@@ -382,6 +382,8 @@ void UpdateFastmemViews(CPUFastmemMode mode)
     };
 
     auto ReserveRegion = [](u32 start_address, u32 end_address_inclusive) {
+    // We don't reserve memory regions on Android because the app could be subject to address space size limitations.
+#ifndef __ANDROID__
       Assert(end_address_inclusive >= start_address);
       u8* map_address = m_fastmem_base + start_address;
       auto view = m_memory_arena.CreateReservedView(end_address_inclusive - start_address + 1, map_address);
@@ -392,6 +394,7 @@ void UpdateFastmemViews(CPUFastmemMode mode)
       }
 
       m_fastmem_reserved_views.push_back(std::move(view.value()));
+#endif
     };
 
     // KUSEG - cached
