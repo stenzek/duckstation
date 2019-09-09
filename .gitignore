@@ -1,0 +1,38 @@
+# osx annoyances
+.DS_Store
+
+# binaries folder
+/bin/
+/Build/
+/build/
+
+# vs stuff
+.vs
+ipch
+ipch/*
+*.opensdf
+*.sdf
+*.suo
+*.vcxproj.user
+*.VC.opendb
+*.VC.db
+
+# cmake stuff
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# unix intermediate files
+config.h
+*.o
+*.a
+*.so
+*.dylib
+
+# qt creator
+CMakeLists.txt.user
+
+# python bytecode
+__pycache__

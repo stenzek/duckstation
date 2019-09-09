@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="BitField&lt;*,bool,*,1&gt;">
+    <DisplayString><![CDATA[{((data >> $T2) & 1) != 0}]]></DisplayString>
+    <Expand>
+      <Item Name="[bit index]">$T2</Item>
+    </Expand>
+  </Type>
+  <Type Name="BitField&lt;*,*,*,*&gt;">
+    <DisplayString><![CDATA[{((data >> $T3) & ((1 << $T4) - 1))}]]></DisplayString>
+    <Expand>
+      <Item Name="[bit index]">$T3</Item>
+      <Item Name="[bit count]">$T4</Item>
+      <Item Name="[bit mask]"><![CDATA[((1 << $T4) - 1) << $T3]]></Item>
+      <Item Name="[masked bits]"><![CDATA[(data >> $T3) & (((1 << $T4) - 1) << $T3)]]></Item>
+      <Item Name="[all bits]">data</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

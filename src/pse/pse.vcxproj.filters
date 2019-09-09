@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="system.cpp" />
+    <ClCompile Include="cpu_core.cpp" />
+    <ClCompile Include="cpu_disasm.cpp" />
+    <ClCompile Include="bus.cpp" />
+    <ClCompile Include="dma.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="types.h" />
+    <ClInclude Include="save_state_version.h" />
+    <ClInclude Include="system.h" />
+    <ClInclude Include="cpu_core.h" />
+    <ClInclude Include="cpu_types.h" />
+    <ClInclude Include="cpu_disasm.h" />
+    <ClInclude Include="bus.h" />
+    <ClInclude Include="dma.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpu_core.inl" />
+    <None Include="bus.inl" />
+  </ItemGroup>
+</Project>
