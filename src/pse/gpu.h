@@ -23,6 +23,8 @@ public:
   void DMAWrite(u32 value);
 
 private:
+  static constexpr u32 MAX_GP0_COMMAND_LENGTH = 12;
+
   enum class DMADirection : u32
   {
     Off = 0,
@@ -36,6 +38,9 @@ private:
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
+
+  // Rendering commands, returns false if not enough data is provided
+  bool HandleRenderPolygonCommand();
 
   Bus* m_bus = nullptr;
   DMA* m_dma = nullptr;
@@ -69,4 +74,29 @@ private:
     BitField<u32, DMADirection, 29, 2> dma_direction;
     BitField<u32, bool, 31, 1> drawing_even_line;
   } m_GPUSTAT = {};
+
+  struct TextureConfig
+  {
+    u8 window_mask_x;   // in 8 pixel steps
+    u8 window_mask_y;   // in 8 pixel steps
+    u8 window_offset_x; // in 8 pixel steps
+    u8 window_offset_y; // in 8 pixel steps
+    bool x_flip;
+    bool y_flip;
+  } m_texture_config = {};
+
+  struct DrawingArea
+  {
+    u32 top_left_x, top_left_y;
+    u32 bottom_right_x, bottom_right_y;
+  } m_drawing_area = {};
+
+  struct DrawingOffset
+  {
+    s32 x;
+    s32 y;
+  } m_drawing_offset = {};
+
+  std::array<u32, MAX_GP0_COMMAND_LENGTH> m_GP0_command = {};
+  u32 m_GP0_command_length = 0;
 };
