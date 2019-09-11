@@ -20,11 +20,11 @@ public:
   bool DoState(StateWrapper& sw);
 
   bool ReadByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u8* value);
-  bool ReadWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16* value);
-  bool ReadDWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32* value);
+  bool ReadHalfWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16* value);
+  bool ReadWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32* value);
   bool WriteByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u8 value);
-  bool WriteWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16 value);
-  bool WriteDWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32 value);
+  bool WriteHalfWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16 value);
+  bool WriteWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32 value);
 
   template<MemoryAccessType type, MemoryAccessSize size>
   bool DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32& value);
@@ -33,6 +33,9 @@ private:
   static constexpr u32 DMA_BASE = 0x1F801080;
   static constexpr u32 DMA_SIZE = 0x80;
   static constexpr u32 DMA_MASK = DMA_SIZE - 1;
+  static constexpr u32 GPU_BASE = 0x1F801810;
+  static constexpr u32 GPU_SIZE = 0x10;
+  static constexpr u32 GPU_MASK = GPU_SIZE - 1;
   static constexpr u32 SPU_BASE = 0x1F801C00;
   static constexpr u32 SPU_SIZE = 0x300;
   static constexpr u32 SPU_MASK = 0x3FF;
@@ -54,11 +57,14 @@ private:
   bool ReadExpansionRegion2(MemoryAccessSize size, u32 offset, u32& value);
   bool WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool ReadSPU(MemoryAccessSize size, u32 offset, u32& value);
-  bool WriteSPU(MemoryAccessSize size, u32 offset, u32 value);
+  bool DoReadGPU(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value);
 
   bool DoReadDMA(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteDMA(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value);
+
+  bool ReadSPU(MemoryAccessSize size, u32 offset, u32& value);
+  bool WriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
   DMA* m_dma = nullptr;
   GPU* m_gpu = nullptr;

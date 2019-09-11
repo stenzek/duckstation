@@ -39,6 +39,7 @@
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="dma.cpp" />
+    <ClCompile Include="gpu.cpp" />
     <ClCompile Include="system.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +48,7 @@
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="cpu_types.h" />
     <ClInclude Include="dma.h" />
+    <ClInclude Include="gpu.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="types.h" />

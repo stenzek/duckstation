@@ -89,6 +89,15 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
     return (type == MemoryAccessType::Read) ? DoReadDMA(size, bus_address & DMA_MASK, value) :
                                               DoWriteDMA(size, bus_address & DMA_MASK, value);
   }
+  else if (bus_address < GPU_BASE)
+  {
+    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+  }
+  else if (bus_address < (GPU_BASE + GPU_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadGPU(size, bus_address & GPU_MASK, value) :
+                                              DoWriteGPU(size, bus_address & GPU_MASK, value);
+  }
   else if (bus_address < SPU_BASE)
   {
     return DoInvalidAccess(type, size, cpu_address, bus_address, value);

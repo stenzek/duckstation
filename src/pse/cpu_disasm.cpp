@@ -61,19 +61,19 @@ static const std::array<const char*, 64> s_base_table = {{
   "UNKNOWN",               // 31
   "lb $rt, $offsetrs",     // 32
   "lh $rt, $offsetrs",     // 33
-  "UNKNOWN",               // 34
+  "lwl $rt, $offsetrs",    // 34
   "lw $rt, $offsetrs",     // 35
   "lbu $rt, $offsetrs",    // 36
   "lhu $rt, $offsetrs",    // 37
-  "UNKNOWN",               // 38
+  "lwr $rt, $offsetrs",    // 38
   "UNKNOWN",               // 39
   "sb $rt, $offsetrs",     // 40
   "sh $rt, $offsetrs",     // 41
-  "UNKNOWN",               // 42
+  "swl $rt, $offsetrs",    // 42
   "sw $rt, $offsetrs",     // 43
   "UNKNOWN",               // 44
   "UNKNOWN",               // 45
-  "UNKNOWN",               // 46
+  "swr $rt, $offsetrs",    // 46
   "UNKNOWN",               // 47
   "UNKNOWN",               // 48
   "UNKNOWN",               // 49

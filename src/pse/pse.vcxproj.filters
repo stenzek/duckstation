@@ -6,6 +6,7 @@
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="dma.cpp" />
+    <ClCompile Include="gpu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -16,6 +17,7 @@
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="dma.h" />
+    <ClInclude Include="gpu.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

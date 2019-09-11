@@ -3,6 +3,7 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
 #include "dma.h"
+#include "gpu.h"
 #include <cstdio>
 Log_SetChannel(Bus);
 
@@ -38,7 +39,7 @@ bool Bus::ReadByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_
   return result;
 }
 
-bool Bus::ReadWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16* value)
+bool Bus::ReadHalfWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16* value)
 {
   u32 temp = 0;
   const bool result =
@@ -47,7 +48,7 @@ bool Bus::ReadWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_
   return result;
 }
 
-bool Bus::ReadDWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32* value)
+bool Bus::ReadWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32* value)
 {
   return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cpu_address, bus_address, *value);
 }
@@ -58,13 +59,13 @@ bool Bus::WriteByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus
   return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(cpu_address, bus_address, temp);
 }
 
-bool Bus::WriteWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16 value)
+bool Bus::WriteHalfWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16 value)
 {
   u32 temp = ZeroExtend32(value);
   return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(cpu_address, bus_address, temp);
 }
 
-bool Bus::WriteDWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32 value)
+bool Bus::WriteWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32 value)
 {
   return DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(cpu_address, bus_address, value);
 }
@@ -178,6 +179,20 @@ bool Bus::WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value)
   return DoInvalidAccess(MemoryAccessType::Write, size, EXP2_BASE | offset, EXP2_BASE | offset, value);
 }
 
+bool Bus::DoReadGPU(MemoryAccessSize size, u32 offset, u32& value)
+{
+  Assert(size == MemoryAccessSize::Word);
+  value = m_gpu->ReadRegister(offset);
+  return true;
+}
+
+bool Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
+{
+  Assert(size == MemoryAccessSize::Word);
+  m_gpu->WriteRegister(offset, value);
+  return true;
+}
+
 bool Bus::ReadSPU(MemoryAccessSize size, u32 offset, u32& value)
 {
   if (offset == 0x1AE)
@@ -186,7 +201,7 @@ bool Bus::ReadSPU(MemoryAccessSize size, u32 offset, u32& value)
     return true;
   }
 
-  //return DoInvalidAccess(MemoryAccessType::Write, size, SPU_BASE | offset, SPU_BASE | offset, value);
+  // return DoInvalidAccess(MemoryAccessType::Write, size, SPU_BASE | offset, SPU_BASE | offset, value);
   value = 0;
   return true;
 }
@@ -201,7 +216,7 @@ bool Bus::WriteSPU(MemoryAccessSize size, u32 offset, u32 value)
   if (offset == 0x1AA)
     return true;
 
-  //return DoInvalidAccess(MemoryAccessType::Write, size, SPU_BASE | offset, SPU_BASE | offset, value);
+  // return DoInvalidAccess(MemoryAccessType::Write, size, SPU_BASE | offset, SPU_BASE | offset, value);
   return true;
 }
 
@@ -212,7 +227,7 @@ bool Bus::DoReadDMA(MemoryAccessSize size, u32 offset, u32& value)
   return true;
 }
 
-bool Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32& value)
+bool Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
 {
   Assert(size == MemoryAccessSize::Word);
   m_dma->WriteRegister(offset, value);

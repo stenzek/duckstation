@@ -526,6 +526,32 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     }
     break;
 
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      const u32 aligned_value = ReadMemoryWord(aligned_addr);
+
+      // note: bypasses load delay on the read
+      const u32 existing_value = m_regs.r[static_cast<u8>(inst.i.rt.GetValue())];
+      const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
+      u32 new_value;
+      if (inst.op == InstructionOp::lwl)
+      {
+        const u32 mask = UINT32_C(0x00FFFFFF) >> shift;
+        new_value = (existing_value & mask) | (aligned_value << (24 - shift));
+      }
+      else
+      {
+        const u32 mask = UINT32_C(0xFFFFFF00) << (24 - shift);
+        new_value = (existing_value & mask) | (aligned_value >> shift);
+      }
+
+      WriteRegDelayed(inst.i.rt, new_value);
+    }
+    break;
+
     case InstructionOp::sb:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
@@ -547,6 +573,31 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryWord(addr, value);
+    }
+    break;
+
+    case InstructionOp::swl:
+    case InstructionOp::swr:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      const u32 mem_value = ReadMemoryWord(aligned_addr);
+      const u32 reg_value = ReadReg(inst.i.rt);
+      const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
+
+      u32 new_value;
+      if (inst.op == InstructionOp::swl)
+      {
+        const u32 mem_mask = UINT32_C(0xFFFFFF00) << shift;
+        new_value = (mem_value & mem_mask) | (reg_value >> (24 - shift));
+      }
+      else
+      {
+        const u32 mem_mask = UINT32_C(0x00FFFFFF) >> (24 - shift);
+        new_value = (mem_value & mem_mask) | (reg_value << shift);
+      }
+
+      WriteMemoryWord(aligned_addr, new_value);
     }
     break;
 
