@@ -18,8 +18,22 @@ public:
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
 
+  // DMA access
+  u32 DMARead();
+  void DMAWrite(u32 value);
+
 private:
+  enum class DMADirection : u32
+  {
+    Off = 0,
+    FIFO = 1,
+    CPUtoGP0 = 2,
+    GPUREADtoCPU = 3
+  };
+
   void SoftReset();
+  void UpdateDMARequest();
+  u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
 
@@ -52,7 +66,7 @@ private:
     BitField<u32, bool, 26, 1> ready_to_recieve_cmd;
     BitField<u32, bool, 27, 1> ready_to_send_vram;
     BitField<u32, bool, 28, 1> ready_to_recieve_dma;
-    BitField<u32, u8, 29, 2> dma_direction;
+    BitField<u32, DMADirection, 29, 2> dma_direction;
     BitField<u32, bool, 31, 1> drawing_even_line;
   } m_GPUSTAT = {};
 };

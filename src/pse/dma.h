@@ -37,7 +37,7 @@ public:
   void SetRequest(Channel channel, bool request);
 
 private:
-  static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
+  static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x00FFFFFF);
 
   enum class SyncMode : u32
   {
@@ -53,10 +53,10 @@ private:
   void RunDMA(Channel channel);
 
   // from device -> memory
-  u32 DMARead(Channel channel);
+  u32 DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaining_words);
 
   // from memory -> device
-  void DMAWrite(Channel channel, u32 value);
+  void DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address, u32 remaining_words);
 
   Bus* m_bus = nullptr;
   GPU* m_gpu = nullptr;
@@ -88,7 +88,7 @@ private:
     {
       u32 bits;
       BitField<u32, bool, 0, 1> copy_to_device;
-      BitField<u32, bool, 1, 1> address_step_forward;
+      BitField<u32, bool, 1, 1> address_step_reverse;
       BitField<u32, bool, 8, 1> chopping_enable;
       BitField<u32, SyncMode, 9, 2> sync_mode;
       BitField<u32, u32, 16, 3> chopping_dma_window_size;
