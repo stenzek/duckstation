@@ -16,8 +16,9 @@ public:
   void Reset() override;
 
 protected:
-  virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices) override;
-  virtual void FlushRender() override;
+  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
+  void DispatchRenderCommand(RenderCommand rc, u32 num_vertices) override;
+  void FlushRender() override;
 
 private:
   void CreateFramebuffer();

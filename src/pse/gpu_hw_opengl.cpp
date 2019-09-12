@@ -51,7 +51,7 @@ void GPU_HW_OpenGL::ClearFramebuffer()
   glClear(GL_COLOR_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  //m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 }
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
@@ -127,6 +127,45 @@ void GPU_HW_OpenGL::SetViewport()
 }
 
 void GPU_HW_OpenGL::SetScissor() {}
+
+inline u32 ConvertRGBA5551ToRGBA8888(u16 color)
+{
+  u8 r = Truncate8(color & 31);
+  u8 g = Truncate8((color >> 5) & 31);
+  u8 b = Truncate8((color >> 10) & 31);
+  u8 a = Truncate8((color >> 15) & 1);
+
+  // 00012345 -> 1234545
+  b = (b << 3) | (b >> 3);
+  g = (g << 3) | (g >> 3);
+  r = (r << 3) | (r >> 3);
+  a = a ? 255 : 0;
+
+  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
+}
+
+void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+{
+  const u32 pixel_count = width * height;
+  std::vector<u32> rgba_data;
+  rgba_data.reserve(pixel_count);
+
+  const u8* source_ptr = static_cast<const u8*>(data);
+  for (u32 i = 0; i < pixel_count; i++)
+  {
+    u16 src_col;
+    std::memcpy(&src_col, source_ptr, sizeof(src_col));
+    source_ptr += sizeof(src_col);
+
+    const u32 dst_col = ConvertRGBA5551ToRGBA8888(src_col);
+    rgba_data.push_back(dst_col);
+  }
+
+  m_framebuffer_texture->Bind();
+  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+                  rgba_data.data());
+  m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+}
 
 void GPU_HW_OpenGL::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
 {

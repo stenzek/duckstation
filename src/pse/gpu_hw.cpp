@@ -85,7 +85,7 @@ void main()
 {
   // 0..+1023 -> -1..1
   float pos_x = (float(a_position.x) / 511.5) - 1.0;
-  float pos_y = (float(a_position.y) / 255.5) + 1.0;
+  float pos_y = (float(a_position.y) / -255.5) + 1.0;
   gl_Position = vec4(pos_x, pos_y, 0.0, 1.0);
 
   v_color = a_color;

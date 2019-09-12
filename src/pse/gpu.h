@@ -97,8 +97,10 @@ protected:
 
   // Rendering commands, returns false if not enough data is provided
   bool HandleRenderCommand();
+  bool HandleCopyRectangleCPUToVRAMCommand();
 
   // Rendering in the backend
+  virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices);
   virtual void FlushRender();
 

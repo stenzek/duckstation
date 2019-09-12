@@ -103,7 +103,7 @@ u32 GPU::ReadGPUREAD()
 void GPU::WriteGP0(u32 value)
 {
   m_GP0_command.push_back(value);
-  Assert(m_GP0_command.size() <= 128);
+  Assert(m_GP0_command.size() <= 1048576);
 
   const u8 command = Truncate8(m_GP0_command[0] >> 24);
   const u32 param = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
@@ -120,6 +120,13 @@ void GPU::WriteGP0(u32 value)
     {
       case 0x00: // NOP
         break;
+
+      case 0xA0: // Copy Rectangle CPU->VRAM
+      {
+        if (!HandleCopyRectangleCPUToVRAMCommand())
+          return;
+      }
+      break;
 
       case 0xE1: // Set draw mode
       {
@@ -287,6 +294,36 @@ bool GPU::HandleRenderCommand()
   DispatchRenderCommand(rc, num_vertices);
   return true;
 }
+
+bool GPU::HandleCopyRectangleCPUToVRAMCommand()
+{
+  if (m_GP0_command.size() < 3)
+    return false;
+
+  const u32 copy_width = m_GP0_command[2] & UINT32_C(0xFFFF);
+  const u32 copy_height = m_GP0_command[2] >> 16;
+  const u32 num_pixels = copy_width * copy_height;
+  const u32 num_words = 3 + ((num_pixels + 1) / 2);
+  if (m_GP0_command.size() < num_words)
+    return false;
+
+  const u32 dst_x = m_GP0_command[1] & UINT32_C(0xFFFF);
+  const u32 dst_y = m_GP0_command[1] >> 16;
+
+  Log_DebugPrintf("Copy rectangle from CPU to VRAM offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, copy_width,
+                  copy_height);
+
+  if ((dst_x + copy_width) > VRAM_WIDTH || (dst_y + copy_height) > VRAM_HEIGHT)
+  {
+    Panic("Out of bounds VRAM copy");
+    return true;
+  }
+
+  UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &m_GP0_command[3]);
+  return true;
+}
+
+void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
 
 void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices) {}
 
