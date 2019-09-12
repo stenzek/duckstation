@@ -1,9 +1,14 @@
 #pragma once
-#include "bus.h"
-#include "dma.h"
-#include "gpu.h"
-#include "cpu_core.h"
 #include "types.h"
+
+namespace CPU
+{
+class Core;
+}
+
+class Bus;
+class DMA;
+class GPU;
 
 class System
 {
@@ -17,8 +22,8 @@ public:
   void RunFrame();
 
 private:
-  CPU::Core m_cpu;
-  Bus m_bus;
-  DMA m_dma;
-  GPU m_gpu;
+  std::unique_ptr<CPU::Core> m_cpu;
+  std::unique_ptr<Bus> m_bus;
+  std::unique_ptr<DMA> m_dma;
+  std::unique_ptr<GPU> m_gpu;
 };

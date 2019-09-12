@@ -10,10 +10,10 @@ class GPU
 {
 public:
   GPU();
-  ~GPU();
+  virtual ~GPU();
 
-  bool Initialize(Bus* bus, DMA* dma);
-  void Reset();
+  virtual bool Initialize(Bus* bus, DMA* dma);
+  virtual void Reset();
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -22,8 +22,21 @@ public:
   u32 DMARead();
   void DMAWrite(u32 value);
 
-private:
-  static constexpr u32 MAX_GP0_COMMAND_LENGTH = 12;
+  // gpu_hw_opengl.cpp
+  static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
+
+protected:
+  static constexpr u32 VRAM_WIDTH = 1024;
+  static constexpr u32 VRAM_HEIGHT = 512;
+  static constexpr u32 VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16);
+
+  static constexpr s32 S11ToS32(u32 value)
+  {
+    if (value & (UINT16_C(1) << 10))
+      return static_cast<s32>(UINT32_C(0xFFFFF800) | value);
+    else
+      return value;
+  }
 
   enum class DMADirection : u32
   {
@@ -33,6 +46,48 @@ private:
     GPUREADtoCPU = 3
   };
 
+  enum class Primitive : u8
+  {
+    Reserved = 0,
+    Polygon = 1,
+    Line = 2,
+    Rectangle = 3
+  };
+
+  enum class DrawRectangleSize : u8
+  {
+    Variable = 0,
+    R1x1 = 1,
+    R8x8 = 2,
+    R16x16 = 3
+  };
+
+  union RenderCommand
+  {
+    u32 bits;
+
+    BitField<u32, u32, 0, 23> color_for_first_vertex;
+    BitField<u32, bool, 24, 1> texture_enable; // not valid for lines
+    BitField<u32, bool, 25, 1> transparency_enable;
+    BitField<u32, DrawRectangleSize, 27, 2> rectangle_size; // only for rectangles
+    BitField<u32, bool, 27, 1> quad_polygon;                // only for polygons
+    BitField<u32, bool, 27, 1> polyline;                    // only for lines
+    BitField<u32, bool, 28, 1> shading_enable;                     // 0 - flat, 1 = gouroud
+    BitField<u32, Primitive, 29, 21> primitive;
+  };
+
+  // TODO: Use BitField to do sign extending instead
+  union VertexPosition
+  {
+    u32 bits;
+
+    BitField<u32, u32, 0, 11> x_s11;
+    BitField<u32, u32, 16, 11> y_s11;
+
+    u32 x() const { return S11ToS32(x_s11); }
+    u32 y() const { return S11ToS32(y_s11); }
+  };
+
   void SoftReset();
   void UpdateDMARequest();
   u32 ReadGPUREAD();
@@ -40,7 +95,11 @@ private:
   void WriteGP1(u32 value);
 
   // Rendering commands, returns false if not enough data is provided
-  bool HandleRenderPolygonCommand();
+  bool HandleRenderCommand();
+
+  // Rendering in the backend
+  virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices);
+  virtual void FlushRender();
 
   Bus* m_bus = nullptr;
   DMA* m_dma = nullptr;
@@ -97,6 +156,5 @@ private:
     s32 y;
   } m_drawing_offset = {};
 
-  std::array<u32, MAX_GP0_COMMAND_LENGTH> m_GP0_command = {};
-  u32 m_GP0_command_length = 0;
+  std::vector<u32> m_GP0_command;
 };

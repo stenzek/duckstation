@@ -7,6 +7,8 @@
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
+    <ClCompile Include="gpu_hw_opengl.cpp" />
+    <ClCompile Include="gpu_hw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -18,6 +20,8 @@
     <ClInclude Include="bus.h" />
     <ClInclude Include="dma.h" />
     <ClInclude Include="gpu.h" />
+    <ClInclude Include="gpu_hw_opengl.h" />
+    <ClInclude Include="gpu_hw.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />
