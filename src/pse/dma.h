@@ -68,13 +68,13 @@ private:
     union BlockControl
     {
       u32 bits;
-      struct
+      union
       {
         BitField<u32, u32, 0, 16> word_count;
 
         u32 GetWordCount() const { return (word_count == 0) ? 0x10000 : word_count; }
       } manual;
-      struct
+      union
       {
         BitField<u32, u32, 0, 16> block_size;
         BitField<u32, u32, 16, 16> block_count;

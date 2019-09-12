@@ -228,6 +228,43 @@ void DMA::RunDMA(Channel channel)
     break;
 
     case SyncMode::Request:
+    {
+      const u32 block_size = cs.block_control.request.GetBlockSize();
+      const u32 block_count = cs.block_control.request.GetBlockCount();
+      Log_DebugPrintf(" ... copying %u blocks of size %u %s 0x%08X", block_count, block_size,
+                      copy_to_device ? "from" : "to", current_address);
+      if (copy_to_device)
+      {
+        u32 words_remaining = block_size * block_count;
+        do
+        {
+          words_remaining--;
+
+          u32 value = 0;
+          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, current_address,
+                                                                                value);
+          DMAWrite(channel, value, current_address, words_remaining);
+
+          current_address = (current_address + increment) & ADDRESS_MASK;
+        } while (words_remaining > 0);
+      }
+      else
+      {
+        u32 words_remaining = block_size * block_count;
+        do
+        {
+          words_remaining--;
+
+          u32 value = DMARead(channel, current_address, words_remaining);
+          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, current_address,
+                                                                                 value);
+
+          current_address = (current_address + increment) & ADDRESS_MASK;
+        } while (words_remaining > 0);
+      }
+    }
+    break;
+
     default:
       Panic("Unimplemented sync mode");
       break;
