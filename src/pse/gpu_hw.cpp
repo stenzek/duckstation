@@ -32,6 +32,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 
         if (textured)
           hw_vert.texcoord = (m_GP0_command[buffer_pos++] & UINT32_C(0x0000FFFF));
+        else
+          hw_vert.texcoord = 0;
 
         m_vertex_staging.push_back(hw_vert);
       }
@@ -44,6 +46,22 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
   }
 }
 
+void GPU_HW::CalcViewport(int* x, int* y, int* width, int* height)
+{
+  *x = m_drawing_offset.x;
+  *y = m_drawing_offset.y;
+  *width = std::max(static_cast<int>(VRAM_WIDTH - m_drawing_offset.x), 1);
+  *height = std::max(static_cast<int>(VRAM_HEIGHT - m_drawing_offset.y), 1);
+}
+
+void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
+{
+  *left = m_drawing_area.top_left_x;
+  *right = m_drawing_area.bottom_right_x;
+  *top = m_drawing_area.top_left_y;
+  *bottom = m_drawing_area.bottom_right_y;
+}
+
 std::string GPU_HW::GenerateVertexShader(bool textured)
 {
   std::stringstream ss;
@@ -54,9 +72,9 @@ std::string GPU_HW::GenerateVertexShader(bool textured)
     ss << "/* #define TEXTURED 0 */\n";
 
   ss << R"(
-in uivec2 a_position;
-in uint a_texcoord;
+in ivec2 a_position;
 in vec4 a_color;
+in uint a_texcoord;
 
 out vec4 v_color;
 #if TEXTURED
@@ -65,14 +83,14 @@ out vec4 v_color;
 
 void main()
 {
-  // -1024..+1023 -> -1..1
-  float gl_x = (a_position.x < 0) ? (float(a_position.x) / 1024.0) : (float(a_position.x) / 1023.0);
-  float gl_y = (a_position.y < 0) ? -(float(a_position.y) / 1024.0) : -(float(a_position.y) / 1023.0);
-  gl_Position = vec4(gl_x, gl_y, 0.0, 1.0);
+  // 0..+1023 -> -1..1
+  float pos_x = (float(a_position.x) / 511.5) - 1.0;
+  float pos_y = (float(a_position.y) / 255.5) + 1.0;
+  gl_Position = vec4(pos_x, pos_y, 0.0, 1.0);
 
   v_color = a_color;
   #if TEXTURED
-    v_texcoord = a_texcoord;
+    v_texcoord = vec2(float(a_texcoord & 0xFFu) / 256.0, float((a_texcoord >> 8) & 0xFFu) / 256.0);
   #endif
 }
 )";
@@ -99,8 +117,8 @@ out vec4 ocol0;
 
 void main()
 {
-  //ocol0 = v_color;
-  ocol0 = vec4(1.0, 0.5, 0.5, 1.0);
+  ocol0 = v_color;
+  //ocol0 = vec4(1.0, 0.5, 0.5, 1.0);
 }
 )";
 

@@ -8,8 +8,9 @@ GPU::GPU() = default;
 
 GPU::~GPU() = default;
 
-bool GPU::Initialize(Bus* bus, DMA* dma)
+bool GPU::Initialize(System* system, Bus* bus, DMA* dma)
 {
+  m_system = system;
   m_bus = bus;
   m_dma = dma;
   return true;

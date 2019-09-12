@@ -1,7 +1,10 @@
 #pragma once
-#include "gpu_hw.h"
+#include "common/gl_program.h"
+#include "common/gl_texture.h"
 #include "glad.h"
+#include "gpu_hw.h"
 #include <array>
+#include <memory>
 
 class GPU_HW_OpenGL : public GPU_HW
 {
@@ -9,7 +12,7 @@ public:
   GPU_HW_OpenGL();
   ~GPU_HW_OpenGL() override;
 
-  bool Initialize(Bus* bus, DMA* dma) override;
+  bool Initialize(System* system, Bus* bus, DMA* dma) override;
   void Reset() override;
 
 protected:
@@ -23,22 +26,18 @@ private:
 
   void CreateVertexBuffer();
 
-  GLuint m_framebuffer_texture_id = 0;
+  bool CompilePrograms();
+
+  bool SetProgram(bool texture_enable);
+  void SetViewport();
+  void SetScissor();
+
+  std::unique_ptr<GL::Texture> m_framebuffer_texture;
   GLuint m_framebuffer_fbo_id = 0;
 
   GLuint m_vertex_buffer = 0;
   GLuint m_vao_id = 0;
 
-  struct Program
-  {
-    GLuint program_id = 0;
-
-    bool IsValid() const { return program_id != 0; }
-    void Bind();
-    bool Compile(const std::string& vertex_shader, const std::string& fragment_shader);
-  };
-
-  Program m_texture_program;
-  Program m_color_program;
+  GL::Program m_texture_program;
+  GL::Program m_color_program;
 };
-

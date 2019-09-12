@@ -7,6 +7,7 @@
 #include <SDL.h>
 #include <cstdio>
 
+#if 0
 static int NoGUITest()
 {
   std::unique_ptr<System> system = std::make_unique<System>();
@@ -19,14 +20,17 @@ static int NoGUITest()
     system->RunFrame();
   return 0;
 }
+#endif
 
 static int Run(int argc, char* argv[])
 {
+#if 0
   if (argc < 2)
   {
     std::fprintf(stderr, "Usage: %s <path to system ini> [save state index]\n", argv[0]);
     return -1;
   }
+#endif
 
   // init sdl
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -48,7 +52,7 @@ static int Run(int argc, char* argv[])
   s32 state_index = -1;
   if (argc > 2)
     state_index = StringConverter::StringToInt32(argv[2]);
-  if (!host_interface->InitializeSystem(argv[1], state_index))
+  if (!host_interface->InitializeSystem("", state_index))
   {
     host_interface.reset();
     SDL_Quit();
@@ -79,6 +83,6 @@ int main(int argc, char* argv[])
   g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
 #endif
 
-  return NoGUITest();
-  //return Run(argc, argv);
+  //return NoGUITest();
+  return Run(argc, argv);
 }

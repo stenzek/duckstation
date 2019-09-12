@@ -20,6 +20,9 @@ protected:
 
   void LoadVertices(RenderCommand rc, u32 num_vertices);
 
+  void CalcViewport(int* x, int* y, int* width, int* height);
+  void CalcScissorRect(int* left, int* top, int* right, int* bottom);
+
   std::string GenerateVertexShader(bool textured);
   std::string GenerateFragmentShader(bool textured);
 

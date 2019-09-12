@@ -3,6 +3,7 @@
 #include "types.h"
 #include <array>
 
+class System;
 class Bus;
 class DMA;
 
@@ -12,7 +13,7 @@ public:
   GPU();
   virtual ~GPU();
 
-  virtual bool Initialize(Bus* bus, DMA* dma);
+  virtual bool Initialize(System* system, Bus* bus, DMA* dma);
   virtual void Reset();
 
   u32 ReadRegister(u32 offset);
@@ -101,6 +102,7 @@ protected:
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices);
   virtual void FlushRender();
 
+  System* m_system = nullptr;
   Bus* m_bus = nullptr;
   DMA* m_dma = nullptr;
 

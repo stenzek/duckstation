@@ -1,181 +1,162 @@
 #include "sdl_interface.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
-#include "common/display_renderer_d3d.h"
+#include "YBaseLib/Log.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
 #include "pse/system.h"
-#include <SDL.h>
 #include <cinttypes>
 #include <glad.h>
-#ifdef Y_COMPILER_MSVC
-#include "imgui_impl_dx11.h"
-#include <SDL_syswm.h>
-#endif
+Log_SetChannel(SDLInterface);
 
-SDLInterface::SDLInterface(SDL_Window* window, std::unique_ptr<DisplayRenderer> display_renderer,
-                                   std::unique_ptr<MixerType> mixer)
-  : m_window(window), m_display_renderer(std::move(display_renderer)), m_mixer(std::move(mixer))
-{
-}
+SDLInterface::SDLInterface() = default;
 
 SDLInterface::~SDLInterface()
 {
-  m_mixer.reset();
-
-  switch (m_display_renderer->GetBackendType())
+  if (m_gl_context)
   {
-#ifdef Y_COMPILER_MSVC
-    case DisplayRenderer::BackendType::Direct3D:
-    {
-      ImGui_ImplDX11_Shutdown();
-      ImGui::DestroyContext();
-      m_display_renderer.reset();
-    }
-    break;
-#endif
+    if (m_display_vao != 0)
+      glDeleteVertexArrays(1, &m_display_vao);
 
-    case DisplayRenderer::BackendType::OpenGL:
-    {
-      SDL_GLContext context = SDL_GL_GetCurrentContext();
-      ImGui_ImplOpenGL3_Shutdown();
-      ImGui_ImplSDL2_Shutdown();
-      ImGui::DestroyContext();
-      m_display_renderer.reset();
-      SDL_GL_MakeCurrent(nullptr, nullptr);
-      SDL_GL_DeleteContext(context);
-    }
-    break;
-
-    default:
-    {
-
-      ImGui::DestroyContext();
-      m_display_renderer.reset();
-    }
-    break;
+    m_display_program.Destroy();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+    SDL_GL_MakeCurrent(nullptr, nullptr);
+    SDL_GL_DeleteContext(m_gl_context);
   }
+
+  if (m_window)
+    SDL_DestroyWindow(m_window);
 }
 
-std::unique_ptr<SDLInterface> SDLInterface::Create(
-  DisplayRenderer::BackendType display_renderer_backend /* = DisplayRenderer::GetDefaultBackendType() */)
+bool SDLInterface::CreateSDLWindow()
 {
   constexpr u32 DEFAULT_WINDOW_WIDTH = 900;
   constexpr u32 DEFAULT_WINDOW_HEIGHT = 700;
-  constexpr u32 MAIN_MENU_BAR_HEIGHT = 20;
 
   // Create window.
-  u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-  if (display_renderer_backend == DisplayRenderer::BackendType::OpenGL)
-    window_flags |= SDL_WINDOW_OPENGL;
+  constexpr u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL;
 
-  auto window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
-    SDL_CreateWindow("PCE - Initializing...", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH,
-                     DEFAULT_WINDOW_HEIGHT, window_flags),
-    [](SDL_Window* win) { SDL_DestroyWindow(win); });
-  if (!window)
+  m_window = SDL_CreateWindow("Some idea to emulate a system starting with a P", SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, window_flags);
+  if (!m_window)
   {
     Panic("Failed to create window");
-    return nullptr;
+    return false;
   }
 
-  DisplayRenderer::WindowHandleType window_handle = nullptr;
-  if (display_renderer_backend == DisplayRenderer::BackendType::OpenGL)
+  SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
+  return true;
+}
+
+static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                                     const GLchar* message, const void* userParam)
+{
+  Log_InfoPrintf("%s", message);
+}
+
+bool SDLInterface::CreateGLContext()
+{
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+  m_gl_context = SDL_GL_CreateContext(m_window);
+  if (!m_gl_context || SDL_GL_MakeCurrent(m_window, m_gl_context) != 0 || !gladLoadGL())
   {
-    // We need a GL context. TODO: Move this to common.
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window.get());
-    if (!gl_context || SDL_GL_MakeCurrent(window.get(), gl_context) != 0 || !gladLoadGL())
-    {
-      Panic("Failed to create GL context");
-      return nullptr;
-    }
+    Panic("Failed to create GL context");
+    return false;
   }
-#ifdef Y_COMPILER_MSVC
-  if (display_renderer_backend == DisplayRenderer::BackendType::Direct3D)
+
+  if (GLAD_GL_KHR_debug)
   {
-    // Get window handle from SDL window
-    SDL_SysWMinfo info = {};
-    SDL_VERSION(&info.version);
-    if (!SDL_GetWindowWMInfo(window.get(), &info))
-    {
-      Panic("SDL_GetWindowWMInfo failed");
-      return nullptr;
-    }
-
-    window_handle = info.info.win.window;
-  }
-#endif
-
-  // Create renderer.
-  auto display_renderer =
-    DisplayRenderer::Create(display_renderer_backend, window_handle, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-  if (!display_renderer)
-  {
-    Panic("Failed to create display");
-    return nullptr;
-  }
-  display_renderer->SetTopPadding(MAIN_MENU_BAR_HEIGHT);
-
-  // Create audio renderer.
-  auto mixer = MixerType::Create();
-  if (!mixer)
-  {
-    Panic("Failed to create audio mixer");
-    return nullptr;
+    glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  // Initialize imgui.
+  return true;
+}
+
+bool SDLInterface::CreateImGuiContext()
+{
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
 
-  switch (display_renderer->GetBackendType())
-  {
-#ifdef Y_COMPILER_MSVC
-    case DisplayRenderer::BackendType::Direct3D:
-    {
-      if (!ImGui_ImplSDL2_InitForD3D(window.get()) ||
-          !ImGui_ImplDX11_Init(static_cast<DisplayRendererD3D*>(display_renderer.get())->GetD3DDevice(),
-                               static_cast<DisplayRendererD3D*>(display_renderer.get())->GetD3DContext()))
-      {
-        return nullptr;
-      }
+  if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init())
+    return false;
 
-      ImGui_ImplDX11_NewFrame();
-      ImGui_ImplSDL2_NewFrame(window.get());
-      ImGui::NewFrame();
-    }
-    break;
-#endif
-
-    case DisplayRenderer::BackendType::OpenGL:
-    {
-      if (!ImGui_ImplSDL2_InitForOpenGL(window.get(), SDL_GL_GetCurrentContext()) || !ImGui_ImplOpenGL3_Init())
-        return nullptr;
-
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplSDL2_NewFrame(window.get());
-      ImGui::NewFrame();
-    }
-    break;
-
-    default:
-      break;
-  }
-
-  return std::make_unique<SDLInterface>(window.release(), std::move(display_renderer), std::move(mixer));
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui::NewFrame();
+  return true;
 }
 
-TinyString SDLInterface::GetSaveStateFilename(u32 index)
+bool SDLInterface::CreateGLResources()
 {
-  return TinyString::FromFormat("savestate_%u.bin", index);
+  static constexpr char fullscreen_quad_vertex_shader[] = R"(
+#version 330 core
+
+out vec2 v_tex0;
+
+void main()
+{
+  v_tex0 = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  gl_Position = vec4(v_tex0 * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
+  gl_Position.y = -gl_Position.y;
 }
+)";
+
+  static constexpr char display_fragment_shader[] = R"(
+#version 330 core
+
+uniform sampler2D samp0;
+
+in vec2 v_tex0;
+out vec4 ocol0;
+
+void main()
+{
+  ocol0 = texture(samp0, v_tex0);
+}
+)";
+
+  if (!m_display_program.Compile(fullscreen_quad_vertex_shader, display_fragment_shader))
+    return false;
+
+  m_display_program.BindFragData();
+  if (!m_display_program.Link())
+    return false;
+
+  m_display_program.RegisterUniform("samp0");
+  m_display_program.Bind();
+  m_display_program.Uniform1ui(0, 0);
+
+  glGenVertexArrays(1, &m_display_vao);
+  return true;
+}
+
+std::unique_ptr<SDLInterface> SDLInterface::Create()
+{
+  std::unique_ptr<SDLInterface> intf = std::make_unique<SDLInterface>();
+  if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() || !intf->CreateGLResources())
+    return nullptr;
+
+  return intf;
+}
+
+// TinyString SDLInterface::GetSaveStateFilename(u32 index)
+// {
+//   return TinyString::FromFormat("savestate_%u.bin", index);
+// }
 
 bool SDLInterface::InitializeSystem(const char* filename, s32 save_state_index /* = -1 */)
 {
   Error error;
 
-  m_system = std::make_unique<System>();
+  m_system = std::make_unique<System>(this);
   if (!m_system->Initialize())
   {
     m_system.reset();
@@ -193,6 +174,8 @@ bool SDLInterface::InitializeSystem(const char* filename, s32 save_state_index /
     }
   }
 #endif
+
+  m_system->Reset();
 
   // Resume execution.
   m_running = true;
@@ -232,88 +215,13 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
 
   switch (event->type)
   {
-#if 0
-    case SDL_MOUSEBUTTONDOWN:
-    {
-      u32 button = SDLButtonToHostButton(event->button.button);
-      if (IsMouseGrabbed())
-      {
-        ExecuteMouseButtonChangeCallbacks(button, true);
-        return true;
-      }
-    }
-    break;
-
-    case SDL_MOUSEBUTTONUP:
-    {
-      u32 button = SDLButtonToHostButton(event->button.button);
-      if (IsMouseGrabbed())
-      {
-        ExecuteMouseButtonChangeCallbacks(button, false);
-        return true;
-      }
-      else
-      {
-        // Are we capturing the mouse?
-        if (button == 0)
-          GrabMouse();
-      }
-    }
-    break;
-
-    case SDL_MOUSEMOTION:
-    {
-      if (!IsMouseGrabbed())
-        return false;
-
-      s32 dx = event->motion.xrel;
-      s32 dy = event->motion.yrel;
-      ExecuteMousePositionChangeCallbacks(dx, dy);
-      return true;
-    }
-    break;
-
-    case SDL_KEYDOWN:
-    {
-      // Release mouse key combination
-      if (((event->key.keysym.sym == SDLK_LCTRL || event->key.keysym.sym == SDLK_RCTRL) &&
-           (SDL_GetModState() & KMOD_ALT) != 0) ||
-          ((event->key.keysym.sym == SDLK_LALT || event->key.keysym.sym == SDLK_RALT) &&
-           (SDL_GetModState() & KMOD_CTRL) != 0))
-      {
-        // But don't consume the key event.
-        ReleaseMouse();
-      }
-
-      // Create keyboard event.
-      // TODO: Since we have crap in the input polling, we can't return true here.
-      GenScanCode scancode;
-      if (MapSDLScanCode(&scancode, event->key.keysym.scancode))
-      {
-        ExecuteKeyboardCallbacks(scancode, true);
-        return false;
-      }
-    }
-    break;
-
-    case SDL_KEYUP:
-    {
-      // Create keyboard event.
-      // TODO: Since we have crap in the input polling, we can't return true here.
-      GenScanCode scancode;
-      if (MapSDLScanCode(&scancode, event->key.keysym.scancode))
-      {
-        ExecuteKeyboardCallbacks(scancode, false);
-        return false;
-      }
-    }
-    break;
-#endif
-
     case SDL_WINDOWEVENT:
     {
       if (event->window.event == SDL_WINDOWEVENT_RESIZED)
-        m_display_renderer->WindowResized(u32(event->window.data1), u32(event->window.data2));
+      {
+        m_window_width = event->window.data1;
+        m_window_height = event->window.data2;
+      }
     }
     break;
 
@@ -387,42 +295,37 @@ bool SDLInterface::PassEventToImGui(const SDL_Event* event)
 
 void SDLInterface::Render()
 {
-  if (!m_display_renderer->BeginFrame())
-    return;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
 
-  m_display_renderer->RenderDisplays();
+  RenderDisplay();
 
   RenderImGui();
 
-  const DisplayRenderer::BackendType backend_type = m_display_renderer->GetBackendType();
-  switch (backend_type)
-  {
-#ifdef Y_COMPILER_MSVC
-    case DisplayRenderer::BackendType::Direct3D:
-    {
-      ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-      m_display_renderer->EndFrame();
-      ImGui_ImplSDL2_NewFrame(m_window);
-      ImGui_ImplDX11_NewFrame();
-    }
-    break;
-#endif
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    case DisplayRenderer::BackendType::OpenGL:
-    {
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-      m_display_renderer->EndFrame();
-      SDL_GL_SwapWindow(m_window);
-      ImGui_ImplSDL2_NewFrame(m_window);
-      ImGui_ImplOpenGL3_NewFrame();
-    }
-    break;
+  SDL_GL_SwapWindow(m_window);
 
-    default:
-      break;
-  }
+  ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui_ImplOpenGL3_NewFrame();
 
   ImGui::NewFrame();
+}
+
+void SDLInterface::RenderDisplay()
+{
+  if (!m_display_texture)
+    return;
+
+  glViewport(0, 0, m_window_width, m_window_height);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_FALSE);
+  m_display_program.Bind();
+  m_display_texture->Bind();
+  glBindVertexArray(m_display_vao);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void SDLInterface::RenderImGui()
@@ -499,6 +402,18 @@ void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
   m_osd_messages.push_back(std::move(msg));
 }
 
+void SDLInterface::SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height)
+{
+  m_display_texture = texture;
+  m_display_texture_offset_x = 0;
+  m_display_texture_offset_y = 0;
+  m_display_texture_width = width;
+  m_display_texture_height = height;
+  m_display_texture_changed = true;
+
+  Render();
+}
+
 void SDLInterface::RenderOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
@@ -561,6 +476,8 @@ void SDLInterface::DoSaveState(u32 index)
 
 void SDLInterface::Run()
 {
+  Timer last_render_time;
+
   while (m_running)
   {
     for (;;)
@@ -572,8 +489,12 @@ void SDLInterface::Run()
         break;
     }
 
-    m_system->RunFrame();
-    Render();
+    while (!m_display_texture_changed || last_render_time.GetTimeSeconds() < (1.0f / 60.0f))
+    {
+      m_system->RunFrame();
+    }
+
+    // Render();
+    last_render_time.Reset();
   }
 }
-

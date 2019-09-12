@@ -43,6 +43,8 @@
     <ClInclude Include="display_renderer_gl.h" />
     <ClInclude Include="display_timing.h" />
     <ClInclude Include="fastjmp.h" />
+    <ClInclude Include="gl_program.h" />
+    <ClInclude Include="gl_texture.h" />
     <ClInclude Include="hdd_image.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="object.h" />
@@ -59,6 +61,8 @@
     <ClCompile Include="display_renderer.cpp" />
     <ClCompile Include="display_renderer_gl.cpp" />
     <ClCompile Include="display_timing.cpp" />
+    <ClCompile Include="gl_program.cpp" />
+    <ClCompile Include="gl_texture.cpp" />
     <ClCompile Include="hdd_image.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="object.cpp" />

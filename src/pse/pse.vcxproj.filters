@@ -22,6 +22,7 @@
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gpu_hw.h" />
+    <ClInclude Include="host_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />
