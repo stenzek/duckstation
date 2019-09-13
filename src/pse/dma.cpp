@@ -116,8 +116,10 @@ void DMA::WriteRegister(u32 offset, u32 value)
 void DMA::SetRequest(Channel channel, bool request)
 {
   ChannelState& cs = m_state[static_cast<u32>(channel)];
-  cs.request = request;
+  if (cs.request == request)
+    return;
 
+  cs.request = request;
   if (CanRunChannel(channel))
     RunDMA(channel);
 }
@@ -199,7 +201,7 @@ void DMA::RunDMA(Channel channel)
 
           const u32 word_count = header >> 24;
           const u32 next_address = header & UINT32_C(0xFFFFFF);
-          Log_DebugPrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X", current_address,
+          Log_TracePrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X", current_address,
                           word_count * UINT32_C(4), word_count, next_address);
           current_address += sizeof(header);
 

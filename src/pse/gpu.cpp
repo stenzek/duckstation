@@ -2,6 +2,7 @@
 #include "YBaseLib/Log.h"
 #include "bus.h"
 #include "dma.h"
+#include "system.h"
 Log_SetChannel(GPU);
 
 GPU::GPU() = default;
@@ -24,14 +25,40 @@ void GPU::Reset()
 void GPU::SoftReset()
 {
   m_GPUSTAT.bits = 0x14802000;
-  UpdateDMARequest();
+  UpdateGPUSTAT();
 }
 
-void GPU::UpdateDMARequest()
+void GPU::UpdateGPUSTAT()
 {
-  const bool request = m_GPUSTAT.dma_direction != DMADirection::Off;
-  m_GPUSTAT.dma_data_request = request;
-  m_dma->SetRequest(DMA::Channel::GPU, request);
+  m_GPUSTAT.ready_to_send_vram = !m_GPUREAD_buffer.empty();
+  m_GPUSTAT.ready_to_recieve_cmd = m_GPUREAD_buffer.empty();
+  m_GPUSTAT.ready_to_recieve_dma = m_GPUREAD_buffer.empty();
+
+  bool dma_request;
+  switch (m_GPUSTAT.dma_direction)
+  {
+    case DMADirection::Off:
+      dma_request = false;
+      break;
+
+    case DMADirection::FIFO:
+      dma_request = true; // FIFO not full/full
+      break;
+
+    case DMADirection::CPUtoGP0:
+      dma_request = m_GPUSTAT.ready_to_recieve_dma;
+      break;
+
+    case DMADirection::GPUREADtoCPU:
+      dma_request = m_GPUSTAT.ready_to_send_vram;
+      break;
+
+    default:
+      dma_request = false;
+      break;
+  }
+  m_GPUSTAT.dma_data_request = dma_request;
+  m_dma->SetRequest(DMA::Channel::GPU, dma_request);
 }
 
 u32 GPU::ReadRegister(u32 offset)
@@ -96,8 +123,16 @@ void GPU::DMAWrite(u32 value)
 
 u32 GPU::ReadGPUREAD()
 {
-  Log_ErrorPrintf("GPUREAD not implemented");
-  return UINT32_C(0xFFFFFFFF);
+  if (m_GPUREAD_buffer.empty())
+  {
+    Log_ErrorPrintf("GPUREAD read while buffer is empty");
+    return UINT32_C(0xFFFFFFFF);
+  }
+
+  const u32 value = m_GPUREAD_buffer.front();
+  m_GPUREAD_buffer.pop_front();
+  UpdateGPUSTAT();
+  return value;
 }
 
 void GPU::WriteGP0(u32 value)
@@ -107,6 +142,7 @@ void GPU::WriteGP0(u32 value)
 
   const u8 command = Truncate8(m_GP0_command[0] >> 24);
   const u32 param = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
+  UpdateGPUSTAT();
 
   if (command >= 0x20 && command <= 0x7F)
   {
@@ -128,6 +164,13 @@ void GPU::WriteGP0(u32 value)
       }
       break;
 
+      case 0xC0: // Copy Rectnagle VRAM->CPU
+      {
+        if (!HandleCopyRectangleVRAMToCPUCommand())
+          return;
+      }
+      break;
+
       case 0xE1: // Set draw mode
       {
         // 0..10 bits match GPUSTAT
@@ -136,6 +179,7 @@ void GPU::WriteGP0(u32 value)
         m_GPUSTAT.texture_disable = (param & (UINT32_C(1) << 11)) != 0;
         m_texture_config.x_flip = (param & (UINT32_C(1) << 12)) != 0;
         m_texture_config.y_flip = (param & (UINT32_C(1) << 13)) != 0;
+        m_texture_config.SetColorMode(m_GPUSTAT.texture_color_mode);
         Log_DebugPrintf("Set draw mode %08X", param);
       }
       break;
@@ -195,6 +239,7 @@ void GPU::WriteGP0(u32 value)
   }
 
   m_GP0_command.clear();
+  UpdateGPUSTAT();
 }
 
 void GPU::WriteGP1(u32 value)
@@ -207,7 +252,15 @@ void GPU::WriteGP1(u32 value)
     {
       m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
       Log_DebugPrintf("DMA direction <- 0x%02X", static_cast<u32>(m_GPUSTAT.dma_direction.GetValue()));
-      UpdateDMARequest();
+      UpdateGPUSTAT();
+    }
+    break;
+
+    case 0x05: // Set display start address
+    {
+      // TODO: Remove this later..
+      FlushRender();
+      UpdateDisplay();
     }
     break;
 
@@ -319,8 +372,43 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
     return true;
   }
 
+  FlushRender();
   UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &m_GP0_command[3]);
   return true;
+}
+
+bool GPU::HandleCopyRectangleVRAMToCPUCommand()
+{
+  if (m_GP0_command.size() < 3)
+    return false;
+
+  const u32 width = m_GP0_command[2] & UINT32_C(0xFFFF);
+  const u32 height = m_GP0_command[2] >> 16;
+  const u32 num_pixels = width * height;
+  const u32 num_words = ((num_pixels + 1) / 2);
+  const u32 src_x = m_GP0_command[1] & UINT32_C(0xFFFF);
+  const u32 src_y = m_GP0_command[1] >> 16;
+
+  Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", src_x, src_y, width, height);
+
+  if ((src_x + width) > VRAM_WIDTH || (src_x + height) > VRAM_HEIGHT)
+  {
+    Panic("Out of bounds VRAM copy");
+    return true;
+  }
+
+  // TODO: Implement.
+  for (u32 i = 0; i < num_words; i++)
+    m_GPUREAD_buffer.push_back(0);
+
+  // Is this correct?
+  return true;
+}
+
+void GPU::UpdateDisplay()
+{
+  m_texture_config.page_changed = true;
+  m_system->IncrementFrameNumber();
 }
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
@@ -328,3 +416,46 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
 void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices) {}
 
 void GPU::FlushRender() {}
+
+void GPU::TextureConfig::SetColorMode(TextureColorMode new_color_mode)
+{
+  if (new_color_mode == TextureColorMode::Reserved_Direct16Bit)
+    new_color_mode = TextureColorMode::Direct16Bit;
+
+  if (color_mode == new_color_mode)
+    return;
+
+  color_mode = new_color_mode;
+}
+
+void GPU::TextureConfig::SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1)
+{
+  SetFromPaletteAttribute(Truncate16(texcoord0 >> 16));
+  SetFromPageAttribute(Truncate16(texcoord1 >> 16));
+}
+
+void GPU::TextureConfig::SetFromRectangleTexcoord(u32 texcoord)
+{
+  SetFromPaletteAttribute(Truncate16(texcoord >> 16));
+}
+
+void GPU::TextureConfig::SetFromPageAttribute(u16 value)
+{
+  value &= PAGE_ATTRIBUTE_MASK;
+  if (page_attribute == value)
+    return;
+
+  base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x1FF)) * UINT32_C(64));
+  base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
+  page_changed = true;
+}
+
+void GPU::TextureConfig::SetFromPaletteAttribute(u16 value)
+{
+  value &= PALETTE_ATTRIBUTE_MASK;
+  if (palette_attribute == value)
+    return;
+
+  palette_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x3F)) * UINT32_C(16));
+  palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
+}

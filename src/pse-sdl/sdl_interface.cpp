@@ -77,6 +77,7 @@ bool SDLInterface::CreateGLContext()
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
+  SDL_GL_SetSwapInterval(0);
   return true;
 }
 
@@ -132,7 +133,7 @@ void main()
 
   m_display_program.RegisterUniform("samp0");
   m_display_program.Bind();
-  m_display_program.Uniform1ui(0, 0);
+  m_display_program.Uniform1i(0, 0);
 
   glGenVertexArrays(1, &m_display_vao);
   return true;
@@ -410,8 +411,6 @@ void SDLInterface::SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 off
   m_display_texture_width = width;
   m_display_texture_height = height;
   m_display_texture_changed = true;
-
-  Render();
 }
 
 void SDLInterface::RenderOSDMessages()
@@ -476,8 +475,6 @@ void SDLInterface::DoSaveState(u32 index)
 
 void SDLInterface::Run()
 {
-  Timer last_render_time;
-
   while (m_running)
   {
     for (;;)
@@ -489,12 +486,7 @@ void SDLInterface::Run()
         break;
     }
 
-    while (!m_display_texture_changed || last_render_time.GetTimeSeconds() < (1.0f / 60.0f))
-    {
-      m_system->RunFrame();
-    }
-
-    // Render();
-    last_render_time.Reset();
+    m_system->RunFrame();
+    Render();
   }
 }

@@ -26,4 +26,9 @@ void Texture::Bind()
   glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
+void Texture::Unbind()
+{
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 } // namespace GL

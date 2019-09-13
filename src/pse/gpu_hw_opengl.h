@@ -5,6 +5,7 @@
 #include "gpu_hw.h"
 #include <array>
 #include <memory>
+#include <tuple>
 
 class GPU_HW_OpenGL : public GPU_HW
 {
@@ -16,11 +17,14 @@ public:
   void Reset() override;
 
 protected:
+  void UpdateDisplay() override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
-  void DispatchRenderCommand(RenderCommand rc, u32 num_vertices) override;
+  void UpdateTexturePageTexture() override;
   void FlushRender() override;
 
 private:
+  std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
+
   void CreateFramebuffer();
   void ClearFramebuffer();
   void DestroyFramebuffer();
@@ -28,17 +32,24 @@ private:
   void CreateVertexBuffer();
 
   bool CompilePrograms();
+  bool CompileProgram(GL::Program& prog, bool textured, bool blending);
 
-  bool SetProgram(bool texture_enable);
+  void SetProgram(bool textured, bool blending);
   void SetViewport();
   void SetScissor();
 
   std::unique_ptr<GL::Texture> m_framebuffer_texture;
   GLuint m_framebuffer_fbo_id = 0;
 
+  std::unique_ptr<GL::Texture> m_texture_page_texture;
+  GLuint m_texture_page_fbo_id = 0;
+
   GLuint m_vertex_buffer = 0;
   GLuint m_vao_id = 0;
+  GLuint m_attributeless_vao_id = 0;
 
   GL::Program m_texture_program;
   GL::Program m_color_program;
+  GL::Program m_blended_texture_program;
+  std::array<GL::Program, 3> m_texture_page_programs;
 };

@@ -14,6 +14,7 @@ public:
   u32 GetHeight() const { return m_height; }
 
   void Bind();
+  static void Unbind();
 
 private:
   GLuint m_id;

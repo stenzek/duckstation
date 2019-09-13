@@ -38,9 +38,12 @@ void System::Reset()
   m_bus->Reset();
   m_dma->Reset();
   m_gpu->Reset();
+  m_frame_number = 1;
 }
 
 void System::RunFrame()
 {
-  m_cpu->Execute();
+  u32 current_frame_number = m_frame_number;
+  while (current_frame_number == m_frame_number)
+    m_cpu->Execute();
 }

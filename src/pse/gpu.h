@@ -2,6 +2,8 @@
 #include "common/bitfield.h"
 #include "types.h"
 #include <array>
+#include <deque>
+#include <vector>
 
 class System;
 class Bus;
@@ -30,6 +32,8 @@ protected:
   static constexpr u32 VRAM_WIDTH = 1024;
   static constexpr u32 VRAM_HEIGHT = 512;
   static constexpr u32 VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16);
+  static constexpr u32 TEXTURE_PAGE_WIDTH = 256;
+  static constexpr u32 TEXTURE_PAGE_HEIGHT = 256;
 
   static constexpr s32 S11ToS32(u32 value)
   {
@@ -63,17 +67,26 @@ protected:
     R16x16 = 3
   };
 
+  enum class TextureColorMode : u8
+  {
+    Palette4Bit = 0,
+    Palette8Bit = 1,
+    Direct16Bit = 2,
+    Reserved_Direct16Bit = 3
+  };
+
   union RenderCommand
   {
     u32 bits;
 
     BitField<u32, u32, 0, 23> color_for_first_vertex;
-    BitField<u32, bool, 24, 1> texture_enable; // not valid for lines
+    BitField<u32, bool, 24, 1> texture_blending_raw; // not valid for lines
     BitField<u32, bool, 25, 1> transparency_enable;
+    BitField<u32, bool, 26, 1> texture_enable;
     BitField<u32, DrawRectangleSize, 27, 2> rectangle_size; // only for rectangles
     BitField<u32, bool, 27, 1> quad_polygon;                // only for polygons
     BitField<u32, bool, 27, 1> polyline;                    // only for lines
-    BitField<u32, bool, 28, 1> shading_enable;                     // 0 - flat, 1 = gouroud
+    BitField<u32, bool, 28, 1> shading_enable;              // 0 - flat, 1 = gouroud
     BitField<u32, Primitive, 29, 21> primitive;
   };
 
@@ -90,7 +103,10 @@ protected:
   };
 
   void SoftReset();
-  void UpdateDMARequest();
+
+  // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
+  void UpdateGPUSTAT();
+
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
@@ -98,8 +114,10 @@ protected:
   // Rendering commands, returns false if not enough data is provided
   bool HandleRenderCommand();
   bool HandleCopyRectangleCPUToVRAMCommand();
+  bool HandleCopyRectangleVRAMToCPUCommand();
 
   // Rendering in the backend
+  virtual void UpdateDisplay();
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices);
   virtual void FlushRender();
@@ -114,7 +132,7 @@ protected:
     BitField<u32, u8, 0, 4> texture_page_x_base;
     BitField<u32, u8, 4, 1> texture_page_y_base;
     BitField<u32, u8, 5, 2> semi_transparency;
-    BitField<u32, u8, 7, 2> texture_page_colors;
+    BitField<u32, TextureColorMode, 7, 2> texture_color_mode;
     BitField<u32, bool, 9, 1> dither_enable;
     BitField<u32, bool, 10, 1> draw_to_display_area;
     BitField<u32, bool, 11, 1> draw_set_mask_bit;
@@ -140,6 +158,33 @@ protected:
 
   struct TextureConfig
   {
+    static constexpr u16 PAGE_ATTRIBUTE_MASK = UINT16_C(0b0000100111111111);
+    static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
+
+    // decoded values
+    s32 base_x;
+    s32 base_y;
+    s32 palette_x;
+    s32 palette_y;
+
+    // original values
+    u16 page_attribute;          // from register in rectangle modes/vertex in polygon modes
+    u16 palette_attribute;       // from vertex
+    TextureColorMode color_mode; // from register/vertex in polygon modes
+
+    bool page_changed = false;
+
+    bool IsPageChanged() const { return page_changed; }
+    void ClearPageChangedFlag() { page_changed = false; }
+
+    void SetColorMode(TextureColorMode new_color_mode);
+
+    void SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1);
+    void SetFromRectangleTexcoord(u32 texcoord);
+
+    void SetFromPageAttribute(u16 value);
+    void SetFromPaletteAttribute(u16 value);
+
     u8 window_mask_x;   // in 8 pixel steps
     u8 window_mask_y;   // in 8 pixel steps
     u8 window_offset_x; // in 8 pixel steps
@@ -160,5 +205,11 @@ protected:
     s32 y;
   } m_drawing_offset = {};
 
+  struct TexturePageConfig
+  {
+
+  } m_texture_page_config = {};
+
   std::vector<u32> m_GP0_command;
+  std::deque<u32> m_GPUREAD_buffer;
 };

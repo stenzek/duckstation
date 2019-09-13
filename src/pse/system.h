@@ -20,6 +20,9 @@ public:
 
   HostInterface* GetHostInterface() const { return m_host_interface; }
 
+  u32 GetFrameNumber() const { return m_frame_number; }
+  void IncrementFrameNumber() { m_frame_number++; }
+
   bool Initialize();
   void Reset();
 
@@ -31,4 +34,5 @@ private:
   std::unique_ptr<Bus> m_bus;
   std::unique_ptr<DMA> m_dma;
   std::unique_ptr<GPU> m_gpu;
+  u32 m_frame_number = 1;
 };
