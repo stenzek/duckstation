@@ -9,6 +9,7 @@
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
+    <ClCompile Include="host_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />

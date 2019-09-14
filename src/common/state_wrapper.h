@@ -2,6 +2,7 @@
 #include "YBaseLib/ByteStream.h"
 #include "types.h"
 #include <cstring>
+#include <deque>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -109,6 +110,28 @@ public:
     if (m_mode == Mode::Read)
       data->resize(length);
     DoArray(data->data(), data->size());
+  }
+
+  template<typename T>
+  void Do(std::deque<T>* data)
+  {
+    u32 length = static_cast<u32>(data->size());
+    Do(&length);
+    if (m_mode == Mode::Read)
+    {
+      data->clear();
+      for (u32 i = 0; i < length; i++)
+      {
+        T value;
+        Do(&value);
+        data->push_back(value);
+      }
+    }
+    else
+    {
+      for (u32 i = 0; i < length; i++)
+        Do(&data[i]);
+    }
   }
 
   bool DoMarker(const char* marker);

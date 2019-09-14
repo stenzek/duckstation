@@ -1,6 +1,7 @@
 #include "dma.h"
 #include "YBaseLib/Log.h"
 #include "bus.h"
+#include "common/state_wrapper.h"
 #include "gpu.h"
 Log_SetChannel(DMA);
 
@@ -20,6 +21,22 @@ void DMA::Reset()
   m_state = {};
   m_DPCR.bits = 0x07654321;
   m_DCIR = 0;
+}
+
+bool DMA::DoState(StateWrapper& sw)
+{
+  for (u32 i = 0; i < NUM_CHANNELS; i++)
+  {
+    ChannelState& cs = m_state[i];
+    sw.Do(&cs.base_address);
+    sw.Do(&cs.block_control.bits);
+    sw.Do(&cs.channel_control.bits);
+    sw.Do(&cs.request);
+  }
+
+  sw.Do(&m_DPCR.bits);
+  sw.Do(&m_DCIR);
+  return !sw.HasError();
 }
 
 u32 DMA::ReadRegister(u32 offset)

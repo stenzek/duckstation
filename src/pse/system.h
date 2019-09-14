@@ -1,6 +1,9 @@
 #pragma once
 #include "types.h"
 
+class ByteStream;
+class StateWrapper;
+
 class HostInterface;
 
 namespace CPU
@@ -26,11 +29,16 @@ public:
   bool Initialize();
   void Reset();
 
+  bool LoadState(ByteStream* state);
+  bool SaveState(ByteStream* state);
+
   void RunFrame();
 
   bool LoadEXE(const char* filename);
 
 private:
+  bool DoState(StateWrapper& sw);
+
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;
   std::unique_ptr<Bus> m_bus;

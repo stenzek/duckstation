@@ -3,6 +3,8 @@
 #include "types.h"
 #include <array>
 
+class StateWrapper;
+
 class Bus;
 class GPU;
 
@@ -30,6 +32,7 @@ public:
 
   bool Initialize(Bus* bus, GPU* gpu);
   void Reset();
+  bool DoState(StateWrapper& sw);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);

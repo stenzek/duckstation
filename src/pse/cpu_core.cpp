@@ -39,7 +39,30 @@ void Core::Reset()
 
 bool Core::DoState(StateWrapper& sw)
 {
-  return false;
+  sw.DoArray(m_regs.r, countof(m_regs.r));
+  sw.Do(&m_regs.pc);
+  sw.Do(&m_regs.hi);
+  sw.Do(&m_regs.lo);
+  sw.Do(&m_regs.npc);
+  sw.Do(&m_cop0_regs.BPC);
+  sw.Do(&m_cop0_regs.BDA);
+  sw.Do(&m_cop0_regs.JUMPDEST);
+  sw.Do(&m_cop0_regs.BadVaddr);
+  sw.Do(&m_cop0_regs.BDAM);
+  sw.Do(&m_cop0_regs.BPCM);
+  sw.Do(&m_cop0_regs.EPC);
+  sw.Do(&m_cop0_regs.PRID);
+  sw.Do(&m_cop0_regs.sr.bits);
+  sw.Do(&m_cop0_regs.cause.bits);
+  sw.Do(&m_cop0_regs.dcic.bits);
+  sw.Do(&m_next_instruction.bits);
+  sw.Do(&m_in_branch_delay_slot);
+  sw.Do(&m_branched);
+  sw.Do(&m_load_delay_reg);
+  sw.Do(&m_load_delay_old_value);
+  sw.Do(&m_cache_control);
+  sw.DoBytes(m_dcache.data(), m_dcache.size());
+  return !sw.HasError();
 }
 
 void Core::SetPC(u32 new_pc)

@@ -1,5 +1,7 @@
 #include "system.h"
+#include "YBaseLib/ByteStream.h"
 #include "bus.h"
+#include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
@@ -32,6 +34,23 @@ bool System::Initialize()
   return true;
 }
 
+bool System::DoState(StateWrapper& sw)
+{
+  if (!sw.DoMarker("CPU") || !m_cpu->DoState(sw))
+    return false;
+
+  if (!sw.DoMarker("Bus") || !m_bus->DoState(sw))
+    return false;
+
+  if (!sw.DoMarker("DMA") || !m_dma->DoState(sw))
+    return false;
+
+  if (!sw.DoMarker("GPU") || !m_gpu->DoState(sw))
+    return false;
+
+  return !sw.HasError();
+}
+
 void System::Reset()
 {
   m_cpu->Reset();
@@ -39,6 +58,18 @@ void System::Reset()
   m_dma->Reset();
   m_gpu->Reset();
   m_frame_number = 1;
+}
+
+bool System::LoadState(ByteStream* state)
+{
+  StateWrapper sw(state, StateWrapper::Mode::Read);
+  return DoState(sw);
+}
+
+bool System::SaveState(ByteStream* state)
+{
+  StateWrapper sw(state, StateWrapper::Mode::Write);
+  return DoState(sw);
 }
 
 void System::RunFrame()
@@ -134,3 +165,4 @@ bool System::LoadEXE(const char* filename)
 
   return true;
 }
+

@@ -19,6 +19,8 @@ public:
 
   static std::unique_ptr<SDLInterface> Create();
 
+  static TinyString GetSaveStateFilename(u32 index);
+
   void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height) override;
 
   void ReportMessage(const char* message) override;
@@ -61,7 +63,6 @@ private:
   int m_window_width = 0;
   int m_window_height = 0;
 
-  std::unique_ptr<System> m_system;
   GL::Program m_display_program;
   GLuint m_display_vao = 0;
   GL::Texture* m_display_texture = nullptr;
@@ -73,6 +74,4 @@ private:
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
-
-  bool m_running = false;
 };

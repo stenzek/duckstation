@@ -1,9 +1,9 @@
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/StringConverter.h"
-#include "sdl_interface.h"
-#include "pse/types.h"
 #include "pse/system.h"
+#include "pse/types.h"
+#include "sdl_interface.h"
 #include <SDL.h>
 #include <cstdio>
 
@@ -24,14 +24,6 @@ static int NoGUITest()
 
 static int Run(int argc, char* argv[])
 {
-#if 0
-  if (argc < 2)
-  {
-    std::fprintf(stderr, "Usage: %s <path to system ini> [save state index]\n", argv[0]);
-    return -1;
-  }
-#endif
-
   // init sdl
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
   {
@@ -48,11 +40,25 @@ static int Run(int argc, char* argv[])
     return -1;
   }
 
-  // create system
+  // parameters
+  const char* filename = nullptr;
   s32 state_index = -1;
-  if (argc > 2)
-    state_index = StringConverter::StringToInt32(argv[2]);
-  if (!host_interface->InitializeSystem("", state_index))
+  for (int i = 1; i < argc; i++)
+  {
+#define CHECK_ARG(str) !std::strcmp(argv[i], str)
+#define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
+
+    if (CHECK_ARG_PARAM("-state"))
+      state_index = std::atoi(argv[++i]);
+    else
+      filename = argv[i];
+
+#undef CHECK_ARG
+#undef CHECK_ARG_PARAM
+  }
+
+  // create system
+  if (!host_interface->InitializeSystem(filename, state_index))
   {
     host_interface.reset();
     SDL_Quit();
@@ -83,6 +89,6 @@ int main(int argc, char* argv[])
   g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
 #endif
 
-  //return NoGUITest();
+  // return NoGUITest();
   return Run(argc, argv);
 }

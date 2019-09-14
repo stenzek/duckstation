@@ -5,6 +5,8 @@
 #include <deque>
 #include <vector>
 
+class StateWrapper;
+
 class System;
 class Bus;
 class DMA;
@@ -17,6 +19,7 @@ public:
 
   virtual bool Initialize(System* system, Bus* bus, DMA* dma);
   virtual void Reset();
+  virtual bool DoState(StateWrapper& sw);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -206,11 +209,6 @@ protected:
     s32 x;
     s32 y;
   } m_drawing_offset = {};
-
-  struct TexturePageConfig
-  {
-
-  } m_texture_page_config = {};
 
   std::vector<u32> m_GP0_command;
   std::deque<u32> m_GPUREAD_buffer;

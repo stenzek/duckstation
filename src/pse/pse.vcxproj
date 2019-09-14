@@ -42,6 +42,7 @@
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
+    <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="system.cpp" />
   </ItemGroup>
   <ItemGroup>

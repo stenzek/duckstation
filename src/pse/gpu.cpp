@@ -1,6 +1,7 @@
 #include "gpu.h"
 #include "YBaseLib/Log.h"
 #include "bus.h"
+#include "common/state_wrapper.h"
 #include "dma.h"
 #include "system.h"
 Log_SetChannel(GPU);
@@ -26,6 +27,46 @@ void GPU::SoftReset()
 {
   m_GPUSTAT.bits = 0x14802000;
   UpdateGPUSTAT();
+}
+
+bool GPU::DoState(StateWrapper& sw)
+{
+  if (sw.IsReading())
+    FlushRender();
+
+  sw.Do(&m_GPUSTAT.bits);
+  sw.Do(&m_texture_config.base_x);
+  sw.Do(&m_texture_config.base_y);
+  sw.Do(&m_texture_config.palette_x);
+  sw.Do(&m_texture_config.palette_y);
+  sw.Do(&m_texture_config.page_attribute);
+  sw.Do(&m_texture_config.palette_attribute);
+  sw.Do(&m_texture_config.color_mode);
+  sw.Do(&m_texture_config.page_changed);
+  sw.Do(&m_texture_config.window_mask_x);
+  sw.Do(&m_texture_config.window_mask_y);
+  sw.Do(&m_texture_config.window_offset_x);
+  sw.Do(&m_texture_config.window_offset_y);
+  sw.Do(&m_texture_config.x_flip);
+  sw.Do(&m_texture_config.y_flip);
+  sw.Do(&m_drawing_area.top_left_x);
+  sw.Do(&m_drawing_area.top_left_y);
+  sw.Do(&m_drawing_area.bottom_right_x);
+  sw.Do(&m_drawing_area.bottom_right_y);
+  sw.Do(&m_drawing_offset.x);
+  sw.Do(&m_drawing_offset.y);
+  sw.Do(&m_drawing_offset.x);
+
+  sw.Do(&m_GP0_command);
+  sw.Do(&m_GPUREAD_buffer);
+
+  if (sw.IsReading())
+  {
+    m_texture_config.page_changed = true;
+    UpdateGPUSTAT();
+  }
+
+  return !sw.HasError();
 }
 
 void GPU::UpdateGPUSTAT()
@@ -352,7 +393,6 @@ bool GPU::HandleRenderCommand()
                   ZeroExtend32(words_per_vertex));
 
   DispatchRenderCommand(rc, num_vertices);
-  UpdateDisplay();
   return true;
 }
 
@@ -370,7 +410,6 @@ bool GPU::HandleFillRectangleCommand()
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
   FillVRAM(dst_x, dst_y, width, height, color);
-  UpdateDisplay();
   return true;
 }
 
@@ -400,7 +439,6 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 
   FlushRender();
   UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &m_GP0_command[3]);
-  UpdateDisplay();
   return true;
 }
 

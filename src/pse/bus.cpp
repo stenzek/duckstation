@@ -2,6 +2,7 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
+#include "common/state_wrapper.h"
 #include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
@@ -29,7 +30,10 @@ void Bus::Reset()
 
 bool Bus::DoState(StateWrapper& sw)
 {
-  return false;
+  sw.DoBytes(m_ram.data(), m_ram.size());
+  sw.DoBytes(m_bios.data(), m_bios.size());
+  sw.Do(&m_tty_line_buffer);
+  return !sw.HasError();
 }
 
 bool Bus::ReadByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u8* value)

@@ -148,15 +148,13 @@ std::unique_ptr<SDLInterface> SDLInterface::Create()
   return intf;
 }
 
-// TinyString SDLInterface::GetSaveStateFilename(u32 index)
-// {
-//   return TinyString::FromFormat("savestate_%u.bin", index);
-// }
+TinyString SDLInterface::GetSaveStateFilename(u32 index)
+{
+  return TinyString::FromFormat("savestate_%u.bin", index);
+}
 
 bool SDLInterface::InitializeSystem(const char* filename, s32 save_state_index /* = -1 */)
 {
-  Error error;
-
   m_system = std::make_unique<System>(this);
   if (!m_system->Initialize())
   {
@@ -164,21 +162,13 @@ bool SDLInterface::InitializeSystem(const char* filename, s32 save_state_index /
     return false;
   }
 
-#if 0
+  m_system->Reset();
+
   if (save_state_index >= 0)
   {
     // Load the save state.
-    if (!HostInterface::LoadSystemState(GetSaveStateFilename(static_cast<u32>(save_state_index)), &error))
-    {
-      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading save state failed", error.GetErrorCodeAndDescription(),
-                               m_window);
-    }
+    LoadState(GetSaveStateFilename(static_cast<u32>(save_state_index)));
   }
-#endif
-
-  m_system->Reset();
-
-  //m_system->LoadEXE("tests/psxtest_cpu.psxexe");
 
   // Resume execution.
   m_running = true;
@@ -458,21 +448,12 @@ void SDLInterface::RenderOSDMessages()
 
 void SDLInterface::DoLoadState(u32 index)
 {
-#if 0
-  Error error;
-  if (!LoadSystemState(TinyString::FromFormat("savestate_%u.bin", index), &error))
-  {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Loading save state failed", error.GetErrorCodeAndDescription(),
-                             m_window);
-  }
-#endif
+  LoadState(GetSaveStateFilename(index));
 }
 
 void SDLInterface::DoSaveState(u32 index)
 {
-#if 0
-  SaveSystemState(TinyString::FromFormat("savestate_%u.bin", index));
-#endif
+  SaveState(GetSaveStateFilename(index));
 }
 
 void SDLInterface::Run()
