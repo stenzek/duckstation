@@ -83,7 +83,7 @@ protected:
     u32 bits;
 
     BitField<u32, u32, 0, 23> color_for_first_vertex;
-    BitField<u32, bool, 24, 1> texture_blending_raw; // not valid for lines
+    BitField<u32, bool, 24, 1> texture_blend_disable; // not valid for lines
     BitField<u32, bool, 25, 1> transparency_enable;
     BitField<u32, bool, 26, 1> texture_enable;
     BitField<u32, DrawRectangleSize, 27, 2> rectangle_size; // only for rectangles
@@ -91,6 +91,10 @@ protected:
     BitField<u32, bool, 27, 1> polyline;                    // only for lines
     BitField<u32, bool, 28, 1> shading_enable;              // 0 - flat, 1 = gouroud
     BitField<u32, Primitive, 29, 21> primitive;
+
+    // Helper functions.
+    bool IsTextureEnabled() const { return (primitive != Primitive::Line && texture_enable); }
+    bool IsTextureBlendingEnabled() const { return (IsTextureEnabled() && !texture_blend_disable); }
   };
 
   // TODO: Use BitField to do sign extending instead

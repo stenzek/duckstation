@@ -166,6 +166,7 @@ in vec2 a_tex0;
 
 out vec4 v_col0;
 #if TEXTURED
+  uniform vec2 u_tex_scale;
   out vec2 v_tex0;
 #endif
 
@@ -178,7 +179,7 @@ void main()
 
   v_col0 = a_col0;
   #if TEXTURED
-    v_tex0 = vec2(a_tex0.x / 4, a_tex0.y);
+    v_tex0 = vec2(a_tex0 * u_tex_scale);
   #endif
 }
 )";

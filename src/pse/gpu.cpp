@@ -409,6 +409,8 @@ bool GPU::HandleRenderCommand()
                   ZeroExtend32(words_per_vertex));
 
   DispatchRenderCommand(rc, num_vertices);
+  FlushRender();
+  UpdateDisplay();
   return true;
 }
 

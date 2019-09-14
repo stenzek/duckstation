@@ -148,12 +148,12 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   if (!prog.Link())
     return false;
 
-  prog.Bind();
-
   if (textured)
   {
+    prog.Bind();
+    prog.RegisterUniform("u_tex_scale");
     prog.RegisterUniform("samp0");
-    prog.Uniform1i(0, 0);
+    prog.Uniform1i(1, 0);
   }
 
   return true;
@@ -163,6 +163,29 @@ void GPU_HW_OpenGL::SetProgram(bool textured, bool blending)
 {
   const GL::Program& prog = textured ? (blending ? m_blended_texture_program : m_texture_program) : m_color_program;
   prog.Bind();
+
+  if (textured)
+  {
+    switch (m_texture_config.color_mode)
+    {
+      case GPU::TextureColorMode::Palette4Bit:
+        prog.Uniform2f(0, 1.0f / 4, 1.0f);
+        break;
+
+      case GPU::TextureColorMode::Palette8Bit:
+        prog.Uniform2f(0, 1.0f / 2, 1.0f);
+        break;
+
+      case GPU::TextureColorMode::Direct16Bit:
+        prog.Uniform2f(0, 1.0f, 1.0f);
+        break;
+
+      default:
+        break;
+    }
+
+    m_texture_page_texture->Bind();
+  }
 }
 
 void GPU_HW_OpenGL::SetViewport()
@@ -337,12 +360,9 @@ void GPU_HW_OpenGL::FlushRender()
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
-  SetProgram(m_batch_command.texture_enable, m_batch_command.texture_blending_raw);
+  SetProgram(m_batch_command.IsTextureEnabled(), m_batch_command.IsTextureBlendingEnabled());
   SetViewport();
   SetScissor();
-
-  if (m_batch_command.texture_enable)
-    m_texture_page_texture->Bind();
 
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
   glBindVertexArray(m_vao_id);
