@@ -256,7 +256,8 @@ void Core::Execute()
   m_current_instruction_pc = m_regs.pc;
 
   // fetch the next instruction
-  FetchInstruction();
+  if (!FetchInstruction())
+    return;
 
   // handle branch delays - we are now in a delay slot if we just branched
   m_in_branch_delay_slot = m_branched;
@@ -272,12 +273,20 @@ void Core::Execute()
   m_next_load_delay_old_value = 0;
 }
 
-void Core::FetchInstruction()
+bool Core::FetchInstruction()
 {
+  m_regs.pc = m_regs.npc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(static_cast<VirtualMemoryAddress>(m_regs.npc)))
+  {
+    // this will call FetchInstruction() again when the pipeline is flushed.
+    return false;
+  }
+
   DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true, true>(
     static_cast<VirtualMemoryAddress>(m_regs.npc), m_next_instruction.bits);
-  m_regs.pc = m_regs.npc;
   m_regs.npc += sizeof(m_next_instruction.bits);
+  return true;
 }
 
 void Core::ExecuteInstruction(Instruction inst)

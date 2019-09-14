@@ -65,7 +65,7 @@ private:
   void DisassembleAndPrint(u32 addr);
 
   // Fetches the instruction at m_regs.npc
-  void FetchInstruction();
+  bool FetchInstruction();
   void ExecuteInstruction(Instruction inst);
   void ExecuteCop0Instruction(Instruction inst);
   void Branch(u32 target);
