@@ -54,7 +54,21 @@ bool SDLInterface::CreateSDLWindow()
 static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                      const GLchar* message, const void* userParam)
 {
-  Log_InfoPrintf("%s", message);
+  switch (severity)
+  {
+    case GL_DEBUG_SEVERITY_HIGH_KHR:
+      Log_InfoPrint(message);
+      break;
+    case GL_DEBUG_SEVERITY_MEDIUM_KHR:
+      Log_WarningPrint(message);
+      break;
+    case GL_DEBUG_SEVERITY_LOW_KHR:
+      Log_InfoPrintf(message);
+      break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+      Log_DebugPrint(message);
+      break;
+  }
 }
 
 bool SDLInterface::CreateGLContext()
