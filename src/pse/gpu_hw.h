@@ -1,7 +1,7 @@
 #pragma once
 #include "gpu.h"
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 class GPU_HW : public GPU
@@ -18,6 +18,12 @@ protected:
     u32 color;
     u16 texcoord;
     u16 padding;
+
+    static std::tuple<u8, u8> DecodeTexcoord(u16 texcoord)
+    {
+      return std::make_tuple(static_cast<u8>(texcoord), static_cast<u8>(texcoord >> 8));
+    }
+    static u16 EncodeTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
   };
 
   virtual void UpdateTexturePageTexture();
@@ -42,4 +48,3 @@ private:
 
   void LoadVertices(RenderCommand rc, u32 num_vertices);
 };
-

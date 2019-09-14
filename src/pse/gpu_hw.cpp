@@ -8,6 +8,7 @@ GPU_HW::~GPU_HW() = default;
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 {
+  // TODO: Move this to the GPU..
   switch (rc.primitive)
   {
     case Primitive::Polygon:
@@ -45,6 +46,53 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 
         m_batch_vertices.push_back(hw_vert);
       }
+    }
+    break;
+
+    case Primitive::Rectangle:
+    {
+      u32 buffer_pos = 1;
+
+      const bool textured = rc.texture_enable;
+      const u32 color = rc.color_for_first_vertex;
+      const VertexPosition vp{m_GP0_command[buffer_pos++]};
+      const s32 pos_left = vp.x();
+      const s32 pos_top = vp.y();
+      const auto [tex_left, tex_top] =
+        HWVertex::DecodeTexcoord(rc.texture_enable ? Truncate16(m_GP0_command[buffer_pos++]) : 0);
+      s32 rectangle_width;
+      s32 rectangle_height;
+      switch (rc.rectangle_size)
+      {
+        case DrawRectangleSize::R1x1:
+          rectangle_width = 1;
+          rectangle_height = 1;
+          break;
+        case DrawRectangleSize::R8x8:
+          rectangle_width = 8;
+          rectangle_height = 8;
+          break;
+        case DrawRectangleSize::R16x16:
+          rectangle_width = 16;
+          rectangle_height = 16;
+          break;
+        default:
+          rectangle_width = static_cast<s32>(m_GP0_command[buffer_pos] & UINT32_C(0xFFFF));
+          rectangle_height = static_cast<s32>(m_GP0_command[buffer_pos] >> 16);
+          break;
+      }
+
+      // TODO: This should repeat the texcoords instead of stretching
+      const s32 pos_right = pos_left + (rectangle_width - 1);
+      const s32 pos_bottom = pos_top + (rectangle_height - 1);
+      const u8 tex_right = static_cast<u8>(tex_left + (rectangle_width - 1));
+      const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
+
+      m_batch_vertices.push_back(HWVertex{pos_left, pos_top, color, HWVertex::EncodeTexcoord(tex_left, tex_top)});
+      m_batch_vertices.push_back(HWVertex{pos_right, pos_top, color, HWVertex::EncodeTexcoord(tex_right, tex_top)});
+      m_batch_vertices.push_back(HWVertex{pos_left, pos_bottom, color, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
+      m_batch_vertices.push_back(
+        HWVertex{pos_right, pos_bottom, color, HWVertex::EncodeTexcoord(tex_right, tex_bottom)});
     }
     break;
 
@@ -271,6 +319,12 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
           m_texture_config.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[5]);
         else
           m_texture_config.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[4]);
+      }
+
+      case Primitive::Rectangle:
+      {
+        m_texture_config.SetFromRectangleTexcoord(m_GP0_command[2]);
+        m_texture_config.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
       }
       break;
 

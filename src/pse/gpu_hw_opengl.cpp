@@ -283,8 +283,9 @@ void GPU_HW_OpenGL::FlushRender()
   glVertexAttribPointer(2, 2, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
                         reinterpret_cast<void*>(offsetof(HWVertex, texcoord)));
 
-  glDrawArrays(m_batch_command.quad_polygon ? GL_TRIANGLE_STRIP : GL_TRIANGLES, 0,
-               static_cast<GLsizei>(m_batch_vertices.size()));
+  const bool is_strip = ((m_batch_command.primitive == Primitive::Polygon && m_batch_command.quad_polygon) ||
+                         m_batch_command.primitive == Primitive::Rectangle);
+  glDrawArrays(is_strip ? GL_TRIANGLE_STRIP : GL_TRIANGLES, 0, static_cast<GLsizei>(m_batch_vertices.size()));
 
   m_batch_vertices.clear();
 }

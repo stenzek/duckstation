@@ -322,7 +322,7 @@ bool GPU::HandleRenderCommand()
     case Primitive::Rectangle:
     {
       words_per_vertex =
-        1 + BoolToUInt8(rc.texture_enable) + BoolToUInt8(rc.rectangle_size == DrawRectangleSize::Variable);
+        2 + BoolToUInt8(rc.texture_enable) + BoolToUInt8(rc.rectangle_size == DrawRectangleSize::Variable);
       num_vertices = 1;
       total_words = words_per_vertex;
     }
