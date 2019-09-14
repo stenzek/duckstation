@@ -77,8 +77,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       }
 
       // TODO: This should repeat the texcoords instead of stretching
-      const s32 pos_right = pos_left + (rectangle_width - 1);
-      const s32 pos_bottom = pos_top + (rectangle_height - 1);
+      const s32 pos_right = pos_left + rectangle_width;
+      const s32 pos_bottom = pos_top + rectangle_height;
       const u8 tex_right = static_cast<u8>(tex_left + (rectangle_width - 1));
       const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
 
