@@ -66,6 +66,22 @@ bool GPU::DoState(StateWrapper& sw)
     UpdateGPUSTAT();
   }
 
+  if (!sw.DoMarker("GPU-VRAM"))
+    return false;
+
+  if (sw.IsReading())
+  {
+    std::vector<u16> vram;
+    sw.Do(&vram);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, vram.data());
+  }
+  else
+  {
+    std::vector<u16> vram(VRAM_WIDTH * VRAM_HEIGHT);
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, vram.data());
+    sw.Do(&vram);
+  }
+
   return !sw.HasError();
 }
 
@@ -475,6 +491,8 @@ void GPU::UpdateDisplay()
   m_texture_config.page_changed = true;
   m_system->IncrementFrameNumber();
 }
+
+void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 

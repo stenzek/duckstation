@@ -193,10 +193,53 @@ inline u32 ConvertRGBA5551ToRGBA8888(u16 color)
   return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
 }
 
+inline u16 ConvertRGBA8888ToRGBA5551(u32 color)
+{
+  const u16 r = Truncate16((color >> 3) & 0x1Fu);
+  const u16 g = Truncate16((color >> 11) & 0x1Fu);
+  const u16 b = Truncate16((color >> 19) & 0x1Fu);
+  const u16 a = Truncate16((color >> 31) & 0x01u);
+
+  return r | (g << 5) | (b << 10) | (a << 15);
+}
+
 void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
   m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+}
+
+void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
+{
+  // we need to convert RGBA8 -> RGBA5551
+  std::vector<u32> temp_buffer(width * height);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_fbo_id);
+  glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
+
+  // reverse copy because of lower-left origin
+  const u32 source_stride = width * sizeof(u32);
+  const u8* source_ptr = reinterpret_cast<const u8*>(temp_buffer.data()) + (source_stride * (height - 1));
+  const u32 dst_stride = width * sizeof(u16);
+  u8* dst_ptr = static_cast<u8*>(buffer);
+  for (u32 row = 0; row < height; row++)
+  {
+    const u8* source_row_ptr = source_ptr;
+    u8* dst_row_ptr = dst_ptr;
+
+    for (u32 col = 0; col < width; col++)
+    {
+      u32 src_col;
+      std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
+      source_row_ptr += sizeof(src_col);
+
+      const u16 dst_col = ConvertRGBA8888ToRGBA5551(src_col);
+      std::memcpy(dst_row_ptr, &dst_col, sizeof(dst_col));
+      dst_row_ptr += sizeof(dst_col);
+    }
+
+    source_ptr -= source_stride;
+    dst_ptr += dst_stride;
+  }
 }
 
 void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
