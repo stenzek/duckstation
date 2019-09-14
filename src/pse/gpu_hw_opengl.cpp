@@ -151,9 +151,8 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   if (textured)
   {
     prog.Bind();
-    prog.RegisterUniform("u_tex_scale");
     prog.RegisterUniform("samp0");
-    prog.Uniform1i(1, 0);
+    prog.Uniform1i(0, 0);
   }
 
   return true;
@@ -165,27 +164,7 @@ void GPU_HW_OpenGL::SetProgram(bool textured, bool blending)
   prog.Bind();
 
   if (textured)
-  {
-    switch (m_texture_config.color_mode)
-    {
-      case GPU::TextureColorMode::Palette4Bit:
-        prog.Uniform2f(0, 1.0f / 4, 1.0f);
-        break;
-
-      case GPU::TextureColorMode::Palette8Bit:
-        prog.Uniform2f(0, 1.0f / 2, 1.0f);
-        break;
-
-      case GPU::TextureColorMode::Direct16Bit:
-        prog.Uniform2f(0, 1.0f, 1.0f);
-        break;
-
-      default:
-        break;
-    }
-
     m_texture_page_texture->Bind();
-  }
 }
 
 void GPU_HW_OpenGL::SetViewport()
@@ -334,16 +313,9 @@ void GPU_HW_OpenGL::UpdateTexturePageTexture()
   const GL::Program& prog = m_texture_page_programs[static_cast<u8>(m_texture_config.color_mode)];
   prog.Bind();
 
-  const float base_x = static_cast<float>(m_texture_config.base_x) * (1.0f / static_cast<float>(VRAM_WIDTH));
-  const float base_y = static_cast<float>(m_texture_config.base_y) * (1.0f / static_cast<float>(VRAM_HEIGHT));
-  prog.Uniform2f(1, base_x, base_y);
-
+  prog.Uniform2i(1, m_texture_config.base_x, m_texture_config.base_y);
   if (m_texture_config.color_mode >= GPU::TextureColorMode::Palette4Bit)
-  {
-    const float palette_x = static_cast<float>(m_texture_config.palette_x) * (1.0f / static_cast<float>(VRAM_WIDTH));
-    const float palette_y = static_cast<float>(m_texture_config.palette_y) * (1.0f / static_cast<float>(VRAM_HEIGHT));
-    prog.Uniform2f(2, palette_x, palette_y);
-  }
+    prog.Uniform2i(2, m_texture_config.palette_x, m_texture_config.palette_y);
 
   glDrawArrays(GL_TRIANGLES, 0, 3);
 

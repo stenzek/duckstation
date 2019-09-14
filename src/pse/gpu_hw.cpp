@@ -123,13 +123,19 @@ static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
 void GPU_HW::GenerateShaderHeader(std::stringstream& ss)
 {
   ss << "#version 330 core\n\n";
-  ss << "const vec2 vram_size = vec2(float(" << VRAM_WIDTH << "), float(" << VRAM_HEIGHT << "));\n";
-  ss << "const vec2 rcp_vram_size = vec2(1.0, 1.0) / vram_size;\n";
+  ss << "const ivec2 VRAM_SIZE = ivec2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ");\n";
+  ss << "const ivec2 VRAM_COORD_MASK = ivec2(" << (VRAM_WIDTH - 1) << ", " << (VRAM_HEIGHT - 1) << ");\n";
+  ss << "const vec2 RCP_VRAM_SIZE = vec2(1.0, 1.0) / vec2(VRAM_SIZE);\n";
   ss << R"(
 
 float fixYCoord(float y)
 {
-  return 1.0 - rcp_vram_size.y - y;
+  return 1.0 - RCP_VRAM_SIZE.y - y;
+}
+
+int fixYCoord(int y)
+{
+  return VRAM_SIZE.y - y - 1;
 }
 
 uint RGBA8ToRGBA5551(vec4 v)
@@ -179,7 +185,7 @@ void main()
 
   v_col0 = a_col0;
   #if TEXTURED
-    v_tex0 = vec2(a_tex0 * u_tex_scale);
+    v_tex0 = a_tex0;
   #endif
 }
 )";
@@ -255,10 +261,10 @@ std::string GPU_HW::GenerateTexturePageFragmentShader(TextureColorMode mode)
 
   ss << R"(
 uniform sampler2D samp0;
-uniform vec2 base_offset;
+uniform ivec2 base_offset;
 
 #if PALETTE
-uniform vec2 palette_offset;
+uniform ivec2 palette_offset;
 #endif
 
 in vec2 v_tex0;
@@ -266,33 +272,32 @@ out vec4 o_col0;
 
 void main()
 {
+  ivec2 local_coords = ivec2(gl_FragCoord.xy);
   #if PALETTE_4_BIT
-    vec2 local_coords = vec2(v_tex0.x / 4.0, v_tex0.y);
+    local_coords.x /= 4;
   #elif PALETTE_8_BIT
-    vec2 local_coords = vec2(v_tex0.x / 2.0, v_tex0.y);
-  #else
-    vec2 local_coords = v_tex0;
+    local_coords.x /= 2;
   #endif
 
   // fixup coords
-  vec2 coords = vec2(local_coords.x + base_offset.x, fixYCoord(local_coords.y + base_offset.y));
+  ivec2 coords = ivec2(base_offset.x + local_coords.x, fixYCoord(base_offset.y + local_coords.y));
 
   // load colour/palette
-  vec4 color = texture(samp0, coords);
+  vec4 color = texelFetch(samp0, coords & VRAM_COORD_MASK, 0);
 
   // apply palette
   #if PALETTE
     #if PALETTE_4_BIT
-      uint subpixel = uint(gl_FragCoord.x) & 3u;
+      int subpixel = int(gl_FragCoord.x) & 3;
       uint vram_value = RGBA8ToRGBA5551(color);
-      float palette_index = float((vram_value >> (subpixel * 4u)) & 0x0Fu) * rcp_vram_size.x;
+      int palette_index = int((vram_value >> (subpixel * 4)) & 0x0Fu);
     #elif PALETTE_8_BIT
-      // TODO: Still has precision issues here
-      uint subpixel = uint(gl_FragCoord.x) & 1u;
-      float palette_index = ((subpixel == 0u) ? color.x : color.y) * (255.0 * rcp_vram_size.x);
+      int subpixel = int(gl_FragCoord.x) & 1;
+      uint vram_value = RGBA8ToRGBA5551(color);
+      int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
     #endif
-    vec2 palette_coords = vec2(palette_offset.x + palette_index, fixYCoord(palette_offset.y));
-    color = texture(samp0, palette_coords);
+    ivec2 palette_coords = ivec2(palette_offset.x + palette_index, fixYCoord(palette_offset.y));
+    color = texelFetch(samp0, palette_coords & VRAM_COORD_MASK, 0);
   #endif
 
   o_col0 = color;

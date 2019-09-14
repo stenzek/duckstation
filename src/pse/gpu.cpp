@@ -409,8 +409,8 @@ bool GPU::HandleRenderCommand()
                   ZeroExtend32(words_per_vertex));
 
   DispatchRenderCommand(rc, num_vertices);
-  FlushRender();
-  UpdateDisplay();
+  //FlushRender();
+  //UpdateDisplay();
   return true;
 }
 
@@ -535,7 +535,7 @@ void GPU::TextureConfig::SetFromPageAttribute(u16 value)
   if (page_attribute == value)
     return;
 
-  base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x1FF)) * UINT32_C(64));
+  base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
   base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
   page_attribute = value;
   page_changed = true;
