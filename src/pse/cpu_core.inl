@@ -107,6 +107,29 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
+bool CPU::Core::DoAlignmentCheck(VirtualMemoryAddress address)
+{
+  if constexpr (size == MemoryAccessSize::HalfWord)
+  {
+    if ((address & UINT32_C(1)) == 0)
+      return true;
+  }
+  else if constexpr (size == MemoryAccessSize::Word)
+  {
+    if ((address & UINT32_C(3)) == 0)
+      return true;
+  }
+  else
+  {
+    return true;
+  }
+
+  m_cop0_regs.BadVaddr = address;
+  RaiseException(type == MemoryAccessType::Read ? Exception::AdEL : Exception::AdES);
+  return false;
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
 void CPU::Core::DoScratchpadAccess(PhysicalMemoryAddress address, u32& value)
 {
   const PhysicalMemoryAddress cache_offset = address & DCACHE_OFFSET_MASK;

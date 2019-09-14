@@ -46,14 +46,17 @@ private:
   bool DoMemoryAccess(VirtualMemoryAddress address, u32& value);
 
   template<MemoryAccessType type, MemoryAccessSize size>
+  bool DoAlignmentCheck(VirtualMemoryAddress address);
+
+  template<MemoryAccessType type, MemoryAccessSize size>
   void DoScratchpadAccess(PhysicalMemoryAddress address, u32& value);
 
-  u8 ReadMemoryByte(VirtualMemoryAddress addr);
-  u16 ReadMemoryHalfWord(VirtualMemoryAddress addr);
-  u32 ReadMemoryWord(VirtualMemoryAddress addr);
-  void WriteMemoryByte(VirtualMemoryAddress addr, u8 value);
-  void WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
-  void WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
+  bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value);
+  bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
+  bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value);
+  bool WriteMemoryByte(VirtualMemoryAddress addr, u8 value);
+  bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
+  bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 
   // state helpers
   bool InUserMode() const { return m_cop0_regs.sr.KUc; }
@@ -63,10 +66,10 @@ private:
 
   // Fetches the instruction at m_regs.npc
   void FetchInstruction();
-  void ExecuteInstruction(Instruction inst, u32 inst_pc);
-  void ExecuteCop0Instruction(Instruction inst, u32 inst_pc);
+  void ExecuteInstruction(Instruction inst);
+  void ExecuteCop0Instruction(Instruction inst);
   void Branch(u32 target);
-  void RaiseException(u32 inst_pc, Exception excode);
+  void RaiseException(Exception excode);
 
   // clears pipeline of load/branch delays
   void FlushPipeline();
@@ -86,6 +89,9 @@ private:
   Instruction m_next_instruction = {};
   bool m_in_branch_delay_slot = false;
   bool m_branched = false;
+
+  // address of the instruction currently being executed
+  u32 m_current_instruction_pc = 0;
 
   // load delays
   Reg m_load_delay_reg = Reg::count;

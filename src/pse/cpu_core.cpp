@@ -48,46 +48,54 @@ void Core::SetPC(u32 new_pc)
   FlushPipeline();
 }
 
-u8 Core::ReadMemoryByte(VirtualMemoryAddress addr)
+bool Core::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
 {
-  u32 value;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte, false, true>(addr, value);
-  return Truncate8(value);
+  u32 temp = 0;
+  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte, false, true>(addr, temp);
+  *value = Truncate8(temp);
+  return result;
 }
 
-u16 Core::ReadMemoryHalfWord(VirtualMemoryAddress addr)
+bool Core::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
 {
-  Assert(Common::IsAlignedPow2(addr, 2));
-  u32 value;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord, false, true>(addr, value);
-  return Truncate16(value);
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  u32 temp = 0;
+  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord, false, true>(addr, temp);
+  *value = Truncate16(temp);
+  return result;
 }
 
-u32 Core::ReadMemoryWord(VirtualMemoryAddress addr)
+bool Core::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
 {
-  Assert(Common::IsAlignedPow2(addr, 4));
-  u32 value;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, false, true>(addr, value);
-  return value;
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+    return false;
+
+  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, false, true>(addr, *value);
 }
 
-void Core::WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+bool Core::WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 {
-  u32 value32 = ZeroExtend32(value);
-  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte, false, true>(addr, value32);
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte, false, true>(addr, temp);
 }
 
-void Core::WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+bool Core::WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 {
-  Assert(Common::IsAlignedPow2(addr, 2));
-  u32 value32 = ZeroExtend32(value);
-  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord, false, true>(addr, value32);
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord, false, true>(addr, temp);
 }
 
-void Core::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+bool Core::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
-  Assert(Common::IsAlignedPow2(addr, 4));
-  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word, false, true>(addr, value);
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+    return false;
+
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word, false, true>(addr, value);
 }
 
 bool Core::SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
@@ -134,9 +142,9 @@ void Core::Branch(u32 target)
   m_branched = true;
 }
 
-void Core::RaiseException(u32 inst_pc, Exception excode)
+void Core::RaiseException(Exception excode)
 {
-  m_cop0_regs.EPC = m_in_branch_delay_slot ? (inst_pc - UINT32_C(4)) : inst_pc;
+  m_cop0_regs.EPC = m_in_branch_delay_slot ? (m_current_instruction_pc - UINT32_C(4)) : m_current_instruction_pc;
   m_cop0_regs.cause.Excode = excode;
   m_cop0_regs.cause.BD = m_in_branch_delay_slot;
 
@@ -222,7 +230,7 @@ void Core::Execute()
 {
   // now executing the instruction we previously fetched
   const Instruction inst = m_next_instruction;
-  const u32 inst_pc = m_regs.pc;
+  m_current_instruction_pc = m_regs.pc;
 
   // fetch the next instruction
   FetchInstruction();
@@ -232,7 +240,7 @@ void Core::Execute()
   m_branched = false;
 
   // execute the instruction we previously fetched
-  ExecuteInstruction(inst, inst_pc);
+  ExecuteInstruction(inst);
 
   // next load delay
   m_load_delay_reg = m_next_load_delay_reg;
@@ -249,7 +257,7 @@ void Core::FetchInstruction()
   m_regs.npc += sizeof(m_next_instruction.bits);
 }
 
-void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
+void Core::ExecuteInstruction(Instruction inst)
 {
 #if 0
   if (inst_pc == 0xBFC06FF0)
@@ -260,7 +268,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
 #endif
 
   if (TRACE_EXECUTION)
-    PrintInstruction(inst.bits, inst_pc);
+    PrintInstruction(inst.bits, m_current_instruction_pc);
 
   switch (inst.op)
   {
@@ -348,7 +356,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
           const u32 new_value = old_value + add_value;
           if (AddOverflow(old_value, add_value, new_value))
           {
-            RaiseException(inst_pc, Exception::Ov);
+            RaiseException(Exception::Ov);
             return;
           }
 
@@ -370,7 +378,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
           const u32 new_value = old_value - sub_value;
           if (SubOverflow(old_value, sub_value, new_value))
           {
-            RaiseException(inst_pc, Exception::Ov);
+            RaiseException(Exception::Ov);
             return;
           }
 
@@ -507,7 +515,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
 
         case InstructionFunct::syscall:
         {
-          RaiseException(inst_pc, Exception::Syscall);
+          RaiseException(Exception::Syscall);
         }
         break;
 
@@ -549,7 +557,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
       const u32 new_value = old_value + add_value;
       if (AddOverflow(old_value, add_value, new_value))
       {
-        RaiseException(inst_pc, Exception::Ov);
+        RaiseException(Exception::Ov);
         return;
       }
 
@@ -580,7 +588,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     case InstructionOp::lb:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u8 value = ReadMemoryByte(addr);
+      u8 value;
+      if (!ReadMemoryByte(addr, &value))
+        return;
+
       WriteRegDelayed(inst.i.rt, SignExtend32(value));
     }
     break;
@@ -588,7 +599,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     case InstructionOp::lh:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u16 value = ReadMemoryHalfWord(addr);
+      u16 value;
+      if (!ReadMemoryHalfWord(addr, &value))
+        return;
+
       WriteRegDelayed(inst.i.rt, SignExtend32(value));
     }
     break;
@@ -596,7 +610,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     case InstructionOp::lw:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u32 value = ReadMemoryWord(addr);
+      u32 value;
+      if (!ReadMemoryWord(addr, &value))
+        return;
+
       WriteRegDelayed(inst.i.rt, value);
     }
     break;
@@ -604,7 +621,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     case InstructionOp::lbu:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u8 value = ReadMemoryByte(addr);
+      u8 value;
+      if (!ReadMemoryByte(addr, &value))
+        return;
+
       WriteRegDelayed(inst.i.rt, ZeroExtend32(value));
     }
     break;
@@ -612,7 +632,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     case InstructionOp::lhu:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u16 value = ReadMemoryHalfWord(addr);
+      u16 value;
+      if (!ReadMemoryHalfWord(addr, &value))
+        return;
+
       WriteRegDelayed(inst.i.rt, ZeroExtend32(value));
     }
     break;
@@ -622,7 +645,9 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
-      const u32 aligned_value = ReadMemoryWord(aligned_addr);
+      u32 aligned_value;
+      if (!ReadMemoryWord(aligned_addr, &aligned_value))
+        return;
 
       // note: bypasses load delay on the read
       const u32 existing_value = m_regs.r[static_cast<u8>(inst.i.rt.GetValue())];
@@ -672,9 +697,11 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
-      const u32 mem_value = ReadMemoryWord(aligned_addr);
       const u32 reg_value = ReadReg(inst.i.rt);
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
+      u32 mem_value;
+      if (!ReadMemoryWord(aligned_addr, &mem_value))
+        return;
 
       u32 new_value;
       if (inst.op == InstructionOp::swl)
@@ -760,11 +787,11 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
       if (!m_cop0_regs.sr.CU0 && InUserMode())
       {
         Log_WarningPrintf("Coprocessor 0 not present in user mode");
-        RaiseException(inst_pc, Exception::CpU);
+        RaiseException(Exception::CpU);
         return;
       }
 
-      ExecuteCop0Instruction(inst, inst_pc);
+      ExecuteCop0Instruction(inst);
     }
     break;
 
@@ -772,7 +799,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     case InstructionOp::cop1:
     case InstructionOp::cop2:
     {
-      RaiseException(inst_pc, Exception::CpU);
+      RaiseException(Exception::CpU);
     }
     break;
 
@@ -788,7 +815,7 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
   }
 }
 
-void Core::ExecuteCop0Instruction(Instruction inst, u32 inst_pc)
+void Core::ExecuteCop0Instruction(Instruction inst)
 {
   switch (inst.cop.cop0_op())
   {
