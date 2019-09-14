@@ -342,7 +342,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
           const u32 add_value = ReadReg(inst.r.rt);
           const u32 new_value = old_value + add_value;
           if (AddOverflow(old_value, add_value, new_value))
+          {
             RaiseException(inst_pc, Exception::Ov);
+            return;
+          }
 
           WriteReg(inst.r.rd, new_value);
         }
@@ -525,7 +528,10 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
       const u32 add_value = inst.i.imm_sext32();
       const u32 new_value = old_value + add_value;
       if (AddOverflow(old_value, add_value, new_value))
+      {
         RaiseException(inst_pc, Exception::Ov);
+        return;
+      }
 
       WriteReg(inst.i.rt, new_value);
     }
