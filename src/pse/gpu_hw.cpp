@@ -377,8 +377,11 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   }
 
   // flush when the command changes
-  if (!m_batch_vertices.empty() && m_batch_command.bits != rc.bits)
-    FlushRender();
+  if (!m_batch_vertices.empty())
+  {
+    if (m_batch_vertices.size() >= MAX_BATCH_VERTEX_COUNT || m_batch_command.bits != rc.bits)
+      FlushRender();
+  }
 
   m_batch_command = rc;
   LoadVertices(rc, num_vertices);

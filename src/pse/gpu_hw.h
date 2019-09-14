@@ -11,6 +11,8 @@ public:
   virtual ~GPU_HW();
 
 protected:
+  static constexpr u32 MAX_BATCH_VERTEX_COUNT = 1024;
+
   struct HWVertex
   {
     s32 x;
