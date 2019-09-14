@@ -185,9 +185,9 @@ inline u32 ConvertRGBA5551ToRGBA8888(u16 color)
   u8 a = Truncate8((color >> 15) & 1);
 
   // 00012345 -> 1234545
-  b = (b << 3) | (b >> 3);
-  g = (g << 3) | (g >> 3);
-  r = (r << 3) | (r >> 3);
+  b = (b << 3) | (b & 0b111);
+  g = (g << 3) | (g & 0b111);
+  r = (r << 3) | (r & 0b111);
   a = a ? 255 : 0;
 
   return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
@@ -214,7 +214,7 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
   // we need to convert RGBA8 -> RGBA5551
   std::vector<u32> temp_buffer(width * height);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_fbo_id);
-  glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
+  glReadPixels(x, VRAM_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
 
   // reverse copy because of lower-left origin
   const u32 source_stride = width * sizeof(u32);

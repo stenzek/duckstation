@@ -212,10 +212,13 @@ void main()
 {
   #if TEXTURED
     vec4 texcol = texture(samp0, v_tex0);
+    if (all(texcol == vec4(0.0, 0.0, 0.0, 0.0)))
+      discard;
+
     #if BLENDING
       o_col0 = v_col0 * texcol;
     #else
-      o_col0 = /*v_col0 + */texcol;
+      o_col0 = texcol;
     #endif
   #else
     o_col0 = v_col0;
@@ -338,6 +341,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
         else
           m_texture_config.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[4]);
       }
+      break;
 
       case Primitive::Rectangle:
       {

@@ -513,6 +513,7 @@ void GPU::TextureConfig::SetColorMode(TextureColorMode new_color_mode)
     return;
 
   color_mode = new_color_mode;
+  page_changed = true;
 }
 
 void GPU::TextureConfig::SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1)
@@ -534,6 +535,7 @@ void GPU::TextureConfig::SetFromPageAttribute(u16 value)
 
   base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x1FF)) * UINT32_C(64));
   base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
+  page_attribute = value;
   page_changed = true;
 }
 
@@ -545,4 +547,6 @@ void GPU::TextureConfig::SetFromPaletteAttribute(u16 value)
 
   palette_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x3F)) * UINT32_C(16));
   palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
+  palette_attribute = value;
+  page_changed = true;
 }
