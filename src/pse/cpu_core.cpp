@@ -800,14 +800,14 @@ void Core::ExecuteInstruction(Instruction inst)
       // bgez is the inverse of bltz, so simply do ltz and xor the result
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
       const bool branch = (static_cast<s32>(ReadReg(inst.i.rs)) < 0) ^ bgez;
-      if (branch)
-      {
-        const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
-        if (link)
-          m_regs.ra = m_regs.npc;
 
+      // register is still linked even if the branch isn't taken
+      const bool link = (rt & u8(0x1E)) == u8(0x10);
+      if (link)
+        m_regs.ra = m_regs.npc;
+
+      if (branch)
         Branch(m_regs.pc + (inst.i.imm_sext32() << 2));
-      }
     }
     break;
 
