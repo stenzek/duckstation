@@ -519,6 +519,12 @@ void Core::ExecuteInstruction(Instruction inst)
         }
         break;
 
+        case InstructionFunct::break_:
+        {
+          RaiseException(Exception::BP);
+        }
+        break;
+
         default:
           UnreachableCode();
           break;

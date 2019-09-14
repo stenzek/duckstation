@@ -107,7 +107,7 @@ static const std::array<const char*, 64> s_special_table = {{
   "UNKNOWN",              // 10
   "UNKNOWN",              // 11
   "syscall",              // 12
-  "UNKNOWN",              // 13
+  "break",                // 13
   "UNKNOWN",              // 14
   "UNKNOWN",              // 15
   "mfhi $rd",             // 16
