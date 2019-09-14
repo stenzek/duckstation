@@ -31,6 +31,8 @@ public:
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 
+  void Flush();
+
 protected:
   static constexpr u32 VRAM_WIDTH = 1024;
   static constexpr u32 VRAM_HEIGHT = 512;

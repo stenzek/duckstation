@@ -75,8 +75,14 @@ bool System::SaveState(ByteStream* state)
 void System::RunFrame()
 {
   u32 current_frame_number = m_frame_number;
-  while (current_frame_number == m_frame_number)
+  u32 ticks = 0;
+  while (current_frame_number == m_frame_number && ticks < (44100 * 300))
+  {
     m_cpu->Execute();
+    ticks++;
+  }
+
+  m_gpu->Flush();
 }
 
 bool System::LoadEXE(const char* filename)

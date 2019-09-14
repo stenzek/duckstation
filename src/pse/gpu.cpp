@@ -178,6 +178,12 @@ void GPU::DMAWrite(u32 value)
   }
 }
 
+void GPU::Flush()
+{
+  FlushRender();
+  UpdateDisplay();
+}
+
 u32 GPU::ReadGPUREAD()
 {
   if (m_GPUREAD_buffer.empty())
@@ -312,6 +318,14 @@ void GPU::WriteGP1(u32 value)
   const u32 param = value & UINT32_C(0x00FFFFFF);
   switch (command)
   {
+    case 0x01: // Clear FIFO
+    {
+      m_GP0_command.clear();
+      Log_DebugPrintf("GP1 clear FIFO");
+      UpdateGPUSTAT();
+    }
+    break;
+
     case 0x04: // DMA Direction
     {
       m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
@@ -409,8 +423,6 @@ bool GPU::HandleRenderCommand()
                   ZeroExtend32(words_per_vertex));
 
   DispatchRenderCommand(rc, num_vertices);
-  //FlushRender();
-  //UpdateDisplay();
   return true;
 }
 
