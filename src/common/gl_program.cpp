@@ -79,7 +79,7 @@ void Program::BindDefaultAttributes()
   BindAttribute(2, "a_color");
 }
 
-void Program::BindFragData(GLuint index /*= 0*/, const char* name /*= "ocol0"*/)
+void Program::BindFragData(GLuint index /*= 0*/, const char* name /*= "o_col0"*/)
 {
   glBindFragDataLocation(m_program_id, index, name);
 }

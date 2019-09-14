@@ -110,7 +110,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   const std::string screen_quad_vs = GenerateScreenQuadVertexShader();
   for (u32 palette_size = 0; palette_size < static_cast<u32>(m_texture_page_programs.size()); palette_size++)
   {
-    const std::string fs = GenerateTexturePageProgram(static_cast<TextureColorMode>(palette_size));
+    const std::string fs = GenerateTexturePageFragmentShader(static_cast<TextureColorMode>(palette_size));
 
     GL::Program& prog = m_texture_page_programs[palette_size];
     if (!prog.Compile(screen_quad_vs.c_str(), fs.c_str()))
@@ -197,6 +197,19 @@ void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
   m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+}
+
+void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(x, VRAM_HEIGHT - y - height, width, height);
+
+  const auto [r, g, b, a] = RGBA8ToFloat(color);
+  glClearColor(r, g, b, a);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glDisable(GL_SCISSOR_TEST);
 }
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)

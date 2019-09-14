@@ -19,12 +19,20 @@ protected:
     u16 texcoord;
     u16 padding;
 
-    static std::tuple<u8, u8> DecodeTexcoord(u16 texcoord)
+    static constexpr std::tuple<u8, u8> DecodeTexcoord(u16 texcoord)
     {
       return std::make_tuple(static_cast<u8>(texcoord), static_cast<u8>(texcoord >> 8));
     }
-    static u16 EncodeTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
+    static constexpr u16 EncodeTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
   };
+
+  static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
+  {
+    return std::make_tuple(static_cast<float>(rgba & UINT32_C(0xFF)) * (1.0f / 255.0f),
+                           static_cast<float>((rgba >> 16) & UINT32_C(0xFF)) * (1.0f / 255.0f),
+                           static_cast<float>((rgba >> 8) & UINT32_C(0xFF)) * (1.0f / 255.0f),
+                           static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
+  }
 
   virtual void UpdateTexturePageTexture();
 
@@ -38,7 +46,8 @@ protected:
   std::string GenerateVertexShader(bool textured);
   std::string GenerateFragmentShader(bool textured, bool blending);
   std::string GenerateScreenQuadVertexShader();
-  std::string GenerateTexturePageProgram(TextureColorMode mode);
+  std::string GenerateTexturePageFragmentShader(TextureColorMode mode);
+  std::string GenerateFillFragmentShader();
 
   std::vector<HWVertex> m_batch_vertices;
   RenderCommand m_batch_command = {};

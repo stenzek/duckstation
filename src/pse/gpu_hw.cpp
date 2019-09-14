@@ -245,7 +245,7 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateTexturePageProgram(TextureColorMode mode)
+std::string GPU_HW::GenerateTexturePageFragmentShader(TextureColorMode mode)
 {
   const bool is_palette = (mode == GPU::TextureColorMode::Palette4Bit || mode == GPU::TextureColorMode::Palette8Bit);
 
@@ -298,6 +298,24 @@ void main()
   #endif
 
   o_col0 = color;
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW::GenerateFillFragmentShader()
+{
+  std::stringstream ss;
+  GenerateShaderHeader(ss);
+
+  ss << R"(
+uniform vec4 fill_color;
+out vec4 o_col0;
+
+void main()
+{
+  o_col0 = fill_color;
 }
 )";
 

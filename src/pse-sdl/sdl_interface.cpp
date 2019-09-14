@@ -116,18 +116,18 @@ void main()
 uniform sampler2D samp0;
 
 in vec2 v_tex0;
-out vec4 ocol0;
+out vec4 o_col0;
 
 void main()
 {
-  ocol0 = texture(samp0, v_tex0);
+  o_col0 = texture(samp0, v_tex0);
 }
 )";
 
   if (!m_display_program.Compile(fullscreen_quad_vertex_shader, display_fragment_shader))
     return false;
 
-  m_display_program.BindFragData();
+  m_display_program.BindFragData(0, "o_col0");
   if (!m_display_program.Link())
     return false;
 

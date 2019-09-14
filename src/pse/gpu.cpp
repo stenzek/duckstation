@@ -157,6 +157,13 @@ void GPU::WriteGP0(u32 value)
       case 0x00: // NOP
         break;
 
+      case 0x02: // Fill Rectnagle
+      {
+        if (!HandleFillRectangleCommand())
+          return;
+      }
+      break;
+
       case 0xA0: // Copy Rectangle CPU->VRAM
       {
         if (!HandleCopyRectangleCPUToVRAMCommand())
@@ -345,6 +352,25 @@ bool GPU::HandleRenderCommand()
                   ZeroExtend32(words_per_vertex));
 
   DispatchRenderCommand(rc, num_vertices);
+  UpdateDisplay();
+  return true;
+}
+
+bool GPU::HandleFillRectangleCommand()
+{
+  if (m_GP0_command.size() < 3)
+    return false;
+
+  const u32 color = (m_GP0_command[0] & UINT32_C(0x00FFFFFF)) | UINT32_C(0xFF000000);
+  const u32 dst_x = m_GP0_command[1] & UINT32_C(0xFFFF);
+  const u32 dst_y = m_GP0_command[1] >> 16;
+  const u32 width = m_GP0_command[2] & UINT32_C(0xFFFF);
+  const u32 height = m_GP0_command[2] >> 16;
+
+  Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
+
+  FillVRAM(dst_x, dst_y, width, height, color);
+  UpdateDisplay();
   return true;
 }
 
@@ -374,6 +400,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 
   FlushRender();
   UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &m_GP0_command[3]);
+  UpdateDisplay();
   return true;
 }
 
@@ -410,6 +437,8 @@ void GPU::UpdateDisplay()
   m_texture_config.page_changed = true;
   m_system->IncrementFrameNumber();
 }
+
+void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
 
