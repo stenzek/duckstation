@@ -81,7 +81,7 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
 {
   glGenBuffers(1, &m_vertex_buffer);
   glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, 128, nullptr, GL_STREAM_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE, nullptr, GL_STREAM_DRAW);
 
   glGenVertexArrays(1, &m_vao_id);
   glBindVertexArray(m_vao_id);
@@ -339,14 +339,10 @@ void GPU_HW_OpenGL::FlushRender()
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
   glBindVertexArray(m_vao_id);
 
+  Assert((m_batch_vertices.size() * sizeof(HWVertex)) <= VERTEX_BUFFER_SIZE);
   glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(sizeof(HWVertex) * m_batch_vertices.size()),
-               m_batch_vertices.data(), GL_STREAM_DRAW);
-  glVertexAttribIPointer(0, 2, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, x)));
-  glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
-                        reinterpret_cast<void*>(offsetof(HWVertex, color)));
-  glVertexAttribPointer(2, 2, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
-                        reinterpret_cast<void*>(offsetof(HWVertex, texcoord)));
+  glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(HWVertex) * m_batch_vertices.size()),
+                  m_batch_vertices.data());
 
   const bool is_strip = ((m_batch_command.primitive == Primitive::Polygon && m_batch_command.quad_polygon) ||
                          m_batch_command.primitive == Primitive::Rectangle);

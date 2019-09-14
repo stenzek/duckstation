@@ -379,7 +379,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   // flush when the command changes
   if (!m_batch_vertices.empty())
   {
-    if (m_batch_vertices.size() >= MAX_BATCH_VERTEX_COUNT || m_batch_command.bits != rc.bits)
+    // including the degenerate triangles for strips
+    const u32 max_added_vertices = num_vertices + 2;
+    if ((m_batch_vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT || m_batch_command.bits != rc.bits)
       FlushRender();
   }
 

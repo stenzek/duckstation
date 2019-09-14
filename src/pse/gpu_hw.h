@@ -11,8 +11,6 @@ public:
   virtual ~GPU_HW();
 
 protected:
-  static constexpr u32 MAX_BATCH_VERTEX_COUNT = 1024;
-
   struct HWVertex
   {
     s32 x;
@@ -27,6 +25,9 @@ protected:
     }
     static constexpr u16 EncodeTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
   };
+
+  static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
+  static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
 
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
   {
