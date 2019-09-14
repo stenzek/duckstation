@@ -478,9 +478,11 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
     return true;
   }
 
-  // TODO: Implement.
-  for (u32 i = 0; i < num_words; i++)
-    m_GPUREAD_buffer.push_back(0);
+  // TODO: A better way of doing this..
+  std::vector<u32> temp(num_words);
+  ReadVRAM(src_x, src_y, width, height, temp.data());
+  for (const u32 bits : temp)
+    m_GPUREAD_buffer.push_back(bits);
 
   // Is this correct?
   return true;
