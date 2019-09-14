@@ -15,14 +15,26 @@ Core::~Core() = default;
 bool Core::Initialize(Bus* bus)
 {
   m_bus = bus;
+
+  // From nocash spec.
+  m_cop0_regs.PRID = UINT32_C(0x00000002);
+
   return true;
 }
 
 void Core::Reset()
 {
   m_regs = {};
-  m_regs.npc = RESET_VECTOR;
-  FetchInstruction();
+
+  m_cop0_regs.BPC = 0;
+  m_cop0_regs.BDA = 0;
+  m_cop0_regs.JUMPDEST = 0;
+  m_cop0_regs.BadVaddr = 0;
+  m_cop0_regs.BDAM = 0;
+  m_cop0_regs.BPCM = 0;
+  m_cop0_regs.EPC = 0;
+
+  SetPC(RESET_VECTOR);
 }
 
 bool Core::DoState(StateWrapper& sw)
@@ -501,6 +513,12 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
     }
     break;
 
+    case InstructionOp::xori:
+    {
+      WriteReg(inst.i.rt, ReadReg(inst.i.rs) ^ inst.i.imm_zext32());
+    }
+    break;
+
     case InstructionOp::addi:
     {
       const u32 old_value = ReadReg(inst.i.rs);
@@ -843,6 +861,14 @@ void Core::ExecuteCop0Instruction(Instruction inst, u32 inst_pc)
           value = m_cop0_regs.dcic.bits;
           break;
 
+        case Cop0Reg::JUMPDEST:
+          value = m_cop0_regs.JUMPDEST;
+          break;
+
+        case Cop0Reg::BadVaddr:
+          value = m_cop0_regs.BadVaddr;
+          break;
+
         case Cop0Reg::SR:
           value = m_cop0_regs.sr.bits;
           break;
@@ -853,6 +879,10 @@ void Core::ExecuteCop0Instruction(Instruction inst, u32 inst_pc)
 
         case Cop0Reg::EPC:
           value = m_cop0_regs.EPC;
+          break;
+
+        case Cop0Reg::PRID:
+          value = m_cop0_regs.PRID;
           break;
 
         default:
