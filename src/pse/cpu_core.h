@@ -2,6 +2,7 @@
 #include "common/bitfield.h"
 #include "cpu_types.h"
 #include "types.h"
+#include <array>
 
 class StateWrapper;
 
@@ -12,7 +13,11 @@ namespace CPU {
 class Core
 {
 public:
-  static constexpr VirtualMemoryAddress RESET_VECTOR = 0xbfc00000;
+  static constexpr VirtualMemoryAddress RESET_VECTOR = UINT32_C(0xBFC00000);
+  static constexpr PhysicalMemoryAddress DCACHE_LOCATION = UINT32_C(0x1F800000);
+  static constexpr PhysicalMemoryAddress DCACHE_LOCATION_MASK = UINT32_C(0xFFFFFC00);
+  static constexpr PhysicalMemoryAddress DCACHE_OFFSET_MASK = UINT32_C(0x000003FF);
+  static constexpr PhysicalMemoryAddress DCACHE_SIZE = UINT32_C(0x00000400);
 
   Core();
   ~Core();
@@ -39,6 +44,9 @@ public:
 private:
   template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch, bool raise_exceptions>
   bool DoMemoryAccess(VirtualMemoryAddress address, u32& value);
+
+  template<MemoryAccessType type, MemoryAccessSize size>
+  void DoScratchpadAccess(PhysicalMemoryAddress address, u32& value);
 
   u8 ReadMemoryByte(VirtualMemoryAddress addr);
   u16 ReadMemoryHalfWord(VirtualMemoryAddress addr);
@@ -88,6 +96,9 @@ private:
   u32 m_cache_control = 0;
 
   Cop0Registers m_cop0_regs = {};
+
+  // data cache (used as scratchpad)
+  std::array<u8, DCACHE_SIZE> m_dcache = {};
 };
 
 extern bool TRACE_EXECUTION;
