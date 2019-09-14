@@ -206,6 +206,11 @@ static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32 new_value)
   return (((new_value ^ old_value) & (new_value ^ add_value)) & UINT32_C(0x80000000)) != 0;
 }
 
+static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u32 new_value)
+{
+  return (((new_value ^ old_value) & (old_value ^ sub_value)) & UINT32_C(0x80000000)) != 0;
+}
+
 void Core::DisassembleAndPrint(u32 addr)
 {
   u32 bits;
@@ -354,6 +359,21 @@ void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
         case InstructionFunct::addu:
         {
           const u32 new_value = ReadReg(inst.r.rs) + ReadReg(inst.r.rt);
+          WriteReg(inst.r.rd, new_value);
+        }
+        break;
+
+        case InstructionFunct::sub:
+        {
+          const u32 old_value = ReadReg(inst.r.rs);
+          const u32 sub_value = ReadReg(inst.r.rt);
+          const u32 new_value = old_value - sub_value;
+          if (SubOverflow(old_value, sub_value, new_value))
+          {
+            RaiseException(inst_pc, Exception::Ov);
+            return;
+          }
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
