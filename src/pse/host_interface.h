@@ -14,6 +14,8 @@ public:
   HostInterface();
   virtual ~HostInterface();
 
+  bool InitializeSystem(const char* filename, const char* save_state_filename);
+
   virtual void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height) = 0;
   virtual void ReportMessage(const char* message) = 0;
 

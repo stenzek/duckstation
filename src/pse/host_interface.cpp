@@ -1,10 +1,45 @@
 #include "host_interface.h"
 #include "YBaseLib/ByteStream.h"
+#include "YBaseLib/Log.h"
 #include "system.h"
+Log_SetChannel(HostInterface);
 
 HostInterface::HostInterface() = default;
 
 HostInterface::~HostInterface() = default;
+
+bool HostInterface::InitializeSystem(const char* filename, const char* save_state_filename)
+{
+  m_system = std::make_unique<System>(this);
+  if (!m_system->Initialize())
+  {
+    m_system.reset();
+    return false;
+  }
+
+  m_system->Reset();
+
+  if (filename)
+  {
+    const StaticString filename_str(filename);
+    if (filename_str.EndsWith(".psxexe", false) || filename_str.EndsWith(".exe", false))
+    {
+      Log_InfoPrintf("Sideloading EXE file %s", filename);
+      if (!m_system->LoadEXE(filename))
+      {
+        Log_ErrorPrintf("Failed to load EXE file %s", filename);
+        return false;
+      }
+    }
+  }
+
+  if (save_state_filename)
+    LoadState(save_state_filename);
+
+  // Resume execution.
+  m_running = true;
+  return true;
+}
 
 bool HostInterface::LoadState(const char* filename)
 {

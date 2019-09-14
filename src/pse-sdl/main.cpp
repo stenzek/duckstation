@@ -42,14 +42,14 @@ static int Run(int argc, char* argv[])
 
   // parameters
   const char* filename = nullptr;
-  s32 state_index = -1;
+  TinyString state_filename;
   for (int i = 1; i < argc; i++)
   {
 #define CHECK_ARG(str) !std::strcmp(argv[i], str)
 #define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
 
     if (CHECK_ARG_PARAM("-state"))
-      state_index = std::atoi(argv[++i]);
+      state_filename = SDLInterface::GetSaveStateFilename(std::strtoul(argv[++i], nullptr, 10));
     else
       filename = argv[i];
 
@@ -58,7 +58,7 @@ static int Run(int argc, char* argv[])
   }
 
   // create system
-  if (!host_interface->InitializeSystem(filename, state_index))
+  if (!host_interface->InitializeSystem(filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray()))
   {
     host_interface.reset();
     SDL_Quit();

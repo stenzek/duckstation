@@ -153,28 +153,6 @@ TinyString SDLInterface::GetSaveStateFilename(u32 index)
   return TinyString::FromFormat("savestate_%u.bin", index);
 }
 
-bool SDLInterface::InitializeSystem(const char* filename, s32 save_state_index /* = -1 */)
-{
-  m_system = std::make_unique<System>(this);
-  if (!m_system->Initialize())
-  {
-    m_system.reset();
-    return false;
-  }
-
-  m_system->Reset();
-
-  if (save_state_index >= 0)
-  {
-    // Load the save state.
-    LoadState(GetSaveStateFilename(static_cast<u32>(save_state_index)));
-  }
-
-  // Resume execution.
-  m_running = true;
-  return true;
-}
-
 void SDLInterface::ReportMessage(const char* message)
 {
   AddOSDMessage(message, 3.0f);
@@ -314,6 +292,7 @@ void SDLInterface::RenderDisplay()
   glViewport(0, 0, m_window_width, m_window_height);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
+  glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
   m_display_texture->Bind();

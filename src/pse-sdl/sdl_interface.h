@@ -28,8 +28,6 @@ public:
   // Adds OSD messages, duration is in seconds.
   void AddOSDMessage(const char* message, float duration = 2.0f) override;
 
-  bool InitializeSystem(const char* filename, s32 save_state_index /* = -1 */);
-
   void Run();
 
 private:
