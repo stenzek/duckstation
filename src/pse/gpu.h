@@ -84,7 +84,7 @@ protected:
   {
     u32 bits;
 
-    BitField<u32, u32, 0, 23> color_for_first_vertex;
+    BitField<u32, u32, 0, 24> color_for_first_vertex;
     BitField<u32, bool, 24, 1> texture_blend_disable; // not valid for lines
     BitField<u32, bool, 25, 1> transparency_enable;
     BitField<u32, bool, 26, 1> texture_enable;

@@ -13,19 +13,20 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
   {
     case Primitive::Polygon:
     {
-      const u32 first_colour = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
+      // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
+      bool restart_strip = (rc.quad_polygon && !m_batch_vertices.empty());
+      if (restart_strip)
+        m_batch_vertices.push_back(m_batch_vertices.back());
+
+      const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
-
-      // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      if (rc.quad_polygon && !m_batch_vertices.empty())
-        m_batch_vertices.push_back(m_batch_vertices.back());
 
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
         HWVertex hw_vert;
-        hw_vert.color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_colour;
+        hw_vert.color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
 
         const VertexPosition vp{m_GP0_command[buffer_pos++]};
         hw_vert.x = vp.x();
@@ -39,14 +40,23 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
         hw_vert.padding = 0;
 
         m_batch_vertices.push_back(hw_vert);
+        if (restart_strip)
+        {
+          m_batch_vertices.push_back(m_batch_vertices.back());
+          restart_strip = false;
+        }
       }
     }
     break;
 
     case Primitive::Rectangle:
     {
-      u32 buffer_pos = 1;
+      // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
+      const bool restart_strip = !m_batch_vertices.empty();
+      if (restart_strip)
+        m_batch_vertices.push_back(m_batch_vertices.back());
 
+      u32 buffer_pos = 1;
       const bool textured = rc.texture_enable;
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{m_GP0_command[buffer_pos++]};
@@ -83,6 +93,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
 
       m_batch_vertices.push_back(HWVertex{pos_left, pos_top, color, HWVertex::EncodeTexcoord(tex_left, tex_top)});
+      if (restart_strip)
+        m_batch_vertices.push_back(m_batch_vertices.back());
       m_batch_vertices.push_back(HWVertex{pos_right, pos_top, color, HWVertex::EncodeTexcoord(tex_right, tex_top)});
       m_batch_vertices.push_back(HWVertex{pos_left, pos_bottom, color, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
       m_batch_vertices.push_back(
@@ -365,7 +377,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   }
 
   // flush when the command changes
-  if (!m_batch_vertices.empty()) // && m_batch_command.bits != rc.bits)
+  if (!m_batch_vertices.empty() && m_batch_command.bits != rc.bits)
     FlushRender();
 
   m_batch_command = rc;
