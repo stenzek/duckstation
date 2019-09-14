@@ -178,6 +178,8 @@ bool SDLInterface::InitializeSystem(const char* filename, s32 save_state_index /
 
   m_system->Reset();
 
+  //m_system->LoadEXE("tests/psxtest_cpu.psxexe");
+
   // Resume execution.
   m_running = true;
   return true;

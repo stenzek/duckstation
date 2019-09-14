@@ -23,9 +23,22 @@ public:
 
   void Execute();
 
+  const Registers& GetRegs() const { return m_regs; }
+  Registers& GetRegs() { return m_regs; }
+
+  // Sets the PC and flushes the pipeline.
+  void SetPC(u32 new_pc);
+
+  bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value);
+  bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
+  bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value);
+  bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value);
+  bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
+  bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value);
+
 private:
-  template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch>
-  void DoMemoryAccess(VirtualMemoryAddress address, u32& value);
+  template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch, bool raise_exceptions>
+  bool DoMemoryAccess(VirtualMemoryAddress address, u32& value);
 
   u8 ReadMemoryByte(VirtualMemoryAddress addr);
   u16 ReadMemoryHalfWord(VirtualMemoryAddress addr);

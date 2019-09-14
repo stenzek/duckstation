@@ -2,6 +2,7 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
+#include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
 #include <cstdio>
@@ -70,6 +71,24 @@ bool Bus::WriteWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus
   return DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(cpu_address, bus_address, value);
 }
 
+void Bus::PatchBIOS(u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
+{
+  const u32 phys_address = address & UINT32_C(0x1FFFFFFF);
+  const u32 offset = phys_address - BIOS_BASE;
+  Assert(phys_address >= BIOS_BASE && offset < BIOS_SIZE);
+
+  u32 existing_value;
+  std::memcpy(&existing_value, &m_bios[offset], sizeof(existing_value));
+  u32 new_value = (existing_value & ~mask) | value;
+  std::memcpy(&m_bios[offset], &new_value, sizeof(new_value));
+
+  SmallString old_disasm, new_disasm;
+  CPU::DisassembleInstruction(&old_disasm, address, existing_value);
+  CPU::DisassembleInstruction(&new_disasm, address, new_value);
+  Log_InfoPrintf("BIOS-Patch 0x%08X (+0x%X): 0x%08X %s -> %08X %s", address, offset, existing_value,
+                 old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
+}
+
 bool Bus::LoadBIOS()
 {
   std::FILE* fp = std::fopen("SCPH1001.BIN", "rb");
@@ -97,9 +116,9 @@ bool Bus::LoadBIOS()
   std::fclose(fp);
 
 #if 1
-  auto Patch = [this](u32 address, u32 value) { std::memcpy(&m_bios[address], &value, sizeof(value)); };
-  Patch(0x6F0C, 0x24010001); // addiu $at, $zero, 1
-  Patch(0x6F14, 0xaf81a9c0); // sw at, -0x5640(gp)
+  // Patch to enable TTY.
+  PatchBIOS(BIOS_BASE + 0x6F0C, 0x24010001);
+  PatchBIOS(BIOS_BASE + 0x6F14, 0xAF81A9C0);
 #endif
 
   return true;

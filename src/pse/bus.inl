@@ -116,13 +116,13 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
     return (type == MemoryAccessType::Read) ? ReadExpansionRegion2(size, bus_address & EXP2_MASK, value) :
                                               WriteExpansionRegion2(size, bus_address & EXP2_MASK, value);
   }
-  else if (bus_address < 0x1FC00000)
+  else if (bus_address < BIOS_BASE)
   {
     return DoInvalidAccess(type, size, cpu_address, bus_address, value);
   }
-  else if (bus_address < 0x20000000)
+  else if (bus_address < (BIOS_BASE + BIOS_SIZE))
   {
-    return DoBIOSAccess<type, size>(static_cast<u32>(bus_address - UINT32_C(0x1FC00000)), value);
+    return DoBIOSAccess<type, size>(static_cast<u32>(bus_address - BIOS_BASE), value);
   }
   else if (bus_address < 0x1FFE0000)
   {

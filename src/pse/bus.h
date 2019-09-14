@@ -29,6 +29,8 @@ public:
   template<MemoryAccessType type, MemoryAccessSize size>
   bool DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32& value);
 
+  void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
+
 private:
   static constexpr u32 DMA_BASE = 0x1F801080;
   static constexpr u32 DMA_SIZE = 0x80;
@@ -42,6 +44,8 @@ private:
   static constexpr u32 EXP2_BASE = 0x1F802000;
   static constexpr u32 EXP2_SIZE = 0x2000;
   static constexpr u32 EXP2_MASK = EXP2_SIZE - 1;
+  static constexpr u32 BIOS_BASE = 0x1FC00000;
+  static constexpr u32 BIOS_SIZE = 0x80000;
 
   bool LoadBIOS();
 

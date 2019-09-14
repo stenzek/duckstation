@@ -179,38 +179,38 @@ struct Registers
 
     struct
     {
-      u32 zero;
-      u32 at;
-      u32 v0;
-      u32 v1;
-      u32 a0;
-      u32 a1;
-      u32 a2;
-      u32 a3;
-      u32 t0;
-      u32 t1;
-      u32 t2;
-      u32 t3;
-      u32 t4;
-      u32 t5;
-      u32 t6;
-      u32 t7;
-      u32 s0;
-      u32 s1;
-      u32 s2;
-      u32 s3;
-      u32 s4;
-      u32 s5;
-      u32 s6;
-      u32 s7;
-      u32 t8;
-      u32 t9;
-      u32 k0;
-      u32 k1;
-      u32 gp;
-      u32 sp;
-      u32 fp;
-      u32 ra;
+      u32 zero;   // r0
+      u32 at;     // r1
+      u32 v0;     // r2
+      u32 v1;     // r3
+      u32 a0;     // r4
+      u32 a1;     // r5
+      u32 a2;     // r6
+      u32 a3;     // r7
+      u32 t0;     // r8
+      u32 t1;     // r9
+      u32 t2;     // r10
+      u32 t3;     // r11
+      u32 t4;     // r12
+      u32 t5;     // r13
+      u32 t6;     // r14
+      u32 t7;     // r15
+      u32 s0;     // r16
+      u32 s1;     // r17
+      u32 s2;     // r18
+      u32 s3;     // r19
+      u32 s4;     // r20
+      u32 s5;     // r21
+      u32 s6;     // r22
+      u32 s7;     // r23
+      u32 t8;     // r24
+      u32 t9;     // r25
+      u32 k0;     // r26
+      u32 k1;     // r27
+      u32 gp;     // r28
+      u32 sp;     // r29
+      u32 fp;     // r30
+      u32 ra;     // r31
     };
   };
 

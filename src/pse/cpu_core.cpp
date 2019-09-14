@@ -30,10 +30,16 @@ bool Core::DoState(StateWrapper& sw)
   return false;
 }
 
+void Core::SetPC(u32 new_pc)
+{
+  m_regs.npc = new_pc;
+  FlushPipeline();
+}
+
 u8 Core::ReadMemoryByte(VirtualMemoryAddress addr)
 {
   u32 value;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte, false>(addr, value);
+  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte, false, true>(addr, value);
   return Truncate8(value);
 }
 
@@ -41,7 +47,7 @@ u16 Core::ReadMemoryHalfWord(VirtualMemoryAddress addr)
 {
   Assert(Common::IsAlignedPow2(addr, 2));
   u32 value;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord, false>(addr, value);
+  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord, false, true>(addr, value);
   return Truncate16(value);
 }
 
@@ -49,27 +55,65 @@ u32 Core::ReadMemoryWord(VirtualMemoryAddress addr)
 {
   Assert(Common::IsAlignedPow2(addr, 4));
   u32 value;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, false>(addr, value);
+  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, false, true>(addr, value);
   return value;
 }
 
 void Core::WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 {
   u32 value32 = ZeroExtend32(value);
-  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte, false>(addr, value32);
+  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte, false, true>(addr, value32);
 }
 
 void Core::WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 {
   Assert(Common::IsAlignedPow2(addr, 2));
   u32 value32 = ZeroExtend32(value);
-  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord, false>(addr, value32);
+  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord, false, true>(addr, value32);
 }
 
 void Core::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
   Assert(Common::IsAlignedPow2(addr, 4));
-  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word, false>(addr, value);
+  DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word, false, true>(addr, value);
+}
+
+bool Core::SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  u32 temp = 0;
+  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte, false, false>(addr, temp);
+  *value = Truncate8(temp);
+  return result;
+}
+
+bool Core::SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  u32 temp = 0;
+  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord, false, false>(addr, temp);
+  *value = Truncate16(temp);
+  return result;
+}
+
+bool Core::SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, false, false>(addr, *value);
+}
+
+bool Core::SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte, false, false>(addr, temp);
+}
+
+bool Core::SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord, false, false>(addr, temp);
+}
+
+bool Core::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word, false, false>(addr, value);
 }
 
 void Core::Branch(u32 target)
@@ -153,7 +197,7 @@ static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32 new_value)
 void Core::DisassembleAndPrint(u32 addr)
 {
   u32 bits;
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true>(addr, bits);
+  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true, false>(addr, bits);
   PrintInstruction(bits, addr);
 }
 
@@ -182,21 +226,24 @@ void Core::Execute()
 
 void Core::FetchInstruction()
 {
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true>(static_cast<VirtualMemoryAddress>(m_regs.npc),
-                                                                       m_next_instruction.bits);
+  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true, true>(
+    static_cast<VirtualMemoryAddress>(m_regs.npc), m_next_instruction.bits);
   m_regs.pc = m_regs.npc;
   m_regs.npc += sizeof(m_next_instruction.bits);
 }
 
 void Core::ExecuteInstruction(Instruction inst, u32 inst_pc)
 {
+#if 0
+  if (inst_pc == 0xBFC06FF0)
+  {
+    TRACE_EXECUTION = true;
+    __debugbreak();
+  }
+#endif
+
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, inst_pc);
-
-#if 0
-  if (inst_pc == 0x8005ab80)
-    __debugbreak();
-#endif
 
   switch (inst.op)
   {

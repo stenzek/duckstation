@@ -5,8 +5,8 @@
 
 namespace CPU {
 
-template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch>
-void Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
+template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch, bool raise_exceptions>
+bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
 {
   switch (address >> 29)
   {
@@ -15,13 +15,17 @@ void Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       if constexpr (type == MemoryAccessType::Write)
       {
         if (m_cop0_regs.sr.Isc)
-          return;
+          return true;
       }
 
       if (!m_bus->DispatchAccess<type, size>(address, address & UINT32_C(0x1FFFFFFF), value))
+      {
         Panic("Bus error");
+        return false;
+      }
+
+      return true;
     }
-    break;
 
     case 0x01: // KUSEG 512M-1024M
     case 0x02: // KUSEG 1024M-1536M
@@ -29,26 +33,36 @@ void Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
     {
       // Above 512mb raises an exception.
       Panic("Bad user access");
+      return false;
     }
-    break;
 
     case 0x04: // KSEG0 - physical memory cached
     {
       if constexpr (type == MemoryAccessType::Write)
       {
         if (m_cop0_regs.sr.Isc)
-          return;
+          return true;
       }
 
       if (!m_bus->DispatchAccess<type, size>(address, address & UINT32_C(0x1FFFFFFF), value))
+      {
         Panic("Bus error");
+        return false;
+      }
+
+      return true;
     }
     break;
 
     case 0x05: // KSEG1 - physical memory uncached
     {
       if (!m_bus->DispatchAccess<type, size>(address, address & UINT32_C(0x1FFFFFFF), value))
+      {
         Panic("Bus error");
+        return false;
+      }
+
+      return true;
     }
     break;
 
@@ -61,17 +75,19 @@ void Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
           value = m_cache_control;
         else
           WriteCacheControl(value);
+
+        return true;
       }
       else
       {
         Panic("KSEG2 access");
+        return false;
       }
     }
-    break;
 
     default:
       UnreachableCode();
-      break;
+      return false;
   }
 }
 

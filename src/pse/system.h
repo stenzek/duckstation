@@ -28,6 +28,8 @@ public:
 
   void RunFrame();
 
+  bool LoadEXE(const char* filename);
+
 private:
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;
