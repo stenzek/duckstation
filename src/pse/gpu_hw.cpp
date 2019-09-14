@@ -31,12 +31,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
         hw_vert.x = vp.x();
         hw_vert.y = vp.y();
 
-        // excluding lower-right coordinates
-        if ((i & UINT32_C(1)) != 0)
-          hw_vert.x--;
-        if ((i & UINT32_C(2)) != 0)
-          hw_vert.y--;
-
         if (textured)
           hw_vert.texcoord = Truncate16(m_GP0_command[buffer_pos++]);
         else
@@ -113,9 +107,9 @@ void GPU_HW::CalcViewport(int* x, int* y, int* width, int* height)
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
 {
   *left = m_drawing_area.top_left_x;
-  *right = m_drawing_area.bottom_right_x;
+  *right = m_drawing_area.bottom_right_x + 1;
   *top = m_drawing_area.top_left_y;
-  *bottom = m_drawing_area.bottom_right_y;
+  *bottom = m_drawing_area.bottom_right_y + 1;
 }
 
 static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)

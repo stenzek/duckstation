@@ -175,7 +175,19 @@ void GPU_HW_OpenGL::SetViewport()
   glViewport(x, y, width, height);
 }
 
-void GPU_HW_OpenGL::SetScissor() {}
+void GPU_HW_OpenGL::SetScissor()
+{
+  int left, top, right, bottom;
+  CalcScissorRect(&left, &top, &right, &bottom);
+
+  const int width = right - left;
+  const int height = bottom - top;
+  const int x = left;
+  const int y = VRAM_HEIGHT - bottom;
+
+  Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
+  glScissor(x, y, width, height);
+}
 
 inline u32 ConvertRGBA5551ToRGBA8888(u16 color)
 {
@@ -252,7 +264,6 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   const auto [r, g, b, a] = RGBA8ToFloat(color);
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
-  glDisable(GL_SCISSOR_TEST);
 }
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
@@ -293,6 +304,7 @@ void GPU_HW_OpenGL::UpdateTexturePageTexture()
   m_framebuffer_texture->Bind();
 
   glDisable(GL_BLEND);
+  glDisable(GL_SCISSOR_TEST);
   glViewport(0, 0, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT);
   glBindVertexArray(m_attributeless_vao_id);
 
@@ -321,8 +333,13 @@ void GPU_HW_OpenGL::FlushRender()
   if (m_batch_vertices.empty())
     return;
 
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_SCISSOR_TEST);
+  glDepthMask(GL_FALSE);
   SetProgram(m_batch_command.texture_enable, m_batch_command.texture_blending_raw);
   SetViewport();
+  SetScissor();
 
   if (m_batch_command.texture_enable)
     m_texture_page_texture->Bind();
