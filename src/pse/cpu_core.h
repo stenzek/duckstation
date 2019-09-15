@@ -69,7 +69,10 @@ private:
   void ExecuteInstruction(Instruction inst);
   void ExecuteCop0Instruction(Instruction inst);
   void Branch(u32 target);
-  void RaiseException(Exception excode);
+
+  // exceptions
+  u32 GetExceptionVector(Exception excode) const;
+  void RaiseException(Exception excode, u8 coprocessor = 0);
 
   // flushes any load delays if present
   void FlushLoadDelay();

@@ -33,6 +33,7 @@ void Core::Reset()
   m_cop0_regs.BDAM = 0;
   m_cop0_regs.BPCM = 0;
   m_cop0_regs.EPC = 0;
+  m_cop0_regs.sr.bits = 0;
 
   SetPC(RESET_VECTOR);
 }
@@ -165,17 +166,31 @@ void Core::Branch(u32 target)
   m_branched = true;
 }
 
-void Core::RaiseException(Exception excode)
+u32 Core::GetExceptionVector(Exception excode) const
+{
+  const u32 base = m_cop0_regs.sr.BEV ? UINT32_C(0xbfc00100) : UINT32_C(0x80000000);
+  switch (excode)
+  {
+    case Exception::BP:
+      return base | UINT32_C(0x00000040);
+
+    default:
+      return base | UINT32_C(0x00000080);
+  }
+}
+
+void Core::RaiseException(Exception excode, u8 coprocessor /* = 0 */)
 {
   m_cop0_regs.EPC = m_in_branch_delay_slot ? (m_current_instruction_pc - UINT32_C(4)) : m_current_instruction_pc;
   m_cop0_regs.cause.Excode = excode;
   m_cop0_regs.cause.BD = m_in_branch_delay_slot;
+  m_cop0_regs.cause.CE = coprocessor;
 
-  // current -> previous
+  // current -> previous, switch to kernel mode and disable interrupts
   m_cop0_regs.sr.mode_bits <<= 2;
 
   // flush the pipeline - we don't want to execute the previously fetched instruction
-  m_regs.npc = m_cop0_regs.sr.BEV ? UINT32_C(0xbfc00180) : UINT32_C(0x80000080);
+  m_regs.npc = GetExceptionVector(excode);
   FlushPipeline();
 }
 
@@ -830,7 +845,7 @@ void Core::ExecuteInstruction(Instruction inst)
       if (!m_cop0_regs.sr.CU0 && InUserMode())
       {
         Log_WarningPrintf("Coprocessor 0 not present in user mode");
-        RaiseException(Exception::CpU);
+        RaiseException(Exception::CpU, 0);
         return;
       }
 
@@ -842,7 +857,7 @@ void Core::ExecuteInstruction(Instruction inst)
     case InstructionOp::cop1:
     case InstructionOp::cop2:
     {
-      RaiseException(Exception::CpU);
+      RaiseException(Exception::CpU, inst.cop.cop_n);
     }
     break;
 

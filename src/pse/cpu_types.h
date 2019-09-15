@@ -267,11 +267,11 @@ struct Cop0Registers
   {
     u32 bits;
     BitField<u32, bool, 0, 1> IEc;  // current interrupt enable
-    BitField<u32, bool, 1, 1> KUc;  // current kernel/user mode, kernel = 1
+    BitField<u32, bool, 1, 1> KUc;  // current kernel/user mode, user = 1
     BitField<u32, bool, 2, 1> IEp;  // previous interrupt enable
-    BitField<u32, bool, 3, 1> KUp;  // previous kernel/user mode, kernel = 1
+    BitField<u32, bool, 3, 1> KUp;  // previous kernel/user mode, user = 1
     BitField<u32, bool, 4, 1> IEo;  // old interrupt enable
-    BitField<u32, bool, 5, 1> KUo;  // old kernel/user mode, kernel = 1
+    BitField<u32, bool, 5, 1> KUo;  // old kernel/user mode, user = 1
     BitField<u32, u8, 8, 8> Im;     // interrupt mask, set to 1 = allowed to trigger
     BitField<u32, bool, 16, 1> Isc; // isolate cache, no writes to memory occur
     BitField<u32, bool, 17, 1> Swc; // swap data and instruction caches
