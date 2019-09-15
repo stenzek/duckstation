@@ -71,6 +71,9 @@ private:
   void Branch(u32 target);
   void RaiseException(Exception excode);
 
+  // flushes any load delays if present
+  void FlushLoadDelay();
+
   // clears pipeline of load/branch delays
   void FlushPipeline();
 

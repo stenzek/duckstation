@@ -179,13 +179,18 @@ void Core::RaiseException(Exception excode)
   FlushPipeline();
 }
 
-void Core::FlushPipeline()
+void Core::FlushLoadDelay()
 {
-  // loads are flushed
   m_load_delay_reg = Reg::count;
   m_load_delay_old_value = 0;
   m_next_load_delay_reg = Reg::count;
   m_next_load_delay_old_value = 0;
+}
+
+void Core::FlushPipeline()
+{
+  // loads are flushed
+  FlushLoadDelay();
 
   // not in a branch delay slot
   m_branched = false;
@@ -214,7 +219,7 @@ void Core::WriteRegDelayed(Reg rd, u32 value)
 
   // save the old value, this will be returned if the register is read in the next instruction
   m_next_load_delay_reg = rd;
-  m_next_load_delay_old_value = m_regs.r[static_cast<u8>(rd)];
+  m_next_load_delay_old_value = ReadReg(rd);
   m_regs.r[static_cast<u8>(rd)] = value;
 }
 
