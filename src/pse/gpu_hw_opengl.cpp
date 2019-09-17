@@ -12,9 +12,9 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   DestroyFramebuffer();
 }
 
-bool GPU_HW_OpenGL::Initialize(System* system, Bus* bus, DMA* dma)
+bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
 {
-  if (!GPU_HW::Initialize(system, bus, dma))
+  if (!GPU_HW::Initialize(system, dma, interrupt_controller))
     return false;
 
   CreateFramebuffer();

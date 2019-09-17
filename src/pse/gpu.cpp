@@ -1,8 +1,8 @@
 #include "gpu.h"
 #include "YBaseLib/Log.h"
-#include "bus.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
+#include "interrupt_controller.h"
 #include "system.h"
 Log_SetChannel(GPU);
 
@@ -10,11 +10,11 @@ GPU::GPU() = default;
 
 GPU::~GPU() = default;
 
-bool GPU::Initialize(System* system, Bus* bus, DMA* dma)
+bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
 {
   m_system = system;
-  m_bus = bus;
   m_dma = dma;
+  m_interrupt_controller = interrupt_controller;
   return true;
 }
 
@@ -278,8 +278,8 @@ void GPU::Execute(TickCount ticks)
     m_crtc_state.in_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_vertical_resolution;
     if (m_crtc_state.in_vblank && !old_vblank)
     {
-      // TODO: trigger vblank interrupt
-      Log_WarningPrint("VBlank interrupt would go here");
+      Log_DebugPrintf("Now in v-blank");
+      m_interrupt_controller->InterruptRequest(InterruptController::IRQ::VBLANK);
     }
 
     // past the end of vblank?

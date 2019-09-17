@@ -8,8 +8,8 @@
 class StateWrapper;
 
 class System;
-class Bus;
 class DMA;
+class InterruptController;
 
 class GPU
 {
@@ -17,7 +17,7 @@ public:
   GPU();
   virtual ~GPU();
 
-  virtual bool Initialize(System* system, Bus* bus, DMA* dma);
+  virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
@@ -141,8 +141,8 @@ protected:
   virtual void FlushRender();
 
   System* m_system = nullptr;
-  Bus* m_bus = nullptr;
   DMA* m_dma = nullptr;
+  InterruptController* m_interrupt_controller = nullptr;
 
   union GPUSTAT
   {

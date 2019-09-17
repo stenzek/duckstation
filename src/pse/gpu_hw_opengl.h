@@ -13,7 +13,7 @@ public:
   GPU_HW_OpenGL();
   ~GPU_HW_OpenGL() override;
 
-  bool Initialize(System* system, Bus* bus, DMA* dma) override;
+  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller) override;
   void Reset() override;
 
 protected:

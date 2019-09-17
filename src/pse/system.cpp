@@ -1,12 +1,12 @@
 #include "system.h"
 #include "YBaseLib/ByteStream.h"
 #include "bus.h"
+#include "cdrom.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
-#include "cdrom.h"
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
@@ -35,7 +35,7 @@ bool System::Initialize()
   if (!m_interrupt_controller->Initialize(m_cpu.get()))
     return false;
 
-  if (!m_gpu->Initialize(this, m_bus.get(), m_dma.get()))
+  if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
     return false;
 
   if (!m_cdrom->Initialize(m_dma.get(), m_interrupt_controller.get()))
