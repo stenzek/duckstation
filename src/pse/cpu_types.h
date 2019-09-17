@@ -127,6 +127,15 @@ enum class Cop0Instruction : u32 // 25:21 | 0:5
   rfe = 0b10000'010000,
 };
 
+enum class Cop2Instruction : u32 // 25:21
+{
+  mfc2 = 0b0000,
+  cfc2 = 0b0010,
+  mtc2 = 0b0100,
+  ctc2 = 0b0110,
+  bc2c = 0b1000,
+};
+
 union Instruction
 {
   u32 bits;
@@ -164,9 +173,16 @@ union Instruction
     BitField<u32, u16, 0, 16> imm16;
     BitField<u32, u32, 0, 25> imm25;
 
+    bool IsCommonInstruction() const { return (bits & (UINT32_C(1) << 25)) == 0; }
+
     Cop0Instruction cop0_op() const
     {
       return static_cast<Cop0Instruction>(((bits >> 15) & UINT32_C(0b11111000000)) | (bits & UINT32_C(0b111111)));
+    }
+
+    Cop2Instruction cop2_op() const
+    {
+      return static_cast<Cop2Instruction>((bits >> 21) & UINT32_C(0b1111));
     }
   } cop;
 };

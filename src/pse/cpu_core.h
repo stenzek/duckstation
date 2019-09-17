@@ -1,6 +1,7 @@
 #pragma once
 #include "common/bitfield.h"
 #include "cpu_types.h"
+#include "gte.h"
 #include "types.h"
 #include <array>
 
@@ -74,6 +75,7 @@ private:
   bool FetchInstruction();
   void ExecuteInstruction(Instruction inst);
   void ExecuteCop0Instruction(Instruction inst);
+  void ExecuteCop2Instruction(Instruction inst);
   void Branch(u32 target);
 
   // exceptions
@@ -121,6 +123,8 @@ private:
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> m_dcache = {};
+
+  GTE::Core m_cop2;
 };
 
 extern bool TRACE_EXECUTION;

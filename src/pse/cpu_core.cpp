@@ -19,6 +19,8 @@ bool Core::Initialize(Bus* bus)
   // From nocash spec.
   m_cop0_regs.PRID = UINT32_C(0x00000002);
 
+  m_cop2.Initialize();
+
   return true;
 }
 
@@ -37,6 +39,8 @@ void Core::Reset()
   m_cop0_regs.EPC = 0;
   m_cop0_regs.sr.bits = 0;
   m_cop0_regs.cause.bits = 0;
+
+  m_cop2.Reset();
 
   SetPC(RESET_VECTOR);
 }
@@ -70,6 +74,10 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_branched);
   sw.Do(&m_cache_control);
   sw.DoBytes(m_dcache.data(), m_dcache.size());
+
+  if (!m_cop2.DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -893,17 +901,24 @@ void Core::ExecuteInstruction(Instruction inst)
     }
     break;
 
-    // COP1/COP3 are not present
-    case InstructionOp::cop1:
     case InstructionOp::cop2:
     {
-      RaiseException(Exception::CpU, inst.cop.cop_n);
+      if (!m_cop0_regs.sr.CU0 && InUserMode())
+      {
+        Log_WarningPrintf("Coprocessor 2 not present in user mode");
+        RaiseException(Exception::CpU, 2);
+        return;
+      }
+
+      ExecuteCop2Instruction(inst);
     }
     break;
 
+    // COP1/COP3 are not present
+    case InstructionOp::cop1:
     case InstructionOp::cop3:
     {
-      Panic("GTE not implemented");
+      RaiseException(Exception::CpU, inst.cop.cop_n);
     }
     break;
 
@@ -1056,6 +1071,36 @@ void Core::ExecuteCop0Instruction(Instruction inst)
     default:
       Panic("Unhandled instruction");
       break;
+  }
+}
+
+void Core::ExecuteCop2Instruction(Instruction inst)
+{
+  if (inst.cop.IsCommonInstruction())
+  {
+    // TODO: Combine with cop0.
+    switch (inst.cop.cop2_op())
+    {
+      case Cop2Instruction::mfc2:
+      case Cop2Instruction::cfc2:
+      case Cop2Instruction::mtc2:
+      case Cop2Instruction::ctc2:
+      {
+        const u32 index = static_cast<u32>(inst.r.rd.GetValue());
+        const u32 value = ReadReg(inst.r.rt);
+        m_cop2.WriteControlRegister(index, value);
+      }
+      break;
+
+      case Cop2Instruction::bc2c:
+      default:
+        Panic("Missing implementation");
+        break;
+    }
+  }
+  else
+  {
+    m_cop2.ExecuteInstruction(GTE::Instruction{inst.bits});
   }
 }
 

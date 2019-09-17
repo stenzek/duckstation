@@ -168,6 +168,13 @@ static const std::array<std::pair<Cop0Instruction, const char*>, 6> s_cop0_table
    {Cop0Instruction::bc0c, "bc0$copcc $rel"},
    {Cop0Instruction::rfe, "rfe"}}};
 
+static const std::array<std::pair<Cop2Instruction, const char*>, 6> s_cop2_common_table = {
+  {{Cop2Instruction::mfc2, "mfc2 $rt, $coprd"},
+   {Cop2Instruction::cfc2, "cfc2 $rt, $copcr"},
+   {Cop2Instruction::mtc2, "mtc2 $rt, $coprd"},
+   {Cop2Instruction::ctc2, "ctc2 $rt, $copcr"},
+   {Cop2Instruction::bc2c, "bc2$copcc $rel"}}};
+
 static void FormatInstruction(String* dest, const Instruction inst, u32 pc, const char* format)
 {
   dest->Clear();
@@ -266,7 +273,7 @@ void FormatCopInstruction(String* dest, u32 pc, const Instruction inst, const st
     }
   }
 
-  dest->Format("<cop%u 0x%07X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+  dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
 }
 
 void DisassembleInstruction(String* dest, u32 pc, u32 bits)
@@ -282,10 +289,23 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
       FormatCopInstruction(dest, pc, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.cop0_op());
       return;
 
-    case InstructionOp::cop1:
     case InstructionOp::cop2:
+    {
+      if (inst.cop.IsCommonInstruction())
+      {
+        FormatCopInstruction(dest, pc, inst, s_cop2_common_table.data(), s_cop2_common_table.size(),
+                             inst.cop.cop2_op());
+      }
+      else
+      {
+        dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+      }
+    }
+    break;
+
+    case InstructionOp::cop1:
     case InstructionOp::cop3:
-      dest->Format("<cop%u 0x%07X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+      dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
       break;
 
     // special case for bltz/bgez{al}

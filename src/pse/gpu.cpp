@@ -653,7 +653,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
 
   Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", src_x, src_y, width, height);
 
-  if ((src_x + width) > VRAM_WIDTH || (src_x + height) > VRAM_HEIGHT)
+  if ((src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT)
   {
     Panic("Out of bounds VRAM copy");
     return true;
