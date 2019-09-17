@@ -34,6 +34,9 @@ bool CDROM::DoState(StateWrapper& sw)
 {
   sw.Do(&m_state);
   sw.Do(&m_status.bits);
+  sw.Do(&m_secondary_status.bits);
+  sw.Do(&m_interrupt_enable_register);
+  sw.Do(&m_interrupt_flag_register);
   sw.Do(&m_param_fifo);
   sw.Do(&m_response_fifo);
   sw.Do(&m_data_fifo);
