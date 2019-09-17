@@ -19,6 +19,7 @@
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="gl_program.h" />
     <ClInclude Include="gl_texture.h" />
+    <ClInclude Include="fifo_queue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hdd_image.cpp" />

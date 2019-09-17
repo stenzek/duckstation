@@ -1,5 +1,6 @@
 #pragma once
 #include "YBaseLib/ByteStream.h"
+#include "fifo_queue.h"
 #include "types.h"
 #include <cstring>
 #include <deque>
@@ -131,6 +132,29 @@ public:
     {
       for (u32 i = 0; i < length; i++)
         Do(&data[i]);
+    }
+  }
+
+  template<typename T, u32 CAPACITY>
+  void Do(FIFOQueue<T, CAPACITY>* data)
+  {
+    u32 size = data->GetSize();
+    Do(&size);
+
+    if (m_mode == Mode::Read)
+    {
+      T* temp = new T[size];
+      DoArray(temp, size);
+      data->PushRange(temp, size);
+      delete[] temp;
+    }
+    else
+    {
+      for (u32 i = 0; i < size; i++)
+      {
+        T temp(data->Peek(i));
+        Do(&temp);
+      }
     }
   }
 

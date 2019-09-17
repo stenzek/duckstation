@@ -43,6 +43,7 @@
     <ClInclude Include="display_renderer_gl.h" />
     <ClInclude Include="display_timing.h" />
     <ClInclude Include="fastjmp.h" />
+    <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="gl_program.h" />
     <ClInclude Include="gl_texture.h" />
     <ClInclude Include="hdd_image.h" />
