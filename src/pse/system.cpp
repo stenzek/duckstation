@@ -6,6 +6,7 @@
 #include "dma.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "cdrom.h"
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
@@ -15,6 +16,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_interrupt_controller = std::make_unique<InterruptController>();
   // m_gpu = std::make_unique<GPU>();
   m_gpu = GPU::CreateHardwareOpenGLRenderer();
+  m_cdrom = std::make_unique<CDROM>();
 }
 
 System::~System() = default;
@@ -24,7 +26,7 @@ bool System::Initialize()
   if (!m_cpu->Initialize(m_bus.get()))
     return false;
 
-  if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get()))
+  if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get()))
     return false;
 
   if (!m_dma->Initialize(m_bus.get(), m_gpu.get()))
@@ -34,6 +36,9 @@ bool System::Initialize()
     return false;
 
   if (!m_gpu->Initialize(this, m_bus.get(), m_dma.get()))
+    return false;
+
+  if (!m_cdrom->Initialize(m_dma.get(), m_interrupt_controller.get()))
     return false;
 
   return true;
@@ -56,6 +61,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("GPU") || !m_gpu->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("CDROM") || !m_cdrom->DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -68,6 +76,7 @@ void System::Reset()
   m_dma->Reset();
   m_interrupt_controller->Reset();
   m_gpu->Reset();
+  m_cdrom->Reset();
   m_frame_number = 1;
 }
 

@@ -11,6 +11,7 @@
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
+    <ClCompile Include="cdrom.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="interrupt_controller.h" />
+    <ClInclude Include="cdrom.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

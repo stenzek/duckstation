@@ -15,6 +15,7 @@ class Bus;
 class DMA;
 class InterruptController;
 class GPU;
+class CDROM;
 
 class System
 {
@@ -48,5 +49,6 @@ private:
   std::unique_ptr<DMA> m_dma;
   std::unique_ptr<InterruptController> m_interrupt_controller;
   std::unique_ptr<GPU> m_gpu;
+  std::unique_ptr<CDROM> m_cdrom;
   u32 m_frame_number = 1;
 };

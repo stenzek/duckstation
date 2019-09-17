@@ -12,8 +12,9 @@ class Core;
 }
 
 class DMA;
-class GPU;
 class InterruptController;
+class GPU;
+class CDROM;
 class System;
 
 class Bus
@@ -22,7 +23,7 @@ public:
   Bus();
   ~Bus();
 
-  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu);
+  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -39,15 +40,18 @@ public:
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
 
 private:
-  static constexpr u32 GPU_BASE = 0x1F801810;
-  static constexpr u32 GPU_SIZE = 0x10;
-  static constexpr u32 GPU_MASK = GPU_SIZE - 1;
   static constexpr u32 INTERRUPT_CONTROLLER_BASE = 0x1F801070;
   static constexpr u32 INTERRUPT_CONTROLLER_SIZE = 0x08;
   static constexpr u32 INTERRUPT_CONTROLLER_MASK = INTERRUPT_CONTROLLER_SIZE - 1;
   static constexpr u32 DMA_BASE = 0x1F801080;
   static constexpr u32 DMA_SIZE = 0x80;
   static constexpr u32 DMA_MASK = DMA_SIZE - 1;
+  static constexpr u32 CDROM_BASE = 0x1F801800;
+  static constexpr u32 CDROM_SIZE = 0x04;
+  static constexpr u32 CDROM_MASK = CDROM_SIZE - 1;
+  static constexpr u32 GPU_BASE = 0x1F801810;
+  static constexpr u32 GPU_SIZE = 0x10;
+  static constexpr u32 GPU_MASK = GPU_SIZE - 1;
   static constexpr u32 SPU_BASE = 0x1F801C00;
   static constexpr u32 SPU_SIZE = 0x300;
   static constexpr u32 SPU_MASK = 0x3FF;
@@ -71,6 +75,9 @@ private:
   bool ReadExpansionRegion2(MemoryAccessSize size, u32 offset, u32& value);
   bool WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value);
 
+  bool DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value);
+
   bool DoReadGPU(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value);
 
@@ -87,6 +94,7 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
+  CDROM* m_cdrom = nullptr;
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM
   std::array<u8, 524288> m_bios{}; // 512K BIOS ROM

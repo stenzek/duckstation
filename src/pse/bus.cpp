@@ -2,6 +2,7 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
+#include "cdrom.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
@@ -23,7 +24,7 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu)
+bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom)
 {
   if (!LoadBIOS())
     return false;
@@ -32,6 +33,7 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
+  m_cdrom = cdrom;
   return true;
 }
 
@@ -212,6 +214,22 @@ bool Bus::WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value)
   }
 
   return DoInvalidAccess(MemoryAccessType::Write, size, EXP2_BASE | offset, EXP2_BASE | offset, value);
+}
+
+bool Bus::DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value)
+{
+  // TODO: Splitting of half/word reads.
+  Assert(size == MemoryAccessSize::Byte);
+  value = ZeroExtend32(m_cdrom->ReadRegister(offset));
+  return true;
+}
+
+bool Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
+{
+  // TODO: Splitting of half/word reads.
+  Assert(size == MemoryAccessSize::Byte);
+  m_cdrom->WriteRegister(offset, Truncate8(value));
+  return true;
 }
 
 bool Bus::DoReadGPU(MemoryAccessSize size, u32 offset, u32& value)
