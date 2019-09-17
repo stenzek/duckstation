@@ -62,6 +62,26 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_drawing_offset.y);
   sw.Do(&m_drawing_offset.x);
 
+  sw.Do(&m_crtc_state.regs.display_address_start);
+  sw.Do(&m_crtc_state.regs.horizontal_display_range);
+  sw.Do(&m_crtc_state.regs.vertical_display_range);
+  sw.Do(&m_crtc_state.horizontal_resolution);
+  sw.Do(&m_crtc_state.vertical_resolution);
+  sw.Do(&m_crtc_state.dot_clock_divider);
+  sw.Do(&m_crtc_state.visible_horizontal_resolution);
+  sw.Do(&m_crtc_state.visible_vertical_resolution);
+  sw.Do(&m_crtc_state.ticks_per_scanline);
+  sw.Do(&m_crtc_state.visible_ticks_per_scanline);
+  sw.Do(&m_crtc_state.total_scanlines_per_frame);
+  sw.Do(&m_crtc_state.fractional_ticks);
+  sw.Do(&m_crtc_state.current_tick_in_scanline);
+  sw.Do(&m_crtc_state.current_scanline);
+  sw.Do(&m_crtc_state.in_hblank);
+  sw.Do(&m_crtc_state.in_vblank);
+
+  if (sw.IsReading())
+    UpdateSliceTicks();
+
   sw.Do(&m_GP0_command);
   sw.Do(&m_GPUREAD_buffer);
 
