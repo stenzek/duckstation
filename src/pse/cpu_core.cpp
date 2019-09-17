@@ -317,13 +317,13 @@ TickCount Core::Execute()
     const Instruction inst = m_next_instruction;
     m_current_instruction_pc = m_regs.pc;
 
-    // fetch the next instruction
-    if (DispatchInterrupts() || !FetchInstruction())
-      continue;
-
     // handle branch delays - we are now in a delay slot if we just branched
     m_in_branch_delay_slot = m_branched;
     m_branched = false;
+
+    // fetch the next instruction
+    if (DispatchInterrupts() || !FetchInstruction())
+      continue;
 
     // execute the instruction we previously fetched
     ExecuteInstruction(inst);
