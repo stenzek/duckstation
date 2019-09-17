@@ -88,7 +88,7 @@ struct BitField
 
   BitField& operator|=(DataType rhs)
   {
-    SetValue(GetValue() & rhs);
+    SetValue(GetValue() | rhs);
     return *this;
   }
 

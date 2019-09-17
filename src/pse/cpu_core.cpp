@@ -606,6 +606,7 @@ void Core::ExecuteInstruction(Instruction inst)
 
         case InstructionFunct::syscall:
         {
+          Log_DebugPrintf("Syscall 0x%X(0x%X)", m_regs.s0, m_regs.a0);
           RaiseException(Exception::Syscall);
         }
         break;

@@ -20,7 +20,7 @@ public:
   T* GetFrontPointer() { return m_ptr[m_head]; }
   constexpr u32 GetCapacity() const { return CAPACITY; }
   u32 GetSize() const { return m_size; }
-  bool IsEmpty() const { return m_size > 0; }
+  bool IsEmpty() const { return m_size == 0; }
   bool IsFull() const { return m_size == CAPACITY; }
 
   void Clear()

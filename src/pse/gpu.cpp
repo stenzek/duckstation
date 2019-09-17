@@ -292,6 +292,8 @@ void GPU::Execute(TickCount ticks)
       // start the new frame
       m_system->IncrementFrameNumber();
       m_crtc_state.current_scanline = 0;
+      m_crtc_state.in_hblank = false;
+      m_crtc_state.in_vblank = false;
 
       if (m_GPUSTAT.vertical_resolution)
         m_GPUSTAT.drawing_even_line ^= true;

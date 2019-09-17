@@ -31,8 +31,56 @@ private:
   static constexpr u32 NUM_INTERRUPTS = 32;
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
+  enum class Interrupt : u8
+  {
+    INT1 = 0x01,
+    INT2 = 0x02,
+    INT3 = 0x03,
+    INT4 = 0x04,
+    INT5 = 0x05
+  };
+
+  enum class Command : u8
+  {
+    Sync = 0x00,
+    Getstat = 0x01,
+    Setloc = 0x02,
+    Play = 0x03,
+    Forward = 0x04,
+    Backward = 0x05,
+    ReadN = 0x06,
+    MotorOn = 0x07,
+    Stop = 0x08,
+    Pause = 0x09,
+    Init = 0x0A,
+    Mute = 0x0B,
+    Demute = 0x0C,
+    Setfilter = 0x0D,
+    Setmode = 0x0E,
+    Getparam = 0x0F,
+    GetlocL = 0x10,
+    GetlocP = 0x11,
+    SetSession = 0x12,
+    GetTN = 0x13,
+    GetTD = 0x14,
+    SeekL = 0x15,
+    SeekP = 0x16,
+    SetClock = 0x17,
+    GetClock = 0x18,
+    Test = 0x19,
+    GetID = 0x1A,
+    ReadS = 0x1B,
+    Reset = 0x1C,
+    GetQ = 0x1D,
+    ReadTOC = 0x1E,
+    VideoCD = 0x1F,
+  };
+
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
-  void WriteCommand(u8 command);
+  void SetInterrupt(Interrupt interrupt);
+  void UpdateStatusRegister();
+  void ExecuteCommand(Command command);
+  void ExecuteTestCommand(u8 subcommand);
 
   DMA* m_dma;
   InterruptController* m_interrupt_controller;
@@ -55,6 +103,19 @@ private:
     BitField<u8, bool, 6, 1> DRQSTS;
     BitField<u8, bool, 7, 1> BUSYSTS;
   } m_status = {};
+
+  union
+  {
+    u8 bits;
+    BitField<u8, bool, 0, 1> error;
+    BitField<u8, bool, 1, 1> motor_on;
+    BitField<u8, bool, 2, 1> seek_error;
+    BitField<u8, bool, 3, 1> id_error;
+    BitField<u8, bool, 4, 1> shell_open;
+    BitField<u8, bool, 5, 1> reading;
+    BitField<u8, bool, 6, 1> seeking;
+    BitField<u8, bool, 7, 1> playing_cdda;
+  } m_secondary_status = {};
 
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;

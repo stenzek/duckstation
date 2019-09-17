@@ -289,7 +289,7 @@ struct Cop0Registers
     BitField<u32, u8, 0, 6> mode_bits;
     BitField<u32, u8, 28, 2> coprocessor_enable_mask;
 
-    static constexpr u32 WRITE_MASK = 0b1111'0010'0111'1111'1111'0011'0011'1111;
+    static constexpr u32 WRITE_MASK = 0b1111'0010'0111'1111'1111'1111'0011'1111;
   } sr;
 
   union CAUSE

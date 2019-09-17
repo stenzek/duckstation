@@ -58,7 +58,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
     case 0x00: // I_STATUS
     {
       Log_DebugPrintf("Clearing bits 0x%08X", value);
-      m_interrupt_status_register = m_interrupt_status_register & (~(value & REGISTER_WRITE_MASK));
+      m_interrupt_status_register = m_interrupt_status_register & (value & REGISTER_WRITE_MASK);
       UpdateCPUInterruptRequest();
     }
     break;
@@ -80,7 +80,7 @@ void InterruptController::UpdateCPUInterruptRequest()
 {
   // external interrupts set bit 10 only?
   if (m_interrupt_status_register != 0)
-    m_cpu->SetExternalInterrupt(3);
+    m_cpu->SetExternalInterrupt(2);
   else
-    m_cpu->ClearExternalInterrupt(3);
+    m_cpu->ClearExternalInterrupt(2);
 }
