@@ -343,7 +343,10 @@ void GPU::WriteGP0(u32 value)
       case 0x00: // NOP
         break;
 
-      case 0x02: // Fill Rectnagle
+      case 0x01: // Clear cache
+        break;
+
+      case 0x02: // Fill Rectangle
       {
         if (!HandleFillRectangleCommand())
           return;
@@ -357,9 +360,16 @@ void GPU::WriteGP0(u32 value)
       }
       break;
 
-      case 0xC0: // Copy Rectnagle VRAM->CPU
+      case 0xC0: // Copy Rectangle VRAM->CPU
       {
         if (!HandleCopyRectangleVRAMToCPUCommand())
+          return;
+      }
+      break;
+
+      case 0x80: // Copy Rectangle VRAM->VRAM
+      {
+        if (!HandleCopyRectangleVRAMToVRAMCommand())
           return;
       }
       break;
@@ -669,6 +679,32 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   return true;
 }
 
+bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
+{
+  if (m_GP0_command.size() < 4)
+    return false;
+
+  const u32 src_x = m_GP0_command[1] & UINT32_C(0xFFFF);
+  const u32 src_y = m_GP0_command[1] >> 16;
+  const u32 dst_x = m_GP0_command[2] & UINT32_C(0xFFFF);
+  const u32 dst_y = m_GP0_command[2] >> 16;
+  const u32 width = m_GP0_command[3] & UINT32_C(0xFFFF);
+  const u32 height = m_GP0_command[3] >> 16;
+
+  Log_DebugPrintf("Copy rectangle from VRAM to VRAM src=(%u,%u), dst=(%u,%u), size=(%u,%u)", src_x, src_y, dst_x, dst_y,
+                  width, height);
+
+  if ((src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT || (dst_x + width) > VRAM_WIDTH ||
+      (dst_y + height) > VRAM_HEIGHT)
+  {
+    Panic("Out of bounds VRAM copy");
+    return true;
+  }
+
+  CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+  return true;
+}
+
 void GPU::UpdateDisplay()
 {
   m_texture_config.page_changed = true;
@@ -680,6 +716,8 @@ void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
+
+void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) {}
 
 void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices) {}
 

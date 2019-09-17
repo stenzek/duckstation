@@ -300,6 +300,19 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                   rgba_data.data());
 }
 
+void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
+{
+  glDisable(GL_SCISSOR_TEST);
+
+  // lower-left origin flip
+  src_y = VRAM_HEIGHT - src_y - height;
+  dst_y = VRAM_HEIGHT - dst_y - height;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+  glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
 void GPU_HW_OpenGL::UpdateTexturePageTexture()
 {
   glBindFramebuffer(GL_FRAMEBUFFER, m_texture_page_fbo_id);
