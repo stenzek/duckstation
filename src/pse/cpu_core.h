@@ -26,7 +26,12 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  void Execute();
+  TickCount Execute();
+
+  void SetSliceTicks(TickCount downcount)
+  {
+    m_slice_ticks = (downcount < m_slice_ticks ? downcount : m_slice_ticks);
+  }
 
   const Registers& GetRegs() const { return m_regs; }
   Registers& GetRegs() { return m_regs; }
@@ -91,6 +96,10 @@ private:
   void WriteCacheControl(u32 value);
 
   Bus* m_bus = nullptr;
+
+  // ticks of master/CPU clock until the next event
+  TickCount m_slice_ticks = 0;
+
   Registers m_regs = {};
   Instruction m_next_instruction = {};
   bool m_in_branch_delay_slot = false;

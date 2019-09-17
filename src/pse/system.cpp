@@ -53,6 +53,8 @@ bool System::DoState(StateWrapper& sw)
 
 void System::Reset()
 {
+  SetSliceTicks(1);
+
   m_cpu->Reset();
   m_bus->Reset();
   m_dma->Reset();
@@ -75,14 +77,13 @@ bool System::SaveState(ByteStream* state)
 void System::RunFrame()
 {
   u32 current_frame_number = m_frame_number;
-  u32 ticks = 0;
-  while (current_frame_number == m_frame_number && ticks < (44100 * 300))
+  while (current_frame_number == m_frame_number)
   {
-    m_cpu->Execute();
-    ticks++;
-  }
+    const TickCount pending_ticks = m_cpu->Execute();
 
-  m_gpu->Flush();
+    // run pending ticks from CPU for other components
+    m_gpu->Execute(pending_ticks);
+  }
 }
 
 bool System::LoadEXE(const char* filename)
@@ -172,3 +173,7 @@ bool System::LoadEXE(const char* filename)
   return true;
 }
 
+void System::SetSliceTicks(TickCount downcount)
+{
+  m_cpu->SetSliceTicks(downcount);
+}

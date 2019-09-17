@@ -26,7 +26,12 @@ void GPU::Reset()
 void GPU::SoftReset()
 {
   m_GPUSTAT.bits = 0x14802000;
+  m_crtc_state = {};
+  m_crtc_state.regs.display_address_start = 0;
+  m_crtc_state.regs.horizontal_display_range = 0xC60260;
+  m_crtc_state.regs.vertical_display_range = 0x3FC10;
   UpdateGPUSTAT();
+  UpdateCRTCConfig();
 }
 
 bool GPU::DoState(StateWrapper& sw)
@@ -126,7 +131,12 @@ u32 GPU::ReadRegister(u32 offset)
       return ReadGPUREAD();
 
     case 0x04:
-      return m_GPUSTAT.bits;
+    {
+      // Bit 31 of GPUSTAT is always clear during vblank.
+      u32 bits = m_GPUSTAT.bits;
+      // bits &= (BoolToUInt32(!m_crtc_state.in_vblank) << 31);
+      return bits;
+    }
 
     default:
       Log_ErrorPrintf("Unhandled register read: %02X", offset);
@@ -178,10 +188,101 @@ void GPU::DMAWrite(u32 value)
   }
 }
 
-void GPU::Flush()
+void GPU::UpdateCRTCConfig()
 {
-  FlushRender();
-  UpdateDisplay();
+  static constexpr std::array<TickCount, 8> dot_clock_dividers = {{8, 4, 10, 5, 7, 7, 7, 7}};
+  static constexpr std::array<u32, 8> horizontal_resolutions = {{256, 320, 512, 630, 368, 368, 368, 368}};
+  static constexpr std::array<u32, 2> vertical_resolutions = {{240, 480}};
+  CRTCState& cs = m_crtc_state;
+
+  const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
+  cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
+  cs.horizontal_resolution = horizontal_resolutions[horizontal_resolution_index];
+  cs.vertical_resolution = vertical_resolutions[m_GPUSTAT.vertical_resolution];
+
+  // check for a change in resolution
+  const u32 old_horizontal_resolution = cs.visible_horizontal_resolution;
+  const u32 old_vertical_resolution = cs.visible_vertical_resolution;
+  cs.visible_horizontal_resolution = std::max((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, u32(1));
+  cs.visible_vertical_resolution = cs.regs.Y2 - cs.regs.Y1 + 1;
+  if (cs.visible_horizontal_resolution != old_horizontal_resolution ||
+      cs.visible_vertical_resolution != old_vertical_resolution)
+  {
+    Log_InfoPrintf("Visible resolution is now %ux%u", cs.visible_horizontal_resolution, cs.visible_vertical_resolution);
+  }
+
+  if (m_GPUSTAT.pal_mode)
+  {
+    cs.total_scanlines_per_frame = 314;
+    cs.ticks_per_scanline = 3406;
+  }
+  else
+  {
+    cs.total_scanlines_per_frame = 263;
+    cs.ticks_per_scanline = 3413;
+  }
+
+  UpdateSliceTicks();
+}
+
+void GPU::UpdateSliceTicks()
+{
+  // the next event is at the end of the next scanline
+  // const TickCount ticks_until_next_event = m_crtc_state.ticks_per_scanline - m_crtc_state.current_tick_in_scanline;
+
+  // or at vblank. this will depend on the timer config..
+  const TickCount ticks_until_next_event =
+    ((m_crtc_state.total_scanlines_per_frame - m_crtc_state.current_scanline) * m_crtc_state.ticks_per_scanline) -
+    m_crtc_state.current_tick_in_scanline;
+
+  // convert to master clock, rounding up as we want to overshoot not undershoot
+  const TickCount system_ticks = (ticks_until_next_event * 7 + 10) / 11;
+  m_system->SetSliceTicks(system_ticks);
+}
+
+void GPU::Execute(TickCount ticks)
+{
+  // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
+  {
+    const TickCount temp = (ticks * 11) + m_crtc_state.fractional_ticks;
+    m_crtc_state.current_tick_in_scanline += temp / 7;
+    m_crtc_state.fractional_ticks = temp % 7;
+  }
+
+  while (m_crtc_state.current_tick_in_scanline >= m_crtc_state.ticks_per_scanline)
+  {
+    m_crtc_state.current_tick_in_scanline -= m_crtc_state.ticks_per_scanline;
+    m_crtc_state.current_scanline++;
+
+    const bool old_vblank = m_crtc_state.in_vblank;
+    m_crtc_state.in_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_vertical_resolution;
+    if (m_crtc_state.in_vblank && !old_vblank)
+    {
+      // TODO: trigger vblank interrupt
+      Log_WarningPrint("VBlank interrupt would go here");
+    }
+
+    // past the end of vblank?
+    if (m_crtc_state.current_scanline >= m_crtc_state.total_scanlines_per_frame)
+    {
+      // flush any pending draws and "scan out" the image
+      FlushRender();
+      UpdateDisplay();
+
+      // start the new frame
+      m_system->IncrementFrameNumber();
+      m_crtc_state.current_scanline = 0;
+
+      if (m_GPUSTAT.vertical_resolution)
+        m_GPUSTAT.drawing_even_line ^= true;
+    }
+
+    // alternating even line bit in 240-line mode
+    if (!m_crtc_state.vertical_resolution)
+      m_GPUSTAT.drawing_even_line = ConvertToBoolUnchecked(m_crtc_state.current_scanline & u32(1));
+  }
+
+  UpdateSliceTicks();
 }
 
 u32 GPU::ReadGPUREAD()
@@ -336,9 +437,53 @@ void GPU::WriteGP1(u32 value)
 
     case 0x05: // Set display start address
     {
-      // TODO: Remove this later..
-      FlushRender();
-      UpdateDisplay();
+      m_crtc_state.regs.display_address_start = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
+      Log_DebugPrintf("Display address start <- 0x%08X", m_crtc_state.regs.display_address_start);
+    }
+    break;
+
+    case 0x06: // Set horizontal display range
+    {
+      m_crtc_state.regs.horizontal_display_range = param & CRTCState::Regs::HORIZONTAL_DISPLAY_RANGE_MASK;
+      Log_DebugPrintf("Horizontal display range <- 0x%08X", m_crtc_state.regs.horizontal_display_range);
+      UpdateCRTCConfig();
+    }
+    break;
+
+    case 0x07: // Set display start address
+    {
+      m_crtc_state.regs.vertical_display_range = param & CRTCState::Regs::VERTICAL_DISPLAY_RANGE_MASK;
+      Log_DebugPrintf("Vertical display range <- 0x%08X", m_crtc_state.regs.vertical_display_range);
+      UpdateCRTCConfig();
+    }
+    break;
+
+    case 0x08: // Set display mode
+    {
+      union GP1_08h
+      {
+        u32 bits;
+
+        BitField<u32, u8, 0, 2> horizontal_resolution_1;
+        BitField<u32, u8, 2, 1> vertical_resolution;
+        BitField<u32, bool, 3, 1> pal_mode;
+        BitField<u32, bool, 4, 1> display_area_color_depth;
+        BitField<u32, bool, 5, 1> vertical_interlace;
+        BitField<u32, bool, 6, 1> horizontal_resolution_2;
+        BitField<u32, bool, 7, 1> reverse_flag;
+      };
+
+      const GP1_08h dm{param};
+      m_GPUSTAT.horizontal_resolution_1 = dm.horizontal_resolution_1;
+      m_GPUSTAT.vertical_resolution = dm.vertical_resolution;
+      m_GPUSTAT.pal_mode = dm.pal_mode;
+      m_GPUSTAT.display_area_color_depth_24 = dm.display_area_color_depth;
+      m_GPUSTAT.vertical_interlace = dm.vertical_interlace;
+      m_GPUSTAT.horizontal_resolution_2 = dm.horizontal_resolution_2;
+      m_GPUSTAT.reverse_flag = dm.reverse_flag;
+
+      Log_DebugPrintf("Set display mode <- 0x%08X", dm.bits);
+      UpdateCRTCConfig();
     }
     break;
 

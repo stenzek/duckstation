@@ -24,6 +24,8 @@ bool Core::Initialize(Bus* bus)
 
 void Core::Reset()
 {
+  m_slice_ticks = std::numeric_limits<decltype(m_slice_ticks)>::max();
+
   m_regs = {};
 
   m_cop0_regs.BPC = 0;
@@ -40,6 +42,7 @@ void Core::Reset()
 
 bool Core::DoState(StateWrapper& sw)
 {
+  sw.Do(&m_slice_ticks);
   sw.DoArray(m_regs.r, countof(m_regs.r));
   sw.Do(&m_regs.pc);
   sw.Do(&m_regs.hi);
@@ -269,28 +272,38 @@ void Core::DisassembleAndPrint(u32 addr)
   PrintInstruction(bits, addr);
 }
 
-void Core::Execute()
+TickCount Core::Execute()
 {
-  // now executing the instruction we previously fetched
-  const Instruction inst = m_next_instruction;
-  m_current_instruction_pc = m_regs.pc;
+  TickCount executed_ticks = 0;
+  while (executed_ticks < m_slice_ticks)
+  {
+    executed_ticks++;
 
-  // fetch the next instruction
-  if (!FetchInstruction())
-    return;
+    // now executing the instruction we previously fetched
+    const Instruction inst = m_next_instruction;
+    m_current_instruction_pc = m_regs.pc;
 
-  // handle branch delays - we are now in a delay slot if we just branched
-  m_in_branch_delay_slot = m_branched;
-  m_branched = false;
+    // fetch the next instruction
+    if (!FetchInstruction())
+      continue;
 
-  // execute the instruction we previously fetched
-  ExecuteInstruction(inst);
+    // handle branch delays - we are now in a delay slot if we just branched
+    m_in_branch_delay_slot = m_branched;
+    m_branched = false;
 
-  // next load delay
-  m_load_delay_reg = m_next_load_delay_reg;
-  m_next_load_delay_reg = Reg::count;
-  m_load_delay_old_value = m_next_load_delay_old_value;
-  m_next_load_delay_old_value = 0;
+    // execute the instruction we previously fetched
+    ExecuteInstruction(inst);
+
+    // next load delay
+    m_load_delay_reg = m_next_load_delay_reg;
+    m_next_load_delay_reg = Reg::count;
+    m_load_delay_old_value = m_next_load_delay_old_value;
+    m_next_load_delay_old_value = 0;
+  }
+  
+  // reset slice ticks, it'll be updated when the components execute
+  m_slice_ticks = MAX_CPU_SLICE_SIZE;
+  return executed_ticks;
 }
 
 bool Core::FetchInstruction()

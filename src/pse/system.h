@@ -36,6 +36,8 @@ public:
 
   bool LoadEXE(const char* filename);
 
+  void SetSliceTicks(TickCount downcount);
+
 private:
   bool DoState(StateWrapper& sw);
 

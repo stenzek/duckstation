@@ -31,7 +31,7 @@ public:
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 
-  void Flush();
+  void Execute(TickCount ticks);
 
 protected:
   static constexpr u32 VRAM_WIDTH = 1024;
@@ -113,6 +113,12 @@ protected:
 
   void SoftReset();
 
+  // Sets dots per scanline
+  void UpdateCRTCConfig();
+
+  // Update ticks for this execution slice
+  void UpdateSliceTicks();
+
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
   void UpdateGPUSTAT();
 
@@ -154,7 +160,7 @@ protected:
     BitField<u32, bool, 15, 1> texture_disable;
     BitField<u32, u8, 16, 1> horizontal_resolution_2;
     BitField<u32, u8, 17, 2> horizontal_resolution_1;
-    BitField<u32, u8, 19, 1> vetical_resolution;
+    BitField<u32, u8, 19, 1> vertical_resolution;
     BitField<u32, bool, 20, 1> pal_mode;
     BitField<u32, bool, 21, 1> display_area_color_depth_24;
     BitField<u32, bool, 22, 1> vertical_interlace;
@@ -216,6 +222,54 @@ protected:
     s32 x;
     s32 y;
   } m_drawing_offset = {};
+
+  struct CRTCState
+  {
+    struct Regs
+    {
+      static constexpr u32 DISPLAY_ADDRESS_START_MASK = 0b111'11111111'11111111;
+      static constexpr u32 HORIZONTAL_DISPLAY_RANGE_MASK = 0b11111111'11111111'11111111;
+      static constexpr u32 VERTICAL_DISPLAY_RANGE_MASK = 0b1111'11111111'11111111;
+
+      union
+      {
+        u32 display_address_start;
+        BitField<u32, u32, 0, 10> X;
+        BitField<u32, u32, 10, 9> Y;
+      };
+      union
+      {
+        u32 horizontal_display_range;
+        BitField<u32, u32, 0, 12> X1;
+        BitField<u32, u32, 12, 12> X2;
+      };
+
+      union
+      {
+        u32 vertical_display_range;
+        BitField<u32, u32, 0, 10> Y1;
+        BitField<u32, u32, 10, 10> Y2;
+      };
+    } regs;
+
+    u32 horizontal_resolution;
+    u32 vertical_resolution;
+    TickCount dot_clock_divider;
+
+    u32 visible_horizontal_resolution;
+    u32 visible_vertical_resolution;
+
+    TickCount ticks_per_scanline;
+    TickCount visible_ticks_per_scanline;
+    u32 total_scanlines_per_frame;
+
+    TickCount fractional_ticks;
+    TickCount current_tick_in_scanline;
+    u32 current_scanline;
+
+    bool in_hblank;
+    bool in_vblank;
+  } m_crtc_state = {};
 
   std::vector<u32> m_GP0_command;
   std::deque<u32> m_GPUREAD_buffer;
