@@ -13,6 +13,7 @@ class Core;
 
 class Bus;
 class DMA;
+class InterruptController;
 class GPU;
 
 class System
@@ -45,6 +46,7 @@ private:
   std::unique_ptr<CPU::Core> m_cpu;
   std::unique_ptr<Bus> m_bus;
   std::unique_ptr<DMA> m_dma;
+  std::unique_ptr<InterruptController> m_interrupt_controller;
   std::unique_ptr<GPU> m_gpu;
   u32 m_frame_number = 1;
 };

@@ -3,22 +3,34 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
 #include "common/state_wrapper.h"
+#include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
+#include "interrupt_controller.h"
 #include <cstdio>
 Log_SetChannel(Bus);
+
+// Offset and value remapping for (w32) registers from nocash docs.
+void FixupUnalignedWordAccessW32(u32& offset, u32& value)
+{
+  const u32 byte_offset = offset & u32(3);
+  offset &= ~u32(3);
+  value <<= byte_offset * 8;
+}
 
 Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-bool Bus::Initialize(System* system, DMA* dma, GPU* gpu)
+bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu)
 {
   if (!LoadBIOS())
     return false;
 
+  m_cpu = cpu;
   m_dma = dma;
+  m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
   return true;
 }
@@ -213,6 +225,20 @@ bool Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
 {
   Assert(size == MemoryAccessSize::Word);
   m_gpu->WriteRegister(offset, value);
+  return true;
+}
+
+bool Bus::DoReadInterruptController(MemoryAccessSize size, u32 offset, u32& value)
+{
+  FixupUnalignedWordAccessW32(offset, value);
+  value = m_interrupt_controller->ReadRegister(offset);
+  return true;
+}
+
+bool Bus::DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value)
+{
+  FixupUnalignedWordAccessW32(offset, value);
+  m_interrupt_controller->WriteRegister(offset, value);
   return true;
 }
 

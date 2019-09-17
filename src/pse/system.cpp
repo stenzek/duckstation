@@ -5,12 +5,14 @@
 #include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
+#include "interrupt_controller.h"
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
   m_bus = std::make_unique<Bus>();
   m_dma = std::make_unique<DMA>();
+  m_interrupt_controller = std::make_unique<InterruptController>();
   // m_gpu = std::make_unique<GPU>();
   m_gpu = GPU::CreateHardwareOpenGLRenderer();
 }
@@ -22,10 +24,13 @@ bool System::Initialize()
   if (!m_cpu->Initialize(m_bus.get()))
     return false;
 
-  if (!m_bus->Initialize(this, m_dma.get(), m_gpu.get()))
+  if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get()))
     return false;
 
   if (!m_dma->Initialize(m_bus.get(), m_gpu.get()))
+    return false;
+
+  if (!m_interrupt_controller->Initialize(m_cpu.get()))
     return false;
 
   if (!m_gpu->Initialize(this, m_bus.get(), m_dma.get()))
@@ -45,6 +50,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("DMA") || !m_dma->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("InterruptController") || !m_interrupt_controller->DoState(sw))
+    return false;
+
   if (!sw.DoMarker("GPU") || !m_gpu->DoState(sw))
     return false;
 
@@ -58,6 +66,7 @@ void System::Reset()
   m_cpu->Reset();
   m_bus->Reset();
   m_dma->Reset();
+  m_interrupt_controller->Reset();
   m_gpu->Reset();
   m_frame_number = 1;
 }

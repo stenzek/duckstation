@@ -43,6 +43,7 @@
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="host_interface.cpp" />
+    <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="system.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +56,7 @@
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="host_interface.h" />
+    <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="types.h" />

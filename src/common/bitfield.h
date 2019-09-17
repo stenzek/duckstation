@@ -80,6 +80,18 @@ struct BitField
     return *this;
   }
 
+  BitField& operator&=(DataType rhs)
+  {
+    SetValue(GetValue() & rhs);
+    return *this;
+  }
+
+  BitField& operator|=(DataType rhs)
+  {
+    SetValue(GetValue() & rhs);
+    return *this;
+  }
+
   BitField& operator^=(DataType rhs)
   {
     SetValue(GetValue() ^ rhs);

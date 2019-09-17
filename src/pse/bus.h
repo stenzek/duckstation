@@ -5,8 +5,15 @@
 #include <array>
 
 class StateWrapper;
+
+namespace CPU
+{
+class Core;
+}
+
 class DMA;
 class GPU;
+class InterruptController;
 class System;
 
 class Bus
@@ -15,7 +22,7 @@ public:
   Bus();
   ~Bus();
 
-  bool Initialize(System* system, DMA* dma, GPU* gpu);
+  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -32,12 +39,15 @@ public:
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
 
 private:
-  static constexpr u32 DMA_BASE = 0x1F801080;
-  static constexpr u32 DMA_SIZE = 0x80;
-  static constexpr u32 DMA_MASK = DMA_SIZE - 1;
   static constexpr u32 GPU_BASE = 0x1F801810;
   static constexpr u32 GPU_SIZE = 0x10;
   static constexpr u32 GPU_MASK = GPU_SIZE - 1;
+  static constexpr u32 INTERRUPT_CONTROLLER_BASE = 0x1F801070;
+  static constexpr u32 INTERRUPT_CONTROLLER_SIZE = 0x08;
+  static constexpr u32 INTERRUPT_CONTROLLER_MASK = INTERRUPT_CONTROLLER_SIZE - 1;
+  static constexpr u32 DMA_BASE = 0x1F801080;
+  static constexpr u32 DMA_SIZE = 0x80;
+  static constexpr u32 DMA_MASK = DMA_SIZE - 1;
   static constexpr u32 SPU_BASE = 0x1F801C00;
   static constexpr u32 SPU_SIZE = 0x300;
   static constexpr u32 SPU_MASK = 0x3FF;
@@ -64,13 +74,18 @@ private:
   bool DoReadGPU(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value);
 
+  bool DoReadInterruptController(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value);
+
   bool DoReadDMA(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value);
 
   bool ReadSPU(MemoryAccessSize size, u32 offset, u32& value);
   bool WriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
+  CPU::Core* m_cpu = nullptr;
   DMA* m_dma = nullptr;
+  InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM

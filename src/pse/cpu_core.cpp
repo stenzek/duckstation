@@ -36,6 +36,7 @@ void Core::Reset()
   m_cop0_regs.BPCM = 0;
   m_cop0_regs.EPC = 0;
   m_cop0_regs.sr.bits = 0;
+  m_cop0_regs.cause.bits = 0;
 
   SetPC(RESET_VECTOR);
 }
@@ -60,10 +61,13 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_cop0_regs.cause.bits);
   sw.Do(&m_cop0_regs.dcic.bits);
   sw.Do(&m_next_instruction.bits);
-  sw.Do(&m_in_branch_delay_slot);
-  sw.Do(&m_branched);
+  sw.Do(&m_current_instruction_pc);
   sw.Do(&m_load_delay_reg);
   sw.Do(&m_load_delay_old_value);
+  sw.Do(&m_next_load_delay_reg);
+  sw.Do(&m_next_load_delay_old_value);
+  sw.Do(&m_in_branch_delay_slot);
+  sw.Do(&m_branched);
   sw.Do(&m_cache_control);
   sw.DoBytes(m_dcache.data(), m_dcache.size());
   return !sw.HasError();
@@ -197,6 +201,28 @@ void Core::RaiseException(Exception excode, u8 coprocessor /* = 0 */)
   FlushPipeline();
 }
 
+void Core::SetExternalInterrupt(u8 bit)
+{
+  m_cop0_regs.cause.Ip |= static_cast<u8>(1u << bit);
+}
+
+void Core::ClearExternalInterrupt(u8 bit)
+{
+  m_cop0_regs.cause.Ip &= static_cast<u8>(~(1u << bit));
+}
+
+bool Core::DispatchInterrupts()
+{
+  // const bool do_interrupt = m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0);
+  const bool do_interrupt =
+    m_cop0_regs.sr.IEc && (((m_cop0_regs.cause.bits & m_cop0_regs.sr.bits) & (UINT32_C(0xFF) << 8)) != 0);
+  if (!do_interrupt)
+    return false;
+
+  RaiseException(Exception::INT);
+  return true;
+}
+
 void Core::FlushLoadDelay()
 {
   m_load_delay_reg = Reg::count;
@@ -284,7 +310,7 @@ TickCount Core::Execute()
     m_current_instruction_pc = m_regs.pc;
 
     // fetch the next instruction
-    if (!FetchInstruction())
+    if (DispatchInterrupts() || !FetchInstruction())
       continue;
 
     // handle branch delays - we are now in a delay slot if we just branched
@@ -300,7 +326,7 @@ TickCount Core::Execute()
     m_load_delay_old_value = m_next_load_delay_old_value;
     m_next_load_delay_old_value = 0;
   }
-  
+
   // reset slice ticks, it'll be updated when the components execute
   m_slice_ticks = MAX_CPU_SLICE_SIZE;
   return executed_ticks;
