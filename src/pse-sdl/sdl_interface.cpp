@@ -304,6 +304,7 @@ void SDLInterface::RenderDisplay()
     return;
 
   glViewport(0, 0, m_window_width, m_window_height - 20);
+  glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_SCISSOR_TEST);

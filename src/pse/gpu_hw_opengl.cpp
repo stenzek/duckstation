@@ -191,6 +191,36 @@ void GPU_HW_OpenGL::SetScissor()
   glScissor(x, y, width, height);
 }
 
+void GPU_HW_OpenGL::SetBlendState()
+{
+  struct BlendVars
+  {
+    GLenum src_factor;
+    GLenum func;
+    GLenum dst_factor;
+    float color;
+  };
+  static const std::array<BlendVars, 4> blend_vars = {{
+    {GL_CONSTANT_COLOR, GL_FUNC_ADD, GL_CONSTANT_COLOR, 0.5f}, // B/2 + F/2
+    {GL_ONE, GL_FUNC_ADD, GL_ONE, -1.0f},                      // B + F
+    {GL_ONE, GL_FUNC_REVERSE_SUBTRACT, GL_ONE, -1.0f},         // B - F
+    {GL_CONSTANT_COLOR, GL_FUNC_ADD, GL_ONE, 0.25f}            // B + F/4
+  }};
+
+  if (!m_batch_command.IsTransparencyEnabled())
+  {
+    glDisable(GL_BLEND);
+    return;
+  }
+
+  const BlendVars& vars = blend_vars[static_cast<u8>(m_texture_config.transparency_mode)];
+  glEnable(GL_BLEND);
+  glBlendFuncSeparate(vars.src_factor, vars.dst_factor, GL_ONE, GL_ZERO);
+  glBlendEquationSeparate(vars.func, GL_FUNC_ADD);
+  if (vars.color >= 0.0f)
+    glBlendColor(vars.color, vars.color, vars.color, 1.0f);
+}
+
 void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
@@ -322,6 +352,7 @@ void GPU_HW_OpenGL::FlushRender()
   SetProgram(m_batch_command.IsTextureEnabled(), m_batch_command.IsTextureBlendingEnabled());
   SetViewport();
   SetScissor();
+  SetBlendState();
 
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
   glBindVertexArray(m_vao_id);

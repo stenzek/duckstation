@@ -40,6 +40,7 @@ private:
   void SetProgram(bool textured, bool blending);
   void SetViewport();
   void SetScissor();
+  void SetBlendState();
 
   std::unique_ptr<GL::Texture> m_framebuffer_texture;
   GLuint m_framebuffer_fbo_id = 0;

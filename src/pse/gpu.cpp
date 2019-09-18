@@ -388,7 +388,6 @@ void GPU::WriteGP0(u32 value)
         m_GPUSTAT.texture_disable = (param & (UINT32_C(1) << 11)) != 0;
         m_texture_config.x_flip = (param & (UINT32_C(1) << 12)) != 0;
         m_texture_config.y_flip = (param & (UINT32_C(1) << 13)) != 0;
-        m_texture_config.SetColorMode(m_GPUSTAT.texture_color_mode);
         Log_DebugPrintf("Set draw mode %08X", param);
       }
       break;
@@ -749,18 +748,6 @@ void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices) {}
 
 void GPU::FlushRender() {}
 
-void GPU::TextureConfig::SetColorMode(TextureColorMode new_color_mode)
-{
-  if (new_color_mode == TextureColorMode::Reserved_Direct16Bit)
-    new_color_mode = TextureColorMode::Direct16Bit;
-
-  if (color_mode == new_color_mode)
-    return;
-
-  color_mode = new_color_mode;
-  page_changed = true;
-}
-
 void GPU::TextureConfig::SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1)
 {
   SetFromPaletteAttribute(Truncate16(texcoord0 >> 16));
@@ -778,11 +765,16 @@ void GPU::TextureConfig::SetFromPageAttribute(u16 value)
   if (page_attribute == value)
     return;
 
-  base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
-  base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
-  SetColorMode(static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
   page_attribute = value;
   page_changed = true;
+
+  base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
+  base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
+  color_mode = (static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
+  if (color_mode == TextureColorMode::Reserved_Direct16Bit)
+    color_mode = TextureColorMode::Direct16Bit;
+
+  transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));
 }
 
 void GPU::TextureConfig::SetFromPaletteAttribute(u16 value)

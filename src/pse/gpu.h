@@ -110,6 +110,14 @@ protected:
     Reserved_Direct16Bit = 3
   };
 
+  enum class TransparencyMode : u8
+  {
+    HalfBackgroundPlusHalfForeground = 0,
+    BackgroundPlusForeground = 1,
+    BackgroundMinusForeground = 2,
+    BackgroundPlusQuarterForeground = 3
+  };
+
   union RenderCommand
   {
     u32 bits;
@@ -127,6 +135,7 @@ protected:
     // Helper functions.
     bool IsTextureEnabled() const { return (primitive != Primitive::Line && texture_enable); }
     bool IsTextureBlendingEnabled() const { return (IsTextureEnabled() && !texture_blend_disable); }
+    bool IsTransparencyEnabled() const { return transparency_enable; }
   };
 
   // TODO: Use BitField to do sign extending instead
@@ -181,7 +190,7 @@ protected:
     u32 bits;
     BitField<u32, u8, 0, 4> texture_page_x_base;
     BitField<u32, u8, 4, 1> texture_page_y_base;
-    BitField<u32, u8, 5, 2> semi_transparency;
+    BitField<u32, TransparencyMode, 5, 2> semi_transparency_mode;
     BitField<u32, TextureColorMode, 7, 2> texture_color_mode;
     BitField<u32, bool, 9, 1> dither_enable;
     BitField<u32, bool, 10, 1> draw_to_display_area;
@@ -221,13 +230,12 @@ protected:
     u16 page_attribute;          // from register in rectangle modes/vertex in polygon modes
     u16 palette_attribute;       // from vertex
     TextureColorMode color_mode; // from register/vertex in polygon modes
+    TransparencyMode transparency_mode;
 
     bool page_changed = false;
 
     bool IsPageChanged() const { return page_changed; }
     void ClearPageChangedFlag() { page_changed = false; }
-
-    void SetColorMode(TextureColorMode new_color_mode);
 
     void SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1);
     void SetFromRectangleTexcoord(u32 texcoord);
