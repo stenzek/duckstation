@@ -669,6 +669,9 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
     return true;
   }
 
+  // all rendering should be done first...
+  FlushRender();
+
   // TODO: A better way of doing this..
   std::vector<u32> temp(num_words);
   ReadVRAM(src_x, src_y, width, height, temp.data());
