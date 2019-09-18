@@ -704,6 +704,7 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
     return true;
   }
 
+  FlushRender();
   CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
   return true;
 }
