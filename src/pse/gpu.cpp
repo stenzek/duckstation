@@ -758,6 +758,7 @@ void GPU::TextureConfig::SetFromPageAttribute(u16 value)
 
   base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
   base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
+  SetColorMode(static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
   page_attribute = value;
   page_changed = true;
 }
