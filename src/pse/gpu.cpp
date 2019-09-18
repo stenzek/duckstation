@@ -3,8 +3,14 @@
 #include "common/state_wrapper.h"
 #include "dma.h"
 #include "interrupt_controller.h"
+#include "stb_image_write.h"
 #include "system.h"
 Log_SetChannel(GPU);
+
+bool GPU::DUMP_CPU_TO_VRAM_COPIES = false;
+bool GPU::DUMP_VRAM_TO_CPU_COPIES = false;
+static u32 s_cpu_to_vram_dump_id = 1;
+static u32 s_vram_to_cpu_dump_id = 1;
 
 GPU::GPU() = default;
 
@@ -644,6 +650,12 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
     return true;
   }
 
+  if (DUMP_CPU_TO_VRAM_COPIES)
+  {
+    DumpVRAMToFile(SmallString::FromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++), copy_width, copy_height,
+                   sizeof(u16) * copy_width, &m_GP0_command[3], true);
+  }
+
   FlushRender();
   UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &m_GP0_command[3]);
   return true;
@@ -677,6 +689,12 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   ReadVRAM(src_x, src_y, width, height, temp.data());
   for (const u32 bits : temp)
     m_GPUREAD_buffer.push_back(bits);
+
+  if (DUMP_VRAM_TO_CPU_COPIES)
+  {
+    DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_cpu_to_vram_dump_id++), width, height,
+                   sizeof(u16) * width, temp.data(), true);
+  }
 
   // Is this correct?
   return true;
@@ -773,4 +791,27 @@ void GPU::TextureConfig::SetFromPaletteAttribute(u16 value)
   palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
   palette_attribute = value;
   page_changed = true;
+}
+
+bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)
+{
+  std::vector<u32> rgba8_buf(width * height);
+
+  const char* ptr_in = static_cast<const char*>(buffer);
+  u32* ptr_out = rgba8_buf.data();
+  for (u32 row = 0; row < height; row++)
+  {
+    const char* row_ptr_in = ptr_in;
+
+    for (u32 col = 0; col < width; col++)
+    {
+      u16 src_col;
+      std::memcpy(&src_col, row_ptr_in, sizeof(u16));
+      row_ptr_in += sizeof(u16);
+      *(ptr_out++) = RGBA5551ToRGBA8888(remove_alpha ? (src_col | u16(0x8000)) : src_col);
+    }
+
+    ptr_in += stride;
+  }
+  return (stbi_write_png(filename, width, height, 4, rgba8_buf.data(), sizeof(u32) * width) != 0);
 }

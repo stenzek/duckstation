@@ -48,6 +48,36 @@ protected:
       return value;
   }
 
+  // Helper/format conversion functions.
+  static constexpr u32 RGBA5551ToRGBA8888(u16 color)
+  {
+    u8 r = Truncate8(color & 31);
+    u8 g = Truncate8((color >> 5) & 31);
+    u8 b = Truncate8((color >> 10) & 31);
+    u8 a = Truncate8((color >> 15) & 1);
+
+    // 00012345 -> 1234545
+    b = (b << 3) | (b & 0b111);
+    g = (g << 3) | (g & 0b111);
+    r = (r << 3) | (r & 0b111);
+    a = a ? 255 : 0;
+
+    return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
+  }
+
+  static constexpr u16 RGBA8888ToRGBA5551(u32 color)
+  {
+    const u16 r = Truncate16((color >> 3) & 0x1Fu);
+    const u16 g = Truncate16((color >> 11) & 0x1Fu);
+    const u16 b = Truncate16((color >> 19) & 0x1Fu);
+    const u16 a = Truncate16((color >> 31) & 0x01u);
+
+    return r | (g << 5) | (b << 10) | (a << 15);
+  }
+
+  static bool DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer,
+                             bool remove_alpha);
+
   enum class DMADirection : u32
   {
     Off = 0,
@@ -275,4 +305,8 @@ protected:
 
   std::vector<u32> m_GP0_command;
   std::deque<u32> m_GPUREAD_buffer;
+
+  // debug options
+  static bool DUMP_CPU_TO_VRAM_COPIES;
+  static bool DUMP_VRAM_TO_CPU_COPIES;
 };

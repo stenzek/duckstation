@@ -191,32 +191,6 @@ void GPU_HW_OpenGL::SetScissor()
   glScissor(x, y, width, height);
 }
 
-inline u32 ConvertRGBA5551ToRGBA8888(u16 color)
-{
-  u8 r = Truncate8(color & 31);
-  u8 g = Truncate8((color >> 5) & 31);
-  u8 b = Truncate8((color >> 10) & 31);
-  u8 a = Truncate8((color >> 15) & 1);
-
-  // 00012345 -> 1234545
-  b = (b << 3) | (b & 0b111);
-  g = (g << 3) | (g & 0b111);
-  r = (r << 3) | (r & 0b111);
-  a = a ? 255 : 0;
-
-  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
-}
-
-inline u16 ConvertRGBA8888ToRGBA5551(u32 color)
-{
-  const u16 r = Truncate16((color >> 3) & 0x1Fu);
-  const u16 g = Truncate16((color >> 11) & 0x1Fu);
-  const u16 b = Truncate16((color >> 19) & 0x1Fu);
-  const u16 a = Truncate16((color >> 31) & 0x01u);
-
-  return r | (g << 5) | (b << 10) | (a << 15);
-}
-
 void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
@@ -246,7 +220,7 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
       std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
       source_row_ptr += sizeof(src_col);
 
-      const u16 dst_col = ConvertRGBA8888ToRGBA5551(src_col);
+      const u16 dst_col = RGBA8888ToRGBA5551(src_col);
       std::memcpy(dst_row_ptr, &dst_col, sizeof(dst_col));
       dst_row_ptr += sizeof(dst_col);
     }
@@ -286,7 +260,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
       std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
       source_row_ptr += sizeof(src_col);
 
-      const u32 dst_col = ConvertRGBA5551ToRGBA8888(src_col);
+      const u32 dst_col = RGBA5551ToRGBA8888(src_col);
       rgba_data.push_back(dst_col);
     }
 

@@ -191,8 +191,8 @@ out vec4 v_col0;
 void main()
 {
   // 0..+1023 -> -1..1
-  float pos_x = (float(a_pos.x) / 511.5) - 1.0;
-  float pos_y = (float(a_pos.y) / -255.5) + 1.0;
+  float pos_x = (float(a_pos.x) / 512.0) - 1.0;
+  float pos_y = (float(a_pos.y) / -256.0) + 1.0;
   gl_Position = vec4(pos_x, pos_y, 0.0, 1.0);
 
   v_col0 = a_col0;
