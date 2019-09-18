@@ -614,7 +614,7 @@ bool GPU::HandleFillRectangleCommand()
   if (m_GP0_command.size() < 3)
     return false;
 
-  const u32 color = (m_GP0_command[0] & UINT32_C(0x00FFFFFF)) | UINT32_C(0xFF000000);
+  const u32 color = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
   const u32 dst_x = m_GP0_command[1] & UINT32_C(0xFFFF);
   const u32 dst_y = m_GP0_command[1] >> 16;
   const u32 width = m_GP0_command[2] & UINT32_C(0xFFFF);
@@ -622,7 +622,11 @@ bool GPU::HandleFillRectangleCommand()
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
-  FillVRAM(dst_x, dst_y, width, height, color);
+  // Drop higher precision when filling. Bit15 is set to 0.
+  // TODO: Force 8-bit color option.
+  const u16 color16 = RGBA8888ToRGBA5551(color);
+
+  FillVRAM(dst_x, dst_y, width, height, color16);
   return true;
 }
 
@@ -735,7 +739,7 @@ void GPU::UpdateDisplay()
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 
-void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
+void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color) {}
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
 

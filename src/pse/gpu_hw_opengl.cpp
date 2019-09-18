@@ -230,14 +230,14 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
   }
 }
 
-void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
+void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
 
   glEnable(GL_SCISSOR_TEST);
   glScissor(x, VRAM_HEIGHT - y - height, width, height);
 
-  const auto [r, g, b, a] = RGBA8ToFloat(color);
+  const auto [r, g, b, a] = RGBA8ToFloat(RGBA5551ToRGBA8888(color));
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
