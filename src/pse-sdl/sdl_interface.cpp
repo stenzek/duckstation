@@ -67,7 +67,7 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
       Log_InfoPrintf(message);
       break;
     case GL_DEBUG_SEVERITY_NOTIFICATION:
-      Log_DebugPrint(message);
+      // Log_DebugPrint(message);
       break;
   }
 }

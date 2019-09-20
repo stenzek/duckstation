@@ -3,6 +3,7 @@
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
 
+class CDImage;
 class StateWrapper;
 
 class DMA;
@@ -17,6 +18,10 @@ public:
   bool Initialize(DMA* dma, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
+
+  bool HasMedia() const { return static_cast<bool>(m_media); }
+  bool InsertMedia(const char* filename);
+  void RemoveMedia();
 
   // I/O
   u8 ReadRegister(u32 offset);
@@ -84,6 +89,7 @@ private:
 
   DMA* m_dma;
   InterruptController* m_interrupt_controller;
+  std::unique_ptr<CDImage> m_media;
 
   enum class State : u32
   {

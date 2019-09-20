@@ -45,6 +45,10 @@ public:
 
   void SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev);
 
+  bool HasMedia() const;
+  bool InsertMedia(const char* path);
+  void RemoveMedia();
+
 private:
   bool DoState(StateWrapper& sw);
 

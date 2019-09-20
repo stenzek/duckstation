@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClInclude Include="audio.h" />
     <ClInclude Include="bitfield.h" />
+    <ClInclude Include="cd_image.h" />
     <ClInclude Include="display.h" />
     <ClInclude Include="display_renderer_d3d.h" />
     <ClInclude Include="display_renderer.h" />
@@ -57,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
+    <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="display_renderer_d3d.cpp" />
     <ClCompile Include="display_renderer.cpp" />

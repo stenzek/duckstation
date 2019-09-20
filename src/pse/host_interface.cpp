@@ -24,10 +24,19 @@ bool HostInterface::InitializeSystem(const char* filename, const char* save_stat
     const StaticString filename_str(filename);
     if (filename_str.EndsWith(".psxexe", false) || filename_str.EndsWith(".exe", false))
     {
-      Log_InfoPrintf("Sideloading EXE file %s", filename);
+      Log_InfoPrintf("Sideloading EXE file '%s'", filename);
       if (!m_system->LoadEXE(filename))
       {
-        Log_ErrorPrintf("Failed to load EXE file %s", filename);
+        Log_ErrorPrintf("Failed to load EXE file '%s'", filename);
+        return false;
+      }
+    }
+    else
+    {
+      Log_InfoPrintf("Inserting CDROM from image file '%s'", filename);
+      if (!m_system->InsertMedia(filename))
+      {
+        Log_ErrorPrintf("Failed to insert media '%s'", filename);
         return false;
       }
     }

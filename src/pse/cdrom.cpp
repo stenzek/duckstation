@@ -1,5 +1,6 @@
 #include "cdrom.h"
 #include "YBaseLib/Log.h"
+#include "common/cd_image.h"
 #include "common/state_wrapper.h"
 #include "interrupt_controller.h"
 Log_SetChannel(CDROM);
@@ -41,6 +42,34 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_response_fifo);
   sw.Do(&m_data_fifo);
   return !sw.HasError();
+}
+
+bool CDROM::InsertMedia(const char* filename)
+{
+  auto media = std::make_unique<CDImage>();
+  if (!media->Open(filename))
+  {
+    Log_ErrorPrintf("Failed to open media at '%s'", filename);
+    return false;
+  }
+
+  if (HasMedia())
+    RemoveMedia();
+
+  m_media = std::move(media);
+  m_secondary_status.shell_open = false;
+  return true;
+}
+
+void CDROM::RemoveMedia()
+{
+  if (!m_media)
+    return;
+
+  // TODO: Error while reading?
+  Log_InfoPrintf("Removing CD...");
+  m_media.reset();
+  m_secondary_status.shell_open = true;
 }
 
 u8 CDROM::ReadRegister(u32 offset)

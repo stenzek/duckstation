@@ -20,6 +20,7 @@
     <ClInclude Include="gl_program.h" />
     <ClInclude Include="gl_texture.h" />
     <ClInclude Include="fifo_queue.h" />
+    <ClInclude Include="cd_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hdd_image.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="gl_program.cpp" />
     <ClCompile Include="gl_texture.cpp" />
+    <ClCompile Include="cd_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

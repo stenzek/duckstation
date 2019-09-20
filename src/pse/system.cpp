@@ -213,3 +213,18 @@ void System::SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev)
 {
   m_pad->SetDevice(slot, std::move(dev));
 }
+
+bool System::HasMedia() const
+{
+  return m_cdrom->HasMedia();
+}
+
+bool System::InsertMedia(const char* path)
+{
+  return m_cdrom->InsertMedia(path);
+}
+
+void System::RemoveMedia()
+{
+  m_cdrom->RemoveMedia();
+}

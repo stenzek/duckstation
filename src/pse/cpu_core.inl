@@ -39,7 +39,7 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
     case 0x03: // KUSEG 1536M-2048M
     {
       // Above 512mb raises an exception.
-      Panic("Bad user access");
+      RaiseException(is_instruction_fetch ? Exception::IBE : Exception::DBE);
       return false;
     }
 
@@ -95,7 +95,7 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       }
       else
       {
-        Panic("KSEG2 access");
+        RaiseException(is_instruction_fetch ? Exception::IBE : Exception::DBE);
         return false;
       }
     }

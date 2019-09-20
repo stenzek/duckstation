@@ -184,6 +184,9 @@ void Core::Branch(u32 target)
 u32 Core::GetExceptionVector(Exception excode) const
 {
   const u32 base = m_cop0_regs.sr.BEV ? UINT32_C(0xbfc00100) : UINT32_C(0x80000000);
+
+#if 0
+  // apparently this isn't correct...
   switch (excode)
   {
     case Exception::BP:
@@ -192,6 +195,9 @@ u32 Core::GetExceptionVector(Exception excode) const
     default:
       return base | UINT32_C(0x00000080);
   }
+#else
+  return base | UINT32_C(0x00000080);
+#endif
 }
 
 void Core::RaiseException(Exception excode, u8 coprocessor /* = 0 */)
@@ -344,14 +350,15 @@ bool Core::FetchInstruction()
 {
   m_regs.pc = m_regs.npc;
 
-  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(static_cast<VirtualMemoryAddress>(m_regs.npc)))
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(
+        static_cast<VirtualMemoryAddress>(m_regs.npc)) ||
+      !DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true, true>(
+        static_cast<VirtualMemoryAddress>(m_regs.npc), m_next_instruction.bits))
   {
     // this will call FetchInstruction() again when the pipeline is flushed.
     return false;
   }
 
-  DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word, true, true>(
-    static_cast<VirtualMemoryAddress>(m_regs.npc), m_next_instruction.bits);
   m_regs.npc += sizeof(m_next_instruction.bits);
   return true;
 }
