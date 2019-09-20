@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <memory>
 
 class ByteStream;
 class StateWrapper;
@@ -16,6 +17,8 @@ class DMA;
 class InterruptController;
 class GPU;
 class CDROM;
+class Pad;
+class PadDevice;
 
 class System
 {
@@ -40,6 +43,8 @@ public:
 
   void SetSliceTicks(TickCount downcount);
 
+  void SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev);
+
 private:
   bool DoState(StateWrapper& sw);
 
@@ -50,5 +55,6 @@ private:
   std::unique_ptr<InterruptController> m_interrupt_controller;
   std::unique_ptr<GPU> m_gpu;
   std::unique_ptr<CDROM> m_cdrom;
+  std::unique_ptr<Pad> m_pad;
   u32 m_frame_number = 1;
 };

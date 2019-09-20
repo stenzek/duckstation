@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
+#include "pse/digital_controller.h"
 #include "pse/system.h"
 #include <cinttypes>
 #include <glad.h>
@@ -159,6 +160,8 @@ std::unique_ptr<SDLInterface> SDLInterface::Create()
   if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() || !intf->CreateGLResources())
     return nullptr;
 
+  intf->m_controller = DigitalController::Create();
+
   return intf;
 }
 
@@ -206,6 +209,73 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
       {
         m_window_width = event->window.data1;
         m_window_height = event->window.data2;
+      }
+    }
+    break;
+
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+    {
+      const bool pressed = (event->type == SDL_KEYDOWN);
+      switch (event->key.keysym.scancode)
+      {
+        case SDL_SCANCODE_KP_8:
+        case SDL_SCANCODE_I:
+          m_controller->SetButtonState(DigitalController::Button::Triangle, pressed);
+          return true;
+        case SDL_SCANCODE_KP_2:
+        case SDL_SCANCODE_K:
+          m_controller->SetButtonState(DigitalController::Button::Cross, pressed);
+          return true;
+        case SDL_SCANCODE_KP_4:
+        case SDL_SCANCODE_J:
+          m_controller->SetButtonState(DigitalController::Button::Square, pressed);
+          return true;
+        case SDL_SCANCODE_KP_6:
+        case SDL_SCANCODE_L:
+          m_controller->SetButtonState(DigitalController::Button::Circle, pressed);
+          return true;
+
+        case SDL_SCANCODE_W:
+        case SDL_SCANCODE_UP:
+          m_controller->SetButtonState(DigitalController::Button::Up, pressed);
+          return true;
+        case SDL_SCANCODE_S:
+        case SDL_SCANCODE_DOWN:
+          m_controller->SetButtonState(DigitalController::Button::Down, pressed);
+          return true;
+        case SDL_SCANCODE_A:
+        case SDL_SCANCODE_LEFT:
+          m_controller->SetButtonState(DigitalController::Button::Left, pressed);
+          return true;
+        case SDL_SCANCODE_D:
+        case SDL_SCANCODE_RIGHT:
+          m_controller->SetButtonState(DigitalController::Button::Right, pressed);
+          return true;
+
+        case SDL_SCANCODE_Q:
+          m_controller->SetButtonState(DigitalController::Button::L1, pressed);
+          return true;
+        case SDL_SCANCODE_E:
+          m_controller->SetButtonState(DigitalController::Button::R1, pressed);
+          return true;
+
+        case SDL_SCANCODE_1:
+          m_controller->SetButtonState(DigitalController::Button::L2, pressed);
+          return true;
+        case SDL_SCANCODE_3:
+          m_controller->SetButtonState(DigitalController::Button::R3, pressed);
+          return true;
+
+        case SDL_SCANCODE_RETURN:
+          m_controller->SetButtonState(DigitalController::Button::Start, pressed);
+          return true;
+        case SDL_SCANCODE_BACKSPACE:
+          m_controller->SetButtonState(DigitalController::Button::Select, pressed);
+          return true;
+
+        default:
+          break;
       }
     }
     break;
@@ -452,6 +522,8 @@ void SDLInterface::DoSaveState(u32 index)
 
 void SDLInterface::Run()
 {
+  m_system->SetPadDevice(0, m_controller);
+
   while (m_running)
   {
     for (;;)

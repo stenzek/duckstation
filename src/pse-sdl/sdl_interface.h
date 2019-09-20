@@ -8,8 +8,10 @@
 #include <array>
 #include <deque>
 #include <mutex>
+#include <memory>
 
 class System;
+class DigitalController;
 
 class SDLInterface : public HostInterface
 {
@@ -72,4 +74,6 @@ private:
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
+
+  std::shared_ptr<DigitalController> m_controller;
 };

@@ -7,6 +7,8 @@
 #include "dma.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "pad.h"
+#include "pad_device.h"
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
@@ -17,6 +19,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   // m_gpu = std::make_unique<GPU>();
   m_gpu = GPU::CreateHardwareOpenGLRenderer();
   m_cdrom = std::make_unique<CDROM>();
+  m_pad = std::make_unique<Pad>();
 }
 
 System::~System() = default;
@@ -26,8 +29,11 @@ bool System::Initialize()
   if (!m_cpu->Initialize(m_bus.get()))
     return false;
 
-  if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get()))
+  if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(),
+                         m_pad.get()))
+  {
     return false;
+  }
 
   if (!m_dma->Initialize(m_bus.get(), m_gpu.get()))
     return false;
@@ -39,6 +45,9 @@ bool System::Initialize()
     return false;
 
   if (!m_cdrom->Initialize(m_dma.get(), m_interrupt_controller.get()))
+    return false;
+
+  if (!m_pad->Initialize(m_interrupt_controller.get()))
     return false;
 
   return true;
@@ -64,6 +73,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("CDROM") || !m_cdrom->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("Pad") || !m_pad->DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -77,6 +89,7 @@ void System::Reset()
   m_interrupt_controller->Reset();
   m_gpu->Reset();
   m_cdrom->Reset();
+  m_pad->Reset();
   m_frame_number = 1;
 }
 
@@ -194,4 +207,9 @@ bool System::LoadEXE(const char* filename)
 void System::SetSliceTicks(TickCount downcount)
 {
   m_cpu->SetSliceTicks(downcount);
+}
+
+void System::SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev)
+{
+  m_pad->SetDevice(slot, std::move(dev));
 }

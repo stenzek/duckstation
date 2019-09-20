@@ -39,6 +39,7 @@
     <ClCompile Include="cdrom.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
+    <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
@@ -46,6 +47,8 @@
     <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
+    <ClCompile Include="pad.cpp" />
+    <ClCompile Include="pad_device.cpp" />
     <ClCompile Include="system.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +56,7 @@
     <ClInclude Include="cdrom.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_disasm.h" />
+    <ClInclude Include="digital_controller.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
     <ClInclude Include="dma.h" />
@@ -62,6 +66,8 @@
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="interrupt_controller.h" />
+    <ClInclude Include="pad.h" />
+    <ClInclude Include="pad_device.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="types.h" />

@@ -9,6 +9,7 @@
 #include "dma.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "pad.h"
 #include <cstdio>
 Log_SetChannel(Bus);
 
@@ -24,7 +25,7 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom)
+bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad)
 {
   if (!LoadBIOS())
     return false;
@@ -34,6 +35,7 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
   m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
   m_cdrom = cdrom;
+  m_pad = pad;
   return true;
 }
 
@@ -214,6 +216,18 @@ bool Bus::WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value)
   }
 
   return DoInvalidAccess(MemoryAccessType::Write, size, EXP2_BASE | offset, EXP2_BASE | offset, value);
+}
+
+bool Bus::DoReadPad(MemoryAccessSize size, u32 offset, u32& value)
+{
+  value = m_pad->ReadRegister(offset);
+  return true;
+}
+
+bool Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
+{
+  m_pad->WriteRegister(offset, value);
+  return true;
 }
 
 bool Bus::DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value)

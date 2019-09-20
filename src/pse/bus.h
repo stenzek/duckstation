@@ -15,6 +15,7 @@ class DMA;
 class InterruptController;
 class GPU;
 class CDROM;
+class Pad;
 class System;
 
 class Bus
@@ -23,7 +24,7 @@ public:
   Bus();
   ~Bus();
 
-  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom);
+  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -40,6 +41,9 @@ public:
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
 
 private:
+  static constexpr u32 PAD_BASE = 0x1F801040;
+  static constexpr u32 PAD_SIZE = 0x10;
+  static constexpr u32 PAD_MASK = PAD_SIZE - 1;
   static constexpr u32 INTERRUPT_CONTROLLER_BASE = 0x1F801070;
   static constexpr u32 INTERRUPT_CONTROLLER_SIZE = 0x08;
   static constexpr u32 INTERRUPT_CONTROLLER_MASK = INTERRUPT_CONTROLLER_SIZE - 1;
@@ -75,6 +79,9 @@ private:
   bool ReadExpansionRegion2(MemoryAccessSize size, u32 offset, u32& value);
   bool WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value);
 
+  bool DoReadPad(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWritePad(MemoryAccessSize size, u32 offset, u32 value);
+
   bool DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value);
 
@@ -95,6 +102,7 @@ private:
   InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
+  Pad* m_pad = nullptr;
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM
   std::array<u8, 524288> m_bios{}; // 512K BIOS ROM

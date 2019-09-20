@@ -80,6 +80,15 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
   {
     return DoRAMAccess<type, size>(bus_address, value);
   }
+  else if (bus_address < PAD_BASE)
+  {
+    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+  }
+  else if (bus_address < (PAD_BASE + PAD_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadPad(size, bus_address & PAD_MASK, value) :
+                                              DoWritePad(size, bus_address & PAD_MASK, value);
+  }
   else if (bus_address < INTERRUPT_CONTROLLER_BASE)
   {
     return DoInvalidAccess(type, size, cpu_address, bus_address, value);
