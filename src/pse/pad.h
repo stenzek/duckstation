@@ -31,7 +31,7 @@ private:
 
   union JOY_CTRL
   {
-    u32 bits;
+    u16 bits;
 
     BitField<u16, bool, 0, 1> TXEN;
     BitField<u16, bool, 1, 1> SELECT;

@@ -22,6 +22,11 @@ void Pad::Reset()
 
 bool Pad::DoState(StateWrapper& sw)
 {
+  sw.Do(&m_JOY_CTRL.bits);
+  sw.Do(&m_JOY_STAT.bits);
+  sw.Do(&m_JOY_MODE.bits);
+  sw.Do(&m_RX_FIFO);
+  sw.Do(&m_TX_FIFO);
   return !sw.HasError();
 }
 
