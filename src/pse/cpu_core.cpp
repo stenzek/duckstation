@@ -26,7 +26,8 @@ bool Core::Initialize(Bus* bus)
 
 void Core::Reset()
 {
-  m_slice_ticks = std::numeric_limits<decltype(m_slice_ticks)>::max();
+  m_pending_ticks = 0;
+  m_downcount = MAX_SLICE_SIZE;
 
   m_regs = {};
 
@@ -47,7 +48,8 @@ void Core::Reset()
 
 bool Core::DoState(StateWrapper& sw)
 {
-  sw.Do(&m_slice_ticks);
+  sw.Do(&m_pending_ticks);
+  sw.Do(&m_downcount);
   sw.DoArray(m_regs.r, countof(m_regs.r));
   sw.Do(&m_regs.pc);
   sw.Do(&m_regs.hi);
@@ -312,12 +314,12 @@ void Core::DisassembleAndPrint(u32 addr)
   PrintInstruction(bits, addr);
 }
 
-TickCount Core::Execute()
+void Core::Execute()
 {
-  TickCount executed_ticks = 0;
-  while (executed_ticks < m_slice_ticks)
+  while (m_downcount >= 0)
   {
-    executed_ticks++;
+    m_pending_ticks += 3;
+    m_downcount -= 3;
 
     // now executing the instruction we previously fetched
     const Instruction inst = m_next_instruction;
@@ -340,10 +342,6 @@ TickCount Core::Execute()
     m_load_delay_old_value = m_next_load_delay_old_value;
     m_next_load_delay_old_value = 0;
   }
-
-  // reset slice ticks, it'll be updated when the components execute
-  m_slice_ticks = MAX_CPU_SLICE_SIZE;
-  return executed_ticks;
 }
 
 bool Core::FetchInstruction()

@@ -52,7 +52,7 @@ bool System::Initialize()
   if (!m_pad->Initialize(m_interrupt_controller.get()))
     return false;
 
-  if (!m_timers->Initialize(m_interrupt_controller.get()))
+  if (!m_timers->Initialize(this, m_interrupt_controller.get()))
     return false;
 
   return true;
@@ -89,8 +89,6 @@ bool System::DoState(StateWrapper& sw)
 
 void System::Reset()
 {
-  SetSliceTicks(1);
-
   m_cpu->Reset();
   m_bus->Reset();
   m_dma->Reset();
@@ -119,12 +117,8 @@ void System::RunFrame()
   u32 current_frame_number = m_frame_number;
   while (current_frame_number == m_frame_number)
   {
-    const TickCount pending_ticks = m_cpu->Execute();
-
-    // run pending ticks from CPU for other components
-    m_gpu->Execute(pending_ticks * 3);
-
-    m_timers->AddTicks(2, m_timers->IsUsingExternalClock(2) ? (pending_ticks / 8) : pending_ticks);
+    m_cpu->Execute();
+    Synchronize();
   }
 }
 
@@ -215,9 +209,20 @@ bool System::LoadEXE(const char* filename)
   return true;
 }
 
-void System::SetSliceTicks(TickCount downcount)
+void System::Synchronize()
 {
-  m_cpu->SetSliceTicks(downcount);
+  m_cpu->ResetDowncount();
+
+  const TickCount pending_ticks = m_cpu->GetPendingTicks();
+  m_cpu->ResetPendingTicks();
+
+  m_gpu->Execute(pending_ticks);
+  m_timers->AddSystemTicks(pending_ticks);
+}
+
+void System::SetDowncount(TickCount downcount)
+{
+  m_cpu->SetDowncount(downcount);
 }
 
 void System::SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev)

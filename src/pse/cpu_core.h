@@ -27,12 +27,16 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  TickCount Execute();
+  void Execute();
 
   const Registers& GetRegs() const { return m_regs; }
   Registers& GetRegs() { return m_regs; }
 
-  void SetSliceTicks(TickCount downcount) { m_slice_ticks = (downcount < m_slice_ticks ? downcount : m_slice_ticks); }
+  TickCount GetPendingTicks() const { return m_pending_ticks; }
+  void ResetPendingTicks() { m_pending_ticks = 0; }
+
+  void SetDowncount(TickCount downcount) { m_downcount = (downcount < m_downcount) ? downcount : m_downcount; }
+  void ResetDowncount() { m_downcount = MAX_SLICE_SIZE; }
 
   // Sets the PC and flushes the pipeline.
   void SetPC(u32 new_pc);
@@ -101,8 +105,9 @@ private:
 
   Bus* m_bus = nullptr;
 
-  // ticks of master/CPU clock until the next event
-  TickCount m_slice_ticks = 0;
+  // ticks the CPU has executed
+  TickCount m_pending_ticks = 0;
+  TickCount m_downcount = MAX_SLICE_SIZE;
 
   Registers m_regs = {};
   Cop0Registers m_cop0_regs = {};

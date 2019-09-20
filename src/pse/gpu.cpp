@@ -256,7 +256,7 @@ void GPU::UpdateCRTCConfig()
 void GPU::UpdateSliceTicks()
 {
   // the next event is at the end of the next scanline
-#if 1
+#if 0
   const TickCount ticks_until_next_event = m_crtc_state.ticks_per_scanline - m_crtc_state.current_tick_in_scanline;
 #else
   // or at vblank. this will depend on the timer config..
@@ -267,7 +267,7 @@ void GPU::UpdateSliceTicks()
 
   // convert to master clock, rounding up as we want to overshoot not undershoot
   const TickCount system_ticks = (ticks_until_next_event * 7 + 10) / 11;
-  m_system->SetSliceTicks(system_ticks);
+  m_system->SetDowncount(system_ticks);
 }
 
 void GPU::Execute(TickCount ticks)

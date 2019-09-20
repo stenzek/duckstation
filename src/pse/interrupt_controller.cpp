@@ -57,7 +57,9 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
   {
     case 0x00: // I_STATUS
     {
-      Log_DebugPrintf("Clearing bits 0x%08X", value);
+      if ((m_interrupt_status_register & ~value) != 0)
+        Log_DebugPrintf("Clearing bits 0x%08X", (m_interrupt_status_register & ~value));
+
       m_interrupt_status_register = m_interrupt_status_register & (value & REGISTER_WRITE_MASK);
       UpdateCPUInterruptRequest();
     }

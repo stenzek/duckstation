@@ -5,6 +5,7 @@
 
 class StateWrapper;
 
+class System;
 class InterruptController;
 
 class Timers
@@ -13,7 +14,7 @@ public:
   Timers();
   ~Timers();
 
-  bool Initialize(InterruptController* interrupt_controller);
+  bool Initialize(System* system, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -22,6 +23,7 @@ public:
   // dot clock/hblank/sysclk div 8
   bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
   void AddTicks(u32 timer, u32 ticks);
+  void AddSystemTicks(u32 ticks);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -70,6 +72,7 @@ private:
   void UpdateDowncount();
   u32 GetSystemTicksForTimerTicks(u32 timer) const;
 
+  System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
 
   std::array<CounterState, NUM_TIMERS> m_states{};

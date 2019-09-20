@@ -264,7 +264,7 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
           m_controller->SetButtonState(DigitalController::Button::L2, pressed);
           return true;
         case SDL_SCANCODE_3:
-          m_controller->SetButtonState(DigitalController::Button::R3, pressed);
+          m_controller->SetButtonState(DigitalController::Button::R2, pressed);
           return true;
 
         case SDL_SCANCODE_RETURN:

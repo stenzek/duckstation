@@ -20,5 +20,5 @@ enum class MemoryAccessSize : u32
 using TickCount = s32;
 
 static constexpr TickCount MASTER_CLOCK = 44100 * 0x300; // 33868800Hz or 33.8688MHz, also used as CPU clock
-static constexpr TickCount MAX_CPU_SLICE_SIZE = MASTER_CLOCK / 10;
+static constexpr TickCount MAX_SLICE_SIZE = MASTER_CLOCK / 10;
 

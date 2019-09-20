@@ -2,14 +2,16 @@
 #include "YBaseLib/Log.h"
 #include "common/state_wrapper.h"
 #include "interrupt_controller.h"
+#include "system.h"
 Log_SetChannel(Timers);
 
 Timers::Timers() = default;
 
 Timers::~Timers() = default;
 
-bool Timers::Initialize(InterruptController* interrupt_controller)
+bool Timers::Initialize(System* system, InterruptController* interrupt_controller)
 {
+  m_system = system;
   m_interrupt_controller = interrupt_controller;
   return true;
 }
@@ -103,6 +105,16 @@ void Timers::AddTicks(u32 timer, u32 count)
     cs.counter = 0;
 }
 
+void Timers::AddSystemTicks(u32 ticks)
+{
+  if (!m_states[0].external_counting_enabled && m_states[0].counting_enabled)
+    AddTicks(0, ticks);
+  if (!m_states[1].external_counting_enabled && m_states[1].counting_enabled)
+    AddTicks(1, ticks);
+  if (m_states[2].counting_enabled)
+    AddTicks(2, m_states[2].external_counting_enabled ? (ticks / 8) : (ticks));
+}
+
 u32 Timers::ReadRegister(u32 offset)
 {
   const u32 timer_index = (offset >> 4) & u32(0x03);
@@ -113,15 +125,20 @@ u32 Timers::ReadRegister(u32 offset)
   switch (port_offset)
   {
     case 0x00:
+    {
+      m_system->Synchronize();
       return cs.counter;
+    }
 
     case 0x04:
     {
+      m_system->Synchronize();
+
       const u32 bits = cs.mode.bits;
       cs.mode.reached_overflow = false;
       cs.mode.reached_target = false;
+      return bits;
     }
-    break;
 
     case 0x08:
       return cs.target;
@@ -142,13 +159,17 @@ void Timers::WriteRegister(u32 offset, u32 value)
   switch (port_offset)
   {
     case 0x00:
+    {
       Log_DebugPrintf("Timer %u write counter %u", timer_index, value);
+      m_system->Synchronize();
       cs.counter = value & u32(0xFFFF);
-      break;
+    }
+    break;
 
     case 0x04:
     {
       Log_DebugPrintf("Timer %u write mode register 0x%04X", timer_index, value);
+      m_system->Synchronize();
       cs.mode.bits = value & u32(0x1FFF);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
@@ -157,9 +178,12 @@ void Timers::WriteRegister(u32 offset, u32 value)
     break;
 
     case 0x08:
+    {
       Log_DebugPrintf("Timer %u write target 0x%04X", timer_index, ZeroExtend32(Truncate16(value)));
+      m_system->Synchronize();
       cs.target = value & u32(0xFFFF);
-      break;
+    }
+    break;
 
     default:
       Log_ErrorPrintf("Write unknown register in timer %u (offset 0x%02X, value 0x%X)", offset, value);

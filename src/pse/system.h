@@ -42,7 +42,8 @@ public:
 
   bool LoadEXE(const char* filename);
 
-  void SetSliceTicks(TickCount downcount);
+  void SetDowncount(TickCount downcount);
+  void Synchronize();
 
   void SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev);
 
