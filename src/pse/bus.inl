@@ -108,6 +108,15 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
     return (type == MemoryAccessType::Read) ? DoReadDMA(size, bus_address & DMA_MASK, value) :
                                               DoWriteDMA(size, bus_address & DMA_MASK, value);
   }
+  else if (bus_address < TIMERS_BASE)
+  {
+    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+  }
+  else if (bus_address < (TIMERS_BASE + TIMERS_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadTimers(size, bus_address & TIMERS_MASK, value) :
+                                              DoWriteTimers(size, bus_address & TIMERS_MASK, value);
+  }
   else if (bus_address < CDROM_BASE)
   {
     return DoInvalidAccess(type, size, cpu_address, bus_address, value);

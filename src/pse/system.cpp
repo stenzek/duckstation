@@ -9,6 +9,7 @@
 #include "interrupt_controller.h"
 #include "pad.h"
 #include "pad_device.h"
+#include "timers.h"
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
@@ -20,6 +21,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_gpu = GPU::CreateHardwareOpenGLRenderer();
   m_cdrom = std::make_unique<CDROM>();
   m_pad = std::make_unique<Pad>();
+  m_timers = std::make_unique<Timers>();
 }
 
 System::~System() = default;
@@ -30,7 +32,7 @@ bool System::Initialize()
     return false;
 
   if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(),
-                         m_pad.get()))
+                         m_pad.get(), m_timers.get()))
   {
     return false;
   }
@@ -41,13 +43,16 @@ bool System::Initialize()
   if (!m_interrupt_controller->Initialize(m_cpu.get()))
     return false;
 
-  if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
+  if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_timers.get()))
     return false;
 
   if (!m_cdrom->Initialize(m_dma.get(), m_interrupt_controller.get()))
     return false;
 
   if (!m_pad->Initialize(m_interrupt_controller.get()))
+    return false;
+
+  if (!m_timers->Initialize(m_interrupt_controller.get()))
     return false;
 
   return true;
@@ -76,6 +81,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("Pad") || !m_pad->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("Timers") || !m_timers->DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -90,6 +98,7 @@ void System::Reset()
   m_gpu->Reset();
   m_cdrom->Reset();
   m_pad->Reset();
+  m_timers->Reset();
   m_frame_number = 1;
 }
 
@@ -113,7 +122,9 @@ void System::RunFrame()
     const TickCount pending_ticks = m_cpu->Execute();
 
     // run pending ticks from CPU for other components
-    m_gpu->Execute(pending_ticks);
+    m_gpu->Execute(pending_ticks * 3);
+
+    m_timers->AddTicks(2, m_timers->IsUsingExternalClock(2) ? (pending_ticks / 8) : pending_ticks);
   }
 }
 

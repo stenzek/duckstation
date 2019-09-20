@@ -304,6 +304,17 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
       return;
     }
 
+    case 0x22:
+    {
+      Log_DebugPrintf("Get CDROM region ID string");
+      static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'U', '/', 'C'};
+      m_response_fifo.PushRange(response, countof(response));
+      m_param_fifo.Clear();
+      SetInterrupt(Interrupt::INT3);
+      UpdateStatusRegister();
+      return;
+    }
+
     default:
     {
       Log_ErrorPrintf("Unknown test command 0x%02X", subcommand);

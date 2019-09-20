@@ -1,5 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
+#include "timers.h"
 #include "types.h"
 #include <array>
 #include <deque>
@@ -10,6 +11,7 @@ class StateWrapper;
 class System;
 class DMA;
 class InterruptController;
+class Timers;
 
 class GPU
 {
@@ -17,7 +19,7 @@ public:
   GPU();
   virtual ~GPU();
 
-  virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller);
+  virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
@@ -39,6 +41,8 @@ protected:
   static constexpr u32 VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16);
   static constexpr u32 TEXTURE_PAGE_WIDTH = 256;
   static constexpr u32 TEXTURE_PAGE_HEIGHT = 256;
+  static constexpr u32 DOT_TIMER_INDEX = 0;
+  static constexpr u32 HBLANK_TIMER_INDEX = 1;
 
   static constexpr s32 S11ToS32(u32 value)
   {
@@ -184,6 +188,7 @@ protected:
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
+  Timers* m_timers = nullptr;
 
   union GPUSTAT
   {

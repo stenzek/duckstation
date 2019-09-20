@@ -50,6 +50,7 @@
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="pad_device.cpp" />
     <ClCompile Include="system.cpp" />
+    <ClCompile Include="timers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bus.h" />
@@ -70,6 +71,7 @@
     <ClInclude Include="pad_device.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="system.h" />
+    <ClInclude Include="timers.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>

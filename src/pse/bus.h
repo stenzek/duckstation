@@ -16,6 +16,7 @@ class InterruptController;
 class GPU;
 class CDROM;
 class Pad;
+class Timers;
 class System;
 
 class Bus
@@ -24,7 +25,7 @@ public:
   Bus();
   ~Bus();
 
-  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad);
+  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -50,6 +51,9 @@ private:
   static constexpr u32 DMA_BASE = 0x1F801080;
   static constexpr u32 DMA_SIZE = 0x80;
   static constexpr u32 DMA_MASK = DMA_SIZE - 1;
+  static constexpr u32 TIMERS_BASE = 0x1F801100;
+  static constexpr u32 TIMERS_SIZE = 0x40;
+  static constexpr u32 TIMERS_MASK = TIMERS_SIZE - 1;
   static constexpr u32 CDROM_BASE = 0x1F801800;
   static constexpr u32 CDROM_SIZE = 0x04;
   static constexpr u32 CDROM_MASK = CDROM_SIZE - 1;
@@ -94,6 +98,9 @@ private:
   bool DoReadDMA(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value);
 
+  bool DoReadTimers(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value);
+
   bool ReadSPU(MemoryAccessSize size, u32 offset, u32& value);
   bool WriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
@@ -103,6 +110,7 @@ private:
   GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
   Pad* m_pad = nullptr;
+  Timers* m_timers = nullptr;
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM
   std::array<u8, 524288> m_bios{}; // 512K BIOS ROM

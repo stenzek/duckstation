@@ -5,6 +5,7 @@
 #include "interrupt_controller.h"
 #include "stb_image_write.h"
 #include "system.h"
+#include "timers.h"
 Log_SetChannel(GPU);
 
 bool GPU::DUMP_CPU_TO_VRAM_COPIES = false;
@@ -16,11 +17,12 @@ GPU::GPU() = default;
 
 GPU::~GPU() = default;
 
-bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
+bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
 {
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
+  m_timers = timers;
   return true;
 }
 
@@ -254,12 +256,14 @@ void GPU::UpdateCRTCConfig()
 void GPU::UpdateSliceTicks()
 {
   // the next event is at the end of the next scanline
-  // const TickCount ticks_until_next_event = m_crtc_state.ticks_per_scanline - m_crtc_state.current_tick_in_scanline;
-
+#if 1
+  const TickCount ticks_until_next_event = m_crtc_state.ticks_per_scanline - m_crtc_state.current_tick_in_scanline;
+#else
   // or at vblank. this will depend on the timer config..
   const TickCount ticks_until_next_event =
     ((m_crtc_state.total_scanlines_per_frame - m_crtc_state.current_scanline) * m_crtc_state.ticks_per_scanline) -
     m_crtc_state.current_tick_in_scanline;
+#endif
 
   // convert to master clock, rounding up as we want to overshoot not undershoot
   const TickCount system_ticks = (ticks_until_next_event * 7 + 10) / 11;
@@ -279,13 +283,22 @@ void GPU::Execute(TickCount ticks)
   {
     m_crtc_state.current_tick_in_scanline -= m_crtc_state.ticks_per_scanline;
     m_crtc_state.current_scanline++;
+    if (m_timers->IsUsingExternalClock(HBLANK_TIMER_INDEX))
+      m_timers->AddTicks(HBLANK_TIMER_INDEX, 1);
 
     const bool old_vblank = m_crtc_state.in_vblank;
-    m_crtc_state.in_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_vertical_resolution;
-    if (m_crtc_state.in_vblank && !old_vblank)
+    const bool new_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_vertical_resolution;
+    if (new_vblank != old_vblank)
     {
-      Log_DebugPrintf("Now in v-blank");
-      m_interrupt_controller->InterruptRequest(InterruptController::IRQ::VBLANK);
+      m_crtc_state.in_vblank = new_vblank;
+
+      if (!old_vblank)
+      {
+        Log_DebugPrintf("Now in v-blank");
+        m_interrupt_controller->InterruptRequest(InterruptController::IRQ::VBLANK);
+      }
+
+      m_timers->SetGate(HBLANK_TIMER_INDEX, new_vblank);
     }
 
     // past the end of vblank?

@@ -10,6 +10,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "pad.h"
+#include "timers.h"
 #include <cstdio>
 Log_SetChannel(Bus);
 
@@ -25,7 +26,8 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad)
+bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
+                     Pad* pad, Timers* timers)
 {
   if (!LoadBIOS())
     return false;
@@ -36,6 +38,7 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
   m_gpu = gpu;
   m_cdrom = cdrom;
   m_pad = pad;
+  m_timers = timers;
   return true;
 }
 
@@ -271,6 +274,20 @@ bool Bus::DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 valu
 {
   FixupUnalignedWordAccessW32(offset, value);
   m_interrupt_controller->WriteRegister(offset, value);
+  return true;
+}
+
+bool Bus::DoReadTimers(MemoryAccessSize size, u32 offset, u32& value)
+{
+  FixupUnalignedWordAccessW32(offset, value);
+  value = m_timers->ReadRegister(offset);
+  return true;
+}
+
+bool Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
+{
+  FixupUnalignedWordAccessW32(offset, value);
+  m_timers->WriteRegister(offset, value);
   return true;
 }
 

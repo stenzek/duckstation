@@ -19,6 +19,7 @@ class GPU;
 class CDROM;
 class Pad;
 class PadDevice;
+class Timers;
 
 class System
 {
@@ -60,5 +61,6 @@ private:
   std::unique_ptr<GPU> m_gpu;
   std::unique_ptr<CDROM> m_cdrom;
   std::unique_ptr<Pad> m_pad;
+  std::unique_ptr<Timers> m_timers;
   u32 m_frame_number = 1;
 };
