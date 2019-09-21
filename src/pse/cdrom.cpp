@@ -278,7 +278,7 @@ u32 CDROM::DMARead()
     m_data_fifo.Clear();
   }
 
-  Log_DebugPrintf("DMA Read -> 0x%08X", data);
+  // Log_DebugPrintf("DMA Read -> 0x%08X", data);
   return data;
 }
 
@@ -430,9 +430,9 @@ void CDROM::ExecuteCommand()
     case Command::Setloc:
     {
       // TODO: Verify parameter count
-      m_setloc.minute = m_param_fifo.Peek(0);
-      m_setloc.second = m_param_fifo.Peek(1);
-      m_setloc.frame = m_param_fifo.Peek(2);
+      m_setloc.minute = BCDToDecimal(m_param_fifo.Peek(0));
+      m_setloc.second = BCDToDecimal(m_param_fifo.Peek(1));
+      m_setloc.frame = BCDToDecimal(m_param_fifo.Peek(2));
       Log_DebugPrintf("CDROM setloc command (%u, %u, %u)", ZeroExtend32(m_setloc.minute), ZeroExtend32(m_setloc.second),
                       ZeroExtend32(m_setloc.frame));
       m_response_fifo.Push(m_secondary_status.bits);
@@ -450,7 +450,7 @@ void CDROM::ExecuteCommand()
       if (m_command_stage == 0)
       {
         StopReading();
-        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second, m_setloc.frame))
+        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
         {
           Panic("Error in Setloc command");
           return;
@@ -517,6 +517,27 @@ void CDROM::ExecuteCommand()
       return;
     }
 
+    case Command::Init:
+    {
+      if (m_command_stage == 0)
+      {
+        Log_DebugPrintf("CDROM init command");
+        m_response_fifo.Push(m_secondary_status.bits);
+        SetInterrupt(Interrupt::INT3);
+        StopReading();
+        NextCommandStage(true, 100);
+      }
+      else
+      {
+        m_response_fifo.Push(m_secondary_status.bits);
+        SetInterrupt(Interrupt::INT2);
+        EndCommand();
+      }
+
+      return;
+    }
+    break;
+
     default:
       Panic("Unknown command");
       break;
@@ -575,7 +596,7 @@ void CDROM::DoSectorRead()
   if (HasPendingInterrupt())
   {
     // can't read with a pending interrupt?
-    m_sector_read_remaining_ticks += 100;
+    m_sector_read_remaining_ticks += 10;
     m_system->SetDowncount(m_sector_read_remaining_ticks);
     return;
   }

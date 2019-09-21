@@ -92,7 +92,7 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
     switch (read_mode)
     {
       case ReadMode::DataOnly:
-        std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE, DATA_SECTOR_SIZE);
+        std::memcpy(buffer_ptr, raw_sector + 24, DATA_SECTOR_SIZE);
         buffer_ptr += DATA_SECTOR_SIZE;
         break;
 
