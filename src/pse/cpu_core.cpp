@@ -283,6 +283,117 @@ void Core::WriteRegDelayed(Reg rd, u32 value)
   m_regs.r[static_cast<u8>(rd)] = value;
 }
 
+u32 Core::ReadCop0Reg(Cop0Reg reg)
+{
+  switch (reg)
+  {
+    case Cop0Reg::BPC:
+      return m_cop0_regs.BPC;
+
+    case Cop0Reg::BPCM:
+      return m_cop0_regs.BPCM;
+
+    case Cop0Reg::BDA:
+      return m_cop0_regs.BDA;
+
+    case Cop0Reg::BDAM:
+      return m_cop0_regs.BDAM;
+
+    case Cop0Reg::DCIC:
+      return m_cop0_regs.dcic.bits;
+
+    case Cop0Reg::JUMPDEST:
+      return m_cop0_regs.JUMPDEST;
+
+    case Cop0Reg::BadVaddr:
+      return m_cop0_regs.BadVaddr;
+
+    case Cop0Reg::SR:
+      return m_cop0_regs.sr.bits;
+
+    case Cop0Reg::CAUSE:
+      return m_cop0_regs.cause.bits;
+
+    case Cop0Reg::EPC:
+      return m_cop0_regs.EPC;
+
+    case Cop0Reg::PRID:
+      return m_cop0_regs.PRID;
+
+    default:
+      Panic("Unknown COP0 reg");
+      return 0;
+  }
+}
+
+void Core::WriteCop0Reg(Cop0Reg reg, u32 value)
+{
+  switch (reg)
+  {
+    case Cop0Reg::BPC:
+    {
+      m_cop0_regs.BPC = value;
+      Log_WarningPrintf("COP0 BPC <- %08X", value);
+    }
+    break;
+
+    case Cop0Reg::BPCM:
+    {
+      m_cop0_regs.BPCM = value;
+      Log_WarningPrintf("COP0 BPCM <- %08X", value);
+    }
+    break;
+
+    case Cop0Reg::BDA:
+    {
+      m_cop0_regs.BDA = value;
+      Log_WarningPrintf("COP0 BDA <- %08X", value);
+    }
+    break;
+
+    case Cop0Reg::BDAM:
+    {
+      m_cop0_regs.BDAM = value;
+      Log_WarningPrintf("COP0 BDAM <- %08X", value);
+    }
+    break;
+
+    case Cop0Reg::JUMPDEST:
+    {
+      Log_WarningPrintf("Ignoring write to Cop0 JUMPDEST");
+    }
+    break;
+
+    case Cop0Reg::DCIC:
+    {
+      m_cop0_regs.dcic.bits =
+        (m_cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
+      Log_WarningPrintf("COP0 DCIC <- %08X (now %08X)", value, m_cop0_regs.dcic.bits);
+    }
+    break;
+
+    case Cop0Reg::SR:
+    {
+      m_cop0_regs.sr.bits =
+        (m_cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
+      Log_WarningPrintf("COP0 SR <- %08X (now %08X)", value, m_cop0_regs.sr.bits);
+    }
+    break;
+
+    case Cop0Reg::CAUSE:
+    {
+      m_cop0_regs.cause.bits =
+        (m_cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
+      Log_WarningPrintf("COP0 CAUSE <- %08X (now %08X)", value, m_cop0_regs.cause.bits);
+    }
+    break;
+
+    default:
+      Panic("Unknown COP0 reg");
+      break;
+  }
+}
+
 void Core::WriteCacheControl(u32 value)
 {
   Log_WarningPrintf("Cache control <- 0x%08X", value);
@@ -895,7 +1006,7 @@ void Core::ExecuteInstruction(Instruction inst)
 
     case InstructionOp::cop0:
     {
-      if (!m_cop0_regs.sr.CU0 && InUserMode())
+      if (InUserMode() && !m_cop0_regs.sr.CU0)
       {
         Log_WarningPrintf("Coprocessor 0 not present in user mode");
         RaiseException(Exception::CpU, 0);
@@ -908,7 +1019,7 @@ void Core::ExecuteInstruction(Instruction inst)
 
     case InstructionOp::cop2:
     {
-      if (!m_cop0_regs.sr.CU0 && InUserMode())
+      if (InUserMode() && !m_cop0_regs.sr.CU2)
       {
         Log_WarningPrintf("Coprocessor 2 not present in user mode");
         RaiseException(Exception::CpU, 2);
@@ -919,9 +1030,46 @@ void Core::ExecuteInstruction(Instruction inst)
     }
     break;
 
+    case InstructionOp::lwc2:
+    {
+      if (InUserMode() && !m_cop0_regs.sr.CU2)
+      {
+        Log_WarningPrintf("Coprocessor 2 not present in user mode");
+        RaiseException(Exception::CpU, 2);
+        return;
+      }
+
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      u32 value;
+      if (!ReadMemoryWord(addr, &value))
+        return;
+
+      m_cop2.WriteDataRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
+    }
+    break;
+
+    case InstructionOp::swc2:
+    {
+      if (InUserMode() && !m_cop0_regs.sr.CU2)
+      {
+        Log_WarningPrintf("Coprocessor 2 not present in user mode");
+        RaiseException(Exception::CpU, 2);
+        return;
+      }
+
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const u32 value = m_cop2.ReadDataRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
+      WriteMemoryWord(addr, value);
+    }
+    break;
+
     // COP1/COP3 are not present
     case InstructionOp::cop1:
     case InstructionOp::cop3:
+    case InstructionOp::lwc1:
+    case InstructionOp::swc1:
+    case InstructionOp::lwc3:
+    case InstructionOp::swc3:
     {
       RaiseException(Exception::CpU, inst.cop.cop_n);
     }
@@ -935,147 +1083,38 @@ void Core::ExecuteInstruction(Instruction inst)
 
 void Core::ExecuteCop0Instruction(Instruction inst)
 {
-  switch (inst.cop.cop0_op())
+  if (inst.cop.IsCommonInstruction())
   {
-    case Cop0Instruction::mtc0:
+    switch (inst.cop.CommonOp())
     {
-      const u32 value = ReadReg(inst.r.rt);
-      switch (static_cast<Cop0Reg>(inst.r.rd.GetValue()))
+      case CopCommonInstruction::mfcn:
+        WriteRegDelayed(inst.r.rt, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())));
+        break;
+
+      case CopCommonInstruction::mtcn:
+        WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+        break;
+
+      default:
+        Panic("Missing implementation");
+        break;
+    }
+  }
+  else
+  {
+    switch (inst.cop.Cop0Op())
+    {
+      case Cop0Instruction::rfe:
       {
-        case Cop0Reg::BPC:
-        {
-          m_cop0_regs.BPC = value;
-          Log_WarningPrintf("COP0 BPC <- %08X", value);
-        }
-        break;
-
-        case Cop0Reg::BPCM:
-        {
-          m_cop0_regs.BPCM = value;
-          Log_WarningPrintf("COP0 BPCM <- %08X", value);
-        }
-        break;
-
-        case Cop0Reg::BDA:
-        {
-          m_cop0_regs.BDA = value;
-          Log_WarningPrintf("COP0 BDA <- %08X", value);
-        }
-        break;
-
-        case Cop0Reg::BDAM:
-        {
-          m_cop0_regs.BDAM = value;
-          Log_WarningPrintf("COP0 BDAM <- %08X", value);
-        }
-        break;
-
-        case Cop0Reg::JUMPDEST:
-        {
-          Log_WarningPrintf("Ignoring write to Cop0 JUMPDEST");
-        }
-        break;
-
-        case Cop0Reg::DCIC:
-        {
-          m_cop0_regs.dcic.bits =
-            (m_cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
-          Log_WarningPrintf("COP0 DCIC <- %08X (now %08X)", value, m_cop0_regs.dcic.bits);
-        }
-        break;
-
-        case Cop0Reg::SR:
-        {
-          m_cop0_regs.sr.bits =
-            (m_cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
-          Log_WarningPrintf("COP0 SR <- %08X (now %08X)", value, m_cop0_regs.sr.bits);
-        }
-        break;
-
-        case Cop0Reg::CAUSE:
-        {
-          m_cop0_regs.cause.bits =
-            (m_cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
-          Log_WarningPrintf("COP0 CAUSE <- %08X (now %08X)", value, m_cop0_regs.cause.bits);
-        }
-        break;
-
-        default:
-          Panic("Unknown COP0 reg");
-          break;
+        // restore mode
+        m_cop0_regs.sr.mode_bits = (m_cop0_regs.sr.mode_bits & UINT32_C(0b110000)) | (m_cop0_regs.sr.mode_bits >> 2);
       }
-    }
-    break;
-
-    case Cop0Instruction::mfc0:
-    {
-      u32 value;
-      switch (static_cast<Cop0Reg>(inst.r.rd.GetValue()))
-      {
-        case Cop0Reg::BPC:
-          value = m_cop0_regs.BPC;
-          break;
-
-        case Cop0Reg::BPCM:
-          value = m_cop0_regs.BPCM;
-          break;
-
-        case Cop0Reg::BDA:
-          value = m_cop0_regs.BDA;
-          break;
-
-        case Cop0Reg::BDAM:
-          value = m_cop0_regs.BDAM;
-          break;
-
-        case Cop0Reg::DCIC:
-          value = m_cop0_regs.dcic.bits;
-          break;
-
-        case Cop0Reg::JUMPDEST:
-          value = m_cop0_regs.JUMPDEST;
-          break;
-
-        case Cop0Reg::BadVaddr:
-          value = m_cop0_regs.BadVaddr;
-          break;
-
-        case Cop0Reg::SR:
-          value = m_cop0_regs.sr.bits;
-          break;
-
-        case Cop0Reg::CAUSE:
-          value = m_cop0_regs.cause.bits;
-          break;
-
-        case Cop0Reg::EPC:
-          value = m_cop0_regs.EPC;
-          break;
-
-        case Cop0Reg::PRID:
-          value = m_cop0_regs.PRID;
-          break;
-
-        default:
-          Panic("Unknown COP0 reg");
-          value = 0;
-          break;
-      }
-
-      WriteRegDelayed(inst.r.rt, value);
-    }
-    break;
-
-    case Cop0Instruction::rfe:
-    {
-      // restore mode
-      m_cop0_regs.sr.mode_bits = (m_cop0_regs.sr.mode_bits & UINT32_C(0b110000)) | (m_cop0_regs.sr.mode_bits >> 2);
-    }
-    break;
-
-    default:
-      Panic("Unhandled instruction");
       break;
+
+      default:
+        Panic("Missing implementation");
+        break;
+    }
   }
 }
 
@@ -1084,20 +1123,25 @@ void Core::ExecuteCop2Instruction(Instruction inst)
   if (inst.cop.IsCommonInstruction())
   {
     // TODO: Combine with cop0.
-    switch (inst.cop.cop2_op())
+    switch (inst.cop.CommonOp())
     {
-      case Cop2Instruction::mfc2:
-      case Cop2Instruction::cfc2:
-      case Cop2Instruction::mtc2:
-      case Cop2Instruction::ctc2:
-      {
-        const u32 index = static_cast<u32>(inst.r.rd.GetValue());
-        const u32 value = ReadReg(inst.r.rt);
-        m_cop2.WriteControlRegister(index, value);
-      }
-      break;
+      case CopCommonInstruction::cfcn:
+        WriteRegDelayed(inst.r.rt, m_cop2.ReadControlRegister(static_cast<u32>(inst.r.rd.GetValue())));
+        break;
 
-      case Cop2Instruction::bc2c:
+      case CopCommonInstruction::ctcn:
+        m_cop2.WriteControlRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+        break;
+
+      case CopCommonInstruction::mfcn:
+        WriteRegDelayed(inst.r.rt, m_cop2.ReadDataRegister(static_cast<u32>(inst.r.rd.GetValue())));
+        break;
+
+      case CopCommonInstruction::mtcn:
+        m_cop2.WriteDataRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+        break;
+
+      case CopCommonInstruction::bcnc:
       default:
         Panic("Missing implementation");
         break;

@@ -160,20 +160,14 @@ static const std::array<const char*, 64> s_special_table = {{
   "UNKNOWN"               // 63
 }};
 
-static const std::array<std::pair<Cop0Instruction, const char*>, 6> s_cop0_table = {
-  {{Cop0Instruction::mfc0, "mfc0 $rt, $coprd"},
-   {Cop0Instruction::cfc0, "cfc0 $rt, $copcr"},
-   {Cop0Instruction::mtc0, "mtc0 $rt, $coprd"},
-   {Cop0Instruction::ctc0, "ctc0 $rt, $copcr"},
-   {Cop0Instruction::bc0c, "bc0$copcc $rel"},
-   {Cop0Instruction::rfe, "rfe"}}};
+static const std::array<std::pair<CopCommonInstruction, const char*>, 5> s_cop_common_table = {
+  {{CopCommonInstruction::mfcn, "mfc$cop $rt, $coprd"},
+   {CopCommonInstruction::cfcn, "cfc$cop $rt, $copcr"},
+   {CopCommonInstruction::mtcn, "mtc$cop $rt, $coprd"},
+   {CopCommonInstruction::ctcn, "ctc$cop $rt, $copcr"},
+   {CopCommonInstruction::bcnc, "bc$cop$copcc $rel"}}};
 
-static const std::array<std::pair<Cop2Instruction, const char*>, 6> s_cop2_common_table = {
-  {{Cop2Instruction::mfc2, "mfc2 $rt, $coprd"},
-   {Cop2Instruction::cfc2, "cfc2 $rt, $copcr"},
-   {Cop2Instruction::mtc2, "mtc2 $rt, $coprd"},
-   {Cop2Instruction::ctc2, "ctc2 $rt, $copcr"},
-   {Cop2Instruction::bc2c, "bc2$copcc $rel"}}};
+static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 
 static void FormatInstruction(String* dest, const Instruction inst, u32 pc, const char* format)
 {
@@ -286,27 +280,36 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
       return;
 
     case InstructionOp::cop0:
-      FormatCopInstruction(dest, pc, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.cop0_op());
-      return;
-
+    case InstructionOp::cop1:
     case InstructionOp::cop2:
+    case InstructionOp::cop3:
     {
       if (inst.cop.IsCommonInstruction())
       {
-        FormatCopInstruction(dest, pc, inst, s_cop2_common_table.data(), s_cop2_common_table.size(),
-                             inst.cop.cop2_op());
+        FormatCopInstruction(dest, pc, inst, s_cop_common_table.data(), s_cop_common_table.size(), inst.cop.CommonOp());
       }
       else
       {
-        dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+        switch (inst.op)
+        {
+          case InstructionOp::cop0:
+          {
+            FormatCopInstruction(dest, pc, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
+          }
+          break;
+
+          case InstructionOp::cop1:
+          case InstructionOp::cop2:
+          case InstructionOp::cop3:
+          default:
+          {
+            dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+          }
+          break;
+        }
       }
     }
     break;
-
-    case InstructionOp::cop1:
-    case InstructionOp::cop3:
-      dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
-      break;
 
     // special case for bltz/bgez{al}
     case InstructionOp::b:

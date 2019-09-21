@@ -103,6 +103,10 @@ private:
   // write to cache control register
   void WriteCacheControl(u32 value);
 
+  // read/write cop0 regs
+  u32 ReadCop0Reg(Cop0Reg reg);
+  void WriteCop0Reg(Cop0Reg reg, u32 value);
+
   Bus* m_bus = nullptr;
 
   // ticks the CPU has executed

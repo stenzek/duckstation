@@ -74,7 +74,15 @@ enum class InstructionOp : u8
   sh = 41,
   swl = 42,
   sw = 43,
-  swr = 46
+  swr = 46,
+  lwc0 = 48,
+  lwc1 = 49,
+  lwc2 = 50,
+  lwc3 = 51,
+  swc0 = 56,
+  swc1 = 57,
+  swc2 = 58,
+  swc3 = 59,
 };
 constexpr u8 INSTRUCTION_COP_BITS = 0x10;
 constexpr u8 INSTRUCTION_COP_MASK = 0x3C;
@@ -113,27 +121,22 @@ enum class InstructionFunct : u8
   sltu = 43
 };
 
-enum class Cop0Instruction : u32 // 25:21 | 0:5
+enum class CopCommonInstruction : u32
 {
-  mfc0 = 0b00000'000000,
-  cfc0 = 0b00010'000000,
-  mtc0 = 0b00100'000000,
-  ctc0 = 0b00110'000000,
-  bc0c = 0b01000'000000,
-  tlbr = 0b10000'000001,
-  tlbwi = 0b10000'000010,
-  tlbwr = 0b10000'000100,
-  tlbp = 0b10000'001000,
-  rfe = 0b10000'010000,
+  mfcn = 0b0000,
+  cfcn = 0b0010,
+  mtcn = 0b0100,
+  ctcn = 0b0110,
+  bcnc = 0b1000,
 };
 
-enum class Cop2Instruction : u32 // 25:21
+enum class Cop0Instruction : u32
 {
-  mfc2 = 0b0000,
-  cfc2 = 0b0010,
-  mtc2 = 0b0100,
-  ctc2 = 0b0110,
-  bc2c = 0b1000,
+  tlbr = 0x01,
+  tlbwi = 0x02,
+  tlbwr = 0x04,
+  tlbp = 0x08,
+  rfe = 0x10,
 };
 
 union Instruction
@@ -175,15 +178,9 @@ union Instruction
 
     bool IsCommonInstruction() const { return (bits & (UINT32_C(1) << 25)) == 0; }
 
-    Cop0Instruction cop0_op() const
-    {
-      return static_cast<Cop0Instruction>(((bits >> 15) & UINT32_C(0b11111000000)) | (bits & UINT32_C(0b111111)));
-    }
+    CopCommonInstruction CommonOp() const { return static_cast<CopCommonInstruction>((bits >> 21) & UINT32_C(0b1111)); }
 
-    Cop2Instruction cop2_op() const
-    {
-      return static_cast<Cop2Instruction>((bits >> 21) & UINT32_C(0b1111));
-    }
+    Cop0Instruction Cop0Op() const { return static_cast<Cop0Instruction>(bits & UINT32_C(0x3F)); }
   } cop;
 };
 
