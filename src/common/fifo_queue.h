@@ -16,8 +16,8 @@ class FIFOQueue
 public:
   const T* GetDataPointer() const { return m_ptr; }
   T* GetDataPointer() { return m_ptr; }
-  const T* GetFrontPointer() const { return m_ptr[m_head]; }
-  T* GetFrontPointer() { return m_ptr[m_head]; }
+  const T* GetFrontPointer() const { return &m_ptr[m_head]; }
+  T* GetFrontPointer() { return &m_ptr[m_head]; }
   constexpr u32 GetCapacity() const { return CAPACITY; }
   u32 GetSize() const { return m_size; }
   bool IsEmpty() const { return m_size == 0; }
@@ -90,6 +90,17 @@ public:
 
   const T& Peek() const { return m_ptr[m_head]; }
   const T& Peek(u32 offset) { return m_ptr[(m_head + offset) % CAPACITY]; }
+
+  void Remove(u32 count)
+  {
+    Assert(m_size >= count);
+    for (u32 i = 0; i < count; i++)
+    {
+      m_ptr[m_head].~T();
+      m_head = (m_head + 1) % CAPACITY;
+      m_size--;
+    }
+  }
 
   void RemoveOne()
   {

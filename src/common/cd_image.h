@@ -9,6 +9,16 @@ public:
   CDImage();
   ~CDImage();
 
+  enum : u32
+  {
+    RAW_SECTOR_SIZE = 2352,
+    DATA_SECTOR_SIZE = 2048,
+    SECTOR_SYNC_SIZE = 12,
+    FRAMES_PER_SECOND = 75, // "sectors"
+    SECONDS_PER_MINUTE = 60,
+    FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
+  };
+
   enum class ReadMode : u32
   {
     DataOnly,     // 2048 bytes per sector.
@@ -40,16 +50,6 @@ public:
   u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
 
 private:
-  enum : u32
-  {
-    RAW_SECTOR_SIZE = 2352,
-    DATA_SECTOR_SIZE = 2048,
-    SECTOR_SYNC_SIZE = 12,
-    FRAMES_PER_SECOND = 75, // "sectors"
-    SECONDS_PER_MINUTE = 60,
-    FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
-  };
-
   // TODO: Multiple data files from cue sheet
   ByteStream* m_data_file = nullptr;
 

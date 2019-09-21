@@ -1,11 +1,12 @@
 #pragma once
-#include "types.h"
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
+#include "types.h"
 
 class CDImage;
 class StateWrapper;
 
+class System;
 class DMA;
 class InterruptController;
 
@@ -15,7 +16,7 @@ public:
   CDROM();
   ~CDROM();
 
-  bool Initialize(DMA* dma, InterruptController* interrupt_controller);
+  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -26,8 +27,9 @@ public:
   // I/O
   u8 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u8 value);
+  u32 DMARead();
 
-  void Execute();
+  void Execute(TickCount ticks);
 
 private:
   static constexpr u32 PARAM_FIFO_SIZE = 16;
@@ -78,27 +80,24 @@ private:
     Reset = 0x1C,
     GetQ = 0x1D,
     ReadTOC = 0x1E,
-    VideoCD = 0x1F,
+    VideoCD = 0x1F
   };
 
-  bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
-  void SetInterrupt(Interrupt interrupt);
-  void UpdateStatusRegister();
-  void ExecuteCommand(Command command);
-  void ExecuteTestCommand(u8 subcommand);
-
-  DMA* m_dma;
-  InterruptController* m_interrupt_controller;
-  std::unique_ptr<CDImage> m_media;
-
-  enum class State : u32
+  enum class CommandState : u32
   {
-    Idle
+    Idle,
+    WaitForExecute,
+    WaitForIRQClear
   };
 
-  State m_state = State::Idle;
+  struct Loc
+  {
+    u8 minute;
+    u8 second;
+    u8 frame;
+  };
 
-  union
+  union StatusRegister
   {
     u8 bits;
     BitField<u8, u8, 0, 2> index;
@@ -108,9 +107,9 @@ private:
     BitField<u8, bool, 5, 1> RSLRRDY;
     BitField<u8, bool, 6, 1> DRQSTS;
     BitField<u8, bool, 7, 1> BUSYSTS;
-  } m_status = {};
+  };
 
-  union
+  union SecondaryStatusRegister
   {
     u8 bits;
     BitField<u8, bool, 0, 1> error;
@@ -121,7 +120,59 @@ private:
     BitField<u8, bool, 5, 1> reading;
     BitField<u8, bool, 6, 1> seeking;
     BitField<u8, bool, 7, 1> playing_cdda;
-  } m_secondary_status = {};
+  };
+
+  union ModeRegister
+  {
+    u8 bits;
+    BitField<u8, bool, 0, 1> cdda;
+    BitField<u8, bool, 1, 1> auto_pause;
+    BitField<u8, bool, 2, 1> report_audio;
+    BitField<u8, bool, 3, 1> xa_filter;
+    BitField<u8, bool, 4, 1> ignore_bit;
+    BitField<u8, bool, 5, 1> read_raw_sector;
+    BitField<u8, bool, 6, 1> xa_adpcm;
+    BitField<u8, bool, 7, 1> double_speed;
+  };
+
+  union RequestRegister
+  {
+    u8 bits;
+    BitField<u8, bool, 5, 1> SMEN;
+    BitField<u8, bool, 6, 1> BFWR;
+    BitField<u8, bool, 7, 1> BFRD;
+  };
+
+  bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
+  void SetInterrupt(Interrupt interrupt);
+  void UpdateStatusRegister();
+
+  u32 GetTicksForCommand() const;
+  void BeginCommand(Command command); // also update status register
+  void NextCommandStage(bool wait_for_irq, u32 time);
+  void EndCommand(); // also updates status register
+  void ExecuteCommand();
+  void ExecuteTestCommand(u8 subcommand);
+  void BeginReading();
+  void DoSectorRead();
+  void StopReading();
+
+  System* m_system = nullptr;
+  DMA* m_dma = nullptr;
+  InterruptController* m_interrupt_controller = nullptr;
+  std::unique_ptr<CDImage> m_media;
+
+  CommandState m_command_state = CommandState::Idle;
+  Command m_command = Command::Sync;
+  u32 m_command_stage = 0;
+  TickCount m_command_remaining_ticks = 0;
+
+  TickCount m_sector_read_remaining_ticks = 0;
+  bool m_reading = false;
+
+  StatusRegister m_status = {};
+  SecondaryStatusRegister m_secondary_status = {};
+  ModeRegister m_mode = {};
 
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
@@ -129,5 +180,6 @@ private:
   InlineFIFOQueue<u8, PARAM_FIFO_SIZE> m_param_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
-};
 
+  Loc m_setloc = {};
+};

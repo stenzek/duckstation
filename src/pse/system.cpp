@@ -37,7 +37,7 @@ bool System::Initialize()
     return false;
   }
 
-  if (!m_dma->Initialize(m_bus.get(), m_gpu.get()))
+  if (!m_dma->Initialize(m_bus.get(), m_gpu.get(), m_cdrom.get()))
     return false;
 
   if (!m_interrupt_controller->Initialize(m_cpu.get()))
@@ -46,7 +46,7 @@ bool System::Initialize()
   if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_timers.get()))
     return false;
 
-  if (!m_cdrom->Initialize(m_dma.get(), m_interrupt_controller.get()))
+  if (!m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
     return false;
 
   if (!m_pad->Initialize(m_interrupt_controller.get()))
@@ -218,6 +218,7 @@ void System::Synchronize()
 
   m_gpu->Execute(pending_ticks);
   m_timers->AddSystemTicks(pending_ticks);
+  m_cdrom->Execute(pending_ticks);
 }
 
 void System::SetDowncount(TickCount downcount)

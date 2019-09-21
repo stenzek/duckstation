@@ -1,6 +1,7 @@
 #include "dma.h"
 #include "YBaseLib/Log.h"
 #include "bus.h"
+#include "cdrom.h"
 #include "common/state_wrapper.h"
 #include "gpu.h"
 Log_SetChannel(DMA);
@@ -9,10 +10,11 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-bool DMA::Initialize(Bus* bus, GPU* gpu)
+bool DMA::Initialize(Bus* bus, GPU* gpu, CDROM* cdrom)
 {
   m_bus = bus;
   m_gpu = gpu;
+  m_cdrom = cdrom;
   return true;
 }
 
@@ -304,9 +306,11 @@ u32 DMA::DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaini
     case Channel::GPU:
       return m_gpu->DMARead();
 
+    case Channel::CDROM:
+      return m_cdrom->DMARead();
+
     case Channel::MDECin:
     case Channel::MDECout:
-    case Channel::CDROM:
     case Channel::SPU:
     case Channel::PIO:
     default:

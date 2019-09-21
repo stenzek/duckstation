@@ -7,6 +7,7 @@ class StateWrapper;
 
 class Bus;
 class GPU;
+class CDROM;
 
 class DMA
 {
@@ -30,7 +31,7 @@ public:
   DMA();
   ~DMA();
 
-  bool Initialize(Bus* bus, GPU* gpu);
+  bool Initialize(Bus* bus, GPU* gpu, CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -63,6 +64,7 @@ private:
 
   Bus* m_bus = nullptr;
   GPU* m_gpu = nullptr;
+  CDROM* m_cdrom = nullptr;
 
   struct ChannelState
   {
