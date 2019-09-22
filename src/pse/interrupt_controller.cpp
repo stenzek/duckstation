@@ -31,7 +31,7 @@ bool InterruptController::DoState(StateWrapper& sw)
 void InterruptController::InterruptRequest(IRQ irq)
 {
   const u32 bit = (u32(1) << static_cast<u32>(irq));
-  m_interrupt_status_register |= (bit & m_interrupt_mask_register);
+  m_interrupt_status_register |= bit;
   UpdateCPUInterruptRequest();
 }
 
@@ -81,7 +81,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
 void InterruptController::UpdateCPUInterruptRequest()
 {
   // external interrupts set bit 10 only?
-  if (m_interrupt_status_register != 0)
+  if ((m_interrupt_status_register & m_interrupt_mask_register) != 0)
     m_cpu->SetExternalInterrupt(2);
   else
     m_cpu->ClearExternalInterrupt(2);
