@@ -270,6 +270,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_NCLIP(inst);
       break;
 
+    case 0x13:
+      Execute_NCDS(inst);
+      break;
+
     case 0x28:
       Execute_SQR(inst);
       break;
@@ -413,6 +417,13 @@ void Core::PushSZ(s32 value)
   m_regs.dr32[17] = m_regs.dr32[18];         // SZ1 <- SZ2
   m_regs.dr32[18] = m_regs.dr32[19];         // SZ2 <- SZ3
   m_regs.dr32[19] = static_cast<u32>(value); // SZ3 <- value
+}
+
+void Core::PushRGB(u8 r, u8 g, u8 b, u8 c)
+{
+  m_regs.RGB0 = m_regs.RGB1;
+  m_regs.RGB1 = m_regs.RGB2;
+  m_regs.RGB2 = ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(c) << 24);
 }
 
 s32 Core::Divide(s32 dividend, s32 divisor)
@@ -563,6 +574,73 @@ void Core::Execute_AVSZ4(Instruction inst)
                                                      ZeroExtend32(m_regs.SZ2) + ZeroExtend32(m_regs.SZ3));
   SetMAC(0, MAC0);
   SetOTZ(static_cast<s32>(MAC0 / 0x1000));
+
+  m_regs.FLAG.UpdateError();
+}
+
+s64 Core::VecDot(const s16 A[3], const s16 B[3])
+{
+  return s64(s32(A[0]) * s32(B[0])) + s64(s32(A[1]) * s32(B[1])) + s64(s32(A[2]) * s32(B[2]));
+}
+
+s64 Core::VecDot(const s16 A[3], s16 B_x, s16 B_y, s16 B_z)
+{
+  return s64(s32(A[0]) * s32(B_x)) + s64(s32(A[1]) * s32(B_y)) + s64(s32(A[2]) * s32(B_z));
+}
+
+void Core::NCDS(const s16 V[3], bool sf, bool lm)
+{
+  const u8 shift = sf ? 12 : 0;
+
+  // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
+  m_regs.MAC1 = TruncateMAC<1>(VecDot(m_regs.LLM[0], V) >> shift);
+  m_regs.MAC2 = TruncateMAC<2>(VecDot(m_regs.LLM[1], V) >> shift);
+  m_regs.MAC3 = TruncateMAC<3>(VecDot(m_regs.LLM[2], V) >> shift);
+  SetIR(0, m_regs.MAC1, lm);
+  SetIR(1, m_regs.MAC2, lm);
+  SetIR(2, m_regs.MAC3, lm);
+
+  // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
+  // TODO: First multiply should check overflow
+  m_regs.MAC1 = TruncateMAC<1>(
+    ((ZeroExtend64(m_regs.RBK) * 0x1000) + VecDot(m_regs.LCM[0], m_regs.IR1, m_regs.IR2, m_regs.IR3)) >> shift);
+  m_regs.MAC2 = TruncateMAC<2>(
+    ((ZeroExtend64(m_regs.GBK) * 0x1000) + VecDot(m_regs.LCM[1], m_regs.IR1, m_regs.IR2, m_regs.IR3)) >> shift);
+  m_regs.MAC3 = TruncateMAC<3>(
+    ((ZeroExtend64(m_regs.BBK) * 0x1000) + VecDot(m_regs.LCM[2], m_regs.IR1, m_regs.IR2, m_regs.IR3)) >> shift);
+  SetIR(1, m_regs.MAC1, lm);
+  SetIR(2, m_regs.MAC2, lm);
+  SetIR(3, m_regs.MAC3, lm);
+
+  // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for NCDx/NCCx
+  m_regs.MAC1 = TruncateMAC<1>((ZeroExtend64(m_regs.RGBC[0]) * static_cast<u16>(m_regs.IR1)) << 4);
+  m_regs.MAC2 = TruncateMAC<1>((ZeroExtend64(m_regs.RGBC[1]) * static_cast<u16>(m_regs.IR2)) << 4);
+  m_regs.MAC3 = TruncateMAC<1>((ZeroExtend64(m_regs.RGBC[2]) * static_cast<u16>(m_regs.IR3)) << 4);
+  SetIR(1, m_regs.MAC1, false);
+  SetIR(2, m_regs.MAC2, false);
+  SetIR(3, m_regs.MAC3, false);
+
+  // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0                   ;<--- for NCDx only
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
+  m_regs.MAC1 = TruncateMAC<1>(m_regs.MAC1 + ((s32(m_regs.RFC) - m_regs.MAC1) * m_regs.IR0));
+  m_regs.MAC2 = TruncateMAC<2>(m_regs.MAC2 + ((s32(m_regs.GFC) - m_regs.MAC2) * m_regs.IR0));
+  m_regs.MAC3 = TruncateMAC<3>(m_regs.MAC3 + ((s32(m_regs.BFC) - m_regs.MAC3) * m_regs.IR0));
+
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
+  m_regs.MAC1 >>= shift;
+  m_regs.MAC2 >>= shift;
+  m_regs.MAC3 >>= shift;
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
+          m_regs.RGBC[3]);
+}
+
+void Core::Execute_NCDS(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  NCDS(m_regs.V0, inst.sf, inst.lm);
 
   m_regs.FLAG.UpdateError();
 }
