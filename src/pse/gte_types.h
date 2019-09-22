@@ -3,11 +3,56 @@
 #include "types.h"
 
 namespace GTE {
-static constexpr u32 NUM_REGS = 64;
+static constexpr u32 NUM_DATA_REGS = 32;
+static constexpr u32 NUM_CONTROL_REGS = 32;
+static constexpr u32 NUM_REGS = NUM_DATA_REGS + NUM_CONTROL_REGS;
+
+union FLAGS
+{
+  u32 bits;
+
+  BitField<u32, bool, 31, 1> error;
+  BitField<u32, bool, 30, 1> mac1_overflow;
+  BitField<u32, bool, 29, 1> mac2_overflow;
+  BitField<u32, bool, 28, 1> mac3_overflow;
+  BitField<u32, bool, 27, 1> mac1_underflow;
+  BitField<u32, bool, 26, 1> mac2_underflow;
+  BitField<u32, bool, 25, 1> mac3_underflow;
+  BitField<u32, bool, 24, 1> ir1_saturated;
+  BitField<u32, bool, 23, 1> ir2_saturated;
+  BitField<u32, bool, 22, 1> ir3_saturated;
+  BitField<u32, bool, 21, 1> color_r_saturated;
+  BitField<u32, bool, 20, 1> color_g_saturated;
+  BitField<u32, bool, 19, 1> color_b_saturated;
+  BitField<u32, bool, 18, 1> sz1_otz_saturated;
+  BitField<u32, bool, 17, 1> divide_overflow;
+  BitField<u32, bool, 16, 1> mac0_overflow;
+  BitField<u32, bool, 15, 1> mac0_underflow;
+  BitField<u32, bool, 14, 1> sx2_saturated;
+  BitField<u32, bool, 13, 1> sy2_saturated;
+  BitField<u32, bool, 12, 1> ir0_saturated;
+
+  static constexpr u32 WRITE_MASK = UINT32_C(0xFFFFF000);
+
+  void SetMACOverflow(u32 index) { bits |= (index == 0) ? (UINT32_C(1) << 16) : (UINT32_C(1) << (31 - index)); }
+
+  void SetMACUnderflow(u32 index) { bits |= (index == 0) ? (UINT32_C(1) << 15) : (UINT32_C(1) << (27 - index)); }
+
+  void SetIRSaturated(u32 index) { bits |= (index == 0) ? (UINT32_C(1) << 12) : (UINT32_C(1) << (25 - index)); }
+
+  void Clear() { bits = 0; }
+
+  // Bits 30..23, 18..13 OR'ed
+  void UpdateError() { error = (bits & UINT32_C(0x7F87E000)) != UINT32_C(0); }
+};
 
 union Regs
 {
-  u32 r32[NUM_REGS];
+  struct
+  {
+    u32 dr32[NUM_DATA_REGS];
+    u32 cr32[NUM_CONTROL_REGS];
+  };
 
 #pragma pack(push, 1)
   struct
@@ -29,14 +74,10 @@ union Regs
     u16 pad7;     // 10
     s16 IR3;      // 11
     u16 pad8;     // 11
-    s16 SXY0;     // 12
-    u16 pad9;     // 12
-    s16 SXY1;     // 13
-    u16 pad10;    // 13
-    s16 SXY2;     // 14
-    u16 pad11;    // 14
-    s16 SXYP;     // 15
-    u16 pad12;    // 15
+    s16 SXY0[2];  // 12
+    s16 SXY1[2];  // 13
+    s16 SXY2[2];  // 14
+    s16 SXYP[2];  // 15
     u16 SZ0;      // 16
     u16 pad13;    // 16
     u16 SZ1;      // 17
@@ -52,12 +93,12 @@ union Regs
     s32 MAC0;     // 24
     s32 MAC1;     // 25
     s32 MAC2;     // 26
-    s32 MAC4;     // 27
-    u16 IRGB;     // 28
-    u16 ORGB;     // 29
+    s32 MAC3;     // 27
+    u32 IRGB;     // 28
+    u32 ORGB;     // 29
     s32 LZCS;     // 30
-    s32 LZCR;     // 31
-    u16 RT[3][3]; // 32-36
+    u32 LZCR;     // 31
+    s16 RT[3][3]; // 32-36
     u16 pad17;    // 36
     s32 TR[3];    // 37-39
     u16 L[3][3];  // 40-44
@@ -70,18 +111,18 @@ union Regs
     u32 RFC;      // 53
     u32 GFC;      // 54
     u32 BFC;      // 55
-    u32 OFX;      // 56
-    u32 OFY;      // 57
+    s32 OFX;      // 56
+    s32 OFY;      // 57
     u16 H;        // 58
     u16 pad20;    // 58
-    u16 DQA;      // 59
+    s16 DQA;      // 59
     u16 pad21;    // 59
-    u32 DQB;      // 60
+    s32 DQB;      // 60
     u16 ZSF3;     // 61
     u16 pad22;    // 61
     u16 ZSF4;     // 62
     u16 pad23;    // 62
-    u32 FLAG;     // 63
+    FLAGS FLAG;   // 63
   };
 #pragma pack(pop)
 };
