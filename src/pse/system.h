@@ -41,6 +41,7 @@ public:
   void RunFrame();
 
   bool LoadEXE(const char* filename);
+  bool SetExpansionROM(const char* filename);
 
   void SetDowncount(TickCount downcount);
   void Synchronize();

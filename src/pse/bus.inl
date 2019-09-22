@@ -80,6 +80,15 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
   {
     return DoRAMAccess<type, size>(bus_address, value);
   }
+  else if (bus_address < EXP1_BASE)
+  {
+    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+  }
+  else if (bus_address < (EXP1_BASE + EXP1_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadEXP1(size, bus_address & EXP1_MASK, value) :
+                                              DoWriteEXP1(size, bus_address & EXP1_MASK, value);
+  }
   else if (bus_address < PAD_BASE)
   {
     return DoInvalidAccess(type, size, cpu_address, bus_address, value);
@@ -88,6 +97,11 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
   {
     return (type == MemoryAccessType::Read) ? DoReadPad(size, bus_address & PAD_MASK, value) :
                                               DoWritePad(size, bus_address & PAD_MASK, value);
+  }
+  else if (bus_address < (SIO_BASE + SIO_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadSIO(size, bus_address & SIO_MASK, value) :
+                                              DoWriteSIO(size, bus_address & SIO_MASK, value);
   }
   else if (bus_address < INTERRUPT_CONTROLLER_BASE)
   {
@@ -150,8 +164,8 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
   }
   else if (bus_address < (EXP2_BASE + EXP2_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? ReadExpansionRegion2(size, bus_address & EXP2_MASK, value) :
-                                              WriteExpansionRegion2(size, bus_address & EXP2_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadEXP2(size, bus_address & EXP2_MASK, value) :
+                                              DoWriteEXP2(size, bus_address & EXP2_MASK, value);
   }
   else if (bus_address < BIOS_BASE)
   {

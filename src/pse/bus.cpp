@@ -112,6 +112,11 @@ void Bus::PatchBIOS(u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
                  old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
 }
 
+void Bus::SetExpansionROM(std::vector<u8> data)
+{
+  m_exp1_rom = std::move(data);
+}
+
 bool Bus::LoadBIOS()
 {
   std::FILE* fp = std::fopen("SCPH1001.BIN", "rb");
@@ -175,7 +180,49 @@ bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, Physical
   return true;
 }
 
-bool Bus::ReadExpansionRegion2(MemoryAccessSize size, u32 offset, u32& value)
+bool Bus::DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value)
+{
+  if (m_exp1_rom.empty())
+    return DoInvalidAccess(MemoryAccessType::Read, size, EXP1_BASE | offset, EXP1_BASE | offset, value);
+
+  if (offset == 0x20018)
+  {
+    // Bit 0 - Action Replay On/Off
+    return UINT32_C(1);
+  }
+
+  const u32 transfer_size = u32(1) << static_cast<u32>(size);
+  if ((offset + transfer_size) > m_exp1_rom.size())
+  {
+    value = UINT32_C(0);
+    return true;
+  }
+
+  if (size == MemoryAccessSize::Byte)
+  {
+    value = ZeroExtend32(m_exp1_rom[offset]);
+  }
+  else if (size == MemoryAccessSize::HalfWord)
+  {
+    u16 halfword;
+    std::memcpy(&halfword, &m_exp1_rom[offset], sizeof(halfword));
+    value = ZeroExtend32(halfword);
+  }
+  else
+  {
+    std::memcpy(&value, &m_exp1_rom[offset], sizeof(value));
+  }
+
+  // Log_DevPrintf("EXP1 read: 0x%08X -> 0x%08X", EXP1_BASE | offset, value);
+  return true;
+}
+
+bool Bus::DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value)
+{
+  return DoInvalidAccess(MemoryAccessType::Write, size, EXP1_BASE | offset, EXP1_BASE | offset, value);
+}
+
+bool Bus::DoReadEXP2(MemoryAccessSize size, u32 offset, u32& value)
 {
   offset &= EXP2_MASK;
 
@@ -189,7 +236,7 @@ bool Bus::ReadExpansionRegion2(MemoryAccessSize size, u32 offset, u32& value)
   return DoInvalidAccess(MemoryAccessType::Read, size, EXP2_BASE | offset, EXP2_BASE | offset, value);
 }
 
-bool Bus::WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value)
+bool Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
 {
   offset &= EXP2_MASK;
 
@@ -230,6 +277,22 @@ bool Bus::DoReadPad(MemoryAccessSize size, u32 offset, u32& value)
 bool Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
 {
   m_pad->WriteRegister(offset, value);
+  return true;
+}
+
+bool Bus::DoReadSIO(MemoryAccessSize size, u32 offset, u32& value)
+{
+  Log_ErrorPrintf("SIO Read 0x%08X", offset);
+  value = 0;
+  if (offset == 0x04)
+    value = 0x5;
+
+  return true;
+}
+
+bool Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
+{
+  Log_ErrorPrintf("SIO Write 0x%08X <- 0x%08X", offset, value);
   return true;
 }
 

@@ -42,6 +42,7 @@ static int Run(int argc, char* argv[])
 
   // parameters
   const char* filename = nullptr;
+  const char* exp1_filename = nullptr;
   TinyString state_filename;
   for (int i = 1; i < argc; i++)
   {
@@ -50,6 +51,8 @@ static int Run(int argc, char* argv[])
 
     if (CHECK_ARG_PARAM("-state"))
       state_filename = SDLInterface::GetSaveStateFilename(std::strtoul(argv[++i], nullptr, 10));
+    else if (CHECK_ARG_PARAM("-exp1"))
+      exp1_filename = argv[++i];
     else
       filename = argv[i];
 
@@ -58,7 +61,7 @@ static int Run(int argc, char* argv[])
   }
 
   // create system
-  if (!host_interface->InitializeSystem(filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray()))
+  if (!host_interface->InitializeSystem(filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray()))
   {
     host_interface.reset();
     SDL_Quit();

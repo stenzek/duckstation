@@ -1,5 +1,5 @@
 #include "system.h"
-#include "YBaseLib/ByteStream.h"
+#include "YBaseLib/Log.h"
 #include "bus.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"
@@ -10,6 +10,8 @@
 #include "pad.h"
 #include "pad_device.h"
 #include "timers.h"
+#include <cstdio>
+Log_SetChannel(System);
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
@@ -206,6 +208,34 @@ bool System::LoadEXE(const char* filename)
     m_bus->PatchBIOS(0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
   }
 
+  return true;
+}
+
+bool System::SetExpansionROM(const char* filename)
+{
+  std::FILE* fp = std::fopen(filename, "rb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Failed to open '%s'", filename);
+    return false;
+  }
+
+  std::fseek(fp, 0, SEEK_END);
+  const u32 size = static_cast<u32>(std::ftell(fp));
+  std::fseek(fp, 0, SEEK_SET);
+
+  std::vector<u8> data(size);
+  if (std::fread(data.data(), size, 1, fp) != 1)
+  {
+    Log_ErrorPrintf("Failed to read ROM data from '%s'", filename);
+    std::fclose(fp);
+    return false;
+  }
+
+  std::fclose(fp);
+
+  Log_InfoPrintf("Loaded expansion ROM from '%s': %u bytes", filename, size);
+  m_bus->SetExpansionROM(std::move(data));
   return true;
 }
 

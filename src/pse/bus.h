@@ -40,11 +40,18 @@ public:
   bool DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32& value);
 
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
+  void SetExpansionROM(std::vector<u8> data);
 
 private:
+  static constexpr u32 EXP1_BASE = 0x1F000000;
+  static constexpr u32 EXP1_SIZE = 0x800000;
+  static constexpr u32 EXP1_MASK = EXP1_SIZE - 1;
   static constexpr u32 PAD_BASE = 0x1F801040;
   static constexpr u32 PAD_SIZE = 0x10;
   static constexpr u32 PAD_MASK = PAD_SIZE - 1;
+  static constexpr u32 SIO_BASE = 0x1F801050;
+  static constexpr u32 SIO_SIZE = 0x10;
+  static constexpr u32 SIO_MASK = SIO_SIZE - 1;
   static constexpr u32 INTERRUPT_CONTROLLER_BASE = 0x1F801070;
   static constexpr u32 INTERRUPT_CONTROLLER_SIZE = 0x08;
   static constexpr u32 INTERRUPT_CONTROLLER_MASK = INTERRUPT_CONTROLLER_SIZE - 1;
@@ -80,11 +87,17 @@ private:
   bool DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress cpu_address,
                        PhysicalMemoryAddress bus_address, u32& value);
 
-  bool ReadExpansionRegion2(MemoryAccessSize size, u32 offset, u32& value);
-  bool WriteExpansionRegion2(MemoryAccessSize size, u32 offset, u32 value);
+  bool DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value);
+
+  bool DoReadEXP2(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value);
 
   bool DoReadPad(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWritePad(MemoryAccessSize size, u32 offset, u32 value);
+
+  bool DoReadSIO(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value);
 
   bool DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value);
@@ -114,6 +127,7 @@ private:
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM
   std::array<u8, 524288> m_bios{}; // 512K BIOS ROM
+  std::vector<u8> m_exp1_rom;
 
   String m_tty_line_buffer;
 };
