@@ -7,6 +7,7 @@
 
 class StateWrapper;
 
+class System;
 class InterruptController;
 class PadDevice;
 
@@ -16,7 +17,7 @@ public:
   Pad();
   ~Pad();
 
-  bool Initialize(InterruptController* interrupt_controller);
+  bool Initialize(System* system, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -26,8 +27,17 @@ public:
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
 
+  void Execute(TickCount ticks);
+
 private:
   static constexpr u32 NUM_SLOTS = 2;
+  static constexpr u32 TRANSFER_TICKS = 500;
+
+  enum class State : u32
+  {
+    Idle,
+    Transmitting
+  };
 
   union JOY_CTRL
   {
@@ -52,7 +62,6 @@ private:
     BitField<u32, bool, 0, 1> TXRDY;
     BitField<u32, bool, 1, 1> RXFIFONEMPTY;
     BitField<u32, bool, 2, 1> TXDONE;
-    BitField<u32, bool, 3, 1> ACKINPUTLEVEL;
     BitField<u32, bool, 7, 1> ACKINPUT;
     BitField<u32, bool, 9, 1> INTR;
     BitField<u32, u32, 11, 21> TMR;
@@ -69,11 +78,23 @@ private:
     BitField<u16, u8, 8, 1> clk_polarity;
   };
 
+  bool IsTransmitting() const { return m_state == State::Transmitting; }
+  bool CanTransfer() const
+  {
+    return !m_TX_FIFO.IsEmpty() && !m_RX_FIFO.IsFull() && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN;
+  }
+
   void SoftReset();
   void UpdateJoyStat();
+  void BeginTransfer();
   void DoTransfer();
+  void EndTransfer();
 
+  System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
+
+  State m_state = State::Idle;
+  TickCount m_ticks_remaining = 0;
 
   JOY_CTRL m_JOY_CTRL = {};
   JOY_STAT m_JOY_STAT = {};

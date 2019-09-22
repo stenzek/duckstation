@@ -25,7 +25,7 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
       Log_DebugPrintf("Access");
 
       // response is hi-z
-      *data_out = data_in;
+      *data_out = 0xFF;
       ack = true;
     }
     break;

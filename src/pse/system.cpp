@@ -49,7 +49,7 @@ bool System::Initialize()
   if (!m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
     return false;
 
-  if (!m_pad->Initialize(m_interrupt_controller.get()))
+  if (!m_pad->Initialize(this, m_interrupt_controller.get()))
     return false;
 
   if (!m_timers->Initialize(this, m_interrupt_controller.get()))
@@ -219,6 +219,7 @@ void System::Synchronize()
   m_gpu->Execute(pending_ticks);
   m_timers->AddSystemTicks(pending_ticks);
   m_cdrom->Execute(pending_ticks);
+  m_pad->Execute(pending_ticks);
 }
 
 void System::SetDowncount(TickCount downcount)
