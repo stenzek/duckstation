@@ -118,9 +118,9 @@ union Regs
     s16 DQA;      // 59
     u16 pad21;    // 59
     s32 DQB;      // 60
-    u16 ZSF3;     // 61
+    s16 ZSF3;     // 61
     u16 pad22;    // 61
-    u16 ZSF4;     // 62
+    s16 ZSF4;     // 62
     u16 pad23;    // 62
     FLAGS FLAG;   // 63
   };

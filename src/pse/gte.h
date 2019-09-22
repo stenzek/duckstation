@@ -29,6 +29,7 @@ private:
   void SetMAC(u32 index, s64 value);
   void SetIR(u32 index, s32 value, bool lm);
   void SetIR0(s32 value);
+  void SetOTZ(s32 value);
   void PushSXY(s32 x, s32 y);
   void PushSZ(s32 value);
   s32 Divide(s32 dividend, s32 divisor);
@@ -40,6 +41,8 @@ private:
   void Execute_RTPT(Instruction inst);
   void Execute_NCLIP(Instruction inst);
   void Execute_SQR(Instruction inst);
+  void Execute_AVSZ3(Instruction inst);
+  void Execute_AVSZ4(Instruction inst);
 
   Regs m_regs = {};
 };

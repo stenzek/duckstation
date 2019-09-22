@@ -145,9 +145,6 @@ void Core::WriteDataRegister(u32 index, u32 value)
     {
       // IRGB register, convert 555 to 16-bit
       m_regs.IRGB = value & UINT32_C(0x7FFF);
-      // m_regs.IR1 = static_cast<s16>(Truncate16((value & UINT32_C(0x1F)) * UINT32_C(0x80)));
-      // m_regs.IR2 = static_cast<s16>(Truncate16(((value >> 5) & UINT32_C(0x1F)) * UINT32_C(0x80)));
-      // m_regs.IR3 = static_cast<s16>(Truncate16(((value >> 10) & UINT32_C(0x1F)) * UINT32_C(0x80)));
       m_regs.dr32[9] = SignExtend32(static_cast<u16>(Truncate16((value & UINT32_C(0x1F)) * UINT32_C(0x80))));
       m_regs.dr32[10] = SignExtend32(static_cast<u16>(Truncate16(((value >> 5) & UINT32_C(0x1F)) * UINT32_C(0x80))));
       m_regs.dr32[11] = SignExtend32(static_cast<u16>(Truncate16(((value >> 10) & UINT32_C(0x1F)) * UINT32_C(0x80))));
@@ -277,6 +274,14 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_SQR(inst);
       break;
 
+    case 0x2D:
+      Execute_AVSZ3(inst);
+      break;
+
+    case 0x2E:
+      Execute_AVSZ4(inst);
+      break;
+
     case 0x30:
       Execute_RTPT(inst);
       break;
@@ -342,7 +347,23 @@ void Core::SetIR0(s32 value)
   }
 
   // store the sign extension in the padding bits
-  m_regs.dr32[8] = value;
+  m_regs.dr32[8] = static_cast<u32>(value);
+}
+
+void Core::SetOTZ(s32 value)
+{
+  if (value < 0)
+  {
+    m_regs.FLAG.sz1_otz_saturated = true;
+    value = 0;
+  }
+  else if (value > 0xFFFF)
+  {
+    m_regs.FLAG.sz1_otz_saturated = true;
+    value = 0xFFFF;
+  }
+
+  m_regs.dr32[7] = static_cast<u32>(value);
 }
 
 void Core::PushSXY(s32 x, s32 y)
@@ -499,10 +520,6 @@ void Core::Execute_NCLIP(Instruction inst)
                     s64(m_regs.SXY2[0]) * s64(m_regs.SXY0[1]) - s64(m_regs.SXY0[0]) * s64(m_regs.SXY2[1]) -
                     s64(m_regs.SXY1[0]) * s64(m_regs.SXY0[1]) - s64(m_regs.SXY2[0]) * s64(m_regs.SXY1[1]);
 
-  const s64 MAC0 = s64(m_regs.SXY0[0]) * m_regs.SXY1[1] + m_regs.SXY1[0] * m_regs.SXY2[1] +
-                   m_regs.SXY2[0] * m_regs.SXY0[1] - m_regs.SXY0[0] * m_regs.SXY2[1] - m_regs.SXY1[0] * m_regs.SXY0[1] -
-                   m_regs.SXY2[0] * m_regs.SXY1[1];
-
   SetMAC(0, MAC0x);
 
   m_regs.FLAG.UpdateError();
@@ -521,6 +538,31 @@ void Core::Execute_SQR(Instruction inst)
   SetIR(1, m_regs.MAC1, lm);
   SetIR(2, m_regs.MAC2, lm);
   SetIR(3, m_regs.MAC3, lm);
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_AVSZ3(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const s64 MAC0 = static_cast<s64>(m_regs.ZSF3) *
+                   static_cast<s32>(ZeroExtend32(m_regs.SZ1) + ZeroExtend32(m_regs.SZ2) + ZeroExtend32(m_regs.SZ3));
+  SetMAC(0, MAC0);
+  SetOTZ(static_cast<s32>(MAC0 / 0x1000));
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_AVSZ4(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const s64 MAC0 =
+    static_cast<s64>(m_regs.ZSF4) * static_cast<s32>(ZeroExtend32(m_regs.SZ0) + ZeroExtend32(m_regs.SZ1) +
+                                                     ZeroExtend32(m_regs.SZ2) + ZeroExtend32(m_regs.SZ3));
+  SetMAC(0, MAC0);
+  SetOTZ(static_cast<s32>(MAC0 / 0x1000));
 
   m_regs.FLAG.UpdateError();
 }
