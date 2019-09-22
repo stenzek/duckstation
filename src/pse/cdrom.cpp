@@ -505,7 +505,7 @@ void CDROM::ExecuteCommand()
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::INT3);
         StopReading();
-        NextCommandStage(true, 100);
+        NextCommandStage(true, 1000);
       }
       else
       {
@@ -525,7 +525,7 @@ void CDROM::ExecuteCommand()
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::INT3);
         StopReading();
-        NextCommandStage(true, 100);
+        NextCommandStage(true, 1000);
       }
       else
       {
@@ -586,7 +586,7 @@ void CDROM::BeginReading()
   m_secondary_status.reading = true;
 
   m_reading = true;
-  m_sector_read_remaining_ticks = 100;
+  m_sector_read_remaining_ticks = 4000;
   m_system->SetDowncount(m_sector_read_remaining_ticks);
   UpdateStatusRegister();
 }
@@ -596,9 +596,10 @@ void CDROM::DoSectorRead()
   if (HasPendingInterrupt())
   {
     // can't read with a pending interrupt?
-    m_sector_read_remaining_ticks += 10;
-    m_system->SetDowncount(m_sector_read_remaining_ticks);
-    return;
+    Log_WarningPrintf("Missed sector read...");
+    //m_sector_read_remaining_ticks += 10;
+    //m_system->SetDowncount(m_sector_read_remaining_ticks);
+    //return;
   }
 
   Log_DebugPrintf("Reading sector %llu", m_media->GetCurrentLBA());
@@ -612,7 +613,7 @@ void CDROM::DoSectorRead()
   SetInterrupt(Interrupt::INT1);
   UpdateStatusRegister();
 
-  m_sector_read_remaining_ticks += 100;
+  m_sector_read_remaining_ticks += 4000;
   m_system->SetDowncount(m_sector_read_remaining_ticks);
 }
 
