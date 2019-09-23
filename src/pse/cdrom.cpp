@@ -304,6 +304,11 @@ u32 CDROM::GetTicksForCommand() const
   return 100;
 }
 
+u32 CDROM::GetTicksForRead() const
+{
+  return m_mode.double_speed ? (MASTER_CLOCK / 150) : (MASTER_CLOCK / 75);
+}
+
 void CDROM::Execute(TickCount ticks)
 {
   switch (m_command_state)
@@ -317,6 +322,8 @@ void CDROM::Execute(TickCount ticks)
       m_command_remaining_ticks -= ticks;
       if (m_command_remaining_ticks <= 0)
         ExecuteCommand();
+      else
+        m_system->SetDowncount(m_command_remaining_ticks);
     }
     break;
 
@@ -330,6 +337,8 @@ void CDROM::Execute(TickCount ticks)
     m_sector_read_remaining_ticks -= ticks;
     if (m_sector_read_remaining_ticks <= 0)
       DoSectorRead();
+    else
+      m_system->SetDowncount(m_sector_read_remaining_ticks);
   }
 }
 
@@ -433,6 +442,7 @@ void CDROM::ExecuteCommand()
       m_setloc.minute = BCDToDecimal(m_param_fifo.Peek(0));
       m_setloc.second = BCDToDecimal(m_param_fifo.Peek(1));
       m_setloc.frame = BCDToDecimal(m_param_fifo.Peek(2));
+      m_location_dirty = true;
       Log_DebugPrintf("CDROM setloc command (%u, %u, %u)", ZeroExtend32(m_setloc.minute), ZeroExtend32(m_setloc.second),
                       ZeroExtend32(m_setloc.frame));
       m_response_fifo.Push(m_secondary_status.bits);
@@ -449,6 +459,7 @@ void CDROM::ExecuteCommand()
 
       if (m_command_stage == 0)
       {
+        Assert(m_location_dirty);
         StopReading();
         if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
         {
@@ -456,6 +467,7 @@ void CDROM::ExecuteCommand()
           return;
         }
 
+        m_location_dirty = false;
         m_secondary_status.motor_on = true;
         m_secondary_status.seeking = true;
         m_response_fifo.Push(m_secondary_status.bits);
@@ -490,6 +502,17 @@ void CDROM::ExecuteCommand()
     {
       Log_DebugPrintf("CDROM read command");
       StopReading();
+
+      // TODO: Seek timing and clean up...
+      if (m_location_dirty)
+      {
+        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
+        {
+          Panic("Seek error");
+        }
+        m_location_dirty = false;
+      }
+
       EndCommand();
       BeginReading();
       m_response_fifo.Push(m_secondary_status.bits);
@@ -535,6 +558,16 @@ void CDROM::ExecuteCommand()
       }
 
       return;
+    }
+    break;
+
+    case Command::Demute:
+    {
+      Log_DebugPrintf("CDROM demute command");
+      m_muted = false;
+      m_response_fifo.Push(m_secondary_status.bits);
+      SetInterrupt(Interrupt::INT3);
+      EndCommand();
     }
     break;
 
@@ -586,7 +619,7 @@ void CDROM::BeginReading()
   m_secondary_status.reading = true;
 
   m_reading = true;
-  m_sector_read_remaining_ticks = 4000;
+  m_sector_read_remaining_ticks = GetTicksForRead();
   m_system->SetDowncount(m_sector_read_remaining_ticks);
   UpdateStatusRegister();
 }
@@ -597,9 +630,9 @@ void CDROM::DoSectorRead()
   {
     // can't read with a pending interrupt?
     Log_WarningPrintf("Missed sector read...");
-    //m_sector_read_remaining_ticks += 10;
-    //m_system->SetDowncount(m_sector_read_remaining_ticks);
-    //return;
+    // m_sector_read_remaining_ticks += 10;
+    // m_system->SetDowncount(m_sector_read_remaining_ticks);
+    // return;
   }
 
   Log_DebugPrintf("Reading sector %llu", m_media->GetCurrentLBA());
@@ -608,12 +641,13 @@ void CDROM::DoSectorRead()
   u8 buffer[CDImage::RAW_SECTOR_SIZE];
   m_media->Read(m_mode.read_raw_sector ? CDImage::ReadMode::RawNoSync : CDImage::ReadMode::DataOnly, 1, buffer);
   m_data_fifo.Clear();
-  m_data_fifo.PushRange(buffer, m_mode.read_raw_sector ? CDImage::RAW_SECTOR_SIZE : CDImage::DATA_SECTOR_SIZE);
+  m_data_fifo.PushRange(buffer, m_mode.read_raw_sector ? CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE :
+                                                         CDImage::DATA_SECTOR_SIZE);
   m_response_fifo.Push(m_secondary_status.bits);
   SetInterrupt(Interrupt::INT1);
   UpdateStatusRegister();
 
-  m_sector_read_remaining_ticks += 4000;
+  m_sector_read_remaining_ticks += GetTicksForRead();
   m_system->SetDowncount(m_sector_read_remaining_ticks);
 }
 

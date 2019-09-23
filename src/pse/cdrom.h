@@ -148,6 +148,7 @@ private:
   void UpdateStatusRegister();
 
   u32 GetTicksForCommand() const;
+  u32 GetTicksForRead() const;
   void BeginCommand(Command command); // also update status register
   void NextCommandStage(bool wait_for_irq, u32 time);
   void EndCommand(); // also updates status register
@@ -169,6 +170,7 @@ private:
 
   TickCount m_sector_read_remaining_ticks = 0;
   bool m_reading = false;
+  bool m_muted = false;
 
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
@@ -182,4 +184,5 @@ private:
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
 
   Loc m_setloc = {};
+  bool m_location_dirty = false;
 };
