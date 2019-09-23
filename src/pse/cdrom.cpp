@@ -21,6 +21,14 @@ bool CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_
 void CDROM::Reset()
 {
   m_command_state = CommandState::Idle;
+  m_command = Command::Sync;
+  m_command_stage = 0;
+  m_command_remaining_ticks = 0;
+  m_sector_read_remaining_ticks = 0;
+  m_reading = false;
+  m_muted = false;
+  m_setloc = {};
+  m_setloc_dirty = false;
   m_status.bits = 0;
   m_secondary_status.bits = 0;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
@@ -33,6 +41,16 @@ void CDROM::Reset()
 
 bool CDROM::DoState(StateWrapper& sw)
 {
+  sw.Do(&m_command);
+  sw.Do(&m_command_stage);
+  sw.Do(&m_command_remaining_ticks);
+  sw.Do(&m_sector_read_remaining_ticks);
+  sw.Do(&m_reading);
+  sw.Do(&m_muted);
+  sw.Do(&m_setloc.minute);
+  sw.Do(&m_setloc.second);
+  sw.Do(&m_setloc.frame);
+  sw.Do(&m_setloc_dirty);
   sw.Do(&m_command_state);
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
@@ -41,6 +59,15 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_param_fifo);
   sw.Do(&m_response_fifo);
   sw.Do(&m_data_fifo);
+
+  if (sw.IsReading())
+  {
+    if (m_command_state == CommandState::WaitForExecute)
+      m_system->SetDowncount(m_command_remaining_ticks);
+    if (m_reading)
+      m_system->SetDowncount(m_sector_read_remaining_ticks);
+  }
+
   return !sw.HasError();
 }
 
@@ -214,6 +241,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       {
         case 0:
         {
+          // TODO: sector buffer is not the data fifo
           Log_DebugPrintf("Request register <- 0x%02X", value);
           const RequestRegister rr{value};
           // if (!rr.BFRD)
@@ -296,12 +324,25 @@ void CDROM::UpdateStatusRegister()
   m_status.PRMWRDY = !m_param_fifo.IsFull();
   m_status.RSLRRDY = !m_response_fifo.IsEmpty();
   m_status.DRQSTS = !m_data_fifo.IsEmpty();
-  m_status.BUSYSTS = m_command_state != CommandState::Idle;
+  m_status.BUSYSTS = m_command_state == CommandState::WaitForExecute;
 }
 
 u32 CDROM::GetTicksForCommand() const
 {
-  return 100;
+  switch (m_command)
+  {
+    case Command::ReadN:
+    {
+      // more if seeking..
+      return 50000;
+    }
+
+    case Command::Pause:
+      return 50000;
+
+    default:
+      return 50000;
+  }
 }
 
 u32 CDROM::GetTicksForRead() const
@@ -361,6 +402,7 @@ void CDROM::NextCommandStage(bool wait_for_irq, u32 time)
   m_command_state = CommandState::WaitForIRQClear;
   m_command_remaining_ticks = time;
   m_command_stage++;
+  UpdateStatusRegister();
   if (wait_for_irq)
     return;
 
@@ -442,7 +484,7 @@ void CDROM::ExecuteCommand()
       m_setloc.minute = BCDToDecimal(m_param_fifo.Peek(0));
       m_setloc.second = BCDToDecimal(m_param_fifo.Peek(1));
       m_setloc.frame = BCDToDecimal(m_param_fifo.Peek(2));
-      m_location_dirty = true;
+      m_setloc_dirty = true;
       Log_DebugPrintf("CDROM setloc command (%u, %u, %u)", ZeroExtend32(m_setloc.minute), ZeroExtend32(m_setloc.second),
                       ZeroExtend32(m_setloc.frame));
       m_response_fifo.Push(m_secondary_status.bits);
@@ -459,7 +501,7 @@ void CDROM::ExecuteCommand()
 
       if (m_command_stage == 0)
       {
-        Assert(m_location_dirty);
+        Assert(m_setloc_dirty);
         StopReading();
         if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
         {
@@ -467,7 +509,7 @@ void CDROM::ExecuteCommand()
           return;
         }
 
-        m_location_dirty = false;
+        m_setloc_dirty = false;
         m_secondary_status.motor_on = true;
         m_secondary_status.seeking = true;
         m_response_fifo.Push(m_secondary_status.bits);
@@ -504,13 +546,13 @@ void CDROM::ExecuteCommand()
       StopReading();
 
       // TODO: Seek timing and clean up...
-      if (m_location_dirty)
+      if (m_setloc_dirty)
       {
         if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
         {
           Panic("Seek error");
         }
-        m_location_dirty = false;
+        m_setloc_dirty = false;
       }
 
       EndCommand();
@@ -524,11 +566,12 @@ void CDROM::ExecuteCommand()
     {
       if (m_command_stage == 0)
       {
+        const bool was_reading = m_reading;
         Log_DebugPrintf("CDROM pause command");
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::INT3);
         StopReading();
-        NextCommandStage(true, 1000);
+        NextCommandStage(true, was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 1000);
       }
       else
       {

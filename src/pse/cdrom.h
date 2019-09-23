@@ -172,6 +172,9 @@ private:
   bool m_reading = false;
   bool m_muted = false;
 
+  Loc m_setloc = {};
+  bool m_setloc_dirty = false;
+
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
   ModeRegister m_mode = {};
@@ -182,7 +185,4 @@ private:
   InlineFIFOQueue<u8, PARAM_FIFO_SIZE> m_param_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
-
-  Loc m_setloc = {};
-  bool m_location_dirty = false;
 };
