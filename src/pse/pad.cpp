@@ -152,6 +152,8 @@ void Pad::Execute(TickCount ticks)
       m_ticks_remaining -= ticks;
       if (m_ticks_remaining <= 0)
         DoTransfer();
+      else
+        m_system->SetDowncount(m_ticks_remaining);
     }
     break;
   }
