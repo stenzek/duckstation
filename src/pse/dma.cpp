@@ -5,14 +5,16 @@
 #include "common/state_wrapper.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "system.h"
 Log_SetChannel(DMA);
 
 DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-bool DMA::Initialize(Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom)
+bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom)
 {
+  m_system = system;
   m_bus = bus;
   m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
@@ -22,6 +24,8 @@ bool DMA::Initialize(Bus* bus, InterruptController* interrupt_controller, GPU* g
 
 void DMA::Reset()
 {
+  m_transfer_ticks = 0;
+  m_transfer_pending = false;
   m_state = {};
   m_DPCR.bits = 0x07654321;
   m_DICR.bits = 0;
@@ -99,7 +103,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
         Log_DebugPrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
         if (CanRunChannel(static_cast<Channel>(channel_index)))
-          RunDMA(static_cast<Channel>(channel_index));
+          UpdateTransferPending();
 
         return;
       }
@@ -143,8 +147,39 @@ void DMA::SetRequest(Channel channel, bool request)
     return;
 
   cs.request = request;
-  if (CanRunChannel(channel))
-    RunDMA(channel);
+  UpdateTransferPending();
+}
+
+void DMA::Execute(TickCount ticks)
+{
+  if (!m_transfer_pending)
+    return;
+
+  m_transfer_ticks -= ticks;
+  if (m_transfer_ticks <= 0)
+  {
+    m_transfer_pending = false;
+
+    for (u32 i = 0; i < NUM_CHANNELS; i++)
+    {
+      const Channel channel = static_cast<Channel>(i);
+      if (CanRunChannel(channel))
+      {
+        RunDMA(channel);
+        m_transfer_pending |= CanRunChannel(channel);
+      }
+    }
+
+    if (m_transfer_pending)
+    {
+      m_transfer_ticks += TRANSFER_TICKS;
+      m_system->SetDowncount(m_transfer_ticks);
+    }
+  }
+  else
+  {
+    m_system->SetDowncount(m_transfer_ticks);
+  }
 }
 
 bool DMA::CanRunChannel(Channel channel) const
@@ -157,6 +192,17 @@ bool DMA::CanRunChannel(Channel channel) const
     return true;
 
   return (cs.channel_control.enable_busy && cs.request);
+}
+
+bool DMA::CanRunAnyChannels() const
+{
+  for (u32 i = 0; i < NUM_CHANNELS; i++)
+  {
+    if (CanRunChannel(static_cast<Channel>(i)))
+      return true;
+  }
+
+  return false;
 }
 
 void DMA::RunDMA(Channel channel)
@@ -351,5 +397,24 @@ void DMA::DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address
     default:
       Panic("Unhandled DMA channel write");
       break;
+  }
+}
+
+void DMA::UpdateTransferPending()
+{
+  if (CanRunAnyChannels())
+  {
+    if (m_transfer_pending)
+      return;
+
+    m_system->Synchronize();
+    m_transfer_pending = true;
+    m_transfer_ticks = TRANSFER_TICKS;
+    m_system->SetDowncount(m_transfer_ticks);
+  }
+  else
+  {
+    m_transfer_pending = false;
+    m_transfer_ticks = 0;
   }
 }

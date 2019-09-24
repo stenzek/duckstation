@@ -39,7 +39,7 @@ bool System::Initialize()
     return false;
   }
 
-  if (!m_dma->Initialize(m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get()))
+  if (!m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get()))
     return false;
 
   if (!m_interrupt_controller->Initialize(m_cpu.get()))
@@ -246,6 +246,7 @@ void System::Synchronize()
   const TickCount pending_ticks = m_cpu->GetPendingTicks();
   m_cpu->ResetPendingTicks();
 
+  m_dma->Execute(pending_ticks);
   m_gpu->Execute(pending_ticks);
   m_timers->AddSystemTicks(pending_ticks);
   m_cdrom->Execute(pending_ticks);

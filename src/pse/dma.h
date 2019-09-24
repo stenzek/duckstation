@@ -5,6 +5,7 @@
 
 class StateWrapper;
 
+class System;
 class Bus;
 class InterruptController;
 class GPU;
@@ -32,7 +33,7 @@ public:
   DMA();
   ~DMA();
 
-  bool Initialize(Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom);
+  bool Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -41,8 +42,11 @@ public:
 
   void SetRequest(Channel channel, bool request);
 
+  void Execute(TickCount ticks);
+
 private:
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x00FFFFFF);
+  static constexpr u32 TRANSFER_TICKS = 10;
 
   enum class SyncMode : u32
   {
@@ -54,6 +58,7 @@ private:
 
   // is everything enabled for a channel to operate?
   bool CanRunChannel(Channel channel) const;
+  bool CanRunAnyChannels() const;
 
   void RunDMA(Channel channel);
 
@@ -63,10 +68,16 @@ private:
   // from memory -> device
   void DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address, u32 remaining_words);
 
+  void UpdateTransferPending();
+
+  System* m_system = nullptr;
   Bus* m_bus = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
+
+  TickCount m_transfer_ticks = 0;
+  bool m_transfer_pending = false;
 
   struct ChannelState
   {
@@ -107,7 +118,6 @@ private:
     } channel_control;
 
     bool request = false;
-    bool irq = false;
   };
 
   std::array<ChannelState, NUM_CHANNELS> m_state = {};
