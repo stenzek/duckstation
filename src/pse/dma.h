@@ -6,6 +6,7 @@
 class StateWrapper;
 
 class Bus;
+class InterruptController;
 class GPU;
 class CDROM;
 
@@ -31,7 +32,7 @@ public:
   DMA();
   ~DMA();
 
-  bool Initialize(Bus* bus, GPU* gpu, CDROM* cdrom);
+  bool Initialize(Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -63,6 +64,7 @@ private:
   void DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address, u32 remaining_words);
 
   Bus* m_bus = nullptr;
+  InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
 
@@ -105,13 +107,31 @@ private:
     } channel_control;
 
     bool request = false;
+    bool irq = false;
   };
 
   std::array<ChannelState, NUM_CHANNELS> m_state = {};
 
-  struct DPCR
+  union DPCR
   {
     u32 bits;
+
+    BitField<u32, u8, 0, 3> MDECin_priority;
+    BitField<u32, bool, 3, 1> MDECin_master_enable;
+    BitField<u32, u8, 4, 3> MDECout_priority;
+    BitField<u32, bool, 7, 1> MDECout_master_enable;
+    BitField<u32, u8, 8, 3> GPU_priority;
+    BitField<u32, bool, 10, 1> GPU_master_enable;
+    BitField<u32, u8, 12, 3> CDROM_priority;
+    BitField<u32, bool, 15, 1> CDROM_master_enable;
+    BitField<u32, u8, 16, 3> SPU_priority;
+    BitField<u32, bool, 19, 1> SPU_master_enable;
+    BitField<u32, u8, 20, 3> PIO_priority;
+    BitField<u32, bool, 23, 1> PIO_master_enable;
+    BitField<u32, u8, 24, 3> OTC_priority;
+    BitField<u32, bool, 27, 1> OTC_master_enable;
+    BitField<u32, u8, 28, 3> priority_offset;
+    BitField<u32, bool, 31, 1> unused;
 
     u8 GetPriority(Channel channel) const { return ((bits >> (static_cast<u8>(channel) * 4)) & u32(3)); }
     bool GetMasterEnable(Channel channel) const
@@ -120,6 +140,46 @@ private:
     }
   } m_DPCR;
 
-  static constexpr u32 DCIR_WRITE_MASK = 0b11111111'11111111'10000000'00111111;
-  u32 m_DCIR = 0;
+  static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'00111111;
+  static constexpr u32 DICR_RESET_MASK = 0b01111111'00000000'00000000'00000000;
+  union DICR
+  {
+    u32 bits;
+
+    BitField<u32, bool, 15, 1> force_irq;
+    BitField<u32, bool, 16, 1> MDECin_irq_enable;
+    BitField<u32, bool, 17, 1> MDECout_irq_enable;
+    BitField<u32, bool, 18, 1> GPU_irq_enable;
+    BitField<u32, bool, 19, 1> CDROM_irq_enable;
+    BitField<u32, bool, 20, 1> SPU_irq_enable;
+    BitField<u32, bool, 21, 1> PIO_irq_enable;
+    BitField<u32, bool, 22, 1> OTC_irq_enable;
+    BitField<u32, bool, 23, 1> master_enable;
+    BitField<u32, bool, 24, 1> MDECin_irq_flag;
+    BitField<u32, bool, 25, 1> MDECout_irq_flag;
+    BitField<u32, bool, 26, 1> GPU_irq_flag;
+    BitField<u32, bool, 27, 1> CDROM_irq_flag;
+    BitField<u32, bool, 28, 1> SPU_irq_flag;
+    BitField<u32, bool, 29, 1> PIO_irq_flag;
+    BitField<u32, bool, 30, 1> OTC_irq_flag;
+    BitField<u32, bool, 31, 1> master_flag;
+
+    bool IsIRQEnabled(Channel channel) const
+    {
+      return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) + 16)) & u32(1));
+    }
+
+    bool GetIRQFlag(Channel channel) const
+    {
+      return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) + 24)) & u32(1));
+    }
+
+    void SetIRQFlag(Channel channel) { bits |= (u32(1) << (static_cast<u8>(channel) + 24)); }
+    void ClearIRQFlag(Channel channel) { bits &= ~(u32(1) << (static_cast<u8>(channel) + 24)); }
+
+    void UpdateMasterFlag()
+    {
+      master_flag = master_enable && ((((bits >> 16) & u32(0b1111111)) & ((bits >> 24) & u32(0b1111111))) != 0);
+    }
+  } m_DICR = {};
 };

@@ -4,15 +4,17 @@
 #include "cdrom.h"
 #include "common/state_wrapper.h"
 #include "gpu.h"
+#include "interrupt_controller.h"
 Log_SetChannel(DMA);
 
 DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-bool DMA::Initialize(Bus* bus, GPU* gpu, CDROM* cdrom)
+bool DMA::Initialize(Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom)
 {
   m_bus = bus;
+  m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
   m_cdrom = cdrom;
   return true;
@@ -22,7 +24,7 @@ void DMA::Reset()
 {
   m_state = {};
   m_DPCR.bits = 0x07654321;
-  m_DCIR = 0;
+  m_DICR.bits = 0;
 }
 
 bool DMA::DoState(StateWrapper& sw)
@@ -37,7 +39,7 @@ bool DMA::DoState(StateWrapper& sw)
   }
 
   sw.Do(&m_DPCR.bits);
-  sw.Do(&m_DCIR);
+  sw.Do(&m_DICR.bits);
   return !sw.HasError();
 }
 
@@ -63,7 +65,7 @@ u32 DMA::ReadRegister(u32 offset)
     if (offset == 0x70)
       return m_DPCR.bits;
     else if (offset == 0x74)
-      return m_DCIR;
+      return m_DICR.bits;
   }
 
   Log_ErrorPrintf("Unhandled register read: %02X", offset);
@@ -119,8 +121,10 @@ void DMA::WriteRegister(u32 offset, u32 value)
 
       case 0x74:
       {
-        m_DCIR = (m_DCIR & ~DCIR_WRITE_MASK) | (value & DCIR_WRITE_MASK);
-        Log_DebugPrintf("DCIR <- 0x%08X", m_DCIR);
+        Log_DebugPrintf("DCIR <- 0x%08X", value);
+        m_DICR.bits = (m_DICR.bits & ~DICR_WRITE_MASK) | (value & DICR_WRITE_MASK);
+        m_DICR.bits = (m_DICR.bits & ~DICR_RESET_MASK) & (value ^ DICR_RESET_MASK);
+        m_DICR.UpdateMasterFlag();
         return;
       }
 
@@ -293,6 +297,17 @@ void DMA::RunDMA(Channel channel)
 
   // start/busy bit is cleared on end of transfer
   cs.channel_control.enable_busy = false;
+  if (m_DICR.IsIRQEnabled(channel))
+  {
+    Log_DebugPrintf("Set DMA interrupt for channel %u", static_cast<u32>(channel));
+    m_DICR.SetIRQFlag(channel);
+    m_DICR.UpdateMasterFlag();
+    if (m_DICR.master_flag)
+    {
+      Log_DebugPrintf("Firing DMA interrupt");
+      m_interrupt_controller->InterruptRequest(InterruptController::IRQ::DMA);
+    }
+  }
 }
 
 u32 DMA::DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaining_words)

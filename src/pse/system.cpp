@@ -39,7 +39,7 @@ bool System::Initialize()
     return false;
   }
 
-  if (!m_dma->Initialize(m_bus.get(), m_gpu.get(), m_cdrom.get()))
+  if (!m_dma->Initialize(m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get()))
     return false;
 
   if (!m_interrupt_controller->Initialize(m_cpu.get()))
