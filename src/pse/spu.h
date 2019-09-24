@@ -82,6 +82,8 @@ private:
 #endif
 
   void UpdateDMARequest();
+  u16 RAMTransferRead();
+  void RAMTransferWrite(u16 value);
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;

@@ -75,10 +75,9 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801DA8 - SPU_BASE:
     {
-      std::memcpy(&m_ram[m_transfer_address], &value, sizeof(value));
       Log_TracePrintf("SPU transfer data register <- 0x%04X (RAM offset 0x%08X)", ZeroExtend32(value),
                       m_transfer_address);
-      m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
+      RAMTransferWrite(value);
       return;
     }
 
@@ -107,15 +106,35 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
 u32 SPU::DMARead()
 {
-  Log_ErrorPrintf("SPU DMA READ");
-  return UINT32_C(0xFFFFFFFF);
+  const u16 lsb = RAMTransferRead();
+  const u16 msb = RAMTransferRead();
+  return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
 }
 
-void SPU::DMAWrite(u32 value) {}
+void SPU::DMAWrite(u32 value)
+{
+  // two 16-bit writes to prevent out-of-bounds
+  RAMTransferWrite(Truncate16(value));
+  RAMTransferWrite(Truncate16(value >> 16));
+}
 
 void SPU::UpdateDMARequest()
 {
   const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
   const bool request = (mode == RAMTransferMode::DMAWrite || mode == RAMTransferMode::DMARead);
   m_dma->SetRequest(DMA::Channel::SPU, request);
+}
+
+u16 SPU::RAMTransferRead()
+{
+  u16 value;
+  std::memcpy(&value, &m_ram[m_transfer_address], sizeof(value));
+  m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
+  return value;
+}
+
+void SPU::RAMTransferWrite(u16 value)
+{
+  std::memcpy(&m_ram[m_transfer_address], &value, sizeof(value));
+  m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
 }
