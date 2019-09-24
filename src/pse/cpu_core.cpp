@@ -376,7 +376,7 @@ void Core::WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       m_cop0_regs.sr.bits =
         (m_cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
-      Log_WarningPrintf("COP0 SR <- %08X (now %08X)", value, m_cop0_regs.sr.bits);
+      Log_DebugPrintf("COP0 SR <- %08X (now %08X)", value, m_cop0_regs.sr.bits);
     }
     break;
 
@@ -384,7 +384,7 @@ void Core::WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       m_cop0_regs.cause.bits =
         (m_cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
-      Log_WarningPrintf("COP0 CAUSE <- %08X (now %08X)", value, m_cop0_regs.cause.bits);
+      Log_DebugPrintf("COP0 CAUSE <- %08X (now %08X)", value, m_cop0_regs.cause.bits);
     }
     break;
 
