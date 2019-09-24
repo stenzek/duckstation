@@ -60,12 +60,28 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_response_fifo);
   sw.Do(&m_data_fifo);
 
+  u64 media_lba = m_media ? m_media->GetCurrentLBA() : 0;
+  sw.Do(&m_media_filename);
+  sw.Do(&media_lba);
+
   if (sw.IsReading())
   {
     if (m_command_state == CommandState::WaitForExecute)
       m_system->SetDowncount(m_command_remaining_ticks);
     if (m_reading)
       m_system->SetDowncount(m_sector_read_remaining_ticks);
+
+    // load up media if we had something in there before
+    m_media.reset();
+    if (!m_media_filename.empty())
+    {
+      m_media = std::make_unique<CDImage>();
+      if (!m_media->Open(m_media_filename.c_str()) || !m_media->Seek(media_lba))
+      {
+        Log_ErrorPrintf("Failed to re-insert CD media from save state: '%s'. Ejecting.", m_media_filename.c_str());
+        RemoveMedia();
+      }
+    }
   }
 
   return !sw.HasError();
@@ -84,6 +100,7 @@ bool CDROM::InsertMedia(const char* filename)
     RemoveMedia();
 
   m_media = std::move(media);
+  m_media_filename = filename;
   // m_secondary_status.shell_open = false;
   return true;
 }
@@ -96,6 +113,7 @@ void CDROM::RemoveMedia()
   // TODO: Error while reading?
   Log_InfoPrintf("Removing CD...");
   m_media.reset();
+  m_media_filename.clear();
   // m_secondary_status.shell_open = true;
 }
 
@@ -260,7 +278,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
             }
 
             Log_DebugPrintf("Loading data FIFO");
-            m_data_fifo.PushRange(m_sector_buffer.data(), m_sector_buffer.size());
+            m_data_fifo.PushRange(m_sector_buffer.data(), static_cast<u32>(m_sector_buffer.size()));
             m_sector_buffer.clear();
           }
           else

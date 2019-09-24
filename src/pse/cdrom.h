@@ -2,6 +2,7 @@
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
 #include "types.h"
+#include <string>
 #include <vector>
 
 class CDImage;
@@ -164,6 +165,7 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   std::unique_ptr<CDImage> m_media;
+  std::string m_media_filename;
 
   CommandState m_command_state = CommandState::Idle;
   Command m_command = Command::Sync;
