@@ -6,7 +6,7 @@
 #include "system.h"
 Log_SetChannel(CDROM);
 
-CDROM::CDROM() = default;
+CDROM::CDROM() : m_sector_buffer(SECTOR_BUFFER_SIZE) {}
 
 CDROM::~CDROM() = default;
 
@@ -129,14 +129,19 @@ u8 CDROM::ReadRegister(u32 offset)
       {
         case 0:
         case 2:
-          Log_DebugPrintf("CDROM read interrupt enable register <- 0x%02X",
-                          ZeroExtend32(m_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK));
-          return m_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
+        {
+          const u8 value = m_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
+          Log_DebugPrintf("CDROM read interrupt enable register <- 0x%02X", ZeroExtend32(value));
+          return value;
+        }
 
         case 1:
         case 3:
-          Log_DebugPrintf("CDROM read interrupt flag register <- 0x%02X", ZeroExtend32(m_interrupt_flag_register));
-          return m_interrupt_flag_register;
+        {
+          const u8 value = m_interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
+          Log_DebugPrintf("CDROM read interrupt flag register <- 0x%02X", ZeroExtend32(value));
+          return value;
+        }
       }
     }
     break;
@@ -244,9 +249,27 @@ void CDROM::WriteRegister(u32 offset, u8 value)
           // TODO: sector buffer is not the data fifo
           Log_DebugPrintf("Request register <- 0x%02X", value);
           const RequestRegister rr{value};
-          // if (!rr.BFRD)
-          // m_data_fifo.Clear();
+          Assert(!rr.SMEN);
+          if (rr.BFRD)
+          {
+            // any data to load?
+            if (m_sector_buffer.empty())
+            {
+              Log_ErrorPrintf("Attempting to load empty sector buffer");
+              return;
+            }
 
+            Log_DebugPrintf("Loading data FIFO");
+            m_data_fifo.PushRange(m_sector_buffer.data(), m_sector_buffer.size());
+            m_sector_buffer.clear();
+          }
+          else
+          {
+            Log_DebugPrintf("Clearing data FIFO");
+            m_data_fifo.Clear();
+          }
+
+          UpdateStatusRegister();
           return;
         }
 
@@ -259,6 +282,13 @@ void CDROM::WriteRegister(u32 offset, u8 value)
             m_system->Synchronize();
             m_command_state = CommandState::WaitForExecute;
             m_system->SetDowncount(m_command_remaining_ticks);
+          }
+
+          // Bit 6 clears the parameter FIFO.
+          if (value & 0x40)
+          {
+            m_param_fifo.Clear();
+            UpdateStatusRegister();
           }
 
           return;
@@ -386,14 +416,21 @@ void CDROM::Execute(TickCount ticks)
 void CDROM::BeginCommand(Command command)
 {
   m_response_fifo.Clear();
-
   m_system->Synchronize();
+
   m_command = command;
   m_command_stage = 0;
   m_command_remaining_ticks = GetTicksForCommand();
-  m_command_state = CommandState::WaitForExecute;
-  m_system->SetDowncount(m_command_remaining_ticks);
-  UpdateStatusRegister();
+  if (m_command_remaining_ticks == 0)
+  {
+    ExecuteCommand();
+  }
+  else
+  {
+    m_command_state = CommandState::WaitForExecute;
+    m_system->SetDowncount(m_command_remaining_ticks);
+    UpdateStatusRegister();
+  }
 }
 
 void CDROM::NextCommandStage(bool wait_for_irq, u32 time)
@@ -531,7 +568,6 @@ void CDROM::ExecuteCommand()
     {
       const u8 mode = m_param_fifo.Peek(0);
       Log_DebugPrintf("CDROM setmode command 0x%02X", ZeroExtend32(mode));
-      StopReading();
 
       m_mode.bits = mode;
       m_response_fifo.Push(m_secondary_status.bits);
@@ -543,7 +579,6 @@ void CDROM::ExecuteCommand()
     case Command::ReadN:
     {
       Log_DebugPrintf("CDROM read command");
-      StopReading();
 
       // TODO: Seek timing and clean up...
       if (m_setloc_dirty)
@@ -655,7 +690,6 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 void CDROM::BeginReading()
 {
   Log_DebugPrintf("Starting reading");
-  m_system->Synchronize();
 
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = false;
@@ -681,11 +715,13 @@ void CDROM::DoSectorRead()
   Log_DebugPrintf("Reading sector %llu", m_media->GetCurrentLBA());
 
   // TODO: Error handling
-  u8 buffer[CDImage::RAW_SECTOR_SIZE];
-  m_media->Read(m_mode.read_raw_sector ? CDImage::ReadMode::RawNoSync : CDImage::ReadMode::DataOnly, 1, buffer);
-  m_data_fifo.Clear();
-  m_data_fifo.PushRange(buffer, m_mode.read_raw_sector ? CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE :
-                                                         CDImage::DATA_SECTOR_SIZE);
+  // TODO: Sector buffer should be two sectors?
+  Assert(!m_mode.ignore_bit);
+  const u32 size =
+    m_mode.read_raw_sector ? (CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE) : CDImage::DATA_SECTOR_SIZE;
+  m_sector_buffer.resize(size);
+  m_media->Read(m_mode.read_raw_sector ? CDImage::ReadMode::RawNoSync : CDImage::ReadMode::DataOnly, 1,
+                m_sector_buffer.data());
   m_response_fifo.Push(m_secondary_status.bits);
   SetInterrupt(Interrupt::INT1);
   UpdateStatusRegister();

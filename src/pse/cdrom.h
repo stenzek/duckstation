@@ -2,6 +2,7 @@
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
 #include "types.h"
+#include <vector>
 
 class CDImage;
 class StateWrapper;
@@ -36,6 +37,7 @@ private:
   static constexpr u32 RESPONSE_FIFO_SIZE = 16;
   static constexpr u32 DATA_FIFO_SIZE = 4096;
   static constexpr u32 NUM_INTERRUPTS = 32;
+  static constexpr u32 SECTOR_BUFFER_SIZE = (2352 - 12);
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
   enum class Interrupt : u8
@@ -185,4 +187,5 @@ private:
   InlineFIFOQueue<u8, PARAM_FIFO_SIZE> m_param_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
+  std::vector<u8> m_sector_buffer;
 };
