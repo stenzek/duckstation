@@ -45,7 +45,7 @@ private:
   {
     INT1 = 0x01,
     INT2 = 0x02,
-    INT3 = 0x03,
+    ACK = 0x03,
     INT4 = 0x04,
     INT5 = 0x05
   };
@@ -148,6 +148,7 @@ private:
 
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   void SetInterrupt(Interrupt interrupt);
+  void PushStatResponse(Interrupt interrupt = Interrupt::ACK);
   void UpdateStatusRegister();
 
   u32 GetTicksForCommand() const;

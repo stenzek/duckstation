@@ -273,7 +273,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
             // any data to load?
             if (m_sector_buffer.empty())
             {
-              Log_ErrorPrintf("Attempting to load empty sector buffer");
+              Log_DevPrintf("Attempting to load empty sector buffer");
               return;
             }
 
@@ -365,6 +365,12 @@ void CDROM::SetInterrupt(Interrupt interrupt)
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
+void CDROM::PushStatResponse(Interrupt interrupt /*= Interrupt::ACK*/)
+{
+  m_response_fifo.Push(m_secondary_status.bits);
+  SetInterrupt(interrupt);
+}
+
 void CDROM::UpdateStatusRegister()
 {
   m_status.ADPBUSY = false;
@@ -380,16 +386,17 @@ u32 CDROM::GetTicksForCommand() const
   switch (m_command)
   {
     case Command::ReadN:
+    case Command::ReadS:
     {
       // more if seeking..
-      return 50000;
+      return 1000;
     }
 
     case Command::Pause:
-      return 50000;
+      return 1000;
 
     default:
-      return 50000;
+      return 1000;
   }
 }
 
@@ -490,7 +497,7 @@ void CDROM::ExecuteCommand()
 
       // if bit 0 or 2 is set, send an additional byte
       m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
     }
@@ -518,7 +525,7 @@ void CDROM::ExecuteCommand()
         {
           // INT3(stat), ...
           m_response_fifo.Push(m_secondary_status.bits);
-          SetInterrupt(Interrupt::INT3);
+          SetInterrupt(Interrupt::ACK);
           NextCommandStage(true, GetTicksForCommand());
         }
       }
@@ -543,7 +550,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM setloc command (%u, %u, %u)", ZeroExtend32(m_setloc.minute), ZeroExtend32(m_setloc.second),
                       ZeroExtend32(m_setloc.frame));
       m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
     }
@@ -568,7 +575,7 @@ void CDROM::ExecuteCommand()
         m_secondary_status.motor_on = true;
         m_secondary_status.seeking = true;
         m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::INT3);
+        SetInterrupt(Interrupt::ACK);
         NextCommandStage(false, 100);
       }
       else
@@ -582,6 +589,16 @@ void CDROM::ExecuteCommand()
       return;
     }
 
+    case Command::Setfilter:
+    {
+      const u8 file = m_param_fifo.Peek(0);
+      const u8 channel = m_param_fifo.Peek(1);
+      Log_WarningPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
+      PushStatResponse(Interrupt::ACK);
+      EndCommand();
+      return;
+    }
+
     case Command::Setmode:
     {
       const u8 mode = m_param_fifo.Peek(0);
@@ -589,12 +606,13 @@ void CDROM::ExecuteCommand()
 
       m_mode.bits = mode;
       m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
     }
 
     case Command::ReadN:
+    case Command::ReadS:
     {
       Log_DebugPrintf("CDROM read command");
 
@@ -611,7 +629,7 @@ void CDROM::ExecuteCommand()
       EndCommand();
       BeginReading();
       m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       return;
     }
 
@@ -622,7 +640,7 @@ void CDROM::ExecuteCommand()
         const bool was_reading = m_reading;
         Log_DebugPrintf("CDROM pause command");
         m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::INT3);
+        SetInterrupt(Interrupt::ACK);
         StopReading();
         NextCommandStage(true, was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 1000);
       }
@@ -642,7 +660,7 @@ void CDROM::ExecuteCommand()
       {
         Log_DebugPrintf("CDROM init command");
         m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::INT3);
+        SetInterrupt(Interrupt::ACK);
         StopReading();
         NextCommandStage(true, 1000);
       }
@@ -662,7 +680,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM demute command");
       m_muted = false;
       m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       EndCommand();
     }
     break;
@@ -682,7 +700,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
       Log_DebugPrintf("Get CDROM BIOS Date/Version");
       static constexpr u8 response[] = {0x94, 0x09, 0x19, 0xC0};
       m_response_fifo.PushRange(response, countof(response));
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
     }
@@ -692,7 +710,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
       Log_DebugPrintf("Get CDROM region ID string");
       static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'U', '/', 'C'};
       m_response_fifo.PushRange(response, countof(response));
-      SetInterrupt(Interrupt::INT3);
+      SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
     }
