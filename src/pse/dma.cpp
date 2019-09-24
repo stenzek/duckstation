@@ -234,8 +234,7 @@ void DMA::RunDMA(Channel channel)
           words_remaining--;
 
           u32 value = 0;
-          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, current_address,
-                                                                                value);
+          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, value);
           DMAWrite(channel, value, current_address, words_remaining);
 
           current_address = (current_address + increment) & ADDRESS_MASK;
@@ -249,8 +248,7 @@ void DMA::RunDMA(Channel channel)
           words_remaining--;
 
           u32 value = DMARead(channel, current_address, words_remaining);
-          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, current_address,
-                                                                                 value);
+          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, value);
 
           current_address = (current_address + increment) & ADDRESS_MASK;
         } while (words_remaining > 0);
@@ -269,8 +267,7 @@ void DMA::RunDMA(Channel channel)
         for (;;)
         {
           u32 header;
-          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, current_address,
-                                                                                header);
+          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, header);
 
           const u32 word_count = header >> 24;
           const u32 next_address = header & UINT32_C(0xFFFFFF);
@@ -286,8 +283,7 @@ void DMA::RunDMA(Channel channel)
               words_remaining--;
 
               u32 memory_value = 0;
-              m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, current_address,
-                                                                                    memory_value);
+              m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, memory_value);
               DMAWrite(channel, memory_value, current_address, words_remaining);
               current_address = (current_address + UINT32_C(4)) & ADDRESS_MASK;
             } while (words_remaining > 0);
@@ -316,8 +312,7 @@ void DMA::RunDMA(Channel channel)
           words_remaining--;
 
           u32 value = 0;
-          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, current_address,
-                                                                                value);
+          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, value);
           DMAWrite(channel, value, current_address, words_remaining);
 
           current_address = (current_address + increment) & ADDRESS_MASK;
@@ -331,8 +326,7 @@ void DMA::RunDMA(Channel channel)
           words_remaining--;
 
           u32 value = DMARead(channel, current_address, words_remaining);
-          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, current_address,
-                                                                                 value);
+          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, value);
 
           current_address = (current_address + increment) & ADDRESS_MASK;
         } while (words_remaining > 0);

@@ -74,117 +74,107 @@ bool Bus::DoBIOSAccess(u32 offset, u32& value)
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
-bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32& value)
+bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
 {
-  if (bus_address < 0x800000)
+  if (address < 0x800000)
   {
-    return DoRAMAccess<type, size>(bus_address, value);
+    return DoRAMAccess<type, size>(address, value);
   }
-  else if (bus_address < EXP1_BASE)
+  else if (address < EXP1_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (EXP1_BASE + EXP1_SIZE))
+  else if (address < (EXP1_BASE + EXP1_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadEXP1(size, bus_address & EXP1_MASK, value) :
-                                              DoWriteEXP1(size, bus_address & EXP1_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadEXP1(size, address & EXP1_MASK, value) :
+                                              DoWriteEXP1(size, address & EXP1_MASK, value);
   }
-  else if (bus_address < PAD_BASE)
+  else if (address < MEMCTRL_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (PAD_BASE + PAD_SIZE))
+  else if (address < (MEMCTRL_BASE + MEMCTRL_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadPad(size, bus_address & PAD_MASK, value) :
-                                              DoWritePad(size, bus_address & PAD_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadMemoryControl(size, address & PAD_MASK, value) :
+                                              DoWriteMemoryControl(size, address & PAD_MASK, value);
   }
-  else if (bus_address < (SIO_BASE + SIO_SIZE))
+  else if (address < (PAD_BASE + PAD_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadSIO(size, bus_address & SIO_MASK, value) :
-                                              DoWriteSIO(size, bus_address & SIO_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadPad(size, address & PAD_MASK, value) :
+                                              DoWritePad(size, address & PAD_MASK, value);
   }
-  else if (bus_address < INTERRUPT_CONTROLLER_BASE)
+  else if (address < (SIO_BASE + SIO_SIZE))
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return (type == MemoryAccessType::Read) ? DoReadSIO(size, address & SIO_MASK, value) :
+                                              DoWriteSIO(size, address & SIO_MASK, value);
   }
-  else if (bus_address < (INTERRUPT_CONTROLLER_BASE + INTERRUPT_CONTROLLER_SIZE))
+  else if (address < (MEMCTRL2_BASE + MEMCTRL2_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadMemoryControl2(size, address & PAD_MASK, value) :
+                                              DoWriteMemoryControl2(size, address & PAD_MASK, value);
+  }
+  else if (address < (INTERRUPT_CONTROLLER_BASE + INTERRUPT_CONTROLLER_SIZE))
   {
     return (type == MemoryAccessType::Read) ?
-             DoReadInterruptController(size, bus_address & INTERRUPT_CONTROLLER_MASK, value) :
-             DoWriteInterruptController(size, bus_address & INTERRUPT_CONTROLLER_MASK, value);
+             DoReadInterruptController(size, address & INTERRUPT_CONTROLLER_MASK, value) :
+             DoWriteInterruptController(size, address & INTERRUPT_CONTROLLER_MASK, value);
   }
-  else if (bus_address < DMA_BASE)
+  else if (address < (DMA_BASE + DMA_SIZE))
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return (type == MemoryAccessType::Read) ? DoReadDMA(size, address & DMA_MASK, value) :
+                                              DoWriteDMA(size, address & DMA_MASK, value);
   }
-  else if (bus_address < (DMA_BASE + DMA_SIZE))
+  else if (address < (TIMERS_BASE + TIMERS_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadDMA(size, bus_address & DMA_MASK, value) :
-                                              DoWriteDMA(size, bus_address & DMA_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadTimers(size, address & TIMERS_MASK, value) :
+                                              DoWriteTimers(size, address & TIMERS_MASK, value);
   }
-  else if (bus_address < TIMERS_BASE)
+  else if (address < CDROM_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (TIMERS_BASE + TIMERS_SIZE))
+  else if (address < (CDROM_BASE + GPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadTimers(size, bus_address & TIMERS_MASK, value) :
-                                              DoWriteTimers(size, bus_address & TIMERS_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadCDROM(size, address & CDROM_MASK, value) :
+                                              DoWriteCDROM(size, address & CDROM_MASK, value);
   }
-  else if (bus_address < CDROM_BASE)
+  else if (address < GPU_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (CDROM_BASE + GPU_SIZE))
+  else if (address < (GPU_BASE + GPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadCDROM(size, bus_address & CDROM_MASK, value) :
-                                              DoWriteCDROM(size, bus_address & CDROM_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadGPU(size, address & GPU_MASK, value) :
+                                              DoWriteGPU(size, address & GPU_MASK, value);
   }
-  else if (bus_address < GPU_BASE)
+  else if (address < SPU_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (GPU_BASE + GPU_SIZE))
+  else if (address < (SPU_BASE + SPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadGPU(size, bus_address & GPU_MASK, value) :
-                                              DoWriteGPU(size, bus_address & GPU_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadSPU(size, address & SPU_MASK, value) :
+                                              DoWriteSPU(size, address & SPU_MASK, value);
   }
-  else if (bus_address < SPU_BASE)
+  else if (address < EXP2_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (SPU_BASE + SPU_SIZE))
+  else if (address < (EXP2_BASE + EXP2_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadSPU(size, bus_address & SPU_MASK, value) :
-                                              DoWriteSPU(size, bus_address & SPU_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadEXP2(size, address & EXP2_MASK, value) :
+                                              DoWriteEXP2(size, address & EXP2_MASK, value);
   }
-  else if (bus_address < EXP2_BASE)
+  else if (address < BIOS_BASE)
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
-  else if (bus_address < (EXP2_BASE + EXP2_SIZE))
+  else if (address < (BIOS_BASE + BIOS_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadEXP2(size, bus_address & EXP2_MASK, value) :
-                                              DoWriteEXP2(size, bus_address & EXP2_MASK, value);
-  }
-  else if (bus_address < BIOS_BASE)
-  {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
-  }
-  else if (bus_address < (BIOS_BASE + BIOS_SIZE))
-  {
-    return DoBIOSAccess<type, size>(static_cast<u32>(bus_address - BIOS_BASE), value);
-  }
-  else if (bus_address < 0x1FFE0000)
-  {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
-  }
-  else if (bus_address < 0x1FFE0200) // I/O Ports (Cache Control)
-  {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
   }
   else
   {
-    return DoInvalidAccess(type, size, cpu_address, bus_address, value);
+    return DoInvalidAccess(type, size, address, value);
   }
 }

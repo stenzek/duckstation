@@ -5,7 +5,7 @@
 
 namespace CPU {
 
-template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch, bool raise_exceptions>
+template<MemoryAccessType type, MemoryAccessSize size>
 bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
 {
   switch (address >> 29)
@@ -25,7 +25,7 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
         return true;
       }
 
-      if (!m_bus->DispatchAccess<type, size>(address, phys_addr, value))
+      if (!m_bus->DispatchAccess<type, size>(phys_addr, value))
       {
         Panic("Bus error");
         return false;
@@ -39,7 +39,6 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
     case 0x03: // KUSEG 1536M-2048M
     {
       // Above 512mb raises an exception.
-      RaiseException(is_instruction_fetch ? Exception::IBE : Exception::DBE);
       return false;
     }
 
@@ -58,7 +57,7 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
         return true;
       }
 
-      if (!m_bus->DispatchAccess<type, size>(address, address & UINT32_C(0x1FFFFFFF), value))
+      if (!m_bus->DispatchAccess<type, size>(phys_addr, value))
       {
         Panic("Bus error");
         return false;
@@ -71,7 +70,7 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
     case 0x05: // KSEG1 - physical memory uncached
     {
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
-      if (!m_bus->DispatchAccess<type, size>(address, phys_addr, value))
+      if (!m_bus->DispatchAccess<type, size>(phys_addr, value))
       {
         Panic("Bus error");
         return false;
@@ -95,7 +94,6 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       }
       else
       {
-        RaiseException(is_instruction_fetch ? Exception::IBE : Exception::DBE);
         return false;
       }
     }

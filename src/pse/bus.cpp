@@ -47,53 +47,65 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
 void Bus::Reset()
 {
   m_ram.fill(static_cast<u8>(0));
+  m_MEMCTRL.exp1_base = 0x1F000000;
+  m_MEMCTRL.exp2_base = 0x1F802000;
+  m_MEMCTRL.exp1_delay_size = 0x0013243F;
+  m_MEMCTRL.exp3_delay_size = 0x00003022;
+  m_MEMCTRL.bios_delay_size = 0x0013243F;
+  m_MEMCTRL.spu_delay_size = 0x200931E1;
+  m_MEMCTRL.cdrom_delay_size = 0x00020843;
+  m_MEMCTRL.exp2_delay_size = 0x00070777;
+  m_MEMCTRL.common_delay_size = 0x00031125;
+  m_ram_size_reg = UINT32_C(0x00000B88);
 }
 
 bool Bus::DoState(StateWrapper& sw)
 {
   sw.DoBytes(m_ram.data(), m_ram.size());
   sw.DoBytes(m_bios.data(), m_bios.size());
+  sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
+  sw.Do(&m_ram_size_reg);
   sw.Do(&m_tty_line_buffer);
   return !sw.HasError();
 }
 
-bool Bus::ReadByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u8* value)
+bool Bus::ReadByte(PhysicalMemoryAddress address, u8* value)
 {
   u32 temp = 0;
-  const bool result = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(cpu_address, bus_address, temp);
+  const bool result = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
   *value = Truncate8(temp);
   return result;
 }
 
-bool Bus::ReadHalfWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16* value)
+bool Bus::ReadHalfWord(PhysicalMemoryAddress address, u16* value)
 {
   u32 temp = 0;
   const bool result =
-    DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(cpu_address, bus_address, temp);
+    DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
   *value = Truncate16(temp);
   return result;
 }
 
-bool Bus::ReadWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32* value)
+bool Bus::ReadWord(PhysicalMemoryAddress address, u32* value)
 {
-  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cpu_address, bus_address, *value);
+  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, *value);
 }
 
-bool Bus::WriteByte(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u8 value)
+bool Bus::WriteByte(PhysicalMemoryAddress address, u8 value)
 {
   u32 temp = ZeroExtend32(value);
-  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(cpu_address, bus_address, temp);
+  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
 }
 
-bool Bus::WriteHalfWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u16 value)
+bool Bus::WriteHalfWord(PhysicalMemoryAddress address, u16 value)
 {
   u32 temp = ZeroExtend32(value);
-  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(cpu_address, bus_address, temp);
+  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
 }
 
-bool Bus::WriteWord(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddress bus_address, u32 value)
+bool Bus::WriteWord(PhysicalMemoryAddress address, u32 value)
 {
-  return DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(cpu_address, bus_address, value);
+  return DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
 }
 
 void Bus::PatchBIOS(u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
@@ -154,8 +166,7 @@ bool Bus::LoadBIOS()
   return true;
 }
 
-bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress cpu_address,
-                          PhysicalMemoryAddress bus_address, u32& value)
+bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)
 {
   SmallString str;
   str.AppendString("Invalid bus ");
@@ -171,7 +182,7 @@ bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, Physical
   else
     str.AppendString("write");
 
-  str.AppendFormattedString(" at address 0x%08X (virtual address 0x%08X)", bus_address, cpu_address);
+  str.AppendFormattedString(" at address 0x%08X", address);
   if (type == MemoryAccessType::Write)
     str.AppendFormattedString(" (value 0x%08X)", value);
 
@@ -185,7 +196,7 @@ bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, Physical
 bool Bus::DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value)
 {
   if (m_exp1_rom.empty())
-    return DoInvalidAccess(MemoryAccessType::Read, size, EXP1_BASE | offset, EXP1_BASE | offset, value);
+    return DoInvalidAccess(MemoryAccessType::Read, size, EXP1_BASE | offset, value);
 
   if (offset == 0x20018)
   {
@@ -221,7 +232,7 @@ bool Bus::DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value)
 
 bool Bus::DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value)
 {
-  return DoInvalidAccess(MemoryAccessType::Write, size, EXP1_BASE | offset, EXP1_BASE | offset, value);
+  return DoInvalidAccess(MemoryAccessType::Write, size, EXP1_BASE | offset, value);
 }
 
 bool Bus::DoReadEXP2(MemoryAccessSize size, u32 offset, u32& value)
@@ -235,7 +246,7 @@ bool Bus::DoReadEXP2(MemoryAccessSize size, u32 offset, u32& value)
     return true;
   }
 
-  return DoInvalidAccess(MemoryAccessType::Read, size, EXP2_BASE | offset, EXP2_BASE | offset, value);
+  return DoInvalidAccess(MemoryAccessType::Read, size, EXP2_BASE | offset, value);
 }
 
 bool Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
@@ -267,7 +278,43 @@ bool Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
     return true;
   }
 
-  return DoInvalidAccess(MemoryAccessType::Write, size, EXP2_BASE | offset, EXP2_BASE | offset, value);
+  return DoInvalidAccess(MemoryAccessType::Write, size, EXP2_BASE | offset, value);
+}
+
+bool Bus::DoReadMemoryControl(MemoryAccessSize size, u32 offset, u32& value)
+{
+  FixupUnalignedWordAccessW32(offset, value);
+  value = m_MEMCTRL.regs[offset / 4];
+  return true;
+}
+
+bool Bus::DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value)
+{
+  FixupUnalignedWordAccessW32(offset, value);
+  m_MEMCTRL.regs[offset / 4] = value;
+  return true;
+}
+
+bool Bus::DoReadMemoryControl2(MemoryAccessSize size, u32 offset, u32& value)
+{
+  if (offset == 0x00)
+  {
+    value = m_ram_size_reg;
+    return true;
+  }
+
+  return DoInvalidAccess(MemoryAccessType::Read, size, MEMCTRL2_BASE | offset, value);
+}
+
+bool Bus::DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value)
+{
+  if (offset == 0x00)
+  {
+    m_ram_size_reg = value;
+    return true;
+  }
+
+  return DoInvalidAccess(MemoryAccessType::Write, size, MEMCTRL2_BASE | offset, value);
 }
 
 bool Bus::DoReadPad(MemoryAccessSize size, u32 offset, u32& value)

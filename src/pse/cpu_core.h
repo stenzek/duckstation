@@ -41,6 +41,7 @@ public:
   // Sets the PC and flushes the pipeline.
   void SetPC(u32 new_pc);
 
+  // Memory reads variants which do not raise exceptions.
   bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value);
   bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
   bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value);
@@ -53,7 +54,7 @@ public:
   void ClearExternalInterrupt(u8 bit);
 
 private:
-  template<MemoryAccessType type, MemoryAccessSize size, bool is_instruction_fetch, bool raise_exceptions>
+  template<MemoryAccessType type, MemoryAccessSize size>
   bool DoMemoryAccess(VirtualMemoryAddress address, u32& value);
 
   template<MemoryAccessType type, MemoryAccessSize size>
