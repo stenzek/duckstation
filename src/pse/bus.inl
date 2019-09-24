@@ -155,8 +155,8 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress cpu_address, PhysicalMemoryAddres
   }
   else if (bus_address < (SPU_BASE + SPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? ReadSPU(size, bus_address & SPU_MASK, value) :
-                                              WriteSPU(size, bus_address & SPU_MASK, value);
+    return (type == MemoryAccessType::Read) ? DoReadSPU(size, bus_address & SPU_MASK, value) :
+                                              DoWriteSPU(size, bus_address & SPU_MASK, value);
   }
   else if (bus_address < EXP2_BASE)
   {

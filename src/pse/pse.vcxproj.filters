@@ -17,6 +17,7 @@
     <ClCompile Include="pad_device.cpp" />
     <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="timers.cpp" />
+    <ClCompile Include="spu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -39,6 +40,7 @@
     <ClInclude Include="pad_device.h" />
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="timers.h" />
+    <ClInclude Include="spu.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

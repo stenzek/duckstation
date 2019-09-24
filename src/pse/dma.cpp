@@ -5,6 +5,7 @@
 #include "common/state_wrapper.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "spu.h"
 #include "system.h"
 Log_SetChannel(DMA);
 
@@ -12,13 +13,15 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom)
+bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
+                     SPU* spu)
 {
   m_system = system;
   m_bus = bus;
   m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
   m_cdrom = cdrom;
+  m_spu = spu;
   return true;
 }
 
@@ -79,6 +82,7 @@ u32 DMA::ReadRegister(u32 offset)
 void DMA::WriteRegister(u32 offset, u32 value)
 {
   const u32 channel_index = offset >> 4;
+  Log_DevPrintf("DMA channel %u offset %u", channel_index, offset);
   if (channel_index < 7)
   {
     ChannelState& state = m_state[channel_index];
@@ -370,9 +374,11 @@ u32 DMA::DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaini
     case Channel::CDROM:
       return m_cdrom->DMARead();
 
+    case Channel::SPU:
+      return m_spu->DMARead();
+
     case Channel::MDECin:
     case Channel::MDECout:
-    case Channel::SPU:
     case Channel::PIO:
     default:
       Panic("Unhandled DMA channel read");
@@ -388,10 +394,13 @@ void DMA::DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address
       m_gpu->DMAWrite(value);
       return;
 
+    case Channel::SPU:
+      m_spu->DMAWrite(value);
+      break;
+
     case Channel::MDECin:
     case Channel::MDECout:
     case Channel::CDROM:
-    case Channel::SPU:
     case Channel::PIO:
     case Channel::OTC:
     default:

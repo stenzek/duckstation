@@ -9,6 +9,7 @@
 #include "interrupt_controller.h"
 #include "pad.h"
 #include "pad_device.h"
+#include "spu.h"
 #include "timers.h"
 #include <cstdio>
 Log_SetChannel(System);
@@ -24,6 +25,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_cdrom = std::make_unique<CDROM>();
   m_pad = std::make_unique<Pad>();
   m_timers = std::make_unique<Timers>();
+  m_spu = std::make_unique<SPU>();
 }
 
 System::~System() = default;
@@ -34,13 +36,15 @@ bool System::Initialize()
     return false;
 
   if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(),
-                         m_pad.get(), m_timers.get()))
+                         m_pad.get(), m_timers.get(), m_spu.get()))
   {
     return false;
   }
 
-  if (!m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get()))
+  if (!m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get()))
+  {
     return false;
+  }
 
   if (!m_interrupt_controller->Initialize(m_cpu.get()))
     return false;
@@ -55,6 +59,9 @@ bool System::Initialize()
     return false;
 
   if (!m_timers->Initialize(this, m_interrupt_controller.get()))
+    return false;
+
+  if (!m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
     return false;
 
   return true;
@@ -86,6 +93,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("Timers") || !m_timers->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("SPU") || !m_timers->DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -99,6 +109,7 @@ void System::Reset()
   m_cdrom->Reset();
   m_pad->Reset();
   m_timers->Reset();
+  m_spu->Reset();
   m_frame_number = 1;
 }
 

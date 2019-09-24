@@ -10,6 +10,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "pad.h"
+#include "spu.h"
 #include "timers.h"
 #include <cstdio>
 Log_SetChannel(Bus);
@@ -27,7 +28,7 @@ Bus::Bus() = default;
 Bus::~Bus() = default;
 
 bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                     Pad* pad, Timers* timers)
+                     Pad* pad, Timers* timers, SPU* spu)
 {
   if (!LoadBIOS())
     return false;
@@ -39,6 +40,7 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
   m_cdrom = cdrom;
   m_pad = pad;
   m_timers = timers;
+  m_spu = spu;
   return true;
 }
 
@@ -354,30 +356,34 @@ bool Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
   return true;
 }
 
-bool Bus::ReadSPU(MemoryAccessSize size, u32 offset, u32& value)
+bool Bus::DoReadSPU(MemoryAccessSize size, u32 offset, u32& value)
 {
-  if (offset == 0x1AE)
+  // 32-bit reads are read as two 16-bit writes.
+  if (size == MemoryAccessSize::Word)
   {
-    value = 0;
-    return true;
+    const u16 lsb = m_spu->ReadRegister(offset);
+    const u16 msb = m_spu->ReadRegister(offset + 2);
+    value = ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
+  }
+  else
+  {
+    value = ZeroExtend32(m_spu->ReadRegister(offset));
   }
 
-  // return DoInvalidAccess(MemoryAccessType::Write, size, SPU_BASE | offset, SPU_BASE | offset, value);
-  value = 0;
   return true;
 }
 
-bool Bus::WriteSPU(MemoryAccessSize size, u32 offset, u32 value)
+bool Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 {
-  // Transfer FIFO
-  if (offset == 0x1A8)
+  // 32-bit writes are written as two 16-bit writes.
+  if (size == MemoryAccessSize::Word)
+  {
+    m_spu->WriteRegister(offset, Truncate16(value));
+    m_spu->WriteRegister(offset + 2, Truncate16(value >> 16));
     return true;
+  }
 
-  // SPUCNT
-  if (offset == 0x1AA)
-    return true;
-
-  // return DoInvalidAccess(MemoryAccessType::Write, size, SPU_BASE | offset, SPU_BASE | offset, value);
+  m_spu->WriteRegister(offset, Truncate16(value));
   return true;
 }
 

@@ -6,8 +6,7 @@
 
 class StateWrapper;
 
-namespace CPU
-{
+namespace CPU {
 class Core;
 }
 
@@ -17,6 +16,7 @@ class GPU;
 class CDROM;
 class Pad;
 class Timers;
+class SPU;
 class System;
 
 class Bus
@@ -25,7 +25,8 @@ public:
   Bus();
   ~Bus();
 
-  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers);
+  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad,
+                  Timers* timers, SPU* spu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -114,8 +115,8 @@ private:
   bool DoReadTimers(MemoryAccessSize size, u32 offset, u32& value);
   bool DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool ReadSPU(MemoryAccessSize size, u32 offset, u32& value);
-  bool WriteSPU(MemoryAccessSize size, u32 offset, u32 value);
+  bool DoReadSPU(MemoryAccessSize size, u32 offset, u32& value);
+  bool DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
   CPU::Core* m_cpu = nullptr;
   DMA* m_dma = nullptr;
@@ -124,6 +125,7 @@ private:
   CDROM* m_cdrom = nullptr;
   Pad* m_pad = nullptr;
   Timers* m_timers = nullptr;
+  SPU* m_spu = nullptr;
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM
   std::array<u8, 524288> m_bios{}; // 512K BIOS ROM

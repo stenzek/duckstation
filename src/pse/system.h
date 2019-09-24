@@ -20,6 +20,7 @@ class CDROM;
 class Pad;
 class PadDevice;
 class Timers;
+class SPU;
 
 class System
 {
@@ -64,5 +65,6 @@ private:
   std::unique_ptr<CDROM> m_cdrom;
   std::unique_ptr<Pad> m_pad;
   std::unique_ptr<Timers> m_timers;
+  std::unique_ptr<SPU> m_spu;
   u32 m_frame_number = 1;
 };
