@@ -39,7 +39,7 @@ private:
   s64 TruncateMAC(s64 value);
 
   template<u32 index>
-  s32 TruncateAndSetMAC(s64 value, bool sf);
+  s32 TruncateAndSetMAC(s64 value, u8 shift);
 
   template<u32 index>
   u8 TruncateRGB(s32 value);
@@ -49,24 +49,21 @@ private:
 
   void SetMAC(u32 index, s64 value);
   void SetIR(u32 index, s32 value, bool lm);
-  void SetIR0(s32 value);
   void SetOTZ(s32 value);
   void PushSXY(s32 x, s32 y);
   void PushSZ(s32 value);
   void PushRGB(u8 r, u8 g, u8 b, u8 c);
-  s32 Divide(s32 dividend, s32 divisor);
-  s32 SaturateDivide(s32 result);
 
   s64 VecDot(const s16 A[3], const s16 B[3]);
   s64 VecDot(const s16 A[3], s16 B_x, s16 B_y, s16 B_z);
 
   // 3x3 matrix * 3x1 vector, updates MAC[1-3] and IR[1-3]
-  void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
+  void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
   
   // 3x3 matrix * 3x1 vector with translation, updates MAC[1-3] and IR[1-3]
-  void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
+  void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 
-  void RTPS(const s16 V[3], bool sf);
+  void RTPS(const s16 V[3], bool sf, bool lm);
   void NCCS(const s16 V[3], bool sf, bool lm);
   void NCDS(const s16 V[3], bool sf, bool lm);
 

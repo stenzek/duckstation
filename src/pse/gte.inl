@@ -56,13 +56,12 @@ s64 GTE::Core::TruncateMAC(s64 value)
 }
 
 template<u32 index>
-s32 GTE::Core::TruncateAndSetMAC(s64 value, bool sf)
+s32 GTE::Core::TruncateAndSetMAC(s64 value, u8 shift)
 {
   value = TruncateMAC<index>(value);
 
   // shift should be done before storing to avoid losing precision
-  if (sf)
-    value >>= 12;
+  value >>= shift;
 
   const s32 value32 = static_cast<s32>(value);
   m_regs.dr32[24 + index] = value32;

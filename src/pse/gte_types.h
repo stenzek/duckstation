@@ -135,6 +135,8 @@ union Instruction
   BitField<u32, u8, 13, 2> mvmva_translation_vector;
   BitField<u32, bool, 10, 1> lm; // saturate IR1, IR2, IR3 result
   BitField<u32, u8, 0, 6> command;
+
+  u8 GetShift() const { return sf ? 12 : 0; }
 };
 
 } // namespace GTE
