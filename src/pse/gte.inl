@@ -48,7 +48,7 @@ s16 GTE::Core::TruncateAndSetIR(s32 value, bool lm)
 {
   constexpr s32 MIN_VALUE = (index == 0) ? IR0_MIN_VALUE : IR123_MIN_VALUE;
   constexpr s32 MAX_VALUE = (index == 0) ? IR0_MAX_VALUE : IR123_MAX_VALUE;
-  const s32 actual_min_value = lm ? 0 : -0x8000;
+  const s32 actual_min_value = lm ? 0 : MIN_VALUE;
   if (value < actual_min_value)
   {
     value = actual_min_value;

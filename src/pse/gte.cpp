@@ -388,15 +388,37 @@ void Core::PushRGB(u8 r, u8 g, u8 b, u8 c)
   m_regs.RGB2 = ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(c) << 24);
 }
 
-void Core::RTPS(const s16 V[3], bool sf, bool lm)
+void Core::RTPS(const s16 V[3], bool sf, bool lm, bool last)
 {
+  const u8 shift = sf ? 12 : 0;
+#define dot3(i)                                                                                                        \
+  CheckMACResult<i + 1>(                                                                                               \
+    (s64(m_regs.TR[i]) << 12) +                                                                                        \
+    CheckMACResult<i + 1>(CheckMACResult<i + 1>(CheckMACResult<i + 1>(s64(s32(m_regs.RT[i][0]) * s32(V[0]))) +         \
+                                                s64(s32(m_regs.RT[i][1]) * s32(V[1]))) +                               \
+                          s64(s32(m_regs.RT[i][2]) * s32(V[2]))))
+
   // IR1 = MAC1 = (TRX*1000h + RT11*VX0 + RT12*VY0 + RT13*VZ0) SAR (sf*12)
   // IR2 = MAC2 = (TRY*1000h + RT21*VX0 + RT22*VY0 + RT23*VZ0) SAR (sf*12)
   // IR3 = MAC3 = (TRZ*1000h + RT31*VX0 + RT32*VY0 + RT33*VZ0) SAR (sf*12)
-  MulMatVec(m_regs.RT, m_regs.TR, V[0], V[1], V[2], sf ? 12 : 0, lm);
+  const s64 x = dot3(0);
+  const s64 y = dot3(1);
+  const s64 z = dot3(2);
+  TruncateAndSetMAC<1>(x, shift);
+  TruncateAndSetMAC<2>(y, shift);
+  TruncateAndSetMAC<3>(z, shift);
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+
+  // The command does saturate IR1,IR2,IR3 to -8000h..+7FFFh (regardless of lm bit). When using RTP with sf=0, then the
+  // IR3 saturation flag (FLAG.22) gets set <only> if "MAC3 SAR 12" exceeds -8000h..+7FFFh (although IR3 is saturated
+  // when "MAC3" exceeds -8000h..+7FFFh).
+  TruncateAndSetIR<3>(m_regs.MAC3, false);
+  m_regs.dr32[11] = std::clamp(m_regs.MAC3, lm ? 0 : IR123_MIN_VALUE, IR123_MAX_VALUE);
+#undef dot3
 
   // SZ3 = MAC3 SAR ((1-sf)*12)                           ;ScreenZ FIFO 0..+FFFFh
-  PushSZ(sf ? m_regs.MAC3 : (m_regs.MAC3 >> 12));
+  PushSZ(s32(z >> 12));
 
   s32 result;
   if (m_regs.SZ3 == 0)
@@ -416,18 +438,22 @@ void Core::RTPS(const s16 V[3], bool sf, bool lm)
 
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR1+OFX, SX2=MAC0/10000h ;ScrX FIFO -400h..+3FFh
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR2+OFY, SY2=MAC0/10000h ;ScrY FIFO -400h..+3FFh
-  // MAC0=(((H*20000h/SZ3)+1)/2)*DQA+DQB, IR0=MAC0/1000h  ;Depth cueing 0..+1000h
-  const s32 Sx = s32(TruncateAndSetMAC<0>(s64(result) * s64(m_regs.IR1) + s64(m_regs.OFX), 16));
-  const s32 Sy = s32(TruncateAndSetMAC<0>(s64(result) * s64(m_regs.IR2) + s64(m_regs.OFY), 16));
-  const s32 Sz = s32(TruncateAndSetMAC<0>(s64(result) * s64(m_regs.DQA) + s64(m_regs.DQB), 12));
-  PushSXY(Sx, Sy);
-  TruncateAndSetIR<0>(Sz, true);
+  const s64 Sx = TruncateAndSetMAC<0>(s64(result) * s64(m_regs.IR1) + s64(m_regs.OFX), 0);
+  const s64 Sy = TruncateAndSetMAC<0>(s64(result) * s64(m_regs.IR2) + s64(m_regs.OFY), 0);
+  PushSXY(s32(Sx >> 16), s32(Sy >> 16));
+
+  if (last)
+  {
+    // MAC0=(((H*20000h/SZ3)+1)/2)*DQA+DQB, IR0=MAC0/1000h  ;Depth cueing 0..+1000h
+    const s64 Sz = TruncateAndSetMAC<0>(s64(result) * s64(m_regs.DQA) + s64(m_regs.DQB), 0);
+    TruncateAndSetIR<0>(s32(Sz >> 12), true);
+  }
 }
 
 void Core::Execute_RTPS(Instruction inst)
 {
   m_regs.FLAG.Clear();
-  RTPS(m_regs.V0, inst.sf, inst.lm);
+  RTPS(m_regs.V0, inst.sf, inst.lm, true);
   m_regs.FLAG.UpdateError();
 }
 
@@ -436,9 +462,9 @@ void Core::Execute_RTPT(Instruction inst)
   m_regs.FLAG.Clear();
 
   const bool sf = inst.sf;
-  RTPS(m_regs.V0, sf, inst.lm);
-  RTPS(m_regs.V1, sf, inst.lm);
-  RTPS(m_regs.V2, sf, inst.lm);
+  RTPS(m_regs.V0, sf, inst.lm, false);
+  RTPS(m_regs.V1, sf, inst.lm, false);
+  RTPS(m_regs.V2, sf, inst.lm, true);
 
   m_regs.FLAG.UpdateError();
 }
