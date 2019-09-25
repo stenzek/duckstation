@@ -26,8 +26,8 @@ public:
   void ExecuteInstruction(Instruction inst);
 
 private:
-  static constexpr s64 MAC0_MIN_VALUE = -(INT64_C(1) << 43);
-  static constexpr s64 MAC0_MAX_VALUE = (INT64_C(1) << 43) - 1;
+  static constexpr s64 MAC0_MIN_VALUE = -(INT64_C(1) << 31);
+  static constexpr s64 MAC0_MAX_VALUE = (INT64_C(1) << 31) - 1;
   static constexpr s64 MAC123_MIN_VALUE = -(INT64_C(1) << 43);
   static constexpr s64 MAC123_MAX_VALUE = (INT64_C(1) << 43) - 1;
   static constexpr s32 IR0_MIN_VALUE = 0x0000;
@@ -35,27 +35,23 @@ private:
   static constexpr s32 IR123_MIN_VALUE = -(INT64_C(1) << 15);
   static constexpr s32 IR123_MAX_VALUE = (INT64_C(1) << 15) - 1;
 
+  // Checks for underflow/overflow. Returns the value untouched so it can be threaded through an expression.
   template<u32 index>
-  s64 TruncateMAC(s64 value);
+  s64 CheckMACResult(s64 value);
 
   template<u32 index>
-  s32 TruncateAndSetMAC(s64 value, u8 shift);
-
-  template<u32 index>
-  u8 TruncateRGB(s32 value);
+  s64 TruncateAndSetMAC(s64 value, u8 shift);
 
   template<u32 index>
   s16 TruncateAndSetIR(s32 value, bool lm);
 
-  void SetMAC(u32 index, s64 value);
-  void SetIR(u32 index, s32 value, bool lm);
+  template<u32 index>
+  u8 TruncateRGB(s32 value);
+
   void SetOTZ(s32 value);
   void PushSXY(s32 x, s32 y);
   void PushSZ(s32 value);
   void PushRGB(u8 r, u8 g, u8 b, u8 c);
-
-  s64 VecDot(const s16 A[3], const s16 B[3]);
-  s64 VecDot(const s16 A[3], s16 B_x, s16 B_y, s16 B_z);
 
   // 3x3 matrix * 3x1 vector, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
