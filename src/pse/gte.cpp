@@ -290,6 +290,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_RTPT(inst);
       break;
 
+    case 0x12:
+      Execute_MVMVA(inst);
+      break;
+
     default:
       Panic("Missing handler");
       break;
@@ -607,10 +611,10 @@ void Core::MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz
   TruncateAndSetIR<3>(m_regs.MAC3, lm);
 }
 
-void Core::MulMatVec(const s16 M[3][3], const u32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm)
+void Core::MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm)
 {
 #define dot3(i)                                                                                                        \
-  TruncateAndSetMAC<i + 1>(static_cast<s64>(ZeroExtend64(T[i]) << 12) +                                                \
+  TruncateAndSetMAC<i + 1>(s64(T[i] << 12) +                                                                           \
                              TruncateMAC<i + 1>(TruncateMAC<i + 1>(TruncateMAC<i + 1>(s64(s32(M[i][0]) * s32(Vx))) +   \
                                                                    s64(s32(M[i][1]) * s32(Vy))) +                      \
                                                 s64(s32(M[i][2]) * s32(Vz))),                                          \
@@ -644,9 +648,9 @@ void Core::NCDS(const s16 V[3], bool sf, bool lm)
 
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0                   ;<--- for NCDx only
   //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
-  TruncateAndSetIR<1>(s32(s64(ZeroExtend64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> (sf ? 12 : 0), false);
-  TruncateAndSetIR<2>(s32(s64(ZeroExtend64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> (sf ? 12 : 0), false);
-  TruncateAndSetIR<3>(s32(s64(ZeroExtend64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> (sf ? 12 : 0), false);
+  TruncateAndSetIR<1>(s32((s64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> (sf ? 12 : 0), false);
+  TruncateAndSetIR<2>(s32((s64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> (sf ? 12 : 0), false);
+  TruncateAndSetIR<3>(s32((s64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> (sf ? 12 : 0), false);
 
   //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
   // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
@@ -669,6 +673,76 @@ void Core::Execute_NCDS(Instruction inst)
   NCDS(m_regs.V0, inst.sf, inst.lm);
 
   m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_MVMVA(Instruction inst)
+{
+  // TODO: Remove memcpy..
+  s16 M[3][3];
+  switch (inst.mvmva_multiply_matrix)
+  {
+    case 0:
+      std::memcpy(M, m_regs.RT, sizeof(s16) * 3 * 3);
+      break;
+    case 1:
+      std::memcpy(M, m_regs.LLM, sizeof(s16) * 3 * 3);
+      break;
+    case 2:
+      std::memcpy(M, m_regs.LCM, sizeof(s16) * 3 * 3);
+      break;
+    default:
+      // buggy
+      Panic("Missing implementation");
+      return;
+  }
+
+  s16 Vx, Vy, Vz;
+  switch (inst.mvmva_multiply_vector)
+  {
+    case 0:
+      Vx = m_regs.V0[0];
+      Vy = m_regs.V0[1];
+      Vz = m_regs.V0[2];
+      break;
+    case 1:
+      Vx = m_regs.V1[0];
+      Vy = m_regs.V1[1];
+      Vz = m_regs.V1[2];
+      break;
+    case 2:
+      Vx = m_regs.V2[0];
+      Vy = m_regs.V2[1];
+      Vz = m_regs.V2[2];
+      break;
+    default:
+      Vx = m_regs.IR0;
+      Vy = m_regs.IR1;
+      Vz = m_regs.IR2;
+      break;
+  }
+
+  s32 T[3];
+  switch (inst.mvmva_translation_vector)
+  {
+    case 0:
+      std::memcpy(T, m_regs.TR, sizeof(T));
+      break;
+    case 1:
+      std::memcpy(T, m_regs.BK, sizeof(T));
+      break;
+    case 2:
+      // buggy
+      std::memcpy(T, m_regs.FC, sizeof(T));
+      break;
+    case 3:
+      std::fill_n(T, countof(T), s32(0));
+      break;
+    default:
+      Panic("Missing implementation");
+      return;
+  }
+
+  MulMatVec(M, T, Vx, Vy, Vz, inst.sf, inst.lm);
 }
 
 } // namespace GTE

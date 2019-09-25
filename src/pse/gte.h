@@ -64,7 +64,7 @@ private:
   void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
   
   // 3x3 matrix * 3x1 vector with translation, updates MAC[1-3] and IR[1-3]
-  void MulMatVec(const s16 M[3][3], const u32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
+  void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
 
   void RTPS(const s16 V[3], bool sf);
   void NCDS(const s16 V[3], bool sf, bool lm);
@@ -76,6 +76,7 @@ private:
   void Execute_AVSZ3(Instruction inst);
   void Execute_AVSZ4(Instruction inst);
   void Execute_NCDS(Instruction inst);
+  void Execute_MVMVA(Instruction inst);
 
   Regs m_regs = {};
 };
