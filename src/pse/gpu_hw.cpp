@@ -14,9 +14,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
     case Primitive::Polygon:
     {
       // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      bool restart_strip = (rc.quad_polygon && !m_batch_vertices.empty());
+      bool restart_strip = (rc.quad_polygon && !m_batch.vertices.empty());
       if (restart_strip)
-        m_batch_vertices.push_back(m_batch_vertices.back());
+        m_batch.vertices.push_back(m_batch.vertices.back());
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
@@ -39,10 +39,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 
         hw_vert.padding = 0;
 
-        m_batch_vertices.push_back(hw_vert);
+        m_batch.vertices.push_back(hw_vert);
         if (restart_strip)
         {
-          m_batch_vertices.push_back(m_batch_vertices.back());
+          m_batch.vertices.push_back(m_batch.vertices.back());
           restart_strip = false;
         }
       }
@@ -52,9 +52,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
     case Primitive::Rectangle:
     {
       // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      const bool restart_strip = !m_batch_vertices.empty();
+      const bool restart_strip = !m_batch.vertices.empty();
       if (restart_strip)
-        m_batch_vertices.push_back(m_batch_vertices.back());
+        m_batch.vertices.push_back(m_batch.vertices.back());
 
       u32 buffer_pos = 1;
       const bool textured = rc.texture_enable;
@@ -92,12 +92,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       const u8 tex_right = static_cast<u8>(tex_left + (rectangle_width - 1));
       const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
 
-      m_batch_vertices.push_back(HWVertex{pos_left, pos_top, color, HWVertex::EncodeTexcoord(tex_left, tex_top)});
+      m_batch.vertices.push_back(HWVertex{pos_left, pos_top, color, HWVertex::EncodeTexcoord(tex_left, tex_top)});
       if (restart_strip)
-        m_batch_vertices.push_back(m_batch_vertices.back());
-      m_batch_vertices.push_back(HWVertex{pos_right, pos_top, color, HWVertex::EncodeTexcoord(tex_right, tex_top)});
-      m_batch_vertices.push_back(HWVertex{pos_left, pos_bottom, color, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
-      m_batch_vertices.push_back(
+        m_batch.vertices.push_back(m_batch.vertices.back());
+      m_batch.vertices.push_back(HWVertex{pos_right, pos_top, color, HWVertex::EncodeTexcoord(tex_right, tex_top)});
+      m_batch.vertices.push_back(HWVertex{pos_left, pos_bottom, color, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
+      m_batch.vertices.push_back(
         HWVertex{pos_right, pos_bottom, color, HWVertex::EncodeTexcoord(tex_right, tex_bottom)});
     }
     break;
@@ -106,14 +106,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       UnreachableCode();
       break;
   }
-}
-
-void GPU_HW::CalcViewport(int* x, int* y, int* width, int* height)
-{
-  *x = m_drawing_offset.x;
-  *y = m_drawing_offset.y;
-  *width = std::max(static_cast<int>(VRAM_WIDTH - m_drawing_offset.x), 1);
-  *height = std::max(static_cast<int>(VRAM_HEIGHT - m_drawing_offset.y), 1);
 }
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
@@ -188,11 +180,13 @@ out vec4 v_col0;
   out vec2 v_tex0;
 #endif
 
+uniform ivec2 u_pos_offset;
+
 void main()
 {
   // 0..+1023 -> -1..1
-  float pos_x = (float(a_pos.x) / 512.0) - 1.0;
-  float pos_y = (float(a_pos.y) / -256.0) + 1.0;
+  float pos_x = (float(a_pos.x + u_pos_offset.x) / 512.0) - 1.0;
+  float pos_y = (float(a_pos.y + u_pos_offset.y) / -256.0) + 1.0;
   gl_Position = vec4(pos_x, pos_y, 0.0, 1.0);
 
   v_col0 = a_col0;
@@ -229,7 +223,7 @@ void main()
       discard;
 
     #if BLENDING
-      o_col0 = v_col0 * texcol;
+      o_col0 = vec4((ivec4(v_col0 * 255.0) * ivec4(texcol * 255.0)) >> 7) / 255.0;
     #else
       o_col0 = texcol;
     #endif
@@ -339,6 +333,16 @@ void main()
 
 void GPU_HW::UpdateTexturePageTexture() {}
 
+GPU_HW::HWRenderBatch::Primitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
+{
+  if (rc.primitive == Primitive::Line)
+    return HWRenderBatch::Primitive::Lines;
+  else if ((rc.primitive == Primitive::Polygon && rc.quad_polygon) || rc.primitive == Primitive::Rectangle)
+    return HWRenderBatch::Primitive::TriangleStrip;
+  else
+    return HWRenderBatch::Primitive::Triangles;
+}
+
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
 {
   if (rc.texture_enable)
@@ -349,16 +353,16 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
       case Primitive::Polygon:
       {
         if (rc.shading_enable)
-          m_texture_config.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[5]);
+          m_render_state.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[5]);
         else
-          m_texture_config.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[4]);
+          m_render_state.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[4]);
       }
       break;
 
       case Primitive::Rectangle:
       {
-        m_texture_config.SetFromRectangleTexcoord(m_GP0_command[2]);
-        m_texture_config.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
+        m_render_state.SetFromRectangleTexcoord(m_GP0_command[2]);
+        m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
       }
       break;
 
@@ -366,25 +370,43 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
         break;
     }
 
-    if (m_texture_config.IsPageChanged())
+    if (m_render_state.IsChanged())
     {
-      if (!m_batch_vertices.empty())
+      if (m_render_state.IsTextureChanged())
+      {
+        if (!IsFlushed())
+          FlushRender();
+        UpdateTexturePageTexture();
+        m_render_state.ClearTextureChangedFlag();
+      }
+
+      if (m_batch.transparency_enable && m_render_state.IsTransparencyModeChanged() && !IsFlushed())
         FlushRender();
 
-      UpdateTexturePageTexture();
-      m_texture_config.ClearPageChangedFlag();
+      m_batch.transparency_mode = m_render_state.transparency_mode;
+      m_render_state.ClearTransparencyModeChangedFlag();
     }
   }
 
+  // extract state
+  const bool rc_texture_enable = rc.texture_enable;
+  const bool rc_texture_blend_enable = !rc.texture_blend_disable;
+  const HWRenderBatch::Primitive rc_primitive = GetPrimitiveForCommand(rc);
+
   // flush when the command changes
-  if (!m_batch_vertices.empty())
+  if (!m_batch.vertices.empty())
   {
     // including the degenerate triangles for strips
     const u32 max_added_vertices = num_vertices + 2;
-    if ((m_batch_vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT || m_batch_command.bits != rc.bits)
+    const bool params_changed =
+      (m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
+       m_batch.primitive != rc_primitive);
+    if ((m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT || params_changed)
       FlushRender();
   }
 
-  m_batch_command = rc;
+  m_batch.texture_enable = rc_texture_enable;
+  m_batch.texture_blending_enable = rc_texture_blend_enable;
+  m_batch.primitive = rc_primitive;
   LoadVertices(rc, num_vertices);
 }

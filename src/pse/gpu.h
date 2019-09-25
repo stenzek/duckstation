@@ -220,41 +220,47 @@ protected:
     BitField<u32, bool, 31, 1> drawing_even_line;
   } m_GPUSTAT = {};
 
-  struct TextureConfig
+  struct RenderState
   {
-    static constexpr u16 PAGE_ATTRIBUTE_MASK = UINT16_C(0b0000100111111111);
+    static constexpr u16 PAGE_ATTRIBUTE_TEXTURE_MASK = UINT16_C(0b0000000110011111);
+    static constexpr u16 PAGE_ATTRIBUTE_MASK = UINT16_C(0b0000000111111111);
     static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
 
     // decoded values
-    s32 base_x;
-    s32 base_y;
-    s32 palette_x;
-    s32 palette_y;
+    s32 texture_base_x;
+    s32 texture_base_y;
+    s32 texture_palette_x;
+    s32 texture_palette_y;
+    TextureColorMode texture_color_mode;
+    TransparencyMode transparency_mode;
+    u8 texture_window_mask_x;   // in 8 pixel steps
+    u8 texture_window_mask_y;   // in 8 pixel steps
+    u8 texture_window_offset_x; // in 8 pixel steps
+    u8 texture_window_offset_y; // in 8 pixel steps
+    bool texture_x_flip;
+    bool texture_y_flip;
 
     // original values
-    u16 page_attribute;          // from register in rectangle modes/vertex in polygon modes
-    u16 palette_attribute;       // from vertex
-    TextureColorMode color_mode; // from register/vertex in polygon modes
-    TransparencyMode transparency_mode;
+    u16 texpage_attribute; // from register in rectangle modes/vertex in polygon modes
+    u16 texlut_attribute;  // from vertex
 
-    bool page_changed = false;
+    bool texture_changed = false;
+    bool transparency_mode_changed = false;
 
-    bool IsPageChanged() const { return page_changed; }
-    void ClearPageChangedFlag() { page_changed = false; }
+    bool IsChanged() const { return texture_changed || transparency_mode_changed; }
+
+    bool IsTextureChanged() const { return texture_changed; }
+    void ClearTextureChangedFlag() { texture_changed = false; }
+
+    bool IsTransparencyModeChanged() const { return transparency_mode_changed; }
+    void ClearTransparencyModeChangedFlag() { transparency_mode_changed = false; }
 
     void SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1);
     void SetFromRectangleTexcoord(u32 texcoord);
 
     void SetFromPageAttribute(u16 value);
     void SetFromPaletteAttribute(u16 value);
-
-    u8 window_mask_x;   // in 8 pixel steps
-    u8 window_mask_y;   // in 8 pixel steps
-    u8 window_offset_x; // in 8 pixel steps
-    u8 window_offset_y; // in 8 pixel steps
-    bool x_flip;
-    bool y_flip;
-  } m_texture_config = {};
+  } m_render_state = {};
 
   struct DrawingArea
   {

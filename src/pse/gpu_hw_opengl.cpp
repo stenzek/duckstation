@@ -148,11 +148,14 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   if (!prog.Link())
     return false;
 
+  prog.Bind();
+  prog.RegisterUniform("u_pos_offset");
+  prog.Uniform2i(0, 0, 0);
+
   if (textured)
   {
-    prog.Bind();
     prog.RegisterUniform("samp0");
-    prog.Uniform1i(0, 0);
+    prog.Uniform1i(1, 0);
   }
 
   return true;
@@ -165,16 +168,13 @@ void GPU_HW_OpenGL::SetProgram(bool textured, bool blending)
 
   if (textured)
     m_texture_page_texture->Bind();
+
+  prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);
 }
 
 void GPU_HW_OpenGL::SetViewport()
 {
-  int x, y, width, height;
-  CalcViewport(&x, &y, &width, &height);
-
-  y = VRAM_HEIGHT - y - height;
-  Log_DebugPrintf("SetViewport: Offset (%d,%d) Size (%d, %d)", x, y, width, height);
-  glViewport(x, y, width, height);
+  glViewport(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 }
 
 void GPU_HW_OpenGL::SetScissor()
@@ -207,13 +207,13 @@ void GPU_HW_OpenGL::SetBlendState()
     {GL_CONSTANT_COLOR, GL_FUNC_ADD, GL_ONE, 0.25f}            // B + F/4
   }};
 
-  if (!m_batch_command.IsTransparencyEnabled())
+  if (!m_batch.transparency_enable)
   {
     glDisable(GL_BLEND);
     return;
   }
 
-  const BlendVars& vars = blend_vars[static_cast<u8>(m_texture_config.transparency_mode)];
+  const BlendVars& vars = blend_vars[static_cast<u8>(m_batch.transparency_mode)];
   glEnable(GL_BLEND);
   glBlendFuncSeparate(vars.src_factor, vars.dst_factor, GL_ONE, GL_ZERO);
   glBlendEquationSeparate(vars.func, GL_FUNC_ADD);
@@ -327,12 +327,12 @@ void GPU_HW_OpenGL::UpdateTexturePageTexture()
   glViewport(0, 0, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT);
   glBindVertexArray(m_attributeless_vao_id);
 
-  const GL::Program& prog = m_texture_page_programs[static_cast<u8>(m_texture_config.color_mode)];
+  const GL::Program& prog = m_texture_page_programs[static_cast<u8>(m_render_state.texture_color_mode)];
   prog.Bind();
 
-  prog.Uniform2i(1, m_texture_config.base_x, m_texture_config.base_y);
-  if (m_texture_config.color_mode >= GPU::TextureColorMode::Palette4Bit)
-    prog.Uniform2i(2, m_texture_config.palette_x, m_texture_config.palette_y);
+  prog.Uniform2i(1, m_render_state.texture_base_x, m_render_state.texture_base_y);
+  if (m_render_state.texture_color_mode >= GPU::TextureColorMode::Palette4Bit)
+    prog.Uniform2i(2, m_render_state.texture_palette_x, m_render_state.texture_palette_y);
 
   glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -342,14 +342,14 @@ void GPU_HW_OpenGL::UpdateTexturePageTexture()
 
 void GPU_HW_OpenGL::FlushRender()
 {
-  if (m_batch_vertices.empty())
+  if (m_batch.vertices.empty())
     return;
 
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
-  SetProgram(m_batch_command.IsTextureEnabled(), m_batch_command.IsTextureBlendingEnabled());
+  SetProgram(m_batch.texture_enable, m_batch.texture_blending_enable);
   SetViewport();
   SetScissor();
   SetBlendState();
@@ -357,16 +357,15 @@ void GPU_HW_OpenGL::FlushRender()
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
   glBindVertexArray(m_vao_id);
 
-  Assert((m_batch_vertices.size() * sizeof(HWVertex)) <= VERTEX_BUFFER_SIZE);
+  Assert((m_batch.vertices.size() * sizeof(HWVertex)) <= VERTEX_BUFFER_SIZE);
   glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(HWVertex) * m_batch_vertices.size()),
-                  m_batch_vertices.data());
+  glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(HWVertex) * m_batch.vertices.size()),
+                  m_batch.vertices.data());
 
-  const bool is_strip = ((m_batch_command.primitive == Primitive::Polygon && m_batch_command.quad_polygon) ||
-                         m_batch_command.primitive == Primitive::Rectangle);
-  glDrawArrays(is_strip ? GL_TRIANGLE_STRIP : GL_TRIANGLES, 0, static_cast<GLsizei>(m_batch_vertices.size()));
+  static constexpr std::array<GLenum, 3> gl_primitives = {{GL_LINES, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
+  glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
 
-  m_batch_vertices.clear();
+  m_batch.vertices.clear();
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()

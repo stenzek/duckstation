@@ -26,6 +26,24 @@ protected:
     static constexpr u16 EncodeTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
   };
 
+  struct HWRenderBatch
+  {
+    enum class Primitive : u8
+    {
+      Lines = 0,
+      Triangles = 1,
+      TriangleStrip = 2
+    };
+
+    Primitive primitive;
+    bool transparency_enable;
+    bool texture_enable;
+    bool texture_blending_enable;
+    TransparencyMode transparency_mode;
+
+    std::vector<HWVertex> vertices;
+  };
+
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
 
@@ -39,11 +57,10 @@ protected:
 
   virtual void UpdateTexturePageTexture();
 
-  bool IsFlushed() const { return !m_batch_vertices.empty(); }
+  bool IsFlushed() const { return m_batch.vertices.empty(); }
 
   void DispatchRenderCommand(RenderCommand rc, u32 num_vertices) override;
 
-  void CalcViewport(int* x, int* y, int* width, int* height);
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
 
   std::string GenerateVertexShader(bool textured);
@@ -52,10 +69,11 @@ protected:
   std::string GenerateTexturePageFragmentShader(TextureColorMode mode);
   std::string GenerateFillFragmentShader();
 
-  std::vector<HWVertex> m_batch_vertices;
-  RenderCommand m_batch_command = {};
+  HWRenderBatch m_batch = {};
 
 private:
+  static HWRenderBatch::Primitive GetPrimitiveForCommand(RenderCommand rc);
+
   void GenerateShaderHeader(std::stringstream& ss);
 
   void LoadVertices(RenderCommand rc, u32 num_vertices);

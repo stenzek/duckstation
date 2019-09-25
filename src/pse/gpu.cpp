@@ -38,6 +38,9 @@ void GPU::SoftReset()
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
+  m_render_state = {};
+  m_render_state.texture_changed = true;
+  m_render_state.transparency_mode_changed = true;
   UpdateGPUSTAT();
   UpdateCRTCConfig();
 }
@@ -48,20 +51,24 @@ bool GPU::DoState(StateWrapper& sw)
     FlushRender();
 
   sw.Do(&m_GPUSTAT.bits);
-  sw.Do(&m_texture_config.base_x);
-  sw.Do(&m_texture_config.base_y);
-  sw.Do(&m_texture_config.palette_x);
-  sw.Do(&m_texture_config.palette_y);
-  sw.Do(&m_texture_config.page_attribute);
-  sw.Do(&m_texture_config.palette_attribute);
-  sw.Do(&m_texture_config.color_mode);
-  sw.Do(&m_texture_config.page_changed);
-  sw.Do(&m_texture_config.window_mask_x);
-  sw.Do(&m_texture_config.window_mask_y);
-  sw.Do(&m_texture_config.window_offset_x);
-  sw.Do(&m_texture_config.window_offset_y);
-  sw.Do(&m_texture_config.x_flip);
-  sw.Do(&m_texture_config.y_flip);
+
+  sw.Do(&m_render_state.texture_base_x);
+  sw.Do(&m_render_state.texture_base_y);
+  sw.Do(&m_render_state.texture_palette_x);
+  sw.Do(&m_render_state.texture_palette_y);
+  sw.Do(&m_render_state.texture_color_mode);
+  sw.Do(&m_render_state.transparency_mode);
+  sw.Do(&m_render_state.texture_window_mask_x);
+  sw.Do(&m_render_state.texture_window_mask_y);
+  sw.Do(&m_render_state.texture_window_offset_x);
+  sw.Do(&m_render_state.texture_window_offset_y);
+  sw.Do(&m_render_state.texture_x_flip);
+  sw.Do(&m_render_state.texture_y_flip);
+  sw.Do(&m_render_state.texpage_attribute);
+  sw.Do(&m_render_state.texlut_attribute);
+  sw.Do(&m_render_state.texture_changed);
+  sw.Do(&m_render_state.transparency_mode_changed);
+
   sw.Do(&m_drawing_area.top_left_x);
   sw.Do(&m_drawing_area.top_left_y);
   sw.Do(&m_drawing_area.bottom_right_x);
@@ -95,7 +102,8 @@ bool GPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    m_texture_config.page_changed = true;
+    m_render_state.texture_changed = true;
+    m_render_state.transparency_mode_changed = true;
     UpdateGPUSTAT();
   }
 
@@ -399,21 +407,21 @@ void GPU::WriteGP0(u32 value)
         const u32 MASK = ((UINT32_C(1) << 11) - 1);
         m_GPUSTAT.bits = (m_GPUSTAT.bits & ~MASK) | param & MASK;
         m_GPUSTAT.texture_disable = (param & (UINT32_C(1) << 11)) != 0;
-        m_texture_config.x_flip = (param & (UINT32_C(1) << 12)) != 0;
-        m_texture_config.y_flip = (param & (UINT32_C(1) << 13)) != 0;
+        m_render_state.texture_x_flip = (param & (UINT32_C(1) << 12)) != 0;
+        m_render_state.texture_y_flip = (param & (UINT32_C(1) << 13)) != 0;
         Log_DebugPrintf("Set draw mode %08X", param);
       }
       break;
 
       case 0xE2: // set texture window
       {
-        m_texture_config.window_mask_x = param & UINT32_C(0x1F);
-        m_texture_config.window_mask_y = (param >> 5) & UINT32_C(0x1F);
-        m_texture_config.window_offset_x = (param >> 10) & UINT32_C(0x1F);
-        m_texture_config.window_offset_y = (param >> 15) & UINT32_C(0x1F);
-        Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_texture_config.window_mask_x,
-                        m_texture_config.window_mask_y, m_texture_config.window_offset_x,
-                        m_texture_config.window_offset_y);
+        m_render_state.texture_window_mask_x = param & UINT32_C(0x1F);
+        m_render_state.texture_window_mask_y = (param >> 5) & UINT32_C(0x1F);
+        m_render_state.texture_window_offset_x = (param >> 10) & UINT32_C(0x1F);
+        m_render_state.texture_window_offset_y = (param >> 15) & UINT32_C(0x1F);
+        Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
+                        m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
+                        m_render_state.texture_window_offset_y);
       }
       break;
 
@@ -745,7 +753,7 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
 
 void GPU::UpdateDisplay()
 {
-  m_texture_config.page_changed = true;
+  m_render_state.texture_changed = true;
   m_system->IncrementFrameNumber();
 }
 
@@ -761,45 +769,48 @@ void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices) {}
 
 void GPU::FlushRender() {}
 
-void GPU::TextureConfig::SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1)
+void GPU::RenderState::SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1)
 {
   SetFromPaletteAttribute(Truncate16(texcoord0 >> 16));
   SetFromPageAttribute(Truncate16(texcoord1 >> 16));
 }
 
-void GPU::TextureConfig::SetFromRectangleTexcoord(u32 texcoord)
+void GPU::RenderState::SetFromRectangleTexcoord(u32 texcoord)
 {
   SetFromPaletteAttribute(Truncate16(texcoord >> 16));
 }
 
-void GPU::TextureConfig::SetFromPageAttribute(u16 value)
+void GPU::RenderState::SetFromPageAttribute(u16 value)
 {
+  const u16 old_page_attribute = texpage_attribute;
   value &= PAGE_ATTRIBUTE_MASK;
-  if (page_attribute == value)
+  if (texpage_attribute == value)
     return;
 
-  page_attribute = value;
-  page_changed = true;
+  texture_base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
+  texture_base_y = static_cast<s32>(ZeroExtend32((value >> 4) & UINT16_C(1)) * UINT32_C(256));
+  texture_color_mode = (static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
+  if (texture_color_mode == TextureColorMode::Reserved_Direct16Bit)
+    texture_color_mode = TextureColorMode::Direct16Bit;
 
-  base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
-  base_y = static_cast<s32>(ZeroExtend32((value >> 11) & UINT16_C(1)) * UINT32_C(512));
-  color_mode = (static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
-  if (color_mode == TextureColorMode::Reserved_Direct16Bit)
-    color_mode = TextureColorMode::Direct16Bit;
+  texpage_attribute = value;
+  texture_changed = (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_MASK);
 
+  const TransparencyMode old_transparency_mode = transparency_mode;
   transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));
+  transparency_mode_changed = old_transparency_mode != transparency_mode;
 }
 
-void GPU::TextureConfig::SetFromPaletteAttribute(u16 value)
+void GPU::RenderState::SetFromPaletteAttribute(u16 value)
 {
   value &= PALETTE_ATTRIBUTE_MASK;
-  if (palette_attribute == value)
+  if (texlut_attribute == value)
     return;
 
-  palette_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x3F)) * UINT32_C(16));
-  palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
-  palette_attribute = value;
-  page_changed = true;
+  texture_palette_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x3F)) * UINT32_C(16));
+  texture_palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
+  texlut_attribute = value;
+  texture_changed = true;
 }
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)
