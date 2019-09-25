@@ -67,6 +67,7 @@ private:
   void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
 
   void RTPS(const s16 V[3], bool sf);
+  void NCCS(const s16 V[3], bool sf, bool lm);
   void NCDS(const s16 V[3], bool sf, bool lm);
 
   void Execute_RTPS(Instruction inst);
@@ -75,8 +76,12 @@ private:
   void Execute_SQR(Instruction inst);
   void Execute_AVSZ3(Instruction inst);
   void Execute_AVSZ4(Instruction inst);
+  void Execute_NCCS(Instruction inst);
+  void Execute_NCCT(Instruction inst);
   void Execute_NCDS(Instruction inst);
+  void Execute_NCDT(Instruction inst);
   void Execute_MVMVA(Instruction inst);
+  void Execute_DPCS(Instruction inst);
 
   Regs m_regs = {};
 };
