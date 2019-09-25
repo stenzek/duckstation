@@ -225,7 +225,7 @@ void main()
 {
   #if TEXTURED
     vec4 texcol = texture(samp0, v_tex0);
-    if (all(texcol == vec4(0.0, 0.0, 0.0, 0.0)))
+    if (texcol == vec4(0.0, 0.0, 0.0, 0.0))
       discard;
 
     #if BLENDING
