@@ -588,52 +588,78 @@ s64 Core::VecDot(const s16 A[3], s16 B_x, s16 B_y, s16 B_z)
   return s64(s32(A[0]) * s32(B_x)) + s64(s32(A[1]) * s32(B_y)) + s64(s32(A[2]) * s32(B_z));
 }
 
+void Core::MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm)
+{
+#define dot3(i)                                                                                                        \
+  TruncateAndSetMAC<i + 1>(                                                                                            \
+    TruncateMAC<i + 1>(TruncateMAC<i + 1>(s64(s32(M[i][0]) * s32(Vx))) + s64(s32(M[i][1]) * s32(Vy))) +                \
+      s64(s32(M[i][2]) * s32(Vz)),                                                                                     \
+    sf)
+
+  dot3(0);
+  dot3(1);
+  dot3(2);
+
+#undef dot3
+
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+  TruncateAndSetIR<3>(m_regs.MAC3, lm);
+}
+
+void Core::MulMatVec(const s16 M[3][3], const u32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm)
+{
+#define dot3(i)                                                                                                        \
+  TruncateAndSetMAC<i + 1>(static_cast<s64>(ZeroExtend64(T[i]) << 12) +                                                \
+                             TruncateMAC<i + 1>(TruncateMAC<i + 1>(TruncateMAC<i + 1>(s64(s32(M[i][0]) * s32(Vx))) +   \
+                                                                   s64(s32(M[i][1]) * s32(Vy))) +                      \
+                                                s64(s32(M[i][2]) * s32(Vz))),                                          \
+                           sf)
+
+  dot3(0);
+  dot3(1);
+  dot3(2);
+
+#undef dot3
+
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+  TruncateAndSetIR<3>(m_regs.MAC3, lm);
+}
+
 void Core::NCDS(const s16 V[3], bool sf, bool lm)
 {
   const u8 shift = sf ? 12 : 0;
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
-  m_regs.MAC1 = TruncateMAC<1>(VecDot(m_regs.LLM[0], V) >> shift);
-  m_regs.MAC2 = TruncateMAC<2>(VecDot(m_regs.LLM[1], V) >> shift);
-  m_regs.MAC3 = TruncateMAC<3>(VecDot(m_regs.LLM[2], V) >> shift);
-  SetIR(0, m_regs.MAC1, lm);
-  SetIR(1, m_regs.MAC2, lm);
-  SetIR(2, m_regs.MAC3, lm);
+  MulMatVec(m_regs.LLM, V[0], V[1], V[2], sf, lm);
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
-  // TODO: First multiply should check overflow
-  m_regs.MAC1 = TruncateMAC<1>(
-    ((ZeroExtend64(m_regs.RBK) * 0x1000) + VecDot(m_regs.LCM[0], m_regs.IR1, m_regs.IR2, m_regs.IR3)) >> shift);
-  m_regs.MAC2 = TruncateMAC<2>(
-    ((ZeroExtend64(m_regs.GBK) * 0x1000) + VecDot(m_regs.LCM[1], m_regs.IR1, m_regs.IR2, m_regs.IR3)) >> shift);
-  m_regs.MAC3 = TruncateMAC<3>(
-    ((ZeroExtend64(m_regs.BBK) * 0x1000) + VecDot(m_regs.LCM[2], m_regs.IR1, m_regs.IR2, m_regs.IR3)) >> shift);
-  SetIR(1, m_regs.MAC1, lm);
-  SetIR(2, m_regs.MAC2, lm);
-  SetIR(3, m_regs.MAC3, lm);
+  MulMatVec(m_regs.LCM, m_regs.BK, m_regs.IR1, m_regs.IR2, m_regs.IR3, sf, lm);
 
   // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for NCDx/NCCx
-  m_regs.MAC1 = TruncateMAC<1>((ZeroExtend64(m_regs.RGBC[0]) * static_cast<u16>(m_regs.IR1)) << 4);
-  m_regs.MAC2 = TruncateMAC<1>((ZeroExtend64(m_regs.RGBC[1]) * static_cast<u16>(m_regs.IR2)) << 4);
-  m_regs.MAC3 = TruncateMAC<1>((ZeroExtend64(m_regs.RGBC[2]) * static_cast<u16>(m_regs.IR3)) << 4);
-  SetIR(1, m_regs.MAC1, false);
-  SetIR(2, m_regs.MAC2, false);
-  SetIR(3, m_regs.MAC3, false);
+  TruncateAndSetMAC<1>((s64(ZeroExtend64(m_regs.RGBC[0])) << 4) * s64(m_regs.MAC1), false);
+  TruncateAndSetMAC<2>((s64(ZeroExtend64(m_regs.RGBC[1])) << 4) * s64(m_regs.MAC2), false);
+  TruncateAndSetMAC<3>((s64(ZeroExtend64(m_regs.RGBC[2])) << 4) * s64(m_regs.MAC3), false);
 
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0                   ;<--- for NCDx only
-  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
-  m_regs.MAC1 = TruncateMAC<1>(m_regs.MAC1 + ((s32(m_regs.RFC) - m_regs.MAC1) * m_regs.IR0));
-  m_regs.MAC2 = TruncateMAC<2>(m_regs.MAC2 + ((s32(m_regs.GFC) - m_regs.MAC2) * m_regs.IR0));
-  m_regs.MAC3 = TruncateMAC<3>(m_regs.MAC3 + ((s32(m_regs.BFC) - m_regs.MAC3) * m_regs.IR0));
+  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
+  TruncateAndSetIR<1>(s32(s64(ZeroExtend64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> (sf ? 12 : 0), false);
+  TruncateAndSetIR<2>(s32(s64(ZeroExtend64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> (sf ? 12 : 0), false);
+  TruncateAndSetIR<3>(s32(s64(ZeroExtend64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> (sf ? 12 : 0), false);
 
+  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
   // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
-  m_regs.MAC1 >>= shift;
-  m_regs.MAC2 >>= shift;
-  m_regs.MAC3 >>= shift;
+  TruncateAndSetMAC<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), sf);
+  TruncateAndSetMAC<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), sf);
+  TruncateAndSetMAC<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), sf);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
           m_regs.RGBC[3]);
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+  TruncateAndSetIR<3>(m_regs.MAC3, lm);
 }
 
 void Core::Execute_NCDS(Instruction inst)

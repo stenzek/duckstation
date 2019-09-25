@@ -19,9 +19,11 @@ u8 GTE::Core::TruncateRGB(s32 value)
 }
 
 template<u32 index>
-s32 GTE::Core::TruncateMAC(s64 value)
+s64 GTE::Core::TruncateMAC(s64 value)
 {
-  if (value < INT64_C(-2147483648))
+  constexpr s64 MIN_VALUE = (index == 0) ? MAC0_MIN_VALUE : MAC123_MIN_VALUE;
+  constexpr s64 MAX_VALUE = (index == 0) ? MAC0_MAX_VALUE : MAC123_MAX_VALUE;
+  if (value < MIN_VALUE)
   {
     if constexpr (index == 0)
       m_regs.FLAG.mac0_underflow = true;
@@ -32,9 +34,9 @@ s32 GTE::Core::TruncateMAC(s64 value)
     else if constexpr (index == 3)
       m_regs.FLAG.mac3_underflow = true;
 
-    return static_cast<s32>(UINT32_C(0x80000000));
+    return MIN_VALUE;
   }
-  else if (value > INT64_C(2147483647))
+  else if (value > MAX_VALUE)
   {
     if constexpr (index == 0)
       m_regs.FLAG.mac0_overflow = true;
@@ -45,13 +47,60 @@ s32 GTE::Core::TruncateMAC(s64 value)
     else if constexpr (index == 3)
       m_regs.FLAG.mac3_overflow = true;
 
-    return static_cast<s32>(UINT32_C(0x7FFFFFFF));
+    return MAX_VALUE;
   }
-
-  return static_cast<s32>(value);
+  else
+  {
+    return value;
+  }
 }
 
 template<u32 index>
-void GTE::Core::SetIR(s32 value, bool lm)
+s32 GTE::Core::TruncateAndSetMAC(s64 value, bool sf)
 {
+  value = TruncateMAC<index>(value);
+
+  // shift should be done before storing to avoid losing precision
+  if (sf)
+    value >>= 12;
+
+  const s32 value32 = static_cast<s32>(value);
+  m_regs.dr32[24 + index] = value32;
+  return value32;
+}
+
+template<u32 index>
+s16 GTE::Core::TruncateAndSetIR(s32 value, bool lm)
+{
+  constexpr s32 MIN_VALUE = (index == 0) ? IR0_MIN_VALUE : IR123_MIN_VALUE;
+  constexpr s32 MAX_VALUE = (index == 0) ? IR0_MAX_VALUE : IR123_MAX_VALUE;
+  const s32 actual_min_value = lm ? 0 : -0x8000;
+  if (value < actual_min_value)
+  {
+    value = actual_min_value;
+    if constexpr (index == 0)
+      m_regs.FLAG.ir0_saturated = true;
+    else if constexpr (index == 1)
+      m_regs.FLAG.ir1_saturated = true;
+    else if constexpr (index == 2)
+      m_regs.FLAG.ir2_saturated = true;
+    else if constexpr (index == 3)
+      m_regs.FLAG.ir3_saturated = true;
+  }
+  else if (value > MAX_VALUE)
+  {
+    value = MAX_VALUE;
+    if constexpr (index == 0)
+      m_regs.FLAG.ir0_saturated = true;
+    else if constexpr (index == 1)
+      m_regs.FLAG.ir1_saturated = true;
+    else if constexpr (index == 2)
+      m_regs.FLAG.ir2_saturated = true;
+    else if constexpr (index == 3)
+      m_regs.FLAG.ir3_saturated = true;
+  }
+
+  // store sign-extended 16-bit value as 32-bit
+  m_regs.dr32[8 + index] = value;
+  return static_cast<s16>(value);
 }

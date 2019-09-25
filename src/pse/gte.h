@@ -26,14 +26,26 @@ public:
   void ExecuteInstruction(Instruction inst);
 
 private:
+  static constexpr s64 MAC0_MIN_VALUE = -(INT64_C(1) << 43);
+  static constexpr s64 MAC0_MAX_VALUE = (INT64_C(1) << 43) - 1;
+  static constexpr s64 MAC123_MIN_VALUE = -(INT64_C(1) << 43);
+  static constexpr s64 MAC123_MAX_VALUE = (INT64_C(1) << 43) - 1;
+  static constexpr s32 IR0_MIN_VALUE = 0x0000;
+  static constexpr s32 IR0_MAX_VALUE = 0x1000;
+  static constexpr s32 IR123_MIN_VALUE = -(INT64_C(1) << 15);
+  static constexpr s32 IR123_MAX_VALUE = (INT64_C(1) << 15) - 1;
+
   template<u32 index>
-  s32 TruncateMAC(s64 value);
+  s64 TruncateMAC(s64 value);
+
+  template<u32 index>
+  s32 TruncateAndSetMAC(s64 value, bool sf);
 
   template<u32 index>
   u8 TruncateRGB(s32 value);
 
   template<u32 index>
-  void SetIR(s32 value, bool lm);
+  s16 TruncateAndSetIR(s32 value, bool lm);
 
   void SetMAC(u32 index, s64 value);
   void SetIR(u32 index, s32 value, bool lm);
@@ -45,8 +57,14 @@ private:
   s32 Divide(s32 dividend, s32 divisor);
   s32 SaturateDivide(s32 result);
 
-  static s64 VecDot(const s16 A[3], const s16 B[3]);
-  static s64 VecDot(const s16 A[3], s16 B_x, s16 B_y, s16 B_z);
+  s64 VecDot(const s16 A[3], const s16 B[3]);
+  s64 VecDot(const s16 A[3], s16 B_x, s16 B_y, s16 B_z);
+
+  // 3x3 matrix * 3x1 vector, updates MAC[1-3] and IR[1-3]
+  void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
+  
+  // 3x3 matrix * 3x1 vector with translation, updates MAC[1-3] and IR[1-3]
+  void MulMatVec(const s16 M[3][3], const u32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, bool sf, bool lm);
 
   void RTPS(const s16 V[3], bool sf);
   void NCDS(const s16 V[3], bool sf, bool lm);
