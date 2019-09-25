@@ -27,8 +27,8 @@ public:
   };
 
   // Conversion helpers.
-  static constexpr u64 MSFToLBA(u32 minute, u32 second, u32 frame);
-  static constexpr void LBAToMSF(u64 lba, u32* minute, u32* second, u32* frame);
+  static constexpr u64 MSFToLBA(u32 pregap_seconds, u32 minute, u32 second, u32 frame);
+  static constexpr void LBAToMSF(u32 pregap_seconds, u64 lba, u32* minute, u32* second, u32* frame);
 
   // Accessors.
   u64 GetCurrentLBA() const { return m_current_lba; }
@@ -52,6 +52,9 @@ public:
 private:
   // TODO: Multiple data files from cue sheet
   ByteStream* m_data_file = nullptr;
+
+  // Pregap size.
+  u32 m_pregap_seconds = 2;
 
   // Current LBA/total LBAs.
   u64 m_current_lba = 0;

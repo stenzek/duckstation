@@ -565,7 +565,7 @@ void CDROM::ExecuteCommand()
       {
         Assert(m_setloc_dirty);
         StopReading();
-        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
+        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second, m_setloc.frame))
         {
           Panic("Error in Setloc command");
           return;
@@ -619,7 +619,7 @@ void CDROM::ExecuteCommand()
       // TODO: Seek timing and clean up...
       if (m_setloc_dirty)
       {
-        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second - 2 /* pregap */, m_setloc.frame))
+        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second, m_setloc.frame))
         {
           Panic("Seek error");
         }
