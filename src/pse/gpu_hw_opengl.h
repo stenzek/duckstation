@@ -15,6 +15,7 @@ public:
 
   bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers) override;
   void Reset() override;
+  void RenderUI() override;
 
 protected:
   void UpdateDisplay() override;
@@ -26,6 +27,13 @@ protected:
   void FlushRender() override;
 
 private:
+  struct GLStats
+  {
+    u32 num_texture_page_updates;
+    u32 num_batches;
+    u32 num_vertices;
+  };
+
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
   void CreateFramebuffer();
@@ -56,4 +64,6 @@ private:
   GL::Program m_color_program;
   GL::Program m_blended_texture_program;
   std::array<GL::Program, 3> m_texture_page_programs;
+
+  GLStats m_stats = {};
 };

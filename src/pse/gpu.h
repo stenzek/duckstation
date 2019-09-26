@@ -22,6 +22,7 @@ public:
   virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
+  virtual void RenderUI();
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);

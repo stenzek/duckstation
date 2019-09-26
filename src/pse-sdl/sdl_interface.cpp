@@ -390,6 +390,8 @@ void SDLInterface::RenderImGui()
   RenderMainMenuBar();
   RenderOSDMessages();
 
+  m_system->RenderUI();
+
   ImGui::Render();
 }
 

@@ -40,6 +40,7 @@ public:
   bool SaveState(ByteStream* state);
 
   void RunFrame();
+  void RenderUI();
 
   bool LoadEXE(const char* filename);
   bool SetExpansionROM(const char* filename);

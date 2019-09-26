@@ -2,6 +2,7 @@
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
 #include "host_interface.h"
+#include "imgui.h"
 #include "system.h"
 Log_SetChannel(GPU_HW_OpenGL);
 
@@ -30,6 +31,37 @@ void GPU_HW_OpenGL::Reset()
   GPU_HW::Reset();
 
   ClearFramebuffer();
+}
+
+void GPU_HW_OpenGL::RenderUI()
+{
+  GPU_HW::RenderUI();
+
+  if (ImGui::Begin("GL Render Statistics"))
+  {
+    ImGui::Columns(2);
+
+    ImGui::TextUnformatted("Texture Page Updates:");
+    ImGui::NextColumn();
+    ImGui::Text("%u", m_stats.num_texture_page_updates);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("Batches Drawn:");
+    ImGui::NextColumn();
+    ImGui::Text("%u", m_stats.num_batches);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("Vertices Drawn: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", m_stats.num_vertices);
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+  }
+
+  ImGui::End();
+
+  m_stats = {};
 }
 
 std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y)
@@ -319,6 +351,8 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
 void GPU_HW_OpenGL::UpdateTexturePageTexture()
 {
+  m_stats.num_texture_page_updates++;
+
   glBindFramebuffer(GL_FRAMEBUFFER, m_texture_page_fbo_id);
   m_framebuffer_texture->Bind();
 
@@ -344,6 +378,9 @@ void GPU_HW_OpenGL::FlushRender()
 {
   if (m_batch.vertices.empty())
     return;
+
+  m_stats.num_batches++;
+  m_stats.num_vertices += static_cast<u32>(m_batch.vertices.size());
 
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);

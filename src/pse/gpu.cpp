@@ -126,6 +126,8 @@ bool GPU::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
+void GPU::RenderUI() {}
+
 void GPU::UpdateGPUSTAT()
 {
   m_GPUSTAT.ready_to_send_vram = !m_GPUREAD_buffer.empty();

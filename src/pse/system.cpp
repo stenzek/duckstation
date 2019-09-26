@@ -135,6 +135,11 @@ void System::RunFrame()
   }
 }
 
+void System::RenderUI()
+{
+  m_gpu->RenderUI();
+}
+
 bool System::LoadEXE(const char* filename)
 {
 #pragma pack(push, 1)
