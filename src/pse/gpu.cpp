@@ -52,8 +52,8 @@ bool GPU::DoState(StateWrapper& sw)
 
   sw.Do(&m_GPUSTAT.bits);
 
-  sw.Do(&m_render_state.texture_base_x);
-  sw.Do(&m_render_state.texture_base_y);
+  sw.Do(&m_render_state.texture_page_x);
+  sw.Do(&m_render_state.texture_page_y);
   sw.Do(&m_render_state.texture_palette_x);
   sw.Do(&m_render_state.texture_palette_y);
   sw.Do(&m_render_state.texture_color_mode);
@@ -69,10 +69,10 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_render_state.texture_changed);
   sw.Do(&m_render_state.transparency_mode_changed);
 
-  sw.Do(&m_drawing_area.top_left_x);
-  sw.Do(&m_drawing_area.top_left_y);
-  sw.Do(&m_drawing_area.bottom_right_x);
-  sw.Do(&m_drawing_area.bottom_right_y);
+  sw.Do(&m_drawing_area.left);
+  sw.Do(&m_drawing_area.top);
+  sw.Do(&m_drawing_area.right);
+  sw.Do(&m_drawing_area.bottom);
   sw.Do(&m_drawing_offset.x);
   sw.Do(&m_drawing_offset.y);
   sw.Do(&m_drawing_offset.x);
@@ -429,18 +429,18 @@ void GPU::WriteGP0(u32 value)
 
       case 0xE3: // Set drawing area top left
       {
-        m_drawing_area.top_left_x = param & UINT32_C(0x3FF);
-        m_drawing_area.top_left_y = (param >> 10) & UINT32_C(0x1FF);
-        Log_DebugPrintf("Set drawing area top-left: (%u, %u)", m_drawing_area.top_left_x, m_drawing_area.top_left_y);
+        m_drawing_area.left = param & UINT32_C(0x3FF);
+        m_drawing_area.top = (param >> 10) & UINT32_C(0x1FF);
+        Log_DebugPrintf("Set drawing area top-left: (%u, %u)", m_drawing_area.left, m_drawing_area.top);
       }
       break;
 
       case 0xE4: // Set drawing area bottom right
       {
-        m_drawing_area.bottom_right_x = param & UINT32_C(0x3FF);
-        m_drawing_area.bottom_right_y = (param >> 10) & UINT32_C(0x1FF);
-        Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.bottom_right_x,
-                        m_drawing_area.bottom_right_y);
+        m_drawing_area.right = param & UINT32_C(0x3FF);
+        m_drawing_area.bottom = (param >> 10) & UINT32_C(0x1FF);
+        Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right,
+                        m_drawing_area.bottom);
       }
       break;
 
@@ -785,8 +785,8 @@ void GPU::RenderState::SetFromPageAttribute(u16 value)
   if (texpage_attribute == value)
     return;
 
-  texture_base_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
-  texture_base_y = static_cast<s32>(ZeroExtend32((value >> 4) & UINT16_C(1)) * UINT32_C(256));
+  texture_page_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
+  texture_page_y = static_cast<s32>(ZeroExtend32((value >> 4) & UINT16_C(1)) * UINT32_C(256));
   texture_color_mode = (static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
   if (texture_color_mode == TextureColorMode::Reserved_Direct16Bit)
     texture_color_mode = TextureColorMode::Direct16Bit;

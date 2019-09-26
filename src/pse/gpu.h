@@ -228,8 +228,8 @@ protected:
     static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
 
     // decoded values
-    s32 texture_base_x;
-    s32 texture_base_y;
+    s32 texture_page_x;
+    s32 texture_page_y;
     s32 texture_palette_x;
     s32 texture_palette_y;
     TextureColorMode texture_color_mode;
@@ -265,8 +265,8 @@ protected:
 
   struct DrawingArea
   {
-    u32 top_left_x, top_left_y;
-    u32 bottom_right_x, bottom_right_y;
+    u32 left, top;
+    u32 right, bottom;
   } m_drawing_area = {};
 
   struct DrawingOffset

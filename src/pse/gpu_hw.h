@@ -39,6 +39,11 @@ protected:
     bool transparency_enable;
     bool texture_enable;
     bool texture_blending_enable;
+    TextureColorMode texture_color_mode;
+    u32 texture_page_x;
+    u32 texture_page_y;
+    u32 texture_palette_x;
+    u32 texture_palette_y;
     TransparencyMode transparency_mode;
 
     std::vector<HWVertex> vertices;
@@ -46,6 +51,10 @@ protected:
 
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
+  static constexpr u32 TEXTURE_TILE_SIZE = 256;
+  static constexpr u32 TEXTURE_TILE_X_COUNT = VRAM_WIDTH / TEXTURE_TILE_SIZE;
+  static constexpr u32 TEXTURE_TILE_Y_COUNT = VRAM_HEIGHT / TEXTURE_TILE_SIZE;
+  static constexpr u32 TEXTURE_TILE_COUNT = TEXTURE_TILE_X_COUNT * TEXTURE_TILE_Y_COUNT;
 
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
   {
@@ -55,7 +64,7 @@ protected:
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
-  virtual void UpdateTexturePageTexture();
+  virtual void InvalidateVRAMReadCache();
 
   bool IsFlushed() const { return m_batch.vertices.empty(); }
 
@@ -64,9 +73,8 @@ protected:
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
 
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(bool textured, bool blending);
+  std::string GenerateFragmentShader(bool textured, bool blending, TextureColorMode texture_color_mode);
   std::string GenerateScreenQuadVertexShader();
-  std::string GenerateTexturePageFragmentShader(TextureColorMode mode);
   std::string GenerateFillFragmentShader();
 
   HWRenderBatch m_batch = {};

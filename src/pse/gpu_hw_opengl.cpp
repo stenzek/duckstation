@@ -43,7 +43,7 @@ void GPU_HW_OpenGL::RenderUI()
 
     ImGui::TextUnformatted("Texture Page Updates:");
     ImGui::NextColumn();
-    ImGui::Text("%u", m_stats.num_texture_page_updates);
+    ImGui::Text("%u", m_stats.num_vram_read_texture_updates);
     ImGui::NextColumn();
 
     ImGui::TextUnformatted("Batches Drawn:");
@@ -64,6 +64,11 @@ void GPU_HW_OpenGL::RenderUI()
   m_stats = {};
 }
 
+void GPU_HW_OpenGL::InvalidateVRAMReadCache()
+{
+  m_vram_read_texture_dirty = true;
+}
+
 std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y)
 {
   return std::make_tuple(x, static_cast<s32>(static_cast<s32>(VRAM_HEIGHT) - y));
@@ -79,11 +84,11 @@ void GPU_HW_OpenGL::CreateFramebuffer()
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_framebuffer_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-  m_texture_page_texture =
-    std::make_unique<GL::Texture>(TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
-  glGenFramebuffers(1, &m_texture_page_fbo_id);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_texture_page_fbo_id);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_page_texture->GetGLId(), 0);
+  m_vram_read_texture =
+    std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+  glGenFramebuffers(1, &m_vram_read_fbo_id);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_read_fbo_id);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_read_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 }
 
@@ -100,9 +105,9 @@ void GPU_HW_OpenGL::ClearFramebuffer()
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
 {
-  glDeleteFramebuffers(1, &m_texture_page_fbo_id);
-  m_texture_page_fbo_id = 0;
-  m_texture_page_texture.reset();
+  glDeleteFramebuffers(1, &m_vram_read_fbo_id);
+  m_vram_read_fbo_id = 0;
+  m_vram_read_texture.reset();
 
   glDeleteFramebuffers(1, &m_framebuffer_fbo_id);
   m_framebuffer_fbo_id = 0;
@@ -132,41 +137,29 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
-  bool result = true;
-  result &= CompileProgram(m_color_program, false, false);
-  result &= CompileProgram(m_texture_program, true, false);
-  result &= CompileProgram(m_blended_texture_program, true, true);
-  if (!result)
-    return false;
-
-  const std::string screen_quad_vs = GenerateScreenQuadVertexShader();
-  for (u32 palette_size = 0; palette_size < static_cast<u32>(m_texture_page_programs.size()); palette_size++)
+  for (u32 textured = 0; textured < 2; textured++)
   {
-    const std::string fs = GenerateTexturePageFragmentShader(static_cast<TextureColorMode>(palette_size));
-
-    GL::Program& prog = m_texture_page_programs[palette_size];
-    if (!prog.Compile(screen_quad_vs.c_str(), fs.c_str()))
-      return false;
-
-    prog.BindFragData(0, "o_col0");
-
-    if (!prog.Link())
-      return false;
-
-    prog.RegisterUniform("samp0");
-    prog.RegisterUniform("base_offset");
-    prog.RegisterUniform("palette_offset");
-    prog.Bind();
-    prog.Uniform1i(0, 0);
+    for (u32 blending = 0; blending < 2; blending++)
+    {
+      for (u32 format = 0; format < 3; format++)
+      {
+        // TODO: eliminate duplicate shaders here
+        if (!CompileProgram(m_render_programs[textured][blending][format], ConvertToBoolUnchecked(textured),
+                            ConvertToBoolUnchecked(blending), static_cast<TextureColorMode>(format)))
+        {
+          return false;
+        }
+      }
+    }
   }
 
   return true;
 }
 
-bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blending)
+bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blending, TextureColorMode texture_color_mode)
 {
   const std::string vs = GenerateVertexShader(textured);
-  const std::string fs = GenerateFragmentShader(textured, blending);
+  const std::string fs = GenerateFragmentShader(textured, blending, texture_color_mode);
   if (!prog.Compile(vs.c_str(), fs.c_str()))
     return false;
 
@@ -187,21 +180,29 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   if (textured)
   {
     prog.RegisterUniform("samp0");
+    prog.RegisterUniform("u_texture_page_base");
+    prog.RegisterUniform("u_texture_palette_base");
     prog.Uniform1i(1, 0);
   }
 
   return true;
 }
 
-void GPU_HW_OpenGL::SetProgram(bool textured, bool blending)
+void GPU_HW_OpenGL::SetProgram()
 {
-  const GL::Program& prog = textured ? (blending ? m_blended_texture_program : m_texture_program) : m_color_program;
+  const GL::Program& prog =
+    m_render_programs[BoolToUInt32(m_batch.texture_enable)][BoolToUInt32(m_batch.texture_blending_enable)]
+                     [static_cast<u32>(m_batch.texture_color_mode)];
   prog.Bind();
 
-  if (textured)
-    m_texture_page_texture->Bind();
-
   prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);
+
+  if (m_batch.texture_enable)
+  {
+    m_vram_read_texture->Bind();
+    prog.Uniform2i(2, m_batch.texture_page_x, m_batch.texture_page_y);
+    prog.Uniform2i(3, m_batch.texture_palette_x, m_batch.texture_palette_y);
+  }
 }
 
 void GPU_HW_OpenGL::SetViewport()
@@ -302,6 +303,8 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
   const auto [r, g, b, a] = RGBA8ToFloat(RGBA5551ToRGBA8888(color));
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
+
+  InvalidateVRAMReadCache();
 }
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
@@ -334,6 +337,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   // lower-left origin flip happens here
   glTexSubImage2D(GL_TEXTURE_2D, 0, x, VRAM_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
                   rgba_data.data());
+
+  InvalidateVRAMReadCache();
 }
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
@@ -347,37 +352,27 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
   glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+  InvalidateVRAMReadCache();
 }
 
-void GPU_HW_OpenGL::UpdateTexturePageTexture()
+void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 {
-  m_stats.num_texture_page_updates++;
+  m_stats.num_vram_read_texture_updates++;
+  m_vram_read_texture_dirty = false;
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_texture_page_fbo_id);
-  m_framebuffer_texture->Bind();
-
-  glDisable(GL_BLEND);
-  glDisable(GL_SCISSOR_TEST);
-  glViewport(0, 0, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT);
-  glBindVertexArray(m_attributeless_vao_id);
-
-  const GL::Program& prog = m_texture_page_programs[static_cast<u8>(m_render_state.texture_color_mode)];
-  prog.Bind();
-
-  prog.Uniform2i(1, m_render_state.texture_base_x, m_render_state.texture_base_y);
-  if (m_render_state.texture_color_mode >= GPU::TextureColorMode::Palette4Bit)
-    prog.Uniform2i(2, m_render_state.texture_palette_x, m_render_state.texture_palette_y);
-
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-
-  m_framebuffer_texture->Unbind();
-  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+  // TODO: Fallback blit path, and partial updates.
+  glCopyImageSubData(m_framebuffer_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_read_texture->GetGLId(),
+                     GL_TEXTURE_2D, 0, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1);
 }
 
 void GPU_HW_OpenGL::FlushRender()
 {
   if (m_batch.vertices.empty())
     return;
+
+  if (m_vram_read_texture_dirty)
+    UpdateVRAMReadTexture();
 
   m_stats.num_batches++;
   m_stats.num_vertices += static_cast<u32>(m_batch.vertices.size());
@@ -386,7 +381,7 @@ void GPU_HW_OpenGL::FlushRender()
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
-  SetProgram(m_batch.texture_enable, m_batch.texture_blending_enable);
+  SetProgram();
   SetViewport();
   SetScissor();
   SetBlendState();

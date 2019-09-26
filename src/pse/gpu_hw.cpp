@@ -1,6 +1,8 @@
 #include "gpu_hw.h"
 #include "YBaseLib/Assert.h"
+#include "YBaseLib/Log.h"
 #include <sstream>
+Log_SetChannel(GPU_HW);
 
 GPU_HW::GPU_HW() = default;
 
@@ -110,10 +112,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
 {
-  *left = m_drawing_area.top_left_x;
-  *right = m_drawing_area.bottom_right_x + 1;
-  *top = m_drawing_area.top_left_y;
-  *bottom = m_drawing_area.bottom_right_y + 1;
+  *left = m_drawing_area.left;
+  *right = m_drawing_area.right + 1;
+  *top = m_drawing_area.top;
+  *bottom = m_drawing_area.bottom + 1;
 }
 
 static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
@@ -176,7 +178,6 @@ in vec2 a_tex0;
 
 out vec4 v_col0;
 #if TEXTURED
-  uniform vec2 u_tex_scale;
   out vec2 v_tex0;
 #endif
 
@@ -199,26 +200,75 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateFragmentShader(bool textured, bool blending)
+std::string GPU_HW::GenerateFragmentShader(bool textured, bool blending, TextureColorMode texture_color_mode)
 {
   std::stringstream ss;
   GenerateShaderHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "BLENDING", blending);
+  DefineMacro(ss, "PALETTE",
+              textured && (texture_color_mode == GPU::TextureColorMode::Palette4Bit ||
+                           texture_color_mode == GPU::TextureColorMode::Palette8Bit));
+  DefineMacro(ss, "PALETTE_4_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette4Bit);
+  DefineMacro(ss, "PALETTE_8_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette8Bit);
 
   ss << R"(
 in vec4 v_col0;
 #if TEXTURED
   in vec2 v_tex0;
   uniform sampler2D samp0;
+  uniform ivec2 u_texture_page_base;
+  #if PALETTE
+    uniform ivec2 u_texture_palette_base;
+  #endif
 #endif
 
 out vec4 o_col0;
 
+#if TEXTURED
+vec4 SampleFromVRAM(vec2 coord)
+{
+  // from 0..1 to 0..255
+  ivec2 icoord = ivec2(coord * vec2(255.0));
+
+  // adjust for tightly packed palette formats
+  ivec2 index_coord = icoord;
+  #if PALETTE_4_BIT
+    index_coord.x /= 4;
+  #elif PALETTE_8_BIT
+    index_coord.x /= 2;
+  #endif
+
+  // fixup coords
+  ivec2 vicoord = ivec2(u_texture_page_base.x + index_coord.x,
+                        fixYCoord(u_texture_page_base.y + index_coord.y));
+
+  // load colour/palette
+  vec4 color = texelFetch(samp0, vicoord & VRAM_COORD_MASK, 0);
+
+  // apply palette
+  #if PALETTE
+    #if PALETTE_4_BIT
+      int subpixel = int(icoord.x) & 3;
+      uint vram_value = RGBA8ToRGBA5551(color);
+      int palette_index = int((vram_value >> (subpixel * 4)) & 0x0Fu);
+    #elif PALETTE_8_BIT
+      int subpixel = int(icoord.x) & 1;
+      uint vram_value = RGBA8ToRGBA5551(color);
+      int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
+    #endif
+    ivec2 palette_icoord = ivec2(u_texture_palette_base.x + palette_index, fixYCoord(u_texture_palette_base.y));
+    color = texelFetch(samp0, palette_icoord & VRAM_COORD_MASK, 0);
+  #endif
+
+  return color;
+}
+#endif
+
 void main()
 {
   #if TEXTURED
-    vec4 texcol = texture(samp0, v_tex0);
+    vec4 texcol = SampleFromVRAM(v_tex0);
     if (texcol == vec4(0.0, 0.0, 0.0, 0.0))
       discard;
 
@@ -255,64 +305,6 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateTexturePageFragmentShader(TextureColorMode mode)
-{
-  const bool is_palette = (mode == GPU::TextureColorMode::Palette4Bit || mode == GPU::TextureColorMode::Palette8Bit);
-
-  std::stringstream ss;
-  GenerateShaderHeader(ss);
-  DefineMacro(ss, "PALETTE", is_palette);
-  DefineMacro(ss, "PALETTE_4_BIT", mode == GPU::TextureColorMode::Palette4Bit);
-  DefineMacro(ss, "PALETTE_8_BIT", mode == GPU::TextureColorMode::Palette8Bit);
-
-  ss << R"(
-uniform sampler2D samp0;
-uniform ivec2 base_offset;
-
-#if PALETTE
-uniform ivec2 palette_offset;
-#endif
-
-in vec2 v_tex0;
-out vec4 o_col0;
-
-void main()
-{
-  ivec2 local_coords = ivec2(gl_FragCoord.xy);
-  #if PALETTE_4_BIT
-    local_coords.x /= 4;
-  #elif PALETTE_8_BIT
-    local_coords.x /= 2;
-  #endif
-
-  // fixup coords
-  ivec2 coords = ivec2(base_offset.x + local_coords.x, fixYCoord(base_offset.y + local_coords.y));
-
-  // load colour/palette
-  vec4 color = texelFetch(samp0, coords & VRAM_COORD_MASK, 0);
-
-  // apply palette
-  #if PALETTE
-    #if PALETTE_4_BIT
-      int subpixel = int(gl_FragCoord.x) & 3;
-      uint vram_value = RGBA8ToRGBA5551(color);
-      int palette_index = int((vram_value >> (subpixel * 4)) & 0x0Fu);
-    #elif PALETTE_8_BIT
-      int subpixel = int(gl_FragCoord.x) & 1;
-      uint vram_value = RGBA8ToRGBA5551(color);
-      int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
-    #endif
-    ivec2 palette_coords = ivec2(palette_offset.x + palette_index, fixYCoord(palette_offset.y));
-    color = texelFetch(samp0, palette_coords & VRAM_COORD_MASK, 0);
-  #endif
-
-  o_col0 = color;
-}
-)";
-
-  return ss.str();
-}
-
 std::string GPU_HW::GenerateFillFragmentShader()
 {
   std::stringstream ss;
@@ -331,8 +323,6 @@ void main()
   return ss.str();
 }
 
-void GPU_HW::UpdateTexturePageTexture() {}
-
 GPU_HW::HWRenderBatch::Primitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 {
   if (rc.primitive == Primitive::Line)
@@ -342,6 +332,8 @@ GPU_HW::HWRenderBatch::Primitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc
   else
     return HWRenderBatch::Primitive::Triangles;
 }
+
+void GPU_HW::InvalidateVRAMReadCache() {}
 
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
 {
@@ -375,20 +367,46 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
       if (m_render_state.IsTextureChanged())
       {
         if (!IsFlushed())
+        {
+          // we only need to update the copy texture if the render area intersects with the texture page
+          const u32 texture_page_left = m_render_state.texture_page_x;
+          const u32 texture_page_right = m_render_state.texture_page_y + TEXTURE_PAGE_WIDTH;
+          const u32 texture_page_top = m_render_state.texture_page_y;
+          const u32 texture_page_bottom = texture_page_top + TEXTURE_PAGE_HEIGHT;
+          const bool texture_page_overlaps =
+            (texture_page_left < m_drawing_area.right && texture_page_right > m_drawing_area.left &&
+             texture_page_top > m_drawing_area.bottom && texture_page_bottom < m_drawing_area.top);
+
+          // TODO: Check palette too.
+          if (texture_page_overlaps)
+          {
+            Log_DebugPrintf("Invalidating VRAM read cache due to drawing area overlap");
+            InvalidateVRAMReadCache();
+          }
+
+          // texture page changed?
+          // TODO: Move this to the shader...
           FlushRender();
-        UpdateTexturePageTexture();
+        }
+
         m_render_state.ClearTextureChangedFlag();
       }
 
       if (m_batch.transparency_enable && m_render_state.IsTransparencyModeChanged() && !IsFlushed())
         FlushRender();
-
-      m_batch.transparency_mode = m_render_state.transparency_mode;
       m_render_state.ClearTransparencyModeChangedFlag();
+
+      m_batch.texture_color_mode = m_render_state.texture_color_mode;
+      m_batch.texture_page_x = m_render_state.texture_page_x;
+      m_batch.texture_page_y = m_render_state.texture_page_y;
+      m_batch.texture_palette_x = m_render_state.texture_palette_x;
+      m_batch.texture_palette_y = m_render_state.texture_palette_y;
+      m_batch.transparency_mode = m_render_state.transparency_mode;
     }
   }
 
   // extract state
+  const bool rc_transparency_enable = rc.transparency_enable;
   const bool rc_texture_enable = rc.texture_enable;
   const bool rc_texture_blend_enable = !rc.texture_blend_disable;
   const HWRenderBatch::Primitive rc_primitive = GetPrimitiveForCommand(rc);
@@ -399,14 +417,15 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
     // including the degenerate triangles for strips
     const u32 max_added_vertices = num_vertices + 2;
     const bool params_changed =
-      (m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
-       m_batch.primitive != rc_primitive);
+      (m_batch.transparency_enable != rc_transparency_enable || m_batch.texture_enable != rc_texture_enable ||
+       m_batch.texture_blending_enable != rc_texture_blend_enable || m_batch.primitive != rc_primitive);
     if ((m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT || params_changed)
       FlushRender();
   }
 
+  m_batch.primitive = rc_primitive;
+  m_batch.transparency_enable = rc_transparency_enable;
   m_batch.texture_enable = rc_texture_enable;
   m_batch.texture_blending_enable = rc_texture_blend_enable;
-  m_batch.primitive = rc_primitive;
   LoadVertices(rc, num_vertices);
 }
