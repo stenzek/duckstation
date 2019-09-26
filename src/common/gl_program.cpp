@@ -1,7 +1,11 @@
 #include "gl_program.h"
 #include "YBaseLib/Log.h"
+#include "YBaseLib/String.h"
 #include <array>
+#include <fstream>
 Log_SetChannel(GL);
+
+static u32 s_next_bad_shader_id = 1;
 
 namespace GL {
 
@@ -40,6 +44,17 @@ GLuint Program::CompileShader(GLenum type, const char* source)
     else
     {
       Log_ErrorPrintf("Shader failed to compile:\n%s", info_log.c_str());
+
+      std::ofstream ofs(SmallString::FromFormat("bad_shader_%u.txt", s_next_bad_shader_id++),
+                        std::ofstream::out | std::ofstream::binary);
+      if (ofs.is_open())
+      {
+        ofs.write(sources[0], source_lengths[0]);
+        ofs << "\n\nCompile failed, info log:\n";
+        ofs << info_log;
+        ofs.close();
+      }
+
       glDeleteShader(id);
       return 0;
     }
