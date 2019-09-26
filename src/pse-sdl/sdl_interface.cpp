@@ -388,9 +388,11 @@ void SDLInterface::RenderDisplay()
 void SDLInterface::RenderImGui()
 {
   RenderMainMenuBar();
-  RenderOSDMessages();
 
   m_system->RenderUI();
+
+  RenderOSDMessages();
+  RenderFPS();
 
   ImGui::Render();
 }
@@ -512,6 +514,27 @@ void SDLInterface::RenderOSDMessages()
   }
 }
 
+void SDLInterface::RenderFPS()
+{
+  // Position in the top-right corner of the screen.
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 2.0f, 2.0f), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+  ImGui::SetNextWindowSize(ImVec2(80.0f, 20.0f));
+
+  if (ImGui::Begin("FPS", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
+                     ImGuiWindowFlags_NoBackground))
+  {
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "FPS: %.2f", m_fps);
+  }
+  ImGui::End();
+
+  ImGui::PopStyleVar(2);
+}
+
 void SDLInterface::DoLoadState(u32 index)
 {
   LoadState(GetSaveStateFilename(index));
@@ -538,6 +561,19 @@ void SDLInterface::Run()
     }
 
     m_system->RunFrame();
+
+    // update fps counter
+    {
+      m_fps_counter++;
+      const double time = m_fps_timer.GetTimeSeconds();
+      if (time > 0.1)
+      {
+        m_fps = static_cast<float>(m_fps_counter / time);
+        m_fps_counter = 0;
+        m_fps_timer.Reset();
+      }
+    }
+
     Render();
   }
 }

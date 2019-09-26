@@ -57,6 +57,7 @@ private:
   void RenderDisplay();
   void RenderMainMenuBar();
   void RenderOSDMessages();
+  void RenderFPS();
 
   SDL_Window* m_window = nullptr;
   SDL_GLContext m_gl_context = nullptr;
@@ -76,4 +77,8 @@ private:
   std::mutex m_osd_messages_lock;
 
   std::shared_ptr<DigitalController> m_controller;
+
+  float m_fps = 0.0f;
+  u32 m_fps_counter = 0;
+  Timer m_fps_timer;
 };

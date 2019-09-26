@@ -753,11 +753,7 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
   return true;
 }
 
-void GPU::UpdateDisplay()
-{
-  m_render_state.texture_changed = true;
-  m_system->IncrementFrameNumber();
-}
+void GPU::UpdateDisplay() {}
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 
