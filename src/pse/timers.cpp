@@ -37,6 +37,7 @@ bool Timers::DoState(StateWrapper& sw)
     sw.Do(&cs.counter);
     sw.Do(&cs.target);
     sw.Do(&cs.gate);
+    sw.Do(&cs.use_external_clock);
     sw.Do(&cs.external_counting_enabled);
     sw.Do(&cs.counting_enabled);
   }

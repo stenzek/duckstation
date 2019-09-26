@@ -262,11 +262,11 @@ void System::Synchronize()
   const TickCount pending_ticks = m_cpu->GetPendingTicks();
   m_cpu->ResetPendingTicks();
 
-  m_dma->Execute(pending_ticks);
   m_gpu->Execute(pending_ticks);
   m_timers->AddSystemTicks(pending_ticks);
   m_cdrom->Execute(pending_ticks);
   m_pad->Execute(pending_ticks);
+  m_dma->Execute(pending_ticks);
 }
 
 void System::SetDowncount(TickCount downcount)

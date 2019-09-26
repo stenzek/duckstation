@@ -61,7 +61,9 @@ void GPU_HW_OpenGL::RenderUI()
 
   ImGui::End();
 
-  m_stats = {};
+  // skip update when no batches were drawn in that frame.. for now
+  if (m_stats.num_batches > 0)
+    m_stats = {};
 }
 
 void GPU_HW_OpenGL::InvalidateVRAMReadCache()

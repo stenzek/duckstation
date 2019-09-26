@@ -266,7 +266,7 @@ void GPU::UpdateCRTCConfig()
 void GPU::UpdateSliceTicks()
 {
   // the next event is at the end of the next scanline
-#if 0
+#if 1
   const TickCount ticks_until_next_event = m_crtc_state.ticks_per_scanline - m_crtc_state.current_tick_in_scanline;
 #else
   // or at vblank. this will depend on the timer config..
@@ -296,6 +296,21 @@ void GPU::Execute(TickCount ticks)
     if (m_timers->IsUsingExternalClock(HBLANK_TIMER_INDEX))
       m_timers->AddTicks(HBLANK_TIMER_INDEX, 1);
 
+    // past the end of vblank?
+    if (m_crtc_state.current_scanline >= m_crtc_state.total_scanlines_per_frame)
+    {
+      // flush any pending draws and "scan out" the image
+      FlushRender();
+      UpdateDisplay();
+
+      // start the new frame
+      m_system->IncrementFrameNumber();
+      m_crtc_state.current_scanline = 0;
+
+      if (m_GPUSTAT.vertical_resolution)
+        m_GPUSTAT.drawing_even_line ^= true;
+    }
+
     const bool old_vblank = m_crtc_state.in_vblank;
     const bool new_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_vertical_resolution;
     if (new_vblank != old_vblank)
@@ -311,22 +326,7 @@ void GPU::Execute(TickCount ticks)
       m_timers->SetGate(HBLANK_TIMER_INDEX, new_vblank);
     }
 
-    // past the end of vblank?
-    if (m_crtc_state.current_scanline >= m_crtc_state.total_scanlines_per_frame)
-    {
-      // flush any pending draws and "scan out" the image
-      FlushRender();
-      UpdateDisplay();
 
-      // start the new frame
-      m_system->IncrementFrameNumber();
-      m_crtc_state.current_scanline = 0;
-      m_crtc_state.in_hblank = false;
-      m_crtc_state.in_vblank = false;
-
-      if (m_GPUSTAT.vertical_resolution)
-        m_GPUSTAT.drawing_even_line ^= true;
-    }
 
     // alternating even line bit in 240-line mode
     if (!m_crtc_state.vertical_resolution)
