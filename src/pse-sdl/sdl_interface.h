@@ -57,7 +57,6 @@ private:
   void RenderDisplay();
   void RenderMainMenuBar();
   void RenderOSDMessages();
-  void RenderFPS();
 
   SDL_Window* m_window = nullptr;
   SDL_GLContext m_gl_context = nullptr;

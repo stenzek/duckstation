@@ -392,7 +392,6 @@ void SDLInterface::RenderImGui()
   m_system->RenderUI();
 
   RenderOSDMessages();
-  RenderFPS();
 
   ImGui::Render();
 }
@@ -449,6 +448,10 @@ void SDLInterface::RenderMainMenuBar()
 
     ImGui::EndMenu();
   }
+
+
+  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+  ImGui::Text("FPS: %.2f", m_fps);
 
   ImGui::EndMainMenuBar();
 }
@@ -512,27 +515,6 @@ void SDLInterface::RenderOSDMessages()
     ImGui::PopStyleVar();
     ++iter;
   }
-}
-
-void SDLInterface::RenderFPS()
-{
-  // Position in the top-right corner of the screen.
-  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 2.0f, 2.0f), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-  ImGui::SetNextWindowSize(ImVec2(80.0f, 20.0f));
-
-  if (ImGui::Begin("FPS", nullptr,
-                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
-                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
-                     ImGuiWindowFlags_NoBackground))
-  {
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "FPS: %.2f", m_fps);
-  }
-  ImGui::End();
-
-  ImGui::PopStyleVar(2);
 }
 
 void SDLInterface::DoLoadState(u32 index)
