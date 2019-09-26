@@ -703,9 +703,9 @@ void Core::Execute_MVMVA(Instruction inst)
       Vz = m_regs.V2[2];
       break;
     default:
-      Vx = m_regs.IR0;
-      Vy = m_regs.IR1;
-      Vz = m_regs.IR2;
+      Vx = m_regs.IR1;
+      Vy = m_regs.IR2;
+      Vz = m_regs.IR3;
       break;
   }
 
