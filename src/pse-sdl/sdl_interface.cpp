@@ -483,8 +483,11 @@ void SDLInterface::RenderMainMenuBar()
     ImGui::EndMenu();
   }
 
-  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 170.0f);
   ImGui::Text("FPS: %.2f", m_fps);
+
+  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+  ImGui::Text("VPS: %.2f", m_vps);
 
   ImGui::EndMainMenuBar();
 }
@@ -581,12 +584,14 @@ void SDLInterface::Run()
 
     // update fps counter
     {
-      m_fps_counter++;
       const double time = m_fps_timer.GetTimeSeconds();
       if (time >= 0.25f)
       {
-        m_fps = static_cast<float>(m_fps_counter / time);
-        m_fps_counter = 0;
+        m_vps = static_cast<float>(static_cast<double>(m_system->GetFrameNumber() - m_last_frame_number) / time);
+        m_last_frame_number = m_system->GetFrameNumber();
+        m_fps = static_cast<float>(
+          static_cast<double>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time);
+        m_last_internal_frame_number = m_system->GetInternalFrameNumber();
         m_fps_timer.Reset();
       }
     }

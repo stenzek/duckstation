@@ -499,6 +499,7 @@ void GPU::WriteGP1(u32 value)
     {
       m_crtc_state.regs.display_address_start = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
       Log_DebugPrintf("Display address start <- 0x%08X", m_crtc_state.regs.display_address_start);
+      m_system->IncrementInternalFrameNumber();
     }
     break;
 

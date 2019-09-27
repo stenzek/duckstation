@@ -78,7 +78,9 @@ private:
 
   std::shared_ptr<DigitalController> m_controller;
 
+  float m_vps = 0.0f;
   float m_fps = 0.0f;
-  u32 m_fps_counter = 0;
+  u32 m_last_frame_number = 0;
+  u32 m_last_internal_frame_number = 0;
   Timer m_fps_timer;
 };

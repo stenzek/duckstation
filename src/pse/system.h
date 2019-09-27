@@ -31,7 +31,9 @@ public:
   HostInterface* GetHostInterface() const { return m_host_interface; }
 
   u32 GetFrameNumber() const { return m_frame_number; }
+  u32 GetInternalFrameNumber() const { return m_internal_frame_number; }
   void IncrementFrameNumber() { m_frame_number++; }
+  void IncrementInternalFrameNumber() { m_internal_frame_number++; }
 
   bool Initialize();
   void Reset();
@@ -68,4 +70,5 @@ private:
   std::unique_ptr<Timers> m_timers;
   std::unique_ptr<SPU> m_spu;
   u32 m_frame_number = 1;
+  u32 m_internal_frame_number = 1;
 };
