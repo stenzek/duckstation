@@ -129,13 +129,15 @@ void main()
 #version 330 core
 
 uniform sampler2D samp0;
+uniform vec4 u_src_rect;
 
 in vec2 v_tex0;
 out vec4 o_col0;
 
 void main()
 {
-  o_col0 = texture(samp0, v_tex0);
+  vec2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
+  o_col0 = texture(samp0, coords);
 }
 )";
 
@@ -146,9 +148,10 @@ void main()
   if (!m_display_program.Link())
     return false;
 
-  m_display_program.RegisterUniform("samp0");
   m_display_program.Bind();
-  m_display_program.Uniform1i(0, 0);
+  m_display_program.RegisterUniform("u_src_rect");
+  m_display_program.RegisterUniform("samp0");
+  m_display_program.Uniform1i(1, 0);
 
   glGenVertexArrays(1, &m_display_vao);
   return true;
@@ -380,6 +383,11 @@ void SDLInterface::RenderDisplay()
   glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
+  m_display_program.Uniform4f(
+    0, static_cast<float>(m_display_texture_offset_x) / static_cast<float>(m_display_texture->GetWidth()),
+    static_cast<float>(m_display_texture_offset_y) / static_cast<float>(m_display_texture->GetHeight()),
+    static_cast<float>(m_display_texture_width) / static_cast<float>(m_display_texture->GetWidth()),
+    static_cast<float>(m_display_texture_height) / static_cast<float>(m_display_texture->GetHeight()));
   m_display_texture->Bind();
   glBindVertexArray(m_display_vao);
   glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -448,7 +456,6 @@ void SDLInterface::RenderMainMenuBar()
 
     ImGui::EndMenu();
   }
-
 
   ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
   ImGui::Text("FPS: %.2f", m_fps);

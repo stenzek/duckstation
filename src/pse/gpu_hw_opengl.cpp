@@ -37,7 +37,7 @@ void GPU_HW_OpenGL::RenderUI()
 {
   GPU_HW::RenderUI();
 
-  ImGui::SetNextWindowSize(ImVec2(300.0f, 100.0f), ImGuiCond_Once);
+  ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_Once);
 
   const bool is_null_frame = m_stats.num_batches == 0;
   if (!is_null_frame)
@@ -72,6 +72,8 @@ void GPU_HW_OpenGL::RenderUI()
     ImGui::NextColumn();
 
     ImGui::Columns(1);
+
+    ImGui::Checkbox("Show VRAM##gpu_gl_show_vram", &m_show_vram);
   }
 
   ImGui::End();
@@ -102,6 +104,15 @@ void GPU_HW_OpenGL::CreateFramebuffer()
   glGenFramebuffers(1, &m_vram_read_fbo_id);
   glBindFramebuffer(GL_FRAMEBUFFER, m_vram_read_fbo_id);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_read_texture->GetGLId(), 0);
+  Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+  m_display_texture = std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+  m_display_texture->Bind();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glGenFramebuffers(1, &m_display_fbo_id);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_display_fbo_id);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_display_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 }
 
@@ -272,7 +283,28 @@ void GPU_HW_OpenGL::SetBlendState()
 void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
-  m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+
+  // TODO: 24-bit support.
+  if (m_show_vram)
+  {
+    m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  }
+  else
+  {
+    const u32 display_width = m_crtc_state.horizontal_resolution;
+    const u32 display_height = m_crtc_state.vertical_resolution;
+    const u32 vram_offset_x = m_crtc_state.regs.X;
+    const u32 vram_offset_y = m_crtc_state.regs.Y;
+    const u32 copy_width =
+      ((vram_offset_x + display_width) > VRAM_WIDTH) ? (VRAM_WIDTH - vram_offset_x) : display_width;
+    const u32 copy_height =
+      ((vram_offset_y + display_height) > VRAM_HEIGHT) ? (VRAM_HEIGHT - vram_offset_y) : display_height;
+    glCopyImageSubData(m_framebuffer_texture->GetGLId(), GL_TEXTURE_2D, 0, vram_offset_x,
+                       VRAM_HEIGHT - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0,
+                       0, 0, copy_width, copy_height, 1);
+
+    m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, copy_width, copy_height);
+  }
 }
 
 void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)

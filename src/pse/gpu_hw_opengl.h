@@ -58,6 +58,9 @@ private:
   GLuint m_vram_read_fbo_id = 0;
   bool m_vram_read_texture_dirty = true;
 
+  std::unique_ptr<GL::Texture> m_display_texture;
+  GLuint m_display_fbo_id = 0;
+
   GLuint m_vertex_buffer = 0;
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
@@ -67,4 +70,5 @@ private:
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};
+  bool m_show_vram = false;
 };
