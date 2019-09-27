@@ -119,15 +119,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        // x/y are encoded differently for lines - 16 bits each
         const u32 color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-        const s32 x = Truncate16(m_GP0_command[buffer_pos]);
-        const s32 y = Truncate16(m_GP0_command[buffer_pos++] >> 16);
-        m_batch.vertices.push_back(HWVertex{x, y, color});
+        const VertexPosition vp{m_GP0_command[buffer_pos++]};
+        m_batch.vertices.push_back(HWVertex{vp.x(), vp.y(), color});
       }
-
-      FlushRender();
-      UpdateDisplay();
     }
     break;
 
