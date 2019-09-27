@@ -78,6 +78,7 @@ private:
   void Execute_DPCS(Instruction inst);
   void Execute_DPCT(Instruction inst);
   void Execute_DPCL(Instruction inst);
+  void Execute_GPL(Instruction inst);
 
   Regs m_regs = {};
 };

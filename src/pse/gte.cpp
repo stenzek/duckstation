@@ -314,6 +314,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_RTPT(inst);
       break;
 
+    case 0x3E:
+      Execute_GPL(inst);
+      break;
+
     case 0x3F:
       Execute_NCCT(inst);
       break;
@@ -823,6 +827,36 @@ void Core::Execute_DPCL(Instruction inst)
   TruncateAndSetMAC<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), shift);
   TruncateAndSetMAC<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), shift);
   TruncateAndSetMAC<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), shift);
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
+          m_regs.RGBC[3]);
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+  TruncateAndSetIR<3>(m_regs.MAC3, lm);
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_GPL(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SHL (sf*12)       ;<--- for GPL only
+  if (inst.sf)
+  {
+    TruncateAndSetMAC<1>(s64(m_regs.MAC1), shift);
+    TruncateAndSetMAC<2>(s64(m_regs.MAC2), shift);
+    TruncateAndSetMAC<3>(s64(m_regs.MAC3), shift);
+  }
+
+  // [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3]) SAR (sf*12)
+  TruncateAndSetMAC<1>((s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1)) >> shift, 0);
+  TruncateAndSetMAC<2>((s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2)) >> shift, 0);
+  TruncateAndSetMAC<3>((s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3)) >> shift, 0);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
