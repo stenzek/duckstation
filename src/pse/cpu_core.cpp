@@ -251,6 +251,11 @@ void Core::ClearExternalInterrupt(u8 bit)
 
 bool Core::DispatchInterrupts()
 {
+  // If the instruction we're about to execute is a GTE instruction, delay dispatching the interrupt until the next
+  // instruction. For some reason, if we don't do this, we end up with incorrectly sorted polygons and flickering..
+  if (m_next_instruction.IsCop2Instruction())
+    return false;
+
   // const bool do_interrupt = m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0);
   const bool do_interrupt =
     m_cop0_regs.sr.IEc && (((m_cop0_regs.cause.bits & m_cop0_regs.sr.bits) & (UINT32_C(0xFF) << 8)) != 0);
