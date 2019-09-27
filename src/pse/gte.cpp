@@ -665,6 +665,8 @@ void Core::Execute_NCDT(Instruction inst)
 
 void Core::Execute_MVMVA(Instruction inst)
 {
+  m_regs.FLAG.Clear();
+
   // TODO: Remove memcpy..
   s16 M[3][3];
   switch (inst.mvmva_multiply_matrix)
@@ -731,10 +733,14 @@ void Core::Execute_MVMVA(Instruction inst)
   }
 
   MulMatVec(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
+
+  m_regs.FLAG.UpdateError();
 }
 
 void Core::Execute_DPCS(Instruction inst)
 {
+  m_regs.FLAG.Clear();
+
   const u8 shift = inst.GetShift();
   const bool lm = inst.lm;
 
@@ -762,6 +768,8 @@ void Core::Execute_DPCS(Instruction inst)
   TruncateAndSetIR<1>(m_regs.MAC1, lm);
   TruncateAndSetIR<2>(m_regs.MAC2, lm);
   TruncateAndSetIR<3>(m_regs.MAC3, lm);
+
+  m_regs.FLAG.UpdateError();
 }
 
 } // namespace GTE
