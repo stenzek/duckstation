@@ -86,9 +86,9 @@ union Regs
     u16 pad15;     // 18
     u16 SZ3;       // 19
     u16 pad16;     // 19
-    u32 RGB0;      // 20
-    u32 RGB1;      // 21
-    u32 RGB2;      // 22
+    u8 RGB0[4];    // 20
+    u8 RGB1[4];    // 21
+    u8 RGB2[4];    // 22
     u32 RES1;      // 23
     s32 MAC0;      // 24
     s32 MAC1;      // 25
