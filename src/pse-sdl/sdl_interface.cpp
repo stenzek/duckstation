@@ -88,11 +88,11 @@ bool SDLInterface::CreateGLContext()
   if (GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    // glEnable(GL_DEBUG_OUTPUT);
+    // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  SDL_GL_SetSwapInterval(0);
+  SDL_GL_SetSwapInterval(1);
   return true;
 }
 
@@ -276,6 +276,10 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
         case SDL_SCANCODE_BACKSPACE:
           m_controller->SetButtonState(DigitalController::Button::Select, pressed);
           return true;
+
+        case SDL_SCANCODE_TAB:
+          SDL_GL_SetSwapInterval(pressed ? 0 : 1);
+          break;
 
         default:
           break;
@@ -582,6 +586,8 @@ void SDLInterface::Run()
 
     m_system->RunFrame();
 
+    Render();
+
     // update fps counter
     {
       const double time = m_fps_timer.GetTimeSeconds();
@@ -595,7 +601,5 @@ void SDLInterface::Run()
         m_fps_timer.Reset();
       }
     }
-
-    Render();
   }
 }
