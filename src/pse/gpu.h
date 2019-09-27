@@ -223,7 +223,7 @@ protected:
 
   struct RenderState
   {
-    static constexpr u16 PAGE_ATTRIBUTE_TEXTURE_MASK = UINT16_C(0b0000000110011111);
+    static constexpr u16 PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK = UINT16_C(0b0000000000011111);
     static constexpr u16 PAGE_ATTRIBUTE_MASK = UINT16_C(0b0000000111111111);
     static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
 
@@ -245,13 +245,17 @@ protected:
     u16 texpage_attribute; // from register in rectangle modes/vertex in polygon modes
     u16 texlut_attribute;  // from vertex
 
-    bool texture_changed = false;
+    bool texture_page_changed = false;
+    bool texture_color_mode_changed = false;
     bool transparency_mode_changed = false;
 
-    bool IsChanged() const { return texture_changed || transparency_mode_changed; }
+    bool IsChanged() const { return texture_page_changed || texture_color_mode_changed || transparency_mode_changed; }
 
-    bool IsTextureChanged() const { return texture_changed; }
-    void ClearTextureChangedFlag() { texture_changed = false; }
+    bool IsTexturePageChanged() const { return texture_page_changed; }
+    void ClearTexturePageChangedFlag() { texture_page_changed = false; }
+
+    bool IsTextureColorModeChanged() const { return texture_color_mode_changed; }
+    void ClearTextureColorModeChangedFlag() { texture_color_mode_changed = false; }
 
     bool IsTransparencyModeChanged() const { return transparency_mode_changed; }
     void ClearTransparencyModeChangedFlag() { transparency_mode_changed = false; }

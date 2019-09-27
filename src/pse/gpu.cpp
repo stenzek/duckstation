@@ -39,7 +39,8 @@ void GPU::SoftReset()
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
   m_render_state = {};
-  m_render_state.texture_changed = true;
+  m_render_state.texture_page_changed = true;
+  m_render_state.texture_color_mode_changed = true;
   m_render_state.transparency_mode_changed = true;
   UpdateGPUSTAT();
   UpdateCRTCConfig();
@@ -66,7 +67,8 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_render_state.texture_y_flip);
   sw.Do(&m_render_state.texpage_attribute);
   sw.Do(&m_render_state.texlut_attribute);
-  sw.Do(&m_render_state.texture_changed);
+  sw.Do(&m_render_state.texture_page_changed);
+  sw.Do(&m_render_state.texture_color_mode_changed);
   sw.Do(&m_render_state.transparency_mode_changed);
 
   sw.Do(&m_drawing_area.left);
@@ -102,7 +104,8 @@ bool GPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    m_render_state.texture_changed = true;
+    m_render_state.texture_page_changed = true;
+    m_render_state.texture_color_mode_changed = true;
     m_render_state.transparency_mode_changed = true;
     UpdateGPUSTAT();
   }
@@ -326,8 +329,6 @@ void GPU::Execute(TickCount ticks)
       m_timers->SetGate(HBLANK_TIMER_INDEX, new_vblank);
     }
 
-
-
     // alternating even line bit in 240-line mode
     if (!m_crtc_state.vertical_resolution)
       m_GPUSTAT.drawing_even_line = ConvertToBoolUnchecked(m_crtc_state.current_scanline & u32(1));
@@ -439,8 +440,7 @@ void GPU::WriteGP0(u32 value)
       {
         m_drawing_area.right = param & UINT32_C(0x3FF);
         m_drawing_area.bottom = (param >> 10) & UINT32_C(0x1FF);
-        Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right,
-                        m_drawing_area.bottom);
+        Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
       }
       break;
 
@@ -785,14 +785,17 @@ void GPU::RenderState::SetFromPageAttribute(u16 value)
   if (texpage_attribute == value)
     return;
 
+  texpage_attribute = value;
   texture_page_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
   texture_page_y = static_cast<s32>(ZeroExtend32((value >> 4) & UINT16_C(1)) * UINT32_C(256));
+  texture_page_changed |=
+    (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK);
+
+  const TextureColorMode old_color_mode = texture_color_mode;
   texture_color_mode = (static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
   if (texture_color_mode == TextureColorMode::Reserved_Direct16Bit)
     texture_color_mode = TextureColorMode::Direct16Bit;
-
-  texpage_attribute = value;
-  texture_changed |= (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_MASK);
+  texture_color_mode_changed |= old_color_mode != texture_color_mode;
 
   const TransparencyMode old_transparency_mode = transparency_mode;
   transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));
@@ -808,7 +811,7 @@ void GPU::RenderState::SetFromPaletteAttribute(u16 value)
   texture_palette_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x3F)) * UINT32_C(16));
   texture_palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
   texlut_attribute = value;
-  texture_changed = true;
+  texture_page_changed = true;
 }
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)

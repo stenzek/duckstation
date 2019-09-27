@@ -138,11 +138,13 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
   glVertexAttribIPointer(0, 2, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
                         reinterpret_cast<void*>(offsetof(HWVertex, color)));
   glVertexAttribPointer(2, 2, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
                         reinterpret_cast<void*>(offsetof(HWVertex, texcoord)));
+  glVertexAttribIPointer(3, 1, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, texpage)));
   glBindVertexArray(0);
 
   glGenVertexArrays(1, &m_attributeless_vao_id);
@@ -184,7 +186,10 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   prog.BindAttribute(0, "a_pos");
   prog.BindAttribute(1, "a_col0");
   if (textured)
+  {
     prog.BindAttribute(2, "a_tex0");
+    prog.BindAttribute(3, "a_texpage");
+  }
 
   prog.BindFragData(0, "o_col0");
 
@@ -200,8 +205,6 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   if (textured)
   {
     prog.RegisterUniform("samp0");
-    prog.RegisterUniform("u_texture_page_base");
-    prog.RegisterUniform("u_texture_palette_base");
     prog.Uniform1i(2, 0);
   }
 
@@ -228,11 +231,7 @@ void GPU_HW_OpenGL::SetProgram()
   }
 
   if (m_batch.texture_enable)
-  {
     m_vram_read_texture->Bind();
-    prog.Uniform2i(3, m_batch.texture_page_x, m_batch.texture_page_y);
-    prog.Uniform2i(4, m_batch.texture_palette_x, m_batch.texture_palette_y);
-  }
 }
 
 void GPU_HW_OpenGL::SetViewport()

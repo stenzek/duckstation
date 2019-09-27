@@ -16,9 +16,9 @@ protected:
     s32 x;
     s32 y;
     u32 color;
+    u32 texpage;
     u16 texcoord;
     u16 padding;
-    u32 texpage;
 
     static constexpr std::tuple<u8, u8> DecodeTexcoord(u16 texcoord)
     {

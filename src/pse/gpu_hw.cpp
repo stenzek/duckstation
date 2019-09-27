@@ -10,6 +10,9 @@ GPU_HW::~GPU_HW() = default;
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 {
+  const u32 texpage =
+    ZeroExtend32(m_render_state.texpage_attribute) | (ZeroExtend32(m_render_state.texlut_attribute) << 16);
+
   // TODO: Move this to the GPU..
   switch (rc.primitive)
   {
@@ -33,6 +36,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
         const VertexPosition vp{m_GP0_command[buffer_pos++]};
         hw_vert.x = vp.x();
         hw_vert.y = vp.y();
+        hw_vert.texpage = texpage;
 
         if (textured)
           hw_vert.texcoord = Truncate16(m_GP0_command[buffer_pos++]);
@@ -94,13 +98,16 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       const u8 tex_right = static_cast<u8>(tex_left + (rectangle_width - 1));
       const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
 
-      m_batch.vertices.push_back(HWVertex{pos_left, pos_top, color, HWVertex::EncodeTexcoord(tex_left, tex_top)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_left, pos_top, color, texpage, HWVertex::EncodeTexcoord(tex_left, tex_top)});
       if (restart_strip)
         m_batch.vertices.push_back(m_batch.vertices.back());
-      m_batch.vertices.push_back(HWVertex{pos_right, pos_top, color, HWVertex::EncodeTexcoord(tex_right, tex_top)});
-      m_batch.vertices.push_back(HWVertex{pos_left, pos_bottom, color, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
       m_batch.vertices.push_back(
-        HWVertex{pos_right, pos_bottom, color, HWVertex::EncodeTexcoord(tex_right, tex_bottom)});
+        HWVertex{pos_right, pos_top, color, texpage, HWVertex::EncodeTexcoord(tex_right, tex_top)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_left, pos_bottom, color, texpage, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_right, pos_bottom, color, texpage, HWVertex::EncodeTexcoord(tex_right, tex_bottom)});
     }
     break;
 
@@ -175,10 +182,12 @@ std::string GPU_HW::GenerateVertexShader(bool textured)
 in ivec2 a_pos;
 in vec4 a_col0;
 in vec2 a_tex0;
+in int a_texpage;
 
 out vec3 v_col0;
 #if TEXTURED
   out vec2 v_tex0;
+  flat out ivec4 v_texpage;
 #endif
 
 uniform ivec2 u_pos_offset;
@@ -193,6 +202,12 @@ void main()
   v_col0 = a_col0.rgb;
   #if TEXTURED
     v_tex0 = a_tex0;
+
+    // base_x,base_y,palette_x,palette_y
+    v_texpage.x = (a_texpage & 15) * 64;
+    v_texpage.y = ((a_texpage >> 4) & 1) * 256;
+    v_texpage.z = ((a_texpage >> 16) & 63) * 16;
+    v_texpage.w = ((a_texpage >> 22) & 511);
   #endif
 }
 )";
@@ -218,11 +233,8 @@ in vec3 v_col0;
 uniform vec2 u_transparent_alpha;
 #if TEXTURED
   in vec2 v_tex0;
+  flat in ivec4 v_texpage;
   uniform sampler2D samp0;
-  uniform ivec2 u_texture_page_base;
-  #if PALETTE
-    uniform ivec2 u_texture_palette_base;
-  #endif
 #endif
 
 out vec4 o_col0;
@@ -242,8 +254,8 @@ vec4 SampleFromVRAM(vec2 coord)
   #endif
 
   // fixup coords
-  ivec2 vicoord = ivec2(u_texture_page_base.x + index_coord.x,
-                        fixYCoord(u_texture_page_base.y + index_coord.y));
+  ivec2 vicoord = ivec2(v_texpage.x + index_coord.x,
+                        fixYCoord(v_texpage.y + index_coord.y));
 
   // load colour/palette
   vec4 color = texelFetch(samp0, vicoord & VRAM_COORD_MASK, 0);
@@ -259,7 +271,7 @@ vec4 SampleFromVRAM(vec2 coord)
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
     #endif
-    ivec2 palette_icoord = ivec2(u_texture_palette_base.x + palette_index, fixYCoord(u_texture_palette_base.y));
+    ivec2 palette_icoord = ivec2(v_texpage.z + palette_index, fixYCoord(v_texpage.w));
     color = texelFetch(samp0, palette_icoord & VRAM_COORD_MASK, 0);
   #endif
 
@@ -393,7 +405,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
     m_batch.render_command_bits != rc.bits && m_batch.transparency_enable != rc_transparency_enable ||
     m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
     m_batch.primitive != rc_primitive;
-  const bool needs_flush = !IsFlushed() && (m_render_state.IsChanged() || buffer_overflow || rc_changed);
+  const bool needs_flush =
+    !IsFlushed() && (m_render_state.IsTextureColorModeChanged() || m_render_state.IsTransparencyModeChanged() ||
+                     buffer_overflow || rc_changed);
   if (needs_flush)
     FlushRender();
 
@@ -407,7 +421,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
     m_batch.texture_blending_enable = rc_texture_blend_enable;
   }
 
-  if (m_render_state.IsTextureChanged())
+  if (m_render_state.IsTexturePageChanged())
   {
     // we only need to update the copy texture if the render area intersects with the texture page
     const u32 texture_page_left = m_render_state.texture_page_x;
@@ -425,12 +439,17 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
       InvalidateVRAMReadCache();
     }
 
-    m_batch.texture_color_mode = m_render_state.texture_color_mode;
     m_batch.texture_page_x = m_render_state.texture_page_x;
     m_batch.texture_page_y = m_render_state.texture_page_y;
     m_batch.texture_palette_x = m_render_state.texture_palette_x;
     m_batch.texture_palette_y = m_render_state.texture_palette_y;
-    m_render_state.ClearTextureChangedFlag();
+    m_render_state.ClearTexturePageChangedFlag();
+  }
+
+  if (m_render_state.IsTextureColorModeChanged())
+  {
+    m_batch.texture_color_mode = m_render_state.texture_color_mode;
+    m_render_state.ClearTextureColorModeChangedFlag();
   }
 
   if (m_render_state.IsTransparencyModeChanged())
