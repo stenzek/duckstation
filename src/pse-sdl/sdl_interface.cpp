@@ -371,12 +371,38 @@ void SDLInterface::Render()
   ImGui::NewFrame();
 }
 
+static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
+{
+  const float window_ratio = float(window_width) / float(window_height);
+  int left, top, width, height;
+  if (window_ratio >= display_ratio)
+  {
+    width = static_cast<int>(float(window_height) * display_ratio);
+    height = static_cast<int>(window_height);
+    left = (window_width - width) / 2;
+    top = 0;
+  }
+  else
+  {
+    width = static_cast<int>(window_width);
+    height = static_cast<int>(float(window_width) / display_ratio);
+    left = 0;
+    top = (window_height - height) / 2;
+  }
+
+  return std::tie(left, top, width, height);
+}
+
 void SDLInterface::RenderDisplay()
 {
   if (!m_display_texture)
     return;
 
-  glViewport(0, 0, m_window_width, m_window_height - 20);
+  // - 20 for main menu padding
+  const auto [vp_left, vp_top, vp_width, vp_height] =
+    CalculateDrawRect(m_window_width, std::max(m_window_height - 20, 1), m_display_aspect_ratio);
+
+  glViewport(vp_left, m_window_height - (20 + vp_top) - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
@@ -473,13 +499,15 @@ void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
   m_osd_messages.push_back(std::move(msg));
 }
 
-void SDLInterface::SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height)
+void SDLInterface::SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height,
+                                     float aspect_ratio)
 {
   m_display_texture = texture;
-  m_display_texture_offset_x = 0;
-  m_display_texture_offset_y = 0;
+  m_display_texture_offset_x = offset_x;
+  m_display_texture_offset_y = offset_y;
   m_display_texture_width = width;
   m_display_texture_height = height;
+  m_display_aspect_ratio = aspect_ratio;
   m_display_texture_changed = true;
 }
 

@@ -23,6 +23,7 @@ bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* in
   if (!CompilePrograms())
     return false;
 
+  m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1.0f);
   return true;
 }
 
@@ -123,8 +124,6 @@ void GPU_HW_OpenGL::ClearFramebuffer()
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 }
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
@@ -287,7 +286,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
   // TODO: 24-bit support.
   if (m_show_vram)
   {
-    m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1.0f);
   }
   else
   {
@@ -303,7 +302,8 @@ void GPU_HW_OpenGL::UpdateDisplay()
                        VRAM_HEIGHT - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0,
                        0, 0, copy_width, copy_height, 1);
 
-    m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, copy_width, copy_height);
+    m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, copy_width, copy_height,
+                                                    DISPLAY_ASPECT_RATIO);
   }
 }
 

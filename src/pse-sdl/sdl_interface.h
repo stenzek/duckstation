@@ -23,7 +23,7 @@ public:
 
   static TinyString GetSaveStateFilename(u32 index);
 
-  void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height) override;
+  void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height, float aspect_ratio) override;
 
   void ReportMessage(const char* message) override;
 
@@ -70,6 +70,7 @@ private:
   u32 m_display_texture_offset_y = 0;
   u32 m_display_texture_width = 0;
   u32 m_display_texture_height = 0;
+  float m_display_aspect_ratio = 1.0f;
   bool m_display_texture_changed = false;
 
   std::deque<OSDMessage> m_osd_messages;

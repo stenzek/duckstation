@@ -37,6 +37,7 @@ public:
   void Execute(TickCount ticks);
 
 protected:
+  static constexpr float DISPLAY_ASPECT_RATIO = 4.0f / 3.0f;
   static constexpr u32 VRAM_WIDTH = 1024;
   static constexpr u32 VRAM_HEIGHT = 512;
   static constexpr u32 VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16);

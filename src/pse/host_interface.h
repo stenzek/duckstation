@@ -16,7 +16,7 @@ public:
 
   bool InitializeSystem(const char* filename, const char* exp1_filename, const char* save_state_filename);
 
-  virtual void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height) = 0;
+  virtual void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height, float aspect_ratio) = 0;
   virtual void ReportMessage(const char* message) = 0;
 
   // Adds OSD messages, duration is in seconds.
