@@ -228,10 +228,10 @@ protected:
     static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
 
     // decoded values
-    s32 texture_page_x;
-    s32 texture_page_y;
-    s32 texture_palette_x;
-    s32 texture_palette_y;
+    u32 texture_page_x;
+    u32 texture_page_y;
+    u32 texture_palette_x;
+    u32 texture_palette_y;
     TextureColorMode texture_color_mode;
     TransparencyMode transparency_mode;
     u8 texture_window_mask_x;   // in 8 pixel steps

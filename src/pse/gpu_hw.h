@@ -35,6 +35,7 @@ protected:
       TriangleStrip = 2
     };
 
+    u32 render_command_bits;
     Primitive primitive;
     bool transparency_enable;
     bool texture_enable;

@@ -792,7 +792,7 @@ void GPU::RenderState::SetFromPageAttribute(u16 value)
     texture_color_mode = TextureColorMode::Direct16Bit;
 
   texpage_attribute = value;
-  texture_changed = (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_MASK);
+  texture_changed |= (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_MASK);
 
   const TransparencyMode old_transparency_mode = transparency_mode;
   transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));

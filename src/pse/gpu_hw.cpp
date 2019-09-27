@@ -361,71 +361,64 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
       default:
         break;
     }
-
-    if (m_render_state.IsChanged())
-    {
-      if (m_render_state.IsTextureChanged())
-      {
-        if (!IsFlushed())
-        {
-          // we only need to update the copy texture if the render area intersects with the texture page
-          const u32 texture_page_left = m_render_state.texture_page_x;
-          const u32 texture_page_right = m_render_state.texture_page_y + TEXTURE_PAGE_WIDTH;
-          const u32 texture_page_top = m_render_state.texture_page_y;
-          const u32 texture_page_bottom = texture_page_top + TEXTURE_PAGE_HEIGHT;
-          const bool texture_page_overlaps =
-            (texture_page_left < m_drawing_area.right && texture_page_right > m_drawing_area.left &&
-             texture_page_top > m_drawing_area.bottom && texture_page_bottom < m_drawing_area.top);
-
-          // TODO: Check palette too.
-          if (texture_page_overlaps)
-          {
-            Log_DebugPrintf("Invalidating VRAM read cache due to drawing area overlap");
-            InvalidateVRAMReadCache();
-          }
-
-          // texture page changed?
-          // TODO: Move this to the shader...
-          FlushRender();
-        }
-
-        m_render_state.ClearTextureChangedFlag();
-      }
-
-      if (m_batch.transparency_enable && m_render_state.IsTransparencyModeChanged() && !IsFlushed())
-        FlushRender();
-      m_render_state.ClearTransparencyModeChangedFlag();
-
-      m_batch.texture_color_mode = m_render_state.texture_color_mode;
-      m_batch.texture_page_x = m_render_state.texture_page_x;
-      m_batch.texture_page_y = m_render_state.texture_page_y;
-      m_batch.texture_palette_x = m_render_state.texture_palette_x;
-      m_batch.texture_palette_y = m_render_state.texture_palette_y;
-      m_batch.transparency_mode = m_render_state.transparency_mode;
-    }
   }
 
-  // extract state
+  // has any state changed which requires a new batch?
   const bool rc_transparency_enable = rc.transparency_enable;
   const bool rc_texture_enable = rc.texture_enable;
   const bool rc_texture_blend_enable = !rc.texture_blend_disable;
   const HWRenderBatch::Primitive rc_primitive = GetPrimitiveForCommand(rc);
+  const u32 max_added_vertices = num_vertices + 2;
+  const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
+  const bool rc_changed =
+    m_batch.render_command_bits != rc.bits && m_batch.transparency_enable != rc_transparency_enable ||
+    m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
+    m_batch.primitive != rc_primitive;
+  const bool needs_flush = !IsFlushed() && (m_render_state.IsChanged() || buffer_overflow || rc_changed);
+  if (needs_flush)
+    FlushRender();
 
-  // flush when the command changes
-  if (!m_batch.vertices.empty())
+  // update state
+  if (rc_changed)
   {
-    // including the degenerate triangles for strips
-    const u32 max_added_vertices = num_vertices + 2;
-    const bool params_changed =
-      (m_batch.transparency_enable != rc_transparency_enable || m_batch.texture_enable != rc_texture_enable ||
-       m_batch.texture_blending_enable != rc_texture_blend_enable || m_batch.primitive != rc_primitive);
-    if ((m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT || params_changed)
-      FlushRender();
+    m_batch.render_command_bits = rc.bits;
+    m_batch.primitive = rc_primitive;
+    m_batch.transparency_enable = rc_transparency_enable;
+    m_batch.texture_enable = rc_texture_enable;
+    m_batch.texture_blending_enable = rc_texture_blend_enable;
   }
 
-  m_batch.primitive = rc_primitive;
-  m_batch.transparency_enable = rc_transparency_enable;
-  m_batch.texture_enable = rc_texture_enable;
-  m_batch.texture_blending_enable = rc_texture_blend_enable;
+  if (m_render_state.IsTextureChanged())
+  {
+    // we only need to update the copy texture if the render area intersects with the texture page
+    const u32 texture_page_left = m_render_state.texture_page_x;
+    const u32 texture_page_right = m_render_state.texture_page_y + TEXTURE_PAGE_WIDTH;
+    const u32 texture_page_top = m_render_state.texture_page_y;
+    const u32 texture_page_bottom = texture_page_top + TEXTURE_PAGE_HEIGHT;
+    const bool texture_page_overlaps =
+      (texture_page_left < m_drawing_area.right && texture_page_right > m_drawing_area.left &&
+       texture_page_top > m_drawing_area.bottom && texture_page_bottom < m_drawing_area.top);
+
+    // TODO: Check palette too.
+    if (texture_page_overlaps)
+    {
+      Log_DebugPrintf("Invalidating VRAM read cache due to drawing area overlap");
+      InvalidateVRAMReadCache();
+    }
+
+    m_batch.texture_color_mode = m_render_state.texture_color_mode;
+    m_batch.texture_page_x = m_render_state.texture_page_x;
+    m_batch.texture_page_y = m_render_state.texture_page_y;
+    m_batch.texture_palette_x = m_render_state.texture_palette_x;
+    m_batch.texture_palette_y = m_render_state.texture_palette_y;
+    m_render_state.ClearTextureChangedFlag();
+  }
+
+  if (m_render_state.IsTransparencyModeChanged())
+  {
+    m_batch.transparency_mode = m_render_state.transparency_mode;
+    m_render_state.ClearTransparencyModeChangedFlag();
+  }
+
   LoadVertices(rc, num_vertices);
 }
