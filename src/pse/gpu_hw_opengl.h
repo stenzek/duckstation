@@ -44,7 +44,7 @@ private:
   void CreateVertexBuffer();
 
   bool CompilePrograms();
-  bool CompileProgram(GL::Program& prog, bool textured, bool blending, TextureColorMode texture_color_mode);
+  bool CompileProgram(GL::Program& prog, bool textured, bool blending, bool transparent, TextureColorMode texture_color_mode);
 
   void SetProgram();
   void SetViewport();
@@ -62,7 +62,7 @@ private:
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
 
-  std::array<std::array<std::array<GL::Program, 3>, 2>, 2> m_render_programs;
+  std::array<std::array<std::array<std::array<GL::Program, 3>, 2>, 2>, 2> m_render_programs;
   std::array<GL::Program, 3> m_texture_page_programs;
 
   GLStats m_stats = {};

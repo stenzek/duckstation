@@ -18,6 +18,7 @@ protected:
     u32 color;
     u16 texcoord;
     u16 padding;
+    u32 texpage;
 
     static constexpr std::tuple<u8, u8> DecodeTexcoord(u16 texcoord)
     {
@@ -74,7 +75,7 @@ protected:
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
 
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(bool textured, bool blending, TextureColorMode texture_color_mode);
+  std::string GenerateFragmentShader(bool textured, bool blending, bool transparent, TextureColorMode texture_color_mode);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
 

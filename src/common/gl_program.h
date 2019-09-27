@@ -40,6 +40,15 @@ public:
   void Uniform2f(u32 index, float x, float y) const;
   void Uniform3f(u32 index, float x, float y, float z) const;
   void Uniform4f(u32 index, float x, float y, float z, float w) const;
+  void Uniform2uiv(u32 index, const u32* v) const;
+  void Uniform3uiv(u32 index, const u32* v) const;
+  void Uniform4uiv(u32 index, const u32* v) const;
+  void Uniform2iv(u32 index, const s32* v) const;
+  void Uniform3iv(u32 index, const s32* v) const;
+  void Uniform4iv(u32 index, const s32* v) const;
+  void Uniform2fv(u32 index, const float* v) const;
+  void Uniform3fv(u32 index, const float* v) const;
+  void Uniform4fv(u32 index, const float* v) const;
 
 private:
   GLuint m_program_id = 0;

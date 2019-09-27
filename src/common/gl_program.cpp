@@ -263,4 +263,76 @@ void Program::Uniform4f(u32 index, float x, float y, float z, float w) const
     glUniform4f(location, x, y, z, w);
 }
 
+void Program::Uniform2uiv(u32 index, const u32* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform2uiv(location, 1, v);
+}
+
+void Program::Uniform3uiv(u32 index, const u32* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform3uiv(location, 1, v);
+}
+
+void Program::Uniform4uiv(u32 index, const u32* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform4uiv(location, 1, v);
+}
+
+void Program::Uniform2iv(u32 index, const s32* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform2iv(location, 1, v);
+}
+
+void Program::Uniform3iv(u32 index, const s32* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform3iv(location, 1, v);
+}
+
+void Program::Uniform4iv(u32 index, const s32* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform4iv(location, 1, v);
+}
+
+void Program::Uniform2fv(u32 index, const float* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform2fv(location, 1, v);
+}
+
+void Program::Uniform3fv(u32 index, const float* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform3fv(location, 1, v);
+}
+
+void Program::Uniform4fv(u32 index, const float* v) const
+{
+  Assert(index < m_uniform_locations.size());
+  const int location = m_uniform_locations[index];
+  if (location >= 0)
+    glUniform4fv(location, 1, v);
+}
+
 } // namespace GL

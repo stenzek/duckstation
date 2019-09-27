@@ -176,7 +176,7 @@ in ivec2 a_pos;
 in vec4 a_col0;
 in vec2 a_tex0;
 
-out vec4 v_col0;
+out vec3 v_col0;
 #if TEXTURED
   out vec2 v_tex0;
 #endif
@@ -190,7 +190,7 @@ void main()
   float pos_y = (float(a_pos.y + u_pos_offset.y) / -256.0) + 1.0;
   gl_Position = vec4(pos_x, pos_y, 0.0, 1.0);
 
-  v_col0 = a_col0;
+  v_col0 = a_col0.rgb;
   #if TEXTURED
     v_tex0 = a_tex0;
   #endif
@@ -200,7 +200,8 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateFragmentShader(bool textured, bool blending, TextureColorMode texture_color_mode)
+std::string GPU_HW::GenerateFragmentShader(bool textured, bool blending, bool transparent,
+                                           TextureColorMode texture_color_mode)
 {
   std::stringstream ss;
   GenerateShaderHeader(ss);
@@ -213,7 +214,8 @@ std::string GPU_HW::GenerateFragmentShader(bool textured, bool blending, Texture
   DefineMacro(ss, "PALETTE_8_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette8Bit);
 
   ss << R"(
-in vec4 v_col0;
+in vec3 v_col0;
+uniform vec2 u_transparent_alpha;
 #if TEXTURED
   in vec2 v_tex0;
   uniform sampler2D samp0;
@@ -272,13 +274,30 @@ void main()
     if (texcol == vec4(0.0, 0.0, 0.0, 0.0))
       discard;
 
+    vec3 color;
     #if BLENDING
-      o_col0 = vec4((ivec4(v_col0 * 255.0) * ivec4(texcol * 255.0)) >> 7) / 255.0;
+      color = vec3((ivec3(v_col0 * 255.0) * ivec3(texcol.rgb * 255.0)) >> 7) / 255.0;
     #else
-      o_col0 = texcol;
+      color = texcol.rgb;
+    #endif
+
+    #if TRANSPARENT
+      // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
+      if (texcol.a != 0)
+        o_col0 = vec4(color * u_transparent_alpha.x, u_transparent_alpha.y);
+      else
+        o_col0 = vec4(color, 0.0);
+    #else
+      // Mask bit from texture.
+      o_col0 = vec4(color, texcol.a);
     #endif
   #else
-    o_col0 = v_col0;
+    #if TRANSPARENT
+      o_col0 = vec4(v_col0 * u_transparent_alpha.x, u_transparent_alpha.y);
+    #else
+      // Mask bit is cleared for untextured polygons.
+      o_col0 = vec4(v_col0, 0.0);
+    #endif
   #endif
 }
 )";

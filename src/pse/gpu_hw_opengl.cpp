@@ -143,13 +143,17 @@ bool GPU_HW_OpenGL::CompilePrograms()
   {
     for (u32 blending = 0; blending < 2; blending++)
     {
-      for (u32 format = 0; format < 3; format++)
+      for (u32 transparent = 0; transparent < 2; transparent++)
       {
-        // TODO: eliminate duplicate shaders here
-        if (!CompileProgram(m_render_programs[textured][blending][format], ConvertToBoolUnchecked(textured),
-                            ConvertToBoolUnchecked(blending), static_cast<TextureColorMode>(format)))
+        for (u32 format = 0; format < 3; format++)
         {
-          return false;
+          // TODO: eliminate duplicate shaders here
+          if (!CompileProgram(m_render_programs[textured][blending][transparent][format],
+                              ConvertToBoolUnchecked(textured), ConvertToBoolUnchecked(blending),
+                              ConvertToBoolUnchecked(transparent), static_cast<TextureColorMode>(format)))
+          {
+            return false;
+          }
         }
       }
     }
@@ -158,10 +162,11 @@ bool GPU_HW_OpenGL::CompilePrograms()
   return true;
 }
 
-bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blending, TextureColorMode texture_color_mode)
+bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blending, bool transparent,
+                                   TextureColorMode texture_color_mode)
 {
   const std::string vs = GenerateVertexShader(textured);
-  const std::string fs = GenerateFragmentShader(textured, blending, texture_color_mode);
+  const std::string fs = GenerateFragmentShader(textured, blending, transparent, texture_color_mode);
   if (!prog.Compile(vs.c_str(), fs.c_str()))
     return false;
 
@@ -177,14 +182,16 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
 
   prog.Bind();
   prog.RegisterUniform("u_pos_offset");
+  prog.RegisterUniform("u_transparent_alpha");
   prog.Uniform2i(0, 0, 0);
+  prog.Uniform2f(1, 1.0f, 0.0f);
 
   if (textured)
   {
     prog.RegisterUniform("samp0");
     prog.RegisterUniform("u_texture_page_base");
     prog.RegisterUniform("u_texture_palette_base");
-    prog.Uniform1i(1, 0);
+    prog.Uniform1i(2, 0);
   }
 
   return true;
@@ -194,16 +201,26 @@ void GPU_HW_OpenGL::SetProgram()
 {
   const GL::Program& prog =
     m_render_programs[BoolToUInt32(m_batch.texture_enable)][BoolToUInt32(m_batch.texture_blending_enable)]
-                     [static_cast<u32>(m_batch.texture_color_mode)];
+                     [BoolToUInt32(m_batch.transparency_enable)][static_cast<u32>(m_batch.texture_color_mode)];
   prog.Bind();
 
   prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);
+  if (m_batch.transparency_enable)
+  {
+    static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
+    prog.Uniform2fv(1, transparent_alpha[static_cast<u32>(m_batch.transparency_mode)]);
+  }
+  else
+  {
+    static constexpr float disabled_alpha[2] = {1.0f, 0.0f};
+    prog.Uniform2fv(1, disabled_alpha);
+  }
 
   if (m_batch.texture_enable)
   {
     m_vram_read_texture->Bind();
-    prog.Uniform2i(2, m_batch.texture_page_x, m_batch.texture_page_y);
-    prog.Uniform2i(3, m_batch.texture_palette_x, m_batch.texture_palette_y);
+    prog.Uniform2i(3, m_batch.texture_page_x, m_batch.texture_page_y);
+    prog.Uniform2i(4, m_batch.texture_palette_x, m_batch.texture_palette_y);
   }
 }
 
@@ -228,32 +245,18 @@ void GPU_HW_OpenGL::SetScissor()
 
 void GPU_HW_OpenGL::SetBlendState()
 {
-  struct BlendVars
-  {
-    GLenum src_factor;
-    GLenum func;
-    GLenum dst_factor;
-    float color;
-  };
-  static const std::array<BlendVars, 4> blend_vars = {{
-    {GL_CONSTANT_COLOR, GL_FUNC_ADD, GL_CONSTANT_COLOR, 0.5f}, // B/2 + F/2
-    {GL_ONE, GL_FUNC_ADD, GL_ONE, -1.0f},                      // B + F
-    {GL_ONE, GL_FUNC_REVERSE_SUBTRACT, GL_ONE, -1.0f},         // B - F
-    {GL_CONSTANT_COLOR, GL_FUNC_ADD, GL_ONE, 0.25f}            // B + F/4
-  }};
-
   if (!m_batch.transparency_enable)
   {
     glDisable(GL_BLEND);
     return;
   }
 
-  const BlendVars& vars = blend_vars[static_cast<u8>(m_batch.transparency_mode)];
   glEnable(GL_BLEND);
-  glBlendFuncSeparate(vars.src_factor, vars.dst_factor, GL_ONE, GL_ZERO);
-  glBlendEquationSeparate(vars.func, GL_FUNC_ADD);
-  if (vars.color >= 0.0f)
-    glBlendColor(vars.color, vars.color, vars.color, 1.0f);
+  glBlendEquationSeparate(m_batch.transparency_mode == GPU::TransparencyMode::BackgroundMinusForeground ?
+                            GL_FUNC_REVERSE_SUBTRACT :
+                            GL_FUNC_ADD,
+                          GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_ONE, GL_SRC_ALPHA, GL_ONE, GL_ZERO);
 }
 
 void GPU_HW_OpenGL::UpdateDisplay()
