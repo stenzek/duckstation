@@ -77,6 +77,7 @@ private:
   void Execute_MVMVA(Instruction inst);
   void Execute_DPCS(Instruction inst);
   void Execute_DPCT(Instruction inst);
+  void Execute_DPCL(Instruction inst);
 
   Regs m_regs = {};
 };

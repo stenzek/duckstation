@@ -294,6 +294,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_SQR(inst);
       break;
 
+    case 0x29:
+      Execute_DPCL(inst);
+      break;
+
     case 0x2A:
       Execute_DPCT(inst);
       break;
@@ -770,8 +774,6 @@ void Core::DPCS(const u8 color[3], bool sf, bool lm)
   TruncateAndSetIR<1>(m_regs.MAC1, lm);
   TruncateAndSetIR<2>(m_regs.MAC2, lm);
   TruncateAndSetIR<3>(m_regs.MAC3, lm);
-
-  m_regs.FLAG.UpdateError();
 }
 
 void Core::Execute_DPCS(Instruction inst)
@@ -790,9 +792,44 @@ void Core::Execute_DPCT(Instruction inst)
   const bool sf = inst.sf;
   const bool lm = inst.lm;
 
-  DPCS(m_regs.RGB0, sf, lm);
-  DPCS(m_regs.RGB0, sf, lm);
-  DPCS(m_regs.RGB0, sf, lm);
+  for (u32 i = 0; i < 3; i++)
+    DPCS(m_regs.RGB0, sf, lm);
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_DPCL(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  // In: [IR1,IR2,IR3]=Vector, FC=Far Color, IR0=Interpolation value, CODE=MSB of RGBC
+  // [MAC1,MAC2,MAC3] = [R,G,B] SHL 16                     ;<--- for DPCS/DPCT
+  // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for DCPL only
+  TruncateAndSetMAC<1>(((s64(ZeroExtend64(m_regs.RGBC[0])) + s64(m_regs.IR0)) << 4), 0);
+  TruncateAndSetMAC<2>(((s64(ZeroExtend64(m_regs.RGBC[1])) + s64(m_regs.IR0)) << 4), 0);
+  TruncateAndSetMAC<3>(((s64(ZeroExtend64(m_regs.RGBC[2])) + s64(m_regs.IR0)) << 4), 0);
+
+  // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
+  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
+  TruncateAndSetIR<1>(s32((s64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> shift, false);
+  TruncateAndSetIR<2>(s32((s64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> shift, false);
+  TruncateAndSetIR<3>(s32((s64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> shift, false);
+
+  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
+  TruncateAndSetMAC<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), shift);
+  TruncateAndSetMAC<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), shift);
+  TruncateAndSetMAC<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), shift);
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
+          m_regs.RGBC[3]);
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+  TruncateAndSetIR<3>(m_regs.MAC3, lm);
 
   m_regs.FLAG.UpdateError();
 }
