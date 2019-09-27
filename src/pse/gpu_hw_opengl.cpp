@@ -37,33 +37,44 @@ void GPU_HW_OpenGL::RenderUI()
 {
   GPU_HW::RenderUI();
 
+  ImGui::SetNextWindowSize(ImVec2(300.0f, 100.0f), ImGuiCond_Once);
+
+  const bool is_null_frame = m_stats.num_batches == 0;
+  if (!is_null_frame)
+  {
+    m_last_stats = m_stats;
+    m_stats = {};
+  }
+
   if (ImGui::Begin("GL Render Statistics"))
   {
     ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, 200.0f);
 
-    ImGui::TextUnformatted("Texture Page Updates:");
+    ImGui::TextUnformatted("VRAM Read Texture Updates:");
     ImGui::NextColumn();
-    ImGui::Text("%u", m_stats.num_vram_read_texture_updates);
+    ImGui::Text("%u", m_last_stats.num_vram_read_texture_updates);
     ImGui::NextColumn();
 
     ImGui::TextUnformatted("Batches Drawn:");
     ImGui::NextColumn();
-    ImGui::Text("%u", m_stats.num_batches);
+    ImGui::Text("%u", m_last_stats.num_batches);
     ImGui::NextColumn();
 
     ImGui::TextUnformatted("Vertices Drawn: ");
     ImGui::NextColumn();
-    ImGui::Text("%u", m_stats.num_vertices);
+    ImGui::Text("%u", m_last_stats.num_vertices);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("GPU Active In This Frame: ");
+    ImGui::NextColumn();
+    ImGui::Text("%s", is_null_frame ? "Yes" : "No");
     ImGui::NextColumn();
 
     ImGui::Columns(1);
   }
 
   ImGui::End();
-
-  // skip update when no batches were drawn in that frame.. for now
-  if (m_stats.num_batches > 0)
-    m_stats = {};
 }
 
 void GPU_HW_OpenGL::InvalidateVRAMReadCache()

@@ -548,7 +548,7 @@ void SDLInterface::Run()
     {
       m_fps_counter++;
       const double time = m_fps_timer.GetTimeSeconds();
-      if (time > 0.1)
+      if (time >= 0.25f)
       {
         m_fps = static_cast<float>(m_fps_counter / time);
         m_fps_counter = 0;

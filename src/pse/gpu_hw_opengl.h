@@ -66,4 +66,5 @@ private:
   std::array<GL::Program, 3> m_texture_page_programs;
 
   GLStats m_stats = {};
+  GLStats m_last_stats = {};
 };
