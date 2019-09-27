@@ -32,8 +32,9 @@ protected:
     enum class Primitive : u8
     {
       Lines = 0,
-      Triangles = 1,
-      TriangleStrip = 2
+      LineStrip = 1,
+      Triangles = 2,
+      TriangleStrip = 3
     };
 
     u32 render_command_bits;

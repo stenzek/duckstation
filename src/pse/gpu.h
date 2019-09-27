@@ -151,8 +151,8 @@ protected:
     BitField<u32, u32, 0, 11> x_s11;
     BitField<u32, u32, 16, 11> y_s11;
 
-    u32 x() const { return S11ToS32(x_s11); }
-    u32 y() const { return S11ToS32(y_s11); }
+    s32 x() const { return S11ToS32(x_s11); }
+    s32 y() const { return S11ToS32(y_s11); }
   };
 
   void SoftReset();

@@ -441,7 +441,7 @@ void GPU_HW_OpenGL::FlushRender()
   glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(HWVertex) * m_batch.vertices.size()),
                   m_batch.vertices.data());
 
-  static constexpr std::array<GLenum, 3> gl_primitives = {{GL_LINES, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
+  static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
   glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
 
   m_batch.vertices.clear();

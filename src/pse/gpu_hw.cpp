@@ -111,6 +111,26 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
     }
     break;
 
+    case Primitive::Line:
+    {
+      const u32 first_color = rc.color_for_first_vertex;
+      const bool shaded = rc.shading_enable;
+
+      u32 buffer_pos = 1;
+      for (u32 i = 0; i < num_vertices; i++)
+      {
+        // x/y are encoded differently for lines - 16 bits each
+        const u32 color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+        const s32 x = Truncate16(m_GP0_command[buffer_pos]);
+        const s32 y = Truncate16(m_GP0_command[buffer_pos++] >> 16);
+        m_batch.vertices.push_back(HWVertex{x, y, color});
+      }
+
+      FlushRender();
+      UpdateDisplay();
+    }
+    break;
+
     default:
       UnreachableCode();
       break;
@@ -357,7 +377,7 @@ void main()
 GPU_HW::HWRenderBatch::Primitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 {
   if (rc.primitive == Primitive::Line)
-    return HWRenderBatch::Primitive::Lines;
+    return rc.polyline ? HWRenderBatch::Primitive::LineStrip : HWRenderBatch::Primitive::Lines;
   else if ((rc.primitive == Primitive::Polygon && rc.quad_polygon) || rc.primitive == Primitive::Rectangle)
     return HWRenderBatch::Primitive::TriangleStrip;
   else
@@ -395,9 +415,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   }
 
   // has any state changed which requires a new batch?
-  const bool rc_transparency_enable = rc.transparency_enable;
-  const bool rc_texture_enable = rc.texture_enable;
-  const bool rc_texture_blend_enable = !rc.texture_blend_disable;
+  const bool rc_transparency_enable = rc.IsTransparencyEnabled();
+  const bool rc_texture_enable = rc.IsTextureEnabled();
+  const bool rc_texture_blend_enable = rc.IsTextureBlendingEnabled();
   const HWRenderBatch::Primitive rc_primitive = GetPrimitiveForCommand(rc);
   const u32 max_added_vertices = num_vertices + 2;
   const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
@@ -405,9 +425,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
     m_batch.render_command_bits != rc.bits && m_batch.transparency_enable != rc_transparency_enable ||
     m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
     m_batch.primitive != rc_primitive;
+  const bool restart_line_strip = (rc_primitive == HWRenderBatch::Primitive::LineStrip);
   const bool needs_flush =
     !IsFlushed() && (m_render_state.IsTextureColorModeChanged() || m_render_state.IsTransparencyModeChanged() ||
-                     buffer_overflow || rc_changed);
+                     buffer_overflow || rc_changed || restart_line_strip);
   if (needs_flush)
     FlushRender();
 

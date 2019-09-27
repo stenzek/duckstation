@@ -580,7 +580,8 @@ bool GPU::HandleRenderCommand()
         // polyline goes until we hit the termination code
         num_vertices = 0;
         bool found_terminator = false;
-        for (size_t pos = 0; pos < m_GP0_command.size(); pos += words_per_vertex)
+        for (u32 pos = BoolToUInt32(!rc.shading_enable); pos < static_cast<u32>(m_GP0_command.size());
+             pos += words_per_vertex)
         {
           if (m_GP0_command[pos] == 0x55555555)
           {
