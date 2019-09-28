@@ -35,15 +35,22 @@ private:
   static constexpr s32 IR123_MIN_VALUE = -(INT64_C(1) << 15);
   static constexpr s32 IR123_MAX_VALUE = (INT64_C(1) << 15) - 1;
 
-  // Checks for underflow/overflow. Returns the value untouched so it can be threaded through an expression.
+  // Checks for underflow/overflow.
   template<u32 index>
-  s64 CheckMACResult(s64 value);
+  void CheckMACOverflow(s64 value);
+
+  // Checks for underflow/overflow, sign-extending to 31/43 bits.
+  template<u32 index>
+  s64 SignExtendMACResult(s64 value);
 
   template<u32 index>
-  s64 TruncateAndSetMAC(s64 value, u8 shift);
+  void TruncateAndSetMAC(s64 value, u8 shift);
 
   template<u32 index>
-  s16 TruncateAndSetIR(s32 value, bool lm);
+  void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm);
+
+  template<u32 index>
+  void TruncateAndSetIR(s32 value, bool lm);
 
   template<u32 index>
   u8 TruncateRGB(s32 value);
@@ -55,7 +62,7 @@ private:
 
   // 3x3 matrix * 3x1 vector, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
-  
+
   // 3x3 matrix * 3x1 vector with translation, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 

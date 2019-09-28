@@ -190,6 +190,15 @@ constexpr bool ConvertToBoolUnchecked(TValue value)
   return ret;
 }
 
+// Generic sign extension
+template<int NBITS, typename T>
+constexpr T SignExtendN(T value)
+{
+  // http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
+  constexpr int shift = 8 * sizeof(T) - NBITS;
+  return static_cast<T>((static_cast<std::make_signed_t<T>>(value) << shift) >> shift);
+}
+
 // Enum class bitwise operators
 #define IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(type_)                                                                  \
   inline constexpr type_ operator&(type_ lhs, type_ rhs)                                                               \

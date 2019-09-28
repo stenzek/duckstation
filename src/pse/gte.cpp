@@ -405,11 +405,12 @@ void Core::RTPS(const s16 V[3], bool sf, bool lm, bool last)
 {
   const u8 shift = sf ? 12 : 0;
 #define dot3(i)                                                                                                        \
-  CheckMACResult<i + 1>(                                                                                               \
+  SignExtendMACResult<i + 1>(                                                                                          \
     (s64(m_regs.TR[i]) << 12) +                                                                                        \
-    CheckMACResult<i + 1>(CheckMACResult<i + 1>(CheckMACResult<i + 1>(s64(s32(m_regs.RT[i][0]) * s32(V[0]))) +         \
-                                                s64(s32(m_regs.RT[i][1]) * s32(V[1]))) +                               \
-                          s64(s32(m_regs.RT[i][2]) * s32(V[2]))))
+    SignExtendMACResult<i + 1>(                                                                                        \
+      SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>(s64(s32(m_regs.RT[i][0]) * s32(V[0]))) +                   \
+                                 s64(s32(m_regs.RT[i][1]) * s32(V[1]))) +                                              \
+      s64(s32(m_regs.RT[i][2]) * s32(V[2]))))
 
   // IR1 = MAC1 = (TRX*1000h + RT11*VX0 + RT12*VY0 + RT13*VZ0) SAR (sf*12)
   // IR2 = MAC2 = (TRY*1000h + RT21*VX0 + RT22*VY0 + RT23*VZ0) SAR (sf*12)
@@ -451,14 +452,17 @@ void Core::RTPS(const s16 V[3], bool sf, bool lm, bool last)
 
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR1+OFX, SX2=MAC0/10000h ;ScrX FIFO -400h..+3FFh
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR2+OFY, SY2=MAC0/10000h ;ScrY FIFO -400h..+3FFh
-  const s64 Sx = TruncateAndSetMAC<0>(s64(result) * s64(m_regs.IR1) + s64(m_regs.OFX), 0);
-  const s64 Sy = TruncateAndSetMAC<0>(s64(result) * s64(m_regs.IR2) + s64(m_regs.OFY), 0);
+  const s64 Sx = s64(result) * s64(m_regs.IR1) + s64(m_regs.OFX);
+  const s64 Sy = s64(result) * s64(m_regs.IR2) + s64(m_regs.OFY);
+  TruncateAndSetMAC<0>(Sx, 0);
+  TruncateAndSetMAC<1>(Sy, 0);
   PushSXY(s32(Sx >> 16), s32(Sy >> 16));
 
   if (last)
   {
     // MAC0=(((H*20000h/SZ3)+1)/2)*DQA+DQB, IR0=MAC0/1000h  ;Depth cueing 0..+1000h
-    const s64 Sz = TruncateAndSetMAC<0>(s64(result) * s64(m_regs.DQA) + s64(m_regs.DQB), 0);
+    const s64 Sz = s64(result) * s64(m_regs.DQA) + s64(m_regs.DQB);
+    TruncateAndSetMAC<0>(Sz, 0);
     TruncateAndSetIR<0>(s32(Sz >> 12), true);
   }
 }
@@ -517,8 +521,7 @@ void Core::Execute_AVSZ3(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  const s64 result =
-    TruncateAndSetMAC<0>(s64(m_regs.ZSF3) * s32(u32(m_regs.SZ1) + u32(m_regs.SZ2) + u32(m_regs.SZ3)), 0);
+  const s64 result = s64(m_regs.ZSF3) * s32(u32(m_regs.SZ1) + u32(m_regs.SZ2) + u32(m_regs.SZ3));
   TruncateAndSetMAC<0>(result, 0);
   SetOTZ(s32(result >> 12));
 
@@ -529,8 +532,7 @@ void Core::Execute_AVSZ4(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  const s64 result = TruncateAndSetMAC<0>(
-    s64(m_regs.ZSF4) * s32(u32(m_regs.SZ0) + u32(m_regs.SZ1) + u32(m_regs.SZ2) + u32(m_regs.SZ3)), 0);
+  const s64 result = s64(m_regs.ZSF4) * s32(u32(m_regs.SZ0) + u32(m_regs.SZ1) + u32(m_regs.SZ2) + u32(m_regs.SZ3));
   TruncateAndSetMAC<0>(result, 0);
   SetOTZ(s32(result >> 12));
 
@@ -540,41 +542,31 @@ void Core::Execute_AVSZ4(Instruction inst)
 void Core::MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
 #define dot3(i)                                                                                                        \
-  TruncateAndSetMAC<i + 1>(                                                                                            \
-    CheckMACResult<i + 1>(CheckMACResult<i + 1>(s64(s32(M[i][0]) * s32(Vx))) + s64(s32(M[i][1]) * s32(Vy))) +          \
-      s64(s32(M[i][2]) * s32(Vz)),                                                                                     \
-    shift)
+  TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][0]) * s64(Vx)) + (s64(M[i][1]) * s64(Vy))) +      \
+                                  (s64(M[i][2]) * s64(Vz)),                                                            \
+                                shift, lm)
 
   dot3(0);
   dot3(1);
   dot3(2);
 
 #undef dot3
-
-  TruncateAndSetIR<1>(m_regs.MAC1, lm);
-  TruncateAndSetIR<2>(m_regs.MAC2, lm);
-  TruncateAndSetIR<3>(m_regs.MAC3, lm);
 }
 
 void Core::MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
 #define dot3(i)                                                                                                        \
-  TruncateAndSetMAC<i + 1>(                                                                                            \
-    (s64(T[i]) << 12) +                                                                                                \
-      CheckMACResult<i + 1>(                                                                                           \
-        CheckMACResult<i + 1>(CheckMACResult<i + 1>(s64(s32(M[i][0]) * s32(Vx))) + s64(s32(M[i][1]) * s32(Vy))) +      \
-        s64(s32(M[i][2]) * s32(Vz))),                                                                                  \
-    shift)
+  TruncateAndSetMACAndIR<i + 1>(                                                                                       \
+    SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx))) +              \
+                               (s64(M[i][1]) * s64(Vy))) +                                                             \
+      (s64(M[i][2]) * s64(Vz)),                                                                                        \
+    shift, lm)
 
   dot3(0);
   dot3(1);
   dot3(2);
 
 #undef dot3
-
-  TruncateAndSetIR<1>(m_regs.MAC1, lm);
-  TruncateAndSetIR<2>(m_regs.MAC2, lm);
-  TruncateAndSetIR<3>(m_regs.MAC3, lm);
 }
 
 void Core::NCCS(const s16 V[3], bool sf, bool lm)

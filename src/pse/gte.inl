@@ -1,7 +1,7 @@
 #include "gte.h"
 
 template<u32 index>
-s64 GTE::Core::CheckMACResult(s64 value)
+void GTE::Core::CheckMACOverflow(s64 value)
 {
   constexpr s64 MIN_VALUE = (index == 0) ? MAC0_MIN_VALUE : MAC123_MIN_VALUE;
   constexpr s64 MAX_VALUE = (index == 0) ? MAC0_MAX_VALUE : MAC123_MAX_VALUE;
@@ -27,24 +27,28 @@ s64 GTE::Core::CheckMACResult(s64 value)
     else if constexpr (index == 3)
       m_regs.FLAG.mac3_overflow = true;
   }
-
-  return value;
 }
 
 template<u32 index>
-s64 GTE::Core::TruncateAndSetMAC(s64 value, u8 shift)
+s64 GTE::Core::SignExtendMACResult(s64 value)
 {
-  value = CheckMACResult<index>(value);
+  CheckMACOverflow<index>(value);
+  return SignExtendN < index == 0 ? 31 : 44 > (value);
+}
+
+template<u32 index>
+void GTE::Core::TruncateAndSetMAC(s64 value, u8 shift)
+{
+  CheckMACOverflow<index>(value);
 
   // shift should be done before storing to avoid losing precision
   value >>= shift;
 
   m_regs.dr32[24 + index] = Truncate32(static_cast<u64>(value));
-  return value;
 }
 
 template<u32 index>
-s16 GTE::Core::TruncateAndSetIR(s32 value, bool lm)
+void GTE::Core::TruncateAndSetIR(s32 value, bool lm)
 {
   constexpr s32 MIN_VALUE = (index == 0) ? IR0_MIN_VALUE : IR123_MIN_VALUE;
   constexpr s32 MAX_VALUE = (index == 0) ? IR0_MAX_VALUE : IR123_MAX_VALUE;
@@ -76,7 +80,22 @@ s16 GTE::Core::TruncateAndSetIR(s32 value, bool lm)
 
   // store sign-extended 16-bit value as 32-bit
   m_regs.dr32[8 + index] = value;
-  return static_cast<s16>(value);
+}
+
+template<u32 index>
+void GTE::Core::TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
+{
+  CheckMACOverflow<index>(value);
+
+  // shift should be done before storing to avoid losing precision
+  value >>= shift;
+
+  // set MAC
+  const s32 value32 = static_cast<s32>(value);
+  m_regs.dr32[24 + index] = value32;
+
+  // set IR
+  TruncateAndSetIR<index>(value32, lm);
 }
 
 template<u32 index>
