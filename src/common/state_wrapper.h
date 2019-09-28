@@ -145,6 +145,7 @@ public:
     {
       T* temp = new T[size];
       DoArray(temp, size);
+      data->Clear();
       data->PushRange(temp, size);
       delete[] temp;
     }
