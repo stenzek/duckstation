@@ -59,6 +59,7 @@ private:
   void PushSXY(s32 x, s32 y);
   void PushSZ(s32 value);
   void PushRGB(u8 r, u8 g, u8 b, u8 c);
+  void PushRGBFromMAC();
 
   // 3x3 matrix * 3x1 vector, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
@@ -67,7 +68,7 @@ private:
   void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 
   void RTPS(const s16 V[3], bool sf, bool lm, bool last);
-  void NCCS(const s16 V[3], bool sf, bool lm);
+  void NCCS(const s16 V[3], u8 shift, bool lm);
   void NCDS(const s16 V[3], bool sf, bool lm);
   void DPCS(const u8 color[3], bool sf, bool lm);
 
