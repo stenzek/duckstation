@@ -92,7 +92,7 @@ bool SDLInterface::CreateGLContext()
     // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  SDL_GL_SetSwapInterval(1);
+  SDL_GL_SetSwapInterval(0);
   return true;
 }
 
@@ -276,6 +276,27 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
         case SDL_SCANCODE_BACKSPACE:
           m_controller->SetButtonState(DigitalController::Button::Select, pressed);
           return true;
+
+        case SDL_SCANCODE_F1:
+        case SDL_SCANCODE_F2:
+        case SDL_SCANCODE_F3:
+        case SDL_SCANCODE_F4:
+        case SDL_SCANCODE_F5:
+        case SDL_SCANCODE_F6:
+        case SDL_SCANCODE_F7:
+        case SDL_SCANCODE_F8:
+          {
+            if (!pressed)
+            {
+              auto filename = GetSaveStateFilename(event->key.keysym.scancode - SDL_SCANCODE_F1 + 1);
+              if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+                SaveState(filename);
+              else
+                LoadState(filename);
+            }
+          }
+          break;
+             
 
         case SDL_SCANCODE_TAB:
           SDL_GL_SetSwapInterval(pressed ? 0 : 1);
