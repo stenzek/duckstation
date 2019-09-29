@@ -128,6 +128,12 @@ u8 CDROM::ReadRegister(u32 offset)
 
     case 1: // always response FIFO
     {
+      if (m_response_fifo.IsEmpty())
+      {
+        Log_DebugPrintf("Response FIFO empty on read");
+        return 0xFF;
+      }
+
       const u8 value = m_response_fifo.Pop();
       UpdateStatusRegister();
       Log_DebugPrintf("CDROM read response FIFO <- 0x%08X", ZeroExtend32(value));
@@ -749,7 +755,7 @@ void CDROM::DoSectorRead()
     // return;
   }
 
-  Log_DebugPrintf("Reading sector %llu", m_media->GetCurrentLBA());
+  Log_DevPrintf("Reading sector %llu", m_media->GetCurrentLBA());
 
   // TODO: Error handling
   // TODO: Sector buffer should be two sectors?
