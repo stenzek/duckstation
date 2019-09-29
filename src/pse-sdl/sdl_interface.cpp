@@ -379,6 +379,7 @@ bool SDLInterface::PassEventToImGui(const SDL_Event* event)
 void SDLInterface::Render()
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDisable(GL_SCISSOR_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
