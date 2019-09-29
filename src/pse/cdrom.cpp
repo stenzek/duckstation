@@ -59,6 +59,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_param_fifo);
   sw.Do(&m_response_fifo);
   sw.Do(&m_data_fifo);
+  sw.Do(&m_sector_buffer);
 
   u64 media_lba = m_media ? m_media->GetCurrentLBA() : 0;
   sw.Do(&m_media_filename);
