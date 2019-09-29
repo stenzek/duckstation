@@ -21,6 +21,7 @@ class Pad;
 class PadDevice;
 class Timers;
 class SPU;
+class MDEC;
 
 class System
 {
@@ -69,6 +70,7 @@ private:
   std::unique_ptr<Pad> m_pad;
   std::unique_ptr<Timers> m_timers;
   std::unique_ptr<SPU> m_spu;
+  std::unique_ptr<MDEC> m_mdec;
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
 };

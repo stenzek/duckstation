@@ -7,6 +7,7 @@
 #include "dma.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "mdec.h"
 #include "pad.h"
 #include "pad_device.h"
 #include "spu.h"
@@ -26,6 +27,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_pad = std::make_unique<Pad>();
   m_timers = std::make_unique<Timers>();
   m_spu = std::make_unique<SPU>();
+  m_mdec = std::make_unique<MDEC>();
 }
 
 System::~System() = default;
@@ -36,12 +38,13 @@ bool System::Initialize()
     return false;
 
   if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(),
-                         m_pad.get(), m_timers.get(), m_spu.get()))
+                         m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get()))
   {
     return false;
   }
 
-  if (!m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get()))
+  if (!m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get(),
+                         m_mdec.get()))
   {
     return false;
   }
@@ -62,6 +65,9 @@ bool System::Initialize()
     return false;
 
   if (!m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
+    return false;
+
+  if (!m_mdec->Initialize(this, m_dma.get()))
     return false;
 
   return true;
@@ -96,6 +102,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("SPU") || !m_timers->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("MDEC") || !m_mdec->DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -110,6 +119,7 @@ void System::Reset()
   m_pad->Reset();
   m_timers->Reset();
   m_spu->Reset();
+  m_mdec->Reset();
   m_frame_number = 1;
 }
 

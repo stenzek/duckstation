@@ -18,6 +18,7 @@
     <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="timers.cpp" />
     <ClCompile Include="spu.cpp" />
+    <ClCompile Include="mdec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="timers.h" />
     <ClInclude Include="spu.h" />
+    <ClInclude Include="mdec.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

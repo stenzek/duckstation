@@ -11,6 +11,7 @@ class InterruptController;
 class GPU;
 class CDROM;
 class SPU;
+class MDEC;
 
 class DMA
 {
@@ -35,7 +36,7 @@ public:
   ~DMA();
 
   bool Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                  SPU* spu);
+                  SPU* spu, MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -78,6 +79,7 @@ private:
   GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
   SPU* m_spu = nullptr;
+  MDEC* m_mdec = nullptr;
 
   TickCount m_transfer_ticks = 0;
   bool m_transfer_pending = false;

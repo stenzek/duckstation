@@ -9,6 +9,7 @@
 #include "dma.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "mdec.h"
 #include "pad.h"
 #include "spu.h"
 #include "timers.h"
@@ -28,7 +29,7 @@ Bus::Bus() = default;
 Bus::~Bus() = default;
 
 bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                     Pad* pad, Timers* timers, SPU* spu)
+                     Pad* pad, Timers* timers, SPU* spu, MDEC* mdec)
 {
   if (!LoadBIOS())
     return false;
@@ -41,6 +42,7 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
   m_pad = pad;
   m_timers = timers;
   m_spu = spu;
+  m_mdec = mdec;
   return true;
 }
 
@@ -80,8 +82,7 @@ bool Bus::ReadByte(PhysicalMemoryAddress address, u8* value)
 bool Bus::ReadHalfWord(PhysicalMemoryAddress address, u16* value)
 {
   u32 temp = 0;
-  const bool result =
-    DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
+  const bool result = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
   *value = Truncate16(temp);
   return result;
 }
@@ -372,6 +373,20 @@ bool Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
 {
   Assert(size == MemoryAccessSize::Word);
   m_gpu->WriteRegister(offset, value);
+  return true;
+}
+
+bool Bus::DoReadMDEC(MemoryAccessSize size, u32 offset, u32& value)
+{
+  Assert(size == MemoryAccessSize::Word);
+  value = m_mdec->ReadRegister(offset);
+  return true;
+}
+
+bool Bus::DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value)
+{
+  Assert(size == MemoryAccessSize::Word);
+  m_mdec->WriteRegister(offset, value);
   return true;
 }
 

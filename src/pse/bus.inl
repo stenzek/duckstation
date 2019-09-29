@@ -138,14 +138,15 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     return (type == MemoryAccessType::Read) ? DoReadCDROM(size, address & CDROM_MASK, value) :
                                               DoWriteCDROM(size, address & CDROM_MASK, value);
   }
-  else if (address < GPU_BASE)
-  {
-    return DoInvalidAccess(type, size, address, value);
-  }
   else if (address < (GPU_BASE + GPU_SIZE))
   {
     return (type == MemoryAccessType::Read) ? DoReadGPU(size, address & GPU_MASK, value) :
                                               DoWriteGPU(size, address & GPU_MASK, value);
+  }
+  else if (address < (MDEC_BASE + MDEC_SIZE))
+  {
+    return (type == MemoryAccessType::Read) ? DoReadMDEC(size, address & MDEC_MASK, value) :
+                                              DoWriteMDEC(size, address & MDEC_MASK, value);
   }
   else if (address < SPU_BASE)
   {

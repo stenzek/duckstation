@@ -5,6 +5,7 @@
 #include "common/state_wrapper.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "mdec.h"
 #include "spu.h"
 #include "system.h"
 Log_SetChannel(DMA);
@@ -14,7 +15,7 @@ DMA::DMA() = default;
 DMA::~DMA() = default;
 
 bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                     SPU* spu)
+                     SPU* spu, MDEC* mdec)
 {
   m_system = system;
   m_bus = bus;
@@ -22,6 +23,7 @@ bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
   m_gpu = gpu;
   m_cdrom = cdrom;
   m_spu = spu;
+  m_mdec = mdec;
   return true;
 }
 
@@ -371,8 +373,10 @@ u32 DMA::DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaini
     case Channel::SPU:
       return m_spu->DMARead();
 
-    case Channel::MDECin:
     case Channel::MDECout:
+      return m_mdec->DMARead();
+
+    case Channel::MDECin:
     case Channel::PIO:
     default:
       Panic("Unhandled DMA channel read");
@@ -393,6 +397,9 @@ void DMA::DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address
       break;
 
     case Channel::MDECin:
+      m_mdec->DMAWrite(value);
+      break;
+
     case Channel::MDECout:
     case Channel::CDROM:
     case Channel::PIO:
