@@ -19,6 +19,9 @@ public:
 
   static std::shared_ptr<MemoryCard> Create();
 
+  void Reset() override;
+  bool DoState(StateWrapper& sw) override;
+
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 

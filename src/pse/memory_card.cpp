@@ -1,5 +1,6 @@
 #include "memory_card.h"
 #include "YBaseLib/Log.h"
+#include "common/state_wrapper.h"
 Log_SetChannel(MemoryCard);
 
 MemoryCard::MemoryCard()
@@ -9,6 +10,23 @@ MemoryCard::MemoryCard()
 }
 
 MemoryCard::~MemoryCard() = default;
+
+void MemoryCard::Reset()
+{
+  ResetTransferState();
+}
+
+bool MemoryCard::DoState(StateWrapper& sw)
+{
+  sw.Do(&m_state);
+  sw.Do(&m_address);
+  sw.Do(&m_sector_offset);
+  sw.Do(&m_checksum);
+  sw.Do(&m_last_byte);
+  sw.Do(&m_data);
+  
+  return !sw.HasError();
+}
 
 void MemoryCard::ResetTransferState()
 {

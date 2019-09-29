@@ -20,10 +20,34 @@ bool Pad::Initialize(System* system, InterruptController* interrupt_controller)
 void Pad::Reset()
 {
   SoftReset();
+
+  for (u32 i = 0; i < NUM_SLOTS; i++)
+  {
+    if (m_controllers[i])
+      m_controllers[i]->Reset();
+
+    if (m_memory_cards[i])
+      m_memory_cards[i]->Reset();
+  }
 }
 
 bool Pad::DoState(StateWrapper& sw)
 {
+  for (u32 i = 0; i < NUM_SLOTS; i++)
+  {
+    if (m_controllers[i])
+    {
+      if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+        continue;
+    }
+
+    if (m_memory_cards[i])
+    {
+      if (!sw.DoMarker("MemortCard") || !m_memory_cards[i]->DoState(sw))
+        continue;
+    }
+  }
+
   sw.Do(&m_state);
   sw.Do(&m_ticks_remaining);
   sw.Do(&m_JOY_CTRL.bits);
@@ -172,6 +196,7 @@ void Pad::SoftReset()
   m_JOY_MODE.bits = 0;
   m_RX_FIFO.Clear();
   m_TX_FIFO.Clear();
+  ResetDeviceTransferState();
   UpdateJoyStat();
 }
 
