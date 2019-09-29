@@ -12,6 +12,7 @@
 
 class System;
 class DigitalController;
+class MemoryCard;
 
 class SDLInterface : public HostInterface
 {
@@ -77,6 +78,7 @@ private:
   std::mutex m_osd_messages_lock;
 
   std::shared_ptr<DigitalController> m_controller;
+  std::shared_ptr<MemoryCard> m_memory_card;
 
   float m_vps = 0.0f;
   float m_fps = 0.0f;

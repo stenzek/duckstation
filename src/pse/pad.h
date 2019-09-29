@@ -21,8 +21,11 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  PadDevice* GetDevice(u32 slot) { return m_devices[slot].get(); }
-  void SetDevice(u32 slot, std::shared_ptr<PadDevice> dev) { m_devices[slot] = dev; }
+  PadDevice* GetController(u32 slot) { return m_controllers[slot].get(); }
+  void SetController(u32 slot, std::shared_ptr<PadDevice> dev) { m_controllers[slot] = dev; }
+
+  PadDevice* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
+  void SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev) { m_memory_cards[slot] = dev; }
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -31,12 +34,19 @@ public:
 
 private:
   static constexpr u32 NUM_SLOTS = 2;
-  static constexpr u32 TRANSFER_TICKS = 750;
+  static constexpr u32 TRANSFER_TICKS = 550;
 
   enum class State : u32
   {
     Idle,
     Transmitting
+  };
+
+  enum class ActiveDevice : u8
+  {
+    None,
+    Controller,
+    MemoryCard
   };
 
   union JOY_CTRL
@@ -89,6 +99,7 @@ private:
   void BeginTransfer();
   void DoTransfer();
   void EndTransfer();
+  void ResetDeviceTransferState();
 
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
@@ -100,8 +111,10 @@ private:
   JOY_STAT m_JOY_STAT = {};
   JOY_MODE m_JOY_MODE = {};
 
+  ActiveDevice m_active_device = ActiveDevice::None;
   InlineFIFOQueue<u8, 8> m_RX_FIFO;
   InlineFIFOQueue<u8, 2> m_TX_FIFO;
 
-  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_devices;
+  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_controllers;
+  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_memory_cards;
 };

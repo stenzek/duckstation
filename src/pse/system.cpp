@@ -284,9 +284,14 @@ void System::SetDowncount(TickCount downcount)
   m_cpu->SetDowncount(downcount);
 }
 
-void System::SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev)
+void System::SetController(u32 slot, std::shared_ptr<PadDevice> dev)
 {
-  m_pad->SetDevice(slot, std::move(dev));
+  m_pad->SetController(slot, std::move(dev));
+}
+
+void System::SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev)
+{
+  m_pad->SetMemoryCard(slot, std::move(dev));
 }
 
 bool System::HasMedia() const

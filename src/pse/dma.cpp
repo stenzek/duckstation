@@ -84,7 +84,6 @@ u32 DMA::ReadRegister(u32 offset)
 void DMA::WriteRegister(u32 offset, u32 value)
 {
   const u32 channel_index = offset >> 4;
-  Log_DevPrintf("DMA channel %u offset %u", channel_index, offset);
   if (channel_index < 7)
   {
     ChannelState& state = m_state[channel_index];

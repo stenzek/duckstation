@@ -14,6 +14,11 @@ void DigitalController::SetButtonState(Button button, bool pressed)
     m_button_state |= u16(1) << static_cast<u8>(button);
 }
 
+void DigitalController::ResetTransferState()
+{
+  m_transfer_fifo.Clear();
+}
+
 bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 {
   bool ack;
@@ -75,3 +80,4 @@ std::shared_ptr<DigitalController> DigitalController::Create()
 {
   return std::make_shared<DigitalController>();
 }
+

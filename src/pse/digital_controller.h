@@ -33,6 +33,7 @@ public:
 
   void SetButtonState(Button button, bool pressed);
 
+  void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 
 private:

@@ -107,6 +107,9 @@ void Pad::WriteRegister(u32 offset, u32 value)
         m_JOY_STAT.INTR = false;
       }
 
+      if (!m_JOY_CTRL.SELECT)
+        ResetDeviceTransferState();
+
       if (!m_JOY_CTRL.SELECT || !m_JOY_CTRL.TXEN)
       {
         if (IsTransmitting())
@@ -211,25 +214,62 @@ void Pad::DoTransfer()
 {
   Log_DebugPrintf("Transferring slot %d", m_JOY_CTRL.SLOT.GetValue());
 
-  const std::shared_ptr<PadDevice>& dev = m_devices[m_JOY_CTRL.SLOT];
-  if (!dev || !CanTransfer())
-  {
-    // no device present, don't set ACK and read hi-z
-    m_TX_FIFO.Clear();
-    m_RX_FIFO.Clear();
-    m_RX_FIFO.Push(0xFF);
-    UpdateJoyStat();
-    EndTransfer();
-    return;
-  }
+  const std::shared_ptr<PadDevice>& controller = m_controllers[m_JOY_CTRL.SLOT];
+  const std::shared_ptr<PadDevice>& memory_card = m_memory_cards[m_JOY_CTRL.SLOT];
 
   // set rx?
   m_JOY_CTRL.RXEN = true;
 
   const u8 data_out = m_TX_FIFO.Pop();
-  u8 data_in;
-  m_JOY_STAT.ACKINPUT |= dev->Transfer(data_out, &data_in);
+  u8 data_in = 0xFF;
+  bool ack = false;
+
+  switch (m_active_device)
+  {
+    case ActiveDevice::None:
+    {
+      if (!controller || !(ack = controller->Transfer(data_out, &data_in)))
+      {
+        if (!memory_card || !(ack = memory_card->Transfer(data_out, &data_in)))
+        {
+          // nothing connected to this port
+          Log_DebugPrintf("Nothing connected or ACK'ed");
+        }
+        else
+        {
+          // memory card responded, make it the active device until non-ack
+          m_active_device = ActiveDevice::MemoryCard;
+        }
+      }
+      else
+      {
+        // controller responded, make it the active device until non-ack
+        m_active_device = ActiveDevice::Controller;
+      }
+    }
+    break;
+
+    case ActiveDevice::Controller:
+    {
+      if (controller)
+        ack = controller->Transfer(data_out, &data_in);
+    }
+    break;
+
+    case ActiveDevice::MemoryCard:
+    {
+      if (memory_card)
+        ack = memory_card->Transfer(data_out, &data_in);
+    }
+    break;
+  }
+
   m_RX_FIFO.Push(data_in);
+  m_JOY_STAT.ACKINPUT |= ack;
+
+  // device no longer active?
+  if (!ack)
+    m_active_device = ActiveDevice::None;
 
   if (m_JOY_STAT.ACKINPUT && m_JOY_CTRL.ACKINTEN)
   {
@@ -259,4 +299,15 @@ void Pad::EndTransfer()
 
   m_state = State::Idle;
   m_ticks_remaining = 0;
+}
+
+void Pad::ResetDeviceTransferState()
+{
+  for (u32 i = 0; i < NUM_SLOTS; i++)
+  {
+    if (m_controllers[i])
+      m_controllers[i]->ResetTransferState();
+    if (m_memory_cards[i])
+      m_memory_cards[i]->ResetTransferState();
+  }
 }

@@ -456,8 +456,8 @@ void Core::Execute()
 {
   while (m_downcount >= 0)
   {
-    m_pending_ticks += 2;
-    m_downcount -= 2;
+    m_pending_ticks += 3;
+    m_downcount -= 3;
 
     // now executing the instruction we previously fetched
     const Instruction inst = m_next_instruction;

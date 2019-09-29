@@ -6,6 +6,7 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
 #include "pse/digital_controller.h"
+#include "pse/memory_card.h"
 #include "pse/system.h"
 #include <cinttypes>
 #include <glad.h>
@@ -164,6 +165,7 @@ std::unique_ptr<SDLInterface> SDLInterface::Create()
     return nullptr;
 
   intf->m_controller = DigitalController::Create();
+  intf->m_memory_card = MemoryCard::Create();
 
   return intf;
 }
@@ -285,18 +287,17 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
         case SDL_SCANCODE_F6:
         case SDL_SCANCODE_F7:
         case SDL_SCANCODE_F8:
+        {
+          if (!pressed)
           {
-            if (!pressed)
-            {
-              auto filename = GetSaveStateFilename(event->key.keysym.scancode - SDL_SCANCODE_F1 + 1);
-              if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
-                SaveState(filename);
-              else
-                LoadState(filename);
-            }
+            auto filename = GetSaveStateFilename(event->key.keysym.scancode - SDL_SCANCODE_F1 + 1);
+            if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+              SaveState(filename);
+            else
+              LoadState(filename);
           }
-          break;
-             
+        }
+        break;
 
         case SDL_SCANCODE_TAB:
           SDL_GL_SetSwapInterval(pressed ? 0 : 1);
@@ -593,7 +594,8 @@ void SDLInterface::DoSaveState(u32 index)
 
 void SDLInterface::Run()
 {
-  m_system->SetPadDevice(0, m_controller);
+  m_system->SetController(0, m_controller);
+  m_system->SetMemoryCard(0, m_memory_card);
 
   while (m_running)
   {

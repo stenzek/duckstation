@@ -51,7 +51,8 @@ public:
   void SetDowncount(TickCount downcount);
   void Synchronize();
 
-  void SetPadDevice(u32 slot, std::shared_ptr<PadDevice> dev);
+  void SetController(u32 slot, std::shared_ptr<PadDevice> dev);
+  void SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev);
 
   bool HasMedia() const;
   bool InsertMedia(const char* path);

@@ -48,6 +48,7 @@
     <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="mdec.cpp" />
+    <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="pad_device.cpp" />
     <ClCompile Include="spu.cpp" />
@@ -70,6 +71,7 @@
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="mdec.h" />
+    <ClInclude Include="memory_card.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="pad_device.h" />
     <ClInclude Include="save_state_version.h" />
