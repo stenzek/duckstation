@@ -314,6 +314,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_RTPT(inst);
       break;
 
+    case 0x3D:
+      Execute_GPF(inst);
+      break;
+
     case 0x3E:
       Execute_GPL(inst);
       break;
@@ -847,4 +851,24 @@ void Core::Execute_GPL(Instruction inst)
 
   m_regs.FLAG.UpdateError();
 }
+
+void Core::Execute_GPF(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  // [MAC1,MAC2,MAC3] = [0,0,0]                            ;<--- for GPF only
+  // [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3]) SAR (sf*12)
+  TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)), shift, lm);
+  TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)), shift, lm);
+  TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)), shift, lm);
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGBFromMAC();
+
+  m_regs.FLAG.UpdateError();
+}
+
 } // namespace GTE
