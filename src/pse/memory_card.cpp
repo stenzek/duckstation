@@ -5,6 +5,7 @@ Log_SetChannel(MemoryCard);
 MemoryCard::MemoryCard()
 {
   m_FLAG.no_write_yet = true;
+  Format();
 }
 
 MemoryCard::~MemoryCard() = default;
@@ -72,7 +73,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       const u8 bits = m_data[ZeroExtend32(m_address) * SECTOR_SIZE + m_sector_offset];
       if (m_sector_offset == 0)
       {
-        Log_DebugPrintf("Reading memory card sector %u", ZeroExtend32(m_address));
+        Log_DevPrintf("Reading memory card sector %u", ZeroExtend32(m_address));
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ bits;
       }
       else
@@ -106,7 +107,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_sector_offset == 0)
       {
-        Log_DebugPrintf("Writing memory card sector %u", ZeroExtend32(m_address));
+        Log_DevPrintf("Writing memory card sector %u", ZeroExtend32(m_address));
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ data_in;
       }
       else
@@ -190,4 +191,72 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
 std::shared_ptr<MemoryCard> MemoryCard::Create()
 {
   return std::make_shared<MemoryCard>();
+}
+
+u8 MemoryCard::ChecksumFrame(const u8* fptr)
+{
+  u8 value = fptr[0];
+  for (u32 i = 0; i < SECTOR_SIZE; i++)
+    value ^= fptr[i];
+
+  return value;
+}
+
+void MemoryCard::Format()
+{
+  // fill everything with FF
+  m_data.fill(u8(0xFF));
+
+  // header
+  {
+    u8* fptr = GetSectorPtr(0);
+    std::fill_n(fptr, SECTOR_SIZE, u8(0));
+    fptr[0] = 'M';
+    fptr[1] = 'C';
+    fptr[0x7F] = ChecksumFrame(&m_data[0]);
+  }
+
+  // directory
+  for (u32 frame = 1; frame < 16; frame++)
+  {
+    u8* fptr = GetSectorPtr(frame);
+    std::fill_n(fptr, SECTOR_SIZE, u8(0));
+    fptr[0] = 0xA0;                   // free
+    fptr[0x7F] = ChecksumFrame(fptr); // checksum
+  }
+
+  // broken sector list
+  for (u32 frame = 16; frame < 36; frame++)
+  {
+    u8* fptr = GetSectorPtr(frame);
+    std::fill_n(fptr, SECTOR_SIZE, u8(0));
+    fptr[0] = 0xFF;
+    fptr[1] = 0xFF;
+    fptr[2] = 0xFF;
+    fptr[3] = 0xFF;
+    fptr[0x7F] = ChecksumFrame(fptr); // checksum
+  }
+
+  // broken sector replacement data
+  for (u32 frame = 36; frame < 56; frame++)
+  {
+    u8* fptr = GetSectorPtr(frame);
+    std::fill_n(fptr, SECTOR_SIZE, u8(0xFF));
+  }
+
+  // unused frames
+  for (u32 frame = 56; frame < 63; frame++)
+  {
+    u8* fptr = GetSectorPtr(frame);
+    std::fill_n(fptr, SECTOR_SIZE, u8(0xFF));
+  }
+
+  // write test frame
+  std::memcpy(GetSectorPtr(63), GetSectorPtr(0), SECTOR_SIZE);
+}
+
+u8* MemoryCard::GetSectorPtr(u32 sector)
+{
+  Assert(sector < NUM_SECTORS);
+  return &m_data[sector * SECTOR_SIZE];
 }

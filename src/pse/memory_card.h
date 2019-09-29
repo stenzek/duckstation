@@ -22,6 +22,8 @@ public:
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 
+  void Format();
+
 private:
   union FLAG
   {
@@ -59,6 +61,10 @@ private:
     WriteACK2,
     WriteEnd,
   };
+
+  static u8 ChecksumFrame(const u8* fptr);
+
+  u8* GetSectorPtr(u32 sector);
 
   State m_state = State::Idle;
   u16 m_address = 0;
