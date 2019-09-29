@@ -121,6 +121,19 @@ public:
     return val;
   }
 
+  void PopRange(T* out_data, u32 count)
+  {
+    Assert(m_size >= count);
+
+    for (u32 i = 0; i < count; i++)
+    {
+      out_data[i] = std::move(m_ptr[m_head]);
+      m_ptr[m_head].~T();
+      m_head = (m_head + 1) % CAPACITY;
+      m_size--;
+    }
+  }
+
 protected:
   FIFOQueue() = default;
 
