@@ -103,6 +103,12 @@ public:
   void Do(std::string* value_ptr);
   void Do(String* value_ptr);
 
+  template<typename T, size_t N>
+  void Do(std::array<T, N>* data)
+  {
+    DoArray(data->data(), data->size());
+  }
+
   template<typename T>
   void Do(std::vector<T>* data)
   {
