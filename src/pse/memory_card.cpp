@@ -24,7 +24,7 @@ bool MemoryCard::DoState(StateWrapper& sw)
   sw.Do(&m_checksum);
   sw.Do(&m_last_byte);
   sw.Do(&m_data);
-  
+
   return !sw.HasError();
 }
 
@@ -112,7 +112,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     break;
 
       FIXED_REPLY_STATE(State::ReadChecksum, m_checksum, true, State::ReadEnd);
-      FIXED_REPLY_STATE(State::ReadEnd, 0x47, false, State::Idle);
+      FIXED_REPLY_STATE(State::ReadEnd, 0x47, true, State::Idle);
 
       // write state
 
@@ -127,6 +127,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       {
         Log_DevPrintf("Writing memory card sector %u", ZeroExtend32(m_address));
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ data_in;
+        m_FLAG.no_write_yet = false;
       }
       else
       {
@@ -149,21 +150,25 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       FIXED_REPLY_STATE(State::WriteChecksum, m_checksum, true, State::WriteACK1);
       FIXED_REPLY_STATE(State::WriteACK1, 0x5C, true, State::WriteACK2);
       FIXED_REPLY_STATE(State::WriteACK2, 0x5D, true, State::WriteEnd);
-      FIXED_REPLY_STATE(State::WriteEnd, 0x47, false, State::Idle);
+      FIXED_REPLY_STATE(State::WriteEnd, 0x47, true, State::Idle);
 
       // new command
     case State::Idle:
     {
+      // select device
+      if (data_in == 0x81)
+      {
+        *data_out = 0xFF;
+        ack = true;
+        m_state = State::Command;
+      }
+    }
+    break;
+
+    case State::Command:
+    {
       switch (data_in)
       {
-        case 0x81: // tests if the controller is present
-        {
-          // response is hi-z
-          *data_out = 0xFF;
-          ack = true;
-        }
-        break;
-
         case 0x52: // read data
         {
           *data_out = m_FLAG.bits;
@@ -188,8 +193,10 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
 
         default:
         {
+          Log_ErrorPrintf("Invalid command 0x%02X", ZeroExtend32(data_in));
           *data_out = m_FLAG.bits;
           ack = false;
+          m_state = State::Idle;
         }
       }
     }

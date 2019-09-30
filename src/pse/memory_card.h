@@ -41,6 +41,7 @@ private:
   enum class State : u8
   {
     Idle,
+    Command,
 
     ReadCardID1,
     ReadCardID2,
