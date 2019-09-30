@@ -451,14 +451,41 @@ bool Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 
 bool Bus::DoReadDMA(MemoryAccessSize size, u32 offset, u32& value)
 {
-  Assert(size == MemoryAccessSize::Word);
+  switch (size)
+  {
+    case MemoryAccessSize::Byte:
+    case MemoryAccessSize::HalfWord:
+      {
+        if ((offset & u32(0xF0)) >= 7 || (offset & u32(0x0F)) != 0x4)
+          FixupUnalignedWordAccessW32(offset, value);
+      }
+
+    default:
+      break;
+  }
+
   value = m_dma->ReadRegister(offset);
   return true;
 }
 
 bool Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
 {
-  Assert(size == MemoryAccessSize::Word);
+  switch (size)
+  {
+    case MemoryAccessSize::Byte:
+    case MemoryAccessSize::HalfWord:
+    {
+      // zero extend length register
+      if ((offset & u32(0xF0)) < 7 && (offset & u32(0x0F)) == 0x4)
+        value = ZeroExtend32(value);
+      else
+        FixupUnalignedWordAccessW32(offset, value);
+    }
+
+    default:
+      break;
+  }
+
   m_dma->WriteRegister(offset, value);
   return true;
 }
