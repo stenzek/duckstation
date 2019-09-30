@@ -134,7 +134,7 @@ private:
     BitField<u8, bool, 3, 1> xa_filter;
     BitField<u8, bool, 4, 1> ignore_bit;
     BitField<u8, bool, 5, 1> read_raw_sector;
-    BitField<u8, bool, 6, 1> xa_adpcm;
+    BitField<u8, bool, 6, 1> xa_enable;
     BitField<u8, bool, 7, 1> double_speed;
   };
 
@@ -144,6 +144,41 @@ private:
     BitField<u8, bool, 5, 1> SMEN;
     BitField<u8, bool, 6, 1> BFWR;
     BitField<u8, bool, 7, 1> BFRD;
+  };
+
+  struct CDSectorHeader
+  {
+    u8 minute;
+    u8 second;
+    u8 frame;
+    u8 sector_mode;
+  };
+
+  struct XASubHeader
+  {
+    u8 file_number;
+    u8 channel_number;
+    union Submode
+    {
+      u8 bits;
+      BitField<u8, bool, 0, 1> eor;
+      BitField<u8, bool, 1, 1> video;
+      BitField<u8, bool, 2, 1> audio;
+      BitField<u8, bool, 3, 1> data;
+      BitField<u8, bool, 4, 1> trigger;
+      BitField<u8, bool, 5, 1> form2;
+      BitField<u8, bool, 6, 1> realtime;
+      BitField<u8, bool, 7, 1> eof;
+    } submode;
+    union Codinginfo
+    {
+      u8 bits;
+
+      BitField<u8, u8, 0, 2> mono_stereo;
+      BitField<u8, u8, 2, 2> sample_rate;
+      BitField<u8, u8, 4, 2> bits_per_sample;
+      BitField<u8, bool, 6, 1> emphasis;
+    } codinginfo;
   };
 
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
@@ -161,6 +196,7 @@ private:
   void BeginReading();
   void DoSectorRead();
   void StopReading();
+  void LoadDataFIFO();
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;

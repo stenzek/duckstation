@@ -229,8 +229,9 @@ void MDEC::HandleDecodeMacroblockCommand()
   {
     while (src != src_end)
     {
+      u32 old_offs = static_cast<u32>(src - temp.data());
       src = DecodeColoredMacroblock(src, src_end);
-      Log_InfoPrint("Decoded colour macroblock");
+      Log_InfoPrintf("Decoded colour macroblock, ptr was %u, now %u", old_offs, static_cast<u32>(src - temp.data()));
     }
   }
 }
@@ -464,7 +465,8 @@ void MDEC::IDCT(s16* blk)
       for (u32 u = 0; u < 8; u++)
         sum += s64(temp_buffer[u + y * 8]) * s32(m_scale_table[u * 8 + x]);
 
-      blk[x + y * 8] = static_cast<s16>(std::clamp<s32>(SignExtendN<9, s32>((sum >> 32) + ((sum >> 31) & 1)), -128, 127));
+      blk[x + y * 8] =
+        static_cast<s16>(std::clamp<s32>(SignExtendN<9, s32>((sum >> 32) + ((sum >> 31) & 1)), -128, 127));
     }
   }
 }
@@ -494,7 +496,7 @@ void MDEC::yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const st
 
       rgb_out[(x + xx) + ((y + yy) * 16)] = ZeroExtend32(static_cast<u16>(R)) |
                                             (ZeroExtend32(static_cast<u16>(G)) << 8) |
-                                            (ZeroExtend32(static_cast<u16>(B)) << 16);
+                                            (ZeroExtend32(static_cast<u16>(B)) << 16) | UINT32_C(0xFF000000);
     }
   }
 }

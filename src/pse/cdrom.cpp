@@ -123,7 +123,7 @@ u8 CDROM::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0: // status register
-      Log_DebugPrintf("CDROM read status register <- 0x%08X", m_status.bits);
+      Log_TracePrintf("CDROM read status register <- 0x%08X", m_status.bits);
       return m_status.bits;
 
     case 1: // always response FIFO
@@ -184,7 +184,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
   {
     case 0:
     {
-      Log_DebugPrintf("CDROM status register <- 0x%02X", ZeroExtend32(value));
+      Log_TracePrintf("CDROM status register <- 0x%02X", ZeroExtend32(value));
       m_status.bits = (m_status.bits & static_cast<u8>(~3)) | (value & u8(3));
       return;
     }
@@ -277,16 +277,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
           Assert(!rr.SMEN);
           if (rr.BFRD)
           {
-            // any data to load?
-            if (m_sector_buffer.empty())
-            {
-              Log_DevPrintf("Attempting to load empty sector buffer");
-              return;
-            }
-
-            Log_DebugPrintf("Loading data FIFO");
-            m_data_fifo.PushRange(m_sector_buffer.data(), static_cast<u32>(m_sector_buffer.size()));
-            m_sector_buffer.clear();
+            LoadDataFIFO();
           }
           else
           {
@@ -361,7 +352,7 @@ u32 CDROM::DMARead()
     m_data_fifo.Clear();
   }
 
-  // Log_DebugPrintf("DMA Read -> 0x%08X", data);
+  // Log_DebugPrintf("DMA Read -> 0x%08X (%u remaining)", data, m_data_fifo.GetSize());
   return data;
 }
 
@@ -755,19 +746,44 @@ void CDROM::DoSectorRead()
     // return;
   }
 
-  Log_DevPrintf("Reading sector %llu", m_media->GetCurrentLBA());
-
   // TODO: Error handling
   // TODO: Sector buffer should be two sectors?
   Assert(!m_mode.ignore_bit);
-  const u32 size =
-    m_mode.read_raw_sector ? (CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE) : CDImage::DATA_SECTOR_SIZE;
-  m_sector_buffer.resize(size);
-  m_media->Read(m_mode.read_raw_sector ? CDImage::ReadMode::RawNoSync : CDImage::ReadMode::DataOnly, 1,
-                m_sector_buffer.data());
-  m_response_fifo.Push(m_secondary_status.bits);
-  SetInterrupt(Interrupt::INT1);
-  UpdateStatusRegister();
+  m_sector_buffer.resize(CDImage::RAW_SECTOR_SIZE);
+  m_media->Read(CDImage::ReadMode::RawSector, 1, m_sector_buffer.data());
+  Log_DevPrintf("Read sector %llu: mode %u submode 0x%02X", m_media->GetCurrentLBA(), ZeroExtend32(m_sector_buffer[15]),
+                ZeroExtend32(m_sector_buffer[18]));
+
+  bool pass_to_cpu = true;
+  if (m_mode.xa_enable)
+  {
+    const CDSectorHeader* sh =
+      reinterpret_cast<const CDSectorHeader*>(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE);
+    if (sh->sector_mode == 2)
+    {
+      const XASubHeader* xsh = reinterpret_cast<const XASubHeader*>(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE +
+                                                                    sizeof(CDSectorHeader));
+      if (xsh->submode.realtime && xsh->submode.audio)
+      {
+        // TODO: Decode audio sector. Do we still transfer this to the CPU?
+        Log_WarningPrintf("Decode CD-XA audio sector");
+        m_sector_buffer.clear();
+        pass_to_cpu = false;
+      }
+
+      if (xsh->submode.eof)
+      {
+        Log_WarningPrintf("End of CD-XA file");
+      }
+    }
+  }
+
+  if (pass_to_cpu)
+  {
+    m_response_fifo.Push(m_secondary_status.bits);
+    SetInterrupt(Interrupt::INT1);
+    UpdateStatusRegister();
+  }
 
   m_sector_read_remaining_ticks += GetTicksForRead();
   m_system->SetDowncount(m_sector_read_remaining_ticks);
@@ -781,4 +797,27 @@ void CDROM::StopReading()
   Log_DebugPrintf("Stopping reading");
   m_secondary_status.reading = false;
   m_reading = false;
+}
+
+void CDROM::LoadDataFIFO()
+{
+  // any data to load?
+  if (m_sector_buffer.empty())
+  {
+    Log_DevPrintf("Attempting to load empty sector buffer");
+    return;
+  }
+
+  if (m_mode.read_raw_sector)
+  {
+    m_data_fifo.PushRange(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE,
+                          CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE);
+  }
+  else
+  {
+    m_data_fifo.PushRange(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE + 12, CDImage::DATA_SECTOR_SIZE);
+  }
+
+  Log_DebugPrintf("Loaded %u bytes to data FIFO", m_data_fifo.GetSize());
+  m_sector_buffer.clear();
 }

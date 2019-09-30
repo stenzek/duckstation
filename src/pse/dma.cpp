@@ -92,12 +92,12 @@ void DMA::WriteRegister(u32 offset, u32 value)
       case 0x00:
       {
         state.base_address = value & ADDRESS_MASK;
-        Log_DebugPrintf("DMA channel %u base address <- 0x%08X", channel_index, state.base_address);
+        Log_TracePrintf("DMA channel %u base address <- 0x%08X", channel_index, state.base_address);
         return;
       }
       case 0x04:
       {
-        Log_DebugPrintf("DMA channel %u block control <- 0x%08X", channel_index, value);
+        Log_TracePrintf("DMA channel %u block control <- 0x%08X", channel_index, value);
         state.block_control.bits = value;
         return;
       }
@@ -106,7 +106,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
-        Log_DebugPrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
+        Log_TracePrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
         if (CanRunChannel(static_cast<Channel>(channel_index)))
           UpdateTransferPending();
 
@@ -123,14 +123,14 @@ void DMA::WriteRegister(u32 offset, u32 value)
     {
       case 0x70:
       {
-        Log_DebugPrintf("DPCR <- 0x%08X", value);
+        Log_TracePrintf("DPCR <- 0x%08X", value);
         m_DPCR.bits = value;
         return;
       }
 
       case 0x74:
       {
-        Log_DebugPrintf("DCIR <- 0x%08X", value);
+        Log_TracePrintf("DCIR <- 0x%08X", value);
         m_DICR.bits = (m_DICR.bits & ~DICR_WRITE_MASK) | (value & DICR_WRITE_MASK);
         m_DICR.bits = (m_DICR.bits & ~DICR_RESET_MASK) & (value ^ DICR_RESET_MASK);
         m_DICR.UpdateMasterFlag();
@@ -214,7 +214,6 @@ void DMA::RunDMA(Channel channel)
 {
   ChannelState& cs = m_state[static_cast<u32>(channel)];
   const bool copy_to_device = cs.channel_control.copy_to_device;
-  Log_DebugPrintf("Running DMA for channel %u", static_cast<u32>(channel));
 
   // start/trigger bit is cleared on beginning of transfer
   cs.channel_control.start_trigger = false;
@@ -226,7 +225,8 @@ void DMA::RunDMA(Channel channel)
     case SyncMode::Manual:
     {
       const u32 word_count = cs.block_control.manual.GetWordCount();
-      Log_DebugPrintf(" ... copying %u words %s 0x%08X", word_count, copy_to_device ? "from" : "to", current_address);
+      Log_DebugPrintf("DMA%u: Copying %u words %s 0x%08X", static_cast<u32>(channel), word_count,
+                      copy_to_device ? "from" : "to", current_address);
       if (copy_to_device)
       {
         u32 words_remaining = word_count;
@@ -265,6 +265,9 @@ void DMA::RunDMA(Channel channel)
       }
       else
       {
+        Log_DebugPrintf("DMA%u: Copying linked list starting at 0x%08X to device", static_cast<u32>(channel),
+                        current_address);
+
         for (;;)
         {
           u32 header;
@@ -303,8 +306,8 @@ void DMA::RunDMA(Channel channel)
     {
       const u32 block_size = cs.block_control.request.GetBlockSize();
       const u32 block_count = cs.block_control.request.GetBlockCount();
-      Log_DebugPrintf(" ... copying %u blocks of size %u %s 0x%08X", block_count, block_size,
-                      copy_to_device ? "from" : "to", current_address);
+      Log_DebugPrintf("DMA%u: Copying %u blocks of size %u %s 0x%08X", static_cast<u32>(channel), block_count,
+                      block_size, copy_to_device ? "from" : "to", current_address);
       if (copy_to_device)
       {
         u32 words_remaining = block_size * block_count;
@@ -344,12 +347,12 @@ void DMA::RunDMA(Channel channel)
   cs.channel_control.enable_busy = false;
   if (m_DICR.IsIRQEnabled(channel))
   {
-    Log_DebugPrintf("Set DMA interrupt for channel %u", static_cast<u32>(channel));
+    Log_TracePrintf("Set DMA interrupt for channel %u", static_cast<u32>(channel));
     m_DICR.SetIRQFlag(channel);
     m_DICR.UpdateMasterFlag();
     if (m_DICR.master_flag)
     {
-      Log_DebugPrintf("Firing DMA interrupt");
+      Log_TracePrintf("Firing DMA interrupt");
       m_interrupt_controller->InterruptRequest(InterruptController::IRQ::DMA);
     }
   }
