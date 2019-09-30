@@ -6,7 +6,7 @@
 Log_SetChannel(CPU::Core);
 
 namespace CPU {
-bool TRACE_EXECUTION = false;
+u32 TRACE_EXECUTION = 0;
 
 Core::Core() = default;
 
@@ -427,10 +427,10 @@ void Core::WriteCacheControl(u32 value)
   m_cache_control = value;
 }
 
-static void PrintInstruction(u32 bits, u32 pc)
+static void PrintInstruction(u32 bits, u32 pc, Core* state)
 {
   TinyString instr;
-  DisassembleInstruction(&instr, pc, bits);
+  DisassembleInstruction(&instr, pc, bits, state);
 
   std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
@@ -449,7 +449,7 @@ void Core::DisassembleAndPrint(u32 addr)
 {
   u32 bits = 0;
   DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, bits);
-  PrintInstruction(bits, addr);
+  PrintInstruction(bits, addr, this);
 }
 
 void Core::Execute()
@@ -512,8 +512,8 @@ void Core::ExecuteInstruction(Instruction inst)
   }
 #endif
 
-  if (TRACE_EXECUTION)
-    PrintInstruction(inst.bits, m_current_instruction_pc);
+  if (TRACE_EXECUTION == 1)
+    PrintInstruction(inst.bits, m_current_instruction_pc, nullptr);
 
   switch (inst.op)
   {
@@ -1109,6 +1109,9 @@ void Core::ExecuteInstruction(Instruction inst)
       UnreachableCode();
       break;
   }
+
+  if (TRACE_EXECUTION == 2)
+    PrintInstruction(inst.bits, m_current_instruction_pc, this);
 }
 
 void Core::ExecuteCop0Instruction(Instruction inst)

@@ -1,4 +1,5 @@
 #include "cpu_disasm.h"
+#include "cpu_core.h"
 #include <array>
 
 namespace CPU {
@@ -27,70 +28,70 @@ static const std::array<const char*, 32> s_reg_names = {
    "s0",    "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"}};
 
 static const std::array<const char*, 64> s_base_table = {{
-  "",                      // 0
-  "UNKNOWN",               // 1
-  "j $jt",                 // 2
-  "jal $jt",               // 3
-  "beq $rs, $rt, $rel",    // 4
-  "bne $rs, $rt, $rel",    // 5
-  "blez $rs, $rel",        // 6
-  "bgtz $rs, $rel",        // 7
-  "addi $rt, $rs, $imm",   // 8
-  "addiu $rt, $rs, $imm",  // 9
-  "slti $rt, $rs, $imm",   // 10
-  "sltiu $rt, $rs, $immu", // 11
-  "andi $rt, $rs, $immu",  // 12
-  "ori $rt, $rs, $immu",   // 13
-  "UNKNOWN",               // 14
-  "lui $rt, $imm",         // 15
-  "UNKNOWN",               // 16
-  "UNKNOWN",               // 17
-  "UNKNOWN",               // 18
-  "UNKNOWN",               // 19
-  "UNKNOWN",               // 20
-  "UNKNOWN",               // 21
-  "UNKNOWN",               // 22
-  "UNKNOWN",               // 23
-  "UNKNOWN",               // 24
-  "UNKNOWN",               // 25
-  "UNKNOWN",               // 26
-  "UNKNOWN",               // 27
-  "UNKNOWN",               // 28
-  "UNKNOWN",               // 29
-  "UNKNOWN",               // 30
-  "UNKNOWN",               // 31
-  "lb $rt, $offsetrs",     // 32
-  "lh $rt, $offsetrs",     // 33
-  "lwl $rt, $offsetrs",    // 34
-  "lw $rt, $offsetrs",     // 35
-  "lbu $rt, $offsetrs",    // 36
-  "lhu $rt, $offsetrs",    // 37
-  "lwr $rt, $offsetrs",    // 38
-  "UNKNOWN",               // 39
-  "sb $rt, $offsetrs",     // 40
-  "sh $rt, $offsetrs",     // 41
-  "swl $rt, $offsetrs",    // 42
-  "sw $rt, $offsetrs",     // 43
-  "UNKNOWN",               // 44
-  "UNKNOWN",               // 45
-  "swr $rt, $offsetrs",    // 46
-  "UNKNOWN",               // 47
-  "UNKNOWN",               // 48
-  "UNKNOWN",               // 49
-  "UNKNOWN",               // 50
-  "UNKNOWN",               // 51
-  "UNKNOWN",               // 52
-  "UNKNOWN",               // 53
-  "UNKNOWN",               // 54
-  "UNKNOWN",               // 55
-  "UNKNOWN",               // 56
-  "UNKNOWN",               // 57
-  "UNKNOWN",               // 58
-  "UNKNOWN",               // 59
-  "UNKNOWN",               // 60
-  "UNKNOWN",               // 61
-  "UNKNOWN",               // 62
-  "UNKNOWN"                // 63
+  "",                       // 0
+  "UNKNOWN",                // 1
+  "j $jt",                  // 2
+  "jal $jt",                // 3
+  "beq $rs, $rt, $rel",     // 4
+  "bne $rs, $rt, $rel",     // 5
+  "blez $rs, $rel",         // 6
+  "bgtz $rs, $rel",         // 7
+  "addi $rt, $rs, $imm",    // 8
+  "addiu $rt, $rs, $imm",   // 9
+  "slti $rt, $rs, $imm",    // 10
+  "sltiu $rt, $rs, $immu",  // 11
+  "andi $rt, $rs, $immu",   // 12
+  "ori $rt, $rs, $immu",    // 13
+  "UNKNOWN",                // 14
+  "lui $rt, $imm",          // 15
+  "UNKNOWN",                // 16
+  "UNKNOWN",                // 17
+  "UNKNOWN",                // 18
+  "UNKNOWN",                // 19
+  "UNKNOWN",                // 20
+  "UNKNOWN",                // 21
+  "UNKNOWN",                // 22
+  "UNKNOWN",                // 23
+  "UNKNOWN",                // 24
+  "UNKNOWN",                // 25
+  "UNKNOWN",                // 26
+  "UNKNOWN",                // 27
+  "UNKNOWN",                // 28
+  "UNKNOWN",                // 29
+  "UNKNOWN",                // 30
+  "UNKNOWN",                // 31
+  "lb $rt, $offsetrs",      // 32
+  "lh $rt, $offsetrs",      // 33
+  "lwl $rt, $offsetrs",     // 34
+  "lw $rt, $offsetrs",      // 35
+  "lbu $rt, $offsetrs",     // 36
+  "lhu $rt, $offsetrs",     // 37
+  "lwr $rt, $offsetrs",     // 38
+  "UNKNOWN",                // 39
+  "sb $rt, $offsetrs",      // 40
+  "sh $rt, $offsetrs",      // 41
+  "swl $rt, $offsetrs",     // 42
+  "sw $rt, $offsetrs",      // 43
+  "UNKNOWN",                // 44
+  "UNKNOWN",                // 45
+  "swr $rt, $offsetrs",     // 46
+  "UNKNOWN",                // 47
+  "lwc0 $coprt, $offsetrs", // 48
+  "lwc1 $coprt, $offsetrs", // 49
+  "lwc2 $coprt, $offsetrs", // 50
+  "lwc3 $coprt, $offsetrs", // 51
+  "UNKNOWN",                // 52
+  "UNKNOWN",                // 53
+  "UNKNOWN",                // 54
+  "UNKNOWN",                // 55
+  "swc0 $coprt, $offsetrs", // 56
+  "swc1 $coprt, $offsetrs", // 57
+  "swc2 $coprt, $offsetrs", // 58
+  "swc3 $coprt, $offsetrs", // 59
+  "UNKNOWN",                // 60
+  "UNKNOWN",                // 61
+  "UNKNOWN",                // 62
+  "UNKNOWN"                 // 63
 }};
 
 static const std::array<const char*, 64> s_special_table = {{
@@ -162,16 +163,18 @@ static const std::array<const char*, 64> s_special_table = {{
 
 static const std::array<std::pair<CopCommonInstruction, const char*>, 5> s_cop_common_table = {
   {{CopCommonInstruction::mfcn, "mfc$cop $rt, $coprd"},
-   {CopCommonInstruction::cfcn, "cfc$cop $rt, $copcr"},
+   {CopCommonInstruction::cfcn, "cfc$cop $rt, $coprd"},
    {CopCommonInstruction::mtcn, "mtc$cop $rt, $coprd"},
-   {CopCommonInstruction::ctcn, "ctc$cop $rt, $copcr"},
+   {CopCommonInstruction::ctcn, "ctc$cop $rt, $coprd"},
    {CopCommonInstruction::bcnc, "bc$cop$copcc $rel"}}};
 
 static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 
-static void FormatInstruction(String* dest, const Instruction inst, u32 pc, const char* format)
+static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core* state, const char* format)
 {
   dest->Clear();
+
+  TinyString comment;
 
   const char* str = format;
   while (*str != '\0')
@@ -186,16 +189,37 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
     if (std::strncmp(str, "rs", 2) == 0)
     {
       dest->AppendString(s_reg_names[static_cast<u8>(inst.r.rs.GetValue())]);
+      if (state)
+      {
+        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ",
+                                      s_reg_names[static_cast<u8>(inst.r.rs.GetValue())],
+                                      state->GetRegs().r[static_cast<u8>(inst.r.rs.GetValue())]);
+      }
+
       str += 2;
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
       dest->AppendString(s_reg_names[static_cast<u8>(inst.r.rt.GetValue())]);
+      if (state)
+      {
+        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ",
+                                      s_reg_names[static_cast<u8>(inst.r.rt.GetValue())],
+                                      state->GetRegs().r[static_cast<u8>(inst.r.rt.GetValue())]);
+      }
+
       str += 2;
     }
     else if (std::strncmp(str, "rd", 2) == 0)
     {
       dest->AppendString(s_reg_names[static_cast<u8>(inst.r.rd.GetValue())]);
+      if (state)
+      {
+        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ",
+                                      s_reg_names[static_cast<u8>(inst.r.rd.GetValue())],
+                                      state->GetRegs().r[static_cast<u8>(inst.r.rd.GetValue())]);
+      }
+
       str += 2;
     }
     else if (std::strncmp(str, "shamt", 5) == 0)
@@ -224,6 +248,12 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
       dest->AppendFormattedString("%d(%s)", offset, s_reg_names[static_cast<u8>(inst.i.rs.GetValue())]);
+      if (state)
+      {
+        comment.AppendFormattedString("%saddr=0x%08X", comment.IsEmpty() ? "" : ", ",
+                                      state->GetRegs().r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+      }
+
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
@@ -237,9 +267,14 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
       dest->AppendCharacter(((inst.bits & (UINT32_C(1) << 24)) != 0) ? 't' : 'f');
       str += 5;
     }
-    else if (std::strncmp(str, "coprd", 5) == 0 || std::strncmp(str, "copcr", 5) == 0)
+    else if (std::strncmp(str, "coprd", 5) == 0)
     {
       dest->AppendFormattedString("%u", ZeroExtend32(static_cast<u8>(inst.r.rd.GetValue())));
+      str += 5;
+    }
+    else if (std::strncmp(str, "coprt", 5) == 0)
+    {
+      dest->AppendFormattedString("%u", ZeroExtend32(static_cast<u8>(inst.r.rt.GetValue())));
       str += 5;
     }
     else if (std::strncmp(str, "cop", 3) == 0)
@@ -252,17 +287,25 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
       Panic("Unknown operand");
     }
   }
+
+  if (!comment.IsEmpty())
+  {
+    for (u32 i = dest->GetLength(); i < 30; i++)
+      dest->AppendCharacter(' ');
+    dest->AppendString("; ");
+    dest->AppendString(comment);
+  }
 }
 
 template<typename T>
-void FormatCopInstruction(String* dest, u32 pc, const Instruction inst, const std::pair<T, const char*>* table,
-                          size_t table_size, T table_key)
+void FormatCopInstruction(String* dest, u32 pc, Core* state, const Instruction inst,
+                          const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
     if (table[i].first == table_key)
     {
-      FormatInstruction(dest, inst, pc, table[i].second);
+      FormatInstruction(dest, inst, pc, state, table[i].second);
       return;
     }
   }
@@ -270,13 +313,13 @@ void FormatCopInstruction(String* dest, u32 pc, const Instruction inst, const st
   dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
 }
 
-void DisassembleInstruction(String* dest, u32 pc, u32 bits)
+void DisassembleInstruction(String* dest, u32 pc, u32 bits, Core* state)
 {
   const Instruction inst{bits};
   switch (inst.op)
   {
     case InstructionOp::funct:
-      FormatInstruction(dest, inst, pc, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
+      FormatInstruction(dest, inst, pc, state, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
       return;
 
     case InstructionOp::cop0:
@@ -286,7 +329,8 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
     {
       if (inst.cop.IsCommonInstruction())
       {
-        FormatCopInstruction(dest, pc, inst, s_cop_common_table.data(), s_cop_common_table.size(), inst.cop.CommonOp());
+        FormatCopInstruction(dest, pc, state, inst, s_cop_common_table.data(), s_cop_common_table.size(),
+                             inst.cop.CommonOp());
       }
       else
       {
@@ -294,7 +338,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
         {
           case InstructionOp::cop0:
           {
-            FormatCopInstruction(dest, pc, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
+            FormatCopInstruction(dest, pc, state, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
           }
           break;
 
@@ -318,14 +362,14 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
       const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
       if (link)
-        FormatInstruction(dest, inst, pc, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
+        FormatInstruction(dest, inst, pc, state, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
       else
-        FormatInstruction(dest, inst, pc, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
+        FormatInstruction(dest, inst, pc, state, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
     }
     break;
 
     default:
-      FormatInstruction(dest, inst, pc, s_base_table[static_cast<u8>(inst.op.GetValue())]);
+      FormatInstruction(dest, inst, pc, state, s_base_table[static_cast<u8>(inst.op.GetValue())]);
       break;
   }
 }
