@@ -61,12 +61,17 @@ static int Run(int argc, char* argv[])
   }
 
   // create system
-  if (!host_interface->InitializeSystem(filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray()))
+  if (!host_interface->InitializeSystem(filename, exp1_filename))
   {
     host_interface.reset();
     SDL_Quit();
     return -1;
   }
+
+  host_interface->ConnectDevices();
+
+  if (!state_filename.IsEmpty())
+    host_interface->LoadState(state_filename);
 
   // run
   host_interface->Run();

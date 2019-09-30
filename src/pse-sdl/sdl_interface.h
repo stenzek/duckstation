@@ -31,6 +31,8 @@ public:
   // Adds OSD messages, duration is in seconds.
   void AddOSDMessage(const char* message, float duration = 2.0f) override;
 
+  void ConnectDevices();
+
   void Run();
 
 private:

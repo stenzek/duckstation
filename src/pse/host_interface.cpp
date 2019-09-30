@@ -8,7 +8,7 @@ HostInterface::HostInterface() = default;
 
 HostInterface::~HostInterface() = default;
 
-bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename, const char* save_state_filename)
+bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
 {
   m_system = std::make_unique<System>(this);
   if (!m_system->Initialize())
@@ -44,9 +44,6 @@ bool HostInterface::InitializeSystem(const char* filename, const char* exp1_file
 
   if (exp1_filename)
     m_system->SetExpansionROM(exp1_filename);
-
-  if (save_state_filename)
-    LoadState(save_state_filename);
 
   // Resume execution.
   m_running = true;

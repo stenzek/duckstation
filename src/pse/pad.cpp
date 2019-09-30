@@ -38,13 +38,23 @@ bool Pad::DoState(StateWrapper& sw)
     if (m_controllers[i])
     {
       if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
-        continue;
+        return false;
+    }
+    else
+    {
+      if (!sw.DoMarker("NoController"))
+        return false;
     }
 
     if (m_memory_cards[i])
     {
-      if (!sw.DoMarker("MemortCard") || !m_memory_cards[i]->DoState(sw))
-        continue;
+      if (!sw.DoMarker("MemoryCard") || !m_memory_cards[i]->DoState(sw))
+        return false;
+    }
+    else
+    {
+      if (!sw.DoMarker("NoController"))
+        return false;
     }
   }
 
@@ -334,5 +344,7 @@ void Pad::ResetDeviceTransferState()
       m_controllers[i]->ResetTransferState();
     if (m_memory_cards[i])
       m_memory_cards[i]->ResetTransferState();
+
+    m_active_device = ActiveDevice::None;
   }
 }

@@ -164,9 +164,6 @@ std::unique_ptr<SDLInterface> SDLInterface::Create()
   if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() || !intf->CreateGLResources())
     return nullptr;
 
-  intf->m_controller = DigitalController::Create();
-  intf->m_memory_card = MemoryCard::Create();
-
   return intf;
 }
 
@@ -592,11 +589,17 @@ void SDLInterface::DoSaveState(u32 index)
   SaveState(GetSaveStateFilename(index));
 }
 
+void SDLInterface::ConnectDevices()
+{
+  m_controller = DigitalController::Create();
+  m_system->SetController(0, m_controller);
+
+  m_memory_card = MemoryCard::Create();
+  m_system->SetMemoryCard(0, m_memory_card);
+}
+
 void SDLInterface::Run()
 {
-  m_system->SetController(0, m_controller);
-  m_system->SetMemoryCard(0, m_memory_card);
-
   while (m_running)
   {
     for (;;)
