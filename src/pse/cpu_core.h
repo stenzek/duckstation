@@ -87,7 +87,7 @@ private:
   // exceptions
   u32 GetExceptionVector(Exception excode) const;
   void RaiseException(Exception excode);
-  void RaiseException(Exception excode, u32 EPC, bool BD, u8 CE);
+  void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
   bool DispatchInterrupts();
 
   // flushes any load delays if present
@@ -123,14 +123,16 @@ private:
   // address of the instruction currently being executed
   Instruction m_current_instruction = {};
   u32 m_current_instruction_pc = 0;
+  bool m_current_instruction_in_branch_delay_slot = false;
+  bool m_current_instruction_was_branch_taken = false;
+  bool m_next_instruction_is_branch_delay_slot = false;
+  bool m_branch_was_taken = false;
 
   // load delays
   Reg m_load_delay_reg = Reg::count;
   u32 m_load_delay_old_value = 0;
   Reg m_next_load_delay_reg = Reg::count;
   u32 m_next_load_delay_old_value = 0;
-  bool m_in_branch_delay_slot = false;
-  bool m_branched = false;
 
   u32 m_cache_control = 0;
 

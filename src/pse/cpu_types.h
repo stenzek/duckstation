@@ -274,7 +274,7 @@ struct Cop0Registers
 {
   u32 BPC;      // breakpoint on execute
   u32 BDA;      // breakpoint on data access
-  u32 JUMPDEST; // randomly memorized jump address
+  u32 TAR; // randomly memorized jump address
   u32 BadVaddr; // bad virtual address value
   u32 BDAM;     // data breakpoint mask
   u32 BPCM;     // execute breakpoint mask
@@ -316,6 +316,7 @@ struct Cop0Registers
     BitField<u32, Exception, 2, 5> Excode; // which exception occurred
     BitField<u32, u8, 8, 8> Ip;            // interrupt pending
     BitField<u32, u8, 28, 2> CE;           // coprocessor number if caused by a coprocessor
+    BitField<u32, bool, 30, 1> BT;         // exception occurred in branch delay slot, and the branch was taken
     BitField<u32, bool, 31, 1> BD;         // exception occurred in branch delay slot, but pushed IP is for branch
 
     static constexpr u32 WRITE_MASK = 0b0000'0000'0000'0000'0000'0011'0000'0000;

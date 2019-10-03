@@ -33,7 +33,7 @@ void Core::Reset()
 
   m_cop0_regs.BPC = 0;
   m_cop0_regs.BDA = 0;
-  m_cop0_regs.JUMPDEST = 0;
+  m_cop0_regs.TAR = 0;
   m_cop0_regs.BadVaddr = 0;
   m_cop0_regs.BDAM = 0;
   m_cop0_regs.BPCM = 0;
@@ -57,7 +57,7 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_regs.npc);
   sw.Do(&m_cop0_regs.BPC);
   sw.Do(&m_cop0_regs.BDA);
-  sw.Do(&m_cop0_regs.JUMPDEST);
+  sw.Do(&m_cop0_regs.TAR);
   sw.Do(&m_cop0_regs.BadVaddr);
   sw.Do(&m_cop0_regs.BDAM);
   sw.Do(&m_cop0_regs.BPCM);
@@ -67,13 +67,16 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_cop0_regs.cause.bits);
   sw.Do(&m_cop0_regs.dcic.bits);
   sw.Do(&m_next_instruction.bits);
+  sw.Do(&m_current_instruction.bits);
   sw.Do(&m_current_instruction_pc);
+  sw.Do(&m_current_instruction_in_branch_delay_slot);
+  sw.Do(&m_current_instruction_was_branch_taken);
+  sw.Do(&m_next_instruction_is_branch_delay_slot);
+  sw.Do(&m_branch_was_taken);
   sw.Do(&m_load_delay_reg);
   sw.Do(&m_load_delay_old_value);
   sw.Do(&m_next_load_delay_reg);
   sw.Do(&m_next_load_delay_old_value);
-  sw.Do(&m_in_branch_delay_slot);
-  sw.Do(&m_branched);
   sw.Do(&m_cache_control);
   sw.DoBytes(m_dcache.data(), m_dcache.size());
 
@@ -202,7 +205,7 @@ bool Core::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 void Core::Branch(u32 target)
 {
   m_regs.npc = target;
-  m_branched = true;
+  m_branch_was_taken = true;
 }
 
 u32 Core::GetExceptionVector(Exception excode) const
@@ -226,15 +229,14 @@ u32 Core::GetExceptionVector(Exception excode) const
 
 void Core::RaiseException(Exception excode)
 {
-  const bool BD = m_in_branch_delay_slot;
-  const u32 EPC = BD ? (m_current_instruction_pc - UINT32_C(4)) : m_current_instruction_pc;
-  RaiseException(excode, EPC, BD, m_current_instruction.cop.cop_n);
+  RaiseException(excode, m_current_instruction_pc, m_current_instruction_in_branch_delay_slot,
+                 m_current_instruction_was_branch_taken, m_current_instruction.cop.cop_n);
 }
 
-void Core::RaiseException(Exception excode, u32 EPC, bool BD, u8 CE)
+void Core::RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
 {
-  Log_WarningPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
-                    m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+  Log_DevPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode), m_current_instruction_pc,
+                EPC, BD ? "true" : "false", ZeroExtend32(CE));
 #ifdef Y_BUILD_CONFIG_DEBUG
   DisassembleAndPrint(m_current_instruction_pc, 4, 0);
 #endif
@@ -242,7 +244,16 @@ void Core::RaiseException(Exception excode, u32 EPC, bool BD, u8 CE)
   m_cop0_regs.EPC = EPC;
   m_cop0_regs.cause.Excode = excode;
   m_cop0_regs.cause.BD = BD;
+  m_cop0_regs.cause.BT = BT;
   m_cop0_regs.cause.CE = CE;
+
+  if (BD)
+  {
+    // TAR is set to the address which was being fetched in this instruction, or the next instruction to execute if the
+    // exception hadn't occurred in the delay slot.
+    m_cop0_regs.EPC -= UINT32_C(4);
+    m_cop0_regs.TAR = m_regs.pc;
+  }
 
   // current -> previous, switch to kernel mode and disable interrupts
   m_cop0_regs.sr.mode_bits <<= 2;
@@ -293,8 +304,8 @@ void Core::FlushPipeline()
   FlushLoadDelay();
 
   // not in a branch delay slot
-  m_branched = false;
-  m_in_branch_delay_slot = false;
+  m_branch_was_taken = false;
+  m_next_instruction_is_branch_delay_slot = false;
 
   // prefetch the next instruction
   FetchInstruction();
@@ -343,7 +354,7 @@ u32 Core::ReadCop0Reg(Cop0Reg reg)
       return m_cop0_regs.dcic.bits;
 
     case Cop0Reg::JUMPDEST:
-      return m_cop0_regs.JUMPDEST;
+      return m_cop0_regs.TAR;
 
     case Cop0Reg::BadVaddr:
       return m_cop0_regs.BadVaddr;
@@ -494,10 +505,10 @@ void Core::Execute()
     // now executing the instruction we previously fetched
     m_current_instruction = m_next_instruction;
     m_current_instruction_pc = m_regs.pc;
-
-    // handle branch delays - we are now in a delay slot if we just branched
-    m_in_branch_delay_slot = m_branched;
-    m_branched = false;
+    m_current_instruction_in_branch_delay_slot = m_next_instruction_is_branch_delay_slot;
+    m_current_instruction_was_branch_taken = m_branch_was_taken;
+    m_next_instruction_is_branch_delay_slot = false;
+    m_branch_was_taken = false;
 
     // fetch the next instruction
     if (DispatchInterrupts() || !FetchInstruction())
@@ -520,13 +531,13 @@ bool Core::FetchInstruction()
   {
     // The EPC must be set to the fetching address, not the instruction about to execute.
     m_cop0_regs.BadVaddr = m_regs.npc;
-    RaiseException(Exception::AdEL, m_regs.npc, false, 0);
+    RaiseException(Exception::AdEL, m_regs.npc, false, false, 0);
     return false;
   }
   else if (!DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(m_regs.npc, m_next_instruction.bits))
   {
     // Bus errors don't set BadVaddr.
-    RaiseException(Exception::IBE, m_regs.npc, false, 0);
+    RaiseException(Exception::IBE, m_regs.npc, false, false, 0);
     return false;
   }
 
@@ -780,6 +791,7 @@ void Core::ExecuteInstruction()
 
         case InstructionFunct::jr:
         {
+          m_next_instruction_is_branch_delay_slot = true;
           const u32 target = ReadReg(inst.r.rs);
           Branch(target);
         }
@@ -787,6 +799,7 @@ void Core::ExecuteInstruction()
 
         case InstructionFunct::jalr:
         {
+          m_next_instruction_is_branch_delay_slot = true;
           const u32 target = ReadReg(inst.r.rs);
           WriteReg(inst.r.rd, m_regs.npc);
           Branch(target);
@@ -1008,6 +1021,7 @@ void Core::ExecuteInstruction()
 
     case InstructionOp::j:
     {
+      m_next_instruction_is_branch_delay_slot = true;
       Branch((m_regs.pc & UINT32_C(0xF0000000)) | (inst.j.target << 2));
     }
     break;
@@ -1015,12 +1029,15 @@ void Core::ExecuteInstruction()
     case InstructionOp::jal:
     {
       m_regs.ra = m_regs.npc;
+      m_next_instruction_is_branch_delay_slot = true;
       Branch((m_regs.pc & UINT32_C(0xF0000000)) | (inst.j.target << 2));
     }
     break;
 
     case InstructionOp::beq:
     {
+      // We're still flagged as a branch delay slot even if the branch isn't taken.
+      m_next_instruction_is_branch_delay_slot = true;
       const bool branch = (ReadReg(inst.i.rs) == ReadReg(inst.i.rt));
       if (branch)
         Branch(m_regs.pc + (inst.i.imm_sext32() << 2));
@@ -1029,6 +1046,7 @@ void Core::ExecuteInstruction()
 
     case InstructionOp::bne:
     {
+      m_next_instruction_is_branch_delay_slot = true;
       const bool branch = (ReadReg(inst.i.rs) != ReadReg(inst.i.rt));
       if (branch)
         Branch(m_regs.pc + (inst.i.imm_sext32() << 2));
@@ -1037,6 +1055,7 @@ void Core::ExecuteInstruction()
 
     case InstructionOp::bgtz:
     {
+      m_next_instruction_is_branch_delay_slot = true;
       const bool branch = (static_cast<s32>(ReadReg(inst.i.rs)) > 0);
       if (branch)
         Branch(m_regs.pc + (inst.i.imm_sext32() << 2));
@@ -1045,6 +1064,7 @@ void Core::ExecuteInstruction()
 
     case InstructionOp::blez:
     {
+      m_next_instruction_is_branch_delay_slot = true;
       const bool branch = (static_cast<s32>(ReadReg(inst.i.rs)) <= 0);
       if (branch)
         Branch(m_regs.pc + (inst.i.imm_sext32() << 2));
@@ -1053,6 +1073,7 @@ void Core::ExecuteInstruction()
 
     case InstructionOp::b:
     {
+      m_next_instruction_is_branch_delay_slot = true;
       const u8 rt = static_cast<u8>(inst.i.rt.GetValue());
 
       // bgez is the inverse of bltz, so simply do ltz and xor the result
