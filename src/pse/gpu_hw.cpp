@@ -134,10 +134,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
 {
-  *left = m_drawing_area.left;
-  *right = m_drawing_area.right + 1;
-  *top = m_drawing_area.top;
-  *bottom = m_drawing_area.bottom + 1;
+  *left = m_drawing_area.left * s32(m_resolution_scale);
+  *right = (m_drawing_area.right + 1) * s32(m_resolution_scale);
+  *top = m_drawing_area.top * s32(m_resolution_scale);
+  *bottom = (m_drawing_area.bottom + 1) * s32(m_resolution_scale);
 }
 
 static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
@@ -151,8 +151,8 @@ static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
 void GPU_HW::GenerateShaderHeader(std::stringstream& ss)
 {
   ss << "#version 330 core\n\n";
-  ss << "const ivec2 VRAM_SIZE = ivec2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ");\n";
-  ss << "const ivec2 VRAM_COORD_MASK = ivec2(" << (VRAM_WIDTH - 1) << ", " << (VRAM_HEIGHT - 1) << ");\n";
+  ss << "const int RESOLUTION_SCALE = " << m_resolution_scale << ";\n";
+  ss << "const ivec2 VRAM_SIZE = ivec2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "const vec2 RCP_VRAM_SIZE = vec2(1.0, 1.0) / vec2(VRAM_SIZE);\n";
   ss << R"(
 
@@ -269,11 +269,11 @@ vec4 SampleFromVRAM(vec2 coord)
   #endif
 
   // fixup coords
-  ivec2 vicoord = ivec2(v_texpage.x + index_coord.x,
-                        fixYCoord(v_texpage.y + index_coord.y));
+  ivec2 vicoord = ivec2((v_texpage.x + index_coord.x) * RESOLUTION_SCALE,
+                        fixYCoord((v_texpage.y + index_coord.y) * RESOLUTION_SCALE));
 
   // load colour/palette
-  vec4 color = texelFetch(samp0, vicoord & VRAM_COORD_MASK, 0);
+  vec4 color = texelFetch(samp0, vicoord, 0);
 
   // apply palette
   #if PALETTE
@@ -286,8 +286,9 @@ vec4 SampleFromVRAM(vec2 coord)
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
     #endif
-    ivec2 palette_icoord = ivec2(v_texpage.z + palette_index, fixYCoord(v_texpage.w));
-    color = texelFetch(samp0, palette_icoord & VRAM_COORD_MASK, 0);
+    ivec2 palette_icoord = ivec2((v_texpage.z + palette_index) * RESOLUTION_SCALE,
+                                 fixYCoord(v_texpage.w * RESOLUTION_SCALE));
+    color = texelFetch(samp0, palette_icoord, 0);
   #endif
 
   return color;

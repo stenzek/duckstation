@@ -1,6 +1,7 @@
 #include "gpu_hw_opengl.h"
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
+#include "YBaseLib/String.h"
 #include "host_interface.h"
 #include "imgui.h"
 #include "system.h"
@@ -75,6 +76,24 @@ void GPU_HW_OpenGL::RenderUI()
     ImGui::Columns(1);
 
     ImGui::Checkbox("Show VRAM##gpu_gl_show_vram", &m_show_vram);
+
+    static constexpr std::array<const char*, 16> internal_resolution_items = {
+      {"1x Internal Resolution", "2x Internal Resolution", "3x Internal Resolution", "4x Internal Resolution",
+       "5x Internal Resolution", "6x Internal Resolution", "7x Internal Resolution", "8x Internal Resolution",
+       "9x Internal Resolution", "10x Internal Resolution", "11x Internal Resolution", "12x Internal Resolution",
+       "13x Internal Resolution", "14x Internal Resolution", "15x Internal Resolution", "16x Internal Resolution"}};
+
+    int internal_resolution_item =
+      std::clamp(static_cast<int>(m_resolution_scale) - 1, 0, static_cast<int>(internal_resolution_items.size()));
+    if (ImGui::Combo("##gpu_internal_resolution", &internal_resolution_item, internal_resolution_items.data(),
+                     static_cast<int>(internal_resolution_items.size())))
+    {
+      m_resolution_scale = static_cast<u32>(internal_resolution_item + 1);
+      m_system->GetHostInterface()->AddOSDMessage(
+        TinyString::FromFormat("Internal resolution changed to %ux, recompiling programs", m_resolution_scale));
+      CreateFramebuffer();
+      CompilePrograms();
+    }
   }
 
   ImGui::End();
@@ -92,27 +111,67 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
 
 void GPU_HW_OpenGL::CreateFramebuffer()
 {
-  m_framebuffer_texture =
-    std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+  // save old vram texture/fbo, in case we're changing scale
+  auto old_vram_texture = std::move(m_vram_texture);
+  const GLuint old_vram_fbo = m_vram_fbo;
+  m_vram_fbo = 0;
+  DestroyFramebuffer();
 
-  glGenFramebuffers(1, &m_framebuffer_fbo_id);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_framebuffer_texture->GetGLId(), 0);
+  // scale vram size to internal resolution
+  const u32 texture_width = VRAM_WIDTH * m_resolution_scale;
+  const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
+
+  m_vram_texture =
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+
+  glGenFramebuffers(1, &m_vram_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
+  // do we need to restore the framebuffer after a size change?
+  if (old_vram_texture)
+  {
+    const bool linear_filter = old_vram_texture->GetWidth() > m_vram_texture->GetWidth();
+    Log_DevPrintf("Scaling %ux%u VRAM texture to %ux%u using %s filter", old_vram_texture->GetWidth(),
+                  old_vram_texture->GetHeight(), m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
+                  linear_filter ? "linear" : "nearest");
+    glDisable(GL_SCISSOR_TEST);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, old_vram_fbo);
+    glBlitFramebuffer(0, 0, old_vram_texture->GetWidth(), old_vram_texture->GetHeight(), 0, 0,
+                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), GL_COLOR_BUFFER_BIT,
+                      linear_filter ? GL_LINEAR : GL_NEAREST);
+
+    glDeleteFramebuffers(1, &old_vram_fbo);
+    old_vram_texture.reset();
+  }
+
   m_vram_read_texture =
-    std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
-  glGenFramebuffers(1, &m_vram_read_fbo_id);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_read_fbo_id);
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+  glGenFramebuffers(1, &m_vram_read_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_read_fbo);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_read_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-  m_display_texture = std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+  if (m_resolution_scale > 1)
+  {
+    m_vram_downsample_texture =
+      std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
+    m_vram_downsample_texture->Bind();
+    glGenFramebuffers(1, &m_vram_downsample_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_vram_downsample_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_downsample_texture->GetGLId(),
+                           0);
+    Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+  }
+
+  m_display_texture =
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
   m_display_texture->Bind();
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glGenFramebuffers(1, &m_display_fbo_id);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_display_fbo_id);
+  glGenFramebuffers(1, &m_display_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_display_fbo);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_display_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 }
@@ -120,7 +179,7 @@ void GPU_HW_OpenGL::CreateFramebuffer()
 void GPU_HW_OpenGL::ClearFramebuffer()
 {
   // TODO: get rid of the FBO switches
-  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -128,13 +187,24 @@ void GPU_HW_OpenGL::ClearFramebuffer()
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
 {
-  glDeleteFramebuffers(1, &m_vram_read_fbo_id);
-  m_vram_read_fbo_id = 0;
+  glDeleteFramebuffers(1, &m_vram_read_fbo);
+  m_vram_read_fbo = 0;
   m_vram_read_texture.reset();
 
-  glDeleteFramebuffers(1, &m_framebuffer_fbo_id);
-  m_framebuffer_fbo_id = 0;
-  m_framebuffer_texture.reset();
+  glDeleteFramebuffers(1, &m_vram_fbo);
+  m_vram_fbo = 0;
+  m_vram_texture.reset();
+
+  if (m_vram_downsample_texture)
+  {
+    glDeleteFramebuffers(1, &m_vram_downsample_fbo);
+    m_vram_downsample_fbo = 0;
+    m_vram_downsample_texture.reset();
+  }
+
+  glDeleteFramebuffers(1, &m_display_fbo);
+  m_display_fbo = 0;
+  m_display_texture.reset();
 }
 
 void GPU_HW_OpenGL::CreateVertexBuffer()
@@ -246,7 +316,7 @@ void GPU_HW_OpenGL::SetProgram()
 
 void GPU_HW_OpenGL::SetViewport()
 {
-  glViewport(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
 }
 
 void GPU_HW_OpenGL::SetScissor()
@@ -257,7 +327,7 @@ void GPU_HW_OpenGL::SetScissor()
   const int width = right - left;
   const int height = bottom - top;
   const int x = left;
-  const int y = VRAM_HEIGHT - bottom;
+  const int y = m_vram_texture->GetHeight() - bottom;
 
   Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
   glScissor(x, y, width, height);
@@ -283,24 +353,27 @@ void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
+  const u32 texture_width = m_vram_texture->GetWidth();
+  const u32 texture_height = m_vram_texture->GetHeight();
+
   // TODO: 24-bit support.
   if (m_show_vram)
   {
-    m_system->GetHostInterface()->SetDisplayTexture(m_framebuffer_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1.0f);
+    m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, texture_width, texture_height, 1.0f);
   }
   else
   {
-    const u32 display_width = m_crtc_state.horizontal_resolution;
-    const u32 display_height = m_crtc_state.vertical_resolution;
-    const u32 vram_offset_x = m_crtc_state.regs.X;
-    const u32 vram_offset_y = m_crtc_state.regs.Y;
+    const u32 display_width = m_crtc_state.horizontal_resolution * m_resolution_scale;
+    const u32 display_height = m_crtc_state.vertical_resolution * m_resolution_scale;
+    const u32 vram_offset_x = m_crtc_state.regs.X * m_resolution_scale;
+    const u32 vram_offset_y = m_crtc_state.regs.Y * m_resolution_scale;
     const u32 copy_width =
-      ((vram_offset_x + display_width) > VRAM_WIDTH) ? (VRAM_WIDTH - vram_offset_x) : display_width;
+      ((vram_offset_x + display_width) > texture_width) ? (texture_width - vram_offset_x) : display_width;
     const u32 copy_height =
-      ((vram_offset_y + display_height) > VRAM_HEIGHT) ? (VRAM_HEIGHT - vram_offset_y) : display_height;
-    glCopyImageSubData(m_framebuffer_texture->GetGLId(), GL_TEXTURE_2D, 0, vram_offset_x,
-                       VRAM_HEIGHT - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0,
-                       0, 0, copy_width, copy_height, 1);
+      ((vram_offset_y + display_height) > texture_height) ? (texture_height - vram_offset_y) : display_height;
+    glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, vram_offset_x,
+                       texture_height - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0,
+                       0, 0, 0, copy_width, copy_height, 1);
 
     m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, copy_width, copy_height,
                                                     DISPLAY_ASPECT_RATIO);
@@ -311,8 +384,30 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 {
   // we need to convert RGBA8 -> RGBA5551
   std::vector<u32> temp_buffer(width * height);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_fbo_id);
-  glReadPixels(x, VRAM_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
+
+  // downscaling to 1xIR.
+  if (m_resolution_scale > 1)
+  {
+    const u32 texture_width = m_vram_texture->GetWidth();
+    const u32 texture_height = m_vram_texture->GetHeight();
+    const u32 scaled_x = x * m_resolution_scale;
+    const u32 scaled_y = y * m_resolution_scale;
+    const u32 scaled_width = width * m_resolution_scale;
+    const u32 scaled_height = height * m_resolution_scale;
+
+    glDisable(GL_SCISSOR_TEST);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_downsample_fbo);
+    glBlitFramebuffer(scaled_x, texture_height - scaled_y - height, scaled_x + scaled_width, scaled_y + scaled_height,
+                      0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
+  }
+  else
+  {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
+    glReadPixels(x, VRAM_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
+  }
 
   // reverse copy because of lower-left origin
   const u32 source_stride = width * sizeof(u32);
@@ -342,10 +437,16 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 
 void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+  // scale coordiantes
+  x *= m_resolution_scale;
+  y *= m_resolution_scale;
+  width *= m_resolution_scale;
+  height *= m_resolution_scale;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
 
   glEnable(GL_SCISSOR_TEST);
-  glScissor(x, VRAM_HEIGHT - y - height, width, height);
+  glScissor(x, m_vram_texture->GetHeight() - y - height, width, height);
 
   const auto [r, g, b, a] = RGBA8ToFloat(RGBA5551ToRGBA8888(color));
   glClearColor(r, g, b, a);
@@ -379,24 +480,50 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     source_ptr -= source_stride;
   }
 
-  m_framebuffer_texture->Bind();
+  // have to write to the 1x texture first
+  if (m_resolution_scale > 1)
+    m_vram_downsample_texture->Bind();
+  else
+    m_vram_texture->Bind();
 
   // lower-left origin flip happens here
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, VRAM_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
-                  rgba_data.data());
+  const u32 flipped_y = VRAM_HEIGHT - y - height;
 
+  // update texture data
+  glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data.data());
   InvalidateVRAMReadCache();
+
+  if (m_resolution_scale > 1)
+  {
+    // scale to internal resolution
+    const u32 scaled_width = width * m_resolution_scale;
+    const u32 scaled_height = height * m_resolution_scale;
+    const u32 scaled_x = x * m_resolution_scale;
+    const u32 scaled_y = y * m_resolution_scale;
+    const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
+    glDisable(GL_SCISSOR_TEST);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
+    glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y, scaled_x + scaled_width,
+                      scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  }
 }
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  glDisable(GL_SCISSOR_TEST);
+  src_x *= m_resolution_scale;
+  src_y *= m_resolution_scale;
+  dst_x *= m_resolution_scale;
+  dst_y *= m_resolution_scale;
+  width *= m_resolution_scale;
+  height *= m_resolution_scale;
 
   // lower-left origin flip
-  src_y = VRAM_HEIGHT - src_y - height;
-  dst_y = VRAM_HEIGHT - dst_y - height;
+  src_y = m_vram_texture->GetHeight() - src_y - height;
+  dst_y = m_vram_texture->GetHeight() - dst_y - height;
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+  glDisable(GL_SCISSOR_TEST);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
   glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
@@ -409,8 +536,8 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
   m_vram_read_texture_dirty = false;
 
   // TODO: Fallback blit path, and partial updates.
-  glCopyImageSubData(m_framebuffer_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_read_texture->GetGLId(),
-                     GL_TEXTURE_2D, 0, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1);
+  glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_read_texture->GetGLId(),
+                     GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1);
 }
 
 void GPU_HW_OpenGL::FlushRender()
@@ -433,7 +560,7 @@ void GPU_HW_OpenGL::FlushRender()
   SetScissor();
   SetBlendState();
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_fbo_id);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
   glBindVertexArray(m_vao_id);
 
   Assert((m_batch.vertices.size() * sizeof(HWVertex)) <= VERTEX_BUFFER_SIZE);

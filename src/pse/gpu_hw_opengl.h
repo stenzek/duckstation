@@ -51,24 +51,27 @@ private:
   void SetScissor();
   void SetBlendState();
 
-  std::unique_ptr<GL::Texture> m_framebuffer_texture;
-  GLuint m_framebuffer_fbo_id = 0;
-
+  // downsample texture - used for readbacks at >1xIR.
+  std::unique_ptr<GL::Texture> m_vram_texture;
   std::unique_ptr<GL::Texture> m_vram_read_texture;
-  GLuint m_vram_read_fbo_id = 0;
-  bool m_vram_read_texture_dirty = true;
-
+  std::unique_ptr<GL::Texture> m_vram_downsample_texture;
   std::unique_ptr<GL::Texture> m_display_texture;
-  GLuint m_display_fbo_id = 0;
+
+  GLuint m_vram_fbo = 0;
+  GLuint m_vram_read_fbo = 0;
+  GLuint m_vram_downsample_fbo = 0;
+  GLuint m_display_fbo = 0;
 
   GLuint m_vertex_buffer = 0;
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
+
+  bool m_vram_read_texture_dirty = true;
 
   std::array<std::array<std::array<std::array<GL::Program, 3>, 2>, 2>, 2> m_render_programs;
   std::array<GL::Program, 3> m_texture_page_programs;
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};
-  bool m_show_vram = false;
+  bool m_show_vram = true;
 };

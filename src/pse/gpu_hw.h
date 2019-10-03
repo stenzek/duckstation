@@ -2,6 +2,7 @@
 #include "gpu.h"
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 class GPU_HW : public GPU
@@ -75,11 +76,18 @@ protected:
 
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
 
+  std::tuple<s32, s32> ScaleVRAMCoordinates(s32 x, s32 y) const
+  {
+    return std::make_tuple(x * s32(m_resolution_scale), y * s32(m_resolution_scale));
+  }
+
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(bool textured, bool blending, bool transparent, TextureColorMode texture_color_mode);
+  std::string GenerateFragmentShader(bool textured, bool blending, bool transparent,
+                                     TextureColorMode texture_color_mode);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
 
+  u32 m_resolution_scale = 1;
   HWRenderBatch m_batch = {};
 
 private:
