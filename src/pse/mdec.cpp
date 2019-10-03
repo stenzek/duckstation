@@ -222,7 +222,7 @@ void MDEC::HandleDecodeMacroblockCommand()
     while (src != src_end)
     {
       src = DecodeMonoMacroblock(src, src_end);
-      Log_InfoPrint("Decoded mono macroblock");
+      Log_DevPrintf("Decoded mono macroblock");
     }
   }
   else
@@ -231,7 +231,7 @@ void MDEC::HandleDecodeMacroblockCommand()
     {
       u32 old_offs = static_cast<u32>(src - temp.data());
       src = DecodeColoredMacroblock(src, src_end);
-      Log_InfoPrintf("Decoded colour macroblock, ptr was %u, now %u", old_offs, static_cast<u32>(src - temp.data()));
+      Log_DevPrintf("Decoded colour macroblock, ptr was %u, now %u", old_offs, static_cast<u32>(src - temp.data()));
     }
   }
 }

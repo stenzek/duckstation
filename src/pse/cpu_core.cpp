@@ -6,7 +6,7 @@
 Log_SetChannel(CPU::Core);
 
 namespace CPU {
-u32 TRACE_EXECUTION = 0;
+bool TRACE_EXECUTION = false;
 
 Core::Core() = default;
 
@@ -456,8 +456,8 @@ void Core::Execute()
 {
   while (m_downcount >= 0)
   {
-    m_pending_ticks += 3;
-    m_downcount -= 3;
+    m_pending_ticks += 2;
+    m_downcount -= 2;
 
     // now executing the instruction we previously fetched
     const Instruction inst = m_next_instruction;
@@ -512,8 +512,8 @@ void Core::ExecuteInstruction(Instruction inst)
   }
 #endif
 
-  if (TRACE_EXECUTION == 1)
-    PrintInstruction(inst.bits, m_current_instruction_pc, nullptr);
+  if (TRACE_EXECUTION)
+    PrintInstruction(inst.bits, m_current_instruction_pc, this);
 
   switch (inst.op)
   {
@@ -1109,9 +1109,6 @@ void Core::ExecuteInstruction(Instruction inst)
       UnreachableCode();
       break;
   }
-
-  if (TRACE_EXECUTION == 2)
-    PrintInstruction(inst.bits, m_current_instruction_pc, this);
 }
 
 void Core::ExecuteCop0Instruction(Instruction inst)

@@ -34,7 +34,7 @@ public:
 
 private:
   static constexpr u32 NUM_SLOTS = 2;
-  static constexpr u32 TRANSFER_TICKS = 550;
+  static constexpr u32 TRANSFER_TICKS = 750;
 
   enum class State : u32
   {

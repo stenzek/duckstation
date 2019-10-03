@@ -137,7 +137,7 @@ private:
   GTE::Core m_cop2;
 };
 
-extern u32 TRACE_EXECUTION;
+extern bool TRACE_EXECUTION;
 
 } // namespace CPU
 
