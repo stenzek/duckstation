@@ -73,5 +73,5 @@ private:
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};
-  bool m_show_vram = true;
+  bool m_show_vram = false;
 };

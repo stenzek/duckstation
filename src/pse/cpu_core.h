@@ -75,17 +75,19 @@ private:
   bool InKernelMode() const { return !m_cop0_regs.sr.KUc; }
 
   void DisassembleAndPrint(u32 addr);
+  void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_after);
 
   // Fetches the instruction at m_regs.npc
   bool FetchInstruction();
-  void ExecuteInstruction(Instruction inst);
-  void ExecuteCop0Instruction(Instruction inst);
-  void ExecuteCop2Instruction(Instruction inst);
+  void ExecuteInstruction();
+  void ExecuteCop0Instruction();
+  void ExecuteCop2Instruction();
   void Branch(u32 target);
 
   // exceptions
   u32 GetExceptionVector(Exception excode) const;
-  void RaiseException(Exception excode, u8 coprocessor = 0);
+  void RaiseException(Exception excode);
+  void RaiseException(Exception excode, u32 EPC, bool BD, u8 CE);
   bool DispatchInterrupts();
 
   // flushes any load delays if present
@@ -119,6 +121,7 @@ private:
   Instruction m_next_instruction = {};
 
   // address of the instruction currently being executed
+  Instruction m_current_instruction = {};
   u32 m_current_instruction_pc = 0;
 
   // load delays

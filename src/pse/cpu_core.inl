@@ -109,12 +109,12 @@ bool CPU::Core::DoAlignmentCheck(VirtualMemoryAddress address)
 {
   if constexpr (size == MemoryAccessSize::HalfWord)
   {
-    if ((address & UINT32_C(1)) == 0)
+    if (Common::IsAlignedPow2(address, 2))
       return true;
   }
   else if constexpr (size == MemoryAccessSize::Word)
   {
-    if ((address & UINT32_C(3)) == 0)
+    if (Common::IsAlignedPow2(address, 4))
       return true;
   }
   else

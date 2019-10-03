@@ -224,12 +224,25 @@ u32 Core::GetExceptionVector(Exception excode) const
 #endif
 }
 
-void Core::RaiseException(Exception excode, u8 coprocessor /* = 0 */)
+void Core::RaiseException(Exception excode)
 {
-  m_cop0_regs.EPC = m_in_branch_delay_slot ? (m_current_instruction_pc - UINT32_C(4)) : m_current_instruction_pc;
+  const bool BD = m_in_branch_delay_slot;
+  const u32 EPC = BD ? (m_current_instruction_pc - UINT32_C(4)) : m_current_instruction_pc;
+  RaiseException(excode, EPC, BD, m_current_instruction.cop.cop_n);
+}
+
+void Core::RaiseException(Exception excode, u32 EPC, bool BD, u8 CE)
+{
+  Log_WarningPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
+                    m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+#ifdef Y_BUILD_CONFIG_DEBUG
+  DisassembleAndPrint(m_current_instruction_pc, 4, 0);
+#endif
+
+  m_cop0_regs.EPC = EPC;
   m_cop0_regs.cause.Excode = excode;
-  m_cop0_regs.cause.BD = m_in_branch_delay_slot;
-  m_cop0_regs.cause.CE = coprocessor;
+  m_cop0_regs.cause.BD = BD;
+  m_cop0_regs.cause.CE = CE;
 
   // current -> previous, switch to kernel mode and disable interrupts
   m_cop0_regs.sr.mode_bits <<= 2;
@@ -452,6 +465,25 @@ void Core::DisassembleAndPrint(u32 addr)
   PrintInstruction(bits, addr, this);
 }
 
+void Core::DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instructions_after /* = 0 */)
+{
+  u32 disasm_addr = addr - (instructions_before * sizeof(u32));
+  for (u32 i = 0; i < instructions_before; i++)
+  {
+    DisassembleAndPrint(disasm_addr);
+    disasm_addr += sizeof(u32);
+  }
+
+  std::printf("----> ");
+
+  // <= to include the instruction itself
+  for (u32 i = 0; i <= instructions_after; i++)
+  {
+    DisassembleAndPrint(disasm_addr);
+    disasm_addr += sizeof(u32);
+  }
+}
+
 void Core::Execute()
 {
   while (m_downcount >= 0)
@@ -460,7 +492,7 @@ void Core::Execute()
     m_downcount -= 2;
 
     // now executing the instruction we previously fetched
-    const Instruction inst = m_next_instruction;
+    m_current_instruction = m_next_instruction;
     m_current_instruction_pc = m_regs.pc;
 
     // handle branch delays - we are now in a delay slot if we just branched
@@ -472,7 +504,7 @@ void Core::Execute()
       continue;
 
     // execute the instruction we previously fetched
-    ExecuteInstruction(inst);
+    ExecuteInstruction();
 
     // next load delay
     m_load_delay_reg = m_next_load_delay_reg;
@@ -484,26 +516,29 @@ void Core::Execute()
 
 bool Core::FetchInstruction()
 {
+  if (!Common::IsAlignedPow2(m_regs.npc, 4))
+  {
+    // The EPC must be set to the fetching address, not the instruction about to execute.
+    m_cop0_regs.BadVaddr = m_regs.npc;
+    RaiseException(Exception::AdEL, m_regs.npc, false, 0);
+    return false;
+  }
+  else if (!DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(m_regs.npc, m_next_instruction.bits))
+  {
+    // Bus errors don't set BadVaddr.
+    RaiseException(Exception::IBE, m_regs.npc, false, 0);
+    return false;
+  }
+
   m_regs.pc = m_regs.npc;
-
-  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(static_cast<VirtualMemoryAddress>(m_regs.npc)))
-  {
-    // this will call FetchInstruction() again when the pipeline is flushed.
-    return false;
-  }
-  if (!DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(static_cast<VirtualMemoryAddress>(m_regs.npc),
-                                                                      m_next_instruction.bits))
-  {
-    RaiseException(Exception::IBE);
-    return false;
-  }
-
   m_regs.npc += sizeof(m_next_instruction.bits);
   return true;
 }
 
-void Core::ExecuteInstruction(Instruction inst)
+void Core::ExecuteInstruction()
 {
+  const Instruction inst = m_current_instruction;
+
 #if 0
   if (inst_pc == 0xBFC06FF0)
   {
@@ -1039,11 +1074,11 @@ void Core::ExecuteInstruction(Instruction inst)
       if (InUserMode() && !m_cop0_regs.sr.CU0)
       {
         Log_WarningPrintf("Coprocessor 0 not present in user mode");
-        RaiseException(Exception::CpU, 0);
+        RaiseException(Exception::CpU);
         return;
       }
 
-      ExecuteCop0Instruction(inst);
+      ExecuteCop0Instruction();
     }
     break;
 
@@ -1052,11 +1087,11 @@ void Core::ExecuteInstruction(Instruction inst)
       if (InUserMode() && !m_cop0_regs.sr.CU2)
       {
         Log_WarningPrintf("Coprocessor 2 not present in user mode");
-        RaiseException(Exception::CpU, 2);
+        RaiseException(Exception::CpU);
         return;
       }
 
-      ExecuteCop2Instruction(inst);
+      ExecuteCop2Instruction();
     }
     break;
 
@@ -1065,7 +1100,7 @@ void Core::ExecuteInstruction(Instruction inst)
       if (InUserMode() && !m_cop0_regs.sr.CU2)
       {
         Log_WarningPrintf("Coprocessor 2 not present in user mode");
-        RaiseException(Exception::CpU, 2);
+        RaiseException(Exception::CpU);
         return;
       }
 
@@ -1083,7 +1118,7 @@ void Core::ExecuteInstruction(Instruction inst)
       if (InUserMode() && !m_cop0_regs.sr.CU2)
       {
         Log_WarningPrintf("Coprocessor 2 not present in user mode");
-        RaiseException(Exception::CpU, 2);
+        RaiseException(Exception::CpU);
         return;
       }
 
@@ -1101,7 +1136,7 @@ void Core::ExecuteInstruction(Instruction inst)
     case InstructionOp::lwc3:
     case InstructionOp::swc3:
     {
-      RaiseException(Exception::CpU, inst.cop.cop_n);
+      RaiseException(Exception::CpU);
     }
     break;
 
@@ -1111,8 +1146,10 @@ void Core::ExecuteInstruction(Instruction inst)
   }
 }
 
-void Core::ExecuteCop0Instruction(Instruction inst)
+void Core::ExecuteCop0Instruction()
 {
+  const Instruction inst = m_current_instruction;
+
   if (inst.cop.IsCommonInstruction())
   {
     switch (inst.cop.CommonOp())
@@ -1148,8 +1185,10 @@ void Core::ExecuteCop0Instruction(Instruction inst)
   }
 }
 
-void Core::ExecuteCop2Instruction(Instruction inst)
+void Core::ExecuteCop2Instruction()
 {
+  const Instruction inst = m_current_instruction;
+
   if (inst.cop.IsCommonInstruction())
   {
     // TODO: Combine with cop0.
