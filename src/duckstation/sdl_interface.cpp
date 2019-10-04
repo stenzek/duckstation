@@ -562,7 +562,17 @@ void SDLInterface::RenderMainMenuBar()
     ImGui::EndMenu();
   }
 
-  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 170.0f);
+  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 205.0f);
+
+  const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
+  if (m_speed < 90.0f)
+    ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
+  else if (m_speed < 110.0f)
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+  else
+    ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+
+  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
   ImGui::Text("FPS: %.2f", m_fps);
 
   ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
@@ -680,6 +690,11 @@ void SDLInterface::Run()
         m_fps = static_cast<float>(
           static_cast<double>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time);
         m_last_internal_frame_number = m_system->GetInternalFrameNumber();
+        m_speed =
+          static_cast<float>(static_cast<double>(m_system->GetGlobalTickCounter() - m_last_global_tick_counter) /
+                             (static_cast<double>(MASTER_CLOCK) * time)) *
+          100.0f;
+        m_last_global_tick_counter = m_system->GetGlobalTickCounter();
         m_fps_timer.Reset();
       }
     }

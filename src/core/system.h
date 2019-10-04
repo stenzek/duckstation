@@ -36,6 +36,7 @@ public:
 
   u32 GetFrameNumber() const { return m_frame_number; }
   u32 GetInternalFrameNumber() const { return m_internal_frame_number; }
+  u32 GetGlobalTickCounter() const { return m_global_tick_counter; }
   void IncrementFrameNumber() { m_frame_number++; }
   void IncrementInternalFrameNumber() { m_internal_frame_number++; }
 
@@ -79,6 +80,7 @@ private:
   std::unique_ptr<MDEC> m_mdec;
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
+  u32 m_global_tick_counter = 0;
 
   Settings m_settings;
 };

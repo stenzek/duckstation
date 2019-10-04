@@ -81,6 +81,13 @@ bool System::Initialize()
 
 bool System::DoState(StateWrapper& sw)
 {
+  if (!sw.DoMarker("System"))
+    return false;
+
+  sw.Do(&m_frame_number);
+  sw.Do(&m_internal_frame_number);
+  sw.Do(&m_global_tick_counter);
+
   if (!sw.DoMarker("CPU") || !m_cpu->DoState(sw))
     return false;
 
@@ -127,6 +134,8 @@ void System::Reset()
   m_spu->Reset();
   m_mdec->Reset();
   m_frame_number = 1;
+  m_internal_frame_number = 0;
+  m_global_tick_counter = 0;
 }
 
 bool System::LoadState(ByteStream* state)
@@ -268,10 +277,11 @@ bool System::SetExpansionROM(const char* filename)
 
 void System::Synchronize()
 {
-  m_cpu->ResetDowncount();
-
   const TickCount pending_ticks = m_cpu->GetPendingTicks();
   m_cpu->ResetPendingTicks();
+  m_cpu->ResetDowncount();
+
+  m_global_tick_counter += static_cast<u32>(pending_ticks);
 
   m_gpu->Execute(pending_ticks);
   m_timers->AddSystemTicks(pending_ticks);
