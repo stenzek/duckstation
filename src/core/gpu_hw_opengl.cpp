@@ -362,7 +362,7 @@ void GPU_HW_OpenGL::SetDrawState()
     m_vram_read_texture->Bind();
 
   if (m_last_transparency_enable != m_batch.transparency_enable ||
-      (!m_last_transparency_enable && m_last_transparency_mode != m_batch.transparency_mode))
+      (m_last_transparency_enable && m_last_transparency_mode != m_batch.transparency_mode))
   {
     m_last_transparency_enable = m_batch.texture_enable;
     m_last_transparency_mode = m_batch.transparency_mode;
