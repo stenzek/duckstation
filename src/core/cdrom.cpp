@@ -683,6 +683,33 @@ void CDROM::ExecuteCommand()
     }
     break;
 
+    case Command::GetlocL:
+    {
+      Log_DebugPrintf("CDROM GetlocL command");
+      m_response_fifo.PushRange(reinterpret_cast<const u8*>(&m_last_sector_header), sizeof(m_last_sector_header));
+      m_response_fifo.PushRange(reinterpret_cast<const u8*>(&m_last_sector_subheader), sizeof(m_last_sector_subheader));
+      SetInterrupt(Interrupt::ACK);
+      EndCommand();
+    }
+    break;
+
+    case Command::GetlocP:
+    {
+      // TODO: Subchannel Q support..
+      Log_DebugPrintf("CDROM GetlocP command");
+      m_response_fifo.Push(1);                                         // track number
+      m_response_fifo.Push(1);                                         // index
+      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.minute)); // minute within track
+      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.second)); // second within track
+      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.frame));  // frame within track
+      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.minute)); // minute on entire disc
+      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.second)); // second on entire disc
+      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.frame));  // frame on entire disc
+      SetInterrupt(Interrupt::ACK);
+      EndCommand();
+    }
+    break;
+
     default:
       Panic("Unknown command");
       break;
@@ -749,32 +776,28 @@ void CDROM::DoSectorRead()
   // TODO: Error handling
   // TODO: Sector buffer should be two sectors?
   Assert(!m_mode.ignore_bit);
-  m_sector_buffer.resize(CDImage::RAW_SECTOR_SIZE);
+  m_sector_buffer.resize(RAW_SECTOR_SIZE);
   m_media->Read(CDImage::ReadMode::RawSector, 1, m_sector_buffer.data());
-  Log_DevPrintf("Read sector %llu: mode %u submode 0x%02X", m_media->GetCurrentLBA(), ZeroExtend32(m_sector_buffer[15]),
-                ZeroExtend32(m_sector_buffer[18]));
+  std::memcpy(&m_last_sector_header, &m_sector_buffer[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
+  std::memcpy(&m_last_sector_subheader, &m_sector_buffer[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
+              sizeof(m_last_sector_subheader));
+  Log_DevPrintf("Read sector %llu: mode %u submode 0x%02X", m_media->GetCurrentLBA(),
+                ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));
 
   bool pass_to_cpu = true;
-  if (m_mode.xa_enable)
+  if (m_mode.xa_enable && m_last_sector_header.sector_mode == 2)
   {
-    const CDSectorHeader* sh =
-      reinterpret_cast<const CDSectorHeader*>(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE);
-    if (sh->sector_mode == 2)
+    if (m_last_sector_subheader.submode.realtime && m_last_sector_subheader.submode.audio)
     {
-      const XASubHeader* xsh = reinterpret_cast<const XASubHeader*>(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE +
-                                                                    sizeof(CDSectorHeader));
-      if (xsh->submode.realtime && xsh->submode.audio)
-      {
-        // TODO: Decode audio sector. Do we still transfer this to the CPU?
-        Log_WarningPrintf("Decode CD-XA audio sector");
-        m_sector_buffer.clear();
-        pass_to_cpu = false;
-      }
+      // TODO: Decode audio sector. Do we still transfer this to the CPU?
+      Log_WarningPrintf("Decode CD-XA audio sector");
+      m_sector_buffer.clear();
+      pass_to_cpu = false;
+    }
 
-      if (xsh->submode.eof)
-      {
-        Log_WarningPrintf("End of CD-XA file");
-      }
+    if (m_last_sector_subheader.submode.eof)
+    {
+      Log_WarningPrintf("End of CD-XA file");
     }
   }
 

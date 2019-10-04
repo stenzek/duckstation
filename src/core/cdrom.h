@@ -1,11 +1,11 @@
 #pragma once
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
+#include "common/cd_image.h"
 #include "types.h"
 #include <string>
 #include <vector>
 
-class CDImage;
 class StateWrapper;
 
 class System;
@@ -34,6 +34,14 @@ public:
   void Execute(TickCount ticks);
 
 private:
+  enum : u32
+  {
+    RAW_SECTOR_SIZE = CDImage::RAW_SECTOR_SIZE,
+    SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
+    SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
+    SECTOR_XA_SUBHEADER_SIZE = CDImage::SECTOR_XA_SUBHEADER_SIZE,
+  };
+
   static constexpr u32 PARAM_FIFO_SIZE = 16;
   static constexpr u32 RESPONSE_FIFO_SIZE = 16;
   static constexpr u32 DATA_FIFO_SIZE = 4096;
@@ -146,41 +154,6 @@ private:
     BitField<u8, bool, 7, 1> BFRD;
   };
 
-  struct CDSectorHeader
-  {
-    u8 minute;
-    u8 second;
-    u8 frame;
-    u8 sector_mode;
-  };
-
-  struct XASubHeader
-  {
-    u8 file_number;
-    u8 channel_number;
-    union Submode
-    {
-      u8 bits;
-      BitField<u8, bool, 0, 1> eor;
-      BitField<u8, bool, 1, 1> video;
-      BitField<u8, bool, 2, 1> audio;
-      BitField<u8, bool, 3, 1> data;
-      BitField<u8, bool, 4, 1> trigger;
-      BitField<u8, bool, 5, 1> form2;
-      BitField<u8, bool, 6, 1> realtime;
-      BitField<u8, bool, 7, 1> eof;
-    } submode;
-    union Codinginfo
-    {
-      u8 bits;
-
-      BitField<u8, u8, 0, 2> mono_stereo;
-      BitField<u8, u8, 2, 2> sample_rate;
-      BitField<u8, u8, 4, 2> bits_per_sample;
-      BitField<u8, bool, 6, 1> emphasis;
-    } codinginfo;
-  };
-
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   void SetInterrupt(Interrupt interrupt);
   void PushStatResponse(Interrupt interrupt = Interrupt::ACK);
@@ -213,12 +186,14 @@ private:
   bool m_reading = false;
   bool m_muted = false;
 
-  Loc m_setloc = {};
-  bool m_setloc_dirty = false;
-
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
   ModeRegister m_mode = {};
+
+  Loc m_setloc = {};
+  bool m_setloc_dirty = false;
+  CDImage::SectorHeader m_last_sector_header = {};
+  CDImage::XASubHeader m_last_sector_subheader = {};
 
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
