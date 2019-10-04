@@ -33,10 +33,14 @@ void GPU::Reset()
 void GPU::SoftReset()
 {
   m_GPUSTAT.bits = 0x14802000;
+  m_drawing_area = {};
+  m_drawing_offset = {};
   m_crtc_state = {};
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
+  m_GP0_command.clear();
+  m_GPUREAD_buffer.clear();
   m_render_state = {};
   m_render_state.texture_page_changed = true;
   m_render_state.texture_color_mode_changed = true;
@@ -48,7 +52,10 @@ void GPU::SoftReset()
 bool GPU::DoState(StateWrapper& sw)
 {
   if (sw.IsReading())
-    FlushRender();
+  {
+    // perform a reset to discard all pending draws/fb state
+    Reset();
+  }
 
   sw.Do(&m_GPUSTAT.bits);
 

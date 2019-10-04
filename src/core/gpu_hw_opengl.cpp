@@ -177,6 +177,7 @@ void GPU_HW_OpenGL::ClearFramebuffer()
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  m_vram_read_texture_dirty = true;
 }
 
 void GPU_HW_OpenGL::DestroyFramebuffer()

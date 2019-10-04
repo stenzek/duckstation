@@ -8,6 +8,13 @@ GPU_HW::GPU_HW() = default;
 
 GPU_HW::~GPU_HW() = default;
 
+void GPU_HW::Reset()
+{
+  GPU::Reset();
+
+  m_batch = {};
+}
+
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 {
   const u32 texpage =

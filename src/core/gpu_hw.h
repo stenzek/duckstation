@@ -11,6 +11,8 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
+  virtual void Reset() override;
+
 protected:
   struct HWVertex
   {
