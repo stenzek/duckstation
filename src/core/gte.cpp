@@ -294,6 +294,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_NCCS(inst);
       break;
 
+    case 0x1C:
+      Execute_CC(inst);
+      break;
+
     case 0x1E:
       Execute_NCS(inst);
       break;
@@ -422,6 +426,110 @@ void Core::PushRGBFromMAC()
   // Note: SHR 4 used instead of /16 as the results are different.
   PushRGB(TruncateRGB<0>(m_regs.MAC1 >> 4), TruncateRGB<1>(m_regs.MAC2 >> 4), TruncateRGB<2>(m_regs.MAC3 >> 4),
           m_regs.RGBC[3]);
+}
+
+void Core::MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+{
+#define dot3(i)                                                                                                        \
+  TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][0]) * s64(Vx)) + (s64(M[i][1]) * s64(Vy))) +      \
+                                  (s64(M[i][2]) * s64(Vz)),                                                            \
+                                shift, lm)
+
+  dot3(0);
+  dot3(1);
+  dot3(2);
+
+#undef dot3
+}
+
+void Core::MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+{
+#define dot3(i)                                                                                                        \
+  TruncateAndSetMACAndIR<i + 1>(                                                                                       \
+    SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx))) +              \
+                               (s64(M[i][1]) * s64(Vy))) +                                                             \
+      (s64(M[i][2]) * s64(Vz)),                                                                                        \
+    shift, lm)
+
+  dot3(0);
+  dot3(1);
+  dot3(2);
+
+#undef dot3
+}
+
+void Core::Execute_MVMVA(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  // TODO: Remove memcpy..
+  s16 M[3][3];
+  switch (inst.mvmva_multiply_matrix)
+  {
+    case 0:
+      std::memcpy(M, m_regs.RT, sizeof(s16) * 3 * 3);
+      break;
+    case 1:
+      std::memcpy(M, m_regs.LLM, sizeof(s16) * 3 * 3);
+      break;
+    case 2:
+      std::memcpy(M, m_regs.LCM, sizeof(s16) * 3 * 3);
+      break;
+    default:
+      // buggy
+      Panic("Missing implementation");
+      return;
+  }
+
+  s16 Vx, Vy, Vz;
+  switch (inst.mvmva_multiply_vector)
+  {
+    case 0:
+      Vx = m_regs.V0[0];
+      Vy = m_regs.V0[1];
+      Vz = m_regs.V0[2];
+      break;
+    case 1:
+      Vx = m_regs.V1[0];
+      Vy = m_regs.V1[1];
+      Vz = m_regs.V1[2];
+      break;
+    case 2:
+      Vx = m_regs.V2[0];
+      Vy = m_regs.V2[1];
+      Vz = m_regs.V2[2];
+      break;
+    default:
+      Vx = m_regs.IR1;
+      Vy = m_regs.IR2;
+      Vz = m_regs.IR3;
+      break;
+  }
+
+  s32 T[3];
+  switch (inst.mvmva_translation_vector)
+  {
+    case 0:
+      std::memcpy(T, m_regs.TR, sizeof(T));
+      break;
+    case 1:
+      std::memcpy(T, m_regs.BK, sizeof(T));
+      break;
+    case 2:
+      // buggy
+      std::memcpy(T, m_regs.FC, sizeof(T));
+      break;
+    case 3:
+      std::fill_n(T, countof(T), s32(0));
+      break;
+    default:
+      Panic("Missing implementation");
+      return;
+  }
+
+  MulMatVec(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
+
+  m_regs.FLAG.UpdateError();
 }
 
 void Core::RTPS(const s16 V[3], bool sf, bool lm, bool last)
@@ -562,36 +670,6 @@ void Core::Execute_AVSZ4(Instruction inst)
   m_regs.FLAG.UpdateError();
 }
 
-void Core::MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
-{
-#define dot3(i)                                                                                                        \
-  TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][0]) * s64(Vx)) + (s64(M[i][1]) * s64(Vy))) +      \
-                                  (s64(M[i][2]) * s64(Vz)),                                                            \
-                                shift, lm)
-
-  dot3(0);
-  dot3(1);
-  dot3(2);
-
-#undef dot3
-}
-
-void Core::MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
-{
-#define dot3(i)                                                                                                        \
-  TruncateAndSetMACAndIR<i + 1>(                                                                                       \
-    SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx))) +              \
-                               (s64(M[i][1]) * s64(Vy))) +                                                             \
-      (s64(M[i][2]) * s64(Vz)),                                                                                        \
-    shift, lm)
-
-  dot3(0);
-  dot3(1);
-  dot3(2);
-
-#undef dot3
-}
-
 void Core::InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm)
 {
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
@@ -727,76 +805,24 @@ void Core::Execute_NCDT(Instruction inst)
   m_regs.FLAG.UpdateError();
 }
 
-void Core::Execute_MVMVA(Instruction inst)
+void Core::Execute_CC(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  // TODO: Remove memcpy..
-  s16 M[3][3];
-  switch (inst.mvmva_multiply_matrix)
-  {
-    case 0:
-      std::memcpy(M, m_regs.RT, sizeof(s16) * 3 * 3);
-      break;
-    case 1:
-      std::memcpy(M, m_regs.LLM, sizeof(s16) * 3 * 3);
-      break;
-    case 2:
-      std::memcpy(M, m_regs.LCM, sizeof(s16) * 3 * 3);
-      break;
-    default:
-      // buggy
-      Panic("Missing implementation");
-      return;
-  }
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
 
-  s16 Vx, Vy, Vz;
-  switch (inst.mvmva_multiply_vector)
-  {
-    case 0:
-      Vx = m_regs.V0[0];
-      Vy = m_regs.V0[1];
-      Vz = m_regs.V0[2];
-      break;
-    case 1:
-      Vx = m_regs.V1[0];
-      Vy = m_regs.V1[1];
-      Vz = m_regs.V1[2];
-      break;
-    case 2:
-      Vx = m_regs.V2[0];
-      Vy = m_regs.V2[1];
-      Vz = m_regs.V2[2];
-      break;
-    default:
-      Vx = m_regs.IR1;
-      Vy = m_regs.IR2;
-      Vz = m_regs.IR3;
-      break;
-  }
+  // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
+  MulMatVec(m_regs.LCM, m_regs.BK, m_regs.IR1, m_regs.IR2, m_regs.IR3, shift, lm);
 
-  s32 T[3];
-  switch (inst.mvmva_translation_vector)
-  {
-    case 0:
-      std::memcpy(T, m_regs.TR, sizeof(T));
-      break;
-    case 1:
-      std::memcpy(T, m_regs.BK, sizeof(T));
-      break;
-    case 2:
-      // buggy
-      std::memcpy(T, m_regs.FC, sizeof(T));
-      break;
-    case 3:
-      std::fill_n(T, countof(T), s32(0));
-      break;
-    default:
-      Panic("Missing implementation");
-      return;
-  }
+  // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
+  TruncateAndSetMACAndIR<1>(s64(s32(ZeroExtend32(m_regs.RGBC[0])) * s32(m_regs.IR1)) << 4, shift, lm);
+  TruncateAndSetMACAndIR<2>(s64(s32(ZeroExtend32(m_regs.RGBC[1])) * s32(m_regs.IR2)) << 4, shift, lm);
+  TruncateAndSetMACAndIR<3>(s64(s32(ZeroExtend32(m_regs.RGBC[2])) * s32(m_regs.IR3)) << 4, shift, lm);
 
-  MulMatVec(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGBFromMAC();
 
   m_regs.FLAG.UpdateError();
 }
