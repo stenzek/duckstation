@@ -229,23 +229,14 @@ u32 Core::GetExceptionVector(Exception excode) const
 
 void Core::RaiseException(Exception excode)
 {
-#ifdef Y_BUILD_CONFIG_RELEASE
-  if (excode == Exception::RI)
-  {
-    // Invalid op.
-    Log_DevPrintf("Invalid instruction at 0x%08X", m_current_instruction_pc);
-    DisassembleAndPrint(m_current_instruction_pc, 4, 0);
-  }
-#endif
-
   RaiseException(excode, m_current_instruction_pc, m_current_instruction_in_branch_delay_slot,
                  m_current_instruction_was_branch_taken, m_current_instruction.cop.cop_n);
 }
 
 void Core::RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
 {
-  Log_DevPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode), m_current_instruction_pc,
-                EPC, BD ? "true" : "false", ZeroExtend32(CE));
+  Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
+                  m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
 #ifdef Y_BUILD_CONFIG_DEBUG
   DisassembleAndPrint(m_current_instruction_pc, 4, 0);
 #endif
@@ -522,6 +513,14 @@ void Core::Execute()
     // fetch the next instruction
     if (DispatchInterrupts() || !FetchInstruction())
       continue;
+
+#if 0 // GTE flag test debugging
+    if (m_current_instruction_pc == 0x8002cdf4)
+    {
+      if (m_regs.v1 != m_regs.v0)
+        printf("Got %08X Expected? %08X\n", m_regs.v1, m_regs.v0);
+    }
+#endif
 
     // execute the instruction we previously fetched
     ExecuteInstruction();
