@@ -19,6 +19,7 @@ bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* in
   if (!GPU_HW::Initialize(system, dma, interrupt_controller, timers))
     return false;
 
+  SetMaxResolutionScale();
   CreateFramebuffer();
   CreateVertexBuffer();
   if (!CompilePrograms())
@@ -101,6 +102,24 @@ void GPU_HW_OpenGL::InvalidateVRAMReadCache()
 std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y)
 {
   return std::make_tuple(x, static_cast<s32>(static_cast<s32>(VRAM_HEIGHT) - y));
+}
+
+void GPU_HW_OpenGL::SetMaxResolutionScale()
+{
+  GLint max_texture_size = VRAM_WIDTH;
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+  Log_InfoPrintf("Max texture size: %dx%d", max_texture_size, max_texture_size);
+  const int max_texture_scale = max_texture_size / VRAM_WIDTH;
+
+  std::array<int, 2> line_width_range = {{1, 1}};
+  glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range.data());
+  Log_InfoPrintf("Max line width: %d", line_width_range[1]);
+
+  const u32 max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
+  Log_InfoPrintf("Maximum resolution scale is %u", max_resolution_scale);
+  m_system->GetSettings().max_gpu_resolution_scale = max_resolution_scale;
+  m_system->GetSettings().gpu_resolution_scale =
+    std::min(m_system->GetSettings().gpu_resolution_scale, max_resolution_scale);
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
@@ -550,6 +569,7 @@ void GPU_HW_OpenGL::FlushRender()
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
+  glLineWidth(static_cast<float>(m_resolution_scale));
   SetProgram();
   SetViewport();
   SetScissor();

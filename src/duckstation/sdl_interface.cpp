@@ -524,7 +524,7 @@ void SDLInterface::RenderMainMenuBar()
       if (ImGui::BeginMenu("Internal Resolution"))
       {
         const u32 current_internal_resolution = m_system->GetSettings().gpu_resolution_scale;
-        for (u32 scale = 1; scale <= 16; scale++)
+        for (u32 scale = 1; scale <= m_system->GetSettings().max_gpu_resolution_scale; scale++)
         {
           if (ImGui::MenuItem(
                 TinyString::FromFormat("%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT),

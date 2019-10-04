@@ -37,6 +37,7 @@ private:
 
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
+  void SetMaxResolutionScale();
   void CreateFramebuffer();
   void ClearFramebuffer();
   void DestroyFramebuffer();
