@@ -4,6 +4,7 @@
 #include "gte.h"
 #include "types.h"
 #include <array>
+#include <optional>
 
 class StateWrapper;
 
@@ -107,7 +108,7 @@ private:
   void WriteCacheControl(u32 value);
 
   // read/write cop0 regs
-  u32 ReadCop0Reg(Cop0Reg reg);
+  std::optional<u32> ReadCop0Reg(Cop0Reg reg);
   void WriteCop0Reg(Cop0Reg reg, u32 value);
 
   Bus* m_bus = nullptr;

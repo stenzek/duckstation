@@ -229,6 +229,15 @@ u32 Core::GetExceptionVector(Exception excode) const
 
 void Core::RaiseException(Exception excode)
 {
+#ifdef Y_BUILD_CONFIG_RELEASE
+  if (excode == Exception::RI)
+  {
+    // Invalid op.
+    Log_DevPrintf("Invalid instruction at 0x%08X", m_current_instruction_pc);
+    DisassembleAndPrint(m_current_instruction_pc, 4, 0);
+  }
+#endif
+
   RaiseException(excode, m_current_instruction_pc, m_current_instruction_in_branch_delay_slot,
                  m_current_instruction_was_branch_taken, m_current_instruction.cop.cop_n);
 }
@@ -334,7 +343,7 @@ void Core::WriteRegDelayed(Reg rd, u32 value)
   m_regs.r[static_cast<u8>(rd)] = value;
 }
 
-u32 Core::ReadCop0Reg(Cop0Reg reg)
+std::optional<u32> Core::ReadCop0Reg(Cop0Reg reg)
 {
   switch (reg)
   {
@@ -372,8 +381,8 @@ u32 Core::ReadCop0Reg(Cop0Reg reg)
       return m_cop0_regs.PRID;
 
     default:
-      Panic("Unknown COP0 reg");
-      return 0;
+      Log_DevPrintf("Unknown COP0 reg %u", ZeroExtend32(static_cast<u8>(reg)));
+      return std::nullopt;
   }
 }
 
@@ -440,7 +449,7 @@ void Core::WriteCop0Reg(Cop0Reg reg, u32 value)
     break;
 
     default:
-      Panic("Unknown COP0 reg");
+      Log_DevPrintf("Unknown COP0 reg %u", ZeroExtend32(static_cast<u8>(reg)));
       break;
   }
 }
@@ -820,8 +829,10 @@ void Core::ExecuteInstruction()
         break;
 
         default:
-          UnreachableCode();
+        {
+          RaiseException(Exception::RI);
           break;
+        }
       }
     }
     break;
@@ -1149,21 +1160,25 @@ void Core::ExecuteInstruction()
     }
     break;
 
-    // COP1/COP3 are not present
+    // swc0/lwc0/cop1/cop3 are essentially no-ops
     case InstructionOp::cop1:
     case InstructionOp::cop3:
+    case InstructionOp::lwc0:
     case InstructionOp::lwc1:
-    case InstructionOp::swc1:
     case InstructionOp::lwc3:
+    case InstructionOp::swc0:
+    case InstructionOp::swc1:
     case InstructionOp::swc3:
     {
-      RaiseException(Exception::CpU);
     }
     break;
 
+    // everything else is reserved/invalid
     default:
-      UnreachableCode();
-      break;
+    {
+      RaiseException(Exception::RI);
+    }
+    break;
   }
 }
 
@@ -1176,12 +1191,20 @@ void Core::ExecuteCop0Instruction()
     switch (inst.cop.CommonOp())
     {
       case CopCommonInstruction::mfcn:
-        WriteRegDelayed(inst.r.rt, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())));
-        break;
+      {
+        const std::optional<u32> value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
+        if (value)
+          WriteRegDelayed(inst.r.rt, value.value());
+        else
+          RaiseException(Exception::RI);
+      }
+      break;
 
       case CopCommonInstruction::mtcn:
+      {
         WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
-        break;
+      }
+      break;
 
       default:
         Panic("Missing implementation");
