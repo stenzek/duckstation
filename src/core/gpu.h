@@ -156,8 +156,8 @@ protected:
   {
     u32 bits;
 
-    BitField<u32, s32, 0, 11> x;
-    BitField<u32, s32, 16, 11> y;
+    BitField<u32, s32, 0, 12> x;
+    BitField<u32, s32, 16, 12> y;
   };
 
   struct DebugOptions
