@@ -11,6 +11,7 @@ public:
   ~Program();
 
   static GLuint CompileShader(GLenum type, const char* source);
+  static void ResetLastProgram();
 
   bool IsVaild() const { return m_program_id != 0; }
 

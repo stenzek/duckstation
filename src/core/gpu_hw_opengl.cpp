@@ -26,6 +26,7 @@ bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* in
     return false;
 
   m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1.0f);
+  RestoreGraphicsAPIState();
   return true;
 }
 
@@ -34,6 +35,37 @@ void GPU_HW_OpenGL::Reset()
   GPU_HW::Reset();
 
   ClearFramebuffer();
+}
+
+void GPU_HW_OpenGL::ResetGraphicsAPIState()
+{
+  GPU_HW::ResetGraphicsAPIState();
+
+  glEnable(GL_CULL_FACE);
+  glDisable(GL_SCISSOR_TEST);
+  glDisable(GL_BLEND);
+  glDepthMask(GL_TRUE);
+  glLineWidth(1.0f);
+  glBindVertexArray(0);
+}
+
+void GPU_HW_OpenGL::RestoreGraphicsAPIState()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
+  glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_SCISSOR_TEST);
+  glDepthMask(GL_FALSE);
+  glLineWidth(static_cast<float>(m_resolution_scale));
+  UpdateDrawingArea();
+
+  m_last_transparency_enable = false;
+  glDisable(GL_BLEND);
+
+  glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
+  glBindVertexArray(m_vao_id);
 }
 
 void GPU_HW_OpenGL::RenderStatistics()
@@ -156,6 +188,7 @@ void GPU_HW_OpenGL::CreateFramebuffer()
                       linear_filter ? GL_LINEAR : GL_NEAREST);
 
     glDeleteFramebuffers(1, &old_vram_fbo);
+    glEnable(GL_SCISSOR_TEST);
     old_vram_texture.reset();
   }
 
@@ -187,15 +220,16 @@ void GPU_HW_OpenGL::CreateFramebuffer()
   glBindFramebuffer(GL_FRAMEBUFFER, m_display_fbo);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_display_texture->GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
 }
 
 void GPU_HW_OpenGL::ClearFramebuffer()
 {
-  // TODO: get rid of the FBO switches
-  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
+  glDisable(GL_SCISSOR_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glEnable(GL_SCISSOR_TEST);
   m_vram_read_texture_dirty = true;
 }
 
@@ -305,7 +339,7 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
   return true;
 }
 
-void GPU_HW_OpenGL::SetProgram()
+void GPU_HW_OpenGL::SetDrawState()
 {
   const GL::Program& prog =
     m_render_programs[BoolToUInt32(m_batch.texture_enable)][BoolToUInt32(m_batch.texture_blending_enable)]
@@ -326,14 +360,30 @@ void GPU_HW_OpenGL::SetProgram()
 
   if (m_batch.texture_enable)
     m_vram_read_texture->Bind();
+
+  if (m_last_transparency_enable != m_batch.transparency_enable ||
+      (!m_last_transparency_enable && m_last_transparency_mode != m_batch.transparency_mode))
+  {
+    m_last_transparency_enable = m_batch.texture_enable;
+    m_last_transparency_mode = m_batch.transparency_mode;
+
+    if (!m_batch.transparency_enable)
+    {
+      glDisable(GL_BLEND);
+    }
+    else
+    {
+      glEnable(GL_BLEND);
+      glBlendEquationSeparate(m_batch.transparency_mode == GPU::TransparencyMode::BackgroundMinusForeground ?
+                                GL_FUNC_REVERSE_SUBTRACT :
+                                GL_FUNC_ADD,
+                              GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE, GL_SRC_ALPHA, GL_ONE, GL_ZERO);
+    }
+  }
 }
 
-void GPU_HW_OpenGL::SetViewport()
-{
-  glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
-}
-
-void GPU_HW_OpenGL::SetScissor()
+void GPU_HW_OpenGL::UpdateDrawingArea()
 {
   int left, top, right, bottom;
   CalcScissorRect(&left, &top, &right, &bottom);
@@ -345,22 +395,6 @@ void GPU_HW_OpenGL::SetScissor()
 
   Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
   glScissor(x, y, width, height);
-}
-
-void GPU_HW_OpenGL::SetBlendState()
-{
-  if (!m_batch.transparency_enable)
-  {
-    glDisable(GL_BLEND);
-    return;
-  }
-
-  glEnable(GL_BLEND);
-  glBlendEquationSeparate(m_batch.transparency_mode == GPU::TransparencyMode::BackgroundMinusForeground ?
-                            GL_FUNC_REVERSE_SUBTRACT :
-                            GL_FUNC_ADD,
-                          GL_FUNC_ADD);
-  glBlendFuncSeparate(GL_ONE, GL_SRC_ALPHA, GL_ONE, GL_ZERO);
 }
 
 void GPU_HW_OpenGL::UpdateDisplay()
@@ -415,7 +449,9 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
     glBlitFramebuffer(scaled_x, texture_height - scaled_y - height, scaled_x + scaled_width, scaled_y + scaled_height,
                       0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
+    glEnable(GL_SCISSOR_TEST);
   }
   else
   {
@@ -457,8 +493,6 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
   width *= m_resolution_scale;
   height *= m_resolution_scale;
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
-
   glEnable(GL_SCISSOR_TEST);
   glScissor(x, m_vram_texture->GetHeight() - y - height, width, height);
 
@@ -466,6 +500,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 
+  UpdateDrawingArea();
   InvalidateVRAMReadCache();
 }
 
@@ -517,9 +552,9 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
     glDisable(GL_SCISSOR_TEST);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
     glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y, scaled_x + scaled_width,
                       scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glEnable(GL_SCISSOR_TEST);
   }
 }
 
@@ -540,6 +575,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
   glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glEnable(GL_SCISSOR_TEST);
 
   InvalidateVRAMReadCache();
 }
@@ -565,21 +601,9 @@ void GPU_HW_OpenGL::FlushRender()
   m_stats.num_batches++;
   m_stats.num_vertices += static_cast<u32>(m_batch.vertices.size());
 
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_SCISSOR_TEST);
-  glDepthMask(GL_FALSE);
-  glLineWidth(static_cast<float>(m_resolution_scale));
-  SetProgram();
-  SetViewport();
-  SetScissor();
-  SetBlendState();
-
-  glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
-  glBindVertexArray(m_vao_id);
+  SetDrawState();
 
   Assert((m_batch.vertices.size() * sizeof(HWVertex)) <= VERTEX_BUFFER_SIZE);
-  glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
   glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(HWVertex) * m_batch.vertices.size()),
                   m_batch.vertices.data());
 

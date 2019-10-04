@@ -135,6 +135,10 @@ bool GPU::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
+void GPU::ResetGraphicsAPIState() {}
+
+void GPU::RestoreGraphicsAPIState() {}
+
 void GPU::RenderStatistics() {}
 
 void GPU::RenderDebugMenu()
@@ -445,17 +449,29 @@ void GPU::WriteGP0(u32 value)
 
       case 0xE3: // Set drawing area top left
       {
-        m_drawing_area.left = param & UINT32_C(0x3FF);
-        m_drawing_area.top = (param >> 10) & UINT32_C(0x1FF);
-        Log_DebugPrintf("Set drawing area top-left: (%u, %u)", m_drawing_area.left, m_drawing_area.top);
+        const u32 left = param & UINT32_C(0x3FF);
+        const u32 top = (param >> 10) & UINT32_C(0x1FF);
+        Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
+        if (m_drawing_area.left != left || m_drawing_area.top != top)
+        {
+          m_drawing_area.left = left;
+          m_drawing_area.top = top;
+          UpdateDrawingArea();
+        }
       }
       break;
 
       case 0xE4: // Set drawing area bottom right
       {
-        m_drawing_area.right = param & UINT32_C(0x3FF);
-        m_drawing_area.bottom = (param >> 10) & UINT32_C(0x1FF);
+        const u32 right = param & UINT32_C(0x3FF);
+        const u32 bottom = (param >> 10) & UINT32_C(0x1FF);
         Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
+        if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
+        {
+          m_drawing_area.right = right;
+          m_drawing_area.bottom = bottom;
+          UpdateDrawingArea();
+        }
       }
       break;
 
@@ -771,6 +787,8 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
 }
 
 void GPU::UpdateDisplay() {}
+
+void GPU::UpdateDrawingArea() {}
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 

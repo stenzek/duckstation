@@ -35,6 +35,10 @@ public:
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
+  // Graphics API state reset/restore - call when drawing the UI etc.
+  virtual void ResetGraphicsAPIState();
+  virtual void RestoreGraphicsAPIState();
+
   // Render statistics debug window.
   virtual void RenderStatistics();
 
@@ -198,6 +202,7 @@ protected:
 
   // Rendering in the backend
   virtual void UpdateDisplay();
+  virtual void UpdateDrawingArea();
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);

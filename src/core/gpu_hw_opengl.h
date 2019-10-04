@@ -15,11 +15,16 @@ public:
 
   bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers) override;
   void Reset() override;
+
+  void ResetGraphicsAPIState() override;
+  void RestoreGraphicsAPIState() override;
+
   void RenderStatistics() override;
   void UpdateSettings() override;
 
 protected:
   void UpdateDisplay() override;
+  void UpdateDrawingArea() override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) override;
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
@@ -48,10 +53,7 @@ private:
   bool CompilePrograms();
   bool CompileProgram(GL::Program& prog, bool textured, bool blending, bool transparent, TextureColorMode texture_color_mode);
 
-  void SetProgram();
-  void SetViewport();
-  void SetScissor();
-  void SetBlendState();
+  void SetDrawState();
 
   // downsample texture - used for readbacks at >1xIR.
   std::unique_ptr<GL::Texture> m_vram_texture;
@@ -69,6 +71,8 @@ private:
   GLuint m_attributeless_vao_id = 0;
 
   bool m_vram_read_texture_dirty = true;
+  bool m_last_transparency_enable = false;
+  TransparencyMode m_last_transparency_mode = TransparencyMode::BackgroundMinusForeground;
 
   std::array<std::array<std::array<std::array<GL::Program, 3>, 2>, 2>, 2> m_render_programs;
   std::array<GL::Program, 3> m_texture_page_programs;

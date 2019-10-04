@@ -6,6 +6,7 @@
 Log_SetChannel(GL);
 
 static u32 s_next_bad_shader_id = 1;
+static GLuint s_last_program_id = 0;
 
 namespace GL {
 
@@ -61,6 +62,11 @@ GLuint Program::CompileShader(GLenum type, const char* source)
   }
 
   return id;
+}
+
+void Program::ResetLastProgram()
+{
+  s_last_program_id = 0;
 }
 
 bool Program::Compile(const char* vertex_shader, const char* fragment_shader)
@@ -138,7 +144,11 @@ bool Program::Link()
 
 void Program::Bind() const
 {
+  if (s_last_program_id == m_program_id)
+    return;
+
   glUseProgram(m_program_id);
+  s_last_program_id = m_program_id;
 }
 
 void Program::Destroy()

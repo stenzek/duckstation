@@ -388,8 +388,9 @@ bool SDLInterface::PassEventToImGui(const SDL_Event* event)
 
 void SDLInterface::Render()
 {
+  m_system->GetGPU()->ResetGraphicsAPIState();
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glDisable(GL_SCISSOR_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -405,6 +406,9 @@ void SDLInterface::Render()
   ImGui_ImplOpenGL3_NewFrame();
 
   ImGui::NewFrame();
+
+  GL::Program::ResetLastProgram();
+  m_system->GetGPU()->RestoreGraphicsAPIState();
 }
 
 static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
