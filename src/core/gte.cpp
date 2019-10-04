@@ -769,10 +769,8 @@ void Core::Execute_MVMVA(Instruction inst)
   m_regs.FLAG.UpdateError();
 }
 
-void Core::DPCS(const u8 color[3], bool sf, bool lm)
+void Core::DPCS(const u8 color[3], u8 shift, bool lm)
 {
-  const u8 shift = sf ? 12 : 0;
-
   // In: [IR1,IR2,IR3]=Vector, FC=Far Color, IR0=Interpolation value, CODE=MSB of RGBC
   // [MAC1,MAC2,MAC3] = [R,G,B] SHL 16                     ;<--- for DPCS/DPCT
   TruncateAndSetMAC<1>((s64(ZeroExtend64(color[0])) << 16), 0);
@@ -780,30 +778,17 @@ void Core::DPCS(const u8 color[3], bool sf, bool lm)
   TruncateAndSetMAC<3>((s64(ZeroExtend64(color[2])) << 16), 0);
 
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
-  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
-  TruncateAndSetIR<1>(s32((s64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> shift, false);
-  TruncateAndSetIR<2>(s32((s64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> shift, false);
-  TruncateAndSetIR<3>(s32((s64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> shift, false);
-
-  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
-  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
-  TruncateAndSetMAC<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), shift);
-  TruncateAndSetMAC<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), shift);
-  TruncateAndSetMAC<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), shift);
+  InterpolateColor(m_regs.MAC1, m_regs.MAC2, m_regs.MAC3, shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
-  PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
-          m_regs.RGBC[3]);
-  TruncateAndSetIR<1>(m_regs.MAC1, lm);
-  TruncateAndSetIR<2>(m_regs.MAC2, lm);
-  TruncateAndSetIR<3>(m_regs.MAC3, lm);
+  PushRGBFromMAC();
 }
 
 void Core::Execute_DPCS(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  DPCS(m_regs.RGBC, inst.sf, inst.lm);
+  DPCS(m_regs.RGBC, inst.GetShift(), inst.lm);
 
   m_regs.FLAG.UpdateError();
 }
@@ -812,11 +797,11 @@ void Core::Execute_DPCT(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  const bool sf = inst.sf;
+  const u8 shift = inst.GetShift();
   const bool lm = inst.lm;
 
   for (u32 i = 0; i < 3; i++)
-    DPCS(m_regs.RGB0, sf, lm);
+    DPCS(m_regs.RGB0, shift, lm);
 
   m_regs.FLAG.UpdateError();
 }

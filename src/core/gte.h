@@ -73,7 +73,7 @@ private:
   void RTPS(const s16 V[3], bool sf, bool lm, bool last);
   void NCCS(const s16 V[3], u8 shift, bool lm);
   void NCDS(const s16 V[3], bool sf, bool lm);
-  void DPCS(const u8 color[3], bool sf, bool lm);
+  void DPCS(const u8 color[3], u8 shift, bool lm);
 
   void Execute_RTPS(Instruction inst);
   void Execute_RTPT(Instruction inst);
