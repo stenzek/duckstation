@@ -10,7 +10,9 @@ HostInterface::~HostInterface() = default;
 
 bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
 {
-  m_system = std::make_unique<System>(this);
+  Settings settings;
+
+  m_system = std::make_unique<System>(this, settings);
   if (!m_system->Initialize())
   {
     m_system.reset();

@@ -1,4 +1,5 @@
 #pragma once
+#include "settings.h"
 #include "types.h"
 #include <memory>
 
@@ -7,8 +8,7 @@ class StateWrapper;
 
 class HostInterface;
 
-namespace CPU
-{
+namespace CPU {
 class Core;
 }
 
@@ -26,15 +26,21 @@ class MDEC;
 class System
 {
 public:
-  System(HostInterface* host_interface);
+  System(HostInterface* host_interface, const Settings& settings);
   ~System();
 
   HostInterface* GetHostInterface() const { return m_host_interface; }
+  CPU::Core* GetCPU() const { return m_cpu.get(); }
+  Bus* GetBus() const { return m_bus.get(); }
+  GPU* GetGPU() const { return m_gpu.get(); }
 
   u32 GetFrameNumber() const { return m_frame_number; }
   u32 GetInternalFrameNumber() const { return m_internal_frame_number; }
   void IncrementFrameNumber() { m_frame_number++; }
   void IncrementInternalFrameNumber() { m_internal_frame_number++; }
+
+  Settings& GetSettings() { return m_settings; }
+  void UpdateSettings();
 
   bool Initialize();
   void Reset();
@@ -43,7 +49,6 @@ public:
   bool SaveState(ByteStream* state);
 
   void RunFrame();
-  void RenderUI();
 
   bool LoadEXE(const char* filename);
   bool SetExpansionROM(const char* filename);
@@ -74,4 +79,6 @@ private:
   std::unique_ptr<MDEC> m_mdec;
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
+
+  Settings m_settings;
 };

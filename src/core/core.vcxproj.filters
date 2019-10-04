@@ -20,6 +20,7 @@
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
+    <ClCompile Include="settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -45,6 +46,7 @@
     <ClInclude Include="spu.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
+    <ClInclude Include="settings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

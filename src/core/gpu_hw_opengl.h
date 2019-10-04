@@ -15,7 +15,8 @@ public:
 
   bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers) override;
   void Reset() override;
-  void RenderUI() override;
+  void RenderStatistics() override;
+  void UpdateSettings() override;
 
 protected:
   void UpdateDisplay() override;
@@ -73,5 +74,4 @@ private:
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};
-  bool m_show_vram = false;
 };

@@ -6,10 +6,9 @@
 #include "stb_image_write.h"
 #include "system.h"
 #include "timers.h"
+#include <imgui.h>
 Log_SetChannel(GPU);
 
-bool GPU::DUMP_CPU_TO_VRAM_COPIES = false;
-bool GPU::DUMP_VRAM_TO_CPU_COPIES = false;
 static u32 s_cpu_to_vram_dump_id = 1;
 static u32 s_vram_to_cpu_dump_id = 1;
 
@@ -129,7 +128,16 @@ bool GPU::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void GPU::RenderUI() {}
+void GPU::RenderStatistics() {}
+
+void GPU::RenderDebugMenu()
+{
+  ImGui::MenuItem("Show VRAM", nullptr, &m_debug_options.show_vram);
+  ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &m_debug_options.dump_cpu_to_vram_copies);
+  ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &m_debug_options.dump_vram_to_cpu_copies);
+}
+
+void GPU::UpdateSettings() {}
 
 void GPU::UpdateGPUSTAT()
 {
@@ -678,7 +686,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
     return true;
   }
 
-  if (DUMP_CPU_TO_VRAM_COPIES)
+  if (m_debug_options.dump_cpu_to_vram_copies)
   {
     DumpVRAMToFile(SmallString::FromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++), copy_width, copy_height,
                    sizeof(u16) * copy_width, &m_GP0_command[3], true);
@@ -718,7 +726,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   for (const u32 bits : temp)
     m_GPUREAD_buffer.push_back(bits);
 
-  if (DUMP_VRAM_TO_CPU_COPIES)
+  if (m_debug_options.dump_vram_to_cpu_copies)
   {
     DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_cpu_to_vram_dump_id++), width, height,
                    sizeof(u16) * width, temp.data(), true);

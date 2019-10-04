@@ -35,9 +35,9 @@ void GPU_HW_OpenGL::Reset()
   ClearFramebuffer();
 }
 
-void GPU_HW_OpenGL::RenderUI()
+void GPU_HW_OpenGL::RenderStatistics()
 {
-  GPU_HW::RenderUI();
+  GPU_HW::RenderStatistics();
 
   ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_Once);
 
@@ -48,7 +48,7 @@ void GPU_HW_OpenGL::RenderUI()
     m_stats = {};
   }
 
-  if (ImGui::Begin("GL Render Statistics"))
+  if (ImGui::Begin("GPU Render Statistics"))
   {
     ImGui::Columns(2);
     ImGui::SetColumnWidth(0, 200.0f);
@@ -72,31 +72,25 @@ void GPU_HW_OpenGL::RenderUI()
     ImGui::NextColumn();
     ImGui::Text("%s", is_null_frame ? "Yes" : "No");
     ImGui::NextColumn();
-
-    ImGui::Columns(1);
-
-    ImGui::Checkbox("Show VRAM##gpu_gl_show_vram", &m_show_vram);
-
-    static constexpr std::array<const char*, 16> internal_resolution_items = {
-      {"1x Internal Resolution", "2x Internal Resolution", "3x Internal Resolution", "4x Internal Resolution",
-       "5x Internal Resolution", "6x Internal Resolution", "7x Internal Resolution", "8x Internal Resolution",
-       "9x Internal Resolution", "10x Internal Resolution", "11x Internal Resolution", "12x Internal Resolution",
-       "13x Internal Resolution", "14x Internal Resolution", "15x Internal Resolution", "16x Internal Resolution"}};
-
-    int internal_resolution_item =
-      std::clamp(static_cast<int>(m_resolution_scale) - 1, 0, static_cast<int>(internal_resolution_items.size()));
-    if (ImGui::Combo("##gpu_internal_resolution", &internal_resolution_item, internal_resolution_items.data(),
-                     static_cast<int>(internal_resolution_items.size())))
-    {
-      m_resolution_scale = static_cast<u32>(internal_resolution_item + 1);
-      m_system->GetHostInterface()->AddOSDMessage(
-        TinyString::FromFormat("Internal resolution changed to %ux, recompiling programs", m_resolution_scale));
-      CreateFramebuffer();
-      CompilePrograms();
-    }
   }
 
   ImGui::End();
+}
+
+void GPU_HW_OpenGL::UpdateSettings()
+{
+  GPU_HW::UpdateSettings();
+
+  if (m_resolution_scale != m_system->GetSettings().gpu_resolution_scale)
+  {
+    m_resolution_scale = m_system->GetSettings().gpu_resolution_scale;
+    CreateFramebuffer();
+    CompilePrograms();
+
+    m_system->GetHostInterface()->AddOSDMessage(TinyString::FromFormat("Changed internal resolution to %ux (%ux%u)",
+                                                                       m_resolution_scale, m_vram_texture->GetWidth(),
+                                                                       m_vram_texture->GetHeight()));
+  }
 }
 
 void GPU_HW_OpenGL::InvalidateVRAMReadCache()
@@ -357,7 +351,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
   const u32 texture_height = m_vram_texture->GetHeight();
 
   // TODO: 24-bit support.
-  if (m_show_vram)
+  if (m_debug_options.show_vram)
   {
     m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, texture_width, texture_height, 1.0f);
   }

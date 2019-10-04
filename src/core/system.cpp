@@ -15,7 +15,8 @@
 #include <cstdio>
 Log_SetChannel(System);
 
-System::System(HostInterface* host_interface) : m_host_interface(host_interface)
+System::System(HostInterface* host_interface, const Settings& settings)
+  : m_host_interface(host_interface), m_settings(settings)
 {
   m_cpu = std::make_unique<CPU::Core>();
   m_bus = std::make_unique<Bus>();
@@ -31,6 +32,11 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 }
 
 System::~System() = default;
+
+void System::UpdateSettings()
+{
+  m_gpu->UpdateSettings();
+}
 
 bool System::Initialize()
 {
@@ -143,11 +149,6 @@ void System::RunFrame()
     m_cpu->Execute();
     Synchronize();
   }
-}
-
-void System::RenderUI()
-{
-  m_gpu->RenderUI();
 }
 
 bool System::LoadEXE(const char* filename)

@@ -3,6 +3,7 @@
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
 #include "core/digital_controller.h"
+#include "core/gpu.h"
 #include "core/memory_card.h"
 #include "core/system.h"
 #include "icon.h"
@@ -458,7 +459,8 @@ void SDLInterface::RenderImGui()
 {
   RenderMainMenuBar();
 
-  m_system->RenderUI();
+  if (m_show_gpu_statistics)
+    m_system->GetGPU()->RenderStatistics();
 
   RenderOSDMessages();
 
@@ -514,6 +516,48 @@ void SDLInterface::RenderMainMenuBar()
   {
     if (ImGui::MenuItem("Fullscreen", nullptr, IsWindowFullscreen()))
       SDL_SetWindowFullscreen(m_window, IsWindowFullscreen() ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu("Settings"))
+  {
+    if (ImGui::BeginMenu("GPU"))
+    {
+      if (ImGui::BeginMenu("Internal Resolution"))
+      {
+        const u32 current_internal_resolution = m_system->GetSettings().gpu_resolution_scale;
+        for (u32 scale = 1; scale <= 16; scale++)
+        {
+          bool selected = current_internal_resolution == scale;
+          if (ImGui::MenuItem(
+                TinyString::FromFormat("%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT),
+                nullptr, &selected))
+          {
+            m_system->GetSettings().gpu_resolution_scale = scale;
+            m_system->UpdateSettings();
+          }
+        }
+
+        ImGui::EndMenu();
+      }
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu("Debug"))
+  {
+    if (ImGui::BeginMenu("GPU"))
+    {
+      ImGui::MenuItem("Show Statistics", nullptr, &m_show_gpu_statistics);
+      ImGui::Separator();
+
+      m_system->GetGPU()->RenderDebugMenu();
+      ImGui::EndMenu();
+    }
 
     ImGui::EndMenu();
   }

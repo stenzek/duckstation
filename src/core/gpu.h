@@ -16,13 +16,33 @@ class Timers;
 class GPU
 {
 public:
+  static constexpr float DISPLAY_ASPECT_RATIO = 4.0f / 3.0f;
+  enum : u32
+  {
+    VRAM_WIDTH = 1024,
+    VRAM_HEIGHT = 512,
+    VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16),
+    TEXTURE_PAGE_WIDTH = 256,
+    TEXTURE_PAGE_HEIGHT = 256,
+    DOT_TIMER_INDEX = 0,
+    HBLANK_TIMER_INDEX = 1
+  };
+
   GPU();
   virtual ~GPU();
 
   virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
-  virtual void RenderUI();
+
+  // Render statistics debug window.
+  virtual void RenderStatistics();
+
+  // Manipulating debug options.
+  virtual void RenderDebugMenu();
+
+  // Called when settings change.
+  virtual void UpdateSettings();
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -37,15 +57,6 @@ public:
   void Execute(TickCount ticks);
 
 protected:
-  static constexpr float DISPLAY_ASPECT_RATIO = 4.0f / 3.0f;
-  static constexpr u32 VRAM_WIDTH = 1024;
-  static constexpr u32 VRAM_HEIGHT = 512;
-  static constexpr u32 VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16);
-  static constexpr u32 TEXTURE_PAGE_WIDTH = 256;
-  static constexpr u32 TEXTURE_PAGE_HEIGHT = 256;
-  static constexpr u32 DOT_TIMER_INDEX = 0;
-  static constexpr u32 HBLANK_TIMER_INDEX = 1;
-
   static constexpr s32 S11ToS32(u32 value)
   {
     if (value & (UINT16_C(1) << 10))
@@ -154,6 +165,13 @@ protected:
 
     s32 x() const { return S11ToS32(x_s11); }
     s32 y() const { return S11ToS32(y_s11); }
+  };
+
+  struct DebugOptions
+  {
+    bool show_vram;
+    bool dump_cpu_to_vram_copies;
+    bool dump_vram_to_cpu_copies;
   };
 
   void SoftReset();
@@ -331,7 +349,5 @@ protected:
   std::vector<u32> m_GP0_command;
   std::deque<u32> m_GPUREAD_buffer;
 
-  // debug options
-  static bool DUMP_CPU_TO_VRAM_COPIES;
-  static bool DUMP_VRAM_TO_CPU_COPIES;
+  DebugOptions m_debug_options = {};
 };
