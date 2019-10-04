@@ -1,5 +1,3 @@
 add_subdirectory(common)
-add_subdirectory(pse)
-if(ENABLE_SDL_FRONTEND)
-  add_subdirectory(pse-sdl)
-endif()
+add_subdirectory(core)
+add_subdirectory(duckstation)

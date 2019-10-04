@@ -3,7 +3,7 @@
 #include "YBaseLib/Timer.h"
 #include "common/gl_program.h"
 #include "common/gl_texture.h"
-#include "pse/host_interface.h"
+#include "core/host_interface.h"
 #include <SDL.h>
 #include <array>
 #include <deque>

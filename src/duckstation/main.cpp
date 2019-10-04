@@ -1,8 +1,7 @@
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/StringConverter.h"
-#include "pse/system.h"
-#include "pse/types.h"
+#include "core/system.h"
 #include "sdl_interface.h"
 #include <SDL.h>
 #include <cstdio>

@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(pse C CXX)
-
-
-# Options
-option(ENABLE_OPENGL "Enables OpenGL support in renderer" ON)
-option(ENABLE_SDL_FRONTEND "Compiles the SDL frontend" ON)
+project(duckstation C CXX)
 
 # Common include/library directories on Windows.
 if(WIN32)
@@ -22,14 +17,10 @@ if(WIN32)
     endif()
   endif()
 
-  if(ENABLE_SDL_FRONTEND)
-    set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/include/SDL")
-    set(SDL2_LIBRARIES "SDL2")
-  endif()
+  set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/include/SDL")
+  set(SDL2_LIBRARIES "SDL2")
 else()
-  if(ENABLE_SDL_FRONTEND)
-    find_package(SDL2 REQUIRED)
-  endif()
+  find_package(SDL2 REQUIRED)
 endif()
 
 

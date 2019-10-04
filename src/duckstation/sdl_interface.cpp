@@ -5,9 +5,9 @@
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
-#include "pse/digital_controller.h"
-#include "pse/memory_card.h"
-#include "pse/system.h"
+#include "core/digital_controller.h"
+#include "core/memory_card.h"
+#include "core/system.h"
 #include <cinttypes>
 #include <glad.h>
 Log_SetChannel(SDLInterface);
