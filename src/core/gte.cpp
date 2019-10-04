@@ -299,7 +299,7 @@ void Core::ExecuteInstruction(Instruction inst)
       break;
 
     case 0x29:
-      Execute_DPCL(inst);
+      Execute_DCPL(inst);
       break;
 
     case 0x2A:
@@ -584,6 +584,21 @@ void Core::MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 
 #undef dot3
 }
 
+void Core::InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm)
+{
+  // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
+  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
+  TruncateAndSetMACAndIR<1>((s64(m_regs.FC[0]) << 12) - in_MAC1, shift, false);
+  TruncateAndSetMACAndIR<2>((s64(m_regs.FC[1]) << 12) - in_MAC2, shift, false);
+  TruncateAndSetMACAndIR<3>((s64(m_regs.FC[2]) << 12) - in_MAC3, shift, false);
+
+  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
+  TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + in_MAC1, shift, lm);
+  TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + in_MAC2, shift, lm);
+  TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + in_MAC3, shift, lm);
+}
+
 void Core::NCCS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
@@ -806,30 +821,20 @@ void Core::Execute_DPCT(Instruction inst)
   m_regs.FLAG.UpdateError();
 }
 
-void Core::Execute_DPCL(Instruction inst)
+void Core::Execute_DCPL(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
   const u8 shift = inst.GetShift();
   const bool lm = inst.lm;
 
-  // In: [IR1,IR2,IR3]=Vector, FC=Far Color, IR0=Interpolation value, CODE=MSB of RGBC
-  // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for DCPL only
-  TruncateAndSetMAC<1>(((s64(ZeroExtend64(m_regs.RGBC[0])) + s64(m_regs.IR1)) << 4), 0);
-  TruncateAndSetMAC<2>(((s64(ZeroExtend64(m_regs.RGBC[1])) + s64(m_regs.IR2)) << 4), 0);
-  TruncateAndSetMAC<3>(((s64(ZeroExtend64(m_regs.RGBC[2])) + s64(m_regs.IR3)) << 4), 0);
+  // No need to assign these to MAC[1-3], as it'll never overflow.
+  const s32 in_MAC1 = (s32(ZeroExtend32(m_regs.RGBC[0])) * s32(m_regs.IR1)) << 4;
+  const s32 in_MAC2 = (s32(ZeroExtend32(m_regs.RGBC[1])) * s32(m_regs.IR2)) << 4;
+  const s32 in_MAC3 = (s32(ZeroExtend32(m_regs.RGBC[2])) * s32(m_regs.IR3)) << 4;
 
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
-  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
-  TruncateAndSetIR<1>(s32((s64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> shift, false);
-  TruncateAndSetIR<2>(s32((s64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> shift, false);
-  TruncateAndSetIR<3>(s32((s64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> shift, false);
-
-  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
-  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
-  TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), shift, lm);
-  TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), shift, lm);
-  TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), shift, lm);
+  InterpolateColor(in_MAC1, in_MAC2, in_MAC3, shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGBFromMAC();
@@ -844,24 +849,10 @@ void Core::Execute_INTPL(Instruction inst)
   const u8 shift = inst.GetShift();
   const bool lm = inst.lm;
 
-  // In: [IR1,IR2,IR3]=Vector, FC=Far Color, IR0=Interpolation value, CODE=MSB of RGBC
-  // [MAC1,MAC2,MAC3] = [IR1,IR2,IR3] SHL 12               ;<--- for INTPL only
   // No need to assign these to MAC[1-3], as it'll never overflow.
-  const s32 in_IR1 = s32(m_regs.IR1) << 12;
-  const s32 in_IR2 = s32(m_regs.IR2) << 12;
-  const s32 in_IR3 = s32(m_regs.IR3) << 12;
-
+  // [MAC1,MAC2,MAC3] = [IR1,IR2,IR3] SHL 12               ;<--- for INTPL only
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
-  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
-  TruncateAndSetMACAndIR<1>((s64(m_regs.FC[0]) << 12) - s64(in_IR1), shift, false);
-  TruncateAndSetMACAndIR<2>((s64(m_regs.FC[1]) << 12) - s64(in_IR2), shift, false);
-  TruncateAndSetMACAndIR<3>((s64(m_regs.FC[2]) << 12) - s64(in_IR3), shift, false);
-
-  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
-  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
-  TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(in_IR1), shift, lm);
-  TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(in_IR2), shift, lm);
-  TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(in_IR3), shift, lm);
+  InterpolateColor(s32(m_regs.IR1) << 12, s32(m_regs.IR2) << 12, s32(m_regs.IR3) << 12, shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGBFromMAC();

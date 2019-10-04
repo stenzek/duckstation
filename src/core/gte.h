@@ -67,6 +67,9 @@ private:
   // 3x3 matrix * 3x1 vector with translation, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 
+  // Interpolate colour, or as in nocash "MAC+(FC-MAC)*IR0".
+  void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm);
+
   void RTPS(const s16 V[3], bool sf, bool lm, bool last);
   void NCCS(const s16 V[3], u8 shift, bool lm);
   void NCDS(const s16 V[3], bool sf, bool lm);
@@ -85,7 +88,7 @@ private:
   void Execute_MVMVA(Instruction inst);
   void Execute_DPCS(Instruction inst);
   void Execute_DPCT(Instruction inst);
-  void Execute_DPCL(Instruction inst);
+  void Execute_DCPL(Instruction inst);
   void Execute_INTPL(Instruction inst);
   void Execute_GPL(Instruction inst);
   void Execute_GPF(Instruction inst);
