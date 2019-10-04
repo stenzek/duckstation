@@ -90,6 +90,7 @@ private:
   void Execute_NCDS(Instruction inst);
   void Execute_NCDT(Instruction inst);
   void Execute_CC(Instruction inst);
+  void Execute_CDP(Instruction inst);
   void Execute_DPCS(Instruction inst);
   void Execute_DPCT(Instruction inst);
   void Execute_DCPL(Instruction inst);

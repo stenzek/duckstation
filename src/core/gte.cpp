@@ -286,6 +286,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_NCDS(inst);
       break;
 
+    case 0x14:
+      Execute_CDP(inst);
+      break;
+
     case 0x16:
       Execute_NCCT(inst);
       break;
@@ -820,6 +824,32 @@ void Core::Execute_CC(Instruction inst)
   TruncateAndSetMACAndIR<1>(s64(s32(ZeroExtend32(m_regs.RGBC[0])) * s32(m_regs.IR1)) << 4, shift, lm);
   TruncateAndSetMACAndIR<2>(s64(s32(ZeroExtend32(m_regs.RGBC[1])) * s32(m_regs.IR2)) << 4, shift, lm);
   TruncateAndSetMACAndIR<3>(s64(s32(ZeroExtend32(m_regs.RGBC[2])) * s32(m_regs.IR3)) << 4, shift, lm);
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGBFromMAC();
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_CDP(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
+  MulMatVec(m_regs.LCM, m_regs.BK, m_regs.IR1, m_regs.IR2, m_regs.IR3, shift, lm);
+
+  // No need to assign these to MAC[1-3], as it'll never overflow.
+  // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4
+  const s32 in_MAC1 = (s32(ZeroExtend32(m_regs.RGBC[0])) * s32(m_regs.IR1)) << 4;
+  const s32 in_MAC2 = (s32(ZeroExtend32(m_regs.RGBC[1])) * s32(m_regs.IR2)) << 4;
+  const s32 in_MAC3 = (s32(ZeroExtend32(m_regs.RGBC[2])) * s32(m_regs.IR3)) << 4;
+
+  // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0                   ;<--- for CDP only
+  // [MAC1, MAC2, MAC3] = [MAC1, MAC2, MAC3] SAR(sf * 12)
+  InterpolateColor(in_MAC1, in_MAC2, in_MAC3, shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGBFromMAC();
