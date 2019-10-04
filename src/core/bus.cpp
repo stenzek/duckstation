@@ -51,14 +51,15 @@ void Bus::Reset()
   m_ram.fill(static_cast<u8>(0));
   m_MEMCTRL.exp1_base = 0x1F000000;
   m_MEMCTRL.exp2_base = 0x1F802000;
-  m_MEMCTRL.exp1_delay_size = 0x0013243F;
-  m_MEMCTRL.exp3_delay_size = 0x00003022;
-  m_MEMCTRL.bios_delay_size = 0x0013243F;
-  m_MEMCTRL.spu_delay_size = 0x200931E1;
-  m_MEMCTRL.cdrom_delay_size = 0x00020843;
-  m_MEMCTRL.exp2_delay_size = 0x00070777;
-  m_MEMCTRL.common_delay_size = 0x00031125;
+  m_MEMCTRL.exp1_delay_size.bits = 0x0013243F;
+  m_MEMCTRL.exp3_delay_size.bits = 0x00003022;
+  m_MEMCTRL.bios_delay_size.bits = 0x0013243F;
+  m_MEMCTRL.spu_delay_size.bits = 0x200931E1;
+  m_MEMCTRL.cdrom_delay_size.bits = 0x00020843;
+  m_MEMCTRL.exp2_delay_size.bits = 0x00070777;
+  m_MEMCTRL.common_delay.bits = 0x00031125;
   m_ram_size_reg = UINT32_C(0x00000B88);
+  RecalculateMemoryTimings();
 }
 
 bool Bus::DoState(StateWrapper& sw)
@@ -165,6 +166,61 @@ bool Bus::LoadBIOS()
 #endif
 
   return true;
+}
+
+std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)
+{
+  // from nocash spec
+  s32 first = 0, seq = 0, min = 0;
+  if (mem_delay.use_com0_time)
+  {
+    first += s32(common_delay.com0) - 1;
+    seq += s32(common_delay.com0) - 1;
+  }
+  if (mem_delay.use_com2_time)
+  {
+    first += s32(common_delay.com2);
+    seq += s32(common_delay.com2);
+  }
+  if (mem_delay.use_com3_time)
+  {
+    min = s32(common_delay.com3);
+  }
+  if (first < 6)
+    first++;
+
+  first = first + s32(mem_delay.access_time) + 2;
+  seq = seq + s32(mem_delay.access_time) + 2;
+
+  if (first < (min + 6))
+    first = min + 6;
+  if (seq < (min + 2))
+    seq = min + 2;
+
+  const TickCount byte_access_time = first;
+  const TickCount halfword_access_time = mem_delay.data_bus_16bit ? first : (first + seq);
+  const TickCount word_access_time = mem_delay.data_bus_16bit ? (first + seq) : (first + seq + seq + seq);
+  return std::tie(byte_access_time, halfword_access_time, word_access_time);
+}
+
+void Bus::RecalculateMemoryTimings()
+{
+  std::tie(m_bios_access_time[0], m_bios_access_time[1], m_bios_access_time[2]) =
+    CalculateMemoryTiming(m_MEMCTRL.bios_delay_size, m_MEMCTRL.common_delay);
+  std::tie(m_cdrom_access_time[0], m_cdrom_access_time[1], m_cdrom_access_time[2]) =
+    CalculateMemoryTiming(m_MEMCTRL.cdrom_delay_size, m_MEMCTRL.common_delay);
+  std::tie(m_spu_access_time[0], m_spu_access_time[1], m_spu_access_time[2]) =
+    CalculateMemoryTiming(m_MEMCTRL.spu_delay_size, m_MEMCTRL.common_delay);
+
+  Log_DevPrintf("BIOS Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
+                m_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, m_bios_access_time[0], m_bios_access_time[1],
+                m_bios_access_time[2]);
+  Log_DevPrintf("CDROM Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
+                m_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, m_cdrom_access_time[0], m_cdrom_access_time[1],
+                m_cdrom_access_time[2]);
+  Log_DevPrintf("SPU Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
+                m_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, m_spu_access_time[0], m_spu_access_time[1],
+                m_spu_access_time[2]);
 }
 
 bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)
@@ -292,7 +348,16 @@ bool Bus::DoReadMemoryControl(MemoryAccessSize size, u32 offset, u32& value)
 bool Bus::DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
-  m_MEMCTRL.regs[offset / 4] = value;
+
+  const u32 index = offset / 4;
+  const u32 write_mask = (index == 8) ? COMDELAY::WRITE_MASK : MEMDELAY::WRITE_MASK;
+  const u32 new_value = (m_MEMCTRL.regs[index] & ~write_mask) | (value & write_mask);
+  if (m_MEMCTRL.regs[index] != new_value)
+  {
+    m_MEMCTRL.regs[index] = new_value;
+    RecalculateMemoryTimings();
+  }
+
   return true;
 }
 
@@ -455,10 +520,10 @@ bool Bus::DoReadDMA(MemoryAccessSize size, u32 offset, u32& value)
   {
     case MemoryAccessSize::Byte:
     case MemoryAccessSize::HalfWord:
-      {
-        if ((offset & u32(0xF0)) >= 7 || (offset & u32(0x0F)) != 0x4)
-          FixupUnalignedWordAccessW32(offset, value);
-      }
+    {
+      if ((offset & u32(0xF0)) >= 7 || (offset & u32(0x0F)) != 0x4)
+        FixupUnalignedWordAccessW32(offset, value);
+    }
 
     default:
       break;

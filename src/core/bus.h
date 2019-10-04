@@ -1,6 +1,7 @@
 #pragma once
 
 #include "YBaseLib/String.h"
+#include "common/bitfield.h"
 #include "types.h"
 #include <array>
 
@@ -95,6 +96,34 @@ private:
     MEMCTRL_REG_COUNT = 9
   };
 
+  union MEMDELAY
+  {
+    u32 bits;
+
+    BitField<u32, u8, 4, 4> access_time; // cycles
+    BitField<u32, bool, 8, 1> use_com0_time;
+    BitField<u32, bool, 9, 1> use_com1_time;
+    BitField<u32, bool, 10, 1> use_com2_time;
+    BitField<u32, bool, 11, 1> use_com3_time;
+    BitField<u32, bool, 12, 1> data_bus_16bit;
+    BitField<u32, u8, 16, 5> memory_window_size;
+
+    static constexpr u32 WRITE_MASK = 0b10101111'00011111'11111111'11111111;
+  };
+
+  union COMDELAY
+  {
+    u32 bits;
+
+    BitField<u32, u8, 0, 4> com0;
+    BitField<u32, u8, 4, 4> com1;
+    BitField<u32, u8, 8, 4> com2;
+    BitField<u32, u8, 12, 4> com3;
+    BitField<u32, u8, 16, 2> comunk;
+
+    static constexpr u32 WRITE_MASK = 0b00000000'00000011'11111111'11111111;
+  };
+
   union MEMCTRL
   {
     u32 regs[MEMCTRL_REG_COUNT];
@@ -103,17 +132,20 @@ private:
     {
       u32 exp1_base;
       u32 exp2_base;
-      u32 exp1_delay_size;
-      u32 exp3_delay_size;
-      u32 bios_delay_size;
-      u32 spu_delay_size;
-      u32 cdrom_delay_size;
-      u32 exp2_delay_size;
-      u32 common_delay_size;
+      MEMDELAY exp1_delay_size;
+      MEMDELAY exp3_delay_size;
+      MEMDELAY bios_delay_size;
+      MEMDELAY spu_delay_size;
+      MEMDELAY cdrom_delay_size;
+      MEMDELAY exp2_delay_size;
+      COMDELAY common_delay;
     };
   };
 
   bool LoadBIOS();
+
+  static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
+  void RecalculateMemoryTimings();
 
   template<MemoryAccessType type, MemoryAccessSize size>
   bool DoRAMAccess(u32 offset, u32& value);
@@ -171,6 +203,10 @@ private:
   Timers* m_timers = nullptr;
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
+
+  std::array<TickCount, 3> m_bios_access_time = {};
+  std::array<TickCount, 3> m_cdrom_access_time = {};
+  std::array<TickCount, 3> m_spu_access_time = {};
 
   std::array<u8, 2097152> m_ram{}; // 2MB RAM
   std::array<u8, 524288> m_bios{}; // 512K BIOS ROM
