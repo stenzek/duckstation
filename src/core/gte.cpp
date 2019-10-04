@@ -640,46 +640,32 @@ void Core::Execute_NCCT(Instruction inst)
   m_regs.FLAG.UpdateError();
 }
 
-void Core::NCDS(const s16 V[3], bool sf, bool lm)
+void Core::NCDS(const s16 V[3], u8 shift, bool lm)
 {
-  const u8 shift = sf ? 12 : 0;
-
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
   MulMatVec(m_regs.LLM, V[0], V[1], V[2], shift, lm);
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
   MulMatVec(m_regs.LCM, m_regs.BK, m_regs.IR1, m_regs.IR2, m_regs.IR3, shift, lm);
 
+  // No need to assign these to MAC[1-3], as it'll never overflow.
   // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for NCDx/NCCx
-  TruncateAndSetMAC<1>((s64(ZeroExtend64(m_regs.RGBC[0])) << 4) * s64(m_regs.MAC1), 0);
-  TruncateAndSetMAC<2>((s64(ZeroExtend64(m_regs.RGBC[1])) << 4) * s64(m_regs.MAC2), 0);
-  TruncateAndSetMAC<3>((s64(ZeroExtend64(m_regs.RGBC[2])) << 4) * s64(m_regs.MAC3), 0);
+  const s32 in_MAC1 = (s32(ZeroExtend32(m_regs.RGBC[0])) * s32(m_regs.IR1)) << 4;
+  const s32 in_MAC2 = (s32(ZeroExtend32(m_regs.RGBC[1])) * s32(m_regs.IR2)) << 4;
+  const s32 in_MAC3 = (s32(ZeroExtend32(m_regs.RGBC[2])) * s32(m_regs.IR3)) << 4;
 
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0                   ;<--- for NCDx only
-  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
-  TruncateAndSetIR<1>(s32((s64(m_regs.FC[0]) << 12) - s64(m_regs.MAC1)) >> shift, false);
-  TruncateAndSetIR<2>(s32((s64(m_regs.FC[1]) << 12) - s64(m_regs.MAC2)) >> shift, false);
-  TruncateAndSetIR<3>(s32((s64(m_regs.FC[2]) << 12) - s64(m_regs.MAC3)) >> shift, false);
-
-  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
-  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
-  TruncateAndSetMAC<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), shift);
-  TruncateAndSetMAC<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), shift);
-  TruncateAndSetMAC<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), shift);
+  InterpolateColor(in_MAC1, in_MAC2, in_MAC3, shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
-  PushRGB(TruncateRGB<0>(m_regs.MAC1 / 16), TruncateRGB<1>(m_regs.MAC2 / 16), TruncateRGB<2>(m_regs.MAC3 / 16),
-          m_regs.RGBC[3]);
-  TruncateAndSetIR<1>(m_regs.MAC1, lm);
-  TruncateAndSetIR<2>(m_regs.MAC2, lm);
-  TruncateAndSetIR<3>(m_regs.MAC3, lm);
+  PushRGBFromMAC();
 }
 
 void Core::Execute_NCDS(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  NCDS(m_regs.V0, inst.sf, inst.lm);
+  NCDS(m_regs.V0, inst.GetShift(), inst.lm);
 
   m_regs.FLAG.UpdateError();
 }
@@ -688,9 +674,12 @@ void Core::Execute_NCDT(Instruction inst)
 {
   m_regs.FLAG.Clear();
 
-  NCDS(m_regs.V0, inst.sf, inst.lm);
-  NCDS(m_regs.V1, inst.sf, inst.lm);
-  NCDS(m_regs.V2, inst.sf, inst.lm);
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  NCDS(m_regs.V0, shift, lm);
+  NCDS(m_regs.V1, shift, lm);
+  NCDS(m_regs.V2, shift, lm);
 
   m_regs.FLAG.UpdateError();
 }
@@ -814,6 +803,7 @@ void Core::Execute_DCPL(Instruction inst)
   const bool lm = inst.lm;
 
   // No need to assign these to MAC[1-3], as it'll never overflow.
+  // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for DCPL only
   const s32 in_MAC1 = (s32(ZeroExtend32(m_regs.RGBC[0])) * s32(m_regs.IR1)) << 4;
   const s32 in_MAC2 = (s32(ZeroExtend32(m_regs.RGBC[1])) * s32(m_regs.IR2)) << 4;
   const s32 in_MAC3 = (s32(ZeroExtend32(m_regs.RGBC[2])) * s32(m_regs.IR3)) << 4;
