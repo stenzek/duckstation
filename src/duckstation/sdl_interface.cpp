@@ -512,16 +512,13 @@ void SDLInterface::RenderMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (ImGui::BeginMenu("View"))
+  if (ImGui::BeginMenu("Settings"))
   {
     if (ImGui::MenuItem("Fullscreen", nullptr, IsWindowFullscreen()))
       SDL_SetWindowFullscreen(m_window, IsWindowFullscreen() ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 
-    ImGui::EndMenu();
-  }
+    ImGui::Separator();
 
-  if (ImGui::BeginMenu("Settings"))
-  {
     if (ImGui::BeginMenu("GPU"))
     {
       if (ImGui::BeginMenu("Internal Resolution"))
@@ -529,10 +526,9 @@ void SDLInterface::RenderMainMenuBar()
         const u32 current_internal_resolution = m_system->GetSettings().gpu_resolution_scale;
         for (u32 scale = 1; scale <= 16; scale++)
         {
-          bool selected = current_internal_resolution == scale;
           if (ImGui::MenuItem(
                 TinyString::FromFormat("%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT),
-                nullptr, &selected))
+                nullptr, current_internal_resolution == scale))
           {
             m_system->GetSettings().gpu_resolution_scale = scale;
             m_system->UpdateSettings();
@@ -562,7 +558,7 @@ void SDLInterface::RenderMainMenuBar()
     ImGui::EndMenu();
   }
 
-  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 205.0f);
+  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
 
   const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
   if (m_speed < 90.0f)
