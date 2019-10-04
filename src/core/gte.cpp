@@ -270,6 +270,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_NCLIP(inst);
       break;
 
+    case 0x0C:
+      Execute_OP(inst);
+      break;
+
     case 0x10:
       Execute_DPCS(inst);
       break;
@@ -536,6 +540,47 @@ void Core::Execute_MVMVA(Instruction inst)
   m_regs.FLAG.UpdateError();
 }
 
+void Core::Execute_SQR(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  // 32-bit multiply for speed - 16x16 isn't >32bit, and we know it won't overflow/underflow.
+  const u8 shift = inst.GetShift();
+  m_regs.MAC1 = (s32(m_regs.IR1) * s32(m_regs.IR1)) >> shift;
+  m_regs.MAC2 = (s32(m_regs.IR2) * s32(m_regs.IR2)) >> shift;
+  m_regs.MAC3 = (s32(m_regs.IR3) * s32(m_regs.IR3)) >> shift;
+
+  const bool lm = inst.lm;
+  TruncateAndSetIR<1>(m_regs.MAC1, lm);
+  TruncateAndSetIR<2>(m_regs.MAC2, lm);
+  TruncateAndSetIR<3>(m_regs.MAC3, lm);
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_OP(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  // Take copies since we overwrite them in each step.
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+  const s32 D1 = s32(m_regs.RT[0][0]);
+  const s32 D2 = s32(m_regs.RT[1][1]);
+  const s32 D3 = s32(m_regs.RT[2][2]);
+  const s32 IR1 = s32(m_regs.IR1);
+  const s32 IR2 = s32(m_regs.IR2);
+  const s32 IR3 = s32(m_regs.IR3);
+
+  // [MAC1,MAC2,MAC3] = [IR3*D2-IR2*D3, IR1*D3-IR3*D1, IR2*D1-IR1*D2] SAR (sf*12)
+  // [IR1, IR2, IR3] = [MAC1, MAC2, MAC3]; copy result
+  TruncateAndSetMACAndIR<1>(s64(IR3 * D2) - s64(IR2 * D3), shift, lm);
+  TruncateAndSetMACAndIR<2>(s64(IR1 * D3) - s64(IR3 * D1), shift, lm);
+  TruncateAndSetMACAndIR<3>(s64(IR2 * D1) - s64(IR1 * D2), shift, lm);
+
+  m_regs.FLAG.UpdateError();
+}
+
 void Core::RTPS(const s16 V[3], bool sf, bool lm, bool last)
 {
   const u8 shift = sf ? 12 : 0;
@@ -630,24 +675,6 @@ void Core::Execute_NCLIP(Instruction inst)
                          s64(m_regs.SXY2[0]) * s64(m_regs.SXY0[1]) - s64(m_regs.SXY0[0]) * s64(m_regs.SXY2[1]) -
                          s64(m_regs.SXY1[0]) * s64(m_regs.SXY0[1]) - s64(m_regs.SXY2[0]) * s64(m_regs.SXY1[1]),
                        0);
-
-  m_regs.FLAG.UpdateError();
-}
-
-void Core::Execute_SQR(Instruction inst)
-{
-  m_regs.FLAG.Clear();
-
-  // 32-bit multiply for speed - 16x16 isn't >32bit, and we know it won't overflow/underflow.
-  const u8 shift = inst.GetShift();
-  m_regs.MAC1 = (s32(m_regs.IR1) * s32(m_regs.IR1)) >> shift;
-  m_regs.MAC2 = (s32(m_regs.IR2) * s32(m_regs.IR2)) >> shift;
-  m_regs.MAC3 = (s32(m_regs.IR3) * s32(m_regs.IR3)) >> shift;
-
-  const bool lm = inst.lm;
-  TruncateAndSetIR<1>(m_regs.MAC1, lm);
-  TruncateAndSetIR<2>(m_regs.MAC2, lm);
-  TruncateAndSetIR<3>(m_regs.MAC3, lm);
 
   m_regs.FLAG.UpdateError();
 }

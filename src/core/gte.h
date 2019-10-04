@@ -77,10 +77,11 @@ private:
   void DPCS(const u8 color[3], u8 shift, bool lm);
 
   void Execute_MVMVA(Instruction inst);
+  void Execute_SQR(Instruction inst);
+  void Execute_OP(Instruction inst);
   void Execute_RTPS(Instruction inst);
   void Execute_RTPT(Instruction inst);
   void Execute_NCLIP(Instruction inst);
-  void Execute_SQR(Instruction inst);
   void Execute_AVSZ3(Instruction inst);
   void Execute_AVSZ4(Instruction inst);
   void Execute_NCS(Instruction inst);
