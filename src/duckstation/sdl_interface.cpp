@@ -2,14 +2,15 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
-#include "imgui.h"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_sdl.h"
 #include "core/digital_controller.h"
 #include "core/memory_card.h"
 #include "core/system.h"
+#include "icon.h"
 #include <cinttypes>
 #include <glad.h>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl.h>
 Log_SetChannel(SDLInterface);
 
 SDLInterface::SDLInterface() = default;
@@ -41,12 +42,22 @@ bool SDLInterface::CreateSDLWindow()
   // Create window.
   constexpr u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL;
 
-  m_window = SDL_CreateWindow("Some idea to emulate a system starting with a P", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, window_flags);
+  m_window = SDL_CreateWindow("DuckStation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH,
+                              DEFAULT_WINDOW_HEIGHT, window_flags);
   if (!m_window)
   {
     Panic("Failed to create window");
     return false;
+  }
+
+  // Set window icon.
+  SDL_Surface* icon_surface = SDL_CreateRGBSurfaceFrom(
+    const_cast<unsigned int*>(ICON_DATA), ICON_WIDTH, ICON_HEIGHT, 32, ICON_WIDTH * sizeof(u32), UINT32_C(0x000000FF),
+    UINT32_C(0x0000FF00), UINT32_C(0x00FF0000), UINT32_C(0xFF000000));
+  if (icon_surface)
+  {
+    SDL_SetWindowIcon(m_window, icon_surface);
+    SDL_FreeSurface(icon_surface);
   }
 
   SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);

@@ -54,6 +54,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="icon.h" />
     <ClInclude Include="sdl_audio_mixer.h" />
     <ClInclude Include="sdl_interface.h" />
   </ItemGroup>

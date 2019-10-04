@@ -8,5 +8,6 @@
   <ItemGroup>
     <ClInclude Include="sdl_audio_mixer.h" />
     <ClInclude Include="sdl_interface.h" />
+    <ClInclude Include="icon.h" />
   </ItemGroup>
 </Project>
