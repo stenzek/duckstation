@@ -274,6 +274,10 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_DPCS(inst);
       break;
 
+    case 0x11:
+      Execute_INTPL(inst);
+      break;
+
     case 0x12:
       Execute_MVMVA(inst);
       break;
@@ -826,6 +830,38 @@ void Core::Execute_DPCL(Instruction inst)
   TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(m_regs.MAC1), shift, lm);
   TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(m_regs.MAC2), shift, lm);
   TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(m_regs.MAC3), shift, lm);
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGBFromMAC();
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_INTPL(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  // In: [IR1,IR2,IR3]=Vector, FC=Far Color, IR0=Interpolation value, CODE=MSB of RGBC
+  // [MAC1,MAC2,MAC3] = [IR1,IR2,IR3] SHL 12               ;<--- for INTPL only
+  // No need to assign these to MAC[1-3], as it'll never overflow.
+  const s32 in_IR1 = s32(m_regs.IR1) << 12;
+  const s32 in_IR2 = s32(m_regs.IR2) << 12;
+  const s32 in_IR3 = s32(m_regs.IR3) << 12;
+
+  // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
+  //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
+  TruncateAndSetMACAndIR<1>((s64(m_regs.FC[0]) << 12) - s64(in_IR1), shift, false);
+  TruncateAndSetMACAndIR<2>((s64(m_regs.FC[1]) << 12) - s64(in_IR2), shift, false);
+  TruncateAndSetMACAndIR<3>((s64(m_regs.FC[2]) << 12) - s64(in_IR3), shift, false);
+
+  //   [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3])
+  // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
+  TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + s64(in_IR1), shift, lm);
+  TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + s64(in_IR2), shift, lm);
+  TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + s64(in_IR3), shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGBFromMAC();
