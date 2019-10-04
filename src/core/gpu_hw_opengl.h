@@ -51,8 +51,8 @@ private:
   void CreateVertexBuffer();
 
   bool CompilePrograms();
-  bool CompileProgram(GL::Program& prog, bool textured, bool blending, bool transparent, TextureColorMode texture_color_mode);
-
+  bool CompileProgram(GL::Program& prog, bool transparent, bool textured, TextureColorMode texture_color_mode,
+                      bool blending);
   void SetDrawState();
 
   // downsample texture - used for readbacks at >1xIR.
@@ -74,7 +74,7 @@ private:
   bool m_last_transparency_enable = false;
   TransparencyMode m_last_transparency_mode = TransparencyMode::BackgroundMinusForeground;
 
-  std::array<std::array<std::array<std::array<GL::Program, 3>, 2>, 2>, 2> m_render_programs;
+  std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 2> m_render_programs;
   std::array<GL::Program, 3> m_texture_page_programs;
 
   GLStats m_stats = {};

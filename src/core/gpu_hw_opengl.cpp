@@ -289,9 +289,9 @@ bool GPU_HW_OpenGL::CompilePrograms()
         for (u32 format = 0; format < 3; format++)
         {
           // TODO: eliminate duplicate shaders here
-          if (!CompileProgram(m_render_programs[textured][blending][transparent][format],
-                              ConvertToBoolUnchecked(textured), ConvertToBoolUnchecked(blending),
-                              ConvertToBoolUnchecked(transparent), static_cast<TextureColorMode>(format)))
+          if (!CompileProgram(m_render_programs[transparent][textured][format][blending],
+                              ConvertToBoolUnchecked(transparent), ConvertToBoolUnchecked(textured),
+                              static_cast<TextureColorMode>(format), ConvertToBoolUnchecked(blending)))
           {
             return false;
           }
@@ -303,11 +303,11 @@ bool GPU_HW_OpenGL::CompilePrograms()
   return true;
 }
 
-bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blending, bool transparent,
-                                   TextureColorMode texture_color_mode)
+bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool transparent, bool textured,
+                                   TextureColorMode texture_color_mode, bool blending)
 {
   const std::string vs = GenerateVertexShader(textured);
-  const std::string fs = GenerateFragmentShader(textured, blending, transparent, texture_color_mode);
+  const std::string fs = GenerateFragmentShader(transparent, textured, texture_color_mode, blending);
   if (!prog.Compile(vs.c_str(), fs.c_str()))
     return false;
 
@@ -342,8 +342,8 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool textured, bool blendi
 void GPU_HW_OpenGL::SetDrawState()
 {
   const GL::Program& prog =
-    m_render_programs[BoolToUInt32(m_batch.texture_enable)][BoolToUInt32(m_batch.texture_blending_enable)]
-                     [BoolToUInt32(m_batch.transparency_enable)][static_cast<u32>(m_batch.texture_color_mode)];
+    m_render_programs[BoolToUInt32(m_batch.transparency_enable)][BoolToUInt32(m_batch.texture_enable)]
+                     [static_cast<u32>(m_batch.texture_color_mode)][BoolToUInt32(m_batch.texture_blending_enable)];
   prog.Bind();
 
   prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);

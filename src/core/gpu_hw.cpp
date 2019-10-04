@@ -237,18 +237,19 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateFragmentShader(bool textured, bool blending, bool transparent,
-                                           TextureColorMode texture_color_mode)
+std::string GPU_HW::GenerateFragmentShader(bool transparent, bool textured, TextureColorMode texture_color_mode,
+                                           bool blending)
 {
   std::stringstream ss;
   GenerateShaderHeader(ss);
+  DefineMacro(ss, "TRANSPARENT", transparent);
   DefineMacro(ss, "TEXTURED", textured);
-  DefineMacro(ss, "BLENDING", blending);
   DefineMacro(ss, "PALETTE",
               textured && (texture_color_mode == GPU::TextureColorMode::Palette4Bit ||
                            texture_color_mode == GPU::TextureColorMode::Palette8Bit));
   DefineMacro(ss, "PALETTE_4_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette4Bit);
   DefineMacro(ss, "PALETTE_8_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette8Bit);
+  DefineMacro(ss, "BLENDING", blending);
 
   ss << R"(
 in vec3 v_col0;

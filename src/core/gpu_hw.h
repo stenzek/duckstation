@@ -84,8 +84,8 @@ protected:
   }
 
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(bool textured, bool blending, bool transparent,
-                                     TextureColorMode texture_color_mode);
+  std::string GenerateFragmentShader(bool transparent, bool textured, TextureColorMode texture_color_mode,
+                                     bool blending);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
 
