@@ -22,7 +22,7 @@ bool HostInterface::InitializeSystem(const char* filename, const char* exp1_file
   if (filename)
   {
     const StaticString filename_str(filename);
-    if (filename_str.EndsWith(".psxexe", false) || filename_str.EndsWith(".exe", false))
+    if (filename_str.EndsWith(".psexe", false) || filename_str.EndsWith(".exe", false))
     {
       Log_InfoPrintf("Sideloading EXE file '%s'", filename);
       if (!m_system->LoadEXE(filename))
