@@ -61,14 +61,6 @@ public:
   void Execute(TickCount ticks);
 
 protected:
-  static constexpr s32 S11ToS32(u32 value)
-  {
-    if (value & (UINT16_C(1) << 10))
-      return static_cast<s32>(UINT32_C(0xFFFFF800) | value);
-    else
-      return value;
-  }
-
   // Helper/format conversion functions.
   static constexpr u32 RGBA5551ToRGBA8888(u16 color)
   {
@@ -164,11 +156,8 @@ protected:
   {
     u32 bits;
 
-    BitField<u32, u32, 0, 11> x_s11;
-    BitField<u32, u32, 16, 11> y_s11;
-
-    s32 x() const { return S11ToS32(x_s11); }
-    s32 y() const { return S11ToS32(y_s11); }
+    BitField<u32, s32, 0, 11> x;
+    BitField<u32, s32, 16, 11> y;
   };
 
   struct DebugOptions

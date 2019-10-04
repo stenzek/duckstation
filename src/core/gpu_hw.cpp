@@ -41,8 +41,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
         hw_vert.color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
 
         const VertexPosition vp{m_GP0_command[buffer_pos++]};
-        hw_vert.x = vp.x();
-        hw_vert.y = vp.y();
+        hw_vert.x = vp.x;
+        hw_vert.y = vp.y;
         hw_vert.texpage = texpage;
 
         if (textured)
@@ -73,8 +73,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       const bool textured = rc.texture_enable;
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{m_GP0_command[buffer_pos++]};
-      const s32 pos_left = vp.x();
-      const s32 pos_top = vp.y();
+      const s32 pos_left = vp.x;
+      const s32 pos_top = vp.y;
       const auto [tex_left, tex_top] =
         HWVertex::DecodeTexcoord(rc.texture_enable ? Truncate16(m_GP0_command[buffer_pos++]) : 0);
       s32 rectangle_width;
@@ -128,7 +128,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       {
         const u32 color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{m_GP0_command[buffer_pos++]};
-        m_batch.vertices.push_back(HWVertex{vp.x(), vp.y(), color});
+        m_batch.vertices.push_back(HWVertex{vp.x.GetValue(), vp.y.GetValue(), color});
       }
     }
     break;
