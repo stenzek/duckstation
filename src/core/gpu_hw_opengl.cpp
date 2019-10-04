@@ -68,9 +68,9 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glBindVertexArray(m_vao_id);
 }
 
-void GPU_HW_OpenGL::RenderStatistics()
+void GPU_HW_OpenGL::DrawStatistics()
 {
-  GPU_HW::RenderStatistics();
+  GPU_HW::DrawStatistics();
 
   ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_Once);
 

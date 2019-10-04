@@ -19,7 +19,7 @@ public:
   void ResetGraphicsAPIState() override;
   void RestoreGraphicsAPIState() override;
 
-  void RenderStatistics() override;
+  void DrawStatistics() override;
   void UpdateSettings() override;
 
 protected:

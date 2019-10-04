@@ -50,7 +50,7 @@ private:
 
   // We only pass mouse input through if it's grabbed
   bool IsWindowFullscreen() const;
-  void RenderImGui();
+  void DrawImGui();
   void DoLoadState(u32 index);
   void DoSaveState(u32 index);
 
@@ -58,8 +58,8 @@ private:
   bool PassEventToImGui(const SDL_Event* event);
   void Render();
   void RenderDisplay();
-  void RenderMainMenuBar();
-  void RenderOSDMessages();
+  void DrawMainMenuBar();
+  void DrawOSDMessages();
 
   SDL_Window* m_window = nullptr;
   SDL_GLContext m_gl_context = nullptr;

@@ -139,9 +139,9 @@ void GPU::ResetGraphicsAPIState() {}
 
 void GPU::RestoreGraphicsAPIState() {}
 
-void GPU::RenderStatistics() {}
+void GPU::DrawStatistics() {}
 
-void GPU::RenderDebugMenu()
+void GPU::DrawDebugMenu()
 {
   ImGui::MenuItem("Show VRAM", nullptr, &m_debug_options.show_vram);
   ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &m_debug_options.dump_cpu_to_vram_copies);

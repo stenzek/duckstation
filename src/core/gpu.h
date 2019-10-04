@@ -40,10 +40,10 @@ public:
   virtual void RestoreGraphicsAPIState();
 
   // Render statistics debug window.
-  virtual void RenderStatistics();
+  virtual void DrawStatistics();
 
   // Manipulating debug options.
-  virtual void RenderDebugMenu();
+  virtual void DrawDebugMenu();
 
   // Called when settings change.
   virtual void UpdateSettings();

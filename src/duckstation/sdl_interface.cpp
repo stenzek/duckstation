@@ -388,6 +388,8 @@ bool SDLInterface::PassEventToImGui(const SDL_Event* event)
 
 void SDLInterface::Render()
 {
+  DrawImGui();
+
   m_system->GetGPU()->ResetGraphicsAPIState();
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -395,8 +397,6 @@ void SDLInterface::Render()
   glClear(GL_COLOR_BUFFER_BIT);
 
   RenderDisplay();
-
-  RenderImGui();
 
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -459,19 +459,19 @@ void SDLInterface::RenderDisplay()
   glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void SDLInterface::RenderImGui()
+void SDLInterface::DrawImGui()
 {
-  RenderMainMenuBar();
+  DrawMainMenuBar();
 
   if (m_show_gpu_statistics)
-    m_system->GetGPU()->RenderStatistics();
+    m_system->GetGPU()->DrawStatistics();
 
-  RenderOSDMessages();
+  DrawOSDMessages();
 
   ImGui::Render();
 }
 
-void SDLInterface::RenderMainMenuBar()
+void SDLInterface::DrawMainMenuBar()
 {
   if (!ImGui::BeginMainMenuBar())
     return;
@@ -555,7 +555,7 @@ void SDLInterface::RenderMainMenuBar()
       ImGui::MenuItem("Show Statistics", nullptr, &m_show_gpu_statistics);
       ImGui::Separator();
 
-      m_system->GetGPU()->RenderDebugMenu();
+      m_system->GetGPU()->DrawDebugMenu();
       ImGui::EndMenu();
     }
 
@@ -603,7 +603,7 @@ void SDLInterface::SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 off
   m_display_texture_changed = true;
 }
 
-void SDLInterface::RenderOSDMessages()
+void SDLInterface::DrawOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
                                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
