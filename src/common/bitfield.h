@@ -112,11 +112,19 @@ struct BitField
 
   DataType GetValue() const
   {
-    // TODO: Handle signed types
-    if (std::is_same<DataType, bool>::value)
+    if constexpr (std::is_same_v<DataType, bool>)
+    {
       return static_cast<DataType>(!!((data & GetMask()) >> BitIndex));
+    }
+    else if constexpr (std::is_signed_v<DataType>)
+    {
+      constexpr int shift = 8 * sizeof(DataType) - BitCount;
+      return (static_cast<DataType>((data & GetMask()) >> BitIndex) << shift) >> shift;
+    }
     else
+    {
       return static_cast<DataType>((data & GetMask()) >> BitIndex);
+    }
   }
 
   void SetValue(DataType value)
