@@ -71,6 +71,7 @@ private:
   void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm);
 
   void RTPS(const s16 V[3], bool sf, bool lm, bool last);
+  void NCS(const s16 V[3], u8 shift, bool lm);
   void NCCS(const s16 V[3], u8 shift, bool lm);
   void NCDS(const s16 V[3], u8 shift, bool lm);
   void DPCS(const u8 color[3], u8 shift, bool lm);
@@ -81,6 +82,8 @@ private:
   void Execute_SQR(Instruction inst);
   void Execute_AVSZ3(Instruction inst);
   void Execute_AVSZ4(Instruction inst);
+  void Execute_NCS(Instruction inst);
+  void Execute_NCT(Instruction inst);
   void Execute_NCCS(Instruction inst);
   void Execute_NCCT(Instruction inst);
   void Execute_NCDS(Instruction inst);

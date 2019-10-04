@@ -294,6 +294,14 @@ void Core::ExecuteInstruction(Instruction inst)
       Execute_NCCS(inst);
       break;
 
+    case 0x1E:
+      Execute_NCS(inst);
+      break;
+
+    case 0x20:
+      Execute_NCT(inst);
+      break;
+
     case 0x28:
       Execute_SQR(inst);
       break;
@@ -597,6 +605,41 @@ void Core::InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, boo
   TruncateAndSetMACAndIR<1>(s64(s32(m_regs.IR1) * s32(m_regs.IR0)) + in_MAC1, shift, lm);
   TruncateAndSetMACAndIR<2>(s64(s32(m_regs.IR2) * s32(m_regs.IR0)) + in_MAC2, shift, lm);
   TruncateAndSetMACAndIR<3>(s64(s32(m_regs.IR3) * s32(m_regs.IR0)) + in_MAC3, shift, lm);
+}
+
+void Core::NCS(const s16 V[3], u8 shift, bool lm)
+{
+  // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
+  MulMatVec(m_regs.LLM, V[0], V[1], V[2], shift, lm);
+
+  // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
+  MulMatVec(m_regs.LCM, m_regs.BK, m_regs.IR1, m_regs.IR2, m_regs.IR3, shift, lm);
+
+  // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  PushRGBFromMAC();
+}
+
+void Core::Execute_NCS(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  NCS(m_regs.V0, inst.GetShift(), inst.lm);
+
+  m_regs.FLAG.UpdateError();
+}
+
+void Core::Execute_NCT(Instruction inst)
+{
+  m_regs.FLAG.Clear();
+
+  const u8 shift = inst.GetShift();
+  const bool lm = inst.lm;
+
+  NCS(m_regs.V0, shift, lm);
+  NCS(m_regs.V1, shift, lm);
+  NCS(m_regs.V2, shift, lm);
+
+  m_regs.FLAG.UpdateError();
 }
 
 void Core::NCCS(const s16 V[3], u8 shift, bool lm)
