@@ -95,12 +95,16 @@ void Core::SetPC(u32 new_pc)
 bool Core::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
 {
   u32 temp = 0;
-  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
   *value = Truncate8(temp);
-  if (!result)
+  if (cycles < 0)
+  {
     RaiseException(Exception::DBE);
+    return false;
+  }
 
-  return result;
+  AddTicks(cycles - 1);
+  return true;
 }
 
 bool Core::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
@@ -109,12 +113,16 @@ bool Core::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
     return false;
 
   u32 temp = 0;
-  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
   *value = Truncate16(temp);
-  if (!result)
+  if (cycles < 0)
+  {
     RaiseException(Exception::DBE);
+    return false;
+  }
 
-  return result;
+  AddTicks(cycles - 1);
+  return true;
 }
 
 bool Core::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
@@ -122,21 +130,29 @@ bool Core::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
   if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
     return false;
 
-  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
-  if (!result)
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+  if (cycles < 0)
+  {
     RaiseException(Exception::DBE);
+    return false;
+  }
 
-  return result;
+  AddTicks(cycles - 1);
+  return true;
 }
 
 bool Core::WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 {
   u32 temp = ZeroExtend32(value);
-  const bool result = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
-  if (!result)
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
+  if (cycles < 0)
+  {
     RaiseException(Exception::DBE);
+    return false;
+  }
 
-  return result;
+  AddTicks(cycles - 1);
+  return true;
 }
 
 bool Core::WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
@@ -145,11 +161,15 @@ bool Core::WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
     return false;
 
   u32 temp = ZeroExtend32(value);
-  const bool result = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
-  if (!result)
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  if (cycles < 0)
+  {
     RaiseException(Exception::DBE);
+    return false;
+  }
 
-  return result;
+  AddTicks(cycles - 1);
+  return cycles;
 }
 
 bool Core::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
@@ -157,49 +177,53 @@ bool Core::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
     return false;
 
-  const bool result = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
-  if (!result)
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+  if (cycles < 0)
+  {
     RaiseException(Exception::DBE);
+    return false;
+  }
 
-  return result;
+  AddTicks(cycles - 1);
+  return true;
 }
 
 bool Core::SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
 {
   u32 temp = 0;
-  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
   *value = Truncate8(temp);
-  return result;
+  return (cycles >= 0);
 }
 
 bool Core::SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
 {
   u32 temp = 0;
-  const bool result = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
   *value = Truncate16(temp);
-  return result;
+  return (cycles >= 0);
 }
 
 bool Core::SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
 {
-  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value) >= 0;
 }
 
 bool Core::SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 {
   u32 temp = ZeroExtend32(value);
-  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp) >= 0;
 }
 
 bool Core::SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 {
   u32 temp = ZeroExtend32(value);
-  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp) >= 0;
 }
 
 bool Core::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
-  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value) >= 0;
 }
 
 void Core::Branch(u32 target)
@@ -235,10 +259,13 @@ void Core::RaiseException(Exception excode)
 
 void Core::RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
 {
-  Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
-                  m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
 #ifdef Y_BUILD_CONFIG_DEBUG
-  DisassembleAndPrint(m_current_instruction_pc, 4, 0);
+  if (excode != Exception::INT && excode != Exception::Syscall && excode != Exception::BP)
+  {
+    Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
+                    m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+    DisassembleAndPrint(m_current_instruction_pc, 4, 0);
+  }
 #endif
 
   m_cop0_regs.EPC = EPC;
@@ -499,8 +526,8 @@ void Core::Execute()
 {
   while (m_downcount >= 0)
   {
-    m_pending_ticks += 2;
-    m_downcount -= 2;
+    m_pending_ticks += 1;
+    m_downcount -= 1;
 
     // now executing the instruction we previously fetched
     m_current_instruction = m_next_instruction;
@@ -542,7 +569,7 @@ bool Core::FetchInstruction()
     RaiseException(Exception::AdEL, m_regs.npc, false, false, 0);
     return false;
   }
-  else if (!DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(m_regs.npc, m_next_instruction.bits))
+  else if (DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(m_regs.npc, m_next_instruction.bits) < 0)
   {
     // Bus errors don't set BadVaddr.
     RaiseException(Exception::IBE, m_regs.npc, false, false, 0);

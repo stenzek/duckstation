@@ -64,6 +64,11 @@ void Bus::Reset()
 
 bool Bus::DoState(StateWrapper& sw)
 {
+  sw.Do(&m_exp1_access_time);
+  sw.Do(&m_exp2_access_time);
+  sw.Do(&m_bios_access_time);
+  sw.Do(&m_cdrom_access_time);
+  sw.Do(&m_spu_access_time);
   sw.DoBytes(m_ram.data(), m_ram.size());
   sw.DoBytes(m_bios.data(), m_bios.size());
   sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
@@ -223,7 +228,7 @@ void Bus::RecalculateMemoryTimings()
                 m_spu_access_time[2]);
 }
 
-bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)
+TickCount Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)
 {
   SmallString str;
   str.AppendString("Invalid bus ");
@@ -247,13 +252,16 @@ bool Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, Physical
   if (type == MemoryAccessType::Read)
     value = UINT32_C(0xFFFFFFFF);
 
-  return true;
+  return 1;
 }
 
-bool Bus::DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadEXP1(MemoryAccessSize size, u32 offset)
 {
   if (m_exp1_rom.empty())
-    return DoInvalidAccess(MemoryAccessType::Read, size, EXP1_BASE | offset, value);
+  {
+    // EXP1 not present.
+    return UINT32_C(0xFFFFFFFF);
+  }
 
   if (offset == 0x20018)
   {
@@ -264,10 +272,10 @@ bool Bus::DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value)
   const u32 transfer_size = u32(1) << static_cast<u32>(size);
   if ((offset + transfer_size) > m_exp1_rom.size())
   {
-    value = UINT32_C(0);
-    return true;
+    return UINT32_C(0);
   }
 
+  u32 value;
   if (size == MemoryAccessSize::Byte)
   {
     value = ZeroExtend32(m_exp1_rom[offset]);
@@ -284,36 +292,32 @@ bool Bus::DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value)
   }
 
   // Log_DevPrintf("EXP1 read: 0x%08X -> 0x%08X", EXP1_BASE | offset, value);
-  return true;
+  return value;
 }
 
-bool Bus::DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value)
 {
-  return DoInvalidAccess(MemoryAccessType::Write, size, EXP1_BASE | offset, value);
+  Log_WarningPrintf("EXP1 write: 0x%08X <- 0x%08X", EXP1_BASE | offset, value);
 }
 
-bool Bus::DoReadEXP2(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadEXP2(MemoryAccessSize size, u32 offset)
 {
-  offset &= EXP2_MASK;
-
   // rx/tx buffer empty
   if (offset == 0x21)
   {
-    value = 0x04 | 0x08;
-    return true;
+    return 0x04 | 0x08;
   }
 
-  return DoInvalidAccess(MemoryAccessType::Read, size, EXP2_BASE | offset, value);
+  Log_WarningPrintf("EXP2 read: 0x%08X", EXP2_BASE | offset);
+  return UINT32_C(0xFFFFFFFF);
 }
 
-bool Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
 {
-  offset &= EXP2_MASK;
-
   if (offset == 0x23)
   {
     if (value == '\r')
-      return true;
+      return;
 
     if (value == '\n')
     {
@@ -326,26 +330,26 @@ bool Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
       m_tty_line_buffer.AppendCharacter(Truncate8(value));
     }
 
-    return true;
+    return;
   }
 
   if (offset == 0x41)
   {
     Log_WarningPrintf("BIOS POST status: %02X", value & UINT32_C(0x0F));
-    return true;
+    return;
   }
 
-  return DoInvalidAccess(MemoryAccessType::Write, size, EXP2_BASE | offset, value);
+  Log_WarningPrintf("EXP2 write: 0x%08X <- 0x%08X", EXP2_BASE | offset, value);
 }
 
-bool Bus::DoReadMemoryControl(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadMemoryControl(MemoryAccessSize size, u32 offset)
 {
+  u32 value = m_MEMCTRL.regs[offset / 4];
   FixupUnalignedWordAccessW32(offset, value);
-  value = m_MEMCTRL.regs[offset / 4];
-  return true;
+  return value;
 }
 
-bool Bus::DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
 
@@ -357,165 +361,151 @@ bool Bus::DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value)
     m_MEMCTRL.regs[index] = new_value;
     RecalculateMemoryTimings();
   }
-
-  return true;
 }
 
-bool Bus::DoReadMemoryControl2(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadMemoryControl2(MemoryAccessSize size, u32 offset)
 {
   if (offset == 0x00)
-  {
-    value = m_ram_size_reg;
-    return true;
-  }
+    return m_ram_size_reg;
 
-  return DoInvalidAccess(MemoryAccessType::Read, size, MEMCTRL2_BASE | offset, value);
+  u32 value = 0;
+  DoInvalidAccess(MemoryAccessType::Read, size, MEMCTRL2_BASE | offset, value);
+  return value;
 }
 
-bool Bus::DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value)
 {
   if (offset == 0x00)
   {
     m_ram_size_reg = value;
-    return true;
+    return;
   }
 
-  return DoInvalidAccess(MemoryAccessType::Write, size, MEMCTRL2_BASE | offset, value);
+  DoInvalidAccess(MemoryAccessType::Write, size, MEMCTRL2_BASE | offset, value);
 }
 
-bool Bus::DoReadPad(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadPad(MemoryAccessSize size, u32 offset)
 {
-  value = m_pad->ReadRegister(offset);
-  return true;
+  return m_pad->ReadRegister(offset);
 }
 
-bool Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
 {
   m_pad->WriteRegister(offset, value);
-  return true;
 }
 
-bool Bus::DoReadSIO(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadSIO(MemoryAccessSize size, u32 offset)
 {
   Log_ErrorPrintf("SIO Read 0x%08X", offset);
-  value = 0;
   if (offset == 0x04)
-    value = 0x5;
-
-  return true;
+    return 0x5;
+  else
+    return 0;
 }
 
-bool Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
 {
   Log_ErrorPrintf("SIO Write 0x%08X <- 0x%08X", offset, value);
-  return true;
 }
 
-bool Bus::DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadCDROM(MemoryAccessSize size, u32 offset)
 {
   // TODO: Splitting of half/word reads.
   Assert(size == MemoryAccessSize::Byte);
-  value = ZeroExtend32(m_cdrom->ReadRegister(offset));
-  return true;
+  return ZeroExtend32(m_cdrom->ReadRegister(offset));
 }
 
-bool Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
 {
   // TODO: Splitting of half/word reads.
   Assert(size == MemoryAccessSize::Byte);
   m_cdrom->WriteRegister(offset, Truncate8(value));
-  return true;
 }
 
-bool Bus::DoReadGPU(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadGPU(MemoryAccessSize size, u32 offset)
 {
   Assert(size == MemoryAccessSize::Word);
-  value = m_gpu->ReadRegister(offset);
-  return true;
+  return m_gpu->ReadRegister(offset);
 }
 
-bool Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
 {
   Assert(size == MemoryAccessSize::Word);
   m_gpu->WriteRegister(offset, value);
-  return true;
 }
 
-bool Bus::DoReadMDEC(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadMDEC(MemoryAccessSize size, u32 offset)
 {
   Assert(size == MemoryAccessSize::Word);
-  value = m_mdec->ReadRegister(offset);
-  return true;
+  return m_mdec->ReadRegister(offset);
 }
 
-bool Bus::DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value)
 {
   Assert(size == MemoryAccessSize::Word);
   m_mdec->WriteRegister(offset, value);
-  return true;
 }
 
-bool Bus::DoReadInterruptController(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadInterruptController(MemoryAccessSize size, u32 offset)
 {
+  u32 value = m_interrupt_controller->ReadRegister(offset);
   FixupUnalignedWordAccessW32(offset, value);
-  value = m_interrupt_controller->ReadRegister(offset);
-  return true;
+  return value;
 }
 
-bool Bus::DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
   m_interrupt_controller->WriteRegister(offset, value);
-  return true;
 }
 
-bool Bus::DoReadTimers(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadTimers(MemoryAccessSize size, u32 offset)
 {
+  u32 value = m_timers->ReadRegister(offset);
   FixupUnalignedWordAccessW32(offset, value);
-  value = m_timers->ReadRegister(offset);
-  return true;
+  return value;
 }
 
-bool Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
   m_timers->WriteRegister(offset, value);
-  return true;
 }
 
-bool Bus::DoReadSPU(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadSPU(MemoryAccessSize size, u32 offset)
 {
-  // 32-bit reads are read as two 16-bit writes.
+  // 32-bit reads are read as two 16-bit accesses.
   if (size == MemoryAccessSize::Word)
   {
     const u16 lsb = m_spu->ReadRegister(offset);
     const u16 msb = m_spu->ReadRegister(offset + 2);
-    value = ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
+    return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
   }
   else
   {
-    value = ZeroExtend32(m_spu->ReadRegister(offset));
+    return ZeroExtend32(m_spu->ReadRegister(offset));
   }
-
-  return true;
 }
 
-bool Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 {
   // 32-bit writes are written as two 16-bit writes.
+  // TODO: Ignore if address is not aligned.
   if (size == MemoryAccessSize::Word)
   {
+    Assert(Common::IsAlignedPow2(offset, 2));
     m_spu->WriteRegister(offset, Truncate16(value));
     m_spu->WriteRegister(offset + 2, Truncate16(value >> 16));
-    return true;
+    return;
   }
 
+  Assert(Common::IsAlignedPow2(offset, 2));
   m_spu->WriteRegister(offset, Truncate16(value));
-  return true;
 }
 
-bool Bus::DoReadDMA(MemoryAccessSize size, u32 offset, u32& value)
+u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)
 {
+  u32 value = m_dma->ReadRegister(offset);
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -529,11 +519,10 @@ bool Bus::DoReadDMA(MemoryAccessSize size, u32 offset, u32& value)
       break;
   }
 
-  value = m_dma->ReadRegister(offset);
-  return true;
+  return value;
 }
 
-bool Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
+void Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
 {
   switch (size)
   {
@@ -552,5 +541,4 @@ bool Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
   }
 
   m_dma->WriteRegister(offset, value);
-  return true;
 }

@@ -2,7 +2,7 @@
 #include "bus.h"
 
 template<MemoryAccessType type, MemoryAccessSize size>
-bool Bus::DoRAMAccess(u32 offset, u32& value)
+TickCount Bus::DoRAMAccess(u32 offset, u32& value)
 {
   // TODO: Configurable mirroring.
   offset &= UINT32_C(0x1FFFFF);
@@ -40,11 +40,12 @@ bool Bus::DoRAMAccess(u32 offset, u32& value)
     }
   }
 
-  return true;
+  // Nocash docs say RAM takes 6 cycles to access.
+  return RAM_ACCESS_DELAY;
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
-bool Bus::DoBIOSAccess(u32 offset, u32& value)
+TickCount Bus::DoBIOSAccess(u32 offset, u32& value)
 {
   // TODO: Configurable mirroring.
   if constexpr (type == MemoryAccessType::Read)
@@ -70,11 +71,11 @@ bool Bus::DoBIOSAccess(u32 offset, u32& value)
     // Writes are ignored.
   }
 
-  return true;
+  return m_bios_access_time[static_cast<u32>(size)];
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
-bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
+TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
 {
   if (address < 0x800000)
   {
@@ -86,8 +87,12 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   }
   else if (address < (EXP1_BASE + EXP1_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadEXP1(size, address & EXP1_MASK, value) :
-                                              DoWriteEXP1(size, address & EXP1_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadEXP1(size, address & EXP1_MASK);
+    else
+      DoWriteEXP1(size, address & EXP1_MASK, value);
+
+    return m_exp1_access_time[static_cast<u32>(size)];
   }
   else if (address < MEMCTRL_BASE)
   {
@@ -95,39 +100,66 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   }
   else if (address < (MEMCTRL_BASE + MEMCTRL_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadMemoryControl(size, address & PAD_MASK, value) :
-                                              DoWriteMemoryControl(size, address & PAD_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadMemoryControl(size, address & PAD_MASK);
+    else
+      DoWriteMemoryControl(size, address & PAD_MASK, value);
+
+    return 1;
   }
   else if (address < (PAD_BASE + PAD_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadPad(size, address & PAD_MASK, value) :
-                                              DoWritePad(size, address & PAD_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadPad(size, address & PAD_MASK);
+    else
+      DoWritePad(size, address & PAD_MASK, value);
+
+    return 1;
   }
   else if (address < (SIO_BASE + SIO_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadSIO(size, address & SIO_MASK, value) :
-                                              DoWriteSIO(size, address & SIO_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadSIO(size, address & SIO_MASK);
+    else
+      DoWriteSIO(size, address & SIO_MASK, value);
+
+    return 1;
   }
   else if (address < (MEMCTRL2_BASE + MEMCTRL2_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadMemoryControl2(size, address & PAD_MASK, value) :
-                                              DoWriteMemoryControl2(size, address & PAD_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadMemoryControl2(size, address & PAD_MASK);
+    else
+      DoWriteMemoryControl2(size, address & PAD_MASK, value);
+
+    return 1;
   }
   else if (address < (INTERRUPT_CONTROLLER_BASE + INTERRUPT_CONTROLLER_SIZE))
   {
-    return (type == MemoryAccessType::Read) ?
-             DoReadInterruptController(size, address & INTERRUPT_CONTROLLER_MASK, value) :
-             DoWriteInterruptController(size, address & INTERRUPT_CONTROLLER_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadInterruptController(size, address & INTERRUPT_CONTROLLER_MASK);
+    else
+      DoWriteInterruptController(size, address & INTERRUPT_CONTROLLER_MASK, value);
+
+    return 1;
   }
   else if (address < (DMA_BASE + DMA_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadDMA(size, address & DMA_MASK, value) :
-                                              DoWriteDMA(size, address & DMA_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadDMA(size, address & DMA_MASK);
+    else
+      DoWriteDMA(size, address & DMA_MASK, value);
+
+    return 1;
   }
   else if (address < (TIMERS_BASE + TIMERS_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadTimers(size, address & TIMERS_MASK, value) :
-                                              DoWriteTimers(size, address & TIMERS_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadTimers(size, address & TIMERS_MASK);
+    else
+      DoWriteTimers(size, address & TIMERS_MASK, value);
+
+    return 1;
   }
   else if (address < CDROM_BASE)
   {
@@ -135,18 +167,30 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   }
   else if (address < (CDROM_BASE + GPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadCDROM(size, address & CDROM_MASK, value) :
-                                              DoWriteCDROM(size, address & CDROM_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadCDROM(size, address & CDROM_MASK);
+    else
+      DoWriteCDROM(size, address & CDROM_MASK, value);
+
+    return m_cdrom_access_time[static_cast<u32>(size)];
   }
   else if (address < (GPU_BASE + GPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadGPU(size, address & GPU_MASK, value) :
-                                              DoWriteGPU(size, address & GPU_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadGPU(size, address & GPU_MASK);
+    else
+      DoWriteGPU(size, address & GPU_MASK, value);
+
+    return 1;
   }
   else if (address < (MDEC_BASE + MDEC_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadMDEC(size, address & MDEC_MASK, value) :
-                                              DoWriteMDEC(size, address & MDEC_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadMDEC(size, address & MDEC_MASK);
+    else
+      DoWriteMDEC(size, address & MDEC_MASK, value);
+
+    return 1;
   }
   else if (address < SPU_BASE)
   {
@@ -154,8 +198,12 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   }
   else if (address < (SPU_BASE + SPU_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadSPU(size, address & SPU_MASK, value) :
-                                              DoWriteSPU(size, address & SPU_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadSPU(size, address & SPU_MASK);
+    else
+      DoWriteSPU(size, address & SPU_MASK, value);
+
+    return m_spu_access_time[static_cast<u32>(size)];
   }
   else if (address < EXP2_BASE)
   {
@@ -163,8 +211,12 @@ bool Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   }
   else if (address < (EXP2_BASE + EXP2_SIZE))
   {
-    return (type == MemoryAccessType::Read) ? DoReadEXP2(size, address & EXP2_MASK, value) :
-                                              DoWriteEXP2(size, address & EXP2_MASK, value);
+    if constexpr (type == MemoryAccessType::Read)
+      value = DoReadEXP2(size, address & EXP2_MASK);
+    else
+      DoWriteEXP2(size, address & EXP2_MASK, value);
+
+    return m_exp2_access_time[static_cast<u32>(size)];
   }
   else if (address < BIOS_BASE)
   {

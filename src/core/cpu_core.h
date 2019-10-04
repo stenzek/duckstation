@@ -56,7 +56,7 @@ public:
 
 private:
   template<MemoryAccessType type, MemoryAccessSize size>
-  bool DoMemoryAccess(VirtualMemoryAddress address, u32& value);
+  TickCount DoMemoryAccess(VirtualMemoryAddress address, u32& value);
 
   template<MemoryAccessType type, MemoryAccessSize size>
   bool DoAlignmentCheck(VirtualMemoryAddress address);
@@ -74,6 +74,13 @@ private:
   // state helpers
   bool InUserMode() const { return m_cop0_regs.sr.KUc; }
   bool InKernelMode() const { return !m_cop0_regs.sr.KUc; }
+
+  // timing
+  void AddTicks(TickCount ticks)
+  {
+    m_pending_ticks += ticks;
+    m_downcount -= ticks;
+  }
 
   void DisassembleAndPrint(u32 addr);
   void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_after);

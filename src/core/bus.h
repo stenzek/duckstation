@@ -40,7 +40,7 @@ public:
   bool WriteWord(PhysicalMemoryAddress address, u32 value);
 
   template<MemoryAccessType type, MemoryAccessSize size>
-  bool DispatchAccess(PhysicalMemoryAddress address, u32& value);
+  TickCount DispatchAccess(PhysicalMemoryAddress address, u32& value);
 
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
   void SetExpansionROM(std::vector<u8> data);
@@ -93,6 +93,7 @@ private:
 
   enum : u32
   {
+    RAM_ACCESS_DELAY = 6,     // Nocash docs say RAM takes 6 cycles to access.
     MEMCTRL_REG_COUNT = 9
   };
 
@@ -148,51 +149,51 @@ private:
   void RecalculateMemoryTimings();
 
   template<MemoryAccessType type, MemoryAccessSize size>
-  bool DoRAMAccess(u32 offset, u32& value);
+  TickCount DoRAMAccess(u32 offset, u32& value);
 
   template<MemoryAccessType type, MemoryAccessSize size>
-  bool DoBIOSAccess(u32 offset, u32& value);
+  TickCount DoBIOSAccess(u32 offset, u32& value);
 
-  bool DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value);
+  TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value);
 
-  bool DoReadEXP1(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadEXP1(MemoryAccessSize size, u32 offset);
+  void DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadEXP2(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadEXP2(MemoryAccessSize size, u32 offset);
+  void DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadMemoryControl(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadMemoryControl(MemoryAccessSize size, u32 offset);
+  void DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadMemoryControl2(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadMemoryControl2(MemoryAccessSize size, u32 offset);
+  void DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadPad(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWritePad(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadPad(MemoryAccessSize size, u32 offset);
+  void DoWritePad(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadSIO(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadSIO(MemoryAccessSize size, u32 offset);
+  void DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadCDROM(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadCDROM(MemoryAccessSize size, u32 offset);
+  void DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadGPU(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadGPU(MemoryAccessSize size, u32 offset);
+  void DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadMDEC(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadMDEC(MemoryAccessSize size, u32 offset);
+  void DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadInterruptController(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadInterruptController(MemoryAccessSize size, u32 offset);
+  void DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadDMA(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadDMA(MemoryAccessSize size, u32 offset);
+  void DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadTimers(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadTimers(MemoryAccessSize size, u32 offset);
+  void DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value);
 
-  bool DoReadSPU(MemoryAccessSize size, u32 offset, u32& value);
-  bool DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value);
+  u32 DoReadSPU(MemoryAccessSize size, u32 offset);
+  void DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
   CPU::Core* m_cpu = nullptr;
   DMA* m_dma = nullptr;
@@ -204,6 +205,8 @@ private:
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
 
+  std::array<TickCount, 3> m_exp1_access_time = {};
+  std::array<TickCount, 3> m_exp2_access_time = {};
   std::array<TickCount, 3> m_bios_access_time = {};
   std::array<TickCount, 3> m_cdrom_access_time = {};
   std::array<TickCount, 3> m_spu_access_time = {};

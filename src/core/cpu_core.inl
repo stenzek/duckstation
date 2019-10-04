@@ -6,7 +6,7 @@
 namespace CPU {
 
 template<MemoryAccessType type, MemoryAccessSize size>
-bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
+TickCount Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
 {
   switch (address >> 29)
   {
@@ -15,23 +15,17 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       if constexpr (type == MemoryAccessType::Write)
       {
         if (m_cop0_regs.sr.Isc)
-          return true;
+          return 1;
       }
 
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
       if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
       {
         DoScratchpadAccess<type, size>(phys_addr, value);
-        return true;
+        return 1;
       }
 
-      if (!m_bus->DispatchAccess<type, size>(phys_addr, value))
-      {
-        Panic("Bus error");
-        return false;
-      }
-
-      return true;
+      return m_bus->DispatchAccess<type, size>(phys_addr, value);
     }
 
     case 0x01: // KUSEG 512M-1024M
@@ -39,7 +33,7 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
     case 0x03: // KUSEG 1536M-2048M
     {
       // Above 512mb raises an exception.
-      return false;
+      return -1;
     }
 
     case 0x04: // KSEG0 - physical memory cached
@@ -47,36 +41,24 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       if constexpr (type == MemoryAccessType::Write)
       {
         if (m_cop0_regs.sr.Isc)
-          return true;
+          return 1;
       }
 
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
       if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
       {
         DoScratchpadAccess<type, size>(phys_addr, value);
-        return true;
+        return 1;
       }
 
-      if (!m_bus->DispatchAccess<type, size>(phys_addr, value))
-      {
-        Panic("Bus error");
-        return false;
-      }
-
-      return true;
+      return m_bus->DispatchAccess<type, size>(phys_addr, value);
     }
     break;
 
     case 0x05: // KSEG1 - physical memory uncached
     {
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
-      if (!m_bus->DispatchAccess<type, size>(phys_addr, value))
-      {
-        Panic("Bus error");
-        return false;
-      }
-
-      return true;
+      return m_bus->DispatchAccess<type, size>(phys_addr, value);
     }
     break;
 
@@ -90,11 +72,11 @@ bool Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
         else
           WriteCacheControl(value);
 
-        return true;
+        return 1;
       }
       else
       {
-        return false;
+        return -1;
       }
     }
 
