@@ -16,6 +16,9 @@
 #include <cstdio>
 Log_SetChannel(Bus);
 
+#define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
+#define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset) & u32(3)) * 8))
+
 // Offset and value remapping for (w32) registers from nocash docs.
 void FixupUnalignedWordAccessW32(u32& offset, u32& value)
 {
@@ -505,21 +508,7 @@ void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)
 {
-  u32 value = m_dma->ReadRegister(offset);
-  switch (size)
-  {
-    case MemoryAccessSize::Byte:
-    case MemoryAccessSize::HalfWord:
-    {
-      if ((offset & u32(0xF0)) >= 7 || (offset & u32(0x0F)) != 0x4)
-        FixupUnalignedWordAccessW32(offset, value);
-    }
-
-    default:
-      break;
-  }
-
-  return value;
+  return FIXUP_WORD_READ_VALUE(offset, m_dma->ReadRegister(FIXUP_WORD_READ_OFFSET(offset)));
 }
 
 void Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
