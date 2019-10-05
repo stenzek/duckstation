@@ -240,6 +240,7 @@ protected:
     static constexpr u16 PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK = UINT16_C(0b0000000000011111);
     static constexpr u16 PAGE_ATTRIBUTE_MASK = UINT16_C(0b0000000111111111);
     static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
+    static constexpr u32 TEXTURE_WINDOW_MASK = UINT16_C(0b11111111111111111111);
 
     // decoded values
     u32 texture_page_x;
@@ -258,10 +259,12 @@ protected:
     // original values
     u16 texpage_attribute; // from register in rectangle modes/vertex in polygon modes
     u16 texlut_attribute;  // from vertex
+    u32 texture_window_value;
 
     bool texture_page_changed = false;
     bool texture_color_mode_changed = false;
     bool transparency_mode_changed = false;
+    bool texture_window_changed = false;
 
     bool IsChanged() const { return texture_page_changed || texture_color_mode_changed || transparency_mode_changed; }
 
@@ -274,11 +277,15 @@ protected:
     bool IsTransparencyModeChanged() const { return transparency_mode_changed; }
     void ClearTransparencyModeChangedFlag() { transparency_mode_changed = false; }
 
+    bool IsTextureWindowChanged() const { return texture_window_changed; }
+    void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
+
     void SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1);
     void SetFromRectangleTexcoord(u32 texcoord);
 
     void SetFromPageAttribute(u16 value);
     void SetFromPaletteAttribute(u16 value);
+    void SetTextureWindow(u32 value);
   } m_render_state = {};
 
   struct DrawingArea

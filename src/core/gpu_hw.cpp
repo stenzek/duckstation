@@ -46,9 +46,17 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
         hw_vert.texpage = texpage;
 
         if (textured)
+        {
           hw_vert.texcoord = Truncate16(m_GP0_command[buffer_pos++]);
+          // auto [u, v] = HWVertex::DecodeTexcoord(hw_vert.texcoord);
+          // u = (u & (~(m_render_state.texture_window_mask_x * 8))) | ((m_render_state.texture_window_offset_x &
+          // m_render_state.texture_window_mask_x) * 8); v = (v & (~(m_render_state.texture_window_mask_y * 8))) |
+          // ((m_render_state.texture_window_offset_y & m_render_state.texture_window_mask_y) * 8);
+        }
         else
+        {
           hw_vert.texcoord = 0;
+        }
 
         hw_vert.padding = 0;
 
@@ -258,15 +266,24 @@ uniform vec2 u_transparent_alpha;
   in vec2 v_tex0;
   flat in ivec4 v_texpage;
   uniform sampler2D samp0;
+  uniform uvec4 u_texture_window;
 #endif
 
 out vec4 o_col0;
 
 #if TEXTURED
+ivec2 ApplyTextureWindow(ivec2 coords)
+{
+  uint x = (uint(coords.x) & ~(u_texture_window.x * 8u)) | ((u_texture_window.z & u_texture_window.x) * 8u);
+  uint y = (uint(coords.y) & ~(u_texture_window.y * 8u)) | ((u_texture_window.w & u_texture_window.y) * 8u);
+  return ivec2(int(x), int(y));
+}  
+
 vec4 SampleFromVRAM(vec2 coord)
 {
   // from 0..1 to 0..255
   ivec2 icoord = ivec2(coord * vec2(255.0));
+  icoord = ApplyTextureWindow(icoord);
 
   // adjust for tightly packed palette formats
   ivec2 index_coord = icoord;
@@ -493,7 +510,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   const bool restart_line_strip = (rc_primitive == HWRenderBatch::Primitive::LineStrip);
   const bool needs_flush =
     !IsFlushed() && (m_render_state.IsTextureColorModeChanged() || m_render_state.IsTransparencyModeChanged() ||
-                     buffer_overflow || rc_changed || restart_line_strip);
+                     m_render_state.IsTextureWindowChanged() || buffer_overflow || rc_changed || restart_line_strip);
   if (needs_flush)
     FlushRender();
 
@@ -542,6 +559,15 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   {
     m_batch.transparency_mode = m_render_state.transparency_mode;
     m_render_state.ClearTransparencyModeChangedFlag();
+  }
+
+  if (m_render_state.IsTextureWindowChanged())
+  {
+    m_batch.texture_window_values[0] = m_render_state.texture_window_mask_x;
+    m_batch.texture_window_values[1] = m_render_state.texture_window_mask_y;
+    m_batch.texture_window_values[2] = m_render_state.texture_window_offset_x;
+    m_batch.texture_window_values[3] = m_render_state.texture_window_offset_y;
+    m_render_state.ClearTextureWindowChangedFlag();
   }
 
   LoadVertices(rc, num_vertices);

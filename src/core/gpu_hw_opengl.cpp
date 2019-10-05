@@ -358,8 +358,9 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, bool transparent, bool tex
 
   if (textured)
   {
+    prog.RegisterUniform("u_texture_window");
     prog.RegisterUniform("samp0");
-    prog.Uniform1i(2, 0);
+    prog.Uniform1i(3, 0);
   }
 
   return true;
@@ -385,7 +386,11 @@ void GPU_HW_OpenGL::SetDrawState()
   }
 
   if (m_batch.texture_enable)
+  {
+    prog.Uniform4ui(2, m_batch.texture_window_values[0], m_batch.texture_window_values[1],
+                    m_batch.texture_window_values[2], m_batch.texture_window_values[3]);
     m_vram_read_texture->Bind();
+  }
 
   if (m_last_transparency_enable != m_batch.transparency_enable ||
       (m_last_transparency_enable && m_last_transparency_mode != m_batch.transparency_mode))

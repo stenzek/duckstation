@@ -73,9 +73,11 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_render_state.texture_y_flip);
   sw.Do(&m_render_state.texpage_attribute);
   sw.Do(&m_render_state.texlut_attribute);
+  sw.Do(&m_render_state.texture_window_value);
   sw.Do(&m_render_state.texture_page_changed);
   sw.Do(&m_render_state.texture_color_mode_changed);
   sw.Do(&m_render_state.transparency_mode_changed);
+  sw.Do(&m_render_state.texture_window_changed);
 
   sw.Do(&m_drawing_area.left);
   sw.Do(&m_drawing_area.top);
@@ -113,6 +115,7 @@ bool GPU::DoState(StateWrapper& sw)
     m_render_state.texture_page_changed = true;
     m_render_state.texture_color_mode_changed = true;
     m_render_state.transparency_mode_changed = true;
+    m_render_state.texture_window_changed = true;
     UpdateGPUSTAT();
   }
 
@@ -437,10 +440,7 @@ void GPU::WriteGP0(u32 value)
 
       case 0xE2: // set texture window
       {
-        m_render_state.texture_window_mask_x = param & UINT32_C(0x1F);
-        m_render_state.texture_window_mask_y = (param >> 5) & UINT32_C(0x1F);
-        m_render_state.texture_window_offset_x = (param >> 10) & UINT32_C(0x1F);
-        m_render_state.texture_window_offset_y = (param >> 15) & UINT32_C(0x1F);
+        m_render_state.SetTextureWindow(value);
         Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
                         m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
                         m_render_state.texture_window_offset_y);
@@ -893,6 +893,20 @@ void GPU::RenderState::SetFromPaletteAttribute(u16 value)
   texture_palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
   texlut_attribute = value;
   texture_page_changed = true;
+}
+
+void GPU::RenderState::SetTextureWindow(u32 value)
+{
+  value &= TEXTURE_WINDOW_MASK;
+  if (texture_window_value == value)
+    return;
+
+  texture_window_mask_x = value & UINT32_C(0x1F);
+  texture_window_mask_y = (value >> 5) & UINT32_C(0x1F);
+  texture_window_offset_x = (value >> 10) & UINT32_C(0x1F);
+  texture_window_offset_y = (value >> 15) & UINT32_C(0x1F);
+  texture_window_value = value;
+  texture_window_changed = true;
 }
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)

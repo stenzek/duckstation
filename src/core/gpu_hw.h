@@ -51,6 +51,7 @@ protected:
     u32 texture_palette_x;
     u32 texture_palette_y;
     TransparencyMode transparency_mode;
+    std::array<u8, 4> texture_window_values;
 
     std::vector<HWVertex> vertices;
   };
