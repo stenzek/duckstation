@@ -727,6 +727,8 @@ bool GPU::HandleFillRectangleCommand()
   if (m_GP0_command.size() < 3)
     return false;
 
+  FlushRender();
+
   const u32 color = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
   const u32 dst_x = m_GP0_command[1] & UINT32_C(0xFFFF);
   const u32 dst_y = m_GP0_command[1] >> 16;
