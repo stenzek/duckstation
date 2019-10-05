@@ -1,7 +1,7 @@
 #pragma once
 #include "common/bitfield.h"
-#include "common/fifo_queue.h"
 #include "common/cd_image.h"
+#include "common/fifo_queue.h"
 #include "types.h"
 #include <string>
 #include <vector>
@@ -154,12 +154,14 @@ private:
     BitField<u8, bool, 7, 1> BFRD;
   };
 
+  void SoftReset();
+
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   void SetInterrupt(Interrupt interrupt);
   void PushStatResponse(Interrupt interrupt = Interrupt::ACK);
   void UpdateStatusRegister();
 
-  u32 GetTicksForCommand() const;
+  u32 GetAckDelayForCommand() const;
   u32 GetTicksForRead() const;
   void BeginCommand(Command command); // also update status register
   void NextCommandStage(bool wait_for_irq, u32 time);

@@ -20,6 +20,14 @@ bool CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_
 
 void CDROM::Reset()
 {
+  if (m_media)
+    m_media->Seek(0);
+
+  SoftReset();
+}
+
+void CDROM::SoftReset()
+{
   m_command_state = CommandState::Idle;
   m_command = Command::Sync;
   m_command_stage = 0;
@@ -36,6 +44,7 @@ void CDROM::Reset()
   m_param_fifo.Clear();
   m_response_fifo.Clear();
   m_data_fifo.Clear();
+  m_sector_buffer.clear();
   UpdateStatusRegister();
 }
 
@@ -379,23 +388,13 @@ void CDROM::UpdateStatusRegister()
   m_status.BUSYSTS = m_command_state == CommandState::WaitForExecute;
 }
 
-u32 CDROM::GetTicksForCommand() const
+u32 CDROM::GetAckDelayForCommand() const
 {
-  switch (m_command)
-  {
-    case Command::ReadN:
-    case Command::ReadS:
-    {
-      // more if seeking..
-      return 1000;
-    }
-
-    case Command::Pause:
-      return 1000;
-
-    default:
-      return 1000;
-  }
+  const u32 default_ack_delay = 20000;
+  if (m_command == Command::Init)
+    return 60000;
+  else
+    return default_ack_delay;
 }
 
 u32 CDROM::GetTicksForRead() const
@@ -443,7 +442,7 @@ void CDROM::BeginCommand(Command command)
 
   m_command = command;
   m_command_stage = 0;
-  m_command_remaining_ticks = GetTicksForCommand();
+  m_command_remaining_ticks = GetAckDelayForCommand();
   if (m_command_remaining_ticks == 0)
   {
     ExecuteCommand();
@@ -524,7 +523,7 @@ void CDROM::ExecuteCommand()
           // INT3(stat), ...
           m_response_fifo.Push(m_secondary_status.bits);
           SetInterrupt(Interrupt::ACK);
-          NextCommandStage(true, GetTicksForCommand());
+          NextCommandStage(true, 18000);
         }
       }
       else
@@ -574,7 +573,7 @@ void CDROM::ExecuteCommand()
         m_secondary_status.seeking = true;
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::ACK);
-        NextCommandStage(false, 100);
+        NextCommandStage(false, 20000);
       }
       else
       {
@@ -640,7 +639,7 @@ void CDROM::ExecuteCommand()
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::ACK);
         StopReading();
-        NextCommandStage(true, was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 1000);
+        NextCommandStage(true, was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000);
       }
       else
       {
@@ -660,10 +659,13 @@ void CDROM::ExecuteCommand()
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::ACK);
         StopReading();
-        NextCommandStage(true, 1000);
+        NextCommandStage(true, 8000);
       }
       else
       {
+        m_mode.bits = 0;
+        m_secondary_status.bits = 0;
+        m_secondary_status.motor_on = true;
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::INT2);
         EndCommand();
