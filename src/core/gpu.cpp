@@ -116,6 +116,7 @@ bool GPU::DoState(StateWrapper& sw)
     m_render_state.texture_color_mode_changed = true;
     m_render_state.transparency_mode_changed = true;
     m_render_state.texture_window_changed = true;
+    UpdateDrawingArea();
     UpdateGPUSTAT();
   }
 
@@ -454,6 +455,8 @@ void GPU::WriteGP0(u32 value)
         Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
         if (m_drawing_area.left != left || m_drawing_area.top != top)
         {
+          FlushRender();
+
           m_drawing_area.left = left;
           m_drawing_area.top = top;
           UpdateDrawingArea();
@@ -468,6 +471,8 @@ void GPU::WriteGP0(u32 value)
         Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
         if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
         {
+          FlushRender();
+
           m_drawing_area.right = right;
           m_drawing_area.bottom = bottom;
           UpdateDrawingArea();
