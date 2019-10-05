@@ -75,7 +75,7 @@ private:
   TransparencyMode m_last_transparency_mode = TransparencyMode::BackgroundMinusForeground;
 
   std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 2> m_render_programs;
-  std::array<GL::Program, 3> m_texture_page_programs;
+  GL::Program m_reinterpret_rgb8_program;
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};

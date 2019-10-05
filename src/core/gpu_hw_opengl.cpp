@@ -300,6 +300,21 @@ bool GPU_HW_OpenGL::CompilePrograms()
     }
   }
 
+  // TODO: Use string_view
+  if (!m_reinterpret_rgb8_program.Compile(GenerateScreenQuadVertexShader().c_str(),
+                                          GenerateRGB24DecodeFragmentShader().c_str()))
+  {
+    return false;
+  }
+  m_reinterpret_rgb8_program.BindFragData(0, "o_col0");
+  if (!m_reinterpret_rgb8_program.Link())
+    return false;
+
+  m_reinterpret_rgb8_program.Bind();
+  m_reinterpret_rgb8_program.RegisterUniform("u_base_coords");
+  m_reinterpret_rgb8_program.RegisterUniform("samp0");
+  m_reinterpret_rgb8_program.Uniform1i(1, 0);
+
   return true;
 }
 
@@ -404,7 +419,6 @@ void GPU_HW_OpenGL::UpdateDisplay()
   const u32 texture_width = m_vram_texture->GetWidth();
   const u32 texture_height = m_vram_texture->GetHeight();
 
-  // TODO: 24-bit support.
   if (m_debug_options.show_vram)
   {
     m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, texture_width, texture_height, 1.0f);
@@ -419,9 +433,31 @@ void GPU_HW_OpenGL::UpdateDisplay()
       ((vram_offset_x + display_width) > texture_width) ? (texture_width - vram_offset_x) : display_width;
     const u32 copy_height =
       ((vram_offset_y + display_height) > texture_height) ? (texture_height - vram_offset_y) : display_height;
-    glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, vram_offset_x,
-                       texture_height - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0,
-                       0, 0, 0, copy_width, copy_height, 1);
+
+    if (m_GPUSTAT.display_area_color_depth_24)
+    {
+      glBindFramebuffer(GL_FRAMEBUFFER, m_display_fbo);
+      glViewport(0, 0, copy_width, copy_height);
+      glDisable(GL_BLEND);
+      glDisable(GL_SCISSOR_TEST);
+      m_reinterpret_rgb8_program.Bind();
+      m_reinterpret_rgb8_program.Uniform2i(0, vram_offset_x, texture_height - vram_offset_y - copy_height);
+      m_vram_texture->Bind();
+      glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // restore state
+      glBindFramebuffer(GL_FRAMEBUFFER, m_vram_fbo);
+      glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+      glEnable(GL_SCISSOR_TEST);
+      if (m_last_transparency_enable)
+        glEnable(GL_BLEND);
+    }
+    else
+    {
+      glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, vram_offset_x,
+                         texture_height - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D,
+                         0, 0, 0, 0, copy_width, copy_height, 1);
+    }
 
     m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, copy_width, copy_height,
                                                     DISPLAY_ASPECT_RATIO);
