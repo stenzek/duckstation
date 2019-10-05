@@ -108,7 +108,7 @@ bool SDLInterface::CreateGLContext()
   }
 #endif
 
-  // SDL_GL_SetSwapInterval(0);
+  SDL_GL_SetSwapInterval(0);
   return true;
 }
 

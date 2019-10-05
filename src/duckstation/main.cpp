@@ -86,15 +86,17 @@ static int Run(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
   // set log flags
-  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
-  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
-  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController InterruptController", LOGLEVEL_DEBUG);
-
 #ifdef Y_BUILD_CONFIG_RELEASE
-  g_pLog->SetFilterLevel(LOGLEVEL_INFO);
-  // g_pLog->SetFilterLevel(LOGLEVEL_DEV);
-  // g_pLog->SetFilterLevel(LOGLEVEL_PROFILE);
+  const LOGLEVEL level = LOGLEVEL_INFO;
+  // const LOGLEVEL level = LOGLEVEL_DEV;
+  // const LOGLEVEL level = LOGLEVEL_PROFILE;
+  // g_pLog->SetConsoleOutputParams(true, nullptr, level);
+  g_pLog->SetConsoleOutputParams(true, "Pad SPU", level);
+  g_pLog->SetFilterLevel(level);
 #else
+  // g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
+  g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController InterruptController", LOGLEVEL_DEBUG);
   // g_pLog->SetFilterLevel(LOGLEVEL_TRACE);
   g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
   // g_pLog->SetFilterLevel(LOGLEVEL_DEV);

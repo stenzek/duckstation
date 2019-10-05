@@ -237,23 +237,32 @@ void GPU_HW_OpenGL::ClearFramebuffer()
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
 {
-  glDeleteFramebuffers(1, &m_vram_read_fbo);
-  m_vram_read_fbo = 0;
+  if (m_vram_read_fbo != 0)
+  {
+    glDeleteFramebuffers(1, &m_vram_read_fbo);
+    m_vram_read_fbo = 0;
+  }
   m_vram_read_texture.reset();
 
-  glDeleteFramebuffers(1, &m_vram_fbo);
-  m_vram_fbo = 0;
+  if (m_vram_fbo != 0)
+  {
+    glDeleteFramebuffers(1, &m_vram_fbo);
+    m_vram_fbo = 0;
+  }
   m_vram_texture.reset();
 
-  if (m_vram_downsample_texture)
+  if (m_vram_downsample_fbo != 0)
   {
     glDeleteFramebuffers(1, &m_vram_downsample_fbo);
     m_vram_downsample_fbo = 0;
-    m_vram_downsample_texture.reset();
   }
+  m_vram_downsample_texture.reset();
 
-  glDeleteFramebuffers(1, &m_display_fbo);
-  m_display_fbo = 0;
+  if (m_display_fbo != 0)
+  {
+    glDeleteFramebuffers(1, &m_display_fbo);
+    m_display_fbo = 0;
+  }
   m_display_texture.reset();
 }
 
@@ -477,6 +486,7 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 {
   // we need to convert RGBA8 -> RGBA5551
   std::vector<u32> temp_buffer(width * height);
+  const u32 flipped_y = VRAM_HEIGHT - y - height;
 
   // downscaling to 1xIR.
   if (m_resolution_scale > 1)
@@ -487,21 +497,22 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
     const u32 scaled_y = y * m_resolution_scale;
     const u32 scaled_width = width * m_resolution_scale;
     const u32 scaled_height = height * m_resolution_scale;
+    const u32 scaled_flipped_y = texture_height - scaled_y - scaled_height;
 
-    glDisable(GL_SCISSOR_TEST);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_downsample_fbo);
-    glBlitFramebuffer(scaled_x, texture_height - scaled_y - height, scaled_x + scaled_width, scaled_y + scaled_height,
-                      0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glDisable(GL_SCISSOR_TEST);
+    glBlitFramebuffer(scaled_x, scaled_flipped_y, scaled_x + scaled_width, scaled_flipped_y + scaled_height, 0, 0,
+                      width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glEnable(GL_SCISSOR_TEST);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
-    glEnable(GL_SCISSOR_TEST);
   }
   else
   {
+    glReadPixels(x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
-    glReadPixels(x, VRAM_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
   }
 
   // reverse copy because of lower-left origin
