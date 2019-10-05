@@ -615,7 +615,7 @@ void GPU::WriteGP1(u32 value)
     case 0x1E:
     case 0x1F:
     {
-      HandleGetGPUInfoCommand();
+      HandleGetGPUInfoCommand(value);
     }
     break;
 
@@ -625,9 +625,9 @@ void GPU::WriteGP1(u32 value)
   }
 }
 
-void GPU::HandleGetGPUInfoCommand()
+void GPU::HandleGetGPUInfoCommand(u32 value)
 {
-  const u8 subcommand = Truncate8(m_GP0_command[0] & 0x07);
+  const u8 subcommand = Truncate8(value & 0x07);
   switch (subcommand)
   {
     case 0x00:
