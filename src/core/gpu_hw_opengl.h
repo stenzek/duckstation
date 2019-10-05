@@ -73,6 +73,7 @@ private:
   bool m_vram_read_texture_dirty = true;
   bool m_last_transparency_enable = false;
   TransparencyMode m_last_transparency_mode = TransparencyMode::BackgroundMinusForeground;
+  bool m_drawing_area_changed = true;
 
   std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 2> m_render_programs;
   GL::Program m_reinterpret_rgb8_program;

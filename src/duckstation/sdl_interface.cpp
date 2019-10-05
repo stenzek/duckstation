@@ -98,12 +98,14 @@ bool SDLInterface::CreateGLContext()
     return false;
   }
 
+#if 0
   if (GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
-    // glEnable(GL_DEBUG_OUTPUT);
-    // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
+#endif
 
   SDL_GL_SetSwapInterval(0);
   return true;

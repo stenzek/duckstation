@@ -396,20 +396,27 @@ void GPU_HW_OpenGL::SetDrawState()
       glBlendFuncSeparate(GL_ONE, GL_SRC_ALPHA, GL_ONE, GL_ZERO);
     }
   }
+
+  if (m_drawing_area_changed)
+  {
+    m_drawing_area_changed = false;
+
+    int left, top, right, bottom;
+    CalcScissorRect(&left, &top, &right, &bottom);
+
+    const int width = right - left;
+    const int height = bottom - top;
+    const int x = left;
+    const int y = m_vram_texture->GetHeight() - bottom;
+
+    Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
+    glScissor(x, y, width, height);
+  }
 }
 
 void GPU_HW_OpenGL::UpdateDrawingArea()
 {
-  int left, top, right, bottom;
-  CalcScissorRect(&left, &top, &right, &bottom);
-
-  const int width = right - left;
-  const int height = bottom - top;
-  const int x = left;
-  const int y = m_vram_texture->GetHeight() - bottom;
-
-  Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
-  glScissor(x, y, width, height);
+  m_drawing_area_changed = true;
 }
 
 void GPU_HW_OpenGL::UpdateDisplay()

@@ -141,10 +141,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
 {
-  *left = m_drawing_area.left * s32(m_resolution_scale);
-  *right = (m_drawing_area.right + 1) * s32(m_resolution_scale);
-  *top = m_drawing_area.top * s32(m_resolution_scale);
-  *bottom = (m_drawing_area.bottom + 1) * s32(m_resolution_scale);
+  *left = m_drawing_area.left * m_resolution_scale;
+  *right = std::max<u32>((m_drawing_area.right + 1) * m_resolution_scale, *left + 1);
+  *top = m_drawing_area.top * m_resolution_scale;
+  *bottom = std::max<u32>((m_drawing_area.bottom + 1) * m_resolution_scale, *top + 1);
 }
 
 static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
