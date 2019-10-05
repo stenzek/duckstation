@@ -181,6 +181,7 @@ protected:
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
+  void HandleGetGPUInfoCommand();
 
   // Rendering commands, returns false if not enough data is provided
   bool HandleRenderCommand();

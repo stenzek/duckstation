@@ -360,7 +360,7 @@ u32 GPU::ReadGPUREAD()
 {
   if (m_GPUREAD_buffer.empty())
   {
-    Log_ErrorPrintf("GPUREAD read while buffer is empty");
+    Log_DevPrintf("GPUREAD read while buffer is empty");
     return UINT32_C(0xFFFFFFFF);
   }
 
@@ -518,6 +518,13 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
+    case 0x02: // Acknowledge Interrupt
+    {
+      Log_DebugPrintf("Acknowledge interrupt");
+      m_GPUSTAT.interrupt_request = false;
+    }
+    break;
+
     case 0x04: // DMA Direction
     {
       m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
@@ -579,8 +586,47 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
+    case 0x10:
+    case 0x11:
+    case 0x12:
+    case 0x13:
+    case 0x14:
+    case 0x15:
+    case 0x16:
+    case 0x17:
+    case 0x18:
+    case 0x19:
+    case 0x1A:
+    case 0x1B:
+    case 0x1C:
+    case 0x1D:
+    case 0x1E:
+    case 0x1F:
+    {
+      HandleGetGPUInfoCommand();
+    }
+    break;
+
     default:
       Log_ErrorPrintf("Unimplemented GP1 command 0x%02X", command);
+      break;
+  }
+}
+
+void GPU::HandleGetGPUInfoCommand()
+{
+  const u8 subcommand = Truncate8(m_GP0_command[0] & 0x07);
+  switch (subcommand)
+  {
+    case 0x00:
+    case 0x01:
+    case 0x06:
+    case 0x07:
+      // leave GPUREAD intact
+      break;
+
+    default:
+      Log_WarningPrintf("Unhandled GetGPUInfo(0x%02X)", ZeroExtend32(subcommand));
       break;
   }
 }
