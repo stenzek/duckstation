@@ -489,7 +489,7 @@ void SDLInterface::DrawMainMenuBar()
   if (ImGui::BeginMenu("System"))
   {
     if (ImGui::MenuItem("Reset"))
-      m_system->Reset();
+      DoReset();
 
     ImGui::Separator();
 
@@ -652,6 +652,16 @@ void SDLInterface::DrawOSDMessages()
     ImGui::PopStyleVar();
     ++iter;
   }
+}
+
+void SDLInterface::DoReset()
+{
+  m_system->Reset();
+  m_last_frame_number = 0;
+  m_last_internal_frame_number = 0;
+  m_last_global_tick_counter = 0;
+  m_fps_timer.Reset();
+  AddOSDMessage("System reset.");
 }
 
 void SDLInterface::DoLoadState(u32 index)

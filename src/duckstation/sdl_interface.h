@@ -51,6 +51,7 @@ private:
   // We only pass mouse input through if it's grabbed
   bool IsWindowFullscreen() const;
   void DrawImGui();
+  void DoReset();
   void DoLoadState(u32 index);
   void DoSaveState(u32 index);
 
