@@ -223,6 +223,7 @@ void GPU_HW_OpenGL::CreateFramebuffer()
   Assert(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
+  m_vram_read_texture_dirty = true;
 }
 
 void GPU_HW_OpenGL::ClearFramebuffer()
