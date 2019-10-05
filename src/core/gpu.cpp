@@ -482,9 +482,16 @@ void GPU::WriteGP0(u32 value)
 
       case 0xE5: // Set drawing offset
       {
-        m_drawing_offset.x = SignExtendN<11, u32>(param & UINT32_C(0x7FF));
-        m_drawing_offset.y = SignExtendN<11, u32>((param >> 11) & UINT32_C(0x7FF));
+        const s32 x = SignExtendN<11, s32>(param & UINT32_C(0x7FF));
+        const s32 y = SignExtendN<11, s32>((param >> 11) & UINT32_C(0x7FF));
         Log_DebugPrintf("Set drawing offset (%d, %d)", m_drawing_offset.x, m_drawing_offset.y);
+        if (m_drawing_offset.x != x || m_drawing_offset.y != y)
+        {
+          FlushRender();
+
+          m_drawing_offset.x = x;
+          m_drawing_offset.y = y;
+        }
       }
       break;
 
