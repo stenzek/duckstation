@@ -86,9 +86,9 @@ static int Run(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
   // set log flags
-  // g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
   // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
-  g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController InterruptController", LOGLEVEL_DEBUG);
+  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController InterruptController", LOGLEVEL_DEBUG);
 
 #ifdef Y_BUILD_CONFIG_RELEASE
   g_pLog->SetFilterLevel(LOGLEVEL_INFO);

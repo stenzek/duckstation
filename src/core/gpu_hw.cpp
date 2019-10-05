@@ -405,31 +405,30 @@ void main()
 
   // select the bit for this pixel depending on its offset in the 4-pixel block
   uint r, g, b;
-  switch (xoff & 3)
+  int block_offset = xoff & 3;
+  if (block_offset == 0)
   {
-    case 0:
-      r = s0 & 0xFFu;
-      g = s0 >> 8;
-      b = s1 & 0xFFu;
-      break;
-
-    case 1:
-      r = s1 >> 8;
-      g = s2 & 0xFFu;
-      b = s2 >> 8;
-      break;
-
-    case 2:
-      r = s1 & 0xFFu;
-      g = s1 >> 8;
-      b = s2 & 0xFFu;
-      break;
-
-    case 3:
-      r = s2 >> 8;
-      g = s3 & 0xFFu;
-      b = s3 >> 8;
-      break;
+    r = s0 & 0xFFu;
+    g = s0 >> 8;
+    b = s1 & 0xFFu;
+  }
+  else if (block_offset == 1)
+  {
+    r = s1 >> 8;
+    g = s2 & 0xFFu;
+    b = s2 >> 8;
+  }
+  else if (block_offset == 2)
+  {
+    r = s1 & 0xFFu;
+    g = s1 >> 8;
+    b = s2 & 0xFFu;
+  }
+  else
+  {
+    r = s2 >> 8;
+    g = s3 & 0xFFu;
+    b = s3 >> 8;
   }
 
   // and normalize
