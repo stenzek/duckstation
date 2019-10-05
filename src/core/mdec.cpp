@@ -304,8 +304,8 @@ const u16* MDEC::DecodeColoredMacroblock(const u16* src, const u16* src_end)
   }
 
   yuv_to_rgb(0, 0, Crblk, Cbblk, Yblk[0], out_rgb);
-  yuv_to_rgb(0, 8, Crblk, Cbblk, Yblk[1], out_rgb);
-  yuv_to_rgb(8, 0, Crblk, Cbblk, Yblk[2], out_rgb);
+  yuv_to_rgb(8, 0, Crblk, Cbblk, Yblk[1], out_rgb);
+  yuv_to_rgb(0, 8, Crblk, Cbblk, Yblk[2], out_rgb);
   yuv_to_rgb(8, 8, Crblk, Cbblk, Yblk[3], out_rgb);
 
   switch (m_status.data_output_depth)
@@ -382,11 +382,14 @@ static constexpr std::array<u8, 64> zigzag = {{0,  1,  5,  6,  14, 15, 27, 28, 2
                                                3,  8,  12, 17, 25, 30, 41, 43, 9,  11, 18, 24, 31, 40, 44, 53,
                                                10, 19, 23, 32, 39, 45, 52, 54, 20, 22, 33, 38, 46, 51, 55, 60,
                                                21, 34, 37, 47, 50, 56, 59, 61, 35, 36, 48, 49, 57, 58, 62, 63}};
+static constexpr std::array<u8, 64> zagzig = {{0,  1,  8,  16, 9,  2,  3,  10, 17, 24, 32, 25, 18, 11, 4,  5,
+                                               12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28,
+                                               35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,
+                                               58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63}};
 
 bool MDEC::rl_decode_block(s16* blk, const u16*& src, const u16* src_end, const u8* qt)
 {
   std::fill_n(blk, 64, s16(0));
-
   // skip padding
   u16 n;
   for (;;)
@@ -413,7 +416,7 @@ bool MDEC::rl_decode_block(s16* blk, const u16*& src, const u16* src_end, const 
     val = std::clamp(val, -0x400, 0x3FF);
     // val = val * static_cast<s32>(ZeroExtend32(scalezag[i]));
     if (q_scale > 0)
-      blk[zigzag[k]] = static_cast<s16>(val);
+      blk[zagzig[k]] = static_cast<s16>(val);
     else if (q_scale == 0)
       blk[k] = static_cast<s16>(val);
 
@@ -490,13 +493,14 @@ void MDEC::yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const st
       G = static_cast<s16>(std::clamp(static_cast<int>(Y) + G, -128, 127));
       B = static_cast<s16>(std::clamp(static_cast<int>(Y) + B, -128, 127));
 
+      // TODO: Signed output
       R += 128;
       G += 128;
       B += 128;
 
       rgb_out[(x + xx) + ((y + yy) * 16)] = ZeroExtend32(static_cast<u16>(R)) |
                                             (ZeroExtend32(static_cast<u16>(G)) << 8) |
-                                            (ZeroExtend32(static_cast<u16>(B)) << 16) | UINT32_C(0xFF000000);
+                                            (ZeroExtend32(static_cast<u16>(B)) << 16);
     }
   }
 }
