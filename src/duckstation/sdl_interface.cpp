@@ -302,11 +302,11 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
         {
           if (!pressed)
           {
-            auto filename = GetSaveStateFilename(event->key.keysym.scancode - SDL_SCANCODE_F1 + 1);
+            const u32 index = event->key.keysym.scancode - SDL_SCANCODE_F1 + 1;
             if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
-              SaveState(filename);
+              DoSaveState(index);
             else
-              LoadState(filename);
+              DoLoadState(index);
           }
         }
         break;
@@ -667,6 +667,10 @@ void SDLInterface::DoReset()
 void SDLInterface::DoLoadState(u32 index)
 {
   LoadState(GetSaveStateFilename(index));
+  m_last_frame_number = m_system->GetFrameNumber();
+  m_last_internal_frame_number = m_system->GetInternalFrameNumber();
+  m_last_global_tick_counter = m_system->GetGlobalTickCounter();
+  m_fps_timer.Reset();
 }
 
 void SDLInterface::DoSaveState(u32 index)
