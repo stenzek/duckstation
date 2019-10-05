@@ -495,6 +495,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
         break;
     }
   }
+  else
+  {
+    m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
+  }
 
   // has any state changed which requires a new batch?
   const bool rc_transparency_enable = rc.IsTransparencyEnabled();
