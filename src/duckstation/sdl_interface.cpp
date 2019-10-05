@@ -91,6 +91,7 @@ bool SDLInterface::CreateGLContext()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   m_gl_context = SDL_GL_CreateContext(m_window);
   if (!m_gl_context || SDL_GL_MakeCurrent(m_window, m_gl_context) != 0 || !gladLoadGL())
   {
@@ -107,7 +108,7 @@ bool SDLInterface::CreateGLContext()
   }
 #endif
 
-  SDL_GL_SetSwapInterval(0);
+  // SDL_GL_SetSwapInterval(0);
   return true;
 }
 
@@ -311,7 +312,14 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
         break;
 
         case SDL_SCANCODE_TAB:
-          SDL_GL_SetSwapInterval(pressed ? 0 : 1);
+          {
+            // Window framebuffer has to be bound to call SetSwapInterval.
+            GLint current_fbo = 0;
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            SDL_GL_SetSwapInterval(pressed ? 0 : 1);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+          }
           break;
 
         default:
