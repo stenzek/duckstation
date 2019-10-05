@@ -152,6 +152,7 @@ void GPU_HW_OpenGL::SetMaxResolutionScale()
   m_system->GetSettings().max_gpu_resolution_scale = max_resolution_scale;
   m_system->GetSettings().gpu_resolution_scale =
     std::min(m_system->GetSettings().gpu_resolution_scale, max_resolution_scale);
+  m_resolution_scale = m_system->GetSettings().gpu_resolution_scale;
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
