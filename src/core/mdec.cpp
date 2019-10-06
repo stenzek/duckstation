@@ -28,10 +28,14 @@ bool MDEC::DoState(StateWrapper& sw)
   sw.Do(&m_data_in_fifo);
   sw.Do(&m_data_out_fifo);
   sw.Do(&m_command);
-  sw.Do(&m_command_parameter_count);
+  sw.Do(&m_remaining_words);
   sw.Do(&m_iq_uv);
   sw.Do(&m_iq_y);
   sw.Do(&m_scale_table);
+  sw.Do(&m_blocks);
+  sw.Do(&m_current_block);
+  sw.Do(&m_current_coefficient);
+  sw.Do(&m_current_q_scale);
 
   return !sw.HasError();
 }
@@ -115,16 +119,9 @@ void MDEC::UpdateStatusRegister()
   m_status.data_out_fifo_empty = m_data_out_fifo.IsEmpty();
   m_status.data_in_fifo_full = m_data_in_fifo.IsFull();
 
-  m_status.command_busy = !m_data_in_fifo.IsEmpty();
-  if (!m_data_in_fifo.IsEmpty())
-  {
-    const CommandWord cw{m_data_in_fifo.Peek(0)};
-    m_status.parameter_words_remaining = Truncate16(m_command_parameter_count - m_data_in_fifo.GetSize());
-  }
-  else
-  {
-    m_status.parameter_words_remaining = 0;
-  }
+  m_status.command_busy = m_command != Command::None;
+  m_status.parameter_words_remaining = Truncate16(m_remaining_words);
+  m_status.current_block = (m_current_block + 4) % NUM_BLOCKS;
 }
 
 u32 MDEC::ReadDataRegister()
@@ -144,7 +141,7 @@ void MDEC::WriteCommandRegister(u32 value)
 {
   Log_DebugPrintf("MDEC command/data register <- 0x%08X", value);
 
-  if (m_data_in_fifo.IsEmpty())
+  if (m_command == Command::None)
   {
     // first word
     const CommandWord cw{value};
@@ -156,15 +153,15 @@ void MDEC::WriteCommandRegister(u32 value)
     switch (cw.command)
     {
       case Command::DecodeMacroblock:
-        m_command_parameter_count = ZeroExtend32(cw.parameter_word_count.GetValue());
+        m_remaining_words = ZeroExtend32(cw.parameter_word_count.GetValue());
         break;
 
       case Command::SetIqTab:
-        m_command_parameter_count = 16 + (((value & 1) != 0) ? 16 : 0);
+        m_remaining_words = 16 + (((value & 1) != 0) ? 16 : 0);
         break;
 
       case Command::SetScale:
-        m_command_parameter_count = 32;
+        m_remaining_words = 32;
         break;
 
       default:
@@ -174,76 +171,81 @@ void MDEC::WriteCommandRegister(u32 value)
 
     Log_DebugPrintf("MDEC command: 0x%08X (%u, %u words in parameter, %u expected)", cw.bits,
                     ZeroExtend32(static_cast<u8>(cw.command.GetValue())),
-                    ZeroExtend32(cw.parameter_word_count.GetValue()), m_command_parameter_count);
+                    ZeroExtend32(cw.parameter_word_count.GetValue()), m_remaining_words);
   }
-
-  m_data_in_fifo.Push(value);
-
-  if (m_data_in_fifo.GetSize() <= m_command_parameter_count)
+  else
   {
-    UpdateStatusRegister();
-    return;
+    DebugAssert(m_remaining_words > 0);
+    m_data_in_fifo.Push(Truncate16(value));
+    m_data_in_fifo.Push(Truncate16(value >> 16));
+    m_remaining_words--;
   }
 
-  // pop command
-  m_data_in_fifo.RemoveOne();
   switch (m_command)
   {
     case Command::DecodeMacroblock:
-      HandleDecodeMacroblockCommand();
-      break;
+    {
+      if (!HandleDecodeMacroblockCommand())
+        return;
+    }
+    break;
 
     case Command::SetIqTab:
-      HandleSetQuantTableCommand();
-      break;
+    {
+      if (!HandleSetQuantTableCommand())
+        return;
+    }
+    break;
 
     case Command::SetScale:
-      HandleSetScaleCommand();
-      break;
+    {
+      if (!HandleSetScaleCommand())
+        return;
+    }
+    break;
   }
 
   m_data_in_fifo.Clear();
   m_command = Command::None;
-  m_command_parameter_count = 0;
+  m_current_block = 0;
+  m_current_coefficient = 64;
+  m_current_q_scale = 0;
   UpdateStatusRegister();
 }
 
-void MDEC::HandleDecodeMacroblockCommand()
+bool MDEC::HandleDecodeMacroblockCommand()
 {
-  // TODO: Remove this copy and strict aliasing violation..
-  std::vector<u16> temp(m_data_in_fifo.GetSize() * 2);
-  m_data_in_fifo.PopRange(reinterpret_cast<u32*>(temp.data()), m_data_in_fifo.GetSize());
-
-  const u16* src = temp.data();
-  const u16* src_end = src + temp.size();
-
   if (m_status.data_output_depth <= DataOutputDepth_8Bit)
   {
-    while (src != src_end)
+    while (!m_data_in_fifo.IsEmpty())
     {
-      src = DecodeMonoMacroblock(src, src_end);
-      Log_DevPrintf("Decoded mono macroblock");
+      if (!DecodeMonoMacroblock())
+        break;
     }
+
+    return m_remaining_words == 0;
   }
   else
   {
-    while (src != src_end)
+    while (!m_data_in_fifo.IsEmpty())
     {
-      u32 old_offs = static_cast<u32>(src - temp.data());
-      src = DecodeColoredMacroblock(src, src_end);
-      Log_DevPrintf("Decoded colour macroblock, ptr was %u, now %u", old_offs, static_cast<u32>(src - temp.data()));
+      if (!DecodeColoredMacroblock())
+        break;
     }
+
+    return m_remaining_words == 0;
   }
 }
 
-const u16* MDEC::DecodeMonoMacroblock(const u16* src, const u16* src_end)
+bool MDEC::DecodeMonoMacroblock()
 {
-  std::array<s16, 64> Yblk;
-  if (!rl_decode_block(Yblk.data(), src, src_end, m_iq_y.data()))
-    return src_end;
+  if (!rl_decode_block(m_blocks[0].data(), m_iq_y.data()))
+    return false;
+
+  IDCT(m_blocks[0].data());
 
   std::array<u8, 64> out_r;
-  y_to_mono(Yblk, out_r);
+  y_to_mono(m_blocks[0], out_r);
 
   switch (m_status.data_output_depth)
   {
@@ -283,30 +285,28 @@ const u16* MDEC::DecodeMonoMacroblock(const u16* src, const u16* src_end)
       break;
   }
 
-  return src;
+  return true;
 }
 
-const u16* MDEC::DecodeColoredMacroblock(const u16* src, const u16* src_end)
+bool MDEC::DecodeColoredMacroblock()
 {
-  std::array<s16, 64> Crblk;
-  std::array<s16, 64> Cbblk;
-  std::array<std::array<s16, 64>, 4> Yblk;
   std::array<u32, 256> out_rgb;
 
-  if (!rl_decode_block(Crblk.data(), src, src_end, m_iq_uv.data()) ||
-      !rl_decode_block(Cbblk.data(), src, src_end, m_iq_uv.data()) ||
-      !rl_decode_block(Yblk[0].data(), src, src_end, m_iq_y.data()) ||
-      !rl_decode_block(Yblk[1].data(), src, src_end, m_iq_y.data()) ||
-      !rl_decode_block(Yblk[2].data(), src, src_end, m_iq_y.data()) ||
-      !rl_decode_block(Yblk[3].data(), src, src_end, m_iq_y.data()))
+  for (; m_current_block < NUM_BLOCKS; m_current_block++)
   {
-    return src_end;
+    if (!rl_decode_block(m_blocks[m_current_block].data(), (m_current_block >= 2) ? m_iq_y.data() : m_iq_uv.data()))
+      return false;
+
+    IDCT(m_blocks[m_current_block].data());
   }
 
-  yuv_to_rgb(0, 0, Crblk, Cbblk, Yblk[0], out_rgb);
-  yuv_to_rgb(8, 0, Crblk, Cbblk, Yblk[1], out_rgb);
-  yuv_to_rgb(0, 8, Crblk, Cbblk, Yblk[2], out_rgb);
-  yuv_to_rgb(8, 8, Crblk, Cbblk, Yblk[3], out_rgb);
+  // done decoding
+  m_current_block = 0;
+
+  yuv_to_rgb(0, 0, m_blocks[0], m_blocks[1], m_blocks[2], out_rgb);
+  yuv_to_rgb(8, 0, m_blocks[0], m_blocks[1], m_blocks[3], out_rgb);
+  yuv_to_rgb(0, 8, m_blocks[0], m_blocks[1], m_blocks[4], out_rgb);
+  yuv_to_rgb(8, 8, m_blocks[0], m_blocks[1], m_blocks[5], out_rgb);
 
   switch (m_status.data_output_depth)
   {
@@ -375,7 +375,7 @@ const u16* MDEC::DecodeColoredMacroblock(const u16* src, const u16* src_end)
       break;
   }
 
-  return src;
+  return true;
 }
 
 static constexpr std::array<u8, 64> zigzag = {{0,  1,  5,  6,  14, 15, 27, 28, 2,  4,  7,  13, 16, 26, 29, 42,
@@ -387,64 +387,68 @@ static constexpr std::array<u8, 64> zagzig = {{0,  1,  8,  16, 9,  2,  3,  10, 1
                                                35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,
                                                58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63}};
 
-bool MDEC::rl_decode_block(s16* blk, const u16*& src, const u16* src_end, const u8* qt)
+bool MDEC::rl_decode_block(s16* blk, const u8* qt)
 {
-  std::fill_n(blk, 64, s16(0));
-  // skip padding
-  u16 n;
-  for (;;)
+  if (m_current_coefficient == 64)
   {
-    if (src == src_end)
-      return false;
+    std::fill_n(blk, 64, s16(0));
 
-    n = *(src++);
-    if (n == 0xFE00)
-      continue;
-    else
-      break;
+    // skip padding at start
+    u16 n;
+    for (;;)
+    {
+      if (m_data_in_fifo.IsEmpty())
+        return false;
+
+      n = m_data_in_fifo.Pop();
+      if (n == 0xFE00)
+        continue;
+      else
+        break;
+    }
+
+    m_current_coefficient = 0;
+    m_current_q_scale = (n >> 10) & 0x3F;
+    s32 val =
+      SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * static_cast<s32>(ZeroExtend32(qt[m_current_coefficient]));
+
+    if (m_current_q_scale == 0)
+      val = SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * 2;
+
+    val = std::clamp(val, -0x400, 0x3FF);
+    if (m_current_q_scale > 0)
+      blk[zagzig[m_current_coefficient]] = static_cast<s16>(val);
+    else if (m_current_q_scale == 0)
+      blk[m_current_coefficient] = static_cast<s16>(val);
   }
 
-  u32 k = 0;
-  u16 q_scale = (n >> 10) & 0x3F;
-  s32 val = SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * static_cast<s32>(ZeroExtend32(qt[k]));
-
-  for (;;)
+  while (!m_data_in_fifo.IsEmpty())
   {
-    if (q_scale == 0)
+    u16 n = m_data_in_fifo.Pop();
+    m_current_coefficient += ((n >> 10) & 0x3F) + 1;
+    if (m_current_coefficient >= 64)
+    {
+      m_current_coefficient = 64;
+      return true;
+    }
+
+    s32 val = (SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) *
+                 static_cast<s32>(ZeroExtend32(qt[m_current_coefficient])) * static_cast<s32>(m_current_q_scale) +
+               4) /
+              8;
+
+    if (m_current_q_scale == 0)
       val = SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * 2;
 
     val = std::clamp(val, -0x400, 0x3FF);
     // val = val * static_cast<s32>(ZeroExtend32(scalezag[i]));
-    if (q_scale > 0)
-      blk[zagzig[k]] = static_cast<s16>(val);
-    else if (q_scale == 0)
-      blk[k] = static_cast<s16>(val);
-
-    if (src == src_end)
-      break;
-
-    n = *(src++);
-    k += ((n >> 10) & 0x3F) + 1;
-    if (k >= 64)
-      break;
-
-    val = (SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * static_cast<s32>(ZeroExtend32(qt[k])) *
-             static_cast<s32>(q_scale) +
-           4) /
-          8;
+    if (m_current_q_scale > 0)
+      blk[zagzig[m_current_coefficient]] = static_cast<s16>(val);
+    else if (m_current_q_scale == 0)
+      blk[m_current_coefficient] = static_cast<s16>(val);
   }
 
-#undef READ_SRC
-
-  // insufficient coefficients
-  if (k < 64)
-  {
-    Log_DebugPrintf("Only %u of 64 coefficients in block, skipping", k);
-    return false;
-  }
-
-  IDCT(blk);
-  return true;
+  return false;
 }
 
 void MDEC::IDCT(s16* blk)
@@ -517,10 +521,16 @@ void MDEC::y_to_mono(const std::array<s16, 64>& Yblk, std::array<u8, 64>& r_out)
   }
 }
 
-void MDEC::HandleSetQuantTableCommand()
+bool MDEC::HandleSetQuantTableCommand()
 {
+  if (m_remaining_words > 0)
+  {
+    UpdateStatusRegister();
+    return false;
+  }
+
   // TODO: Remove extra copies..
-  std::array<u32, 16> packed_data;
+  std::array<u16, 32> packed_data;
   m_data_in_fifo.PopRange(packed_data.data(), static_cast<u32>(packed_data.size()));
   std::memcpy(m_iq_y.data(), packed_data.data(), m_iq_y.size());
 
@@ -529,12 +539,21 @@ void MDEC::HandleSetQuantTableCommand()
     m_data_in_fifo.PopRange(packed_data.data(), static_cast<u32>(packed_data.size()));
     std::memcpy(m_iq_uv.data(), packed_data.data(), m_iq_uv.size());
   }
+
+  return true;
 }
 
-void MDEC::HandleSetScaleCommand()
+bool MDEC::HandleSetScaleCommand()
 {
+  if (m_remaining_words > 0)
+  {
+    UpdateStatusRegister();
+    return false;
+  }
+
   // TODO: Remove extra copies..
-  std::array<u32, 32> packed_data;
+  std::array<u16, 64> packed_data;
   m_data_in_fifo.PopRange(packed_data.data(), static_cast<u32>(packed_data.size()));
   std::memcpy(m_scale_table.data(), packed_data.data(), m_scale_table.size() * sizeof(s16));
+  return true;
 }

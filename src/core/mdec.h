@@ -29,6 +29,7 @@ public:
 private:
   static constexpr u32 DATA_IN_FIFO_SIZE = 1048576;
   static constexpr u32 DATA_OUT_FIFO_SIZE = 1048576;
+  static constexpr u32 NUM_BLOCKS = 6;
 
   enum DataOutputDepth : u8
   {
@@ -87,15 +88,15 @@ private:
   u32 ReadDataRegister();
   void WriteCommandRegister(u32 value);
 
-  void HandleDecodeMacroblockCommand();
-  void HandleSetQuantTableCommand();
-  void HandleSetScaleCommand();
+  bool HandleDecodeMacroblockCommand();
+  bool HandleSetQuantTableCommand();
+  bool HandleSetScaleCommand();
 
-  const u16* DecodeColoredMacroblock(const u16* src, const u16* src_end);
-  const u16* DecodeMonoMacroblock(const u16* src, const u16* src_end);
+  bool DecodeColoredMacroblock();
+  bool DecodeMonoMacroblock();
 
   // from nocash spec
-  bool rl_decode_block(s16* blk, const u16*& src, const u16* src_end, const u8* qt);
+  bool rl_decode_block(s16* blk, const u8* qt);
   void IDCT(s16* blk);
   void yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
                   const std::array<s16, 64>& Yblk, std::array<u32, 256>& rgb_out);
@@ -106,13 +107,20 @@ private:
 
   StatusRegister m_status = {};
 
-  InlineFIFOQueue<u32, DATA_IN_FIFO_SIZE> m_data_in_fifo;
+  // Even though the DMA is in words, we access the FIFO as halfwords.
+  InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE> m_data_in_fifo;
   InlineFIFOQueue<u32, DATA_OUT_FIFO_SIZE> m_data_out_fifo;
   Command m_command = Command::None;
-  u32 m_command_parameter_count = 0;
+  u32 m_remaining_words = 0;
 
   std::array<u8, 64> m_iq_uv{};
   std::array<u8, 64> m_iq_y{};
 
   std::array<s16, 64> m_scale_table{};
+
+  // blocks, for colour: 0 - Crblk, 1 - Cbblk, 2-5 - Y 1-4
+  std::array<std::array<s16, 64>, NUM_BLOCKS> m_blocks;
+  u32 m_current_block = 0;            // block (0-5)
+  u32 m_current_coefficient = 64;     // k (in block)
+  u16 m_current_q_scale = 0;
 };
