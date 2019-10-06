@@ -637,6 +637,37 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
       // leave GPUREAD intact
       break;
 
+    case 0x02: // Get Texture Window
+    {
+      Log_DebugPrintf("Get texture window");
+      m_GPUREAD_buffer.push_back(m_render_state.texture_window_value);
+    }
+    break;
+
+    case 0x03: // Get Draw Area Top Left
+    {
+      Log_DebugPrintf("Get drawing area top left");
+      m_GPUREAD_buffer.push_back((m_drawing_area.left & UINT32_C(0b1111111111)) |
+                                 ((m_drawing_area.top & UINT32_C(0b1111111111)) << 10));
+    }
+    break;
+
+    case 0x04: // Get Draw Area Bottom Right
+    {
+      Log_DebugPrintf("Get drawing area bottom right");
+      m_GPUREAD_buffer.push_back((m_drawing_area.right & UINT32_C(0b1111111111)) |
+                                 ((m_drawing_area.bottom & UINT32_C(0b1111111111)) << 10));
+    }
+    break;
+
+    case 0x05: // Get Drawing Offset
+    {
+      Log_DebugPrintf("Get drawing offset");
+      m_GPUREAD_buffer.push_back((m_drawing_offset.x & INT32_C(0b11111111111)) |
+                                 ((m_drawing_offset.y & INT32_C(0b11111111111)) << 11));
+    }
+    break;
+
     default:
       Log_WarningPrintf("Unhandled GetGPUInfo(0x%02X)", ZeroExtend32(subcommand));
       break;
