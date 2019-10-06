@@ -56,6 +56,14 @@ protected:
     std::vector<HWVertex> vertices;
   };
 
+  enum class TransparencyRenderMode
+  {
+    Off,
+    TransparentAndOpaque,
+    OnlyOpaque,
+    OnlyTransparent
+  };
+
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
   static constexpr u32 TEXTURE_TILE_SIZE = 256;
@@ -85,8 +93,8 @@ protected:
   }
 
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(bool transparent, bool textured, TextureColorMode texture_color_mode,
-                                     bool blending);
+  std::string GenerateFragmentShader(TransparencyRenderMode transparency, bool textured,
+                                     TextureColorMode texture_color_mode, bool blending);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
   std::string GenerateRGB24DecodeFragmentShader();

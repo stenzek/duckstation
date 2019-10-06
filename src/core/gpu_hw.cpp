@@ -245,12 +245,14 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateFragmentShader(bool transparent, bool textured, TextureColorMode texture_color_mode,
-                                           bool blending)
+std::string GPU_HW::GenerateFragmentShader(TransparencyRenderMode transparency, bool textured,
+                                           TextureColorMode texture_color_mode, bool blending)
 {
   std::stringstream ss;
   GenerateShaderHeader(ss);
-  DefineMacro(ss, "TRANSPARENT", transparent);
+  DefineMacro(ss, "TRANSPARENT", transparency != TransparencyRenderMode::Off);
+  DefineMacro(ss, "TRANSPARENT_ONLY_OPAQUE", transparency == TransparencyRenderMode::OnlyOpaque);
+  DefineMacro(ss, "TRANSPARENT_ONLY_TRANSPARENT", transparency == TransparencyRenderMode::OnlyTransparent);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
               textured && (texture_color_mode == GPU::TextureColorMode::Palette4Bit ||
@@ -337,9 +339,19 @@ void main()
     #if TRANSPARENT
       // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
       if (texcol.a != 0)
+      {
+        #if TRANSPARENT_ONLY_OPAQUE
+          discard;
+        #endif
         o_col0 = vec4(color * u_transparent_alpha.x, u_transparent_alpha.y);
+      }
       else
+      {
+        #if TRANSPARENT_ONLY_TRANSPARENT
+          discard;
+        #endif
         o_col0 = vec4(color, 0.0);
+      }
     #else
       // Mask bit from texture.
       o_col0 = vec4(color, texcol.a);
@@ -575,4 +587,5 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   }
 
   LoadVertices(rc, num_vertices);
+  FlushRender();
 }

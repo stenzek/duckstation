@@ -94,9 +94,9 @@ int main(int argc, char* argv[])
   g_pLog->SetConsoleOutputParams(true, "Pad SPU", level);
   g_pLog->SetFilterLevel(level);
 #else
-  // g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
   // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
-  g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController InterruptController", LOGLEVEL_DEBUG);
+  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController InterruptController", LOGLEVEL_DEBUG);
   // g_pLog->SetFilterLevel(LOGLEVEL_TRACE);
   g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
   // g_pLog->SetFilterLevel(LOGLEVEL_DEV);

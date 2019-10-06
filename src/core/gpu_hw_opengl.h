@@ -51,9 +51,9 @@ private:
   void CreateVertexBuffer();
 
   bool CompilePrograms();
-  bool CompileProgram(GL::Program& prog, bool transparent, bool textured, TextureColorMode texture_color_mode,
-                      bool blending);
-  void SetDrawState();
+  bool CompileProgram(GL::Program& prog, TransparencyRenderMode transparent, bool textured,
+                      TextureColorMode texture_color_mode, bool blending);
+  void SetDrawState(TransparencyRenderMode render_mode);
 
   // downsample texture - used for readbacks at >1xIR.
   std::unique_ptr<GL::Texture> m_vram_texture;
@@ -71,11 +71,9 @@ private:
   GLuint m_attributeless_vao_id = 0;
 
   bool m_vram_read_texture_dirty = true;
-  bool m_last_transparency_enable = false;
-  TransparencyMode m_last_transparency_mode = TransparencyMode::BackgroundMinusForeground;
   bool m_drawing_area_changed = true;
 
-  std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 2> m_render_programs;
+  std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 4> m_render_programs;
   GL::Program m_reinterpret_rgb8_program;
 
   GLStats m_stats = {};
