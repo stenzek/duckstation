@@ -84,6 +84,7 @@ private:
 
   void SoftReset();
   void UpdateStatusRegister();
+  void UpdateDMARequest();
 
   u32 ReadDataRegister();
   void WriteCommandRegister(u32 value);
@@ -106,6 +107,8 @@ private:
   DMA* m_dma = nullptr;
 
   StatusRegister m_status = {};
+  bool m_enable_dma_in = false;
+  bool m_enable_dma_out = false;
 
   // Even though the DMA is in words, we access the FIFO as halfwords.
   InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE> m_data_in_fifo;

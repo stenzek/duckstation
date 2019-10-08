@@ -25,6 +25,8 @@ void MDEC::Reset()
 bool MDEC::DoState(StateWrapper& sw)
 {
   sw.Do(&m_status.bits);
+  sw.Do(&m_enable_dma_in);
+  sw.Do(&m_enable_dma_out);
   sw.Do(&m_data_in_fifo);
   sw.Do(&m_data_out_fifo);
   sw.Do(&m_command);
@@ -45,6 +47,7 @@ u32 MDEC::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0:
+      UpdateStatusRegister();
       return ReadDataRegister();
 
     case 4:
@@ -79,11 +82,9 @@ void MDEC::WriteRegister(u32 offset, u32 value)
       if (cr.reset)
         SoftReset();
 
-      m_status.data_in_request = cr.enable_dma_in;
-      m_status.data_out_request = cr.enable_dma_out;
-      m_dma->SetRequest(DMA::Channel::MDECin, cr.enable_dma_in);
-      m_dma->SetRequest(DMA::Channel::MDECout, cr.enable_dma_out);
-
+      m_enable_dma_in = cr.enable_dma_in;
+      m_enable_dma_out = cr.enable_dma_out;
+      UpdateDMARequest();
       return;
     }
 
@@ -108,10 +109,11 @@ void MDEC::DMAWrite(u32 value)
 void MDEC::SoftReset()
 {
   m_status = {};
+  m_enable_dma_in = false;
+  m_enable_dma_out = false;
   m_data_in_fifo.Clear();
   m_data_out_fifo.Clear();
-
-  UpdateStatusRegister();
+  UpdateDMARequest();
 }
 
 void MDEC::UpdateStatusRegister()
@@ -120,26 +122,40 @@ void MDEC::UpdateStatusRegister()
   m_status.data_in_fifo_full = m_data_in_fifo.IsFull();
 
   m_status.command_busy = m_command != Command::None;
-  m_status.parameter_words_remaining = Truncate16(m_remaining_words);
+  m_status.parameter_words_remaining = Truncate16(m_remaining_words - 1);
   m_status.current_block = (m_current_block + 4) % NUM_BLOCKS;
+}
+
+void MDEC::UpdateDMARequest()
+{
+  // we always want data in if it's enabled
+  const bool data_in_request = m_enable_dma_in && !m_data_in_fifo.IsFull();
+  m_status.data_in_request = data_in_request;
+  m_dma->SetRequest(DMA::Channel::MDECin, data_in_request);
+
+  // we only want to send data out if we have some in the fifo
+  const bool data_out_request = m_enable_dma_out && !m_data_out_fifo.IsEmpty();
+  m_status.data_out_request = data_out_request;
+  m_dma->SetRequest(DMA::Channel::MDECout, data_out_request);
 }
 
 u32 MDEC::ReadDataRegister()
 {
   if (m_data_out_fifo.IsEmpty())
   {
-    // Log_WarningPrintf("MDEC data out FIFO empty on read");
+    Log_WarningPrintf("MDEC data out FIFO empty on read");
     return UINT32_C(0xFFFFFFFF);
   }
 
   const u32 value = m_data_out_fifo.Pop();
   UpdateStatusRegister();
+  UpdateDMARequest();
   return value;
 }
 
 void MDEC::WriteCommandRegister(u32 value)
 {
-  Log_DebugPrintf("MDEC command/data register <- 0x%08X", value);
+  Log_TracePrintf("MDEC command/data register <- 0x%08X", value);
 
   if (m_command == Command::None)
   {
@@ -179,6 +195,7 @@ void MDEC::WriteCommandRegister(u32 value)
     m_data_in_fifo.Push(Truncate16(value));
     m_data_in_fifo.Push(Truncate16(value >> 16));
     m_remaining_words--;
+    UpdateDMARequest();
   }
 
   switch (m_command)
@@ -210,7 +227,7 @@ void MDEC::WriteCommandRegister(u32 value)
   m_current_block = 0;
   m_current_coefficient = 64;
   m_current_q_scale = 0;
-  UpdateStatusRegister();
+  UpdateDMARequest();
 }
 
 bool MDEC::HandleDecodeMacroblockCommand()
@@ -524,10 +541,7 @@ void MDEC::y_to_mono(const std::array<s16, 64>& Yblk, std::array<u8, 64>& r_out)
 bool MDEC::HandleSetQuantTableCommand()
 {
   if (m_remaining_words > 0)
-  {
-    UpdateStatusRegister();
     return false;
-  }
 
   // TODO: Remove extra copies..
   std::array<u16, 32> packed_data;
@@ -546,10 +560,7 @@ bool MDEC::HandleSetQuantTableCommand()
 bool MDEC::HandleSetScaleCommand()
 {
   if (m_remaining_words > 0)
-  {
-    UpdateStatusRegister();
     return false;
-  }
 
   // TODO: Remove extra copies..
   std::array<u16, 64> packed_data;

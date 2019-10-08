@@ -198,7 +198,7 @@ u32 GPU::ReadRegister(u32 offset)
     {
       // Bit 31 of GPUSTAT is always clear during vblank.
       u32 bits = m_GPUSTAT.bits;
-      // bits &= (BoolToUInt32(!m_crtc_state.in_vblank) << 31);
+      bits &= ~(BoolToUInt32(!m_crtc_state.in_vblank) << 31);
       return bits;
     }
 
