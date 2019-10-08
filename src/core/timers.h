@@ -22,8 +22,8 @@ public:
 
   // dot clock/hblank/sysclk div 8
   bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
-  void AddTicks(u32 timer, u32 ticks);
-  void AddSystemTicks(u32 ticks);
+  void AddTicks(u32 timer, TickCount ticks);
+  void Execute(TickCount sysclk_ticks);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -49,9 +49,9 @@ private:
     BitField<u32, bool, 4, 1> irq_at_target;
     BitField<u32, bool, 5, 1> irq_on_overflow;
     BitField<u32, bool, 6, 1> irq_repeat;
-    BitField<u32, bool, 7, 1> irq_pulse;
+    BitField<u32, bool, 7, 1> irq_pulse_n;
     BitField<u32, u8, 8, 2> clock_source;
-    BitField<u32, bool, 10, 1> interrupt_request;
+    BitField<u32, bool, 10, 1> interrupt_request_n;
     BitField<u32, bool, 11, 1> reached_target;
     BitField<u32, bool, 12, 1> reached_overflow;
   };
@@ -65,15 +65,17 @@ private:
     bool use_external_clock;
     bool external_counting_enabled;
     bool counting_enabled;
+    bool irq_done;
   };
 
   void UpdateCountingEnabled(CounterState& cs);
+  void UpdateIRQ(u32 index);
 
   void UpdateDowncount();
-  u32 GetSystemTicksForTimerTicks(u32 timer) const;
 
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
 
   std::array<CounterState, NUM_TIMERS> m_states{};
+  u32 m_sysclk_div_8_carry = 0;   // partial ticks for timer 3 with sysclk/8
 };

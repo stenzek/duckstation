@@ -26,7 +26,10 @@ void Timers::Reset()
     cs.gate = false;
     cs.external_counting_enabled = false;
     cs.counting_enabled = true;
+    cs.irq_done = false;
   }
+
+  m_sysclk_div_8_carry = 0;
 }
 
 bool Timers::DoState(StateWrapper& sw)
@@ -40,8 +43,10 @@ bool Timers::DoState(StateWrapper& sw)
     sw.Do(&cs.use_external_clock);
     sw.Do(&cs.external_counting_enabled);
     sw.Do(&cs.counting_enabled);
+    sw.Do(&cs.irq_done);
   }
 
+  sw.Do(&m_sysclk_div_8_carry);
   return !sw.HasError();
 }
 
@@ -74,46 +79,71 @@ void Timers::SetGate(u32 timer, bool state)
   }
 }
 
-void Timers::AddTicks(u32 timer, u32 count)
+void Timers::AddTicks(u32 timer, TickCount count)
 {
   CounterState& cs = m_states[timer];
-  cs.counter += count;
+  const u32 old_counter = cs.counter;
+  cs.counter += static_cast<u32>(count);
 
-  const u32 reset_value = cs.mode.reset_at_target ? cs.target : u32(0xFFFF);
-  if (cs.counter < reset_value)
-    return;
-
-  const bool old_intr = cs.mode.interrupt_request;
-
-  if (cs.counter >= cs.target)
-    cs.mode.reached_target = true;
-  if (cs.counter >= u32(0xFFFF))
-    cs.mode.reached_overflow = true;
-
-  // TODO: Non-repeat mode.
-  const bool target_intr = cs.mode.reached_target & cs.mode.irq_at_target;
-  const bool overflow_intr = cs.mode.reached_overflow & cs.mode.irq_on_overflow;
-  const bool new_intr = target_intr | overflow_intr;
-  if (!old_intr && new_intr)
+  bool interrupt_request = false;
+  if (cs.counter >= cs.target && old_counter < cs.target)
   {
-    m_interrupt_controller->InterruptRequest(
-      static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + timer));
+    interrupt_request = true;
+    cs.mode.reached_target = true;
+  }
+  if (cs.counter >= 0xFFFF)
+  {
+    interrupt_request = true;
+    cs.mode.reached_overflow = true;
   }
 
-  if (reset_value > 0)
-    cs.counter = cs.counter % reset_value;
+  if (interrupt_request)
+  {
+    if (!cs.mode.irq_pulse_n)
+    {
+      // this is actually low for a few cycles
+      cs.mode.interrupt_request_n = false;
+      UpdateIRQ(timer);
+      cs.mode.interrupt_request_n = true;
+    }
+    else
+    {
+      cs.mode.interrupt_request_n ^= true;
+      UpdateIRQ(timer);
+    }
+  }
+
+  if (cs.mode.reset_at_target)
+  {
+    if (cs.target > 0)
+      cs.counter %= cs.target;
+    else
+      cs.counter = 0;
+  }
   else
-    cs.counter = 0;
+  {
+    cs.counter %= 0xFFFF;
+  }
 }
 
-void Timers::AddSystemTicks(u32 ticks)
+void Timers::Execute(TickCount sysclk_ticks)
 {
   if (!m_states[0].external_counting_enabled && m_states[0].counting_enabled)
-    AddTicks(0, ticks);
+    AddTicks(0, sysclk_ticks);
   if (!m_states[1].external_counting_enabled && m_states[1].counting_enabled)
-    AddTicks(1, ticks);
-  if (m_states[2].counting_enabled)
-    AddTicks(2, m_states[2].external_counting_enabled ? (ticks / 8) : (ticks));
+    AddTicks(1, sysclk_ticks);
+  if (m_states[2].external_counting_enabled)
+  {
+    TickCount sysclk_div_8_ticks = (sysclk_ticks + m_sysclk_div_8_carry) / 8;
+    m_sysclk_div_8_carry = (sysclk_ticks + m_sysclk_div_8_carry) % 8;
+    AddTicks(2, sysclk_div_8_ticks);
+  }
+  else if (m_states[2].counting_enabled)
+  {
+    AddTicks(2, m_states[2].external_counting_enabled ? sysclk_ticks / 8 : sysclk_ticks);
+  }
+
+  UpdateDowncount();
 }
 
 u32 Timers::ReadRegister(u32 offset)
@@ -174,7 +204,12 @@ void Timers::WriteRegister(u32 offset, u32 value)
       cs.mode.bits = value & u32(0x1FFF);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
+      cs.irq_done = false;
+      if (cs.mode.irq_pulse_n)
+        cs.mode.interrupt_request_n = true;
+
       UpdateCountingEnabled(cs);
+      UpdateIRQ(timer_index);
     }
     break;
 
@@ -220,9 +255,38 @@ void Timers::UpdateCountingEnabled(CounterState& cs)
   cs.external_counting_enabled = cs.use_external_clock && cs.counting_enabled;
 }
 
-void Timers::UpdateDowncount() {}
-
-u32 Timers::GetSystemTicksForTimerTicks(u32 timer) const
+void Timers::UpdateIRQ(u32 index)
 {
-  return 1;
+  CounterState& cs = m_states[index];
+  if (cs.mode.interrupt_request_n || (!cs.mode.irq_repeat && cs.irq_done))
+    return;
+
+  Log_DebugPrintf("Raising timer %u IRQ", index);
+  cs.irq_done = true;
+  m_interrupt_controller->InterruptRequest(
+    static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + index));
+}
+
+void Timers::UpdateDowncount()
+{
+  TickCount min_ticks = std::numeric_limits<TickCount>::max();
+  for (u32 i = 0; i < NUM_TIMERS; i++)
+  {
+    CounterState& cs = m_states[i];
+    if (!cs.counting_enabled || (i < 2 && cs.external_counting_enabled))
+      continue;
+
+    TickCount min_ticks_for_this_timer = min_ticks;
+    if (cs.mode.irq_at_target && cs.counter < cs.target)
+      min_ticks_for_this_timer = static_cast<TickCount>(cs.target - cs.counter);
+    if (cs.mode.irq_on_overflow && cs.counter < cs.target)
+      min_ticks_for_this_timer = std::min(min_ticks_for_this_timer, static_cast<TickCount>(0xFFFF - cs.counter));
+
+    if (cs.external_counting_enabled) // sysclk/8 for timer 2
+      min_ticks_for_this_timer = std::max<TickCount>(1, min_ticks_for_this_timer / 8);
+
+    min_ticks = std::min(min_ticks, min_ticks_for_this_timer);
+  }
+
+  m_system->SetDowncount(min_ticks);
 }

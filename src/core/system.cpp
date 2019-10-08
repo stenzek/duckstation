@@ -284,7 +284,7 @@ void System::Synchronize()
   m_global_tick_counter += static_cast<u32>(pending_ticks);
 
   m_gpu->Execute(pending_ticks);
-  m_timers->AddSystemTicks(pending_ticks);
+  m_timers->Execute(pending_ticks);
   m_cdrom->Execute(pending_ticks);
   m_pad->Execute(pending_ticks);
   m_dma->Execute(pending_ticks);
