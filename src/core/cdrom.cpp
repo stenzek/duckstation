@@ -35,10 +35,13 @@ void CDROM::SoftReset()
   m_sector_read_remaining_ticks = 0;
   m_reading = false;
   m_muted = false;
-  m_setloc = {};
-  m_setloc_dirty = false;
   m_status.bits = 0;
   m_secondary_status.bits = 0;
+  m_mode.bits = 0;
+  m_setloc = {};
+  m_setloc_dirty = false;
+  m_last_sector_header = {};
+  m_last_sector_subheader = {};
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
   m_param_fifo.Clear();
@@ -63,6 +66,11 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_command_state);
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
+  sw.Do(&m_mode.bits);
+  sw.DoPOD(&m_setloc);
+  sw.Do(&m_setloc_dirty);
+  sw.DoPOD(&m_last_sector_header);
+  sw.DoPOD(&m_last_sector_subheader);
   sw.Do(&m_interrupt_enable_register);
   sw.Do(&m_interrupt_flag_register);
   sw.Do(&m_param_fifo);
@@ -773,6 +781,10 @@ void CDROM::DoSectorRead()
     // m_sector_read_remaining_ticks += 10;
     // m_system->SetDowncount(m_sector_read_remaining_ticks);
     // return;
+  }
+  if (!m_sector_buffer.empty())
+  {
+    Log_WarningPrintf("Sector buffer was not empty");
   }
 
   // TODO: Error handling
