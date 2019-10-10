@@ -2,6 +2,8 @@
 #include "types.h"
 #include <memory>
 
+class AudioStream;
+
 namespace GL {
 class Texture;
 }
@@ -13,6 +15,8 @@ class HostInterface
 public:
   HostInterface();
   virtual ~HostInterface();
+
+  AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
 
   bool InitializeSystem(const char* filename, const char* exp1_filename);
 
@@ -26,6 +30,8 @@ public:
   bool SaveState(const char* filename);
 
 protected:
+  std::unique_ptr<AudioStream> m_audio_stream;
+
   std::unique_ptr<System> m_system;
   bool m_running = false;
 };

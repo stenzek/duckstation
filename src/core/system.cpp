@@ -288,6 +288,7 @@ void System::Synchronize()
   m_cdrom->Execute(pending_ticks);
   m_pad->Execute(pending_ticks);
   m_dma->Execute(pending_ticks);
+  m_spu->Execute(pending_ticks);
 }
 
 void System::SetDowncount(TickCount downcount)

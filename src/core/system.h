@@ -33,6 +33,7 @@ public:
   CPU::Core* GetCPU() const { return m_cpu.get(); }
   Bus* GetBus() const { return m_bus.get(); }
   GPU* GetGPU() const { return m_gpu.get(); }
+  SPU* GetSPU() const { return m_spu.get(); }
 
   u32 GetFrameNumber() const { return m_frame_number; }
   u32 GetInternalFrameNumber() const { return m_internal_frame_number; }

@@ -1,6 +1,7 @@
 #include "host_interface.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
+#include "common/audio_stream.h"
 #include "system.h"
 Log_SetChannel(HostInterface);
 

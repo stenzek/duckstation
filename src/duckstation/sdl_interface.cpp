@@ -5,8 +5,10 @@
 #include "core/digital_controller.h"
 #include "core/gpu.h"
 #include "core/memory_card.h"
+#include "core/spu.h"
 #include "core/system.h"
 #include "icon.h"
+#include "sdl_audio_stream.h"
 #include <cinttypes>
 #include <glad.h>
 #include <imgui.h>
@@ -173,11 +175,26 @@ void main()
   return true;
 }
 
+bool SDLInterface::CreateAudioStream()
+{
+  m_audio_stream = std::make_unique<SDLAudioStream>();
+  if (!m_audio_stream->Reconfigure(44100, 2))
+  {
+    Panic("Failed to open audio stream");
+    return false;
+  }
+
+  return true;
+}
+
 std::unique_ptr<SDLInterface> SDLInterface::Create()
 {
   std::unique_ptr<SDLInterface> intf = std::make_unique<SDLInterface>();
-  if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() || !intf->CreateGLResources())
+  if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() ||
+      !intf->CreateGLResources() || !intf->CreateAudioStream())
+  {
     return nullptr;
+  }
 
   return intf;
 }
@@ -312,15 +329,15 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
         break;
 
         case SDL_SCANCODE_TAB:
-          {
-            // Window framebuffer has to be bound to call SetSwapInterval.
-            GLint current_fbo = 0;
-            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            SDL_GL_SetSwapInterval(pressed ? 0 : 1);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
-          }
-          break;
+        {
+          // Window framebuffer has to be bound to call SetSwapInterval.
+          GLint current_fbo = 0;
+          glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+          SDL_GL_SetSwapInterval(pressed ? 0 : 1);
+          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+        }
+        break;
 
         default:
           break;
@@ -476,6 +493,8 @@ void SDLInterface::DrawImGui()
   if (m_show_gpu_statistics)
     m_system->GetGPU()->DrawStatistics();
 
+  m_system->GetSPU()->DrawDebugWindow();
+
   DrawOSDMessages();
 
   ImGui::Render();
@@ -566,6 +585,13 @@ void SDLInterface::DrawMainMenuBar()
       ImGui::Separator();
 
       m_system->GetGPU()->DrawDebugMenu();
+      ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("SPU"))
+    {
+      m_system->GetSPU()->DrawDebugMenu();
+
       ImGui::EndMenu();
     }
 
@@ -689,6 +715,8 @@ void SDLInterface::ConnectDevices()
 
 void SDLInterface::Run()
 {
+  m_audio_stream->PauseOutput(false);
+
   while (m_running)
   {
     for (;;)

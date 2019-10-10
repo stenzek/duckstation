@@ -13,6 +13,7 @@
 class System;
 class DigitalController;
 class MemoryCard;
+class AudioStream;
 
 class SDLInterface : public HostInterface
 {
@@ -47,6 +48,7 @@ private:
   bool CreateGLContext();
   bool CreateImGuiContext();
   bool CreateGLResources();
+  bool CreateAudioStream();
 
   // We only pass mouse input through if it's grabbed
   bool IsWindowFullscreen() const;

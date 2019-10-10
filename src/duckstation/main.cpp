@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   // const LOGLEVEL level = LOGLEVEL_DEV;
   // const LOGLEVEL level = LOGLEVEL_PROFILE;
   // g_pLog->SetConsoleOutputParams(true, nullptr, level);
-  g_pLog->SetConsoleOutputParams(true, "Pad SPU", level);
+  g_pLog->SetConsoleOutputParams(true, "Pad", level);
   g_pLog->SetFilterLevel(level);
 #else
   g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
