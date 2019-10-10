@@ -125,6 +125,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DPCR <- 0x%08X", value);
         m_DPCR.bits = value;
+        UpdateTransferPending();
         return;
       }
 
