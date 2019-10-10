@@ -50,12 +50,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sdl_audio_mixer.cpp" />
+    <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_interface.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
     <ClInclude Include="sdl_audio_mixer.h" />
+    <ClInclude Include="sdl_audio_stream.h" />
     <ClInclude Include="sdl_interface.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="audio.h" />
+    <ClInclude Include="audio_stream.h" />
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="display.h" />
@@ -58,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
+    <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="display_renderer_d3d.cpp" />

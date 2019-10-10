@@ -4,10 +4,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sdl_audio_mixer.cpp" />
     <ClCompile Include="sdl_interface.cpp" />
+    <ClCompile Include="sdl_audio_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdl_audio_mixer.h" />
     <ClInclude Include="sdl_interface.h" />
     <ClInclude Include="icon.h" />
+    <ClInclude Include="sdl_audio_stream.h" />
   </ItemGroup>
 </Project>
