@@ -283,7 +283,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   Assert(voice_index < 24);
 
   Voice& voice = m_voices[voice_index];
-  if (voice.key_on)
+  if (voice.IsOn())
     m_system->Synchronize();
 
   switch (reg_index)
@@ -318,14 +318,14 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
     case 0x08: // adsr low
     {
-      Log_WarningPrintf("SPU voice %u ADSR low <- 0x%04X", voice_index, value);
+      Log_DebugPrintf("SPU voice %u ADSR low <- 0x%04X", voice_index, value);
       voice.regs.adsr.bits_low = value;
     }
     break;
 
     case 0x0A: // adsr high
     {
-      Log_WarningPrintf("SPU voice %u ADSR high <- 0x%04X", voice_index, value);
+      Log_DebugPrintf("SPU voice %u ADSR high <- 0x%04X", voice_index, value);
       voice.regs.adsr.bits_high = value;
     }
     break;
@@ -404,14 +404,113 @@ void SPU::Execute(TickCount ticks)
 void SPU::Voice::KeyOn()
 {
   current_address = regs.adpcm_start_address;
+  regs.adsr_volume = 0;
   has_samples = false;
-  key_on = true;
+  SetADSRPhase(ADSRPhase::Attack);
 }
 
 void SPU::Voice::KeyOff()
 {
-  has_samples = false;
-  key_on = false;
+  if (adsr_phase == ADSRPhase::Off)
+    return;
+
+  SetADSRPhase(ADSRPhase::Release);
+}
+
+SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
+{
+  switch (phase)
+  {
+    case ADSRPhase::Attack:
+      // attack -> decay
+      return ADSRPhase::Decay;
+
+    case ADSRPhase::Decay:
+      // decay -> sustain
+      return ADSRPhase::Sustain;
+
+    case ADSRPhase::Sustain:
+      // sustain stays in sustain until key off
+      return ADSRPhase::Sustain;
+
+    default:
+    case ADSRPhase::Release:
+      // end of release disables the voice
+      return ADSRPhase::Off;
+  }
+}
+
+void SPU::Voice::SetADSRPhase(ADSRPhase phase)
+{
+  adsr_phase = phase;
+  switch (phase)
+  {
+    case ADSRPhase::Off:
+      adsr_target = {};
+      break;
+
+    case ADSRPhase::Attack:
+      adsr_target.level = 32767; // 0 -> max
+      adsr_target.step = regs.adsr.attack_step + 4;
+      adsr_target.shift = regs.adsr.attack_shift;
+      adsr_target.decreasing = false;
+      adsr_target.exponential = regs.adsr.attack_exponential;
+      break;
+
+    case ADSRPhase::Decay:
+      adsr_target.level = (u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800; // max -> sustain level
+      adsr_target.step = 0;
+      adsr_target.shift = regs.adsr.decay_shift;
+      adsr_target.decreasing = true;
+      adsr_target.exponential = true;
+      break;
+
+    case ADSRPhase::Sustain:
+      adsr_target.level = regs.adsr.sustain_direction_decrease ? -1 : 1;
+      adsr_target.step = 0;
+      adsr_target.shift = regs.adsr.sustain_shift;
+      adsr_target.decreasing = regs.adsr.sustain_direction_decrease;
+      adsr_target.exponential = regs.adsr.sustain_exponential;
+      break;
+
+    case ADSRPhase::Release:
+      adsr_target.level = 0;
+      adsr_target.step = 0;
+      adsr_target.shift = regs.adsr.release_shift;
+      adsr_target.decreasing = true;
+      adsr_target.exponential = regs.adsr.release_exponential;
+      break;
+
+    default:
+      break;
+  }
+
+  const s32 step = adsr_target.decreasing ? (-8 + adsr_target.step) : (7 - adsr_target.step);
+  adsr_ticks = 1 << std::max<s16>(0, adsr_target.shift - 11);
+  adsr_ticks_remaining = adsr_ticks;
+  adsr_step = step << std::max<s16>(0, 11 - adsr_target.shift);
+}
+
+void SPU::Voice::TickADSR()
+{
+  adsr_ticks_remaining--;
+  if (adsr_ticks_remaining <= 0)
+  {
+    const s32 new_volume = s32(regs.adsr_volume) + s32(adsr_step);
+    regs.adsr_volume = static_cast<s16>(std::clamp<s32>(new_volume, ADSR_MIN_VOLUME, ADSR_MAX_VOLUME));
+
+    const bool reached_target =
+      adsr_target.decreasing ? (new_volume <= adsr_target.level) : (new_volume >= adsr_target.level);
+    if (adsr_phase != ADSRPhase::Sustain && reached_target)
+    {
+      // next phase
+      SetADSRPhase(GetNextADSRPhase(adsr_phase));
+    }
+    else
+    {
+      adsr_ticks_remaining = adsr_ticks;
+    }
+  }
 }
 
 void SPU::Voice::DecodeBlock()
@@ -575,7 +674,7 @@ void SPU::DecodeADPCMBlock(const ADPCMBlock& block, SampleFormat out_samples[NUM
 std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_index)
 {
   Voice& voice = m_voices[voice_index];
-  if (!voice.key_on)
+  if (!voice.IsOn())
     return std::make_tuple<s16, s16>(0, 0);
 
   if (!voice.has_samples)
@@ -624,10 +723,13 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
   }
 
   // TODO: Volume
+  const float adsr_volume = S16ToFloat(voice.regs.adsr_volume);
+  voice.TickADSR();
+
   const s32 sample = voice.Interpolate();
   // s32 sample = voice.SampleBlock(voice.counter.sample_index);
   const s16 sample16 = Clamp16(sample);
-  const float samplef = S16ToFloat(sample16);
+  const float samplef = S16ToFloat(sample16) * adsr_volume;
 
   // apply volume
   const float volume_left = S16ToFloat(voice.regs.volume_left.GetVolume());
@@ -672,7 +774,7 @@ void SPU::DrawDebugWindow()
   if (!m_debug_window_open)
     return;
 
-  ImGui::SetNextWindowSize(ImVec2(700, 400), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("SPU State", &m_debug_window_open))
   {
     ImGui::End();
@@ -682,14 +784,15 @@ void SPU::DrawDebugWindow()
   // draw voice states
   if (ImGui::CollapsingHeader("Voice State", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr u32 NUM_COLUMNS = 11;
+    static constexpr u32 NUM_COLUMNS = 12;
 
     ImGui::Columns(NUM_COLUMNS);
 
     // headers
     static constexpr std::array<const char*, NUM_COLUMNS> column_titles = {
       {"#", "InterpIndex", "SampleIndex", "CurAddr", "StartAddr", "RepeatAddr", "SampleRate", "VolLeft", "VolRight",
-       "ADSR", "ADSRVol"}};
+       "ADSR", "ADSRPhase", "ADSRVol"}};
+    static constexpr std::array<const char*, 5> adsr_phases = {{"Off", "Attack", "Decay", "Sustain", "Release"}};
     for (u32 i = 0; i < NUM_COLUMNS; i++)
     {
       ImGui::TextUnformatted(column_titles[i]);
@@ -700,7 +803,7 @@ void SPU::DrawDebugWindow()
     for (u32 voice_index = 0; voice_index < NUM_VOICES; voice_index++)
     {
       const Voice& v = m_voices[voice_index];
-      ImVec4 color = v.key_on ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+      ImVec4 color = v.IsOn() ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
       ImGui::TextColored(color, "%u", ZeroExtend32(voice_index));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.interpolation_index.GetValue()));
@@ -721,7 +824,9 @@ void SPU::DrawDebugWindow()
       ImGui::NextColumn();
       ImGui::TextColored(color, "%08X", v.regs.adsr.bits);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.adsr_volume));
+      ImGui::TextColored(color, adsr_phases[static_cast<u8>(v.adsr_phase)]);
+      ImGui::NextColumn();
+      ImGui::TextColored(color, "%d", ZeroExtend32(v.regs.adsr_volume));
       ImGui::NextColumn();
     }
 

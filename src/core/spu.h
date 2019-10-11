@@ -46,6 +46,8 @@ private:
   static constexpr u32 NUM_SAMPLES_PER_ADPCM_BLOCK = 28;
   static constexpr u32 SAMPLE_RATE = 44100;
   static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = MASTER_CLOCK / SAMPLE_RATE; // 0x300
+  static constexpr s16 ADSR_MIN_VOLUME = 0;
+  static constexpr s16 ADSR_MAX_VOLUME = 0x7FFF;
 
   enum class RAMTransferMode : u8
   {
@@ -99,7 +101,7 @@ private:
     BitField<u32, u8, 0, 4> sustain_level;
     BitField<u32, u8, 4, 4> decay_shift;
     BitField<u32, u8, 8, 2> attack_step;
-    BitField<u32, u8, 10, 6> attack_shift;
+    BitField<u32, u8, 10, 5> attack_shift;
     BitField<u32, bool, 15, 1> attack_exponential;
 
     BitField<u32, u8, 16, 5> release_shift;
@@ -140,7 +142,7 @@ private:
       u16 adpcm_start_address; // multiply by 8
 
       ADSRRegister adsr;
-      u16 adsr_volume;
+      s16 adsr_volume;
 
       u16 adpcm_repeat_address; // multiply by 8
     };
@@ -187,6 +189,24 @@ private:
     u8 GetNibble(u32 index) const { return (data[index / 2] >> ((index % 2) * 4)) & 0x0F; }
   };
 
+  enum class ADSRPhase : u8
+  {
+    Off = 0,
+    Attack = 1,
+    Decay = 2,
+    Sustain = 3,
+    Release = 4
+  };
+
+  struct ADSRTarget
+  {
+    s32 level;
+    s16 step;
+    u8 shift;
+    bool decreasing;
+    bool exponential;
+  };
+
   struct Voice
   {
     u16 current_address;
@@ -197,8 +217,14 @@ private:
     std::array<SampleFormat, 3> previous_block_last_samples;
     std::array<s32, 2> adpcm_state;
 
-    bool has_samples;
-    bool key_on;
+    ADSRPhase adsr_phase;
+    ADSRTarget adsr_target;
+    TickCount adsr_ticks;
+    TickCount adsr_ticks_remaining;
+    s16 adsr_step;
+    bool has_samples;    
+    
+    bool IsOn() const { return adsr_phase != ADSRPhase::Off; }
 
     void KeyOn();
     void KeyOff();
@@ -206,7 +232,15 @@ private:
     void DecodeBlock();
     SampleFormat SampleBlock(s32 index) const;
     s16 Interpolate() const;
+    
+    // Switches to the specified phase, filling in target.
+    void SetADSRPhase(ADSRPhase phase);
+
+    // Updates the ADSR volume/phase.
+    void TickADSR();
   };
+
+  static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
   u16 ReadVoiceRegister(u32 offset);
   void WriteVoiceRegister(u32 offset, u16 value);
