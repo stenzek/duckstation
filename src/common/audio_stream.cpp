@@ -61,10 +61,9 @@ void AudioStream::Shutdown()
 
 void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_samples)
 {
-  m_buffer_lock.lock();
+  m_buffer_mutex.lock();
 
-  if (m_num_free_buffers == 0)
-    DropBuffer();
+  EnsureBuffer();
 
   Buffer& buffer = m_buffers[m_first_free_buffer];
   *buffer_ptr = buffer.data.data() + buffer.write_position;
@@ -73,13 +72,12 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_samples)
 
 void AudioStream::WriteSamples(const SampleType* samples, u32 num_samples)
 {
-  std::lock_guard<std::mutex> guard(m_buffer_lock);
   u32 remaining_samples = num_samples;
+  std::unique_lock<std::mutex> lock(m_buffer_mutex);
 
   while (remaining_samples > 0)
   {
-    if (m_num_free_buffers == 0)
-      DropBuffer();
+    EnsureBuffer();
 
     Buffer& buffer = m_buffers[m_first_free_buffer];
     const u32 to_this_buffer = std::min(m_buffer_size - buffer.write_position, remaining_samples);
@@ -120,13 +118,13 @@ void AudioStream::EndWrite(u32 num_samples)
     m_num_available_buffers++;
   }
 
-  m_buffer_lock.unlock();
+  m_buffer_mutex.unlock();
 }
 
 u32 AudioStream::ReadSamples(SampleType* samples, u32 num_samples)
 {
-  std::lock_guard<std::mutex> guard(m_buffer_lock);
   u32 remaining_samples = num_samples;
+  std::unique_lock<std::mutex> lock(m_buffer_mutex);
 
   while (remaining_samples > 0 && m_num_available_buffers > 0)
   {
@@ -148,6 +146,7 @@ u32 AudioStream::ReadSamples(SampleType* samples, u32 num_samples)
       m_num_available_buffers--;
       m_first_available_buffer = (m_first_available_buffer + 1) % m_buffers.size();
       m_num_free_buffers++;
+      m_buffer_available_cv.notify_one();
     }
   }
 
@@ -169,6 +168,23 @@ void AudioStream::AllocateBuffers(u32 buffer_count)
   m_num_available_buffers = 0;
   m_first_free_buffer = 0;
   m_num_free_buffers = buffer_count;
+}
+
+void AudioStream::EnsureBuffer()
+{
+  if (m_num_free_buffers > 0)
+    return;
+
+  if (m_sync)
+  {
+    std::unique_lock<std::mutex> lock(m_buffer_mutex, std::adopt_lock);
+    m_buffer_available_cv.wait(lock, [this]() { return m_num_free_buffers > 0; });
+    lock.release();
+  }
+  else
+  {
+    DropBuffer();
+  }
 }
 
 void AudioStream::DropBuffer()

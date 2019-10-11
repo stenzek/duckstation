@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -25,9 +26,11 @@ public:
   u32 GetChannels() const { return m_channels; }
   u32 GetBufferSize() const { return m_buffer_size; }
   u32 GetBufferCount() const { return static_cast<u32>(m_buffers.size()); }
+  bool IsSyncing() const { return m_sync; }
 
   bool Reconfigure(u32 output_sample_rate = DefaultOutputSampleRate, u32 channels = 1,
                    u32 buffer_size = DefaultBufferSize, u32 buffer_count = DefaultBufferCount);
+  void SetSync(bool enable) { m_sync = enable; }
 
   void PauseOutput(bool paused);
   void EmptyBuffers();
@@ -60,10 +63,11 @@ private:
   };
 
   void AllocateBuffers(u32 buffer_count);
+  void EnsureBuffer();
   void DropBuffer();
 
   std::vector<Buffer> m_buffers;
-  std::mutex m_buffer_lock;
+  std::mutex m_buffer_mutex;
 
   // For input.
   u32 m_first_free_buffer = 0;
@@ -73,5 +77,9 @@ private:
   u32 m_num_available_buffers = 0;
   u32 m_first_available_buffer = 0;
 
+  // TODO: Switch to semaphore
+  std::condition_variable m_buffer_available_cv;
+
   bool m_output_paused = true;
+  bool m_sync = true;
 };
