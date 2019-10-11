@@ -14,6 +14,18 @@ static s16 Clamp16(s32 value)
   return static_cast<s16>(std::clamp<s32>(value, -32768, 32767));
 }
 
+static constexpr float S16ToFloat(s16 value)
+{
+  return (value >= 0) ? (static_cast<float>(value) / static_cast<float>(std::numeric_limits<s16>::max())) :
+                        (static_cast<float>(value) / -static_cast<float>(std::numeric_limits<s16>::min()));
+}
+
+static constexpr s16 FloatToS16(float value)
+{
+  return (value >= 0.0f) ? (static_cast<s16>(value * static_cast<float>(std::numeric_limits<s16>::max()))) :
+                           (static_cast<s16>(value * -static_cast<float>(std::numeric_limits<s16>::min())));
+}
+
 SPU::SPU() = default;
 
 SPU::~SPU() = default;
@@ -51,6 +63,30 @@ u16 SPU::ReadRegister(u32 offset)
 
   switch (offset)
   {
+    case 0x1F801D80 - SPU_BASE:
+      return m_main_volume_left.bits;
+
+    case 0x1F801D82 - SPU_BASE:
+      return m_main_volume_right.bits;
+
+    case 0x1F801D88 - SPU_BASE:
+      return Truncate16(m_key_on_register);
+
+    case 0x1F801D8A - SPU_BASE:
+      return Truncate16(m_key_on_register >> 16);
+
+    case 0x1F801D8C - SPU_BASE:
+      return Truncate16(m_key_off_register);
+
+    case 0x1F801D8E - SPU_BASE:
+      return Truncate16(m_key_off_register >> 16);
+
+    case 0x1F801D98 - SPU_BASE:
+      return Truncate16(m_reverb_on_register);
+
+    case 0x1F801D9A - SPU_BASE:
+      return Truncate16(m_reverb_on_register >> 16);
+
     case 0x1F801DA6 - SPU_BASE:
       Log_DebugPrintf("SPU transfer address register -> 0x%04X", ZeroExtend32(m_transfer_address_reg));
       return m_transfer_address_reg;
@@ -66,18 +102,6 @@ u16 SPU::ReadRegister(u32 offset)
     case 0x1F801DAE - SPU_BASE:
       // Log_DebugPrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUSTAT.bits;
-
-    case 0x1F801D88 - SPU_BASE:
-      return Truncate16(m_key_on_register);
-
-    case 0x1F801D8A - SPU_BASE:
-      return Truncate16(m_key_on_register >> 16);
-
-    case 0x1F801D8C - SPU_BASE:
-      return Truncate16(m_key_off_register);
-
-    case 0x1F801D8E - SPU_BASE:
-      return Truncate16(m_key_off_register >> 16);
 
     default:
       Log_ErrorPrintf("Unknown SPU register read: offset 0x%X (address 0x%08X)", offset, offset | SPU_BASE);
@@ -116,6 +140,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
       m_SPUCNT.bits = value;
       UpdateDMARequest();
+      return;
+    }
+
+    case 0x1F801D80 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU main volume left <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_main_volume_left.bits = value;
+      return;
+    }
+
+    case 0x1F801D82 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU main volume right <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_main_volume_right.bits = value;
       return;
     }
 
@@ -195,6 +235,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
     }
     break;
 
+    case 0x1F801D98 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU reverb on register <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_reverb_on_register = (m_reverb_on_register & 0xFFFF0000) | ZeroExtend32(value);
+    }
+    break;
+
+    case 0x1F801D9A - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU reverb off register <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
+    }
+    break;
+
       // read-only registers
     case 0x1F801DAE - SPU_BASE:
     {
@@ -212,8 +268,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
 u16 SPU::ReadVoiceRegister(u32 offset)
 {
-  const u32 reg_index = (offset & 0x0F) / 2;
-  const u32 voice_index = ((offset >> 4) & 0x1F);
+  const u32 reg_index = (offset % 0x10) / 2; //(offset & 0x0F) / 2;
+  const u32 voice_index = (offset / 0x10);   //((offset >> 4) & 0x1F);
   Assert(voice_index < 24);
 
   return m_voices[voice_index].regs.index[reg_index];
@@ -222,65 +278,69 @@ u16 SPU::ReadVoiceRegister(u32 offset)
 void SPU::WriteVoiceRegister(u32 offset, u16 value)
 {
   // per-voice registers
-  const u32 reg_index = (offset & 0x0F);
-  const u32 voice_index = ((offset >> 4) & 0x1F);
+  const u32 reg_index = (offset % 0x10);
+  const u32 voice_index = (offset / 0x10);
   Assert(voice_index < 24);
+
+  Voice& voice = m_voices[voice_index];
+  if (voice.key_on)
+    m_system->Synchronize();
 
   switch (reg_index)
   {
     case 0x00: // volume left
     {
       Log_DebugPrintf("SPU voice %u volume left <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.volume_left.bits = value;
+      voice.regs.volume_left.bits = value;
     }
     break;
 
     case 0x02: // volume right
     {
       Log_DebugPrintf("SPU voice %u volume right <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.volume_right.bits = value;
+      voice.regs.volume_right.bits = value;
     }
     break;
 
     case 0x04: // sample rate
     {
       Log_DebugPrintf("SPU voice %u ADPCM sample rate <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.adpcm_sample_rate = value;
+      voice.regs.adpcm_sample_rate = value;
     }
     break;
 
     case 0x06: // start address
     {
       Log_DebugPrintf("SPU voice %u ADPCM start address <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.adpcm_start_address = value;
+      voice.regs.adpcm_start_address = value;
     }
     break;
 
     case 0x08: // adsr low
     {
       Log_WarningPrintf("SPU voice %u ADSR low <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.adsr.bits_low = value;
+      voice.regs.adsr.bits_low = value;
     }
     break;
 
     case 0x0A: // adsr high
     {
       Log_WarningPrintf("SPU voice %u ADSR high <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.adsr.bits_high = value;
+      voice.regs.adsr.bits_high = value;
     }
     break;
 
     case 0x0C: // adsr volume
     {
       Log_DebugPrintf("SPU voice %u ADSR volume <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.adsr_volume = value;
+      voice.regs.adsr_volume = value;
     }
     break;
 
     case 0x0E: // repeat address
     {
       Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X", voice_index, value);
-      m_voices[voice_index].regs.adpcm_repeat_address = value;
+      voice.regs.adpcm_repeat_address = value;
     }
     break;
 
@@ -373,7 +433,7 @@ SPU::SampleFormat SPU::Voice::SampleBlock(s32 index) const
   return current_block_samples[index];
 }
 
-s32 SPU::Voice::Interpolate() const
+s16 SPU::Voice::Interpolate() const
 {
   static constexpr std::array<s32, 0x200> gauss = {{
     -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, //
@@ -445,10 +505,10 @@ s32 SPU::Voice::Interpolate() const
   const u8 i = counter.interpolation_index;
   const s32 s = static_cast<s32>(ZeroExtend32(counter.sample_index.GetValue()));
 
-  s32 out = gauss[0x0FF - i] * s32(SampleBlock(s - 3));
-  out += gauss[0x1FF - i] * s32(SampleBlock(s - 2));
-  out += gauss[0x100 + i] * s32(SampleBlock(s - 1));
-  out += gauss[0x000 + i] * s32(SampleBlock(s - 0));
+  s16 out = s16(gauss[0x0FF - i] * s32(SampleBlock(s - 3)) >> 15);
+  out += s16(gauss[0x1FF - i] * s32(SampleBlock(s - 2)) >> 15);
+  out += s16(gauss[0x100 + i] * s32(SampleBlock(s - 1)) >> 15);
+  out += s16(gauss[0x000 + i] * s32(SampleBlock(s - 0)) >> 15);
   return out;
 }
 
@@ -491,8 +551,8 @@ void SPU::DecodeADPCMBlock(const ADPCMBlock& block, SampleFormat out_samples[NUM
   static constexpr std::array<s32, 5> filter_table_neg = {{0, 0, -52, -55, -60}};
 
   // pre-lookup
-  const u8 shift = block.shift_filter.shift;
-  const u8 filter_index = std::min<u8>(block.shift_filter.filter, 4);
+  const u8 shift = block.GetShift();
+  const u8 filter_index = block.GetFilter();
   const s32 filter_pos = filter_table_pos[filter_index];
   const s32 filter_neg = filter_table_neg[filter_index];
   s32 last_samples[2] = {state[0], state[1]};
@@ -500,18 +560,16 @@ void SPU::DecodeADPCMBlock(const ADPCMBlock& block, SampleFormat out_samples[NUM
   // samples
   for (u32 i = 0; i < NUM_SAMPLES_PER_ADPCM_BLOCK; i++)
   {
-    const u8 nibble = (block.data[i / 2] >> (4 * (i % 2))) & 0x0F;
-    s32 sample = SignExtendN<4, s32>(static_cast<s32>(ZeroExtend32(nibble)));
-    sample >>= shift;
+    // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
+    const s16 sample = static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift;
+    const s32 interp_sample = s32(sample) + ((last_samples[0] * filter_pos) + (last_samples[1] * filter_neg) + 32) / 64;
 
-    sample += ((last_samples[0] * filter_pos) + (last_samples[1] * filter_neg) + 32) / 64;
-
-    out_samples[i] =
-      static_cast<s16>(std::clamp<s32>(sample, std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
-
-    state[1] = state[0];
-    state[0] = sample;
+    out_samples[i] = Clamp16(interp_sample);
+    last_samples[1] = last_samples[0];
+    last_samples[0] = interp_sample;
   }
+
+  std::copy_n(last_samples, countof(last_samples), state);
 }
 
 std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_index)
@@ -566,8 +624,20 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
   }
 
   // TODO: Volume
-  s32 sample = voice.Interpolate();
-  return std::make_tuple(Clamp16(sample), Clamp16(sample));
+  const s32 sample = voice.Interpolate();
+  // s32 sample = voice.SampleBlock(voice.counter.sample_index);
+  const s16 sample16 = Clamp16(sample);
+  const float samplef = S16ToFloat(sample16);
+
+  // apply volume
+  const float volume_left = S16ToFloat(voice.regs.volume_left.GetVolume());
+  const float volume_right = S16ToFloat(voice.regs.volume_right.GetVolume());
+  const float final_left = volume_left * samplef;
+  const float final_right = volume_right * samplef;
+
+  return std::make_tuple(FloatToS16(final_left), FloatToS16(final_right));
+  // return std::make_tuple(FloatToS16(samplef), FloatToS16(samplef));
+  // return std::make_tuple(sample16, sample16);
 }
 
 void SPU::GenerateSample()
@@ -581,9 +651,20 @@ void SPU::GenerateSample()
     right_sum += right;
   }
 
-  Log_DebugPrintf("SPU sample %d %d", left_sum, right_sum);
+  // Log_DebugPrintf("SPU sample %d %d", left_sum, right_sum);
   AudioStream::SampleType samples[2] = {Clamp16(left_sum), Clamp16(right_sum)};
-  m_audio_stream->WriteSamples(samples, countof(samples));
+  m_audio_stream->WriteSamples(samples, 1);
+
+#if 0
+  static FILE* fp = nullptr;
+  if (!fp)
+    fp = std::fopen("D:\\spu.raw", "wb");
+  if (fp)
+  {
+    std::fwrite(samples, sizeof(AudioStream::SampleType), 2, fp);
+    std::fflush(fp);
+  }
+#endif
 }
 
 void SPU::DrawDebugWindow()

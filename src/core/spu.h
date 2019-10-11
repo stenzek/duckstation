@@ -115,13 +115,15 @@ private:
     u16 bits;
 
     BitField<u16, bool, 15, 1> sweep_mode;
-    BitField<u16, u16, 0, 15> fixed_volume; // divided by 2
+    BitField<u16, s16, 0, 15> fixed_volume; // divided by 2
 
     BitField<u16, bool, 14, 1> sweep_exponential;
     BitField<u16, bool, 13, 1> sweep_direction_decrease;
     BitField<u16, bool, 12, 1> sweep_phase_negative;
     BitField<u16, u8, 2, 5> sweep_shift;
     BitField<u16, u8, 0, 2> sweep_step;
+
+    s16 GetVolume() { return fixed_volume * 2; }
   };
 
   // organized so we can replace this with a u16 array in the future
@@ -173,7 +175,16 @@ private:
 
     u8 data[NUM_SAMPLES_PER_ADPCM_BLOCK / 2];
 
-    u8 ReadSample(u32 index) const { return (data[index / 2] >> ((index % 2) * 4)) & 0x0F; }
+    // For both 4bit and 8bit ADPCM, reserved shift values 13..15 will act same as shift=9).
+    u8 GetShift() const
+    {
+      const u8 shift = shift_filter.shift;
+      return (shift > 12) ? 9 : shift;
+    }
+
+    u8 GetFilter() const { return std::min<u8>(shift_filter.filter, 4); }
+
+    u8 GetNibble(u32 index) const { return (data[index / 2] >> ((index % 2) * 4)) & 0x0F; }
   };
 
   struct Voice
@@ -181,7 +192,7 @@ private:
     u16 current_address;
     VoiceRegisters regs;
     VoiceCounter counter;
-    ADPCMBlock current_block;   // TODO Drop this after decoding
+    ADPCMBlock current_block; // TODO Drop this after decoding
     std::array<SampleFormat, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<SampleFormat, 3> previous_block_last_samples;
     std::array<s32, 2> adpcm_state;
@@ -194,7 +205,7 @@ private:
 
     void DecodeBlock();
     SampleFormat SampleBlock(s32 index) const;
-    s32 Interpolate() const;
+    s16 Interpolate() const;
   };
 
   u16 ReadVoiceRegister(u32 offset);
@@ -223,9 +234,13 @@ private:
 
   u16 m_irq_address = 0;
 
+  VolumeRegister m_main_volume_left = {};
+  VolumeRegister m_main_volume_right = {};
+
   u32 m_key_on_register = 0;
   u32 m_key_off_register = 0;
   u32 m_endx_register = 0;
+  u32 m_reverb_on_register = 0;
 
   TickCount m_ticks_carry = 0;
 
