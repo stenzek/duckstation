@@ -184,6 +184,7 @@ bool SDLInterface::CreateAudioStream()
     return false;
   }
 
+  m_audio_stream->SetSync(false);
   return true;
 }
 
@@ -330,12 +331,17 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
 
         case SDL_SCANCODE_TAB:
         {
+#if 1
+          // sync to audio
+          m_audio_stream->SetSync(!pressed);
+#else
           // Window framebuffer has to be bound to call SetSwapInterval.
           GLint current_fbo = 0;
           glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
           glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
           SDL_GL_SetSwapInterval(pressed ? 0 : 1);
           glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+#endif
         }
         break;
 
