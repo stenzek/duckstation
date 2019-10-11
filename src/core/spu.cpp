@@ -45,6 +45,34 @@ void SPU::Reset()
   m_SPUSTAT.bits = 0;
   m_transfer_address = 0;
   m_transfer_address_reg = 0;
+  m_irq_address = 0;
+  m_main_volume_left.bits = 0;
+  m_main_volume_right.bits = 0;
+  m_key_on_register = 0;
+  m_key_off_register = 0;
+  m_endx_register = 0;
+  m_reverb_on_register = 0;
+  m_ticks_carry = 0;
+
+  for (u32 i = 0; i < NUM_VOICES; i++)
+  {
+    Voice& v = m_voices[i];
+    v.current_address = 0;
+    std::fill_n(v.regs.index, NUM_VOICE_REGISTERS, u16(0));
+    v.counter.bits = 0;
+    v.current_block_flags.bits = 0;
+    v.current_block_samples.fill(s16(0));
+    v.previous_block_last_samples.fill(s16(0));
+    v.adpcm_last_samples.fill(s32(0));
+    v.adsr_phase = ADSRPhase::Off;
+    v.adsr_target = {};
+    v.adsr_ticks = 0;
+    v.adsr_ticks_remaining = 0;
+    v.adsr_step = 0;
+    v.has_samples = false;
+  }
+
+  m_ram.fill(0);
 }
 
 bool SPU::DoState(StateWrapper& sw)
