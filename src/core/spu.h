@@ -157,6 +157,15 @@ private:
     BitField<u32, u8, 12, 5> sample_index;
   };
 
+  union ADPCMFlags
+  {
+    u8 bits;
+
+    BitField<u8, bool, 0, 1> loop_end;
+    BitField<u8, bool, 1, 1> loop_repeat;
+    BitField<u8, bool, 2, 1> loop_start;
+  };
+
   struct ADPCMBlock
   {
     union
@@ -166,15 +175,7 @@ private:
       BitField<u8, u8, 0, 4> shift;
       BitField<u8, u8, 4, 3> filter;
     } shift_filter;
-    union
-    {
-      u8 bits;
-
-      BitField<u8, bool, 0, 1> loop_end;
-      BitField<u8, bool, 1, 1> loop_repeat;
-      BitField<u8, bool, 2, 1> loop_start;
-    } flags;
-
+    ADPCMFlags flags;
     u8 data[NUM_SAMPLES_PER_ADPCM_BLOCK / 2];
 
     // For both 4bit and 8bit ADPCM, reserved shift values 13..15 will act same as shift=9).
@@ -212,10 +213,10 @@ private:
     u16 current_address;
     VoiceRegisters regs;
     VoiceCounter counter;
-    ADPCMBlock current_block; // TODO Drop this after decoding
+    ADPCMFlags current_block_flags;
     std::array<SampleFormat, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<SampleFormat, 3> previous_block_last_samples;
-    std::array<s32, 2> adpcm_state;
+    std::array<s32, 2> adpcm_last_samples;
 
     ADSRPhase adsr_phase;
     ADSRTarget adsr_target;
@@ -229,7 +230,7 @@ private:
     void KeyOn();
     void KeyOff();
 
-    void DecodeBlock();
+    void DecodeBlock(const ADPCMBlock& block);
     SampleFormat SampleBlock(s32 index) const;
     s16 Interpolate() const;
     
@@ -250,7 +251,6 @@ private:
   void RAMTransferWrite(u16 value);
 
   void ReadADPCMBlock(u16 address, ADPCMBlock* block);
-  static void DecodeADPCMBlock(const ADPCMBlock& block, SampleFormat* out_samples, s32* state);
   std::tuple<SampleFormat, SampleFormat> SampleVoice(u32 voice_index);
   void GenerateSample();
 

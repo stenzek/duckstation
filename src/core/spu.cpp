@@ -513,12 +513,37 @@ void SPU::Voice::TickADSR()
   }
 }
 
-void SPU::Voice::DecodeBlock()
+void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
 {
+  static constexpr std::array<s32, 5> filter_table_pos = {{0, 60, 115, 98, 122}};
+  static constexpr std::array<s32, 5> filter_table_neg = {{0, 0, -52, -55, -60}};
+
+  // store samples needed for interpolation
   previous_block_last_samples[2] = current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK - 1];
   previous_block_last_samples[1] = current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK - 2];
   previous_block_last_samples[0] = current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK - 3];
-  DecodeADPCMBlock(current_block, current_block_samples.data(), adpcm_state.data());
+
+  // pre-lookup
+  const u8 shift = block.GetShift();
+  const u8 filter_index = block.GetFilter();
+  const s32 filter_pos = filter_table_pos[filter_index];
+  const s32 filter_neg = filter_table_neg[filter_index];
+  s32 last_samples[2] = {adpcm_last_samples[0], adpcm_last_samples[1]};
+
+  // samples
+  for (u32 i = 0; i < NUM_SAMPLES_PER_ADPCM_BLOCK; i++)
+  {
+    // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
+    const s16 sample = static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift;
+    const s32 interp_sample = s32(sample) + ((last_samples[0] * filter_pos) + (last_samples[1] * filter_neg) + 32) / 64;
+
+    current_block_samples[i] = Clamp16(interp_sample);
+    last_samples[1] = last_samples[0];
+    last_samples[0] = interp_sample;
+  }
+
+  std::copy(last_samples, last_samples + countof(last_samples), adpcm_last_samples.begin());
+  current_block_flags.bits = block.flags.bits;
 }
 
 SPU::SampleFormat SPU::Voice::SampleBlock(s32 index) const
@@ -644,33 +669,6 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
   }
 }
 
-void SPU::DecodeADPCMBlock(const ADPCMBlock& block, SampleFormat out_samples[NUM_SAMPLES_PER_ADPCM_BLOCK], s32 state[2])
-{
-  static constexpr std::array<s32, 5> filter_table_pos = {{0, 60, 115, 98, 122}};
-  static constexpr std::array<s32, 5> filter_table_neg = {{0, 0, -52, -55, -60}};
-
-  // pre-lookup
-  const u8 shift = block.GetShift();
-  const u8 filter_index = block.GetFilter();
-  const s32 filter_pos = filter_table_pos[filter_index];
-  const s32 filter_neg = filter_table_neg[filter_index];
-  s32 last_samples[2] = {state[0], state[1]};
-
-  // samples
-  for (u32 i = 0; i < NUM_SAMPLES_PER_ADPCM_BLOCK; i++)
-  {
-    // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
-    const s16 sample = static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift;
-    const s32 interp_sample = s32(sample) + ((last_samples[0] * filter_pos) + (last_samples[1] * filter_neg) + 32) / 64;
-
-    out_samples[i] = Clamp16(interp_sample);
-    last_samples[1] = last_samples[0];
-    last_samples[0] = interp_sample;
-  }
-
-  std::copy_n(last_samples, countof(last_samples), state);
-}
-
 std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_index)
 {
   Voice& voice = m_voices[voice_index];
@@ -679,11 +677,12 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
 
   if (!voice.has_samples)
   {
-    ReadADPCMBlock(voice.current_address, &voice.current_block);
-    voice.DecodeBlock();
+    ADPCMBlock block;
+    ReadADPCMBlock(voice.current_address, &block);
+    voice.DecodeBlock(block);
     voice.has_samples = true;
 
-    if (voice.current_block.flags.loop_start)
+    if (voice.current_block_flags.loop_start)
     {
       Log_DebugPrintf("Voice %u loop start @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
       voice.regs.adpcm_repeat_address = voice.current_address;
@@ -702,9 +701,9 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
     voice.has_samples = false;
 
     // handle flags
-    if (voice.current_block.flags.loop_end)
+    if (voice.current_block_flags.loop_end)
     {
-      if (!voice.current_block.flags.loop_repeat)
+      if (!voice.current_block_flags.loop_repeat)
       {
         Log_DebugPrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
         m_endx_register |= (u32(1) << voice_index);
