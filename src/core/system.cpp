@@ -112,7 +112,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("Timers") || !m_timers->DoState(sw))
     return false;
 
-  if (!sw.DoMarker("SPU") || !m_timers->DoState(sw))
+  if (!sw.DoMarker("SPU") || !m_spu->DoState(sw))
     return false;
 
   if (!sw.DoMarker("MDEC") || !m_mdec->DoState(sw))

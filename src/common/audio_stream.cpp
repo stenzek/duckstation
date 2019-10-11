@@ -204,6 +204,8 @@ void AudioStream::DropBuffer()
 
 void AudioStream::EmptyBuffers()
 {
+  std::unique_lock<std::mutex> lock(m_buffer_mutex);
+
   for (Buffer& buffer : m_buffers)
   {
     buffer.read_position = 0;

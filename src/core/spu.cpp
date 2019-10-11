@@ -53,6 +53,37 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_SPUSTAT.bits);
   sw.Do(&m_transfer_address);
   sw.Do(&m_transfer_address_reg);
+  sw.Do(&m_irq_address);
+  sw.Do(&m_main_volume_left.bits);
+  sw.Do(&m_main_volume_right.bits);
+  sw.Do(&m_key_on_register);
+  sw.Do(&m_key_off_register);
+  sw.Do(&m_endx_register);
+  sw.Do(&m_reverb_on_register);
+  sw.Do(&m_ticks_carry);
+  for (u32 i = 0; i < NUM_VOICES; i++)
+  {
+    Voice& v = m_voices[i];
+    sw.Do(&v.current_address);
+    sw.DoArray(v.regs.index, NUM_VOICE_REGISTERS);
+    sw.Do(&v.counter.bits);
+    sw.Do(&v.current_block_flags.bits);
+    sw.Do(&v.current_block_samples);
+    sw.Do(&v.previous_block_last_samples);
+    sw.Do(&v.adpcm_last_samples);
+    sw.Do(&v.adsr_phase);
+    sw.DoPOD(&v.adsr_target);
+    sw.Do(&v.adsr_ticks);
+    sw.Do(&v.adsr_ticks_remaining);
+    sw.Do(&v.adsr_step);
+    sw.Do(&v.has_samples);
+  }
+
+  sw.DoBytes(m_ram.data(), RAM_SIZE);
+
+  if (sw.IsReading())
+    m_audio_stream->EmptyBuffers();
+
   return !sw.HasError();
 }
 
@@ -485,7 +516,7 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
       break;
   }
 
-  const s32 step = adsr_target.decreasing ? (-8 + adsr_target.step) : (7 - adsr_target.step);
+  const s16 step = adsr_target.decreasing ? (-8 + adsr_target.step) : (7 - adsr_target.step);
   adsr_ticks = 1 << std::max<s16>(0, adsr_target.shift - 11);
   adsr_ticks_remaining = adsr_ticks;
   adsr_step = step << std::max<s16>(0, 11 - adsr_target.shift);
