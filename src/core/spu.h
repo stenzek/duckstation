@@ -258,7 +258,7 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   AudioStream* m_audio_stream = nullptr;
-  bool m_debug_window_open = true;
+  bool m_show_spu_state = false;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};

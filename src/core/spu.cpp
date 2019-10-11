@@ -743,7 +743,7 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
 
     if (voice.current_block_flags.loop_start)
     {
-      Log_DebugPrintf("Voice %u loop start @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
+      Log_TracePrintf("Voice %u loop start @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
       voice.regs.adpcm_repeat_address = voice.current_address;
     }
   }
@@ -764,13 +764,13 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
     {
       if (!voice.current_block_flags.loop_repeat)
       {
-        Log_DebugPrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
+        Log_TracePrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
         m_endx_register |= (u32(1) << voice_index);
         voice.KeyOff();
       }
       else
       {
-        Log_DebugPrintf("Voice %u loop end+repeat @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
+        Log_TracePrintf("Voice %u loop end+repeat @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
         voice.current_address = voice.regs.adpcm_repeat_address;
       }
     }
@@ -829,11 +829,11 @@ void SPU::GenerateSample()
 
 void SPU::DrawDebugWindow()
 {
-  if (!m_debug_window_open)
+  if (!m_show_spu_state)
     return;
 
   ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("SPU State", &m_debug_window_open))
+  if (!ImGui::Begin("SPU State", &m_show_spu_state))
   {
     ImGui::End();
     return;
@@ -897,4 +897,5 @@ void SPU::DrawDebugWindow()
 void SPU::DrawDebugMenu()
 {
   // TODO: Show RAM, etc.
+  ImGui::MenuItem("Show State", nullptr, &m_show_spu_state);
 }
