@@ -143,15 +143,6 @@ void GPU::ResetGraphicsAPIState() {}
 
 void GPU::RestoreGraphicsAPIState() {}
 
-void GPU::DrawStatistics() {}
-
-void GPU::DrawDebugMenu()
-{
-  ImGui::MenuItem("Show VRAM", nullptr, &m_debug_options.show_vram);
-  ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &m_debug_options.dump_cpu_to_vram_copies);
-  ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &m_debug_options.dump_vram_to_cpu_copies);
-}
-
 void GPU::UpdateSettings() {}
 
 void GPU::UpdateGPUSTAT()
@@ -975,4 +966,71 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
     ptr_in += stride;
   }
   return (stbi_write_png(filename, width, height, 4, rgba8_buf.data(), sizeof(u32) * width) != 0);
+}
+
+void GPU::DrawDebugWindows()
+{
+  if (m_debug_options.show_state)
+    DrawDebugStateWindow();
+}
+
+void GPU::DrawDebugMenu()
+{
+  if (ImGui::BeginMenu("GPU"))
+  {
+    ImGui::MenuItem("Show State", nullptr, &m_debug_options.show_state);
+    ImGui::MenuItem("Show VRAM", nullptr, &m_debug_options.show_vram);
+    ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &m_debug_options.dump_cpu_to_vram_copies);
+    ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &m_debug_options.dump_vram_to_cpu_copies);
+
+    ImGui::EndMenu();
+  }
+}
+
+void GPU::DrawDebugStateWindow()
+{
+  ImGui::SetNextWindowSize(ImVec2(450, 550), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("GPU State", &m_debug_options.show_state))
+  {
+    ImGui::End();
+    return;
+  }
+
+  if (ImGui::CollapsingHeader("CRTC", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    const auto& cs = m_crtc_state;
+    ImGui::Text("Resolution: %ux%u", cs.horizontal_resolution, cs.vertical_resolution);
+    ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
+    ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
+                m_GPUSTAT.interlaced_field ? "odd" : "even");
+    ImGui::Text("Display Enable: %s", m_GPUSTAT.display_enable ? "Yes" : "No");
+    ImGui::Text("Drawing Even Line: %s", m_GPUSTAT.drawing_even_line ? "Yes" : "No");
+    ImGui::NewLine();
+
+    ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
+    ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
+    ImGui::Text("Display Range: %u-%u, %u-%u", cs.regs.X1.GetValue(), cs.regs.X2.GetValue(), cs.regs.Y1.GetValue(),
+                cs.regs.Y2.GetValue());
+    ImGui::NewLine();
+
+    ImGui::Text("Visible Resolution: %ux%u", cs.visible_horizontal_resolution, cs.visible_vertical_resolution);
+    ImGui::Text("Ticks Per Scanline: %u (%u visible)", cs.ticks_per_scanline, cs.visible_ticks_per_scanline);
+    ImGui::Text("Scanlines Per Frame: %u", cs.total_scanlines_per_frame);
+    ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
+    ImGui::Text("Horizontal Blank: %s", cs.in_hblank ? "Yes" : "No");
+    ImGui::Text("Vertical Blank: %s", cs.in_vblank ? "Yes" : "No");
+  }
+
+  if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Text("Dither: %s", m_GPUSTAT.dither_enable ? "Enabled" : "Disabled");
+    ImGui::Text("Draw To Display Area: %s", m_GPUSTAT.dither_enable ? "Yes" : "No");
+    ImGui::Text("Draw Set Mask Bit: %s", m_GPUSTAT.draw_set_mask_bit ? "Yes" : "No");
+    ImGui::Text("Draw To Masked Pixels: %s", m_GPUSTAT.draw_to_masked_pixels ? "Yes" : "No");
+    ImGui::Text("Reverse Flag: %s", m_GPUSTAT.reverse_flag ? "Yes" : "No");
+    ImGui::Text("Texture Disable: %s", m_GPUSTAT.texture_disable ? "Yes" : "No");
+    ImGui::Text("PAL Mode: %s", m_GPUSTAT.pal_mode ? "Yes" : "No");
+    ImGui::Text("Interrupt Request: %s", m_GPUSTAT.interrupt_request ? "Yes" : "No");
+    ImGui::Text("DMA Request: %s", m_GPUSTAT.dma_data_request ? "Yes" : "No");
+  }
 }

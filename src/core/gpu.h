@@ -40,7 +40,7 @@ public:
   virtual void RestoreGraphicsAPIState();
 
   // Render statistics debug window.
-  virtual void DrawStatistics();
+  virtual void DrawDebugWindows();
 
   // Manipulating debug options.
   virtual void DrawDebugMenu();
@@ -162,9 +162,10 @@ protected:
 
   struct DebugOptions
   {
-    bool show_vram;
-    bool dump_cpu_to_vram_copies;
-    bool dump_vram_to_cpu_copies;
+    bool show_state = false;
+    bool show_vram = false;
+    bool dump_cpu_to_vram_copies = false;
+    bool dump_vram_to_cpu_copies = false;
   };
 
   void SoftReset();
@@ -199,6 +200,9 @@ protected:
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices);
   virtual void FlushRender();
+
+  // Debugging
+  void DrawDebugStateWindow();
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
@@ -351,5 +355,5 @@ protected:
   std::vector<u32> m_GP0_command;
   std::deque<u32> m_GPUREAD_buffer;
 
-  DebugOptions m_debug_options = {};
+  DebugOptions m_debug_options;
 };

@@ -19,7 +19,8 @@ public:
   void ResetGraphicsAPIState() override;
   void RestoreGraphicsAPIState() override;
 
-  void DrawStatistics() override;
+  void DrawDebugWindows() override;
+  void DrawDebugMenu() override;
   void UpdateSettings() override;
 
 protected:
@@ -39,6 +40,8 @@ private:
     u32 num_batches;
     u32 num_vertices;
   };
+
+  void DrawRendererStatistics();
 
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
@@ -72,6 +75,7 @@ private:
 
   bool m_vram_read_texture_dirty = true;
   bool m_drawing_area_changed = true;
+  bool m_show_renderer_statistics = false;
 
   std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 4> m_render_programs;
   GL::Program m_reinterpret_rgb8_program;

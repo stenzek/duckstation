@@ -587,5 +587,4 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
   }
 
   LoadVertices(rc, num_vertices);
-  FlushRender();
 }

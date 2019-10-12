@@ -65,6 +65,9 @@ public:
   bool InsertMedia(const char* path);
   void RemoveMedia();
 
+  void DrawDebugMenus();
+  void DrawDebugWindows();
+
 private:
   bool DoState(StateWrapper& sw);
 

@@ -92,7 +92,4 @@ private:
   u32 m_last_internal_frame_number = 0;
   u32 m_last_global_tick_counter = 0;
   Timer m_fps_timer;
-
-  // UI options
-  bool m_show_gpu_statistics = false;
 };

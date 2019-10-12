@@ -65,11 +65,24 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glBindVertexArray(m_vao_id);
 }
 
-void GPU_HW_OpenGL::DrawStatistics()
+void GPU_HW_OpenGL::DrawDebugWindows()
 {
-  GPU_HW::DrawStatistics();
+  GPU_HW::DrawDebugWindows();
 
-  ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_Once);
+  if (m_show_renderer_statistics)
+    DrawRendererStatistics();
+}
+
+void GPU_HW_OpenGL::DrawDebugMenu()
+{
+  GPU_HW::DrawDebugMenu();
+
+  ImGui::MenuItem("GPU Renderer", nullptr, &m_show_renderer_statistics);
+}
+
+void GPU_HW_OpenGL::DrawRendererStatistics()
+{
+  ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_FirstUseEver);
 
   const bool is_null_frame = m_stats.num_batches == 0;
   if (!is_null_frame)
@@ -78,7 +91,7 @@ void GPU_HW_OpenGL::DrawStatistics()
     m_stats = {};
   }
 
-  if (ImGui::Begin("GPU Render Statistics"))
+  if (ImGui::Begin("GPU Renderer Statistics", &m_show_renderer_statistics))
   {
     ImGui::Columns(2);
     ImGui::SetColumnWidth(0, 200.0f);

@@ -3,6 +3,7 @@
 #include "common/state_wrapper.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include <imgui.h>
 Log_SetChannel(Timers);
 
 Timers::Timers() = default;
@@ -140,7 +141,7 @@ void Timers::Execute(TickCount sysclk_ticks)
   }
   else if (m_states[2].counting_enabled)
   {
-    AddTicks(2, m_states[2].external_counting_enabled ? sysclk_ticks / 8 : sysclk_ticks);
+    AddTicks(2, sysclk_ticks);
   }
 
   UpdateDowncount();
@@ -289,4 +290,82 @@ void Timers::UpdateDowncount()
   }
 
   m_system->SetDowncount(min_ticks);
+}
+
+void Timers::DrawDebugMenu()
+{
+  ImGui::MenuItem("Timers", nullptr, &m_debug_show_state);
+}
+
+void Timers::DrawDebugWindow()
+{
+  if (!m_debug_show_state)
+    return;
+
+  static constexpr u32 NUM_COLUMNS = 10;
+  static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
+    {"#", "Value", "Target", "Sync", "Reset", "IRQ", "IRQRepeat", "IRQToggle", "Clock Source", "Reached"}};
+  static constexpr std::array<const char*, 4> sync_mode_names = {
+    {"PauseOnGate", "ResetOnGate", "ResetAndRunOnGate", "FreeRunOnGate"}};
+  static constexpr std::array<std::array<const char*, 4>, 3> clock_source_names = {
+    {{{"SysClk", "DotClk", "SysClk", "DotClk"}},
+     {{"SysClk", "HBlank", "SysClk", "HBlank"}},
+     {{"SysClk", "DotClk", "SysClk/8", "SysClk/8"}}}};
+
+  ImGui::SetNextWindowSize(ImVec2(800, 100), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("Timer State", &m_debug_show_state))
+  {
+    ImGui::End();
+    return;
+  }
+
+  ImGui::Columns(NUM_COLUMNS);
+  ImGui::SetColumnWidth(0, 20.0f);
+  ImGui::SetColumnWidth(1, 50.0f);
+  ImGui::SetColumnWidth(2, 50.0f);
+  ImGui::SetColumnWidth(3, 100.0f);
+  ImGui::SetColumnWidth(4, 80.0f);
+  ImGui::SetColumnWidth(5, 80.0f);
+  ImGui::SetColumnWidth(6, 80.0f);
+  ImGui::SetColumnWidth(7, 80.0f);
+  ImGui::SetColumnWidth(8, 80.0f);
+  ImGui::SetColumnWidth(9, 80.0f);
+
+  for (const char* title : column_names)
+  {
+    ImGui::TextUnformatted(title);
+    ImGui::NextColumn();
+  }
+
+  for (u32 i = 0; i < NUM_TIMERS; i++)
+  {
+    const CounterState& cs = m_states[i];
+    ImGui::PushStyleColor(ImGuiCol_Text,
+                          cs.counting_enabled ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    ImGui::Text("%u", i);
+    ImGui::NextColumn();
+    ImGui::Text("%u", cs.counter);
+    ImGui::NextColumn();
+    ImGui::Text("%u", cs.target);
+    ImGui::NextColumn();
+    ImGui::Text("%s",
+                cs.mode.sync_enable ? sync_mode_names[static_cast<u8>(cs.mode.sync_mode.GetValue())] : "Disabled");
+    ImGui::NextColumn();
+    ImGui::Text("%s", cs.mode.reset_at_target ? "@Target" : "@Overflow");
+    ImGui::NextColumn();
+    ImGui::Text("%s%s", cs.mode.irq_at_target ? "Target " : "", cs.mode.irq_on_overflow ? "Overflow" : "");
+    ImGui::NextColumn();
+    ImGui::Text("%s", cs.mode.irq_repeat ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("%s", cs.mode.irq_pulse_n ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("%s%s", clock_source_names[i][cs.mode.clock_source], cs.external_counting_enabled ? " (External)" : "");
+    ImGui::NextColumn();
+    ImGui::Text("%s", cs.mode.reached_target ? "Target " : "", cs.mode.reached_overflow ? "Overflow" : "");
+    ImGui::NextColumn();
+    ImGui::PopStyleColor();
+  }
+
+  ImGui::Columns(1);
+  ImGui::End();
 }

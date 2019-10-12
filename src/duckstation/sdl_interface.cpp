@@ -5,7 +5,6 @@
 #include "core/digital_controller.h"
 #include "core/gpu.h"
 #include "core/memory_card.h"
-#include "core/spu.h"
 #include "core/system.h"
 #include "icon.h"
 #include "sdl_audio_stream.h"
@@ -496,10 +495,7 @@ void SDLInterface::DrawImGui()
 {
   DrawMainMenuBar();
 
-  if (m_show_gpu_statistics)
-    m_system->GetGPU()->DrawStatistics();
-
-  m_system->GetSPU()->DrawDebugWindow();
+  m_system->DrawDebugWindows();
 
   DrawOSDMessages();
 
@@ -585,22 +581,7 @@ void SDLInterface::DrawMainMenuBar()
 
   if (ImGui::BeginMenu("Debug"))
   {
-    if (ImGui::BeginMenu("GPU"))
-    {
-      ImGui::MenuItem("Show Statistics", nullptr, &m_show_gpu_statistics);
-      ImGui::Separator();
-
-      m_system->GetGPU()->DrawDebugMenu();
-      ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("SPU"))
-    {
-      m_system->GetSPU()->DrawDebugMenu();
-
-      ImGui::EndMenu();
-    }
-
+    m_system->DrawDebugMenus();
     ImGui::EndMenu();
   }
 

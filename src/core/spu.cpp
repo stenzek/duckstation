@@ -897,5 +897,5 @@ void SPU::DrawDebugWindow()
 void SPU::DrawDebugMenu()
 {
   // TODO: Show RAM, etc.
-  ImGui::MenuItem("Show State", nullptr, &m_show_spu_state);
+  ImGui::MenuItem("SPU", nullptr, &m_show_spu_state);
 }

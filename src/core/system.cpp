@@ -13,6 +13,7 @@
 #include "spu.h"
 #include "timers.h"
 #include <cstdio>
+#include <imgui.h>
 Log_SetChannel(System);
 
 System::System(HostInterface* host_interface, const Settings& settings)
@@ -319,4 +320,18 @@ bool System::InsertMedia(const char* path)
 void System::RemoveMedia()
 {
   m_cdrom->RemoveMedia();
+}
+
+void System::DrawDebugMenus()
+{
+  m_gpu->DrawDebugMenu();
+  m_spu->DrawDebugMenu();
+  m_timers->DrawDebugMenu();
+}
+
+void System::DrawDebugWindows()
+{
+  m_gpu->DrawDebugWindows();
+  m_spu->DrawDebugWindow();
+  m_timers->DrawDebugWindow();
 }
