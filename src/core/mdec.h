@@ -26,9 +26,12 @@ public:
   u32 DMARead();
   void DMAWrite(u32 value);
 
+  void DrawDebugMenu();
+  void DrawDebugWindow();
+
 private:
-  static constexpr u32 DATA_IN_FIFO_SIZE = 1048576;
-  static constexpr u32 DATA_OUT_FIFO_SIZE = 1048576;
+  static constexpr u32 DATA_IN_FIFO_SIZE = 512 * 1024;
+  static constexpr u32 DATA_OUT_FIFO_SIZE = 512 * 1024;
   static constexpr u32 NUM_BLOCKS = 6;
 
   enum DataOutputDepth : u8
@@ -126,4 +129,8 @@ private:
   u32 m_current_block = 0;            // block (0-5)
   u32 m_current_coefficient = 64;     // k (in block)
   u16 m_current_q_scale = 0;
-};
+
+  bool m_debug_show_state = false;
+  u32 m_debug_blocks_decoded = 0;
+  u32 m_debug_last_blocks_decoded = 0;
+  };

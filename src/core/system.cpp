@@ -327,6 +327,7 @@ void System::DrawDebugMenus()
   m_gpu->DrawDebugMenu();
   m_spu->DrawDebugMenu();
   m_timers->DrawDebugMenu();
+  m_mdec->DrawDebugMenu();
 }
 
 void System::DrawDebugWindows()
@@ -334,4 +335,5 @@ void System::DrawDebugWindows()
   m_gpu->DrawDebugWindows();
   m_spu->DrawDebugWindow();
   m_timers->DrawDebugWindow();
+  m_mdec->DrawDebugWindow();
 }
