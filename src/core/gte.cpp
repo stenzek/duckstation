@@ -540,9 +540,19 @@ void Core::Execute_MVMVA(Instruction inst)
       std::memcpy(M, m_regs.LCM, sizeof(s16) * 3 * 3);
       break;
     default:
+    {
       // buggy
-      Panic("Missing implementation");
-      return;
+      M[0][0] = -static_cast<s16>(ZeroExtend16(m_regs.RGBC[0]) << 4);
+      M[0][1] = static_cast<s16>(ZeroExtend16(m_regs.RGBC[0]) << 4);
+      M[0][2] = m_regs.IR0;
+      M[1][0] = m_regs.RT[0][2];
+      M[1][1] = m_regs.RT[0][2];
+      M[1][2] = m_regs.RT[0][2];
+      M[2][0] = m_regs.RT[1][1];
+      M[2][1] = m_regs.RT[1][1];
+      M[2][2] = m_regs.RT[1][1];
+    }
+    break;
   }
 
   s16 Vx, Vy, Vz;
@@ -580,15 +590,11 @@ void Core::Execute_MVMVA(Instruction inst)
       std::memcpy(T, m_regs.BK, sizeof(T));
       break;
     case 2:
-      // buggy
       std::memcpy(T, m_regs.FC, sizeof(T));
       break;
-    case 3:
+    default:
       std::fill_n(T, countof(T), s32(0));
       break;
-    default:
-      Panic("Missing implementation");
-      return;
   }
 
   MulMatVec(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
