@@ -34,12 +34,6 @@ union FLAGS
 
   static constexpr u32 WRITE_MASK = UINT32_C(0xFFFFF000);
 
-  void SetMACOverflow(u32 index) { bits |= (index == 0) ? (UINT32_C(1) << 16) : (UINT32_C(1) << (31 - index)); }
-
-  void SetMACUnderflow(u32 index) { bits |= (index == 0) ? (UINT32_C(1) << 15) : (UINT32_C(1) << (27 - index)); }
-
-  void SetIRSaturated(u32 index) { bits |= (index == 0) ? (UINT32_C(1) << 12) : (UINT32_C(1) << (25 - index)); }
-
   void Clear() { bits = 0; }
 
   // Bits 30..23, 18..13 OR'ed

@@ -61,6 +61,9 @@ private:
   void PushRGB(u8 r, u8 g, u8 b, u8 c);
   void PushRGBFromMAC();
 
+  // Divide using Unsigned Newton-Raphson algorithm.
+  u32 UNRDivide(u32 lhs, u32 rhs);
+
   // 3x3 matrix * 3x1 vector, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 
@@ -70,7 +73,7 @@ private:
   // Interpolate colour, or as in nocash "MAC+(FC-MAC)*IR0".
   void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm);
 
-  void RTPS(const s16 V[3], bool sf, bool lm, bool last);
+  void RTPS(const s16 V[3], u8 shift, bool lm, bool last);
   void NCS(const s16 V[3], u8 shift, bool lm);
   void NCCS(const s16 V[3], u8 shift, bool lm);
   void NCDS(const s16 V[3], u8 shift, bool lm);
