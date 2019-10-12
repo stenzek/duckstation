@@ -309,7 +309,7 @@ void Core::ExecuteInstruction(Instruction inst)
       break;
 
     case 0x16:
-      Execute_NCCT(inst);
+      Execute_NCDT(inst);
       break;
 
     case 0x1B:
@@ -435,19 +435,17 @@ void Core::PushSZ(s32 value)
   m_regs.dr32[19] = static_cast<u32>(value); // SZ3 <- value
 }
 
-void Core::PushRGB(u8 r, u8 g, u8 b, u8 c)
-{
-  m_regs.dr32[20] = m_regs.dr32[21]; // RGB0 <- RGB1
-  m_regs.dr32[21] = m_regs.dr32[22]; // RGB1 <- RGB2
-  m_regs.dr32[22] =
-    ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(c) << 24); // RGB2 <- Value
-}
-
 void Core::PushRGBFromMAC()
 {
   // Note: SHR 4 used instead of /16 as the results are different.
-  PushRGB(TruncateRGB<0>(m_regs.MAC1 >> 4), TruncateRGB<1>(m_regs.MAC2 >> 4), TruncateRGB<2>(m_regs.MAC3 >> 4),
-          m_regs.RGBC[3]);
+  const u32 r = TruncateRGB<0>(static_cast<u32>(m_regs.MAC1 >> 4));
+  const u32 g = TruncateRGB<1>(static_cast<u32>(m_regs.MAC2 >> 4));
+  const u32 b = TruncateRGB<2>(static_cast<u32>(m_regs.MAC3 >> 4));
+  const u32 c = ZeroExtend32(m_regs.RGBC[3]);
+
+  m_regs.dr32[20] = m_regs.dr32[21];                      // RGB0 <- RGB1
+  m_regs.dr32[21] = m_regs.dr32[22];                      // RGB1 <- RGB2
+  m_regs.dr32[22] = r | (g << 8) | (b << 16) | (c << 24); // RGB2 <- Value
 }
 
 u32 Core::UNRDivide(u32 lhs, u32 rhs)
@@ -662,7 +660,7 @@ void Core::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   // The command does saturate IR1,IR2,IR3 to -8000h..+7FFFh (regardless of lm bit). When using RTP with sf=0, then the
   // IR3 saturation flag (FLAG.22) gets set <only> if "MAC3 SAR 12" exceeds -8000h..+7FFFh (although IR3 is saturated
   // when "MAC3" exceeds -8000h..+7FFFh).
-  TruncateAndSetIR<3>(z >> 12, false);
+  TruncateAndSetIR<3>(s32(z >> 12), false);
   m_regs.dr32[11] = std::clamp(m_regs.MAC3, lm ? 0 : IR123_MIN_VALUE, IR123_MAX_VALUE);
 #undef dot3
 

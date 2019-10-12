@@ -99,7 +99,7 @@ void GTE::Core::TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
 }
 
 template<u32 index>
-u8 GTE::Core::TruncateRGB(s32 value)
+u32 GTE::Core::TruncateRGB(s32 value)
 {
   if (value < 0 || value > 0xFF)
   {
@@ -110,8 +110,8 @@ u8 GTE::Core::TruncateRGB(s32 value)
     else
       m_regs.FLAG.color_b_saturated = true;
 
-    value = (value < 0) ? 0 : 0xFF;
+    return (value < 0) ? 0 : 0xFF;
   }
 
-  return static_cast<u8>(value);
+  return static_cast<u32>(value);
 }

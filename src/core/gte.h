@@ -53,12 +53,11 @@ private:
   void TruncateAndSetIR(s32 value, bool lm);
 
   template<u32 index>
-  u8 TruncateRGB(s32 value);
+  u32 TruncateRGB(s32 value);
 
   void SetOTZ(s32 value);
   void PushSXY(s32 x, s32 y);
   void PushSZ(s32 value);
-  void PushRGB(u8 r, u8 g, u8 b, u8 c);
   void PushRGBFromMAC();
 
   // Divide using Unsigned Newton-Raphson algorithm.
