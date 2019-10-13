@@ -185,12 +185,12 @@ protected:
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering commands, returns false if not enough data is provided
-  void HandleGP0Command();
-  bool HandleRenderCommand();
-  bool HandleFillRectangleCommand();
-  bool HandleCopyRectangleCPUToVRAMCommand();
-  bool HandleCopyRectangleVRAMToCPUCommand();
-  bool HandleCopyRectangleVRAMToVRAMCommand();
+  bool HandleGP0Command(const u32*& command_ptr, u32 command_size);
+  bool HandleRenderCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 command_size);
 
   // Rendering in the backend
   virtual void UpdateDisplay();
@@ -199,7 +199,7 @@ protected:
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
-  virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices);
+  virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   virtual void FlushRender();
 
   // Debugging
@@ -353,7 +353,7 @@ protected:
     bool in_vblank;
   } m_crtc_state = {};
 
-  std::vector<u32> m_GP0_command;
+  std::vector<u32> m_GP0_buffer;
   std::deque<u32> m_GPUREAD_buffer;
 
   DebugOptions m_debug_options;

@@ -83,7 +83,7 @@ protected:
 
   bool IsFlushed() const { return m_batch.vertices.empty(); }
 
-  void DispatchRenderCommand(RenderCommand rc, u32 num_vertices) override;
+  void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
 
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
 
@@ -107,5 +107,5 @@ private:
 
   void GenerateShaderHeader(std::stringstream& ss);
 
-  void LoadVertices(RenderCommand rc, u32 num_vertices);
+  void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
 };

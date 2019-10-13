@@ -39,7 +39,7 @@ void GPU::SoftReset()
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
-  m_GP0_command.clear();
+  m_GP0_buffer.clear();
   m_GPUREAD_buffer.clear();
   m_render_state = {};
   m_render_state.texture_page_changed = true;
@@ -107,7 +107,7 @@ bool GPU::DoState(StateWrapper& sw)
   if (sw.IsReading())
     UpdateSliceTicks();
 
-  sw.Do(&m_GP0_command);
+  sw.Do(&m_GP0_buffer);
   sw.Do(&m_GPUREAD_buffer);
 
   if (sw.IsReading())
@@ -250,11 +250,45 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
   {
     case DMADirection::CPUtoGP0:
     {
-      m_GP0_command.reserve(m_GP0_command.size() + word_count);
-      for (u32 i = 0; i < word_count; i++)
+      // partial command buffered? have to go through the slow path
+      if (!m_GP0_buffer.empty())
       {
-        m_GP0_command.push_back(*(words++));
-        HandleGP0Command();
+        std::copy(words, words + word_count, std::back_inserter(m_GP0_buffer));
+        const u32* command_ptr = m_GP0_buffer.data();
+        u32 command_size = static_cast<u32>(m_GP0_buffer.size());
+        do
+        {
+          const u32* prev_command_ptr = command_ptr;
+          const bool result = HandleGP0Command(command_ptr, command_size);
+          command_size -= command_ptr - prev_command_ptr;
+          if (!result)
+            break;
+        } while (command_size > 0);
+
+        if (command_size > 0 && command_size < m_GP0_buffer.size())
+          m_GP0_buffer.erase(m_GP0_buffer.begin(), m_GP0_buffer.begin() + (m_GP0_buffer.size() - command_size));
+        else if (command_size == 0)
+          m_GP0_buffer.clear();
+      }
+      else
+      {
+        // fast path - read directly from DMA buffer
+        const u32* command_ptr = words;
+        u32 command_size = word_count;
+        do
+        {
+          const u32* prev_command_ptr = command_ptr;
+          const bool result = HandleGP0Command(command_ptr, command_size);
+          command_size -= command_ptr - prev_command_ptr;
+          if (!result)
+            break;
+        } while (command_size > 0);
+
+        if (command_size > 0)
+        {
+          // partial command left over
+          std::copy(command_ptr, command_ptr + command_size, std::back_inserter(m_GP0_buffer));
+        }
       }
 
       UpdateGPUSTAT();
@@ -394,60 +428,50 @@ u32 GPU::ReadGPUREAD()
 
 void GPU::WriteGP0(u32 value)
 {
-  m_GP0_command.push_back(value);
-  Assert(m_GP0_command.size() <= 1048576);
-  HandleGP0Command();
+  m_GP0_buffer.push_back(value);
+  Assert(m_GP0_buffer.size() <= 1048576);
+
+  const u32* command_ptr = m_GP0_buffer.data();
+  if (HandleGP0Command(command_ptr, static_cast<u32>(m_GP0_buffer.size())))
+  {
+    DebugAssert((command_ptr - m_GP0_buffer.data()) == m_GP0_buffer.size());
+    m_GP0_buffer.clear();
+  }
+
   UpdateGPUSTAT();
 }
 
-void GPU::HandleGP0Command()
+bool GPU::HandleGP0Command(const u32*& command_ptr, u32 command_size)
 {
-  const u8 command = Truncate8(m_GP0_command[0] >> 24);
-  const u32 param = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
+  const u8 command = Truncate8(command_ptr[0] >> 24);
 
   if (command >= 0x20 && command <= 0x7F)
   {
     // Draw polygon
-    if (!HandleRenderCommand())
-      return;
+    return HandleRenderCommand(command_ptr, command_size);
   }
   else
   {
+    const u32 param = command_ptr[0] & UINT32_C(0x00FFFFFF);
+
     switch (command)
     {
       case 0x00: // NOP
-        break;
-
       case 0x01: // Clear cache
-        break;
+        command_ptr++;
+        return true;
 
       case 0x02: // Fill Rectangle
-      {
-        if (!HandleFillRectangleCommand())
-          return;
-      }
-      break;
+        return HandleFillRectangleCommand(command_ptr, command_size);
 
       case 0xA0: // Copy Rectangle CPU->VRAM
-      {
-        if (!HandleCopyRectangleCPUToVRAMCommand())
-          return;
-      }
-      break;
+        return HandleCopyRectangleCPUToVRAMCommand(command_ptr, command_size);
 
       case 0xC0: // Copy Rectangle VRAM->CPU
-      {
-        if (!HandleCopyRectangleVRAMToCPUCommand())
-          return;
-      }
-      break;
+        return HandleCopyRectangleVRAMToCPUCommand(command_ptr, command_size);
 
       case 0x80: // Copy Rectangle VRAM->VRAM
-      {
-        if (!HandleCopyRectangleVRAMToVRAMCommand())
-          return;
-      }
-      break;
+        return HandleCopyRectangleVRAMToVRAMCommand(command_ptr, command_size);
 
       case 0xE1: // Set draw mode
       {
@@ -458,8 +482,9 @@ void GPU::HandleGP0Command()
         m_render_state.texture_x_flip = (param & (UINT32_C(1) << 12)) != 0;
         m_render_state.texture_y_flip = (param & (UINT32_C(1) << 13)) != 0;
         Log_DebugPrintf("Set draw mode %08X", param);
+        command_ptr++;
+        return true;
       }
-      break;
 
       case 0xE2: // set texture window
       {
@@ -467,8 +492,9 @@ void GPU::HandleGP0Command()
         Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
                         m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
                         m_render_state.texture_window_offset_y);
+        command_ptr++;
+        return true;
       }
-      break;
 
       case 0xE3: // Set drawing area top left
       {
@@ -483,8 +509,9 @@ void GPU::HandleGP0Command()
           m_drawing_area.top = top;
           UpdateDrawingArea();
         }
+        command_ptr++;
+        return true;
       }
-      break;
 
       case 0xE4: // Set drawing area bottom right
       {
@@ -499,8 +526,9 @@ void GPU::HandleGP0Command()
           m_drawing_area.bottom = bottom;
           UpdateDrawingArea();
         }
+        command_ptr++;
+        return true;
       }
-      break;
 
       case 0xE5: // Set drawing offset
       {
@@ -514,8 +542,9 @@ void GPU::HandleGP0Command()
           m_drawing_offset.x = x;
           m_drawing_offset.y = y;
         }
+        command_ptr++;
+        return true;
       }
-      break;
 
       case 0xE6: // Mask bit setting
       {
@@ -523,18 +552,18 @@ void GPU::HandleGP0Command()
         m_GPUSTAT.draw_to_masked_pixels = (param & UINT32_C(0x01)) != 0;
         Log_DebugPrintf("Set mask bit %u %u", BoolToUInt32(m_GPUSTAT.draw_set_mask_bit),
                         BoolToUInt32(m_GPUSTAT.draw_to_masked_pixels));
+        command_ptr++;
+        return true;
       }
-      break;
 
       default:
       {
         Log_ErrorPrintf("Unimplemented GP0 command 0x%02X", command);
+        command_ptr++;
+        return true;
       }
-      break;
     }
   }
-
-  m_GP0_command.clear();
 }
 
 void GPU::WriteGP1(u32 value)
@@ -545,7 +574,7 @@ void GPU::WriteGP1(u32 value)
   {
     case 0x01: // Clear FIFO
     {
-      m_GP0_command.clear();
+      m_GP0_buffer.clear();
       Log_DebugPrintf("GP1 clear FIFO");
       UpdateGPUSTAT();
     }
@@ -695,11 +724,9 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
   }
 }
 
-bool GPU::HandleRenderCommand()
+bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u8 command = Truncate8(m_GP0_command[0] >> 24);
-
-  const RenderCommand rc{m_GP0_command[0]};
+  const RenderCommand rc{command_ptr[0]};
   u8 words_per_vertex;
   u32 num_vertices;
   u32 total_words;
@@ -722,10 +749,9 @@ bool GPU::HandleRenderCommand()
         // polyline goes until we hit the termination code
         num_vertices = 0;
         bool found_terminator = false;
-        for (u32 pos = BoolToUInt32(!rc.shading_enable); pos < static_cast<u32>(m_GP0_command.size());
-             pos += words_per_vertex)
+        for (u32 pos = 1 + BoolToUInt32(!rc.shading_enable); pos < command_size; pos += words_per_vertex)
         {
-          if (m_GP0_command[pos] == 0x55555555)
+          if (command_ptr[pos] == 0x55555555)
           {
             found_terminator = true;
             break;
@@ -759,7 +785,7 @@ bool GPU::HandleRenderCommand()
       return true;
   }
 
-  if (m_GP0_command.size() < total_words)
+  if (command_size < total_words)
     return false;
 
   static constexpr std::array<const char*, 4> primitive_names = {{"", "polygon", "line", "rectangle"}};
@@ -770,22 +796,24 @@ bool GPU::HandleRenderCommand()
                   primitive_names[static_cast<u8>(rc.primitive.GetValue())], ZeroExtend32(num_vertices),
                   ZeroExtend32(words_per_vertex));
 
-  DispatchRenderCommand(rc, num_vertices);
+  DispatchRenderCommand(rc, num_vertices, command_ptr);
+  command_ptr += total_words;
   return true;
 }
 
-bool GPU::HandleFillRectangleCommand()
+bool GPU::HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (m_GP0_command.size() < 3)
+  if (command_size < 3)
     return false;
 
   FlushRender();
 
-  const u32 color = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
-  const u32 dst_x = m_GP0_command[1] & UINT32_C(0xFFFF);
-  const u32 dst_y = m_GP0_command[1] >> 16;
-  const u32 width = m_GP0_command[2] & UINT32_C(0xFFFF);
-  const u32 height = m_GP0_command[2] >> 16;
+  const u32 color = command_ptr[0] & UINT32_C(0x00FFFFFF);
+  const u32 dst_x = command_ptr[1] & UINT32_C(0xFFFF);
+  const u32 dst_y = command_ptr[1] >> 16;
+  const u32 width = command_ptr[2] & UINT32_C(0xFFFF);
+  const u32 height = command_ptr[2] >> 16;
+  command_ptr += 3;
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
@@ -797,20 +825,20 @@ bool GPU::HandleFillRectangleCommand()
   return true;
 }
 
-bool GPU::HandleCopyRectangleCPUToVRAMCommand()
+bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (m_GP0_command.size() < 3)
+  if (command_size < 3)
     return false;
 
-  const u32 copy_width = m_GP0_command[2] & UINT32_C(0xFFFF);
-  const u32 copy_height = m_GP0_command[2] >> 16;
+  const u32 copy_width = command_ptr[2] & UINT32_C(0xFFFF);
+  const u32 copy_height = command_ptr[2] >> 16;
   const u32 num_pixels = copy_width * copy_height;
   const u32 num_words = 3 + ((num_pixels + 1) / 2);
-  if (m_GP0_command.size() < num_words)
+  if (command_size < num_words)
     return false;
 
-  const u32 dst_x = m_GP0_command[1] & UINT32_C(0xFFFF);
-  const u32 dst_y = m_GP0_command[1] >> 16;
+  const u32 dst_x = command_ptr[1] & UINT32_C(0xFFFF);
+  const u32 dst_y = command_ptr[1] >> 16;
 
   Log_DebugPrintf("Copy rectangle from CPU to VRAM offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, copy_width,
                   copy_height);
@@ -824,25 +852,27 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
   if (m_debug_options.dump_cpu_to_vram_copies)
   {
     DumpVRAMToFile(SmallString::FromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++), copy_width, copy_height,
-                   sizeof(u16) * copy_width, &m_GP0_command[3], true);
+                   sizeof(u16) * copy_width, &command_ptr[3], true);
   }
 
   FlushRender();
-  UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &m_GP0_command[3]);
+  UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &command_ptr[3]);
+  command_ptr += num_words;
   return true;
 }
 
-bool GPU::HandleCopyRectangleVRAMToCPUCommand()
+bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (m_GP0_command.size() < 3)
+  if (command_size < 3)
     return false;
 
-  const u32 width = m_GP0_command[2] & UINT32_C(0xFFFF);
-  const u32 height = m_GP0_command[2] >> 16;
+  const u32 width = command_ptr[2] & UINT32_C(0xFFFF);
+  const u32 height = command_ptr[2] >> 16;
   const u32 num_pixels = width * height;
   const u32 num_words = ((num_pixels + 1) / 2);
-  const u32 src_x = m_GP0_command[1] & UINT32_C(0xFFFF);
-  const u32 src_y = m_GP0_command[1] >> 16;
+  const u32 src_x = command_ptr[1] & UINT32_C(0xFFFF);
+  const u32 src_y = command_ptr[1] >> 16;
+  command_ptr += 3;
 
   Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", src_x, src_y, width, height);
 
@@ -871,17 +901,18 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   return true;
 }
 
-bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
+bool GPU::HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (m_GP0_command.size() < 4)
+  if (command_size < 4)
     return false;
 
-  const u32 src_x = m_GP0_command[1] & UINT32_C(0xFFFF);
-  const u32 src_y = m_GP0_command[1] >> 16;
-  const u32 dst_x = m_GP0_command[2] & UINT32_C(0xFFFF);
-  const u32 dst_y = m_GP0_command[2] >> 16;
-  const u32 width = m_GP0_command[3] & UINT32_C(0xFFFF);
-  const u32 height = m_GP0_command[3] >> 16;
+  const u32 src_x = command_ptr[1] & UINT32_C(0xFFFF);
+  const u32 src_y = command_ptr[1] >> 16;
+  const u32 dst_x = command_ptr[2] & UINT32_C(0xFFFF);
+  const u32 dst_y = command_ptr[2] >> 16;
+  const u32 width = command_ptr[3] & UINT32_C(0xFFFF);
+  const u32 height = command_ptr[3] >> 16;
+  command_ptr += 4;
 
   Log_DebugPrintf("Copy rectangle from VRAM to VRAM src=(%u,%u), dst=(%u,%u), size=(%u,%u)", src_x, src_y, dst_x, dst_y,
                   width, height);
@@ -910,7 +941,7 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
 
 void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) {}
 
-void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices) {}
+void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) {}
 
 void GPU::FlushRender() {}
 

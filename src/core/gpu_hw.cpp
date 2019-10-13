@@ -15,7 +15,7 @@ void GPU_HW::Reset()
   m_batch = {};
 }
 
-void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
+void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   const u32 texpage =
     ZeroExtend32(m_render_state.texpage_attribute) | (ZeroExtend32(m_render_state.texlut_attribute) << 16);
@@ -38,16 +38,16 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       for (u32 i = 0; i < num_vertices; i++)
       {
         HWVertex hw_vert;
-        hw_vert.color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+        hw_vert.color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
 
-        const VertexPosition vp{m_GP0_command[buffer_pos++]};
+        const VertexPosition vp{command_ptr[buffer_pos++]};
         hw_vert.x = vp.x;
         hw_vert.y = vp.y;
         hw_vert.texpage = texpage;
 
         if (textured)
         {
-          hw_vert.texcoord = Truncate16(m_GP0_command[buffer_pos++]);
+          hw_vert.texcoord = Truncate16(command_ptr[buffer_pos++]);
           // auto [u, v] = HWVertex::DecodeTexcoord(hw_vert.texcoord);
           // u = (u & (~(m_render_state.texture_window_mask_x * 8))) | ((m_render_state.texture_window_offset_x &
           // m_render_state.texture_window_mask_x) * 8); v = (v & (~(m_render_state.texture_window_mask_y * 8))) |
@@ -80,11 +80,11 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       u32 buffer_pos = 1;
       const bool textured = rc.texture_enable;
       const u32 color = rc.color_for_first_vertex;
-      const VertexPosition vp{m_GP0_command[buffer_pos++]};
+      const VertexPosition vp{command_ptr[buffer_pos++]};
       const s32 pos_left = vp.x;
       const s32 pos_top = vp.y;
       const auto [tex_left, tex_top] =
-        HWVertex::DecodeTexcoord(rc.texture_enable ? Truncate16(m_GP0_command[buffer_pos++]) : 0);
+        HWVertex::DecodeTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
       s32 rectangle_width;
       s32 rectangle_height;
       switch (rc.rectangle_size)
@@ -102,8 +102,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
           rectangle_height = 16;
           break;
         default:
-          rectangle_width = static_cast<s32>(m_GP0_command[buffer_pos] & UINT32_C(0xFFFF));
-          rectangle_height = static_cast<s32>(m_GP0_command[buffer_pos] >> 16);
+          rectangle_width = static_cast<s32>(command_ptr[buffer_pos] & UINT32_C(0xFFFF));
+          rectangle_height = static_cast<s32>(command_ptr[buffer_pos] >> 16);
           break;
       }
 
@@ -134,8 +134,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices)
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        const u32 color = (shaded && i > 0) ? (m_GP0_command[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-        const VertexPosition vp{m_GP0_command[buffer_pos++]};
+        const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+        const VertexPosition vp{command_ptr[buffer_pos++]};
         m_batch.vertices.push_back(HWVertex{vp.x.GetValue(), vp.y.GetValue(), color});
       }
     }
@@ -480,7 +480,7 @@ GPU_HW::HWRenderBatch::Primitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc
 
 void GPU_HW::InvalidateVRAMReadCache() {}
 
-void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
+void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   if (rc.texture_enable)
   {
@@ -490,15 +490,15 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
       case Primitive::Polygon:
       {
         if (rc.shading_enable)
-          m_render_state.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[5]);
+          m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[5]);
         else
-          m_render_state.SetFromPolygonTexcoord(m_GP0_command[2], m_GP0_command[4]);
+          m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[4]);
       }
       break;
 
       case Primitive::Rectangle:
       {
-        m_render_state.SetFromRectangleTexcoord(m_GP0_command[2]);
+        m_render_state.SetFromRectangleTexcoord(command_ptr[2]);
         m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
       }
       break;
@@ -586,5 +586,5 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices)
     m_render_state.ClearTextureWindowChangedFlag();
   }
 
-  LoadVertices(rc, num_vertices);
+  LoadVertices(rc, num_vertices, command_ptr);
 }
