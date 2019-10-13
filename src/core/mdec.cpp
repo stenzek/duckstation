@@ -48,7 +48,6 @@ u32 MDEC::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0:
-      UpdateStatusRegister();
       return ReadDataRegister();
 
     case 4:
@@ -85,6 +84,7 @@ void MDEC::WriteRegister(u32 offset, u32 value)
 
       m_enable_dma_in = cr.enable_dma_in;
       m_enable_dma_out = cr.enable_dma_out;
+      UpdateStatusRegister();
       UpdateDMARequest();
       return;
     }
@@ -114,6 +114,7 @@ void MDEC::SoftReset()
   m_enable_dma_out = false;
   m_data_in_fifo.Clear();
   m_data_out_fifo.Clear();
+  UpdateStatusRegister();
   UpdateDMARequest();
 }
 
@@ -122,7 +123,7 @@ void MDEC::UpdateStatusRegister()
   m_status.data_out_fifo_empty = m_data_out_fifo.IsEmpty();
   m_status.data_in_fifo_full = m_data_in_fifo.IsFull();
 
-  m_status.command_busy = m_command != Command::None;
+  m_status.command_busy = false;
   m_status.parameter_words_remaining = Truncate16(m_remaining_words - 1);
   m_status.current_block = (m_current_block + 4) % NUM_BLOCKS;
 }
@@ -130,7 +131,7 @@ void MDEC::UpdateStatusRegister()
 void MDEC::UpdateDMARequest()
 {
   // we always want data in if it's enabled
-  const bool data_in_request = m_enable_dma_in && !m_data_in_fifo.IsFull();
+  const bool data_in_request = m_enable_dma_in && m_data_in_fifo.GetSpace() >= (32 * 2) && !m_data_out_fifo.IsFull();
   m_status.data_in_request = data_in_request;
   m_dma->SetRequest(DMA::Channel::MDECin, data_in_request);
 
@@ -144,13 +145,22 @@ u32 MDEC::ReadDataRegister()
 {
   if (m_data_out_fifo.IsEmpty())
   {
-    Log_WarningPrintf("MDEC data out FIFO empty on read");
-    return UINT32_C(0xFFFFFFFF);
+    Execute();
+
+    if (m_data_out_fifo.IsEmpty())
+    {
+      Log_WarningPrintf("MDEC data out FIFO empty on read");
+      return UINT32_C(0xFFFFFFFF);
+    }
   }
 
   const u32 value = m_data_out_fifo.Pop();
-  UpdateStatusRegister();
-  UpdateDMARequest();
+  if (m_data_out_fifo.IsEmpty())
+  {
+    UpdateStatusRegister();
+    UpdateDMARequest();
+  }
+
   return value;
 }
 
@@ -197,29 +207,53 @@ void MDEC::WriteCommandRegister(u32 value)
     m_data_in_fifo.Push(Truncate16(value));
     m_data_in_fifo.Push(Truncate16(value >> 16));
     m_remaining_words--;
-    UpdateDMARequest();
   }
 
+  Execute();
+}
+
+void MDEC::Execute()
+{
   switch (m_command)
   {
     case Command::DecodeMacroblock:
     {
       if (!HandleDecodeMacroblockCommand())
+      {
+        UpdateStatusRegister();
+        UpdateDMARequest();
         return;
+      }
     }
     break;
 
     case Command::SetIqTab:
     {
       if (!HandleSetQuantTableCommand())
+      {
+        UpdateStatusRegister();
+        UpdateDMARequest();
         return;
+      }
     }
     break;
 
     case Command::SetScale:
     {
       if (!HandleSetScaleCommand())
+      {
+        UpdateStatusRegister();
+        UpdateDMARequest();
         return;
+      }
+    }
+    break;
+
+    default:
+    {
+      UpdateStatusRegister();
+      UpdateDMARequest();
+      return;
     }
     break;
   }
@@ -229,6 +263,7 @@ void MDEC::WriteCommandRegister(u32 value)
   m_current_block = 0;
   m_current_coefficient = 64;
   m_current_q_scale = 0;
+  UpdateStatusRegister();
   UpdateDMARequest();
 }
 
@@ -242,7 +277,7 @@ bool MDEC::HandleDecodeMacroblockCommand()
         break;
     }
 
-    return m_remaining_words == 0;
+    return m_data_in_fifo.IsEmpty() && m_remaining_words == 0;
   }
   else
   {
@@ -252,12 +287,24 @@ bool MDEC::HandleDecodeMacroblockCommand()
         break;
     }
 
-    return m_remaining_words == 0;
+    return m_data_in_fifo.IsEmpty() && m_remaining_words == 0;
   }
 }
 
 bool MDEC::DecodeMonoMacroblock()
 {
+  // sufficient space in output?
+  if (m_status.data_output_depth == DataOutputDepth_4Bit)
+  {
+    if (m_data_out_fifo.GetSpace() < (64 / 8))
+      return false;
+  }
+  else
+  {
+    if (m_data_out_fifo.GetSpace() < (64 / 4))
+      return false;
+  }
+
   if (!rl_decode_block(m_blocks[0].data(), m_iq_y.data()))
     return false;
 
@@ -310,7 +357,17 @@ bool MDEC::DecodeMonoMacroblock()
 
 bool MDEC::DecodeColoredMacroblock()
 {
-  std::array<u32, 256> out_rgb;
+  // sufficient space in output?
+  if (m_status.data_output_depth == DataOutputDepth_24Bit)
+  {
+    if (m_data_out_fifo.GetSpace() < (256 - (256 / 4)))
+      return false;
+  }
+  else
+  {
+    if (m_data_out_fifo.GetSpace() < (256 / 2))
+      return false;
+  }
 
   for (; m_current_block < NUM_BLOCKS; m_current_block++)
   {
@@ -322,7 +379,9 @@ bool MDEC::DecodeColoredMacroblock()
 
   // done decoding
   m_current_block = 0;
+  Log_DebugPrintf("Decoded colored macroblock");
 
+  std::array<u32, 256> out_rgb;
   yuv_to_rgb(0, 0, m_blocks[0], m_blocks[1], m_blocks[2], out_rgb);
   yuv_to_rgb(8, 0, m_blocks[0], m_blocks[1], m_blocks[3], out_rgb);
   yuv_to_rgb(0, 8, m_blocks[0], m_blocks[1], m_blocks[4], out_rgb);
@@ -612,8 +671,8 @@ void MDEC::DrawDebugWindow()
   if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Data-Out FIFO Empty: %s", m_status.data_out_fifo_empty ? "Yes" : "No");
-    ImGui::Text("Data-In FIFO Empty: %s", m_status.data_in_fifo_full ? "Yes" : "No");
-    ImGui::Text("Command Busy FIFO Empty: %s", m_status.command_busy ? "Yes" : "No");
+    ImGui::Text("Data-In FIFO Full: %s", m_status.data_in_fifo_full ? "Yes" : "No");
+    ImGui::Text("Command Busy: %s", m_status.command_busy ? "Yes" : "No");
     ImGui::Text("Data-In Request: %s", m_status.data_in_request ? "Yes" : "No");
     ImGui::Text("Output Depth: %s", output_depths[static_cast<u8>(m_status.data_output_depth.GetValue())]);
     ImGui::Text("Output Signed: %s", m_status.data_output_signed ? "Yes" : "No");

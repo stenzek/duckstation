@@ -2,6 +2,7 @@
 #include "YBaseLib/Log.h"
 #include "common/cd_image.h"
 #include "common/state_wrapper.h"
+#include "dma.h"
 #include "interrupt_controller.h"
 #include "system.h"
 Log_SetChannel(CDROM);
@@ -394,6 +395,8 @@ void CDROM::UpdateStatusRegister()
   m_status.RSLRRDY = !m_response_fifo.IsEmpty();
   m_status.DRQSTS = !m_data_fifo.IsEmpty();
   m_status.BUSYSTS = m_command_state == CommandState::WaitForExecute;
+
+  m_dma->SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
 }
 
 u32 CDROM::GetAckDelayForCommand() const

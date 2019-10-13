@@ -30,7 +30,7 @@ bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
 void DMA::Reset()
 {
   m_transfer_ticks = 0;
-  m_transfer_pending = false;
+  m_transfer_in_progress = false;
   m_state = {};
   m_DPCR.bits = 0x07654321;
   m_DICR.bits = 0;
@@ -99,6 +99,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DMA channel %u block control <- 0x%08X", channel_index, value);
         state.block_control.bits = value;
+        Transfer();
         return;
       }
 
@@ -107,9 +108,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
         Log_TracePrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
-        if (CanRunChannel(static_cast<Channel>(channel_index)))
-          UpdateTransferPending();
-
+        Transfer();
         return;
       }
 
@@ -125,7 +124,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DPCR <- 0x%08X", value);
         m_DPCR.bits = value;
-        UpdateTransferPending();
+        Transfer();
         return;
       }
 
@@ -153,65 +152,70 @@ void DMA::SetRequest(Channel channel, bool request)
     return;
 
   cs.request = request;
-  UpdateTransferPending();
+  if (request)
+    Transfer();
 }
 
-void DMA::Execute(TickCount ticks)
-{
-  if (!m_transfer_pending)
-    return;
-
-  m_transfer_ticks -= ticks;
-  if (m_transfer_ticks <= 0)
-  {
-    m_transfer_pending = false;
-
-    for (u32 i = 0; i < NUM_CHANNELS; i++)
-    {
-      const Channel channel = static_cast<Channel>(i);
-      if (CanRunChannel(channel))
-      {
-        RunDMA(channel);
-        m_transfer_pending |= CanRunChannel(channel);
-      }
-    }
-
-    if (m_transfer_pending)
-    {
-      m_transfer_ticks += TRANSFER_TICKS;
-      m_system->SetDowncount(m_transfer_ticks);
-    }
-  }
-  else
-  {
-    m_system->SetDowncount(m_transfer_ticks);
-  }
-}
-
-bool DMA::CanRunChannel(Channel channel) const
+bool DMA::CanTransferChannel(Channel channel) const
 {
   if (!m_DPCR.GetMasterEnable(channel))
     return false;
 
   const ChannelState& cs = m_state[static_cast<u32>(channel)];
-  if (cs.channel_control.start_trigger)
-    return true;
+  if (!cs.channel_control.enable_busy)
+    return false;
 
-  return (cs.channel_control.enable_busy && cs.request);
+  if (!cs.request && channel != Channel::OTC)
+    return false;
+
+  if (cs.channel_control.sync_mode == SyncMode::Manual && !cs.channel_control.start_trigger)
+    return false;
+
+  return true;
 }
 
 bool DMA::CanRunAnyChannels() const
 {
   for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
-    if (CanRunChannel(static_cast<Channel>(i)))
+    if (CanTransferChannel(static_cast<Channel>(i)))
       return true;
   }
 
   return false;
 }
 
-void DMA::RunDMA(Channel channel)
+void DMA::Transfer()
+{
+  if (m_transfer_in_progress)
+    return;
+
+  // prevent recursive calls
+  m_transfer_in_progress = true;
+
+  // keep going until all transfers are done. one channel can start others (e.g. MDEC)
+  for (;;)
+  {
+    bool any_channels_active = false;
+
+    for (u32 i = 0; i < NUM_CHANNELS; i++)
+    {
+      const Channel channel = static_cast<Channel>(i);
+      if (CanTransferChannel(channel))
+      {
+        TransferChannel(channel);
+        any_channels_active = true;
+      }
+    }
+
+    if (!any_channels_active)
+      break;
+  }
+
+  m_transfer_in_progress = false;
+}
+
+void DMA::TransferChannel(Channel channel)
 {
   ChannelState& cs = m_state[static_cast<u32>(channel)];
   const bool copy_to_device = cs.channel_control.copy_to_device;
@@ -305,37 +309,56 @@ void DMA::RunDMA(Channel channel)
 
     case SyncMode::Request:
     {
-      const u32 block_size = cs.block_control.request.GetBlockSize();
-      const u32 block_count = cs.block_control.request.GetBlockCount();
-      Log_DebugPrintf("DMA%u: Copying %u blocks of size %u %s 0x%08X", static_cast<u32>(channel), block_count,
-                      block_size, copy_to_device ? "from" : "to", current_address);
+      Log_DebugPrintf("DMA%u: Copying %u blocks of size %u %s 0x%08X", static_cast<u32>(channel),
+                      cs.block_control.request.GetBlockCount(), cs.block_control.request.GetBlockSize(),
+                      copy_to_device ? "from" : "to", current_address);
+
+      u32 blocks_remaining = cs.block_control.request.block_count;
+
       if (copy_to_device)
       {
-        u32 words_remaining = block_size * block_count;
         do
         {
-          words_remaining--;
+          blocks_remaining--;
 
-          u32 value = 0;
-          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, value);
-          DMAWrite(channel, value, current_address, words_remaining);
+          u32 words_remaining = cs.block_control.request.block_size;
+          do
+          {
+            words_remaining--;
 
-          current_address = (current_address + increment) & ADDRESS_MASK;
-        } while (words_remaining > 0);
+            u32 value = 0;
+            m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, value);
+            DMAWrite(channel, value, current_address, words_remaining);
+
+            current_address = (current_address + increment) & ADDRESS_MASK;
+          } while (words_remaining > 0);
+        } while (cs.request && blocks_remaining > 0);
       }
       else
       {
-        u32 words_remaining = block_size * block_count;
         do
         {
-          words_remaining--;
+          blocks_remaining--;
 
-          u32 value = DMARead(channel, current_address, words_remaining);
-          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, value);
+          u32 words_remaining = cs.block_control.request.block_size;
+          do
+          {
+            words_remaining--;
 
-          current_address = (current_address + increment) & ADDRESS_MASK;
-        } while (words_remaining > 0);
+            u32 value = DMARead(channel, current_address, words_remaining);
+            m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, value);
+
+            current_address = (current_address + increment) & ADDRESS_MASK;
+          } while (words_remaining > 0);
+        } while (cs.request && blocks_remaining > 0);
       }
+
+      cs.base_address = current_address;
+      cs.block_control.request.block_count = blocks_remaining;
+
+      // finish transfer later if the request was cleared
+      if (blocks_remaining > 0)
+        return;
     }
     break;
 
@@ -410,24 +433,5 @@ void DMA::DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address
     default:
       Panic("Unhandled DMA channel write");
       break;
-  }
-}
-
-void DMA::UpdateTransferPending()
-{
-  if (CanRunAnyChannels())
-  {
-    if (m_transfer_pending)
-      return;
-
-    m_system->Synchronize();
-    m_transfer_pending = true;
-    m_transfer_ticks = TRANSFER_TICKS;
-    m_system->SetDowncount(m_transfer_ticks);
-  }
-  else
-  {
-    m_transfer_pending = false;
-    m_transfer_ticks = 0;
   }
 }

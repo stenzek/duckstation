@@ -91,6 +91,7 @@ private:
 
   u32 ReadDataRegister();
   void WriteCommandRegister(u32 value);
+  void Execute();
 
   bool HandleDecodeMacroblockCommand();
   bool HandleSetQuantTableCommand();
@@ -114,8 +115,8 @@ private:
   bool m_enable_dma_out = false;
 
   // Even though the DMA is in words, we access the FIFO as halfwords.
-  InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE> m_data_in_fifo;
-  InlineFIFOQueue<u32, DATA_OUT_FIFO_SIZE> m_data_out_fifo;
+  InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE / sizeof(u16)> m_data_in_fifo;
+  InlineFIFOQueue<u32, DATA_OUT_FIFO_SIZE / sizeof(u32)> m_data_out_fifo;
   Command m_command = Command::None;
   u32 m_remaining_words = 0;
 

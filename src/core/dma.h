@@ -35,8 +35,8 @@ public:
   DMA();
   ~DMA();
 
-  bool Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                  SPU* spu, MDEC* mdec);
+  bool Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, SPU* spu,
+                  MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -44,8 +44,6 @@ public:
   void WriteRegister(u32 offset, u32 value);
 
   void SetRequest(Channel channel, bool request);
-
-  void Execute(TickCount ticks);
 
 private:
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x00FFFFFF);
@@ -60,18 +58,17 @@ private:
   };
 
   // is everything enabled for a channel to operate?
-  bool CanRunChannel(Channel channel) const;
+  bool CanTransferChannel(Channel channel) const;
   bool CanRunAnyChannels() const;
 
-  void RunDMA(Channel channel);
+  void Transfer();
+  void TransferChannel(Channel channel);
 
   // from device -> memory
   u32 DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaining_words);
 
   // from memory -> device
   void DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address, u32 remaining_words);
-
-  void UpdateTransferPending();
 
   System* m_system = nullptr;
   Bus* m_bus = nullptr;
@@ -82,7 +79,7 @@ private:
   MDEC* m_mdec = nullptr;
 
   TickCount m_transfer_ticks = 0;
-  bool m_transfer_pending = false;
+  bool m_transfer_in_progress = false;
 
   struct ChannelState
   {
