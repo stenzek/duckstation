@@ -65,10 +65,10 @@ private:
   void TransferChannel(Channel channel);
 
   // from device -> memory
-  u32 DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaining_words);
+  void TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
 
   // from memory -> device
-  void DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address, u32 remaining_words);
+  void TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
 
   System* m_system = nullptr;
   Bus* m_bus = nullptr;
@@ -80,6 +80,8 @@ private:
 
   TickCount m_transfer_ticks = 0;
   bool m_transfer_in_progress = false;
+
+  std::vector<u32> m_transfer_buffer;
 
   struct ChannelState
   {

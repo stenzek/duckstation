@@ -52,8 +52,8 @@ public:
   void WriteRegister(u32 offset, u32 value);
 
   // DMA access
-  u32 DMARead();
-  void DMAWrite(u32 value);
+  void DMARead(u32* words, u32 word_count);
+  void DMAWrite(const u32* words, u32 word_count);
 
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
@@ -185,6 +185,7 @@ protected:
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering commands, returns false if not enough data is provided
+  void HandleGP0Command();
   bool HandleRenderCommand();
   bool HandleFillRectangleCommand();
   bool HandleCopyRectangleCPUToVRAMCommand();

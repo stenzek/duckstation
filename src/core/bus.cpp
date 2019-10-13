@@ -17,7 +17,7 @@
 Log_SetChannel(Bus);
 
 #define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
-#define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset) & u32(3)) * 8))
+#define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8))
 
 // Offset and value remapping for (w32) registers from nocash docs.
 void FixupUnalignedWordAccessW32(u32& offset, u32& value)
@@ -116,6 +116,58 @@ bool Bus::WriteHalfWord(PhysicalMemoryAddress address, u16 value)
 bool Bus::WriteWord(PhysicalMemoryAddress address, u32 value)
 {
   return DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
+}
+
+TickCount Bus::ReadWords(PhysicalMemoryAddress address, u32* words, u32 word_count)
+{
+  if (address + (word_count * sizeof(u32)) > (RAM_BASE + RAM_SIZE))
+  {
+    // Not RAM, or RAM mirrors.
+    TickCount total_ticks = 0;
+    for (u32 i = 0; i < word_count; i++)
+    {
+      const TickCount ticks = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, words[i]);
+      if (ticks < 0)
+        return -1;
+
+      total_ticks += ticks;
+      address += sizeof(u32);
+    }
+
+    return total_ticks;
+  }
+
+
+  // DMA is using DRAM Hyper Page mode, allowing it to access DRAM rows at 1 clock cycle per word (effectively around 17
+  // clks per 16 words, due to required row address loading, probably plus some further minimal overload due to refresh
+  // cycles). This is making DMA much faster than CPU memory accesses (CPU DRAM access takes 1 opcode cycle plus 6
+  // waitstates, ie. 7 cycles in total).
+  std::memcpy(words, &m_ram[address], sizeof(u32) * word_count);
+  return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
+}
+
+TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 word_count)
+{
+  if (address + (word_count * sizeof(u32)) > (RAM_BASE + RAM_SIZE))
+  {
+    // Not RAM, or RAM mirrors.
+    TickCount total_ticks = 0;
+    for (u32 i = 0; i < word_count; i++)
+    {
+      u32 value = words[i];
+      const TickCount ticks = DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
+      if (ticks < 0)
+        return -1;
+
+      total_ticks += ticks;
+      address += sizeof(u32);
+    }
+
+    return total_ticks;
+  }
+
+  std::memcpy(&m_ram[address], words, sizeof(u32) * word_count);
+  return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
 }
 
 void Bus::PatchBIOS(u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)

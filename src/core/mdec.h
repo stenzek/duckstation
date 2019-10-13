@@ -23,8 +23,8 @@ public:
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
 
-  u32 DMARead();
-  void DMAWrite(u32 value);
+  void DMARead(u32* words, u32 word_count);
+  void DMAWrite(const u32* words, u32 word_count);
 
   void DrawDebugMenu();
   void DrawDebugWindow();

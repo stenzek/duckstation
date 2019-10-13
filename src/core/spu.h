@@ -25,8 +25,8 @@ public:
   u16 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u16 value);
 
-  u32 DMARead();
-  void DMAWrite(u32 value);
+  void DMARead(u32* words, u32 word_count);
+  void DMAWrite(const u32* words, u32 word_count);
 
   void Execute(TickCount ticks);
 

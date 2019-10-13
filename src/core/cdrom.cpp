@@ -348,30 +348,17 @@ void CDROM::WriteRegister(u32 offset, u8 value)
                   ZeroExtend32(m_status.index.GetValue()), ZeroExtend32(value));
 }
 
-u32 CDROM::DMARead()
+void CDROM::DMARead(u32* words, u32 word_count)
 {
-  if (m_data_fifo.IsEmpty())
+  const u32 words_in_fifo = m_data_fifo.GetSize() / 4;
+  if (words_in_fifo < word_count)
   {
-    Log_ErrorPrintf("DMA read on empty data FIFO");
-    return UINT32_C(0xFFFFFFFF);
+    Log_ErrorPrintf("DMA read on empty/near-empty data FIFO");
+    std::memset(words + words_in_fifo, 0, sizeof(u32) * (word_count - words_in_fifo));
   }
 
-  u32 data;
-  if (m_data_fifo.GetSize() >= sizeof(data))
-  {
-    std::memcpy(&data, m_data_fifo.GetFrontPointer(), sizeof(data));
-    m_data_fifo.Remove(sizeof(data));
-  }
-  else
-  {
-    Log_WarningPrintf("Unaligned DMA read on FIFO(%u)", m_data_fifo.GetSize());
-    data = 0;
-    std::memcpy(&data, m_data_fifo.GetFrontPointer(), m_data_fifo.GetSize());
-    m_data_fifo.Clear();
-  }
-
-  // Log_DebugPrintf("DMA Read -> 0x%08X (%u remaining)", data, m_data_fifo.GetSize());
-  return data;
+  const u32 bytes_to_read = std::min<u32>(word_count * sizeof(u32), m_data_fifo.GetSize());
+  m_data_fifo.PopRange(reinterpret_cast<u8*>(words), bytes_to_read);
 }
 
 void CDROM::SetInterrupt(Interrupt interrupt)

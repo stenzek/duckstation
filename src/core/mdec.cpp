@@ -97,14 +97,17 @@ void MDEC::WriteRegister(u32 offset, u32 value)
   }
 }
 
-u32 MDEC::DMARead()
+void MDEC::DMARead(u32* words, u32 word_count)
 {
-  return ReadDataRegister();
+  // TODO: Make faster
+  for (u32 i= 0; i < word_count; i++)
+    words[i] = ReadDataRegister();
 }
 
-void MDEC::DMAWrite(u32 value)
+void MDEC::DMAWrite(const u32* words, u32 word_count)
 {
-  WriteCommandRegister(value);
+  for (u32 i = 0; i < word_count; i++)
+    WriteCommandRegister(words[i]);
 }
 
 void MDEC::SoftReset()

@@ -38,9 +38,13 @@ public:
   bool WriteByte(PhysicalMemoryAddress address, u8 value);
   bool WriteHalfWord(PhysicalMemoryAddress address, u16 value);
   bool WriteWord(PhysicalMemoryAddress address, u32 value);
-
+  
   template<MemoryAccessType type, MemoryAccessSize size>
   TickCount DispatchAccess(PhysicalMemoryAddress address, u32& value);
+
+  // Optimized variant for burst/multi-word read/writing.
+  TickCount ReadWords(PhysicalMemoryAddress address, u32* words, u32 word_count);
+  TickCount WriteWords(PhysicalMemoryAddress address, const u32* words, u32 word_count);
 
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
   void SetExpansionROM(std::vector<u8> data);
@@ -48,6 +52,10 @@ public:
 private:
   enum : u32
   {
+    RAM_BASE = 0x00000000,
+    RAM_SIZE = 0x200000,
+    RAM_MASK = RAM_SIZE - 1,
+    RAM_MIRROR_END = 0x800000,
     EXP1_BASE = 0x1F000000,
     EXP1_SIZE = 0x800000,
     EXP1_MASK = EXP1_SIZE - 1,

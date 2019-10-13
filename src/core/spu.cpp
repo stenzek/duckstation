@@ -412,18 +412,44 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   }
 }
 
-u32 SPU::DMARead()
+void SPU::DMARead(u32* words, u32 word_count)
 {
-  const u16 lsb = RAMTransferRead();
-  const u16 msb = RAMTransferRead();
-  return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
+  // test for wrap-around
+  if ((m_transfer_address & ~RAM_MASK) != ((m_transfer_address + (word_count * sizeof(u32))) & ~RAM_MASK))
+  {
+    // this could still be optimized to copy in two parts - end/start, but is unlikely.
+    for (u32 i = 0; i < word_count; i++)
+    {
+      const u16 lsb = RAMTransferRead();
+      const u16 msb = RAMTransferRead();
+      words[i] = ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
+    }
+  }
+  else
+  {
+    std::memcpy(words, &m_ram[m_transfer_address], sizeof(u32) * word_count);
+    m_transfer_address = (m_transfer_address + (sizeof(u32) * word_count)) & RAM_MASK;
+  }
 }
 
-void SPU::DMAWrite(u32 value)
+void SPU::DMAWrite(const u32* words, u32 word_count)
 {
-  // two 16-bit writes to prevent out-of-bounds
-  RAMTransferWrite(Truncate16(value));
-  RAMTransferWrite(Truncate16(value >> 16));
+  // test for wrap-around
+  if ((m_transfer_address & ~RAM_MASK) != ((m_transfer_address + (word_count * sizeof(u32))) & ~RAM_MASK))
+  {
+    // this could still be optimized to copy in two parts - end/start, but is unlikely.
+    for (u32 i = 0; i < word_count; i++)
+    {
+      const u32 value = words[i];
+      RAMTransferWrite(Truncate16(value));
+      RAMTransferWrite(Truncate16(value >> 16));
+    }
+  }
+  else
+  {
+    std::memcpy(&m_ram[m_transfer_address], words, sizeof(u32) * word_count);
+    m_transfer_address = (m_transfer_address + (sizeof(u32) * word_count)) & RAM_MASK;
+  }
 }
 
 void SPU::UpdateDMARequest()

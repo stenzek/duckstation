@@ -24,6 +24,7 @@ bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
   m_cdrom = cdrom;
   m_spu = spu;
   m_mdec = mdec;
+  m_transfer_buffer.resize(32);
   return true;
 }
 
@@ -223,7 +224,7 @@ void DMA::TransferChannel(Channel channel)
   // start/trigger bit is cleared on beginning of transfer
   cs.channel_control.start_trigger = false;
 
-  PhysicalMemoryAddress current_address = cs.base_address & ~UINT32_C(3);
+  PhysicalMemoryAddress current_address = (cs.base_address & ~UINT32_C(3)) & ADDRESS_MASK;
   const PhysicalMemoryAddress increment = cs.channel_control.address_step_reverse ? static_cast<u32>(-4) : UINT32_C(4);
   switch (cs.channel_control.sync_mode)
   {
@@ -233,32 +234,9 @@ void DMA::TransferChannel(Channel channel)
       Log_DebugPrintf("DMA%u: Copying %u words %s 0x%08X", static_cast<u32>(channel), word_count,
                       copy_to_device ? "from" : "to", current_address);
       if (copy_to_device)
-      {
-        u32 words_remaining = word_count;
-        do
-        {
-          words_remaining--;
-
-          u32 value = 0;
-          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, value);
-          DMAWrite(channel, value, current_address, words_remaining);
-
-          current_address = (current_address + increment) & ADDRESS_MASK;
-        } while (words_remaining > 0);
-      }
+        TransferMemoryToDevice(channel, current_address, increment, word_count);
       else
-      {
-        u32 words_remaining = word_count;
-        do
-        {
-          words_remaining--;
-
-          u32 value = DMARead(channel, current_address, words_remaining);
-          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, value);
-
-          current_address = (current_address + increment) & ADDRESS_MASK;
-        } while (words_remaining > 0);
-      }
+        TransferDeviceToMemory(channel, current_address, increment, word_count);
     }
     break;
 
@@ -285,18 +263,7 @@ void DMA::TransferChannel(Channel channel)
           current_address += sizeof(header);
 
           if (word_count > 0)
-          {
-            u32 words_remaining = word_count;
-            do
-            {
-              words_remaining--;
-
-              u32 memory_value = 0;
-              m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, memory_value);
-              DMAWrite(channel, memory_value, current_address, words_remaining);
-              current_address = (current_address + UINT32_C(4)) & ADDRESS_MASK;
-            } while (words_remaining > 0);
-          }
+            TransferMemoryToDevice(channel, current_address, 4, word_count);
 
           if (next_address & UINT32_C(0x800000))
             break;
@@ -313,6 +280,7 @@ void DMA::TransferChannel(Channel channel)
                       cs.block_control.request.GetBlockCount(), cs.block_control.request.GetBlockSize(),
                       copy_to_device ? "from" : "to", current_address);
 
+      const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.block_count;
 
       if (copy_to_device)
@@ -320,18 +288,8 @@ void DMA::TransferChannel(Channel channel)
         do
         {
           blocks_remaining--;
-
-          u32 words_remaining = cs.block_control.request.block_size;
-          do
-          {
-            words_remaining--;
-
-            u32 value = 0;
-            m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, value);
-            DMAWrite(channel, value, current_address, words_remaining);
-
-            current_address = (current_address + increment) & ADDRESS_MASK;
-          } while (words_remaining > 0);
+          TransferMemoryToDevice(channel, current_address, increment, block_size);
+          current_address = (current_address + (increment * block_size)) & ADDRESS_MASK;
         } while (cs.request && blocks_remaining > 0);
       }
       else
@@ -339,17 +297,8 @@ void DMA::TransferChannel(Channel channel)
         do
         {
           blocks_remaining--;
-
-          u32 words_remaining = cs.block_control.request.block_size;
-          do
-          {
-            words_remaining--;
-
-            u32 value = DMARead(channel, current_address, words_remaining);
-            m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(current_address, value);
-
-            current_address = (current_address + increment) & ADDRESS_MASK;
-          } while (words_remaining > 0);
+          TransferDeviceToMemory(channel, current_address, increment, block_size);
+          current_address = (current_address + (increment * block_size)) & ADDRESS_MASK;
         } while (cs.request && blocks_remaining > 0);
       }
 
@@ -382,56 +331,122 @@ void DMA::TransferChannel(Channel channel)
   }
 }
 
-u32 DMA::DMARead(Channel channel, PhysicalMemoryAddress dst_address, u32 remaining_words)
+void DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count)
 {
+  // Read from memory. Wrap-around?
+  if (m_transfer_buffer.size() < word_count)
+    m_transfer_buffer.resize(word_count);
+
+  if (increment > 0 && ((address + (increment * word_count)) & ADDRESS_MASK) > address)
+  {
+    m_bus->ReadWords(address, m_transfer_buffer.data(), word_count);
+  }
+  else
+  {
+    for (u32 i = 0; i < word_count; i++)
+    {
+      m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, m_transfer_buffer[i]);
+      address = (address + increment) & ADDRESS_MASK;
+    }
+  }
+
   switch (channel)
   {
-    case Channel::OTC:
-      // clear ordering table
-      return (remaining_words == 0) ? UINT32_C(0xFFFFFF) : ((dst_address - UINT32_C(4)) & ADDRESS_MASK);
-
     case Channel::GPU:
-      return m_gpu->DMARead();
-
-    case Channel::CDROM:
-      return m_cdrom->DMARead();
+      m_gpu->DMAWrite(m_transfer_buffer.data(), word_count);
+      break;
 
     case Channel::SPU:
-      return m_spu->DMARead();
-
-    case Channel::MDECout:
-      return m_mdec->DMARead();
+      m_spu->DMAWrite(m_transfer_buffer.data(), word_count);
+      break;
 
     case Channel::MDECin:
+      m_mdec->DMAWrite(m_transfer_buffer.data(), word_count);
+      break;
+
+    case Channel::CDROM:
+    case Channel::MDECout:
     case Channel::PIO:
     default:
-      Panic("Unhandled DMA channel read");
-      return UINT32_C(0xFFFFFFFF);
+      Panic("Unhandled DMA channel for device write");
+      break;
   }
 }
 
-void DMA::DMAWrite(Channel channel, u32 value, PhysicalMemoryAddress src_address, u32 remaining_words)
+void DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count)
 {
+  if (m_transfer_buffer.size() < word_count)
+    m_transfer_buffer.resize(word_count);
+
+  // Read from device.
   switch (channel)
   {
-    case Channel::GPU:
-      m_gpu->DMAWrite(value);
-      return;
+    case Channel::OTC:
+    {
+      // clear ordering table
+      // this always goes in reverse, so we can generate values in reverse order and write it forwards
+      if (((address - (4 * word_count)) & ADDRESS_MASK) < address)
+      {
+        const u32 end_address = (address - (4 * (word_count - 1))) & ADDRESS_MASK;
 
-    case Channel::SPU:
-      m_spu->DMAWrite(value);
+        u32 value = end_address;
+        m_transfer_buffer[0] = UINT32_C(0xFFFFFF);
+        for (u32 i = 1; i < word_count; i++)
+        {
+          m_transfer_buffer[i] = value;
+          value = (value + 4) & ADDRESS_MASK;
+        }
+
+        m_bus->WriteWords(end_address, m_transfer_buffer.data(), word_count);
+      }
+      else
+      {
+        for (u32 i = 0; i < word_count; i++)
+        {
+          u32 value = (i == word_count - 1) ? UINT32_C(0xFFFFFFF) : ((address - 4) & ADDRESS_MASK);
+          m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
+          address = (address - 4) & ADDRESS_MASK;
+        }
+      }
+
+      return;
+    }
+    break;
+
+    case Channel::GPU:
+      m_gpu->DMARead(m_transfer_buffer.data(), word_count);
       break;
 
-    case Channel::MDECin:
-      m_mdec->DMAWrite(value);
+    case Channel::CDROM:
+      m_cdrom->DMARead(m_transfer_buffer.data(), word_count);
+      break;
+
+    case Channel::SPU:
+      m_spu->DMARead(m_transfer_buffer.data(), word_count);
       break;
 
     case Channel::MDECout:
-    case Channel::CDROM:
-    case Channel::PIO:
-    case Channel::OTC:
-    default:
-      Panic("Unhandled DMA channel write");
+      m_mdec->DMARead(m_transfer_buffer.data(), word_count);
       break;
+
+    case Channel::MDECin:
+    case Channel::PIO:
+    default:
+      Panic("Unhandled DMA channel for device read");
+      std::fill_n(m_transfer_buffer.begin(), word_count, UINT32_C(0xFFFFFFFF));
+      break;
+  }
+
+  if (increment > 0 && ((address + (increment * word_count)) & ADDRESS_MASK) > address)
+  {
+    m_bus->WriteWords(address, m_transfer_buffer.data(), word_count);
+  }
+  else
+  {
+    for (u32 i = 0; i < word_count; i++)
+    {
+      m_bus->DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, m_transfer_buffer[i]);
+      address = (address + increment) & ADDRESS_MASK;
+    }
   }
 }

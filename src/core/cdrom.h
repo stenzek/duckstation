@@ -29,7 +29,7 @@ public:
   // I/O
   u8 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u8 value);
-  u32 DMARead();
+  void DMARead(u32* words, u32 word_count);
 
   void Execute(TickCount ticks);
 

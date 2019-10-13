@@ -217,29 +217,56 @@ void GPU::WriteRegister(u32 offset, u32 value)
   }
 }
 
-u32 GPU::DMARead()
+void GPU::DMARead(u32* words, u32 word_count)
 {
   if (m_GPUSTAT.dma_direction != DMADirection::GPUREADtoCPU)
   {
     Log_ErrorPrintf("Invalid DMA direction from GPU DMA read");
-    return UINT32_C(0xFFFFFFFF);
+    std::fill_n(words, word_count, UINT32_C(0xFFFFFFFF));
+    return;
   }
 
-  return ReadGPUREAD();
+  const u32 words_to_copy = std::min(word_count, static_cast<u32>(m_GPUREAD_buffer.size()));
+  if (!m_GPUREAD_buffer.empty())
+  {
+    auto it = m_GPUREAD_buffer.begin();
+    for (u32 i = 0; i < word_count; i++)
+      words[i] = *(it++);
+
+    m_GPUREAD_buffer.erase(m_GPUREAD_buffer.begin(), it);
+  }
+  if (words_to_copy < word_count)
+  {
+    Log_WarningPrintf("Partially-empty GPUREAD buffer on GPU DMA read");
+    std::fill_n(words + words_to_copy, word_count - words_to_copy, u32(0));
+  }
+
+  UpdateGPUSTAT();
 }
 
-void GPU::DMAWrite(u32 value)
+void GPU::DMAWrite(const u32* words, u32 word_count)
 {
   switch (m_GPUSTAT.dma_direction)
   {
     case DMADirection::CPUtoGP0:
-      WriteGP0(value);
-      break;
+    {
+      m_GP0_command.reserve(m_GP0_command.size() + word_count);
+      for (u32 i = 0; i < word_count; i++)
+      {
+        m_GP0_command.push_back(*(words++));
+        HandleGP0Command();
+      }
+
+      UpdateGPUSTAT();
+    }
+    break;
 
     default:
-      Log_ErrorPrintf("Unhandled GPU DMA write mode %u for value %08X",
-                      static_cast<u32>(m_GPUSTAT.dma_direction.GetValue()), value);
-      break;
+    {
+      Log_ErrorPrintf("Unhandled GPU DMA write mode %u for %u words",
+                      static_cast<u32>(m_GPUSTAT.dma_direction.GetValue()), word_count);
+    }
+    break;
   }
 }
 
@@ -369,10 +396,14 @@ void GPU::WriteGP0(u32 value)
 {
   m_GP0_command.push_back(value);
   Assert(m_GP0_command.size() <= 1048576);
+  HandleGP0Command();
+  UpdateGPUSTAT();
+}
 
+void GPU::HandleGP0Command()
+{
   const u8 command = Truncate8(m_GP0_command[0] >> 24);
   const u32 param = m_GP0_command[0] & UINT32_C(0x00FFFFFF);
-  UpdateGPUSTAT();
 
   if (command >= 0x20 && command <= 0x7F)
   {
@@ -432,7 +463,7 @@ void GPU::WriteGP0(u32 value)
 
       case 0xE2: // set texture window
       {
-        m_render_state.SetTextureWindow(value);
+        m_render_state.SetTextureWindow(param);
         Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
                         m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
                         m_render_state.texture_window_offset_y);
@@ -504,7 +535,6 @@ void GPU::WriteGP0(u32 value)
   }
 
   m_GP0_command.clear();
-  UpdateGPUSTAT();
 }
 
 void GPU::WriteGP1(u32 value)
