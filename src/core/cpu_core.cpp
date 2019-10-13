@@ -88,6 +88,7 @@ bool Core::DoState(StateWrapper& sw)
 
 void Core::SetPC(u32 new_pc)
 {
+  DebugAssert(Common::IsAlignedPow2(new_pc, 4));
   m_regs.npc = new_pc;
   FlushPipeline();
 }
@@ -228,6 +229,14 @@ bool Core::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 
 void Core::Branch(u32 target)
 {
+  if (!Common::IsAlignedPow2(target, 4))
+  {
+    // The BadVaddr and EPC must be set to the fetching address, not the instruction about to execute.
+    m_cop0_regs.BadVaddr = target;
+    RaiseException(Exception::AdEL, target, false, false, 0);
+    return;
+  }
+
   m_regs.npc = target;
   m_branch_was_taken = true;
 }
@@ -562,14 +571,8 @@ void Core::Execute()
 
 bool Core::FetchInstruction()
 {
-  if (!Common::IsAlignedPow2(m_regs.npc, 4))
-  {
-    // The EPC must be set to the fetching address, not the instruction about to execute.
-    m_cop0_regs.BadVaddr = m_regs.npc;
-    RaiseException(Exception::AdEL, m_regs.npc, false, false, 0);
-    return false;
-  }
-  else if (DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(m_regs.npc, m_next_instruction.bits) < 0)
+  DebugAssert(Common::IsAlignedPow2(m_regs.npc, 4));
+  if (DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(m_regs.npc, m_next_instruction.bits) < 0)
   {
     // Bus errors don't set BadVaddr.
     RaiseException(Exception::IBE, m_regs.npc, false, false, 0);
