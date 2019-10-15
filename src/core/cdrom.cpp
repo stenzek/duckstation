@@ -542,8 +542,8 @@ void CDROM::ExecuteCommand()
       m_setloc.second = BCDToDecimal(m_param_fifo.Peek(1));
       m_setloc.frame = BCDToDecimal(m_param_fifo.Peek(2));
       m_setloc_dirty = true;
-      Log_DebugPrintf("CDROM setloc command (%u, %u, %u)", ZeroExtend32(m_setloc.minute), ZeroExtend32(m_setloc.second),
-                      ZeroExtend32(m_setloc.frame));
+      Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
+                      ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
       m_response_fifo.Push(m_secondary_status.bits);
       SetInterrupt(Interrupt::ACK);
       EndCommand();
@@ -697,14 +697,14 @@ void CDROM::ExecuteCommand()
     {
       // TODO: Subchannel Q support..
       Log_DebugPrintf("CDROM GetlocP command");
-      m_response_fifo.Push(1);                                         // track number
-      m_response_fifo.Push(1);                                         // index
-      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.minute)); // minute within track
-      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.second)); // second within track
-      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.frame));  // frame within track
-      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.minute)); // minute on entire disc
-      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.second)); // second on entire disc
-      m_response_fifo.Push(DecimalToBCD(m_last_sector_header.frame));  // frame on entire disc
+      m_response_fifo.Push(1);                           // track number
+      m_response_fifo.Push(1);                           // index
+      m_response_fifo.Push(m_last_sector_header.minute); // minute within track
+      m_response_fifo.Push(m_last_sector_header.second); // second within track
+      m_response_fifo.Push(m_last_sector_header.frame);  // frame within track
+      m_response_fifo.Push(m_last_sector_header.minute); // minute on entire disc
+      m_response_fifo.Push(m_last_sector_header.second); // second on entire disc
+      m_response_fifo.Push(m_last_sector_header.frame);  // frame on entire disc
       SetInterrupt(Interrupt::ACK);
       EndCommand();
     }
