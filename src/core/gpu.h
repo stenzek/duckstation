@@ -226,7 +226,7 @@ protected:
     BitField<u32, bool, 15, 1> texture_disable;
     BitField<u32, u8, 16, 1> horizontal_resolution_2;
     BitField<u32, u8, 17, 2> horizontal_resolution_1;
-    BitField<u32, u8, 19, 1> vertical_resolution;
+    BitField<u32, bool, 19, 1> vertical_resolution;
     BitField<u32, bool, 20, 1> pal_mode;
     BitField<u32, bool, 21, 1> display_area_color_depth_24;
     BitField<u32, bool, 22, 1> vertical_interlace;

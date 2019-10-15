@@ -189,7 +189,7 @@ u32 GPU::ReadRegister(u32 offset)
     {
       // Bit 31 of GPUSTAT is always clear during vblank.
       u32 bits = m_GPUSTAT.bits;
-      bits &= ~(BoolToUInt32(!m_crtc_state.in_vblank) << 31);
+      bits &= ~(BoolToUInt32(m_crtc_state.in_vblank) << 31);
       return bits;
     }
 
@@ -314,7 +314,8 @@ void GPU::UpdateCRTCConfig()
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
   cs.horizontal_resolution = horizontal_resolutions[horizontal_resolution_index];
-  cs.vertical_resolution = vertical_resolutions[m_GPUSTAT.vertical_resolution];
+  cs.vertical_resolution =
+    vertical_resolutions[BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution)];
 
   // check for a change in resolution
   const u32 old_horizontal_resolution = cs.visible_horizontal_resolution;
@@ -385,7 +386,7 @@ void GPU::Execute(TickCount ticks)
       m_system->IncrementFrameNumber();
       m_crtc_state.current_scanline = 0;
 
-      if (m_GPUSTAT.vertical_resolution)
+      if (m_GPUSTAT.vertical_interlace & m_GPUSTAT.vertical_resolution)
         m_GPUSTAT.drawing_even_line ^= true;
     }
 
@@ -405,7 +406,7 @@ void GPU::Execute(TickCount ticks)
     }
 
     // alternating even line bit in 240-line mode
-    if (!m_crtc_state.vertical_resolution)
+    if (!(m_GPUSTAT.vertical_interlace & m_GPUSTAT.vertical_resolution))
       m_GPUSTAT.drawing_even_line = ConvertToBoolUnchecked(m_crtc_state.current_scanline & u32(1));
   }
 
@@ -626,7 +627,7 @@ void GPU::WriteGP1(u32 value)
         u32 bits;
 
         BitField<u32, u8, 0, 2> horizontal_resolution_1;
-        BitField<u32, u8, 2, 1> vertical_resolution;
+        BitField<u32, bool, 2, 1> vertical_resolution;
         BitField<u32, bool, 3, 1> pal_mode;
         BitField<u32, bool, 4, 1> display_area_color_depth;
         BitField<u32, bool, 5, 1> vertical_interlace;
