@@ -1,5 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
+#include "common/fifo_queue.h"
 #include "types.h"
 #include <array>
 
@@ -36,6 +37,14 @@ public:
   // Manipulating debug options.
   void DrawDebugMenu();
 
+  // External input from CD controller.
+  void AddCDAudioSample(s16 left, s16 right)
+  {
+    m_cd_audio_buffer.Push(left);
+    m_cd_audio_buffer.Push(right);
+  }
+  void EnsureCDAudioSpace(u32 num_samples);
+
 private:
   static constexpr u32 RAM_SIZE = 512 * 1024;
   static constexpr u32 RAM_MASK = RAM_SIZE - 1;
@@ -48,6 +57,7 @@ private:
   static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = MASTER_CLOCK / SAMPLE_RATE; // 0x300
   static constexpr s16 ADSR_MIN_VOLUME = 0;
   static constexpr s16 ADSR_MAX_VOLUME = 0x7FFF;
+  static constexpr u32 CD_AUDIO_SAMPLE_BUFFER_SIZE = 44100 * 2;
 
   enum class RAMTransferMode : u8
   {
@@ -280,4 +290,6 @@ private:
 
   std::array<Voice, NUM_VOICES> m_voices{};
   std::array<u8, RAM_SIZE> m_ram{};
+
+  InlineFIFOQueue<s16, CD_AUDIO_SAMPLE_BUFFER_SIZE> m_cd_audio_buffer;
 };

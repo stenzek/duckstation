@@ -479,7 +479,7 @@ void SPU::Execute(TickCount ticks)
 {
   TickCount num_samples = (ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
   m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
-  if (num_samples == 0 || !m_SPUCNT.enable)
+  if (num_samples == 0 || (!m_SPUCNT.enable && !m_SPUCNT.cd_audio_enable))
     return;
 
   for (TickCount i = 0; i < num_samples; i++)
@@ -826,15 +826,36 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
   // return std::make_tuple(sample16, sample16);
 }
 
+void SPU::EnsureCDAudioSpace(u32 num_samples)
+{
+  if (m_cd_audio_buffer.GetSpace() < (num_samples * 2))
+  {
+    Log_WarningPrintf("SPU CD Audio buffer overflow - writing %u samples with %u samples space", num_samples,
+                      m_cd_audio_buffer.GetSpace() / 2);
+    m_cd_audio_buffer.Remove((num_samples * 2) - m_cd_audio_buffer.GetSpace());
+  }
+}
+
 void SPU::GenerateSample()
 {
   s32 left_sum = 0;
   s32 right_sum = 0;
-  for (u32 i = 0; i < NUM_VOICES; i++)
+  if (m_SPUCNT.enable)
   {
-    const auto [left, right] = SampleVoice(i);
-    left_sum += left;
-    right_sum += right;
+    for (u32 i = 0; i < NUM_VOICES; i++)
+    {
+      const auto [left, right] = SampleVoice(i);
+      left_sum += left;
+      right_sum += right;
+    }
+  }
+
+  // Mix in CD audio.
+  // TODO: Volume control.
+  if (m_SPUCNT.cd_audio_enable && !m_cd_audio_buffer.IsEmpty())
+  {
+    left_sum += s32(m_cd_audio_buffer.Pop());
+    right_sum += s32(m_cd_audio_buffer.Pop());
   }
 
   // Log_DebugPrintf("SPU sample %d %d", left_sum, right_sum);

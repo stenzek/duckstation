@@ -62,7 +62,7 @@ bool System::Initialize()
   if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_timers.get()))
     return false;
 
-  if (!m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
+  if (!m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get()))
     return false;
 
   if (!m_pad->Initialize(this, m_interrupt_controller.get()))

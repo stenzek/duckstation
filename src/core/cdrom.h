@@ -1,8 +1,10 @@
 #pragma once
 #include "common/bitfield.h"
 #include "common/cd_image.h"
+#include "common/cd_xa.h"
 #include "common/fifo_queue.h"
 #include "types.h"
+#include <array>
 #include <string>
 #include <vector>
 
@@ -11,14 +13,25 @@ class StateWrapper;
 class System;
 class DMA;
 class InterruptController;
+class SPU;
 
 class CDROM
 {
 public:
+  enum : u32
+  {
+    RAW_SECTOR_SIZE = CDImage::RAW_SECTOR_SIZE,
+    SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
+    SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
+    XA_RESAMPLE_RING_BUFFER_SIZE = 32,
+    XA_RESAMPLE_ZIGZAG_TABLE_SIZE = 29,
+    XA_RESAMPLE_NUM_ZIGZAG_TABLES = 7
+  };
+
   CDROM();
   ~CDROM();
 
-  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller);
+  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -34,14 +47,6 @@ public:
   void Execute(TickCount ticks);
 
 private:
-  enum : u32
-  {
-    RAW_SECTOR_SIZE = CDImage::RAW_SECTOR_SIZE,
-    SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
-    SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
-    SECTOR_XA_SUBHEADER_SIZE = CDImage::SECTOR_XA_SUBHEADER_SIZE,
-  };
-
   static constexpr u32 PARAM_FIFO_SIZE = 16;
   static constexpr u32 RESPONSE_FIFO_SIZE = 16;
   static constexpr u32 DATA_FIFO_SIZE = 4096;
@@ -170,12 +175,14 @@ private:
   void ExecuteTestCommand(u8 subcommand);
   void BeginReading();
   void DoSectorRead();
+  void ProcessXAADPCMSector();
   void StopReading();
   void LoadDataFIFO();
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
+  SPU* m_spu = nullptr;
   std::unique_ptr<CDImage> m_media;
   std::string m_media_filename;
 
@@ -192,13 +199,25 @@ private:
   SecondaryStatusRegister m_secondary_status = {};
   ModeRegister m_mode = {};
 
-  Loc m_setloc = {};
-  bool m_setloc_dirty = false;
-  CDImage::SectorHeader m_last_sector_header = {};
-  CDImage::XASubHeader m_last_sector_subheader = {};
-
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
+
+  Loc m_setloc = {};
+  bool m_setloc_dirty = false;
+
+  u8 m_filter_file_number = 0;
+  u8 m_filter_channel_number = 0;
+
+  CDImage::SectorHeader m_last_sector_header = {};
+  CDXA::XASubHeader m_last_sector_subheader = {};
+
+  std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
+  std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};
+
+  std::array<s32, 4> m_xa_last_samples{};
+  std::array<std::array<s16, XA_RESAMPLE_RING_BUFFER_SIZE>, 2> m_xa_resample_ring_buffer{};
+  u8 m_xa_resample_p = 0;
+  u8 m_xa_resample_sixstep = 6;
 
   InlineFIFOQueue<u8, PARAM_FIFO_SIZE> m_param_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
