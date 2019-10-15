@@ -69,6 +69,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
     {
       Log_DebugPrintf("Interrupt mask <- 0x%08X", value);
       m_interrupt_mask_register = value & REGISTER_WRITE_MASK;
+      UpdateCPUInterruptRequest();
     }
     break;
 
