@@ -42,7 +42,7 @@ static const std::array<const char*, 64> s_base_table = {{
   "sltiu $rt, $rs, $immu",  // 11
   "andi $rt, $rs, $immu",   // 12
   "ori $rt, $rs, $immu",    // 13
-  "UNKNOWN",                // 14
+  "xori $rt, $rs, $immu",   // 14
   "lui $rt, $imm",          // 15
   "UNKNOWN",                // 16
   "UNKNOWN",                // 17
