@@ -589,6 +589,8 @@ void CDROM::ExecuteCommand()
       const u8 file = m_param_fifo.Peek(0);
       const u8 channel = m_param_fifo.Peek(1);
       Log_WarningPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
+      m_filter_file_number = file;
+      m_filter_channel_number = channel;
       PushStatResponse(Interrupt::ACK);
       EndCommand();
       return;
@@ -793,8 +795,19 @@ void CDROM::DoSectorRead()
   {
     if (m_last_sector_subheader.submode.realtime && m_last_sector_subheader.submode.audio)
     {
-      // TODO: Decode audio sector. Do we still transfer this to the CPU?
-      Log_WarningPrintf("Decode CD-XA audio sector");
+      // Check for automatic ADPCM filter.
+      if (m_mode.xa_filter && (m_last_sector_subheader.file_number != m_filter_file_number ||
+                               m_last_sector_subheader.channel_number != m_filter_channel_number))
+      {
+        Log_DebugPrintf("Skipping sector due to filter mismatch (expected %u/%u got %u/%u)", m_filter_file_number,
+                        m_filter_channel_number, m_last_sector_subheader.file_number,
+                        m_last_sector_subheader.channel_number);
+      }
+      else
+      {
+      }
+
+      // Audio+realtime sectors aren't delivered to the CPU.
       m_sector_buffer.clear();
       pass_to_cpu = false;
     }
