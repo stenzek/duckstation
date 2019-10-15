@@ -22,6 +22,7 @@
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="audio_stream.h" />
+    <ClInclude Include="cd_xa.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hdd_image.cpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="gl_texture.cpp" />
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
+    <ClCompile Include="cd_xa.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
