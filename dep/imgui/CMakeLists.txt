@@ -20,7 +20,7 @@ if(WIN32)
   target_sources(imgui PRIVATE include/imgui_impl_dx11.h src/imgui_impl_dx11.cpp)
 endif()
 
-if(ENABLE_SDL_FRONTEND)
+if(SDL2_FOUND)
   target_sources(imgui PRIVATE
     include/imgui_impl_opengl3.h
     include/imgui_impl_sdl.h

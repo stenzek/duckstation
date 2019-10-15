@@ -1,11 +1,7 @@
 add_subdirectory(glad)
-add_subdirectory(googletest)
 add_subdirectory(imgui)
-add_subdirectory(inih)
 add_subdirectory(libsamplerate)
-add_subdirectory(nativefiledialog)
-add_subdirectory(softfloat)
-add_subdirectory(xxhash)
+add_subdirectory(stb)
 
 ###################### YBaseLib ############################
 

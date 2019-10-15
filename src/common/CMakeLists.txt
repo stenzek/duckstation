@@ -1,7 +1,13 @@
 set(SRCS
     audio.cpp
     audio.h
+    audio_stream.cpp
+    audio_stream.h
     bitfield.h
+    cd_image.cpp
+    cd_image.h
+    cd_xa.cpp
+    cd_xa.h
     display.cpp
     display.h
     display_renderer.cpp
@@ -9,6 +15,10 @@ set(SRCS
     display_timing.cpp
     display_timing.h
     fastjmp.h
+    gl_program.cpp
+    gl_program.h
+    gl_texture.cpp
+    gl_texture.h
     hdd_image.cpp
     hdd_image.h
     jit_code_buffer.cpp

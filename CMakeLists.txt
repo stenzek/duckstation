@@ -19,6 +19,7 @@ if(WIN32)
 
   set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/include/SDL")
   set(SDL2_LIBRARIES "SDL2")
+  set(SDL2_FOUND TRUE)
 else()
   find_package(SDL2 REQUIRED)
 endif()
