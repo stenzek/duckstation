@@ -573,10 +573,17 @@ void GPU::WriteGP1(u32 value)
   const u32 param = value & UINT32_C(0x00FFFFFF);
   switch (command)
   {
+    case 0x00: // Reset GPU
+    {
+      Log_DebugPrintf("GP1 reset GPU");
+      SoftReset();
+    }
+    break;
+
     case 0x01: // Clear FIFO
     {
-      m_GP0_buffer.clear();
       Log_DebugPrintf("GP1 clear FIFO");
+      m_GP0_buffer.clear();
       UpdateGPUSTAT();
     }
     break;
