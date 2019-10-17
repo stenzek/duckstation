@@ -60,6 +60,7 @@ private:
   // is everything enabled for a channel to operate?
   bool CanTransferChannel(Channel channel) const;
   bool CanRunAnyChannels() const;
+  void UpdateIRQ();
 
   void Transfer();
   void TransferChannel(Channel channel);
@@ -78,10 +79,8 @@ private:
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
 
-  TickCount m_transfer_ticks = 0;
-  bool m_transfer_in_progress = false;
-
   std::vector<u32> m_transfer_buffer;
+  bool m_transfer_in_progress = false;
 
   struct ChannelState
   {

@@ -30,7 +30,6 @@ bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
 
 void DMA::Reset()
 {
-  m_transfer_ticks = 0;
   m_transfer_in_progress = false;
   m_state = {};
   m_DPCR.bits = 0x07654321;
@@ -61,11 +60,20 @@ u32 DMA::ReadRegister(u32 offset)
     switch (offset & UINT32_C(0x0F))
     {
       case 0x00:
+      {
+        Log_TracePrintf("DMA%u base address -> 0x%08X", channel_index, m_state[channel_index].base_address);
         return m_state[channel_index].base_address;
+      }
       case 0x04:
+      {
+        Log_TracePrintf("DMA%u block control -> 0x%08X", channel_index, m_state[channel_index].block_control.bits);
         return m_state[channel_index].block_control.bits;
+      }
       case 0x08:
+      {
+        Log_TracePrintf("DMA%u channel control -> 0x%08X", channel_index, m_state[channel_index].channel_control.bits);
         return m_state[channel_index].channel_control.bits;
+      }
       default:
         break;
     }
@@ -73,9 +81,15 @@ u32 DMA::ReadRegister(u32 offset)
   else
   {
     if (offset == 0x70)
+    {
+      Log_TracePrintf("DPCR -> 0x%08X", m_DPCR.bits);
       return m_DPCR.bits;
+    }
     else if (offset == 0x74)
+    {
+      Log_TracePrintf("DPCR -> 0x%08X", m_DPCR.bits);
       return m_DICR.bits;
+    }
   }
 
   Log_ErrorPrintf("Unhandled register read: %02X", offset);
@@ -133,7 +147,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DCIR <- 0x%08X", value);
         m_DICR.bits = (m_DICR.bits & ~DICR_WRITE_MASK) | (value & DICR_WRITE_MASK);
-        m_DICR.bits = (m_DICR.bits & ~DICR_RESET_MASK) & (value ^ DICR_RESET_MASK);
+        m_DICR.bits = m_DICR.bits & ~(value & DICR_RESET_MASK);
         m_DICR.UpdateMasterFlag();
         return;
       }
@@ -184,6 +198,16 @@ bool DMA::CanRunAnyChannels() const
   }
 
   return false;
+}
+
+void DMA::UpdateIRQ()
+{
+  m_DICR.UpdateMasterFlag();
+  if (m_DICR.master_flag)
+  {
+    Log_TracePrintf("Firing DMA master interrupt");
+    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::DMA);
+  }
 }
 
 void DMA::Transfer()
@@ -276,8 +300,9 @@ void DMA::TransferChannel(Channel channel)
 
     case SyncMode::Request:
     {
-      Log_DebugPrintf("DMA%u: Copying %u blocks of size %u %s 0x%08X", static_cast<u32>(channel),
+      Log_DebugPrintf("DMA%u: Copying %u blocks of size %u (%u total words) %s 0x%08X", static_cast<u32>(channel),
                       cs.block_control.request.GetBlockCount(), cs.block_control.request.GetBlockSize(),
+                      cs.block_control.request.GetBlockCount() * cs.block_control.request.GetBlockSize(),
                       copy_to_device ? "from" : "to", current_address);
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
@@ -320,14 +345,9 @@ void DMA::TransferChannel(Channel channel)
   cs.channel_control.enable_busy = false;
   if (m_DICR.IsIRQEnabled(channel))
   {
-    Log_TracePrintf("Set DMA interrupt for channel %u", static_cast<u32>(channel));
+    Log_DebugPrintf("Set DMA interrupt for channel %u", static_cast<u32>(channel));
     m_DICR.SetIRQFlag(channel);
-    m_DICR.UpdateMasterFlag();
-    if (m_DICR.master_flag)
-    {
-      Log_TracePrintf("Firing DMA interrupt");
-      m_interrupt_controller->InterruptRequest(InterruptController::IRQ::DMA);
-    }
+    UpdateIRQ();
   }
 }
 
