@@ -35,6 +35,11 @@ public:
 
   TickCount GetPendingTicks() const { return m_pending_ticks; }
   void ResetPendingTicks() { m_pending_ticks = 0; }
+  void AddPendingTicks(TickCount ticks)
+  {
+    m_pending_ticks += ticks;
+    m_downcount -= ticks;
+  }
 
   void SetDowncount(TickCount downcount) { m_downcount = (downcount < m_downcount) ? downcount : m_downcount; }
   void ResetDowncount() { m_downcount = MAX_SLICE_SIZE; }

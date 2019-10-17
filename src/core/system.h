@@ -58,6 +58,9 @@ public:
   void SetDowncount(TickCount downcount);
   void Synchronize();
 
+  // Adds ticks to the global tick counter, simulating the CPU being stalled.
+  void StallCPU(TickCount ticks);
+
   void SetController(u32 slot, std::shared_ptr<PadDevice> dev);
   void SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev);
 

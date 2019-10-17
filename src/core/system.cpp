@@ -296,6 +296,11 @@ void System::SetDowncount(TickCount downcount)
   m_cpu->SetDowncount(downcount);
 }
 
+void System::StallCPU(TickCount ticks)
+{
+  m_cpu->AddPendingTicks(ticks);
+}
+
 void System::SetController(u32 slot, std::shared_ptr<PadDevice> dev)
 {
   m_pad->SetController(slot, std::move(dev));
