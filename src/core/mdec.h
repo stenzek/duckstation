@@ -26,13 +26,16 @@ public:
   void DMARead(u32* words, u32 word_count);
   void DMAWrite(const u32* words, u32 word_count);
 
+  void Execute(TickCount ticks);
+
   void DrawDebugMenu();
   void DrawDebugWindow();
 
 private:
-  static constexpr u32 DATA_IN_FIFO_SIZE = 512 * 1024;
-  static constexpr u32 DATA_OUT_FIFO_SIZE = 512 * 1024;
+  static constexpr u32 DATA_IN_FIFO_SIZE = 256 * 4;
+  static constexpr u32 DATA_OUT_FIFO_SIZE = 192 * 4;
   static constexpr u32 NUM_BLOCKS = 6;
+  static constexpr TickCount TICKS_PER_BLOCK = 256;
 
   enum DataOutputDepth : u8
   {
@@ -85,27 +88,31 @@ private:
     BitField<u32, u16, 0, 16> parameter_word_count;
   };
 
+  bool HasPendingCommand() const { return m_command != Command::None; }
+
   void SoftReset();
-  void UpdateStatusRegister();
-  void UpdateDMARequest();
+  void UpdateStatus();
 
   u32 ReadDataRegister();
   void WriteCommandRegister(u32 value);
-  void Execute();
+  void ExecutePendingCommand();
+  void EndCommand();
 
   bool HandleDecodeMacroblockCommand();
-  bool HandleSetQuantTableCommand();
-  bool HandleSetScaleCommand();
+  void HandleSetQuantTableCommand();
+  void HandleSetScaleCommand();
 
-  bool DecodeColoredMacroblock();
   bool DecodeMonoMacroblock();
+  bool DecodeColoredMacroblock();
+  void ScheduleBlockCopyOut(TickCount ticks);
+  void CopyOutBlock();
 
   // from nocash spec
   bool rl_decode_block(s16* blk, const u8* qt);
   void IDCT(s16* blk);
   void yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
-                  const std::array<s16, 64>& Yblk, std::array<u32, 256>& rgb_out);
-  void y_to_mono(const std::array<s16, 64>& Yblk, std::array<u8, 64>& r_out);
+                  const std::array<s16, 64>& Yblk);
+  void y_to_mono(const std::array<s16, 64>& Yblk);
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
@@ -118,7 +125,7 @@ private:
   InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE / sizeof(u16)> m_data_in_fifo;
   InlineFIFOQueue<u32, DATA_OUT_FIFO_SIZE / sizeof(u32)> m_data_out_fifo;
   Command m_command = Command::None;
-  u32 m_remaining_words = 0;
+  u32 m_remaining_halfwords = 0;
 
   std::array<u8, 64> m_iq_uv{};
   std::array<u8, 64> m_iq_y{};
@@ -127,11 +134,14 @@ private:
 
   // blocks, for colour: 0 - Crblk, 1 - Cbblk, 2-5 - Y 1-4
   std::array<std::array<s16, 64>, NUM_BLOCKS> m_blocks;
-  u32 m_current_block = 0;            // block (0-5)
-  u32 m_current_coefficient = 64;     // k (in block)
+  u32 m_current_block = 0;        // block (0-5)
+  u32 m_current_coefficient = 64; // k (in block)
   u16 m_current_q_scale = 0;
 
-  bool m_debug_show_state = false;
-  u32 m_debug_blocks_decoded = 0;
-  u32 m_debug_last_blocks_decoded = 0;
-  };
+  std::array<u32, 256> m_block_rgb{};
+  TickCount m_block_copy_out_ticks = TICKS_PER_BLOCK;
+  bool m_block_copy_out_pending = false;
+
+  bool m_show_state = false;
+  u32 m_total_blocks_decoded = 0;
+};
