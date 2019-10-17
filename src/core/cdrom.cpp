@@ -3,6 +3,7 @@
 #include "common/cd_image.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
+#include "imgui.h"
 #include "interrupt_controller.h"
 #include "spu.h"
 #include "system.h"
@@ -108,7 +109,8 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_sector_buffer);
 
   u64 media_lba = m_media ? m_media->GetCurrentLBA() : 0;
-  sw.Do(&m_media_filename);
+  std::string media_filename = m_media ? m_media->GetFileName() : std::string();
+  sw.Do(&media_filename);
   sw.Do(&media_lba);
 
   if (sw.IsReading())
@@ -120,12 +122,12 @@ bool CDROM::DoState(StateWrapper& sw)
 
     // load up media if we had something in there before
     m_media.reset();
-    if (!m_media_filename.empty())
+    if (!media_filename.empty())
     {
       m_media = std::make_unique<CDImage>();
-      if (!m_media->Open(m_media_filename.c_str()) || !m_media->Seek(media_lba))
+      if (!m_media->Open(media_filename.c_str()) || !m_media->Seek(media_lba))
       {
-        Log_ErrorPrintf("Failed to re-insert CD media from save state: '%s'. Ejecting.", m_media_filename.c_str());
+        Log_ErrorPrintf("Failed to re-insert CD media from save state: '%s'. Ejecting.", media_filename.c_str());
         RemoveMedia();
       }
     }
@@ -147,7 +149,6 @@ bool CDROM::InsertMedia(const char* filename)
     RemoveMedia();
 
   m_media = std::move(media);
-  m_media_filename = filename;
   // m_secondary_status.shell_open = false;
   return true;
 }
@@ -160,7 +161,6 @@ void CDROM::RemoveMedia()
   // TODO: Error while reading?
   Log_InfoPrintf("Removing CD...");
   m_media.reset();
-  m_media_filename.clear();
   // m_secondary_status.shell_open = true;
 }
 
@@ -1030,4 +1030,110 @@ void CDROM::LoadDataFIFO()
 
   Log_DebugPrintf("Loaded %u bytes to data FIFO", m_data_fifo.GetSize());
   m_sector_buffer.clear();
+}
+
+void CDROM::DrawDebugWindow()
+{
+  if (!m_show_cdrom_state)
+    return;
+
+  ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("CDROM State", &m_show_cdrom_state))
+  {
+    ImGui::End();
+    return;
+  }
+
+  // draw voice states
+  if (ImGui::CollapsingHeader("Media", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    if (m_media)
+    {
+      const auto [pos_minute, pos_second, pos_frame] = m_media->GetPositionMSF();
+
+      ImGui::Text("Filename: %s", m_media->GetFileName().c_str());
+      ImGui::Text("Position (MSF): %02u:%02u:%02u", pos_minute, pos_second, pos_frame);
+      ImGui::Text("Position (LBA): %llu", m_media->GetCurrentLBA());
+    }
+    else
+    {
+      ImGui::Text("No media inserted.");
+    }
+  }
+
+  if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Columns(3);
+
+    ImGui::Text("Status");
+    ImGui::NextColumn();
+    ImGui::Text("Secondary Status");
+    ImGui::NextColumn();
+    ImGui::Text("Mode Status");
+    ImGui::NextColumn();
+
+    ImGui::Text("ADPBUSY: %s", m_status.ADPBUSY ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Error: %s", m_secondary_status.error ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("CDDA: %s", m_mode.cdda ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::Text("PRMEMPTY: %s", m_status.PRMEMPTY ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Motor On: %s", m_secondary_status.motor_on ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Auto Pause: %s", m_mode.auto_pause ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::Text("PRMWRDY: %s", m_status.PRMWRDY ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Seek Error: %s", m_secondary_status.seek_error ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Report Audio: %s", m_mode.report_audio ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::Text("RSLRRDY: %s", m_status.RSLRRDY ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("ID Error: %s", m_secondary_status.id_error ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("XA Filter: %s (File %u Channel %u)", m_mode.xa_filter ? "Yes" : "No", m_filter_file_number,
+                m_filter_channel_number);
+    ImGui::NextColumn();
+
+    ImGui::Text("DRQSTS: %s", m_status.DRQSTS ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Shell Open: %s", m_secondary_status.shell_open ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Ignore Bit: %s", m_mode.ignore_bit ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::Text("BUSYSTS: %s", m_status.BUSYSTS ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Reading: %s", m_secondary_status.reading ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Read Raw Sectors: %s", m_mode.read_raw_sector ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::NextColumn();
+    ImGui::Text("Seeking: %s", m_secondary_status.seeking ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("XA Enable: %s", m_mode.xa_enable ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::NextColumn();
+    ImGui::Text("Playing CDDA: %s", m_secondary_status.playing_cdda ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("Double Speed: %s", m_mode.double_speed ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+  }
+
+  ImGui::End();
+}
+
+void CDROM::DrawDebugMenu()
+{
+  ImGui::MenuItem("CDROM", nullptr, &m_show_cdrom_state);
 }

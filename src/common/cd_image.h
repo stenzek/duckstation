@@ -1,6 +1,7 @@
 #pragma once
 #include "bitfield.h"
 #include "types.h"
+#include <tuple>
 
 class ByteStream;
 
@@ -37,11 +38,25 @@ public:
   };
 
   // Conversion helpers.
-  static constexpr u64 MSFToLBA(u32 pregap_seconds, u32 minute, u32 second, u32 frame);
-  static constexpr void LBAToMSF(u32 pregap_seconds, u64 lba, u32* minute, u32* second, u32* frame);
+  static constexpr u64 MSFToLBA(u32 pregap_seconds, u32 minute, u32 second, u32 frame)
+  {
+    return ZeroExtend64(minute) * FRAMES_PER_MINUTE + ZeroExtend64(second) * FRAMES_PER_SECOND + ZeroExtend64(frame) -
+           ZeroExtend64(pregap_seconds) * FRAMES_PER_SECOND;
+  }
+  static constexpr std::tuple<u32, u32, u32> LBAToMSF(u32 pregap_seconds, u64 lba)
+  {
+    const u64 offset = (lba + (pregap_seconds * FRAMES_PER_SECOND) % FRAMES_PER_MINUTE);
+    const u32 minute = Truncate32(lba / FRAMES_PER_MINUTE);
+    const u32 second = Truncate32(offset / FRAMES_PER_SECOND);
+    const u32 frame = Truncate32(offset % FRAMES_PER_SECOND);
+    return std::make_tuple(minute, second, frame);
+  }
 
   // Accessors.
+  const std::string& GetFileName() const { return m_filename; }
+  u32 GetPregapSeconds() const { return m_pregap_seconds; }
   u64 GetCurrentLBA() const { return m_current_lba; }
+  std::tuple<u32, u32, u32> GetPositionMSF() const { return LBAToMSF(m_pregap_seconds, m_current_lba); }
   u64 GetLBACount() const { return m_lba_count; }
 
   bool Open(const char* path);
@@ -60,6 +75,8 @@ public:
   u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
 
 private:
+  std::string m_filename;
+
   // TODO: Multiple data files from cue sheet
   ByteStream* m_data_file = nullptr;
 

@@ -11,20 +11,6 @@ CDImage::~CDImage()
     m_data_file->Release();
 }
 
-constexpr u64 CDImage::MSFToLBA(u32 pregap_seconds, u32 minute, u32 second, u32 frame)
-{
-  return ZeroExtend64(minute) * FRAMES_PER_MINUTE + ZeroExtend64(second) * FRAMES_PER_SECOND + ZeroExtend64(frame) -
-         ZeroExtend64(pregap_seconds) * FRAMES_PER_SECOND;
-}
-
-constexpr void CDImage::LBAToMSF(u32 pregap_seconds, u64 lba, u32* minute, u32* second, u32* frame)
-{
-  const u64 offset = (lba + (pregap_seconds * FRAMES_PER_SECOND) % FRAMES_PER_MINUTE);
-  *minute = Truncate32(lba / FRAMES_PER_MINUTE);
-  *second = Truncate32(offset / FRAMES_PER_SECOND);
-  *frame = Truncate32(offset % FRAMES_PER_SECOND);
-}
-
 bool CDImage::Open(const char* path)
 {
   Assert(!m_data_file);
@@ -35,6 +21,7 @@ bool CDImage::Open(const char* path)
     return false;
   }
 
+  m_filename = path;
   m_lba_count = m_data_file->GetSize() / RAW_SECTOR_SIZE;
   return true;
 }
