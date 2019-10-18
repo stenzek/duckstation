@@ -33,6 +33,18 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename)
   return nullptr;
 }
 
+CDImage::LBA CDImage::GetTrackStartPosition(u8 track) const
+{
+  Assert(track > 0 && track <= m_tracks.size());
+  return m_tracks[track - 1].start_lba;
+}
+
+CDImage::Position CDImage::GetTrackStartMSFPosition(u8 track) const
+{
+  Assert(track > 0 && track <= m_tracks.size());
+  return Position::FromLBA(m_tracks[track - 1].start_lba);
+}
+
 bool CDImage::Seek(LBA lba)
 {
   const Index* new_index;

@@ -628,7 +628,7 @@ void CDROM::ExecuteCommand()
     {
       const u8 file = m_param_fifo.Peek(0);
       const u8 channel = m_param_fifo.Peek(1);
-      Log_WarningPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
+      Log_DebugPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
       m_filter_file_number = file;
       m_filter_channel_number = channel;
       PushStatResponse(Interrupt::ACK);
@@ -775,6 +775,38 @@ void CDROM::ExecuteCommand()
       else
       {
         SendErrorResponse(0x80);
+      }
+
+      EndCommand();
+    }
+    break;
+
+    case Command::GetTD:
+    {
+      Log_DebugPrintf("CDROM GetTD command");
+      Assert(m_param_fifo.GetSize() >= 1);
+      const u8 track = BCDToDecimal(m_param_fifo.Peek());
+
+      if (!m_media)
+      {
+        SendErrorResponse(0x80);
+      }
+      else if (track > m_media->GetTrackCount())
+      {
+        SendErrorResponse(0x10);
+      }
+      else
+      {
+        CDImage::Position pos;
+        if (track == 0)
+          pos = CDImage::Position::FromLBA(m_media->GetLBACount());
+        else
+          pos = m_media->GetTrackStartMSFPosition(track);
+
+        m_response_fifo.Push(m_secondary_status.bits);
+        m_response_fifo.Push(DecimalToBCD(Truncate8(pos.minute)));
+        m_response_fifo.Push(DecimalToBCD(Truncate8(pos.second)));
+        SetInterrupt(Interrupt::ACK);
       }
 
       EndCommand();

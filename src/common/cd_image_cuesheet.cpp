@@ -132,11 +132,13 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     // how many indices in this track?
     Index last_index;
     last_index.start_lba_on_disc = disc_lba;
+    last_index.start_lba_in_track = 0;
     last_index.track_number = track_num;
     last_index.index_number = 1;
     last_index.file = it->second;
     last_index.file_sector_size = track_sector_size;
     last_index.file_offset = 0;
+    last_index.is_pregap = false;
 
     long last_index_offset = track_start;
     for (int index_num = 1;; index_num++)

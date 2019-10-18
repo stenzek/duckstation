@@ -93,6 +93,8 @@ public:
   u32 GetIndexNumber() const { return m_current_index->index_number; }
   u32 GetTrackNumber() const { return m_current_index->track_number; }
   u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
+  LBA GetTrackStartPosition(u8 track) const;
+  Position GetTrackStartMSFPosition(u8 track) const;
 
   // Seek to data LBA.
   bool Seek(LBA lba);
