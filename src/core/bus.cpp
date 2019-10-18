@@ -137,7 +137,6 @@ TickCount Bus::ReadWords(PhysicalMemoryAddress address, u32* words, u32 word_cou
     return total_ticks;
   }
 
-
   // DMA is using DRAM Hyper Page mode, allowing it to access DRAM rows at 1 clock cycle per word (effectively around 17
   // clks per 16 words, due to required row address loading, probably plus some further minimal overload due to refresh
   // cycles). This is making DMA much faster than CPU memory accesses (CPU DRAM access takes 1 opcode cycle plus 6
@@ -272,15 +271,15 @@ void Bus::RecalculateMemoryTimings()
   std::tie(m_spu_access_time[0], m_spu_access_time[1], m_spu_access_time[2]) =
     CalculateMemoryTiming(m_MEMCTRL.spu_delay_size, m_MEMCTRL.common_delay);
 
-  Log_DevPrintf("BIOS Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                m_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, m_bios_access_time[0], m_bios_access_time[1],
-                m_bios_access_time[2]);
-  Log_DevPrintf("CDROM Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                m_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, m_cdrom_access_time[0], m_cdrom_access_time[1],
-                m_cdrom_access_time[2]);
-  Log_DevPrintf("SPU Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                m_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, m_spu_access_time[0], m_spu_access_time[1],
-                m_spu_access_time[2]);
+  Log_TracePrintf("BIOS Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
+                  m_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, m_bios_access_time[0], m_bios_access_time[1],
+                  m_bios_access_time[2]);
+  Log_TracePrintf("CDROM Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
+                  m_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, m_cdrom_access_time[0], m_cdrom_access_time[1],
+                  m_cdrom_access_time[2]);
+  Log_TracePrintf("SPU Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
+                  m_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, m_spu_access_time[0], m_spu_access_time[1],
+                  m_spu_access_time[2]);
 }
 
 TickCount Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)

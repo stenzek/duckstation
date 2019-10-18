@@ -63,6 +63,7 @@ bool Pad::DoState(StateWrapper& sw)
   sw.Do(&m_JOY_CTRL.bits);
   sw.Do(&m_JOY_STAT.bits);
   sw.Do(&m_JOY_MODE.bits);
+  sw.Do(&m_JOY_BAUD);
   sw.Do(&m_RX_FIFO);
   sw.Do(&m_TX_FIFO);
   return !sw.HasError();
@@ -98,6 +99,9 @@ u32 Pad::ReadRegister(u32 offset)
 
     case 0x0A: // JOY_CTRL
       return ZeroExtend32(m_JOY_CTRL.bits);
+
+    case 0x0E: // JOY_BAUD
+      return ZeroExtend32(m_JOY_BAUD);
 
     default:
       Log_ErrorPrintf("Unknown register read: 0x%X", offset);
@@ -167,7 +171,8 @@ void Pad::WriteRegister(u32 offset, u32 value)
 
     case 0x0E:
     {
-      Log_WarningPrintf("JOY_BAUD <- 0x%08X", value);
+      Log_DebugPrintf("JOY_BAUD <- 0x%08X", value);
+      m_JOY_BAUD = value;
       return;
     }
 

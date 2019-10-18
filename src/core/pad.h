@@ -110,6 +110,7 @@ private:
   JOY_CTRL m_JOY_CTRL = {};
   JOY_STAT m_JOY_STAT = {};
   JOY_MODE m_JOY_MODE = {};
+  u16 m_JOY_BAUD = 0;
 
   ActiveDevice m_active_device = ActiveDevice::None;
   InlineFIFOQueue<u8, 8> m_RX_FIFO;
