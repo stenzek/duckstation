@@ -48,6 +48,7 @@ bool CDImageBin::Open(const char* filename)
   pregap_index.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(pregap_frames));
   pregap_index.length = pregap_frames;
   pregap_index.track_number = 1;
+  pregap_index.index_number = 0;
   pregap_index.is_pregap = true;
   m_indices.push_back(pregap_index);
 
@@ -58,6 +59,7 @@ bool CDImageBin::Open(const char* filename)
   data_index.file_sector_size = track_sector_size;
   data_index.start_lba_on_disc = pregap_index.length;
   data_index.track_number = 1;
+  data_index.index_number = 1;
   data_index.start_lba_in_track = 0;
   data_index.length = m_lba_count;
   m_indices.push_back(data_index);

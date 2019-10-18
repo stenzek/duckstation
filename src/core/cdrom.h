@@ -170,6 +170,7 @@ private:
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   void SetInterrupt(Interrupt interrupt);
   void PushStatResponse(Interrupt interrupt = Interrupt::ACK);
+  void SendErrorResponse(u8 reason = 0x80);
   void UpdateStatusRegister();
 
   u32 GetAckDelayForCommand() const;

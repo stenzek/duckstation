@@ -407,6 +407,13 @@ void CDROM::PushStatResponse(Interrupt interrupt /*= Interrupt::ACK*/)
   SetInterrupt(interrupt);
 }
 
+void CDROM::SendErrorResponse(u8 reason /*= 0x80*/)
+{
+  m_response_fifo.Push(m_secondary_status.bits | 0x01);
+  m_response_fifo.Push(reason);
+  SetInterrupt(Interrupt::INT5);
+}
+
 void CDROM::UpdateStatusRegister()
 {
   m_status.ADPBUSY = false;
@@ -751,6 +758,25 @@ void CDROM::ExecuteCommand()
       m_response_fifo.Push(m_last_sector_header.second); // second on entire disc
       m_response_fifo.Push(m_last_sector_header.frame);  // frame on entire disc
       SetInterrupt(Interrupt::ACK);
+      EndCommand();
+    }
+    break;
+
+    case Command::GetTN:
+    {
+      Log_DebugPrintf("CDROM GetTN command");
+      if (m_media)
+      {
+        m_response_fifo.Push(m_secondary_status.bits);
+        m_response_fifo.Push(DecimalToBCD(Truncate8(m_media->GetTrackNumber())));
+        m_response_fifo.Push(DecimalToBCD(Truncate8(m_media->GetTrackCount())));
+        SetInterrupt(Interrupt::ACK);
+      }
+      else
+      {
+        SendErrorResponse(0x80);
+      }
+
       EndCommand();
     }
     break;

@@ -118,6 +118,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       pregap_index.start_lba_in_track = static_cast<LBA>(static_cast<unsigned long>(-pregap_frames));
       pregap_index.length = pregap_frames;
       pregap_index.track_number = track_num;
+      pregap_index.index_number = 0;
       pregap_index.is_pregap = true;
       m_indices.push_back(pregap_index);
 
@@ -132,6 +133,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     Index last_index;
     last_index.start_lba_on_disc = disc_lba;
     last_index.track_number = track_num;
+    last_index.index_number = 1;
     last_index.file = it->second;
     last_index.file_sector_size = track_sector_size;
     last_index.file_offset = 0;
@@ -156,6 +158,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       }
 
       last_index.file_offset = index_offset * last_index.file_sector_size;
+      last_index.index_number = static_cast<u32>(index_num);
       last_index_offset = index_offset;
     }
 

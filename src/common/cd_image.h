@@ -90,7 +90,9 @@ public:
   LBA GetPositionInTrack() const { return m_position_in_track; }
   Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
   LBA GetLBACount() const { return m_lba_count; }
+  u32 GetIndexNumber() const { return m_current_index->index_number; }
   u32 GetTrackNumber() const { return m_current_index->track_number; }
+  u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
 
   // Seek to data LBA.
   bool Seek(LBA lba);
@@ -120,6 +122,7 @@ protected:
     u32 file_sector_size;
     LBA start_lba_on_disc;
     u32 track_number;
+    u32 index_number;
     LBA start_lba_in_track;
     u32 length;
     bool is_pregap;
