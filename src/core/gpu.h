@@ -184,14 +184,6 @@ protected:
   void WriteGP1(u32 value);
   void HandleGetGPUInfoCommand(u32 value);
 
-  // Rendering commands, returns false if not enough data is provided
-  bool HandleGP0Command(const u32*& command_ptr, u32 command_size);
-  bool HandleRenderCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 command_size);
-
   // Rendering in the backend
   virtual void UpdateDisplay();
   virtual void UpdateDrawingArea();
@@ -357,4 +349,28 @@ protected:
   std::deque<u32> m_GPUREAD_buffer;
 
   DebugOptions m_debug_options;
+
+private:
+  using GP0CommandHandler = bool (GPU::*)(const u32*&, u32);
+  using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;
+  static constexpr GP0CommandHandlerTable GenerateGP0CommandHandlerTable();
+
+  // Rendering commands, returns false if not enough data is provided
+  bool HandleUnknownGP0Command(const u32*& command_ptr, u32 command_size);
+  bool HandleNOPCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleClearCacheCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleSetDrawingAreaTopLeftCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleSetDrawingAreaBottomRightCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleSetMaskBitCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleRenderCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 command_size);
+
+  static const GP0CommandHandlerTable s_GP0_command_handler_table;
 };

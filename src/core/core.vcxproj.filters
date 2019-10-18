@@ -21,6 +21,7 @@
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="gpu_commands.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
