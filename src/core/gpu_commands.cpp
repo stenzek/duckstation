@@ -7,6 +7,11 @@ Log_SetChannel(GPU);
 static u32 s_cpu_to_vram_dump_id = 1;
 static u32 s_vram_to_cpu_dump_id = 1;
 
+static constexpr u32 ReplaceZero(u32 value, u32 value_for_zero)
+{
+  return value == 0 ? value_for_zero : value;
+}
+
 constexpr GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
 {
   GP0CommandHandlerTable table = {};
@@ -76,21 +81,21 @@ bool GPU::HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_siz
 
 bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u32 param = *(command_ptr++) & UINT32_C(0x00FFFFFF);
+  const u32 param = *(command_ptr++) & 0x00FFFFFF;
 
   // 0..10 bits match GPUSTAT
-  const u32 MASK = ((UINT32_C(1) << 11) - 1);
+  const u32 MASK = ((1 << 11) - 1);
   m_GPUSTAT.bits = (m_GPUSTAT.bits & ~MASK) | param & MASK;
-  m_GPUSTAT.texture_disable = (param & (UINT32_C(1) << 11)) != 0;
-  m_render_state.texture_x_flip = (param & (UINT32_C(1) << 12)) != 0;
-  m_render_state.texture_y_flip = (param & (UINT32_C(1) << 13)) != 0;
+  m_GPUSTAT.texture_disable = (param & (1 << 11)) != 0;
+  m_render_state.texture_x_flip = (param & (1 << 12)) != 0;
+  m_render_state.texture_y_flip = (param & (1 << 13)) != 0;
   Log_DebugPrintf("Set draw mode %08X", param);
   return true;
 }
 
 bool GPU::HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u32 param = *(command_ptr++) & UINT32_C(0x00FFFFFF);
+  const u32 param = *(command_ptr++) & 0x00FFFFFF;
   m_render_state.SetTextureWindow(param);
   Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
                   m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
@@ -100,9 +105,9 @@ bool GPU::HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_siz
 
 bool GPU::HandleSetDrawingAreaTopLeftCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u32 param = *(command_ptr++) & UINT32_C(0x00FFFFFF);
-  const u32 left = param & UINT32_C(0x3FF);
-  const u32 top = (param >> 10) & UINT32_C(0x1FF);
+  const u32 param = *(command_ptr++) & 0x00FFFFFF;
+  const u32 left = param & 0x3FF;
+  const u32 top = (param >> 10) & 0x1FF;
   Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
   if (m_drawing_area.left != left || m_drawing_area.top != top)
   {
@@ -118,10 +123,10 @@ bool GPU::HandleSetDrawingAreaTopLeftCommand(const u32*& command_ptr, u32 comman
 
 bool GPU::HandleSetDrawingAreaBottomRightCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u32 param = *(command_ptr++) & UINT32_C(0x00FFFFFF);
+  const u32 param = *(command_ptr++) & 0x00FFFFFF;
 
-  const u32 right = param & UINT32_C(0x3FF);
-  const u32 bottom = (param >> 10) & UINT32_C(0x1FF);
+  const u32 right = param & 0x3FF;
+  const u32 bottom = (param >> 10) & 0x1FF;
   Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
   if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
   {
@@ -137,9 +142,9 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand(const u32*& command_ptr, u32 co
 
 bool GPU::HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u32 param = *(command_ptr++) & UINT32_C(0x00FFFFFF);
-  const s32 x = SignExtendN<11, s32>(param & UINT32_C(0x7FF));
-  const s32 y = SignExtendN<11, s32>((param >> 11) & UINT32_C(0x7FF));
+  const u32 param = *(command_ptr++) & 0x00FFFFFF;
+  const s32 x = SignExtendN<11, s32>(param & 0x7FF);
+  const s32 y = SignExtendN<11, s32>((param >> 11) & 0x7FF);
   Log_DebugPrintf("Set drawing offset (%d, %d)", m_drawing_offset.x, m_drawing_offset.y);
   if (m_drawing_offset.x != x || m_drawing_offset.y != y)
   {
@@ -153,10 +158,10 @@ bool GPU::HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_siz
 
 bool GPU::HandleSetMaskBitCommand(const u32*& command_ptr, u32 command_size)
 {
-  const u32 param = *(command_ptr++) & UINT32_C(0x00FFFFFF);
+  const u32 param = *(command_ptr++) & 0x00FFFFFF;
 
-  m_GPUSTAT.draw_set_mask_bit = (param & UINT32_C(0x01)) != 0;
-  m_GPUSTAT.draw_to_masked_pixels = (param & UINT32_C(0x01)) != 0;
+  m_GPUSTAT.draw_set_mask_bit = (param & 0x01) != 0;
+  m_GPUSTAT.draw_to_masked_pixels = (param & 0x01) != 0;
   Log_DebugPrintf("Set mask bit %u %u", BoolToUInt32(m_GPUSTAT.draw_set_mask_bit),
                   BoolToUInt32(m_GPUSTAT.draw_to_masked_pixels));
   return true;
@@ -246,11 +251,11 @@ bool GPU::HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size)
 
   FlushRender();
 
-  const u32 color = command_ptr[0] & UINT32_C(0x00FFFFFF);
-  const u32 dst_x = command_ptr[1] & UINT32_C(0xFFFF);
-  const u32 dst_y = command_ptr[1] >> 16;
-  const u32 width = command_ptr[2] & UINT32_C(0xFFFF);
-  const u32 height = command_ptr[2] >> 16;
+  const u32 color = command_ptr[0] & 0x00FFFFFF;
+  const u32 dst_x = command_ptr[1] & 0x3F0;
+  const u32 dst_y = (command_ptr[1] >> 16) & 0x3FF;
+  const u32 width = ((command_ptr[2] & 0x3FF) + 0xF) & ~0xF;
+  const u32 height = (command_ptr[2] >> 16) & 0x1FF;
   command_ptr += 3;
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
@@ -268,22 +273,23 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 comma
   if (command_size < 3)
     return false;
 
-  const u32 copy_width = command_ptr[2] & UINT32_C(0xFFFF);
-  const u32 copy_height = command_ptr[2] >> 16;
+  const u32 copy_width = ReplaceZero(command_ptr[2] & 0x3FF, 0x400);
+  const u32 copy_height = ReplaceZero((command_ptr[2] >> 16) & 0x1FF, 0x200);
   const u32 num_pixels = copy_width * copy_height;
   const u32 num_words = 3 + ((num_pixels + 1) / 2);
   if (command_size < num_words)
     return false;
 
-  const u32 dst_x = command_ptr[1] & UINT32_C(0xFFFF);
-  const u32 dst_y = command_ptr[1] >> 16;
+  const u32 dst_x = command_ptr[1] & 0x3FF;
+  const u32 dst_y = (command_ptr[1] >> 16) & 0x3FF;
 
   Log_DebugPrintf("Copy rectangle from CPU to VRAM offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, copy_width,
                   copy_height);
 
   if ((dst_x + copy_width) > VRAM_WIDTH || (dst_y + copy_height) > VRAM_HEIGHT)
   {
-    Panic("Out of bounds VRAM copy");
+    Log_ErrorPrintf("Out of bounds CPU->VRAM copy (%u,%u) @ (%u,%u)", copy_width, copy_height, dst_x, dst_y);
+    command_ptr += num_words;
     return true;
   }
 
@@ -304,11 +310,11 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
   if (command_size < 3)
     return false;
 
-  const u32 width = command_ptr[2] & UINT32_C(0xFFFF);
-  const u32 height = command_ptr[2] >> 16;
+  const u32 width = ReplaceZero(command_ptr[2] & 0x3FF, 0x400);
+  const u32 height = ReplaceZero((command_ptr[2] >> 16) & 0x1FF, 0x200);
   const u32 num_pixels = width * height;
   const u32 num_words = ((num_pixels + 1) / 2);
-  const u32 src_x = command_ptr[1] & UINT32_C(0xFFFF);
+  const u32 src_x = command_ptr[1] & 0xFFFF;
   const u32 src_y = command_ptr[1] >> 16;
   command_ptr += 3;
 
@@ -344,12 +350,12 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 comm
   if (command_size < 4)
     return false;
 
-  const u32 src_x = command_ptr[1] & UINT32_C(0xFFFF);
-  const u32 src_y = command_ptr[1] >> 16;
-  const u32 dst_x = command_ptr[2] & UINT32_C(0xFFFF);
-  const u32 dst_y = command_ptr[2] >> 16;
-  const u32 width = command_ptr[3] & UINT32_C(0xFFFF);
-  const u32 height = command_ptr[3] >> 16;
+  const u32 src_x = command_ptr[1] & 0x3FF;
+  const u32 src_y = (command_ptr[1] >> 16) & 0x3FF;
+  const u32 dst_x = command_ptr[2] & 0x3FF;
+  const u32 dst_y = (command_ptr[2] >> 16) & 0x3FF;
+  const u32 width = ReplaceZero(command_ptr[3] & 0x3FF, 0x400);
+  const u32 height = ReplaceZero((command_ptr[3] >> 16) & 0x1FF, 0x200);
   command_ptr += 4;
 
   Log_DebugPrintf("Copy rectangle from VRAM to VRAM src=(%u,%u), dst=(%u,%u), size=(%u,%u)", src_x, src_y, dst_x, dst_y,
