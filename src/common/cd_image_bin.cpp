@@ -24,6 +24,7 @@ CDImageBin::~CDImageBin()
 
 bool CDImageBin::Open(const char* filename)
 {
+  m_filename = filename;
   m_fp = std::fopen(filename, "rb");
   if (!m_fp)
   {

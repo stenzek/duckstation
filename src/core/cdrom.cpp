@@ -421,7 +421,7 @@ void CDROM::UpdateStatusRegister()
 
 u32 CDROM::GetAckDelayForCommand() const
 {
-  const u32 default_ack_delay = 20000;
+  const u32 default_ack_delay = 2000;
   if (m_command == Command::Init)
     return 60000;
   else
@@ -1056,9 +1056,10 @@ void CDROM::DrawDebugWindow()
       const auto [track_minute, track_second, track_frame] = m_media->GetMSFPositionInTrack();
 
       ImGui::Text("Filename: %s", m_media->GetFileName().c_str());
-      ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_minute, disc_second, disc_frame);
+      ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_minute, disc_second, disc_frame,
+                  m_media->GetPositionOnDisc());
       ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", m_media->GetTrackNumber(), track_minute,
-                  track_second, track_frame);
+                  track_second, track_frame, m_media->GetPositionInTrack());
       ImGui::Text("Last Sector: %02X:%02X:%02X (Mode %u)", m_last_sector_header.minute, m_last_sector_header.second,
                   m_last_sector_header.frame, m_last_sector_header.sector_mode);
     }

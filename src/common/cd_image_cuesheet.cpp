@@ -63,6 +63,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
 
   // get the directory of the filename
   std::string basepath = GetPathDirectory(filename);
+  m_filename = filename;
 
   u32 disc_lba = 0;
 
