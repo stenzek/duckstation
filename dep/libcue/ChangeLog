@@ -1,0 +1,202 @@
+libcue (2.2.1)
+	[Ilya Lipnitskiy]
+	* cmake: Check for __attribute__ format
+
+	[Fabrice Fontaine]
+	* cmake: Don't check for C++ presence as libcue is C-only
+
+	[Thomas Petazzoni]
+	* cmake: Don't force SHARED when building the library
+
+libcue (2.2.0)
+	[Tom M]
+	* cmake: Use GNUInstallDirs and don't hard-code install paths (PR #12)
+
+	[John Lindgren]
+	* cmake: Set RUNTIME to CMAKE_INSTALL_BINDIR (issue #13)
+
+	[Wolfgang Hotwagner]
+	* Fix memory corruption in cue_scanner.l (PR #15)
+
+	[John Fitzgerald]
+	* Use MAXINDEX instead of MAXTRACK when indexing INDEX entries
+	* Allow for 100 INDEX entries
+	* Replace fprintf(3) to stdout with printf(3)
+
+	[Ilya Lipnitskiy]
+	* pkgconfig: Use dynamic directories from GNUInstallDirs
+	* Port 99 track fix from cuetools and add a test case
+
+libcue (2.1.0)
+	[Ilya Lipnitskiy]
+	* Add FLAC token support (issue #9)
+	* Clean up static vars in the parser to prevent double frees (issue #10)
+
+libcue (2.0.1)
+	[Peter Lemenkov]
+	* Rename buffer to yy_buffer
+
+	[Ilya Lipnitskiy]
+	* Create the libcue/libcue.h symlink for compatibility
+
+libcue (2.0.0)
+
+	[John Lindgren]
+	* Parse REM GENRE lines
+
+	[Svyatoslav Mishyn]
+	* Clean up time conversion functions
+
+	[Ilya Lipnitskiy]
+	* Add Travis-CI support
+
+	* Move exported function declarations to libcue.h. Change default
+	  symbol visibility to hidden. Only export parsing and accessor
+	  functions. Make functions more const-correct
+
+	* Add support for noncompliant CUEs produced by EAC
+
+	* Return -1 instead of 0 for unknown values
+
+	* Refactor CUE INDEX parsing to set pregap and previous track length
+	  correctly
+
+	* Add tests for various CUE formats
+
+	* Move the project from automake to cmake
+
+	* Clean up the changelog
+
+libcue (1.4.0)
+
+	[Avuton Olrich]
+	* He helped a lot to make compilation on win32 work (it still would break
+	  without him). Finding the parallel build bug is also accredited to him.
+	  Thanks!
+
+	[Jochen Keil]
+	* force make to *not* build things in parallel since this tends to mess things up
+
+	* update changelog
+
+	* set version number to 1.4.0 (libtool)
+
+	* update copyright
+
+	* fix compiler warning: input() defined but not used
+
+	* new flex behaviour: explicitly enable yylineno usage
+
+	* new automake macro name
+
+	* possible fix for compilation problems on win32
+
+	* update COPYING and corrected copyright notices in several source code files
+
+	* Update general COPYRIGHT notice as well as several file specific notifications
+
+	* update ChangeLog and NEWS
+
+libcue (1.3.0)
+
+	[Jochen Keil]
+	* set version number to 1.3.0 (libtool)
+
+	* fix for invalid pointer
+
+libcue (1.2.0)
+
+	[Jochen Keil]
+	* set version number to 1.2.0 (libtool)
+
+	* update comment on libtool versioning
+
+	* update copyright notifications
+
+	* switch copyright licence to 2-clause BSD
+
+	* update AUTHORS to reflect recent changes
+
+	* dump old README
+
+	* simple test program (not yet supported by autotools, needs flac lib
+
+	* autoheader/config.h support for parser buffer size
+
+	* update autotool build system
+
+	* update main interface/api file
+
+	* support for custom cue values hidden as rem comments
+
+	* add buffer size to config.h
+
+	* prevent the parser from memory leaking/replace strdup() with
+	  fixed-size array and strncpy/implement yacc|bison macros for buffer
+	  creation/deletion
+
+	* prevent the lexer from memory leaking/replace strdup() with
+	  fixed-size array and strncpy
+
+	* cd_delete() and track_delete() methods
+
+	* support for cdtext filename
+
+	* major code clean up
+
+	* initial clean up for libcue
+
+cuetools (1.3.1)
+
+	[Svend Sorensen]
+	* Applied most of Branden Robinson's Debian patch
+	  (cuetools_1.3-2.diff.gz). This included many fixes and enhancements
+	  to tools and manual pages. cuebreakpoints and cueconvert will exit if
+	  they fail on any of the input files. cuebreakpoints, cueconvert, and
+	  cuetools will exit with a nonzero return value if there was a failure
+	  on an input file.
+
+	* Added version option to all tools.
+
+	* Single quoted string support has been removed.  This was broken, and I am not
+	  sure of any software that supports single quoted strings in cue or toc files.
+
+cuetools (1.3)
+
+	[Svend Sorensen]
+	* Build system has been rewritten using automake/autoconf.
+
+	* Added append, prepend, and split pregap modes to cuebreakpoints.
+
+	* Fixed possible compilation error with Bison.
+
+	* All tools accept long options.
+
+	* Programs exit if --input-format or --output-format is an illegal value.
+
+cuetools (1.2)
+
+	[Svend Sorensen]
+	* cuebreakpoints was not printing the last track breakpoint.  This has been
+	  fixed.
+
+	* cueprint now prints a zero-length string for undefined values.  Flags, width,
+	  and precision are applied to conversion characters which have no conversion.
+
+	* Added a tagging script, cuetag.sh, which uses cueprint, vorbiscomment, and
+	  mp3info to tag Ogg Vorbis and MP3 files.  This needs more testing and
+	  documentation.
+
+	* Added a track selection flag to cueprint.
+
+cuetools (1.1)
+
+	[Svend Sorensen]
+	* File formats documentation has been readded and updated (docs/formats.txt).
+
+	* ``CDTEXTFILE`` is now a recognized (but ignored) keyword.
+
+	* If only a disc or track template is specified on the command line, then only
+	  the disc or track information is printed, respectively.
+
+	* cueprint now supports flags and width and precision values for template
