@@ -5,58 +5,80 @@ Log_SetChannel(CDImage);
 
 CDImage::CDImage() = default;
 
-CDImage::~CDImage()
-{
-  if (m_data_file)
-    m_data_file->Release();
-}
+CDImage::~CDImage() = default;
 
-bool CDImage::Open(const char* path)
+std::unique_ptr<CDImage> CDImage::Open(const char* filename)
 {
-  Assert(!m_data_file);
-
-  if (!ByteStream_OpenFileStream(path, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE, &m_data_file))
+  const char* extension = std::strrchr(filename, '.');
+  if (!extension)
   {
-    Log_ErrorPrintf("Failed to open '%s'", path);
-    return false;
+    Log_ErrorPrintf("Invalid filename: '%s'", filename);
+    return nullptr;
   }
 
-  m_filename = path;
-  m_lba_count = m_data_file->GetSize() / RAW_SECTOR_SIZE;
+#ifdef _MSC_VER
+#define CASE_COMPARE _stricmp
+#else
+#define CASE_COMPARE strcasecmp
+#endif
+
+  if (CASE_COMPARE(extension, ".cue") == 0)
+    return OpenCueSheetImage(filename);
+  else if (CASE_COMPARE(extension, ".bin") == 0)
+    return OpenBinImage(filename);
+
+#undef CASE_COMPARE
+
+  Log_ErrorPrintf("Unknown extension '%s' from filename '%s'", extension, filename);
+  return nullptr;
+}
+
+bool CDImage::Seek(LBA lba)
+{
+  const Index* new_index;
+  if (m_current_index && lba >= m_current_index->start_lba_on_disc &&
+      (lba - m_current_index->start_lba_on_disc) < m_current_index->length)
+  {
+    new_index = m_current_index;
+  }
+  else
+  {
+    new_index = GetIndexForDiscPosition(lba);
+    if (!new_index)
+      return false;
+  }
+
+  const u32 new_index_offset = lba - new_index->start_lba_on_disc;
+  if (new_index_offset >= new_index->length)
+    return false;
+
+  const u64 new_file_offset = new_index->file_offset + (u64(new_index_offset) * new_index->file_sector_size);
+  if (new_index->file && std::fseek(new_index->file, static_cast<long>(new_file_offset), SEEK_SET) != 0)
+    return false;
+
+  m_current_index = new_index;
+  m_position_on_disc = lba;
+  m_position_in_index = new_index_offset;
+  m_position_in_track = new_index->start_lba_in_track + new_index_offset;
   return true;
 }
 
-bool CDImage::Seek(u64 lba)
+bool CDImage::Seek(u32 track_number, const Position& pos_in_track)
 {
-  if (lba >= m_lba_count)
+  if (track_number < 1 || track_number > m_tracks.size())
     return false;
 
-  if (!m_data_file->SeekAbsolute(lba * RAW_SECTOR_SIZE))
+  const Track& track = m_tracks[track_number - 1];
+  const u32 pos_lba = pos_in_track.ToLBA();
+  if (pos_lba >= track.length)
     return false;
 
-  m_current_lba = lba;
-  return true;
+  return Seek(track.start_lba + pos_lba);
 }
 
-bool CDImage::Seek(u32 minute, u32 second, u32 frame)
+bool CDImage::Seek(const Position& pos)
 {
-  return Seek(MSFToLBA(m_pregap_seconds, minute, second, frame));
-}
-
-u32 CDImage::Read(ReadMode read_mode, u64 lba, u32 sector_count, void* buffer)
-{
-  if (!Seek(lba))
-    return false;
-
-  return Read(read_mode, sector_count, buffer);
-}
-
-u32 CDImage::Read(ReadMode read_mode, u32 minute, u32 second, u32 frame, u32 sector_count, void* buffer)
-{
-  if (!Seek(minute, second, frame))
-    return false;
-
-  return Read(read_mode, sector_count, buffer);
+  return Seek(pos.ToLBA());
 }
 
 u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
@@ -65,15 +87,20 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   u32 sectors_read = 0;
   for (; sectors_read < sector_count; sectors_read++)
   {
-    if (m_current_lba == m_lba_count)
-      break;
+    if (m_position_in_index == m_current_index->length)
+    {
+      if (!Seek(m_position_on_disc))
+        break;
+    }
+
+    Assert(m_current_index->file);
 
     // get raw sector
     char raw_sector[RAW_SECTOR_SIZE];
-    if (!m_data_file->Read2(raw_sector, RAW_SECTOR_SIZE))
+    if (std::fread(raw_sector, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
     {
-      Log_ErrorPrintf("Read of LBA %llu failed", m_current_lba);
-      m_data_file->SeekAbsolute(m_current_lba * RAW_SECTOR_SIZE);
+      Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+      Seek(m_position_on_disc);
       return false;
     }
 
@@ -99,9 +126,40 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
         break;
     }
 
-    m_current_lba++;
+    m_position_on_disc++;
+    m_position_in_index++;
+    m_position_in_track++;
     sectors_read++;
   }
 
   return sectors_read;
+}
+
+const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
+{
+  for (const Index& index : m_indices)
+  {
+    if (pos < index.start_lba_on_disc)
+      continue;
+
+    const LBA index_offset = pos - index.start_lba_on_disc;
+    if (pos >= index.length)
+      continue;
+
+    return &index;
+  }
+
+  return nullptr;
+}
+
+const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA track_pos)
+{
+  if (track_number < 1 || track_number > m_tracks.size())
+    return nullptr;
+
+  const Track& track = m_tracks[track_number - 1];
+  if (track_pos >= track.length)
+    return false;
+
+  return GetIndexForDiscPosition(track.start_lba + track_pos);
 }

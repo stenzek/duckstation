@@ -1,7 +1,9 @@
 #pragma once
 #include "bitfield.h"
 #include "types.h"
+#include <memory>
 #include <tuple>
+#include <vector>
 
 class ByteStream;
 
@@ -9,7 +11,9 @@ class CDImage
 {
 public:
   CDImage();
-  ~CDImage();
+  virtual ~CDImage();
+
+  using LBA = u32;
 
   enum : u32
   {
@@ -37,53 +41,104 @@ public:
     u8 sector_mode;
   };
 
-  // Conversion helpers.
-  static constexpr u64 MSFToLBA(u32 pregap_seconds, u32 minute, u32 second, u32 frame)
+  struct Position
   {
-    return ZeroExtend64(minute) * FRAMES_PER_MINUTE + ZeroExtend64(second) * FRAMES_PER_SECOND + ZeroExtend64(frame) -
-           ZeroExtend64(pregap_seconds) * FRAMES_PER_SECOND;
-  }
-  static constexpr std::tuple<u32, u32, u32> LBAToMSF(u32 pregap_seconds, u64 lba)
-  {
-    const u64 offset = (lba + (pregap_seconds * FRAMES_PER_SECOND) % FRAMES_PER_MINUTE);
-    const u32 minute = Truncate32(lba / FRAMES_PER_MINUTE);
-    const u32 second = Truncate32(offset / FRAMES_PER_SECOND);
-    const u32 frame = Truncate32(offset % FRAMES_PER_SECOND);
-    return std::make_tuple(minute, second, frame);
-  }
+    u8 minute;
+    u8 second;
+    u8 frame;
+
+    static constexpr Position FromBCD(u8 minute, u8 second, u8 frame)
+    {
+      return Position{BCDToDecimal(minute), BCDToDecimal(second), BCDToDecimal(frame)};
+    }
+
+    static constexpr Position FromLBA(LBA lba)
+    {
+      const u8 frame = Truncate8(lba % FRAMES_PER_SECOND);
+      lba /= FRAMES_PER_SECOND;
+
+      const u8 second = Truncate8(lba % SECONDS_PER_MINUTE);
+      lba /= SECONDS_PER_MINUTE;
+
+      const u8 minute = Truncate8(lba);
+
+      return Position{minute, second, frame};
+    }
+
+    LBA ToLBA() const
+    {
+      return ZeroExtend32(minute) * FRAMES_PER_MINUTE + ZeroExtend32(second) * FRAMES_PER_SECOND + ZeroExtend32(frame);
+    }
+
+    Position operator+(const Position& rhs) { return FromLBA(ToLBA() + rhs.ToLBA()); }
+    Position& operator+=(const Position& pos)
+    {
+      *this = *this + pos;
+      return *this;
+    }
+  };
+
+  // Opening disc image.
+  static std::unique_ptr<CDImage> Open(const char* filename);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* filename);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename);
 
   // Accessors.
   const std::string& GetFileName() const { return m_filename; }
-  u32 GetPregapSeconds() const { return m_pregap_seconds; }
-  u64 GetCurrentLBA() const { return m_current_lba; }
-  std::tuple<u32, u32, u32> GetPositionMSF() const { return LBAToMSF(m_pregap_seconds, m_current_lba); }
-  u64 GetLBACount() const { return m_lba_count; }
-
-  bool Open(const char* path);
+  LBA GetPositionOnDisc() const { return m_position_on_disc; }
+  Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
+  LBA GetPositionInTrack() const { return m_position_in_track; }
+  Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
+  LBA GetLBACount() const { return m_lba_count; }
+  u32 GetTrackNumber() const { return m_current_index->track_number; }
 
   // Seek to data LBA.
-  bool Seek(u64 lba);
+  bool Seek(LBA lba);
 
-  // Seek to audio timestamp (MSF).
-  bool Seek(u32 minute, u32 second, u32 frame);
+  // Seek to disc position (MSF).
+  bool Seek(const Position& pos);
 
-  // Seek and read at the same time.
-  u32 Read(ReadMode read_mode, u64 lba, u32 sector_count, void* buffer);
-  u32 Read(ReadMode read_mode, u32 minute, u32 second, u32 frame, u32 sector_count, void* buffer);
+  // Seek to track and position.
+  bool Seek(u32 track_number, const Position& pos_in_track);
 
   // Read from the current LBA. Returns the number of sectors read.
   u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
 
-private:
+protected:
+  struct Track
+  {
+    u32 track_number;
+    LBA start_lba;
+    u32 first_index;
+    u32 length;
+  };
+
+  struct Index
+  {
+    u64 file_offset;
+    std::FILE* file;
+    u32 file_sector_size;
+    LBA start_lba_on_disc;
+    u32 track_number;
+    LBA start_lba_in_track;
+    u32 length;
+    bool is_pregap;
+  };
+
+  const Index* GetIndexForDiscPosition(LBA pos);
+  const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos);
+
   std::string m_filename;
+  u32 m_lba_count = 0;
 
-  // TODO: Multiple data files from cue sheet
-  ByteStream* m_data_file = nullptr;
+  std::vector<Track> m_tracks;
+  std::vector<Index> m_indices;
 
-  // Pregap size.
-  u32 m_pregap_seconds = 2;
+  // Position on disc.
+  LBA m_position_on_disc = 0;
 
-  // Current LBA/total LBAs.
-  u64 m_current_lba = 0;
-  u64 m_lba_count = 0;
+  // Position in track/index.
+  const Index* m_current_index = nullptr;
+  LBA m_position_in_index = 0;
+  LBA m_position_in_track = 0;
 };

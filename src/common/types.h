@@ -145,12 +145,12 @@ constexpr u32 Truncate32(TValue value)
 }
 
 // BCD helpers
-inline u8 DecimalToBCD(u8 value)
+constexpr u8 DecimalToBCD(u8 value)
 {
   return ((value / 10) << 4) + (value % 10);
 }
 
-inline u8 BCDToDecimal(u8 value)
+constexpr u8 BCDToDecimal(u8 value)
 {
   return ((value >> 4) * 10) + (value % 16);
 }

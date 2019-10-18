@@ -207,7 +207,7 @@ private:
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
 
-  Loc m_setloc = {};
+  CDImage::Position m_setloc = {};
   bool m_setloc_dirty = false;
 
   u8 m_filter_file_number = 0;

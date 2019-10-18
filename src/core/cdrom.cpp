@@ -108,7 +108,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_data_fifo);
   sw.Do(&m_sector_buffer);
 
-  u64 media_lba = m_media ? m_media->GetCurrentLBA() : 0;
+  u32 media_lba = m_media ? m_media->GetPositionOnDisc() : 0;
   std::string media_filename = m_media ? m_media->GetFileName() : std::string();
   sw.Do(&media_filename);
   sw.Do(&media_lba);
@@ -124,8 +124,8 @@ bool CDROM::DoState(StateWrapper& sw)
     m_media.reset();
     if (!media_filename.empty())
     {
-      m_media = std::make_unique<CDImage>();
-      if (!m_media->Open(media_filename.c_str()) || !m_media->Seek(media_lba))
+      m_media = CDImage::Open(media_filename.c_str());
+      if (!m_media || !m_media->Seek(media_lba))
       {
         Log_ErrorPrintf("Failed to re-insert CD media from save state: '%s'. Ejecting.", media_filename.c_str());
         RemoveMedia();
@@ -138,8 +138,8 @@ bool CDROM::DoState(StateWrapper& sw)
 
 bool CDROM::InsertMedia(const char* filename)
 {
-  auto media = std::make_unique<CDImage>();
-  if (!media->Open(filename))
+  auto media = CDImage::Open(filename);
+  if (!media)
   {
     Log_ErrorPrintf("Failed to open media at '%s'", filename);
     return false;
@@ -593,7 +593,7 @@ void CDROM::ExecuteCommand()
       {
         Assert(m_setloc_dirty);
         StopReading();
-        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second, m_setloc.frame))
+        if (!m_media || !m_media->Seek(m_setloc))
         {
           Panic("Error in Setloc command");
           return;
@@ -649,7 +649,7 @@ void CDROM::ExecuteCommand()
       // TODO: Seek timing and clean up...
       if (m_setloc_dirty)
       {
-        if (!m_media || !m_media->Seek(m_setloc.minute, m_setloc.second, m_setloc.frame))
+        if (!m_media || !m_media->Seek(m_setloc))
         {
           Panic("Seek error");
         }
@@ -830,7 +830,7 @@ void CDROM::DoSectorRead()
   std::memcpy(&m_last_sector_header, &m_sector_buffer[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &m_sector_buffer[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
-  Log_DevPrintf("Read sector %llu: mode %u submode 0x%02X", m_media->GetCurrentLBA(),
+  Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc(),
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));
 
   bool pass_to_cpu = true;
@@ -1034,10 +1034,13 @@ void CDROM::LoadDataFIFO()
 
 void CDROM::DrawDebugWindow()
 {
+  static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
+  static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
+
   if (!m_show_cdrom_state)
     return;
 
-  ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("CDROM State", &m_show_cdrom_state))
   {
     ImGui::End();
@@ -1049,11 +1052,15 @@ void CDROM::DrawDebugWindow()
   {
     if (m_media)
     {
-      const auto [pos_minute, pos_second, pos_frame] = m_media->GetPositionMSF();
+      const auto [disc_minute, disc_second, disc_frame] = m_media->GetMSFPositionOnDisc();
+      const auto [track_minute, track_second, track_frame] = m_media->GetMSFPositionInTrack();
 
       ImGui::Text("Filename: %s", m_media->GetFileName().c_str());
-      ImGui::Text("Position (MSF): %02u:%02u:%02u", pos_minute, pos_second, pos_frame);
-      ImGui::Text("Position (LBA): %llu", m_media->GetCurrentLBA());
+      ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_minute, disc_second, disc_frame);
+      ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", m_media->GetTrackNumber(), track_minute,
+                  track_second, track_frame);
+      ImGui::Text("Last Sector: %02X:%02X:%02X (Mode %u)", m_last_sector_header.minute, m_last_sector_header.second,
+                  m_last_sector_header.frame, m_last_sector_header.sector_mode);
     }
     else
     {
@@ -1072,62 +1079,99 @@ void CDROM::DrawDebugWindow()
     ImGui::Text("Mode Status");
     ImGui::NextColumn();
 
-    ImGui::Text("ADPBUSY: %s", m_status.ADPBUSY ? "Yes" : "No");
+    ImGui::TextColored(m_status.ADPBUSY ? active_color : inactive_color, "ADPBUSY: %s",
+                       m_status.ADPBUSY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Error: %s", m_secondary_status.error ? "Yes" : "No");
+    ImGui::TextColored(m_secondary_status.error ? active_color : inactive_color, "Error: %s",
+                       m_secondary_status.error ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("CDDA: %s", m_mode.cdda ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::Text("PRMEMPTY: %s", m_status.PRMEMPTY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("Motor On: %s", m_secondary_status.motor_on ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("Auto Pause: %s", m_mode.auto_pause ? "Yes" : "No");
+    ImGui::TextColored(m_mode.cdda ? active_color : inactive_color, "CDDA: %s", m_mode.cdda ? "Yes" : "No");
     ImGui::NextColumn();
 
-    ImGui::Text("PRMWRDY: %s", m_status.PRMWRDY ? "Yes" : "No");
+    ImGui::TextColored(m_status.PRMEMPTY ? active_color : inactive_color, "PRMEMPTY: %s",
+                       m_status.PRMEMPTY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Seek Error: %s", m_secondary_status.seek_error ? "Yes" : "No");
+    ImGui::TextColored(m_secondary_status.motor_on ? active_color : inactive_color, "Motor On: %s",
+                       m_secondary_status.motor_on ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Report Audio: %s", m_mode.report_audio ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::Text("RSLRRDY: %s", m_status.RSLRRDY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("ID Error: %s", m_secondary_status.id_error ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("XA Filter: %s (File %u Channel %u)", m_mode.xa_filter ? "Yes" : "No", m_filter_file_number,
-                m_filter_channel_number);
+    ImGui::TextColored(m_mode.auto_pause ? active_color : inactive_color, "Auto Pause: %s",
+                       m_mode.auto_pause ? "Yes" : "No");
     ImGui::NextColumn();
 
-    ImGui::Text("DRQSTS: %s", m_status.DRQSTS ? "Yes" : "No");
+    ImGui::TextColored(m_status.PRMWRDY ? active_color : inactive_color, "PRMWRDY: %s",
+                       m_status.PRMWRDY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Shell Open: %s", m_secondary_status.shell_open ? "Yes" : "No");
+    ImGui::TextColored(m_secondary_status.seek_error ? active_color : inactive_color, "Seek Error: %s",
+                       m_secondary_status.seek_error ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Ignore Bit: %s", m_mode.ignore_bit ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::Text("BUSYSTS: %s", m_status.BUSYSTS ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("Reading: %s", m_secondary_status.reading ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("Read Raw Sectors: %s", m_mode.read_raw_sector ? "Yes" : "No");
+    ImGui::TextColored(m_mode.report_audio ? active_color : inactive_color, "Report Audio: %s",
+                       m_mode.report_audio ? "Yes" : "No");
     ImGui::NextColumn();
 
+    ImGui::TextColored(m_status.RSLRRDY ? active_color : inactive_color, "RSLRRDY: %s",
+                       m_status.RSLRRDY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Seeking: %s", m_secondary_status.seeking ? "Yes" : "No");
+    ImGui::TextColored(m_secondary_status.id_error ? active_color : inactive_color, "ID Error: %s",
+                       m_secondary_status.id_error ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("XA Enable: %s", m_mode.xa_enable ? "Yes" : "No");
+    ImGui::TextColored(m_mode.xa_filter ? active_color : inactive_color, "XA Filter: %s (File %u Channel %u)",
+                       m_mode.xa_filter ? "Yes" : "No", m_filter_file_number, m_filter_channel_number);
+    ImGui::NextColumn();
+
+    ImGui::TextColored(m_status.DRQSTS ? active_color : inactive_color, "DRQSTS: %s", m_status.DRQSTS ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_secondary_status.shell_open ? active_color : inactive_color, "Shell Open: %s",
+                       m_secondary_status.shell_open ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_mode.ignore_bit ? active_color : inactive_color, "Ignore Bit: %s",
+                       m_mode.ignore_bit ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::TextColored(m_status.BUSYSTS ? active_color : inactive_color, "BUSYSTS: %s",
+                       m_status.BUSYSTS ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_secondary_status.reading ? active_color : inactive_color, "Reading: %s",
+                       m_secondary_status.reading ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_mode.read_raw_sector ? active_color : inactive_color, "Read Raw Sectors: %s",
+                       m_mode.read_raw_sector ? "Yes" : "No");
     ImGui::NextColumn();
 
     ImGui::NextColumn();
-    ImGui::Text("Playing CDDA: %s", m_secondary_status.playing_cdda ? "Yes" : "No");
+    ImGui::TextColored(m_secondary_status.seeking ? active_color : inactive_color, "Seeking: %s",
+                       m_secondary_status.seeking ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::Text("Double Speed: %s", m_mode.double_speed ? "Yes" : "No");
+    ImGui::TextColored(m_mode.xa_enable ? active_color : inactive_color, "XA Enable: %s",
+                       m_mode.xa_enable ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::NextColumn();
+    ImGui::TextColored(m_secondary_status.playing_cdda ? active_color : inactive_color, "Playing CDDA: %s",
+                       m_secondary_status.playing_cdda ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_mode.double_speed ? active_color : inactive_color, "Double Speed: %s",
+                       m_mode.double_speed ? "Yes" : "No");
     ImGui::NextColumn();
 
     ImGui::Columns(1);
+    ImGui::NewLine();
+
+    ImGui::Text("Interrupt Enable Register: 0x%02X", m_interrupt_enable_register);
+    ImGui::Text("Interrupt Flag Register: 0x%02X", m_interrupt_flag_register);
+  }
+
+  if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    const bool playing_anything = m_reading && m_mode.xa_enable;
+    ImGui::TextColored(playing_anything ? active_color : inactive_color, "Playing: %s",
+                       (m_reading && m_mode.xa_enable) ? "XA-ADPCM" : "Disabled");
+    ImGui::TextColored(m_muted ? inactive_color : active_color, "Muted: %s", m_muted ? "Yes" : "No");
+    ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[0][0],
+                ZeroExtend32(m_cd_audio_volume_matrix[0][0]) * 100 / 0x80, m_cd_audio_volume_matrix[0][1],
+                ZeroExtend32(m_cd_audio_volume_matrix[0][1]) * 100 / 0x80);
+    ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[1][0],
+                ZeroExtend32(m_cd_audio_volume_matrix[1][0]) * 100 / 0x80, m_cd_audio_volume_matrix[1][1],
+                ZeroExtend32(m_cd_audio_volume_matrix[1][1]) * 100 / 0x80);
   }
 
   ImGui::End();
