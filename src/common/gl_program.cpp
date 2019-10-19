@@ -105,6 +105,11 @@ void Program::BindFragData(GLuint index /*= 0*/, const char* name /*= "o_col0"*/
   glBindFragDataLocation(m_program_id, index, name);
 }
 
+void Program::BindFragDataIndexed(GLuint color_number /*= 0*/, const char* name /*= "o_col0"*/)
+{
+  glBindFragDataLocationIndexed(m_program_id, color_number, 0, name);
+}
+
 bool Program::Link()
 {
   glLinkProgram(m_program_id);

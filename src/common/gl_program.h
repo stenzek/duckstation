@@ -21,6 +21,7 @@ public:
   void BindDefaultAttributes();
 
   void BindFragData(GLuint index = 0, const char* name = "o_col0");
+  void BindFragDataIndexed(GLuint color_number = 0, const char* name = "o_col0");
 
   bool Link();
 
