@@ -54,6 +54,9 @@ private:
   bool IsWindowFullscreen() const;
   void DrawImGui();
   void DoReset();
+  void DoResume();
+  void DoStartDisc();
+  void DoStartBIOS();
   void DoLoadState(u32 index);
   void DoSaveState(u32 index);
 
@@ -62,12 +65,15 @@ private:
   void Render();
   void RenderDisplay();
   void DrawMainMenuBar();
+  void DrawPoweredOffWindow();
   void DrawOSDMessages();
 
   SDL_Window* m_window = nullptr;
   SDL_GLContext m_gl_context = nullptr;
   int m_window_width = 0;
   int m_window_height = 0;
+
+  std::unique_ptr<GL::Texture> m_app_icon_texture = nullptr;
 
   GL::Program m_display_program;
   GLuint m_display_vao = 0;
@@ -87,7 +93,7 @@ private:
 
   float m_vps = 0.0f;
   float m_fps = 0.0f;
-  float m_speed = 1.0f;
+  float m_speed = 0.0f;
   u32 m_last_frame_number = 0;
   u32 m_last_internal_frame_number = 0;
   u32 m_last_global_tick_counter = 0;

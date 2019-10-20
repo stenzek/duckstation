@@ -53,9 +53,10 @@ bool SDLInterface::CreateSDLWindow()
   }
 
   // Set window icon.
-  SDL_Surface* icon_surface = SDL_CreateRGBSurfaceFrom(
-    const_cast<unsigned int*>(ICON_DATA), ICON_WIDTH, ICON_HEIGHT, 32, ICON_WIDTH * sizeof(u32), UINT32_C(0x000000FF),
-    UINT32_C(0x0000FF00), UINT32_C(0x00FF0000), UINT32_C(0xFF000000));
+  SDL_Surface* icon_surface =
+    SDL_CreateRGBSurfaceFrom(const_cast<unsigned int*>(WINDOW_ICON_DATA), WINDOW_ICON_WIDTH, WINDOW_ICON_HEIGHT, 32,
+                             WINDOW_ICON_WIDTH * sizeof(u32), UINT32_C(0x000000FF), UINT32_C(0x0000FF00),
+                             UINT32_C(0x00FF0000), UINT32_C(0xFF000000));
   if (icon_surface)
   {
     SDL_SetWindowIcon(m_window, icon_surface);
@@ -171,6 +172,10 @@ void main()
   m_display_program.Uniform1i(1, 0);
 
   glGenVertexArrays(1, &m_display_vao);
+
+  m_app_icon_texture =
+    std::make_unique<GL::Texture>(APP_ICON_WIDTH, APP_ICON_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, APP_ICON_DATA, true);
+
   return true;
 }
 
@@ -422,7 +427,8 @@ void SDLInterface::Render()
 {
   DrawImGui();
 
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  if (m_system)
+    m_system->GetGPU()->ResetGraphicsAPIState();
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -440,7 +446,8 @@ void SDLInterface::Render()
   ImGui::NewFrame();
 
   GL::Program::ResetLastProgram();
-  m_system->GetGPU()->RestoreGraphicsAPIState();
+  if (m_system)
+    m_system->GetGPU()->RestoreGraphicsAPIState();
 }
 
 static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
@@ -495,7 +502,10 @@ void SDLInterface::DrawImGui()
 {
   DrawMainMenuBar();
 
-  m_system->DrawDebugWindows();
+  if (m_system)
+    m_system->DrawDebugWindows();
+  else
+    DrawPoweredOffWindow();
 
   DrawOSDMessages();
 
@@ -579,7 +589,7 @@ void SDLInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (ImGui::BeginMenu("Debug"))
+  if (m_system && ImGui::BeginMenu("Debug"))
   {
     m_system->DrawDebugMenus();
     ImGui::EndMenu();
@@ -602,6 +612,71 @@ void SDLInterface::DrawMainMenuBar()
   ImGui::Text("VPS: %.2f", m_vps);
 
   ImGui::EndMainMenuBar();
+}
+
+void SDLInterface::DrawPoweredOffWindow()
+{
+  constexpr int WINDOW_WIDTH = 400;
+  constexpr int WINDOW_HEIGHT = 650;
+  constexpr int BUTTON_WIDTH = 200;
+  constexpr int BUTTON_HEIGHT = 40;
+
+  ImGui::SetNextWindowSize(ImVec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+  ImGui::SetNextWindowPosCenter(ImGuiCond_Always);
+
+  if (!ImGui::Begin("Powered Off", nullptr,
+                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize |
+                      ImGuiWindowFlags_NoBringToFrontOnFocus))
+  {
+    ImGui::End();
+  }
+
+  ImGui::SetCursorPosX((WINDOW_WIDTH - APP_ICON_WIDTH) / 2);
+  ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(m_app_icon_texture->GetGLId())),
+               ImVec2(APP_ICON_WIDTH, APP_ICON_HEIGHT));
+  ImGui::SetCursorPosY(APP_ICON_HEIGHT + 32);
+
+  static const ImVec2 button_size(200.0f, 40.0f);
+  constexpr float button_left = static_cast<float>((WINDOW_WIDTH - BUTTON_WIDTH) / 2);
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+  ImGui::PushStyleColor(ImGuiCol_Button, 0xFF202020);
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0xFF808080);
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0xFF575757);
+
+  ImGui::SetCursorPosX(button_left);
+  ImGui::Button("Resume", button_size);
+  ImGui::NewLine();
+
+  ImGui::SetCursorPosX(button_left);
+  ImGui::Button("Start Disc", button_size);
+  ImGui::NewLine();
+
+  ImGui::SetCursorPosX(button_left);
+  if (ImGui::Button("Start BIOS", button_size))
+    DoStartBIOS();
+  ImGui::NewLine();
+
+  ImGui::SetCursorPosX(button_left);
+  ImGui::Button("Load State", button_size);
+  ImGui::NewLine();
+
+  ImGui::SetCursorPosX(button_left);
+  ImGui::Button("Settings", button_size);
+  ImGui::NewLine();
+
+  ImGui::SetCursorPosX(button_left);
+  if (ImGui::Button("Exit", button_size))
+    m_running = false;
+
+  ImGui::NewLine();
+
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar(2);
+
+  ImGui::End();
 }
 
 void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
@@ -677,6 +752,19 @@ void SDLInterface::DoReset()
   AddOSDMessage("System reset.");
 }
 
+void SDLInterface::DoResume() {}
+
+void SDLInterface::DoStartDisc() {}
+
+void SDLInterface::DoStartBIOS()
+{
+  Assert(!m_system);
+
+  AddOSDMessage("Starting BIOS...");
+  InitializeSystem(nullptr, nullptr);
+  ConnectDevices();
+}
+
 void SDLInterface::DoLoadState(u32 index)
 {
   LoadState(GetSaveStateFilename(index));
@@ -715,11 +803,13 @@ void SDLInterface::Run()
         break;
     }
 
-    m_system->RunFrame();
+    if (m_system)
+      m_system->RunFrame();
 
     Render();
 
     // update fps counter
+    if (m_system)
     {
       const double time = m_fps_timer.GetTimeSeconds();
       if (time >= 0.25f)

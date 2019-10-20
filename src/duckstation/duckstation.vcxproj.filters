@@ -5,6 +5,7 @@
     <ClCompile Include="sdl_audio_mixer.cpp" />
     <ClCompile Include="sdl_interface.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
+    <ClCompile Include="icon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdl_audio_mixer.h" />

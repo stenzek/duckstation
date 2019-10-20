@@ -33,5 +33,5 @@ protected:
   std::unique_ptr<AudioStream> m_audio_stream;
 
   std::unique_ptr<System> m_system;
-  bool m_running = false;
+  bool m_running = true;
 };

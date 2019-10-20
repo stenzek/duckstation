@@ -49,6 +49,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="icon.cpp" />
     <ClCompile Include="sdl_audio_mixer.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_interface.cpp" />

@@ -49,7 +49,6 @@ bool HostInterface::InitializeSystem(const char* filename, const char* exp1_file
     m_system->SetExpansionROM(exp1_filename);
 
   // Resume execution.
-  m_running = true;
   return true;
 }
 

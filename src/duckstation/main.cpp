@@ -60,17 +60,21 @@ static int Run(int argc, char* argv[])
   }
 
   // create system
-  if (!host_interface->InitializeSystem(filename, exp1_filename))
+  const bool boot = (filename != nullptr || exp1_filename != nullptr || !state_filename.IsEmpty());
+  if (boot)
   {
-    host_interface.reset();
-    SDL_Quit();
-    return -1;
+    if (!host_interface->InitializeSystem(filename, exp1_filename))
+    {
+      host_interface.reset();
+      SDL_Quit();
+      return -1;
+    }
+
+    host_interface->ConnectDevices();
+
+    if (!state_filename.IsEmpty())
+      host_interface->LoadState(state_filename);
   }
-
-  host_interface->ConnectDevices();
-
-  if (!state_filename.IsEmpty())
-    host_interface->LoadState(state_filename);
 
   // run
   host_interface->Run();
