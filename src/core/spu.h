@@ -260,6 +260,8 @@ private:
 
   static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
+  bool IsVoiceReverbEnabled(u32 i) const { return ConvertToBoolUnchecked((m_reverb_on_register >> i) & u32(1)); }
+
   u16 ReadVoiceRegister(u32 offset);
   void WriteVoiceRegister(u32 offset, u16 value);
 

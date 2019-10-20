@@ -195,6 +195,12 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
       m_SPUCNT.bits = value;
+      m_SPUSTAT.mode = m_SPUCNT.mode;
+      m_SPUSTAT.dma_read_write_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
+
+      if (!m_SPUCNT.irq9_enable)
+        m_SPUSTAT.irq9_flag = false;
+
       UpdateDMARequest();
       return;
     }
@@ -469,7 +475,9 @@ void SPU::UpdateDMARequest()
 {
   const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
   const bool request = (mode == RAMTransferMode::DMAWrite || mode == RAMTransferMode::DMARead);
-  m_dma->SetRequest(DMA::Channel::SPU, request);
+  m_dma->SetRequest(DMA::Channel::SPU, true);
+  m_SPUSTAT.dma_read_request = request && mode == RAMTransferMode::DMARead;
+  m_SPUSTAT.dma_write_request = request && mode == RAMTransferMode::DMAWrite;
 }
 
 u16 SPU::RAMTransferRead()
@@ -887,14 +895,71 @@ void SPU::GenerateSample()
 
 void SPU::DrawDebugWindow()
 {
+  static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
+  static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
+
   if (!m_show_spu_state)
     return;
 
-  ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("SPU State", &m_show_spu_state))
   {
     ImGui::End();
     return;
+  }
+
+  // status
+  if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    static constexpr std::array<float, 6> offsets = {{100.0f, 200.0f, 300.0f, 420.0f, 500.0f, 600.0f}};
+    static constexpr std::array<const char*, 4> transfer_modes = {
+      {"Transfer Stopped", "Manual Write", "DMA Write", "DMA Read"}};
+
+    ImGui::Text("Control: ");
+    ImGui::SameLine(offsets[0]);
+    ImGui::TextColored(m_SPUCNT.enable ? active_color : inactive_color, "SPU Enable");
+    ImGui::SameLine(offsets[1]);
+    ImGui::TextColored(m_SPUCNT.mute_n ? inactive_color : active_color, "Mute SPU");
+    ImGui::SameLine(offsets[2]);
+    ImGui::TextColored(m_SPUCNT.external_audio_enable ? active_color : inactive_color, "External Audio");
+    ImGui::SameLine(offsets[3]);
+    ImGui::TextColored(m_SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped ? active_color : inactive_color,
+                       transfer_modes[static_cast<u8>(m_SPUCNT.ram_transfer_mode.GetValue())]);
+
+    ImGui::Text("Status: ");
+    ImGui::SameLine(offsets[0]);
+    ImGui::TextColored(m_SPUSTAT.irq9_flag ? active_color : inactive_color, "IRQ9");
+    ImGui::SameLine(offsets[1]);
+    ImGui::TextColored(m_SPUSTAT.dma_read_write_request ? active_color : inactive_color, "DMA Request");
+    ImGui::SameLine(offsets[2]);
+    ImGui::TextColored(m_SPUSTAT.dma_read_request ? active_color : inactive_color, "DMA Read");
+    ImGui::SameLine(offsets[3]);
+    ImGui::TextColored(m_SPUSTAT.dma_write_request ? active_color : inactive_color, "DMA Write");
+    ImGui::SameLine(offsets[4]);
+    ImGui::TextColored(m_SPUSTAT.transfer_busy ? active_color : inactive_color, "Transfer Busy");
+    ImGui::SameLine(offsets[5]);
+    ImGui::TextColored(m_SPUSTAT.second_half_capture_buffer ? active_color : inactive_color, "Second Capture Buffer");
+
+    ImGui::Text("Interrupt: ");
+    ImGui::SameLine(offsets[0]);
+    ImGui::TextColored(m_SPUCNT.irq9_enable ? active_color : inactive_color,
+                       m_SPUCNT.irq9_enable ? "Enabled @ 0x%04X (actual 0x%08X)" : "Disabled @ 0x%04X (actual 0x%08X)",
+                       m_irq_address, ZeroExtend32(m_irq_address * 8) & RAM_MASK);
+
+    ImGui::Text("Volume: ");
+    ImGui::SameLine(offsets[0]);
+    ImGui::Text("Left: %d%%", ApplyVolume(100, m_main_volume_left.GetVolume()));
+    ImGui::SameLine(offsets[1]);
+    ImGui::Text("Right: %d%%", ApplyVolume(100, m_main_volume_right.GetVolume()));
+
+    ImGui::Text("CD Audio: ");
+    ImGui::SameLine(offsets[0]);
+    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color,
+                       m_SPUCNT.cd_audio_enable ? "Enabled" : "Disabled");
+    ImGui::SameLine(offsets[1]);
+    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Left Volume: %d%%", 0, 0);
+    ImGui::SameLine(offsets[3]);
+    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %d%%", 0, 0);
   }
 
   // draw voice states
@@ -947,6 +1012,27 @@ void SPU::DrawDebugWindow()
     }
 
     ImGui::Columns(1);
+  }
+
+  if (ImGui::CollapsingHeader("Reverb", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::TextColored(m_SPUCNT.reverb_master_enable ? active_color : inactive_color, "Master Enable: %s",
+                       m_SPUCNT.reverb_master_enable ? "Yes" : "No");
+    ImGui::Text("Voices Enabled: ");
+
+    for (u32 i = 0; i < NUM_VOICES; i++)
+    {
+      ImGui::SameLine(0.0f, 16.0f);
+
+      const bool active = IsVoiceReverbEnabled(i);
+      ImGui::TextColored(active ? active_color : inactive_color, "%u", i);
+    }
+
+    ImGui::TextColored(m_SPUCNT.cd_audio_reverb ? active_color : inactive_color, "CD Audio Enable: %s",
+                       m_SPUCNT.cd_audio_reverb ? "Yes" : "No");
+
+    ImGui::TextColored(m_SPUCNT.external_audio_reverb ? active_color : inactive_color, "External Audio Enable: %s",
+                       m_SPUCNT.external_audio_reverb ? "Yes" : "No");
   }
 
   ImGui::End();
