@@ -348,6 +348,54 @@ void GPU::UpdateCRTCConfig()
   if (cs.display_width != old_horizontal_resolution || cs.display_height != old_vertical_resolution)
     Log_InfoPrintf("Visible resolution is now %ux%u", cs.display_width, cs.display_height);
 
+  // Compute the aspect ratio necessary to display borders in the inactive region of the picture.
+  // Convert total dots/lines to time.
+  const float dot_clock =
+    (static_cast<float>(MASTER_CLOCK) * (11.0f / 7.0f / static_cast<float>(cs.dot_clock_divider)));
+  const float dot_clock_period = 1.0f / dot_clock;
+  const float dots_per_scanline = static_cast<float>(cs.ticks_per_scanline) / static_cast<float>(cs.dot_clock_divider);
+  const float horizontal_period = dots_per_scanline * dot_clock_period;
+  const float vertical_period = horizontal_period * static_cast<float>(cs.total_scanlines_per_frame);
+
+  // Convert active dots/lines to time.
+  const float visible_dots_per_scanline =
+    static_cast<float>(cs.visible_ticks_per_scanline) / static_cast<float>(cs.dot_clock_divider);
+  const float horizontal_active_time = horizontal_period * visible_dots_per_scanline;
+  const float vertical_active_time = horizontal_active_time * static_cast<float>(cs.visible_scanlines_per_frame);
+
+  // Use the reference active time/lines for the signal to work out the border area, and thus aspect ratio
+  // transformation for the active area in our framebuffer. For the purposes of these calculations, we're assuming
+  // progressive scan.
+  float display_ratio;
+  if (m_GPUSTAT.pal_mode)
+  {
+    // Wikipedia says PAL is active 51.95us of 64.00us, and 576/625 lines.
+    const float signal_horizontal_active_time = 51.95f;
+    const float signal_horizontal_total_time = 64.0f;
+    const float signal_vertical_active_lines = 576.0f;
+    const float signal_vertical_total_lines = 625.0f;
+    const float h_ratio =
+      (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
+    const float v_ratio =
+      (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
+    display_ratio = h_ratio / v_ratio;
+  }
+  else
+  {
+    const float signal_horizontal_active_time = 52.66f;
+    const float signal_horizontal_total_time = 63.56f;
+    const float signal_vertical_active_lines = 486.0f;
+    const float signal_vertical_total_lines = 525.0f;
+    const float h_ratio =
+      (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
+    const float v_ratio =
+      (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
+    display_ratio = h_ratio / v_ratio;
+  }
+
+  // Ensure the numbers are sane, and not due to a misconfigured active display range.
+  cs.display_aspect_ratio = (std::isnormal(display_ratio) && display_ratio != 0.0f) ? display_ratio : (4.0f / 3.0f);
+
   UpdateSliceTicks();
 }
 

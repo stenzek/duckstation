@@ -492,7 +492,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       glEnable(GL_SCISSOR_TEST);
 
       m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, display_width, display_height,
-                                                      DISPLAY_ASPECT_RATIO);
+                                                      m_crtc_state.display_aspect_ratio);
     }
     else
     {
@@ -501,7 +501,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
                          scaled_display_width, scaled_display_height, 1);
 
       m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
-                                                      scaled_display_height, DISPLAY_ASPECT_RATIO);
+                                                      scaled_display_height, m_crtc_state.display_aspect_ratio);
     }
   }
 }

@@ -16,7 +16,6 @@ class Timers;
 class GPU
 {
 public:
-  static constexpr float DISPLAY_ASPECT_RATIO = 4.0f / 3.0f;
   enum : u32
   {
     VRAM_WIDTH = 1024,
@@ -341,6 +340,8 @@ protected:
     TickCount fractional_ticks;
     TickCount current_tick_in_scanline;
     u32 current_scanline;
+
+    float display_aspect_ratio;
 
     bool in_hblank;
     bool in_vblank;
