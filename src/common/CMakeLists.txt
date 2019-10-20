@@ -4,6 +4,8 @@ set(SRCS
     bitfield.h
     cd_image.cpp
     cd_image.h
+    cd_image_bin.cpp
+    cd_image_cue.cpp
     cd_xa.cpp
     cd_xa.h
     gl_program.cpp

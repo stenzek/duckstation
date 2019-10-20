@@ -50,7 +50,7 @@
     <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
-    <ClCompile Include="cd_image_cuesheet.cpp" />
+    <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="gl_program.cpp" />
     <ClCompile Include="gl_texture.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />

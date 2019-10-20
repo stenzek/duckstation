@@ -20,7 +20,7 @@
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="cd_xa.cpp" />
-    <ClCompile Include="cd_image_cuesheet.cpp" />
+    <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
   </ItemGroup>
   <ItemGroup>
