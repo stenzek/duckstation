@@ -330,11 +330,12 @@ protected:
     u32 vertical_resolution;
     TickCount dot_clock_divider;
 
-    u32 visible_horizontal_resolution;
-    u32 visible_vertical_resolution;
+    u32 display_width;
+    u32 display_height;
 
     TickCount ticks_per_scanline;
     TickCount visible_ticks_per_scanline;
+    u32 visible_scanlines_per_frame;
     u32 total_scanlines_per_frame;
 
     TickCount fractional_ticks;

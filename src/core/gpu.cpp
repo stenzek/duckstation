@@ -90,10 +90,11 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.horizontal_resolution);
   sw.Do(&m_crtc_state.vertical_resolution);
   sw.Do(&m_crtc_state.dot_clock_divider);
-  sw.Do(&m_crtc_state.visible_horizontal_resolution);
-  sw.Do(&m_crtc_state.visible_vertical_resolution);
+  sw.Do(&m_crtc_state.display_width);
+  sw.Do(&m_crtc_state.display_height);
   sw.Do(&m_crtc_state.ticks_per_scanline);
   sw.Do(&m_crtc_state.visible_ticks_per_scanline);
+  sw.Do(&m_crtc_state.visible_scanlines_per_frame);
   sw.Do(&m_crtc_state.total_scanlines_per_frame);
   sw.Do(&m_crtc_state.fractional_ticks);
   sw.Do(&m_crtc_state.current_tick_in_scanline);
@@ -308,27 +309,10 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
 
 void GPU::UpdateCRTCConfig()
 {
-  static constexpr std::array<TickCount, 8> dot_clock_dividers = {{8, 4, 10, 5, 7, 7, 7, 7}};
-  static constexpr std::array<u32, 8> horizontal_resolutions = {{256, 320, 512, 630, 368, 368, 368, 368}};
+  static constexpr std::array<TickCount, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
+  static constexpr std::array<u32, 8> horizontal_resolutions = {{256, 320, 512, 640, 368, 368, 368, 368}};
   static constexpr std::array<u32, 2> vertical_resolutions = {{240, 480}};
   CRTCState& cs = m_crtc_state;
-
-  const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
-  cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
-  cs.horizontal_resolution = horizontal_resolutions[horizontal_resolution_index];
-  cs.vertical_resolution =
-    vertical_resolutions[BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution)];
-
-  // check for a change in resolution
-  const u32 old_horizontal_resolution = cs.visible_horizontal_resolution;
-  const u32 old_vertical_resolution = cs.visible_vertical_resolution;
-  cs.visible_horizontal_resolution = std::max((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, u32(1));
-  cs.visible_vertical_resolution = cs.regs.Y2 - cs.regs.Y1 + 1;
-  if (cs.visible_horizontal_resolution != old_horizontal_resolution ||
-      cs.visible_vertical_resolution != old_vertical_resolution)
-  {
-    Log_InfoPrintf("Visible resolution is now %ux%u", cs.visible_horizontal_resolution, cs.visible_vertical_resolution);
-  }
 
   if (m_GPUSTAT.pal_mode)
   {
@@ -340,6 +324,29 @@ void GPU::UpdateCRTCConfig()
     cs.total_scanlines_per_frame = 263;
     cs.ticks_per_scanline = 3413;
   }
+
+  const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
+  cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
+  cs.horizontal_resolution = horizontal_resolutions[horizontal_resolution_index];
+  cs.vertical_resolution =
+    vertical_resolutions[BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution)];
+  cs.visible_ticks_per_scanline = cs.regs.X2 - cs.regs.X1;
+  cs.visible_scanlines_per_frame = cs.regs.Y2 - cs.regs.Y1;
+
+  // check for a change in resolution
+  const u32 old_horizontal_resolution = cs.display_width;
+  const u32 old_vertical_resolution = cs.display_height;
+  cs.display_width = std::max<u32>(cs.visible_ticks_per_scanline / cs.dot_clock_divider, 1);
+  cs.display_height = cs.visible_scanlines_per_frame;
+
+  if (m_GPUSTAT.vertical_interlace)
+  {
+    // Force progressive for now.
+    cs.display_height *= 2;
+  }
+
+  if (cs.display_width != old_horizontal_resolution || cs.display_height != old_vertical_resolution)
+    Log_InfoPrintf("Visible resolution is now %ux%u", cs.display_width, cs.display_height);
 
   UpdateSliceTicks();
 }
@@ -393,7 +400,7 @@ void GPU::Execute(TickCount ticks)
     }
 
     const bool old_vblank = m_crtc_state.in_vblank;
-    const bool new_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_vertical_resolution;
+    const bool new_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_scanlines_per_frame;
     if (new_vblank != old_vblank)
     {
       m_crtc_state.in_vblank = new_vblank;
@@ -444,7 +451,6 @@ void GPU::WriteGP0(u32 value)
 
   UpdateGPUSTAT();
 }
-
 
 void GPU::WriteGP1(u32 value)
 {
@@ -756,9 +762,9 @@ void GPU::DrawDebugStateWindow()
                 cs.regs.Y2.GetValue());
     ImGui::NewLine();
 
-    ImGui::Text("Visible Resolution: %ux%u", cs.visible_horizontal_resolution, cs.visible_vertical_resolution);
+    ImGui::Text("Display Resolution: %ux%u", cs.display_width, cs.display_height);
     ImGui::Text("Ticks Per Scanline: %u (%u visible)", cs.ticks_per_scanline, cs.visible_ticks_per_scanline);
-    ImGui::Text("Scanlines Per Frame: %u", cs.total_scanlines_per_frame);
+    ImGui::Text("Scanlines Per Frame: %u (%u visible)", cs.total_scanlines_per_frame, cs.visible_scanlines_per_frame);
     ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
     ImGui::Text("Horizontal Blank: %s", cs.in_hblank ? "Yes" : "No");
     ImGui::Text("Vertical Blank: %s", cs.in_vblank ? "Yes" : "No");
