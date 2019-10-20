@@ -441,49 +441,68 @@ void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  const u32 texture_width = m_vram_texture->GetWidth();
-  const u32 texture_height = m_vram_texture->GetHeight();
-
   if (m_debug_options.show_vram)
   {
-    m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, texture_width, texture_height, 1.0f);
+    m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, m_vram_texture->GetWidth(),
+                                                    m_vram_texture->GetHeight(), 1.0f);
   }
   else
   {
-    const u32 display_width = m_crtc_state.horizontal_resolution * m_resolution_scale;
-    const u32 display_height = m_crtc_state.vertical_resolution * m_resolution_scale;
-    const u32 vram_offset_x = m_crtc_state.regs.X * m_resolution_scale;
-    const u32 vram_offset_y = m_crtc_state.regs.Y * m_resolution_scale;
-    const u32 copy_width =
-      ((vram_offset_x + display_width) > texture_width) ? (texture_width - vram_offset_x) : display_width;
-    const u32 copy_height =
-      ((vram_offset_y + display_height) > texture_height) ? (texture_height - vram_offset_y) : display_height;
+    const u32 vram_offset_x = m_crtc_state.regs.X;
+    const u32 vram_offset_y = m_crtc_state.regs.Y;
+    const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
+    const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
+    const u32 display_width = std::min<u32>(m_crtc_state.horizontal_resolution, VRAM_WIDTH - vram_offset_x);
+    const u32 display_height = std::min<u32>(m_crtc_state.vertical_resolution, VRAM_HEIGHT - vram_offset_y);
+    const u32 scaled_display_width = display_width * m_resolution_scale;
+    const u32 scaled_display_height = display_height * m_resolution_scale;
+    const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
+    const u32 scaled_flipped_vram_offset_y = m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
     if (m_GPUSTAT.display_area_color_depth_24)
     {
-      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_display_fbo);
-      glViewport(0, 0, copy_width, copy_height);
       glDisable(GL_BLEND);
       glDisable(GL_SCISSOR_TEST);
+
+      // Because of how the reinterpret shader works, we need to use the downscaled version.
+      if (m_resolution_scale > 1)
+      {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_downsample_fbo);
+        glBlitFramebuffer(
+          scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_vram_offset_x + scaled_display_width,
+          scaled_flipped_vram_offset_y + scaled_display_height, vram_offset_x, flipped_vram_offset_y,
+          vram_offset_x + display_width, flipped_vram_offset_y + display_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        m_vram_downsample_texture->Bind();
+      }
+      else
+      {
+        m_vram_texture->Bind();
+      }
+
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_display_fbo);
+      glViewport(0, 0, display_width, display_height);
       m_reinterpret_rgb8_program.Bind();
-      m_reinterpret_rgb8_program.Uniform2i(0, vram_offset_x, texture_height - vram_offset_y - copy_height);
-      m_vram_texture->Bind();
+      m_reinterpret_rgb8_program.Uniform2i(0, vram_offset_x, flipped_vram_offset_y);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       // restore state
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
       glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
       glEnable(GL_SCISSOR_TEST);
+
+      m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, display_width, display_height,
+                                                      DISPLAY_ASPECT_RATIO);
     }
     else
     {
-      glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, vram_offset_x,
-                         texture_height - vram_offset_y - copy_height, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D,
-                         0, 0, 0, 0, copy_width, copy_height, 1);
-    }
+      glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_vram_offset_x,
+                         scaled_flipped_vram_offset_y, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0,
+                         scaled_display_width, scaled_display_height, 1);
 
-    m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, copy_width, copy_height,
-                                                    DISPLAY_ASPECT_RATIO);
+      m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
+                                                      scaled_display_height, DISPLAY_ASPECT_RATIO);
+    }
   }
 }
 
