@@ -233,8 +233,8 @@ private:
     TickCount adsr_ticks;
     TickCount adsr_ticks_remaining;
     s16 adsr_step;
-    bool has_samples;    
-    
+    bool has_samples;
+
     bool IsOn() const { return adsr_phase != ADSRPhase::Off; }
 
     void KeyOn();
@@ -243,13 +243,21 @@ private:
     void DecodeBlock(const ADPCMBlock& block);
     SampleFormat SampleBlock(s32 index) const;
     s16 Interpolate() const;
-    
+
     // Switches to the specified phase, filling in target.
     void SetADSRPhase(ADSRPhase phase);
 
     // Updates the ADSR volume/phase.
     void TickADSR();
   };
+
+  static constexpr s16 Clamp16(s32 value)
+  {
+    return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : static_cast<s16>(value);
+  }
+
+  static constexpr s16 ApplyVolume(s16 sample, s16 volume) { return Clamp16((s32(sample) * s32(volume)) >> 15); }
+  static constexpr s32 ApplyVolumeUnsaturated(s32 sample, s16 volume) { return (sample * s32(volume)) >> 15; }
 
   static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
@@ -261,7 +269,7 @@ private:
   void RAMTransferWrite(u16 value);
 
   void ReadADPCMBlock(u16 address, ADPCMBlock* block);
-  std::tuple<SampleFormat, SampleFormat> SampleVoice(u32 voice_index);
+  std::tuple<s32, s32> SampleVoice(u32 voice_index);
   void GenerateSample();
 
   System* m_system = nullptr;

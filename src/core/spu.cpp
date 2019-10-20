@@ -9,23 +9,6 @@
 #include <imgui.h>
 Log_SetChannel(SPU);
 
-static s16 Clamp16(s32 value)
-{
-  return static_cast<s16>(std::clamp<s32>(value, -32768, 32767));
-}
-
-static constexpr float S16ToFloat(s16 value)
-{
-  return (value >= 0) ? (static_cast<float>(value) / static_cast<float>(std::numeric_limits<s16>::max())) :
-                        (static_cast<float>(value) / -static_cast<float>(std::numeric_limits<s16>::min()));
-}
-
-static constexpr s16 FloatToS16(float value)
-{
-  return (value >= 0.0f) ? (static_cast<s16>(value * static_cast<float>(std::numeric_limits<s16>::max()))) :
-                           (static_cast<s16>(value * -static_cast<float>(std::numeric_limits<s16>::min())));
-}
-
 SPU::SPU() = default;
 
 SPU::~SPU() = default;
@@ -754,11 +737,11 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
   }
 }
 
-std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_index)
+std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 {
   Voice& voice = m_voices[voice_index];
   if (!voice.IsOn())
-    return std::make_tuple<s16, s16>(0, 0);
+    return {};
 
   if (!voice.has_samples)
   {
@@ -806,24 +789,14 @@ std::tuple<SPU::SampleFormat, SPU::SampleFormat> SPU::SampleVoice(u32 voice_inde
     }
   }
 
-  // TODO: Volume
-  const float adsr_volume = S16ToFloat(voice.regs.adsr_volume);
+  // interpolate/sample and apply ADSR volume
+  const s32 sample = ApplyVolumeUnsaturated(voice.Interpolate(), voice.regs.adsr_volume);
   voice.TickADSR();
 
-  const s32 sample = voice.Interpolate();
-  // s32 sample = voice.SampleBlock(voice.counter.sample_index);
-  const s16 sample16 = Clamp16(sample);
-  const float samplef = S16ToFloat(sample16) * adsr_volume;
-
-  // apply volume
-  const float volume_left = S16ToFloat(voice.regs.volume_left.GetVolume());
-  const float volume_right = S16ToFloat(voice.regs.volume_right.GetVolume());
-  const float final_left = volume_left * samplef;
-  const float final_right = volume_right * samplef;
-
-  return std::make_tuple(FloatToS16(final_left), FloatToS16(final_right));
-  // return std::make_tuple(FloatToS16(samplef), FloatToS16(samplef));
-  // return std::make_tuple(sample16, sample16);
+  // apply per-channel volume
+  const s16 left = ApplyVolumeUnsaturated(sample, voice.regs.volume_left.GetVolume());
+  const s16 right = ApplyVolumeUnsaturated(sample, voice.regs.volume_right.GetVolume());
+  return std::make_tuple(left, right);
 }
 
 void SPU::EnsureCDAudioSpace(u32 num_samples)
