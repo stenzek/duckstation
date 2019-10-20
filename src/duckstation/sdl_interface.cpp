@@ -428,8 +428,7 @@ void SDLInterface::Render()
 {
   DrawImGui();
 
-  if (m_system)
-    m_system->GetGPU()->ResetGraphicsAPIState();
+  m_system->GetGPU()->ResetGraphicsAPIState();
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -447,8 +446,26 @@ void SDLInterface::Render()
   ImGui::NewFrame();
 
   GL::Program::ResetLastProgram();
-  if (m_system)
-    m_system->GetGPU()->RestoreGraphicsAPIState();
+  m_system->GetGPU()->RestoreGraphicsAPIState();
+}
+
+void SDLInterface::RenderPoweredOff()
+{
+  DrawPoweredOffWindow();
+  ImGui::Render();
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+  SDL_GL_SwapWindow(m_window);
+
+  ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui_ImplOpenGL3_NewFrame();
+
+  ImGui::NewFrame();
 }
 
 static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
@@ -503,10 +520,7 @@ void SDLInterface::DrawImGui()
 {
   DrawMainMenuBar();
 
-  if (m_system)
-    m_system->DrawDebugWindows();
-  else
-    DrawPoweredOffWindow();
+  m_system->DrawDebugWindows();
 
   DrawOSDMessages();
 
@@ -590,7 +604,7 @@ void SDLInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (m_system && ImGui::BeginMenu("Debug"))
+  if (ImGui::BeginMenu("Debug"))
   {
     m_system->DrawDebugMenus();
     ImGui::EndMenu();
@@ -827,13 +841,12 @@ void SDLInterface::Run()
     }
 
     if (m_system)
+    {
       m_system->RunFrame();
 
-    Render();
+      Render();
 
-    // update fps counter
-    if (m_system)
-    {
+      // update fps counter
       const double time = m_fps_timer.GetTimeSeconds();
       if (time >= 0.25f)
       {
@@ -849,6 +862,10 @@ void SDLInterface::Run()
         m_last_global_tick_counter = m_system->GetGlobalTickCounter();
         m_fps_timer.Reset();
       }
+    }
+    else
+    {
+      RenderPoweredOff();
     }
   }
 }

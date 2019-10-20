@@ -63,6 +63,7 @@ private:
   bool HandleSDLEvent(const SDL_Event* event);
   bool PassEventToImGui(const SDL_Event* event);
   void Render();
+  void RenderPoweredOff();
   void RenderDisplay();
   void DrawMainMenuBar();
   void DrawPoweredOffWindow();
