@@ -37,15 +37,15 @@ void CDROM::SoftReset()
   m_command_stage = 0;
   m_command_remaining_ticks = 0;
   m_sector_read_remaining_ticks = 0;
-  m_reading = false;
   m_muted = false;
+  m_adpcm_muted = false;
   m_status.bits = 0;
   m_secondary_status.bits = 0;
   m_mode.bits = 0;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
-  m_setloc = {};
-  m_setloc_dirty = false;
+  m_pending_location = {};
+  m_location_pending = false;
   m_filter_file_number = 0;
   m_filter_channel_number = 0;
   m_last_sector_header = {};
@@ -79,20 +79,20 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_command_stage);
   sw.Do(&m_command_remaining_ticks);
   sw.Do(&m_sector_read_remaining_ticks);
-  sw.Do(&m_reading);
   sw.Do(&m_muted);
-  sw.Do(&m_setloc.minute);
-  sw.Do(&m_setloc.second);
-  sw.Do(&m_setloc.frame);
-  sw.Do(&m_setloc_dirty);
+  sw.Do(&m_adpcm_muted);
+  sw.Do(&m_pending_location.minute);
+  sw.Do(&m_pending_location.second);
+  sw.Do(&m_pending_location.frame);
+  sw.Do(&m_location_pending);
   sw.Do(&m_command_state);
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
   sw.Do(&m_mode.bits);
   sw.Do(&m_interrupt_enable_register);
   sw.Do(&m_interrupt_flag_register);
-  sw.DoPOD(&m_setloc);
-  sw.Do(&m_setloc_dirty);
+  sw.DoPOD(&m_pending_location);
+  sw.Do(&m_location_pending);
   sw.Do(&m_filter_file_number);
   sw.Do(&m_filter_channel_number);
   sw.DoPOD(&m_last_sector_header);
@@ -117,7 +117,7 @@ bool CDROM::DoState(StateWrapper& sw)
   {
     if (m_command_state == CommandState::WaitForExecute)
       m_system->SetDowncount(m_command_remaining_ticks);
-    if (m_reading)
+    if (m_secondary_status.IsReadingOrPlaying())
       m_system->SetDowncount(m_sector_read_remaining_ticks);
 
     // load up media if we had something in there before
@@ -369,7 +369,9 @@ void CDROM::WriteRegister(u32 offset, u8 value)
         case 3:
         {
           Log_DebugPrintf("Audio volume apply changes <- 0x%02X", ZeroExtend32(value));
-          m_cd_audio_volume_matrix = m_next_cd_audio_volume_matrix;
+          m_adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
+          if (value & 0x20)
+            m_cd_audio_volume_matrix = m_next_cd_audio_volume_matrix;
           return;
         }
       }
@@ -463,7 +465,7 @@ void CDROM::Execute(TickCount ticks)
       break;
   }
 
-  if (m_reading)
+  if (m_secondary_status.IsReadingOrPlaying())
   {
     m_sector_read_remaining_ticks -= ticks;
     if (m_sector_read_remaining_ticks <= 0)
@@ -578,10 +580,10 @@ void CDROM::ExecuteCommand()
     case Command::Setloc:
     {
       // TODO: Verify parameter count
-      m_setloc.minute = BCDToDecimal(m_param_fifo.Peek(0));
-      m_setloc.second = BCDToDecimal(m_param_fifo.Peek(1));
-      m_setloc.frame = BCDToDecimal(m_param_fifo.Peek(2));
-      m_setloc_dirty = true;
+      m_pending_location.minute = BCDToDecimal(m_param_fifo.Peek(0));
+      m_pending_location.second = BCDToDecimal(m_param_fifo.Peek(1));
+      m_pending_location.frame = BCDToDecimal(m_param_fifo.Peek(2));
+      m_location_pending = true;
       Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
                       ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
       m_response_fifo.Push(m_secondary_status.bits);
@@ -598,15 +600,15 @@ void CDROM::ExecuteCommand()
 
       if (m_command_stage == 0)
       {
-        Assert(m_setloc_dirty);
+        Assert(m_location_pending);
         StopReading();
-        if (!m_media || !m_media->Seek(m_setloc))
+        if (!m_media || !m_media->Seek(m_pending_location))
         {
           Panic("Error in Setloc command");
           return;
         }
 
-        m_setloc_dirty = false;
+        m_location_pending = false;
         m_secondary_status.motor_on = true;
         m_secondary_status.seeking = true;
         m_response_fifo.Push(m_secondary_status.bits);
@@ -652,21 +654,44 @@ void CDROM::ExecuteCommand()
     case Command::ReadS:
     {
       Log_DebugPrintf("CDROM read command");
+      if (!m_media)
+        SendErrorResponse(0x80);
+      else
+        BeginReading(false);
 
-      // TODO: Seek timing and clean up...
-      if (m_setloc_dirty)
+      EndCommand();
+      return;
+    }
+
+    case Command::Play:
+    {
+      u8 track = m_param_fifo.IsEmpty() ? 0 : m_param_fifo.Peek(0);
+      Log_DebugPrintf("CDROM play command, track=%u", track);
+
+      if (!m_media)
       {
-        if (!m_media || !m_media->Seek(m_setloc))
+        SendErrorResponse(0x80);
+      }
+      else
+      {
+        // if track zero, start from current position
+        if (track != 0)
         {
-          Panic("Seek error");
+          // play specific track?
+          if (track > m_media->GetTrackCount())
+          {
+            // restart current track
+            track = Truncate8(m_media->GetTrackNumber());
+          }
+
+          m_pending_location = m_media->GetTrackStartMSFPosition(track);
+          m_location_pending = true;
         }
-        m_setloc_dirty = false;
+
+        BeginReading(true);
       }
 
       EndCommand();
-      BeginReading();
-      m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::ACK);
       return;
     }
 
@@ -674,7 +699,7 @@ void CDROM::ExecuteCommand()
     {
       if (m_command_stage == 0)
       {
-        const bool was_reading = m_reading;
+        const bool was_reading = m_secondary_status.IsReadingOrPlaying();
         Log_DebugPrintf("CDROM pause command");
         m_response_fifo.Push(m_secondary_status.bits);
         SetInterrupt(Interrupt::ACK);
@@ -851,18 +876,30 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
   }
 }
 
-void CDROM::BeginReading()
+void CDROM::BeginReading(bool cdda)
 {
-  Log_DebugPrintf("Starting reading");
+  Log_DebugPrintf("Starting %s", cdda ? "playing CDDA" : "reading");
+
+  // TODO: Seek timing and clean up...
+  if (m_location_pending)
+  {
+    if (!m_media || !m_media->Seek(m_pending_location))
+    {
+      Panic("Seek error");
+    }
+    m_location_pending = false;
+  }
 
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = false;
-  m_secondary_status.reading = true;
+  m_secondary_status.reading = !cdda;
+  m_secondary_status.playing_cdda = cdda;
 
-  m_reading = true;
+  m_response_fifo.Push(m_secondary_status.bits);
+  SetInterrupt(Interrupt::ACK);
+
   m_sector_read_remaining_ticks = GetTicksForRead();
   m_system->SetDowncount(m_sector_read_remaining_ticks);
-  UpdateStatusRegister();
 }
 
 void CDROM::DoSectorRead()
@@ -885,6 +922,20 @@ void CDROM::DoSectorRead()
   Assert(!m_mode.ignore_bit);
   m_sector_buffer.resize(RAW_SECTOR_SIZE);
   m_media->Read(CDImage::ReadMode::RawSector, 1, m_sector_buffer.data());
+
+  if (m_secondary_status.reading)
+    ProcessDataSector();
+  else if (m_secondary_status.playing_cdda)
+    ProcessCDDASector();
+  else
+    Panic("Not reading or playing");
+
+  m_sector_read_remaining_ticks += GetTicksForRead();
+  m_system->SetDowncount(m_sector_read_remaining_ticks);
+}
+
+void CDROM::ProcessDataSector()
+{
   std::memcpy(&m_last_sector_header, &m_sector_buffer[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &m_sector_buffer[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
@@ -926,9 +977,6 @@ void CDROM::DoSectorRead()
     SetInterrupt(Interrupt::INT1);
     UpdateStatusRegister();
   }
-
-  m_sector_read_remaining_ticks += GetTicksForRead();
-  m_system->SetDowncount(m_sector_read_remaining_ticks);
 }
 
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
@@ -965,7 +1013,7 @@ static s16 ZigZagInterpolate(const s16* ringbuf, const s16* table, u8 p)
 
 static constexpr s16 ApplyVolume(s16 sample, u8 volume)
 {
-  return static_cast<s16>(s32(sample) * static_cast<s32>(ZeroExtend32(volume)) / 0x80);
+  return static_cast<s16>(std::clamp<s32>(s32(sample) * static_cast<s32>(ZeroExtend32(volume)) >> 7, -0x8000, 0x7FFF));
 }
 
 template<bool STEREO, bool SAMPLE_RATE>
@@ -1020,7 +1068,7 @@ void CDROM::ProcessXAADPCMSector()
   CDXA::DecodeADPCMSector(m_sector_buffer.data(), sample_buffer.data(), m_xa_last_samples.data());
 
   // Only send to SPU if we're not muted.
-  if (m_muted)
+  if (m_muted || m_adpcm_muted)
     return;
 
   if (m_last_sector_subheader.codinginfo.IsStereo())
@@ -1057,14 +1105,49 @@ void CDROM::ProcessXAADPCMSector()
   }
 }
 
+void CDROM::ProcessCDDASector()
+{
+  // For CDDA sectors, the whole sector contains the audio data.
+  Log_DevPrintf("Read sector %u as CDDA", m_media->GetPositionOnDisc());
+
+  // Apply volume when pushing sectors to SPU.
+  if (!m_muted)
+  {
+    constexpr bool is_stereo = true;
+    constexpr u32 num_samples = RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
+    m_spu->EnsureCDAudioSpace(num_samples);
+
+    const u8* sector_ptr = m_sector_buffer.data();
+    for (u32 i = 0; i < num_samples; i++)
+    {
+      s16 samp_left, samp_right;
+      std::memcpy(&samp_left, sector_ptr, sizeof(samp_left));
+      std::memcpy(&samp_right, sector_ptr + sizeof(s16), sizeof(samp_right));
+      sector_ptr += sizeof(s16) * 2;
+
+      const s16 left = ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) +
+                       ApplyVolume(samp_right, m_cd_audio_volume_matrix[0][1]);
+      const s16 right = ApplyVolume(samp_left, m_cd_audio_volume_matrix[1][0]) +
+                        ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]);
+      m_spu->AddCDAudioSample(left, right);
+    }
+  }
+
+  if (m_mode.report_audio)
+    Log_ErrorPrintf("CDDA report not implemented");
+
+  m_sector_buffer.clear();
+}
+
 void CDROM::StopReading()
 {
-  if (!m_reading)
+  if (!m_secondary_status.IsReadingOrPlaying())
     return;
 
-  Log_DebugPrintf("Stopping reading");
+  Log_DebugPrintf("Stopping %s", m_secondary_status.reading ? "reading" : "playing CDDA");
   m_secondary_status.reading = false;
-  m_reading = false;
+  m_secondary_status.playing_cdda = false;
+  m_sector_read_remaining_ticks = 0;
 }
 
 void CDROM::LoadDataFIFO()
@@ -1221,9 +1304,11 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    const bool playing_anything = m_reading && m_mode.xa_enable;
+    const bool playing_anything = (m_secondary_status.reading && m_mode.xa_enable) || m_secondary_status.playing_cdda;
     ImGui::TextColored(playing_anything ? active_color : inactive_color, "Playing: %s",
-                       (m_reading && m_mode.xa_enable) ? "XA-ADPCM" : "Disabled");
+                       (m_secondary_status.reading && m_mode.xa_enable) ?
+                         "XA-ADPCM" :
+                         (m_secondary_status.playing_cdda ? "CDDA" : "Disabled"));
     ImGui::TextColored(m_muted ? inactive_color : active_color, "Muted: %s", m_muted ? "Yes" : "No");
     ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[0][0],
                 ZeroExtend32(m_cd_audio_volume_matrix[0][0]) * 100 / 0x80, m_cd_audio_volume_matrix[0][1],

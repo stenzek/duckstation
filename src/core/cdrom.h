@@ -112,13 +112,6 @@ private:
     WaitForIRQClear
   };
 
-  struct Loc
-  {
-    u8 minute;
-    u8 second;
-    u8 frame;
-  };
-
   union StatusRegister
   {
     u8 bits;
@@ -142,6 +135,8 @@ private:
     BitField<u8, bool, 5, 1> reading;
     BitField<u8, bool, 6, 1> seeking;
     BitField<u8, bool, 7, 1> playing_cdda;
+
+    bool IsReadingOrPlaying() const { return reading || playing_cdda; }
   };
 
   union ModeRegister
@@ -180,9 +175,11 @@ private:
   void EndCommand(); // also updates status register
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
-  void BeginReading();
+  void BeginReading(bool cdda);
   void DoSectorRead();
+  void ProcessDataSector();
   void ProcessXAADPCMSector();
+  void ProcessCDDASector();
   void StopReading();
   void LoadDataFIFO();
 
@@ -198,8 +195,8 @@ private:
   TickCount m_command_remaining_ticks = 0;
 
   TickCount m_sector_read_remaining_ticks = 0;
-  bool m_reading = false;
   bool m_muted = false;
+  bool m_adpcm_muted = false;
 
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
@@ -208,8 +205,8 @@ private:
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
 
-  CDImage::Position m_setloc = {};
-  bool m_setloc_dirty = false;
+  CDImage::Position m_pending_location = {};
+  bool m_location_pending = false;
 
   u8 m_filter_file_number = 0;
   u8 m_filter_channel_number = 0;
