@@ -38,6 +38,9 @@
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\nativefiledialog\nativefiledialog.vcxproj">
+      <Project>{ace32f47-2960-4fb3-9f77-2c375625bf61}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\YBaseLib\Source\YBaseLib.vcxproj">
       <Project>{b56ce698-7300-4fa5-9609-942f1d05c5a2}</Project>
     </ProjectReference>

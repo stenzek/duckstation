@@ -13,6 +13,7 @@
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
+#include <nfd.h>
 Log_SetChannel(SDLInterface);
 
 SDLInterface::SDLInterface() = default;
@@ -651,7 +652,8 @@ void SDLInterface::DrawPoweredOffWindow()
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
-  ImGui::Button("Start Disc", button_size);
+  if (ImGui::Button("Start Disc", button_size))
+    DoStartDisc();
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
@@ -754,14 +756,35 @@ void SDLInterface::DoReset()
 
 void SDLInterface::DoResume() {}
 
-void SDLInterface::DoStartDisc() {}
+void SDLInterface::DoStartDisc()
+{
+  Assert(!m_system);
+
+  nfdchar_t* path = nullptr;
+  if (!NFD_OpenDialog("bin,img,cue,exe,psexe", nullptr, &path) || !path || std::strlen(path) == 0)
+    return;
+
+  AddOSDMessage(SmallString::FromFormat("Starting disc from '%s'...", path));
+  if (!InitializeSystem(path, nullptr))
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "System initialization failed.", m_window);
+    return;
+  }
+
+  ConnectDevices();
+}
 
 void SDLInterface::DoStartBIOS()
 {
   Assert(!m_system);
 
   AddOSDMessage("Starting BIOS...");
-  InitializeSystem(nullptr, nullptr);
+  if (!InitializeSystem(nullptr, nullptr))
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "System initialization failed.", m_window);
+    return;
+  }
+
   ConnectDevices();
 }
 
