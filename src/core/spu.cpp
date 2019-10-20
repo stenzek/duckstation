@@ -790,12 +790,12 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   }
 
   // interpolate/sample and apply ADSR volume
-  const s32 sample = ApplyVolumeUnsaturated(voice.Interpolate(), voice.regs.adsr_volume);
+  const s32 sample = ApplyVolume(voice.Interpolate(), voice.regs.adsr_volume);
   voice.TickADSR();
 
   // apply per-channel volume
-  const s16 left = ApplyVolumeUnsaturated(sample, voice.regs.volume_left.GetVolume());
-  const s16 right = ApplyVolumeUnsaturated(sample, voice.regs.volume_right.GetVolume());
+  const s32 left = ApplyVolume(sample, voice.regs.volume_left.GetVolume());
+  const s32 right = ApplyVolume(sample, voice.regs.volume_right.GetVolume());
   return std::make_tuple(left, right);
 }
 
@@ -821,6 +821,12 @@ void SPU::GenerateSample()
       left_sum += left;
       right_sum += right;
     }
+
+    if (!m_SPUCNT.mute_n)
+    {
+      left_sum = 0;
+      right_sum = 0;
+    }
   }
 
   // Mix in CD audio.
@@ -831,9 +837,11 @@ void SPU::GenerateSample()
     right_sum += s32(m_cd_audio_buffer.Pop());
   }
 
-  // Log_DebugPrintf("SPU sample %d %d", left_sum, right_sum);
-  AudioStream::SampleType samples[2] = {Clamp16(left_sum), Clamp16(right_sum)};
-  m_audio_stream->WriteSamples(samples, 1);
+  // Apply main volume before clamping.
+  std::array<AudioStream::SampleType, 2> out_samples;
+  out_samples[0] = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
+  out_samples[1] = Clamp16(ApplyVolume(right_sum, m_main_volume_right.GetVolume()));
+  m_audio_stream->WriteSamples(out_samples.data(), 1);
 
 #if 0
   static FILE* fp = nullptr;
@@ -841,7 +849,7 @@ void SPU::GenerateSample()
     fp = std::fopen("D:\\spu.raw", "wb");
   if (fp)
   {
-    std::fwrite(samples, sizeof(AudioStream::SampleType), 2, fp);
+    std::fwrite(out_samples.data(), sizeof(AudioStream::SampleType), 2, fp);
     std::fflush(fp);
   }
 #endif

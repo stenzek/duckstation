@@ -72,7 +72,7 @@ private:
     u16 bits;
 
     BitField<u16, bool, 15, 1> enable;
-    BitField<u16, bool, 14, 1> mute;
+    BitField<u16, bool, 14, 1> mute_n;
     BitField<u16, u8, 10, 4> noise_frequency_shift;
     BitField<u16, u8, 8, 2> noise_frequency_step;
     BitField<u16, bool, 7, 1> reverb_master_enable;
@@ -256,8 +256,7 @@ private:
     return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : static_cast<s16>(value);
   }
 
-  static constexpr s16 ApplyVolume(s16 sample, s16 volume) { return Clamp16((s32(sample) * s32(volume)) >> 15); }
-  static constexpr s32 ApplyVolumeUnsaturated(s32 sample, s16 volume) { return (sample * s32(volume)) >> 15; }
+  static constexpr s32 ApplyVolume(s32 sample, s16 volume) { return (sample * s32(volume)) >> 15; }
 
   static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
