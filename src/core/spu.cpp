@@ -37,6 +37,8 @@ void SPU::Reset()
   m_irq_address = 0;
   m_main_volume_left.bits = 0;
   m_main_volume_right.bits = 0;
+  m_cd_audio_volume_left = 0;
+  m_cd_audio_volume_right = 0;
   m_key_on_register = 0;
   m_key_off_register = 0;
   m_endx_register = 0;
@@ -74,6 +76,8 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_irq_address);
   sw.Do(&m_main_volume_left.bits);
   sw.Do(&m_main_volume_right.bits);
+  sw.Do(&m_cd_audio_volume_left);
+  sw.Do(&m_cd_audio_volume_right);
   sw.Do(&m_key_on_register);
   sw.Do(&m_key_off_register);
   sw.Do(&m_endx_register);
@@ -158,6 +162,12 @@ u16 SPU::ReadRegister(u32 offset)
     case 0x1F801DAE - SPU_BASE:
       // Log_DebugPrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUSTAT.bits;
+
+    case 0x1F801DB0 - SPU_BASE:
+      return m_cd_audio_volume_left;
+
+    case 0x1F801DB2 - SPU_BASE:
+      return m_cd_audio_volume_right;
 
     default:
       Log_ErrorPrintf("Unknown SPU register read: offset 0x%X (address 0x%08X)", offset, offset | SPU_BASE);
@@ -326,6 +336,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU reverb off register <- 0x%04X", ZeroExtend32(value));
       m_system->Synchronize();
       m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
+    }
+    break;
+
+    case 0x1F801DB0 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU left cd audio register <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_cd_audio_volume_left = value;
+    }
+    break;
+
+    case 0x1F801DB2 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU right cd audio register <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_cd_audio_volume_right = value;
     }
     break;
 
@@ -868,11 +894,12 @@ void SPU::GenerateSample()
   }
 
   // Mix in CD audio.
-  // TODO: Volume control.
   if (m_SPUCNT.cd_audio_enable && !m_cd_audio_buffer.IsEmpty())
   {
-    left_sum += s32(m_cd_audio_buffer.Pop());
-    right_sum += s32(m_cd_audio_buffer.Pop());
+    const s32 left = m_cd_audio_buffer.Pop();
+    const s32 right = m_cd_audio_buffer.Pop();
+    left_sum += ApplyVolume(left, m_cd_audio_volume_left);
+    right_sum += ApplyVolume(right, m_cd_audio_volume_right);
   }
 
   // Apply main volume before clamping.
@@ -957,9 +984,11 @@ void SPU::DrawDebugWindow()
     ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color,
                        m_SPUCNT.cd_audio_enable ? "Enabled" : "Disabled");
     ImGui::SameLine(offsets[1]);
-    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Left Volume: %d%%", 0, 0);
+    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Left Volume: %d%%",
+                       ApplyVolume(100, m_cd_audio_volume_left));
     ImGui::SameLine(offsets[3]);
-    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %d%%", 0, 0);
+    ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %d%%",
+                       ApplyVolume(100, m_cd_audio_volume_left));
   }
 
   // draw voice states
