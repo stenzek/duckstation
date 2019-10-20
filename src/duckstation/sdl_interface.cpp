@@ -733,7 +733,17 @@ void SDLInterface::DrawPoweredOffWindow()
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
-  ImGui::Button("Load State", button_size);
+  if (ImGui::Button("Load State", button_size))
+    ImGui::OpenPopup("PowerOffWindow_LoadStateMenu");
+  if (ImGui::BeginPopup("PowerOffWindow_LoadStateMenu"))
+  {
+    for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
+    {
+      if (ImGui::MenuItem(TinyString::FromFormat("State %u", i).GetCharArray()))
+        DoLoadState(i);
+    }
+    ImGui::EndPopup();
+  }
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
