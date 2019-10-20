@@ -155,7 +155,7 @@ const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
       continue;
 
     const LBA index_offset = pos - index.start_lba_on_disc;
-    if (pos >= index.length)
+    if (index_offset >= index.length)
       continue;
 
     return &index;
