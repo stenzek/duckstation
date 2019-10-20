@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\nfd_common.h" />
+    <ClInclude Include="include\nfd.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\nfd_common.c" />
+    <ClCompile Include="src\nfd_win.cpp" />
+  </ItemGroup>
+</Project>
