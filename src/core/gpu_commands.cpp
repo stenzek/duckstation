@@ -314,8 +314,8 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
   const u32 height = ReplaceZero((command_ptr[2] >> 16) & 0x1FF, 0x200);
   const u32 num_pixels = width * height;
   const u32 num_words = ((num_pixels + 1) / 2);
-  const u32 src_x = command_ptr[1] & 0xFFFF;
-  const u32 src_y = command_ptr[1] >> 16;
+  const u32 src_x = command_ptr[1] & 0x3FF;
+  const u32 src_y = (command_ptr[1] >> 16) & 0x3FF;
   command_ptr += 3;
 
   Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", src_x, src_y, width, height);
