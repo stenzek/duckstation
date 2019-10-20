@@ -53,6 +53,7 @@ private:
   bool CreateImGuiContext();
   bool CreateGLResources();
   bool CreateAudioStream();
+  void UpdateAudioVisualSync();
 
   bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
   void ConnectDevices();
@@ -109,4 +110,6 @@ private:
   Timer m_fps_timer;
 
   bool m_about_window_open = false;
+  bool m_speed_limiter_enabled = true;
+  bool m_speed_limiter_temp_disabled = false;
 };

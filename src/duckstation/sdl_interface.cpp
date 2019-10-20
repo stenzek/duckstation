@@ -189,8 +189,25 @@ bool SDLInterface::CreateAudioStream()
     return false;
   }
 
-  m_audio_stream->SetSync(false);
   return true;
+}
+
+void SDLInterface::UpdateAudioVisualSync()
+{
+  const bool speed_limiter_enabled = m_speed_limiter_enabled && !m_speed_limiter_temp_disabled;
+  const bool audio_sync_enabled = speed_limiter_enabled;
+  const bool vsync_enabled = !m_system || (speed_limiter_enabled && m_system->GetSettings().gpu_vsync);
+  Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
+                 (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
+
+  m_audio_stream->SetSync(audio_sync_enabled);
+
+  // Window framebuffer has to be bound to call SetSwapInterval.
+  GLint current_fbo = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  SDL_GL_SetSwapInterval(vsync_enabled ? 1 : 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filename)
@@ -202,6 +219,7 @@ bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filen
   }
 
   ConnectDevices();
+  UpdateAudioVisualSync();
   return true;
 }
 
@@ -235,6 +253,7 @@ std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nul
       intf->LoadState(save_state_filename);
   }
 
+  intf->UpdateAudioVisualSync();
   return intf;
 }
 
@@ -369,17 +388,8 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
 
         case SDL_SCANCODE_TAB:
         {
-#if 1
-          // sync to audio
-          m_audio_stream->SetSync(!pressed);
-#else
-          // Window framebuffer has to be bound to call SetSwapInterval.
-          GLint current_fbo = 0;
-          glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-          SDL_GL_SetSwapInterval(pressed ? 0 : 1);
-          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
-#endif
+          m_speed_limiter_temp_disabled = pressed;
+          UpdateAudioVisualSync();
         }
         break;
 
@@ -556,10 +566,10 @@ void SDLInterface::DrawMainMenuBar()
   if (!ImGui::BeginMainMenuBar())
     return;
 
+  const bool system_enabled = static_cast<bool>(m_system);
+
   if (ImGui::BeginMenu("System"))
   {
-    const bool system_enabled = static_cast<bool>(m_system);
-
     if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
       DoReset();
 
@@ -568,10 +578,8 @@ void SDLInterface::DrawMainMenuBar()
     if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
       DoPowerOff();
 
-#if 0
-    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, IsSpeedLimiterEnabled()))
-      SetSpeedLimiterEnabled(!IsSpeedLimiterEnabled());
-#endif
+    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_speed_limiter_enabled, system_enabled))
+      UpdateAudioVisualSync();
 
     ImGui::Separator();
 
@@ -592,7 +600,7 @@ void SDLInterface::DrawMainMenuBar()
       ImGui::EndMenu();
     }
 
-    if (ImGui::BeginMenu("Save State"))
+    if (ImGui::BeginMenu("Save State", system_enabled))
     {
       for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
       {
@@ -617,7 +625,7 @@ void SDLInterface::DrawMainMenuBar()
 
     ImGui::Separator();
 
-    if (ImGui::BeginMenu("GPU"))
+    if (ImGui::BeginMenu("GPU", system_enabled))
     {
       if (ImGui::BeginMenu("Internal Resolution"))
       {
@@ -635,6 +643,9 @@ void SDLInterface::DrawMainMenuBar()
 
         ImGui::EndMenu();
       }
+
+      if (ImGui::MenuItem("VSync", nullptr, &m_system->GetSettings().gpu_vsync))
+        UpdateAudioVisualSync();
 
       ImGui::EndMenu();
     }
@@ -871,6 +882,7 @@ void SDLInterface::DoPowerOff()
   m_system.reset();
   m_display_texture = nullptr;
   AddOSDMessage("System powered off.");
+  UpdateAudioVisualSync();
 }
 
 void SDLInterface::DoResume() {}
