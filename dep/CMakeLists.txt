@@ -1,7 +1,6 @@
 add_subdirectory(glad)
 add_subdirectory(imgui)
 add_subdirectory(libcue)
-add_subdirectory(libsamplerate)
 add_subdirectory(nativefiledialog)
 add_subdirectory(stb)
 

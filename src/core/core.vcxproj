@@ -84,9 +84,6 @@
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\dep\libsamplerate\libsamplerate.vcxproj">
-      <Project>{2f2a2b7b-60b3-478c-921e-3633b3c45c3f}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
       <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
     </ProjectReference>

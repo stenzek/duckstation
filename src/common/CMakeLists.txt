@@ -39,7 +39,7 @@ add_library(common ${SRCS})
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common YBaseLib glad libsamplerate libcue Threads::Threads)
+target_link_libraries(common YBaseLib glad libcue Threads::Threads)
 
 if(ENABLE_OPENGL)
   target_sources(common PRIVATE display_renderer_gl.cpp display_renderer_gl.h)
