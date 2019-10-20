@@ -1,7 +1,5 @@
 set(SRCS
   main.cpp
-  sdl_audio_mixer.cpp
-  sdl_audio_mixer.h
   sdl_audio_stream.cpp
   sdl_audio_stream.h
   sdl_interface.cpp

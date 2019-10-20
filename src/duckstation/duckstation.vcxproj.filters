@@ -2,13 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sdl_audio_mixer.cpp" />
     <ClCompile Include="sdl_interface.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="icon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sdl_audio_mixer.h" />
     <ClInclude Include="sdl_interface.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="sdl_audio_stream.h" />
