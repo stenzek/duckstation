@@ -193,13 +193,46 @@ bool SDLInterface::CreateAudioStream()
   return true;
 }
 
-std::unique_ptr<SDLInterface> SDLInterface::Create()
+bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filename)
+{
+  if (!HostInterface::InitializeSystem(filename, exp1_filename))
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "System initialization failed.", m_window);
+    return false;
+  }
+
+  ConnectDevices();
+  return true;
+}
+
+void SDLInterface::ConnectDevices()
+{
+  m_controller = DigitalController::Create();
+  m_system->SetController(0, m_controller);
+
+  m_memory_card = MemoryCard::Create();
+  m_system->SetMemoryCard(0, m_memory_card);
+}
+
+std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nullptr */,
+                                                   const char* exp1_filename /* = nullptr */,
+                                                   const char* save_state_filename /* = nullptr */)
 {
   std::unique_ptr<SDLInterface> intf = std::make_unique<SDLInterface>();
   if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() ||
       !intf->CreateGLResources() || !intf->CreateAudioStream())
   {
     return nullptr;
+  }
+
+  const bool boot = (filename != nullptr || exp1_filename != nullptr || save_state_filename != nullptr);
+  if (boot)
+  {
+    if (!intf->InitializeSystem(filename, exp1_filename))
+      return nullptr;
+
+    if (save_state_filename)
+      intf->LoadState(save_state_filename);
   }
 
   return intf;
@@ -561,7 +594,7 @@ void SDLInterface::DrawMainMenuBar()
 
     if (ImGui::BeginMenu("Save State"))
     {
-      for (u32 i = 1; i <= 8; i++)
+      for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
       {
         if (ImGui::MenuItem(TinyString::FromFormat("State %u", i).GetCharArray()))
           DoSaveState(i);
@@ -842,12 +875,7 @@ void SDLInterface::DoStartDisc()
 
   AddOSDMessage(SmallString::FromFormat("Starting disc from '%s'...", path));
   if (!InitializeSystem(path, nullptr))
-  {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "System initialization failed.", m_window);
     return;
-  }
-
-  ConnectDevices();
 }
 
 void SDLInterface::DoStartBIOS()
@@ -856,16 +884,14 @@ void SDLInterface::DoStartBIOS()
 
   AddOSDMessage("Starting BIOS...");
   if (!InitializeSystem(nullptr, nullptr))
-  {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "System initialization failed.", m_window);
     return;
-  }
-
-  ConnectDevices();
 }
 
 void SDLInterface::DoLoadState(u32 index)
 {
+  if (!HasSystem() && !InitializeSystem(nullptr, nullptr))
+    return;
+
   LoadState(GetSaveStateFilename(index));
   m_last_frame_number = m_system->GetFrameNumber();
   m_last_internal_frame_number = m_system->GetInternalFrameNumber();
@@ -875,16 +901,8 @@ void SDLInterface::DoLoadState(u32 index)
 
 void SDLInterface::DoSaveState(u32 index)
 {
+  Assert(m_system);
   SaveState(GetSaveStateFilename(index));
-}
-
-void SDLInterface::ConnectDevices()
-{
-  m_controller = DigitalController::Create();
-  m_system->SetController(0, m_controller);
-
-  m_memory_card = MemoryCard::Create();
-  m_system->SetMemoryCard(0, m_memory_card);
 }
 
 void SDLInterface::Run()

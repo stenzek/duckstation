@@ -30,15 +30,6 @@ static int Run(int argc, char* argv[])
     return -1;
   }
 
-  // create display and host interface
-  std::unique_ptr<SDLInterface> host_interface = SDLInterface::Create();
-  if (!host_interface)
-  {
-    Panic("Failed to create host interface");
-    SDL_Quit();
-    return -1;
-  }
-
   // parameters
   const char* filename = nullptr;
   const char* exp1_filename = nullptr;
@@ -59,21 +50,14 @@ static int Run(int argc, char* argv[])
 #undef CHECK_ARG_PARAM
   }
 
-  // create system
-  const bool boot = (filename != nullptr || exp1_filename != nullptr || !state_filename.IsEmpty());
-  if (boot)
+  // create display and host interface
+  std::unique_ptr<SDLInterface> host_interface =
+    SDLInterface::Create(filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray());
+  if (!host_interface)
   {
-    if (!host_interface->InitializeSystem(filename, exp1_filename))
-    {
-      host_interface.reset();
-      SDL_Quit();
-      return -1;
-    }
-
-    host_interface->ConnectDevices();
-
-    if (!state_filename.IsEmpty())
-      host_interface->LoadState(state_filename);
+    Panic("Failed to create host interface");
+    SDL_Quit();
+    return -1;
   }
 
   // run

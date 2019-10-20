@@ -7,8 +7,8 @@
 #include <SDL.h>
 #include <array>
 #include <deque>
-#include <mutex>
 #include <memory>
+#include <mutex>
 
 class System;
 class DigitalController;
@@ -21,22 +21,24 @@ public:
   SDLInterface();
   ~SDLInterface();
 
-  static std::unique_ptr<SDLInterface> Create();
+  static std::unique_ptr<SDLInterface> Create(const char* filename = nullptr, const char* exp1_filename = nullptr,
+                                              const char* save_state_filename = nullptr);
 
   static TinyString GetSaveStateFilename(u32 index);
 
-  void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height, float aspect_ratio) override;
+  void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height,
+                         float aspect_ratio) override;
 
   void ReportMessage(const char* message) override;
 
   // Adds OSD messages, duration is in seconds.
   void AddOSDMessage(const char* message, float duration = 2.0f) override;
 
-  void ConnectDevices();
-
   void Run();
 
 private:
+  static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
+
   struct OSDMessage
   {
     String text;
@@ -44,11 +46,16 @@ private:
     float duration;
   };
 
+  bool HasSystem() const { return static_cast<bool>(m_system); }
+
   bool CreateSDLWindow();
   bool CreateGLContext();
   bool CreateImGuiContext();
   bool CreateGLResources();
   bool CreateAudioStream();
+
+  bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
+  void ConnectDevices();
 
   // We only pass mouse input through if it's grabbed
   bool IsWindowFullscreen() const;
