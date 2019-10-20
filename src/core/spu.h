@@ -292,6 +292,7 @@ private:
   u32 m_key_off_register = 0;
   u32 m_endx_register = 0;
   u32 m_reverb_on_register = 0;
+  u32 m_noise_mode_register = 0;
 
   TickCount m_ticks_carry = 0;
 

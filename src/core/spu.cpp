@@ -9,6 +9,12 @@
 #include <imgui.h>
 Log_SetChannel(SPU);
 
+// TODO:
+//   - Reverb
+//   - Noise
+//   - Volume Sweep
+//   - Pulse Modulation
+
 SPU::SPU() = default;
 
 SPU::~SPU() = default;
@@ -35,6 +41,7 @@ void SPU::Reset()
   m_key_off_register = 0;
   m_endx_register = 0;
   m_reverb_on_register = 0;
+  m_noise_mode_register = 0;
   m_ticks_carry = 0;
 
   for (u32 i = 0; i < NUM_VOICES; i++)
@@ -71,6 +78,7 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_key_off_register);
   sw.Do(&m_endx_register);
   sw.Do(&m_reverb_on_register);
+  sw.Do(&m_noise_mode_register);
   sw.Do(&m_ticks_carry);
   for (u32 i = 0; i < NUM_VOICES; i++)
   {
@@ -122,6 +130,12 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801D8E - SPU_BASE:
       return Truncate16(m_key_off_register >> 16);
+
+    case 0x1F801D94 - SPU_BASE:
+      return Truncate16(m_noise_mode_register);
+
+    case 0x1F801D96 - SPU_BASE:
+      return Truncate16(m_noise_mode_register >> 16);
 
     case 0x1F801D98 - SPU_BASE:
       return Truncate16(m_reverb_on_register);
@@ -274,6 +288,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
         }
         bits >>= 1;
       }
+    }
+    break;
+
+    case 0x1F801D94 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_noise_mode_register = (m_noise_mode_register & 0xFFFF0000) | ZeroExtend32(value);
+    }
+    break;
+
+    case 0x1F801D96 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
+      m_system->Synchronize();
+      m_noise_mode_register = (m_noise_mode_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
 
