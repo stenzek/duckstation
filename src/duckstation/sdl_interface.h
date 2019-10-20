@@ -54,6 +54,7 @@ private:
   bool IsWindowFullscreen() const;
   void DrawImGui();
   void DoReset();
+  void DoPowerOff();
   void DoResume();
   void DoStartDisc();
   void DoStartBIOS();
@@ -63,10 +64,10 @@ private:
   bool HandleSDLEvent(const SDL_Event* event);
   bool PassEventToImGui(const SDL_Event* event);
   void Render();
-  void RenderPoweredOff();
   void RenderDisplay();
   void DrawMainMenuBar();
   void DrawPoweredOffWindow();
+  void DrawAboutWindow();
   void DrawOSDMessages();
 
   SDL_Window* m_window = nullptr;
@@ -99,4 +100,6 @@ private:
   u32 m_last_internal_frame_number = 0;
   u32 m_last_global_tick_counter = 0;
   Timer m_fps_timer;
+
+  bool m_about_window_open = false;
 };

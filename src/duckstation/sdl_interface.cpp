@@ -428,8 +428,10 @@ void SDLInterface::Render()
 {
   DrawImGui();
 
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  if (m_system)
+    m_system->GetGPU()->ResetGraphicsAPIState();
 
+  glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -446,26 +448,9 @@ void SDLInterface::Render()
   ImGui::NewFrame();
 
   GL::Program::ResetLastProgram();
-  m_system->GetGPU()->RestoreGraphicsAPIState();
-}
 
-void SDLInterface::RenderPoweredOff()
-{
-  DrawPoweredOffWindow();
-  ImGui::Render();
-
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-  SDL_GL_SwapWindow(m_window);
-
-  ImGui_ImplSDL2_NewFrame(m_window);
-  ImGui_ImplOpenGL3_NewFrame();
-
-  ImGui::NewFrame();
+  if (m_system)
+    m_system->GetGPU()->RestoreGraphicsAPIState();
 }
 
 static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
@@ -520,7 +505,13 @@ void SDLInterface::DrawImGui()
 {
   DrawMainMenuBar();
 
-  m_system->DrawDebugWindows();
+  if (m_system)
+    m_system->DrawDebugWindows();
+  else
+    DrawPoweredOffWindow();
+
+  if (m_about_window_open)
+    DrawAboutWindow();
 
   DrawOSDMessages();
 
@@ -534,15 +525,27 @@ void SDLInterface::DrawMainMenuBar()
 
   if (ImGui::BeginMenu("System"))
   {
-    if (ImGui::MenuItem("Reset"))
+    const bool system_enabled = static_cast<bool>(m_system);
+
+    if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
       DoReset();
 
-    ImGui::Separator();
+    ImGui::MenuItem("Change Disc", nullptr, false, system_enabled);
+
+    if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
+      DoPowerOff();
 
 #if 0
     if (ImGui::MenuItem("Enable Speed Limiter", nullptr, IsSpeedLimiterEnabled()))
       SetSpeedLimiterEnabled(!IsSpeedLimiterEnabled());
 #endif
+
+    ImGui::Separator();
+
+    if (ImGui::MenuItem("Start Disc"))
+      DoStartDisc();
+    if (ImGui::MenuItem("Start BIOS"))
+      DoStartBIOS();
 
     ImGui::Separator();
 
@@ -565,6 +568,8 @@ void SDLInterface::DrawMainMenuBar()
       }
       ImGui::EndMenu();
     }
+
+    ImGui::Separator();
 
     if (ImGui::MenuItem("Exit"))
       m_running = false;
@@ -604,27 +609,46 @@ void SDLInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (ImGui::BeginMenu("Debug"))
+  if (m_system)
   {
-    m_system->DrawDebugMenus();
-    ImGui::EndMenu();
+    if (ImGui::BeginMenu("Debug"))
+    {
+      m_system->DrawDebugMenus();
+      ImGui::EndMenu();
+    }
+
+    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
+
+    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
+    if (m_speed < 90.0f)
+      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
+    else if (m_speed < 110.0f)
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+    else
+      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+
+    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
+    ImGui::Text("FPS: %.2f", m_fps);
+
+    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+    ImGui::Text("VPS: %.2f", m_vps);
   }
 
-  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
+  if (ImGui::BeginMenu("Help"))
+  {
+    if (ImGui::MenuItem("GitHub Repository"))
+    {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Add URL Opener", "https://github.com/stenzek/duckstation",
+                               m_window);
+    }
 
-  const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
-  if (m_speed < 90.0f)
-    ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-  else if (m_speed < 110.0f)
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
-  else
-    ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+    ImGui::Separator();
 
-  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
-  ImGui::Text("FPS: %.2f", m_fps);
+    if (ImGui::MenuItem("About"))
+      m_about_window_open = true;
 
-  ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
-  ImGui::Text("VPS: %.2f", m_vps);
+    ImGui::EndMenu();
+  }
 
   ImGui::EndMainMenuBar();
 }
@@ -691,6 +715,35 @@ void SDLInterface::DrawPoweredOffWindow()
 
   ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(2);
+
+  ImGui::End();
+}
+
+void SDLInterface::DrawAboutWindow()
+{
+  ImGui::SetNextWindowPosCenter(ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("About DuckStation", &m_about_window_open))
+  {
+    ImGui::End();
+    return;
+  }
+
+  ImGui::Text("DuckStation");
+  ImGui::NewLine();
+  ImGui::Text("Authors:");
+  ImGui::Text("  Connor McLaughlin <stenzek@gmail.com>");
+  ImGui::NewLine();
+  ImGui::Text("Uses Dear ImGui (https://github.com/ocornut/imgui)");
+  ImGui::Text("Uses libcue (https://github.com/lipnitsk/libcue)");
+  ImGui::Text("Uses stb_image_write (https://github.com/nothings/stb)");
+  ImGui::NewLine();
+  ImGui::Text("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
+
+  ImGui::NewLine();
+
+  ImGui::SetCursorPosX((ImGui::GetWindowSize().x - 60.0f) / 2.0f);
+  if (ImGui::Button("Close", ImVec2(60.0f, 20.0f)))
+    m_about_window_open = false;
 
   ImGui::End();
 }
@@ -766,6 +819,15 @@ void SDLInterface::DoReset()
   m_last_global_tick_counter = 0;
   m_fps_timer.Reset();
   AddOSDMessage("System reset.");
+}
+
+void SDLInterface::DoPowerOff()
+{
+  Assert(m_system);
+
+  m_system.reset();
+  m_display_texture = nullptr;
+  AddOSDMessage("System powered off.");
 }
 
 void SDLInterface::DoResume() {}
@@ -865,7 +927,7 @@ void SDLInterface::Run()
     }
     else
     {
-      RenderPoweredOff();
+      Render();
     }
   }
 }
