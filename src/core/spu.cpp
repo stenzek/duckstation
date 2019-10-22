@@ -147,6 +147,10 @@ u16 SPU::ReadRegister(u32 offset)
     case 0x1F801D9A - SPU_BASE:
       return Truncate16(m_reverb_on_register >> 16);
 
+    case 0x1F801DA4 - SPU_BASE:
+      Log_DebugPrintf("SPU IRQ address -> 0x%04X", ZeroExtend32(m_irq_address));
+      return m_irq_address;
+
     case 0x1F801DA6 - SPU_BASE:
       Log_DebugPrintf("SPU transfer address register -> 0x%04X", ZeroExtend32(m_transfer_address_reg));
       return m_transfer_address_reg;
@@ -185,36 +189,6 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
   switch (offset)
   {
-    case 0x1F801DA6 - SPU_BASE:
-    {
-      Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
-      m_transfer_address_reg = value;
-      m_transfer_address = (ZeroExtend32(value) << VOICE_ADDRESS_SHIFT) & RAM_MASK;
-      return;
-    }
-
-    case 0x1F801DA8 - SPU_BASE:
-    {
-      Log_TracePrintf("SPU transfer data register <- 0x%04X (RAM offset 0x%08X)", ZeroExtend32(value),
-                      m_transfer_address);
-      RAMTransferWrite(value);
-      return;
-    }
-
-    case 0x1F801DAA - SPU_BASE:
-    {
-      Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
-      m_SPUCNT.bits = value;
-      m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
-      m_SPUSTAT.dma_read_write_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
-
-      if (!m_SPUCNT.irq9_enable)
-        m_SPUSTAT.irq9_flag = false;
-
-      UpdateDMARequest();
-      return;
-    }
-
     case 0x1F801D80 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume left <- 0x%04X", ZeroExtend32(value));
@@ -338,6 +312,43 @@ void SPU::WriteRegister(u32 offset, u16 value)
       m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
+
+    case 0x1F801DA4 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU IRQ address register <- 0x%04X", ZeroExtend32(value));
+      m_irq_address = value;
+      return;
+    }
+
+    case 0x1F801DA6 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
+      m_transfer_address_reg = value;
+      m_transfer_address = (ZeroExtend32(value) << VOICE_ADDRESS_SHIFT) & RAM_MASK;
+      return;
+    }
+
+    case 0x1F801DA8 - SPU_BASE:
+    {
+      Log_TracePrintf("SPU transfer data register <- 0x%04X (RAM offset 0x%08X)", ZeroExtend32(value),
+                      m_transfer_address);
+      RAMTransferWrite(value);
+      return;
+    }
+
+    case 0x1F801DAA - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
+      m_SPUCNT.bits = value;
+      m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
+      m_SPUSTAT.dma_read_write_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
+
+      if (!m_SPUCNT.irq9_enable)
+        m_SPUSTAT.irq9_flag = false;
+
+      UpdateDMARequest();
+      return;
+    }
 
     case 0x1F801DB0 - SPU_BASE:
     {
