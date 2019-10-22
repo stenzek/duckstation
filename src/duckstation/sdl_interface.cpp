@@ -660,22 +660,6 @@ void SDLInterface::DrawMainMenuBar()
       m_system->DrawDebugMenus();
       ImGui::EndMenu();
     }
-
-    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
-
-    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
-    if (m_speed < 90.0f)
-      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-    else if (m_speed < 110.0f)
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
-    else
-      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
-
-    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
-    ImGui::Text("FPS: %.2f", m_fps);
-
-    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
-    ImGui::Text("VPS: %.2f", m_vps);
   }
 
   if (ImGui::BeginMenu("Help"))
@@ -692,6 +676,25 @@ void SDLInterface::DrawMainMenuBar()
       m_about_window_open = true;
 
     ImGui::EndMenu();
+  }
+
+  if (m_system)
+  {
+    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
+
+    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
+    if (m_speed < 90.0f)
+      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
+    else if (m_speed < 110.0f)
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+    else
+      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+
+    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
+    ImGui::Text("FPS: %.2f", m_fps);
+
+    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+    ImGui::Text("VPS: %.2f", m_vps);
   }
 
   ImGui::EndMainMenuBar();
