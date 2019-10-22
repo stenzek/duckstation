@@ -51,7 +51,7 @@ void GPU_HW_OpenGL::ResetGraphicsAPIState()
 
 void GPU_HW_OpenGL::RestoreGraphicsAPIState()
 {
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
+  m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
 
   glDisable(GL_CULL_FACE);
@@ -169,8 +169,6 @@ void GPU_HW_OpenGL::CreateFramebuffer()
 {
   // save old vram texture/fbo, in case we're changing scale
   auto old_vram_texture = std::move(m_vram_texture);
-  const GLuint old_vram_fbo = m_vram_fbo;
-  m_vram_fbo = 0;
   DestroyFramebuffer();
 
   // scale vram size to internal resolution
@@ -178,12 +176,7 @@ void GPU_HW_OpenGL::CreateFramebuffer()
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
 
   m_vram_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
-
-  glGenFramebuffers(1, &m_vram_fbo);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
-  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_texture->GetGLId(), 0);
-  Assert(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
 
   // do we need to restore the framebuffer after a size change?
   if (old_vram_texture)
@@ -193,46 +186,28 @@ void GPU_HW_OpenGL::CreateFramebuffer()
                   old_vram_texture->GetHeight(), m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
                   linear_filter ? "linear" : "nearest");
     glDisable(GL_SCISSOR_TEST);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, old_vram_fbo);
+    old_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
     glBlitFramebuffer(0, 0, old_vram_texture->GetWidth(), old_vram_texture->GetHeight(), 0, 0,
                       m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), GL_COLOR_BUFFER_BIT,
                       linear_filter ? GL_LINEAR : GL_NEAREST);
 
-    glDeleteFramebuffers(1, &old_vram_fbo);
     glEnable(GL_SCISSOR_TEST);
     old_vram_texture.reset();
   }
 
   m_vram_read_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
-  glGenFramebuffers(1, &m_vram_read_fbo);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_read_fbo);
-  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_vram_read_texture->GetGLId(), 0);
-  Assert(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
 
   if (m_resolution_scale > 1)
   {
     m_vram_downsample_texture =
-      std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
-    m_vram_downsample_texture->Bind();
-    glGenFramebuffers(1, &m_vram_downsample_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_downsample_fbo);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                           m_vram_downsample_texture->GetGLId(), 0);
-    Assert(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+      std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
   }
 
   m_display_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false);
-  m_display_texture->Bind();
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glGenFramebuffers(1, &m_display_fbo);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_display_fbo);
-  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_display_texture->GetGLId(), 0);
-  Assert(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, true, true);
 
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
+  m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   m_vram_read_texture_dirty = true;
 }
 
@@ -247,32 +222,9 @@ void GPU_HW_OpenGL::ClearFramebuffer()
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
 {
-  if (m_vram_read_fbo != 0)
-  {
-    glDeleteFramebuffers(1, &m_vram_read_fbo);
-    m_vram_read_fbo = 0;
-  }
   m_vram_read_texture.reset();
-
-  if (m_vram_fbo != 0)
-  {
-    glDeleteFramebuffers(1, &m_vram_fbo);
-    m_vram_fbo = 0;
-  }
   m_vram_texture.reset();
-
-  if (m_vram_downsample_fbo != 0)
-  {
-    glDeleteFramebuffers(1, &m_vram_downsample_fbo);
-    m_vram_downsample_fbo = 0;
-  }
   m_vram_downsample_texture.reset();
-
-  if (m_display_fbo != 0)
-  {
-    glDeleteFramebuffers(1, &m_display_fbo);
-    m_display_fbo = 0;
-  }
   m_display_texture.reset();
 }
 
@@ -467,8 +419,8 @@ void GPU_HW_OpenGL::UpdateDisplay()
       // Because of how the reinterpret shader works, we need to use the downscaled version.
       if (m_resolution_scale > 1)
       {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_downsample_fbo);
+        m_vram_downsample_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+        m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
         glBlitFramebuffer(
           scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_vram_offset_x + scaled_display_width,
           scaled_flipped_vram_offset_y + scaled_display_height, vram_offset_x, flipped_vram_offset_y,
@@ -480,14 +432,14 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_vram_texture->Bind();
       }
 
-      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_display_fbo);
+      m_display_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
       glViewport(0, 0, display_width, display_height);
       m_reinterpret_rgb8_program.Bind();
       m_reinterpret_rgb8_program.Uniform2i(0, vram_offset_x, flipped_vram_offset_y);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       // restore state
-      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
+      m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
       glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
       glEnable(GL_SCISSOR_TEST);
 
@@ -522,20 +474,20 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
     const u32 scaled_height = height * m_resolution_scale;
     const u32 scaled_flipped_y = texture_height - scaled_y - scaled_height;
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_downsample_fbo);
+    m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+    m_vram_downsample_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
     glDisable(GL_SCISSOR_TEST);
     glBlitFramebuffer(scaled_x, scaled_flipped_y, scaled_x + scaled_width, scaled_flipped_y + scaled_height, 0, 0,
                       width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     glEnable(GL_SCISSOR_TEST);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo);
+    m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+    m_vram_downsample_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
   }
   else
   {
+    m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
     glReadPixels(x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, temp_buffer.data());
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
   }
 
   // reverse copy because of lower-left origin
@@ -630,7 +582,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     const u32 scaled_y = y * m_resolution_scale;
     const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
     glDisable(GL_SCISSOR_TEST);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_downsample_fbo);
+    m_vram_downsample_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
     glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y, scaled_x + scaled_width,
                       scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
@@ -651,7 +603,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   dst_y = m_vram_texture->GetHeight() - dst_y - height;
 
   glDisable(GL_SCISSOR_TEST);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo);
+  m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
   glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
   glEnable(GL_SCISSOR_TEST);

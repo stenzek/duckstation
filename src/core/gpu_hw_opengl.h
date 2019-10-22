@@ -64,11 +64,6 @@ private:
   std::unique_ptr<GL::Texture> m_vram_downsample_texture;
   std::unique_ptr<GL::Texture> m_display_texture;
 
-  GLuint m_vram_fbo = 0;
-  GLuint m_vram_read_fbo = 0;
-  GLuint m_vram_downsample_fbo = 0;
-  GLuint m_display_fbo = 0;
-
   GLuint m_vertex_buffer = 0;
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
