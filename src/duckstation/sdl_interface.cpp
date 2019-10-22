@@ -720,7 +720,7 @@ void SDLInterface::DrawPoweredOffWindow()
                ImVec2(APP_ICON_WIDTH, APP_ICON_HEIGHT));
   ImGui::SetCursorPosY(APP_ICON_HEIGHT + 32);
 
-  static const ImVec2 button_size(200.0f, 40.0f);
+  static const ImVec2 button_size(static_cast<float>(BUTTON_WIDTH), static_cast<float>(BUTTON_HEIGHT));
   constexpr float button_left = static_cast<float>((WINDOW_WIDTH - BUTTON_WIDTH) / 2);
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);

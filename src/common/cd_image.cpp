@@ -171,7 +171,7 @@ const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA tr
 
   const Track& track = m_tracks[track_number - 1];
   if (track_pos >= track.length)
-    return false;
+    return nullptr;
 
   return GetIndexForDiscPosition(track.start_lba + track_pos);
 }

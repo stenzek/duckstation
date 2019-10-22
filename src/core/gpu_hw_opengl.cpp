@@ -515,7 +515,6 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
   // downscaling to 1xIR.
   if (m_resolution_scale > 1)
   {
-    const u32 texture_width = m_vram_texture->GetWidth();
     const u32 texture_height = m_vram_texture->GetHeight();
     const u32 scaled_x = x * m_resolution_scale;
     const u32 scaled_y = y * m_resolution_scale;

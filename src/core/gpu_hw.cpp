@@ -78,7 +78,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         m_batch.vertices.push_back(m_batch.vertices.back());
 
       u32 buffer_pos = 1;
-      const bool textured = rc.texture_enable;
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{command_ptr[buffer_pos++]};
       const s32 pos_left = vp.x;
@@ -520,9 +519,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   const u32 max_added_vertices = num_vertices + 2;
   const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
   const bool rc_changed =
-    m_batch.render_command_bits != rc.bits && m_batch.transparency_enable != rc_transparency_enable ||
+    m_batch.render_command_bits != rc.bits && (m_batch.transparency_enable != rc_transparency_enable ||
     m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
-    m_batch.primitive != rc_primitive;
+    m_batch.primitive != rc_primitive);
   const bool restart_line_strip = (rc_primitive == HWRenderBatch::Primitive::LineStrip);
   const bool needs_flush =
     !IsFlushed() && (m_render_state.IsTextureColorModeChanged() || m_render_state.IsTransparencyModeChanged() ||

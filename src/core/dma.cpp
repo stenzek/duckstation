@@ -31,7 +31,7 @@ bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
 void DMA::Reset()
 {
   m_transfer_in_progress = false;
-  m_state = {};
+  std::memset(&m_state, 0, sizeof(m_state));
   m_DPCR.bits = 0x07654321;
   m_DICR.bits = 0;
 }

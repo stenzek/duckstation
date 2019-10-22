@@ -539,7 +539,7 @@ void Core::Execute()
     m_downcount -= 1;
 
     // now executing the instruction we previously fetched
-    m_current_instruction = m_next_instruction;
+    m_current_instruction.bits = m_next_instruction.bits;
     m_current_instruction_pc = m_regs.pc;
     m_current_instruction_in_branch_delay_slot = m_next_instruction_is_branch_delay_slot;
     m_current_instruction_was_branch_taken = m_branch_was_taken;

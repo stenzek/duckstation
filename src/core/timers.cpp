@@ -361,7 +361,7 @@ void Timers::DrawDebugWindow()
     ImGui::NextColumn();
     ImGui::Text("%s%s", clock_source_names[i][cs.mode.clock_source], cs.external_counting_enabled ? " (External)" : "");
     ImGui::NextColumn();
-    ImGui::Text("%s", cs.mode.reached_target ? "Target " : "", cs.mode.reached_overflow ? "Overflow" : "");
+    ImGui::Text("%s%s", cs.mode.reached_target ? "Target " : "", cs.mode.reached_overflow ? "Overflow" : "");
     ImGui::NextColumn();
     ImGui::PopStyleColor();
   }

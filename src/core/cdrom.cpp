@@ -48,8 +48,8 @@ void CDROM::SoftReset()
   m_location_pending = false;
   m_filter_file_number = 0;
   m_filter_channel_number = 0;
-  m_last_sector_header = {};
-  m_last_sector_subheader = {};
+  std::memset(&m_last_sector_header, 0, sizeof(m_last_sector_header));
+  std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
 
   m_next_cd_audio_volume_matrix[0][0] = 0x80;
   m_next_cd_audio_volume_matrix[0][1] = 0x00;
@@ -95,8 +95,8 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_location_pending);
   sw.Do(&m_filter_file_number);
   sw.Do(&m_filter_channel_number);
-  sw.DoPOD(&m_last_sector_header);
-  sw.DoPOD(&m_last_sector_subheader);
+  sw.DoBytes(&m_last_sector_header, sizeof(m_last_sector_header));
+  sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);

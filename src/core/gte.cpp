@@ -50,12 +50,13 @@ void Core::Initialize() {}
 
 void Core::Reset()
 {
-  m_regs = {};
+  std::memset(&m_regs, 0, sizeof(m_regs));
 }
 
 bool Core::DoState(StateWrapper& sw)
 {
-  sw.DoPOD(&m_regs);
+  sw.DoArray(m_regs.dr32, NUM_DATA_REGS);
+  sw.DoArray(m_regs.cr32, NUM_CONTROL_REGS);
   return !sw.HasError();
 }
 

@@ -10,10 +10,8 @@
 template<typename BackingDataType, typename DataType, unsigned BitIndex, unsigned BitCount>
 struct BitField
 {
-  constexpr BitField() = default;
-#ifndef _MSC_VER
-  BitField& operator=(const BitField& value) = delete;
-#endif
+  // We have to delete the copy assignment operator otherwise we can't use this class in anonymous structs/unions.
+  BitField& operator=(const BitField& rhs) = delete;
 
   constexpr BackingDataType GetMask() const
   {

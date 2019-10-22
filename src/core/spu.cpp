@@ -205,7 +205,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
       m_SPUCNT.bits = value;
-      m_SPUSTAT.mode = m_SPUCNT.mode;
+      m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
       m_SPUSTAT.dma_read_write_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
 
       if (!m_SPUCNT.irq9_enable)

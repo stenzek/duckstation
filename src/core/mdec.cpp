@@ -134,7 +134,7 @@ void MDEC::DMAWrite(const u32* words, u32 word_count)
 
 void MDEC::SoftReset()
 {
-  m_status = {};
+  m_status.bits = 0;
   m_enable_dma_in = false;
   m_enable_dma_out = false;
   m_data_in_fifo.Clear();

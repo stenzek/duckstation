@@ -6,8 +6,11 @@
 #include "stb_image_write.h"
 #include "system.h"
 #include "timers.h"
+#include <cmath>
 #include <imgui.h>
 Log_SetChannel(GPU);
+
+const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
 GPU::GPU() = default;
 
@@ -32,7 +35,7 @@ void GPU::SoftReset()
   m_GPUSTAT.bits = 0x14802000;
   m_drawing_area = {};
   m_drawing_offset = {};
-  m_crtc_state = {};
+  std::memset(&m_crtc_state, 0, sizeof(m_crtc_state));
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
@@ -493,7 +496,7 @@ void GPU::WriteGP0(u32 value)
   const u32 command = m_GP0_buffer[0] >> 24;
   if ((this->*s_GP0_command_handler_table[command])(command_ptr, static_cast<u32>(m_GP0_buffer.size())))
   {
-    DebugAssert((command_ptr - m_GP0_buffer.data()) == m_GP0_buffer.size());
+    DebugAssert(static_cast<size_t>(command_ptr - m_GP0_buffer.data()) == m_GP0_buffer.size());
     m_GP0_buffer.clear();
   }
 

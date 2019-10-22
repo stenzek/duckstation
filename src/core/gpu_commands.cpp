@@ -12,7 +12,7 @@ static constexpr u32 ReplaceZero(u32 value, u32 value_for_zero)
   return value == 0 ? value_for_zero : value;
 }
 
-constexpr GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
+GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
 {
   GP0CommandHandlerTable table = {};
   for (u32 i = 0; i < static_cast<u32>(table.size()); i++)
@@ -44,8 +44,6 @@ constexpr GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
 
   return table;
 }
-
-constexpr GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
 bool GPU::HandleUnknownGP0Command(const u32*& command_ptr, u32 command_size)
 {
@@ -85,7 +83,7 @@ bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
 
   // 0..10 bits match GPUSTAT
   const u32 MASK = ((1 << 11) - 1);
-  m_GPUSTAT.bits = (m_GPUSTAT.bits & ~MASK) | param & MASK;
+  m_GPUSTAT.bits = (m_GPUSTAT.bits & ~MASK) | (param & MASK);
   m_GPUSTAT.texture_disable = (param & (1 << 11)) != 0;
   m_render_state.texture_x_flip = (param & (1 << 12)) != 0;
   m_render_state.texture_y_flip = (param & (1 << 13)) != 0;
@@ -337,7 +335,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
 
   if (m_debug_options.dump_vram_to_cpu_copies)
   {
-    DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_cpu_to_vram_dump_id++), width, height,
+    DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++), width, height,
                    sizeof(u16) * width, temp.data(), true);
   }
 

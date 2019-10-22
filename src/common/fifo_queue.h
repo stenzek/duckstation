@@ -4,11 +4,7 @@
 #include <cstring>
 #include <type_traits>
 
-#ifdef _MSC_VER
-#include <malloc.h> // _aligned_malloc
-#else
-#include <cstdlib>
-#endif
+#include <malloc.h> // _aligned_malloc, memalign
 
 template<typename T, u32 CAPACITY>
 class FIFOQueue
@@ -35,7 +31,7 @@ public:
   T& Emplace(Args&&... args)
   {
     T& ref = PushAndGetReference();
-    new (&ref) T(std::forward<Args>(args...));
+    new (&ref) T(std::forward<Args...>(args...));
     return ref;
   }
 
@@ -157,7 +153,7 @@ template<typename T, u32 CAPACITY>
 class InlineFIFOQueue : public FIFOQueue<T, CAPACITY>
 {
 public:
-  InlineFIFOQueue() : FIFOQueue<T, CAPACITY>() { m_ptr = m_inline_data; }
+  InlineFIFOQueue() : FIFOQueue<T, CAPACITY>() { this->m_ptr = m_inline_data; }
 
 private:
   T m_inline_data[CAPACITY] = {};
@@ -172,20 +168,20 @@ public:
     if constexpr (ALIGNMENT > 0)
     {
 #ifdef _MSC_VER
-      m_ptr = static_cast<T*>(_aligned_malloc(sizeof(T) * CAPACITY, ALIGNMENT));
+      this->m_ptr = static_cast<T*>(_aligned_malloc(sizeof(T) * CAPACITY, ALIGNMENT));
 #else
-      m_ptr = static_cast<T*>(memalign(ALIGNMENT, sizeof(T) * CAPACITY));
+      this->m_ptr = static_cast<T*>(memalign(ALIGNMENT, sizeof(T) * CAPACITY));
 #endif
     }
     else
     {
-      m_ptr = static_cast<T*>(std::malloc(sizeof(T) * CAPACITY));
+      this->m_ptr = static_cast<T*>(std::malloc(sizeof(T) * CAPACITY));
     }
 
-    if (!m_ptr)
+    if (!this->m_ptr)
       Panic("Heap allocation failed");
 
-    std::memset(m_ptr, 0, sizeof(T) * CAPACITY);
+    std::memset(this->m_ptr, 0, sizeof(T) * CAPACITY);
   }
 
   ~HeapFIFOQueue()
@@ -193,14 +189,14 @@ public:
     if constexpr (ALIGNMENT > 0)
     {
 #ifdef _MSC_VER
-      _aligned_free(m_ptr);
+      _aligned_free(this->m_ptr);
 #else
-      free(m_ptr);
+      free(this->m_ptr);
 #endif
     }
     else
     {
-      free(m_ptr);
+      free(this->m_ptr);
     }
   }
 };

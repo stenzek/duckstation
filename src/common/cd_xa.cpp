@@ -60,7 +60,7 @@ static void DecodeXA_ADPCMChunks(const u8* chunk_ptr, s16* samples, s32* last_sa
   constexpr u32 NUM_CHUNKS = 18;
   constexpr u32 CHUNK_SIZE_IN_BYTES = 128;
   constexpr u32 WORDS_PER_CHUNK = 28;
-  constexpr u32 SAMPLES_PER_CHUNK = 28 * (IS_8BIT ? 4 : 8);
+  constexpr u32 SAMPLES_PER_CHUNK = WORDS_PER_CHUNK * (IS_8BIT ? 4 : 8);
 
   for (u32 i = 0; i < NUM_CHUNKS; i++)
   {

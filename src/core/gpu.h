@@ -4,6 +4,7 @@
 #include "types.h"
 #include <array>
 #include <deque>
+#include <memory>
 #include <vector>
 
 class StateWrapper;
@@ -355,7 +356,7 @@ protected:
 private:
   using GP0CommandHandler = bool (GPU::*)(const u32*&, u32);
   using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;
-  static constexpr GP0CommandHandlerTable GenerateGP0CommandHandlerTable();
+  static GP0CommandHandlerTable GenerateGP0CommandHandlerTable();
 
   // Rendering commands, returns false if not enough data is provided
   bool HandleUnknownGP0Command(const u32*& command_ptr, u32 command_size);

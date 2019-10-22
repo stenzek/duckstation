@@ -74,7 +74,7 @@ public:
     if (m_mode == Mode::Read)
     {
       if (m_error || (m_error |= !m_stream->Read2(value_ptr, sizeof(T))) == true)
-        *value_ptr = {};
+        std::memset(value_ptr, 0, sizeof(*value_ptr));
     }
     else
     {
