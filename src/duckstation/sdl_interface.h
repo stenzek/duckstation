@@ -70,6 +70,7 @@ private:
   void DoSaveState(u32 index);
 
   bool HandleSDLEvent(const SDL_Event* event);
+  bool HandleSDLKeyEvent(const SDL_Event* event);
   bool PassEventToImGui(const SDL_Event* event);
   void Render();
   void RenderDisplay();

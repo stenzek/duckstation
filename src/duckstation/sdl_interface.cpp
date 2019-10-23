@@ -307,100 +307,104 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_KEYDOWN:
     case SDL_KEYUP:
+        return HandleSDLKeyEvent(event);
+
+    case SDL_QUIT:
+      m_running = false;
+      break;
+  }
+
+  return false;
+}
+
+bool SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
+{
+  const bool pressed = (event->type == SDL_KEYDOWN);
+  switch (event->key.keysym.scancode)
+  {
+    case SDL_SCANCODE_KP_8:
+    case SDL_SCANCODE_I:
+      m_controller->SetButtonState(DigitalController::Button::Triangle, pressed);
+      return true;
+    case SDL_SCANCODE_KP_2:
+    case SDL_SCANCODE_K:
+      m_controller->SetButtonState(DigitalController::Button::Cross, pressed);
+      return true;
+    case SDL_SCANCODE_KP_4:
+    case SDL_SCANCODE_J:
+      m_controller->SetButtonState(DigitalController::Button::Square, pressed);
+      return true;
+    case SDL_SCANCODE_KP_6:
+    case SDL_SCANCODE_L:
+      m_controller->SetButtonState(DigitalController::Button::Circle, pressed);
+      return true;
+
+    case SDL_SCANCODE_W:
+    case SDL_SCANCODE_UP:
+      m_controller->SetButtonState(DigitalController::Button::Up, pressed);
+      return true;
+    case SDL_SCANCODE_S:
+    case SDL_SCANCODE_DOWN:
+      m_controller->SetButtonState(DigitalController::Button::Down, pressed);
+      return true;
+    case SDL_SCANCODE_A:
+    case SDL_SCANCODE_LEFT:
+      m_controller->SetButtonState(DigitalController::Button::Left, pressed);
+      return true;
+    case SDL_SCANCODE_D:
+    case SDL_SCANCODE_RIGHT:
+      m_controller->SetButtonState(DigitalController::Button::Right, pressed);
+      return true;
+
+    case SDL_SCANCODE_Q:
+      m_controller->SetButtonState(DigitalController::Button::L1, pressed);
+      return true;
+    case SDL_SCANCODE_E:
+      m_controller->SetButtonState(DigitalController::Button::R1, pressed);
+      return true;
+
+    case SDL_SCANCODE_1:
+      m_controller->SetButtonState(DigitalController::Button::L2, pressed);
+      return true;
+    case SDL_SCANCODE_3:
+      m_controller->SetButtonState(DigitalController::Button::R2, pressed);
+      return true;
+
+    case SDL_SCANCODE_RETURN:
+      m_controller->SetButtonState(DigitalController::Button::Start, pressed);
+      return true;
+    case SDL_SCANCODE_BACKSPACE:
+      m_controller->SetButtonState(DigitalController::Button::Select, pressed);
+      return true;
+
+    case SDL_SCANCODE_F1:
+    case SDL_SCANCODE_F2:
+    case SDL_SCANCODE_F3:
+    case SDL_SCANCODE_F4:
+    case SDL_SCANCODE_F5:
+    case SDL_SCANCODE_F6:
+    case SDL_SCANCODE_F7:
+    case SDL_SCANCODE_F8:
     {
-      const bool pressed = (event->type == SDL_KEYDOWN);
-      switch (event->key.keysym.scancode)
+      if (!pressed)
       {
-        case SDL_SCANCODE_KP_8:
-        case SDL_SCANCODE_I:
-          m_controller->SetButtonState(DigitalController::Button::Triangle, pressed);
-          return true;
-        case SDL_SCANCODE_KP_2:
-        case SDL_SCANCODE_K:
-          m_controller->SetButtonState(DigitalController::Button::Cross, pressed);
-          return true;
-        case SDL_SCANCODE_KP_4:
-        case SDL_SCANCODE_J:
-          m_controller->SetButtonState(DigitalController::Button::Square, pressed);
-          return true;
-        case SDL_SCANCODE_KP_6:
-        case SDL_SCANCODE_L:
-          m_controller->SetButtonState(DigitalController::Button::Circle, pressed);
-          return true;
-
-        case SDL_SCANCODE_W:
-        case SDL_SCANCODE_UP:
-          m_controller->SetButtonState(DigitalController::Button::Up, pressed);
-          return true;
-        case SDL_SCANCODE_S:
-        case SDL_SCANCODE_DOWN:
-          m_controller->SetButtonState(DigitalController::Button::Down, pressed);
-          return true;
-        case SDL_SCANCODE_A:
-        case SDL_SCANCODE_LEFT:
-          m_controller->SetButtonState(DigitalController::Button::Left, pressed);
-          return true;
-        case SDL_SCANCODE_D:
-        case SDL_SCANCODE_RIGHT:
-          m_controller->SetButtonState(DigitalController::Button::Right, pressed);
-          return true;
-
-        case SDL_SCANCODE_Q:
-          m_controller->SetButtonState(DigitalController::Button::L1, pressed);
-          return true;
-        case SDL_SCANCODE_E:
-          m_controller->SetButtonState(DigitalController::Button::R1, pressed);
-          return true;
-
-        case SDL_SCANCODE_1:
-          m_controller->SetButtonState(DigitalController::Button::L2, pressed);
-          return true;
-        case SDL_SCANCODE_3:
-          m_controller->SetButtonState(DigitalController::Button::R2, pressed);
-          return true;
-
-        case SDL_SCANCODE_RETURN:
-          m_controller->SetButtonState(DigitalController::Button::Start, pressed);
-          return true;
-        case SDL_SCANCODE_BACKSPACE:
-          m_controller->SetButtonState(DigitalController::Button::Select, pressed);
-          return true;
-
-        case SDL_SCANCODE_F1:
-        case SDL_SCANCODE_F2:
-        case SDL_SCANCODE_F3:
-        case SDL_SCANCODE_F4:
-        case SDL_SCANCODE_F5:
-        case SDL_SCANCODE_F6:
-        case SDL_SCANCODE_F7:
-        case SDL_SCANCODE_F8:
-        {
-          if (!pressed)
-          {
-            const u32 index = event->key.keysym.scancode - SDL_SCANCODE_F1 + 1;
-            if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
-              DoSaveState(index);
-            else
-              DoLoadState(index);
-          }
-        }
-        break;
-
-        case SDL_SCANCODE_TAB:
-        {
-          m_speed_limiter_temp_disabled = pressed;
-          UpdateAudioVisualSync();
-        }
-        break;
-
-        default:
-          break;
+        const u32 index = event->key.keysym.scancode - SDL_SCANCODE_F1 + 1;
+        if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+          DoSaveState(index);
+        else
+          DoLoadState(index);
       }
     }
     break;
 
-    case SDL_QUIT:
-      m_running = false;
+    case SDL_SCANCODE_TAB:
+    {
+      m_speed_limiter_temp_disabled = pressed;
+      UpdateAudioVisualSync();
+    }
+    break;
+
+    default:
       break;
   }
 
