@@ -97,7 +97,7 @@ protected:
                                      TextureColorMode texture_color_mode, bool blending);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
-  std::string GenerateRGB24DecodeFragmentShader();
+  std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
 
   u32 m_resolution_scale = 1;
   HWRenderBatch m_batch = {};

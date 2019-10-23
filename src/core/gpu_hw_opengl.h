@@ -73,7 +73,7 @@ private:
   bool m_show_renderer_statistics = false;
 
   std::array<std::array<std::array<std::array<GL::Program, 2>, 3>, 2>, 4> m_render_programs;
-  GL::Program m_reinterpret_rgb8_program;
+  std::array<std::array<GL::Program, 2>, 2> m_display_programs;   // [depth_24][interlaced]
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};

@@ -274,19 +274,27 @@ bool GPU_HW_OpenGL::CompilePrograms()
   }
 
   // TODO: Use string_view
-  if (!m_reinterpret_rgb8_program.Compile(GenerateScreenQuadVertexShader().c_str(),
-                                          GenerateRGB24DecodeFragmentShader().c_str()))
+  for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
-    return false;
-  }
-  m_reinterpret_rgb8_program.BindFragData(0, "o_col0");
-  if (!m_reinterpret_rgb8_program.Link())
-    return false;
+    for (u8 interlaced = 0; interlaced < 2; interlaced++)
+    {
+      GL::Program& prog = m_display_programs[depth_24bit][interlaced];
+      const std::string vs = GenerateScreenQuadVertexShader();
+      const std::string fs =
+        GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit), ConvertToBoolUnchecked(interlaced));
+      if (!prog.Compile(vs.c_str(), fs.c_str()))
+        return false;
 
-  m_reinterpret_rgb8_program.Bind();
-  m_reinterpret_rgb8_program.RegisterUniform("u_base_coords");
-  m_reinterpret_rgb8_program.RegisterUniform("samp0");
-  m_reinterpret_rgb8_program.Uniform1i(1, 0);
+      prog.BindFragData(0, "o_col0");
+      if (!prog.Link())
+        return false;
+
+      prog.Bind();
+      prog.RegisterUniform("u_base_coords");
+      prog.RegisterUniform("samp0");
+      prog.Uniform1i(1, 0);
+    }
+  }
 
   return true;
 }
@@ -400,24 +408,36 @@ void GPU_HW_OpenGL::UpdateDisplay()
   }
   else
   {
+    const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && !m_GPUSTAT.drawing_even_line);
     const u32 vram_offset_x = m_crtc_state.regs.X;
     const u32 vram_offset_y = m_crtc_state.regs.Y;
     const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
     const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
     const u32 display_width = std::min<u32>(m_crtc_state.display_width, VRAM_WIDTH - vram_offset_x);
-    const u32 display_height = std::min<u32>(m_crtc_state.display_height, VRAM_HEIGHT - vram_offset_y);
+    const u32 display_height = std::min<u32>(m_crtc_state.display_height << BoolToUInt8(m_GPUSTAT.vertical_interlace),
+                                             VRAM_HEIGHT - vram_offset_y);
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
     const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
     const u32 scaled_flipped_vram_offset_y = m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
-    if (m_GPUSTAT.display_area_color_depth_24)
+    // fast path when both interlacing and 24-bit depth is off
+    if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
+    {
+      glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_vram_offset_x,
+                         scaled_flipped_vram_offset_y, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0,
+                         scaled_display_width, scaled_display_height, 1);
+
+      m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
+                                                      scaled_display_height, m_crtc_state.display_aspect_ratio);
+    }
+    else
     {
       glDisable(GL_BLEND);
       glDisable(GL_SCISSOR_TEST);
 
       // Because of how the reinterpret shader works, we need to use the downscaled version.
-      if (m_resolution_scale > 1)
+      if (m_GPUSTAT.display_area_color_depth_24 && m_resolution_scale > 1)
       {
         m_vram_downsample_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
         m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
@@ -432,10 +452,13 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_vram_texture->Bind();
       }
 
+      const GL::Program& prog = m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)]
+                                                  [BoolToUInt8(m_GPUSTAT.vertical_interlace)];
+
       m_display_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-      glViewport(0, 0, display_width, display_height);
-      m_reinterpret_rgb8_program.Bind();
-      m_reinterpret_rgb8_program.Uniform2i(0, vram_offset_x, flipped_vram_offset_y);
+      glViewport(0, field_offset, display_width, display_height);
+      prog.Bind();
+      prog.Uniform3i(0, vram_offset_x, flipped_vram_offset_y, field_offset);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       // restore state
@@ -445,15 +468,6 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
       m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, display_width, display_height,
                                                       m_crtc_state.display_aspect_ratio);
-    }
-    else
-    {
-      glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_vram_offset_x,
-                         scaled_flipped_vram_offset_y, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0,
-                         scaled_display_width, scaled_display_height, 1);
-
-      m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
-                                                      scaled_display_height, m_crtc_state.display_aspect_ratio);
     }
   }
 }

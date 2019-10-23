@@ -406,61 +406,80 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateRGB24DecodeFragmentShader()
+std::string GPU_HW::GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced)
 {
   std::stringstream ss;
   GenerateShaderHeader(ss);
+  DefineMacro(ss, "DEPTH_24BIT", depth_24bit);
+  DefineMacro(ss, "INTERLACED", interlaced);
 
   ss << R"(
 in vec2 v_tex0;
 out vec4 o_col0;
 
 uniform sampler2D samp0;
-uniform ivec2 u_base_coords;
+uniform ivec3 u_base_coords;
+
+ivec2 GetCoords(vec2 fragcoord)
+{
+  ivec2 icoords = ivec2(fragcoord);
+  #if INTERLACED
+    if (((icoords.y - u_base_coords.z) & 1) != 0)
+      discard;
+  #endif
+  return icoords;
+}
 
 void main()
 {
-  // compute offset in dwords from the start of the 24-bit values
-  ivec2 base = ivec2(u_base_coords.x, u_base_coords.y + int(gl_FragCoord.y));
-  int xoff = int(gl_FragCoord.x);
-  int dword_index = (xoff / 2) + (xoff / 4);
+  ivec2 icoords = GetCoords(gl_FragCoord.xy);
 
-  // sample two adjacent dwords, or four 16-bit values as the 24-bit value will lie somewhere between these
-  uint s0 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + dword_index * 2 + 0, base.y), 0));
-  uint s1 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + dword_index * 2 + 1, base.y), 0));
-  uint s2 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + (dword_index + 1) * 2 + 0, base.y), 0));
-  uint s3 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + (dword_index + 1) * 2 + 1, base.y), 0));
+  #if DEPTH_24BIT
+    // compute offset in dwords from the start of the 24-bit values
+    ivec2 base = ivec2(u_base_coords.x, u_base_coords.y + icoords.y);
+    int xoff = int(icoords.x);
+    int dword_index = (xoff / 2) + (xoff / 4);
 
-  // select the bit for this pixel depending on its offset in the 4-pixel block
-  uint r, g, b;
-  int block_offset = xoff & 3;
-  if (block_offset == 0)
-  {
-    r = s0 & 0xFFu;
-    g = s0 >> 8;
-    b = s1 & 0xFFu;
-  }
-  else if (block_offset == 1)
-  {
-    r = s1 >> 8;
-    g = s2 & 0xFFu;
-    b = s2 >> 8;
-  }
-  else if (block_offset == 2)
-  {
-    r = s1 & 0xFFu;
-    g = s1 >> 8;
-    b = s2 & 0xFFu;
-  }
-  else
-  {
-    r = s2 >> 8;
-    g = s3 & 0xFFu;
-    b = s3 >> 8;
-  }
+    // sample two adjacent dwords, or four 16-bit values as the 24-bit value will lie somewhere between these
+    uint s0 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + dword_index * 2 + 0, base.y), 0));
+    uint s1 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + dword_index * 2 + 1, base.y), 0));
+    uint s2 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + (dword_index + 1) * 2 + 0, base.y), 0));
+    uint s3 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + (dword_index + 1) * 2 + 1, base.y), 0));
 
-  // and normalize
-  o_col0 = vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255, 1.0);
+    // select the bit for this pixel depending on its offset in the 4-pixel block
+    uint r, g, b;
+    int block_offset = xoff & 3;
+    if (block_offset == 0)
+    {
+      r = s0 & 0xFFu;
+      g = s0 >> 8;
+      b = s1 & 0xFFu;
+    }
+    else if (block_offset == 1)
+    {
+      r = s1 >> 8;
+      g = s2 & 0xFFu;
+      b = s2 >> 8;
+    }
+    else if (block_offset == 2)
+    {
+      r = s1 & 0xFFu;
+      g = s1 >> 8;
+      b = s2 & 0xFFu;
+    }
+    else
+    {
+      r = s2 >> 8;
+      g = s3 & 0xFFu;
+      b = s3 >> 8;
+    }
+
+    // and normalize
+    o_col0 = vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255, 1.0);
+  #else
+    // load and return
+    o_col0 = texelFetch(samp0, u_base_coords.xy + icoords, 0);
+  #endif
 }
 )";
 

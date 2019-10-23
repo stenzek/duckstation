@@ -342,12 +342,6 @@ void GPU::UpdateCRTCConfig()
   cs.display_width = std::max<u32>(cs.visible_ticks_per_scanline / cs.dot_clock_divider, 1);
   cs.display_height = cs.visible_scanlines_per_frame;
 
-  if (m_GPUSTAT.vertical_interlace)
-  {
-    // Force progressive for now.
-    cs.display_height *= 2;
-  }
-
   if (cs.display_width != old_horizontal_resolution || cs.display_height != old_vertical_resolution)
     Log_InfoPrintf("Visible resolution is now %ux%u", cs.display_width, cs.display_height);
 
