@@ -7,6 +7,7 @@
 #include <SDL.h>
 #include <array>
 #include <deque>
+#include <map>
 #include <memory>
 #include <mutex>
 
@@ -55,6 +56,9 @@ private:
   bool CreateAudioStream();
   void UpdateAudioVisualSync();
 
+  void OpenGameControllers();
+  void CloseGameControllers();
+
   bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
   void ConnectDevices();
 
@@ -69,8 +73,8 @@ private:
   void DoLoadState(u32 index);
   void DoSaveState(u32 index);
 
-  bool HandleSDLEvent(const SDL_Event* event);
-  bool HandleSDLKeyEvent(const SDL_Event* event);
+  void HandleSDLEvent(const SDL_Event* event);
+  void HandleSDLKeyEvent(const SDL_Event* event);
   bool PassEventToImGui(const SDL_Event* event);
   void Render();
   void RenderDisplay();
@@ -98,6 +102,8 @@ private:
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
+
+  std::map<int, SDL_GameController*> m_sdl_controllers;
 
   std::shared_ptr<DigitalController> m_controller;
   std::shared_ptr<MemoryCard> m_memory_card;

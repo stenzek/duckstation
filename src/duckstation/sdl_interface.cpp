@@ -20,6 +20,8 @@ SDLInterface::SDLInterface() = default;
 
 SDLInterface::~SDLInterface()
 {
+  CloseGameControllers();
+
   if (m_gl_context)
   {
     if (m_display_vao != 0)
@@ -200,7 +202,7 @@ void SDLInterface::UpdateAudioVisualSync()
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
 
-  m_audio_stream->SetSync(audio_sync_enabled);
+  m_audio_stream->SetSync(false);
 
   // Window framebuffer has to be bound to call SetSwapInterval.
   GLint current_fbo = 0;
@@ -208,6 +210,30 @@ void SDLInterface::UpdateAudioVisualSync()
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   SDL_GL_SetSwapInterval(vsync_enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+}
+
+void SDLInterface::OpenGameControllers()
+{
+  for (int i = 0; i < SDL_NumJoysticks(); i++)
+  {
+    SDL_GameController* gcontroller = SDL_GameControllerOpen(i);
+    if (gcontroller)
+    {
+      Log_InfoPrintf("Opened controller %d: %s", i, SDL_GameControllerName(gcontroller));
+      m_sdl_controllers.emplace(i, gcontroller);
+    }
+    else
+    {
+      Log_WarningPrintf("Failed to open controller %d", i);
+    }
+  }
+}
+
+void SDLInterface::CloseGameControllers()
+{
+  for (auto& it : m_sdl_controllers)
+    SDL_GameControllerClose(it.second);
+  m_sdl_controllers.clear();
 }
 
 bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filename)
@@ -242,6 +268,8 @@ std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nul
   {
     return nullptr;
   }
+
+  intf->OpenGameControllers();
 
   const bool boot = (filename != nullptr || exp1_filename != nullptr || save_state_filename != nullptr);
   if (boot)
@@ -288,10 +316,144 @@ static inline u32 SDLButtonToHostButton(u32 button)
   }
 }
 
-bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
+static bool HandleSDLKeyEventForController(const SDL_Event* event, DigitalController* controller)
+{
+  const bool pressed = (event->type == SDL_KEYDOWN);
+  switch (event->key.keysym.scancode)
+  {
+    case SDL_SCANCODE_KP_8:
+    case SDL_SCANCODE_I:
+      controller->SetButtonState(DigitalController::Button::Triangle, pressed);
+      return true;
+    case SDL_SCANCODE_KP_2:
+    case SDL_SCANCODE_K:
+      controller->SetButtonState(DigitalController::Button::Cross, pressed);
+      return true;
+    case SDL_SCANCODE_KP_4:
+    case SDL_SCANCODE_J:
+      controller->SetButtonState(DigitalController::Button::Square, pressed);
+      return true;
+    case SDL_SCANCODE_KP_6:
+    case SDL_SCANCODE_L:
+      controller->SetButtonState(DigitalController::Button::Circle, pressed);
+      return true;
+
+    case SDL_SCANCODE_W:
+    case SDL_SCANCODE_UP:
+      controller->SetButtonState(DigitalController::Button::Up, pressed);
+      return true;
+    case SDL_SCANCODE_S:
+    case SDL_SCANCODE_DOWN:
+      controller->SetButtonState(DigitalController::Button::Down, pressed);
+      return true;
+    case SDL_SCANCODE_A:
+    case SDL_SCANCODE_LEFT:
+      controller->SetButtonState(DigitalController::Button::Left, pressed);
+      return true;
+    case SDL_SCANCODE_D:
+    case SDL_SCANCODE_RIGHT:
+      controller->SetButtonState(DigitalController::Button::Right, pressed);
+      return true;
+
+    case SDL_SCANCODE_Q:
+      controller->SetButtonState(DigitalController::Button::L1, pressed);
+      return true;
+    case SDL_SCANCODE_E:
+      controller->SetButtonState(DigitalController::Button::R1, pressed);
+      return true;
+
+    case SDL_SCANCODE_1:
+      controller->SetButtonState(DigitalController::Button::L2, pressed);
+      return true;
+    case SDL_SCANCODE_3:
+      controller->SetButtonState(DigitalController::Button::R2, pressed);
+      return true;
+
+    case SDL_SCANCODE_RETURN:
+      controller->SetButtonState(DigitalController::Button::Start, pressed);
+      return true;
+    case SDL_SCANCODE_BACKSPACE:
+      controller->SetButtonState(DigitalController::Button::Select, pressed);
+      return true;
+
+    default:
+      break;
+  }
+
+  return false;
+}
+
+static void HandleSDLControllerAxisEventForController(const SDL_Event* ev, DigitalController* controller)
+{
+  // Log_DevPrintf("axis %d %d", ev->caxis.axis, ev->caxis.value);
+
+  static constexpr int deadzone = 5000;
+  const bool negative = (ev->caxis.value < 0);
+  const bool active = (std::abs(ev->caxis.value) >= deadzone);
+
+  if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+  {
+    controller->SetButtonState(DigitalController::Button::L2, active);
+  }
+  else if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+  {
+    controller->SetButtonState(DigitalController::Button::R2, active);
+  }
+  else
+  {
+    DigitalController::Button negative_button, positive_button;
+    if (ev->caxis.axis & 1)
+    {
+      negative_button = DigitalController::Button::Up;
+      positive_button = DigitalController::Button::Down;
+    }
+    else
+    {
+      negative_button = DigitalController::Button::Left;
+      positive_button = DigitalController::Button::Right;
+    }
+
+    controller->SetButtonState(negative_button, negative && active);
+    controller->SetButtonState(positive_button, !negative && active);
+  }
+}
+
+static void HandleSDLControllerButtonEventForController(const SDL_Event* ev, DigitalController* controller)
+{
+  // Log_DevPrintf("button %d %s", ev->cbutton.button, ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
+
+  // For xbox one controller..
+  static constexpr std::pair<SDL_GameControllerButton, DigitalController::Button> button_mapping[] = {
+    {SDL_CONTROLLER_BUTTON_A, DigitalController::Button::Cross},
+    {SDL_CONTROLLER_BUTTON_B, DigitalController::Button::Circle},
+    {SDL_CONTROLLER_BUTTON_X, DigitalController::Button::Square},
+    {SDL_CONTROLLER_BUTTON_Y, DigitalController::Button::Triangle},
+    {SDL_CONTROLLER_BUTTON_BACK, DigitalController::Button::Select},
+    {SDL_CONTROLLER_BUTTON_START, DigitalController::Button::Start},
+    {SDL_CONTROLLER_BUTTON_GUIDE, DigitalController::Button::Start},
+    {SDL_CONTROLLER_BUTTON_LEFTSTICK, DigitalController::Button::L3},
+    {SDL_CONTROLLER_BUTTON_RIGHTSTICK, DigitalController::Button::R3},
+    {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, DigitalController::Button::L1},
+    {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, DigitalController::Button::R1},
+    {SDL_CONTROLLER_BUTTON_DPAD_UP, DigitalController::Button::Up},
+    {SDL_CONTROLLER_BUTTON_DPAD_DOWN, DigitalController::Button::Down},
+    {SDL_CONTROLLER_BUTTON_DPAD_LEFT, DigitalController::Button::Left},
+    {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, DigitalController::Button::Right}};
+
+  for (const auto& bm : button_mapping)
+  {
+    if (bm.first == ev->cbutton.button)
+    {
+      controller->SetButtonState(bm.second, ev->cbutton.state == SDL_PRESSED);
+      break;
+    }
+  }
+}
+
+void SDLInterface::HandleSDLEvent(const SDL_Event* event)
 {
   if (PassEventToImGui(event))
-    return true;
+    return;
 
   switch (event->type)
   {
@@ -305,78 +467,67 @@ bool SDLInterface::HandleSDLEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-        return HandleSDLKeyEvent(event);
-
     case SDL_QUIT:
       m_running = false;
       break;
-  }
 
-  return false;
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+      HandleSDLKeyEvent(event);
+      break;
+
+    case SDL_CONTROLLERDEVICEADDED:
+    {
+      auto iter = m_sdl_controllers.find(event->cdevice.which);
+      if (iter == m_sdl_controllers.end())
+      {
+        SDL_GameController* gcontroller = SDL_GameControllerOpen(event->cdevice.which);
+        if (gcontroller)
+        {
+          Log_InfoPrintf("Controller %s inserted", SDL_GameControllerName(gcontroller));
+          m_sdl_controllers.emplace(event->cdevice.which, gcontroller);
+        }
+      }
+    }
+    break;
+
+    case SDL_CONTROLLERDEVICEREMOVED:
+    {
+      auto iter = m_sdl_controllers.find(event->cdevice.which);
+      if (iter != m_sdl_controllers.end())
+      {
+        Log_InfoPrintf("Controller %s removed", SDL_GameControllerName(iter->second));
+        SDL_GameControllerClose(iter->second);
+        m_sdl_controllers.erase(iter);
+      }
+    }
+    break;
+
+    case SDL_CONTROLLERAXISMOTION:
+    {
+      if (m_controller)
+        HandleSDLControllerAxisEventForController(event, m_controller.get());
+    }
+    break;
+
+    case SDL_CONTROLLERBUTTONDOWN:
+    case SDL_CONTROLLERBUTTONUP:
+    {
+      if (m_controller)
+        HandleSDLControllerButtonEventForController(event, m_controller.get());
+    }
+    break;
+  }
 }
 
-bool SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
+void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
 {
+  if (m_controller && HandleSDLKeyEventForController(event, m_controller.get()))
+    return;
+
   const bool pressed = (event->type == SDL_KEYDOWN);
   switch (event->key.keysym.scancode)
   {
-    case SDL_SCANCODE_KP_8:
-    case SDL_SCANCODE_I:
-      m_controller->SetButtonState(DigitalController::Button::Triangle, pressed);
-      return true;
-    case SDL_SCANCODE_KP_2:
-    case SDL_SCANCODE_K:
-      m_controller->SetButtonState(DigitalController::Button::Cross, pressed);
-      return true;
-    case SDL_SCANCODE_KP_4:
-    case SDL_SCANCODE_J:
-      m_controller->SetButtonState(DigitalController::Button::Square, pressed);
-      return true;
-    case SDL_SCANCODE_KP_6:
-    case SDL_SCANCODE_L:
-      m_controller->SetButtonState(DigitalController::Button::Circle, pressed);
-      return true;
-
-    case SDL_SCANCODE_W:
-    case SDL_SCANCODE_UP:
-      m_controller->SetButtonState(DigitalController::Button::Up, pressed);
-      return true;
-    case SDL_SCANCODE_S:
-    case SDL_SCANCODE_DOWN:
-      m_controller->SetButtonState(DigitalController::Button::Down, pressed);
-      return true;
-    case SDL_SCANCODE_A:
-    case SDL_SCANCODE_LEFT:
-      m_controller->SetButtonState(DigitalController::Button::Left, pressed);
-      return true;
-    case SDL_SCANCODE_D:
-    case SDL_SCANCODE_RIGHT:
-      m_controller->SetButtonState(DigitalController::Button::Right, pressed);
-      return true;
-
-    case SDL_SCANCODE_Q:
-      m_controller->SetButtonState(DigitalController::Button::L1, pressed);
-      return true;
-    case SDL_SCANCODE_E:
-      m_controller->SetButtonState(DigitalController::Button::R1, pressed);
-      return true;
-
-    case SDL_SCANCODE_1:
-      m_controller->SetButtonState(DigitalController::Button::L2, pressed);
-      return true;
-    case SDL_SCANCODE_3:
-      m_controller->SetButtonState(DigitalController::Button::R2, pressed);
-      return true;
-
-    case SDL_SCANCODE_RETURN:
-      m_controller->SetButtonState(DigitalController::Button::Start, pressed);
-      return true;
-    case SDL_SCANCODE_BACKSPACE:
-      m_controller->SetButtonState(DigitalController::Button::Select, pressed);
-      return true;
-
     case SDL_SCANCODE_F1:
     case SDL_SCANCODE_F2:
     case SDL_SCANCODE_F3:
@@ -403,12 +554,7 @@ bool SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
       UpdateAudioVisualSync();
     }
     break;
-
-    default:
-      break;
   }
-
-  return false;
 }
 
 bool SDLInterface::PassEventToImGui(const SDL_Event* event)
