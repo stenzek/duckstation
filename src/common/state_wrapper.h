@@ -28,6 +28,7 @@ public:
   bool IsReading() const { return (m_mode == Mode::Read); }
   bool IsWriting() const { return (m_mode == Mode::Write); }
   Mode GetMode() const { return m_mode; }
+  void SetMode(Mode mode) { m_mode = mode; }
 
   /// Overload for integral or floating-point types. Writes bytes as-is.
   template<typename T, std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, int> = 0>
