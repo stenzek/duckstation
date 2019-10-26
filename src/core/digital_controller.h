@@ -1,5 +1,4 @@
 #pragma once
-#include "common/fifo_queue.h"
 #include "pad_device.h"
 #include <memory>
 
@@ -37,10 +36,16 @@ public:
   bool Transfer(const u8 data_in, u8* data_out) override;
 
 private:
-  void QueryState();
+  enum class TransferState : u8
+  {
+    Idle,
+    IDMSB,
+    ButtonsLSB,
+    ButtonsMSB
+  };
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
 
-  InlineFIFOQueue<u8, 8> m_transfer_fifo;
+  TransferState m_transfer_state = TransferState::Idle;
 };

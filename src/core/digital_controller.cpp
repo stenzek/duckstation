@@ -16,68 +16,59 @@ void DigitalController::SetButtonState(Button button, bool pressed)
 
 void DigitalController::ResetTransferState()
 {
-  m_transfer_fifo.Clear();
+  m_transfer_state = TransferState::Idle;
 }
 
 bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 {
-  bool ack;
+  static constexpr u16 ID = 0x5A41;
 
-  switch (data_in)
+  switch (m_transfer_state)
   {
-    case 0x01: // tests if the controller is present
+    case TransferState::Idle:
     {
-      Log_DebugPrintf("Access");
-
-      // response is hi-z
-      *data_out = 0xFF;
-      ack = true;
-    }
-    break;
-
-    case 0x42: // query state
-    {
-      Log_DebugPrintf("Query state");
-      QueryState();
-      [[fallthrough]];
-    }
-
-    default: // sending response
-    {
-      if (m_transfer_fifo.IsEmpty())
+      // ack when sent 0x01, send ID for 0x42
+      if (data_in == 0x42)
       {
-        Log_WarningPrint("FIFO empty on read");
-        *data_out = 0xFF;
-        ack = false;
+        *data_out = Truncate8(ID);
+        m_transfer_state = TransferState::IDMSB;
+        return true;
       }
       else
       {
-        *data_out = m_transfer_fifo.Pop();
-        ack = !m_transfer_fifo.IsEmpty();
+        *data_out = 0xFF;
+        return (data_in == 0x01);
       }
     }
-    break;
+
+    case TransferState::IDMSB:
+    {
+      *data_out = Truncate8(ID >> 8);
+      m_transfer_state = TransferState::ButtonsLSB;
+      return true;
+    }
+
+    case TransferState::ButtonsLSB:
+    {
+      *data_out = Truncate8(m_button_state);
+      m_transfer_state = TransferState::ButtonsMSB;
+      return true;
+    }
+
+    case TransferState::ButtonsMSB:
+      *data_out = Truncate8(m_button_state >> 8);
+      m_transfer_state = TransferState::Idle;
+      return false;
+
+    default:
+    {
+      UnreachableCode();
+      return false;
+    }
   }
-
-  Log_DebugPrintf("Transfer, data_in=0x%02X, data_out=0x%02X, ack=%s", data_in, *data_out, ack ? "true" : "false");
-  return ack;
-}
-
-void DigitalController::QueryState()
-{
-  constexpr u16 ID = 0x5A41;
-
-  m_transfer_fifo.Clear();
-
-  m_transfer_fifo.Push(Truncate8(ID));
-  m_transfer_fifo.Push(Truncate8(ID >> 8));
-
-  m_transfer_fifo.Push(Truncate8(m_button_state));      // Digital switches low
-  m_transfer_fifo.Push(Truncate8(m_button_state >> 8)); // Digital switches high
 }
 
 std::shared_ptr<DigitalController> DigitalController::Create()
 {
   return std::make_shared<DigitalController>();
 }
-

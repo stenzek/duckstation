@@ -278,12 +278,14 @@ void Pad::DoTransfer()
         else
         {
           // memory card responded, make it the active device until non-ack
+          Log_DebugPrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_in, data_out);
           m_active_device = ActiveDevice::MemoryCard;
         }
       }
       else
       {
         // controller responded, make it the active device until non-ack
+        Log_DebugPrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_in, data_out);
         m_active_device = ActiveDevice::Controller;
       }
     }
