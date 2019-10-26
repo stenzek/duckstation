@@ -34,10 +34,10 @@ union FLAGS
 
   static constexpr u32 WRITE_MASK = UINT32_C(0xFFFFF000);
 
-  void Clear() { bits = 0; }
+  ALWAYS_INLINE void Clear() { bits = 0; }
 
   // Bits 30..23, 18..13 OR'ed
-  void UpdateError() { error = (bits & UINT32_C(0x7F87E000)) != UINT32_C(0); }
+  ALWAYS_INLINE void UpdateError() { error = (bits & UINT32_C(0x7F87E000)) != UINT32_C(0); }
 };
 
 union Regs
@@ -130,7 +130,7 @@ union Instruction
   BitField<u32, bool, 10, 1> lm; // saturate IR1, IR2, IR3 result
   BitField<u32, u8, 0, 6> command;
 
-  u8 GetShift() const { return sf ? 12 : 0; }
+  ALWAYS_INLINE u8 GetShift() const { return sf ? 12 : 0; }
 };
 
 } // namespace GTE

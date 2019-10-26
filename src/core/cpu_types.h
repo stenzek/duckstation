@@ -151,8 +151,8 @@ union Instruction
     BitField<u32, Reg, 16, 5> rt;
     BitField<u32, u16, 0, 16> imm;
 
-    u32 imm_sext32() const { return SignExtend32(imm.GetValue()); }
-    u32 imm_zext32() const { return ZeroExtend32(imm.GetValue()); }
+    ALWAYS_INLINE u32 imm_sext32() const { return SignExtend32(imm.GetValue()); }
+    ALWAYS_INLINE u32 imm_zext32() const { return ZeroExtend32(imm.GetValue()); }
   } i;
 
   union
@@ -176,11 +176,14 @@ union Instruction
     BitField<u32, u16, 0, 16> imm16;
     BitField<u32, u32, 0, 25> imm25;
 
-    bool IsCommonInstruction() const { return (bits & (UINT32_C(1) << 25)) == 0; }
+    ALWAYS_INLINE bool IsCommonInstruction() const { return (bits & (UINT32_C(1) << 25)) == 0; }
 
-    CopCommonInstruction CommonOp() const { return static_cast<CopCommonInstruction>((bits >> 21) & UINT32_C(0b1111)); }
+    ALWAYS_INLINE CopCommonInstruction CommonOp() const
+    {
+      return static_cast<CopCommonInstruction>((bits >> 21) & UINT32_C(0b1111));
+    }
 
-    Cop0Instruction Cop0Op() const { return static_cast<Cop0Instruction>(bits & UINT32_C(0x3F)); }
+    ALWAYS_INLINE Cop0Instruction Cop0Op() const { return static_cast<Cop0Instruction>(bits & UINT32_C(0x3F)); }
   } cop;
 
   bool IsCop2Instruction() const
@@ -274,7 +277,7 @@ struct Cop0Registers
 {
   u32 BPC;      // breakpoint on execute
   u32 BDA;      // breakpoint on data access
-  u32 TAR; // randomly memorized jump address
+  u32 TAR;      // randomly memorized jump address
   u32 BadVaddr; // bad virtual address value
   u32 BDAM;     // data breakpoint mask
   u32 BPCM;     // execute breakpoint mask
