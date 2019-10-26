@@ -1018,6 +1018,8 @@ void SDLInterface::DrawDebugWindows()
     m_system->GetTimers()->DrawDebugStateWindow();
   if (debug_settings.show_spu_state)
     m_system->GetSPU()->DrawDebugStateWindow();
+  if (debug_settings.show_mdec_state)
+    m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
 void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)

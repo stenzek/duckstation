@@ -722,18 +722,10 @@ void MDEC::HandleSetScaleCommand()
   std::memcpy(m_scale_table.data(), packed_data.data(), m_scale_table.size() * sizeof(s16));
 }
 
-void MDEC::DrawDebugMenu()
+void MDEC::DrawDebugStateWindow()
 {
-  ImGui::MenuItem("MDEC", nullptr, &m_show_state);
-}
-
-void MDEC::DrawDebugWindow()
-{
-  if (!m_show_state)
-    return;
-
   ImGui::SetNextWindowSize(ImVec2(300, 350), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("MDEC State", &m_show_state))
+  if (!ImGui::Begin("MDEC State", &m_system->GetSettings().debugging.show_mdec_state))
   {
     ImGui::End();
     return;

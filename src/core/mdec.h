@@ -28,8 +28,7 @@ public:
 
   void Execute(TickCount ticks);
 
-  void DrawDebugMenu();
-  void DrawDebugWindow();
+  void DrawDebugStateWindow();
 
 private:
   static constexpr u32 DATA_IN_FIFO_SIZE = 256 * 4;
@@ -142,6 +141,5 @@ private:
   TickCount m_block_copy_out_ticks = TICKS_PER_BLOCK;
   bool m_block_copy_out_pending = false;
 
-  bool m_show_state = false;
   u32 m_total_blocks_decoded = 0;
 };
