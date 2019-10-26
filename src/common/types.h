@@ -42,33 +42,33 @@ using CycleCount = int64_t;
 using SimulationTime = int64_t;
 
 // Helpers for simulation time.
-constexpr SimulationTime SecondsToSimulationTime(SimulationTime s)
+ALWAYS_INLINE constexpr SimulationTime SecondsToSimulationTime(SimulationTime s)
 {
   return s * INT64_C(1000000000);
 }
-constexpr SimulationTime MillisecondsToSimulationTime(SimulationTime ms)
+ALWAYS_INLINE constexpr SimulationTime MillisecondsToSimulationTime(SimulationTime ms)
 {
   return ms * INT64_C(1000000);
 }
-constexpr SimulationTime MicrosecondsToSimulationTime(SimulationTime us)
+ALWAYS_INLINE constexpr SimulationTime MicrosecondsToSimulationTime(SimulationTime us)
 {
   return us * INT64_C(1000);
 }
-constexpr SimulationTime SimulationTimeToSeconds(SimulationTime s)
+ALWAYS_INLINE constexpr SimulationTime SimulationTimeToSeconds(SimulationTime s)
 {
   return s / INT64_C(1000000000);
 }
-constexpr SimulationTime SimulationTimeToMilliseconds(SimulationTime ms)
+ALWAYS_INLINE constexpr SimulationTime SimulationTimeToMilliseconds(SimulationTime ms)
 {
   return ms / INT64_C(1000000);
 }
-constexpr SimulationTime SimulationTimeToMicroseconds(SimulationTime us)
+ALWAYS_INLINE constexpr SimulationTime SimulationTimeToMicroseconds(SimulationTime us)
 {
   return us / INT64_C(1000);
 }
 
 // Calculates the difference between the specified timestamps, accounting for signed overflow.
-constexpr SimulationTime GetSimulationTimeDifference(SimulationTime prev, SimulationTime now)
+ALWAYS_INLINE constexpr SimulationTime GetSimulationTimeDifference(SimulationTime prev, SimulationTime now)
 {
   if (prev <= now)
     return now - prev;
@@ -78,111 +78,105 @@ constexpr SimulationTime GetSimulationTimeDifference(SimulationTime prev, Simula
 
 // Zero-extending helper
 template<typename TReturn, typename TValue>
-constexpr TReturn ZeroExtend(TValue value)
+ALWAYS_INLINE constexpr TReturn ZeroExtend(TValue value)
 {
-  // auto unsigned_val = static_cast<typename std::make_unsigned<TValue>::type>(value);
-  // auto extended_val = static_cast<typename std::make_unsigned<TReturn>::type>(unsigned_val);
-  // return static_cast<TReturn>(extended_val);
   return static_cast<TReturn>(static_cast<typename std::make_unsigned<TReturn>::type>(
     static_cast<typename std::make_unsigned<TValue>::type>(value)));
 }
 // Sign-extending helper
 template<typename TReturn, typename TValue>
-constexpr TReturn SignExtend(TValue value)
+ALWAYS_INLINE constexpr TReturn SignExtend(TValue value)
 {
-  // auto signed_val = static_cast<typename std::make_signed<TValue>::type>(value);
-  // auto extended_val = static_cast<typename std::make_signed<TReturn>::type>(signed_val);
-  // return static_cast<TReturn>(extended_val);
   return static_cast<TReturn>(
     static_cast<typename std::make_signed<TReturn>::type>(static_cast<typename std::make_signed<TValue>::type>(value)));
 }
 
 // Type-specific helpers
 template<typename TValue>
-constexpr u16 ZeroExtend16(TValue value)
+ALWAYS_INLINE constexpr u16 ZeroExtend16(TValue value)
 {
   return ZeroExtend<u16, TValue>(value);
 }
 template<typename TValue>
-constexpr u32 ZeroExtend32(TValue value)
+ALWAYS_INLINE constexpr u32 ZeroExtend32(TValue value)
 {
   return ZeroExtend<u32, TValue>(value);
 }
 template<typename TValue>
-constexpr u64 ZeroExtend64(TValue value)
+ALWAYS_INLINE constexpr u64 ZeroExtend64(TValue value)
 {
   return ZeroExtend<u64, TValue>(value);
 }
 template<typename TValue>
-constexpr u16 SignExtend16(TValue value)
+ALWAYS_INLINE constexpr u16 SignExtend16(TValue value)
 {
   return SignExtend<u16, TValue>(value);
 }
 template<typename TValue>
-constexpr u32 SignExtend32(TValue value)
+ALWAYS_INLINE constexpr u32 SignExtend32(TValue value)
 {
   return SignExtend<u32, TValue>(value);
 }
 template<typename TValue>
-constexpr u64 SignExtend64(TValue value)
+ALWAYS_INLINE constexpr u64 SignExtend64(TValue value)
 {
   return SignExtend<u64, TValue>(value);
 }
 template<typename TValue>
-constexpr u8 Truncate8(TValue value)
+ALWAYS_INLINE constexpr u8 Truncate8(TValue value)
 {
   return static_cast<u8>(static_cast<typename std::make_unsigned<decltype(value)>::type>(value));
 }
 template<typename TValue>
-constexpr u16 Truncate16(TValue value)
+ALWAYS_INLINE constexpr u16 Truncate16(TValue value)
 {
   return static_cast<u16>(static_cast<typename std::make_unsigned<decltype(value)>::type>(value));
 }
 template<typename TValue>
-constexpr u32 Truncate32(TValue value)
+ALWAYS_INLINE constexpr u32 Truncate32(TValue value)
 {
   return static_cast<u32>(static_cast<typename std::make_unsigned<decltype(value)>::type>(value));
 }
 
 // BCD helpers
-constexpr u8 DecimalToBCD(u8 value)
+ALWAYS_INLINE constexpr u8 DecimalToBCD(u8 value)
 {
   return ((value / 10) << 4) + (value % 10);
 }
 
-constexpr u8 BCDToDecimal(u8 value)
+ALWAYS_INLINE constexpr u8 BCDToDecimal(u8 value)
 {
   return ((value >> 4) * 10) + (value % 16);
 }
 
 // Boolean to integer
-constexpr u8 BoolToUInt8(bool value)
+ALWAYS_INLINE constexpr u8 BoolToUInt8(bool value)
 {
   return static_cast<u8>(value);
 }
-constexpr u16 BoolToUInt16(bool value)
+ALWAYS_INLINE constexpr u16 BoolToUInt16(bool value)
 {
   return static_cast<u16>(value);
 }
-constexpr u32 BoolToUInt32(bool value)
+ALWAYS_INLINE constexpr u32 BoolToUInt32(bool value)
 {
   return static_cast<u32>(value);
 }
-constexpr u64 BoolToUInt64(bool value)
+ALWAYS_INLINE constexpr u64 BoolToUInt64(bool value)
 {
   return static_cast<u64>(value);
 }
 
 // Integer to boolean
 template<typename TValue>
-constexpr bool ConvertToBool(TValue value)
+ALWAYS_INLINE constexpr bool ConvertToBool(TValue value)
 {
   return static_cast<bool>(value);
 }
 
 // Unsafe integer to boolean
 template<typename TValue>
-constexpr bool ConvertToBoolUnchecked(TValue value)
+ALWAYS_INLINE constexpr bool ConvertToBoolUnchecked(TValue value)
 {
   // static_assert(sizeof(uint8) == sizeof(bool));
   bool ret;
@@ -192,7 +186,7 @@ constexpr bool ConvertToBoolUnchecked(TValue value)
 
 // Generic sign extension
 template<int NBITS, typename T>
-constexpr T SignExtendN(T value)
+ALWAYS_INLINE constexpr T SignExtendN(T value)
 {
   // http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
   constexpr int shift = 8 * sizeof(T) - NBITS;
@@ -201,38 +195,38 @@ constexpr T SignExtendN(T value)
 
 // Enum class bitwise operators
 #define IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(type_)                                                                  \
-  inline constexpr type_ operator&(type_ lhs, type_ rhs)                                                               \
+  ALWAYS_INLINE constexpr type_ operator&(type_ lhs, type_ rhs)                                                               \
   {                                                                                                                    \
     return static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) &                                    \
                               static_cast<std::underlying_type<type_>::type>(rhs));                                    \
   }                                                                                                                    \
-  inline constexpr type_ operator|(type_ lhs, type_ rhs)                                                               \
+  ALWAYS_INLINE constexpr type_ operator|(type_ lhs, type_ rhs)                                                               \
   {                                                                                                                    \
     return static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) |                                    \
                               static_cast<std::underlying_type<type_>::type>(rhs));                                    \
   }                                                                                                                    \
-  inline constexpr type_ operator^(type_ lhs, type_ rhs)                                                               \
+  ALWAYS_INLINE constexpr type_ operator^(type_ lhs, type_ rhs)                                                               \
   {                                                                                                                    \
     return static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) ^                                    \
                               static_cast<std::underlying_type<type_>::type>(rhs));                                    \
   }                                                                                                                    \
-  inline constexpr type_ operator~(type_ val)                                                                          \
+  ALWAYS_INLINE constexpr type_ operator~(type_ val)                                                                          \
   {                                                                                                                    \
     return static_cast<type_>(~static_cast<std::underlying_type<type_>::type>(val));                                   \
   }                                                                                                                    \
-  inline constexpr type_& operator&=(type_& lhs, type_ rhs)                                                            \
+  ALWAYS_INLINE constexpr type_& operator&=(type_& lhs, type_ rhs)                                                            \
   {                                                                                                                    \
     lhs = static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) &                                     \
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \
     return lhs;                                                                                                        \
   }                                                                                                                    \
-  inline constexpr type_& operator|=(type_& lhs, type_ rhs)                                                            \
+  ALWAYS_INLINE constexpr type_& operator|=(type_& lhs, type_ rhs)                                                            \
   {                                                                                                                    \
     lhs = static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) |                                     \
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \
     return lhs;                                                                                                        \
   }                                                                                                                    \
-  inline constexpr type_& operator^=(type_& lhs, type_ rhs)                                                            \
+  ALWAYS_INLINE constexpr type_& operator^=(type_& lhs, type_ rhs)                                                            \
   {                                                                                                                    \
     lhs = static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) ^                                     \
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \
