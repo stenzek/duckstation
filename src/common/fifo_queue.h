@@ -1,6 +1,7 @@
 #pragma once
 #include "YBaseLib/Assert.h"
 #include "types.h"
+#include <algorithm>
 #include <cstring>
 #include <type_traits>
 
@@ -17,6 +18,8 @@ public:
   constexpr u32 GetCapacity() const { return CAPACITY; }
   u32 GetSize() const { return m_size; }
   u32 GetSpace() const { return CAPACITY - m_size; }
+  u32 GetContiguousSpace() const { return (m_tail >= m_head) ? (CAPACITY - m_tail) : (m_head - m_tail); }
+  u32 GetContiguousSize() const { return std::min<u32>(CAPACITY - m_head, m_size); }
   bool IsEmpty() const { return m_size == 0; }
   bool IsFull() const { return m_size == CAPACITY; }
 
@@ -128,6 +131,16 @@ public:
       m_ptr[m_head].~T();
       m_head = (m_head + 1) % CAPACITY;
       m_size--;
+    }
+  }
+
+  template<u32 CAPACITY>
+  void PushFromQueue(FIFOQueue<T, CAPACITY>* other_queue)
+  {
+    while (!other_queue->IsEmpty() && !IsFull())
+    {
+      T& dest = PushAndGetReference();
+      dest = std::move(other_queue->Pop());
     }
   }
 
