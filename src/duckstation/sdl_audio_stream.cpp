@@ -18,9 +18,9 @@ bool SDLAudioStream::OpenDevice()
 
   SDL_AudioSpec spec = {};
   spec.freq = m_output_sample_rate;
-  spec.channels = m_channels;
+  spec.channels = static_cast<Uint8>(m_channels);
   spec.format = AUDIO_S16;
-  spec.samples = m_buffer_size;
+  spec.samples = static_cast<Uint16>(m_buffer_size);
   spec.callback = AudioCallback;
   spec.userdata = static_cast<void*>(this);
 
