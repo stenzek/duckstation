@@ -76,6 +76,21 @@ public:
       *this = *this + pos;
       return *this;
     }
+
+#define RELATIONAL_OPERATOR(op)                                                                                        \
+  bool operator##op(const Position& rhs) const                                                                         \
+  {                                                                                                                    \
+    return std::tie(minute, second, frame) op std::tie(rhs.minute, rhs.second, rhs.frame);                             \
+  }
+
+    RELATIONAL_OPERATOR(==);
+    RELATIONAL_OPERATOR(!=);
+    RELATIONAL_OPERATOR(<);
+    RELATIONAL_OPERATOR(<=);
+    RELATIONAL_OPERATOR(>);
+    RELATIONAL_OPERATOR(>=);
+
+#undef RELATIONAL_OPERATOR
   };
 
   // Opening disc image.
