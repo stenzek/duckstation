@@ -119,6 +119,7 @@ private:
   u32 m_last_global_tick_counter = 0;
   Timer m_fps_timer;
 
+  bool m_focus_main_menu_bar = false;
   bool m_about_window_open = false;
   bool m_speed_limiter_enabled = true;
   bool m_speed_limiter_temp_disabled = false;

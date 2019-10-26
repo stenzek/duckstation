@@ -129,6 +129,8 @@ bool SDLInterface::CreateImGuiContext()
 {
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
+  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+  ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasGamepad;
 
   if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init())
     return false;
@@ -531,6 +533,12 @@ void SDLInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
     {
+      if (event->type == SDL_CONTROLLERBUTTONDOWN && event->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSTICK)
+      {
+        // focus the menu bar
+        m_focus_main_menu_bar = true;
+      }
+
       if (m_controller)
         HandleSDLControllerButtonEventForController(event, m_controller.get());
     }
@@ -678,6 +686,12 @@ void SDLInterface::DrawMainMenuBar()
     return;
 
   const bool system_enabled = static_cast<bool>(m_system);
+
+  if (m_focus_main_menu_bar)
+  {
+    ImGui::OpenPopup("System");
+    m_focus_main_menu_bar = false;
+  }
 
   if (ImGui::BeginMenu("System"))
   {
