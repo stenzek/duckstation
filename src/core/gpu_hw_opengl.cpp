@@ -136,12 +136,10 @@ void GPU_HW_OpenGL::SetMaxResolutionScale()
   glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range.data());
   Log_InfoPrintf("Max line width: %d", line_width_range[1]);
 
-  const u32 max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
-  Log_InfoPrintf("Maximum resolution scale is %u", max_resolution_scale);
-  m_system->GetSettings().max_gpu_resolution_scale = max_resolution_scale;
-  m_system->GetSettings().gpu_resolution_scale =
-    std::min(m_system->GetSettings().gpu_resolution_scale, max_resolution_scale);
-  m_resolution_scale = m_system->GetSettings().gpu_resolution_scale;
+  m_max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
+  Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
+
+  m_resolution_scale = std::min(m_resolution_scale, m_max_resolution_scale);
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
