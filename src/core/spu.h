@@ -32,10 +32,7 @@ public:
   void Execute(TickCount ticks);
 
   // Render statistics debug window.
-  void DrawDebugWindow();
-
-  // Manipulating debug options.
-  void DrawDebugMenu();
+  void DrawDebugStateWindow();
 
   // External input from CD controller.
   void AddCDAudioSample(s16 left, s16 right)
@@ -277,7 +274,6 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   AudioStream* m_audio_stream = nullptr;
-  bool m_show_spu_state = false;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};

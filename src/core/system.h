@@ -29,11 +29,18 @@ public:
   System(HostInterface* host_interface, const Settings& settings);
   ~System();
 
+  // Accessing components.
   HostInterface* GetHostInterface() const { return m_host_interface; }
   CPU::Core* GetCPU() const { return m_cpu.get(); }
   Bus* GetBus() const { return m_bus.get(); }
+  DMA* GetDMA() const { return m_dma.get(); }
+  InterruptController* GetInterruptController() const { return m_interrupt_controller.get(); }
   GPU* GetGPU() const { return m_gpu.get(); }
+  CDROM* GetCDROM() const { return m_cdrom.get(); }
+  Pad* GetPad() const { return m_pad.get(); }
+  Timers* GetTimers() const { return m_timers.get(); }
   SPU* GetSPU() const { return m_spu.get(); }
+  MDEC* GetMDEC() const { return m_mdec.get(); }
 
   u32 GetFrameNumber() const { return m_frame_number; }
   u32 GetInternalFrameNumber() const { return m_internal_frame_number; }
@@ -42,13 +49,15 @@ public:
   void IncrementInternalFrameNumber() { m_internal_frame_number++; }
 
   Settings& GetSettings() { return m_settings; }
-  void UpdateSettings();
 
   bool Initialize();
   void Reset();
 
   bool LoadState(ByteStream* state);
   bool SaveState(ByteStream* state);
+
+  /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
+  bool RecreateGPU();
 
   void RunFrame();
 
@@ -68,11 +77,9 @@ public:
   bool InsertMedia(const char* path);
   void RemoveMedia();
 
-  void DrawDebugMenus();
-  void DrawDebugWindows();
-
 private:
   bool DoState(StateWrapper& sw);
+  bool CreateGPU();
 
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;

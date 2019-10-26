@@ -45,6 +45,9 @@ public:
 
   void SetRequest(Channel channel, bool request);
 
+  // changing interfaces
+  void SetGPU(GPU* gpu) { m_gpu = gpu; }
+
 private:
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x00FFFFFF);
   static constexpr u32 TRANSFER_TICKS = 10;

@@ -65,23 +65,18 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glBindVertexArray(m_vao_id);
 }
 
-void GPU_HW_OpenGL::DrawDebugWindows()
+void GPU_HW_OpenGL::UpdateResolutionScale()
 {
-  GPU_HW::DrawDebugWindows();
+  GPU_HW::UpdateResolutionScale();
 
-  if (m_show_renderer_statistics)
-    DrawRendererStatistics();
+  CreateFramebuffer();
+  CompilePrograms();
 }
 
-void GPU_HW_OpenGL::DrawDebugMenu()
+void GPU_HW_OpenGL::DrawRendererStatsWindow()
 {
-  GPU_HW::DrawDebugMenu();
+  GPU_HW::DrawRendererStatsWindow();
 
-  ImGui::MenuItem("GPU Renderer", nullptr, &m_show_renderer_statistics);
-}
-
-void GPU_HW_OpenGL::DrawRendererStatistics()
-{
   ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_FirstUseEver);
 
   const bool is_null_frame = m_stats.num_batches == 0;
@@ -118,22 +113,6 @@ void GPU_HW_OpenGL::DrawRendererStatistics()
   }
 
   ImGui::End();
-}
-
-void GPU_HW_OpenGL::UpdateSettings()
-{
-  GPU_HW::UpdateSettings();
-
-  if (m_resolution_scale != m_system->GetSettings().gpu_resolution_scale)
-  {
-    m_resolution_scale = m_system->GetSettings().gpu_resolution_scale;
-    CreateFramebuffer();
-    CompilePrograms();
-
-    m_system->GetHostInterface()->AddOSDMessage(TinyString::FromFormat("Changed internal resolution to %ux (%ux%u)",
-                                                                       m_resolution_scale, m_vram_texture->GetWidth(),
-                                                                       m_vram_texture->GetHeight()));
-  }
 }
 
 void GPU_HW_OpenGL::InvalidateVRAMReadCache()
@@ -401,7 +380,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_debug_options.show_vram)
+  if (m_system->GetSettings().debugging.show_vram)
   {
     m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, m_vram_texture->GetWidth(),
                                                     m_vram_texture->GetHeight(), 1.0f);

@@ -82,6 +82,8 @@ private:
   void DrawPoweredOffWindow();
   void DrawAboutWindow();
   void DrawOSDMessages();
+  void DrawDebugMenu();
+  void DrawDebugWindows();
 
   SDL_Window* m_window = nullptr;
   SDL_GLContext m_gl_context = nullptr;

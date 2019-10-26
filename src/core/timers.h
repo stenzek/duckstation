@@ -20,8 +20,7 @@ public:
 
   void SetGate(u32 timer, bool state);
 
-  void DrawDebugMenu();
-  void DrawDebugWindow();
+  void DrawDebugStateWindow();
 
   // dot clock/hblank/sysclk div 8
   bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
@@ -81,6 +80,4 @@ private:
 
   std::array<CounterState, NUM_TIMERS> m_states{};
   u32 m_sysclk_div_8_carry = 0;   // partial ticks for timer 3 with sysclk/8
-
-  bool m_debug_show_state = false;
 };

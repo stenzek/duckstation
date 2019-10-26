@@ -5,6 +5,7 @@
 #include <array>
 #include <deque>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 class StateWrapper;
@@ -40,14 +41,10 @@ public:
   virtual void RestoreGraphicsAPIState();
 
   // Render statistics debug window.
-  virtual void DrawDebugWindows();
+  void DrawDebugStateWindow();
+  virtual void DrawRendererStatsWindow();
 
-  // Manipulating debug options.
-  virtual void DrawDebugMenu();
-
-  // Called when settings change.
-  virtual void UpdateSettings();
-
+  // MMIO access
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
 
@@ -55,13 +52,22 @@ public:
   void DMARead(u32* words, u32 word_count);
   void DMAWrite(const u32* words, u32 word_count);
 
+  // Resolution scaling.
+  u32 GetResolutionScale() const { return m_resolution_scale; }
+  u32 GetMaxResolutionScale() const { return m_max_resolution_scale; }
+  virtual void UpdateResolutionScale();
+
+  // Ticks for hblank/vblank.
+  void Execute(TickCount ticks);
+
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 
-  void Execute(TickCount ticks);
-
 protected:
   // Helper/format conversion functions.
+  static constexpr u8 Convert5To8(u8 x5) { return (x5 << 3) | (x5 & 7); }
+  static constexpr u8 Convert8To5(u8 x8) { return (x8 >> 3); }
+
   static constexpr u32 RGBA5551ToRGBA8888(u16 color)
   {
     u8 r = Truncate8(color & 31);
@@ -86,6 +92,21 @@ protected:
     const u16 a = Truncate16((color >> 31) & 0x01u);
 
     return r | (g << 5) | (b << 10) | (a << 15);
+  }
+
+  static constexpr std::tuple<u8, u8> UnpackTexcoord(u16 texcoord)
+  {
+    return std::make_tuple(static_cast<u8>(texcoord), static_cast<u8>(texcoord >> 8));
+  }
+  static constexpr u16 PackTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
+
+  static constexpr std::tuple<u8, u8, u8> UnpackColorRGB24(u32 rgb24)
+  {
+    return std::make_tuple(static_cast<u8>(rgb24), static_cast<u8>(rgb24 >> 8), static_cast<u8>(rgb24 >> 16));
+  }
+  static constexpr u32 PackColorRGB24(u8 r, u8 g, u8 b)
+  {
+    return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16);
   }
 
   static bool DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer,
@@ -160,12 +181,49 @@ protected:
     BitField<u32, s32, 16, 12> y;
   };
 
-  struct DebugOptions
+  union VRAMPixel
   {
-    bool show_state = false;
-    bool show_vram = false;
-    bool dump_cpu_to_vram_copies = false;
-    bool dump_vram_to_cpu_copies = false;
+    u16 bits;
+
+    BitField<u16, u8, 0, 5> r;
+    BitField<u16, u8, 5, 5> g;
+    BitField<u16, u8, 10, 5> b;
+    BitField<u16, bool, 15, 1> c;
+
+    u8 GetR8() const { return Convert5To8(r); }
+    u8 GetG8() const { return Convert5To8(g); }
+    u8 GetB8() const { return Convert5To8(b); }
+
+    void Set(u8 r_, u8 g_, u8 b_, bool c_ = false)
+    {
+      bits = (ZeroExtend16(r_)) | (ZeroExtend16(g_) << 5) | (ZeroExtend16(b_) << 10) | (static_cast<u16>(c_) << 15);
+    }
+
+    void ClampAndSet(u8 r_, u8 g_, u8 b_, bool c_ = false)
+    {
+      Set(std::min<u8>(r_, 0x1F), std::min<u8>(g_, 0x1F), std::min<u8>(b_, 0x1F), c_);
+    }
+
+    void SetRGB24(u32 rgb24, bool c_ = false)
+    {
+      bits = Truncate16(((rgb24 >> 3) & 0x1F) | (((rgb24 >> 11) & 0x1F) << 5) | (((rgb24 >> 19) & 0x1F) << 10)) |
+             (static_cast<u16>(c_) << 15);
+    }
+
+    void SetRGB24(u8 r8, u8 g8, u8 b8, bool c_ = false)
+    {
+      bits = (ZeroExtend16(r8 >> 3)) | (ZeroExtend16(g8 >> 3) << 5) | (ZeroExtend16(b8 >> 3) << 10) |
+             (static_cast<u16>(c_) << 15);
+    }
+
+    u32 ToRGB24() const
+    {
+      const u32 r_ = ZeroExtend32(r.GetValue());
+      const u32 g_ = ZeroExtend32(g.GetValue());
+      const u32 b_ = ZeroExtend32(b.GetValue());
+
+      return ((r_ << 3) | (r_ & 7)) | (((g_ << 3) | (g_ & 7)) << 8) | (((b_ << 3) | (b_ & 7)) << 16);
+    }
   };
 
   void SoftReset();
@@ -194,13 +252,14 @@ protected:
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   virtual void FlushRender();
 
-  // Debugging
-  void DrawDebugStateWindow();
-
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   Timers* m_timers = nullptr;
+
+  // Resolution scale.
+  u32 m_resolution_scale = 1;
+  u32 m_max_resolution_scale = 1;
 
   union GPUSTAT
   {
@@ -350,8 +409,6 @@ protected:
 
   std::vector<u32> m_GP0_buffer;
   std::deque<u32> m_GPUREAD_buffer;
-
-  DebugOptions m_debug_options;
 
 private:
   using GP0CommandHandler = bool (GPU::*)(const u32*&, u32);

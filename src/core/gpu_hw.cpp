@@ -46,17 +46,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         hw_vert.texpage = texpage;
 
         if (textured)
-        {
           hw_vert.texcoord = Truncate16(command_ptr[buffer_pos++]);
-          // auto [u, v] = HWVertex::DecodeTexcoord(hw_vert.texcoord);
-          // u = (u & (~(m_render_state.texture_window_mask_x * 8))) | ((m_render_state.texture_window_offset_x &
-          // m_render_state.texture_window_mask_x) * 8); v = (v & (~(m_render_state.texture_window_mask_y * 8))) |
-          // ((m_render_state.texture_window_offset_y & m_render_state.texture_window_mask_y) * 8);
-        }
         else
-        {
           hw_vert.texcoord = 0;
-        }
 
         hw_vert.padding = 0;
 
@@ -82,8 +74,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const VertexPosition vp{command_ptr[buffer_pos++]};
       const s32 pos_left = vp.x;
       const s32 pos_top = vp.y;
-      const auto [tex_left, tex_top] =
-        HWVertex::DecodeTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
+      const auto [tex_left, tex_top] = UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
       s32 rectangle_width;
       s32 rectangle_height;
       switch (rc.rectangle_size)
@@ -112,16 +103,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const u8 tex_right = static_cast<u8>(tex_left + (rectangle_width - 1));
       const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
 
-      m_batch.vertices.push_back(
-        HWVertex{pos_left, pos_top, color, texpage, HWVertex::EncodeTexcoord(tex_left, tex_top)});
+      m_batch.vertices.push_back(HWVertex{pos_left, pos_top, color, texpage, PackTexcoord(tex_left, tex_top)});
       if (restart_strip)
         m_batch.vertices.push_back(m_batch.vertices.back());
-      m_batch.vertices.push_back(
-        HWVertex{pos_right, pos_top, color, texpage, HWVertex::EncodeTexcoord(tex_right, tex_top)});
-      m_batch.vertices.push_back(
-        HWVertex{pos_left, pos_bottom, color, texpage, HWVertex::EncodeTexcoord(tex_left, tex_bottom)});
-      m_batch.vertices.push_back(
-        HWVertex{pos_right, pos_bottom, color, texpage, HWVertex::EncodeTexcoord(tex_right, tex_bottom)});
+      m_batch.vertices.push_back(HWVertex{pos_right, pos_top, color, texpage, PackTexcoord(tex_right, tex_top)});
+      m_batch.vertices.push_back(HWVertex{pos_left, pos_bottom, color, texpage, PackTexcoord(tex_left, tex_bottom)});
+      m_batch.vertices.push_back(HWVertex{pos_right, pos_bottom, color, texpage, PackTexcoord(tex_right, tex_bottom)});
     }
     break;
 
@@ -538,9 +525,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   const u32 max_added_vertices = num_vertices + 2;
   const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
   const bool rc_changed =
-    m_batch.render_command_bits != rc.bits && (m_batch.transparency_enable != rc_transparency_enable ||
-    m_batch.texture_enable != rc_texture_enable || m_batch.texture_blending_enable != rc_texture_blend_enable ||
-    m_batch.primitive != rc_primitive);
+    m_batch.render_command_bits != rc.bits &&
+    (m_batch.transparency_enable != rc_transparency_enable || m_batch.texture_enable != rc_texture_enable ||
+     m_batch.texture_blending_enable != rc_texture_blend_enable || m_batch.primitive != rc_primitive);
   const bool restart_line_strip = (rc_primitive == HWRenderBatch::Primitive::LineStrip);
   const bool needs_flush =
     !IsFlushed() && (m_render_state.IsTextureColorModeChanged() || m_render_state.IsTransparencyModeChanged() ||

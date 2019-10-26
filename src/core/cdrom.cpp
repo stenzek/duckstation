@@ -1178,11 +1178,8 @@ void CDROM::DrawDebugWindow()
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
 
-  if (!m_show_cdrom_state)
-    return;
-
   ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("CDROM State", &m_show_cdrom_state))
+  if (!ImGui::Begin("CDROM State", &m_system->GetSettings().debugging.show_cdrom_state))
   {
     ImGui::End();
     return;
@@ -1319,9 +1316,4 @@ void CDROM::DrawDebugWindow()
   }
 
   ImGui::End();
-}
-
-void CDROM::DrawDebugMenu()
-{
-  ImGui::MenuItem("CDROM", nullptr, &m_show_cdrom_state);
 }

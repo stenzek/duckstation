@@ -2,6 +2,7 @@
 #include "YBaseLib/String.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
+#include "system.h"
 Log_SetChannel(GPU);
 
 static u32 s_cpu_to_vram_dump_id = 1;
@@ -291,7 +292,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 comma
     return true;
   }
 
-  if (m_debug_options.dump_cpu_to_vram_copies)
+  if (m_system->GetSettings().debugging.dump_cpu_to_vram_copies)
   {
     DumpVRAMToFile(SmallString::FromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++), copy_width, copy_height,
                    sizeof(u16) * copy_width, &command_ptr[3], true);
@@ -333,7 +334,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
   for (const u32 bits : temp)
     m_GPUREAD_buffer.push_back(bits);
 
-  if (m_debug_options.dump_vram_to_cpu_copies)
+  if (m_system->GetSettings().debugging.dump_vram_to_cpu_copies)
   {
     DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++), width, height,
                    sizeof(u16) * width, temp.data(), true);

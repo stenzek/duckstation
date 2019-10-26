@@ -18,10 +18,9 @@ public:
 
   void ResetGraphicsAPIState() override;
   void RestoreGraphicsAPIState() override;
+  void UpdateResolutionScale() override;
 
-  void DrawDebugWindows() override;
-  void DrawDebugMenu() override;
-  void UpdateSettings() override;
+  void DrawRendererStatsWindow() override;
 
 protected:
   void UpdateDisplay() override;

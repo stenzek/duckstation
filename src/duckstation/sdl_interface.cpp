@@ -2,10 +2,15 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
+#include "core/cdrom.h"
 #include "core/digital_controller.h"
+#include "core/dma.h"
 #include "core/gpu.h"
+#include "core/mdec.h"
 #include "core/memory_card.h"
+#include "core/spu.h"
 #include "core/system.h"
+#include "core/timers.h"
 #include "icon.h"
 #include "sdl_audio_stream.h"
 #include <cinttypes>
@@ -15,6 +20,9 @@
 #include <imgui_impl_sdl.h>
 #include <nfd.h>
 Log_SetChannel(SDLInterface);
+
+static constexpr std::array<std::pair<GPURenderer, const char*>, 1> s_gpu_renderer_names = {
+  {{GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"}}};
 
 SDLInterface::SDLInterface() = default;
 
@@ -699,7 +707,7 @@ void SDLInterface::DrawImGui()
   DrawMainMenuBar();
 
   if (m_system)
-    m_system->DrawDebugWindows();
+    DrawDebugWindows();
   else
     DrawPoweredOffWindow();
 
@@ -777,6 +785,21 @@ void SDLInterface::DrawMainMenuBar()
 
     if (ImGui::BeginMenu("GPU", system_enabled))
     {
+      if (ImGui::BeginMenu("Renderer"))
+      {
+        const GPURenderer current = m_system->GetSettings().gpu_renderer;
+        for (const auto& it : s_gpu_renderer_names)
+        {
+          if (ImGui::MenuItem(it.second, nullptr, current == it.first))
+          {
+            m_system->GetSettings().gpu_renderer = it.first;
+            m_system->RecreateGPU();
+          }
+        }
+
+        ImGui::EndMenu();
+      }
+
       if (ImGui::BeginMenu("Internal Resolution"))
       {
         const u32 current_internal_resolution = m_system->GetSettings().gpu_resolution_scale;
@@ -787,7 +810,7 @@ void SDLInterface::DrawMainMenuBar()
                 nullptr, current_internal_resolution == scale))
           {
             m_system->GetSettings().gpu_resolution_scale = scale;
-            m_system->UpdateSettings();
+            m_system->GetGPU()->UpdateResolutionScale();
           }
         }
 
@@ -804,13 +827,7 @@ void SDLInterface::DrawMainMenuBar()
   }
 
   if (m_system)
-  {
-    if (ImGui::BeginMenu("Debug"))
-    {
-      m_system->DrawDebugMenus();
-      ImGui::EndMenu();
-    }
-  }
+    DrawDebugMenu();
 
   if (ImGui::BeginMenu("Help"))
   {
@@ -953,6 +970,54 @@ void SDLInterface::DrawAboutWindow()
     m_about_window_open = false;
 
   ImGui::End();
+}
+
+void SDLInterface::DrawDebugMenu()
+{
+  if (!ImGui::BeginMenu("Debug", m_system != nullptr))
+    return;
+
+  Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
+
+  ImGui::MenuItem("Show System State");
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
+  ImGui::MenuItem("Show GPU Renderer Stats", nullptr, &debug_settings.show_gpu_renderer_stats);
+  ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
+  ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
+  ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show CDROM State", nullptr, &debug_settings.show_cdrom_state);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
+  ImGui::Separator();
+
+  ImGui::EndMenu();
+}
+
+void SDLInterface::DrawDebugWindows()
+{
+  const Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
+
+  if (debug_settings.show_gpu_state)
+    m_system->GetGPU()->DrawDebugStateWindow();
+  if (debug_settings.show_gpu_renderer_stats)
+    m_system->GetGPU()->DrawRendererStatsWindow();
+  if (debug_settings.show_cdrom_state)
+    m_system->GetCDROM()->DrawDebugWindow();
+  if (debug_settings.show_timers_state)
+    m_system->GetTimers()->DrawDebugStateWindow();
+  if (debug_settings.show_spu_state)
+    m_system->GetSPU()->DrawDebugStateWindow();
 }
 
 void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)

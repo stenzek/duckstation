@@ -38,7 +38,7 @@ public:
   bool WriteByte(PhysicalMemoryAddress address, u8 value);
   bool WriteHalfWord(PhysicalMemoryAddress address, u16 value);
   bool WriteWord(PhysicalMemoryAddress address, u32 value);
-  
+
   template<MemoryAccessType type, MemoryAccessSize size>
   TickCount DispatchAccess(PhysicalMemoryAddress address, u32& value);
 
@@ -48,6 +48,9 @@ public:
 
   void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
   void SetExpansionROM(std::vector<u8> data);
+
+  // changing interfaces
+  void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
 private:
   enum : u32
@@ -101,7 +104,7 @@ private:
 
   enum : u32
   {
-    RAM_ACCESS_DELAY = 6,     // Nocash docs say RAM takes 6 cycles to access.
+    RAM_ACCESS_DELAY = 6, // Nocash docs say RAM takes 6 cycles to access.
     MEMCTRL_REG_COUNT = 9
   };
 

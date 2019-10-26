@@ -49,9 +49,6 @@ public:
   // Render statistics debug window.
   void DrawDebugWindow();
 
-  // Manipulating debug options.
-  void DrawDebugMenu();
-
 private:
   static constexpr u32 PARAM_FIFO_SIZE = 16;
   static constexpr u32 RESPONSE_FIFO_SIZE = 16;
@@ -226,6 +223,4 @@ private:
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
   std::vector<u8> m_sector_buffer;
-
-  bool m_show_cdrom_state = false;
 };

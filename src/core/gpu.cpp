@@ -2,6 +2,7 @@
 #include "YBaseLib/Log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
+#include "host_interface.h"
 #include "interrupt_controller.h"
 #include "stb_image_write.h"
 #include "system.h"
@@ -23,6 +24,17 @@ bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
   m_interrupt_controller = interrupt_controller;
   m_timers = timers;
   return true;
+}
+
+void GPU::UpdateResolutionScale()
+{
+  const u32 new_scale = std::min(m_system->GetSettings().gpu_resolution_scale, m_max_resolution_scale);
+  if (m_resolution_scale == new_scale)
+    return;
+
+  m_resolution_scale = new_scale;
+  m_system->GetHostInterface()->AddOSDMessage(TinyString::FromFormat(
+    "Changed internal resolution to %ux (%ux%u)", m_resolution_scale, VRAM_WIDTH * new_scale, VRAM_HEIGHT * new_scale));
 }
 
 void GPU::Reset()
@@ -143,8 +155,6 @@ bool GPU::DoState(StateWrapper& sw)
 void GPU::ResetGraphicsAPIState() {}
 
 void GPU::RestoreGraphicsAPIState() {}
-
-void GPU::UpdateSettings() {}
 
 void GPU::UpdateGPUSTAT()
 {
@@ -762,29 +772,10 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
   return (stbi_write_png(filename, width, height, 4, rgba8_buf.data(), sizeof(u32) * width) != 0);
 }
 
-void GPU::DrawDebugWindows()
-{
-  if (m_debug_options.show_state)
-    DrawDebugStateWindow();
-}
-
-void GPU::DrawDebugMenu()
-{
-  if (ImGui::BeginMenu("GPU"))
-  {
-    ImGui::MenuItem("Show State", nullptr, &m_debug_options.show_state);
-    ImGui::MenuItem("Show VRAM", nullptr, &m_debug_options.show_vram);
-    ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &m_debug_options.dump_cpu_to_vram_copies);
-    ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &m_debug_options.dump_vram_to_cpu_copies);
-
-    ImGui::EndMenu();
-  }
-}
-
 void GPU::DrawDebugStateWindow()
 {
   ImGui::SetNextWindowSize(ImVec2(450, 550), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("GPU State", &m_debug_options.show_state))
+  if (!ImGui::Begin("GPU State", &m_system->GetSettings().debugging.show_gpu_state))
   {
     ImGui::End();
     return;
@@ -827,4 +818,8 @@ void GPU::DrawDebugStateWindow()
     ImGui::Text("Interrupt Request: %s", m_GPUSTAT.interrupt_request ? "Yes" : "No");
     ImGui::Text("DMA Request: %s", m_GPUSTAT.dma_data_request ? "Yes" : "No");
   }
+
+  ImGui::End();
 }
+
+void GPU::DrawRendererStatsWindow() {}

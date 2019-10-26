@@ -292,16 +292,8 @@ void Timers::UpdateDowncount()
   m_system->SetDowncount(min_ticks);
 }
 
-void Timers::DrawDebugMenu()
+void Timers::DrawDebugStateWindow()
 {
-  ImGui::MenuItem("Timers", nullptr, &m_debug_show_state);
-}
-
-void Timers::DrawDebugWindow()
-{
-  if (!m_debug_show_state)
-    return;
-
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
     {"#", "Value", "Target", "Sync", "Reset", "IRQ", "IRQRepeat", "IRQToggle", "Clock Source", "Reached"}};
@@ -313,7 +305,7 @@ void Timers::DrawDebugWindow()
      {{"SysClk", "DotClk", "SysClk/8", "SysClk/8"}}}};
 
   ImGui::SetNextWindowSize(ImVec2(800, 100), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("Timer State", &m_debug_show_state))
+  if (!ImGui::Begin("Timer State", &m_system->GetSettings().debugging.show_timers_state))
   {
     ImGui::End();
     return;
