@@ -424,6 +424,12 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
     DeliverAsyncInterrupt();
 }
 
+void CDROM::CancelAsyncInterrupt()
+{
+  m_pending_async_interrupt = 0;
+  m_async_response_fifo.Clear();
+}
+
 void CDROM::DeliverAsyncInterrupt()
 {
   Assert(m_pending_async_interrupt != 0 && !HasPendingInterrupt());
@@ -992,6 +998,7 @@ void CDROM::DoSectorRead()
   if (HasPendingAsyncInterrupt())
   {
     Log_WarningPrintf("Data interrupt was not delivered");
+    CancelAsyncInterrupt();
   }
   if (!m_sector_buffer.empty())
   {

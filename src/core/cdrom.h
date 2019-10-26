@@ -171,6 +171,7 @@ private:
   bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
   void SetInterrupt(Interrupt interrupt);
   void SetAsyncInterrupt(Interrupt interrupt);
+  void CancelAsyncInterrupt();
   void DeliverAsyncInterrupt();
   void SendACKAndStat();
   void SendErrorResponse(u8 reason = 0x80);
