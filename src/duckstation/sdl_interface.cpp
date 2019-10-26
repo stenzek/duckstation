@@ -1163,11 +1163,12 @@ void SDLInterface::Run()
     }
 
     if (m_system)
-    {
       m_system->RunFrame();
 
-      Render();
+    Render();
 
+    if (m_system)
+    {
       // update fps counter
       const double time = m_fps_timer.GetTimeSeconds();
       if (time >= 0.25f)
@@ -1184,10 +1185,6 @@ void SDLInterface::Run()
         m_last_global_tick_counter = m_system->GetGlobalTickCounter();
         m_fps_timer.Reset();
       }
-    }
-    else
-    {
-      Render();
     }
   }
 }
