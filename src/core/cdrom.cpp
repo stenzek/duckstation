@@ -44,6 +44,7 @@ void CDROM::SoftReset()
   m_mode.bits = 0;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
+  m_pending_async_interrupt = 0;
   m_pending_location = {};
   m_location_pending = false;
   m_filter_file_number = 0;
@@ -67,6 +68,7 @@ void CDROM::SoftReset()
 
   m_param_fifo.Clear();
   m_response_fifo.Clear();
+  m_async_response_fifo.Clear();
   m_data_fifo.Clear();
   m_sector_buffer.clear();
 
@@ -91,6 +93,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_mode.bits);
   sw.Do(&m_interrupt_enable_register);
   sw.Do(&m_interrupt_flag_register);
+  sw.Do(&m_pending_async_interrupt);
   sw.DoPOD(&m_pending_location);
   sw.Do(&m_location_pending);
   sw.Do(&m_filter_file_number);
@@ -105,6 +108,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_xa_resample_sixstep);
   sw.Do(&m_param_fifo);
   sw.Do(&m_response_fifo);
+  sw.Do(&m_async_response_fifo);
   sw.Do(&m_data_fifo);
   sw.Do(&m_sector_buffer);
 
@@ -342,11 +346,18 @@ void CDROM::WriteRegister(u32 offset, u8 value)
         {
           Log_DebugPrintf("Interrupt flag register <- 0x%02X", value);
           m_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
-          if (m_interrupt_flag_register == 0 && m_command_state == CommandState::WaitForIRQClear)
+          if (m_interrupt_flag_register == 0)
           {
-            m_system->Synchronize();
-            m_command_state = CommandState::WaitForExecute;
-            m_system->SetDowncount(m_command_remaining_ticks);
+            if (m_command_state == CommandState::WaitForIRQClear)
+            {
+              m_system->Synchronize();
+              m_command_state = CommandState::WaitForExecute;
+              m_system->SetDowncount(m_command_remaining_ticks);
+            }
+            else if (HasPendingAsyncInterrupt())
+            {
+              DeliverAsyncInterrupt();
+            }
           }
 
           // Bit 6 clears the parameter FIFO.
@@ -401,6 +412,26 @@ void CDROM::SetInterrupt(Interrupt interrupt)
   m_interrupt_flag_register = static_cast<u8>(interrupt);
   if (HasPendingInterrupt())
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
+}
+
+void CDROM::SetAsyncInterrupt(Interrupt interrupt)
+{
+  Assert(m_pending_async_interrupt == 0);
+  m_pending_async_interrupt = static_cast<u8>(interrupt);
+  if (!HasPendingInterrupt())
+    DeliverAsyncInterrupt();
+}
+
+void CDROM::DeliverAsyncInterrupt()
+{
+  Assert(m_pending_async_interrupt != 0 && !HasPendingInterrupt());
+  Log_DevPrintf("Delivering async interrupt %u", m_pending_async_interrupt);
+
+  m_response_fifo.Clear();
+  m_response_fifo.PushFromQueue(&m_async_response_fifo);
+  m_interrupt_flag_register = m_pending_async_interrupt;
+  m_pending_async_interrupt = 0;
+  m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
 void CDROM::SendACKAndStat()
@@ -894,13 +925,9 @@ void CDROM::BeginReading(bool cdda)
 
 void CDROM::DoSectorRead()
 {
-  if (HasPendingInterrupt())
+  if (HasPendingAsyncInterrupt())
   {
-    // can't read with a pending interrupt?
-    Log_WarningPrintf("Missed sector read...");
-    // m_sector_read_remaining_ticks += 10;
-    // m_system->SetDowncount(m_sector_read_remaining_ticks);
-    // return;
+    Log_WarningPrintf("Data interrupt was not delivered");
   }
   if (!m_sector_buffer.empty())
   {
@@ -963,8 +990,8 @@ void CDROM::ProcessDataSector()
 
   if (pass_to_cpu)
   {
-    m_response_fifo.Push(m_secondary_status.bits);
-    SetInterrupt(Interrupt::INT1);
+    m_async_response_fifo.Push(m_secondary_status.bits);
+    SetAsyncInterrupt(Interrupt::INT1);
     UpdateStatusRegister();
   }
 }

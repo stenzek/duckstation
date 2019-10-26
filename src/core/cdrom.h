@@ -160,7 +160,10 @@ private:
   void SoftReset();
 
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
+  bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
   void SetInterrupt(Interrupt interrupt);
+  void SetAsyncInterrupt(Interrupt interrupt);
+  void DeliverAsyncInterrupt();
   void SendACKAndStat();
   void SendErrorResponse(u8 reason = 0x80);
   void UpdateStatusRegister();
@@ -201,6 +204,7 @@ private:
 
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
+  u8 m_pending_async_interrupt = 0;
 
   CDImage::Position m_pending_location = {};
   bool m_location_pending = false;
@@ -221,6 +225,7 @@ private:
 
   InlineFIFOQueue<u8, PARAM_FIFO_SIZE> m_param_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
+  InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_async_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
   std::vector<u8> m_sector_buffer;
 };
