@@ -34,7 +34,6 @@ public:
 
 private:
   static constexpr u32 NUM_SLOTS = 2;
-  static constexpr u32 TRANSFER_TICKS = 750;
 
   enum class State : u32
   {
@@ -93,6 +92,8 @@ private:
   {
     return !m_TX_FIFO.IsEmpty() && !m_RX_FIFO.IsFull() && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN;
   }
+
+  TickCount GetTransferTicks() const { return static_cast<TickCount>(ZeroExtend32(m_JOY_BAUD) * 8); }
 
   void SoftReset();
   void UpdateJoyStat();

@@ -77,7 +77,7 @@ u32 Pad::ReadRegister(u32 offset)
     {
       if (m_RX_FIFO.IsEmpty())
       {
-        Log_WarningPrint("Read from RX fifo when empty");
+        Log_DevPrintf("Read from RX fifo when empty");
         return 0;
       }
 
@@ -172,7 +172,7 @@ void Pad::WriteRegister(u32 offset, u32 value)
     case 0x0E:
     {
       Log_DebugPrintf("JOY_BAUD <- 0x%08X", value);
-      m_JOY_BAUD = value;
+      m_JOY_BAUD = Truncate16(value);
       return;
     }
 
@@ -246,7 +246,7 @@ void Pad::BeginTransfer()
 
   m_system->Synchronize();
   m_state = State::Transmitting;
-  m_ticks_remaining = TRANSFER_TICKS;
+  m_ticks_remaining = GetTransferTicks();
   m_system->SetDowncount(m_ticks_remaining);
 }
 
@@ -268,9 +268,9 @@ void Pad::DoTransfer()
   {
     case ActiveDevice::None:
     {
-      if (!controller || !(ack = controller->Transfer(data_out, &data_in)))
+      if (!controller || (ack = controller->Transfer(data_out, &data_in)) == false)
       {
-        if (!memory_card || !(ack = memory_card->Transfer(data_out, &data_in)))
+        if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
         {
           // nothing connected to this port
           Log_DebugPrintf("Nothing connected or ACK'ed");
@@ -327,7 +327,7 @@ void Pad::DoTransfer()
   else
   {
     // queue the next byte
-    m_ticks_remaining += TRANSFER_TICKS;
+    m_ticks_remaining += GetTransferTicks();
     m_system->SetDowncount(m_ticks_remaining);
   }
 
