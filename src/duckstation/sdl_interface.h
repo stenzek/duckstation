@@ -75,7 +75,6 @@ private:
 
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
-  bool PassEventToImGui(const SDL_Event* event);
   void Render();
   void RenderDisplay();
   void DrawMainMenuBar();
