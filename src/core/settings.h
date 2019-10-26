@@ -3,7 +3,8 @@
 
 enum class GPURenderer
 {
-  HardwareOpenGL
+  HardwareOpenGL,
+  Software
 };
 
 struct Settings

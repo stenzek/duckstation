@@ -21,8 +21,8 @@
 #include <nfd.h>
 Log_SetChannel(SDLInterface);
 
-static constexpr std::array<std::pair<GPURenderer, const char*>, 1> s_gpu_renderer_names = {
-  {{GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"}}};
+static constexpr std::array<std::pair<GPURenderer, const char*>, 2> s_gpu_renderer_names = {
+  {{GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"}, {GPURenderer::Software, "Software"}}};
 
 SDLInterface::SDLInterface() = default;
 

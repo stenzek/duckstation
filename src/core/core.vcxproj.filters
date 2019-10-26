@@ -22,6 +22,7 @@
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
+    <ClCompile Include="gpu_sw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -48,6 +49,7 @@
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="gpu_sw.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

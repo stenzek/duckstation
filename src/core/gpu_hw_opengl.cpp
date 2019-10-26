@@ -184,7 +184,7 @@ void GPU_HW_OpenGL::CreateFramebuffer()
   }
 
   m_display_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, true, true);
+    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
 
   m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   m_vram_read_texture_dirty = true;

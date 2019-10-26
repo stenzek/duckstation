@@ -63,6 +63,9 @@ public:
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 
+  // gpu_sw.cpp
+  static std::unique_ptr<GPU> CreateSoftwareRenderer();
+
 protected:
   // Helper/format conversion functions.
   static constexpr u8 Convert5To8(u8 x5) { return (x5 << 3) | (x5 & 7); }
