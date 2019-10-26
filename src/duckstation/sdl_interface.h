@@ -101,6 +101,8 @@ private:
   u32 m_display_texture_height = 0;
   float m_display_aspect_ratio = 1.0f;
   bool m_display_texture_changed = false;
+  GLuint m_display_nearest_sampler = false;
+  GLuint m_display_linear_sampler = false;
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;

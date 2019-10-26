@@ -187,6 +187,14 @@ void main()
   m_app_icon_texture =
     std::make_unique<GL::Texture>(APP_ICON_WIDTH, APP_ICON_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, APP_ICON_DATA, true);
 
+  // samplers
+  glGenSamplers(1, &m_display_nearest_sampler);
+  glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glGenSamplers(1, &m_display_linear_sampler);
+  glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
   return true;
 }
 
@@ -684,6 +692,7 @@ void SDLInterface::RenderDisplay()
   // - 20 for main menu padding
   const auto [vp_left, vp_top, vp_width, vp_height] =
     CalculateDrawRect(m_window_width, std::max(m_window_height - 20, 1), m_display_aspect_ratio);
+  const bool linear_filter = m_system ? m_system->GetSettings().display_linear_filtering : false;
 
   glViewport(vp_left, m_window_height - (20 + vp_top) - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);
@@ -698,8 +707,10 @@ void SDLInterface::RenderDisplay()
     static_cast<float>(m_display_texture_width) / static_cast<float>(m_display_texture->GetWidth()),
     static_cast<float>(m_display_texture_height) / static_cast<float>(m_display_texture->GetHeight()));
   m_display_texture->Bind();
+  glBindSampler(0, linear_filter ? m_display_linear_sampler : m_display_nearest_sampler);
   glBindVertexArray(m_display_vao);
   glDrawArrays(GL_TRIANGLES, 0, 3);
+  glBindSampler(0, 0);
 }
 
 void SDLInterface::DrawImGui()
@@ -819,6 +830,12 @@ void SDLInterface::DrawMainMenuBar()
 
       if (ImGui::MenuItem("VSync", nullptr, &m_system->GetSettings().gpu_vsync))
         UpdateAudioVisualSync();
+
+      if (ImGui::MenuItem("Display Linear Filtering", nullptr, &m_system->GetSettings().display_linear_filtering))
+      {
+        // this has to update the display texture for now..
+        m_system->GetGPU()->UpdateResolutionScale();
+      }
 
       ImGui::EndMenu();
     }
