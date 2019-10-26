@@ -69,6 +69,7 @@ static Uint64       g_Time = 0;
 static bool         g_MousePressed[3] = { false, false, false };
 static SDL_Cursor*  g_MouseCursors[ImGuiMouseCursor_COUNT] = { 0 };
 static char*        g_ClipboardTextData = NULL;
+static float        g_ControllerNavInputs[ImGuiNavInput_COUNT] = {};
 
 // Forward Declarations
 static void ImGui_ImplSDL2_InitPlatformInterface(SDL_Window* window, void* sdl_gl_context);
@@ -129,6 +130,75 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
             io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
             return true;
         }
+
+        case SDL_CONTROLLERAXISMOTION:
+        {
+          const SDL_GameControllerAxis axis = static_cast<SDL_GameControllerAxis>(event->caxis.axis);
+          switch (axis)
+          {
+            case SDL_CONTROLLER_AXIS_LEFTX:
+            {
+              if (event->caxis.value < 0)
+              {
+                g_ControllerNavInputs[ImGuiNavInput_LStickLeft] = event->caxis.value < -4000 ? (static_cast<float>(event->caxis.value) / -32768.0f) : 0.0f;
+                g_ControllerNavInputs[ImGuiNavInput_LStickRight] = 0.0f;
+              }
+              else
+              {
+                g_ControllerNavInputs[ImGuiNavInput_LStickLeft] = 0.0f;
+                g_ControllerNavInputs[ImGuiNavInput_LStickRight] = event->caxis.value > 4000 ? static_cast<float>(event->caxis.value) / 32767.0f : 0.0f;
+              }
+
+              return true;
+            }
+            break;
+
+            case SDL_CONTROLLER_AXIS_LEFTY:
+            {
+              if (event->caxis.value < 0)
+              {
+                g_ControllerNavInputs[ImGuiNavInput_LStickUp] = event->caxis.value < -4000 ? (static_cast<float>(event->caxis.value) / -32768.0f) : 0.0f;
+                g_ControllerNavInputs[ImGuiNavInput_LStickDown] = 0.0f;
+              }
+              else
+              {
+                g_ControllerNavInputs[ImGuiNavInput_LStickUp] = 0.0f;
+                g_ControllerNavInputs[ImGuiNavInput_LStickDown] = event->caxis.value > 4000 ? static_cast<float>(event->caxis.value) / 32767.0f : 0.0f;
+              }
+
+              return true;
+            }
+
+            default:
+              break;
+          }
+        }
+        break;
+
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+        {
+          static constexpr unsigned int mapping[][2] = {{SDL_CONTROLLER_BUTTON_A, ImGuiNavInput_Activate},
+                                                        {SDL_CONTROLLER_BUTTON_B, ImGuiNavInput_Cancel},
+                                                        {SDL_CONTROLLER_BUTTON_X, ImGuiNavInput_Input},
+                                                        {SDL_CONTROLLER_BUTTON_Y, ImGuiNavInput_Menu},
+                                                        {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, ImGuiNavInput_FocusPrev},
+                                                        {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, ImGuiNavInput_FocusNext},
+                                                        {SDL_CONTROLLER_BUTTON_DPAD_UP, ImGuiNavInput_DpadUp},
+                                                        {SDL_CONTROLLER_BUTTON_DPAD_DOWN, ImGuiNavInput_DpadDown},
+                                                        {SDL_CONTROLLER_BUTTON_DPAD_LEFT, ImGuiNavInput_DpadLeft},
+                                                        {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, ImGuiNavInput_DpadRight}};
+          for (int i = 0; i < IM_ARRAYSIZE(mapping); i++)
+          {
+            if (event->cbutton.button == mapping[i][0])
+            {
+              g_ControllerNavInputs[mapping[i][1]] = (event->type == SDL_CONTROLLERBUTTONDOWN) ? 1.0f : 0.0f;
+              return true;
+            }
+          }
+        }
+        break;
+
     // Multi-viewport support
     case SDL_WINDOWEVENT:
         Uint8 window_event = event->window.event;
@@ -349,6 +419,9 @@ void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
     Uint64 current_time = SDL_GetPerformanceCounter();
     io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
     g_Time = current_time;
+
+    for (int i = 0; i < ImGuiNavInput_COUNT; i++)
+      io.NavInputs[i] += g_ControllerNavInputs[i];
 
     ImGui_ImplSDL2_UpdateMousePosAndButtons();
     ImGui_ImplSDL2_UpdateMouseCursor();
