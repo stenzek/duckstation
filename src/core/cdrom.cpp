@@ -403,10 +403,10 @@ void CDROM::SetInterrupt(Interrupt interrupt)
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
-void CDROM::PushStatResponse(Interrupt interrupt /*= Interrupt::ACK*/)
+void CDROM::SendACKAndStat()
 {
   m_response_fifo.Push(m_secondary_status.bits);
-  SetInterrupt(interrupt);
+  SetInterrupt(Interrupt::ACK);
 }
 
 void CDROM::SendErrorResponse(u8 reason /*= 0x80*/)
@@ -533,8 +533,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM Getstat command");
 
       // if bit 0 or 2 is set, send an additional byte
-      m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::ACK);
+      SendACKAndStat();
       EndCommand();
       return;
     }
@@ -561,8 +560,7 @@ void CDROM::ExecuteCommand()
         else
         {
           // INT3(stat), ...
-          m_response_fifo.Push(m_secondary_status.bits);
-          SetInterrupt(Interrupt::ACK);
+          SendACKAndStat();
           NextCommandStage(true, 18000);
         }
       }
@@ -586,8 +584,7 @@ void CDROM::ExecuteCommand()
       m_location_pending = true;
       Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
                       ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
-      m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::ACK);
+      SendACKAndStat();
       EndCommand();
       return;
     }
@@ -611,8 +608,7 @@ void CDROM::ExecuteCommand()
         m_location_pending = false;
         m_secondary_status.motor_on = true;
         m_secondary_status.seeking = true;
-        m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::ACK);
+        SendACKAndStat();
         NextCommandStage(false, 20000);
       }
       else
@@ -633,7 +629,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
       m_filter_file_number = file;
       m_filter_channel_number = channel;
-      PushStatResponse(Interrupt::ACK);
+      SendACKAndStat();
       EndCommand();
       return;
     }
@@ -644,8 +640,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM setmode command 0x%02X", ZeroExtend32(mode));
 
       m_mode.bits = mode;
-      m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::ACK);
+      SendACKAndStat();
       EndCommand();
       return;
     }
@@ -701,8 +696,7 @@ void CDROM::ExecuteCommand()
       {
         const bool was_reading = m_secondary_status.IsReadingOrPlaying();
         Log_DebugPrintf("CDROM pause command");
-        m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::ACK);
+        SendACKAndStat();
         StopReading();
         NextCommandStage(true, was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000);
       }
@@ -721,8 +715,7 @@ void CDROM::ExecuteCommand()
       if (m_command_stage == 0)
       {
         Log_DebugPrintf("CDROM init command");
-        m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::ACK);
+        SendACKAndStat();
         StopReading();
         NextCommandStage(true, 8000);
       }
@@ -744,8 +737,7 @@ void CDROM::ExecuteCommand()
     {
       Log_DebugPrintf("CDROM mute command");
       m_muted = true;
-      m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::ACK);
+      SendACKAndStat();
       EndCommand();
     }
     break;
@@ -754,8 +746,7 @@ void CDROM::ExecuteCommand()
     {
       Log_DebugPrintf("CDROM demute command");
       m_muted = false;
-      m_response_fifo.Push(m_secondary_status.bits);
-      SetInterrupt(Interrupt::ACK);
+      SendACKAndStat();
       EndCommand();
     }
     break;
@@ -895,8 +886,7 @@ void CDROM::BeginReading(bool cdda)
   m_secondary_status.reading = !cdda;
   m_secondary_status.playing_cdda = cdda;
 
-  m_response_fifo.Push(m_secondary_status.bits);
-  SetInterrupt(Interrupt::ACK);
+  SendACKAndStat();
 
   m_sector_read_remaining_ticks = GetTicksForRead();
   m_system->SetDowncount(m_sector_read_remaining_ticks);
