@@ -36,17 +36,20 @@ void CDROM::SoftReset()
   m_command = Command::Sync;
   m_command_stage = 0;
   m_command_remaining_ticks = 0;
-  m_sector_read_remaining_ticks = 0;
-  m_muted = false;
-  m_adpcm_muted = false;
+  m_read_or_seek_remaining_ticks = 0;
   m_status.bits = 0;
   m_secondary_status.bits = 0;
   m_mode.bits = 0;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
   m_pending_async_interrupt = 0;
-  m_pending_location = {};
-  m_location_pending = false;
+  m_setloc_position = {};
+  m_seek_position = {};
+  m_setloc_pending = false;
+  m_read_after_seek = false;
+  m_play_after_seek = false;
+  m_muted = false;
+  m_adpcm_muted = false;
   m_filter_file_number = 0;
   m_filter_channel_number = 0;
   std::memset(&m_last_sector_header, 0, sizeof(m_last_sector_header));
@@ -78,24 +81,23 @@ void CDROM::SoftReset()
 bool CDROM::DoState(StateWrapper& sw)
 {
   sw.Do(&m_command);
+  sw.Do(&m_command_state);
   sw.Do(&m_command_stage);
   sw.Do(&m_command_remaining_ticks);
-  sw.Do(&m_sector_read_remaining_ticks);
-  sw.Do(&m_muted);
-  sw.Do(&m_adpcm_muted);
-  sw.Do(&m_pending_location.minute);
-  sw.Do(&m_pending_location.second);
-  sw.Do(&m_pending_location.frame);
-  sw.Do(&m_location_pending);
-  sw.Do(&m_command_state);
+  sw.Do(&m_read_or_seek_remaining_ticks);
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
   sw.Do(&m_mode.bits);
   sw.Do(&m_interrupt_enable_register);
   sw.Do(&m_interrupt_flag_register);
   sw.Do(&m_pending_async_interrupt);
-  sw.DoPOD(&m_pending_location);
-  sw.Do(&m_location_pending);
+  sw.DoPOD(&m_setloc_position);
+  sw.DoPOD(&m_seek_position);
+  sw.Do(&m_setloc_pending);
+  sw.Do(&m_read_after_seek);
+  sw.Do(&m_play_after_seek);
+  sw.Do(&m_muted);
+  sw.Do(&m_adpcm_muted);
   sw.Do(&m_filter_file_number);
   sw.Do(&m_filter_channel_number);
   sw.DoBytes(&m_last_sector_header, sizeof(m_last_sector_header));
@@ -121,8 +123,8 @@ bool CDROM::DoState(StateWrapper& sw)
   {
     if (m_command_state == CommandState::WaitForExecute)
       m_system->SetDowncount(m_command_remaining_ticks);
-    if (m_secondary_status.IsReadingOrPlaying())
-      m_system->SetDowncount(m_sector_read_remaining_ticks);
+    if (m_secondary_status.seeking || m_secondary_status.reading || m_secondary_status.playing_cdda)
+      m_system->SetDowncount(m_read_or_seek_remaining_ticks);
 
     // load up media if we had something in there before
     m_media.reset();
@@ -447,6 +449,13 @@ void CDROM::SendErrorResponse(u8 reason /*= 0x80*/)
   SetInterrupt(Interrupt::INT5);
 }
 
+void CDROM::SendAsyncErrorResponse(u8 reason /*= 0x80*/)
+{
+  m_async_response_fifo.Push(m_secondary_status.bits | 0x01);
+  m_async_response_fifo.Push(reason);
+  SetAsyncInterrupt(Interrupt::INT5);
+}
+
 void CDROM::UpdateStatusRegister()
 {
   m_status.ADPBUSY = false;
@@ -459,7 +468,7 @@ void CDROM::UpdateStatusRegister()
   m_dma->SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
 }
 
-u32 CDROM::GetAckDelayForCommand() const
+TickCount CDROM::GetAckDelayForCommand() const
 {
   const u32 default_ack_delay = 2000;
   if (m_command == Command::Init)
@@ -468,9 +477,20 @@ u32 CDROM::GetAckDelayForCommand() const
     return default_ack_delay;
 }
 
-u32 CDROM::GetTicksForRead() const
+TickCount CDROM::GetTicksForRead() const
 {
   return m_mode.double_speed ? (MASTER_CLOCK / 150) : (MASTER_CLOCK / 75);
+}
+
+TickCount CDROM::GetTicksForSeek() const
+{
+  const CDImage::LBA current_lba = m_media->GetPositionOnDisc();
+  const CDImage::LBA new_lba = m_setloc_position.ToLBA();
+  const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
+
+  const TickCount ticks = static_cast<TickCount>(20000 + lba_diff * 100);
+  Log_DebugPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
+  return ticks;
 }
 
 void CDROM::Execute(TickCount ticks)
@@ -496,13 +516,20 @@ void CDROM::Execute(TickCount ticks)
       break;
   }
 
-  if (m_secondary_status.IsReadingOrPlaying())
+  if (m_secondary_status.IsActive())
   {
-    m_sector_read_remaining_ticks -= ticks;
-    if (m_sector_read_remaining_ticks <= 0)
-      DoSectorRead();
+    m_read_or_seek_remaining_ticks -= ticks;
+    if (m_read_or_seek_remaining_ticks <= 0)
+    {
+      if (m_secondary_status.seeking)
+        DoSeekComplete();
+      else
+        DoSectorRead();
+    }
     else
-      m_system->SetDowncount(m_sector_read_remaining_ticks);
+    {
+      m_system->SetDowncount(m_read_or_seek_remaining_ticks);
+    }
   }
 }
 
@@ -606,53 +633,6 @@ void CDROM::ExecuteCommand()
       return;
     }
 
-    case Command::Setloc:
-    {
-      // TODO: Verify parameter count
-      m_pending_location.minute = BCDToDecimal(m_param_fifo.Peek(0));
-      m_pending_location.second = BCDToDecimal(m_param_fifo.Peek(1));
-      m_pending_location.frame = BCDToDecimal(m_param_fifo.Peek(2));
-      m_location_pending = true;
-      Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
-                      ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
-      SendACKAndStat();
-      EndCommand();
-      return;
-    }
-
-    case Command::SeekL:
-    case Command::SeekP:
-    {
-      // TODO: Data vs audio mode
-      Log_DebugPrintf("CDROM seek command");
-
-      if (m_command_stage == 0)
-      {
-        Assert(m_location_pending);
-        StopReading();
-        if (!m_media || !m_media->Seek(m_pending_location))
-        {
-          Panic("Error in Setloc command");
-          return;
-        }
-
-        m_location_pending = false;
-        m_secondary_status.motor_on = true;
-        m_secondary_status.seeking = true;
-        SendACKAndStat();
-        NextCommandStage(false, 20000);
-      }
-      else
-      {
-        m_secondary_status.seeking = false;
-        m_response_fifo.Push(m_secondary_status.bits);
-        SetInterrupt(Interrupt::INT2);
-        EndCommand();
-      }
-
-      return;
-    }
-
     case Command::Setfilter:
     {
       const u8 file = m_param_fifo.Peek(0);
@@ -676,14 +656,57 @@ void CDROM::ExecuteCommand()
       return;
     }
 
+    case Command::Setloc:
+    {
+      if (m_secondary_status.reading || m_secondary_status.playing_cdda || m_secondary_status.seeking)
+        Log_WarningPrintf("Setloc while reading/playing/seeking");
+
+      // TODO: Verify parameter count
+      m_setloc_position.minute = BCDToDecimal(m_param_fifo.Peek(0));
+      m_setloc_position.second = BCDToDecimal(m_param_fifo.Peek(1));
+      m_setloc_position.frame = BCDToDecimal(m_param_fifo.Peek(2));
+      m_setloc_pending = true;
+      Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
+                      ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
+      SendACKAndStat();
+      EndCommand();
+      return;
+    }
+
+    case Command::SeekL:
+    case Command::SeekP:
+    {
+      // TODO: Data vs audio mode
+      Log_DebugPrintf("CDROM seek command");
+      if (!m_media)
+      {
+        SendErrorResponse(0x80);
+      }
+      else
+      {
+        StopReading();
+        BeginSeeking();
+        SendACKAndStat();
+      }
+
+      EndCommand();
+      return;
+    }
+
     case Command::ReadN:
     case Command::ReadS:
     {
       Log_DebugPrintf("CDROM read command");
       if (!m_media)
+      {
         SendErrorResponse(0x80);
+      }
       else
+      {
+        StopReading();
         BeginReading(false);
+        SendACKAndStat();
+      }
 
       EndCommand();
       return;
@@ -710,11 +733,12 @@ void CDROM::ExecuteCommand()
             track = Truncate8(m_media->GetTrackNumber());
           }
 
-          m_pending_location = m_media->GetTrackStartMSFPosition(track);
-          m_location_pending = true;
+          m_setloc_position = m_media->GetTrackStartMSFPosition(track);
+          m_setloc_pending = true;
         }
 
         BeginReading(true);
+        SendACKAndStat();
       }
 
       EndCommand();
@@ -902,14 +926,12 @@ void CDROM::BeginReading(bool cdda)
 {
   Log_DebugPrintf("Starting %s", cdda ? "playing CDDA" : "reading");
 
-  // TODO: Seek timing and clean up...
-  if (m_location_pending)
+  if (m_setloc_pending)
   {
-    if (!m_media || !m_media->Seek(m_pending_location))
-    {
-      Panic("Seek error");
-    }
-    m_location_pending = false;
+    BeginSeeking();
+    m_read_after_seek = !cdda;
+    m_play_after_seek = cdda;
+    return;
   }
 
   m_secondary_status.motor_on = true;
@@ -917,10 +939,52 @@ void CDROM::BeginReading(bool cdda)
   m_secondary_status.reading = !cdda;
   m_secondary_status.playing_cdda = cdda;
 
-  SendACKAndStat();
+  m_read_or_seek_remaining_ticks = GetTicksForRead();
+  m_system->SetDowncount(m_read_or_seek_remaining_ticks);
+}
 
-  m_sector_read_remaining_ticks = GetTicksForRead();
-  m_system->SetDowncount(m_sector_read_remaining_ticks);
+void CDROM::BeginSeeking()
+{
+  if (!m_setloc_pending)
+    Log_WarningPrintf("Seeking without setloc set");
+
+  m_seek_position = m_setloc_position;
+  m_setloc_pending = false;
+
+  Log_DebugPrintf("Seeking to [%02u:%02u:%02u]", m_seek_position.minute, m_seek_position.second, m_seek_position.frame);
+  Assert(!m_secondary_status.IsReadingOrPlaying());
+
+  m_secondary_status.motor_on = true;
+  m_secondary_status.seeking = true;
+
+  m_read_or_seek_remaining_ticks = GetTicksForSeek();
+  m_system->SetDowncount(m_read_or_seek_remaining_ticks);
+}
+
+void CDROM::DoSeekComplete()
+{
+  Assert(m_secondary_status.seeking);
+  m_secondary_status.seeking = false;
+
+  if (m_media && m_media->Seek(m_seek_position))
+  {
+    // seek complete, transition to play/read if requested
+    if (m_play_after_seek || m_read_after_seek)
+      BeginReading(m_play_after_seek);
+
+    m_async_response_fifo.Push(m_secondary_status.bits);
+    SetAsyncInterrupt(Interrupt::INT2);
+  }
+  else
+  {
+    Log_WarningPrintf("Seek to [%02u:%02u:%02u] failed", m_seek_position.minute, m_seek_position.second,
+                      m_seek_position.frame);
+    SendAsyncErrorResponse(0x80);
+  }
+
+  m_setloc_pending = false;
+  m_read_after_seek = false;
+  m_play_after_seek = false;
 }
 
 void CDROM::DoSectorRead()
@@ -947,8 +1011,8 @@ void CDROM::DoSectorRead()
   else
     Panic("Not reading or playing");
 
-  m_sector_read_remaining_ticks += GetTicksForRead();
-  m_system->SetDowncount(m_sector_read_remaining_ticks);
+  m_read_or_seek_remaining_ticks += GetTicksForRead();
+  m_system->SetDowncount(m_read_or_seek_remaining_ticks);
 }
 
 void CDROM::ProcessDataSector()
@@ -956,7 +1020,7 @@ void CDROM::ProcessDataSector()
   std::memcpy(&m_last_sector_header, &m_sector_buffer[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &m_sector_buffer[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
-  Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc(),
+  Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc() - 1,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));
 
   bool pass_to_cpu = true;
@@ -1158,13 +1222,15 @@ void CDROM::ProcessCDDASector()
 
 void CDROM::StopReading()
 {
-  if (!m_secondary_status.IsReadingOrPlaying())
+  if (!m_secondary_status.IsActive())
     return;
 
-  Log_DebugPrintf("Stopping %s", m_secondary_status.reading ? "reading" : "playing CDDA");
+  Log_DebugPrintf("Stopping %s",
+                  m_secondary_status.seeking ? "seeking" : (m_secondary_status.reading ? "reading" : "playing CDDA"));
   m_secondary_status.reading = false;
   m_secondary_status.playing_cdda = false;
-  m_sector_read_remaining_ticks = 0;
+  m_secondary_status.seeking = false;
+  m_read_or_seek_remaining_ticks = 0;
 }
 
 void CDROM::LoadDataFIFO()

@@ -133,7 +133,15 @@ private:
     BitField<u8, bool, 6, 1> seeking;
     BitField<u8, bool, 7, 1> playing_cdda;
 
-    bool IsReadingOrPlaying() const { return reading || playing_cdda; }
+    ALWAYS_INLINE bool IsReadingOrPlaying() const { return reading || playing_cdda; }
+
+    /// Returns true if seeking, reading or playing CDDA.
+    ALWAYS_INLINE bool IsActive() const
+    {
+      // MSVC can't turn this into a single bit test :(
+      // return seeking || reading || playing_cdda;
+      return (bits & 0xE0) != 0;
+    }
   };
 
   union ModeRegister
@@ -166,21 +174,25 @@ private:
   void DeliverAsyncInterrupt();
   void SendACKAndStat();
   void SendErrorResponse(u8 reason = 0x80);
+  void SendAsyncErrorResponse(u8 reason = 0x80);
   void UpdateStatusRegister();
 
-  u32 GetAckDelayForCommand() const;
-  u32 GetTicksForRead() const;
+  TickCount GetAckDelayForCommand() const;
+  TickCount GetTicksForRead() const;
+  TickCount GetTicksForSeek() const;
   void BeginCommand(Command command); // also update status register
   void NextCommandStage(bool wait_for_irq, u32 time);
   void EndCommand(); // also updates status register
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
   void BeginReading(bool cdda);
+  void DoSeekComplete();
   void DoSectorRead();
   void ProcessDataSector();
   void ProcessXAADPCMSector();
   void ProcessCDDASector();
   void StopReading();
+  void BeginSeeking();
   void LoadDataFIFO();
 
   System* m_system = nullptr;
@@ -189,14 +201,11 @@ private:
   SPU* m_spu = nullptr;
   std::unique_ptr<CDImage> m_media;
 
-  CommandState m_command_state = CommandState::Idle;
   Command m_command = Command::Sync;
+  CommandState m_command_state = CommandState::Idle;
   u32 m_command_stage = 0;
   TickCount m_command_remaining_ticks = 0;
-
-  TickCount m_sector_read_remaining_ticks = 0;
-  bool m_muted = false;
-  bool m_adpcm_muted = false;
+  TickCount m_read_or_seek_remaining_ticks = 0;
 
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
@@ -206,8 +215,14 @@ private:
   u8 m_interrupt_flag_register = 0;
   u8 m_pending_async_interrupt = 0;
 
-  CDImage::Position m_pending_location = {};
-  bool m_location_pending = false;
+  CDImage::Position m_setloc_position = {};
+  CDImage::Position m_seek_position = {};
+  bool m_setloc_pending = false;
+  bool m_read_after_seek = false;
+  bool m_play_after_seek = false;
+
+  bool m_muted = false;
+  bool m_adpcm_muted = false;
 
   u8 m_filter_file_number = 0;
   u8 m_filter_channel_number = 0;
