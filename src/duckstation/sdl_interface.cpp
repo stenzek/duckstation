@@ -597,11 +597,21 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
+    case SDL_SCANCODE_HOME:
+    case SDL_SCANCODE_END:
+    {
+      if (pressed)
+        DoToggleSoftwareRendering();
+    }
+    break;
+
     case SDL_SCANCODE_PAGEUP:
     case SDL_SCANCODE_PAGEDOWN:
     {
       if (pressed)
-        DoToggleSoftwareRendering();
+      {
+        DoModifyInternalResolution(event->key.keysym.scancode == SDL_SCANCODE_PAGEUP ? 1 : -1);
+      }
     }
     break;
   }
@@ -1213,6 +1223,26 @@ void SDLInterface::DoToggleSoftwareRendering()
   }
 
   m_system->RecreateGPU();
+}
+
+void SDLInterface::DoModifyInternalResolution(s32 increment)
+{
+  if (!m_system)
+    return;
+
+  auto& settings = m_system->GetSettings();
+  const u32 new_resolution_scale =
+    std::clamp<u32>(static_cast<u32>(static_cast<s32>(settings.gpu_resolution_scale) + increment), 1,
+                    settings.max_gpu_resolution_scale);
+  if (new_resolution_scale == settings.gpu_resolution_scale)
+    return;
+
+  settings.gpu_resolution_scale = new_resolution_scale;
+  m_system->GetGPU()->UpdateResolutionScale();
+
+  AddOSDMessage(TinyString::FromFormat("Resolution scale set to %ux (%ux%u)", settings.gpu_resolution_scale,
+                                       GPU::VRAM_WIDTH * settings.gpu_resolution_scale,
+                                       GPU::VRAM_HEIGHT * settings.gpu_resolution_scale));
 }
 
 void SDLInterface::Run()

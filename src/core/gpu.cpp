@@ -28,13 +28,7 @@ bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
 
 void GPU::UpdateResolutionScale()
 {
-  const u32 new_scale = std::min(m_system->GetSettings().gpu_resolution_scale, m_max_resolution_scale);
-  if (m_resolution_scale == new_scale)
-    return;
-
-  m_resolution_scale = new_scale;
-  m_system->GetHostInterface()->AddOSDMessage(TinyString::FromFormat(
-    "Changed internal resolution to %ux (%ux%u)", m_resolution_scale, VRAM_WIDTH * new_scale, VRAM_HEIGHT * new_scale));
+  m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
 }
 
 void GPU::Reset()
