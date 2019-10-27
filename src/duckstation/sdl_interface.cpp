@@ -405,7 +405,7 @@ static void HandleSDLControllerAxisEventForController(const SDL_Event* ev, Digit
 {
   // Log_DevPrintf("axis %d %d", ev->caxis.axis, ev->caxis.value);
 
-  static constexpr int deadzone = 5000;
+  static constexpr int deadzone = 8192;
   const bool negative = (ev->caxis.value < 0);
   const bool active = (std::abs(ev->caxis.value) >= deadzone);
 
@@ -581,6 +581,11 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
   }
+}
+
+void SDLInterface::ClearImGuiFocus()
+{
+  ImGui::SetWindowFocus(nullptr);
 }
 
 void SDLInterface::Render()
@@ -1091,6 +1096,8 @@ void SDLInterface::DoStartDisc()
   AddOSDMessage(SmallString::FromFormat("Starting disc from '%s'...", path));
   if (!InitializeSystem(path, nullptr))
     return;
+
+  ClearImGuiFocus();
 }
 
 void SDLInterface::DoStartBIOS()
@@ -1100,6 +1107,8 @@ void SDLInterface::DoStartBIOS()
   AddOSDMessage("Starting BIOS...");
   if (!InitializeSystem(nullptr, nullptr))
     return;
+
+  ClearImGuiFocus();
 }
 
 void SDLInterface::DoLoadState(u32 index)
@@ -1112,12 +1121,14 @@ void SDLInterface::DoLoadState(u32 index)
   m_last_internal_frame_number = m_system->GetInternalFrameNumber();
   m_last_global_tick_counter = m_system->GetGlobalTickCounter();
   m_fps_timer.Reset();
+  ClearImGuiFocus();
 }
 
 void SDLInterface::DoSaveState(u32 index)
 {
   Assert(m_system);
   SaveState(GetSaveStateFilename(index));
+  ClearImGuiFocus();
 }
 
 void SDLInterface::Run()

@@ -180,8 +180,8 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
         {
           static constexpr unsigned int mapping[][2] = {{SDL_CONTROLLER_BUTTON_A, ImGuiNavInput_Activate},
                                                         {SDL_CONTROLLER_BUTTON_B, ImGuiNavInput_Cancel},
-                                                        {SDL_CONTROLLER_BUTTON_X, ImGuiNavInput_Input},
-                                                        {SDL_CONTROLLER_BUTTON_Y, ImGuiNavInput_Menu},
+                                                        {SDL_CONTROLLER_BUTTON_Y, ImGuiNavInput_Input},
+                                                        // {SDL_CONTROLLER_BUTTON_X, ImGuiNavInput_Menu},
                                                         {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, ImGuiNavInput_FocusPrev},
                                                         {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, ImGuiNavInput_FocusNext},
                                                         {SDL_CONTROLLER_BUTTON_DPAD_UP, ImGuiNavInput_DpadUp},
