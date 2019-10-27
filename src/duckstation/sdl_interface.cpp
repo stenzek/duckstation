@@ -850,7 +850,8 @@ void SDLInterface::DrawPoweredOffWindow()
   constexpr int BUTTON_HEIGHT = 40;
 
   ImGui::SetNextWindowSize(ImVec2(WINDOW_WIDTH, WINDOW_HEIGHT));
-  ImGui::SetNextWindowPosCenter(ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   if (!ImGui::Begin("Powered Off", nullptr,
                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
@@ -920,7 +921,8 @@ void SDLInterface::DrawPoweredOffWindow()
 
 void SDLInterface::DrawAboutWindow()
 {
-  ImGui::SetNextWindowPosCenter(ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   if (!ImGui::Begin("About DuckStation", &m_about_window_open))
   {
     ImGui::End();

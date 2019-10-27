@@ -7,10 +7,10 @@
 //  [X] Platform: Mouse cursor shape and visibility. Disable with 'io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange'.
 //  [X] Platform: Clipboard support.
 //  [X] Platform: Keyboard arrays indexed using SDL_SCANCODE_* codes, e.g. ImGui::IsKeyPressed(SDL_SCANCODE_SPACE).
+//  [X] Platform: Gamepad support. Enabled with 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad'.
 //  [X] Platform: Multi-viewport support (multiple windows). Enable with 'io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable'.
 // Missing features:
 //  [ ] Platform: SDL2 handling of IME under Windows appears to be broken and it explicitly disable the regular Windows IME. You can restore Windows IME by compiling SDL with SDL_DISABLE_WINDOWS_IME.
-//  [ ] Platform: Gamepad support (need to use SDL_GameController API to fill the io.NavInputs[] value when ImGuiConfigFlags_NavEnableGamepad is set).
 //  [ ] Platform: Multi-viewport + Minimized windows seems to break mouse wheel events (at least under Windows).
 
 // You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
@@ -19,7 +19,9 @@
 
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
-//  2018-XX-XX: Platform: Added support for multiple windows via the ImGuiPlatformIO interface.
+//  2019-XX-XX: Platform: Added support for multiple windows via the ImGuiPlatformIO interface.
+//  2019-07-21: Inputs: Added mapping for ImGuiKey_KeyPadEnter.
+//  2019-04-23: Inputs: Added support for SDL_GameController (if ImGuiConfigFlags_NavEnableGamepad is set by user application).
 //  2019-03-12: Misc: Preserve DisplayFramebufferScale when main window is minimized.
 //  2018-12-21: Inputs: Workaround for Android/iOS which don't seem to handle focus related calls.
 //  2018-11-30: Misc: Setting up io.BackendPlatformName so it can be displayed in the About Window.
@@ -52,7 +54,7 @@
 #include "TargetConditionals.h"
 #endif
 
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    SDL_VERSION_ATLEAST(2,0,4)
+#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    SDL_VERSION_ATLEAST(2,0,6)
 #define SDL_HAS_WINDOW_ALPHA                SDL_VERSION_ATLEAST(2,0,5)
 #define SDL_HAS_ALWAYS_ON_TOP               SDL_VERSION_ATLEAST(2,0,5)
 #define SDL_HAS_USABLE_DISPLAY_BOUNDS       SDL_VERSION_ATLEAST(2,0,5)
@@ -67,7 +69,7 @@ static const Uint32 SDL_WINDOW_VULKAN = 0x10000000;
 static SDL_Window*  g_Window = NULL;
 static Uint64       g_Time = 0;
 static bool         g_MousePressed[3] = { false, false, false };
-static SDL_Cursor*  g_MouseCursors[ImGuiMouseCursor_COUNT] = { 0 };
+static SDL_Cursor*  g_MouseCursors[ImGuiMouseCursor_COUNT] = {};
 static char*        g_ClipboardTextData = NULL;
 static float        g_ControllerNavInputs[ImGuiNavInput_COUNT] = {};
 
@@ -131,12 +133,12 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
             return true;
         }
 
-        case SDL_CONTROLLERAXISMOTION:
+    case SDL_CONTROLLERAXISMOTION:
+      {
+        const SDL_GameControllerAxis axis = static_cast<SDL_GameControllerAxis>(event->caxis.axis);
+        switch (axis)
         {
-          const SDL_GameControllerAxis axis = static_cast<SDL_GameControllerAxis>(event->caxis.axis);
-          switch (axis)
-          {
-            case SDL_CONTROLLER_AXIS_LEFTX:
+          case SDL_CONTROLLER_AXIS_LEFTX:
             {
               if (event->caxis.value < 0)
               {
@@ -148,57 +150,56 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
                 g_ControllerNavInputs[ImGuiNavInput_LStickLeft] = 0.0f;
                 g_ControllerNavInputs[ImGuiNavInput_LStickRight] = event->caxis.value > 4000 ? static_cast<float>(event->caxis.value) / 32767.0f : 0.0f;
               }
-
+              
               return true;
             }
+            
+          case SDL_CONTROLLER_AXIS_LEFTY:
+              {
+                if (event->caxis.value < 0)
+                {
+                  g_ControllerNavInputs[ImGuiNavInput_LStickUp] = event->caxis.value < -4000 ? (static_cast<float>(event->caxis.value) / -32768.0f) : 0.0f;
+                  g_ControllerNavInputs[ImGuiNavInput_LStickDown] = 0.0f;
+                }
+                else
+                {
+                  g_ControllerNavInputs[ImGuiNavInput_LStickUp] = 0.0f;
+                  g_ControllerNavInputs[ImGuiNavInput_LStickDown] = event->caxis.value > 4000 ? static_cast<float>(event->caxis.value) / 32767.0f : 0.0f;
+                }
+
+                return true;
+              }
+
+          default:
             break;
-
-            case SDL_CONTROLLER_AXIS_LEFTY:
-            {
-              if (event->caxis.value < 0)
-              {
-                g_ControllerNavInputs[ImGuiNavInput_LStickUp] = event->caxis.value < -4000 ? (static_cast<float>(event->caxis.value) / -32768.0f) : 0.0f;
-                g_ControllerNavInputs[ImGuiNavInput_LStickDown] = 0.0f;
-              }
-              else
-              {
-                g_ControllerNavInputs[ImGuiNavInput_LStickUp] = 0.0f;
-                g_ControllerNavInputs[ImGuiNavInput_LStickDown] = event->caxis.value > 4000 ? static_cast<float>(event->caxis.value) / 32767.0f : 0.0f;
-              }
-
-              return true;
-            }
-
-            default:
-              break;
-          }
         }
-        break;
+      }
+      break;
 
-        case SDL_CONTROLLERBUTTONDOWN:
-        case SDL_CONTROLLERBUTTONUP:
+    case SDL_CONTROLLERBUTTONDOWN:
+    case SDL_CONTROLLERBUTTONUP:
+      {
+        static constexpr unsigned int mapping[][2] = { {SDL_CONTROLLER_BUTTON_A, ImGuiNavInput_Activate},
+                                                      {SDL_CONTROLLER_BUTTON_B, ImGuiNavInput_Cancel},
+                                                      {SDL_CONTROLLER_BUTTON_Y, ImGuiNavInput_Input},
+          // {SDL_CONTROLLER_BUTTON_X, ImGuiNavInput_Menu},
+          {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, ImGuiNavInput_FocusPrev},
+          {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, ImGuiNavInput_FocusNext},
+          {SDL_CONTROLLER_BUTTON_DPAD_UP, ImGuiNavInput_DpadUp},
+          {SDL_CONTROLLER_BUTTON_DPAD_DOWN, ImGuiNavInput_DpadDown},
+          {SDL_CONTROLLER_BUTTON_DPAD_LEFT, ImGuiNavInput_DpadLeft},
+          {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, ImGuiNavInput_DpadRight} };
+        for (int i = 0; i < IM_ARRAYSIZE(mapping); i++)
         {
-          static constexpr unsigned int mapping[][2] = {{SDL_CONTROLLER_BUTTON_A, ImGuiNavInput_Activate},
-                                                        {SDL_CONTROLLER_BUTTON_B, ImGuiNavInput_Cancel},
-                                                        {SDL_CONTROLLER_BUTTON_Y, ImGuiNavInput_Input},
-                                                        // {SDL_CONTROLLER_BUTTON_X, ImGuiNavInput_Menu},
-                                                        {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, ImGuiNavInput_FocusPrev},
-                                                        {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, ImGuiNavInput_FocusNext},
-                                                        {SDL_CONTROLLER_BUTTON_DPAD_UP, ImGuiNavInput_DpadUp},
-                                                        {SDL_CONTROLLER_BUTTON_DPAD_DOWN, ImGuiNavInput_DpadDown},
-                                                        {SDL_CONTROLLER_BUTTON_DPAD_LEFT, ImGuiNavInput_DpadLeft},
-                                                        {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, ImGuiNavInput_DpadRight}};
-          for (int i = 0; i < IM_ARRAYSIZE(mapping); i++)
+          if (event->cbutton.button == mapping[i][0])
           {
-            if (event->cbutton.button == mapping[i][0])
-            {
-              g_ControllerNavInputs[mapping[i][1]] = (event->type == SDL_CONTROLLERBUTTONDOWN) ? 1.0f : 0.0f;
-              return true;
-            }
+            g_ControllerNavInputs[mapping[i][1]] = (event->type == SDL_CONTROLLERBUTTONDOWN) ? 1.0f : 0.0f;
+            return true;
           }
         }
-        break;
-
+      }
+      break;
+      
     // Multi-viewport support
     case SDL_WINDOWEVENT:
         Uint8 window_event = event->window.event;
@@ -246,6 +247,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, void* sdl_gl_context)
     io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
     io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
     io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
+    io.KeyMap[ImGuiKey_KeyPadEnter] = SDL_SCANCODE_RETURN2;
     io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
     io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
     io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
@@ -269,6 +271,12 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, void* sdl_gl_context)
     // Our mouse update function expect PlatformHandle to be filled for the main viewport
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     main_viewport->PlatformHandle = (void*)window;
+#if defined(_WIN32)
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (SDL_GetWindowWMInfo(window, &info))
+        main_viewport->PlatformHandleRaw = info.info.win.window;
+#endif
 
     // We need SDL_CaptureMouse(), SDL_GetGlobalMouseState() from SDL 2.0.4+ to support multiple viewports.
     // We left the call to ImGui_ImplSDL2_InitPlatformInterface() outside of #ifdef to avoid unused-function warnings.
@@ -276,11 +284,6 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, void* sdl_gl_context)
         ImGui_ImplSDL2_InitPlatformInterface(window, sdl_gl_context);
 
     return true;
-}
-
-bool ImGui_ImplSDL2_InitForD3D(SDL_Window* window)
-{
-  return ImGui_ImplSDL2_Init(window, NULL);
 }
 
 bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window* window, void* sdl_gl_context)
@@ -292,6 +295,14 @@ bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window* window, void* sdl_gl_context)
 bool ImGui_ImplSDL2_InitForVulkan(SDL_Window* window)
 {
 #if !SDL_HAS_VULKAN
+    IM_ASSERT(0 && "Unsupported");
+#endif
+    return ImGui_ImplSDL2_Init(window, NULL);
+}
+
+bool ImGui_ImplSDL2_InitForD3D(SDL_Window* window)
+{
+#if !defined(_WIN32)
     IM_ASSERT(0 && "Unsupported");
 #endif
     return ImGui_ImplSDL2_Init(window, NULL);
@@ -313,7 +324,7 @@ void ImGui_ImplSDL2_Shutdown()
     memset(g_MouseCursors, 0, sizeof(g_MouseCursors));
 }
 
-// This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4. 
+// This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4.
 static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -335,7 +346,7 @@ static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
     {
         io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
     }
-    
+
     // [2]
     // Set Dear ImGui mouse pos from OS mouse pos + get buttons. (this is the common behavior)
     int mouse_x_local, mouse_y_local;
@@ -400,6 +411,47 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     }
 }
 
+static void ImGui_ImplSDL2_UpdateGamepads()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    memset(io.NavInputs, 0, sizeof(io.NavInputs));
+    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
+        return;
+
+    // Get gamepad
+    SDL_GameController* game_controller = SDL_GameControllerOpen(0);
+    if (!game_controller)
+    {
+        io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
+        return;
+    }
+
+    // Update gamepad inputs
+    #define MAP_BUTTON(NAV_NO, BUTTON_NO)       { io.NavInputs[NAV_NO] = (SDL_GameControllerGetButton(game_controller, BUTTON_NO) != 0) ? 1.0f : 0.0f; }
+    #define MAP_ANALOG(NAV_NO, AXIS_NO, V0, V1) { float vn = (float)(SDL_GameControllerGetAxis(game_controller, AXIS_NO) - V0) / (float)(V1 - V0); if (vn > 1.0f) vn = 1.0f; if (vn > 0.0f && io.NavInputs[NAV_NO] < vn) io.NavInputs[NAV_NO] = vn; }
+    const int thumb_dead_zone = 8000;           // SDL_gamecontroller.h suggests using this value.
+    MAP_BUTTON(ImGuiNavInput_Activate,      SDL_CONTROLLER_BUTTON_A);               // Cross / A
+    MAP_BUTTON(ImGuiNavInput_Cancel,        SDL_CONTROLLER_BUTTON_B);               // Circle / B
+    MAP_BUTTON(ImGuiNavInput_Menu,          SDL_CONTROLLER_BUTTON_X);               // Square / X
+    MAP_BUTTON(ImGuiNavInput_Input,         SDL_CONTROLLER_BUTTON_Y);               // Triangle / Y
+    MAP_BUTTON(ImGuiNavInput_DpadLeft,      SDL_CONTROLLER_BUTTON_DPAD_LEFT);       // D-Pad Left
+    MAP_BUTTON(ImGuiNavInput_DpadRight,     SDL_CONTROLLER_BUTTON_DPAD_RIGHT);      // D-Pad Right
+    MAP_BUTTON(ImGuiNavInput_DpadUp,        SDL_CONTROLLER_BUTTON_DPAD_UP);         // D-Pad Up
+    MAP_BUTTON(ImGuiNavInput_DpadDown,      SDL_CONTROLLER_BUTTON_DPAD_DOWN);       // D-Pad Down
+    MAP_BUTTON(ImGuiNavInput_FocusPrev,     SDL_CONTROLLER_BUTTON_LEFTSHOULDER);    // L1 / LB
+    MAP_BUTTON(ImGuiNavInput_FocusNext,     SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);   // R1 / RB
+    MAP_BUTTON(ImGuiNavInput_TweakSlow,     SDL_CONTROLLER_BUTTON_LEFTSHOULDER);    // L1 / LB
+    MAP_BUTTON(ImGuiNavInput_TweakFast,     SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);   // R1 / RB
+    MAP_ANALOG(ImGuiNavInput_LStickLeft,    SDL_CONTROLLER_AXIS_LEFTX, -thumb_dead_zone, -32768);
+    MAP_ANALOG(ImGuiNavInput_LStickRight,   SDL_CONTROLLER_AXIS_LEFTX, +thumb_dead_zone, +32767);
+    MAP_ANALOG(ImGuiNavInput_LStickUp,      SDL_CONTROLLER_AXIS_LEFTY, -thumb_dead_zone, -32767);
+    MAP_ANALOG(ImGuiNavInput_LStickDown,    SDL_CONTROLLER_AXIS_LEFTY, +thumb_dead_zone, +32767);
+
+    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+    #undef MAP_BUTTON
+    #undef MAP_ANALOG
+}
+
 void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -420,11 +472,11 @@ void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
     io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
     g_Time = current_time;
 
-    for (int i = 0; i < ImGuiNavInput_COUNT; i++)
-      io.NavInputs[i] += g_ControllerNavInputs[i];
-
     ImGui_ImplSDL2_UpdateMousePosAndButtons();
     ImGui_ImplSDL2_UpdateMouseCursor();
+
+    // Update game controllers (if enabled and available)
+    ImGui_ImplSDL2_UpdateGamepads();
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -472,7 +524,7 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
     sdl_flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? SDL_WINDOW_ALWAYS_ON_TOP : 0;
 #endif
     data->Window = SDL_CreateWindow("No Title Yet", (int)viewport->Pos.x, (int)viewport->Pos.y, (int)viewport->Size.x, (int)viewport->Size.y, sdl_flags);
-    data->WindowOwned = true; 
+    data->WindowOwned = true;
     if (use_opengl)
     {
         data->GLContext = SDL_GL_CreateContext(data->Window);
@@ -480,7 +532,14 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
     }
     if (use_opengl && backup_context)
         SDL_GL_MakeCurrent(data->Window, backup_context);
+
     viewport->PlatformHandle = (void*)data->Window;
+#if defined(_WIN32)
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (SDL_GetWindowWMInfo(data->Window, &info))
+        viewport->PlatformHandleRaw = info.info.win.window;
+#endif
 }
 
 static void ImGui_ImplSDL2_DestroyWindow(ImGuiViewport* viewport)
@@ -502,28 +561,23 @@ static void ImGui_ImplSDL2_ShowWindow(ImGuiViewport* viewport)
 {
     ImGuiViewportDataSDL2* data = (ImGuiViewportDataSDL2*)viewport->PlatformUserData;
 #if defined(_WIN32)
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(data->Window, &info))
+    HWND hwnd = (HWND)viewport->PlatformHandleRaw;
+
+    // SDL hack: Hide icon from task bar
+    // Note: SDL 2.0.6+ has a SDL_WINDOW_SKIP_TASKBAR flag which is supported under Windows but the way it create the window breaks our seamless transition.
+    if (viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon)
     {
-        HWND hwnd = info.info.win.window;
+        LONG ex_style = ::GetWindowLong(hwnd, GWL_EXSTYLE);
+        ex_style &= ~WS_EX_APPWINDOW;
+        ex_style |= WS_EX_TOOLWINDOW;
+        ::SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
+    }
 
-        // SDL hack: Hide icon from task bar
-        // Note: SDL 2.0.6+ has a SDL_WINDOW_SKIP_TASKBAR flag which is supported under Windows but the way it create the window breaks our seamless transition.
-        if (viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon)
-        {
-            LONG ex_style = ::GetWindowLong(hwnd, GWL_EXSTYLE);
-            ex_style &= ~WS_EX_APPWINDOW;
-            ex_style |= WS_EX_TOOLWINDOW;
-            ::SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
-        }
-
-        // SDL hack: SDL always activate/focus windows :/
-        if (viewport->Flags & ImGuiViewportFlags_NoFocusOnAppearing)
-        {
-            ::ShowWindow(hwnd, SW_SHOWNA);
-            return;
-        }
+    // SDL hack: SDL always activate/focus windows :/
+    if (viewport->Flags & ImGuiViewportFlags_NoFocusOnAppearing)
+    {
+        ::ShowWindow(hwnd, SW_SHOWNA);
+        return;
     }
 #endif
 
@@ -616,7 +670,7 @@ static int ImGui_ImplSDL2_CreateVkSurface(ImGuiViewport* viewport, ImU64 vk_inst
     ImGuiViewportDataSDL2* data = (ImGuiViewportDataSDL2*)viewport->PlatformUserData;
     (void)vk_allocator;
     SDL_bool ret = SDL_Vulkan_CreateSurface(data->Window, (VkInstance)vk_instance, (VkSurfaceKHR*)out_vk_surface);
-    return ret ? 0 : 1; // ret ? VK_SUCCESS : VK_NOT_READY 
+    return ret ? 0 : 1; // ret ? VK_SUCCESS : VK_NOT_READY
 }
 #endif // SDL_HAS_VULKAN
 
