@@ -220,10 +220,10 @@ void main()
     v_tex0 = a_tex0;
 
     // base_x,base_y,palette_x,palette_y
-    v_texpage.x = (a_texpage & 15) * 64;
-    v_texpage.y = ((a_texpage >> 4) & 1) * 256;
-    v_texpage.z = ((a_texpage >> 16) & 63) * 16;
-    v_texpage.w = ((a_texpage >> 22) & 511);
+    v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
+    v_texpage.y = ((a_texpage >> 4) & 1) * 256 * RESOLUTION_SCALE;
+    v_texpage.z = ((a_texpage >> 16) & 63) * 16 * RESOLUTION_SCALE;
+    v_texpage.w = ((a_texpage >> 22) & 511) * RESOLUTION_SCALE;
   #endif
 }
 )";
@@ -260,17 +260,27 @@ uniform vec2 u_transparent_alpha;
 out vec4 o_col0;
 
 #if TEXTURED
-ivec2 ApplyTextureWindow(ivec2 coords)
+ivec2 ApplyNativeTextureWindow(ivec2 coords)
 {
   uint x = (uint(coords.x) & ~(u_texture_window.x * 8u)) | ((u_texture_window.z & u_texture_window.x) * 8u);
   uint y = (uint(coords.y) & ~(u_texture_window.y * 8u)) | ((u_texture_window.w & u_texture_window.y) * 8u);
   return ivec2(int(x), int(y));
 }  
 
+ivec2 ApplyTextureWindow(ivec2 coords)
+{
+  if (RESOLUTION_SCALE == 1)
+    return ApplyNativeTextureWindow(coords);
+
+  ivec2 downscaled_coords = coords / ivec2(RESOLUTION_SCALE);
+  ivec2 coords_offset = coords % ivec2(RESOLUTION_SCALE);
+  return (ApplyNativeTextureWindow(downscaled_coords) * ivec2(RESOLUTION_SCALE)) + coords_offset;
+}
+
 vec4 SampleFromVRAM(vec2 coord)
 {
   // from 0..1 to 0..255
-  ivec2 icoord = ivec2(coord * vec2(255.0));
+  ivec2 icoord = ivec2(coord * vec2(255 * RESOLUTION_SCALE));
   icoord = ApplyTextureWindow(icoord);
 
   // adjust for tightly packed palette formats
@@ -282,8 +292,7 @@ vec4 SampleFromVRAM(vec2 coord)
   #endif
 
   // fixup coords
-  ivec2 vicoord = ivec2((v_texpage.x + index_coord.x) * RESOLUTION_SCALE,
-                        fixYCoord((v_texpage.y + index_coord.y) * RESOLUTION_SCALE));
+  ivec2 vicoord = ivec2(v_texpage.x + index_coord.x, fixYCoord(v_texpage.y + index_coord.y));
 
   // load colour/palette
   vec4 color = texelFetch(samp0, vicoord, 0);
@@ -291,16 +300,15 @@ vec4 SampleFromVRAM(vec2 coord)
   // apply palette
   #if PALETTE
     #if PALETTE_4_BIT
-      int subpixel = int(icoord.x) & 3;
+      int subpixel = int(icoord.x / RESOLUTION_SCALE) & 3;
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 4)) & 0x0Fu);
     #elif PALETTE_8_BIT
-      int subpixel = int(icoord.x) & 1;
+      int subpixel = int(icoord.x / RESOLUTION_SCALE) & 1;
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
     #endif
-    ivec2 palette_icoord = ivec2((v_texpage.z + palette_index) * RESOLUTION_SCALE,
-                                 fixYCoord(v_texpage.w * RESOLUTION_SCALE));
+    ivec2 palette_icoord = ivec2(v_texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(v_texpage.w));
     color = texelFetch(samp0, palette_icoord, 0);
   #endif
 
