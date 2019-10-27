@@ -546,7 +546,8 @@ void SDLInterface::HandleSDLEvent(const SDL_Event* event)
 
 void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
 {
-  if (m_controller && HandleSDLKeyEventForController(event, m_controller.get()))
+  const bool repeat = event->key.repeat != 0;
+  if (!repeat && m_controller && HandleSDLKeyEventForController(event, m_controller.get()))
     return;
 
   const bool pressed = (event->type == SDL_KEYDOWN);
@@ -574,8 +575,11 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
 
     case SDL_SCANCODE_TAB:
     {
-      m_speed_limiter_temp_disabled = pressed;
-      UpdateAudioVisualSync();
+      if (!repeat)
+      {
+        m_speed_limiter_temp_disabled = pressed;
+        UpdateAudioVisualSync();
+      }
     }
     break;
 
