@@ -68,7 +68,7 @@ private:
     INT5 = 0x05
   };
 
-  enum class Command : u8
+  enum class Command : u16
   {
     Sync = 0x00,
     Getstat = 0x01,
@@ -101,14 +101,20 @@ private:
     Reset = 0x1C,
     GetQ = 0x1D,
     ReadTOC = 0x1E,
-    VideoCD = 0x1F
+    VideoCD = 0x1F,
+
+    None = 0xFFFF
   };
 
-  enum class CommandState : u32
+  enum class DriveState : u8
   {
     Idle,
-    WaitForExecute,
-    WaitForIRQClear
+    Initializing,
+    Seeking,
+    ReadingID,
+    Reading,
+    Playing,
+    Pausing
   };
 
   union StatusRegister
@@ -131,18 +137,16 @@ private:
     BitField<u8, bool, 2, 1> seek_error;
     BitField<u8, bool, 3, 1> id_error;
     BitField<u8, bool, 4, 1> shell_open;
-    BitField<u8, bool, 5, 1> reading;
+    BitField<u8, bool, 5, 1> header_valid;
     BitField<u8, bool, 6, 1> seeking;
     BitField<u8, bool, 7, 1> playing_cdda;
 
-    ALWAYS_INLINE bool IsReadingOrPlaying() const { return reading || playing_cdda; }
-
-    /// Returns true if seeking, reading or playing CDDA.
-    ALWAYS_INLINE bool IsActive() const
+    /// Clears the CDDA/seeking/header valid bits.
+    ALWAYS_INLINE void ClearActiveBits()
     {
-      // MSVC can't turn this into a single bit test :(
-      // return seeking || reading || playing_cdda;
-      return (bits & 0xE0) != 0;
+      header_valid = false;
+      seeking = false;
+      playing_cdda = false;
     }
   };
 
@@ -169,6 +173,8 @@ private:
 
   void SoftReset();
 
+  bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
+  bool HasPendingCommand() const { return m_command != Command::None; }
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
   void SetInterrupt(Interrupt interrupt);
@@ -184,17 +190,18 @@ private:
   TickCount GetTicksForRead() const;
   TickCount GetTicksForSeek() const;
   void BeginCommand(Command command); // also update status register
-  void NextCommandStage(bool wait_for_irq, u32 time);
   void EndCommand(); // also updates status register
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
   void BeginReading(bool cdda);
+  void DoInitComplete();
   void DoSeekComplete();
+  void DoPauseComplete();
+  void DoIDRead();
   void DoSectorRead();
   void ProcessDataSector(const u8* raw_sector);
   void ProcessXAADPCMSector(const u8* raw_sector);
   void ProcessCDDASector(const u8* raw_sector);
-  void StopReading();
   void BeginSeeking();
   void LoadDataFIFO();
 
@@ -204,11 +211,10 @@ private:
   SPU* m_spu = nullptr;
   std::unique_ptr<CDImage> m_media;
 
-  Command m_command = Command::Sync;
-  CommandState m_command_state = CommandState::Idle;
-  u32 m_command_stage = 0;
+  Command m_command = Command::None;
+  DriveState m_drive_state = DriveState::Idle;
   TickCount m_command_remaining_ticks = 0;
-  TickCount m_read_or_seek_remaining_ticks = 0;
+  TickCount m_drive_remaining_ticks = 0;
 
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
