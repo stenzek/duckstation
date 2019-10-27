@@ -21,8 +21,8 @@
 #include <nfd.h>
 Log_SetChannel(SDLInterface);
 
-static constexpr std::array<std::pair<GPURenderer, const char*>, 2> s_gpu_renderer_names = {
-  {{GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"}, {GPURenderer::Software, "Software"}}};
+static constexpr std::array<std::pair<Settings::GPURenderer, const char*>, 2> s_gpu_renderer_names = {
+  {{Settings::GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"}, {Settings::GPURenderer::Software, "Software"}}};
 
 SDLInterface::SDLInterface() = default;
 
@@ -596,6 +596,14 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
         DoFrameStep();
     }
     break;
+
+    case SDL_SCANCODE_PAGEUP:
+    case SDL_SCANCODE_PAGEDOWN:
+    {
+      if (pressed)
+        DoToggleSoftwareRendering();
+    }
+    break;
   }
 }
 
@@ -785,7 +793,7 @@ void SDLInterface::DrawMainMenuBar()
     {
       if (ImGui::BeginMenu("Renderer"))
       {
-        const GPURenderer current = m_system->GetSettings().gpu_renderer;
+        const Settings::GPURenderer current = m_system->GetSettings().gpu_renderer;
         for (const auto& it : s_gpu_renderer_names)
         {
           if (ImGui::MenuItem(it.second, nullptr, current == it.first))
@@ -1185,6 +1193,26 @@ void SDLInterface::DoFrameStep()
 
   m_frame_step_request = true;
   m_paused = false;
+}
+
+void SDLInterface::DoToggleSoftwareRendering()
+{
+  if (!m_system)
+    return;
+
+  auto& settings = m_system->GetSettings();
+  if (settings.gpu_renderer != Settings::GPURenderer::Software)
+  {
+    settings.gpu_renderer = Settings::GPURenderer::Software;
+    AddOSDMessage("Switched to software GPU renderer.");
+  }
+  else
+  {
+    settings.gpu_renderer = Settings::GPURenderer::HardwareOpenGL;
+    AddOSDMessage("Switched to hardware GPU renderer.");
+  }
+
+  m_system->RecreateGPU();
 }
 
 void SDLInterface::Run()

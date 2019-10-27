@@ -1,14 +1,14 @@
 #pragma once
 #include "types.h"
 
-enum class GPURenderer
-{
-  HardwareOpenGL,
-  Software
-};
-
 struct Settings
 {
+  enum class GPURenderer
+  {
+    HardwareOpenGL,
+    Software
+  };
+
   Settings();
 
   bool start_paused = false;

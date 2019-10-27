@@ -108,11 +108,11 @@ bool System::CreateGPU()
 {
   switch (m_settings.gpu_renderer)
   {
-    case GPURenderer::HardwareOpenGL:
+    case Settings::GPURenderer::HardwareOpenGL:
       m_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
-    case GPURenderer::Software:
+    case Settings::GPURenderer::Software:
     default:
       m_gpu = GPU::CreateSoftwareRenderer();
       break;
@@ -122,7 +122,7 @@ bool System::CreateGPU()
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     m_gpu.reset();
-    m_settings.gpu_renderer = GPURenderer::Software;
+    m_settings.gpu_renderer = Settings::GPURenderer::Software;
     m_gpu = GPU::CreateSoftwareRenderer();
     if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_timers.get()))
       return false;

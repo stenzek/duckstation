@@ -74,6 +74,7 @@ private:
   void DoSaveState(u32 index);
   void DoTogglePause();
   void DoFrameStep();
+  void DoToggleSoftwareRendering();
 
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
