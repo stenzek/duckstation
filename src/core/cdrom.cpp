@@ -479,7 +479,7 @@ void CDROM::UpdateStatusRegister()
 
 TickCount CDROM::GetAckDelayForCommand() const
 {
-  const u32 default_ack_delay = 2000;
+  const u32 default_ack_delay = 10000;
   if (m_command == Command::Init)
     return 60000;
   else
@@ -934,16 +934,10 @@ void CDROM::BeginReading(bool cdda)
 
   if (m_setloc_pending)
   {
-    if (m_media->GetMSFPositionOnDisc() != m_setloc_position)
-    {
-      BeginSeeking();
-      m_read_after_seek = !cdda;
-      m_play_after_seek = cdda;
-      return;
-    }
-
-    // already in position
-    m_setloc_pending = false;
+    BeginSeeking();
+    m_read_after_seek = !cdda;
+    m_play_after_seek = cdda;
+    return;
   }
 
   m_secondary_status.motor_on = true;
@@ -1266,6 +1260,7 @@ void CDROM::LoadDataFIFO()
     return;
   }
 
+  m_data_fifo.Clear();
   m_data_fifo.PushRange(m_sector_buffer.data(), static_cast<u32>(m_sector_buffer.size()));
   m_sector_buffer.clear();
 
