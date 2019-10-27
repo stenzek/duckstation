@@ -579,10 +579,17 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_SCANCODE_SPACE:
+    case SDL_SCANCODE_PAUSE:
     {
       if (pressed)
         DoTogglePause();
+    }
+    break;
+
+    case SDL_SCANCODE_SPACE:
+    {
+      if (pressed)
+        DoFrameStep();
     }
     break;
   }
@@ -705,6 +712,13 @@ void SDLInterface::DrawMainMenuBar()
 
   if (ImGui::BeginMenu("System"))
   {
+    if (ImGui::MenuItem("Start Disc", nullptr, false, !system_enabled))
+      DoStartDisc();
+    if (ImGui::MenuItem("Start BIOS", nullptr, false, !system_enabled))
+      DoStartBIOS();
+
+    ImGui::Separator();
+
     if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
       DoPowerOff();
 
@@ -714,14 +728,12 @@ void SDLInterface::DrawMainMenuBar()
     if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
       DoTogglePause();
 
-    ImGui::MenuItem("Change Disc", nullptr, false, system_enabled);
-
     ImGui::Separator();
 
-    if (ImGui::MenuItem("Start Disc"))
-      DoStartDisc();
-    if (ImGui::MenuItem("Start BIOS"))
-      DoStartBIOS();
+    ImGui::MenuItem("Change Disc", nullptr, false, system_enabled);
+
+    if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
+      DoFrameStep();
 
     ImGui::Separator();
 
@@ -1154,9 +1166,21 @@ void SDLInterface::DoSaveState(u32 index)
 
 void SDLInterface::DoTogglePause()
 {
+  if (!m_system)
+    return;
+
   m_paused = !m_paused;
   if (!m_paused)
     m_fps_timer.Reset();
+}
+
+void SDLInterface::DoFrameStep()
+{
+  if (!m_system)
+    return;
+
+  m_frame_step_request = true;
+  m_paused = false;
 }
 
 void SDLInterface::Run()
@@ -1175,7 +1199,14 @@ void SDLInterface::Run()
     }
 
     if (m_system && !m_paused)
+    {
       m_system->RunFrame();
+      if (m_frame_step_request)
+      {
+        m_frame_step_request = false;
+        m_paused = true;
+      }
+    }
 
     Render();
 
