@@ -102,8 +102,6 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.regs.display_address_start);
   sw.Do(&m_crtc_state.regs.horizontal_display_range);
   sw.Do(&m_crtc_state.regs.vertical_display_range);
-  sw.Do(&m_crtc_state.horizontal_resolution);
-  sw.Do(&m_crtc_state.vertical_resolution);
   sw.Do(&m_crtc_state.dot_clock_divider);
   sw.Do(&m_crtc_state.display_width);
   sw.Do(&m_crtc_state.display_height);
@@ -114,6 +112,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.fractional_ticks);
   sw.Do(&m_crtc_state.current_tick_in_scanline);
   sw.Do(&m_crtc_state.current_scanline);
+  sw.Do(&m_crtc_state.display_aspect_ratio);
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
 
@@ -323,8 +322,6 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
 void GPU::UpdateCRTCConfig()
 {
   static constexpr std::array<TickCount, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
-  static constexpr std::array<u32, 8> horizontal_resolutions = {{256, 320, 512, 640, 368, 368, 368, 368}};
-  static constexpr std::array<u32, 2> vertical_resolutions = {{240, 480}};
   CRTCState& cs = m_crtc_state;
 
   if (m_GPUSTAT.pal_mode)
@@ -340,9 +337,6 @@ void GPU::UpdateCRTCConfig()
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
-  cs.horizontal_resolution = horizontal_resolutions[horizontal_resolution_index];
-  cs.vertical_resolution =
-    vertical_resolutions[BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution)];
   cs.visible_ticks_per_scanline = cs.regs.X2 - cs.regs.X1;
   cs.visible_scanlines_per_frame = cs.regs.Y2 - cs.regs.Y1;
 
@@ -784,7 +778,6 @@ void GPU::DrawDebugStateWindow()
   if (ImGui::CollapsingHeader("CRTC", ImGuiTreeNodeFlags_DefaultOpen))
   {
     const auto& cs = m_crtc_state;
-    ImGui::Text("Resolution: %ux%u", cs.horizontal_resolution, cs.vertical_resolution);
     ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
     ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
                 m_GPUSTAT.interlaced_field ? "odd" : "even");

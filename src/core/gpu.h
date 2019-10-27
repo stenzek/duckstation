@@ -388,8 +388,6 @@ protected:
       };
     } regs;
 
-    u32 horizontal_resolution;
-    u32 vertical_resolution;
     TickCount dot_clock_divider;
 
     u32 display_width;
