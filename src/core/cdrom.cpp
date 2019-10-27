@@ -690,9 +690,9 @@ void CDROM::ExecuteCommand()
       }
       else
       {
+        SendACKAndStat();
         StopReading();
         BeginSeeking();
-        SendACKAndStat();
       }
 
       EndCommand();
@@ -709,9 +709,9 @@ void CDROM::ExecuteCommand()
       }
       else
       {
+        SendACKAndStat();
         StopReading();
         BeginReading(false);
-        SendACKAndStat();
       }
 
       EndCommand();
@@ -743,8 +743,8 @@ void CDROM::ExecuteCommand()
           m_setloc_pending = true;
         }
 
-        BeginReading(true);
         SendACKAndStat();
+        BeginReading(true);
       }
 
       EndCommand();
@@ -1254,6 +1254,7 @@ void CDROM::StopReading()
   m_secondary_status.playing_cdda = false;
   m_secondary_status.seeking = false;
   m_read_or_seek_remaining_ticks = 0;
+  m_sector_buffer.clear();
 }
 
 void CDROM::LoadDataFIFO()
