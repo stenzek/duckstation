@@ -11,6 +11,7 @@
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="cd_xa.h" />
+    <ClInclude Include="heap_array.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

@@ -147,6 +147,30 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   return sectors_read;
 }
 
+bool CDImage::ReadRawSector(void* buffer)
+{
+  if (m_position_in_index == m_current_index->length)
+  {
+    if (!Seek(m_position_on_disc))
+      return false;
+  }
+
+  Assert(m_current_index->file);
+
+  // get raw sector
+  if (std::fread(buffer, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
+  {
+    Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+    Seek(m_position_on_disc);
+    return false;
+  }
+
+  m_position_on_disc++;
+  m_position_in_index++;
+  m_position_in_track++;
+  return true;
+}
+
 const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
 {
   for (const Index& index : m_indices)

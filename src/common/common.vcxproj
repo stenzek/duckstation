@@ -41,6 +41,7 @@
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="gl_program.h" />
     <ClInclude Include="gl_texture.h" />
+    <ClInclude Include="heap_array.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="types.h" />

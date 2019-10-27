@@ -123,6 +123,9 @@ public:
   // Read from the current LBA. Returns the number of sectors read.
   u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
 
+  // Read a single raw sector from the current LBA.
+  bool ReadRawSector(void* buffer);
+
 protected:
   struct Track
   {

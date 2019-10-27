@@ -1,6 +1,7 @@
 #pragma once
 #include "YBaseLib/ByteStream.h"
 #include "fifo_queue.h"
+#include "heap_array.h"
 #include "types.h"
 #include <cstring>
 #include <deque>
@@ -106,6 +107,12 @@ public:
 
   template<typename T, size_t N>
   void Do(std::array<T, N>* data)
+  {
+    DoArray(data->data(), data->size());
+  }
+
+  template<typename T, size_t N>
+  void Do(HeapArray<T, N>* data)
   {
     DoArray(data->data(), data->size());
   }
