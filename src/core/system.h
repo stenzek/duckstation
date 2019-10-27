@@ -71,7 +71,7 @@ public:
   void StallCPU(TickCount ticks);
 
   void SetController(u32 slot, std::shared_ptr<PadDevice> dev);
-  void SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev);
+  void UpdateMemoryCards();
 
   bool HasMedia() const;
   bool InsertMedia(const char* path);

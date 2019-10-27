@@ -12,6 +12,7 @@ HostInterface::~HostInterface() = default;
 bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
 {
   Settings settings;
+  settings.memory_card_a_filename = "memory_card_a.mcd";
 
   m_system = std::make_unique<System>(this, settings);
   if (!m_system->Initialize())

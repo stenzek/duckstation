@@ -32,4 +32,7 @@ struct Settings
   } debugging;
 
   // TODO: Controllers, memory cards, etc.
+
+  std::string memory_card_a_filename;
+  std::string memory_card_b_filename;
 };

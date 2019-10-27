@@ -10,6 +10,7 @@ class StateWrapper;
 class System;
 class InterruptController;
 class PadDevice;
+class MemoryCard;
 
 class Pad
 {
@@ -24,8 +25,8 @@ public:
   PadDevice* GetController(u32 slot) { return m_controllers[slot].get(); }
   void SetController(u32 slot, std::shared_ptr<PadDevice> dev) { m_controllers[slot] = dev; }
 
-  PadDevice* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
-  void SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev) { m_memory_cards[slot] = dev; }
+  MemoryCard* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
+  void SetMemoryCard(u32 slot, std::shared_ptr<MemoryCard> dev) { m_memory_cards[slot] = dev; }
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -118,5 +119,5 @@ private:
   InlineFIFOQueue<u8, 2> m_TX_FIFO;
 
   std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_controllers;
-  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_memory_cards;
+  std::array<std::shared_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
 };

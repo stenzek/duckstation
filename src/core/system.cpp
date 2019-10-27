@@ -9,6 +9,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
+#include "memory_card.h"
 #include "pad.h"
 #include "pad_device.h"
 #include "spu.h"
@@ -97,6 +98,8 @@ bool System::Initialize()
 
   if (!m_mdec->Initialize(this, m_dma.get()))
     return false;
+
+  UpdateMemoryCards();
 
   return true;
 }
@@ -361,9 +364,24 @@ void System::SetController(u32 slot, std::shared_ptr<PadDevice> dev)
   m_pad->SetController(slot, std::move(dev));
 }
 
-void System::SetMemoryCard(u32 slot, std::shared_ptr<PadDevice> dev)
+void System::UpdateMemoryCards()
 {
-  m_pad->SetMemoryCard(slot, std::move(dev));
+  m_pad->SetMemoryCard(0, nullptr);
+  m_pad->SetMemoryCard(1, nullptr);
+
+  if (!m_settings.memory_card_a_filename.empty())
+  {
+    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_a_filename);
+    if (card)
+      m_pad->SetMemoryCard(0, std::move(card));
+  }
+
+  if (!m_settings.memory_card_b_filename.empty())
+  {
+    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_b_filename);
+    if (card)
+      m_pad->SetMemoryCard(1, std::move(card));
+  }
 }
 
 bool System::HasMedia() const

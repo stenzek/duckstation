@@ -1,8 +1,12 @@
 #pragma once
 #include "common/bitfield.h"
 #include "pad_device.h"
-#include <memory>
 #include <array>
+#include <memory>
+#include <string>
+#include <string_view>
+
+class System;
 
 class MemoryCard final : public PadDevice
 {
@@ -14,10 +18,11 @@ public:
     NUM_SECTORS = DATA_SIZE / SECTOR_SIZE
   };
 
-  MemoryCard();
+  MemoryCard(System* system);
   ~MemoryCard() override;
 
-  static std::shared_ptr<MemoryCard> Create();
+  static std::shared_ptr<MemoryCard> Create(System* system);
+  static std::shared_ptr<MemoryCard> Open(System* system, std::string_view filename);
 
   void Reset() override;
   bool DoState(StateWrapper& sw) override;
@@ -70,11 +75,19 @@ private:
 
   u8* GetSectorPtr(u32 sector);
 
+  bool LoadFromFile();
+  bool SaveToFile();
+
+  System* m_system;
+
   State m_state = State::Idle;
   u16 m_address = 0;
   u8 m_sector_offset = 0;
   u8 m_checksum = 0;
   u8 m_last_byte = 0;
+  bool m_changed = false;
 
   std::array<u8, DATA_SIZE> m_data{};
+
+  std::string m_filename;
 };

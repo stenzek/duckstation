@@ -1,12 +1,17 @@
 #include "memory_card.h"
+#include "YBaseLib/AutoReleasePtr.h"
+#include "YBaseLib/ByteStream.h"
+#include "YBaseLib/FileSystem.h"
 #include "YBaseLib/Log.h"
 #include "common/state_wrapper.h"
+#include "host_interface.h"
+#include "system.h"
+#include <cstdio>
 Log_SetChannel(MemoryCard);
 
-MemoryCard::MemoryCard()
+MemoryCard::MemoryCard(System* system) : m_system(system)
 {
   m_FLAG.no_write_yet = true;
-  Format();
 }
 
 MemoryCard::~MemoryCard() = default;
@@ -24,6 +29,7 @@ bool MemoryCard::DoState(StateWrapper& sw)
   sw.Do(&m_checksum);
   sw.Do(&m_last_byte);
   sw.Do(&m_data);
+  sw.Do(&m_changed);
 
   return !sw.HasError();
 }
@@ -35,6 +41,7 @@ void MemoryCard::ResetTransferState()
   m_sector_offset = 0;
   m_checksum = 0;
   m_last_byte = 0;
+  m_changed = false;
 }
 
 bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
@@ -134,7 +141,12 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         m_checksum ^= data_in;
       }
 
-      m_data[ZeroExtend32(m_address) * SECTOR_SIZE + m_sector_offset] = data_in;
+      const u32 offset = ZeroExtend32(m_address) * SECTOR_SIZE + m_sector_offset;
+      if (m_data[offset] != data_in)
+        m_changed = true;
+
+      m_data[offset] = data_in;
+
       *data_out = m_last_byte;
       ack = true;
 
@@ -143,6 +155,11 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       {
         m_state = State::WriteChecksum;
         m_sector_offset = 0;
+        if (m_changed)
+        {
+          m_changed = false;
+          SaveToFile();
+        }
       }
     }
     break;
@@ -213,9 +230,24 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
-std::shared_ptr<MemoryCard> MemoryCard::Create()
+std::shared_ptr<MemoryCard> MemoryCard::Create(System* system)
 {
-  return std::make_shared<MemoryCard>();
+  auto mc = std::make_shared<MemoryCard>(system);
+  mc->Format();
+  return mc;
+}
+
+std::shared_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view filename)
+{
+  auto mc = std::make_shared<MemoryCard>(system);
+  mc->m_filename = filename;
+  if (!mc->LoadFromFile())
+  {
+    Log_ErrorPrintf("Memory card at '%s' could not be read, formatting.");
+    mc->Format();
+  }
+
+  return mc;
 }
 
 u8 MemoryCard::ChecksumFrame(const u8* fptr)
@@ -284,4 +316,47 @@ u8* MemoryCard::GetSectorPtr(u32 sector)
 {
   Assert(sector < NUM_SECTORS);
   return &m_data[sector * SECTOR_SIZE];
+}
+
+bool MemoryCard::LoadFromFile()
+{
+  AutoReleasePtr<ByteStream> stream =
+    FileSystem::OpenFile(m_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
+    return false;
+
+  const size_t num_read = stream->Read(m_data.data(), SECTOR_SIZE * NUM_SECTORS);
+  if (num_read != (SECTOR_SIZE * NUM_SECTORS))
+  {
+    Log_ErrorPrintf("Only read %zu of %u sectors from '%s'", num_read / SECTOR_SIZE, NUM_SECTORS, m_filename.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+bool MemoryCard::SaveToFile()
+{
+  if (m_filename.empty())
+    return false;
+
+  AutoReleasePtr<ByteStream> stream =
+    FileSystem::OpenFile(m_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
+                                               BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
+  {
+    Log_ErrorPrintf("Failed to open '%s' for writing.", m_filename.c_str());
+    return false;
+  }
+
+  if (!stream->Write2(m_data.data(), SECTOR_SIZE * NUM_SECTORS) || !stream->Commit())
+  {
+    Log_ErrorPrintf("Failed to write sectors to '%s'", m_filename.c_str());
+    stream->Discard();
+    return false;
+  }
+
+  Log_InfoPrintf("Saved memory card to '%s'", m_filename.c_str());
+  m_system->GetHostInterface()->AddOSDMessage(SmallString::FromFormat("Saved memory card to '%s'", m_filename.c_str()));
+  return true;
 }

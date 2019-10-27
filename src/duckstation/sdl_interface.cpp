@@ -271,9 +271,6 @@ void SDLInterface::ConnectDevices()
 {
   m_controller = DigitalController::Create();
   m_system->SetController(0, m_controller);
-
-  m_memory_card = MemoryCard::Create();
-  m_system->SetMemoryCard(0, m_memory_card);
 }
 
 std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nullptr */,

@@ -1,7 +1,9 @@
 #include "pad.h"
 #include "YBaseLib/Log.h"
 #include "common/state_wrapper.h"
+#include "host_interface.h"
 #include "interrupt_controller.h"
+#include "memory_card.h"
 #include "pad_device.h"
 #include "system.h"
 Log_SetChannel(Pad);
@@ -44,6 +46,28 @@ bool Pad::DoState(StateWrapper& sw)
     {
       if (!sw.DoMarker("NoController"))
         return false;
+    }
+
+    bool card_present = static_cast<bool>(m_memory_cards[i]);
+    sw.Do(&card_present);
+
+    if (card_present && !m_memory_cards[i])
+    {
+      const TinyString message = TinyString::FromFormat(
+        "Memory card %c present in save state but not in system. Creating temporary card.", 'A' + i);
+      m_system->GetHostInterface()->AddOSDMessage(message);
+      Log_WarningPrint(message);
+
+      m_memory_cards[i] = MemoryCard::Create(m_system);
+    }
+    else if (!card_present && m_memory_cards[i])
+    {
+      const TinyString message =
+        TinyString::FromFormat("Memory card %u present system but not save state. Removing card.", 'A' + i);
+      m_system->GetHostInterface()->AddOSDMessage(message);
+      Log_WarningPrint(message);
+
+      m_memory_cards[i].reset();
     }
 
     if (m_memory_cards[i])

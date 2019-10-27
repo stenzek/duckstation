@@ -111,7 +111,6 @@ private:
   std::map<int, SDL_GameController*> m_sdl_controllers;
 
   std::shared_ptr<DigitalController> m_controller;
-  std::shared_ptr<MemoryCard> m_memory_card;
 
   float m_vps = 0.0f;
   float m_fps = 0.0f;
