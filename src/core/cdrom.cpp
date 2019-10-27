@@ -9,7 +9,10 @@
 #include "system.h"
 Log_SetChannel(CDROM);
 
-CDROM::CDROM() : m_sector_buffer(SECTOR_BUFFER_SIZE) {}
+CDROM::CDROM()
+{
+  m_sector_buffer.reserve(RAW_SECTOR_OUTPUT_SIZE);
+}
 
 CDROM::~CDROM() = default;
 
@@ -476,7 +479,7 @@ void CDROM::UpdateStatusRegister()
 
 TickCount CDROM::GetAckDelayForCommand() const
 {
-  const u32 default_ack_delay = 4000;
+  const u32 default_ack_delay = 2000;
   if (m_command == Command::Init)
     return 60000;
   else
@@ -664,9 +667,6 @@ void CDROM::ExecuteCommand()
 
     case Command::Setloc:
     {
-      if (m_secondary_status.reading || m_secondary_status.playing_cdda || m_secondary_status.seeking)
-        Log_WarningPrintf("Setloc while reading/playing/seeking");
-
       // TODO: Verify parameter count
       m_setloc_position.minute = BCDToDecimal(m_param_fifo.Peek(0));
       m_setloc_position.second = BCDToDecimal(m_param_fifo.Peek(1));
@@ -1002,26 +1002,15 @@ void CDROM::DoSeekComplete()
 
 void CDROM::DoSectorRead()
 {
-  if (HasPendingAsyncInterrupt())
-  {
-    Log_WarningPrintf("Data interrupt was not delivered");
-    CancelAsyncInterrupt();
-  }
-  if (!m_sector_buffer.empty())
-  {
-    Log_WarningPrintf("Sector buffer was not empty");
-  }
-
   // TODO: Error handling
-  // TODO: Sector buffer should be two sectors?
-  Assert(!m_mode.ignore_bit);
-  m_sector_buffer.resize(RAW_SECTOR_SIZE);
-  m_media->Read(CDImage::ReadMode::RawSector, 1, m_sector_buffer.data());
+  u8 raw_sector[RAW_SECTOR_OUTPUT_SIZE];
+  if (!m_media->ReadRawSector(raw_sector))
+    Panic("Sector read failed");
 
   if (m_secondary_status.reading)
-    ProcessDataSector();
+    ProcessDataSector(raw_sector);
   else if (m_secondary_status.playing_cdda)
-    ProcessCDDASector();
+    ProcessCDDASector(raw_sector);
   else
     Panic("Not reading or playing");
 
@@ -1029,10 +1018,10 @@ void CDROM::DoSectorRead()
   m_system->SetDowncount(m_read_or_seek_remaining_ticks);
 }
 
-void CDROM::ProcessDataSector()
+void CDROM::ProcessDataSector(const u8* raw_sector)
 {
-  std::memcpy(&m_last_sector_header, &m_sector_buffer[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
-  std::memcpy(&m_last_sector_subheader, &m_sector_buffer[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
+  std::memcpy(&m_last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
+  std::memcpy(&m_last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc() - 1,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));
@@ -1040,6 +1029,11 @@ void CDROM::ProcessDataSector()
   bool pass_to_cpu = true;
   if (m_mode.xa_enable && m_last_sector_header.sector_mode == 2)
   {
+    if (m_last_sector_subheader.submode.eof)
+    {
+      Log_WarningPrintf("End of CD-XA file");
+    }
+
     if (m_last_sector_subheader.submode.realtime && m_last_sector_subheader.submode.audio)
     {
       // Check for automatic ADPCM filter.
@@ -1052,26 +1046,42 @@ void CDROM::ProcessDataSector()
       }
       else
       {
-        ProcessXAADPCMSector();
+        ProcessXAADPCMSector(raw_sector);
       }
 
       // Audio+realtime sectors aren't delivered to the CPU.
-      m_sector_buffer.clear();
-      pass_to_cpu = false;
-    }
-
-    if (m_last_sector_subheader.submode.eof)
-    {
-      Log_WarningPrintf("End of CD-XA file");
+      return;
     }
   }
 
-  if (pass_to_cpu)
+  // Deliver to CPU
+  if (HasPendingAsyncInterrupt())
   {
-    m_async_response_fifo.Push(m_secondary_status.bits);
-    SetAsyncInterrupt(Interrupt::INT1);
-    UpdateStatusRegister();
+    Log_WarningPrintf("Data interrupt was not delivered");
+    CancelAsyncInterrupt();
   }
+  if (!m_sector_buffer.empty())
+  {
+    Log_WarningPrintf("Sector buffer was not empty");
+  }
+
+  Assert(!m_mode.ignore_bit);
+  if (m_mode.read_raw_sector)
+  {
+    m_sector_buffer.resize(RAW_SECTOR_OUTPUT_SIZE);
+    std::memcpy(m_sector_buffer.data(), raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_OUTPUT_SIZE);
+  }
+  else
+  {
+    // TODO: This should actually depend on the mode...
+    Assert(m_last_sector_header.sector_mode == 2);
+    m_sector_buffer.resize(DATA_SECTOR_OUTPUT_SIZE);
+    std::memcpy(m_sector_buffer.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
+  }
+
+  m_async_response_fifo.Push(m_secondary_status.bits);
+  SetAsyncInterrupt(Interrupt::INT1);
+  UpdateStatusRegister();
 }
 
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
@@ -1112,12 +1122,9 @@ static constexpr s16 ApplyVolume(s16 sample, u8 volume)
 }
 
 template<bool STEREO, bool SAMPLE_RATE>
-static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu,
-                            std::array<std::array<s16, CDROM::XA_RESAMPLE_RING_BUFFER_SIZE>, 2>& ring_buffer, u8* p_ptr,
-                            u8* sixstep_ptr, const std::array<std::array<u8, 2>, 2>& volume_matrix)
+static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu, s16* left_ringbuf, s16* right_ringbuf,
+                            u8* p_ptr, u8* sixstep_ptr, const std::array<std::array<u8, 2>, 2>& volume_matrix)
 {
-  s16* left_ringbuf = ring_buffer[0].data();
-  s16* right_ringbuf = ring_buffer[1].data();
   u8 p = *p_ptr;
   u8 sixstep = *sixstep_ptr;
 
@@ -1157,10 +1164,10 @@ static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu,
   *sixstep_ptr = sixstep;
 }
 
-void CDROM::ProcessXAADPCMSector()
+void CDROM::ProcessXAADPCMSector(const u8* raw_sector)
 {
   std::array<s16, CDXA::XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
-  CDXA::DecodeADPCMSector(m_sector_buffer.data(), sample_buffer.data(), m_xa_last_samples.data());
+  CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), m_xa_last_samples.data());
 
   // Only send to SPU if we're not muted.
   if (m_muted || m_adpcm_muted)
@@ -1173,13 +1180,15 @@ void CDROM::ProcessXAADPCMSector()
 
     if (m_last_sector_subheader.codinginfo.IsHalfSampleRate())
     {
-      ResampleXAADPCM<true, true>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer, &m_xa_resample_p,
-                                  &m_xa_resample_sixstep, m_cd_audio_volume_matrix);
+      ResampleXAADPCM<true, true>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer[0].data(),
+                                  m_xa_resample_ring_buffer[1].data(), &m_xa_resample_p, &m_xa_resample_sixstep,
+                                  m_cd_audio_volume_matrix);
     }
     else
     {
-      ResampleXAADPCM<true, false>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer,
-                                   &m_xa_resample_p, &m_xa_resample_sixstep, m_cd_audio_volume_matrix);
+      ResampleXAADPCM<true, false>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer[0].data(),
+                                   m_xa_resample_ring_buffer[1].data(), &m_xa_resample_p, &m_xa_resample_sixstep,
+                                   m_cd_audio_volume_matrix);
     }
   }
   else
@@ -1189,49 +1198,49 @@ void CDROM::ProcessXAADPCMSector()
 
     if (m_last_sector_subheader.codinginfo.IsHalfSampleRate())
     {
-      ResampleXAADPCM<false, true>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer,
-                                   &m_xa_resample_p, &m_xa_resample_sixstep, m_cd_audio_volume_matrix);
+      ResampleXAADPCM<false, true>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer[0].data(),
+                                   m_xa_resample_ring_buffer[1].data(), &m_xa_resample_p, &m_xa_resample_sixstep,
+                                   m_cd_audio_volume_matrix);
     }
     else
     {
-      ResampleXAADPCM<false, false>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer,
-                                    &m_xa_resample_p, &m_xa_resample_sixstep, m_cd_audio_volume_matrix);
+      ResampleXAADPCM<false, false>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer[0].data(),
+                                    m_xa_resample_ring_buffer[1].data(), &m_xa_resample_p, &m_xa_resample_sixstep,
+                                    m_cd_audio_volume_matrix);
     }
   }
 }
 
-void CDROM::ProcessCDDASector()
+void CDROM::ProcessCDDASector(const u8* raw_sector)
 {
   // For CDDA sectors, the whole sector contains the audio data.
   Log_DevPrintf("Read sector %u as CDDA", m_media->GetPositionOnDisc());
 
-  // Apply volume when pushing sectors to SPU.
-  if (!m_muted)
-  {
-    constexpr bool is_stereo = true;
-    constexpr u32 num_samples = RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
-    m_spu->EnsureCDAudioSpace(num_samples);
-
-    const u8* sector_ptr = m_sector_buffer.data();
-    for (u32 i = 0; i < num_samples; i++)
-    {
-      s16 samp_left, samp_right;
-      std::memcpy(&samp_left, sector_ptr, sizeof(samp_left));
-      std::memcpy(&samp_right, sector_ptr + sizeof(s16), sizeof(samp_right));
-      sector_ptr += sizeof(s16) * 2;
-
-      const s16 left = ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) +
-                       ApplyVolume(samp_right, m_cd_audio_volume_matrix[0][1]);
-      const s16 right = ApplyVolume(samp_left, m_cd_audio_volume_matrix[1][0]) +
-                        ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]);
-      m_spu->AddCDAudioSample(left, right);
-    }
-  }
-
   if (m_mode.report_audio)
     Log_ErrorPrintf("CDDA report not implemented");
 
-  m_sector_buffer.clear();
+  // Apply volume when pushing sectors to SPU.
+  if (m_muted)
+    return;
+
+  constexpr bool is_stereo = true;
+  constexpr u32 num_samples = RAW_SECTOR_OUTPUT_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
+  m_spu->EnsureCDAudioSpace(num_samples);
+
+  const u8* sector_ptr = raw_sector;
+  for (u32 i = 0; i < num_samples; i++)
+  {
+    s16 samp_left, samp_right;
+    std::memcpy(&samp_left, sector_ptr, sizeof(samp_left));
+    std::memcpy(&samp_right, sector_ptr + sizeof(s16), sizeof(samp_right));
+    sector_ptr += sizeof(s16) * 2;
+
+    const s16 left =
+      ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) + ApplyVolume(samp_right, m_cd_audio_volume_matrix[0][1]);
+    const s16 right =
+      ApplyVolume(samp_left, m_cd_audio_volume_matrix[1][0]) + ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]);
+    m_spu->AddCDAudioSample(left, right);
+  }
 }
 
 void CDROM::StopReading()
@@ -1256,18 +1265,10 @@ void CDROM::LoadDataFIFO()
     return;
   }
 
-  if (m_mode.read_raw_sector)
-  {
-    m_data_fifo.PushRange(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE,
-                          CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE);
-  }
-  else
-  {
-    m_data_fifo.PushRange(m_sector_buffer.data() + CDImage::SECTOR_SYNC_SIZE + 12, CDImage::DATA_SECTOR_SIZE);
-  }
+  m_data_fifo.PushRange(m_sector_buffer.data(), static_cast<u32>(m_sector_buffer.size()));
+  m_sector_buffer.clear();
 
   Log_DebugPrintf("Loaded %u bytes to data FIFO", m_data_fifo.GetSize());
-  m_sector_buffer.clear();
 }
 
 void CDROM::DrawDebugWindow()

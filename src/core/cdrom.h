@@ -3,6 +3,7 @@
 #include "common/cd_image.h"
 #include "common/cd_xa.h"
 #include "common/fifo_queue.h"
+#include "common/heap_array.h"
 #include "types.h"
 #include <array>
 #include <string>
@@ -18,16 +19,6 @@ class SPU;
 class CDROM
 {
 public:
-  enum : u32
-  {
-    RAW_SECTOR_SIZE = CDImage::RAW_SECTOR_SIZE,
-    SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
-    SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
-    XA_RESAMPLE_RING_BUFFER_SIZE = 32,
-    XA_RESAMPLE_ZIGZAG_TABLE_SIZE = 29,
-    XA_RESAMPLE_NUM_ZIGZAG_TABLES = 7
-  };
-
   CDROM();
   ~CDROM();
 
@@ -50,11 +41,22 @@ public:
   void DrawDebugWindow();
 
 private:
-  static constexpr u32 PARAM_FIFO_SIZE = 16;
-  static constexpr u32 RESPONSE_FIFO_SIZE = 16;
-  static constexpr u32 DATA_FIFO_SIZE = 4096;
-  static constexpr u32 NUM_INTERRUPTS = 32;
-  static constexpr u32 SECTOR_BUFFER_SIZE = (2352 - 12);
+  enum : u32
+  {
+    RAW_SECTOR_OUTPUT_SIZE = CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE,
+    DATA_SECTOR_OUTPUT_SIZE = CDImage::DATA_SECTOR_SIZE,
+    SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
+    SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
+    XA_RESAMPLE_RING_BUFFER_SIZE = 32,
+    XA_RESAMPLE_ZIGZAG_TABLE_SIZE = 29,
+    XA_RESAMPLE_NUM_ZIGZAG_TABLES = 7,
+
+    PARAM_FIFO_SIZE = 16,
+    RESPONSE_FIFO_SIZE = 16,
+    DATA_FIFO_SIZE = RAW_SECTOR_OUTPUT_SIZE,
+    NUM_INTERRUPTS = 32
+  };
+
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
   enum class Interrupt : u8
@@ -189,9 +191,9 @@ private:
   void BeginReading(bool cdda);
   void DoSeekComplete();
   void DoSectorRead();
-  void ProcessDataSector();
-  void ProcessXAADPCMSector();
-  void ProcessCDDASector();
+  void ProcessDataSector(const u8* raw_sector);
+  void ProcessXAADPCMSector(const u8* raw_sector);
+  void ProcessCDDASector(const u8* raw_sector);
   void StopReading();
   void BeginSeeking();
   void LoadDataFIFO();
