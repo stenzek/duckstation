@@ -71,6 +71,7 @@ void GPU_HW_OpenGL::UpdateResolutionScale()
 
   CreateFramebuffer();
   CompilePrograms();
+  UpdateDisplay();
 }
 
 void GPU_HW_OpenGL::DrawRendererStatsWindow()

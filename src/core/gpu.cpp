@@ -140,6 +140,7 @@ bool GPU::DoState(StateWrapper& sw)
     std::vector<u16> vram;
     sw.Do(&vram);
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, vram.data());
+    UpdateDisplay();
   }
   else
   {
