@@ -72,6 +72,7 @@ private:
   void DoStartBIOS();
   void DoLoadState(u32 index);
   void DoSaveState(u32 index);
+  void DoTogglePause();
 
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
@@ -120,6 +121,8 @@ private:
   u32 m_last_global_tick_counter = 0;
   Timer m_fps_timer;
 
+  bool m_paused = false;
+  bool m_quit_request = false;
   bool m_focus_main_menu_bar = false;
   bool m_about_window_open = false;
   bool m_speed_limiter_enabled = true;

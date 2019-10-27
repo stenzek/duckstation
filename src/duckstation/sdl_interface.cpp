@@ -264,6 +264,7 @@ bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filen
 
   ConnectDevices();
   UpdateAudioVisualSync();
+  m_paused = m_system->GetSettings().start_paused;
   return true;
 }
 
@@ -482,7 +483,7 @@ void SDLInterface::HandleSDLEvent(const SDL_Event* event)
     break;
 
     case SDL_QUIT:
-      m_running = false;
+      m_quit_request = true;
       break;
 
     case SDL_KEYDOWN:
@@ -575,6 +576,13 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
     {
       m_speed_limiter_temp_disabled = pressed;
       UpdateAudioVisualSync();
+    }
+    break;
+
+    case SDL_SCANCODE_SPACE:
+    {
+      if (pressed)
+        DoTogglePause();
     }
     break;
   }
@@ -697,16 +705,16 @@ void SDLInterface::DrawMainMenuBar()
 
   if (ImGui::BeginMenu("System"))
   {
-    if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
-      DoReset();
-
-    ImGui::MenuItem("Change Disc", nullptr, false, system_enabled);
-
     if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
       DoPowerOff();
 
-    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_speed_limiter_enabled, system_enabled))
-      UpdateAudioVisualSync();
+    if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
+      DoReset();
+
+    if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
+      DoTogglePause();
+
+    ImGui::MenuItem("Change Disc", nullptr, false, system_enabled);
 
     ImGui::Separator();
 
@@ -740,13 +748,18 @@ void SDLInterface::DrawMainMenuBar()
     ImGui::Separator();
 
     if (ImGui::MenuItem("Exit"))
-      m_running = false;
+      m_quit_request = true;
 
     ImGui::EndMenu();
   }
 
   if (ImGui::BeginMenu("Settings"))
   {
+    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_speed_limiter_enabled, system_enabled))
+      UpdateAudioVisualSync();
+
+    ImGui::Separator();
+
     if (ImGui::MenuItem("Fullscreen", nullptr, IsWindowFullscreen()))
       SDL_SetWindowFullscreen(m_window, IsWindowFullscreen() ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 
@@ -822,21 +835,29 @@ void SDLInterface::DrawMainMenuBar()
 
   if (m_system)
   {
-    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
+    if (!m_paused)
+    {
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
 
-    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
-    if (m_speed < 90.0f)
-      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-    else if (m_speed < 110.0f)
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+      const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
+      if (m_speed < 90.0f)
+        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
+      else if (m_speed < 110.0f)
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+      else
+        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
+      ImGui::Text("FPS: %.2f", m_fps);
+
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+      ImGui::Text("VPS: %.2f", m_vps);
+    }
     else
-      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
-
-    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
-    ImGui::Text("FPS: %.2f", m_fps);
-
-    ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
-    ImGui::Text("VPS: %.2f", m_vps);
+    {
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 50.0f);
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
+    }
   }
 
   ImGui::EndMainMenuBar();
@@ -909,7 +930,7 @@ void SDLInterface::DrawPoweredOffWindow()
 
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Exit", button_size))
-    m_running = false;
+    m_quit_request = true;
 
   ImGui::NewLine();
 
@@ -1077,6 +1098,7 @@ void SDLInterface::DoPowerOff()
   Assert(m_system);
 
   m_system.reset();
+  m_paused = false;
   m_display_texture = nullptr;
   AddOSDMessage("System powered off.");
   UpdateAudioVisualSync();
@@ -1130,11 +1152,18 @@ void SDLInterface::DoSaveState(u32 index)
   ClearImGuiFocus();
 }
 
+void SDLInterface::DoTogglePause()
+{
+  m_paused = !m_paused;
+  if (!m_paused)
+    m_fps_timer.Reset();
+}
+
 void SDLInterface::Run()
 {
   m_audio_stream->PauseOutput(false);
 
-  while (m_running)
+  while (!m_quit_request)
   {
     for (;;)
     {
@@ -1145,7 +1174,7 @@ void SDLInterface::Run()
         break;
     }
 
-    if (m_system)
+    if (m_system && !m_paused)
       m_system->RunFrame();
 
     Render();

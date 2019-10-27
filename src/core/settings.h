@@ -11,6 +11,8 @@ struct Settings
 {
   Settings();
 
+  bool start_paused = false;
+
   GPURenderer gpu_renderer = GPURenderer::HardwareOpenGL;
   u32 gpu_resolution_scale = 1;
   u32 max_gpu_resolution_scale = 1;
