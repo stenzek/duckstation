@@ -524,6 +524,10 @@ void CDROM::Execute(TickCount ticks)
           DoPauseComplete();
           break;
 
+        case DriveState::Stopping:
+          DoStopComplete();
+          break;
+
         case DriveState::ReadingID:
           DoIDRead();
           break;
@@ -721,6 +725,20 @@ void CDROM::ExecuteCommand()
 
       m_drive_state = DriveState::Pausing;
       m_drive_remaining_ticks = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;
+      m_system->SetDowncount(m_drive_remaining_ticks);
+
+      EndCommand();
+      return;
+    }
+
+    case Command::Stop:
+    {
+      const bool was_motor_on = m_secondary_status.motor_on;
+      Log_DebugPrintf("CDROM stop command");
+      SendACKAndStat();
+
+      m_drive_state = DriveState::Stopping;
+      m_drive_remaining_ticks = was_motor_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000;
       m_system->SetDowncount(m_drive_remaining_ticks);
 
       EndCommand();
@@ -974,6 +992,19 @@ void CDROM::DoPauseComplete()
   Log_DebugPrintf("Pause complete");
   m_drive_state = DriveState::Idle;
   m_secondary_status.ClearActiveBits();
+  m_sector_buffer.clear();
+
+  m_async_response_fifo.Clear();
+  m_async_response_fifo.Push(m_secondary_status.bits);
+  SetAsyncInterrupt(Interrupt::INT2);
+}
+
+void CDROM::DoStopComplete()
+{
+  Log_DebugPrintf("Stop complete");
+  m_drive_state = DriveState::Idle;
+  m_secondary_status.ClearActiveBits();
+  m_secondary_status.motor_on = false;
   m_sector_buffer.clear();
 
   m_async_response_fifo.Clear();
@@ -1294,8 +1325,8 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 7> drive_state_names = {
-      {"Idle", "Initializing", "Seeking", "Reading ID", "Reading", "Playing", "Pausing"}};
+    static constexpr std::array<const char*, 8> drive_state_names = {
+      {"Idle", "Initializing", "Seeking", "Reading ID", "Reading", "Playing", "Pausing", "Stopping"}};
 
     ImGui::Columns(3);
 

@@ -114,7 +114,8 @@ private:
     ReadingID,
     Reading,
     Playing,
-    Pausing
+    Pausing,
+    Stopping,
   };
 
   union StatusRegister
@@ -197,6 +198,7 @@ private:
   void DoInitComplete();
   void DoSeekComplete();
   void DoPauseComplete();
+  void DoStopComplete();
   void DoIDRead();
   void DoSectorRead();
   void ProcessDataSector(const u8* raw_sector);
