@@ -399,9 +399,13 @@ void GPU_HW_OpenGL::UpdateDisplay()
     const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
     const u32 scaled_flipped_vram_offset_y = m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
-    // fast path when both interlacing and 24-bit depth is off
-    if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
+    if (m_GPUSTAT.display_disable)
     {
+      m_system->GetHostInterface()->SetDisplayTexture(nullptr, 0, 0, 0, 0, m_crtc_state.display_aspect_ratio);
+    }
+    else if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
+    {
+      // fast path when both interlacing and 24-bit depth is off
       glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_vram_offset_x,
                          scaled_flipped_vram_offset_y, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0,
                          scaled_display_width, scaled_display_height, 1);

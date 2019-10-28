@@ -524,6 +524,14 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
+    case 0x03: // Display on/off
+    {
+      const bool disable = ConvertToBoolUnchecked(value & 0x01);
+      Log_DebugPrintf("Display %s", disable ? "disabled" : "enabled");
+      m_GPUSTAT.display_disable = disable;
+    }
+    break;
+
     case 0x04: // DMA Direction
     {
       m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
@@ -776,7 +784,7 @@ void GPU::DrawDebugStateWindow()
     ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
     ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
                 m_GPUSTAT.interlaced_field ? "odd" : "even");
-    ImGui::Text("Display Enable: %s", m_GPUSTAT.display_enable ? "Yes" : "No");
+    ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
     ImGui::Text("Drawing Even Line: %s", m_GPUSTAT.drawing_even_line ? "Yes" : "No");
     ImGui::NewLine();
 

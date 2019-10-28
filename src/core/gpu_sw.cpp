@@ -127,7 +127,12 @@ void GPU_SW::UpdateDisplay()
                                    VRAM_HEIGHT - vram_offset_y);
     display_aspect_ratio = m_crtc_state.display_aspect_ratio;
 
-    if (m_GPUSTAT.display_area_color_depth_24)
+    if (m_GPUSTAT.display_disable)
+    {
+      m_system->GetHostInterface()->SetDisplayTexture(nullptr, 0, 0, 0, 0, display_aspect_ratio);
+      return;
+    }
+    else if (m_GPUSTAT.display_area_color_depth_24)
     {
       CopyOut24Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
                    m_display_texture_buffer.data(), display_width, display_width, display_height);

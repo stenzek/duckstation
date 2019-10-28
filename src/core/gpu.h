@@ -284,7 +284,7 @@ protected:
     BitField<u32, bool, 20, 1> pal_mode;
     BitField<u32, bool, 21, 1> display_area_color_depth_24;
     BitField<u32, bool, 22, 1> vertical_interlace;
-    BitField<u32, bool, 23, 1> display_enable;
+    BitField<u32, bool, 23, 1> display_disable;
     BitField<u32, bool, 24, 1> interrupt_request;
     BitField<u32, bool, 25, 1> dma_data_request;
     BitField<u32, bool, 26, 1> ready_to_recieve_cmd;
