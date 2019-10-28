@@ -156,7 +156,6 @@ bool CDROM::InsertMedia(const char* filename)
     RemoveMedia();
 
   m_media = std::move(media);
-  // m_secondary_status.shell_open = false;
   return true;
 }
 
@@ -165,10 +164,19 @@ void CDROM::RemoveMedia()
   if (!m_media)
     return;
 
-  // TODO: Error while reading?
   Log_InfoPrintf("Removing CD...");
   m_media.reset();
-  // m_secondary_status.shell_open = true;
+
+  m_secondary_status.shell_open = true;
+
+  // If the drive was doing anything, we need to abort the command.
+  if (m_drive_state != DriveState::Idle)
+  {
+    // TODO: Verify this.
+    Log_WarningPrintf("Aborting drive operation");
+    SendAsyncErrorResponse(0x08);
+    m_drive_state = DriveState::Idle;
+  }
 }
 
 u8 CDROM::ReadRegister(u32 offset)
@@ -580,6 +588,11 @@ void CDROM::ExecuteCommand()
 
       // if bit 0 or 2 is set, send an additional byte
       SendACKAndStat();
+
+      // shell open bit is cleared after sending the status
+      if (m_media)
+        m_secondary_status.shell_open = false;
+
       EndCommand();
       return;
     }
