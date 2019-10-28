@@ -772,7 +772,7 @@ void SDLInterface::DrawMainMenuBar()
 
     if (ImGui::BeginMenu("Load State"))
     {
-      for (u32 i = 1; i <= 8; i++)
+      for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
       {
         if (ImGui::MenuItem(TinyString::FromFormat("State %u", i).GetCharArray()))
           DoLoadState(i);
