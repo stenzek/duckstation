@@ -70,6 +70,7 @@ private:
   void DoResume();
   void DoStartDisc();
   void DoStartBIOS();
+  void DoChangeDisc();
   void DoLoadState(u32 index);
   void DoSaveState(u32 index);
   void DoTogglePause();

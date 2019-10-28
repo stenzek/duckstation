@@ -752,7 +752,8 @@ void SDLInterface::DrawMainMenuBar()
 
     ImGui::Separator();
 
-    ImGui::MenuItem("Change Disc", nullptr, false, system_enabled);
+    if (ImGui::MenuItem("Change Disc", nullptr, false, system_enabled))
+      DoChangeDisc();
 
     if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
       DoFrameStep();
@@ -1164,6 +1165,20 @@ void SDLInterface::DoStartBIOS()
     return;
 
   ClearImGuiFocus();
+}
+
+void SDLInterface::DoChangeDisc()
+{
+  Assert(m_system);
+
+  nfdchar_t* path = nullptr;
+  if (!NFD_OpenDialog("bin,img,cue,exe,psexe", nullptr, &path) || !path || std::strlen(path) == 0)
+    return;
+
+  if (m_system->InsertMedia(path))
+    AddOSDMessage(SmallString::FromFormat("Switched CD to '%s'", path));
+  else
+    AddOSDMessage("Failed to switch CD. The log may contain further information.");
 }
 
 void SDLInterface::DoLoadState(u32 index)
