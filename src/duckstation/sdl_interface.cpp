@@ -598,6 +598,16 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
     break;
 
     case SDL_SCANCODE_HOME:
+    {
+      if (pressed && !repeat && m_system)
+      {
+        m_speed_limiter_enabled = !m_speed_limiter_enabled;
+        UpdateAudioVisualSync();
+        AddOSDMessage(m_speed_limiter_enabled ? "Speed limiter disabled" : "Speed limiter enabled");
+      }
+    }
+    break;
+
     case SDL_SCANCODE_END:
     {
       if (pressed)
