@@ -109,13 +109,13 @@ private:
   enum class DriveState : u8
   {
     Idle,
-    Initializing,
+    SpinningUp,
     Seeking,
     ReadingID,
     Reading,
     Playing,
     Pausing,
-    Stopping,
+    Stopping
   };
 
   union StatusRegister
@@ -195,7 +195,7 @@ private:
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
   void BeginReading(bool cdda);
-  void DoInitComplete();
+  void DoSpinUpComplete();
   void DoSeekComplete();
   void DoPauseComplete();
   void DoStopComplete();

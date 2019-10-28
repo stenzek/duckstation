@@ -512,8 +512,8 @@ void CDROM::Execute(TickCount ticks)
     {
       switch (m_drive_state)
       {
-        case DriveState::Initializing:
-          DoInitComplete();
+        case DriveState::SpinningUp:
+          DoSpinUpComplete();
           break;
 
         case DriveState::Seeking:
@@ -750,9 +750,33 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM init command");
       SendACKAndStat();
 
-      m_drive_state = DriveState::Initializing;
-      m_drive_remaining_ticks = 8000;
+      m_secondary_status.ClearActiveBits();
+      m_mode.bits = 0;
+
+      m_drive_state = DriveState::SpinningUp;
+      m_drive_remaining_ticks = 80000;
       m_system->SetDowncount(m_drive_remaining_ticks);
+
+      EndCommand();
+      return;
+    }
+    break;
+
+    case Command::MotorOn:
+    {
+      Log_DebugPrintf("CDROM motor on command");
+      if (m_secondary_status.motor_on)
+      {
+        SendErrorResponse(0x20);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        m_drive_state = DriveState::SpinningUp;
+        m_drive_remaining_ticks = 80000;
+        m_system->SetDowncount(m_drive_remaining_ticks);
+      }
 
       EndCommand();
       return;
@@ -945,12 +969,10 @@ void CDROM::BeginSeeking()
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
-void CDROM::DoInitComplete()
+void CDROM::DoSpinUpComplete()
 {
   m_drive_state = DriveState::Idle;
 
-  m_mode.bits = 0;
-  m_secondary_status.bits = 0;
   m_secondary_status.motor_on = true;
 
   m_async_response_fifo.Clear();
@@ -1326,7 +1348,7 @@ void CDROM::DrawDebugWindow()
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
     static constexpr std::array<const char*, 8> drive_state_names = {
-      {"Idle", "Initializing", "Seeking", "Reading ID", "Reading", "Playing", "Pausing", "Stopping"}};
+      {"Idle", "Spinning Up", "Seeking", "Reading ID", "Reading", "Playing", "Pausing", "Stopping"}};
 
     ImGui::Columns(3);
 
