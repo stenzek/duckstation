@@ -429,7 +429,7 @@ ivec2 GetCoords(vec2 fragcoord)
 {
   ivec2 icoords = ivec2(fragcoord);
   #if INTERLACED
-    if (((icoords.y - u_base_coords.z) & 1) != 0)
+    if ((((icoords.y - u_base_coords.z) / RESOLUTION_SCALE) & 1) != 0)
       discard;
   #endif
   return icoords;
@@ -480,7 +480,7 @@ void main()
     }
 
     // and normalize
-    o_col0 = vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255, 1.0);
+    o_col0 = vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, 1.0);
   #else
     // load and return
     o_col0 = texelFetch(samp0, u_base_coords.xy + icoords, 0);
