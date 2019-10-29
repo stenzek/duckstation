@@ -677,19 +677,20 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
   for (u32 i = 0; i < NUM_SAMPLES_PER_ADPCM_BLOCK; i++)
   {
     // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
-    const s16 sample = static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift;
-    const s32 interp_sample = s32(sample) + ((last_samples[0] * filter_pos) + (last_samples[1] * filter_neg) + 32) / 64;
+    s32 sample = s32(static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift);
+    sample += (last_samples[0] * filter_pos) >> 6;
+    sample += (last_samples[1] * filter_neg) >> 6;
 
-    current_block_samples[i] = Clamp16(interp_sample);
+    current_block_samples[i] = Clamp16(sample);
     last_samples[1] = last_samples[0];
-    last_samples[0] = interp_sample;
+    last_samples[0] = sample;
   }
 
   std::copy(last_samples, last_samples + countof(last_samples), adpcm_last_samples.begin());
   current_block_flags.bits = block.flags.bits;
 }
 
-SPU::SampleFormat SPU::Voice::SampleBlock(s32 index) const
+s16 SPU::Voice::SampleBlock(s32 index) const
 {
   if (index < 0)
   {
@@ -832,6 +833,10 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     }
   }
 
+  // interpolate/sample and apply ADSR volume
+  const s32 sample = ApplyVolume(voice.Interpolate(), voice.regs.adsr_volume);
+  voice.TickADSR();
+
   // TODO: Pulse modulation
   u16 step = voice.regs.adpcm_sample_rate;
   step = std::min<u16>(step, 0x4000);
@@ -863,10 +868,6 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       voice.current_address += 2;
     }
   }
-
-  // interpolate/sample and apply ADSR volume
-  const s32 sample = ApplyVolume(voice.Interpolate(), voice.regs.adsr_volume);
-  voice.TickADSR();
 
   // apply per-channel volume
   const s32 left = ApplyVolume(sample, voice.regs.volume_left.GetVolume());

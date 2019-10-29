@@ -14,8 +14,6 @@ class InterruptController;
 class SPU
 {
 public:
-  using SampleFormat = s16;
-
   SPU();
   ~SPU();
 
@@ -221,8 +219,8 @@ private:
     VoiceRegisters regs;
     VoiceCounter counter;
     ADPCMFlags current_block_flags;
-    std::array<SampleFormat, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
-    std::array<SampleFormat, 3> previous_block_last_samples;
+    std::array<s16, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
+    std::array<s16, 3> previous_block_last_samples;
     std::array<s32, 2> adpcm_last_samples;
 
     ADSRPhase adsr_phase;
@@ -238,7 +236,7 @@ private:
     void KeyOff();
 
     void DecodeBlock(const ADPCMBlock& block);
-    SampleFormat SampleBlock(s32 index) const;
+    s16 SampleBlock(s32 index) const;
     s16 Interpolate() const;
 
     // Switches to the specified phase, filling in target.
