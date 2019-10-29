@@ -101,7 +101,6 @@ protected:
   {
     return std::make_tuple(static_cast<u8>(texcoord), static_cast<u8>(texcoord >> 8));
   }
-  static constexpr u16 PackTexcoord(u8 x, u8 y) { return ZeroExtend16(x) | (ZeroExtend16(y) << 8); }
 
   static constexpr std::tuple<u8, u8, u8> UnpackColorRGB24(u32 rgb24)
   {

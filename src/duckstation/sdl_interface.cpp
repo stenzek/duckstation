@@ -603,7 +603,7 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
       {
         m_speed_limiter_enabled = !m_speed_limiter_enabled;
         UpdateAudioVisualSync();
-        AddOSDMessage(m_speed_limiter_enabled ? "Speed limiter disabled" : "Speed limiter enabled");
+        AddOSDMessage(m_speed_limiter_enabled ? "Speed limiter enabled." : "Speed limiter disabled.");
       }
     }
     break;

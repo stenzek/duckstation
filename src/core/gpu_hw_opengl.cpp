@@ -221,8 +221,7 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
   glVertexAttribIPointer(0, 2, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
                         reinterpret_cast<void*>(offsetof(HWVertex, color)));
-  glVertexAttribPointer(2, 2, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
-                        reinterpret_cast<void*>(offsetof(HWVertex, texcoord)));
+  glVertexAttribIPointer(2, 2, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, texcoord)));
   glVertexAttribIPointer(3, 1, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, texpage)));
   glBindVertexArray(0);
 
@@ -289,7 +288,7 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, TransparencyRenderMode tra
   prog.BindAttribute(1, "a_col0");
   if (textured)
   {
-    prog.BindAttribute(2, "a_tex0");
+    prog.BindAttribute(2, "a_texcoord");
     prog.BindAttribute(3, "a_texpage");
   }
 

@@ -20,8 +20,10 @@ protected:
     s32 y;
     u32 color;
     u32 texpage;
-    u16 texcoord;
-    u16 padding;
+    u32 texcoord;
+
+    // 16-bit texcoords are needed for 256 extent rectangles
+    static u32 PackTexcoord(u16 x, u16 y) { return ZeroExtend32(x) | (ZeroExtend32(y) << 16); }
   };
 
   struct HWRenderBatch

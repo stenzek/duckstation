@@ -46,11 +46,14 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         hw_vert.texpage = texpage;
 
         if (textured)
-          hw_vert.texcoord = Truncate16(command_ptr[buffer_pos++]);
+        {
+          const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(command_ptr[buffer_pos++]));
+          hw_vert.texcoord = HWVertex::PackTexcoord(texcoord_x, texcoord_y);
+        }
         else
+        {
           hw_vert.texcoord = 0;
-
-        hw_vert.padding = 0;
+        }
 
         m_batch.vertices.push_back(hw_vert);
         if (restart_strip)
@@ -74,9 +77,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const VertexPosition vp{command_ptr[buffer_pos++]};
       const s32 pos_left = vp.x;
       const s32 pos_top = vp.y;
-      const auto [tex_left, tex_top] = UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
-      s32 rectangle_width;
-      s32 rectangle_height;
+      const auto [texcoord_x, texcoord_y] =
+        UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
+      const u16 tex_left = ZeroExtend16(texcoord_x);
+      const u16 tex_top = ZeroExtend16(texcoord_y);
+      u32 rectangle_width;
+      u32 rectangle_height;
       switch (rc.rectangle_size)
       {
         case DrawRectangleSize::R1x1:
@@ -92,23 +98,27 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
           rectangle_height = 16;
           break;
         default:
-          rectangle_width = static_cast<s32>(command_ptr[buffer_pos] & UINT32_C(0xFFFF));
-          rectangle_height = static_cast<s32>(command_ptr[buffer_pos] >> 16);
+          rectangle_width = command_ptr[buffer_pos] & 0xFFFF;
+          rectangle_height = command_ptr[buffer_pos] >> 16;
           break;
       }
 
       // TODO: This should repeat the texcoords instead of stretching
-      const s32 pos_right = pos_left + rectangle_width;
-      const s32 pos_bottom = pos_top + rectangle_height;
-      const u8 tex_right = static_cast<u8>(tex_left + (rectangle_width - 1));
-      const u8 tex_bottom = static_cast<u8>(tex_top + (rectangle_height - 1));
+      const s32 pos_right = pos_left + static_cast<s32>(rectangle_width);
+      const s32 pos_bottom = pos_top + static_cast<s32>(rectangle_height);
+      const u16 tex_right = tex_left + static_cast<u16>(rectangle_width);
+      const u16 tex_bottom = tex_top + static_cast<u16>(rectangle_height);
 
-      m_batch.vertices.push_back(HWVertex{pos_left, pos_top, color, texpage, PackTexcoord(tex_left, tex_top)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_left, pos_top, color, texpage, HWVertex::PackTexcoord(tex_left, tex_top)});
       if (restart_strip)
         m_batch.vertices.push_back(m_batch.vertices.back());
-      m_batch.vertices.push_back(HWVertex{pos_right, pos_top, color, texpage, PackTexcoord(tex_right, tex_top)});
-      m_batch.vertices.push_back(HWVertex{pos_left, pos_bottom, color, texpage, PackTexcoord(tex_left, tex_bottom)});
-      m_batch.vertices.push_back(HWVertex{pos_right, pos_bottom, color, texpage, PackTexcoord(tex_right, tex_bottom)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_right, pos_top, color, texpage, HWVertex::PackTexcoord(tex_right, tex_top)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_left, pos_bottom, color, texpage, HWVertex::PackTexcoord(tex_left, tex_bottom)});
+      m_batch.vertices.push_back(
+        HWVertex{pos_right, pos_bottom, color, texpage, HWVertex::PackTexcoord(tex_right, tex_bottom)});
     }
     break;
 
@@ -197,7 +207,7 @@ std::string GPU_HW::GenerateVertexShader(bool textured)
   ss << R"(
 in ivec2 a_pos;
 in vec4 a_col0;
-in vec2 a_tex0;
+in int a_texcoord;
 in int a_texpage;
 
 out vec3 v_col0;
@@ -217,7 +227,7 @@ void main()
 
   v_col0 = a_col0.rgb;
   #if TEXTURED
-    v_tex0 = a_tex0;
+    v_tex0 = vec2(float(a_texcoord & 0xFFFF), float(a_texcoord >> 16)) / vec2(255.0);
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
