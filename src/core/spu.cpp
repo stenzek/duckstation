@@ -1035,7 +1035,7 @@ void SPU::DrawDebugStateWindow()
       ImGui::NextColumn();
       ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.adpcm_repeat_address));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 16383.0f) * 44100.0f);
+      ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
       ImGui::NextColumn();
       ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.volume_left.bits));
       ImGui::NextColumn();
