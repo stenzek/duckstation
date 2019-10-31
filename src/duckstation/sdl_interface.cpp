@@ -274,6 +274,31 @@ void SDLInterface::ConnectDevices()
   m_system->SetController(0, m_controller);
 }
 
+void SDLInterface::ResetPerformanceCounters()
+{
+  if (m_system)
+  {
+    m_last_frame_number = m_system->GetFrameNumber();
+    m_last_internal_frame_number = m_system->GetInternalFrameNumber();
+    m_last_global_tick_counter = m_system->GetGlobalTickCounter();
+  }
+  else
+  {
+    m_last_frame_number = 0;
+    m_last_internal_frame_number = 0;
+    m_last_global_tick_counter = 0;
+  }
+  m_fps_timer.Reset();
+}
+
+void SDLInterface::ShutdownSystem()
+{
+  m_system.reset();
+  m_paused = false;
+  m_display_texture = nullptr;
+  UpdateAudioVisualSync();
+}
+
 std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nullptr */,
                                                    const char* exp1_filename /* = nullptr */,
                                                    const char* save_state_filename /* = nullptr */)
@@ -942,7 +967,8 @@ void SDLInterface::DrawPoweredOffWindow()
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0xFF575757);
 
   ImGui::SetCursorPosX(button_left);
-  ImGui::Button("Resume", button_size);
+  if (ImGui::Button("Resume", button_size))
+    DoResume();
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
@@ -1131,25 +1157,34 @@ void SDLInterface::DrawOSDMessages()
 void SDLInterface::DoReset()
 {
   m_system->Reset();
-  m_last_frame_number = 0;
-  m_last_internal_frame_number = 0;
-  m_last_global_tick_counter = 0;
-  m_fps_timer.Reset();
+  ResetPerformanceCounters();
   AddOSDMessage("System reset.");
 }
 
 void SDLInterface::DoPowerOff()
 {
   Assert(m_system);
-
-  m_system.reset();
-  m_paused = false;
-  m_display_texture = nullptr;
+  ShutdownSystem();
   AddOSDMessage("System powered off.");
-  UpdateAudioVisualSync();
 }
 
-void SDLInterface::DoResume() {}
+void SDLInterface::DoResume()
+{
+  Assert(!m_system);
+  if (!InitializeSystem())
+    return;
+
+  if (!LoadState(RESUME_SAVESTATE_FILENAME))
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Load state failed",
+                             "Failed to load the resume save state. Stopping emulation.", m_window);
+    ShutdownSystem();
+    return;
+  }
+
+  ResetPerformanceCounters();
+  ClearImGuiFocus();
+}
 
 void SDLInterface::DoStartDisc()
 {
@@ -1163,6 +1198,7 @@ void SDLInterface::DoStartDisc()
   if (!InitializeSystem(path, nullptr))
     return;
 
+  ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1174,6 +1210,7 @@ void SDLInterface::DoStartBIOS()
   if (!InitializeSystem(nullptr, nullptr))
     return;
 
+  ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1189,6 +1226,9 @@ void SDLInterface::DoChangeDisc()
     AddOSDMessage(SmallString::FromFormat("Switched CD to '%s'", path));
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
+
+  ResetPerformanceCounters();
+  ClearImGuiFocus();
 }
 
 void SDLInterface::DoLoadState(u32 index)
@@ -1197,10 +1237,7 @@ void SDLInterface::DoLoadState(u32 index)
     return;
 
   LoadState(GetSaveStateFilename(index));
-  m_last_frame_number = m_system->GetFrameNumber();
-  m_last_internal_frame_number = m_system->GetInternalFrameNumber();
-  m_last_global_tick_counter = m_system->GetGlobalTickCounter();
-  m_fps_timer.Reset();
+  ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1316,5 +1353,17 @@ void SDLInterface::Run()
         m_fps_timer.Reset();
       }
     }
+  }
+
+  // Save state on exit so it can be resumed
+  if (m_system)
+  {
+    if (!SaveState(RESUME_SAVESTATE_FILENAME))
+    {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Save state failed",
+                               "Saving state failed, you will not be able to resume this session.", m_window);
+    }
+
+    ShutdownSystem();
   }
 }

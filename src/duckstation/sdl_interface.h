@@ -39,6 +39,7 @@ public:
 
 private:
   static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
+  static constexpr char RESUME_SAVESTATE_FILENAME[] = "savestate_resume.bin";
 
   struct OSDMessage
   {
@@ -61,6 +62,8 @@ private:
 
   bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
   void ConnectDevices();
+  void ResetPerformanceCounters();
+  void ShutdownSystem();
 
   // We only pass mouse input through if it's grabbed
   bool IsWindowFullscreen() const;
