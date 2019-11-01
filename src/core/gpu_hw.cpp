@@ -241,7 +241,7 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode)
+std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode, bool dithering)
 {
   const TextureMode actual_texture_mode = texture_mode & ~TextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & TextureMode::RawTextureBit) == TextureMode::RawTextureBit;
@@ -258,6 +258,16 @@ std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, Textu
   DefineMacro(ss, "PALETTE_4_BIT", actual_texture_mode == GPU::TextureMode::Palette4Bit);
   DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPU::TextureMode::Palette8Bit);
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
+  DefineMacro(ss, "DITHERING", dithering);
+
+  ss << "const int[16] s_dither_values = int[16]( ";
+  for (u32 i = 0; i < 16; i++)
+  {
+    if (i > 0)
+      ss << ", ";
+    ss << DITHER_MATRIX[i / 4][i % 4];
+  }
+  ss << " );\n";
 
   ss << R"(
 in vec3 v_col0;
@@ -270,6 +280,22 @@ uniform vec2 u_transparent_alpha;
 #endif
 
 out vec4 o_col0;
+
+vec4 ApplyDithering(vec4 col)
+{
+  ivec3 icol = ivec3(col.rgb * vec3(255.0, 255.0, 255.0));
+
+  // apply dither
+  ivec2 fc = ivec2(gl_FragCoord.xy) & ivec2(3, 3);
+  int offset = s_dither_values[fc.y * 4 + fc.x];
+  icol += ivec3(offset, offset, offset);
+
+  // saturate
+  icol = clamp(icol, ivec3(0, 0, 0), ivec3(255, 255, 255));
+
+  // clip to 5-bit range
+  return vec4((icol.rgb >> 3) / vec3(31.0, 31.0, 31.0), col.a);
+}
 
 #if TEXTURED
 ivec2 ApplyNativeTextureWindow(ivec2 coords)
@@ -369,6 +395,10 @@ void main()
       // Mask bit is cleared for untextured polygons.
       o_col0 = vec4(v_col0, 0.0);
     #endif
+  #endif
+
+  #if DITHERING
+    o_col0 = ApplyDithering(o_col0);
   #endif
 }
 )";
@@ -547,13 +577,15 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   const TransparencyMode transparency_mode =
     rc.transparency_enable ? m_render_state.transparency_mode : TransparencyMode::Disabled;
   const HWPrimitive rc_primitive = GetPrimitiveForCommand(rc);
+  const bool dithering_enable = rc.IsDitheringEnabled() ? m_GPUSTAT.dither_enable : false;
   if (!IsFlushed())
   {
     const u32 max_added_vertices = num_vertices + 2;
     const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
     if (buffer_overflow || rc_primitive == HWPrimitive::LineStrip || m_batch.texture_mode != texture_mode ||
         m_batch.transparency_mode != transparency_mode || m_batch.primitive != rc_primitive ||
-        m_render_state.IsTexturePageChanged() || m_render_state.IsTextureWindowChanged())
+        dithering_enable != m_batch.dithering || m_render_state.IsTexturePageChanged() ||
+        m_render_state.IsTextureWindowChanged())
     {
       FlushRender();
     }
@@ -563,6 +595,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   m_batch.primitive = rc_primitive;
   m_batch.texture_mode = texture_mode;
   m_batch.transparency_mode = transparency_mode;
+  m_batch.dithering = dithering_enable;
 
   if (m_render_state.IsTexturePageChanged())
   {

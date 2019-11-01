@@ -42,8 +42,6 @@ private:
     u32 num_vram_read_texture_updates;
   };
 
-  void DrawRendererStatistics();
-
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
   void SetMaxResolutionScale();
@@ -55,7 +53,7 @@ private:
   void CreateVertexBuffer();
 
   bool CompilePrograms();
-  bool CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode);
+  bool CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode, bool dithering);
   void SetDrawState(HWBatchRenderMode render_mode);
 
   // downsample texture - used for readbacks at >1xIR.
@@ -72,8 +70,8 @@ private:
   bool m_drawing_area_changed = true;
   bool m_show_renderer_statistics = false;
 
-  std::array<std::array<GL::Program, 9>, 4> m_render_programs;  // [render_mode][texture_mode]
-  std::array<std::array<GL::Program, 2>, 2> m_display_programs; // [depth_24][interlaced]
+  std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
+  std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};

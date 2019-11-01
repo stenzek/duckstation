@@ -181,10 +181,22 @@ protected:
     BitField<u32, bool, 28, 1> shading_enable;              // 0 - flat, 1 = gouroud
     BitField<u32, Primitive, 29, 21> primitive;
 
-    // Helper functions.
-    bool IsTextureEnabled() const { return (primitive != Primitive::Line && texture_enable); }
-    bool IsTextureBlendingEnabled() const { return (IsTextureEnabled() && !raw_texture_enable); }
-    bool IsTransparencyEnabled() const { return transparency_enable; }
+    // Returns true if dithering should be enabled. Depends on the primitive type.
+    bool IsDitheringEnabled() const
+    {
+      switch (primitive)
+      {
+        case Primitive::Polygon:
+          return shading_enable || !raw_texture_enable;
+
+        case Primitive::Line:
+          return true;
+
+        case Primitive::Rectangle:
+        default:
+          return false;
+      }
+    }
   };
 
   // TODO: Use BitField to do sign extending instead
@@ -240,6 +252,12 @@ protected:
       return ((r_ << 3) | (r_ & 7)) | (((g_ << 3) | (g_ & 7)) << 8) | (((b_ << 3) | (b_ & 7)) << 16);
     }
   };
+
+  // 4x4 dither matrix.
+  static constexpr s32 DITHER_MATRIX[4][4] = {{-4, +0, -3, +1},  // row 0
+                                              {+2, -2, +3, -1},  // row 1
+                                              {-3, +1, -4, +0},  // row 2
+                                              {+4, -1, +2, -2}}; // row 3
 
   void SoftReset();
 

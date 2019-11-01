@@ -44,14 +44,15 @@ protected:
 
   struct HWRenderBatch
   {
-    HWPrimitive primitive;
-    TextureMode texture_mode;
     u32 texture_page_x;
     u32 texture_page_y;
     u32 texture_palette_x;
     u32 texture_palette_y;
+    HWPrimitive primitive;
+    TextureMode texture_mode;
     TransparencyMode transparency_mode;
     std::array<u8, 4> texture_window_values;
+    bool dithering;
 
     std::vector<HWVertex> vertices;
 
@@ -100,7 +101,7 @@ protected:
   }
 
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode);
+  std::string GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode, bool dithering);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);

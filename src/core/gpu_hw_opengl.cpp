@@ -121,8 +121,6 @@ void GPU_HW_OpenGL::DrawRendererStatsWindow()
     ImGui::NextColumn();
     ImGui::Text("%u", m_last_stats.num_vertices);
     ImGui::NextColumn();
-
-
   }
 
   ImGui::End();
@@ -246,10 +244,14 @@ bool GPU_HW_OpenGL::CompilePrograms()
   {
     for (u32 texture_mode = 0; texture_mode < 9; texture_mode++)
     {
-      if (!CompileProgram(m_render_programs[render_mode][texture_mode], static_cast<HWBatchRenderMode>(render_mode),
-                          static_cast<TextureMode>(texture_mode)))
+      for (u8 dithering = 0; dithering < 2; dithering++)
       {
-        return false;
+        if (!CompileProgram(m_render_programs[render_mode][texture_mode][dithering],
+                            static_cast<HWBatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
+                            ConvertToBoolUnchecked(dithering)))
+        {
+          return false;
+        }
       }
     }
   }
@@ -280,11 +282,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
   return true;
 }
 
-bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode)
+bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode,
+                                   bool dithering)
 {
   const bool textured = texture_mode != TextureMode::Disabled;
   const std::string vs = GenerateVertexShader(textured);
-  const std::string fs = GenerateFragmentShader(render_mode, texture_mode);
+  const std::string fs = GenerateFragmentShader(render_mode, texture_mode, dithering);
   if (!prog.Compile(vs.c_str(), fs.c_str()))
     return false;
 
@@ -319,7 +322,8 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_m
 
 void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
 {
-  const GL::Program& prog = m_render_programs[static_cast<u32>(render_mode)][static_cast<u32>(m_batch.texture_mode)];
+  const GL::Program& prog =
+    m_render_programs[static_cast<u32>(render_mode)][static_cast<u32>(m_batch.texture_mode)][m_batch.dithering];
   prog.Bind();
 
   prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);
