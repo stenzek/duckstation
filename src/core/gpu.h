@@ -243,6 +243,15 @@ protected:
              (static_cast<u16>(c_) << 15);
     }
 
+    void SetRGB24Dithered(u32 x, u32 y, u8 r8, u8 g8, u8 b8, bool c_ = false)
+    {
+      const s32 offset = DITHER_MATRIX[y & 3][x & 3];
+      r8 = static_cast<u8>(std::clamp<s32>(static_cast<s32>(ZeroExtend32(r8)) + offset, 0, 255));
+      g8 = static_cast<u8>(std::clamp<s32>(static_cast<s32>(ZeroExtend32(g8)) + offset, 0, 255));
+      b8 = static_cast<u8>(std::clamp<s32>(static_cast<s32>(ZeroExtend32(b8)) + offset, 0, 255));
+      SetRGB24(r8, g8, b8, c_);
+    }
+
     u32 ToRGB24() const
     {
       const u32 r_ = ZeroExtend32(r.GetValue());

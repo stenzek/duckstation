@@ -58,7 +58,7 @@ protected:
 
   static bool IsClockwiseWinding(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
 
-  void ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y);
+  void ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y, bool dithering);
   void DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
   void DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b,
                      u8 origin_texcoord_x, u8 origin_texcoord_y);

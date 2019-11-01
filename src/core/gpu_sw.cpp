@@ -357,7 +357,8 @@ void GPU_SW::DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* 
         const u8 texcoord_x = Interpolate(v0->texcoord_x, v1->texcoord_x, v2->texcoord_x, b0, b1, b2, ws);
         const u8 texcoord_y = Interpolate(v0->texcoord_y, v1->texcoord_y, v2->texcoord_y, b0, b1, b2, ws);
 
-        ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y);
+        ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y,
+                   rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable);
       }
 
       row_w0 += a12;
@@ -395,13 +396,13 @@ void GPU_SW::DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 wid
 
       const u8 texcoord_x = Truncate8(ZeroExtend32(origin_texcoord_x) + offset_x);
 
-      ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y);
+      ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y, false);
     }
   }
 }
 
 void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x,
-                        u8 texcoord_y)
+                        u8 texcoord_y, bool dithering)
 {
   VRAMPixel color;
   bool transparent = true;
@@ -461,15 +462,21 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
     }
     else
     {
-      color.SetRGB24(
-        Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetR8()) * ZeroExtend16(color_r)) >> 7, 0xFF)),
-        Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetG8()) * ZeroExtend16(color_g)) >> 7, 0xFF)),
-        Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetB8()) * ZeroExtend16(color_b)) >> 7, 0xFF)));
+      const u8 r = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetR8()) * ZeroExtend16(color_r)) >> 7, 0xFF));
+      const u8 g = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetG8()) * ZeroExtend16(color_g)) >> 7, 0xFF));
+      const u8 b = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetB8()) * ZeroExtend16(color_b)) >> 7, 0xFF));
+      if (dithering)
+        color.SetRGB24Dithered(x, y, r, g, b);
+      else
+        color.SetRGB24(r, g, b);
     }
   }
   else
   {
-    color.SetRGB24(color_r, color_g, color_b);
+    if (dithering)
+      color.SetRGB24Dithered(x, y, color_r, color_g, color_b);
+    else
+      color.SetRGB24(color_r, color_g, color_b);
   }
 
   if (rc.transparency_enable && transparent)
