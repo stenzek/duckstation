@@ -35,9 +35,11 @@ protected:
 private:
   struct GLStats
   {
-    u32 num_vram_read_texture_updates;
     u32 num_batches;
     u32 num_vertices;
+    u32 num_vram_reads;
+    u32 num_vram_writes;
+    u32 num_vram_read_texture_updates;
   };
 
   void DrawRendererStatistics();

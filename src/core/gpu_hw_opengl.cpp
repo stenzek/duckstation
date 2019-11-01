@@ -78,7 +78,7 @@ void GPU_HW_OpenGL::DrawRendererStatsWindow()
 {
   GPU_HW::DrawRendererStatsWindow();
 
-  ImGui::SetNextWindowSize(ImVec2(300.0f, 130.0f), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(300.0f, 150.0f), ImGuiCond_FirstUseEver);
 
   const bool is_null_frame = m_stats.num_batches == 0;
   if (!is_null_frame)
@@ -91,6 +91,21 @@ void GPU_HW_OpenGL::DrawRendererStatsWindow()
   {
     ImGui::Columns(2);
     ImGui::SetColumnWidth(0, 200.0f);
+
+    ImGui::TextUnformatted("GPU Active In This Frame: ");
+    ImGui::NextColumn();
+    ImGui::Text("%s", is_null_frame ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Reads: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", m_last_stats.num_vram_reads);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Writes: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", m_last_stats.num_vram_writes);
+    ImGui::NextColumn();
 
     ImGui::TextUnformatted("VRAM Read Texture Updates:");
     ImGui::NextColumn();
@@ -107,10 +122,7 @@ void GPU_HW_OpenGL::DrawRendererStatsWindow()
     ImGui::Text("%u", m_last_stats.num_vertices);
     ImGui::NextColumn();
 
-    ImGui::TextUnformatted("GPU Active In This Frame: ");
-    ImGui::NextColumn();
-    ImGui::Text("%s", is_null_frame ? "Yes" : "No");
-    ImGui::NextColumn();
+
   }
 
   ImGui::End();
@@ -510,6 +522,8 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
     source_ptr -= source_stride;
     dst_ptr += dst_stride;
   }
+
+  m_stats.num_vram_reads++;
 }
 
 void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
@@ -583,6 +597,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                       scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
   }
+
+  m_stats.num_vram_writes++;
 }
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
