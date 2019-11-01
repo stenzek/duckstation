@@ -862,7 +862,7 @@ void SDLInterface::DrawMainMenuBar()
                 nullptr, current_internal_resolution == scale))
           {
             m_system->GetSettings().gpu_resolution_scale = scale;
-            m_system->GetGPU()->UpdateResolutionScale();
+            m_system->GetGPU()->UpdateSettings();
           }
         }
 
@@ -872,10 +872,13 @@ void SDLInterface::DrawMainMenuBar()
       if (ImGui::MenuItem("VSync", nullptr, &m_system->GetSettings().gpu_vsync))
         UpdateAudioVisualSync();
 
+      if (ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_system->GetSettings().gpu_true_color))
+        m_system->GetGPU()->UpdateSettings();
+
       if (ImGui::MenuItem("Display Linear Filtering", nullptr, &m_system->GetSettings().display_linear_filtering))
       {
         // this has to update the display texture for now..
-        m_system->GetGPU()->UpdateResolutionScale();
+        m_system->GetGPU()->UpdateSettings();
       }
 
       ImGui::EndMenu();
@@ -1300,7 +1303,7 @@ void SDLInterface::DoModifyInternalResolution(s32 increment)
     return;
 
   settings.gpu_resolution_scale = new_resolution_scale;
-  m_system->GetGPU()->UpdateResolutionScale();
+  m_system->GetGPU()->UpdateSettings();
 
   AddOSDMessage(TinyString::FromFormat("Resolution scale set to %ux (%ux%u)", settings.gpu_resolution_scale,
                                        GPU::VRAM_WIDTH * settings.gpu_resolution_scale,

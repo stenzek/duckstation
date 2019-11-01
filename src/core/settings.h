@@ -17,6 +17,7 @@ struct Settings
   u32 gpu_resolution_scale = 1;
   u32 max_gpu_resolution_scale = 1;
   bool gpu_vsync = true;
+  bool gpu_true_color = false;
   bool display_linear_filtering = true;
 
   struct DebugSettings

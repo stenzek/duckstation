@@ -1,6 +1,8 @@
 #include "gpu_hw.h"
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
+#include "settings.h"
+#include "system.h"
 #include <sstream>
 Log_SetChannel(GPU_HW);
 
@@ -13,6 +15,13 @@ void GPU_HW::Reset()
   GPU::Reset();
 
   m_batch = {};
+}
+
+void GPU_HW::UpdateSettings()
+{
+  GPU::UpdateSettings();
+
+  m_true_color = m_system->GetSettings().gpu_true_color;
 }
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
@@ -259,6 +268,7 @@ std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, Textu
   DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPU::TextureMode::Palette8Bit);
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
+  DefineMacro(ss, "TRUE_COLOR", m_true_color);
 
   ss << "const int[16] s_dither_values = int[16]( ";
   for (u32 i = 0; i < 16; i++)
@@ -384,7 +394,9 @@ void main()
   #endif
 
   // Clip to 15-bit range
-  icolor = TruncateTo15Bit(icolor);
+  #if !TRUE_COLOR
+    icolor = TruncateTo15Bit(icolor);
+  #endif
 
   // Normalize
   vec3 color = vec3(icolor) / vec3(255.0, 255.0, 255.0);
@@ -585,7 +597,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   const TransparencyMode transparency_mode =
     rc.transparency_enable ? m_render_state.transparency_mode : TransparencyMode::Disabled;
   const HWPrimitive rc_primitive = GetPrimitiveForCommand(rc);
-  const bool dithering_enable = rc.IsDitheringEnabled() ? m_GPUSTAT.dither_enable : false;
+  const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
   if (!IsFlushed())
   {
     const u32 max_added_vertices = num_vertices + 2;

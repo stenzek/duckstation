@@ -12,6 +12,7 @@ public:
   virtual ~GPU_HW();
 
   virtual void Reset() override;
+  virtual void UpdateSettings() override;
 
 protected:
   enum class HWPrimitive : u8
@@ -107,6 +108,7 @@ protected:
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
 
   HWRenderBatch m_batch = {};
+  bool m_true_color = false;
 
 private:
   static HWPrimitive GetPrimitiveForCommand(RenderCommand rc);

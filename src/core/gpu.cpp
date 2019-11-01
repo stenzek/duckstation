@@ -26,7 +26,7 @@ bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
   return true;
 }
 
-void GPU::UpdateResolutionScale()
+void GPU::UpdateSettings()
 {
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
 }

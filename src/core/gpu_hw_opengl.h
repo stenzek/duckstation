@@ -18,7 +18,7 @@ public:
 
   void ResetGraphicsAPIState() override;
   void RestoreGraphicsAPIState() override;
-  void UpdateResolutionScale() override;
+  void UpdateSettings() override;
 
   void DrawRendererStatsWindow() override;
 

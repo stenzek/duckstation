@@ -65,9 +65,9 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glBindVertexArray(m_vao_id);
 }
 
-void GPU_HW_OpenGL::UpdateResolutionScale()
+void GPU_HW_OpenGL::UpdateSettings()
 {
-  GPU_HW::UpdateResolutionScale();
+  GPU_HW::UpdateSettings();
 
   CreateFramebuffer();
   CompilePrograms();
@@ -322,8 +322,8 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_m
 
 void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
 {
-  const GL::Program& prog =
-    m_render_programs[static_cast<u32>(render_mode)][static_cast<u32>(m_batch.texture_mode)][m_batch.dithering];
+  const GL::Program& prog = m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
+                                             [BoolToUInt8(m_batch.dithering)];
   prog.Bind();
 
   prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);

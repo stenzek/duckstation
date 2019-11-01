@@ -55,7 +55,7 @@ public:
   // Resolution scaling.
   u32 GetResolutionScale() const { return m_resolution_scale; }
   u32 GetMaxResolutionScale() const { return m_max_resolution_scale; }
-  virtual void UpdateResolutionScale();
+  virtual void UpdateSettings();
 
   // Ticks for hblank/vblank.
   void Execute(TickCount ticks);
