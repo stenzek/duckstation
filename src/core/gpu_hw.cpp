@@ -241,21 +241,23 @@ void main()
   return ss.str();
 }
 
-std::string GPU_HW::GenerateFragmentShader(TransparencyRenderMode transparency, bool textured,
-                                           TextureColorMode texture_color_mode, bool blending)
+std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode)
 {
+  const TextureMode actual_texture_mode = texture_mode & ~TextureMode::RawTextureBit;
+  const bool raw_texture = (texture_mode & TextureMode::RawTextureBit) == TextureMode::RawTextureBit;
+
   std::stringstream ss;
   GenerateShaderHeader(ss);
-  DefineMacro(ss, "TRANSPARENT", transparency != TransparencyRenderMode::Off);
-  DefineMacro(ss, "TRANSPARENT_ONLY_OPAQUE", transparency == TransparencyRenderMode::OnlyOpaque);
-  DefineMacro(ss, "TRANSPARENT_ONLY_TRANSPARENT", transparency == TransparencyRenderMode::OnlyTransparent);
-  DefineMacro(ss, "TEXTURED", textured);
+  DefineMacro(ss, "TRANSPARENCY", transparency != HWBatchRenderMode::TransparencyDisabled);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", transparency == HWBatchRenderMode::OnlyOpaque);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENCY", transparency == HWBatchRenderMode::OnlyTransparent);
+  DefineMacro(ss, "TEXTURED", actual_texture_mode != TextureMode::Disabled);
   DefineMacro(ss, "PALETTE",
-              textured && (texture_color_mode == GPU::TextureColorMode::Palette4Bit ||
-                           texture_color_mode == GPU::TextureColorMode::Palette8Bit));
-  DefineMacro(ss, "PALETTE_4_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette4Bit);
-  DefineMacro(ss, "PALETTE_8_BIT", textured && texture_color_mode == GPU::TextureColorMode::Palette8Bit);
-  DefineMacro(ss, "BLENDING", blending);
+              actual_texture_mode == GPU::TextureMode::Palette4Bit ||
+                actual_texture_mode == GPU::TextureMode::Palette8Bit);
+  DefineMacro(ss, "PALETTE_4_BIT", actual_texture_mode == GPU::TextureMode::Palette4Bit);
+  DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPU::TextureMode::Palette8Bit);
+  DefineMacro(ss, "RAW_TEXTURE", raw_texture);
 
   ss << R"(
 in vec3 v_col0;
@@ -334,24 +336,24 @@ void main()
       discard;
 
     vec3 color;
-    #if BLENDING
-      color = vec3((ivec3(v_col0 * 255.0) * ivec3(texcol.rgb * 255.0)) >> 7) / 255.0;
-    #else
+    #if RAW_TEXTURE
       color = texcol.rgb;
+    #else
+      color = vec3((ivec3(v_col0 * 255.0) * ivec3(texcol.rgb * 255.0)) >> 7) / 255.0;
     #endif
 
-    #if TRANSPARENT
+    #if TRANSPARENCY
       // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
       if (texcol.a != 0)
       {
-        #if TRANSPARENT_ONLY_OPAQUE
+        #if TRANSPARENCY_ONLY_OPAQUE
           discard;
         #endif
         o_col0 = vec4(color * u_transparent_alpha.x, u_transparent_alpha.y);
       }
       else
       {
-        #if TRANSPARENT_ONLY_TRANSPARENT
+        #if TRANSPARENCY_ONLY_TRANSPARENCY
           discard;
         #endif
         o_col0 = vec4(color, 0.0);
@@ -361,7 +363,7 @@ void main()
       o_col0 = vec4(color, texcol.a);
     #endif
   #else
-    #if TRANSPARENT
+    #if TRANSPARENCY
       o_col0 = vec4(v_col0 * u_transparent_alpha.x, u_transparent_alpha.y);
     #else
       // Mask bit is cleared for untextured polygons.
@@ -491,20 +493,21 @@ void main()
   return ss.str();
 }
 
-GPU_HW::HWRenderBatch::Primitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
+GPU_HW::HWPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 {
   if (rc.primitive == Primitive::Line)
-    return rc.polyline ? HWRenderBatch::Primitive::LineStrip : HWRenderBatch::Primitive::Lines;
+    return rc.polyline ? HWPrimitive::LineStrip : HWPrimitive::Lines;
   else if ((rc.primitive == Primitive::Polygon && rc.quad_polygon) || rc.primitive == Primitive::Rectangle)
-    return HWRenderBatch::Primitive::TriangleStrip;
+    return HWPrimitive::TriangleStrip;
   else
-    return HWRenderBatch::Primitive::Triangles;
+    return HWPrimitive::Triangles;
 }
 
 void GPU_HW::InvalidateVRAMReadCache() {}
 
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
+  TextureMode texture_mode;
   if (rc.texture_enable)
   {
     // extract texture lut/page
@@ -529,39 +532,37 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       default:
         break;
     }
+
+    texture_mode = m_render_state.texture_color_mode;
+    if (rc.raw_texture_enable)
+      texture_mode |= TextureMode::RawTextureBit;
   }
   else
   {
     m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
+    texture_mode = TextureMode::Disabled;
   }
 
   // has any state changed which requires a new batch?
-  const bool rc_transparency_enable = rc.IsTransparencyEnabled();
-  const bool rc_texture_enable = rc.IsTextureEnabled();
-  const bool rc_texture_blend_enable = rc.IsTextureBlendingEnabled();
-  const HWRenderBatch::Primitive rc_primitive = GetPrimitiveForCommand(rc);
-  const u32 max_added_vertices = num_vertices + 2;
-  const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
-  const bool rc_changed =
-    m_batch.render_command_bits != rc.bits &&
-    (m_batch.transparency_enable != rc_transparency_enable || m_batch.texture_enable != rc_texture_enable ||
-     m_batch.texture_blending_enable != rc_texture_blend_enable || m_batch.primitive != rc_primitive);
-  const bool restart_line_strip = (rc_primitive == HWRenderBatch::Primitive::LineStrip);
-  const bool needs_flush =
-    !IsFlushed() && (m_render_state.IsTextureColorModeChanged() || m_render_state.IsTransparencyModeChanged() ||
-                     m_render_state.IsTextureWindowChanged() || buffer_overflow || rc_changed || restart_line_strip);
-  if (needs_flush)
-    FlushRender();
+  const TransparencyMode transparency_mode =
+    rc.transparency_enable ? m_render_state.transparency_mode : TransparencyMode::Disabled;
+  const HWPrimitive rc_primitive = GetPrimitiveForCommand(rc);
+  if (!IsFlushed())
+  {
+    const u32 max_added_vertices = num_vertices + 2;
+    const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
+    if (buffer_overflow || rc_primitive == HWPrimitive::LineStrip || m_batch.texture_mode != texture_mode ||
+        m_batch.transparency_mode != transparency_mode || m_batch.primitive != rc_primitive ||
+        m_render_state.IsTexturePageChanged() || m_render_state.IsTextureWindowChanged())
+    {
+      FlushRender();
+    }
+  }
 
   // update state
-  if (rc_changed)
-  {
-    m_batch.render_command_bits = rc.bits;
-    m_batch.primitive = rc_primitive;
-    m_batch.transparency_enable = rc_transparency_enable;
-    m_batch.texture_enable = rc_texture_enable;
-    m_batch.texture_blending_enable = rc_texture_blend_enable;
-  }
+  m_batch.primitive = rc_primitive;
+  m_batch.texture_mode = texture_mode;
+  m_batch.transparency_mode = transparency_mode;
 
   if (m_render_state.IsTexturePageChanged())
   {
@@ -586,18 +587,6 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     m_batch.texture_palette_x = m_render_state.texture_palette_x;
     m_batch.texture_palette_y = m_render_state.texture_palette_y;
     m_render_state.ClearTexturePageChangedFlag();
-  }
-
-  if (m_render_state.IsTextureColorModeChanged())
-  {
-    m_batch.texture_color_mode = m_render_state.texture_color_mode;
-    m_render_state.ClearTextureColorModeChangedFlag();
-  }
-
-  if (m_render_state.IsTransparencyModeChanged())
-  {
-    m_batch.transparency_mode = m_render_state.transparency_mode;
-    m_render_state.ClearTransparencyModeChangedFlag();
   }
 
   if (m_render_state.IsTextureWindowChanged())

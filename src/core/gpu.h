@@ -138,20 +138,33 @@ protected:
     R16x16 = 3
   };
 
-  enum class TextureColorMode : u8
+  enum class TextureMode : u8
   {
     Palette4Bit = 0,
     Palette8Bit = 1,
     Direct16Bit = 2,
-    Reserved_Direct16Bit = 3
+    Reserved_Direct16Bit = 3,
+
+    // Not register values.
+    RawTextureBit = 4,
+    RawPalette4Bit = RawTextureBit | Palette4Bit,
+    RawPalette8Bit = RawTextureBit | Palette8Bit,
+    RawDirect16Bit = RawTextureBit | Direct16Bit,
+    Reserved_RawDirect16Bit = RawTextureBit | Reserved_Direct16Bit,
+
+    Disabled = 8 // Not a register value
   };
+
+  IMPLEMENT_STATIC_FRIEND_ENUM_CLASS_BITWISE_OPERATORS(TextureMode);
 
   enum class TransparencyMode : u8
   {
     HalfBackgroundPlusHalfForeground = 0,
     BackgroundPlusForeground = 1,
     BackgroundMinusForeground = 2,
-    BackgroundPlusQuarterForeground = 3
+    BackgroundPlusQuarterForeground = 3,
+
+    Disabled = 4 // Not a register value
   };
 
   union RenderCommand
@@ -159,7 +172,7 @@ protected:
     u32 bits;
 
     BitField<u32, u32, 0, 24> color_for_first_vertex;
-    BitField<u32, bool, 24, 1> texture_blend_disable; // not valid for lines
+    BitField<u32, bool, 24, 1> raw_texture_enable; // not valid for lines
     BitField<u32, bool, 25, 1> transparency_enable;
     BitField<u32, bool, 26, 1> texture_enable;
     BitField<u32, DrawRectangleSize, 27, 2> rectangle_size; // only for rectangles
@@ -170,7 +183,7 @@ protected:
 
     // Helper functions.
     bool IsTextureEnabled() const { return (primitive != Primitive::Line && texture_enable); }
-    bool IsTextureBlendingEnabled() const { return (IsTextureEnabled() && !texture_blend_disable); }
+    bool IsTextureBlendingEnabled() const { return (IsTextureEnabled() && !raw_texture_enable); }
     bool IsTransparencyEnabled() const { return transparency_enable; }
   };
 
@@ -269,7 +282,7 @@ protected:
     BitField<u32, u8, 0, 4> texture_page_x_base;
     BitField<u32, u8, 4, 1> texture_page_y_base;
     BitField<u32, TransparencyMode, 5, 2> semi_transparency_mode;
-    BitField<u32, TextureColorMode, 7, 2> texture_color_mode;
+    BitField<u32, TextureMode, 7, 2> texture_color_mode;
     BitField<u32, bool, 9, 1> dither_enable;
     BitField<u32, bool, 10, 1> draw_to_display_area;
     BitField<u32, bool, 11, 1> draw_set_mask_bit;
@@ -305,7 +318,7 @@ protected:
     u32 texture_page_y;
     u32 texture_palette_x;
     u32 texture_palette_y;
-    TextureColorMode texture_color_mode;
+    TextureMode texture_color_mode;
     TransparencyMode transparency_mode;
     u8 texture_window_mask_x;   // in 8 pixel steps
     u8 texture_window_mask_y;   // in 8 pixel steps
@@ -320,20 +333,10 @@ protected:
     u32 texture_window_value;
 
     bool texture_page_changed = false;
-    bool texture_color_mode_changed = false;
-    bool transparency_mode_changed = false;
     bool texture_window_changed = false;
-
-    bool IsChanged() const { return texture_page_changed || texture_color_mode_changed || transparency_mode_changed; }
 
     bool IsTexturePageChanged() const { return texture_page_changed; }
     void ClearTexturePageChangedFlag() { texture_page_changed = false; }
-
-    bool IsTextureColorModeChanged() const { return texture_color_mode_changed; }
-    void ClearTextureColorModeChangedFlag() { texture_color_mode_changed = false; }
-
-    bool IsTransparencyModeChanged() const { return transparency_mode_changed; }
-    void ClearTransparencyModeChangedFlag() { transparency_mode_changed = false; }
 
     bool IsTextureWindowChanged() const { return texture_window_changed; }
     void ClearTextureWindowChangedFlag() { texture_window_changed = false; }

@@ -14,6 +14,22 @@ public:
   virtual void Reset() override;
 
 protected:
+  enum class HWPrimitive : u8
+  {
+    Lines = 0,
+    LineStrip = 1,
+    Triangles = 2,
+    TriangleStrip = 3
+  };
+
+  enum class HWBatchRenderMode : u8
+  {
+    TransparencyDisabled,
+    TransparentAndOpaque,
+    OnlyOpaque,
+    OnlyTransparent
+  };
+
   struct HWVertex
   {
     s32 x;
@@ -28,20 +44,8 @@ protected:
 
   struct HWRenderBatch
   {
-    enum class Primitive : u8
-    {
-      Lines = 0,
-      LineStrip = 1,
-      Triangles = 2,
-      TriangleStrip = 3
-    };
-
-    u32 render_command_bits;
-    Primitive primitive;
-    bool transparency_enable;
-    bool texture_enable;
-    bool texture_blending_enable;
-    TextureColorMode texture_color_mode;
+    HWPrimitive primitive;
+    TextureMode texture_mode;
     u32 texture_page_x;
     u32 texture_page_y;
     u32 texture_palette_x;
@@ -50,14 +54,21 @@ protected:
     std::array<u8, 4> texture_window_values;
 
     std::vector<HWVertex> vertices;
-  };
 
-  enum class TransparencyRenderMode
-  {
-    Off,
-    TransparentAndOpaque,
-    OnlyOpaque,
-    OnlyTransparent
+    // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
+    // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
+    bool NeedsTwoPassRendering() const
+    {
+      return transparency_mode == GPU::TransparencyMode::BackgroundMinusForeground &&
+             texture_mode != TextureMode::Disabled;
+    }
+
+    // Returns the render mode for this batch.
+    HWBatchRenderMode GetRenderMode() const
+    {
+      return transparency_mode == TransparencyMode::Disabled ? HWBatchRenderMode::TransparencyDisabled :
+                                                               HWBatchRenderMode::TransparentAndOpaque;
+    }
   };
 
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
@@ -89,8 +100,7 @@ protected:
   }
 
   std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(TransparencyRenderMode transparency, bool textured,
-                                     TextureColorMode texture_color_mode, bool blending);
+  std::string GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
@@ -98,7 +108,7 @@ protected:
   HWRenderBatch m_batch = {};
 
 private:
-  static HWRenderBatch::Primitive GetPrimitiveForCommand(RenderCommand rc);
+  static HWPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
   void GenerateShaderHeader(std::stringstream& ss);
 

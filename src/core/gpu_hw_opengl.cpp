@@ -230,22 +230,14 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
-  for (u32 transparent = 0; transparent < 4; transparent++)
+  for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
-    for (u32 textured = 0; textured < 2; textured++)
+    for (u32 texture_mode = 0; texture_mode < 9; texture_mode++)
     {
-      for (u32 format = 0; format < 3; format++)
+      if (!CompileProgram(m_render_programs[render_mode][texture_mode], static_cast<HWBatchRenderMode>(render_mode),
+                          static_cast<TextureMode>(texture_mode)))
       {
-        for (u32 blending = 0; blending < 2; blending++)
-        {
-          // TODO: eliminate duplicate shaders here
-          if (!CompileProgram(m_render_programs[transparent][textured][format][blending],
-                              static_cast<TransparencyRenderMode>(transparent), ConvertToBoolUnchecked(textured),
-                              static_cast<TextureColorMode>(format), ConvertToBoolUnchecked(blending)))
-          {
-            return false;
-          }
-        }
+        return false;
       }
     }
   }
@@ -276,11 +268,11 @@ bool GPU_HW_OpenGL::CompilePrograms()
   return true;
 }
 
-bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, TransparencyRenderMode transparent, bool textured,
-                                   TextureColorMode texture_color_mode, bool blending)
+bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode)
 {
+  const bool textured = texture_mode != TextureMode::Disabled;
   const std::string vs = GenerateVertexShader(textured);
-  const std::string fs = GenerateFragmentShader(transparent, textured, texture_color_mode, blending);
+  const std::string fs = GenerateFragmentShader(render_mode, texture_mode);
   if (!prog.Compile(vs.c_str(), fs.c_str()))
     return false;
 
@@ -313,15 +305,13 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, TransparencyRenderMode tra
   return true;
 }
 
-void GPU_HW_OpenGL::SetDrawState(TransparencyRenderMode render_mode)
+void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
 {
-  const GL::Program& prog =
-    m_render_programs[static_cast<u32>(render_mode)][BoolToUInt32(m_batch.texture_enable)]
-                     [static_cast<u32>(m_batch.texture_color_mode)][BoolToUInt32(m_batch.texture_blending_enable)];
+  const GL::Program& prog = m_render_programs[static_cast<u32>(render_mode)][static_cast<u32>(m_batch.texture_mode)];
   prog.Bind();
 
   prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);
-  if (m_batch.transparency_enable)
+  if (m_batch.transparency_mode != TransparencyMode::Disabled)
   {
     static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
     prog.Uniform2fv(1, transparent_alpha[static_cast<u32>(m_batch.transparency_mode)]);
@@ -332,14 +322,14 @@ void GPU_HW_OpenGL::SetDrawState(TransparencyRenderMode render_mode)
     prog.Uniform2fv(1, disabled_alpha);
   }
 
-  if (m_batch.texture_enable)
+  if (m_batch.texture_mode != TextureMode::Disabled)
   {
     prog.Uniform4ui(2, m_batch.texture_window_values[0], m_batch.texture_window_values[1],
                     m_batch.texture_window_values[2], m_batch.texture_window_values[3]);
     m_vram_read_texture->Bind();
   }
 
-  if (render_mode == TransparencyRenderMode::Off || render_mode == TransparencyRenderMode::OnlyOpaque)
+  if (m_batch.transparency_mode == TransparencyMode::Disabled || render_mode == HWBatchRenderMode::OnlyOpaque)
   {
     glDisable(GL_BLEND);
   }
@@ -644,18 +634,16 @@ void GPU_HW_OpenGL::FlushRender()
 
   static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
 
-  if (m_batch.transparency_enable && m_batch.texture_enable &&
-      m_batch.transparency_mode == GPU::TransparencyMode::BackgroundMinusForeground)
+  if (m_batch.NeedsTwoPassRendering())
   {
-    SetDrawState(TransparencyRenderMode::OnlyTransparent);
+    SetDrawState(HWBatchRenderMode::OnlyTransparent);
     glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
-    SetDrawState(TransparencyRenderMode::OnlyOpaque);
+    SetDrawState(HWBatchRenderMode::OnlyOpaque);
     glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
   }
   else
   {
-    SetDrawState(m_batch.transparency_enable ? TransparencyRenderMode::TransparentAndOpaque :
-                                               TransparencyRenderMode::Off);
+    SetDrawState(m_batch.GetRenderMode());
     glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
   }
 

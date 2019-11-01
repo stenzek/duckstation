@@ -417,7 +417,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
     VRAMPixel texture_color;
     switch (m_render_state.texture_color_mode)
     {
-      case GPU::TextureColorMode::Palette4Bit:
+      case GPU::TextureMode::Palette4Bit:
       {
         const u16 palette_value =
           GetPixel(std::min<u32>(m_render_state.texture_page_x + ZeroExtend32(texcoord_x / 4), VRAM_WIDTH - 1),
@@ -429,7 +429,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
       }
       break;
 
-      case GPU::TextureColorMode::Palette8Bit:
+      case GPU::TextureMode::Palette8Bit:
       {
         const u16 palette_value =
           GetPixel(std::min<u32>(m_render_state.texture_page_x + ZeroExtend32(texcoord_x / 2), VRAM_WIDTH - 1),
@@ -455,7 +455,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
 
     transparent = texture_color.c;
 
-    if (rc.texture_blend_disable)
+    if (rc.raw_texture_enable)
     {
       color.bits = texture_color.bits;
     }

@@ -49,8 +49,6 @@ void GPU::SoftReset()
   m_GPUREAD_buffer.clear();
   m_render_state = {};
   m_render_state.texture_page_changed = true;
-  m_render_state.texture_color_mode_changed = true;
-  m_render_state.transparency_mode_changed = true;
   UpdateGPUSTAT();
   UpdateCRTCConfig();
 }
@@ -80,10 +78,6 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_render_state.texpage_attribute);
   sw.Do(&m_render_state.texlut_attribute);
   sw.Do(&m_render_state.texture_window_value);
-  sw.Do(&m_render_state.texture_page_changed);
-  sw.Do(&m_render_state.texture_color_mode_changed);
-  sw.Do(&m_render_state.transparency_mode_changed);
-  sw.Do(&m_render_state.texture_window_changed);
 
   sw.Do(&m_drawing_area.left);
   sw.Do(&m_drawing_area.top);
@@ -119,8 +113,6 @@ bool GPU::DoState(StateWrapper& sw)
   if (sw.IsReading())
   {
     m_render_state.texture_page_changed = true;
-    m_render_state.texture_color_mode_changed = true;
-    m_render_state.transparency_mode_changed = true;
     m_render_state.texture_window_changed = true;
     UpdateDrawingArea();
     UpdateGPUSTAT();
@@ -709,15 +701,8 @@ void GPU::RenderState::SetFromPageAttribute(u16 value)
   texture_page_changed |=
     (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK);
 
-  const TextureColorMode old_color_mode = texture_color_mode;
-  texture_color_mode = (static_cast<TextureColorMode>((value >> 7) & UINT16_C(0x03)));
-  if (texture_color_mode == TextureColorMode::Reserved_Direct16Bit)
-    texture_color_mode = TextureColorMode::Direct16Bit;
-  texture_color_mode_changed |= old_color_mode != texture_color_mode;
-
-  const TransparencyMode old_transparency_mode = transparency_mode;
+  texture_color_mode = (static_cast<TextureMode>((value >> 7) & UINT16_C(0x03)));
   transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));
-  transparency_mode_changed = old_transparency_mode != transparency_mode;
 }
 
 void GPU::RenderState::SetFromPaletteAttribute(u16 value)
