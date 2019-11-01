@@ -281,20 +281,17 @@ uniform vec2 u_transparent_alpha;
 
 out vec4 o_col0;
 
-vec4 ApplyDithering(vec4 col)
+ivec3 ApplyDithering(ivec3 icol)
 {
-  ivec3 icol = ivec3(col.rgb * vec3(255.0, 255.0, 255.0));
-
-  // apply dither
   ivec2 fc = (ivec2(gl_FragCoord.xy) / ivec2(RESOLUTION_SCALE, RESOLUTION_SCALE)) & ivec2(3, 3);
   int offset = s_dither_values[fc.y * 4 + fc.x];
-  icol += ivec3(offset, offset, offset);
+  return icol + ivec3(offset, offset, offset);
+}
 
-  // saturate
+ivec3 TruncateTo15Bit(ivec3 icol)
+{
   icol = clamp(icol, ivec3(0, 0, 0), ivec3(255, 255, 255));
-
-  // clip to 5-bit range
-  return vec4((icol.rgb >> 3) / vec3(31.0, 31.0, 31.0), col.a);
+  return (icol & ivec3(~7, ~7, ~7)) | ((icol >> 3) & ivec3(7, 7, 7));
 }
 
 #if TEXTURED
@@ -315,7 +312,7 @@ ivec2 ApplyTextureWindow(ivec2 coords)
   return (ApplyNativeTextureWindow(downscaled_coords) * ivec2(RESOLUTION_SCALE)) + coords_offset;
 }
 
-vec4 SampleFromVRAM(vec2 coord)
+ivec4 SampleFromVRAM(vec2 coord)
 {
   // from 0..1 to 0..255
   ivec2 icoord = ivec2(coord * vec2(255 * RESOLUTION_SCALE));
@@ -350,55 +347,66 @@ vec4 SampleFromVRAM(vec2 coord)
     color = texelFetch(samp0, palette_icoord, 0);
   #endif
 
-  return color;
+  return ivec4(color * vec4(255.0, 255.0, 255.0, 255.0));
 }
 #endif
 
 void main()
 {
+  ivec3 vertcol = ivec3(v_col0 * vec3(255.0, 255.0, 255.0));
+
+  bool semitransparent;
+  bool new_mask_bit;
+  ivec3 icolor;
+
   #if TEXTURED
-    vec4 texcol = SampleFromVRAM(v_tex0);
-    if (texcol == vec4(0.0, 0.0, 0.0, 0.0))
+    ivec4 texcol = SampleFromVRAM(v_tex0);
+    if (texcol == ivec4(0.0, 0.0, 0.0, 0.0))
       discard;
 
-    vec3 color;
-    #if RAW_TEXTURE
-      color = texcol.rgb;
-    #else
-      color = vec3((ivec3(v_col0 * 255.0) * ivec3(texcol.rgb * 255.0)) >> 7) / 255.0;
-    #endif
+    // Grab semitransparent bit from the texture color.
+    semitransparent = (texcol.a != 0);
 
-    #if TRANSPARENCY
-      // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
-      if (texcol.a != 0)
-      {
-        #if TRANSPARENCY_ONLY_OPAQUE
-          discard;
-        #endif
-        o_col0 = vec4(color * u_transparent_alpha.x, u_transparent_alpha.y);
-      }
-      else
-      {
-        #if TRANSPARENCY_ONLY_TRANSPARENCY
-          discard;
-        #endif
-        o_col0 = vec4(color, 0.0);
-      }
+    #if RAW_TEXTURE
+      icolor = texcol.rgb;
     #else
-      // Mask bit from texture.
-      o_col0 = vec4(color, texcol.a);
+      icolor = (vertcol * texcol.rgb) >> 7;
     #endif
   #else
-    #if TRANSPARENCY
-      o_col0 = vec4(v_col0 * u_transparent_alpha.x, u_transparent_alpha.y);
-    #else
-      // Mask bit is cleared for untextured polygons.
-      o_col0 = vec4(v_col0, 0.0);
-    #endif
+    // All pixels are semitransparent for untextured polygons.
+    semitransparent = true;
+    icolor = vertcol;
   #endif
 
+  // Apply dithering
   #if DITHERING
-    o_col0 = ApplyDithering(o_col0);
+    icolor = ApplyDithering(icolor);
+  #endif
+
+  // Clip to 15-bit range
+  icolor = TruncateTo15Bit(icolor);
+
+  // Normalize
+  vec3 color = vec3(icolor) / vec3(255.0, 255.0, 255.0);
+
+  #if TRANSPARENCY
+    // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
+    if (semitransparent)
+    {
+      #if TRANSPARENCY_ONLY_OPAQUE
+        discard;
+      #endif
+      o_col0 = vec4(color * u_transparent_alpha.x, u_transparent_alpha.y);
+    }
+    else
+    {
+      #if TRANSPARENCY_ONLY_TRANSPARENCY
+        discard;
+      #endif
+      o_col0 = vec4(color, 0.0);
+    }
+  #else
+    o_col0 = vec4(color, 0.0);
   #endif
 }
 )";
