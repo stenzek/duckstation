@@ -11,6 +11,7 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
+  virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers) override;
   virtual void Reset() override;
   virtual void UpdateSettings() override;
 
@@ -108,6 +109,8 @@ protected:
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
 
   HWRenderBatch m_batch = {};
+  u32 m_resolution_scale = 1;
+  u32 m_max_resolution_scale = 1;
   bool m_true_color = false;
 
 private:

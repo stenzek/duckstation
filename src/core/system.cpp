@@ -130,10 +130,6 @@ bool System::CreateGPU()
 
   m_bus->SetGPU(m_gpu.get());
   m_dma->SetGPU(m_gpu.get());
-
-  // the new GPU could have a lower maximum resolution
-  m_settings.gpu_resolution_scale = m_gpu->GetResolutionScale();
-  m_settings.max_gpu_resolution_scale = m_gpu->GetMaxResolutionScale();
   return true;
 }
 

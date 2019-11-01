@@ -16,10 +16,11 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
 
 bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
 {
+  SetMaxResolutionScale();
+
   if (!GPU_HW::Initialize(system, dma, interrupt_controller, timers))
     return false;
 
-  SetMaxResolutionScale();
   CreateFramebuffer();
   CreateVertexBuffer();
   if (!CompilePrograms())
@@ -149,8 +150,6 @@ void GPU_HW_OpenGL::SetMaxResolutionScale()
 
   m_max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
   Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
-
-  m_resolution_scale = std::min(m_resolution_scale, m_max_resolution_scale);
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()

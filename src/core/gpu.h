@@ -52,9 +52,7 @@ public:
   void DMARead(u32* words, u32 word_count);
   void DMAWrite(const u32* words, u32 word_count);
 
-  // Resolution scaling.
-  u32 GetResolutionScale() const { return m_resolution_scale; }
-  u32 GetMaxResolutionScale() const { return m_max_resolution_scale; }
+  // Recompile shaders/recreate framebuffers when needed.
   virtual void UpdateSettings();
 
   // Ticks for hblank/vblank.
@@ -298,10 +296,6 @@ protected:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   Timers* m_timers = nullptr;
-
-  // Resolution scale.
-  u32 m_resolution_scale = 1;
-  u32 m_max_resolution_scale = 1;
 
   union GPUSTAT
   {
