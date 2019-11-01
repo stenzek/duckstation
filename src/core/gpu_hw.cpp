@@ -286,7 +286,7 @@ vec4 ApplyDithering(vec4 col)
   ivec3 icol = ivec3(col.rgb * vec3(255.0, 255.0, 255.0));
 
   // apply dither
-  ivec2 fc = ivec2(gl_FragCoord.xy) & ivec2(3, 3);
+  ivec2 fc = (ivec2(gl_FragCoord.xy) / ivec2(RESOLUTION_SCALE, RESOLUTION_SCALE)) & ivec2(3, 3);
   int offset = s_dither_values[fc.y * 4 + fc.x];
   icol += ivec3(offset, offset, offset);
 
