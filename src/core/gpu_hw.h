@@ -38,13 +38,24 @@ protected:
     s32 y;
     u32 color;
     u32 texpage;
-    u32 texcoord;
+    u32 texcoord; // 16-bit texcoords are needed for 256 extent rectangles
 
-    // 16-bit texcoords are needed for 256 extent rectangles
-    static u32 PackTexcoord(u16 x, u16 y) { return ZeroExtend32(x) | (ZeroExtend32(y) << 16); }
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 packed_texcoord)
+    {
+      Set(x_, y_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
+    }
+
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 texcoord_x, u16 texcoord_y)
+    {
+      x = x_;
+      y = y_;
+      color = color_;
+      texpage = texpage_;
+      texcoord = ZeroExtend32(texcoord_x) | (ZeroExtend32(texcoord_y) << 16);
+    }
   };
 
-  struct HWRenderBatch
+  struct HWBatchConfig
   {
     u32 texture_page_x;
     u32 texture_page_y;
@@ -55,8 +66,6 @@ protected:
     TransparencyMode transparency_mode;
     std::array<u8, 4> texture_window_values;
     bool dithering;
-
-    std::vector<HWVertex> vertices;
 
     // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
     // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
@@ -75,6 +84,7 @@ protected:
   };
 
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
+  static constexpr u32 MIN_BATCH_VERTEX_COUNT = 6;
   static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
   static constexpr u32 TEXTURE_TILE_SIZE = 256;
   static constexpr u32 TEXTURE_TILE_X_COUNT = VRAM_WIDTH / TEXTURE_TILE_SIZE;
@@ -89,9 +99,14 @@ protected:
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
-  virtual void InvalidateVRAMReadCache();
+  virtual void InvalidateVRAMReadCache() = 0;
 
-  bool IsFlushed() const { return m_batch.vertices.empty(); }
+  virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
+
+  u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
+  u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
+
+  bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
 
   void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
 
@@ -108,7 +123,13 @@ protected:
   std::string GenerateFillFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
 
-  HWRenderBatch m_batch = {};
+  HWBatchConfig m_batch = {};
+
+  HWVertex* m_batch_start_vertex_ptr = nullptr;
+  HWVertex* m_batch_end_vertex_ptr = nullptr;
+  HWVertex* m_batch_current_vertex_ptr = nullptr;
+  u32 m_batch_base_vertex = 0;
+
   u32 m_resolution_scale = 1;
   u32 m_max_resolution_scale = 1;
   bool m_true_color = false;
@@ -119,4 +140,5 @@ private:
   void GenerateShaderHeader(std::stringstream& ss);
 
   void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
+  void AddDuplicateVertex();
 };

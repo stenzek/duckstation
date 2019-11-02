@@ -49,9 +49,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
     case Primitive::Polygon:
     {
       // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      bool restart_strip = (rc.quad_polygon && !m_batch.vertices.empty());
+      bool restart_strip = (rc.quad_polygon && !IsFlushed());
       if (restart_strip)
-        m_batch.vertices.push_back(m_batch.vertices.back());
+        AddDuplicateVertex();
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
@@ -60,28 +60,15 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        HWVertex hw_vert;
-        hw_vert.color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-
+        const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
-        hw_vert.x = vp.x;
-        hw_vert.y = vp.y;
-        hw_vert.texpage = texpage;
+        const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
 
-        if (textured)
-        {
-          const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(command_ptr[buffer_pos++]));
-          hw_vert.texcoord = HWVertex::PackTexcoord(texcoord_x, texcoord_y);
-        }
-        else
-        {
-          hw_vert.texcoord = 0;
-        }
+        (m_batch_current_vertex_ptr++)->Set(vp.x, vp.y, color, texpage, packed_texcoord);
 
-        m_batch.vertices.push_back(hw_vert);
         if (restart_strip)
         {
-          m_batch.vertices.push_back(m_batch.vertices.back());
+          AddDuplicateVertex();
           restart_strip = false;
         }
       }
@@ -91,9 +78,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
     case Primitive::Rectangle:
     {
       // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      const bool restart_strip = !m_batch.vertices.empty();
+      const bool restart_strip = !IsFlushed();
       if (restart_strip)
-        m_batch.vertices.push_back(m_batch.vertices.back());
+        AddDuplicateVertex();
 
       u32 buffer_pos = 1;
       const u32 color = rc.color_for_first_vertex;
@@ -132,16 +119,13 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const u16 tex_right = tex_left + static_cast<u16>(rectangle_width);
       const u16 tex_bottom = tex_top + static_cast<u16>(rectangle_height);
 
-      m_batch.vertices.push_back(
-        HWVertex{pos_left, pos_top, color, texpage, HWVertex::PackTexcoord(tex_left, tex_top)});
+      (m_batch_current_vertex_ptr++)->Set(pos_left, pos_top, color, texpage, tex_left, tex_top);
       if (restart_strip)
-        m_batch.vertices.push_back(m_batch.vertices.back());
-      m_batch.vertices.push_back(
-        HWVertex{pos_right, pos_top, color, texpage, HWVertex::PackTexcoord(tex_right, tex_top)});
-      m_batch.vertices.push_back(
-        HWVertex{pos_left, pos_bottom, color, texpage, HWVertex::PackTexcoord(tex_left, tex_bottom)});
-      m_batch.vertices.push_back(
-        HWVertex{pos_right, pos_bottom, color, texpage, HWVertex::PackTexcoord(tex_right, tex_bottom)});
+        AddDuplicateVertex();
+
+      (m_batch_current_vertex_ptr++)->Set(pos_right, pos_top, color, texpage, tex_right, tex_top);
+      (m_batch_current_vertex_ptr++)->Set(pos_left, pos_bottom, color, texpage, tex_left, tex_bottom);
+      (m_batch_current_vertex_ptr++)->Set(pos_right, pos_bottom, color, texpage, tex_right, tex_bottom);
     }
     break;
 
@@ -155,7 +139,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       {
         const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
-        m_batch.vertices.push_back(HWVertex{vp.x.GetValue(), vp.y.GetValue(), color});
+        (m_batch_current_vertex_ptr++)->Set(vp.x, vp.y, color, 0, 0);
       }
     }
     break;
@@ -164,6 +148,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       UnreachableCode();
       break;
   }
+}
+
+void GPU_HW::AddDuplicateVertex()
+{
+  std::memcpy(m_batch_current_vertex_ptr, m_batch_current_vertex_ptr - 1, sizeof(HWVertex));
+  m_batch_current_vertex_ptr++;
 }
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
@@ -567,8 +557,6 @@ GPU_HW::HWPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
     return HWPrimitive::Triangles;
 }
 
-void GPU_HW::InvalidateVRAMReadCache() {}
-
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   TextureMode texture_mode;
@@ -612,10 +600,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     rc.transparency_enable ? m_render_state.transparency_mode : TransparencyMode::Disabled;
   const HWPrimitive rc_primitive = GetPrimitiveForCommand(rc);
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
+  const u32 max_added_vertices = num_vertices + 2;
   if (!IsFlushed())
   {
-    const u32 max_added_vertices = num_vertices + 2;
-    const bool buffer_overflow = (m_batch.vertices.size() + max_added_vertices) >= MAX_BATCH_VERTEX_COUNT;
+    const bool buffer_overflow = GetBatchVertexSpace() < max_added_vertices;
     if (buffer_overflow || rc_primitive == HWPrimitive::LineStrip || m_batch.texture_mode != texture_mode ||
         m_batch.transparency_mode != transparency_mode || m_batch.primitive != rc_primitive ||
         dithering_enable != m_batch.dithering || m_render_state.IsTexturePageChanged() ||
@@ -624,6 +612,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       FlushRender();
     }
   }
+
+  // map buffer if it's not already done
+  if (!m_batch_current_vertex_ptr)
+    MapBatchVertexPointer(max_added_vertices);
 
   // update state
   m_batch.primitive = rc_primitive;

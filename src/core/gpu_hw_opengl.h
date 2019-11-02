@@ -1,5 +1,6 @@
 #pragma once
 #include "common/gl_program.h"
+#include "common/gl_stream_buffer.h"
 #include "common/gl_texture.h"
 #include "glad.h"
 #include "gpu_hw.h"
@@ -31,6 +32,7 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void FlushRender() override;
   void InvalidateVRAMReadCache() override;
+  void MapBatchVertexPointer(u32 required_vertices) override;
 
 private:
   struct GLStats
@@ -62,7 +64,7 @@ private:
   std::unique_ptr<GL::Texture> m_vram_downsample_texture;
   std::unique_ptr<GL::Texture> m_display_texture;
 
-  GLuint m_vertex_buffer = 0;
+  std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
 

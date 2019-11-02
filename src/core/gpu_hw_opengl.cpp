@@ -62,7 +62,6 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glLineWidth(static_cast<float>(m_resolution_scale));
   UpdateDrawingArea();
 
-  glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
   glBindVertexArray(m_vao_id);
 }
 
@@ -130,6 +129,19 @@ void GPU_HW_OpenGL::DrawRendererStatsWindow()
 void GPU_HW_OpenGL::InvalidateVRAMReadCache()
 {
   m_vram_read_texture_dirty = true;
+}
+
+void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
+{
+  Assert(!m_batch_start_vertex_ptr);
+
+  const GL::StreamBuffer::MappingResult res =
+    m_vertex_stream_buffer->Map(sizeof(HWVertex), required_vertices * sizeof(HWVertex));
+
+  m_batch_start_vertex_ptr = static_cast<HWVertex*>(res.pointer);
+  m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
+  m_batch_end_vertex_ptr = m_batch_start_vertex_ptr + res.space_aligned;
+  m_batch_base_vertex = res.index_aligned;
 }
 
 std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y)
@@ -217,9 +229,11 @@ void GPU_HW_OpenGL::DestroyFramebuffer()
 
 void GPU_HW_OpenGL::CreateVertexBuffer()
 {
-  glGenBuffers(1, &m_vertex_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE, nullptr, GL_STREAM_DRAW);
+  m_vertex_stream_buffer = GL::StreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE);
+  if (!m_vertex_stream_buffer)
+    Panic("Failed to create vertex streaming buffer");
+
+  m_vertex_stream_buffer->Bind();
 
   glGenVertexArrays(1, &m_vao_id);
   glBindVertexArray(m_vao_id);
@@ -638,35 +652,36 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 
 void GPU_HW_OpenGL::FlushRender()
 {
-  if (m_batch.vertices.empty())
+  const u32 vertex_count = GetBatchVertexCount();
+  if (vertex_count == 0)
     return;
 
   if (m_vram_read_texture_dirty)
     UpdateVRAMReadTexture();
 
   m_stats.num_batches++;
-  m_stats.num_vertices += static_cast<u32>(m_batch.vertices.size());
+  m_stats.num_vertices += vertex_count;
 
-  Assert((m_batch.vertices.size() * sizeof(HWVertex)) <= VERTEX_BUFFER_SIZE);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(HWVertex) * m_batch.vertices.size()),
-                  m_batch.vertices.data());
+  m_vertex_stream_buffer->Unmap(vertex_count * sizeof(HWVertex));
+  m_vertex_stream_buffer->Bind();
+  m_batch_start_vertex_ptr = nullptr;
+  m_batch_end_vertex_ptr = nullptr;
+  m_batch_current_vertex_ptr = nullptr;
 
   static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
 
   if (m_batch.NeedsTwoPassRendering())
   {
     SetDrawState(HWBatchRenderMode::OnlyTransparent);
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
+    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
     SetDrawState(HWBatchRenderMode::OnlyOpaque);
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
+    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
   }
   else
   {
     SetDrawState(m_batch.GetRenderMode());
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, static_cast<GLsizei>(m_batch.vertices.size()));
+    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
   }
-
-  m_batch.vertices.clear();
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()

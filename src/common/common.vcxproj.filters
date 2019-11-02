@@ -12,6 +12,7 @@
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="cd_xa.h" />
     <ClInclude Include="heap_array.h" />
+    <ClInclude Include="gl_stream_buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -23,6 +24,7 @@
     <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
+    <ClCompile Include="gl_stream_buffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
