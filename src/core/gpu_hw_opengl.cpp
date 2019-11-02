@@ -286,7 +286,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
       const std::string vs = GenerateScreenQuadVertexShader();
       const std::string fs =
         GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit), ConvertToBoolUnchecked(interlaced));
-      if (!prog.Compile(vs.c_str(), fs.c_str()))
+      if (!prog.Compile(vs, fs))
         return false;
 
       prog.BindFragData(0, "o_col0");
@@ -309,7 +309,7 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_m
   const bool textured = texture_mode != TextureMode::Disabled;
   const std::string vs = GenerateVertexShader(textured);
   const std::string fs = GenerateFragmentShader(render_mode, texture_mode, dithering);
-  if (!prog.Compile(vs.c_str(), fs.c_str()))
+  if (!prog.Compile(vs, fs))
     return false;
 
   prog.BindAttribute(0, "a_pos");

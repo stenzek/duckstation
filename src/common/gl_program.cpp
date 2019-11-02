@@ -17,12 +17,12 @@ Program::~Program()
   Destroy();
 }
 
-GLuint Program::CompileShader(GLenum type, const char* source)
+GLuint Program::CompileShader(GLenum type, const std::string_view source)
 {
   GLuint id = glCreateShader(type);
 
-  std::array<const GLchar*, 1> sources = {{source}};
-  std::array<GLint, 1> source_lengths = {{static_cast<GLint>(std::strlen(source))}};
+  std::array<const GLchar*, 1> sources = {{source.data()}};
+  std::array<GLint, 1> source_lengths = {{static_cast<GLint>(source.size())}};
   glShaderSource(id, static_cast<GLsizei>(sources.size()), sources.data(), source_lengths.data());
   glCompileShader(id);
 
@@ -69,7 +69,7 @@ void Program::ResetLastProgram()
   s_last_program_id = 0;
 }
 
-bool Program::Compile(const char* vertex_shader, const char* fragment_shader)
+bool Program::Compile(const std::string_view vertex_shader, const std::string_view fragment_shader)
 {
   GLuint vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader);
   if (vertex_shader_id == 0)

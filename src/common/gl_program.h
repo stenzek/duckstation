@@ -1,6 +1,7 @@
 #pragma once
 #include "glad.h"
 #include "types.h"
+#include <string_view>
 #include <vector>
 
 namespace GL {
@@ -10,12 +11,12 @@ public:
   Program();
   ~Program();
 
-  static GLuint CompileShader(GLenum type, const char* source);
+  static GLuint CompileShader(GLenum type, const std::string_view source);
   static void ResetLastProgram();
 
   bool IsVaild() const { return m_program_id != 0; }
 
-  bool Compile(const char* vertex_shader, const char* fragment_shader);
+  bool Compile(const std::string_view vertex_shader, const std::string_view fragment_shader);
 
   void BindAttribute(GLuint index, const char* name);
   void BindDefaultAttributes();
