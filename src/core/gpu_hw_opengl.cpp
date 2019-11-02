@@ -474,12 +474,14 @@ void GPU_HW_OpenGL::UpdateDisplay()
       // Because of how the reinterpret shader works, we need to use the downscaled version.
       if (m_GPUSTAT.display_area_color_depth_24 && m_resolution_scale > 1)
       {
+        const u32 copy_width = std::min<u32>((display_width * 4) / 3, VRAM_WIDTH - vram_offset_x);
+        const u32 scaled_copy_width = copy_width * m_resolution_scale;
         m_vram_downsample_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
         m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
-        glBlitFramebuffer(
-          scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_vram_offset_x + scaled_display_width,
-          scaled_flipped_vram_offset_y + scaled_display_height, vram_offset_x, flipped_vram_offset_y,
-          vram_offset_x + display_width, flipped_vram_offset_y + display_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_vram_offset_x + scaled_copy_width,
+                          scaled_flipped_vram_offset_y + scaled_display_height, vram_offset_x, flipped_vram_offset_y,
+                          vram_offset_x + copy_width, flipped_vram_offset_y + display_height, GL_COLOR_BUFFER_BIT,
+                          GL_NEAREST);
 
         m_display_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
         m_vram_downsample_texture->Bind();
