@@ -70,6 +70,7 @@ private:
   GLuint m_attributeless_vao_id = 0;
 
   std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
+  GLuint m_texture_buffer_r16ui_texture = 0;
 
   bool m_vram_read_texture_dirty = true;
   bool m_drawing_area_changed = true;
@@ -77,6 +78,7 @@ private:
 
   std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
   std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
+  GL::Program m_vram_write_program;
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};

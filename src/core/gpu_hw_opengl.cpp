@@ -254,9 +254,17 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
 
 void GPU_HW_OpenGL::CreateTextureBuffer()
 {
-  m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
+  // const GLenum target = GL_PIXEL_UNPACK_BUFFER;
+  const GLenum target = GL_TEXTURE_BUFFER;
+  m_texture_stream_buffer = GL::StreamBuffer::Create(target, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
   if (!m_texture_stream_buffer)
     Panic("Failed to create texture stream buffer");
+
+  glGenTextures(1, &m_texture_buffer_r16ui_texture);
+  glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
+  glTexBuffer(GL_TEXTURE_BUFFER, GL_R16UI, m_texture_stream_buffer->GetGLBufferId());
+
+  m_texture_stream_buffer->Unbind();
 }
 
 bool GPU_HW_OpenGL::CompilePrograms()
@@ -299,6 +307,19 @@ bool GPU_HW_OpenGL::CompilePrograms()
       prog.Uniform1i(1, 0);
     }
   }
+
+  if (!m_vram_write_program.Compile(GenerateScreenQuadVertexShader(), GenerateVRAMWriteFragmentShader()))
+    return false;
+
+  m_vram_write_program.BindFragData(0, "o_col0");
+  if (!m_vram_write_program.Link())
+    return false;
+
+  m_vram_write_program.Bind();
+  m_vram_write_program.RegisterUniform("u_base_coords");
+  m_vram_write_program.RegisterUniform("u_size");
+  m_vram_write_program.RegisterUniform("samp0");
+  m_vram_write_program.Uniform1i(2, 0);
 
   return true;
 }
@@ -559,7 +580,6 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
   width *= m_resolution_scale;
   height *= m_resolution_scale;
 
-  glEnable(GL_SCISSOR_TEST);
   glScissor(x, m_vram_texture->GetHeight() - y - height, width, height);
 
   const auto [r, g, b, a] = RGBA8ToFloat(RGBA5551ToRGBA8888(color));
@@ -573,6 +593,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
   const u32 num_pixels = width * height;
+#if 0
   const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
 
   // reverse copy the rows so it matches opengl's lower-left origin
@@ -596,6 +617,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   }
 
   m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
+  m_texture_stream_buffer->Bind();
 
   // have to write to the 1x texture first
   if (m_resolution_scale > 1)
@@ -609,7 +631,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   // update texture data
   glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
                   reinterpret_cast<void*>(map_result.index_aligned * sizeof(u32)));
-  InvalidateVRAMReadCache();
+  m_texture_stream_buffer->Unbind();
 
   if (m_resolution_scale > 1)
   {
@@ -625,7 +647,30 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                       scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
   }
+#else
+  const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
+  std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
+  m_texture_stream_buffer->Unmap(num_pixels * sizeof(u16));
 
+  // viewport should be set to the whole VRAM size, so we can just set the scissor
+  const u32 flipped_y = VRAM_HEIGHT - y - height;
+  const u32 scaled_width = width * m_resolution_scale;
+  const u32 scaled_height = height * m_resolution_scale;
+  const u32 scaled_x = x * m_resolution_scale;
+  const u32 scaled_y = y * m_resolution_scale;
+  const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
+  glScissor(scaled_x, scaled_flipped_y, scaled_width, scaled_height);
+
+  m_vram_write_program.Bind();
+  glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
+  m_vram_write_program.Uniform2i(0, x, flipped_y);
+  m_vram_write_program.Uniform2i(1, width, height);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
+
+  UpdateDrawingArea();
+#endif
+
+  InvalidateVRAMReadCache();
   m_stats.num_vram_writes++;
 }
 

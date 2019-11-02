@@ -123,6 +123,7 @@ protected:
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
+  std::string GenerateVRAMWriteFragmentShader();
 
   HWBatchConfig m_batch = {};
 

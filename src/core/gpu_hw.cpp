@@ -201,12 +201,17 @@ uint RGBA8ToRGBA5551(vec4 v)
 
 vec4 RGBA5551ToRGBA8(uint v)
 {
-  uint r = (v & 0x1Fu);
-  uint g = ((v >> 5) & 0x1Fu);
-  uint b = ((v >> 10) & 0x1Fu);
-  uint a = ((v >> 15) & 0x01u);
+  uint r = (v & 31u);
+  uint g = ((v >> 5) & 31u);
+  uint b = ((v >> 10) & 31u);
+  uint a = ((v >> 15) & 1u);
 
-  return vec4(float(r) * 255.0, float(g) * 255.0, float(b) * 255.0, float(a) * 255.0);
+  // repeat lower bits
+  r = (r << 3) | (r & 7u);
+  g = (g << 3) | (g & 7u);
+  b = (b << 3) | (b & 7u);
+
+  return vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, float(a));
 }
 )";
 }
@@ -543,6 +548,34 @@ void main()
   #endif
 }
 )";
+
+  return ss.str();
+}
+
+std::string GPU_HW::GenerateVRAMWriteFragmentShader()
+{
+  std::stringstream ss;
+  GenerateShaderHeader(ss);
+
+  ss << R"(
+
+uniform ivec2 u_base_coords;
+uniform ivec2 u_size;
+uniform usamplerBuffer samp0;
+
+out vec4 o_col0;
+
+void main()
+{
+  ivec2 coords = ivec2(gl_FragCoord.xy) / ivec2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  ivec2 offset = coords - u_base_coords;
+  offset.y = u_size.y - offset.y - 1;
+
+  int buffer_offset = offset.y * u_size.x + offset.x;
+  uint value = texelFetch(samp0, buffer_offset).r;
+  
+  o_col0 = RGBA5551ToRGBA8(value);
+})";
 
   return ss.str();
 }
