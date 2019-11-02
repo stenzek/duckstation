@@ -1067,7 +1067,7 @@ void CDROM::DoIDRead()
 void CDROM::DoSectorRead()
 {
   // TODO: Error handling
-  u8 raw_sector[RAW_SECTOR_OUTPUT_SIZE];
+  u8 raw_sector[CDImage::RAW_SECTOR_SIZE];
   if (!m_media->ReadRawSector(raw_sector))
     Panic("Sector read failed");
 
