@@ -17,6 +17,11 @@ void StreamBuffer::Bind()
   glBindBuffer(m_target, m_buffer_id);
 }
 
+void StreamBuffer::Unbind()
+{
+  glBindBuffer(m_target, 0);
+}
+
 StreamBuffer::MappingResult StreamBuffer::Map(u32 alignment, u32 min_size)
 {
   return MappingResult{static_cast<void*>(m_cpu_buffer.data()), 0, m_size / alignment};

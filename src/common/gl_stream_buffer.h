@@ -17,6 +17,7 @@ public:
   ALWAYS_INLINE u32 GetSize() const { return m_size; }
 
   void Bind();
+  void Unbind();
 
   struct MappingResult
   {
