@@ -53,6 +53,7 @@ private:
   void UpdateVRAMReadTexture();
 
   void CreateVertexBuffer();
+  void CreateTextureBuffer();
 
   bool CompilePrograms();
   bool CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode, bool dithering);
@@ -67,6 +68,8 @@ private:
   std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
+
+  std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
 
   bool m_vram_read_texture_dirty = true;
   bool m_drawing_area_changed = true;

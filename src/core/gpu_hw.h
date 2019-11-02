@@ -83,6 +83,7 @@ protected:
     }
   };
 
+  static constexpr u32 VRAM_UPDATE_TEXTURE_BUFFER_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32);
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 MIN_BATCH_VERTEX_COUNT = 6;
   static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);

@@ -23,6 +23,7 @@ bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* in
 
   CreateFramebuffer();
   CreateVertexBuffer();
+  CreateTextureBuffer();
   if (!CompilePrograms())
     return false;
 
@@ -249,6 +250,13 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
   glBindVertexArray(0);
 
   glGenVertexArrays(1, &m_attributeless_vao_id);
+}
+
+void GPU_HW_OpenGL::CreateTextureBuffer()
+{
+  m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
+  if (!m_texture_stream_buffer)
+    Panic("Failed to create texture stream buffer");
 }
 
 bool GPU_HW_OpenGL::CompilePrograms()
@@ -564,12 +572,13 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
-  std::vector<u32> rgba_data;
-  rgba_data.reserve(width * height);
+  const u32 num_pixels = width * height;
+  const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
 
   // reverse copy the rows so it matches opengl's lower-left origin
   const u32 source_stride = width * sizeof(u16);
   const u8* source_ptr = static_cast<const u8*>(data) + (source_stride * (height - 1));
+  u32* dest_ptr = static_cast<u32*>(map_result.pointer);
   for (u32 row = 0; row < height; row++)
   {
     const u8* source_row_ptr = source_ptr;
@@ -580,12 +589,13 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
       std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
       source_row_ptr += sizeof(src_col);
 
-      const u32 dst_col = RGBA5551ToRGBA8888(src_col);
-      rgba_data.push_back(dst_col);
+      *(dest_ptr++) = RGBA5551ToRGBA8888(src_col);
     }
 
     source_ptr -= source_stride;
   }
+
+  m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
 
   // have to write to the 1x texture first
   if (m_resolution_scale > 1)
@@ -597,7 +607,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   const u32 flipped_y = VRAM_HEIGHT - y - height;
 
   // update texture data
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data.data());
+  glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+                  reinterpret_cast<void*>(map_result.index_aligned * sizeof(u32)));
   InvalidateVRAMReadCache();
 
   if (m_resolution_scale > 1)
