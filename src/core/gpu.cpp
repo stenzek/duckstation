@@ -667,7 +667,7 @@ void GPU::UpdateDrawingArea() {}
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 
-void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color) {}
+void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
 

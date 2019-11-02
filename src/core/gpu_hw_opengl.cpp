@@ -574,7 +574,7 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
   m_stats.num_vram_reads++;
 }
 
-void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
+void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   // scale coordinates
   x *= m_resolution_scale;
@@ -584,7 +584,11 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
 
   glScissor(x, m_vram_texture->GetHeight() - y - height, width, height);
 
-  const auto [r, g, b, a] = RGBA8ToFloat(RGBA5551ToRGBA8888(color));
+  // drop precision unless true colour is enabled
+  if (!m_true_color)
+    color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
+
+  const auto [r, g, b, a] = RGBA8ToFloat(color);
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 

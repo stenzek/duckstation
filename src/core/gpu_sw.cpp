@@ -41,10 +41,11 @@ void GPU_SW::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
   }
 }
 
-void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color)
+void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  const u16 color16 = RGBA8888ToRGBA5551(color);
   for (u32 yoffs = 0; yoffs < height; yoffs++)
-    std::fill_n(GetPixelPtr(x, y + yoffs), width, color);
+    std::fill_n(GetPixelPtr(x, y + yoffs), width, color16);
 }
 
 void GPU_SW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)

@@ -284,7 +284,7 @@ protected:
   virtual void UpdateDisplay();
   virtual void UpdateDrawingArea();
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer);
-  virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u16 color);
+  virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr);

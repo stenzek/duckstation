@@ -259,11 +259,7 @@ bool GPU::HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size)
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
-  // Drop higher precision when filling. Bit15 is set to 0.
-  // TODO: Force 8-bit color option.
-  const u16 color16 = RGBA8888ToRGBA5551(color);
-
-  FillVRAM(dst_x, dst_y, width, height, color16);
+  FillVRAM(dst_x, dst_y, width, height, color);
   return true;
 }
 
