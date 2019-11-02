@@ -91,8 +91,8 @@ protected:
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
   {
     return std::make_tuple(static_cast<float>(rgba & UINT32_C(0xFF)) * (1.0f / 255.0f),
-                           static_cast<float>((rgba >> 16) & UINT32_C(0xFF)) * (1.0f / 255.0f),
                            static_cast<float>((rgba >> 8) & UINT32_C(0xFF)) * (1.0f / 255.0f),
+                           static_cast<float>((rgba >> 16) & UINT32_C(0xFF)) * (1.0f / 255.0f),
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
