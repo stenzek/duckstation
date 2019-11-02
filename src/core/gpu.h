@@ -337,7 +337,7 @@ protected:
     u32 texture_page_y;
     u32 texture_palette_x;
     u32 texture_palette_y;
-    TextureMode texture_color_mode;
+    TextureMode texture_mode;
     TransparencyMode transparency_mode;
     u8 texture_window_mask_x;   // in 8 pixel steps
     u8 texture_window_mask_y;   // in 8 pixel steps
@@ -353,6 +353,13 @@ protected:
 
     bool texture_page_changed = false;
     bool texture_window_changed = false;
+
+    /// Returns true if the texture mode requires a palette.
+    bool IsUsingPalette() const
+    {
+      return (static_cast<u8>(texture_mode) &
+              (static_cast<u8>(TextureMode::Palette4Bit) | static_cast<u8>(TextureMode::Palette8Bit))) != 0;
+    }
 
     bool IsTexturePageChanged() const { return texture_page_changed; }
     void ClearTexturePageChangedFlag() { texture_page_changed = false; }

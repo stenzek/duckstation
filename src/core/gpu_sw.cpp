@@ -416,7 +416,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
                  ((m_render_state.texture_window_offset_y & m_render_state.texture_window_mask_y) * 8u);
 
     VRAMPixel texture_color;
-    switch (m_render_state.texture_color_mode)
+    switch (m_render_state.texture_mode)
     {
       case GPU::TextureMode::Palette4Bit:
       {

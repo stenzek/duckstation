@@ -67,7 +67,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_render_state.texture_page_y);
   sw.Do(&m_render_state.texture_palette_x);
   sw.Do(&m_render_state.texture_palette_y);
-  sw.Do(&m_render_state.texture_color_mode);
+  sw.Do(&m_render_state.texture_mode);
   sw.Do(&m_render_state.transparency_mode);
   sw.Do(&m_render_state.texture_window_mask_x);
   sw.Do(&m_render_state.texture_window_mask_y);
@@ -701,7 +701,7 @@ void GPU::RenderState::SetFromPageAttribute(u16 value)
   texture_page_changed |=
     (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK);
 
-  texture_color_mode = (static_cast<TextureMode>((value >> 7) & UINT16_C(0x03)));
+  texture_mode = (static_cast<TextureMode>((value >> 7) & UINT16_C(0x03)));
   transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));
 }
 

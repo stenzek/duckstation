@@ -57,10 +57,6 @@ protected:
 
   struct HWBatchConfig
   {
-    u32 texture_page_x;
-    u32 texture_page_y;
-    u32 texture_palette_x;
-    u32 texture_palette_y;
     HWPrimitive primitive;
     TextureMode texture_mode;
     TransparencyMode transparency_mode;
