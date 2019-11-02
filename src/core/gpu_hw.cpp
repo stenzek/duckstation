@@ -261,8 +261,10 @@ void main()
 
 std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode, bool dithering)
 {
-  const TextureMode actual_texture_mode = texture_mode & ~TextureMode::RawTextureBit;
-  const bool raw_texture = (texture_mode & TextureMode::RawTextureBit) == TextureMode::RawTextureBit;
+  const TextureMode actual_texture_mode =
+    static_cast<TextureMode>(static_cast<u8>(texture_mode) & ~static_cast<u8>(TextureMode::RawTextureBit));
+  const bool raw_texture = (static_cast<u8>(texture_mode) & static_cast<u8>(TextureMode::RawTextureBit)) ==
+                           static_cast<u8>(TextureMode::RawTextureBit);
 
   std::stringstream ss;
   GenerateShaderHeader(ss);
@@ -620,7 +622,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
 
     texture_mode = m_render_state.texture_color_mode;
     if (rc.raw_texture_enable)
-      texture_mode |= TextureMode::RawTextureBit;
+    {
+      texture_mode =
+        static_cast<TextureMode>(static_cast<u8>(texture_mode) | static_cast<u8>(TextureMode::RawTextureBit));
+    }
   }
   else
   {

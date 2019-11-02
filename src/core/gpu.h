@@ -153,8 +153,6 @@ protected:
     Disabled = 8 // Not a register value
   };
 
-  IMPLEMENT_STATIC_FRIEND_ENUM_CLASS_BITWISE_OPERATORS(TextureMode);
-
   enum class TransparencyMode : u8
   {
     HalfBackgroundPlusHalfForeground = 0,
