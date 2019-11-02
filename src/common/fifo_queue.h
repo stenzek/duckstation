@@ -134,8 +134,8 @@ public:
     }
   }
 
-  template<u32 CAPACITY>
-  void PushFromQueue(FIFOQueue<T, CAPACITY>* other_queue)
+  template<u32 QUEUE_CAPACITY>
+  void PushFromQueue(FIFOQueue<T, QUEUE_CAPACITY>* other_queue)
   {
     while (!other_queue->IsEmpty() && !IsFull())
     {

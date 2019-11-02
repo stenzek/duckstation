@@ -10,6 +10,8 @@ set(SRCS
     cd_xa.h
     gl_program.cpp
     gl_program.h
+    gl_stream_buffer.cpp
+    gl_stream_buffer.h
     gl_texture.cpp
     gl_texture.h
     jit_code_buffer.cpp

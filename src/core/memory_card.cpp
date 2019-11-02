@@ -243,7 +243,11 @@ std::shared_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view fi
   mc->m_filename = filename;
   if (!mc->LoadFromFile())
   {
-    Log_ErrorPrintf("Memory card at '%s' could not be read, formatting.");
+    SmallString message;
+    message.AppendString("Memory card at '");
+    message.AppendString(filename.data(), filename.length());
+    message.AppendString("' could not be read, formatting.");
+    Log_ErrorPrint(message);
     mc->Format();
   }
 

@@ -78,7 +78,7 @@ public:
     }
 
 #define RELATIONAL_OPERATOR(op)                                                                                        \
-  bool operator##op(const Position& rhs) const                                                                         \
+  bool operator op (const Position& rhs) const                                                                         \
   {                                                                                                                    \
     return std::tie(minute, second, frame) op std::tie(rhs.minute, rhs.second, rhs.frame);                             \
   }

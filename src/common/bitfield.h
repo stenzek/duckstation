@@ -130,7 +130,7 @@ struct BitField
 
   ALWAYS_INLINE void SetValue(DataType value)
   {
-    data = (data & ~GetMask()) | (static_cast<BackingDataType>(value) << BitIndex) & GetMask();
+    data = (data & ~GetMask()) | ((static_cast<BackingDataType>(value) << BitIndex) & GetMask());
   }
 
   BackingDataType data;

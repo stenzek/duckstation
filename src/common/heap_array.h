@@ -13,7 +13,7 @@ public:
   using const_reference = const T&;
   using pointer = T*;
   using const_pointer = const T*;
-  using this_type = typename HeapArray<T, SIZE>;
+  using this_type = HeapArray<T, SIZE>;
 
   HeapArray() { m_data = new T[size]; }
 
@@ -71,7 +71,7 @@ public:
   }
 
 #define RELATIONAL_OPERATOR(op)                                                                                        \
-  bool operator##op(const this_type& rhs) const                                                                        \
+  bool operator op (const this_type& rhs) const                                                                        \
   {                                                                                                                    \
     for (size_type i = 0; i < SIZE; i++)                                                                               \
     {                                                                                                                  \
