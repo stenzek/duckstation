@@ -192,7 +192,7 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
         // polyline goes until we hit the termination code
         num_vertices = 0;
         bool found_terminator = false;
-        for (u32 pos = 1 + BoolToUInt32(!rc.shading_enable); pos < command_size; pos += words_per_vertex)
+        for (u32 pos = 1 + BoolToUInt32(rc.shading_enable); pos < command_size; pos += words_per_vertex)
         {
           if (command_ptr[pos] == 0x55555555)
           {
@@ -204,13 +204,14 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
         }
         if (!found_terminator)
           return false;
+
+        total_words = words_per_vertex * num_vertices + BoolToUInt32(!rc.shading_enable) + 1;
       }
       else
       {
         num_vertices = 2;
+        total_words = words_per_vertex * num_vertices + BoolToUInt32(!rc.shading_enable);
       }
-
-      total_words = words_per_vertex * num_vertices + BoolToUInt8(!rc.shading_enable);
     }
     break;
 
