@@ -567,15 +567,9 @@ void GPU_HW_D3D11::UpdateDisplay()
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
     {
-      const CD3D11_BOX src_box(scaled_vram_offset_x, scaled_vram_offset_y, 0,
-                               scaled_vram_offset_x + scaled_display_width,
-                               scaled_vram_offset_y + scaled_display_height, 1);
-      m_context->CopySubresourceRegion(m_display_texture.GetD3DTexture(), 0, 0, 0, 0, m_vram_texture.GetD3DTexture(), 0,
-                                       &src_box);
-
-      m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), 0, 0, scaled_display_width,
-                                        scaled_display_height, m_display_texture.GetWidth(),
-                                        m_display_texture.GetHeight(), m_crtc_state.display_aspect_ratio);
+      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), scaled_vram_offset_x, scaled_vram_offset_y,
+                                        scaled_display_width, scaled_display_height, m_vram_texture.GetWidth(),
+                                        m_vram_texture.GetHeight(), m_crtc_state.display_aspect_ratio);
     }
     else
     {

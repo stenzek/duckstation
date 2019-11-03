@@ -28,7 +28,7 @@ public:
   void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                      u32 data_stride) override;
 
-  void SetDisplayTexture(void* texture, u32 offset_x, u32 offset_y, u32 width, u32 height, u32 texture_width,
+  void SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height, u32 texture_width,
                          u32 texture_height, float aspect_ratio) override;
   void SetDisplayLinearFiltering(bool enabled) override;
 
@@ -70,10 +70,10 @@ private:
   D3D11::StreamBuffer m_display_uniform_buffer;
 
   ID3D11ShaderResourceView* m_display_srv = nullptr;
-  u32 m_display_offset_x = 0;
-  u32 m_display_offset_y = 0;
-  u32 m_display_width = 0;
-  u32 m_display_height = 0;
+  s32 m_display_offset_x = 0;
+  s32 m_display_offset_y = 0;
+  s32 m_display_width = 0;
+  s32 m_display_height = 0;
   u32 m_display_texture_width = 0;
   u32 m_display_texture_height = 0;
   float m_display_aspect_ratio = 1.0f;

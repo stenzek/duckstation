@@ -439,9 +439,10 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
   if (m_system->GetSettings().debugging.show_vram)
   {
-    m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0, 0,
-                                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
-                                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1.0f);
+    m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
+                                      m_vram_texture->GetHeight(), m_vram_texture->GetWidth(),
+                                      -static_cast<s32>(m_vram_texture->GetHeight()), m_vram_texture->GetWidth(),
+                                      m_vram_texture->GetHeight(), 1.0f);
   }
   else
   {
@@ -454,8 +455,6 @@ void GPU_HW_OpenGL::UpdateDisplay()
                                              VRAM_HEIGHT - vram_offset_y);
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
-    const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
-    const u32 scaled_flipped_vram_offset_y = m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
     if (m_GPUSTAT.display_disable)
     {
@@ -463,17 +462,17 @@ void GPU_HW_OpenGL::UpdateDisplay()
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
     {
-      // fast path when both interlacing and 24-bit depth is off
-      glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_vram_offset_x,
-                         scaled_flipped_vram_offset_y, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0,
-                         scaled_display_width, scaled_display_height, 1);
-
-      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
-                                        0, scaled_display_width, scaled_display_height, m_display_texture->GetWidth(),
-                                        m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
+      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())),
+                                        scaled_vram_offset_x, m_vram_texture->GetHeight() - scaled_vram_offset_y,
+                                        scaled_display_width, -static_cast<s32>(scaled_display_height),
+                                        m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
+                                        m_crtc_state.display_aspect_ratio);
     }
     else
     {
+      const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
+      const u32 scaled_flipped_vram_offset_y =
+        m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
       const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && !m_GPUSTAT.drawing_even_line);
       const u32 scaled_field_offset = field_offset * m_resolution_scale;
 
@@ -507,9 +506,10 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
-                                          0, display_width, display_height, m_display_texture->GetWidth(),
-                                          m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture->GetGLId())),
+                                          0, display_height, display_width, -static_cast<s32>(display_height),
+                                          m_display_texture->GetWidth(), m_display_texture->GetHeight(),
+                                          m_crtc_state.display_aspect_ratio);
       }
       else
       {
@@ -524,8 +524,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
-                                          0, scaled_display_width, scaled_display_height, m_display_texture->GetWidth(),
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture->GetGLId())),
+                                          0, scaled_display_height, scaled_display_width,
+                                          -static_cast<s32>(scaled_display_height), m_display_texture->GetWidth(),
                                           m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
       }
 

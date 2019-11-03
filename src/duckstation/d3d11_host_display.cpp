@@ -130,7 +130,7 @@ void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, 
   }
 }
 
-void D3D11HostDisplay::SetDisplayTexture(void* texture, u32 offset_x, u32 offset_y, u32 width, u32 height,
+void D3D11HostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
                                          u32 texture_width, u32 texture_height, float aspect_ratio)
 {
   m_display_srv = static_cast<ID3D11ShaderResourceView*>(texture);
@@ -249,29 +249,29 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
 bool D3D11HostDisplay::CreateD3DResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
-void main(in uint vertex_id : SV_VertexID,
-          out float2 v_tex0 : TEXCOORD0,
-          out float4 o_pos : SV_Position)
-{
-  v_tex0 = float2(float((vertex_id << 1) & 2u), float(vertex_id & 2u));
-  o_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-}
-)";
-
-  static constexpr char display_pixel_shader[] = R"(
 cbuffer UBOBlock : register(b0)
 {
   float4 u_src_rect;
 };
 
+void main(in uint vertex_id : SV_VertexID,
+          out float2 v_tex0 : TEXCOORD0,
+          out float4 o_pos : SV_Position)
+{
+  float2 pos = float2(float((vertex_id << 1) & 2u), float(vertex_id & 2u));
+  v_tex0 = u_src_rect.xy + pos * u_src_rect.zw;
+  o_pos = float4(pos * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+}
+)";
+
+  static constexpr char display_pixel_shader[] = R"(
 Texture2D samp0 : register(t0);
 SamplerState samp0_ss : register(s0);
 
 void main(in float2 v_tex0 : TEXCOORD0,
           out float4 o_col0 : SV_Target)
 {
-  float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
-  o_col0 = samp0.Sample(samp0_ss, coords);
+  o_col0 = samp0.Sample(samp0_ss, v_tex0);
 }
 )";
 
@@ -381,7 +381,7 @@ void D3D11HostDisplay::RenderDisplay()
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));
-  m_context->PSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
+  m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
 
   const CD3D11_VIEWPORT vp(static_cast<float>(vp_left), static_cast<float>(vp_top), static_cast<float>(vp_width),
                            static_cast<float>(vp_height));

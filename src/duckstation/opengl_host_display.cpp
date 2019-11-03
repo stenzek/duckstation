@@ -28,7 +28,7 @@ public:
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
 
     // TODO: Set pack width
-    Assert(initial_data_stride == (width * sizeof(u32)));
+    Assert(!initial_data || initial_data_stride == (width * sizeof(u32)));
 
     glBindTexture(GL_TEXTURE_2D, id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, initial_data);
@@ -109,7 +109,7 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
-void OpenGLHostDisplay::SetDisplayTexture(void* texture, u32 offset_x, u32 offset_y, u32 width, u32 height,
+void OpenGLHostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
                                           u32 texture_width, u32 texture_height, float aspect_ratio)
 {
   m_display_texture_id = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));
@@ -210,13 +210,14 @@ bool OpenGLHostDisplay::CreateGLResources()
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 #version 330 core
 
+uniform vec4 u_src_rect;
 out vec2 v_tex0;
 
 void main()
 {
-  v_tex0 = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
-  gl_Position = vec4(v_tex0 * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
-  gl_Position.y = -gl_Position.y;
+  vec2 pos = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  v_tex0 = u_src_rect.xy + pos * u_src_rect.zw;
+  gl_Position = vec4(pos * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
 }
 )";
 
@@ -224,15 +225,13 @@ void main()
 #version 330 core
 
 uniform sampler2D samp0;
-uniform vec4 u_src_rect;
 
 in vec2 v_tex0;
 out vec4 o_col0;
 
 void main()
 {
-  vec2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
-  o_col0 = texture(samp0, coords);
+  o_col0 = texture(samp0, v_tex0);
 }
 )";
 

@@ -35,7 +35,7 @@ public:
   virtual void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                              u32 data_stride) = 0;
 
-  virtual void SetDisplayTexture(void* texture_handle, u32 offset_x, u32 offset_y, u32 width, u32 height,
+  virtual void SetDisplayTexture(void* texture_handle, s32 offset_x, s32 offset_y, s32 width, s32 height,
                                  u32 texture_width, u32 texture_height, float aspect_ratio) = 0;
   virtual void SetDisplayLinearFiltering(bool enabled) = 0;
 
