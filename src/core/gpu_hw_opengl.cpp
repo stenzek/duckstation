@@ -19,16 +19,16 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
 bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* dma,
                                InterruptController* interrupt_controller, Timers* timers)
 {
-  SetCapabilities();
-
-  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
-    return false;
-
-  if (m_host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
+  if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
   {
     Log_ErrorPrintf("Host render API type is incompatible");
     return false;
   }
+
+  SetCapabilities();
+
+  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
+    return false;
 
   CreateFramebuffer();
   CreateVertexBuffer();

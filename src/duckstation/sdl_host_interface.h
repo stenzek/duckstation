@@ -50,7 +50,7 @@ private:
 
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
-#ifdef Y_PLATFORM_WINDOWS
+#ifdef WIN32
   bool UseOpenGLRenderer() const { return m_settings.gpu_renderer == Settings::GPURenderer::HardwareOpenGL; }
 #else
   bool UseOpenGLRenderer() const { return true; }

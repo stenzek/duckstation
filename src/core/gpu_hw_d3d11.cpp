@@ -20,16 +20,16 @@ GPU_HW_D3D11::~GPU_HW_D3D11()
 bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dma,
                               InterruptController* interrupt_controller, Timers* timers)
 {
-  SetCapabilities();
-
-  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
-    return false;
-
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)
   {
     Log_ErrorPrintf("Host render API is incompatible");
     return false;
   }
+
+  SetCapabilities();
+
+  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
+    return false;
 
   m_device = static_cast<ID3D11Device*>(host_display->GetHostRenderDevice());
   m_context = static_cast<ID3D11DeviceContext*>(host_display->GetHostRenderContext());

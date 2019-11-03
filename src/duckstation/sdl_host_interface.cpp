@@ -71,7 +71,7 @@ bool SDLHostInterface::CreateSDLWindow()
 
 bool SDLHostInterface::CreateDisplay()
 {
-#ifdef Y_PLATFORM_WINDOWS
+#ifdef WIN32
   m_display = UseOpenGLRenderer() ? OpenGLHostDisplay::Create(m_window) : D3D11HostDisplay::Create(m_window);
 #else
   m_display = OpenGLHostDisplay::Create(m_window);

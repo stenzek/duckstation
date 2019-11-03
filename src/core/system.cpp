@@ -113,9 +113,11 @@ bool System::CreateGPU()
       m_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
+#ifdef WIN32
     case Settings::GPURenderer::HardwareD3D11:
       m_gpu = GPU::CreateHardwareD3D11Renderer();
       break;
+#endif
 
     case Settings::GPURenderer::Software:
     default:
