@@ -53,6 +53,8 @@ public:
   void Uniform3fv(u32 index, const float* v) const;
   void Uniform4fv(u32 index, const float* v) const;
 
+  void BindUniformBlock(const char* name, u32 index);
+
 private:
   GLuint m_program_id = 0;
   GLuint m_vertex_shader_id = 0;
