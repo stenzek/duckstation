@@ -8,6 +8,22 @@
 class GPU_HW : public GPU
 {
 public:
+  enum class BatchPrimitive : u8
+  {
+    Lines = 0,
+    LineStrip = 1,
+    Triangles = 2,
+    TriangleStrip = 3
+  };
+
+  enum class BatchRenderMode : u8
+  {
+    TransparencyDisabled,
+    TransparentAndOpaque,
+    OnlyOpaque,
+    OnlyTransparent
+  };
+
   GPU_HW();
   virtual ~GPU_HW();
 
@@ -16,23 +32,7 @@ public:
   virtual void UpdateSettings() override;
 
 protected:
-  enum class HWPrimitive : u8
-  {
-    Lines = 0,
-    LineStrip = 1,
-    Triangles = 2,
-    TriangleStrip = 3
-  };
-
-  enum class HWBatchRenderMode : u8
-  {
-    TransparencyDisabled,
-    TransparentAndOpaque,
-    OnlyOpaque,
-    OnlyTransparent
-  };
-
-  struct HWVertex
+  struct BatchVertex
   {
     s32 x;
     s32 y;
@@ -55,9 +55,9 @@ protected:
     }
   };
 
-  struct HWBatchConfig
+  struct BatchConfig
   {
-    HWPrimitive primitive;
+    BatchPrimitive primitive;
     TextureMode texture_mode;
     TransparencyMode transparency_mode;
     bool dithering;
@@ -71,14 +71,14 @@ protected:
     }
 
     // Returns the render mode for this batch.
-    HWBatchRenderMode GetRenderMode() const
+    BatchRenderMode GetRenderMode() const
     {
-      return transparency_mode == TransparencyMode::Disabled ? HWBatchRenderMode::TransparencyDisabled :
-                                                               HWBatchRenderMode::TransparentAndOpaque;
+      return transparency_mode == TransparencyMode::Disabled ? BatchRenderMode::TransparencyDisabled :
+                                                               BatchRenderMode::TransparentAndOpaque;
     }
   };
 
-  struct HWBatchUBOData
+  struct BatchUBOData
   {
     s32 u_pos_offset[2];
     u32 u_texture_window_mask[2];
@@ -90,7 +90,7 @@ protected:
   static constexpr u32 VRAM_UPDATE_TEXTURE_BUFFER_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32);
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 MIN_BATCH_VERTEX_COUNT = 6;
-  static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
+  static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(BatchVertex);
   static constexpr u32 UNIFORM_BUFFER_SIZE = 512 * 1024;
 
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
@@ -121,31 +121,21 @@ protected:
     return std::make_tuple(x * s32(m_resolution_scale), y * s32(m_resolution_scale));
   }
 
-  std::string GenerateVertexShader(bool textured);
-  std::string GenerateFragmentShader(HWBatchRenderMode transparency, TextureMode texture_mode, bool dithering);
-  std::string GenerateScreenQuadVertexShader();
-  std::string GenerateFillFragmentShader();
-  std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
-  std::string GenerateVRAMWriteFragmentShader();
-
-  HWVertex* m_batch_start_vertex_ptr = nullptr;
-  HWVertex* m_batch_end_vertex_ptr = nullptr;
-  HWVertex* m_batch_current_vertex_ptr = nullptr;
+  BatchVertex* m_batch_start_vertex_ptr = nullptr;
+  BatchVertex* m_batch_end_vertex_ptr = nullptr;
+  BatchVertex* m_batch_current_vertex_ptr = nullptr;
   u32 m_batch_base_vertex = 0;
 
   u32 m_resolution_scale = 1;
   u32 m_max_resolution_scale = 1;
   bool m_true_color = false;
 
-  HWBatchConfig m_batch = {};
-  HWBatchUBOData m_batch_ubo_data = {};
+  BatchConfig m_batch = {};
+  BatchUBOData m_batch_ubo_data = {};
   bool m_batch_ubo_dirty = true;
 
 private:
-  static HWPrimitive GetPrimitiveForCommand(RenderCommand rc);
-
-  void GenerateShaderHeader(std::stringstream& ss);
-  void GenerateBatchUniformBuffer(std::stringstream& ss);
+  static BatchPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
   void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   void AddDuplicateVertex();

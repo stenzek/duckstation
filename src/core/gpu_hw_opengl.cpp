@@ -2,6 +2,7 @@
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
+#include "gpu_hw_shadergen.h"
 #include "host_interface.h"
 #include "imgui.h"
 #include "system.h"
@@ -138,9 +139,9 @@ void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
   Assert(!m_batch_start_vertex_ptr);
 
   const GL::StreamBuffer::MappingResult res =
-    m_vertex_stream_buffer->Map(sizeof(HWVertex), required_vertices * sizeof(HWVertex));
+    m_vertex_stream_buffer->Map(sizeof(BatchVertex), required_vertices * sizeof(BatchVertex));
 
-  m_batch_start_vertex_ptr = static_cast<HWVertex*>(res.pointer);
+  m_batch_start_vertex_ptr = static_cast<BatchVertex*>(res.pointer);
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
   m_batch_end_vertex_ptr = m_batch_start_vertex_ptr + res.space_aligned;
   m_batch_base_vertex = res.index_aligned;
@@ -246,11 +247,11 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
-  glVertexAttribIPointer(0, 2, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, x)));
-  glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(HWVertex),
-                        reinterpret_cast<void*>(offsetof(HWVertex, color)));
-  glVertexAttribIPointer(2, 2, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, texcoord)));
-  glVertexAttribIPointer(3, 1, GL_INT, sizeof(HWVertex), reinterpret_cast<void*>(offsetof(HWVertex, texpage)));
+  glVertexAttribIPointer(0, 2, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
+  glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
+                        reinterpret_cast<void*>(offsetof(BatchVertex, color)));
+  glVertexAttribIPointer(2, 2, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, texcoord)));
+  glVertexAttribIPointer(3, 1, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, texpage)));
   glBindVertexArray(0);
 
   glGenVertexArrays(1, &m_attributeless_vao_id);
@@ -280,31 +281,56 @@ void GPU_HW_OpenGL::CreateTextureBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
+  GPU_HW_ShaderGen shadergen(GPU_HW_ShaderGen::Backend::OpenGL, m_resolution_scale, m_true_color);
+
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
     for (u32 texture_mode = 0; texture_mode < 9; texture_mode++)
     {
       for (u8 dithering = 0; dithering < 2; dithering++)
       {
-        if (!CompileProgram(m_render_programs[render_mode][texture_mode][dithering],
-                            static_cast<HWBatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
-                            ConvertToBoolUnchecked(dithering)))
-        {
+        const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
+        const std::string vs = shadergen.GenerateBatchVertexShader(textured);
+        const std::string fs = shadergen.GenerateBatchFragmentShader(static_cast<BatchRenderMode>(render_mode),
+                                                                     static_cast<TextureMode>(texture_mode),
+                                                                     ConvertToBoolUnchecked(dithering));
+
+        GL::Program& prog = m_render_programs[render_mode][texture_mode][dithering];
+        if (!prog.Compile(vs, fs))
           return false;
+
+        prog.BindAttribute(0, "a_pos");
+        prog.BindAttribute(1, "a_col0");
+        if (textured)
+        {
+          prog.BindAttribute(2, "a_texcoord");
+          prog.BindAttribute(3, "a_texpage");
+        }
+
+        prog.BindFragData(0, "o_col0");
+
+        if (!prog.Link())
+          return false;
+
+        prog.BindUniformBlock("UBOBlock", 1);
+        if (textured)
+        {
+          prog.Bind();
+          prog.RegisterUniform("samp0");
+          prog.Uniform1i(0, 0);
         }
       }
     }
   }
 
-  // TODO: Use string_view
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
     for (u8 interlaced = 0; interlaced < 2; interlaced++)
     {
       GL::Program& prog = m_display_programs[depth_24bit][interlaced];
-      const std::string vs = GenerateScreenQuadVertexShader();
-      const std::string fs =
-        GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit), ConvertToBoolUnchecked(interlaced));
+      const std::string vs = shadergen.GenerateScreenQuadVertexShader();
+      const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
+                                                                     ConvertToBoolUnchecked(interlaced));
       if (!prog.Compile(vs, fs))
         return false;
 
@@ -319,8 +345,11 @@ bool GPU_HW_OpenGL::CompilePrograms()
     }
   }
 
-  if (!m_vram_write_program.Compile(GenerateScreenQuadVertexShader(), GenerateVRAMWriteFragmentShader()))
+  if (!m_vram_write_program.Compile(shadergen.GenerateScreenQuadVertexShader(),
+                                    shadergen.GenerateVRAMWriteFragmentShader()))
+  {
     return false;
+  }
 
   m_vram_write_program.BindFragData(0, "o_col0");
   if (!m_vram_write_program.Link())
@@ -335,41 +364,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   return true;
 }
 
-bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode,
-                                   bool dithering)
-{
-  const bool textured = texture_mode != TextureMode::Disabled;
-  const std::string vs = GenerateVertexShader(textured);
-  const std::string fs = GenerateFragmentShader(render_mode, texture_mode, dithering);
-  if (!prog.Compile(vs, fs))
-    return false;
-
-  prog.BindAttribute(0, "a_pos");
-  prog.BindAttribute(1, "a_col0");
-  if (textured)
-  {
-    prog.BindAttribute(2, "a_texcoord");
-    prog.BindAttribute(3, "a_texpage");
-  }
-
-  prog.BindFragData(0, "o_col0");
-
-  if (!prog.Link())
-    return false;
-
-  prog.BindUniformBlock("UBOBlock", 1);
-
-  if (textured)
-  {
-    prog.Bind();
-    prog.RegisterUniform("samp0");
-    prog.Uniform1i(0, 0);
-  }
-
-  return true;
-}
-
-void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
+void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
 {
   const GL::Program& prog = m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
                                              [BoolToUInt8(m_batch.dithering)];
@@ -378,7 +373,7 @@ void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
   if (m_batch.texture_mode != TextureMode::Disabled)
     m_vram_read_texture->Bind();
 
-  if (m_batch.transparency_mode == TransparencyMode::Disabled || render_mode == HWBatchRenderMode::OnlyOpaque)
+  if (m_batch.transparency_mode == TransparencyMode::Disabled || render_mode == BatchRenderMode::OnlyOpaque)
   {
     glDisable(GL_BLEND);
   }
@@ -732,7 +727,7 @@ void GPU_HW_OpenGL::FlushRender()
   m_stats.num_batches++;
   m_stats.num_vertices += vertex_count;
 
-  m_vertex_stream_buffer->Unmap(vertex_count * sizeof(HWVertex));
+  m_vertex_stream_buffer->Unmap(vertex_count * sizeof(BatchVertex));
   m_vertex_stream_buffer->Bind();
   m_batch_start_vertex_ptr = nullptr;
   m_batch_end_vertex_ptr = nullptr;
@@ -742,9 +737,9 @@ void GPU_HW_OpenGL::FlushRender()
 
   if (m_batch.NeedsTwoPassRendering())
   {
-    SetDrawState(HWBatchRenderMode::OnlyTransparent);
+    SetDrawState(BatchRenderMode::OnlyTransparent);
     glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
-    SetDrawState(HWBatchRenderMode::OnlyOpaque);
+    SetDrawState(BatchRenderMode::OnlyOpaque);
     glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
   }
   else

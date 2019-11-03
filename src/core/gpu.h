@@ -18,6 +18,57 @@ class Timers;
 class GPU
 {
 public:
+  enum class DMADirection : u32
+  {
+    Off = 0,
+    FIFO = 1,
+    CPUtoGP0 = 2,
+    GPUREADtoCPU = 3
+  };
+
+  enum class Primitive : u8
+  {
+    Reserved = 0,
+    Polygon = 1,
+    Line = 2,
+    Rectangle = 3
+  };
+
+  enum class DrawRectangleSize : u8
+  {
+    Variable = 0,
+    R1x1 = 1,
+    R8x8 = 2,
+    R16x16 = 3
+  };
+
+  enum class TextureMode : u8
+  {
+    Palette4Bit = 0,
+    Palette8Bit = 1,
+    Direct16Bit = 2,
+    Reserved_Direct16Bit = 3,
+
+    // Not register values.
+    RawTextureBit = 4,
+    RawPalette4Bit = RawTextureBit | Palette4Bit,
+    RawPalette8Bit = RawTextureBit | Palette8Bit,
+    RawDirect16Bit = RawTextureBit | Direct16Bit,
+    Reserved_RawDirect16Bit = RawTextureBit | Reserved_Direct16Bit,
+
+    Disabled = 8 // Not a register value
+  };
+
+  enum class TransparencyMode : u8
+  {
+    HalfBackgroundPlusHalfForeground = 0,
+    BackgroundPlusForeground = 1,
+    BackgroundMinusForeground = 2,
+    BackgroundPlusQuarterForeground = 3,
+
+    Disabled = 4 // Not a register value
+  };
+
   enum : u32
   {
     VRAM_WIDTH = 1024,
@@ -29,6 +80,13 @@ public:
     HBLANK_TIMER_INDEX = 1
   };
 
+  // 4x4 dither matrix.
+  static constexpr s32 DITHER_MATRIX[4][4] = {{-4, +0, -3, +1},  // row 0
+                                              {+2, -2, +3, -1},  // row 1
+                                              {-3, +1, -4, +0},  // row 2
+                                              {+4, -1, +2, -2}}; // row 3
+
+  // Base class constructor.
   GPU();
   virtual ~GPU();
 
@@ -111,57 +169,6 @@ protected:
 
   static bool DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer,
                              bool remove_alpha);
-
-  enum class DMADirection : u32
-  {
-    Off = 0,
-    FIFO = 1,
-    CPUtoGP0 = 2,
-    GPUREADtoCPU = 3
-  };
-
-  enum class Primitive : u8
-  {
-    Reserved = 0,
-    Polygon = 1,
-    Line = 2,
-    Rectangle = 3
-  };
-
-  enum class DrawRectangleSize : u8
-  {
-    Variable = 0,
-    R1x1 = 1,
-    R8x8 = 2,
-    R16x16 = 3
-  };
-
-  enum class TextureMode : u8
-  {
-    Palette4Bit = 0,
-    Palette8Bit = 1,
-    Direct16Bit = 2,
-    Reserved_Direct16Bit = 3,
-
-    // Not register values.
-    RawTextureBit = 4,
-    RawPalette4Bit = RawTextureBit | Palette4Bit,
-    RawPalette8Bit = RawTextureBit | Palette8Bit,
-    RawDirect16Bit = RawTextureBit | Direct16Bit,
-    Reserved_RawDirect16Bit = RawTextureBit | Reserved_Direct16Bit,
-
-    Disabled = 8 // Not a register value
-  };
-
-  enum class TransparencyMode : u8
-  {
-    HalfBackgroundPlusHalfForeground = 0,
-    BackgroundPlusForeground = 1,
-    BackgroundMinusForeground = 2,
-    BackgroundPlusQuarterForeground = 3,
-
-    Disabled = 4 // Not a register value
-  };
 
   union RenderCommand
   {
@@ -257,12 +264,6 @@ protected:
       return ((r_ << 3) | (r_ & 7)) | (((g_ << 3) | (g_ & 7)) << 8) | (((b_ << 3) | (b_ & 7)) << 16);
     }
   };
-
-  // 4x4 dither matrix.
-  static constexpr s32 DITHER_MATRIX[4][4] = {{-4, +0, -3, +1},  // row 0
-                                              {+2, -2, +3, -1},  // row 1
-                                              {-3, +1, -4, +0},  // row 2
-                                              {+4, -1, +2, -2}}; // row 3
 
   void SoftReset();
 
@@ -464,3 +465,5 @@ private:
 
   static const GP0CommandHandlerTable s_GP0_command_handler_table;
 };
+
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPU::TextureMode);

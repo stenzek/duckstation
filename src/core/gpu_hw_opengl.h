@@ -58,8 +58,7 @@ private:
   void CreateTextureBuffer();
 
   bool CompilePrograms();
-  bool CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode, bool dithering);
-  void SetDrawState(HWBatchRenderMode render_mode);
+  void SetDrawState(BatchRenderMode render_mode);
   void UploadUniformBlock(const void* data, u32 data_size);
 
   // downsample texture - used for readbacks at >1xIR.

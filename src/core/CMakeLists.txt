@@ -21,6 +21,8 @@ add_library(core
     gpu_hw.h
     gpu_hw_opengl.cpp
     gpu_hw_opengl.h
+    gpu_hw_shadergen.cpp
+    gpu_hw_shadergen.h
     gpu_sw.cpp
     gpu_sw.h
     gte.cpp

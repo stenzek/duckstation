@@ -23,6 +23,7 @@
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
+    <ClCompile Include="gpu_hw_shadergen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="gpu_sw.h" />
+    <ClInclude Include="gpu_hw_shadergen.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />
