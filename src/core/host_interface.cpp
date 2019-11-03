@@ -7,7 +7,7 @@ Log_SetChannel(HostInterface);
 
 HostInterface::HostInterface()
 {
-  m_settings.gpu_renderer = Settings::GPURenderer::HardwareD3D11;
+  m_settings.gpu_renderer = Settings::GPURenderer::HardwareOpenGL;
   m_settings.memory_card_a_filename = "memory_card_a.mcd";
 }
 
