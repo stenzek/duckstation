@@ -1,7 +1,7 @@
 #include "gpu_hw_shadergen.h"
 
-GPU_HW_ShaderGen::GPU_HW_ShaderGen(Backend backend, u32 resolution_scale, bool true_color)
-  : m_backend(backend), m_resolution_scale(resolution_scale), m_true_color(true_color)
+GPU_HW_ShaderGen::GPU_HW_ShaderGen(API backend, u32 resolution_scale, bool true_color)
+  : m_backend(backend), m_resolution_scale(resolution_scale), m_true_color(true_color), m_glsl(backend != API::Direct3D)
 {
 }
 
@@ -15,25 +15,75 @@ static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
     ss << "/* #define " << name << " 0 */\n";
 }
 
-void GPU_HW_ShaderGen::GenerateShaderHeader(std::stringstream& ss)
+void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 {
-  ss << "#version 330 core\n\n";
-  ss << "const int RESOLUTION_SCALE = " << m_resolution_scale << ";\n";
-  ss << "const ivec2 VRAM_SIZE = ivec2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
-  ss << "const vec2 RCP_VRAM_SIZE = vec2(1.0, 1.0) / vec2(VRAM_SIZE);\n";
+  if (m_backend == API::OpenGL)
+  {
+    ss << "#version 330 core\n\n";
+    ss << "#define API_OPENGL 1\n";
+  }
+  else if (m_backend == API::Direct3D)
+  {
+    ss << "#define API_DIRECT3D 1\n";
+  }
+
+  if (m_glsl)
+  {
+    ss << "#define GLSL 1\n";
+    ss << "#define float2 vec2\n";
+    ss << "#define float3 vec3\n";
+    ss << "#define float4 vec4\n";
+    ss << "#define int2 ivec2\n";
+    ss << "#define int3 ivec3\n";
+    ss << "#define int4 ivec4\n";
+    ss << "#define uint2 uvec2\n";
+    ss << "#define uint3 uvec3\n";
+    ss << "#define uint4 uvec4\n";
+    ss << "#define nointerpolation flat\n";
+
+    ss << "#define CONSTANT const\n";
+    ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
+    ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
+    ss << "#define LOAD_TEXTURE_BUFFER(name, index) texelFetch(name, index)\n";
+  }
+  else
+  {
+    ss << "#define HLSL 1\n";
+    ss << "#define CONSTANT static const\n";
+    ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
+    ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
+    ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(name, index)\n";
+  }
+
+  ss << "\n";
+}
+
+void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
+{
+  ss << "CONSTANT int RESOLUTION_SCALE = " << m_resolution_scale << ";\n";
+  ss << "CONSTANT int2 VRAM_SIZE = int2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
+  ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0, 1.0) / float2(VRAM_SIZE);\n";
   ss << R"(
 
 float fixYCoord(float y)
 {
+#if API_OPENGL
   return 1.0 - RCP_VRAM_SIZE.y - y;
+#else
+  return y;
+#endif
 }
 
 int fixYCoord(int y)
 {
+#if API_OPENGL
   return VRAM_SIZE.y - y - 1;
+#else
+  return y;
+#endif
 }
 
-uint RGBA8ToRGBA5551(vec4 v)
+uint RGBA8ToRGBA5551(float4 v)
 {
   uint r = uint(v.r * 255.0) >> 3;
   uint g = uint(v.g * 255.0) >> 3;
@@ -42,7 +92,7 @@ uint RGBA8ToRGBA5551(vec4 v)
   return (r) | (g << 5) | (b << 10) | (a << 15);
 }
 
-vec4 RGBA5551ToRGBA8(uint v)
+float4 RGBA5551ToRGBA8(uint v)
 {
   uint r = (v & 31u);
   uint g = ((v >> 5) & 31u);
@@ -54,53 +104,196 @@ vec4 RGBA5551ToRGBA8(uint v)
   g = (g << 3) | (g & 7u);
   b = (b << 3) | (b & 7u);
 
-  return vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, float(a));
+  return float4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, float(a));
 }
 )";
 }
 
-void GPU_HW_ShaderGen::GenerateBatchUniformBuffer(std::stringstream& ss)
+void GPU_HW_ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members)
 {
-  ss << R"(
-uniform UBOBlock {
-  ivec2 u_pos_offset;
-  uvec2 u_texture_window_mask;
-  uvec2 u_texture_window_offset;
-  float u_src_alpha_factor;
-  float u_dst_alpha_factor;
-};
-)";
+  if (m_glsl)
+    ss << "uniform UBOBlock\n";
+  else
+    ss << "cbuffer UBOBlock : register(b0)\n";
+
+  ss << "{\n";
+  for (const char* member : members)
+    ss << member << ";\n";
+  ss << "};\n\n";
+}
+
+void GPU_HW_ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 index)
+{
+  if (m_glsl)
+  {
+    ss << "uniform sampler2D " << name << ";\n";
+  }
+  else
+  {
+    ss << "Texture2D " << name << " : register(t" << index << ");\n";
+    ss << "SamplerState " << name << "_ss : register(s" << index << ");\n";
+  }
+}
+
+void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int,
+                                            bool is_unsigned)
+{
+  if (m_glsl)
+  {
+    ss << "uniform " << (is_int ? (is_unsigned ? "u" : "i") : "") << "samplerBuffer " << name << ";\n";
+  }
+  else
+  {
+    ss << "Buffer<" << (is_int ? (is_unsigned ? "uint4" : "int4") : "float4") << "> " << name << " : register(t"
+       << index << ");\n";
+  }
+}
+
+void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
+                                               const std::initializer_list<const char*>& attributes,
+                                               u32 num_color_outputs, u32 num_texcoord_outputs,
+                                               const std::initializer_list<const char*>& additional_outputs)
+{
+  if (m_glsl)
+  {
+    for (const char* attribute : attributes)
+      ss << "in " << attribute << ";\n";
+
+    for (u32 i = 0; i < num_color_outputs; i++)
+      ss << "out float4 v_col" << i << ";\n";
+
+    for (u32 i = 0; i < num_texcoord_outputs; i++)
+      ss << "out float2 v_tex" << i << ";\n";
+
+    for (const char* output : additional_outputs)
+      ss << output << ";\n";
+
+    ss << "#define v_pos gl_Position\n\n";
+    ss << "void main()\n";
+  }
+  else
+  {
+    ss << "void main(\n";
+
+    u32 attribute_counter = 0;
+    for (const char* attribute : attributes)
+    {
+      ss << "  in " << attribute << " : ATTR" << attribute_counter << ",\n";
+      attribute_counter++;
+    }
+
+    for (u32 i = 0; i < num_color_outputs; i++)
+      ss << "  out float4 v_col" << i << " : COLOR" << i << ",\n";
+
+    for (u32 i = 0; i < num_texcoord_outputs; i++)
+      ss << "  out float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
+
+    u32 additional_counter = num_texcoord_outputs;
+    for (const char* output : additional_outputs)
+    {
+      ss << "  " << output << " : TEXCOORD" << additional_counter << ",\n";
+      additional_counter++;
+    }
+
+    ss << "  out float4 v_pos : SV_Position)\n";
+  }
+}
+
+void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
+                                                 const std::initializer_list<const char*>& additional_inputs,
+                                                 bool declare_fragcoord, bool dual_color_output)
+{
+  if (m_glsl)
+  {
+    for (u32 i = 0; i < num_color_inputs; i++)
+      ss << "in float4 v_col" << i << ";\n";
+
+    for (u32 i = 0; i < num_texcoord_inputs; i++)
+      ss << "in float2 v_tex" << i << ";\n";
+
+    for (const char* input : additional_inputs)
+      ss << input << ";\n";
+
+    if (declare_fragcoord)
+      ss << "#define v_pos gl_FragCoord\n";
+
+    ss << "out float4 o_col0;\n";
+    if (dual_color_output)
+      ss << "out float4 o_col1;\n";
+
+    ss << "\n";
+
+    ss << "void main()\n";
+  }
+  else
+  {
+    {
+      ss << "void main(\n";
+
+      for (u32 i = 0; i < num_color_inputs; i++)
+        ss << "  in float4 v_col" << i << " : COLOR" << i << ",\n";
+
+      for (u32 i = 0; i < num_texcoord_inputs; i++)
+        ss << "  in float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
+
+      u32 additional_counter = num_texcoord_inputs;
+      for (const char* output : additional_inputs)
+      {
+        ss << "  " << output << " : TEXCOORD" << additional_counter << ",\n";
+        additional_counter++;
+      }
+
+      if (declare_fragcoord)
+        ss << "  in float4 v_pos : SV_Position,\n";
+
+      if (dual_color_output)
+      {
+        ss << "  out float4 o_col0 : SV_Target0,\n";
+        ss << "  out float4 o_col1 : SV_Target1)\n";
+      }
+      else
+      {
+        ss << "  out float4 o_col0 : SV_Target)";
+      }
+    }
+  }
+}
+
+void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
+{
+  DeclareUniformBuffer(ss, {"int2 u_pos_offset", "uint2 u_texture_window_mask", "uint2 u_texture_window_offset",
+                            "float u_src_alpha_factor", "float u_dst_alpha_factor"});
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 {
   std::stringstream ss;
-  GenerateShaderHeader(ss);
+  WriteHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
-  GenerateBatchUniformBuffer(ss);
+
+  WriteCommonFunctions(ss);
+  WriteBatchUniformBuffer(ss);
+
+  if (textured)
+  {
+    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "int a_texcoord", "int a_texpage"}, 1, 1,
+                            {"nointerpolation out int4 v_texpage"});
+  }
+  else
+  {
+    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0"}, 1, 0, {});
+  }
 
   ss << R"(
-in ivec2 a_pos;
-in vec4 a_col0;
-in int a_texcoord;
-in int a_texpage;
-
-out vec3 v_col0;
-#if TEXTURED
-  out vec2 v_tex0;
-  flat out ivec4 v_texpage;
-#endif
-
-void main()
 {
   // 0..+1023 -> -1..1
   float pos_x = (float(a_pos.x + u_pos_offset.x) / 512.0) - 1.0;
   float pos_y = (float(a_pos.y + u_pos_offset.y) / -256.0) + 1.0;
-  gl_Position = vec4(pos_x, pos_y, 0.0, 1.0);
+  v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
-  v_col0 = a_col0.rgb;
+  v_col0 = a_col0;
   #if TEXTURED
-    v_tex0 = vec2(float(a_texcoord & 0xFFFF), float(a_texcoord >> 16)) / vec2(255.0);
+    v_tex0 = float2(float(a_texcoord & 0xFFFF), float(a_texcoord >> 16)) / float2(255.0, 255.0);
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
@@ -115,18 +308,18 @@ void main()
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency,
-                                                     GPU::TextureMode texture_mode, bool dithering)
+                                                          GPU::TextureMode texture_mode, bool dithering)
 {
   const GPU::TextureMode actual_texture_mode = texture_mode & ~GPU::TextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPU::TextureMode::RawTextureBit) == GPU::TextureMode::RawTextureBit;
+  const bool textured = (texture_mode != GPU::TextureMode::Disabled);
 
   std::stringstream ss;
-  GenerateShaderHeader(ss);
-  GenerateBatchUniformBuffer(ss);
+  WriteHeader(ss);
   DefineMacro(ss, "TRANSPARENCY", transparency != GPU_HW::BatchRenderMode::TransparencyDisabled);
   DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", transparency == GPU_HW::BatchRenderMode::OnlyOpaque);
   DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENCY", transparency == GPU_HW::BatchRenderMode::OnlyTransparent);
-  DefineMacro(ss, "TEXTURED", actual_texture_mode != GPU::TextureMode::Disabled);
+  DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
               actual_texture_mode == GPU::TextureMode::Palette4Bit ||
                 actual_texture_mode == GPU::TextureMode::Palette8Bit);
@@ -136,64 +329,65 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
 
-  ss << "const int[16] s_dither_values = int[16]( ";
+  WriteCommonFunctions(ss);
+  WriteBatchUniformBuffer(ss);
+  DeclareTexture(ss, "samp0", 0);
+
+  if (m_glsl)
+    ss << "CONSTANT int[16] s_dither_values = int[16]( ";
+  else
+    ss << "CONSTANT int s_dither_values[] = {";
   for (u32 i = 0; i < 16; i++)
   {
     if (i > 0)
       ss << ", ";
     ss << GPU::DITHER_MATRIX[i / 4][i % 4];
   }
-  ss << " );\n";
+  if (m_glsl)
+    ss << " );\n";
+  else
+    ss << "};\n";
 
   ss << R"(
-in vec3 v_col0;
-#if TEXTURED
-  in vec2 v_tex0;
-  flat in ivec4 v_texpage;
-  uniform sampler2D samp0;
-#endif
-
-out vec4 o_col0;
-
-ivec3 ApplyDithering(ivec3 icol)
+int3 ApplyDithering(int2 coord, int3 icol)
 {
-  ivec2 fc = (ivec2(gl_FragCoord.xy) / ivec2(RESOLUTION_SCALE, RESOLUTION_SCALE)) & ivec2(3, 3);
+  int2 fc = coord & int2(3, 3);
   int offset = s_dither_values[fc.y * 4 + fc.x];
-  return icol + ivec3(offset, offset, offset);
+  return icol + int3(offset, offset, offset);
 }
 
-ivec3 TruncateTo15Bit(ivec3 icol)
+int3 TruncateTo15Bit(int3 icol)
 {
-  icol = clamp(icol, ivec3(0, 0, 0), ivec3(255, 255, 255));
-  return (icol & ivec3(~7, ~7, ~7)) | ((icol >> 3) & ivec3(7, 7, 7));
+  icol = clamp(icol, int3(0, 0, 0), int3(255, 255, 255));
+  return (icol & int3(~7, ~7, ~7)) | ((icol >> 3) & int3(7, 7, 7));
 }
 
 #if TEXTURED
-ivec2 ApplyNativeTextureWindow(ivec2 coords)
+int2 ApplyNativeTextureWindow(int2 coords)
 {
   uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u);
   uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u);
-  return ivec2(int(x), int(y));
+  return int2(int(x), int(y));
 }  
 
-ivec2 ApplyTextureWindow(ivec2 coords)
+int2 ApplyTextureWindow(int2 coords)
 {
   if (RESOLUTION_SCALE == 1)
     return ApplyNativeTextureWindow(coords);
 
-  ivec2 downscaled_coords = coords / ivec2(RESOLUTION_SCALE);
-  ivec2 coords_offset = coords % ivec2(RESOLUTION_SCALE);
-  return (ApplyNativeTextureWindow(downscaled_coords) * ivec2(RESOLUTION_SCALE)) + coords_offset;
+  int2 downscaled_coords = coords / int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  int2 coords_offset = coords % int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  return (ApplyNativeTextureWindow(downscaled_coords) * int2(RESOLUTION_SCALE, RESOLUTION_SCALE)) + coords_offset;
 }
 
-ivec4 SampleFromVRAM(vec2 coord)
+int4 SampleFromVRAM(int4 texpage, float2 coord)
 {
   // from 0..1 to 0..255
-  ivec2 icoord = ivec2(coord * vec2(255 * RESOLUTION_SCALE));
+  int2 icoord = int2(coord * float2(float(255 * RESOLUTION_SCALE), float(255 * RESOLUTION_SCALE)));
   icoord = ApplyTextureWindow(icoord);
 
   // adjust for tightly packed palette formats
-  ivec2 index_coord = icoord;
+  int2 index_coord = icoord;
   #if PALETTE_4_BIT
     index_coord.x /= 4;
   #elif PALETTE_8_BIT
@@ -201,10 +395,10 @@ ivec4 SampleFromVRAM(vec2 coord)
   #endif
 
   // fixup coords
-  ivec2 vicoord = ivec2(v_texpage.x + index_coord.x, fixYCoord(v_texpage.y + index_coord.y));
+  int2 vicoord = int2(texpage.x + index_coord.x, fixYCoord(texpage.y + index_coord.y));
 
   // load colour/palette
-  vec4 color = texelFetch(samp0, vicoord, 0);
+  float4 color = LOAD_TEXTURE(samp0, vicoord, 0);
 
   // apply palette
   #if PALETTE
@@ -217,25 +411,35 @@ ivec4 SampleFromVRAM(vec2 coord)
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
     #endif
-    ivec2 palette_icoord = ivec2(v_texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(v_texpage.w));
-    color = texelFetch(samp0, palette_icoord, 0);
+    int2 palette_icoord = int2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
+    color = LOAD_TEXTURE(samp0, palette_icoord, 0);
   #endif
 
-  return ivec4(color * vec4(255.0, 255.0, 255.0, 255.0));
+  return int4(color * float4(255.0, 255.0, 255.0, 255.0));
 }
 #endif
+)";
 
-void main()
+  if (textured)
+  {
+    DeclareFragmentEntryPoint(ss, 1, 1, {"nointerpolation in int4 v_texpage"}, true, false);
+  }
+  else
+  {
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, false);
+  }
+
+  ss << R"(
 {
-  ivec3 vertcol = ivec3(v_col0 * vec3(255.0, 255.0, 255.0));
+  int3 vertcol = int3(v_col0.rgb * float3(255.0, 255.0, 255.0));
 
   bool semitransparent;
   bool new_mask_bit;
-  ivec3 icolor;
+  int3 icolor;
 
   #if TEXTURED
-    ivec4 texcol = SampleFromVRAM(v_tex0);
-    if (texcol == ivec4(0.0, 0.0, 0.0, 0.0))
+    int4 texcol = SampleFromVRAM(v_texpage, v_tex0);
+    if (all(texcol == int4(0.0, 0.0, 0.0, 0.0)))
       discard;
 
     // Grab semitransparent bit from the texture color.
@@ -254,7 +458,7 @@ void main()
 
   // Apply dithering
   #if DITHERING
-    icolor = ApplyDithering(icolor);
+    icolor = ApplyDithering(int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE), icolor);
   #endif
 
   // Clip to 15-bit range
@@ -263,7 +467,7 @@ void main()
   #endif
 
   // Normalize
-  vec3 color = vec3(icolor) / vec3(255.0, 255.0, 255.0);
+  float3 color = float3(icolor) / float3(255.0, 255.0, 255.0);
 
   #if TRANSPARENCY
     // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
@@ -272,17 +476,17 @@ void main()
       #if TRANSPARENCY_ONLY_OPAQUE
         discard;
       #endif
-      o_col0 = vec4(color * u_src_alpha_factor, u_dst_alpha_factor);
+      o_col0 = float4(color * u_src_alpha_factor, u_dst_alpha_factor);
     }
     else
     {
       #if TRANSPARENCY_ONLY_TRANSPARENCY
         discard;
       #endif
-      o_col0 = vec4(color, 0.0);
+      o_col0 = float4(color, 0.0);
     }
   #else
-    o_col0 = vec4(color, 0.0);
+    o_col0 = float4(color, 0.0);
   #endif
 }
 )";
@@ -293,15 +497,12 @@ void main()
 std::string GPU_HW_ShaderGen::GenerateScreenQuadVertexShader()
 {
   std::stringstream ss;
-  GenerateShaderHeader(ss);
+  WriteHeader(ss);
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {});
   ss << R"(
-
-out vec2 v_tex0;
-
-void main()
 {
-  v_tex0 = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
-  gl_Position = vec4(v_tex0 * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
+  v_tex0 = float2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  gl_Position = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
   gl_Position.y = -gl_Position.y;
 }
 )";
@@ -312,15 +513,12 @@ void main()
 std::string GPU_HW_ShaderGen::GenerateFillFragmentShader()
 {
   std::stringstream ss;
-  GenerateShaderHeader(ss);
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4 u_fill_color"});
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, false);
 
-  ss << R"(
-uniform vec4 fill_color;
-out vec4 o_col0;
-
-void main()
-{
-  o_col0 = fill_color;
+  ss << R"({
+  o_col0 = u_fill_color;
 }
 )";
 
@@ -330,42 +528,35 @@ void main()
 std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced)
 {
   std::stringstream ss;
-  GenerateShaderHeader(ss);
+  WriteHeader(ss);
   DefineMacro(ss, "DEPTH_24BIT", depth_24bit);
   DefineMacro(ss, "INTERLACED", interlaced);
 
+  WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"int3 u_base_coords"});
+  DeclareTexture(ss, "samp0", 0);
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
   ss << R"(
-in vec2 v_tex0;
-out vec4 o_col0;
-
-uniform sampler2D samp0;
-uniform ivec3 u_base_coords;
-
-ivec2 GetCoords(vec2 fragcoord)
 {
-  ivec2 icoords = ivec2(fragcoord);
+  int2 icoords = int2(v_pos.xy);
+
   #if INTERLACED
     if ((((icoords.y - u_base_coords.z) / RESOLUTION_SCALE) & 1) != 0)
       discard;
   #endif
-  return icoords;
-}
-
-void main()
-{
-  ivec2 icoords = GetCoords(gl_FragCoord.xy);
 
   #if DEPTH_24BIT
     // compute offset in dwords from the start of the 24-bit values
-    ivec2 base = ivec2(u_base_coords.x, u_base_coords.y + icoords.y);
+    int2 base = int2(u_base_coords.x, u_base_coords.y + icoords.y);
     int xoff = int(icoords.x);
     int dword_index = (xoff / 2) + (xoff / 4);
 
     // sample two adjacent dwords, or four 16-bit values as the 24-bit value will lie somewhere between these
-    uint s0 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + dword_index * 2 + 0, base.y), 0));
-    uint s1 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + dword_index * 2 + 1, base.y), 0));
-    uint s2 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + (dword_index + 1) * 2 + 0, base.y), 0));
-    uint s3 = RGBA8ToRGBA5551(texelFetch(samp0, ivec2(base.x + (dword_index + 1) * 2 + 1, base.y), 0));
+    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + dword_index * 2 + 0, base.y), 0));
+    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + dword_index * 2 + 1, base.y), 0));
+    uint s2 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + (dword_index + 1) * 2 + 0, base.y), 0));
+    uint s3 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + (dword_index + 1) * 2 + 1, base.y), 0));
 
     // select the bit for this pixel depending on its offset in the 4-pixel block
     uint r, g, b;
@@ -396,10 +587,10 @@ void main()
     }
 
     // and normalize
-    o_col0 = vec4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, 1.0);
+    o_col0 = float4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, 1.0);
   #else
     // load and return
-    o_col0 = texelFetch(samp0, u_base_coords.xy + icoords, 0);
+    o_col0 = LOAD_TEXTURE(samp0, u_base_coords.xy + icoords, 0);
   #endif
 }
 )";
@@ -410,24 +601,20 @@ void main()
 std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
 {
   std::stringstream ss;
-  GenerateShaderHeader(ss);
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"int2 u_base_coords", "int2 u_size"});
 
+  DeclareTextureBuffer(ss, "samp0", 0, true, true);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
   ss << R"(
-
-uniform ivec2 u_base_coords;
-uniform ivec2 u_size;
-uniform usamplerBuffer samp0;
-
-out vec4 o_col0;
-
-void main()
 {
-  ivec2 coords = ivec2(gl_FragCoord.xy) / ivec2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  ivec2 offset = coords - u_base_coords;
+  int2 coords = int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  int2 offset = coords - u_base_coords;
   offset.y = u_size.y - offset.y - 1;
 
   int buffer_offset = offset.y * u_size.x + offset.x;
-  uint value = texelFetch(samp0, buffer_offset).r;
+  uint value = LOAD_TEXTURE_BUFFER(samp0, buffer_offset).r;
   
   o_col0 = RGBA5551ToRGBA8(value);
 })";

@@ -281,7 +281,7 @@ void GPU_HW_OpenGL::CreateTextureBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
-  GPU_HW_ShaderGen shadergen(GPU_HW_ShaderGen::Backend::OpenGL, m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(GPU_HW_ShaderGen::API::OpenGL, m_resolution_scale, m_true_color);
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -316,8 +316,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
         if (textured)
         {
           prog.Bind();
-          prog.RegisterUniform("samp0");
-          prog.Uniform1i(0, 0);
+          prog.Uniform1i("samp0", 0);
         }
       }
     }
@@ -338,10 +337,10 @@ bool GPU_HW_OpenGL::CompilePrograms()
       if (!prog.Link())
         return false;
 
+      prog.BindUniformBlock("UBOBlock", 1);
+
       prog.Bind();
-      prog.RegisterUniform("u_base_coords");
-      prog.RegisterUniform("samp0");
-      prog.Uniform1i(1, 0);
+      prog.Uniform1i("samp0", 0);
     }
   }
 
@@ -355,11 +354,10 @@ bool GPU_HW_OpenGL::CompilePrograms()
   if (!m_vram_write_program.Link())
     return false;
 
+  m_vram_write_program.BindUniformBlock("UBOBlock", 1);
+
   m_vram_write_program.Bind();
-  m_vram_write_program.RegisterUniform("u_base_coords");
-  m_vram_write_program.RegisterUniform("u_size");
-  m_vram_write_program.RegisterUniform("samp0");
-  m_vram_write_program.Uniform1i(2, 0);
+  m_vram_write_program.Uniform1i("samp0", 0);
 
   return true;
 }
@@ -490,7 +488,11 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_vram_downsample_texture->Bind();
 
         glViewport(0, field_offset, display_width, display_height);
-        prog.Uniform3i(0, vram_offset_x, flipped_vram_offset_y, field_offset);
+
+        const u32 uniforms[4] = {vram_offset_x, flipped_vram_offset_y, field_offset};
+        UploadUniformBlock(uniforms, sizeof(uniforms));
+        m_batch_ubo_dirty = true;
+
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, display_width, display_height,
@@ -502,7 +504,11 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_vram_texture->Bind();
 
         glViewport(0, scaled_field_offset, scaled_display_width, scaled_display_height);
-        prog.Uniform3i(0, scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_field_offset);
+
+        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_field_offset};
+        UploadUniformBlock(uniforms, sizeof(uniforms));
+        m_batch_ubo_dirty = true;
+
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
@@ -672,8 +678,11 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
   m_vram_write_program.Bind();
   glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
-  m_vram_write_program.Uniform2i(0, x, flipped_y);
-  m_vram_write_program.Uniform2i(1, width, height);
+
+  const u32 uniforms[4] = {x, flipped_y, width, height};
+  UploadUniformBlock(uniforms, sizeof(uniforms));
+  m_batch_ubo_dirty = true;
+
   glDrawArrays(GL_TRIANGLES, 0, 3);
 
   UpdateDrawingArea();
