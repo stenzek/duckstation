@@ -9,7 +9,7 @@ public:
   enum class API
   {
     OpenGL,
-    Direct3D
+    D3D11
   };
 
 public:
@@ -23,6 +23,7 @@ public:
                                           bool dithering);
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
+  std::string GenerateCopyFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
   std::string GenerateVRAMWriteFragmentShader();
 
@@ -38,7 +39,8 @@ private:
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int, bool is_unsigned);
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,
                                u32 num_color_outputs, u32 num_texcoord_outputs,
-                               const std::initializer_list<const char*>& additional_outputs);
+                               const std::initializer_list<const char*>& additional_outputs,
+                               bool declare_vertex_id = false);
   void DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
                                  const std::initializer_list<const char*>& additional_inputs,
                                  bool declare_fragcoord = false, bool dual_color_output = false);

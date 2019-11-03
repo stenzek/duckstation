@@ -17,8 +17,10 @@ GPU::GPU() = default;
 
 GPU::~GPU() = default;
 
-bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
+bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
+                     Timers* timers)
 {
+  m_host_display = host_display;
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
@@ -26,10 +28,7 @@ bool GPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
   return true;
 }
 
-void GPU::UpdateSettings()
-{
-  
-}
+void GPU::UpdateSettings() {}
 
 void GPU::Reset()
 {

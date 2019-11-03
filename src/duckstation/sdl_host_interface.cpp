@@ -1,4 +1,4 @@
-#include "sdl_interface.h"
+#include "sdl_host_interface.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
@@ -6,62 +6,54 @@
 #include "core/digital_controller.h"
 #include "core/dma.h"
 #include "core/gpu.h"
+#include "core/host_display.h"
 #include "core/mdec.h"
 #include "core/memory_card.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/timers.h"
+#ifdef Y_PLATFORM_WINDOWS
+#include "d3d11_host_display.h"
+#endif
 #include "icon.h"
+#include "opengl_host_display.h"
 #include "sdl_audio_stream.h"
 #include <cinttypes>
-#include <glad.h>
 #include <imgui.h>
-#include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
 #include <nfd.h>
-Log_SetChannel(SDLInterface);
+Log_SetChannel(SDLHostInterface);
 
-static constexpr std::array<std::pair<Settings::GPURenderer, const char*>, 2> s_gpu_renderer_names = {
-  {{Settings::GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"}, {Settings::GPURenderer::Software, "Software"}}};
+static constexpr std::array<std::pair<Settings::GPURenderer, const char*>, 3> s_gpu_renderer_names = {
+  {{Settings::GPURenderer::HardwareD3D11, "Hardware (Direct3D 11)"},
+   {Settings::GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"},
+   {Settings::GPURenderer::Software, "Software"}}};
 
-SDLInterface::SDLInterface() = default;
+SDLHostInterface::SDLHostInterface() = default;
 
-SDLInterface::~SDLInterface()
+SDLHostInterface::~SDLHostInterface()
 {
   CloseGameControllers();
-
-  if (m_gl_context)
-  {
-    if (m_display_vao != 0)
-      glDeleteVertexArrays(1, &m_display_vao);
-
-    m_display_program.Destroy();
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-    SDL_GL_MakeCurrent(nullptr, nullptr);
-    SDL_GL_DeleteContext(m_gl_context);
-  }
+  m_display.reset();
+  ImGui::DestroyContext();
 
   if (m_window)
     SDL_DestroyWindow(m_window);
 }
 
-bool SDLInterface::CreateSDLWindow()
+bool SDLHostInterface::CreateSDLWindow()
 {
   constexpr u32 DEFAULT_WINDOW_WIDTH = 900;
   constexpr u32 DEFAULT_WINDOW_HEIGHT = 700;
 
   // Create window.
-  constexpr u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL;
+  const u32 window_flags =
+    SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (UseOpenGLRenderer() ? SDL_WINDOW_OPENGL : 0);
 
   m_window = SDL_CreateWindow("DuckStation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH,
                               DEFAULT_WINDOW_HEIGHT, window_flags);
   if (!m_window)
-  {
-    Panic("Failed to create window");
     return false;
-  }
 
   // Set window icon.
   SDL_Surface* icon_surface =
@@ -74,133 +66,38 @@ bool SDLInterface::CreateSDLWindow()
     SDL_FreeSurface(icon_surface);
   }
 
-  SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
   return true;
 }
 
-static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                                     const GLchar* message, const void* userParam)
+bool SDLHostInterface::CreateDisplay()
 {
-  switch (severity)
-  {
-    case GL_DEBUG_SEVERITY_HIGH_KHR:
-      Log_InfoPrint(message);
-      break;
-    case GL_DEBUG_SEVERITY_MEDIUM_KHR:
-      Log_WarningPrint(message);
-      break;
-    case GL_DEBUG_SEVERITY_LOW_KHR:
-      Log_InfoPrintf(message);
-      break;
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
-      // Log_DebugPrint(message);
-      break;
-  }
-}
-
-bool SDLInterface::CreateGLContext()
-{
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  m_gl_context = SDL_GL_CreateContext(m_window);
-  if (!m_gl_context || SDL_GL_MakeCurrent(m_window, m_gl_context) != 0 || !gladLoadGL())
-  {
-    Panic("Failed to create GL context");
-    return false;
-  }
-
-#if 0
-  if (GLAD_GL_KHR_debug)
-  {
-    glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-  }
+#ifdef Y_PLATFORM_WINDOWS
+  m_display = UseOpenGLRenderer() ? OpenGLHostDisplay::Create(m_window) : D3D11HostDisplay::Create(m_window);
+#else
+  m_display = OpenGLHostDisplay::Create(m_window);
 #endif
 
-  SDL_GL_SetSwapInterval(0);
+  if (!m_display)
+    return false;
+
+  m_app_icon_texture =
+    m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
+  if (!m_app_icon_texture)
+    return false;
+
   return true;
 }
 
-bool SDLInterface::CreateImGuiContext()
+bool SDLHostInterface::CreateImGuiContext()
 {
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
   ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
   ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasGamepad;
-
-  if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init())
-    return false;
-
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame(m_window);
-  ImGui::NewFrame();
   return true;
 }
 
-bool SDLInterface::CreateGLResources()
-{
-  static constexpr char fullscreen_quad_vertex_shader[] = R"(
-#version 330 core
-
-out vec2 v_tex0;
-
-void main()
-{
-  v_tex0 = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
-  gl_Position = vec4(v_tex0 * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
-  gl_Position.y = -gl_Position.y;
-}
-)";
-
-  static constexpr char display_fragment_shader[] = R"(
-#version 330 core
-
-uniform sampler2D samp0;
-uniform vec4 u_src_rect;
-
-in vec2 v_tex0;
-out vec4 o_col0;
-
-void main()
-{
-  vec2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
-  o_col0 = texture(samp0, coords);
-}
-)";
-
-  if (!m_display_program.Compile(fullscreen_quad_vertex_shader, display_fragment_shader))
-    return false;
-
-  m_display_program.BindFragData(0, "o_col0");
-  if (!m_display_program.Link())
-    return false;
-
-  m_display_program.Bind();
-  m_display_program.RegisterUniform("u_src_rect");
-  m_display_program.RegisterUniform("samp0");
-  m_display_program.Uniform1i(1, 0);
-
-  glGenVertexArrays(1, &m_display_vao);
-
-  m_app_icon_texture =
-    std::make_unique<GL::Texture>(APP_ICON_WIDTH, APP_ICON_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, APP_ICON_DATA, true);
-
-  // samplers
-  glGenSamplers(1, &m_display_nearest_sampler);
-  glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glGenSamplers(1, &m_display_linear_sampler);
-  glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  return true;
-}
-
-bool SDLInterface::CreateAudioStream()
+bool SDLHostInterface::CreateAudioStream()
 {
   m_audio_stream = std::make_unique<SDLAudioStream>();
   if (!m_audio_stream->Reconfigure(44100, 2))
@@ -212,7 +109,7 @@ bool SDLInterface::CreateAudioStream()
   return true;
 }
 
-void SDLInterface::UpdateAudioVisualSync()
+void SDLHostInterface::UpdateAudioVisualSync()
 {
   const bool speed_limiter_enabled = m_speed_limiter_enabled && !m_speed_limiter_temp_disabled;
   const bool audio_sync_enabled = speed_limiter_enabled;
@@ -221,16 +118,10 @@ void SDLInterface::UpdateAudioVisualSync()
                  (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
 
   m_audio_stream->SetSync(false);
-
-  // Window framebuffer has to be bound to call SetSwapInterval.
-  GLint current_fbo = 0;
-  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  SDL_GL_SetSwapInterval(vsync_enabled ? 1 : 0);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+  m_display->SetVSync(vsync_enabled);
 }
 
-void SDLInterface::OpenGameControllers()
+void SDLHostInterface::OpenGameControllers()
 {
   for (int i = 0; i < SDL_NumJoysticks(); i++)
   {
@@ -247,14 +138,14 @@ void SDLInterface::OpenGameControllers()
   }
 }
 
-void SDLInterface::CloseGameControllers()
+void SDLHostInterface::CloseGameControllers()
 {
   for (auto& it : m_sdl_controllers)
     SDL_GameControllerClose(it.second);
   m_sdl_controllers.clear();
 }
 
-bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filename)
+bool SDLHostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
 {
   if (!HostInterface::InitializeSystem(filename, exp1_filename))
   {
@@ -268,13 +159,13 @@ bool SDLInterface::InitializeSystem(const char* filename, const char* exp1_filen
   return true;
 }
 
-void SDLInterface::ConnectDevices()
+void SDLHostInterface::ConnectDevices()
 {
   m_controller = DigitalController::Create();
   m_system->SetController(0, m_controller);
 }
 
-void SDLInterface::ResetPerformanceCounters()
+void SDLHostInterface::ResetPerformanceCounters()
 {
   if (m_system)
   {
@@ -291,24 +182,22 @@ void SDLInterface::ResetPerformanceCounters()
   m_fps_timer.Reset();
 }
 
-void SDLInterface::ShutdownSystem()
+void SDLHostInterface::ShutdownSystem()
 {
   m_system.reset();
   m_paused = false;
-  m_display_texture = nullptr;
   UpdateAudioVisualSync();
 }
 
-std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nullptr */,
-                                                   const char* exp1_filename /* = nullptr */,
-                                                   const char* save_state_filename /* = nullptr */)
+std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename /* = nullptr */,
+                                                           const char* exp1_filename /* = nullptr */,
+                                                           const char* save_state_filename /* = nullptr */)
 {
-  std::unique_ptr<SDLInterface> intf = std::make_unique<SDLInterface>();
-  if (!intf->CreateSDLWindow() || !intf->CreateGLContext() || !intf->CreateImGuiContext() ||
-      !intf->CreateGLResources() || !intf->CreateAudioStream())
-  {
+  std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
+  if (!intf->CreateSDLWindow() || !intf->CreateImGuiContext() || !intf->CreateDisplay() || !intf->CreateAudioStream())
     return nullptr;
-  }
+
+  ImGui::NewFrame();
 
   intf->OpenGameControllers();
 
@@ -323,20 +212,26 @@ std::unique_ptr<SDLInterface> SDLInterface::Create(const char* filename /* = nul
   }
 
   intf->UpdateAudioVisualSync();
+
   return intf;
 }
 
-TinyString SDLInterface::GetSaveStateFilename(u32 index)
+TinyString SDLHostInterface::GetSaveStateFilename(u32 index)
 {
   return TinyString::FromFormat("savestate_%u.bin", index);
 }
 
-void SDLInterface::ReportMessage(const char* message)
+HostDisplay* SDLHostInterface::GetDisplay() const
+{
+  return m_display.get();
+}
+
+void SDLHostInterface::ReportMessage(const char* message)
 {
   AddOSDMessage(message, 3.0f);
 }
 
-bool SDLInterface::IsWindowFullscreen() const
+bool SDLHostInterface::IsWindowFullscreen() const
 {
   return ((SDL_GetWindowFlags(m_window) & SDL_WINDOW_FULLSCREEN) != 0);
 }
@@ -491,7 +386,7 @@ static void HandleSDLControllerButtonEventForController(const SDL_Event* ev, Dig
   }
 }
 
-void SDLInterface::HandleSDLEvent(const SDL_Event* event)
+void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 {
   ImGui_ImplSDL2_ProcessEvent(event);
 
@@ -500,10 +395,7 @@ void SDLInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_WINDOWEVENT:
     {
       if (event->window.event == SDL_WINDOWEVENT_RESIZED)
-      {
-        m_window_width = event->window.data1;
-        m_window_height = event->window.data2;
-      }
+        m_display->WindowResized();
     }
     break;
 
@@ -569,7 +461,7 @@ void SDLInterface::HandleSDLEvent(const SDL_Event* event)
   }
 }
 
-void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
+void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
 {
   const bool repeat = event->key.repeat != 0;
   if (!repeat && m_controller && HandleSDLKeyEventForController(event, m_controller.get()))
@@ -652,92 +544,12 @@ void SDLInterface::HandleSDLKeyEvent(const SDL_Event* event)
   }
 }
 
-void SDLInterface::ClearImGuiFocus()
+void SDLHostInterface::ClearImGuiFocus()
 {
   ImGui::SetWindowFocus(nullptr);
 }
 
-void SDLInterface::Render()
-{
-  DrawImGui();
-
-  if (m_system)
-    m_system->GetGPU()->ResetGraphicsAPIState();
-
-  glDisable(GL_SCISSOR_TEST);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  RenderDisplay();
-
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-  SDL_GL_SwapWindow(m_window);
-
-  ImGui_ImplSDL2_NewFrame(m_window);
-  ImGui_ImplOpenGL3_NewFrame();
-
-  ImGui::NewFrame();
-
-  GL::Program::ResetLastProgram();
-
-  if (m_system)
-    m_system->GetGPU()->RestoreGraphicsAPIState();
-}
-
-static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
-{
-  const float window_ratio = float(window_width) / float(window_height);
-  int left, top, width, height;
-  if (window_ratio >= display_ratio)
-  {
-    width = static_cast<int>(float(window_height) * display_ratio);
-    height = static_cast<int>(window_height);
-    left = (window_width - width) / 2;
-    top = 0;
-  }
-  else
-  {
-    width = static_cast<int>(window_width);
-    height = static_cast<int>(float(window_width) / display_ratio);
-    left = 0;
-    top = (window_height - height) / 2;
-  }
-
-  return std::tie(left, top, width, height);
-}
-
-void SDLInterface::RenderDisplay()
-{
-  if (!m_display_texture)
-    return;
-
-  // - 20 for main menu padding
-  const auto [vp_left, vp_top, vp_width, vp_height] =
-    CalculateDrawRect(m_window_width, std::max(m_window_height - 20, 1), m_display_aspect_ratio);
-  const bool linear_filter = m_system ? m_system->GetSettings().display_linear_filtering : false;
-
-  glViewport(vp_left, m_window_height - (20 + vp_top) - vp_height, vp_width, vp_height);
-  glDisable(GL_BLEND);
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_SCISSOR_TEST);
-  glDepthMask(GL_FALSE);
-  m_display_program.Bind();
-  m_display_program.Uniform4f(
-    0, static_cast<float>(m_display_texture_offset_x) / static_cast<float>(m_display_texture->GetWidth()),
-    static_cast<float>(m_display_texture_offset_y) / static_cast<float>(m_display_texture->GetHeight()),
-    static_cast<float>(m_display_texture_width) / static_cast<float>(m_display_texture->GetWidth()),
-    static_cast<float>(m_display_texture_height) / static_cast<float>(m_display_texture->GetHeight()));
-  m_display_texture->Bind();
-  glBindSampler(0, linear_filter ? m_display_linear_sampler : m_display_nearest_sampler);
-  glBindVertexArray(m_display_vao);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glBindSampler(0, 0);
-}
-
-void SDLInterface::DrawImGui()
+void SDLHostInterface::DrawImGui()
 {
   DrawMainMenuBar();
 
@@ -754,7 +566,7 @@ void SDLInterface::DrawImGui()
   ImGui::Render();
 }
 
-void SDLInterface::DrawMainMenuBar()
+void SDLHostInterface::DrawMainMenuBar()
 {
   if (!ImGui::BeginMainMenuBar())
     return;
@@ -936,7 +748,7 @@ void SDLInterface::DrawMainMenuBar()
   ImGui::EndMainMenuBar();
 }
 
-void SDLInterface::DrawPoweredOffWindow()
+void SDLHostInterface::DrawPoweredOffWindow()
 {
   constexpr int WINDOW_WIDTH = 400;
   constexpr int WINDOW_HEIGHT = 650;
@@ -956,8 +768,7 @@ void SDLInterface::DrawPoweredOffWindow()
   }
 
   ImGui::SetCursorPosX((WINDOW_WIDTH - APP_ICON_WIDTH) / 2);
-  ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(m_app_icon_texture->GetGLId())),
-               ImVec2(APP_ICON_WIDTH, APP_ICON_HEIGHT));
+  ImGui::Image(m_app_icon_texture->GetHandle(), ImVec2(APP_ICON_WIDTH, APP_ICON_HEIGHT));
   ImGui::SetCursorPosY(APP_ICON_HEIGHT + 32);
 
   static const ImVec2 button_size(static_cast<float>(BUTTON_WIDTH), static_cast<float>(BUTTON_HEIGHT));
@@ -1014,7 +825,7 @@ void SDLInterface::DrawPoweredOffWindow()
   ImGui::End();
 }
 
-void SDLInterface::DrawAboutWindow()
+void SDLHostInterface::DrawAboutWindow()
 {
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
@@ -1044,7 +855,7 @@ void SDLInterface::DrawAboutWindow()
   ImGui::End();
 }
 
-void SDLInterface::DrawDebugMenu()
+void SDLHostInterface::DrawDebugMenu()
 {
   if (!ImGui::BeginMenu("Debug", m_system != nullptr))
     return;
@@ -1076,7 +887,7 @@ void SDLInterface::DrawDebugMenu()
   ImGui::EndMenu();
 }
 
-void SDLInterface::DrawDebugWindows()
+void SDLHostInterface::DrawDebugWindows()
 {
   const Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
 
@@ -1094,7 +905,7 @@ void SDLInterface::DrawDebugWindows()
     m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
-void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
+void SDLHostInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
 {
   OSDMessage msg;
   msg.text = message;
@@ -1104,19 +915,7 @@ void SDLInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
   m_osd_messages.push_back(std::move(msg));
 }
 
-void SDLInterface::SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height,
-                                     float aspect_ratio)
-{
-  m_display_texture = texture;
-  m_display_texture_offset_x = offset_x;
-  m_display_texture_offset_y = offset_y;
-  m_display_texture_width = width;
-  m_display_texture_height = height;
-  m_display_aspect_ratio = aspect_ratio;
-  m_display_texture_changed = true;
-}
-
-void SDLInterface::DrawOSDMessages()
+void SDLHostInterface::DrawOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
                                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
@@ -1157,21 +956,21 @@ void SDLInterface::DrawOSDMessages()
   }
 }
 
-void SDLInterface::DoReset()
+void SDLHostInterface::DoReset()
 {
   m_system->Reset();
   ResetPerformanceCounters();
   AddOSDMessage("System reset.");
 }
 
-void SDLInterface::DoPowerOff()
+void SDLHostInterface::DoPowerOff()
 {
   Assert(m_system);
   ShutdownSystem();
   AddOSDMessage("System powered off.");
 }
 
-void SDLInterface::DoResume()
+void SDLHostInterface::DoResume()
 {
   Assert(!m_system);
   if (!InitializeSystem())
@@ -1189,7 +988,7 @@ void SDLInterface::DoResume()
   ClearImGuiFocus();
 }
 
-void SDLInterface::DoStartDisc()
+void SDLHostInterface::DoStartDisc()
 {
   Assert(!m_system);
 
@@ -1205,7 +1004,7 @@ void SDLInterface::DoStartDisc()
   ClearImGuiFocus();
 }
 
-void SDLInterface::DoStartBIOS()
+void SDLHostInterface::DoStartBIOS()
 {
   Assert(!m_system);
 
@@ -1217,7 +1016,7 @@ void SDLInterface::DoStartBIOS()
   ClearImGuiFocus();
 }
 
-void SDLInterface::DoChangeDisc()
+void SDLHostInterface::DoChangeDisc()
 {
   Assert(m_system);
 
@@ -1234,7 +1033,7 @@ void SDLInterface::DoChangeDisc()
   ClearImGuiFocus();
 }
 
-void SDLInterface::DoLoadState(u32 index)
+void SDLHostInterface::DoLoadState(u32 index)
 {
   if (!HasSystem() && !InitializeSystem(nullptr, nullptr))
     return;
@@ -1244,14 +1043,14 @@ void SDLInterface::DoLoadState(u32 index)
   ClearImGuiFocus();
 }
 
-void SDLInterface::DoSaveState(u32 index)
+void SDLHostInterface::DoSaveState(u32 index)
 {
   Assert(m_system);
   SaveState(GetSaveStateFilename(index));
   ClearImGuiFocus();
 }
 
-void SDLInterface::DoTogglePause()
+void SDLHostInterface::DoTogglePause()
 {
   if (!m_system)
     return;
@@ -1261,7 +1060,7 @@ void SDLInterface::DoTogglePause()
     m_fps_timer.Reset();
 }
 
-void SDLInterface::DoFrameStep()
+void SDLHostInterface::DoFrameStep()
 {
   if (!m_system)
     return;
@@ -1270,7 +1069,7 @@ void SDLInterface::DoFrameStep()
   m_paused = false;
 }
 
-void SDLInterface::DoToggleSoftwareRendering()
+void SDLHostInterface::DoToggleSoftwareRendering()
 {
   if (!m_system)
     return;
@@ -1283,14 +1082,16 @@ void SDLInterface::DoToggleSoftwareRendering()
   }
   else
   {
-    settings.gpu_renderer = Settings::GPURenderer::HardwareOpenGL;
+    settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ?
+                              Settings::GPURenderer::HardwareD3D11 :
+                              Settings::GPURenderer::HardwareOpenGL;
     AddOSDMessage("Switched to hardware GPU renderer.");
   }
 
   m_system->RecreateGPU();
 }
 
-void SDLInterface::DoModifyInternalResolution(s32 increment)
+void SDLHostInterface::DoModifyInternalResolution(s32 increment)
 {
   if (!m_system)
     return;
@@ -1310,7 +1111,7 @@ void SDLInterface::DoModifyInternalResolution(s32 increment)
                                        GPU::VRAM_HEIGHT * settings.gpu_resolution_scale));
 }
 
-void SDLInterface::Run()
+void SDLHostInterface::Run()
 {
   m_audio_stream->PauseOutput(false);
 
@@ -1335,7 +1136,21 @@ void SDLInterface::Run()
       }
     }
 
-    Render();
+    // rendering
+    {
+      DrawImGui();
+
+      if (m_system)
+        m_system->GetGPU()->ResetGraphicsAPIState();
+
+      ImGui::Render();
+      m_display->Render();
+
+      ImGui::NewFrame();
+
+      if (m_system)
+        m_system->GetGPU()->RestoreGraphicsAPIState();
+    }
 
     if (m_system)
     {

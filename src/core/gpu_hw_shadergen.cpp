@@ -1,7 +1,7 @@
 #include "gpu_hw_shadergen.h"
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(API backend, u32 resolution_scale, bool true_color)
-  : m_backend(backend), m_resolution_scale(resolution_scale), m_true_color(true_color), m_glsl(backend != API::Direct3D)
+  : m_backend(backend), m_resolution_scale(resolution_scale), m_true_color(true_color), m_glsl(backend != API::D3D11)
 {
 }
 
@@ -22,9 +22,9 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#version 330 core\n\n";
     ss << "#define API_OPENGL 1\n";
   }
-  else if (m_backend == API::Direct3D)
+  else if (m_backend == API::D3D11)
   {
-    ss << "#define API_DIRECT3D 1\n";
+    ss << "#define API_D3D11 1\n";
   }
 
   if (m_glsl)
@@ -52,7 +52,7 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT static const\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
-    ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(name, index)\n";
+    ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(index)\n";
   }
 
   ss << "\n";
@@ -152,7 +152,8 @@ void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* n
 void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
                                                const std::initializer_list<const char*>& attributes,
                                                u32 num_color_outputs, u32 num_texcoord_outputs,
-                                               const std::initializer_list<const char*>& additional_outputs)
+                                               const std::initializer_list<const char*>& additional_outputs,
+                                               bool declare_vertex_id)
 {
   if (m_glsl)
   {
@@ -169,6 +170,10 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
       ss << output << ";\n";
 
     ss << "#define v_pos gl_Position\n\n";
+    if (declare_vertex_id)
+      ss << "#define v_id uint(gl_VertexID)\n";
+
+    ss << "\n";
     ss << "void main()\n";
   }
   else
@@ -181,6 +186,9 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
       ss << "  in " << attribute << " : ATTR" << attribute_counter << ",\n";
       attribute_counter++;
     }
+
+    if (declare_vertex_id)
+      ss << "  in uint v_id : SV_VertexID,\n";
 
     for (u32 i = 0; i < num_color_outputs; i++)
       ss << "  out float4 v_col" << i << " : COLOR" << i << ",\n";
@@ -498,12 +506,14 @@ std::string GPU_HW_ShaderGen::GenerateScreenQuadVertexShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareVertexEntryPoint(ss, {}, 0, 1, {});
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
   ss << R"(
 {
-  v_tex0 = float2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
-  gl_Position = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-  gl_Position.y = -gl_Position.y;
+  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
+  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+  #if API_OPENGL
+    v_pos.y = -gl_Position.y;
+  #endif
 }
 )";
 
@@ -517,8 +527,27 @@ std::string GPU_HW_ShaderGen::GenerateFillFragmentShader()
   DeclareUniformBuffer(ss, {"float4 u_fill_color"});
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, false);
 
-  ss << R"({
+  ss << R"(
+{
   o_col0 = u_fill_color;
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateCopyFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4 u_src_rect"});
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, false);
+
+  ss << R"(
+{
+    float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
+    o_col0 = SAMPLE_TEXTURE(samp0, coords);
 }
 )";
 
@@ -603,7 +632,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"int2 u_base_coords", "int2 u_size"});
+  DeclareUniformBuffer(ss, {"int2 u_base_coords", "int2 u_size", "int u_buffer_base_offset"});
 
   DeclareTextureBuffer(ss, "samp0", 0, true, true);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
@@ -611,9 +640,13 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
 {
   int2 coords = int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
   int2 offset = coords - u_base_coords;
-  offset.y = u_size.y - offset.y - 1;
 
-  int buffer_offset = offset.y * u_size.x + offset.x;
+  #if API_OPENGL
+    // Lower-left origin flip for OpenGL
+    offset.y = u_size.y - offset.y - 1;
+  #endif
+
+  int buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
   uint value = LOAD_TEXTURE_BUFFER(samp0, buffer_offset).r;
   
   o_col0 = RGBA5551ToRGBA8(value);

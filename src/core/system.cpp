@@ -7,6 +7,7 @@
 #include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
+#include "host_interface.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "memory_card.h"
@@ -112,20 +113,28 @@ bool System::CreateGPU()
       m_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
+    case Settings::GPURenderer::HardwareD3D11:
+      m_gpu = GPU::CreateHardwareD3D11Renderer();
+      break;
+
     case Settings::GPURenderer::Software:
     default:
       m_gpu = GPU::CreateSoftwareRenderer();
       break;
   }
 
-  if (!m_gpu || !m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_timers.get()))
+  if (!m_gpu || !m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
+                                   m_timers.get()))
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     m_gpu.reset();
     m_settings.gpu_renderer = Settings::GPURenderer::Software;
     m_gpu = GPU::CreateSoftwareRenderer();
-    if (!m_gpu->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_timers.get()))
+    if (!m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
+                           m_timers.get()))
+    {
       return false;
+    }
   }
 
   m_bus->SetGPU(m_gpu.get());

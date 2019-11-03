@@ -1,13 +1,10 @@
 #pragma once
-#include "common/gl/texture.h"
 #include "gpu.h"
 #include <array>
 #include <memory>
 #include <vector>
 
-namespace GL {
-class Texture;
-}
+class HostDisplayTexture;
 
 class GPU_SW final : public GPU
 {
@@ -15,7 +12,8 @@ public:
   GPU_SW();
   ~GPU_SW() override;
 
-  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers) override;
+  bool Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
+                  Timers* timers) override;
   void Reset() override;
 
   u16 GetPixel(u32 x, u32 y) const { return m_vram[VRAM_WIDTH * y + x]; }
@@ -58,13 +56,14 @@ protected:
 
   static bool IsClockwiseWinding(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
 
-  void ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y, bool dithering);
+  void ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y,
+                  bool dithering);
   void DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
   void DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b,
                      u8 origin_texcoord_x, u8 origin_texcoord_y);
 
-  std::unique_ptr<GL::Texture> m_display_texture;
   std::vector<u32> m_display_texture_buffer;
+  std::unique_ptr<HostDisplayTexture> m_display_texture;
 
   std::array<SWVertex, MAX_VERTICES_PER_POLYGON> m_vertex_buffer;
   std::array<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram;

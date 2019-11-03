@@ -27,7 +27,8 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
-  virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers) override;
+  virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
+                          InterruptController* interrupt_controller, Timers* timers) override;
   virtual void Reset() override;
   virtual void UpdateSettings() override;
 

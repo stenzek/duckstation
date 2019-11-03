@@ -2,7 +2,7 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/StringConverter.h"
 #include "core/system.h"
-#include "sdl_interface.h"
+#include "sdl_host_interface.h"
 #include <SDL.h>
 #include <cstdio>
 
@@ -40,7 +40,7 @@ static int Run(int argc, char* argv[])
 #define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
 
     if (CHECK_ARG_PARAM("-state"))
-      state_filename = SDLInterface::GetSaveStateFilename(std::strtoul(argv[++i], nullptr, 10));
+      state_filename = SDLHostInterface::GetSaveStateFilename(std::strtoul(argv[++i], nullptr, 10));
     else if (CHECK_ARG_PARAM("-exp1"))
       exp1_filename = argv[++i];
     else
@@ -51,8 +51,8 @@ static int Run(int argc, char* argv[])
   }
 
   // create display and host interface
-  std::unique_ptr<SDLInterface> host_interface =
-    SDLInterface::Create(filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray());
+  std::unique_ptr<SDLHostInterface> host_interface =
+    SDLHostInterface::Create(filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray());
   if (!host_interface)
   {
     Panic("Failed to create host interface");

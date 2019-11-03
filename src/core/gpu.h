@@ -10,6 +10,8 @@
 
 class StateWrapper;
 
+class HostDisplay;
+
 class System;
 class DMA;
 class InterruptController;
@@ -90,7 +92,8 @@ public:
   GPU();
   virtual ~GPU();
 
-  virtual bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers);
+  virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
+                          InterruptController* interrupt_controller, Timers* timers);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
@@ -115,6 +118,9 @@ public:
 
   // Ticks for hblank/vblank.
   void Execute(TickCount ticks);
+
+  // gpu_hw_d3d11.cpp
+  static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();
 
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
@@ -292,6 +298,7 @@ protected:
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   virtual void FlushRender();
 
+  HostDisplay* m_host_display = nullptr;
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;

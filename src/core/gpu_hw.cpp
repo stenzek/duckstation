@@ -19,9 +19,10 @@ void GPU_HW::Reset()
   m_batch_ubo_dirty = true;
 }
 
-bool GPU_HW::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
+bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
+                        Timers* timers)
 {
-  if (!GPU::Initialize(system, dma, interrupt_controller, timers))
+  if (!GPU::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
@@ -260,7 +261,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     rc.transparency_enable ? m_render_state.transparency_mode : TransparencyMode::Disabled;
   const BatchPrimitive rc_primitive = GetPrimitiveForCommand(rc);
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
-  const u32 max_added_vertices = num_vertices + 2;
+  const u32 max_added_vertices = num_vertices + 5;
   if (!IsFlushed())
   {
     const bool buffer_overflow = GetBatchVertexSpace() < max_added_vertices;

@@ -5,16 +5,17 @@
 #include "system.h"
 Log_SetChannel(HostInterface);
 
-HostInterface::HostInterface() = default;
+HostInterface::HostInterface()
+{
+  m_settings.gpu_renderer = Settings::GPURenderer::HardwareD3D11;
+  m_settings.memory_card_a_filename = "memory_card_a.mcd";
+}
 
 HostInterface::~HostInterface() = default;
 
 bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
 {
-  Settings settings;
-  settings.memory_card_a_filename = "memory_card_a.mcd";
-
-  m_system = std::make_unique<System>(this, settings);
+  m_system = std::make_unique<System>(this, m_settings);
   if (!m_system->Initialize())
   {
     m_system.reset();
@@ -50,6 +51,7 @@ bool HostInterface::InitializeSystem(const char* filename, const char* exp1_file
     m_system->SetExpansionROM(exp1_filename);
 
   // Resume execution.
+  m_settings = m_system->GetSettings();
   return true;
 }
 

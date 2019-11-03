@@ -2,7 +2,7 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/Timer.h"
 #include "common/gl/texture.h"
-#include "host_interface.h"
+#include "host_display.h"
 #include "system.h"
 #include <algorithm>
 Log_SetChannel(GPU_SW);
@@ -12,14 +12,21 @@ GPU_SW::GPU_SW()
   m_vram.fill(0);
 }
 
-GPU_SW::~GPU_SW() = default;
-
-bool GPU_SW::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
+GPU_SW::~GPU_SW()
 {
-  if (!GPU::Initialize(system, dma, interrupt_controller, timers))
+  m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
+}
+
+bool GPU_SW::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
+                        Timers* timers)
+{
+  if (!GPU::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
-  m_display_texture = std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE);
+  m_display_texture = host_display->CreateTexture(VRAM_WIDTH, VRAM_HEIGHT, nullptr, 0, true);
+  if (!m_display_texture)
+    return false;
+
   return true;
 }
 
@@ -71,9 +78,6 @@ void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 
 void GPU_SW::CopyOut15Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height)
 {
-  // OpenGL is beeg silly for lower-left origin
-  dst_ptr = (dst_ptr + ((height - 1) * dst_stride));
-
   for (u32 row = 0; row < height; row++)
   {
     const u16* src_row_ptr = src_ptr;
@@ -82,15 +86,12 @@ void GPU_SW::CopyOut15Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 
       *(dst_row_ptr++) = RGBA5551ToRGBA8888(*(src_row_ptr++));
 
     src_ptr += src_stride;
-    dst_ptr -= dst_stride;
+    dst_ptr += dst_stride;
   }
 }
 
 void GPU_SW::CopyOut24Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height)
 {
-  // OpenGL is beeg silly for lower-left origin
-  dst_ptr = (dst_ptr + ((height - 1) * dst_stride));
-
   for (u32 row = 0; row < height; row++)
   {
     const u8* src_row_ptr = reinterpret_cast<const u8*>(src_ptr);
@@ -106,7 +107,7 @@ void GPU_SW::CopyOut24Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 
     }
 
     src_ptr += src_stride;
-    dst_ptr -= dst_stride;
+    dst_ptr += dst_stride;
   }
 }
 
@@ -130,7 +131,7 @@ void GPU_SW::UpdateDisplay()
 
     if (m_GPUSTAT.display_disable)
     {
-      m_system->GetHostInterface()->SetDisplayTexture(nullptr, 0, 0, 0, 0, display_aspect_ratio);
+      m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, display_aspect_ratio);
       return;
     }
     else if (m_GPUSTAT.display_area_color_depth_24)
@@ -153,11 +154,10 @@ void GPU_SW::UpdateDisplay()
                  display_height);
   }
 
-  m_display_texture->Bind();
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, display_width, display_height, GL_RGBA, GL_UNSIGNED_BYTE,
-                  m_display_texture_buffer.data());
-  m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, display_width, display_height,
-                                                  display_aspect_ratio);
+  m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, display_width, display_height,
+                                m_display_texture_buffer.data(), display_width * sizeof(u32));
+  m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), 0, 0, display_width, display_height, VRAM_WIDTH,
+                                    VRAM_HEIGHT, display_aspect_ratio);
 }
 
 void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)

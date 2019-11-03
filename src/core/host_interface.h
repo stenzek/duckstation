@@ -1,12 +1,10 @@
 #pragma once
 #include "types.h"
+#include "settings.h"
 #include <memory>
 
 class AudioStream;
-
-namespace GL {
-class Texture;
-}
+class HostDisplay;
 
 class System;
 
@@ -20,7 +18,8 @@ public:
 
   bool InitializeSystem(const char* filename, const char* exp1_filename);
 
-  virtual void SetDisplayTexture(GL::Texture* texture, u32 offset_x, u32 offset_y, u32 width, u32 height, float aspect_ratio) = 0;
+  virtual HostDisplay* GetDisplay() const = 0;
+
   virtual void ReportMessage(const char* message) = 0;
 
   // Adds OSD messages, duration is in seconds.
@@ -32,4 +31,6 @@ public:
 protected:
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
+
+  Settings m_settings;
 };

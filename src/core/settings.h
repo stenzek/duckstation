@@ -5,6 +5,7 @@ struct Settings
 {
   enum class GPURenderer
   {
+    HardwareD3D11,
     HardwareOpenGL,
     Software
   };

@@ -41,6 +41,7 @@
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
+    <ClCompile Include="gpu_hw_d3d11.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gte.cpp" />
@@ -65,6 +66,7 @@
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="digital_controller.h" />
+    <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gte.h" />
@@ -74,6 +76,7 @@
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gte_types.h" />
+    <ClInclude Include="host_display.h" />
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="mdec.h" />

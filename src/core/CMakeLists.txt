@@ -55,5 +55,11 @@ add_library(core
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core Threads::Threads YBaseLib common imgui stb)
+target_link_libraries(core PRIVATE Threads::Threads YBaseLib common imgui glad stb)
 
+if(WIN32)
+  target_sources(core PRIVATE
+    gpu_hw_d3d11.cpp
+    gpu_hw_d3d11.h
+  )
+endif()

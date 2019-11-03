@@ -3,7 +3,7 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
 #include "gpu_hw_shadergen.h"
-#include "host_interface.h"
+#include "host_display.h"
 #include "imgui.h"
 #include "system.h"
 Log_SetChannel(GPU_HW_OpenGL);
@@ -12,15 +12,23 @@ GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}
 
 GPU_HW_OpenGL::~GPU_HW_OpenGL()
 {
+  m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
   DestroyFramebuffer();
 }
 
-bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
+bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* dma,
+                               InterruptController* interrupt_controller, Timers* timers)
 {
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(system, dma, interrupt_controller, timers))
+  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
+
+  if (m_host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
+  {
+    Log_ErrorPrintf("Host render API type is incompatible");
+    return false;
+  }
 
   CreateFramebuffer();
   CreateVertexBuffer();
@@ -29,7 +37,9 @@ bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* in
   if (!CompilePrograms())
     return false;
 
-  m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1.0f);
+  m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0, 0,
+                                    m_display_texture->GetWidth(), m_display_texture->GetHeight(),
+                                    m_display_texture->GetWidth(), m_display_texture->GetHeight(), 1.0f);
   RestoreGraphicsAPIState();
   return true;
 }
@@ -250,7 +260,7 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
   glVertexAttribIPointer(0, 2, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
                         reinterpret_cast<void*>(offsetof(BatchVertex, color)));
-  glVertexAttribIPointer(2, 2, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, texcoord)));
+  glVertexAttribIPointer(2, 1, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, texcoord)));
   glVertexAttribIPointer(3, 1, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, texpage)));
   glBindVertexArray(0);
 
@@ -429,8 +439,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
   if (m_system->GetSettings().debugging.show_vram)
   {
-    m_system->GetHostInterface()->SetDisplayTexture(m_vram_texture.get(), 0, 0, m_vram_texture->GetWidth(),
-                                                    m_vram_texture->GetHeight(), 1.0f);
+    m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0, 0,
+                                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
+                                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1.0f);
   }
   else
   {
@@ -448,7 +459,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
     if (m_GPUSTAT.display_disable)
     {
-      m_system->GetHostInterface()->SetDisplayTexture(nullptr, 0, 0, 0, 0, m_crtc_state.display_aspect_ratio);
+      m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, m_crtc_state.display_aspect_ratio);
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
     {
@@ -457,8 +468,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
                          scaled_flipped_vram_offset_y, 0, m_display_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0,
                          scaled_display_width, scaled_display_height, 1);
 
-      m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
-                                                      scaled_display_height, m_crtc_state.display_aspect_ratio);
+      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
+                                        0, scaled_display_width, scaled_display_height, m_display_texture->GetWidth(),
+                                        m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
     }
     else
     {
@@ -495,8 +507,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, display_width, display_height,
-                                                        m_crtc_state.display_aspect_ratio);
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
+                                          0, display_width, display_height, m_display_texture->GetWidth(),
+                                          m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
       }
       else
       {
@@ -511,8 +524,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_system->GetHostInterface()->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width,
-                                                        scaled_display_height, m_crtc_state.display_aspect_ratio);
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
+                                          0, scaled_display_width, scaled_display_height, m_display_texture->GetWidth(),
+                                          m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
       }
 
       // restore state
@@ -679,7 +693,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   m_vram_write_program.Bind();
   glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
 
-  const u32 uniforms[4] = {x, flipped_y, width, height};
+  const u32 uniforms[5] = {x, flipped_y, width, height, map_result.index_aligned};
   UploadUniformBlock(uniforms, sizeof(uniforms));
   m_batch_ubo_dirty = true;
 
