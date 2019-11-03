@@ -376,7 +376,13 @@ void Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
     if (value == '\n')
     {
       if (!m_tty_line_buffer.IsEmpty())
+      {
         Log_InfoPrintf("TTY: %s", m_tty_line_buffer.GetCharArray());
+#ifdef _DEBUG
+        if (CPU::LOG_EXECUTION)
+          CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.GetCharArray());
+#endif
+      }
       m_tty_line_buffer.Clear();
     }
     else

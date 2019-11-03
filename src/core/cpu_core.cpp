@@ -6,7 +6,33 @@
 Log_SetChannel(CPU::Core);
 
 namespace CPU {
+
 bool TRACE_EXECUTION = false;
+bool LOG_EXECUTION = false;
+
+void WriteToExecutionLog(const char* format, ...)
+{
+  static std::FILE* log_file = nullptr;
+  static bool log_file_opened = false;
+
+  std::va_list ap;
+  va_start(ap, format);
+
+  if (!log_file_opened)
+  {
+    log_file = std::fopen("cpu_log.txt", "wb");
+    log_file_opened = true;
+  }
+
+  if (log_file)
+  {
+    std::vfprintf(log_file, format, ap);
+    std::fflush(log_file);
+  }
+
+  va_end(ap);
+}
+
 
 Core::Core() = default;
 
@@ -495,6 +521,14 @@ static void PrintInstruction(u32 bits, u32 pc, Core* state)
   std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
 
+static void LogInstruction(u32 bits, u32 pc, Core* state)
+{
+  TinyString instr;
+  DisassembleInstruction(&instr, pc, bits, state);
+
+  WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
+}
+
 static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32 new_value)
 {
   return (((new_value ^ old_value) & (new_value ^ add_value)) & UINT32_C(0x80000000)) != 0;
@@ -596,8 +630,12 @@ void Core::ExecuteInstruction()
   }
 #endif
 
+#ifdef _DEBUG
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, m_current_instruction_pc, this);
+  if (LOG_EXECUTION)
+    LogInstruction(inst.bits, m_current_instruction_pc, this);
+#endif
 
   switch (inst.op)
   {

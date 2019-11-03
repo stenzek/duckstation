@@ -88,6 +88,7 @@ private:
   }
 
   void DisassembleAndPrint(u32 addr);
+  void DisassembleAndLog(u32 addr);
   void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_after);
 
   // Fetches the instruction at m_regs.npc
@@ -156,6 +157,10 @@ private:
 };
 
 extern bool TRACE_EXECUTION;
+extern bool LOG_EXECUTION;
+
+// Write to CPU execution log file.
+void WriteToExecutionLog(const char* format, ...);
 
 } // namespace CPU
 
