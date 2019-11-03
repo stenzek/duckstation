@@ -16,13 +16,14 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
 
 bool GPU_HW_OpenGL::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
 {
-  SetMaxResolutionScale();
+  SetCapabilities();
 
   if (!GPU_HW::Initialize(system, dma, interrupt_controller, timers))
     return false;
 
   CreateFramebuffer();
   CreateVertexBuffer();
+  CreateUniformBuffer();
   CreateTextureBuffer();
   if (!CompilePrograms())
     return false;
@@ -150,7 +151,7 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
   return std::make_tuple(x, static_cast<s32>(static_cast<s32>(VRAM_HEIGHT) - y));
 }
 
-void GPU_HW_OpenGL::SetMaxResolutionScale()
+void GPU_HW_OpenGL::SetCapabilities()
 {
   GLint max_texture_size = VRAM_WIDTH;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
@@ -163,6 +164,9 @@ void GPU_HW_OpenGL::SetMaxResolutionScale()
 
   m_max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
   Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
+
+  glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
+  Log_InfoPrintf("Uniform buffer offset alignment: %u", m_uniform_buffer_alignment);
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
@@ -250,6 +254,13 @@ void GPU_HW_OpenGL::CreateVertexBuffer()
   glBindVertexArray(0);
 
   glGenVertexArrays(1, &m_attributeless_vao_id);
+}
+
+void GPU_HW_OpenGL::CreateUniformBuffer()
+{
+  m_uniform_stream_buffer = GL::StreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE);
+  if (!m_uniform_stream_buffer)
+    Panic("Failed to create uniform buffer");
 }
 
 void GPU_HW_OpenGL::CreateTextureBuffer()
@@ -346,17 +357,13 @@ bool GPU_HW_OpenGL::CompileProgram(GL::Program& prog, HWBatchRenderMode render_m
   if (!prog.Link())
     return false;
 
-  prog.Bind();
-  prog.RegisterUniform("u_pos_offset");
-  prog.RegisterUniform("u_transparent_alpha");
-  prog.Uniform2i(0, 0, 0);
-  prog.Uniform2f(1, 1.0f, 0.0f);
+  prog.BindUniformBlock("UBOBlock", 1);
 
   if (textured)
   {
-    prog.RegisterUniform("u_texture_window");
+    prog.Bind();
     prog.RegisterUniform("samp0");
-    prog.Uniform1i(3, 0);
+    prog.Uniform1i(0, 0);
   }
 
   return true;
@@ -368,24 +375,8 @@ void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
                                              [BoolToUInt8(m_batch.dithering)];
   prog.Bind();
 
-  prog.Uniform2i(0, m_drawing_offset.x, m_drawing_offset.y);
-  if (m_batch.transparency_mode != TransparencyMode::Disabled)
-  {
-    static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
-    prog.Uniform2fv(1, transparent_alpha[static_cast<u32>(m_batch.transparency_mode)]);
-  }
-  else
-  {
-    static constexpr float disabled_alpha[2] = {1.0f, 0.0f};
-    prog.Uniform2fv(1, disabled_alpha);
-  }
-
   if (m_batch.texture_mode != TextureMode::Disabled)
-  {
-    prog.Uniform4ui(2, m_batch.texture_window_values[0], m_batch.texture_window_values[1],
-                    m_batch.texture_window_values[2], m_batch.texture_window_values[3]);
     m_vram_read_texture->Bind();
-  }
 
   if (m_batch.transparency_mode == TransparencyMode::Disabled || render_mode == HWBatchRenderMode::OnlyOpaque)
   {
@@ -415,6 +406,23 @@ void GPU_HW_OpenGL::SetDrawState(HWBatchRenderMode render_mode)
     Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
     glScissor(x, y, width, height);
   }
+
+  if (m_batch_ubo_dirty)
+  {
+    UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
+    m_batch_ubo_dirty = false;
+  }
+}
+
+void GPU_HW_OpenGL::UploadUniformBlock(const void* data, u32 data_size)
+{
+  const GL::StreamBuffer::MappingResult res = m_uniform_stream_buffer->Map(m_uniform_buffer_alignment, data_size);
+  std::memcpy(res.pointer, data, data_size);
+  m_uniform_stream_buffer->Unmap(data_size);
+
+  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_stream_buffer->GetGLBufferId(), res.buffer_offset, data_size);
+
+  m_stats.num_uniform_buffer_updates++;
 }
 
 void GPU_HW_OpenGL::UpdateDrawingArea()

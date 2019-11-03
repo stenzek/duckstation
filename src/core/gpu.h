@@ -283,6 +283,7 @@ protected:
   // Rendering in the backend
   virtual void UpdateDisplay();
   virtual void UpdateDrawingArea();
+  virtual void UpdateDrawingOffset();
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);

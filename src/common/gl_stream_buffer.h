@@ -22,6 +22,7 @@ public:
   struct MappingResult
   {
     void* pointer;
+    u32 buffer_offset;
     u32 index_aligned; // offset / alignment, suitable for base vertex
     u32 space_aligned; // remaining space / alignment
   };

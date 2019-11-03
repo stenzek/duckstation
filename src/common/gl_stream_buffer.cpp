@@ -24,7 +24,7 @@ void StreamBuffer::Unbind()
 
 StreamBuffer::MappingResult StreamBuffer::Map(u32 alignment, u32 min_size)
 {
-  return MappingResult{static_cast<void*>(m_cpu_buffer.data()), 0, m_size / alignment};
+  return MappingResult{static_cast<void*>(m_cpu_buffer.data()), 0, 0, m_size / alignment};
 }
 
 void StreamBuffer::Unmap(u32 used_size)

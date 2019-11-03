@@ -51,6 +51,8 @@ void GPU::SoftReset()
   m_render_state.texture_page_changed = true;
   UpdateGPUSTAT();
   UpdateCRTCConfig();
+  UpdateDrawingArea();
+  UpdateDrawingOffset();
 }
 
 bool GPU::DoState(StateWrapper& sw)
@@ -115,6 +117,7 @@ bool GPU::DoState(StateWrapper& sw)
     m_render_state.texture_page_changed = true;
     m_render_state.texture_window_changed = true;
     UpdateDrawingArea();
+    UpdateDrawingOffset();
     UpdateGPUSTAT();
   }
 
@@ -664,6 +667,8 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 void GPU::UpdateDisplay() {}
 
 void GPU::UpdateDrawingArea() {}
+
+void GPU::UpdateDrawingOffset() {}
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 

@@ -60,7 +60,6 @@ protected:
     HWPrimitive primitive;
     TextureMode texture_mode;
     TransparencyMode transparency_mode;
-    std::array<u8, 4> texture_window_values;
     bool dithering;
 
     // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
@@ -79,14 +78,20 @@ protected:
     }
   };
 
+  struct HWBatchUBOData
+  {
+    s32 u_pos_offset[2];
+    u32 u_texture_window_mask[2];
+    u32 u_texture_window_offset[2];
+    float u_src_alpha_factor;
+    float u_dst_alpha_factor;
+  };
+
   static constexpr u32 VRAM_UPDATE_TEXTURE_BUFFER_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32);
   static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 MIN_BATCH_VERTEX_COUNT = 6;
   static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(HWVertex);
-  static constexpr u32 TEXTURE_TILE_SIZE = 256;
-  static constexpr u32 TEXTURE_TILE_X_COUNT = VRAM_WIDTH / TEXTURE_TILE_SIZE;
-  static constexpr u32 TEXTURE_TILE_Y_COUNT = VRAM_HEIGHT / TEXTURE_TILE_SIZE;
-  static constexpr u32 TEXTURE_TILE_COUNT = TEXTURE_TILE_X_COUNT * TEXTURE_TILE_Y_COUNT;
+  static constexpr u32 UNIFORM_BUFFER_SIZE = 512 * 1024;
 
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
   {
@@ -95,6 +100,8 @@ protected:
                            static_cast<float>((rgba >> 16) & UINT32_C(0xFF)) * (1.0f / 255.0f),
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
+
+  virtual void UpdateDrawingOffset() override;
 
   virtual void InvalidateVRAMReadCache() = 0;
 
@@ -121,8 +128,6 @@ protected:
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
   std::string GenerateVRAMWriteFragmentShader();
 
-  HWBatchConfig m_batch = {};
-
   HWVertex* m_batch_start_vertex_ptr = nullptr;
   HWVertex* m_batch_end_vertex_ptr = nullptr;
   HWVertex* m_batch_current_vertex_ptr = nullptr;
@@ -132,10 +137,15 @@ protected:
   u32 m_max_resolution_scale = 1;
   bool m_true_color = false;
 
+  HWBatchConfig m_batch = {};
+  HWBatchUBOData m_batch_ubo_data = {};
+  bool m_batch_ubo_dirty = true;
+
 private:
   static HWPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
   void GenerateShaderHeader(std::stringstream& ss);
+  void GenerateBatchUniformBuffer(std::stringstream& ss);
 
   void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   void AddDuplicateVertex();

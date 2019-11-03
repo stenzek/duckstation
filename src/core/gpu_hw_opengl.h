@@ -42,22 +42,25 @@ private:
     u32 num_vram_reads;
     u32 num_vram_writes;
     u32 num_vram_read_texture_updates;
+    u32 num_uniform_buffer_updates;
   };
 
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
-  void SetMaxResolutionScale();
+  void SetCapabilities();
   void CreateFramebuffer();
   void ClearFramebuffer();
   void DestroyFramebuffer();
   void UpdateVRAMReadTexture();
 
   void CreateVertexBuffer();
+  void CreateUniformBuffer();
   void CreateTextureBuffer();
 
   bool CompilePrograms();
   bool CompileProgram(GL::Program& prog, HWBatchRenderMode render_mode, TextureMode texture_mode, bool dithering);
   void SetDrawState(HWBatchRenderMode render_mode);
+  void UploadUniformBlock(const void* data, u32 data_size);
 
   // downsample texture - used for readbacks at >1xIR.
   std::unique_ptr<GL::Texture> m_vram_texture;
@@ -69,12 +72,12 @@ private:
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
 
+  std::unique_ptr<GL::StreamBuffer> m_uniform_stream_buffer;
+
   std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
   GLuint m_texture_buffer_r16ui_texture = 0;
 
-  bool m_vram_read_texture_dirty = true;
-  bool m_drawing_area_changed = true;
-  bool m_show_renderer_statistics = false;
+  u32 m_uniform_buffer_alignment = 1;
 
   std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
   std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
@@ -82,4 +85,8 @@ private:
 
   GLStats m_stats = {};
   GLStats m_last_stats = {};
+
+  bool m_vram_read_texture_dirty = true;
+  bool m_drawing_area_changed = true;
+  bool m_show_renderer_statistics = false;
 };

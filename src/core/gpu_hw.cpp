@@ -15,6 +15,8 @@ void GPU_HW::Reset()
   GPU::Reset();
 
   m_batch = {};
+  m_batch_ubo_data = {};
+  m_batch_ubo_dirty = true;
 }
 
 bool GPU_HW::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, Timers* timers)
@@ -36,6 +38,15 @@ void GPU_HW::UpdateSettings()
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
   m_system->GetSettings().gpu_resolution_scale = m_resolution_scale;
   m_true_color = m_system->GetSettings().gpu_true_color;
+}
+
+void GPU_HW::UpdateDrawingOffset()
+{
+  GPU::UpdateDrawingOffset();
+
+  m_batch_ubo_data.u_pos_offset[0] = m_drawing_offset.x;
+  m_batch_ubo_data.u_pos_offset[1] = m_drawing_offset.y;
+  m_batch_ubo_dirty = true;
 }
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
@@ -216,11 +227,25 @@ vec4 RGBA5551ToRGBA8(uint v)
 )";
 }
 
+void GPU_HW::GenerateBatchUniformBuffer(std::stringstream& ss)
+{
+  ss << R"(
+uniform UBOBlock {
+  ivec2 u_pos_offset;
+  uvec2 u_texture_window_mask;
+  uvec2 u_texture_window_offset;
+  float u_src_alpha_factor;
+  float u_dst_alpha_factor;
+};
+)";
+}
+
 std::string GPU_HW::GenerateVertexShader(bool textured)
 {
   std::stringstream ss;
   GenerateShaderHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
+  GenerateBatchUniformBuffer(ss);
 
   ss << R"(
 in ivec2 a_pos;
@@ -233,8 +258,6 @@ out vec3 v_col0;
   out vec2 v_tex0;
   flat out ivec4 v_texpage;
 #endif
-
-uniform ivec2 u_pos_offset;
 
 void main()
 {
@@ -268,6 +291,7 @@ std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, Textu
 
   std::stringstream ss;
   GenerateShaderHeader(ss);
+  GenerateBatchUniformBuffer(ss);
   DefineMacro(ss, "TRANSPARENCY", transparency != HWBatchRenderMode::TransparencyDisabled);
   DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", transparency == HWBatchRenderMode::OnlyOpaque);
   DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENCY", transparency == HWBatchRenderMode::OnlyTransparent);
@@ -292,12 +316,10 @@ std::string GPU_HW::GenerateFragmentShader(HWBatchRenderMode transparency, Textu
 
   ss << R"(
 in vec3 v_col0;
-uniform vec2 u_transparent_alpha;
 #if TEXTURED
   in vec2 v_tex0;
   flat in ivec4 v_texpage;
   uniform sampler2D samp0;
-  uniform uvec4 u_texture_window;
 #endif
 
 out vec4 o_col0;
@@ -318,8 +340,8 @@ ivec3 TruncateTo15Bit(ivec3 icol)
 #if TEXTURED
 ivec2 ApplyNativeTextureWindow(ivec2 coords)
 {
-  uint x = (uint(coords.x) & ~(u_texture_window.x * 8u)) | ((u_texture_window.z & u_texture_window.x) * 8u);
-  uint y = (uint(coords.y) & ~(u_texture_window.y * 8u)) | ((u_texture_window.w & u_texture_window.y) * 8u);
+  uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u);
+  uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u);
   return ivec2(int(x), int(y));
 }  
 
@@ -419,7 +441,7 @@ void main()
       #if TRANSPARENCY_ONLY_OPAQUE
         discard;
       #endif
-      o_col0 = vec4(color * u_transparent_alpha.x, u_transparent_alpha.y);
+      o_col0 = vec4(color * u_src_alpha_factor, u_dst_alpha_factor);
     }
     else
     {
@@ -679,6 +701,15 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     }
   }
 
+  // transparency mode change
+  if (m_batch.transparency_mode != transparency_mode && transparency_mode != TransparencyMode::Disabled)
+  {
+    static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
+    m_batch_ubo_data.u_src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];
+    m_batch_ubo_data.u_dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
+    m_batch_ubo_dirty = true;
+  }
+
   // map buffer if it's not already done
   if (!m_batch_current_vertex_ptr)
     MapBatchVertexPointer(max_added_vertices);
@@ -691,11 +722,13 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
 
   if (m_render_state.IsTextureWindowChanged())
   {
-    m_batch.texture_window_values[0] = m_render_state.texture_window_mask_x;
-    m_batch.texture_window_values[1] = m_render_state.texture_window_mask_y;
-    m_batch.texture_window_values[2] = m_render_state.texture_window_offset_x;
-    m_batch.texture_window_values[3] = m_render_state.texture_window_offset_y;
     m_render_state.ClearTextureWindowChangedFlag();
+
+    m_batch_ubo_data.u_texture_window_mask[0] = ZeroExtend32(m_render_state.texture_window_mask_x);
+    m_batch_ubo_data.u_texture_window_mask[1] = ZeroExtend32(m_render_state.texture_window_mask_y);
+    m_batch_ubo_data.u_texture_window_offset[0] = ZeroExtend32(m_render_state.texture_window_offset_x);
+    m_batch_ubo_data.u_texture_window_offset[1] = ZeroExtend32(m_render_state.texture_window_offset_y);
+    m_batch_ubo_dirty = true;
   }
 
   LoadVertices(rc, num_vertices, command_ptr);

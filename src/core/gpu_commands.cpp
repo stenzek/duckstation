@@ -151,6 +151,7 @@ bool GPU::HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_siz
 
     m_drawing_offset.x = x;
     m_drawing_offset.y = y;
+    UpdateDrawingOffset();
   }
   return true;
 }
