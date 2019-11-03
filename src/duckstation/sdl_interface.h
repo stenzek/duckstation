@@ -1,8 +1,8 @@
 #pragma once
 #include "YBaseLib/String.h"
 #include "YBaseLib/Timer.h"
-#include "common/gl_program.h"
-#include "common/gl_texture.h"
+#include "common/gl/program.h"
+#include "common/gl/texture.h"
 #include "core/host_interface.h"
 #include <SDL.h>
 #include <array>

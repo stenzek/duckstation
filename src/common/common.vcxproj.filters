@@ -5,28 +5,45 @@
     <ClInclude Include="types.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="state_wrapper.h" />
-    <ClInclude Include="gl_program.h" />
-    <ClInclude Include="gl_texture.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="cd_xa.h" />
     <ClInclude Include="heap_array.h" />
-    <ClInclude Include="gl_stream_buffer.h" />
+    <ClInclude Include="gl\program.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="gl\stream_buffer.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="gl\texture.h">
+      <Filter>gl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
-    <ClCompile Include="gl_program.cpp" />
-    <ClCompile Include="gl_texture.cpp" />
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
-    <ClCompile Include="gl_stream_buffer.cpp" />
+    <ClCompile Include="gl\program.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="gl\stream_buffer.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="gl\texture.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="gl">
+      <UniqueIdentifier>{52487c57-753d-4888-ba26-ed63ab51a234}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

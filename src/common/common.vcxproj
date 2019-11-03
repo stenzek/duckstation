@@ -39,9 +39,9 @@
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="fifo_queue.h" />
-    <ClInclude Include="gl_program.h" />
-    <ClInclude Include="gl_stream_buffer.h" />
-    <ClInclude Include="gl_texture.h" />
+    <ClInclude Include="gl\program.h" />
+    <ClInclude Include="gl\stream_buffer.h" />
+    <ClInclude Include="gl\texture.h" />
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="state_wrapper.h" />
@@ -53,9 +53,9 @@
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
-    <ClCompile Include="gl_program.cpp" />
-    <ClCompile Include="gl_stream_buffer.cpp" />
-    <ClCompile Include="gl_texture.cpp" />
+    <ClCompile Include="gl\program.cpp" />
+    <ClCompile Include="gl\stream_buffer.cpp" />
+    <ClCompile Include="gl\texture.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />

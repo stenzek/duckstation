@@ -1,5 +1,5 @@
 #pragma once
-#include "types.h"
+#include "../types.h"
 #include <glad.h>
 #include <memory>
 #include <tuple>

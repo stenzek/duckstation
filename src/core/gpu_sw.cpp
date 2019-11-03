@@ -1,7 +1,7 @@
 #include "gpu_sw.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/Timer.h"
-#include "common/gl_texture.h"
+#include "common/gl/texture.h"
 #include "host_interface.h"
 #include "system.h"
 #include <algorithm>

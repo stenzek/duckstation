@@ -1,7 +1,7 @@
 #pragma once
-#include "common/gl_program.h"
-#include "common/gl_stream_buffer.h"
-#include "common/gl_texture.h"
+#include "common/gl/program.h"
+#include "common/gl/stream_buffer.h"
+#include "common/gl/texture.h"
 #include "glad.h"
 #include "gpu_hw.h"
 #include <array>

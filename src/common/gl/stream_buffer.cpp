@@ -1,4 +1,4 @@
-#include "gl_stream_buffer.h"
+#include "stream_buffer.h"
 
 namespace GL {
 

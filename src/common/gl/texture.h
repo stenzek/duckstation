@@ -1,6 +1,6 @@
 #pragma once
-#include "glad.h"
-#include "types.h"
+#include <glad.h>
+#include "../types.h"
 
 namespace GL {
 class Texture

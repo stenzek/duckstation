@@ -1,4 +1,4 @@
-#include "gl_texture.h"
+#include "texture.h"
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
 Log_SetChannel(GL);

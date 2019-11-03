@@ -8,12 +8,12 @@ set(SRCS
     cd_image_cue.cpp
     cd_xa.cpp
     cd_xa.h
-    gl_program.cpp
-    gl_program.h
-    gl_stream_buffer.cpp
-    gl_stream_buffer.h
-    gl_texture.cpp
-    gl_texture.h
+    gl/program.cpp
+    gl/program.h
+    gl/stream_buffer.cpp
+    gl/stream_buffer.h
+    gl/texture.cpp
+    gl/texture.h
     jit_code_buffer.cpp
     jit_code_buffer.h
     state_wrapper.cpp

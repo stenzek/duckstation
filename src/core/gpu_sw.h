@@ -1,5 +1,5 @@
 #pragma once
-#include "common/gl_texture.h"
+#include "common/gl/texture.h"
 #include "gpu.h"
 #include <array>
 #include <memory>

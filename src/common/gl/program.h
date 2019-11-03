@@ -1,6 +1,6 @@
 #pragma once
 #include "glad.h"
-#include "types.h"
+#include "../types.h"
 #include <string_view>
 #include <vector>
 
