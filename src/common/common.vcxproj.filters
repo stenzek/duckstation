@@ -19,6 +19,18 @@
     <ClInclude Include="gl\texture.h">
       <Filter>gl</Filter>
     </ClInclude>
+    <ClInclude Include="d3d11\stream_buffer.h">
+      <Filter>d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11\texture.h">
+      <Filter>d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11\staging_texture.h">
+      <Filter>d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11\shader_compiler.h">
+      <Filter>d3d11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -37,6 +49,18 @@
     <ClCompile Include="gl\texture.cpp">
       <Filter>gl</Filter>
     </ClCompile>
+    <ClCompile Include="d3d11\texture.cpp">
+      <Filter>d3d11</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11\staging_texture.cpp">
+      <Filter>d3d11</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11\stream_buffer.cpp">
+      <Filter>d3d11</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11\shader_compiler.cpp">
+      <Filter>d3d11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -44,6 +68,9 @@
   <ItemGroup>
     <Filter Include="gl">
       <UniqueIdentifier>{52487c57-753d-4888-ba26-ed63ab51a234}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="d3d11">
+      <UniqueIdentifier>{30251086-81f3-44f5-add4-7ff9a24098ab}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

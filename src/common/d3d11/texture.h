@@ -1,0 +1,47 @@
+#pragma once
+#include "../types.h"
+#include "YBaseLib/Windows/WindowsHeaders.h"
+#include <d3d11.h>
+#include <wrl/client.h>
+
+namespace D3D11 {
+class Texture
+{
+public:
+  template<typename T>
+  using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+  Texture();
+  Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11RenderTargetView> rtv);
+  ~Texture();
+
+  ALWAYS_INLINE ID3D11Texture2D* GetD3DTexture() const { return m_texture.Get(); }
+  ALWAYS_INLINE ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.Get(); }
+  ALWAYS_INLINE ID3D11RenderTargetView* GetD3DRTV() const { return m_rtv.Get(); }
+  ALWAYS_INLINE ID3D11ShaderResourceView* const* GetD3DSRVArray() const { return m_srv.GetAddressOf(); }
+  ALWAYS_INLINE ID3D11RenderTargetView* const* GetD3DRTVArray() const { return m_rtv.GetAddressOf(); }
+
+  ALWAYS_INLINE u32 GetWidth() const { return m_width; }
+  ALWAYS_INLINE u32 GetHeight() const { return m_height; }
+  ALWAYS_INLINE DXGI_FORMAT GetFormat() const { return GetDesc().Format; }
+  D3D11_TEXTURE2D_DESC GetDesc() const;
+
+  ALWAYS_INLINE operator ID3D11Texture2D*() const { return m_texture.Get(); }
+  ALWAYS_INLINE operator ID3D11ShaderResourceView*() const { return m_srv.Get(); }
+  ALWAYS_INLINE operator ID3D11RenderTargetView*() const { return m_rtv.Get(); }
+  ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
+
+  bool Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT format, bool shader_resource, bool render_target,
+              const void* initial_data = nullptr, u32 initial_data_stride = 0);
+  bool Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture);
+
+  void Destroy();
+
+private:
+  ComPtr<ID3D11Texture2D> m_texture;
+  ComPtr<ID3D11ShaderResourceView> m_srv;
+  ComPtr<ID3D11RenderTargetView> m_rtv;
+  u32 m_width;
+  u32 m_height;
+};
+} // namespace D3D11
