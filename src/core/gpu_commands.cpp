@@ -190,9 +190,9 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
       if (rc.polyline)
       {
         // polyline goes until we hit the termination code
-        num_vertices = 0;
+        num_vertices = 1;
         bool found_terminator = false;
-        for (u32 pos = 1 + BoolToUInt32(rc.shading_enable); pos < command_size; pos += words_per_vertex)
+        for (u32 pos = 2; pos < command_size; pos += words_per_vertex)
         {
           if (command_ptr[pos] == 0x55555555)
           {
