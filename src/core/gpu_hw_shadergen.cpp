@@ -502,6 +502,60 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateBatchLineExpandGeometryShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+
+  // GS is a pain, too different between HLSL and GLSL...
+  if (m_glsl)
+  {
+  }
+  else
+  {
+    ss << R"(
+CONSTANT float2 OFFSET = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+
+struct Vertex
+{
+  float4 col0 : COLOR0;
+  float4 pos : SV_Position;
+};
+
+[maxvertexcount(4)]
+void main(line Vertex input[2], inout TriangleStream<Vertex> output)
+{
+  Vertex v;
+
+  // top-left
+  v.col0 = input[0].col0;
+  v.pos = input[0].pos + float4(-OFFSET.x, +OFFSET.y, 0.0, 0.0);
+  output.Append(v);
+
+  // top-right
+  v.col0 = input[0].col0;
+  v.pos = input[0].pos + float4(+OFFSET.x, +OFFSET.y, 0.0, 0.0);
+  output.Append(v);
+
+  // bottom-left
+  v.col0 = input[1].col0;
+  v.pos = input[1].pos + float4(-OFFSET.x, -OFFSET.y, 0.0, 0.0);
+  output.Append(v);
+
+  // bottom-right
+  v.col0 = input[1].col0;
+  v.pos = input[1].pos + float4(+OFFSET.x, -OFFSET.y, 0.0, 0.0);
+  output.Append(v);
+
+  output.RestartStrip();
+}
+)";
+  }
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateScreenQuadVertexShader()
 {
   std::stringstream ss;

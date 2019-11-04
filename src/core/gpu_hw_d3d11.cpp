@@ -92,6 +92,8 @@ void GPU_HW_D3D11::Reset()
 void GPU_HW_D3D11::ResetGraphicsAPIState()
 {
   GPU_HW::ResetGraphicsAPIState();
+
+  m_context->GSSetShader(nullptr, nullptr, 0);
 }
 
 void GPU_HW_D3D11::RestoreGraphicsAPIState()
@@ -403,6 +405,15 @@ bool GPU_HW_D3D11::CompileShaders()
     }
   }
 
+  m_batch_line_expand_geometry_shader.Reset();
+  if (m_resolution_scale > 1)
+  {
+    m_batch_line_expand_geometry_shader = D3D11::ShaderCompiler::CompileAndCreateGeometryShader(
+      m_device.Get(), shadergen.GenerateBatchLineExpandGeometryShader(), debug);
+    if (!m_batch_line_expand_geometry_shader)
+      return false;
+  }
+
   m_copy_pixel_shader =
     D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), shadergen.GenerateCopyFragmentShader(), debug);
   if (!m_copy_pixel_shader)
@@ -490,6 +501,7 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
 
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_screen_quad_vertex_shader.Get(), nullptr, 0);
+  m_context->GSSetShader(nullptr, nullptr, 0);
   m_context->PSSetShader(shader, nullptr, 0);
   m_context->OMSetBlendState(m_blend_disabled_state.Get(), nullptr, 0xFFFFFFFFu);
 
@@ -506,6 +518,11 @@ void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
   m_context->IASetPrimitiveTopology(d3d_primitives[static_cast<u8>(m_batch.primitive)]);
 
   m_context->VSSetShader(m_batch_vertex_shaders[BoolToUInt8(textured)].Get(), nullptr, 0);
+
+  m_context->GSSetShader((m_batch.primitive < GPU_HW::BatchPrimitive::Triangles && m_resolution_scale > 1) ?
+                           m_batch_line_expand_geometry_shader.Get() :
+                           nullptr,
+                         nullptr, 0);
 
   m_context->PSSetShader(m_batch_pixel_shaders[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
                                               [BoolToUInt8(m_batch.dithering)]
