@@ -17,21 +17,21 @@ ComPtr<ID3DBlob> CompileShader(Type type, D3D_FEATURE_LEVEL feature_level, std::
   {
     case D3D_FEATURE_LEVEL_10_0:
     {
-      static constexpr std::array<const char*, 3> targets = {{"vs_4_0", "ps_4_0", "cs_4_0"}};
+      static constexpr std::array<const char*, 4> targets = {{"vs_4_0", "gs_4_0", "ps_4_0", "cs_4_0"}};
       target = targets[static_cast<int>(type)];
     }
     break;
 
     case D3D_FEATURE_LEVEL_10_1:
     {
-      static constexpr std::array<const char*, 3> targets = {{"vs_4_1", "ps_4_1", "cs_4_1"}};
+      static constexpr std::array<const char*, 4> targets = {{"vs_4_1", "gs_4_1", "ps_4_1", "cs_4_1"}};
       target = targets[static_cast<int>(type)];
     }
     break;
 
     case D3D_FEATURE_LEVEL_11_0:
     {
-      static constexpr std::array<const char*, 3> targets = {{"vs_5_0", "ps_5_0", "cs_5_0"}};
+      static constexpr std::array<const char*, 4> targets = {{"vs_5_0", "gs_5_0", "ps_5_0", "cs_5_0"}};
       target = targets[static_cast<int>(type)];
     }
     break;
@@ -39,7 +39,7 @@ ComPtr<ID3DBlob> CompileShader(Type type, D3D_FEATURE_LEVEL feature_level, std::
     case D3D_FEATURE_LEVEL_11_1:
     default:
     {
-      static constexpr std::array<const char*, 3> targets = {{"vs_5_1", "ps_5_1", "cs_5_1"}};
+      static constexpr std::array<const char*, 4> targets = {{"vs_5_1", "gs_5_1", "ps_5_1", "cs_5_1"}};
       target = targets[static_cast<int>(type)];
     }
     break;
@@ -91,16 +91,34 @@ ComPtr<ID3D11VertexShader> CompileAndCreateVertexShader(ID3D11Device* device, st
   if (!blob)
     return {};
 
-  ComPtr<ID3D11VertexShader> vs;
+  ComPtr<ID3D11VertexShader> shader;
   const HRESULT hr =
-    device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf());
+    device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, shader.GetAddressOf());
   if (FAILED(hr))
   {
     Log_ErrorPrintf("Failed to create vertex shader: 0x%08X", hr);
     return {};
   }
 
-  return vs;
+  return shader;
+}
+
+ComPtr<ID3D11GeometryShader> CompileAndCreateGeometryShader(ID3D11Device* device, std::string_view code, bool debug)
+{
+  ComPtr<ID3DBlob> blob = CompileShader(Type::Geometry, device->GetFeatureLevel(), std::move(code), debug);
+  if (!blob)
+    return {};
+
+  ComPtr<ID3D11GeometryShader> shader;
+  const HRESULT hr =
+    device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, shader.GetAddressOf());
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to create geometry shader: 0x%08X", hr);
+    return {};
+  }
+
+  return shader;
 }
 
 ComPtr<ID3D11PixelShader> CompileAndCreatePixelShader(ID3D11Device* device, std::string_view code, bool debug)

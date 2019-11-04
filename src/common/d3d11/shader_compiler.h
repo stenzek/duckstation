@@ -12,6 +12,7 @@ using ComPtr = Microsoft::WRL::ComPtr<T>;
 enum class Type
 {
   Vertex,
+  Geometry,
   Pixel,
   Compute
 };
@@ -19,6 +20,7 @@ enum class Type
 ComPtr<ID3DBlob> CompileShader(Type type, D3D_FEATURE_LEVEL feature_level, std::string_view code, bool debug);
 
 ComPtr<ID3D11VertexShader> CompileAndCreateVertexShader(ID3D11Device* device, std::string_view code, bool debug);
+ComPtr<ID3D11GeometryShader> CompileAndCreateGeometryShader(ID3D11Device* device, std::string_view code, bool debug);
 ComPtr<ID3D11PixelShader> CompileAndCreatePixelShader(ID3D11Device* device, std::string_view code, bool debug);
 ComPtr<ID3D11ComputeShader> CompileAndCreateComputeShader(ID3D11Device* device, std::string_view code, bool debug);
 
