@@ -38,8 +38,10 @@ void GPU::Reset()
 void GPU::SoftReset()
 {
   m_GPUSTAT.bits = 0x14802000;
-  m_drawing_area = {};
+  m_drawing_area.Set(0, 0, 0, 0);
+  m_drawing_area_changed = true;
   m_drawing_offset = {};
+  m_drawing_offset_changed = true;
   std::memset(&m_crtc_state, 0, sizeof(m_crtc_state));
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
@@ -50,8 +52,6 @@ void GPU::SoftReset()
   m_render_state.texture_page_changed = true;
   UpdateGPUSTAT();
   UpdateCRTCConfig();
-  UpdateDrawingArea();
-  UpdateDrawingOffset();
 }
 
 bool GPU::DoState(StateWrapper& sw)
@@ -115,8 +115,8 @@ bool GPU::DoState(StateWrapper& sw)
   {
     m_render_state.texture_page_changed = true;
     m_render_state.texture_window_changed = true;
-    UpdateDrawingArea();
-    UpdateDrawingOffset();
+    m_drawing_area_changed = true;
+    m_drawing_offset_changed = true;
     UpdateGPUSTAT();
   }
 
@@ -664,10 +664,6 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 }
 
 void GPU::UpdateDisplay() {}
-
-void GPU::UpdateDrawingArea() {}
-
-void GPU::UpdateDrawingOffset() {}
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
 

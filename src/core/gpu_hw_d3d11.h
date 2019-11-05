@@ -30,13 +30,11 @@ public:
 
 protected:
   void UpdateDisplay() override;
-  void UpdateDrawingArea() override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) override;
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void FlushRender() override;
-  void InvalidateVRAMReadCache() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
 
 private:
@@ -64,6 +62,7 @@ private:
 
   bool CompileShaders();
   void SetDrawState(BatchRenderMode render_mode);
+  void SetScissorFromDrawingArea();
   void UploadUniformBlock(const void* data, u32 data_size);
   void SetViewport(u32 x, u32 y, u32 width, u32 height);
   void SetScissor(u32 x, u32 y, u32 width, u32 height);
@@ -117,7 +116,5 @@ private:
   GLStats m_stats = {};
   GLStats m_last_stats = {};
 
-  bool m_vram_read_texture_dirty = true;
-  bool m_drawing_area_changed = true;
   bool m_show_renderer_statistics = false;
 };

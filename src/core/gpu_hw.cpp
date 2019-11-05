@@ -41,15 +41,6 @@ void GPU_HW::UpdateSettings()
   m_true_color = m_system->GetSettings().gpu_true_color;
 }
 
-void GPU_HW::UpdateDrawingOffset()
-{
-  GPU::UpdateDrawingOffset();
-
-  m_batch_ubo_data.u_pos_offset[0] = m_drawing_offset.x;
-  m_batch_ubo_data.u_pos_offset[1] = m_drawing_offset.y;
-  m_batch_ubo_dirty = true;
-}
-
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   const u32 texpage =
@@ -231,28 +222,14 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   if (m_render_state.IsTexturePageChanged())
   {
     m_render_state.ClearTexturePageChangedFlag();
-
-    const u32 texture_page_left = m_render_state.texture_page_x;
-    const u32 texture_page_right = m_render_state.texture_page_y + TEXTURE_PAGE_WIDTH;
-    const u32 texture_page_top = m_render_state.texture_page_y;
-    const u32 texture_page_bottom = texture_page_top + TEXTURE_PAGE_HEIGHT;
-    const bool texture_page_overlaps =
-      (texture_page_left < m_drawing_area.right && texture_page_right > m_drawing_area.left &&
-       texture_page_top > m_drawing_area.bottom && texture_page_bottom < m_drawing_area.top);
-    const u32 texture_palette_left = m_render_state.texture_palette_x;
-    const u32 texture_palette_right = m_render_state.texture_palette_x + 256;
-    const bool texture_palette_overlaps =
-      m_render_state.IsUsingPalette() && texture_palette_left < m_drawing_area.right &&
-      texture_palette_right > m_drawing_area.left && m_render_state.texture_palette_y < m_drawing_area.bottom &&
-      m_render_state.texture_palette_y >= m_drawing_area.top;
-
-    // we only need to update the copy texture if the render area intersects with the texture page
-    if (texture_page_overlaps || texture_palette_overlaps)
+    if (m_vram_dirty_rect.Valid() && (m_render_state.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
+                                      m_render_state.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
     {
-      Log_WarningPrintf("Invalidating VRAM read cache due to drawing area overlap");
       if (!IsFlushed())
         FlushRender();
-      InvalidateVRAMReadCache();
+
+      Log_WarningPrintf("Invalidating VRAM read cache due to drawing area overlap");
+      m_vram_read_texture_dirty = true;
     }
   }
 
@@ -267,7 +244,8 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     const bool buffer_overflow = GetBatchVertexSpace() < max_added_vertices;
     if (buffer_overflow || rc_primitive == BatchPrimitive::LineStrip || m_batch.texture_mode != texture_mode ||
         m_batch.transparency_mode != transparency_mode || m_batch.primitive != rc_primitive ||
-        dithering_enable != m_batch.dithering || m_render_state.IsTextureWindowChanged())
+        dithering_enable != m_batch.dithering || m_drawing_area_changed || m_drawing_offset_changed ||
+        m_render_state.IsTextureWindowChanged())
     {
       FlushRender();
     }
@@ -279,6 +257,14 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
     m_batch_ubo_data.u_src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];
     m_batch_ubo_data.u_dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
+    m_batch_ubo_dirty = true;
+  }
+
+  if (m_drawing_offset_changed)
+  {
+    m_drawing_offset_changed = false;
+    m_batch_ubo_data.u_pos_offset[0] = m_drawing_offset.x;
+    m_batch_ubo_data.u_pos_offset[1] = m_drawing_offset.y;
     m_batch_ubo_dirty = true;
   }
 

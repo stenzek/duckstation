@@ -102,11 +102,9 @@ protected:
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
-  virtual void UpdateDrawingOffset() override;
-
-  virtual void InvalidateVRAMReadCache() = 0;
-
   virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
+
+  void InvalidateVRAMReadTexture() { m_vram_read_texture_dirty = true; }
 
   u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
@@ -134,6 +132,10 @@ protected:
   BatchConfig m_batch = {};
   BatchUBOData m_batch_ubo_data = {};
   bool m_batch_ubo_dirty = true;
+
+  // Bounding box of VRAM area that the GPU has drawn into.
+  Common::Rectangle<u32> m_vram_dirty_rect;
+  bool m_vram_read_texture_dirty = false;
 
 private:
   static BatchPrimitive GetPrimitiveForCommand(RenderCommand rc);

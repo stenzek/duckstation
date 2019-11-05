@@ -107,7 +107,7 @@ void GPU_HW_D3D11::RestoreGraphicsAPIState()
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), nullptr);
   m_context->RSSetState(m_cull_none_rasterizer_state.Get());
   SetViewport(0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
-  m_drawing_area_changed = true;
+  SetScissorFromDrawingArea();
   m_batch_ubo_dirty = true;
 }
 
@@ -170,11 +170,6 @@ void GPU_HW_D3D11::DrawRendererStatsWindow()
   }
 
   ImGui::End();
-}
-
-void GPU_HW_D3D11::InvalidateVRAMReadCache()
-{
-  m_vram_read_texture_dirty = true;
 }
 
 void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
@@ -536,12 +531,8 @@ void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
   if (m_drawing_area_changed)
   {
     m_drawing_area_changed = false;
-
-    int left, top, right, bottom;
-    CalcScissorRect(&left, &top, &right, &bottom);
-
-    CD3D11_RECT rc(left, top, right, bottom);
-    m_context->RSSetScissorRects(1, &rc);
+    m_vram_dirty_rect.Include(m_drawing_area);
+    SetScissorFromDrawingArea();
   }
 
   if (m_batch_ubo_dirty)
@@ -549,11 +540,18 @@ void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
     UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
     m_batch_ubo_dirty = false;
   }
+
+  if (m_vram_read_texture_dirty)
+    UpdateVRAMReadTexture();
 }
 
-void GPU_HW_D3D11::UpdateDrawingArea()
+void GPU_HW_D3D11::SetScissorFromDrawingArea()
 {
-  m_drawing_area_changed = true;
+  int left, top, right, bottom;
+  CalcScissorRect(&left, &top, &right, &bottom);
+
+  CD3D11_RECT rc(left, top, right, bottom);
+  m_context->RSSetScissorRects(1, &rc);
 }
 
 void GPU_HW_D3D11::UpdateDisplay()
@@ -659,7 +657,7 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   DrawUtilityShader(m_fill_pixel_shader.Get(), uniforms, sizeof(uniforms));
 
   RestoreGraphicsAPIState();
-  InvalidateVRAMReadCache();
+  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
@@ -678,7 +676,7 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
   DrawUtilityShader(m_vram_write_pixel_shader.Get(), uniforms, sizeof(uniforms));
 
   RestoreGraphicsAPIState();
-  InvalidateVRAMReadCache();
+  InvalidateVRAMReadTexture();
   m_stats.num_vram_writes++;
 }
 
@@ -693,13 +691,14 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
 
   const CD3D11_BOX src_box(src_x, src_y, 0, src_x + width, src_y + height, 1);
   m_context->CopySubresourceRegion(m_vram_texture, 0, dst_x, dst_y, 0, m_vram_texture, 0, &src_box);
-  InvalidateVRAMReadCache();
+  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::UpdateVRAMReadTexture()
 {
   m_stats.num_vram_read_texture_updates++;
   m_vram_read_texture_dirty = false;
+  m_vram_dirty_rect.SetInvalid();
 
   const CD3D11_BOX src_box(0, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1);
   m_context->CopySubresourceRegion(m_vram_read_texture, 0, 0, 0, 0, m_vram_texture, 0, &src_box);
@@ -710,9 +709,6 @@ void GPU_HW_D3D11::FlushRender()
   const u32 vertex_count = GetBatchVertexCount();
   if (vertex_count == 0)
     return;
-
-  if (m_vram_read_texture_dirty)
-    UpdateVRAMReadTexture();
 
   m_stats.num_batches++;
   m_stats.num_vertices += vertex_count;

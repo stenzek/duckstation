@@ -1,5 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
+#include "common/rectangle.h"
 #include "timers.h"
 #include "types.h"
 #include <array>
@@ -289,8 +290,6 @@ protected:
 
   // Rendering in the backend
   virtual void UpdateDisplay();
-  virtual void UpdateDrawingArea();
-  virtual void UpdateDrawingOffset();
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
@@ -370,6 +369,21 @@ protected:
               (static_cast<u8>(TextureMode::Palette4Bit) | static_cast<u8>(TextureMode::Palette8Bit))) != 0;
     }
 
+    /// Returns a rectangle comprising the texture page area.
+    Common::Rectangle<u32> GetTexturePageRectangle() const
+    {
+      return Common::Rectangle<u32>::FromExtents(texture_page_x, texture_page_y, TEXTURE_PAGE_WIDTH,
+                                                 TEXTURE_PAGE_HEIGHT);
+    }
+
+    /// Returns a rectangle comprising the texture palette area.
+    Common::Rectangle<u32> GetTexturePaletteRectangle() const
+    {
+      static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
+      return Common::Rectangle<u32>::FromExtents(texture_palette_x, texture_palette_y,
+                                                 palette_widths[static_cast<u8>(texture_mode) & 3], 1);
+    }
+
     bool IsTexturePageChanged() const { return texture_page_changed; }
     void ClearTexturePageChangedFlag() { texture_page_changed = false; }
 
@@ -384,17 +398,16 @@ protected:
     void SetTextureWindow(u32 value);
   } m_render_state = {};
 
-  struct DrawingArea
-  {
-    u32 left, top;
-    u32 right, bottom;
-  } m_drawing_area = {};
+  Common::Rectangle<u32> m_drawing_area;
 
   struct DrawingOffset
   {
     s32 x;
     s32 y;
   } m_drawing_offset = {};
+
+  bool m_drawing_area_changed = false;
+  bool m_drawing_offset_changed = false;
 
   struct CRTCState
   {

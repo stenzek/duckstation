@@ -73,9 +73,10 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
   glLineWidth(static_cast<float>(m_resolution_scale));
-  UpdateDrawingArea();
-
   glBindVertexArray(m_vao_id);
+
+  SetScissorFromDrawingArea();
+  m_batch_ubo_dirty = true;
 }
 
 void GPU_HW_OpenGL::UpdateSettings()
@@ -137,11 +138,6 @@ void GPU_HW_OpenGL::DrawRendererStatsWindow()
   }
 
   ImGui::End();
-}
-
-void GPU_HW_OpenGL::InvalidateVRAMReadCache()
-{
-  m_vram_read_texture_dirty = true;
 }
 
 void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
@@ -397,17 +393,8 @@ void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
   if (m_drawing_area_changed)
   {
     m_drawing_area_changed = false;
-
-    int left, top, right, bottom;
-    CalcScissorRect(&left, &top, &right, &bottom);
-
-    const int width = right - left;
-    const int height = bottom - top;
-    const int x = left;
-    const int y = m_vram_texture->GetHeight() - bottom;
-
-    Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
-    glScissor(x, y, width, height);
+    m_vram_dirty_rect.Include(m_drawing_area);
+    SetScissorFromDrawingArea();
   }
 
   if (m_batch_ubo_dirty)
@@ -415,6 +402,23 @@ void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
     UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
     m_batch_ubo_dirty = false;
   }
+
+  if (m_vram_read_texture_dirty)
+    UpdateVRAMReadTexture();
+}
+
+void GPU_HW_OpenGL::SetScissorFromDrawingArea()
+{
+  int left, top, right, bottom;
+  CalcScissorRect(&left, &top, &right, &bottom);
+
+  const int width = right - left;
+  const int height = bottom - top;
+  const int x = left;
+  const int y = m_vram_texture->GetHeight() - bottom;
+
+  Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
+  glScissor(x, y, width, height);
 }
 
 void GPU_HW_OpenGL::UploadUniformBlock(const void* data, u32 data_size)
@@ -426,11 +430,6 @@ void GPU_HW_OpenGL::UploadUniformBlock(const void* data, u32 data_size)
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_stream_buffer->GetGLBufferId(), res.buffer_offset, data_size);
 
   m_stats.num_uniform_buffer_updates++;
-}
-
-void GPU_HW_OpenGL::UpdateDrawingArea()
-{
-  m_drawing_area_changed = true;
 }
 
 void GPU_HW_OpenGL::UpdateDisplay()
@@ -616,8 +615,8 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  UpdateDrawingArea();
-  InvalidateVRAMReadCache();
+  SetScissorFromDrawingArea();
+  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
@@ -700,10 +699,10 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
   glDrawArrays(GL_TRIANGLES, 0, 3);
 
-  UpdateDrawingArea();
+  SetScissorFromDrawingArea();
 #endif
 
-  InvalidateVRAMReadCache();
+  InvalidateVRAMReadTexture();
   m_stats.num_vram_writes++;
 }
 
@@ -726,13 +725,14 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
   glEnable(GL_SCISSOR_TEST);
 
-  InvalidateVRAMReadCache();
+  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 {
   m_stats.num_vram_read_texture_updates++;
   m_vram_read_texture_dirty = false;
+  m_vram_dirty_rect.SetInvalid();
 
   // TODO: Fallback blit path, and partial updates.
   glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_read_texture->GetGLId(),
@@ -744,9 +744,6 @@ void GPU_HW_OpenGL::FlushRender()
   const u32 vertex_count = GetBatchVertexCount();
   if (vertex_count == 0)
     return;
-
-  if (m_vram_read_texture_dirty)
-    UpdateVRAMReadTexture();
 
   m_stats.num_batches++;
   m_stats.num_vertices += vertex_count;
