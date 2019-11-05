@@ -31,6 +31,7 @@
     <ClInclude Include="d3d11\shader_compiler.h">
       <Filter>d3d11</Filter>
     </ClInclude>
+    <ClInclude Include="rectangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

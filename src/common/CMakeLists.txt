@@ -16,9 +16,10 @@ add_library(common
   gl/texture.h
   jit_code_buffer.cpp
   jit_code_buffer.h
+  rectangle.h
   state_wrapper.cpp
   state_wrapper.h
-    types.h
+  types.h
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
