@@ -3,6 +3,7 @@
 #include "common/gl/texture.h"
 #include "core/host_display.h"
 #include <SDL.h>
+#include <string>
 #include <memory>
 
 class OpenGLHostDisplay final : public HostDisplay
@@ -32,6 +33,9 @@ public:
   void WindowResized() override;
 
 private:
+  const char* GetGLSLVersionString() const;
+  std::string GetGLSLVersionHeader() const;
+
   bool CreateGLContext();
   bool CreateImGuiContext();
   bool CreateGLResources();
@@ -59,6 +63,7 @@ private:
   GLuint m_display_nearest_sampler = 0;
   GLuint m_display_linear_sampler = 0;
 
+  bool m_is_gles = false;
   bool m_display_texture_changed = false;
   bool m_display_linear_filtering = false;
 };

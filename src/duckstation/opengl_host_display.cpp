@@ -1,9 +1,11 @@
 #include "opengl_host_display.h"
 #include "YBaseLib/Log.h"
 #include "icon.h"
+#include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
+#include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
 
 class OpenGLHostDisplayTexture : public HostDisplayTexture
@@ -75,7 +77,7 @@ OpenGLHostDisplay::~OpenGLHostDisplay()
 
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
-  return HostDisplay::RenderAPI::OpenGL;
+  return m_is_gles ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
 void* OpenGLHostDisplay::GetHostRenderDevice() const
@@ -148,6 +150,24 @@ void OpenGLHostDisplay::WindowResized()
   SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
 }
 
+const char* OpenGLHostDisplay::GetGLSLVersionString() const
+{
+  return m_is_gles ? "#version 300 es" : "#version 130\n";
+}
+
+std::string OpenGLHostDisplay::GetGLSLVersionHeader() const
+{
+  std::string header = GetGLSLVersionString();
+  header += "\n\n";
+  if (m_is_gles)
+  {
+    header += "precision highp float;\n";
+    header += "precision highp int;\n\n";
+  }
+
+  return header;
+}
+
 static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                      const GLchar* message, const void* userParam)
 {
@@ -170,15 +190,65 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
 
 bool OpenGLHostDisplay::CreateGLContext()
 {
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+  // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
+  static constexpr std::array<std::tuple<int, int>, 11> desktop_versions_to_try = {
+    {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}, {3, 1}, {3, 0}}};
+  static constexpr std::array<std::tuple<int, int>, 4> es_versions_to_try = {{{3, 2}, {3, 1}, {3, 0}}};
+
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  m_gl_context = SDL_GL_CreateContext(m_window);
-  if (!m_gl_context || SDL_GL_MakeCurrent(m_window, m_gl_context) != 0 || !gladLoadGL())
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifdef _DEBUG
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+
+  for (const auto [major, minor] : desktop_versions_to_try)
   {
-    Panic("Failed to create GL context");
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+
+    Log_InfoPrintf("Trying a Desktop OpenGL %d.%d context", major, minor);
+    m_gl_context = SDL_GL_CreateContext(m_window);
+    if (m_gl_context)
+    {
+      Log_InfoPrintf("Got a desktop OpenGL %d.%d context", major, minor);
+      break;
+    }
+  }
+
+  if (!m_gl_context)
+  {
+    // try es
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+
+    for (const auto [major, minor] : es_versions_to_try)
+    {
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+
+      Log_InfoPrintf("Trying a OpenGL ES %d.%d context", major, minor);
+      m_gl_context = SDL_GL_CreateContext(m_window);
+      if (m_gl_context)
+      {
+        Log_InfoPrintf("Got a OpenGL ES %d.%d context", major, minor);
+        m_is_gles = true;
+        break;
+      }
+    }
+  }
+
+  if (!m_gl_context || SDL_GL_MakeCurrent(m_window, m_gl_context) != 0)
+  {
+    Log_ErrorPrintf("Failed to create any GL context");
+    return false;
+  }
+
+  // Load GLAD.
+  const auto load_result =
+    m_is_gles ? gladLoadGLES2Loader(SDL_GL_GetProcAddress) : gladLoadGLLoader(SDL_GL_GetProcAddress);
+  if (!load_result)
+  {
+    Log_ErrorPrintf("Failed to load GL functions");
     return false;
   }
 
@@ -197,7 +267,7 @@ bool OpenGLHostDisplay::CreateGLContext()
 
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
-  if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init())
+  if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
     return false;
 
   ImGui_ImplOpenGL3_NewFrame();
@@ -208,8 +278,6 @@ bool OpenGLHostDisplay::CreateImGuiContext()
 bool OpenGLHostDisplay::CreateGLResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
-#version 330 core
-
 uniform vec4 u_src_rect;
 out vec2 v_tex0;
 
@@ -222,8 +290,6 @@ void main()
 )";
 
   static constexpr char display_fragment_shader[] = R"(
-#version 330 core
-
 uniform sampler2D samp0;
 
 in vec2 v_tex0;
@@ -235,12 +301,21 @@ void main()
 }
 )";
 
-  if (!m_display_program.Compile(fullscreen_quad_vertex_shader, display_fragment_shader))
+  if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader,
+                                 GetGLSLVersionHeader() + display_fragment_shader))
+  {
+    Log_ErrorPrintf("Failed to compile display shaders");
     return false;
+  }
 
-  m_display_program.BindFragData(0, "o_col0");
+  if (!m_is_gles)
+    m_display_program.BindFragData(0, "o_col0");
+
   if (!m_display_program.Link())
+  {
+    Log_ErrorPrintf("Failed to link display program");
     return false;
+  }
 
   m_display_program.Bind();
   m_display_program.RegisterUniform("u_src_rect");

@@ -22,7 +22,8 @@ public:
   {
     None,
     D3D11,
-    OpenGL
+    OpenGL,
+    OpenGLES
   };
 
   virtual RenderAPI GetRenderAPI() const = 0;
