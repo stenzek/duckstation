@@ -135,6 +135,7 @@ static GLuint       g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
 static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;                                // Uniforms location
 static int          g_AttribLocationVtxPos = 0, g_AttribLocationVtxUV = 0, g_AttribLocationVtxColor = 0; // Vertex attributes location
 static unsigned int g_VboHandle = 0, g_ElementsHandle = 0;
+static bool         g_IsGLES = false;
 
 // Forward Declarations
 static void ImGui_ImplOpenGL3_InitPlatformInterface();
@@ -155,13 +156,30 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     if (glsl_version == NULL)
         glsl_version = "#version 100";
+    g_IsGLES = true;
 #elif defined(IMGUI_IMPL_OPENGL_ES3)
     if (glsl_version == NULL)
         glsl_version = "#version 300 es";
+    g_IsGLES = true;
 #else
     if (glsl_version == NULL)
         glsl_version = "#version 130";
+    g_IsGLES = false;
 #endif
+
+#if defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+    if (GLAD_GL_ES_VERSION_2_0)
+    {
+      glsl_version = "#version 100";
+      g_IsGLES = true;
+    }
+    else if (GLAD_GL_ES_VERSION_3_0)
+    {
+      glsl_version = "#version 300 es";
+      g_IsGLES = true;
+    }
+#endif
+
     IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(g_GlslVersionString));
     strcpy(g_GlslVersionString, glsl_version);
     strcat(g_GlslVersionString, "\n");
@@ -217,7 +235,8 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
 #ifdef GL_POLYGON_MODE
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (!g_IsGLES)
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
 
     // Setup viewport, orthographic projection matrix
@@ -281,7 +300,9 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     GLint last_vertex_array_object; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array_object);
 #endif
 #ifdef GL_POLYGON_MODE
-    GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
+    GLint last_polygon_mode[2];
+    if (!g_IsGLES)
+      glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
 #endif
     GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
     GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
@@ -297,9 +318,13 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
     bool clip_origin_lower_left = true;
 #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
-    GLenum last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
-    if (last_clip_origin == GL_UPPER_LEFT)
-        clip_origin_lower_left = false;
+    GLenum last_clip_origin = 0;
+    if (!g_IsGLES)
+    {
+        glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
+        if (last_clip_origin == GL_UPPER_LEFT)
+            clip_origin_lower_left = false;
+    }
 #endif
 
     // Setup desired GL state
@@ -388,7 +413,8 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     if (last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
     if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
 #ifdef GL_POLYGON_MODE
-    glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
+    if (!g_IsGLES)
+      glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
 #endif
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
