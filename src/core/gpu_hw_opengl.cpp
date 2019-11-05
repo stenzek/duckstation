@@ -124,6 +124,9 @@ void GPU_HW_OpenGL::SetCapabilities()
 
   glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
   Log_InfoPrintf("Uniform buffer offset alignment: %u", m_uniform_buffer_alignment);
+
+  if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image)
+    Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
@@ -675,13 +678,31 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 {
-  // TODO: Fallback blit path.
   const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
-  const u32 flipped_y = m_vram_texture->GetHeight() - scaled_rect.top - scaled_rect.GetHeight();
+  const u32 width = scaled_rect.GetWidth();
+  const u32 height = scaled_rect.GetHeight();
+  const u32 x = scaled_rect.left;
+  const u32 y = m_vram_texture->GetHeight() - scaled_rect.top - height;
 
-  glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_rect.left, flipped_y, 0,
-                     m_vram_read_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_rect.left, flipped_y, 0,
-                     scaled_rect.GetWidth(), scaled_rect.GetHeight(), 1);
+  if (GLAD_GL_VERSION_4_3)
+  {
+    glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, x, y, 0, m_vram_read_texture->GetGLId(),
+                       GL_TEXTURE_2D, 0, x, y, 0, width, height, 1);
+  }
+  else if (GLAD_GL_EXT_copy_image)
+  {
+    glCopyImageSubDataEXT(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, x, y, 0, m_vram_read_texture->GetGLId(),
+                          GL_TEXTURE_2D, 0, x, y, 0, width, height, 1);
+  }
+  else
+  {
+    m_vram_read_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+    m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+    glDisable(GL_SCISSOR_TEST);
+    glBlitFramebuffer(x, y, x + width, y + height, x, y, x + width, y + height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glEnable(GL_SCISSOR_TEST);
+    m_vram_texture->BindFramebuffer(GL_FRAMEBUFFER);
+  }
 
   m_renderer_stats.num_vram_read_texture_updates++;
   ClearVRAMDirtyRectangle();
