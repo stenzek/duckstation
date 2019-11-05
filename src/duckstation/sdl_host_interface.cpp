@@ -866,7 +866,6 @@ void SDLHostInterface::DrawDebugMenu()
   ImGui::Separator();
 
   ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
-  ImGui::MenuItem("Show GPU Renderer Stats", nullptr, &debug_settings.show_gpu_renderer_stats);
   ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
   ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
@@ -893,8 +892,6 @@ void SDLHostInterface::DrawDebugWindows()
 
   if (debug_settings.show_gpu_state)
     m_system->GetGPU()->DrawDebugStateWindow();
-  if (debug_settings.show_gpu_renderer_stats)
-    m_system->GetGPU()->DrawRendererStatsWindow();
   if (debug_settings.show_cdrom_state)
     m_system->GetCDROM()->DrawDebugWindow();
   if (debug_settings.show_timers_state)

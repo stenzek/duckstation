@@ -33,6 +33,13 @@ public:
   virtual void UpdateSettings() override;
 
 protected:
+  enum : u32
+  {
+    VRAM_UPDATE_TEXTURE_BUFFER_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32),
+    VERTEX_BUFFER_SIZE = 1 * 1024 * 1024,
+    UNIFORM_BUFFER_SIZE = 512 * 1024
+  };
+
   struct BatchVertex
   {
     s32 x;
@@ -88,11 +95,12 @@ protected:
     float u_dst_alpha_factor;
   };
 
-  static constexpr u32 VRAM_UPDATE_TEXTURE_BUFFER_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32);
-  static constexpr u32 VERTEX_BUFFER_SIZE = 1 * 1024 * 1024;
-  static constexpr u32 MIN_BATCH_VERTEX_COUNT = 6;
-  static constexpr u32 MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(BatchVertex);
-  static constexpr u32 UNIFORM_BUFFER_SIZE = 512 * 1024;
+  struct RendererStats
+  {
+    u32 num_batches;
+    u32 num_vram_read_texture_updates;
+    u32 num_uniform_buffer_updates;
+  };
 
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
   {
@@ -112,6 +120,7 @@ protected:
   bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
 
   void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
+  void DrawRendererStats(bool is_idle_frame) override;
 
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
 
@@ -131,13 +140,25 @@ protected:
 
   BatchConfig m_batch = {};
   BatchUBOData m_batch_ubo_data = {};
-  bool m_batch_ubo_dirty = true;
 
   // Bounding box of VRAM area that the GPU has drawn into.
   Common::Rectangle<u32> m_vram_dirty_rect;
+
+  // Statistics
+  RendererStats m_renderer_stats = {};
+  RendererStats m_last_renderer_stats = {};
+
+  // Changed state
+  bool m_batch_ubo_dirty = true;
   bool m_vram_read_texture_dirty = false;
 
 private:
+  enum : u32
+  {
+    MIN_BATCH_VERTEX_COUNT = 6,
+    MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(BatchVertex)
+  };
+
   static BatchPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
   void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);

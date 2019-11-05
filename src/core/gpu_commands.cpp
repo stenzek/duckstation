@@ -236,6 +236,8 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
 
   DispatchRenderCommand(rc, num_vertices, command_ptr);
   command_ptr += total_words;
+  m_stats.num_vertices += num_vertices;
+  m_stats.num_polygons++;
   return true;
 }
 
@@ -256,6 +258,7 @@ bool GPU::HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size)
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
   FillVRAM(dst_x, dst_y, width, height, color);
+  m_stats.num_vram_fills++;
   return true;
 }
 
@@ -293,6 +296,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 comma
   FlushRender();
   UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &command_ptr[3]);
   command_ptr += num_words;
+  m_stats.num_vram_writes++;
   return true;
 }
 
@@ -332,7 +336,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
                    sizeof(u16) * width, temp.data(), true);
   }
 
-  // Is this correct?
+  m_stats.num_vram_reads++;
   return true;
 }
 
@@ -361,5 +365,6 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 comm
 
   FlushRender();
   CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+  m_stats.num_vram_copies++;
   return true;
 }

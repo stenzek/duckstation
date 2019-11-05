@@ -22,8 +22,6 @@ public:
   void RestoreGraphicsAPIState() override;
   void UpdateSettings() override;
 
-  void DrawRendererStatsWindow() override;
-
 protected:
   void UpdateDisplay() override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) override;
@@ -81,9 +79,4 @@ private:
   std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
   std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
   GL::Program m_vram_write_program;
-
-  GLStats m_stats = {};
-  GLStats m_last_stats = {};
-
-  bool m_show_renderer_statistics = false;
 };

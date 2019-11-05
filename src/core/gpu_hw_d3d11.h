@@ -26,8 +26,6 @@ public:
   void RestoreGraphicsAPIState() override;
   void UpdateSettings() override;
 
-  void DrawRendererStatsWindow() override;
-
 protected:
   void UpdateDisplay() override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) override;
@@ -38,16 +36,6 @@ protected:
   void MapBatchVertexPointer(u32 required_vertices) override;
 
 private:
-  struct GLStats
-  {
-    u32 num_batches;
-    u32 num_vertices;
-    u32 num_vram_reads;
-    u32 num_vram_writes;
-    u32 num_vram_read_texture_updates;
-    u32 num_uniform_buffer_updates;
-  };
-
   void SetCapabilities();
   bool CreateFramebuffer();
   void ClearFramebuffer();
@@ -112,9 +100,4 @@ private:
   ComPtr<ID3D11PixelShader> m_fill_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_write_pixel_shader;
   std::array<std::array<ComPtr<ID3D11PixelShader>, 2>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
-
-  GLStats m_stats = {};
-  GLStats m_last_stats = {};
-
-  bool m_show_renderer_statistics = false;
 };

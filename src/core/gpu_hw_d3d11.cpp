@@ -6,7 +6,6 @@
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "host_interface.h"
-#include "imgui.h"
 #include "system.h"
 Log_SetChannel(GPU_HW_D3D11);
 
@@ -118,58 +117,6 @@ void GPU_HW_D3D11::UpdateSettings()
   CreateFramebuffer();
   CompileShaders();
   UpdateDisplay();
-}
-
-void GPU_HW_D3D11::DrawRendererStatsWindow()
-{
-  GPU_HW::DrawRendererStatsWindow();
-
-  ImGui::SetNextWindowSize(ImVec2(300.0f, 150.0f), ImGuiCond_FirstUseEver);
-
-  const bool is_null_frame = m_stats.num_batches == 0;
-  if (!is_null_frame)
-  {
-    m_last_stats = m_stats;
-    m_stats = {};
-  }
-
-  if (ImGui::Begin("GPU Renderer Statistics", &m_show_renderer_statistics))
-  {
-    ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f);
-
-    ImGui::TextUnformatted("GPU Active In This Frame: ");
-    ImGui::NextColumn();
-    ImGui::Text("%s", is_null_frame ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Reads: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vram_reads);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Writes: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vram_writes);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Read Texture Updates:");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vram_read_texture_updates);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Batches Drawn:");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_batches);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Vertices Drawn: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vertices);
-    ImGui::NextColumn();
-  }
-
-  ImGui::End();
 }
 
 void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
@@ -449,7 +396,7 @@ void GPU_HW_D3D11::UploadUniformBlock(const void* data, u32 data_size)
   m_context->VSSetConstantBuffers(0, 1, m_uniform_stream_buffer.GetD3DBufferArray());
   m_context->PSSetConstantBuffers(0, 1, m_uniform_stream_buffer.GetD3DBufferArray());
 
-  m_stats.num_uniform_buffer_updates++;
+  m_renderer_stats.num_uniform_buffer_updates++;
 }
 
 void GPU_HW_D3D11::SetViewport(u32 x, u32 y, u32 width, u32 height)
@@ -640,7 +587,6 @@ void GPU_HW_D3D11::UpdateDisplay()
 void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 {
   Log_WarningPrintf("VRAM readback not implemented");
-  m_stats.num_vram_reads++;
 }
 
 void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
@@ -677,7 +623,6 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
   RestoreGraphicsAPIState();
   InvalidateVRAMReadTexture();
-  m_stats.num_vram_writes++;
 }
 
 void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
@@ -696,7 +641,7 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
 
 void GPU_HW_D3D11::UpdateVRAMReadTexture()
 {
-  m_stats.num_vram_read_texture_updates++;
+  m_renderer_stats.num_vram_read_texture_updates++;
   m_vram_read_texture_dirty = false;
   m_vram_dirty_rect.SetInvalid();
 
@@ -710,8 +655,7 @@ void GPU_HW_D3D11::FlushRender()
   if (vertex_count == 0)
     return;
 
-  m_stats.num_batches++;
-  m_stats.num_vertices += vertex_count;
+  m_renderer_stats.num_batches++;
 
   m_vertex_stream_buffer.Unmap(m_context.Get(), vertex_count * sizeof(BatchVertex));
   m_batch_start_vertex_ptr = nullptr;

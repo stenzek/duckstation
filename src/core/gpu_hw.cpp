@@ -3,6 +3,7 @@
 #include "YBaseLib/Log.h"
 #include "settings.h"
 #include "system.h"
+#include <imgui.h>
 #include <sstream>
 Log_SetChannel(GPU_HW);
 
@@ -290,4 +291,38 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   }
 
   LoadVertices(rc, num_vertices, command_ptr);
+}
+
+void GPU_HW::DrawRendererStats(bool is_idle_frame)
+{
+  if (!is_idle_frame)
+  {
+    m_last_renderer_stats = m_renderer_stats;
+    m_renderer_stats = {};
+  }
+
+  if (ImGui::CollapsingHeader("Renderer Statistics", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    const auto& stats = m_last_renderer_stats;
+
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, 200.0f);
+
+    ImGui::TextUnformatted("Batches Drawn:");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_batches);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Read Texture Updates:");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_vram_read_texture_updates);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("Uniform Buffer Updates: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_uniform_buffer_updates);
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+  }
 }

@@ -104,7 +104,6 @@ public:
 
   // Render statistics debug window.
   void DrawDebugStateWindow();
-  virtual void DrawRendererStatsWindow();
 
   // MMIO access
   u32 ReadRegister(u32 offset);
@@ -289,13 +288,14 @@ protected:
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering in the backend
-  virtual void UpdateDisplay();
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   virtual void FlushRender();
+  virtual void UpdateDisplay();
+  virtual void DrawRendererStats(bool is_idle_frame);
 
   HostDisplay* m_host_display = nullptr;
   System* m_system = nullptr;
@@ -460,6 +460,18 @@ protected:
 
   std::vector<u32> m_GP0_buffer;
   std::deque<u32> m_GPUREAD_buffer;
+
+  struct Stats
+  {
+    u32 num_vram_reads;
+    u32 num_vram_fills;
+    u32 num_vram_writes;
+    u32 num_vram_copies;
+    u32 num_vertices;
+    u32 num_polygons;
+  };
+  Stats m_stats = {};
+  Stats m_last_stats = {};
 
 private:
   using GP0CommandHandler = bool (GPU::*)(const u32*&, u32);

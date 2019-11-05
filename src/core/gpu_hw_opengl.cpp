@@ -4,7 +4,6 @@
 #include "YBaseLib/String.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
-#include "imgui.h"
 #include "system.h"
 Log_SetChannel(GPU_HW_OpenGL);
 
@@ -86,58 +85,6 @@ void GPU_HW_OpenGL::UpdateSettings()
   CreateFramebuffer();
   CompilePrograms();
   UpdateDisplay();
-}
-
-void GPU_HW_OpenGL::DrawRendererStatsWindow()
-{
-  GPU_HW::DrawRendererStatsWindow();
-
-  ImGui::SetNextWindowSize(ImVec2(300.0f, 150.0f), ImGuiCond_FirstUseEver);
-
-  const bool is_null_frame = m_stats.num_batches == 0;
-  if (!is_null_frame)
-  {
-    m_last_stats = m_stats;
-    m_stats = {};
-  }
-
-  if (ImGui::Begin("GPU Renderer Statistics", &m_show_renderer_statistics))
-  {
-    ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f);
-
-    ImGui::TextUnformatted("GPU Active In This Frame: ");
-    ImGui::NextColumn();
-    ImGui::Text("%s", is_null_frame ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Reads: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vram_reads);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Writes: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vram_writes);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Read Texture Updates:");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vram_read_texture_updates);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Batches Drawn:");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_batches);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Vertices Drawn: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", m_last_stats.num_vertices);
-    ImGui::NextColumn();
-  }
-
-  ImGui::End();
 }
 
 void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
@@ -429,7 +376,7 @@ void GPU_HW_OpenGL::UploadUniformBlock(const void* data, u32 data_size)
 
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_stream_buffer->GetGLBufferId(), res.buffer_offset, data_size);
 
-  m_stats.num_uniform_buffer_updates++;
+  m_renderer_stats.num_uniform_buffer_updates++;
 }
 
 void GPU_HW_OpenGL::UpdateDisplay()
@@ -593,8 +540,6 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
     source_ptr -= source_stride;
     dst_ptr += dst_stride;
   }
-
-  m_stats.num_vram_reads++;
 }
 
 void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
@@ -703,7 +648,6 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 #endif
 
   InvalidateVRAMReadTexture();
-  m_stats.num_vram_writes++;
 }
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
@@ -730,7 +674,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 {
-  m_stats.num_vram_read_texture_updates++;
+  m_renderer_stats.num_vram_read_texture_updates++;
   m_vram_read_texture_dirty = false;
   m_vram_dirty_rect.SetInvalid();
 
@@ -745,8 +689,7 @@ void GPU_HW_OpenGL::FlushRender()
   if (vertex_count == 0)
     return;
 
-  m_stats.num_batches++;
-  m_stats.num_vertices += vertex_count;
+  m_renderer_stats.num_batches++;
 
   m_vertex_stream_buffer->Unmap(vertex_count * sizeof(BatchVertex));
   m_vertex_stream_buffer->Bind();

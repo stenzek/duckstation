@@ -757,11 +757,65 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
 void GPU::DrawDebugStateWindow()
 {
   ImGui::SetNextWindowSize(ImVec2(450, 550), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("GPU State", &m_system->GetSettings().debugging.show_gpu_state))
+  if (!ImGui::Begin("GPU", &m_system->GetSettings().debugging.show_gpu_state))
   {
     ImGui::End();
     return;
   }
+
+  const bool is_idle_frame = m_stats.num_polygons == 0;
+  if (!is_idle_frame)
+  {
+    m_last_stats = m_stats;
+    m_stats = {};
+  }
+
+  if (ImGui::CollapsingHeader("Statistics", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    const Stats& stats = m_last_stats;
+
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, 200.0f);
+
+    ImGui::TextUnformatted("Idle Frame: ");
+    ImGui::NextColumn();
+    ImGui::Text("%s", is_idle_frame ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Reads: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_vram_reads);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Fills: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_vram_fills);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Writes: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_vram_writes);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("VRAM Copies: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_vram_copies);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("Vertices Processed: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_vertices);
+    ImGui::NextColumn();
+
+    ImGui::TextUnformatted("Polygons Drawn: ");
+    ImGui::NextColumn();
+    ImGui::Text("%u", stats.num_polygons);
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+  }
+
+  DrawRendererStats(is_idle_frame);
 
   if (ImGui::CollapsingHeader("CRTC", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -803,4 +857,4 @@ void GPU::DrawDebugStateWindow()
   ImGui::End();
 }
 
-void GPU::DrawRendererStatsWindow() {}
+void GPU::DrawRendererStats(bool is_idle_frame) {}
