@@ -11,6 +11,7 @@ GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}
 
 GPU_HW_OpenGL::~GPU_HW_OpenGL()
 {
+  // TODO: Destroy objects...
   if (m_host_display)
   {
     m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
@@ -21,13 +22,14 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
 bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* dma,
                                InterruptController* interrupt_controller, Timers* timers)
 {
-  if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
+  if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL &&
+      host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGLES)
   {
     Log_ErrorPrintf("Host render API type is incompatible");
     return false;
   }
 
-  SetCapabilities();
+  SetCapabilities(host_display);
 
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
@@ -108,8 +110,10 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
   return std::make_tuple(x, static_cast<s32>(static_cast<s32>(VRAM_HEIGHT) - y));
 }
 
-void GPU_HW_OpenGL::SetCapabilities()
+void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 {
+  m_is_gles = (host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES);
+
   GLint max_texture_size = VRAM_WIDTH;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   Log_InfoPrintf("Max texture size: %dx%d", max_texture_size, max_texture_size);
@@ -128,9 +132,17 @@ void GPU_HW_OpenGL::SetCapabilities()
   if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image)
     Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
 
-  glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
-  if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
-    Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
+  m_supports_texture_buffer = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+  if (m_uniform_stream_buffer)
+  {
+    glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
+    if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
+      Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
+  }
+  else
+  {
+    Log_WarningPrintf("Texture buffers are not supported, VRAM writes will be slower.");
+  }
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
@@ -234,16 +246,19 @@ void GPU_HW_OpenGL::CreateTextureBuffer()
   if (!m_texture_stream_buffer)
     Panic("Failed to create texture stream buffer");
 
-  glGenTextures(1, &m_texture_buffer_r16ui_texture);
-  glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
-  glTexBuffer(GL_TEXTURE_BUFFER, GL_R16UI, m_texture_stream_buffer->GetGLBufferId());
+  if (m_max_texture_buffer_size > 0)
+  {
+    glGenTextures(1, &m_texture_buffer_r16ui_texture);
+    glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R16UI, m_texture_stream_buffer->GetGLBufferId());
+  }
 
   m_texture_stream_buffer->Unbind();
 }
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
-  GPU_HW_ShaderGen shadergen(GPU_HW_ShaderGen::API::OpenGL, m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -269,7 +284,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
           prog.BindAttribute(3, "a_texpage");
         }
 
-        prog.BindFragData(0, "o_col0");
+        if (!m_is_gles)
+          prog.BindFragData(0, "o_col0");
 
         if (!prog.Link())
           return false;
@@ -295,7 +311,9 @@ bool GPU_HW_OpenGL::CompilePrograms()
       if (!prog.Compile(vs, fs))
         return false;
 
-      prog.BindFragData(0, "o_col0");
+      if (!m_is_gles)
+        prog.BindFragData(0, "o_col0");
+
       if (!prog.Link())
         return false;
 
@@ -306,20 +324,25 @@ bool GPU_HW_OpenGL::CompilePrograms()
     }
   }
 
-  if (!m_vram_write_program.Compile(shadergen.GenerateScreenQuadVertexShader(),
-                                    shadergen.GenerateVRAMWriteFragmentShader()))
+  if (m_supports_texture_buffer)
   {
-    return false;
+    if (!m_vram_write_program.Compile(shadergen.GenerateScreenQuadVertexShader(),
+                                      shadergen.GenerateVRAMWriteFragmentShader()))
+    {
+      return false;
+    }
+
+    if (!m_is_gles)
+      m_vram_write_program.BindFragData(0, "o_col0");
+
+    if (!m_vram_write_program.Link())
+      return false;
+
+    m_vram_write_program.BindUniformBlock("UBOBlock", 1);
+
+    m_vram_write_program.Bind();
+    m_vram_write_program.Uniform1i("samp0", 0);
   }
-
-  m_vram_write_program.BindFragData(0, "o_col0");
-  if (!m_vram_write_program.Link())
-    return false;
-
-  m_vram_write_program.BindUniformBlock("UBOBlock", 1);
-
-  m_vram_write_program.Bind();
-  m_vram_write_program.Uniform1i("samp0", 0);
 
   return true;
 }

@@ -240,7 +240,7 @@ bool GPU_HW_D3D11::CreateBatchInputLayout()
      {"ATTR", 3, DXGI_FORMAT_R32_SINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
 
   // we need a vertex shader...
-  GPU_HW_ShaderGen shadergen(GPU_HW_ShaderGen::API::D3D11, m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
   ComPtr<ID3DBlob> vs_bytecode = D3D11::ShaderCompiler::CompileShader(
     D3D11::ShaderCompiler::Type::Vertex, m_device->GetFeatureLevel(), shadergen.GenerateBatchVertexShader(true), false);
   if (!vs_bytecode)
@@ -318,7 +318,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
 bool GPU_HW_D3D11::CompileShaders()
 {
   const bool debug = false;
-  GPU_HW_ShaderGen shadergen(GPU_HW_ShaderGen::API::D3D11, m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
 
   m_screen_quad_vertex_shader = D3D11::ShaderCompiler::CompileAndCreateVertexShader(
     m_device.Get(), shadergen.GenerateScreenQuadVertexShader(), debug);

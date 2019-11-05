@@ -1,7 +1,9 @@
 #include "gpu_hw_shadergen.h"
+#include <glad.h>
 
-GPU_HW_ShaderGen::GPU_HW_ShaderGen(API backend, u32 resolution_scale, bool true_color)
-  : m_backend(backend), m_resolution_scale(resolution_scale), m_true_color(true_color), m_glsl(backend != API::D3D11)
+GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color)
+  : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
+    m_glsl(render_api != HostDisplay::RenderAPI::D3D11)
 {
 }
 
@@ -9,20 +11,37 @@ GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
 
 static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
 {
-  if (enabled)
-    ss << "#define " << name << " 1\n";
-  else
-    ss << "/* #define " << name << " 0 */\n";
+  ss << "#define " << name << " " << BoolToUInt32(enabled) << "\n";
 }
 
 void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 {
-  if (m_backend == API::OpenGL)
+  if (m_render_api == HostDisplay::RenderAPI::OpenGL)
   {
     ss << "#version 330 core\n\n";
     ss << "#define API_OPENGL 1\n";
   }
-  else if (m_backend == API::D3D11)
+  else if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
+  {
+    if (GLAD_GL_ES_VERSION_3_2)
+      ss << "#version 320 es\n\n";
+    else if (GLAD_GL_ES_VERSION_3_1)
+      ss << "#version 310 es\n\n";
+    else
+      ss << "#version 300 es\n\n";
+
+    ss << "precision highp float;\n";
+    ss << "precision highp int;\n";
+    ss << "precision highp sampler2D;\n";
+
+    if (GLAD_GL_ES_VERSION_3_2)
+      ss << "precision highp usamplerBuffer;\n";
+
+    ss << "\n";
+    ss << "#define API_OPENGL 1\n";
+    ss << "#define API_OPENGL_ES 1\n";
+  }
+  else if (m_render_api == HostDisplay::RenderAPI::D3D11)
   {
     ss << "#define API_D3D11 1\n";
   }
@@ -67,7 +86,7 @@ void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
 
 float fixYCoord(float y)
 {
-#if API_OPENGL
+#if API_OPENGL || API_OPENGL_ES
   return 1.0 - RCP_VRAM_SIZE.y - y;
 #else
   return y;
@@ -76,7 +95,7 @@ float fixYCoord(float y)
 
 int fixYCoord(int y)
 {
-#if API_OPENGL
+#if API_OPENGL || API_OPENGL_ES
   return VRAM_SIZE.y - y - 1;
 #else
   return y;
@@ -447,7 +466,12 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
 
   #if TEXTURED
     int4 texcol = SampleFromVRAM(v_texpage, v_tex0);
-    if (all(texcol == int4(0.0, 0.0, 0.0, 0.0)))
+    #if GLSL
+      bool transparent = (texcol == int4(0.0, 0.0, 0.0, 0.0));
+    #else
+      bool transparent = (all(texcol == int4(0.0, 0.0, 0.0, 0.0)));
+    #endif
+    if (transparent)
       discard;
 
     // Grab semitransparent bit from the texture color.
@@ -565,7 +589,7 @@ std::string GPU_HW_ShaderGen::GenerateScreenQuadVertexShader()
 {
   v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
   v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-  #if API_OPENGL
+  #if API_OPENGL || API_OPENGL_ES
     v_pos.y = -gl_Position.y;
   #endif
 }
@@ -695,7 +719,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   int2 coords = int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
   int2 offset = coords - u_base_coords;
 
-  #if API_OPENGL
+  #if API_OPENGL || API_OPENGL_ES
     // Lower-left origin flip for OpenGL
     offset.y = u_size.y - offset.y - 1;
   #endif

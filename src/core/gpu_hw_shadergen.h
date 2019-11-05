@@ -1,22 +1,14 @@
 #pragma once
 #include "gpu_hw.h"
+#include "host_display.h"
 #include <sstream>
 #include <string>
 
 class GPU_HW_ShaderGen
 {
 public:
-  enum class API
-  {
-    OpenGL,
-    D3D11
-  };
-
-public:
-  GPU_HW_ShaderGen(API backend, u32 resolution_scale, bool true_color);
+  GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color);
   ~GPU_HW_ShaderGen();
-
-  void Init(API backend, u32 resolution_scale, bool true_color);
 
   std::string GenerateBatchVertexShader(bool textured);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPU::TextureMode texture_mode,
@@ -28,10 +20,11 @@ public:
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
   std::string GenerateVRAMWriteFragmentShader();
 
-  API m_backend;
+  HostDisplay::RenderAPI m_render_api;
   u32 m_resolution_scale;
   bool m_true_color;
   bool m_glsl;
+  bool m_glsl_es;
 
 private:
   void WriteHeader(std::stringstream& ss);

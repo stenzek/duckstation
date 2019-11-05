@@ -45,7 +45,7 @@ private:
 
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
-  void SetCapabilities();
+  void SetCapabilities(HostDisplay* host_display);
   void CreateFramebuffer();
   void ClearFramebuffer();
   void DestroyFramebuffer();
@@ -74,10 +74,13 @@ private:
   std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
   GLuint m_texture_buffer_r16ui_texture = 0;
 
-  u32 m_uniform_buffer_alignment = 1;
-  u32 m_max_texture_buffer_size = 0;
-
   std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
   std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
   GL::Program m_vram_write_program;
+
+  u32 m_uniform_buffer_alignment = 1;
+  u32 m_max_texture_buffer_size = 0;
+
+  bool m_is_gles = false;
+  bool m_supports_texture_buffer = false;
 };
