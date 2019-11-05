@@ -169,7 +169,7 @@ void GPU_HW_OpenGL::CreateFramebuffer()
     std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
 
   m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-  m_vram_read_texture_dirty = true;
+  SetFullVRAMDirtyRectangle();
 }
 
 void GPU_HW_OpenGL::ClearFramebuffer()
@@ -178,7 +178,7 @@ void GPU_HW_OpenGL::ClearFramebuffer()
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_SCISSOR_TEST);
-  m_vram_read_texture_dirty = true;
+  SetFullVRAMDirtyRectangle();
 }
 
 void GPU_HW_OpenGL::DestroyFramebuffer()
@@ -352,9 +352,6 @@ void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
     UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
     m_batch_ubo_dirty = false;
   }
-
-  if (m_vram_read_texture_dirty)
-    UpdateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::SetScissorFromDrawingArea()
@@ -678,13 +675,16 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 {
-  m_renderer_stats.num_vram_read_texture_updates++;
-  m_vram_read_texture_dirty = false;
-  m_vram_dirty_rect.SetInvalid();
+  // TODO: Fallback blit path.
+  const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
+  const u32 flipped_y = m_vram_texture->GetHeight() - scaled_rect.top - scaled_rect.GetHeight();
 
-  // TODO: Fallback blit path, and partial updates.
-  glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_read_texture->GetGLId(),
-                     GL_TEXTURE_2D, 0, 0, 0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1);
+  glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_rect.left, flipped_y, 0,
+                     m_vram_read_texture->GetGLId(), GL_TEXTURE_2D, 0, scaled_rect.left, flipped_y, 0,
+                     scaled_rect.GetWidth(), scaled_rect.GetHeight(), 1);
+
+  m_renderer_stats.num_vram_read_texture_updates++;
+  ClearVRAMDirtyRectangle();
 }
 
 void GPU_HW_OpenGL::FlushRender()

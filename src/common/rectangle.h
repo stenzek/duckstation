@@ -87,6 +87,33 @@ struct Rectangle
 
 #undef RELATIONAL_OPERATOR
 
+  // Arithmetic operators.
+#define ARITHMETIC_OPERATOR(op)                                                                                        \
+  constexpr Rectangle& operator op##=(const T amount)                                                                  \
+  {                                                                                                                    \
+    left op## = amount;                                                                                                \
+    top op## = amount;                                                                                                 \
+    right op## = amount;                                                                                               \
+    bottom op## = amount;                                                                                              \
+  }                                                                                                                    \
+  constexpr Rectangle operator op(const T amount)                                                                      \
+  {                                                                                                                    \
+    return Rectangle(left op amount, top op amount, right op amount, bottom op amount);                                \
+  }
+
+  ARITHMETIC_OPERATOR(+);
+  ARITHMETIC_OPERATOR(-);
+  ARITHMETIC_OPERATOR(*);
+  ARITHMETIC_OPERATOR(/);
+  ARITHMETIC_OPERATOR(%);
+  ARITHMETIC_OPERATOR(>>);
+  ARITHMETIC_OPERATOR(<<);
+  ARITHMETIC_OPERATOR(|);
+  ARITHMETIC_OPERATOR(&);
+  ARITHMETIC_OPERATOR(^);
+
+#undef ARITHMETIC_OPERATOR
+
 #ifdef _WINDEF_
   /// Casts this rectangle to a Win32 RECT structure if compatible.
   template<bool _ = true, typename = typename std::enable_if_t<std::is_same_v<T, s32> && _>>

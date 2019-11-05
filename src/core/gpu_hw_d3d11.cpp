@@ -184,7 +184,7 @@ bool GPU_HW_D3D11::CreateFramebuffer()
   }
 
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), nullptr);
-  m_vram_read_texture_dirty = true;
+  SetFullVRAMDirtyRectangle();
   return true;
 }
 
@@ -192,7 +192,7 @@ void GPU_HW_D3D11::ClearFramebuffer()
 {
   static constexpr std::array<float, 4> color = {};
   m_context->ClearRenderTargetView(m_vram_texture.GetD3DRTV(), color.data());
-  m_vram_read_texture_dirty = true;
+  SetFullVRAMDirtyRectangle();
 }
 
 void GPU_HW_D3D11::DestroyFramebuffer()
@@ -491,9 +491,6 @@ void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
     UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
     m_batch_ubo_dirty = false;
   }
-
-  if (m_vram_read_texture_dirty)
-    UpdateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::SetScissorFromDrawingArea()
@@ -648,12 +645,13 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
 
 void GPU_HW_D3D11::UpdateVRAMReadTexture()
 {
-  m_renderer_stats.num_vram_read_texture_updates++;
-  m_vram_read_texture_dirty = false;
-  m_vram_dirty_rect.SetInvalid();
+  const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
+  const CD3D11_BOX src_box(scaled_rect.left, scaled_rect.top, 0, scaled_rect.right, scaled_rect.bottom, 1);
+  m_context->CopySubresourceRegion(m_vram_read_texture, 0, scaled_rect.left, scaled_rect.top, 0, m_vram_texture, 0,
+                                   &src_box);
 
-  const CD3D11_BOX src_box(0, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1);
-  m_context->CopySubresourceRegion(m_vram_read_texture, 0, 0, 0, 0, m_vram_texture, 0, &src_box);
+  m_renderer_stats.num_vram_read_texture_updates++;
+  ClearVRAMDirtyRectangle();
 }
 
 void GPU_HW_D3D11::FlushRender()

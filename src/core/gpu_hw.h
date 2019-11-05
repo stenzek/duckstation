@@ -30,6 +30,7 @@ public:
   virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
                           InterruptController* interrupt_controller, Timers* timers) override;
   virtual void Reset() override;
+  virtual bool DoState(StateWrapper& sw) override;
   virtual void UpdateSettings() override;
 
 protected:
@@ -111,6 +112,14 @@ protected:
   }
 
   virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
+  virtual void UpdateVRAMReadTexture() = 0;
+
+  void SetFullVRAMDirtyRectangle()
+  {
+    m_vram_dirty_rect.Set(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    m_render_state.SetTexturePageChanged();
+  }
+  void ClearVRAMDirtyRectangle() { m_vram_dirty_rect.SetInvalid(); }
 
   u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
@@ -151,7 +160,6 @@ protected:
 
   // Changed state
   bool m_batch_ubo_dirty = true;
-  bool m_vram_read_texture_dirty = false;
 
 private:
   enum : u32

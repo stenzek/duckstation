@@ -1,6 +1,7 @@
 #include "gpu_hw.h"
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
+#include "common/state_wrapper.h"
 #include "settings.h"
 #include "system.h"
 #include <imgui.h>
@@ -10,15 +11,6 @@ Log_SetChannel(GPU_HW);
 GPU_HW::GPU_HW() = default;
 
 GPU_HW::~GPU_HW() = default;
-
-void GPU_HW::Reset()
-{
-  GPU::Reset();
-
-  m_batch = {};
-  m_batch_ubo_data = {};
-  m_batch_ubo_dirty = true;
-}
 
 bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
                         Timers* timers)
@@ -30,6 +22,29 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Int
   m_system->GetSettings().gpu_resolution_scale = m_resolution_scale;
   m_system->GetSettings().max_gpu_resolution_scale = m_max_resolution_scale;
   m_true_color = m_system->GetSettings().gpu_true_color;
+  return true;
+}
+
+void GPU_HW::Reset()
+{
+  GPU::Reset();
+
+  m_batch = {};
+  m_batch_ubo_data = {};
+  m_batch_ubo_dirty = true;
+
+  SetFullVRAMDirtyRectangle();
+}
+
+bool GPU_HW::DoState(StateWrapper& sw)
+{
+  if (!GPU::DoState(sw))
+    return false;
+
+  // invalidate the whole VRAM read texture when loading state
+  if (sw.IsReading())
+    SetFullVRAMDirtyRectangle();
+
   return true;
 }
 
@@ -228,11 +243,11 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       if (m_vram_dirty_rect.Valid() && (m_render_state.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
                                         m_render_state.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
       {
+        Log_WarningPrintf("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())
           FlushRender();
 
-        Log_WarningPrintf("Invalidating VRAM read cache due to drawing area overlap");
-        m_vram_read_texture_dirty = true;
+        UpdateVRAMReadTexture();
       }
     }
 

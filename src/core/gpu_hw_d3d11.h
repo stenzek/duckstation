@@ -34,13 +34,13 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void FlushRender() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
+  void UpdateVRAMReadTexture() override;
 
 private:
   void SetCapabilities();
   bool CreateFramebuffer();
   void ClearFramebuffer();
   void DestroyFramebuffer();
-  void UpdateVRAMReadTexture();
 
   bool CreateVertexBuffer();
   bool CreateUniformBuffer();

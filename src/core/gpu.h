@@ -385,9 +385,11 @@ protected:
     }
 
     bool IsTexturePageChanged() const { return texture_page_changed; }
+    void SetTexturePageChanged() { texture_page_changed = true; }
     void ClearTexturePageChangedFlag() { texture_page_changed = false; }
 
     bool IsTextureWindowChanged() const { return texture_window_changed; }
+    void SetTextureWindowChanged() { texture_window_changed = true; }
     void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
 
     void SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1);
