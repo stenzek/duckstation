@@ -547,6 +547,8 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 
 void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  GPU_HW::FillVRAM(x, y, width, height, color);
+
   // scale coordinates
   x *= m_resolution_scale;
   y *= m_resolution_scale;
@@ -564,11 +566,12 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   glClear(GL_COLOR_BUFFER_BIT);
 
   SetScissorFromDrawingArea();
-  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
+  GPU_HW::UpdateVRAM(x, y, width, height, data);
+
   const u32 num_pixels = width * height;
 #if 0
   const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
@@ -649,12 +652,12 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
   SetScissorFromDrawingArea();
 #endif
-
-  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+
   src_x *= m_resolution_scale;
   src_y *= m_resolution_scale;
   dst_x *= m_resolution_scale;
@@ -671,8 +674,6 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
   glEnable(GL_SCISSOR_TEST);
-
-  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()

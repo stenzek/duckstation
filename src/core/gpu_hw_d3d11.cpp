@@ -595,6 +595,8 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 
 void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  GPU_HW::FillVRAM(x, y, width, height, color);
+
   // drop precision unless true colour is enabled
   if (!m_true_color)
     color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
@@ -607,11 +609,12 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   DrawUtilityShader(m_fill_pixel_shader.Get(), uniforms, sizeof(uniforms));
 
   RestoreGraphicsAPIState();
-  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
+  GPU_HW::UpdateVRAM(x, y, width, height, data);
+
   const u32 num_pixels = width * height;
   const auto map_result = m_texture_stream_buffer.Map(m_context.Get(), sizeof(u16), num_pixels * sizeof(u16));
   std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
@@ -626,11 +629,12 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
   DrawUtilityShader(m_vram_write_pixel_shader.Get(), uniforms, sizeof(uniforms));
 
   RestoreGraphicsAPIState();
-  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+
   src_x *= m_resolution_scale;
   src_y *= m_resolution_scale;
   dst_x *= m_resolution_scale;
@@ -640,7 +644,6 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
 
   const CD3D11_BOX src_box(src_x, src_y, 0, src_x + width, src_y + height, 1);
   m_context->CopySubresourceRegion(m_vram_texture, 0, dst_x, dst_y, 0, m_vram_texture, 0, &src_box);
-  InvalidateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::UpdateVRAMReadTexture()

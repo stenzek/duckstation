@@ -178,6 +178,21 @@ GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
     return BatchPrimitive::Triangles;
 }
 
+void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
+{
+  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+}
+
+void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+{
+  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+}
+
+void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
+{
+  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height));
+}
+
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   TextureMode texture_mode;
@@ -206,6 +221,21 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
         break;
     }
 
+    // texture page changed - check that the new page doesn't intersect the drawing area
+    if (m_render_state.IsTexturePageChanged())
+    {
+      m_render_state.ClearTexturePageChangedFlag();
+      if (m_vram_dirty_rect.Valid() && (m_render_state.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
+                                        m_render_state.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
+      {
+        if (!IsFlushed())
+          FlushRender();
+
+        Log_WarningPrintf("Invalidating VRAM read cache due to drawing area overlap");
+        m_vram_read_texture_dirty = true;
+      }
+    }
+
     texture_mode = m_render_state.texture_mode;
     if (rc.raw_texture_enable)
     {
@@ -217,21 +247,6 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   {
     m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
     texture_mode = TextureMode::Disabled;
-  }
-
-  // texture page changed - check that the new page doesn't intersect the drawing area
-  if (m_render_state.IsTexturePageChanged())
-  {
-    m_render_state.ClearTexturePageChangedFlag();
-    if (m_vram_dirty_rect.Valid() && (m_render_state.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
-                                      m_render_state.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
-    {
-      if (!IsFlushed())
-        FlushRender();
-
-      Log_WarningPrintf("Invalidating VRAM read cache due to drawing area overlap");
-      m_vram_read_texture_dirty = true;
-    }
   }
 
   // has any state changed which requires a new batch?

@@ -112,13 +112,14 @@ protected:
 
   virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
 
-  void InvalidateVRAMReadTexture() { m_vram_read_texture_dirty = true; }
-
   u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
 
   bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
 
+  void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
+  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
+  void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
   void DrawRendererStats(bool is_idle_frame) override;
 
