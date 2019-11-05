@@ -11,8 +11,11 @@ GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}
 
 GPU_HW_OpenGL::~GPU_HW_OpenGL()
 {
-  m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
-  DestroyFramebuffer();
+  if (m_host_display)
+  {
+    m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
+    ResetGraphicsAPIState();
+  }
 }
 
 bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* dma,

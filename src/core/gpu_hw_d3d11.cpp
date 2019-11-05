@@ -13,7 +13,11 @@ GPU_HW_D3D11::GPU_HW_D3D11() = default;
 
 GPU_HW_D3D11::~GPU_HW_D3D11()
 {
-  m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
+  if (m_host_display)
+  {
+    m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
+    ResetGraphicsAPIState();
+  }
 }
 
 bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dma,
