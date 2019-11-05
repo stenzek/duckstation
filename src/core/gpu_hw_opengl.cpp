@@ -127,6 +127,10 @@ void GPU_HW_OpenGL::SetCapabilities()
 
   if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image)
     Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
+
+  glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
+  if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
+    Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
@@ -225,9 +229,8 @@ void GPU_HW_OpenGL::CreateUniformBuffer()
 
 void GPU_HW_OpenGL::CreateTextureBuffer()
 {
-  // const GLenum target = GL_PIXEL_UNPACK_BUFFER;
-  const GLenum target = GL_TEXTURE_BUFFER;
-  m_texture_stream_buffer = GL::StreamBuffer::Create(target, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
+  // We use the pixel unpack buffer here because we share it with CPU-decoded VRAM writes.
+  m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
   if (!m_texture_stream_buffer)
     Panic("Failed to create texture stream buffer");
 
@@ -573,85 +576,88 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   GPU_HW::UpdateVRAM(x, y, width, height, data);
 
   const u32 num_pixels = width * height;
-#if 0
-  const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
-
-  // reverse copy the rows so it matches opengl's lower-left origin
-  const u32 source_stride = width * sizeof(u16);
-  const u8* source_ptr = static_cast<const u8*>(data) + (source_stride * (height - 1));
-  u32* dest_ptr = static_cast<u32*>(map_result.pointer);
-  for (u32 row = 0; row < height; row++)
+  if (num_pixels < m_max_texture_buffer_size)
   {
-    const u8* source_row_ptr = source_ptr;
+    const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
+    std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
+    m_texture_stream_buffer->Unmap(num_pixels * sizeof(u16));
+    m_texture_stream_buffer->Unbind();
 
-    for (u32 col = 0; col < width; col++)
-    {
-      u16 src_col;
-      std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
-      source_row_ptr += sizeof(src_col);
-
-      *(dest_ptr++) = RGBA5551ToRGBA8888(src_col);
-    }
-
-    source_ptr -= source_stride;
-  }
-
-  m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
-  m_texture_stream_buffer->Bind();
-
-  // have to write to the 1x texture first
-  if (m_resolution_scale > 1)
-    m_vram_downsample_texture->Bind();
-  else
-    m_vram_texture->Bind();
-
-  // lower-left origin flip happens here
-  const u32 flipped_y = VRAM_HEIGHT - y - height;
-
-  // update texture data
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
-                  reinterpret_cast<void*>(map_result.index_aligned * sizeof(u32)));
-  m_texture_stream_buffer->Unbind();
-
-  if (m_resolution_scale > 1)
-  {
-    // scale to internal resolution
+    // viewport should be set to the whole VRAM size, so we can just set the scissor
+    const u32 flipped_y = VRAM_HEIGHT - y - height;
     const u32 scaled_width = width * m_resolution_scale;
     const u32 scaled_height = height * m_resolution_scale;
     const u32 scaled_x = x * m_resolution_scale;
     const u32 scaled_y = y * m_resolution_scale;
     const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
-    glDisable(GL_SCISSOR_TEST);
-    m_vram_downsample_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
-    glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y, scaled_x + scaled_width,
-                      scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    glEnable(GL_SCISSOR_TEST);
+    glScissor(scaled_x, scaled_flipped_y, scaled_width, scaled_height);
+
+    m_vram_write_program.Bind();
+    glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
+
+    const u32 uniforms[5] = {x, flipped_y, width, height, map_result.index_aligned};
+    UploadUniformBlock(uniforms, sizeof(uniforms));
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    RestoreGraphicsAPIState();
   }
-#else
-  const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
-  std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
-  m_texture_stream_buffer->Unmap(num_pixels * sizeof(u16));
+  else
+  {
+    const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
 
-  // viewport should be set to the whole VRAM size, so we can just set the scissor
-  const u32 flipped_y = VRAM_HEIGHT - y - height;
-  const u32 scaled_width = width * m_resolution_scale;
-  const u32 scaled_height = height * m_resolution_scale;
-  const u32 scaled_x = x * m_resolution_scale;
-  const u32 scaled_y = y * m_resolution_scale;
-  const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
-  glScissor(scaled_x, scaled_flipped_y, scaled_width, scaled_height);
+    // reverse copy the rows so it matches opengl's lower-left origin
+    const u32 source_stride = width * sizeof(u16);
+    const u8* source_ptr = static_cast<const u8*>(data) + (source_stride * (height - 1));
+    u32* dest_ptr = static_cast<u32*>(map_result.pointer);
+    for (u32 row = 0; row < height; row++)
+    {
+      const u8* source_row_ptr = source_ptr;
 
-  m_vram_write_program.Bind();
-  glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
+      for (u32 col = 0; col < width; col++)
+      {
+        u16 src_col;
+        std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
+        source_row_ptr += sizeof(src_col);
 
-  const u32 uniforms[5] = {x, flipped_y, width, height, map_result.index_aligned};
-  UploadUniformBlock(uniforms, sizeof(uniforms));
-  m_batch_ubo_dirty = true;
+        *(dest_ptr++) = RGBA5551ToRGBA8888(src_col);
+      }
 
-  glDrawArrays(GL_TRIANGLES, 0, 3);
+      source_ptr -= source_stride;
+    }
 
-  SetScissorFromDrawingArea();
-#endif
+    m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
+    m_texture_stream_buffer->Bind();
+
+    // have to write to the 1x texture first
+    if (m_resolution_scale > 1)
+      m_vram_downsample_texture->Bind();
+    else
+      m_vram_texture->Bind();
+
+    // lower-left origin flip happens here
+    const u32 flipped_y = VRAM_HEIGHT - y - height;
+
+    // update texture data
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+                    reinterpret_cast<void*>(map_result.index_aligned * sizeof(u32)));
+    m_texture_stream_buffer->Unbind();
+
+    if (m_resolution_scale > 1)
+    {
+      // scale to internal resolution
+      const u32 scaled_width = width * m_resolution_scale;
+      const u32 scaled_height = height * m_resolution_scale;
+      const u32 scaled_x = x * m_resolution_scale;
+      const u32 scaled_y = y * m_resolution_scale;
+      const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
+      glDisable(GL_SCISSOR_TEST);
+      m_vram_downsample_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+      glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y,
+                        scaled_x + scaled_width, scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+      glEnable(GL_SCISSOR_TEST);
+    }
+  }
 }
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)

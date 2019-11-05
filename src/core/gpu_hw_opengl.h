@@ -75,6 +75,7 @@ private:
   GLuint m_texture_buffer_r16ui_texture = 0;
 
   u32 m_uniform_buffer_alignment = 1;
+  u32 m_max_texture_buffer_size = 0;
 
   std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
   std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
