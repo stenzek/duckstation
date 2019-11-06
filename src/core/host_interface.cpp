@@ -7,8 +7,7 @@ Log_SetChannel(HostInterface);
 
 HostInterface::HostInterface()
 {
-  m_settings.gpu_renderer = Settings::GPURenderer::HardwareOpenGL;
-  m_settings.memory_card_a_filename = "memory_card_a.mcd";
+  m_settings.Load("settings.ini");
 }
 
 HostInterface::~HostInterface() = default;

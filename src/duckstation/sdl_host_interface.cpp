@@ -843,6 +843,7 @@ void SDLHostInterface::DrawAboutWindow()
   ImGui::Text("Uses Dear ImGui (https://github.com/ocornut/imgui)");
   ImGui::Text("Uses libcue (https://github.com/lipnitsk/libcue)");
   ImGui::Text("Uses stb_image_write (https://github.com/nothings/stb)");
+  ImGui::Text("Uses simpleini (https://github.com/brofield/simpleini)");
   ImGui::NewLine();
   ImGui::Text("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
 

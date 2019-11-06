@@ -55,7 +55,7 @@ add_library(core
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PRIVATE Threads::Threads YBaseLib common imgui glad stb)
+target_link_libraries(core PRIVATE Threads::Threads YBaseLib common imgui glad simpleini stb)
 
 if(WIN32)
   target_sources(core PRIVATE

@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <optional>
 
 struct Settings
 {
@@ -36,6 +37,14 @@ struct Settings
 
   // TODO: Controllers, memory cards, etc.
 
+  std::string bios_path;
   std::string memory_card_a_filename;
   std::string memory_card_b_filename;
+
+  void SetDefaults();
+  void Load(const char* filename);
+  bool Save(const char* filename) const;
+
+  static std::optional<GPURenderer> ParseRendererName(const char* str);
+  static const char* GetRendererName(GPURenderer renderer);
 };
