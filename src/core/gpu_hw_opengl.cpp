@@ -756,14 +756,14 @@ void GPU_HW_OpenGL::FlushRender()
   if (m_batch.NeedsTwoPassRendering())
   {
     SetDrawState(BatchRenderMode::OnlyTransparent);
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
+    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, vertex_count);
     SetDrawState(BatchRenderMode::OnlyOpaque);
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
+    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, vertex_count);
   }
   else
   {
     SetDrawState(m_batch.GetRenderMode());
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], 0, vertex_count);
+    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, vertex_count);
   }
 }
 
