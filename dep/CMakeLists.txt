@@ -2,6 +2,7 @@ add_subdirectory(glad)
 add_subdirectory(imgui)
 add_subdirectory(libcue)
 add_subdirectory(nativefiledialog)
+add_subdirectory(simpleini)
 add_subdirectory(stb)
 
 ###################### YBaseLib ############################
