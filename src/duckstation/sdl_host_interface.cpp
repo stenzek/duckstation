@@ -26,7 +26,7 @@
 #include <nfd.h>
 Log_SetChannel(SDLHostInterface);
 
-SDLHostInterface::SDLHostInterface() = default;
+SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini") {}
 
 SDLHostInterface::~SDLHostInterface()
 {
@@ -85,7 +85,7 @@ bool SDLHostInterface::CreateDisplay()
   return true;
 }
 
-bool SDLHostInterface::CreateImGuiContext()
+void SDLHostInterface::CreateImGuiContext()
 {
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
@@ -94,32 +94,12 @@ bool SDLHostInterface::CreateImGuiContext()
 
   ImGui::StyleColorsDarker();
   ImGui::AddRobotoRegularFont();
-  return true;
 }
 
 bool SDLHostInterface::CreateAudioStream()
 {
   m_audio_stream = std::make_unique<SDLAudioStream>();
-  if (!m_audio_stream->Reconfigure(44100, 2))
-  {
-    Panic("Failed to open audio stream");
-    return false;
-  }
-
-  return true;
-}
-
-void SDLHostInterface::UpdateAudioVisualSync()
-{
-  const bool speed_limiter_enabled =
-    !m_system || (m_system->GetSettings().speed_limiter_enabled && !m_speed_limiter_temp_disabled);
-  const bool audio_sync_enabled = speed_limiter_enabled;
-  const bool vsync_enabled = !m_system || (speed_limiter_enabled && m_system->GetSettings().gpu_vsync);
-  Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
-                 (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
-
-  m_audio_stream->SetSync(false);
-  m_display->SetVSync(vsync_enabled);
+  return m_audio_stream->Reconfigure(44100, 2);
 }
 
 void SDLHostInterface::OpenGameControllers()
@@ -144,6 +124,11 @@ void SDLHostInterface::CloseGameControllers()
   for (auto& it : m_sdl_controllers)
     SDL_GameControllerClose(it.second);
   m_sdl_controllers.clear();
+}
+
+void SDLHostInterface::SaveSettings()
+{
+  m_settings.Save(m_settings_filename.c_str());
 }
 
 bool SDLHostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
@@ -185,20 +170,33 @@ void SDLHostInterface::ResetPerformanceCounters()
 
 void SDLHostInterface::SwitchGPURenderer() {}
 
-void SDLHostInterface::ShutdownSystem()
-{
-  m_system.reset();
-  m_paused = false;
-  UpdateAudioVisualSync();
-}
-
 std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename /* = nullptr */,
                                                            const char* exp1_filename /* = nullptr */,
                                                            const char* save_state_filename /* = nullptr */)
 {
   std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
-  if (!intf->CreateSDLWindow() || !intf->CreateImGuiContext() || !intf->CreateDisplay() || !intf->CreateAudioStream())
+
+  // Settings need to be loaded prior to creating the window for OpenGL bits.
+  intf->m_settings.Load(intf->m_settings_filename.c_str());
+
+  if (!intf->CreateSDLWindow())
+  {
+    Log_ErrorPrintf("Failed to create SDL window");
     return nullptr;
+  }
+
+  intf->CreateImGuiContext();
+  if (!intf->CreateDisplay())
+  {
+    Log_ErrorPrintf("Failed to create host display");
+    return nullptr;
+  }
+
+  if (!intf->CreateAudioStream())
+  {
+    Log_ErrorPrintf("Failed to create host audio stream");
+    return nullptr;
+  }
 
   ImGui::NewFrame();
 
@@ -222,11 +220,6 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
 TinyString SDLHostInterface::GetSaveStateFilename(u32 index)
 {
   return TinyString::FromFormat("savestate_%u.bin", index);
-}
-
-HostDisplay* SDLHostInterface::GetDisplay() const
-{
-  return m_display.get();
 }
 
 void SDLHostInterface::ReportMessage(const char* message)
@@ -521,7 +514,7 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     {
       if (pressed && !repeat && m_system)
       {
-        m_system->GetSettings().speed_limiter_enabled = !m_system->GetSettings().speed_limiter_enabled;
+        m_settings.speed_limiter_enabled = !m_settings.speed_limiter_enabled;
         UpdateAudioVisualSync();
         AddOSDMessage(m_system->GetSettings().speed_limiter_enabled ? "Speed limiter enabled." :
                                                                       "Speed limiter disabled.");
@@ -644,74 +637,20 @@ void SDLHostInterface::DrawMainMenuBar()
 
   if (ImGui::BeginMenu("Settings"))
   {
-    Settings& settings = m_system ? m_system->GetSettings() : m_settings;
-    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &settings.speed_limiter_enabled, system_enabled))
-    {
-      UpdateAudioVisualSync();
-    }
+    if (ImGui::MenuItem("Change Settings..."))
+      m_settings_window_open = true;
 
     ImGui::Separator();
 
-    if (ImGui::MenuItem("Fullscreen", nullptr, IsWindowFullscreen()))
-      SDL_SetWindowFullscreen(m_window, IsWindowFullscreen() ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-
-    ImGui::Separator();
-
-    if (ImGui::BeginMenu("GPU", system_enabled))
-    {
-      if (ImGui::BeginMenu("Renderer"))
-      {
-        const Settings::GPURenderer current = m_system->GetSettings().gpu_renderer;
-        for (u32 i = 0; i < static_cast<u32>(Settings::GPURenderer::Count); i++)
-        {
-          if (ImGui::MenuItem(Settings::GetRendererDisplayName(static_cast<Settings::GPURenderer>(i)), nullptr,
-                              i == static_cast<u32>(current)))
-          {
-            m_system->GetSettings().gpu_renderer = static_cast<Settings::GPURenderer>(i);
-            m_system->RecreateGPU();
-          }
-        }
-
-        ImGui::EndMenu();
-      }
-
-      if (ImGui::BeginMenu("Internal Resolution"))
-      {
-        const u32 current_internal_resolution = m_system->GetSettings().gpu_resolution_scale;
-        for (u32 scale = 1; scale <= m_system->GetSettings().max_gpu_resolution_scale; scale++)
-        {
-          if (ImGui::MenuItem(
-                TinyString::FromFormat("%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT),
-                nullptr, current_internal_resolution == scale))
-          {
-            m_system->GetSettings().gpu_resolution_scale = scale;
-            m_system->GetGPU()->UpdateSettings();
-          }
-        }
-
-        ImGui::EndMenu();
-      }
-
-      if (ImGui::MenuItem("VSync", nullptr, &m_system->GetSettings().gpu_vsync))
-        UpdateAudioVisualSync();
-
-      if (ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_system->GetSettings().gpu_true_color))
-        m_system->GetGPU()->UpdateSettings();
-
-      if (ImGui::MenuItem("Display Linear Filtering", nullptr, &m_system->GetSettings().display_linear_filtering))
-      {
-        // this has to update the display texture for now..
-        m_system->GetGPU()->UpdateSettings();
-      }
-
-      ImGui::EndMenu();
-    }
-
+    DrawQuickSettingsMenu();
     ImGui::EndMenu();
   }
 
-  if (m_system)
+  if (ImGui::BeginMenu("Debug", system_enabled))
+  {
     DrawDebugMenu();
+    ImGui::EndMenu();
+  }
 
   if (ImGui::BeginMenu("Help"))
   {
@@ -757,6 +696,100 @@ void SDLHostInterface::DrawMainMenuBar()
   }
 
   ImGui::EndMainMenuBar();
+}
+
+void SDLHostInterface::DrawQuickSettingsMenu()
+{
+  bool settings_changed = false;
+  bool gpu_settings_changed = false;
+  if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings.speed_limiter_enabled))
+  {
+    settings_changed = true;
+    UpdateAudioVisualSync();
+  }
+
+  ImGui::Separator();
+
+  if (ImGui::BeginMenu("Renderer"))
+  {
+    const Settings::GPURenderer current = m_settings.gpu_renderer;
+    for (u32 i = 0; i < static_cast<u32>(Settings::GPURenderer::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetRendererDisplayName(static_cast<Settings::GPURenderer>(i)), nullptr,
+                          i == static_cast<u32>(current)))
+      {
+        m_settings.gpu_renderer = static_cast<Settings::GPURenderer>(i);
+        settings_changed = true;
+        if (m_system)
+          SwitchGPURenderer();
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::MenuItem("Fullscreen", nullptr, IsWindowFullscreen()))
+    SDL_SetWindowFullscreen(m_window, IsWindowFullscreen() ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+  if (ImGui::MenuItem("VSync", nullptr, &m_settings.gpu_vsync))
+  {
+    settings_changed = true;
+    UpdateAudioVisualSync();
+  }
+
+  ImGui::Separator();
+
+  if (ImGui::BeginMenu("Resolution Scale"))
+  {
+    const u32 current_internal_resolution = m_settings.gpu_resolution_scale;
+    for (u32 scale = 1; scale <= m_settings.max_gpu_resolution_scale; scale++)
+    {
+      if (ImGui::MenuItem(
+            TinyString::FromFormat("%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT), nullptr,
+            current_internal_resolution == scale))
+      {
+        m_settings.gpu_resolution_scale = scale;
+        gpu_settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  gpu_settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings.gpu_true_color);
+  settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering);
+
+  if (settings_changed || gpu_settings_changed)
+    SaveSettings();
+
+  if (gpu_settings_changed && m_system)
+    m_system->GetGPU()->UpdateSettings();
+}
+
+void SDLHostInterface::DrawDebugMenu()
+{
+  Settings::DebugSettings& debug_settings = m_settings.debugging;
+
+  ImGui::MenuItem("Show System State");
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
+  ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
+  ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
+  ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show CDROM State", nullptr, &debug_settings.show_cdrom_state);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
+  ImGui::Separator();
+
+  ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
+  ImGui::Separator();
 }
 
 void SDLHostInterface::DrawPoweredOffWindow()
@@ -854,7 +887,6 @@ void SDLHostInterface::DrawSettingsWindow()
     return;
   }
 
-  Settings& settings = m_system ? m_system->GetSettings() : m_settings;
   bool settings_changed = false;
   bool gpu_settings_changed = false;
 
@@ -871,11 +903,11 @@ void SDLHostInterface::DrawSettingsWindow()
 
       ImGui::Text("BIOS Path:");
       ImGui::SameLine(indent);
-      DrawFileChooser("##bios_path", &settings.bios_path);
+      DrawFileChooser("##bios_path", &m_settings.bios_path);
 
-      ImGui::Checkbox("Enable Speed Limiter", &settings.speed_limiter_enabled);
+      ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
 
-      ImGui::Checkbox("Pause On Start", &settings.start_paused);
+      ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
 
       ImGui::EndTabItem();
     }
@@ -892,7 +924,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Path:");
         ImGui::SameLine(indent);
 
-        std::string* path_ptr = (i == 0) ? &settings.memory_card_a_path : &settings.memory_card_b_path;
+        std::string* path_ptr = (i == 0) ? &m_settings.memory_card_a_path : &m_settings.memory_card_b_path;
         if (DrawFileChooser(TinyString::FromFormat("##memcard_%c_path", 'a' + i), path_ptr))
         {
           settings_changed = true;
@@ -921,7 +953,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Renderer:");
         ImGui::SameLine(indent);
 
-        int gpu_renderer = static_cast<int>(settings.gpu_renderer);
+        int gpu_renderer = static_cast<int>(m_settings.gpu_renderer);
         if (ImGui::Combo(
               "##gpu_renderer", &gpu_renderer,
               [](void*, int index, const char** out_text) {
@@ -930,7 +962,7 @@ void SDLHostInterface::DrawSettingsWindow()
               },
               nullptr, static_cast<int>(Settings::GPURenderer::Count)))
         {
-          settings.gpu_renderer = static_cast<Settings::GPURenderer>(gpu_renderer);
+          m_settings.gpu_renderer = static_cast<Settings::GPURenderer>(gpu_renderer);
           SwitchGPURenderer();
         }
       }
@@ -939,10 +971,10 @@ void SDLHostInterface::DrawSettingsWindow()
 
       if (DrawSettingsSectionHeader("Display Output"))
       {
-        ImGui::Checkbox("Fullscreen", &settings.display_fullscreen);
-        if (ImGui::Checkbox("VSync", &settings.gpu_vsync))
+        ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen);
+        if (ImGui::Checkbox("VSync", &m_settings.gpu_vsync))
           UpdateAudioVisualSync();
-        ImGui::Checkbox("Linear Filtering", &settings.display_linear_filtering);
+        ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering);
       }
 
       ImGui::NewLine();
@@ -971,15 +1003,15 @@ void SDLHostInterface::DrawSettingsWindow()
           "16x (16384x8192)",
         }};
 
-        int current_resolution_index = static_cast<int>(settings.gpu_resolution_scale) - 1;
+        int current_resolution_index = static_cast<int>(m_settings.gpu_resolution_scale) - 1;
         if (ImGui::Combo("##gpu_resolution_scale", &current_resolution_index, resolutions.data(),
                          static_cast<int>(resolutions.size())))
         {
-          settings.gpu_resolution_scale = static_cast<u32>(current_resolution_index + 1);
+          m_settings.gpu_resolution_scale = static_cast<u32>(current_resolution_index + 1);
           gpu_settings_changed = true;
         }
 
-        ImGui::Checkbox("True 24-bit Color (disables dithering)", &settings.gpu_true_color);
+        ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
       }
 
       ImGui::EndTabItem();
@@ -1032,37 +1064,6 @@ void SDLHostInterface::DrawAboutWindow()
     m_about_window_open = false;
 
   ImGui::EndPopup();
-}
-
-void SDLHostInterface::DrawDebugMenu()
-{
-  if (!ImGui::BeginMenu("Debug", m_system != nullptr))
-    return;
-
-  Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
-
-  ImGui::MenuItem("Show System State");
-  ImGui::Separator();
-
-  ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
-  ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
-  ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
-  ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
-  ImGui::Separator();
-
-  ImGui::MenuItem("Show CDROM State", nullptr, &debug_settings.show_cdrom_state);
-  ImGui::Separator();
-
-  ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
-  ImGui::Separator();
-
-  ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
-  ImGui::Separator();
-
-  ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
-  ImGui::Separator();
-
-  ImGui::EndMenu();
 }
 
 void SDLHostInterface::DrawDebugWindows()
@@ -1270,17 +1271,16 @@ void SDLHostInterface::DoToggleSoftwareRendering()
   if (!m_system)
     return;
 
-  auto& settings = m_system->GetSettings();
-  if (settings.gpu_renderer != Settings::GPURenderer::Software)
+  if (m_settings.gpu_renderer != Settings::GPURenderer::Software)
   {
-    settings.gpu_renderer = Settings::GPURenderer::Software;
+    m_settings.gpu_renderer = Settings::GPURenderer::Software;
     AddOSDMessage("Switched to software GPU renderer.");
   }
   else
   {
-    settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ?
-                              Settings::GPURenderer::HardwareD3D11 :
-                              Settings::GPURenderer::HardwareOpenGL;
+    m_settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ?
+                                Settings::GPURenderer::HardwareD3D11 :
+                                Settings::GPURenderer::HardwareOpenGL;
     AddOSDMessage("Switched to hardware GPU renderer.");
   }
 
@@ -1289,22 +1289,19 @@ void SDLHostInterface::DoToggleSoftwareRendering()
 
 void SDLHostInterface::DoModifyInternalResolution(s32 increment)
 {
-  if (!m_system)
-    return;
-
-  auto& settings = m_system->GetSettings();
   const u32 new_resolution_scale =
-    std::clamp<u32>(static_cast<u32>(static_cast<s32>(settings.gpu_resolution_scale) + increment), 1,
-                    settings.max_gpu_resolution_scale);
-  if (new_resolution_scale == settings.gpu_resolution_scale)
+    std::clamp<u32>(static_cast<u32>(static_cast<s32>(m_settings.gpu_resolution_scale) + increment), 1,
+                    m_settings.max_gpu_resolution_scale);
+  if (new_resolution_scale == m_settings.gpu_resolution_scale)
     return;
 
-  settings.gpu_resolution_scale = new_resolution_scale;
-  m_system->GetGPU()->UpdateSettings();
+  m_settings.gpu_resolution_scale = new_resolution_scale;
+  if (m_system)
+    m_system->GetGPU()->UpdateSettings();
 
-  AddOSDMessage(TinyString::FromFormat("Resolution scale set to %ux (%ux%u)", settings.gpu_resolution_scale,
-                                       GPU::VRAM_WIDTH * settings.gpu_resolution_scale,
-                                       GPU::VRAM_HEIGHT * settings.gpu_resolution_scale));
+  AddOSDMessage(TinyString::FromFormat("Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
+                                       GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
+                                       GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale));
 }
 
 void SDLHostInterface::Run()

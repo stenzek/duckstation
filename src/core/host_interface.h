@@ -14,11 +14,19 @@ public:
   HostInterface();
   virtual ~HostInterface();
 
+  /// Access to host display.
+  ALWAYS_INLINE HostDisplay* GetDisplay() const { return m_display.get(); }
+
+  /// Access to host audio stream.
   AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
 
-  bool InitializeSystem(const char* filename, const char* exp1_filename);
+  /// Returns a settings object which can be modified.
+  Settings& GetSettings() { return m_settings; }
 
-  virtual HostDisplay* GetDisplay() const = 0;
+
+  bool InitializeSystem(const char* filename, const char* exp1_filename);
+  void ShutdownSystem();
+
 
   virtual void ReportMessage(const char* message) = 0;
 
@@ -29,8 +37,13 @@ public:
   bool SaveState(const char* filename);
 
 protected:
+  void UpdateAudioVisualSync();
+
+  std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
-
   Settings m_settings;
+
+  bool m_paused = false;
+  bool m_speed_limiter_temp_disabled = false;
 };

@@ -2,19 +2,20 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
 #include "common/audio_stream.h"
+#include "host_display.h"
 #include "system.h"
 Log_SetChannel(HostInterface);
 
 HostInterface::HostInterface()
 {
-  m_settings.Load("settings.ini");
+  m_settings.SetDefaults();
 }
 
 HostInterface::~HostInterface() = default;
 
 bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
 {
-  m_system = std::make_unique<System>(this, m_settings);
+  m_system = std::make_unique<System>(this);
   if (!m_system->Initialize())
   {
     m_system.reset();
@@ -52,6 +53,13 @@ bool HostInterface::InitializeSystem(const char* filename, const char* exp1_file
   // Resume execution.
   m_settings = m_system->GetSettings();
   return true;
+}
+
+void HostInterface::ShutdownSystem()
+{
+  m_system.reset();
+  m_paused = false;
+  UpdateAudioVisualSync();
 }
 
 bool HostInterface::LoadState(const char* filename)
@@ -98,4 +106,16 @@ bool HostInterface::SaveState(const char* filename)
 
   stream->Release();
   return result;
+}
+
+void HostInterface::UpdateAudioVisualSync()
+{
+  const bool speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
+  const bool audio_sync_enabled = speed_limiter_enabled;
+  const bool vsync_enabled = !m_system || (speed_limiter_enabled && m_settings.gpu_vsync);
+  Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
+                 (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
+
+  m_audio_stream->SetSync(false);
+  m_display->SetVSync(vsync_enabled);
 }

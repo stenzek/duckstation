@@ -62,5 +62,5 @@ void ImGui::StyleColorsDarker(ImGuiStyle* dst)
 void ImGui::AddRobotoRegularFont(float size /*= 15.0f*/)
 {
   ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(s_font_roboto_regular_compressed_data,
-                                                       s_font_roboto_regular_compressed_size, 15.0f);
+                                                       s_font_roboto_regular_compressed_size, size);
 }

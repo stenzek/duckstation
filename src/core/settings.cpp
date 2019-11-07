@@ -78,7 +78,13 @@ bool Settings::Save(const char* filename) const
     ini.DeleteValue("MemoryCard", "CardBPath", nullptr);
 
   err = ini.SaveFile(filename, false);
-  return (err == SI_OK);
+  if (err != SI_OK)
+  {
+    Log_WarningPrintf("Failed to save settings to '%s'.", filename);
+    return false;
+  }
+
+  return true;
 }
 
 static std::array<const char*, 3> s_gpu_renderer_names = {{"D3D11", "OpenGL", "Software"}};

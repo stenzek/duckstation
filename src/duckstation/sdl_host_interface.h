@@ -28,8 +28,6 @@ public:
 
   static TinyString GetSaveStateFilename(u32 index);
 
-  HostDisplay* GetDisplay() const override;
-
   void ReportMessage(const char* message) override;
 
   // Adds OSD messages, duration is in seconds.
@@ -58,18 +56,18 @@ private:
 
   bool CreateSDLWindow();
   bool CreateDisplay();
-  bool CreateImGuiContext();
+  void CreateImGuiContext();
   bool CreateAudioStream();
-  void UpdateAudioVisualSync();
 
   void OpenGameControllers();
   void CloseGameControllers();
+
+  void SaveSettings();
 
   bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
   void ConnectDevices();
   void ResetPerformanceCounters();
   void SwitchGPURenderer();
-  void ShutdownSystem();
 
   // We only pass mouse input through if it's grabbed
   bool IsWindowFullscreen() const;
@@ -92,17 +90,19 @@ private:
   void ClearImGuiFocus();
 
   void DrawMainMenuBar();
+  void DrawQuickSettingsMenu();
+  void DrawDebugMenu();
   void DrawPoweredOffWindow();
   void DrawSettingsWindow();
   void DrawAboutWindow();
   void DrawOSDMessages();
-  void DrawDebugMenu();
   void DrawDebugWindows();
   bool DrawFileChooser(const char* label, std::string* path, const char* filter = nullptr);
 
   SDL_Window* m_window = nullptr;
-  std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
+
+  std::string m_settings_filename;
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
@@ -119,11 +119,9 @@ private:
   u32 m_last_global_tick_counter = 0;
   Timer m_fps_timer;
 
-  bool m_paused = false;
   bool m_quit_request = false;
   bool m_frame_step_request = false;
   bool m_focus_main_menu_bar = false;
   bool m_settings_window_open = false;
   bool m_about_window_open = false;
-  bool m_speed_limiter_temp_disabled = false;
 };

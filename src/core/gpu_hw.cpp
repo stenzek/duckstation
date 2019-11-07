@@ -19,7 +19,6 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Int
     return false;
 
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
-  m_system->GetSettings().gpu_resolution_scale = m_resolution_scale;
   m_system->GetSettings().max_gpu_resolution_scale = m_max_resolution_scale;
   m_true_color = m_system->GetSettings().gpu_true_color;
   return true;
@@ -53,7 +52,6 @@ void GPU_HW::UpdateSettings()
   GPU::UpdateSettings();
 
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
-  m_system->GetSettings().gpu_resolution_scale = m_resolution_scale;
   m_true_color = m_system->GetSettings().gpu_true_color;
 }
 

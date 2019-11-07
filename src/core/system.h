@@ -1,12 +1,10 @@
 #pragma once
-#include "settings.h"
 #include "types.h"
+#include "host_interface.h"
 #include <memory>
 
 class ByteStream;
 class StateWrapper;
-
-class HostInterface;
 
 namespace CPU {
 class Core;
@@ -26,7 +24,7 @@ class MDEC;
 class System
 {
 public:
-  System(HostInterface* host_interface, const Settings& settings);
+  System(HostInterface* host_interface);
   ~System();
 
   // Accessing components.
@@ -48,7 +46,7 @@ public:
   void IncrementFrameNumber() { m_frame_number++; }
   void IncrementInternalFrameNumber() { m_internal_frame_number++; }
 
-  Settings& GetSettings() { return m_settings; }
+  const Settings& GetSettings() { return m_host_interface->GetSettings(); }
 
   bool Initialize();
   void Reset();
@@ -95,6 +93,4 @@ private:
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
   u32 m_global_tick_counter = 0;
-
-  Settings m_settings;
 };

@@ -19,8 +19,8 @@
 #include <imgui.h>
 Log_SetChannel(System);
 
-System::System(HostInterface* host_interface, const Settings& settings)
-  : m_host_interface(host_interface), m_settings(settings)
+System::System(HostInterface* host_interface)
+  : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
   m_bus = std::make_unique<Bus>();
@@ -107,7 +107,7 @@ bool System::Initialize()
 
 bool System::CreateGPU()
 {
-  switch (m_settings.gpu_renderer)
+  switch (m_host_interface->GetSettings().gpu_renderer)
   {
     case Settings::GPURenderer::HardwareOpenGL:
       m_gpu = GPU::CreateHardwareOpenGLRenderer();
@@ -130,7 +130,7 @@ bool System::CreateGPU()
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     m_gpu.reset();
-    m_settings.gpu_renderer = Settings::GPURenderer::Software;
+    m_host_interface->GetSettings().gpu_renderer = Settings::GPURenderer::Software;
     m_gpu = GPU::CreateSoftwareRenderer();
     if (!m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
                            m_timers.get()))
@@ -376,16 +376,17 @@ void System::UpdateMemoryCards()
   m_pad->SetMemoryCard(0, nullptr);
   m_pad->SetMemoryCard(1, nullptr);
 
-  if (!m_settings.memory_card_a_path.empty())
+  const Settings& settings = m_host_interface->GetSettings();
+  if (!settings.memory_card_a_path.empty())
   {
-    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_a_path);
+    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_a_path);
     if (card)
       m_pad->SetMemoryCard(0, std::move(card));
   }
 
-  if (!m_settings.memory_card_b_path.empty())
+  if (!settings.memory_card_b_path.empty())
   {
-    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_b_path);
+    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_b_path);
     if (card)
       m_pad->SetMemoryCard(1, std::move(card));
   }
