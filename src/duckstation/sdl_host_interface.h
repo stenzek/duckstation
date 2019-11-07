@@ -68,6 +68,7 @@ private:
   bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
   void ConnectDevices();
   void ResetPerformanceCounters();
+  void SwitchGPURenderer();
   void ShutdownSystem();
 
   // We only pass mouse input through if it's grabbed
@@ -92,10 +93,12 @@ private:
 
   void DrawMainMenuBar();
   void DrawPoweredOffWindow();
+  void DrawSettingsWindow();
   void DrawAboutWindow();
   void DrawOSDMessages();
   void DrawDebugMenu();
   void DrawDebugWindows();
+  bool DrawFileChooser(const char* label, std::string* path, const char* filter = nullptr);
 
   SDL_Window* m_window = nullptr;
   std::unique_ptr<HostDisplay> m_display;
@@ -120,7 +123,7 @@ private:
   bool m_quit_request = false;
   bool m_frame_step_request = false;
   bool m_focus_main_menu_bar = false;
+  bool m_settings_window_open = false;
   bool m_about_window_open = false;
-  bool m_speed_limiter_enabled = true;
   bool m_speed_limiter_temp_disabled = false;
 };

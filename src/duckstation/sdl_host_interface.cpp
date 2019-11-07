@@ -21,13 +21,9 @@
 #include <cinttypes>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
+#include <imgui_stdlib.h>
 #include <nfd.h>
 Log_SetChannel(SDLHostInterface);
-
-static constexpr std::array<std::pair<Settings::GPURenderer, const char*>, 3> s_gpu_renderer_names = {
-  {{Settings::GPURenderer::HardwareD3D11, "Hardware (Direct3D 11)"},
-   {Settings::GPURenderer::HardwareOpenGL, "Hardware (OpenGL)"},
-   {Settings::GPURenderer::Software, "Software"}}};
 
 SDLHostInterface::SDLHostInterface() = default;
 
@@ -111,7 +107,8 @@ bool SDLHostInterface::CreateAudioStream()
 
 void SDLHostInterface::UpdateAudioVisualSync()
 {
-  const bool speed_limiter_enabled = m_speed_limiter_enabled && !m_speed_limiter_temp_disabled;
+  const bool speed_limiter_enabled =
+    !m_system || (m_system->GetSettings().speed_limiter_enabled && !m_speed_limiter_temp_disabled);
   const bool audio_sync_enabled = speed_limiter_enabled;
   const bool vsync_enabled = !m_system || (speed_limiter_enabled && m_system->GetSettings().gpu_vsync);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
@@ -181,6 +178,8 @@ void SDLHostInterface::ResetPerformanceCounters()
   }
   m_fps_timer.Reset();
 }
+
+void SDLHostInterface::SwitchGPURenderer() {}
 
 void SDLHostInterface::ShutdownSystem()
 {
@@ -518,9 +517,10 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     {
       if (pressed && !repeat && m_system)
       {
-        m_speed_limiter_enabled = !m_speed_limiter_enabled;
+        m_system->GetSettings().speed_limiter_enabled = !m_system->GetSettings().speed_limiter_enabled;
         UpdateAudioVisualSync();
-        AddOSDMessage(m_speed_limiter_enabled ? "Speed limiter enabled." : "Speed limiter disabled.");
+        AddOSDMessage(m_system->GetSettings().speed_limiter_enabled ? "Speed limiter enabled." :
+                                                                      "Speed limiter disabled.");
       }
     }
     break;
@@ -557,6 +557,9 @@ void SDLHostInterface::DrawImGui()
     DrawDebugWindows();
   else
     DrawPoweredOffWindow();
+
+  if (m_settings_window_open)
+    DrawSettingsWindow();
 
   if (m_about_window_open)
     DrawAboutWindow();
@@ -637,8 +640,11 @@ void SDLHostInterface::DrawMainMenuBar()
 
   if (ImGui::BeginMenu("Settings"))
   {
-    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_speed_limiter_enabled, system_enabled))
+    Settings& settings = m_system ? m_system->GetSettings() : m_settings;
+    if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &settings.speed_limiter_enabled, system_enabled))
+    {
       UpdateAudioVisualSync();
+    }
 
     ImGui::Separator();
 
@@ -652,11 +658,12 @@ void SDLHostInterface::DrawMainMenuBar()
       if (ImGui::BeginMenu("Renderer"))
       {
         const Settings::GPURenderer current = m_system->GetSettings().gpu_renderer;
-        for (const auto& it : s_gpu_renderer_names)
+        for (u32 i = 0; i < static_cast<u32>(Settings::GPURenderer::Count); i++)
         {
-          if (ImGui::MenuItem(it.second, nullptr, current == it.first))
+          if (ImGui::MenuItem(Settings::GetRendererDisplayName(static_cast<Settings::GPURenderer>(i)), nullptr,
+                              i == static_cast<u32>(current)))
           {
-            m_system->GetSettings().gpu_renderer = it.first;
+            m_system->GetSettings().gpu_renderer = static_cast<Settings::GPURenderer>(i);
             m_system->RecreateGPU();
           }
         }
@@ -810,7 +817,8 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
-  ImGui::Button("Settings", button_size);
+  if (ImGui::Button("Settings", button_size))
+    m_settings_window_open = true;
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
@@ -825,11 +833,178 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::End();
 }
 
+static bool DrawSettingsSectionHeader(const char* title)
+{
+  return ImGui::CollapsingHeader(title, ImGuiTreeNodeFlags_DefaultOpen /* | ImGuiTreeNodeFlags_Leaf*/);
+}
+
+void SDLHostInterface::DrawSettingsWindow()
+{
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
+                          ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
+
+  if (!ImGui::Begin("Settings", &m_settings_window_open, ImGuiWindowFlags_NoResize))
+  {
+    ImGui::End();
+    return;
+  }
+
+  Settings& settings = m_system ? m_system->GetSettings() : m_settings;
+  bool settings_changed = false;
+  bool gpu_settings_changed = false;
+
+  if (ImGui::BeginTabBar("SettingsTabBar", 0))
+  {
+    const float indent = 150.0f;
+
+    if (ImGui::BeginTabItem("General"))
+    {
+      ImGui::Text("Region:");
+      ImGui::SameLine(indent);
+      static int region = 0;
+      ImGui::Combo("##region", &region, "NTSC-U (US)\0NTSC-J (Japan)\0PAL (Europe, Australia)");
+
+      ImGui::Text("BIOS Path:");
+      ImGui::SameLine(indent);
+      DrawFileChooser("##bios_path", &settings.bios_path);
+
+      ImGui::Checkbox("Enable Speed Limiter", &settings.speed_limiter_enabled);
+
+      ImGui::Checkbox("Pause On Start", &settings.start_paused);
+
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("Memory Cards"))
+    {
+      for (int i = 0; i < 2; i++)
+      {
+        if (!DrawSettingsSectionHeader(TinyString::FromFormat("Card %c", 'A' + i)))
+          continue;
+
+        ImGui::Text("Card %c", 'A' + i);
+
+        ImGui::Text("Path:");
+        ImGui::SameLine(indent);
+
+        std::string* path_ptr = (i == 0) ? &settings.memory_card_a_path : &settings.memory_card_b_path;
+        if (DrawFileChooser(TinyString::FromFormat("##memcard_%c_path", 'a' + i), path_ptr))
+        {
+          settings_changed = true;
+          if (m_system)
+            m_system->UpdateMemoryCards();
+        }
+
+        if (ImGui::Button("Eject"))
+        {
+          path_ptr->clear();
+          settings_changed = true;
+          if (m_system)
+            m_system->UpdateMemoryCards();
+        }
+
+        ImGui::NewLine();
+      }
+
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("GPU"))
+    {
+      if (DrawSettingsSectionHeader("Basic"))
+      {
+        ImGui::Text("Renderer:");
+        ImGui::SameLine(indent);
+
+        int gpu_renderer = static_cast<int>(settings.gpu_renderer);
+        if (ImGui::Combo(
+              "##gpu_renderer", &gpu_renderer,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetRendererDisplayName(static_cast<Settings::GPURenderer>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(Settings::GPURenderer::Count)))
+        {
+          settings.gpu_renderer = static_cast<Settings::GPURenderer>(gpu_renderer);
+          SwitchGPURenderer();
+        }
+      }
+
+      ImGui::NewLine();
+
+      if (DrawSettingsSectionHeader("Display Output"))
+      {
+        ImGui::Checkbox("Fullscreen", &settings.display_fullscreen);
+        if (ImGui::Checkbox("VSync", &settings.gpu_vsync))
+          UpdateAudioVisualSync();
+        ImGui::Checkbox("Linear Filtering", &settings.display_linear_filtering);
+      }
+
+      ImGui::NewLine();
+
+      if (DrawSettingsSectionHeader("Enhancements"))
+      {
+        ImGui::Text("Resolution Scale:");
+        ImGui::SameLine(indent);
+
+        static constexpr std::array<const char*, 16> resolutions = {{
+          "1x (1024x512)",
+          "2x (2048x1024)",
+          "3x (3072x1536)",
+          "4x (4096x2048)",
+          "5x (5120x2560)",
+          "6x (6144x3072)",
+          "7x (7168x3584)",
+          "8x (8192x4096)",
+          "9x (9216x4608)",
+          "10x (10240x5120)",
+          "11x (11264x5632)",
+          "12x (12288x6144)",
+          "13x (13312x6656)",
+          "14x (14336x7168)",
+          "15x (15360x7680)",
+          "16x (16384x8192)",
+        }};
+
+        int current_resolution_index = static_cast<int>(settings.gpu_resolution_scale) - 1;
+        if (ImGui::Combo("##gpu_resolution_scale", &current_resolution_index, resolutions.data(),
+                         static_cast<int>(resolutions.size())))
+        {
+          settings.gpu_resolution_scale = static_cast<u32>(current_resolution_index + 1);
+          gpu_settings_changed = true;
+        }
+
+        ImGui::Checkbox("True 24-bit Color (disables dithering)", &settings.gpu_true_color);
+      }
+
+      ImGui::EndTabItem();
+    }
+
+    ImGui::EndTabBar();
+  }
+
+  const auto window_size = ImGui::GetWindowSize();
+  ImGui::SetCursorPosX(window_size.x - 50.0f);
+  ImGui::SetCursorPosY(window_size.y - 30.0f);
+  if (ImGui::Button("Close"))
+    m_settings_window_open = false;
+
+  ImGui::End();
+
+  if (settings_changed)
+  {
+    // TODO: Save to file
+  }
+  if (gpu_settings_changed && m_system)
+    m_system->GetGPU()->UpdateSettings();
+}
+
 void SDLHostInterface::DrawAboutWindow()
 {
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  if (!ImGui::Begin("About DuckStation", &m_about_window_open))
+                          ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+  if (!ImGui::Begin("About DuckStation", &m_about_window_open, ImGuiWindowFlags_NoResize))
   {
     ImGui::End();
     return;
@@ -901,6 +1076,26 @@ void SDLHostInterface::DrawDebugWindows()
     m_system->GetSPU()->DrawDebugStateWindow();
   if (debug_settings.show_mdec_state)
     m_system->GetMDEC()->DrawDebugStateWindow();
+}
+
+bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, const char* filter /* = nullptr */)
+{
+  ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - 50.0f);
+  bool result = ImGui::InputText(label, path);
+  ImGui::SameLine();
+
+  ImGui::SetNextItemWidth(50.0f);
+  if (ImGui::Button("..."))
+  {
+    nfdchar_t* out_path = nullptr;
+    if (NFD_OpenDialog(filter, path->c_str(), &out_path) == NFD_OKAY)
+    {
+      path->assign(out_path);
+      result = true;
+    }
+  }
+
+  return result;
 }
 
 void SDLHostInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)

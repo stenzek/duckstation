@@ -22,8 +22,8 @@ void Settings::SetDefaults()
 
   bios_path = "scph1001.bin";
 
-  memory_card_a_filename = "memory_card_a.mcd";
-  memory_card_b_filename.clear();
+  memory_card_a_path = "memory_card_a.mcd";
+  memory_card_b_path.clear();
 }
 
 void Settings::Load(const char* filename)
@@ -46,8 +46,8 @@ void Settings::Load(const char* filename)
 
   bios_path = ini.GetValue("BIOS", "Path", "scph1001.bin");
 
-  memory_card_a_filename = ini.GetValue("MemoryCard", "CardAPath", "memory_card_a.mcd");
-  memory_card_b_filename = ini.GetValue("MemoryCard", "CardBPath", "");
+  memory_card_a_path = ini.GetValue("MemoryCard", "CardAPath", "memory_card_a.mcd");
+  memory_card_b_path = ini.GetValue("MemoryCard", "CardBPath", "");
 }
 
 bool Settings::Save(const char* filename) const
@@ -67,13 +67,13 @@ bool Settings::Save(const char* filename) const
 
   ini.SetValue("BIOS", "Path", bios_path.c_str());
 
-  if (!memory_card_a_filename.empty())
-    ini.SetValue("MemoryCard", "CardAPath", memory_card_a_filename.c_str());
+  if (!memory_card_a_path.empty())
+    ini.SetValue("MemoryCard", "CardAPath", memory_card_a_path.c_str());
   else
     ini.DeleteValue("MemoryCard", "CardAPath", nullptr);
 
-  if (!memory_card_b_filename.empty())
-    ini.SetValue("MemoryCard", "CardBPath", memory_card_b_filename.c_str());
+  if (!memory_card_b_path.empty())
+    ini.SetValue("MemoryCard", "CardBPath", memory_card_b_path.c_str());
   else
     ini.DeleteValue("MemoryCard", "CardBPath", nullptr);
 
@@ -82,6 +82,8 @@ bool Settings::Save(const char* filename) const
 }
 
 static std::array<const char*, 3> s_gpu_renderer_names = {{"D3D11", "OpenGL", "Software"}};
+static std::array<const char*, 3> s_gpu_renderer_display_names = {
+  {"Hardware (D3D11)", "Hardware (OpenGL)", "Software"}};
 
 std::optional<Settings::GPURenderer> Settings::ParseRendererName(const char* str)
 {
@@ -100,4 +102,9 @@ std::optional<Settings::GPURenderer> Settings::ParseRendererName(const char* str
 const char* Settings::GetRendererName(GPURenderer renderer)
 {
   return s_gpu_renderer_names[static_cast<int>(renderer)];
+}
+
+const char* Settings::GetRendererDisplayName(GPURenderer renderer)
+{
+  return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }

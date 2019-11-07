@@ -8,12 +8,14 @@ struct Settings
   {
     HardwareD3D11,
     HardwareOpenGL,
-    Software
+    Software,
+    Count
   };
 
   Settings();
 
   bool start_paused = false;
+  bool speed_limiter_enabled = true;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
@@ -21,6 +23,7 @@ struct Settings
   bool gpu_vsync = true;
   bool gpu_true_color = false;
   bool display_linear_filtering = true;
+  bool display_fullscreen = false;
 
   struct DebugSettings
   {
@@ -38,8 +41,8 @@ struct Settings
   // TODO: Controllers, memory cards, etc.
 
   std::string bios_path;
-  std::string memory_card_a_filename;
-  std::string memory_card_b_filename;
+  std::string memory_card_a_path;
+  std::string memory_card_b_path;
 
   void SetDefaults();
   void Load(const char* filename);
@@ -47,4 +50,5 @@ struct Settings
 
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
+  static const char* GetRendererDisplayName(GPURenderer renderer);
 };

@@ -376,16 +376,16 @@ void System::UpdateMemoryCards()
   m_pad->SetMemoryCard(0, nullptr);
   m_pad->SetMemoryCard(1, nullptr);
 
-  if (!m_settings.memory_card_a_filename.empty())
+  if (!m_settings.memory_card_a_path.empty())
   {
-    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_a_filename);
+    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_a_path);
     if (card)
       m_pad->SetMemoryCard(0, std::move(card));
   }
 
-  if (!m_settings.memory_card_b_filename.empty())
+  if (!m_settings.memory_card_b_path.empty())
   {
-    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_b_filename);
+    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, m_settings.memory_card_b_path);
     if (card)
       m_pad->SetMemoryCard(1, std::move(card));
   }
