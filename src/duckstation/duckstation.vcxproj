@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d11_host_display.cpp" />
+    <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
@@ -61,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d11_host_display.h" />
+    <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="sdl_audio_stream.h" />

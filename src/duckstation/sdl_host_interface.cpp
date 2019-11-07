@@ -16,6 +16,7 @@
 #include "d3d11_host_display.h"
 #endif
 #include "icon.h"
+#include "imgui_styles.h"
 #include "opengl_host_display.h"
 #include "sdl_audio_stream.h"
 #include <cinttypes>
@@ -90,6 +91,8 @@ bool SDLHostInterface::CreateImGuiContext()
   ImGui::GetIO().IniFilename = nullptr;
   ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
   ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasGamepad;
+
+  ImGui::StyleColorsDarker();
   return true;
 }
 

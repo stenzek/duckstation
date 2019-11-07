@@ -1,5 +1,8 @@
 add_executable(duckstation
   icon.cpp
+  icon.h
+  imgui_styles.cpp
+  imgui_styles.h
   main.cpp
   opengl_host_display.cpp
   opengl_host_display.h
