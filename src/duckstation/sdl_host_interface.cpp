@@ -93,6 +93,7 @@ bool SDLHostInterface::CreateImGuiContext()
   ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasGamepad;
 
   ImGui::StyleColorsDarker();
+  ImGui::AddRobotoRegularFont();
   return true;
 }
 

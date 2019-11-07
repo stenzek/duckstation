@@ -56,3 +56,11 @@ void ImGui::StyleColorsDarker(ImGuiStyle* dst)
   colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
   colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
+
+#include "font_roboto_regular.inl"
+
+void ImGui::AddRobotoRegularFont(float size /*= 15.0f*/)
+{
+  ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(s_font_roboto_regular_compressed_data,
+                                                       s_font_roboto_regular_compressed_size, 15.0f);
+}
