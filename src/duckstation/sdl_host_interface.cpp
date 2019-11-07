@@ -1007,11 +1007,10 @@ void SDLHostInterface::DrawAboutWindow()
 {
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
                           ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-  if (!ImGui::Begin("About DuckStation", &m_about_window_open, ImGuiWindowFlags_NoResize))
-  {
-    ImGui::End();
+
+  ImGui::OpenPopup("About DuckStation");
+  if (!ImGui::BeginPopupModal("About DuckStation", &m_about_window_open, ImGuiWindowFlags_NoResize))
     return;
-  }
 
   ImGui::Text("DuckStation");
   ImGui::NewLine();
@@ -1031,7 +1030,7 @@ void SDLHostInterface::DrawAboutWindow()
   if (ImGui::Button("Close", ImVec2(60.0f, 20.0f)))
     m_about_window_open = false;
 
-  ImGui::End();
+  ImGui::EndPopup();
 }
 
 void SDLHostInterface::DrawDebugMenu()
