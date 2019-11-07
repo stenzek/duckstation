@@ -40,6 +40,7 @@
     <ClInclude Include="include\imgui_impl_dx11.h" />
     <ClInclude Include="include\imgui_impl_opengl3.h" />
     <ClInclude Include="include\imgui_impl_sdl.h" />
+    <ClInclude Include="include\imgui_stdlib.h" />
     <ClInclude Include="src\imgui_internal.h" />
     <ClInclude Include="src\imstb_rectpack.h" />
     <ClInclude Include="src\imstb_textedit.h" />
@@ -51,6 +52,7 @@
     <ClCompile Include="src\imgui_impl_dx11.cpp" />
     <ClCompile Include="src\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\imgui_impl_sdl.cpp" />
+    <ClCompile Include="src\imgui_stdlib.cpp" />
     <ClCompile Include="src\imgui_widgets.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -233,7 +235,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>imgui_STATIC;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>imgui_STATIC;WIN32;_ITERATOR_DEBUG_LEVEL=1;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\glad\include;$(ProjectDir)include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -254,7 +256,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>imgui_STATIC;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>imgui_STATIC;WIN32;_ITERATOR_DEBUG_LEVEL=1;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\glad\include;$(ProjectDir)include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
