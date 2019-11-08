@@ -956,6 +956,8 @@ void CDROM::BeginReading(bool cdda)
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_secondary_status.playing_cdda = cdda;
+
+  // TODO: Should the sector buffer be cleared here?
   m_sector_buffer.clear();
 
   m_drive_state = cdda ? DriveState::Playing : DriveState::Reading;
@@ -1003,11 +1005,15 @@ void CDROM::DoSeekComplete()
   {
     // seek complete, transition to play/read if requested
     if (m_play_after_seek || m_read_after_seek)
+    {
+      // INT2 is not sent on play/read
       BeginReading(m_play_after_seek);
-
-    m_async_response_fifo.Push(m_secondary_status.bits);
-    SetAsyncInterrupt(Interrupt::INT2);
-    UpdateStatusRegister();
+    }
+    else
+    {
+      m_async_response_fifo.Push(m_secondary_status.bits);
+      SetAsyncInterrupt(Interrupt::INT2);
+    }
   }
   else
   {
@@ -1020,6 +1026,7 @@ void CDROM::DoSeekComplete()
   m_setloc_pending = false;
   m_read_after_seek = false;
   m_play_after_seek = false;
+  UpdateStatusRegister();
 }
 
 void CDROM::DoPauseComplete()
