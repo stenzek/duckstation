@@ -909,6 +909,20 @@ void CDROM::ExecuteCommand()
     }
     break;
 
+    case Command::Getparam:
+    {
+      Log_DebugPrintf("CDROM Getparam command");
+
+      m_response_fifo.Push(m_secondary_status.bits);
+      m_response_fifo.Push(m_mode.bits);
+      m_response_fifo.Push(0);
+      m_response_fifo.Push(m_filter_file_number);
+      m_response_fifo.Push(m_filter_channel_number);
+      SetInterrupt(Interrupt::ACK);
+      EndCommand();
+    }
+    break;
+
     default:
       Panic("Unknown command");
       break;
