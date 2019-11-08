@@ -311,6 +311,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
         {
           Log_DebugPrintf("Interrupt enable register <- 0x%02X", value);
           m_interrupt_enable_register = value & INTERRUPT_REGISTER_MASK;
+          UpdateInterruptRequest();
           return;
         }
 
@@ -415,8 +416,7 @@ void CDROM::DMARead(u32* words, u32 word_count)
 void CDROM::SetInterrupt(Interrupt interrupt)
 {
   m_interrupt_flag_register = static_cast<u8>(interrupt);
-  if (HasPendingInterrupt())
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
+  UpdateInterruptRequest();
 }
 
 void CDROM::SetAsyncInterrupt(Interrupt interrupt)
@@ -442,7 +442,7 @@ void CDROM::DeliverAsyncInterrupt()
   m_response_fifo.PushFromQueue(&m_async_response_fifo);
   m_interrupt_flag_register = m_pending_async_interrupt;
   m_pending_async_interrupt = 0;
-  m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
+  UpdateInterruptRequest();
 }
 
 void CDROM::SendACKAndStat()
@@ -475,6 +475,14 @@ void CDROM::UpdateStatusRegister()
   m_status.BUSYSTS = HasPendingCommand();
 
   m_dma->SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
+}
+
+void CDROM::UpdateInterruptRequest()
+{
+  if ((m_interrupt_flag_register & m_interrupt_enable_register) == 0)
+    return;
+
+  m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
 TickCount CDROM::GetAckDelayForCommand() const
@@ -937,6 +945,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     {
       Log_DebugPrintf("Get CDROM BIOS Date/Version");
       static constexpr u8 response[] = {0x94, 0x09, 0x19, 0xC0};
+      // static constexpr u8 response[] = {0x96, 0x09, 0x12, 0xC2};
       m_response_fifo.PushRange(response, countof(response));
       SetInterrupt(Interrupt::ACK);
       EndCommand();

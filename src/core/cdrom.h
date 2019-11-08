@@ -186,6 +186,7 @@ private:
   void SendErrorResponse(u8 reason = 0x80);
   void SendAsyncErrorResponse(u8 reason = 0x80);
   void UpdateStatusRegister();
+  void UpdateInterruptRequest();
 
   TickCount GetAckDelayForCommand() const;
   TickCount GetTicksForRead() const;
