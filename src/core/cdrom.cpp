@@ -488,7 +488,7 @@ void CDROM::UpdateInterruptRequest()
 TickCount CDROM::GetAckDelayForCommand() const
 {
   const u32 default_ack_delay = 3000;
-  if (m_command == Command::Init)
+  if (m_command == Command::Init || m_command == Command::ReadTOC)
     return 60000;
   else
     return default_ack_delay;
@@ -546,6 +546,10 @@ void CDROM::Execute(TickCount ticks)
 
         case DriveState::ReadingID:
           DoIDRead();
+          break;
+
+        case DriveState::ReadingTOC:
+          DoTOCRead();
           break;
 
         case DriveState::Reading:
@@ -631,6 +635,25 @@ void CDROM::ExecuteCommand()
 
         m_drive_state = DriveState::ReadingID;
         m_drive_remaining_ticks = 18000;
+      }
+
+      EndCommand();
+      return;
+    }
+
+    case Command::ReadTOC:
+    {
+      Log_DebugPrintf("CDROM ReadTOC command");
+      if (!HasMedia())
+      {
+        SendErrorResponse(0x80);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        m_drive_state = DriveState::ReadingTOC;
+        m_drive_remaining_ticks = MASTER_CLOCK / 2; // half a second
       }
 
       EndCommand();
@@ -1121,6 +1144,15 @@ void CDROM::DoIDRead()
   SetAsyncInterrupt(Interrupt::INT2);
 }
 
+void CDROM::DoTOCRead()
+{
+  Log_DebugPrintf("TOC read complete");
+  m_drive_state = DriveState::Idle;
+  m_async_response_fifo.Clear();
+  m_async_response_fifo.Push(m_secondary_status.bits);
+  SetAsyncInterrupt(Interrupt::INT2);
+}
+
 void CDROM::DoSectorRead()
 {
   // TODO: Error handling
@@ -1417,8 +1449,8 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 8> drive_state_names = {
-      {"Idle", "Spinning Up", "Seeking", "Reading ID", "Reading", "Playing", "Pausing", "Stopping"}};
+    static constexpr std::array<const char*, 9> drive_state_names = {
+      {"Idle", "Spinning Up", "Seeking", "Reading ID", "Reading TOC", "Reading", "Playing", "Pausing", "Stopping"}};
 
     ImGui::Columns(3);
 

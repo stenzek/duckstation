@@ -112,6 +112,7 @@ private:
     SpinningUp,
     Seeking,
     ReadingID,
+    ReadingTOC,
     Reading,
     Playing,
     Pausing,
@@ -201,6 +202,7 @@ private:
   void DoPauseComplete();
   void DoStopComplete();
   void DoIDRead();
+  void DoTOCRead();
   void DoSectorRead();
   void ProcessDataSector(const u8* raw_sector);
   void ProcessXAADPCMSector(const u8* raw_sector);
