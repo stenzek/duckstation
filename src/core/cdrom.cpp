@@ -941,6 +941,27 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 {
   switch (subcommand)
   {
+    case 0x04: // Reset SCEx counters
+    {
+      Log_DebugPrintf("Reset SCEx counters");
+      m_secondary_status.motor_on = true;
+      m_response_fifo.Push(m_secondary_status.bits);
+      SetInterrupt(Interrupt::ACK);
+      EndCommand();
+      return;
+    }
+
+    case 0x05: // Read SCEx counters
+    {
+      Log_DebugPrintf("Read SCEx counters");
+      m_response_fifo.Push(m_secondary_status.bits);
+      m_response_fifo.Push(0); // # of TOC reads?
+      m_response_fifo.Push(0); // # of SCEx strings received
+      SetInterrupt(Interrupt::ACK);
+      EndCommand();
+      return;
+    }
+
     case 0x20: // Get CDROM BIOS Date/Version
     {
       Log_DebugPrintf("Get CDROM BIOS Date/Version");
