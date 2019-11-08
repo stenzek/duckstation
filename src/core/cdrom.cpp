@@ -580,6 +580,12 @@ void CDROM::ExecuteCommand()
 {
   Log_DevPrintf("CDROM executing command 0x%02X", ZeroExtend32(static_cast<u8>(m_command)));
 
+  if (!m_response_fifo.IsEmpty())
+  {
+    Log_DebugPrintf("Response FIFO not empty on command begin");
+    m_response_fifo.Clear();
+  }
+
   switch (m_command)
   {
     case Command::Getstat:
