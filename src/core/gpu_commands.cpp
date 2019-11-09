@@ -110,6 +110,8 @@ bool GPU::HandleSetDrawingAreaTopLeftCommand(const u32*& command_ptr, u32 comman
   Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
   if (m_drawing_area.left != left || m_drawing_area.top != top)
   {
+    FlushRender();
+
     m_drawing_area.left = left;
     m_drawing_area.top = top;
     m_drawing_area_changed = true;
@@ -127,6 +129,8 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand(const u32*& command_ptr, u32 co
   Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
   if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
   {
+    FlushRender();
+
     m_drawing_area.right = right;
     m_drawing_area.bottom = bottom;
     m_drawing_area_changed = true;
@@ -143,6 +147,8 @@ bool GPU::HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_siz
   Log_DebugPrintf("Set drawing offset (%d, %d)", m_drawing_offset.x, m_drawing_offset.y);
   if (m_drawing_offset.x != x || m_drawing_offset.y != y)
   {
+    FlushRender();
+
     m_drawing_offset.x = x;
     m_drawing_offset.y = y;
     m_drawing_offset_changed = true;
