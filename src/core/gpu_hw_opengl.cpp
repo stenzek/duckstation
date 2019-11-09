@@ -133,7 +133,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
 
   m_supports_texture_buffer = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
-  if (m_uniform_stream_buffer)
+  if (m_supports_texture_buffer)
   {
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
     if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
