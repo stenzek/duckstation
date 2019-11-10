@@ -241,8 +241,9 @@ private:
   u8 m_filter_file_number = 0;
   u8 m_filter_channel_number = 0;
 
-  CDImage::SectorHeader m_last_sector_header = {};
-  CDXA::XASubHeader m_last_sector_subheader = {};
+  CDImage::SectorHeader m_last_sector_header{};
+  CDXA::XASubHeader m_last_sector_subheader{};
+  CDImage::SubChannelQ m_last_subq{};
 
   std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};

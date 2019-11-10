@@ -56,6 +56,7 @@ void CDROM::SoftReset()
   m_filter_channel_number = 0;
   std::memset(&m_last_sector_header, 0, sizeof(m_last_sector_header));
   std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
+  std::memset(&m_last_subq, 0, sizeof(m_last_subq));
 
   m_next_cd_audio_volume_matrix[0][0] = 0x80;
   m_next_cd_audio_volume_matrix[0][1] = 0x00;
@@ -103,6 +104,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_filter_channel_number);
   sw.DoBytes(&m_last_sector_header, sizeof(m_last_sector_header));
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
+  sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);
@@ -884,16 +886,15 @@ void CDROM::ExecuteCommand()
 
     case Command::GetlocP:
     {
-      // TODO: Subchannel Q support..
       Log_DebugPrintf("CDROM GetlocP command");
-      m_response_fifo.Push(1);                           // track number
-      m_response_fifo.Push(1);                           // index
-      m_response_fifo.Push(m_last_sector_header.minute); // minute within track
-      m_response_fifo.Push(m_last_sector_header.second); // second within track
-      m_response_fifo.Push(m_last_sector_header.frame);  // frame within track
-      m_response_fifo.Push(m_last_sector_header.minute); // minute on entire disc
-      m_response_fifo.Push(m_last_sector_header.second); // second on entire disc
-      m_response_fifo.Push(m_last_sector_header.frame);  // frame on entire disc
+      m_response_fifo.Push(m_last_subq.track_number_bcd);
+      m_response_fifo.Push(m_last_subq.index_number_bcd);
+      m_response_fifo.Push(m_last_subq.relative_minute_bcd);
+      m_response_fifo.Push(m_last_subq.relative_second_bcd);
+      m_response_fifo.Push(m_last_subq.relative_frame_bcd);
+      m_response_fifo.Push(m_last_subq.absolute_minute_bcd);
+      m_response_fifo.Push(m_last_subq.absolute_second_bcd);
+      m_response_fifo.Push(m_last_subq.absolute_frame_bcd);
       SetInterrupt(Interrupt::ACK);
       EndCommand();
     }
@@ -1086,7 +1087,8 @@ void CDROM::DoSeekComplete()
   m_secondary_status.ClearActiveBits();
   m_sector_buffer.clear();
 
-  if (m_media && m_media->Seek(m_seek_position))
+  // seek and update sub-q for ReadP command
+  if (m_media && m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&m_last_subq))
   {
     // seek complete, transition to play/read if requested
     if (m_play_after_seek || m_read_after_seek)
@@ -1169,7 +1171,7 @@ void CDROM::DoSectorRead()
 {
   // TODO: Error handling
   u8 raw_sector[CDImage::RAW_SECTOR_SIZE];
-  if (!m_media->ReadRawSector(raw_sector))
+  if (!m_media->ReadSubChannelQ(&m_last_subq) || !m_media->ReadRawSector(raw_sector))
     Panic("Sector read failed");
 
   if (m_drive_state == DriveState::Reading)
