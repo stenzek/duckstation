@@ -57,6 +57,7 @@ void CDROM::SoftReset()
   std::memset(&m_last_sector_header, 0, sizeof(m_last_sector_header));
   std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
   std::memset(&m_last_subq, 0, sizeof(m_last_subq));
+  m_last_cdda_report_frame_nibble = 0xFF;
 
   m_next_cd_audio_volume_matrix[0][0] = 0x80;
   m_next_cd_audio_volume_matrix[0][1] = 0x00;
@@ -105,6 +106,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&m_last_sector_header, sizeof(m_last_sector_header));
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
+  sw.Do(&m_last_cdda_report_frame_nibble);
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);
@@ -1042,6 +1044,8 @@ void CDROM::BeginReading(bool cdda)
   // TODO: Should the sector buffer be cleared here?
   m_sector_buffer.clear();
 
+  m_last_cdda_report_frame_nibble = 0xFF;
+
   m_drive_state = cdda ? DriveState::Playing : DriveState::Reading;
   m_drive_remaining_ticks = GetTicksForRead();
   m_system->SetDowncount(m_drive_remaining_ticks);
@@ -1385,7 +1389,38 @@ void CDROM::ProcessCDDASector(const u8* raw_sector)
   Log_DevPrintf("Read sector %u as CDDA", m_media->GetPositionOnDisc());
 
   if (m_mode.report_audio)
-    Log_ErrorPrintf("CDDA report not implemented");
+  {
+    const u8 frame_nibble = m_last_subq.absolute_frame_bcd >> 4;
+    if (m_last_cdda_report_frame_nibble != frame_nibble)
+    {
+      m_last_cdda_report_frame_nibble = frame_nibble;
+
+      Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", m_last_subq.track_number_bcd,
+                      m_last_subq.index_number_bcd, m_last_subq.relative_minute_bcd, m_last_subq.relative_second_bcd,
+                      m_last_subq.relative_frame_bcd);
+
+      m_async_response_fifo.Clear();
+      m_async_response_fifo.Push(m_secondary_status.bits);
+      m_async_response_fifo.Push(m_last_subq.track_number_bcd);
+      m_async_response_fifo.Push(m_last_subq.index_number_bcd);
+      if (m_last_subq.absolute_frame_bcd & 0x10)
+      {
+        m_async_response_fifo.Push(m_last_subq.relative_minute_bcd);
+        m_async_response_fifo.Push(0x80 | m_last_subq.relative_second_bcd);
+        m_async_response_fifo.Push(m_last_subq.relative_frame_bcd);
+      }
+      else
+      {
+        m_async_response_fifo.Push(m_last_subq.absolute_minute_bcd);
+        m_async_response_fifo.Push(m_last_subq.absolute_second_bcd);
+        m_async_response_fifo.Push(m_last_subq.absolute_frame_bcd);
+      }
+
+      m_async_response_fifo.Push(0); // peak low
+      m_async_response_fifo.Push(0); // peak high
+      SetAsyncInterrupt(Interrupt::INT1);
+    }
+  }
 
   // Apply volume when pushing sectors to SPU.
   if (m_muted)

@@ -193,7 +193,7 @@ private:
   TickCount GetTicksForRead() const;
   TickCount GetTicksForSeek() const;
   void BeginCommand(Command command); // also update status register
-  void EndCommand(); // also updates status register
+  void EndCommand();                  // also updates status register
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
   void BeginReading(bool cdda);
@@ -244,6 +244,7 @@ private:
   CDImage::SectorHeader m_last_sector_header{};
   CDXA::XASubHeader m_last_sector_subheader{};
   CDImage::SubChannelQ m_last_subq{};
+  u8 m_last_cdda_report_frame_nibble = 0xFF;
 
   std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};
