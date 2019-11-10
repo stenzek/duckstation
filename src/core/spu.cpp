@@ -44,6 +44,7 @@ void SPU::Reset()
   m_endx_register = 0;
   m_reverb_on_register = 0;
   m_noise_mode_register = 0;
+  m_pitch_modulation_enable_register = 0;
   m_ticks_carry = 0;
 
   for (u32 i = 0; i < NUM_VOICES; i++)
@@ -94,6 +95,7 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.current_block_samples);
     sw.Do(&v.previous_block_last_samples);
     sw.Do(&v.adpcm_last_samples);
+    sw.Do(&v.last_amplitude);
     sw.Do(&v.adsr_phase);
     sw.DoPOD(&v.adsr_target);
     sw.Do(&v.adsr_ticks);
@@ -134,6 +136,12 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801D8E - SPU_BASE:
       return Truncate16(m_key_off_register >> 16);
+
+    case 0x1F801D90 - SPU_BASE:
+      return Truncate16(m_pitch_modulation_enable_register);
+
+    case 0x1F801D92 - SPU_BASE:
+      return Truncate16(m_pitch_modulation_enable_register >> 16);
 
     case 0x1F801D94 - SPU_BASE:
       return Truncate16(m_noise_mode_register);
@@ -278,6 +286,23 @@ void SPU::WriteRegister(u32 offset, u16 value)
         }
         bits >>= 1;
       }
+    }
+    break;
+
+    case 0x1F801D90 - SPU_BASE:
+    {
+      m_system->Synchronize();
+      m_pitch_modulation_enable_register = (m_pitch_modulation_enable_register & 0xFFFF0000) | ZeroExtend32(value);
+      Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
+    }
+    break;
+
+    case 0x1F801D92 - SPU_BASE:
+    {
+      m_system->Synchronize();
+      m_pitch_modulation_enable_register =
+        (m_pitch_modulation_enable_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
+      Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
     }
     break;
 
@@ -817,7 +842,10 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 {
   Voice& voice = m_voices[voice_index];
   if (!voice.IsOn())
+  {
+    voice.last_amplitude = 0;
     return {};
+  }
 
   if (!voice.has_samples)
   {
@@ -834,11 +862,17 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   }
 
   // interpolate/sample and apply ADSR volume
-  const s32 sample = ApplyVolume(voice.Interpolate(), voice.regs.adsr_volume);
+  const s32 amplitude = ApplyVolume(voice.Interpolate(), voice.regs.adsr_volume);
+  voice.last_amplitude = amplitude;
   voice.TickADSR();
 
-  // TODO: Pulse modulation
+  // Pitch modulation
   u16 step = voice.regs.adpcm_sample_rate;
+  if (IsPitchModulationEnabled(voice_index))
+  {
+    const u32 factor = u32(std::clamp<s32>(m_voices[voice_index - 1].last_amplitude, -0x8000, 0x7FFF) + 0x8000);
+    step = Truncate16(step * factor) >> 15;
+  }
   step = std::min<u16>(step, 0x4000);
   voice.counter.bits += step;
 
@@ -870,8 +904,8 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   }
 
   // apply per-channel volume
-  const s32 left = ApplyVolume(sample, voice.regs.volume_left.GetVolume());
-  const s32 right = ApplyVolume(sample, voice.regs.volume_right.GetVolume());
+  const s32 left = ApplyVolume(amplitude, voice.regs.volume_left.GetVolume());
+  const s32 right = ApplyVolume(amplitude, voice.regs.volume_right.GetVolume());
   return std::make_tuple(left, right);
 }
 
@@ -1071,6 +1105,15 @@ void SPU::DrawDebugStateWindow()
 
     ImGui::TextColored(m_SPUCNT.external_audio_reverb ? active_color : inactive_color, "External Audio Enable: %s",
                        m_SPUCNT.external_audio_reverb ? "Yes" : "No");
+
+    ImGui::Text("Pitch Modulation: ");
+    for (u32 i = 1; i < NUM_VOICES; i++)
+    {
+      ImGui::SameLine(0.0f, 16.0f);
+
+      const bool active = IsPitchModulationEnabled(i);
+      ImGui::TextColored(active ? active_color : inactive_color, "%u", i);
+    }
   }
 
   ImGui::End();

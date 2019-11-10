@@ -222,6 +222,7 @@ private:
     std::array<s16, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<s16, 3> previous_block_last_samples;
     std::array<s32, 2> adpcm_last_samples;
+    s32 last_amplitude;
 
     ADSRPhase adsr_phase;
     ADSRTarget adsr_target;
@@ -255,7 +256,11 @@ private:
 
   static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
-  bool IsVoiceReverbEnabled(u32 i) const { return ConvertToBoolUnchecked((m_reverb_on_register >> i) & u32(1)); }
+  bool IsVoiceReverbEnabled(u32 i) const { return (m_reverb_on_register & (u32(1) << i)) != 0; }
+  bool IsPitchModulationEnabled(u32 i) const
+  {
+    return (i > 0 && ((m_pitch_modulation_enable_register & (u32(1) << i)) != 0));
+  }
 
   u16 ReadVoiceRegister(u32 offset);
   void WriteVoiceRegister(u32 offset, u16 value);
@@ -292,6 +297,7 @@ private:
   u32 m_endx_register = 0;
   u32 m_reverb_on_register = 0;
   u32 m_noise_mode_register = 0;
+  u32 m_pitch_modulation_enable_register = 0;
 
   TickCount m_ticks_carry = 0;
 
