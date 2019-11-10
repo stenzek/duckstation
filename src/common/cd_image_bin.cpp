@@ -41,14 +41,20 @@ bool CDImageBin::Open(const char* filename)
 
   m_lba_count = file_size / track_sector_size;
 
+  SubChannelQ::Control control = {};
+  TrackMode mode = TrackMode::Mode2Raw;
+
   // Two seconds default pregap.
   const u32 pregap_frames = 2 * FRAMES_PER_SECOND;
   Index pregap_index = {};
+  pregap_index.file_sector_size = track_sector_size;
   pregap_index.start_lba_on_disc = 0;
   pregap_index.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(pregap_frames));
   pregap_index.length = pregap_frames;
   pregap_index.track_number = 1;
   pregap_index.index_number = 0;
+  pregap_index.mode = mode;
+  pregap_index.control.bits = control.bits;
   pregap_index.is_pregap = true;
   m_indices.push_back(pregap_index);
 
@@ -62,10 +68,13 @@ bool CDImageBin::Open(const char* filename)
   data_index.index_number = 1;
   data_index.start_lba_in_track = 0;
   data_index.length = m_lba_count;
+  data_index.mode = mode;
+  data_index.control.bits = control.bits;
   m_indices.push_back(data_index);
 
   // Assume a single track.
-  m_tracks.push_back(Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count});
+  m_tracks.push_back(
+    Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count, mode, control});
 
   return Seek(1, Position{0, 0, 0});
 }

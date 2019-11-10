@@ -67,6 +67,9 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
 
   u32 disc_lba = 0;
 
+  // "last track" subchannel q - used for the pregap
+  SubChannelQ::Control last_track_control{};
+
   // for each track..
   const int num_tracks = cd_get_ntrack(m_cd);
   for (int track_num = 1; track_num <= num_tracks; track_num++)
@@ -91,11 +94,20 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       it = m_files.emplace(track_filename, track_fp).first;
     }
 
-    // TODO: FIXME
-    const u32 track_sector_size = RAW_SECTOR_SIZE;
+    // data type determines the sector size
+    const TrackMode mode = static_cast<TrackMode>(track_get_mode(track));
+    const u32 track_sector_size = GetBytesPerSector(mode);
+
+    // precompute subchannel q flags for the whole track
+    SubChannelQ::Control control{};
+    control.data = mode != TrackMode::Audio;
+    control.audio_preemphasis = track_is_set_flag(track, FLAG_PRE_EMPHASIS);
+    control.digital_copy_permitted = track_is_set_flag(track, FLAG_COPY_PERMITTED);
+    control.four_channel_audio = track_is_set_flag(track, FLAG_FOUR_CHANNEL);
+
+    // determine the length from the file
     if (track_length < 0)
     {
-      // determine the length from the file
       std::fseek(it->second, 0, SEEK_END);
       long file_size = std::ftell(it->second);
       std::fseek(it->second, 0, SEEK_SET);
@@ -121,6 +133,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       pregap_index.length = pregap_frames;
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
+      pregap_index.mode = mode;
+      pregap_index.control.bits = (track_num > 1) ? last_track_control.bits : control.bits;
       pregap_index.is_pregap = true;
       if (pregap_in_file)
       {
@@ -138,6 +152,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     // add the track itself
     m_tracks.push_back(
       Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()), static_cast<u32>(track_length)});
+    last_track_control.bits = control.bits;
 
     // how many indices in this track?
     Index last_index;
@@ -148,6 +163,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     last_index.file = it->second;
     last_index.file_sector_size = track_sector_size;
     last_index.file_offset = file_offset;
+    last_index.mode = mode;
+    last_index.control.bits = control.bits;
     last_index.is_pregap = false;
 
     long last_index_offset = track_start;
