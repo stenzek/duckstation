@@ -207,7 +207,7 @@ private:
   void ProcessDataSector(const u8* raw_sector);
   void ProcessXAADPCMSector(const u8* raw_sector);
   void ProcessCDDASector(const u8* raw_sector);
-  void BeginSeeking();
+  void BeginSeeking(bool read_after_seek, bool play_after_seek);
   void LoadDataFIFO();
 
   System* m_system = nullptr;

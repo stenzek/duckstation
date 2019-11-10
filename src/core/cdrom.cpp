@@ -501,12 +501,22 @@ TickCount CDROM::GetTicksForRead() const
 
 TickCount CDROM::GetTicksForSeek() const
 {
-  const CDImage::LBA current_lba = m_media->GetPositionOnDisc();
+  const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_media->GetPositionOnDisc() : 0;
   const CDImage::LBA new_lba = m_setloc_position.ToLBA();
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
-  const TickCount ticks = static_cast<TickCount>(20000 + lba_diff * 100);
-  Log_DebugPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
+  // const TickCount ticks = static_cast<TickCount>(20000 + lba_diff * 100);
+
+  // Formula from Mednafen.
+  TickCount ticks = std::max<TickCount>(20000, lba_diff * MASTER_CLOCK * 1000 / (72 * 60 * 75) / 1000);
+  if (!m_secondary_status.motor_on)
+    ticks += MASTER_CLOCK;
+  else if (m_drive_state == DriveState::Idle) // paused
+    ticks += 1237952 << (BoolToUInt8(!m_mode.double_speed));
+  if (lba_diff >= 2550)
+    ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
+
+  Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
 }
 
@@ -709,7 +719,7 @@ void CDROM::ExecuteCommand()
       else
       {
         SendACKAndStat();
-        BeginSeeking();
+        BeginSeeking(false, false);
       }
 
       EndCommand();
@@ -1020,9 +1030,7 @@ void CDROM::BeginReading(bool cdda)
 
   if (m_setloc_pending)
   {
-    BeginSeeking();
-    m_read_after_seek = !cdda;
-    m_play_after_seek = cdda;
+    BeginSeeking(!cdda, cdda);
     return;
   }
 
@@ -1038,22 +1046,26 @@ void CDROM::BeginReading(bool cdda)
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
-void CDROM::BeginSeeking()
+void CDROM::BeginSeeking(bool read_after_seek, bool play_after_seek)
 {
   if (!m_setloc_pending)
     Log_WarningPrintf("Seeking without setloc set");
 
   m_seek_position = m_setloc_position;
+  m_read_after_seek = read_after_seek;
+  m_play_after_seek = play_after_seek;
   m_setloc_pending = false;
 
   Log_DebugPrintf("Seeking to [%02u:%02u:%02u]", m_seek_position.minute, m_seek_position.second, m_seek_position.frame);
+
+  const TickCount seek_time = GetTicksForSeek();
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_sector_buffer.clear();
 
   m_drive_state = DriveState::Seeking;
-  m_drive_remaining_ticks = GetTicksForSeek();
+  m_drive_remaining_ticks = seek_time;
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
