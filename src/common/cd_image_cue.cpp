@@ -107,10 +107,12 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
 
     // two seconds pregap for track 1 is assumed if not specified
     long pregap_frames = track_get_zero_pre(track);
+    bool pregap_in_file = pregap_frames > 0;
     if (pregap_frames < 0 && track_num == 1)
       pregap_frames = 2 * FRAMES_PER_SECOND;
 
     // create the index for the pregap
+    u64 file_offset = static_cast<u64>(static_cast<s64>(track_start)) * track_sector_size;
     if (pregap_frames > 0)
     {
       Index pregap_index = {};
@@ -120,6 +122,14 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
       pregap_index.is_pregap = true;
+      if (pregap_in_file)
+      {
+        pregap_index.file = it->second;
+        pregap_index.file_offset = file_offset;
+        pregap_index.file_sector_size = track_sector_size;
+        file_offset += static_cast<u64>(pregap_index.length) * track_sector_size;
+      }
+
       m_indices.push_back(pregap_index);
 
       disc_lba += pregap_index.length;
@@ -137,7 +147,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     last_index.index_number = 1;
     last_index.file = it->second;
     last_index.file_sector_size = track_sector_size;
-    last_index.file_offset = 0;
+    last_index.file_offset = file_offset;
     last_index.is_pregap = false;
 
     long last_index_offset = track_start;

@@ -95,7 +95,7 @@ bool CDImage::Seek(const Position& pos)
 
 u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
 {
-  char* buffer_ptr = static_cast<char*>(buffer);
+  u8* buffer_ptr = static_cast<u8*>(buffer);
   u32 sectors_read = 0;
   for (; sectors_read < sector_count; sectors_read++)
   {
@@ -105,15 +105,21 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
         break;
     }
 
-    Assert(m_current_index->file);
-
     // get raw sector
-    char raw_sector[RAW_SECTOR_SIZE];
-    if (std::fread(raw_sector, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
+    u8 raw_sector[RAW_SECTOR_SIZE];
+    if (m_current_index->file)
     {
-      Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
-      Seek(m_position_on_disc);
-      return false;
+      if (std::fread(raw_sector, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
+      {
+        Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+        Seek(m_position_on_disc);
+        return false;
+      }
+    }
+    else
+    {
+      // This in an implicit pregap. Return silence.
+      std::fill(raw_sector, raw_sector + RAW_SECTOR_SIZE, u8(0));
     }
 
     switch (read_mode)
@@ -155,14 +161,19 @@ bool CDImage::ReadRawSector(void* buffer)
       return false;
   }
 
-  Assert(m_current_index->file);
-
-  // get raw sector
-  if (std::fread(buffer, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
+  if (m_current_index->file)
   {
-    Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
-    Seek(m_position_on_disc);
-    return false;
+    if (std::fread(buffer, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
+    {
+      Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+      Seek(m_position_on_disc);
+      return false;
+    }
+  }
+  else
+  {
+    // This in an implicit pregap. Return silence.
+    std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
   }
 
   m_position_on_disc++;
