@@ -15,7 +15,7 @@ public:
   MDEC();
   ~MDEC();
 
-  bool Initialize(System* system, DMA* dma);
+  void Initialize(System* system, DMA* dma);
   void Reset();
   bool DoState(StateWrapper& sw);
 

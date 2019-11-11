@@ -32,7 +32,7 @@ public:
   InterruptController();
   ~InterruptController();
 
-  bool Initialize(CPU::Core* cpu);
+  void Initialize(CPU::Core* cpu);
   void Reset();
   bool DoState(StateWrapper& sw);
 

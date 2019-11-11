@@ -38,7 +38,7 @@ Core::Core() = default;
 
 Core::~Core() = default;
 
-bool Core::Initialize(Bus* bus)
+void Core::Initialize(Bus* bus)
 {
   m_bus = bus;
 
@@ -46,8 +46,6 @@ bool Core::Initialize(Bus* bus)
   m_cop0_regs.PRID = UINT32_C(0x00000002);
 
   m_cop2.Initialize();
-
-  return true;
 }
 
 void Core::Reset()

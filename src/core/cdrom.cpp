@@ -16,13 +16,12 @@ CDROM::CDROM()
 
 CDROM::~CDROM() = default;
 
-bool CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu)
+void CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu)
 {
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_spu = spu;
-  return true;
 }
 
 void CDROM::Reset()

@@ -903,7 +903,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
       ImGui::Text("BIOS Path:");
       ImGui::SameLine(indent);
-      DrawFileChooser("##bios_path", &m_settings.bios_path);
+      settings_changed |= DrawFileChooser("##bios_path", &m_settings.bios_path);
 
       ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
 
@@ -1029,9 +1029,8 @@ void SDLHostInterface::DrawSettingsWindow()
   ImGui::End();
 
   if (settings_changed)
-  {
-    // TODO: Save to file
-  }
+    SaveSettings();
+
   if (gpu_settings_changed && m_system)
     m_system->GetGPU()->UpdateSettings();
 }

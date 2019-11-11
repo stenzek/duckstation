@@ -22,7 +22,7 @@ public:
   CDROM();
   ~CDROM();
 
-  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu);
+  void Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu);
   void Reset();
   bool DoState(StateWrapper& sw);
 

@@ -35,7 +35,7 @@ public:
   DMA();
   ~DMA();
 
-  bool Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, SPU* spu,
+  void Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, SPU* spu,
                   MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);

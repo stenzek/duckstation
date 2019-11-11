@@ -14,7 +14,7 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
+void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
                      SPU* spu, MDEC* mdec)
 {
   m_system = system;
@@ -25,7 +25,6 @@ bool DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
   m_spu = spu;
   m_mdec = mdec;
   m_transfer_buffer.resize(32);
-  return true;
 }
 
 void DMA::Reset()

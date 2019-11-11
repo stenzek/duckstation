@@ -12,11 +12,10 @@ Pad::Pad() = default;
 
 Pad::~Pad() = default;
 
-bool Pad::Initialize(System* system, InterruptController* interrupt_controller)
+void Pad::Initialize(System* system, InterruptController* interrupt_controller)
 {
   m_system = system;
   m_interrupt_controller = interrupt_controller;
-  return true;
 }
 
 void Pad::Reset()

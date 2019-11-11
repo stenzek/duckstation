@@ -10,11 +10,10 @@ Timers::Timers() = default;
 
 Timers::~Timers() = default;
 
-bool Timers::Initialize(System* system, InterruptController* interrupt_controller)
+void Timers::Initialize(System* system, InterruptController* interrupt_controller)
 {
   m_system = system;
   m_interrupt_controller = interrupt_controller;
-  return true;
 }
 
 void Timers::Reset()

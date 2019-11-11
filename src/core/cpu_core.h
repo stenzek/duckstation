@@ -24,7 +24,7 @@ public:
   Core();
   ~Core();
 
-  bool Initialize(Bus* bus);
+  void Initialize(Bus* bus);
   void Reset();
   bool DoState(StateWrapper& sw);
 

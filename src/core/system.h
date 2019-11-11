@@ -78,6 +78,7 @@ public:
 private:
   bool DoState(StateWrapper& sw);
   bool CreateGPU();
+  bool LoadBIOS();
 
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;

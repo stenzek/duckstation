@@ -27,10 +27,14 @@ public:
   Bus();
   ~Bus();
 
-  bool Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad,
+  void Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad,
                   Timers* timers, SPU* spu, MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
+
+  bool LoadBIOS(const char* filename);
+  void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
+  void GetBIOSHash(u8 hash[16]);
 
   bool ReadByte(PhysicalMemoryAddress address, u8* value);
   bool ReadHalfWord(PhysicalMemoryAddress address, u16* value);
@@ -46,7 +50,6 @@ public:
   TickCount ReadWords(PhysicalMemoryAddress address, u32* words, u32 word_count);
   TickCount WriteWords(PhysicalMemoryAddress address, const u32* words, u32 word_count);
 
-  void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
   void SetExpansionROM(std::vector<u8> data);
 
   // changing interfaces
@@ -153,8 +156,6 @@ private:
       COMDELAY common_delay;
     };
   };
-
-  bool LoadBIOS();
 
   static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
   void RecalculateMemoryTimings();

@@ -11,11 +11,10 @@ MDEC::MDEC() = default;
 
 MDEC::~MDEC() = default;
 
-bool MDEC::Initialize(System* system, DMA* dma)
+void MDEC::Initialize(System* system, DMA* dma)
 {
   m_system = system;
   m_dma = dma;
-  return true;
 }
 
 void MDEC::Reset()

@@ -19,13 +19,12 @@ SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-bool SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
+void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
 {
   m_audio_stream = system->GetHostInterface()->GetAudioStream();
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
-  return true;
 }
 
 void SPU::Reset()

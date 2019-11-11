@@ -1,6 +1,7 @@
 #include "bus.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
+#include "YBaseLib/MD5Digest.h"
 #include "YBaseLib/String.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"
@@ -31,12 +32,9 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
+void Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
                      Pad* pad, Timers* timers, SPU* spu, MDEC* mdec)
 {
-  if (!LoadBIOS())
-    return false;
-
   m_cpu = cpu;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
@@ -46,7 +44,6 @@ bool Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_co
   m_timers = timers;
   m_spu = spu;
   m_mdec = mdec;
-  return true;
 }
 
 void Bus::Reset()
@@ -187,16 +184,26 @@ void Bus::PatchBIOS(u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
                  old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
 }
 
+void Bus::GetBIOSHash(u8 hash[16])
+{
+  MD5Digest digest;
+  digest.Update(m_bios.data(), static_cast<u32>(m_bios.size()));
+  digest.Final(hash);
+}
+
 void Bus::SetExpansionROM(std::vector<u8> data)
 {
   m_exp1_rom = std::move(data);
 }
 
-bool Bus::LoadBIOS()
+bool Bus::LoadBIOS(const char* filename)
 {
-  std::FILE* fp = std::fopen("SCPH1001.BIN", "rb");
+  std::FILE* fp = std::fopen(filename, "rb");
   if (!fp)
+  {
+    Log_ErrorPrintf("Failed to open BIOS image '%s'", filename);
     return false;
+  }
 
   std::fseek(fp, 0, SEEK_END);
   const u32 size = static_cast<u32>(std::ftell(fp));
@@ -217,13 +224,6 @@ bool Bus::LoadBIOS()
   }
 
   std::fclose(fp);
-
-#if 1
-  // Patch to enable TTY.
-  PatchBIOS(BIOS_BASE + 0x6F0C, 0x24010001);
-  PatchBIOS(BIOS_BASE + 0x6F14, 0xAF81A9C0);
-#endif
-
   return true;
 }
 

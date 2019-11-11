@@ -17,7 +17,7 @@ public:
   SPU();
   ~SPU();
 
-  bool Initialize(System* system, DMA* dma, InterruptController* interrupt_controller);
+  void Initialize(System* system, DMA* dma, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
 

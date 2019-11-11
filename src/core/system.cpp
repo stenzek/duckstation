@@ -19,8 +19,16 @@
 #include <imgui.h>
 Log_SetChannel(System);
 
-System::System(HostInterface* host_interface)
-  : m_host_interface(host_interface)
+namespace BIOSHashes {
+static constexpr char SCPH_1000[] = "239665b1a3dade1b5a52c06338011044";
+static constexpr char SCPH_1001[] = "924e392ed05558ffdb115408c263dccf";
+static constexpr char SCPH_1002[] = "54847e693405ffeb0359c6287434cbef";
+static constexpr char SCPH_5500[] = "8dd7d5296a650fac7319bce665a6a53c";
+static constexpr char SCPH_5501[] = "490f666e1afb15b7362b406ed1cea246";
+static constexpr char SCPH_5502[] = "32736f17079d0b2b7024407c39bd3050";
+} // namespace BIOSHashes
+
+System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
   m_bus = std::make_unique<Bus>();
@@ -64,44 +72,28 @@ bool System::RecreateGPU()
 
 bool System::Initialize()
 {
-  if (!m_cpu->Initialize(m_bus.get()))
-    return false;
+  m_cpu->Initialize(m_bus.get());
+  m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_pad.get(),
+                    m_timers.get(), m_spu.get(), m_mdec.get());
 
-  if (!m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(),
-                         m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get()))
-  {
-    return false;
-  }
+  m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get(),
+                    m_mdec.get());
 
-  if (!m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get(),
-                         m_mdec.get()))
-  {
-    return false;
-  }
+  m_interrupt_controller->Initialize(m_cpu.get());
 
-  if (!m_interrupt_controller->Initialize(m_cpu.get()))
-    return false;
+  m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get());
+  m_pad->Initialize(this, m_interrupt_controller.get());
+  m_timers->Initialize(this, m_interrupt_controller.get());
+  m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
+  m_mdec->Initialize(this, m_dma.get());
 
   if (!CreateGPU())
     return false;
 
-  if (!m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get()))
-    return false;
-
-  if (!m_pad->Initialize(this, m_interrupt_controller.get()))
-    return false;
-
-  if (!m_timers->Initialize(this, m_interrupt_controller.get()))
-    return false;
-
-  if (!m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get()))
-    return false;
-
-  if (!m_mdec->Initialize(this, m_dma.get()))
+  if (!LoadBIOS())
     return false;
 
   UpdateMemoryCards();
-
   return true;
 }
 
@@ -141,6 +133,38 @@ bool System::CreateGPU()
 
   m_bus->SetGPU(m_gpu.get());
   m_dma->SetGPU(m_gpu.get());
+  return true;
+}
+
+bool System::LoadBIOS()
+{
+  if (!m_bus->LoadBIOS(GetSettings().bios_path.c_str()))
+    return false;
+
+  // apply patches
+  u8 bios_hash[16];
+  m_bus->GetBIOSHash(bios_hash);
+  SmallString bios_hash_string;
+  bios_hash_string.Format("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", bios_hash[0],
+                          bios_hash[1], bios_hash[2], bios_hash[3], bios_hash[4], bios_hash[5], bios_hash[6],
+                          bios_hash[7], bios_hash[8], bios_hash[9], bios_hash[10], bios_hash[11], bios_hash[12],
+                          bios_hash[13], bios_hash[14], bios_hash[15]);
+  Log_InfoPrintf("BIOS hash: %s", bios_hash_string.GetCharArray());
+
+  if (bios_hash_string == BIOSHashes::SCPH_1000 || bios_hash_string == BIOSHashes::SCPH_1001 ||
+      bios_hash_string == BIOSHashes::SCPH_1002 || bios_hash_string == BIOSHashes::SCPH_5500 ||
+      bios_hash_string == BIOSHashes::SCPH_5501 || bios_hash_string == BIOSHashes::SCPH_5502)
+  {
+    // Patch to enable TTY.
+    Log_InfoPrintf("Patching BIOS to enable TTY/printf");
+    m_bus->PatchBIOS(0x1FC06F0C, 0x24010001);
+    m_bus->PatchBIOS(0x1FC06F14, 0xAF81A9C0);
+  }
+  else
+  {
+    Log_WarningPrintf("Unknown BIOS version, not patching TTY/printf");
+  }
+
   return true;
 }
 

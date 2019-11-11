@@ -14,7 +14,7 @@ public:
   Timers();
   ~Timers();
 
-  bool Initialize(System* system, InterruptController* interrupt_controller);
+  void Initialize(System* system, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
 

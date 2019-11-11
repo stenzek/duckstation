@@ -8,10 +8,9 @@ InterruptController::InterruptController() = default;
 
 InterruptController::~InterruptController() = default;
 
-bool InterruptController::Initialize(CPU::Core* cpu)
+void InterruptController::Initialize(CPU::Core* cpu)
 {
   m_cpu = cpu;
-  return true;
 }
 
 void InterruptController::Reset()
