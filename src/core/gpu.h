@@ -445,10 +445,12 @@ protected:
     u32 display_width;
     u32 display_height;
 
-    TickCount ticks_per_scanline;
-    TickCount visible_ticks_per_scanline;
-    u32 visible_scanlines_per_frame;
-    u32 total_scanlines_per_frame;
+    TickCount horizontal_total;
+    TickCount horizontal_display_start;
+    TickCount horizontal_display_end;
+    u32 vertical_total;
+    u32 vertical_display_start;
+    u32 vertical_display_end;
 
     TickCount fractional_ticks;
     TickCount current_tick_in_scanline;

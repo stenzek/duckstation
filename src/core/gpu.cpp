@@ -94,10 +94,12 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.dot_clock_divider);
   sw.Do(&m_crtc_state.display_width);
   sw.Do(&m_crtc_state.display_height);
-  sw.Do(&m_crtc_state.ticks_per_scanline);
-  sw.Do(&m_crtc_state.visible_ticks_per_scanline);
-  sw.Do(&m_crtc_state.visible_scanlines_per_frame);
-  sw.Do(&m_crtc_state.total_scanlines_per_frame);
+  sw.Do(&m_crtc_state.horizontal_total);
+  sw.Do(&m_crtc_state.horizontal_display_start);
+  sw.Do(&m_crtc_state.horizontal_display_end);
+  sw.Do(&m_crtc_state.vertical_total);
+  sw.Do(&m_crtc_state.vertical_display_start);
+  sw.Do(&m_crtc_state.vertical_display_end);
   sw.Do(&m_crtc_state.fractional_ticks);
   sw.Do(&m_crtc_state.current_tick_in_scanline);
   sw.Do(&m_crtc_state.current_scanline);
@@ -315,25 +317,27 @@ void GPU::UpdateCRTCConfig()
 
   if (m_GPUSTAT.pal_mode)
   {
-    cs.total_scanlines_per_frame = 314;
-    cs.ticks_per_scanline = 3406;
+    cs.vertical_total = 314;
+    cs.horizontal_total = 3406;
   }
   else
   {
-    cs.total_scanlines_per_frame = 263;
-    cs.ticks_per_scanline = 3413;
+    cs.vertical_total = 263;
+    cs.horizontal_total = 3413;
   }
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
-  cs.visible_ticks_per_scanline = cs.regs.X2 - cs.regs.X1;
-  cs.visible_scanlines_per_frame = cs.regs.Y2 - cs.regs.Y1;
+  cs.horizontal_display_start = static_cast<TickCount>(std::min<u32>(cs.regs.X1, cs.horizontal_total));
+  cs.horizontal_display_end = static_cast<TickCount>(std::min<u32>(cs.regs.X2, cs.horizontal_total));
+  cs.vertical_display_start = static_cast<TickCount>(std::min<u32>(cs.regs.Y1, cs.vertical_total));
+  cs.vertical_display_end = static_cast<TickCount>(std::min<u32>(cs.regs.Y2, cs.vertical_total));
 
   // check for a change in resolution
   const u32 old_horizontal_resolution = cs.display_width;
   const u32 old_vertical_resolution = cs.display_height;
-  cs.display_width = std::max<u32>(cs.visible_ticks_per_scanline / cs.dot_clock_divider, 1);
-  cs.display_height = cs.visible_scanlines_per_frame;
+  cs.display_width = std::max<u32>((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, 1);
+  cs.display_height = cs.regs.Y2 - cs.regs.Y1;
 
   if (cs.display_width != old_horizontal_resolution || cs.display_height != old_vertical_resolution)
     Log_InfoPrintf("Visible resolution is now %ux%u", cs.display_width, cs.display_height);
@@ -343,15 +347,14 @@ void GPU::UpdateCRTCConfig()
   const float dot_clock =
     (static_cast<float>(MASTER_CLOCK) * (11.0f / 7.0f / static_cast<float>(cs.dot_clock_divider)));
   const float dot_clock_period = 1.0f / dot_clock;
-  const float dots_per_scanline = static_cast<float>(cs.ticks_per_scanline) / static_cast<float>(cs.dot_clock_divider);
+  const float dots_per_scanline = static_cast<float>(cs.horizontal_total) / static_cast<float>(cs.dot_clock_divider);
   const float horizontal_period = dots_per_scanline * dot_clock_period;
-  const float vertical_period = horizontal_period * static_cast<float>(cs.total_scanlines_per_frame);
+  const float vertical_period = horizontal_period * static_cast<float>(cs.vertical_total);
 
   // Convert active dots/lines to time.
-  const float visible_dots_per_scanline =
-    static_cast<float>(cs.visible_ticks_per_scanline) / static_cast<float>(cs.dot_clock_divider);
+  const float visible_dots_per_scanline = static_cast<float>(cs.display_width);
   const float horizontal_active_time = horizontal_period * visible_dots_per_scanline;
-  const float vertical_active_time = horizontal_active_time * static_cast<float>(cs.visible_scanlines_per_frame);
+  const float vertical_active_time = horizontal_active_time * static_cast<float>(cs.display_height);
 
   // Use the reference active time/lines for the signal to work out the border area, and thus aspect ratio
   // transformation for the active area in our framebuffer. For the purposes of these calculations, we're assuming
@@ -393,11 +396,17 @@ void GPU::UpdateSliceTicks()
 {
   // the next event is at the end of the next scanline
 #if 1
-  const TickCount ticks_until_next_event = m_crtc_state.ticks_per_scanline - m_crtc_state.current_tick_in_scanline;
+  TickCount ticks_until_next_event;
+  if (m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start)
+    ticks_until_next_event = m_crtc_state.horizontal_display_start - m_crtc_state.current_tick_in_scanline;
+  else if (m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_end)
+    ticks_until_next_event = m_crtc_state.horizontal_display_end - m_crtc_state.current_tick_in_scanline;
+  else
+    ticks_until_next_event = m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline;
 #else
   // or at vblank. this will depend on the timer config..
   const TickCount ticks_until_next_event =
-    ((m_crtc_state.total_scanlines_per_frame - m_crtc_state.current_scanline) * m_crtc_state.ticks_per_scanline) -
+    ((m_crtc_state.vertical_total - m_crtc_state.current_scanline) * m_crtc_state.horizontal_total) -
     m_crtc_state.current_tick_in_scanline;
 #endif
 
@@ -415,38 +424,40 @@ void GPU::Execute(TickCount ticks)
     m_crtc_state.fractional_ticks = temp % 7;
   }
 
-  while (m_crtc_state.current_tick_in_scanline >= m_crtc_state.ticks_per_scanline)
+  while (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_total)
   {
-    m_crtc_state.current_tick_in_scanline -= m_crtc_state.ticks_per_scanline;
+    m_crtc_state.current_tick_in_scanline -= m_crtc_state.horizontal_total;
     m_crtc_state.current_scanline++;
-    if (m_timers->IsUsingExternalClock(HBLANK_TIMER_INDEX))
-      m_timers->AddTicks(HBLANK_TIMER_INDEX, 1);
 
     // past the end of vblank?
-    if (m_crtc_state.current_scanline >= m_crtc_state.total_scanlines_per_frame)
+    if (m_crtc_state.current_scanline >= m_crtc_state.vertical_total)
     {
-      // flush any pending draws and "scan out" the image
-      FlushRender();
-      UpdateDisplay();
-
       // start the new frame
-      m_system->IncrementFrameNumber();
       m_crtc_state.current_scanline = 0;
 
       if (m_GPUSTAT.vertical_interlace & m_GPUSTAT.vertical_resolution)
+      {
+        // extra line for NTSC
+        m_crtc_state.current_scanline = BoolToUInt32(m_GPUSTAT.drawing_even_line);
         m_GPUSTAT.drawing_even_line ^= true;
+      }
     }
 
-    const bool old_vblank = m_crtc_state.in_vblank;
-    const bool new_vblank = m_crtc_state.current_scanline >= m_crtc_state.visible_scanlines_per_frame;
-    if (new_vblank != old_vblank)
+    const bool new_vblank = m_crtc_state.current_scanline < m_crtc_state.vertical_display_start ||
+                            m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end;
+    if (m_crtc_state.in_vblank != new_vblank)
     {
       m_crtc_state.in_vblank = new_vblank;
 
-      if (!old_vblank)
+      if (new_vblank)
       {
         Log_DebugPrintf("Now in v-blank");
         m_interrupt_controller->InterruptRequest(InterruptController::IRQ::VBLANK);
+
+        // flush any pending draws and "scan out" the image
+        FlushRender();
+        UpdateDisplay();
+        m_system->IncrementFrameNumber();
       }
 
       m_timers->SetGate(HBLANK_TIMER_INDEX, new_vblank);
@@ -455,6 +466,15 @@ void GPU::Execute(TickCount ticks)
     // alternating even line bit in 240-line mode
     if (!(m_GPUSTAT.vertical_interlace & m_GPUSTAT.vertical_resolution))
       m_GPUSTAT.drawing_even_line = ConvertToBoolUnchecked(m_crtc_state.current_scanline & u32(1));
+  }
+
+  const bool new_hblank = m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start ||
+                          m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end;
+  if (m_crtc_state.in_hblank != new_hblank)
+  {
+    m_crtc_state.in_hblank = new_hblank;
+    if (new_hblank && m_timers->IsUsingExternalClock(HBLANK_TIMER_INDEX))
+      m_timers->AddTicks(HBLANK_TIMER_INDEX, 1);
   }
 
   UpdateSliceTicks();
@@ -825,20 +845,15 @@ void GPU::DrawDebugStateWindow()
                 m_GPUSTAT.interlaced_field ? "odd" : "even");
     ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
     ImGui::Text("Drawing Even Line: %s", m_GPUSTAT.drawing_even_line ? "Yes" : "No");
-    ImGui::NewLine();
-
+    ImGui::Text("Display Resolution: %ux%u", cs.display_width, cs.display_height);
     ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
     ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
-    ImGui::Text("Display Range: %u-%u, %u-%u", cs.regs.X1.GetValue(), cs.regs.X2.GetValue(), cs.regs.Y1.GetValue(),
-                cs.regs.Y2.GetValue());
-    ImGui::NewLine();
-
-    ImGui::Text("Display Resolution: %ux%u", cs.display_width, cs.display_height);
-    ImGui::Text("Ticks Per Scanline: %u (%u visible)", cs.ticks_per_scanline, cs.visible_ticks_per_scanline);
-    ImGui::Text("Scanlines Per Frame: %u (%u visible)", cs.total_scanlines_per_frame, cs.visible_scanlines_per_frame);
+    ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,
+                cs.horizontal_total / cs.dot_clock_divider, cs.vertical_total);
+    ImGui::Text("Display Range: %u-%u (%u-%u), %u-%u", cs.regs.X1.GetValue(), cs.regs.X2.GetValue(),
+                cs.regs.X1.GetValue() / cs.dot_clock_divider, cs.regs.X2.GetValue() / cs.dot_clock_divider,
+                cs.regs.Y1.GetValue(), cs.regs.Y2.GetValue());
     ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
-    ImGui::Text("Horizontal Blank: %s", cs.in_hblank ? "Yes" : "No");
-    ImGui::Text("Vertical Blank: %s", cs.in_vblank ? "Yes" : "No");
   }
 
   if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
