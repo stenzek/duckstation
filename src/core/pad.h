@@ -89,10 +89,7 @@ private:
   };
 
   bool IsTransmitting() const { return m_state == State::Transmitting; }
-  bool CanTransfer() const
-  {
-    return !m_TX_FIFO.IsEmpty() && !m_RX_FIFO.IsFull() && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN;
-  }
+  bool CanTransfer() const { return m_transmit_buffer_full && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN; }
 
   TickCount GetTransferTicks() const { return static_cast<TickCount>(ZeroExtend32(m_JOY_BAUD) * 8); }
 
@@ -106,6 +103,9 @@ private:
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
 
+  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_controllers;
+  std::array<std::shared_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
+
   State m_state = State::Idle;
   TickCount m_ticks_remaining = 0;
 
@@ -115,9 +115,9 @@ private:
   u16 m_JOY_BAUD = 0;
 
   ActiveDevice m_active_device = ActiveDevice::None;
-  InlineFIFOQueue<u8, 8> m_RX_FIFO;
-  InlineFIFOQueue<u8, 2> m_TX_FIFO;
-
-  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_controllers;
-  std::array<std::shared_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
+  u8 m_receive_buffer = 0;
+  u8 m_transmit_buffer = 0;
+  u8 m_transmit_value = 0;
+  bool m_receive_buffer_full = false;
+  bool m_transmit_buffer_full = false;
 };

@@ -87,8 +87,10 @@ bool Pad::DoState(StateWrapper& sw)
   sw.Do(&m_JOY_STAT.bits);
   sw.Do(&m_JOY_MODE.bits);
   sw.Do(&m_JOY_BAUD);
-  sw.Do(&m_RX_FIFO);
-  sw.Do(&m_TX_FIFO);
+  sw.Do(&m_receive_buffer);
+  sw.Do(&m_transmit_buffer);
+  sw.Do(&m_receive_buffer_full);
+  sw.Do(&m_transmit_buffer_full);
   return !sw.HasError();
 }
 
@@ -98,16 +100,16 @@ u32 Pad::ReadRegister(u32 offset)
   {
     case 0x00: // JOY_DATA
     {
-      if (m_RX_FIFO.IsEmpty())
-      {
+      if (!m_transmit_buffer_full)
         Log_DevPrintf("Read from RX fifo when empty");
-        return 0;
-      }
 
-      const u8 value = m_RX_FIFO.Pop();
+      const u8 value = m_receive_buffer;
+      m_receive_buffer_full = false;
+
       UpdateJoyStat();
       Log_DebugPrintf("JOY_DATA (R) -> 0x%02X", ZeroExtend32(value));
-      return ZeroExtend32(value);
+      return (ZeroExtend32(value) | (ZeroExtend32(value) << 8) | (ZeroExtend32(value) << 16) |
+              (ZeroExtend32(value) << 24));
     }
 
     case 0x04: // JOY_STAT
@@ -139,13 +141,12 @@ void Pad::WriteRegister(u32 offset, u32 value)
     case 0x00: // JOY_DATA
     {
       Log_DebugPrintf("JOY_DATA (W) <- 0x%02X", value);
-      if (m_TX_FIFO.IsFull())
-      {
-        Log_WarningPrint("TX FIFO overrun");
-        m_TX_FIFO.RemoveOne();
-      }
 
-      m_TX_FIFO.Push(Truncate8(value));
+      if (m_transmit_buffer_full)
+        Log_WarningPrint("TX FIFO overrun");
+
+      m_transmit_buffer = Truncate8(value);
+      m_transmit_buffer_full = true;
 
       if (!IsTransmitting() && CanTransfer())
         BeginTransfer();
@@ -182,6 +183,7 @@ void Pad::WriteRegister(u32 offset, u32 value)
           BeginTransfer();
       }
 
+      UpdateJoyStat();
       return;
     }
 
@@ -232,17 +234,19 @@ void Pad::SoftReset()
   m_JOY_CTRL.bits = 0;
   m_JOY_STAT.bits = 0;
   m_JOY_MODE.bits = 0;
-  m_RX_FIFO.Clear();
-  m_TX_FIFO.Clear();
+  m_receive_buffer = 0;
+  m_receive_buffer_full = false;
+  m_transmit_buffer = 0;
+  m_transmit_buffer_full = false;
   ResetDeviceTransferState();
   UpdateJoyStat();
 }
 
 void Pad::UpdateJoyStat()
 {
-  m_JOY_STAT.RXFIFONEMPTY = !m_RX_FIFO.IsEmpty();
-  m_JOY_STAT.TXDONE = m_TX_FIFO.IsEmpty();
-  m_JOY_STAT.TXRDY = !m_TX_FIFO.IsFull();
+  m_JOY_STAT.RXFIFONEMPTY = m_receive_buffer_full;
+  m_JOY_STAT.TXDONE = !m_transmit_buffer_full && m_state == State::Idle;
+  m_JOY_STAT.TXRDY = !m_transmit_buffer_full;
 }
 
 void Pad::BeginTransfer()
@@ -251,6 +255,8 @@ void Pad::BeginTransfer()
   Log_DebugPrintf("Starting transfer");
 
   m_JOY_CTRL.RXEN = true;
+  m_transmit_value = m_transmit_buffer;
+  m_transmit_buffer_full = false;
 
   // The transfer or the interrupt must be delayed, otherwise the BIOS thinks there's no device detected.
   // It seems to do something resembling the following:
@@ -283,7 +289,8 @@ void Pad::DoTransfer()
   // set rx?
   m_JOY_CTRL.RXEN = true;
 
-  const u8 data_out = m_TX_FIFO.Pop();
+  const u8 data_out = m_transmit_value;
+
   u8 data_in = 0xFF;
   bool ack = false;
 
@@ -296,19 +303,19 @@ void Pad::DoTransfer()
         if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
         {
           // nothing connected to this port
-          Log_DebugPrintf("Nothing connected or ACK'ed");
+          Log_TracePrintf("Nothing connected or ACK'ed");
         }
         else
         {
           // memory card responded, make it the active device until non-ack
-          Log_DebugPrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_in, data_out);
+          Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
           m_active_device = ActiveDevice::MemoryCard;
         }
       }
       else
       {
         // controller responded, make it the active device until non-ack
-        Log_DebugPrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_in, data_out);
+        Log_TracePrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
         m_active_device = ActiveDevice::Controller;
       }
     }
@@ -317,19 +324,26 @@ void Pad::DoTransfer()
     case ActiveDevice::Controller:
     {
       if (controller)
+      {
         ack = controller->Transfer(data_out, &data_in);
+        Log_TracePrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
+      }
     }
     break;
 
     case ActiveDevice::MemoryCard:
     {
       if (memory_card)
+      {
         ack = memory_card->Transfer(data_out, &data_in);
+        Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
+      }
     }
     break;
   }
 
-  m_RX_FIFO.Push(data_in);
+  m_receive_buffer = data_in;
+  m_receive_buffer_full = true;
   m_JOY_STAT.ACKINPUT |= ack;
 
   // device no longer active?
@@ -343,17 +357,7 @@ void Pad::DoTransfer()
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::IRQ7);
   }
 
-  if (m_TX_FIFO.IsEmpty())
-  {
-    EndTransfer();
-  }
-  else
-  {
-    // queue the next byte
-    m_ticks_remaining += GetTransferTicks();
-    m_system->SetDowncount(m_ticks_remaining);
-  }
-
+  EndTransfer();
   UpdateJoyStat();
 }
 
