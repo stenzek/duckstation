@@ -53,6 +53,7 @@ private:
   static constexpr s16 ADSR_MIN_VOLUME = 0;
   static constexpr s16 ADSR_MAX_VOLUME = 0x7FFF;
   static constexpr u32 CD_AUDIO_SAMPLE_BUFFER_SIZE = 44100 * 2;
+  static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
 
   enum class RAMTransferMode : u8
   {
@@ -269,6 +270,8 @@ private:
   u16 RAMTransferRead();
   void RAMTransferWrite(u16 value);
   void CheckRAMIRQ(u32 address);
+  void WriteToCaptureBuffer(u32 index, s16 value);
+  void IncrementCaptureBufferPosition();
 
   void ReadADPCMBlock(u16 address, ADPCMBlock* block);
   std::tuple<s32, s32> SampleVoice(u32 voice_index);

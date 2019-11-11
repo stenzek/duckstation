@@ -35,6 +35,7 @@ void SPU::Reset()
   m_transfer_address = 0;
   m_transfer_address_reg = 0;
   m_irq_address = 0;
+  m_capture_buffer_position = 0;
   m_main_volume_left.bits = 0;
   m_main_volume_right.bits = 0;
   m_cd_audio_volume_left = 0;
@@ -75,6 +76,7 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_transfer_address);
   sw.Do(&m_transfer_address_reg);
   sw.Do(&m_irq_address);
+  sw.Do(&m_capture_buffer_position);
   sw.Do(&m_main_volume_left.bits);
   sw.Do(&m_main_volume_right.bits);
   sw.Do(&m_cd_audio_volume_left);
@@ -575,6 +577,21 @@ void SPU::CheckRAMIRQ(u32 address)
   }
 }
 
+void SPU::WriteToCaptureBuffer(u32 index, s16 value)
+{
+  const u32 ram_address = (index * CAPTURE_BUFFER_SIZE_PER_CHANNEL) | ZeroExtend16(m_capture_buffer_position);
+  // Log_DebugPrintf("write to capture buffer %u (0x%08X) <- 0x%04X", index, ram_address, u16(value));
+  std::memcpy(&m_ram[ram_address], &value, sizeof(value));
+  CheckRAMIRQ(ram_address);
+}
+
+void SPU::IncrementCaptureBufferPosition()
+{
+  m_capture_buffer_position += sizeof(s16);
+  m_capture_buffer_position %= CAPTURE_BUFFER_SIZE_PER_CHANNEL;
+  m_SPUSTAT.second_half_capture_buffer = m_capture_buffer_position >= (CAPTURE_BUFFER_SIZE_PER_CHANNEL / 2);
+}
+
 void SPU::Execute(TickCount ticks)
 {
   TickCount num_samples = (ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
@@ -947,12 +964,22 @@ void SPU::GenerateSample()
   }
 
   // Mix in CD audio.
-  if (m_SPUCNT.cd_audio_enable && !m_cd_audio_buffer.IsEmpty())
+  s16 cd_audio_left;
+  s16 cd_audio_right;
+  if (!m_cd_audio_buffer.IsEmpty())
   {
-    const s32 left = m_cd_audio_buffer.Pop();
-    const s32 right = m_cd_audio_buffer.Pop();
-    left_sum += ApplyVolume(left, m_cd_audio_volume_left);
-    right_sum += ApplyVolume(right, m_cd_audio_volume_right);
+    cd_audio_left = m_cd_audio_buffer.Pop();
+    cd_audio_right = m_cd_audio_buffer.Pop();
+    if (m_SPUCNT.cd_audio_enable)
+    {
+      left_sum += ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
+      right_sum += ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
+    }
+  }
+  else
+  {
+    cd_audio_left = 0;
+    cd_audio_right = 0;
   }
 
   // Apply main volume before clamping.
@@ -960,6 +987,13 @@ void SPU::GenerateSample()
   out_samples[0] = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
   out_samples[1] = Clamp16(ApplyVolume(right_sum, m_main_volume_right.GetVolume()));
   m_audio_stream->WriteSamples(out_samples.data(), 1);
+
+  // Write to capture buffers.
+  WriteToCaptureBuffer(0, cd_audio_left);
+  WriteToCaptureBuffer(1, cd_audio_right);
+  WriteToCaptureBuffer(2, Clamp16(m_voices[1].last_amplitude));
+  WriteToCaptureBuffer(3, Clamp16(m_voices[3].last_amplitude));
+  IncrementCaptureBufferPosition();
 
 #if 0
   static FILE* fp = nullptr;
