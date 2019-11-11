@@ -544,6 +544,8 @@ void SPU::UpdateDMARequest()
 
 u16 SPU::RAMTransferRead()
 {
+  CheckRAMIRQ(m_transfer_address);
+
   u16 value;
   std::memcpy(&value, &m_ram[m_transfer_address], sizeof(value));
   m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
@@ -554,8 +556,23 @@ void SPU::RAMTransferWrite(u16 value)
 {
   Log_TracePrintf("SPU RAM @ 0x%08X (voice 0x%04X) <- 0x%04X", m_transfer_address,
                   m_transfer_address >> VOICE_ADDRESS_SHIFT, ZeroExtend32(value));
+
   std::memcpy(&m_ram[m_transfer_address], &value, sizeof(value));
   m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
+  CheckRAMIRQ(m_transfer_address);
+}
+
+void SPU::CheckRAMIRQ(u32 address)
+{
+  if (!m_SPUCNT.irq9_enable)
+    return;
+
+  if (ZeroExtend32(m_irq_address) * 8 == address)
+  {
+    Log_DebugPrintf("SPU IRQ at address 0x%08X", address);
+    m_SPUSTAT.irq9_flag = true;
+    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::SPU);
+  }
 }
 
 void SPU::Execute(TickCount ticks)
@@ -808,17 +825,7 @@ s16 SPU::Voice::Interpolate() const
 void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
 {
   u32 ram_address = (ZeroExtend32(address) * 8) & RAM_MASK;
-
-  // 16 bytes, so 2 8-byte blocks for the interrupt check
-  if (m_SPUCNT.irq9_enable)
-  {
-    if (m_irq_address == address || m_irq_address == (address + 1))
-    {
-      Log_DebugPrintf("SPU IRQ at address 0x%08X", ram_address);
-      m_SPUSTAT.irq9_flag = true;
-      m_interrupt_controller->InterruptRequest(InterruptController::IRQ::SPU);
-    }
-  }
+  CheckRAMIRQ(ram_address);
 
   // fast path - no wrap-around
   if ((ram_address + sizeof(ADPCMBlock)) <= RAM_SIZE)
@@ -1014,7 +1021,7 @@ void SPU::DrawDebugStateWindow()
     ImGui::SameLine(offsets[0]);
     ImGui::TextColored(m_SPUCNT.irq9_enable ? active_color : inactive_color,
                        m_SPUCNT.irq9_enable ? "Enabled @ 0x%04X (actual 0x%08X)" : "Disabled @ 0x%04X (actual 0x%08X)",
-                       m_irq_address, ZeroExtend32(m_irq_address * 8) & RAM_MASK);
+                       m_irq_address, (ZeroExtend32(m_irq_address) * 8) & RAM_MASK);
 
     ImGui::Text("Volume: ");
     ImGui::SameLine(offsets[0]);

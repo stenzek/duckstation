@@ -268,6 +268,7 @@ private:
   void UpdateDMARequest();
   u16 RAMTransferRead();
   void RAMTransferWrite(u16 value);
+  void CheckRAMIRQ(u32 address);
 
   void ReadADPCMBlock(u16 address, ADPCMBlock* block);
   std::tuple<s32, s32> SampleVoice(u32 voice_index);
@@ -285,6 +286,7 @@ private:
   u32 m_transfer_address = 0;
 
   u16 m_irq_address = 0;
+  u16 m_capture_buffer_position = 0;
 
   VolumeRegister m_main_volume_left = {};
   VolumeRegister m_main_volume_right = {};
