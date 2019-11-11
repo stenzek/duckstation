@@ -105,7 +105,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
     {
       case 0x00:
       {
-        state.base_address = value & ADDRESS_MASK;
+        state.base_address = value & BASE_ADDRESS_MASK;
         Log_TracePrintf("DMA channel %u base address <- 0x%08X", channel_index, state.base_address);
         return;
       }
@@ -247,7 +247,7 @@ void DMA::TransferChannel(Channel channel)
   // start/trigger bit is cleared on beginning of transfer
   cs.channel_control.start_trigger = false;
 
-  PhysicalMemoryAddress current_address = (cs.base_address & ~UINT32_C(3)) & ADDRESS_MASK;
+  PhysicalMemoryAddress current_address = cs.base_address;
   const PhysicalMemoryAddress increment = cs.channel_control.address_step_reverse ? static_cast<u32>(-4) : UINT32_C(4);
   switch (cs.channel_control.sync_mode)
   {
@@ -277,23 +277,24 @@ void DMA::TransferChannel(Channel channel)
         for (;;)
         {
           u32 header;
-          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address, header);
+          m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address & ADDRESS_MASK, header);
 
           const u32 word_count = header >> 24;
-          const u32 next_address = header & UINT32_C(0xFFFFFF);
+          const u32 next_address = header & UINT32_C(0x00FFFFFF);
           Log_TracePrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X", current_address,
                           word_count * UINT32_C(4), word_count, next_address);
           current_address += sizeof(header);
 
           if (word_count > 0)
-            TransferMemoryToDevice(channel, current_address, 4, word_count);
+            TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, 4, word_count);
 
-          if (next_address & UINT32_C(0x800000))
+          current_address = next_address;
+          if (current_address & UINT32_C(0x800000))
             break;
-
-          current_address = next_address & ADDRESS_MASK;
         }
       }
+
+      cs.base_address = current_address;
     }
     break;
 
@@ -312,8 +313,8 @@ void DMA::TransferChannel(Channel channel)
         do
         {
           blocks_remaining--;
-          TransferMemoryToDevice(channel, current_address, increment, block_size);
-          current_address = (current_address + (increment * block_size)) & ADDRESS_MASK;
+          TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, block_size);
+          current_address = (current_address + (increment * block_size));
         } while (cs.request && blocks_remaining > 0);
       }
       else
@@ -321,12 +322,12 @@ void DMA::TransferChannel(Channel channel)
         do
         {
           blocks_remaining--;
-          TransferDeviceToMemory(channel, current_address, increment, block_size);
-          current_address = (current_address + (increment * block_size)) & ADDRESS_MASK;
+          TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, block_size);
+          current_address = (current_address + (increment * block_size));
         } while (cs.request && blocks_remaining > 0);
       }
 
-      cs.base_address = current_address;
+      cs.base_address = current_address & BASE_ADDRESS_MASK;
       cs.block_control.request.block_count = blocks_remaining;
 
       // finish transfer later if the request was cleared
