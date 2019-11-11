@@ -1,5 +1,5 @@
 set(SRCS
-    include/ConvertUTF.c
+    include/ConvertUTF.h
     include/SimpleIni.h
     src/ConvertUTF.c
 )
