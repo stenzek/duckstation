@@ -283,10 +283,16 @@ void DMA::TransferChannel(Channel channel)
           const u32 next_address = header & UINT32_C(0x00FFFFFF);
           Log_TracePrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X", current_address,
                           word_count * UINT32_C(4), word_count, next_address);
-          current_address += sizeof(header);
-
           if (word_count > 0)
-            TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, 4, word_count);
+            TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
+
+          // Self-referencing DMA loops.. not sure how these are happening?
+          if (current_address == next_address)
+          {
+            Log_ErrorPrintf("HACK: Aborting self-referencing DMA loop @ 0x%08X. Something went wrong to generate this.",
+                            current_address);
+            break;
+          }
 
           current_address = next_address;
           if (current_address & UINT32_C(0x800000))
