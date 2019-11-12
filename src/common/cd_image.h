@@ -142,6 +142,12 @@ public:
     u8 data[SUBCHANNEL_BYTES_PER_FRAME];
 
     u16 ComputeCRC() const;
+
+    SubChannelQ& operator=(const SubChannelQ& q)
+    {
+      std::copy(q.data, q.data + SUBCHANNEL_BYTES_PER_FRAME, data);
+      return *this;
+    }
   };
   static_assert(sizeof(SubChannelQ) == SUBCHANNEL_BYTES_PER_FRAME, "SubChannelQ is correct size");
 

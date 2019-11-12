@@ -181,7 +181,7 @@ private:
   bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
   void SetInterrupt(Interrupt interrupt);
   void SetAsyncInterrupt(Interrupt interrupt);
-  void CancelAsyncInterrupt();
+  void ClearAsyncInterrupt();
   void DeliverAsyncInterrupt();
   void SendACKAndStat();
   void SendErrorResponse(u8 reason = 0x80);
@@ -204,9 +204,9 @@ private:
   void DoIDRead();
   void DoTOCRead();
   void DoSectorRead();
-  void ProcessDataSector(const u8* raw_sector);
-  void ProcessXAADPCMSector(const u8* raw_sector);
-  void ProcessCDDASector(const u8* raw_sector);
+  void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
+  void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
+  void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void BeginSeeking(bool read_after_seek, bool play_after_seek);
   void LoadDataFIFO();
 
@@ -245,6 +245,7 @@ private:
   CDXA::XASubHeader m_last_sector_subheader{};
   CDImage::SubChannelQ m_last_subq{};
   u8 m_last_cdda_report_frame_nibble = 0xFF;
+  u8 m_auto_pause_track_number = 0xFF;
 
   std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};

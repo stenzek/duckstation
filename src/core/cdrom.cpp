@@ -106,6 +106,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
   sw.Do(&m_last_cdda_report_frame_nibble);
+  sw.Do(&m_auto_pause_track_number);
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);
@@ -432,7 +433,7 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
     DeliverAsyncInterrupt();
 }
 
-void CDROM::CancelAsyncInterrupt()
+void CDROM::ClearAsyncInterrupt()
 {
   m_pending_async_interrupt = 0;
   m_async_response_fifo.Clear();
@@ -1046,6 +1047,7 @@ void CDROM::BeginReading(bool cdda)
   m_sector_buffer.clear();
 
   m_last_cdda_report_frame_nibble = 0xFF;
+  m_auto_pause_track_number = Truncate8(m_media->GetTrackNumber());
 
   m_drive_state = cdda ? DriveState::Playing : DriveState::Reading;
   m_drive_remaining_ticks = GetTicksForRead();
@@ -1175,14 +1177,33 @@ void CDROM::DoTOCRead()
 void CDROM::DoSectorRead()
 {
   // TODO: Error handling
+  CDImage::SubChannelQ subq;
+  if (!m_media->ReadSubChannelQ(&subq))
+    Panic("SubChannel Q read failed");
+
+  if (m_mode.auto_pause && BCDToDecimal(subq.track_number_bcd) != m_auto_pause_track_number)
+  {
+    // we don't want to update the position if the track changes, so we check it before reading the actual sector.
+    Log_DevPrintf("Auto pause at the end of track %u (LBA %u)", m_auto_pause_track_number,
+                  m_media->GetPositionOnDisc());
+
+    ClearAsyncInterrupt();
+    m_async_response_fifo.Push(m_secondary_status.bits);
+    SetAsyncInterrupt(Interrupt::INT4);
+
+    m_secondary_status.ClearActiveBits();
+    m_drive_state = DriveState::Idle;
+    return;
+  }
+
   u8 raw_sector[CDImage::RAW_SECTOR_SIZE];
-  if (!m_media->ReadSubChannelQ(&m_last_subq) || !m_media->ReadRawSector(raw_sector))
+  if (!m_media->ReadRawSector(raw_sector))
     Panic("Sector read failed");
 
   if (m_drive_state == DriveState::Reading)
-    ProcessDataSector(raw_sector);
+    ProcessDataSector(raw_sector, subq);
   else if (m_drive_state == DriveState::Playing)
-    ProcessCDDASector(raw_sector);
+    ProcessCDDASector(raw_sector, subq);
   else
     Panic("Not reading or playing");
 
@@ -1190,11 +1211,15 @@ void CDROM::DoSectorRead()
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
-void CDROM::ProcessDataSector(const u8* raw_sector)
+void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   std::memcpy(&m_last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
+
+  // TODO: Check SubQ checksum.
+  m_last_subq = subq;
+
   m_secondary_status.header_valid = true;
 
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc() - 1,
@@ -1219,7 +1244,7 @@ void CDROM::ProcessDataSector(const u8* raw_sector)
       }
       else
       {
-        ProcessXAADPCMSector(raw_sector);
+        ProcessXAADPCMSector(raw_sector, subq);
       }
 
       // Audio+realtime sectors aren't delivered to the CPU.
@@ -1231,7 +1256,7 @@ void CDROM::ProcessDataSector(const u8* raw_sector)
   if (HasPendingAsyncInterrupt())
   {
     Log_WarningPrintf("Data interrupt was not delivered");
-    CancelAsyncInterrupt();
+    ClearAsyncInterrupt();
   }
   if (!m_sector_buffer.empty())
   {
@@ -1337,7 +1362,7 @@ static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu,
   *sixstep_ptr = sixstep;
 }
 
-void CDROM::ProcessXAADPCMSector(const u8* raw_sector)
+void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   std::array<s16, CDXA::XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
   CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), m_xa_last_samples.data());
@@ -1384,7 +1409,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector)
   }
 }
 
-void CDROM::ProcessCDDASector(const u8* raw_sector)
+void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   // For CDDA sectors, the whole sector contains the audio data.
   Log_DevPrintf("Read sector %u as CDDA", m_media->GetPositionOnDisc());
@@ -1396,25 +1421,25 @@ void CDROM::ProcessCDDASector(const u8* raw_sector)
     {
       m_last_cdda_report_frame_nibble = frame_nibble;
 
-      Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", m_last_subq.track_number_bcd,
-                      m_last_subq.index_number_bcd, m_last_subq.relative_minute_bcd, m_last_subq.relative_second_bcd,
-                      m_last_subq.relative_frame_bcd);
+      Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", subq.track_number_bcd,
+                      subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
+                      subq.relative_frame_bcd);
 
-      m_async_response_fifo.Clear();
+      ClearAsyncInterrupt();
       m_async_response_fifo.Push(m_secondary_status.bits);
-      m_async_response_fifo.Push(m_last_subq.track_number_bcd);
-      m_async_response_fifo.Push(m_last_subq.index_number_bcd);
+      m_async_response_fifo.Push(subq.track_number_bcd);
+      m_async_response_fifo.Push(subq.index_number_bcd);
       if (m_last_subq.absolute_frame_bcd & 0x10)
       {
-        m_async_response_fifo.Push(m_last_subq.relative_minute_bcd);
-        m_async_response_fifo.Push(0x80 | m_last_subq.relative_second_bcd);
-        m_async_response_fifo.Push(m_last_subq.relative_frame_bcd);
+        m_async_response_fifo.Push(subq.relative_minute_bcd);
+        m_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
+        m_async_response_fifo.Push(subq.relative_frame_bcd);
       }
       else
       {
-        m_async_response_fifo.Push(m_last_subq.absolute_minute_bcd);
-        m_async_response_fifo.Push(m_last_subq.absolute_second_bcd);
-        m_async_response_fifo.Push(m_last_subq.absolute_frame_bcd);
+        m_async_response_fifo.Push(subq.absolute_minute_bcd);
+        m_async_response_fifo.Push(subq.absolute_second_bcd);
+        m_async_response_fifo.Push(subq.absolute_frame_bcd);
       }
 
       m_async_response_fifo.Push(0); // peak low
@@ -1422,6 +1447,8 @@ void CDROM::ProcessCDDASector(const u8* raw_sector)
       SetAsyncInterrupt(Interrupt::INT1);
     }
   }
+
+  m_last_subq = subq;
 
   // Apply volume when pushing sectors to SPU.
   if (m_muted)
