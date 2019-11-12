@@ -842,6 +842,7 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
 {
   u32 ram_address = (ZeroExtend32(address) * 8) & RAM_MASK;
   CheckRAMIRQ(ram_address);
+  CheckRAMIRQ((ram_address + 8) & RAM_MASK);
 
   // fast path - no wrap-around
   if ((ram_address + sizeof(ADPCMBlock)) <= RAM_SIZE)
