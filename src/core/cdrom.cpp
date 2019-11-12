@@ -367,6 +367,8 @@ void CDROM::WriteRegister(u32 offset, u8 value)
           {
             if (HasPendingAsyncInterrupt())
               DeliverAsyncInterrupt();
+            else if (HasPendingCommand())
+              m_system->SetDowncount(m_command_remaining_ticks);
           }
 
           // Bit 6 clears the parameter FIFO.
@@ -525,7 +527,7 @@ TickCount CDROM::GetTicksForSeek() const
 
 void CDROM::Execute(TickCount ticks)
 {
-  if (HasPendingCommand())
+  if (HasPendingCommand() && !HasPendingInterrupt())
   {
     m_command_remaining_ticks -= ticks;
     if (m_command_remaining_ticks <= 0)
