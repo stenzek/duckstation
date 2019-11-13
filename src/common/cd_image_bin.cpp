@@ -43,6 +43,7 @@ bool CDImageBin::Open(const char* filename)
 
   SubChannelQ::Control control = {};
   TrackMode mode = TrackMode::Mode2Raw;
+  control.data = mode != TrackMode::Audio;
 
   // Two seconds default pregap.
   const u32 pregap_frames = 2 * FRAMES_PER_SECOND;
