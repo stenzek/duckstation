@@ -136,6 +136,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (m_supports_texture_buffer)
   {
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
+    Log_InfoPrintf("Max texel buffer size: %u", m_max_texture_buffer_size);
     if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
       Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
   }
@@ -613,7 +614,9 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     const u32 scaled_x = x * m_resolution_scale;
     const u32 scaled_y = y * m_resolution_scale;
     const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
-    glScissor(scaled_x, scaled_flipped_y, scaled_width, scaled_height);
+    glViewport(scaled_x, scaled_flipped_y, scaled_width, scaled_height);
+    glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
 
     m_vram_write_program.Bind();
     glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
