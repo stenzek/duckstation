@@ -77,6 +77,8 @@ bool SDLHostInterface::CreateDisplay()
   if (!m_display)
     return false;
 
+  m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+
   m_app_icon_texture =
     m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
   if (!m_app_icon_texture)
@@ -757,7 +759,11 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   }
 
   gpu_settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings.gpu_true_color);
-  settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering);
+  if (ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering))
+  {
+    m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+    settings_changed = true;
+  }
 
   if (settings_changed || gpu_settings_changed)
     SaveSettings();
@@ -973,8 +979,15 @@ void SDLHostInterface::DrawSettingsWindow()
       {
         ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen);
         if (ImGui::Checkbox("VSync", &m_settings.gpu_vsync))
+        {
           UpdateAudioVisualSync();
-        ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering);
+          settings_changed = true;
+        }
+        if (ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering))
+        {
+          m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+          settings_changed = true;
+        }
       }
 
       ImGui::NewLine();
