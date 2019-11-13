@@ -131,7 +131,7 @@ float4 RGBA5551ToRGBA8(uint v)
 void GPU_HW_ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members)
 {
   if (m_glsl)
-    ss << "uniform UBOBlock\n";
+    ss << "layout(std140) uniform UBOBlock\n";
   else
     ss << "cbuffer UBOBlock : register(b0)\n";
 
