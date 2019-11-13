@@ -336,8 +336,9 @@ void GPU::UpdateCRTCConfig()
   // check for a change in resolution
   const u32 old_horizontal_resolution = cs.display_width;
   const u32 old_vertical_resolution = cs.display_height;
+  const u32 visible_lines = cs.regs.Y2 - cs.regs.Y1;
   cs.display_width = std::max<u32>((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, 1);
-  cs.display_height = cs.regs.Y2 - cs.regs.Y1;
+  cs.display_height = visible_lines << BoolToUInt8(m_GPUSTAT.In480iMode());
 
   if (cs.display_width != old_horizontal_resolution || cs.display_height != old_vertical_resolution)
     Log_InfoPrintf("Visible resolution is now %ux%u", cs.display_width, cs.display_height);
@@ -354,7 +355,7 @@ void GPU::UpdateCRTCConfig()
   // Convert active dots/lines to time.
   const float visible_dots_per_scanline = static_cast<float>(cs.display_width);
   const float horizontal_active_time = horizontal_period * visible_dots_per_scanline;
-  const float vertical_active_time = horizontal_active_time * static_cast<float>(cs.display_height);
+  const float vertical_active_time = horizontal_active_time * static_cast<float>(visible_lines);
 
   // Use the reference active time/lines for the signal to work out the border area, and thus aspect ratio
   // transformation for the active area in our framebuffer. For the purposes of these calculations, we're assuming
@@ -435,11 +436,18 @@ void GPU::Execute(TickCount ticks)
       // start the new frame
       m_crtc_state.current_scanline = 0;
 
-      if (m_GPUSTAT.vertical_interlace & m_GPUSTAT.vertical_resolution)
+      // switch fields for interlaced modes
+      if (m_GPUSTAT.vertical_interlace)
       {
-        // extra line for NTSC
-        m_crtc_state.current_scanline = BoolToUInt32(m_GPUSTAT.drawing_even_line);
-        m_GPUSTAT.drawing_even_line ^= true;
+        m_GPUSTAT.interlaced_field ^= true;
+        m_crtc_state.current_scanline = BoolToUInt32(m_GPUSTAT.interlaced_field);
+
+        if (m_GPUSTAT.vertical_resolution)
+          m_GPUSTAT.drawing_even_line = m_GPUSTAT.interlaced_field;
+      }
+      else
+      {
+        m_GPUSTAT.interlaced_field = false;
       }
     }
 
@@ -464,7 +472,7 @@ void GPU::Execute(TickCount ticks)
     }
 
     // alternating even line bit in 240-line mode
-    if (!(m_GPUSTAT.vertical_interlace & m_GPUSTAT.vertical_resolution))
+    if (!m_GPUSTAT.In480iMode())
       m_GPUSTAT.drawing_even_line = ConvertToBoolUnchecked(m_crtc_state.current_scanline & u32(1));
   }
 

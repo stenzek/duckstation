@@ -331,6 +331,8 @@ protected:
     BitField<u32, bool, 28, 1> ready_to_recieve_dma;
     BitField<u32, DMADirection, 29, 2> dma_direction;
     BitField<u32, bool, 31, 1> drawing_even_line;
+
+    bool In480iMode() const { return vertical_interlace & vertical_resolution; }
   } m_GPUSTAT = {};
 
   struct RenderState

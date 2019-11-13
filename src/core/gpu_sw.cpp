@@ -125,8 +125,7 @@ void GPU_SW::UpdateDisplay()
     const u32 vram_offset_x = m_crtc_state.regs.X;
     const u32 vram_offset_y = m_crtc_state.regs.Y;
     display_width = std::min<u32>(m_crtc_state.display_width, VRAM_WIDTH - vram_offset_x);
-    display_height = std::min<u32>(m_crtc_state.display_height << BoolToUInt8(m_GPUSTAT.vertical_interlace),
-                                   VRAM_HEIGHT - vram_offset_y);
+    display_height = std::min<u32>(m_crtc_state.display_height, VRAM_HEIGHT - vram_offset_y);
     display_aspect_ratio = m_crtc_state.display_aspect_ratio;
 
     if (m_GPUSTAT.display_disable)
