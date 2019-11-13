@@ -547,7 +547,7 @@ void GPU_HW_D3D11::UpdateDisplay()
       // Because of how the reinterpret shader works, we need to use the downscaled version.
       if (m_GPUSTAT.display_area_color_depth_24 && m_resolution_scale > 1)
       {
-        const u32 copy_width = std::min<u32>((display_width * 4) / 3, VRAM_WIDTH - vram_offset_x);
+        const u32 copy_width = std::min<u32>((display_width * 3) / 2, VRAM_WIDTH - vram_offset_x);
         const u32 scaled_copy_width = copy_width * m_resolution_scale;
         BlitTexture(m_vram_downsample_texture.GetD3DRTV(), vram_offset_x, vram_offset_y, copy_width, display_height,
                     m_vram_texture.GetD3DSRV(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_copy_width,
