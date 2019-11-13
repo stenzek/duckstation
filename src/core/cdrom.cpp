@@ -106,7 +106,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
   sw.Do(&m_last_cdda_report_frame_nibble);
-  sw.Do(&m_auto_pause_track_number);
+  sw.Do(&m_play_track_number_bcd);
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);
@@ -449,6 +449,7 @@ void CDROM::DeliverAsyncInterrupt()
   m_interrupt_flag_register = m_pending_async_interrupt;
   m_pending_async_interrupt = 0;
   UpdateInterruptRequest();
+  UpdateStatusRegister();
 }
 
 void CDROM::SendACKAndStat()
@@ -743,7 +744,7 @@ void CDROM::ExecuteCommand()
       else
       {
         SendACKAndStat();
-        BeginReading(false);
+        BeginReading();
       }
 
       EndCommand();
@@ -761,22 +762,8 @@ void CDROM::ExecuteCommand()
       }
       else
       {
-        // if track zero, start from current position
-        if (track != 0)
-        {
-          // play specific track?
-          if (track > m_media->GetTrackCount())
-          {
-            // restart current track
-            track = Truncate8(m_media->GetTrackNumber());
-          }
-
-          m_setloc_position = m_media->GetTrackStartMSFPosition(track);
-          m_setloc_pending = true;
-        }
-
         SendACKAndStat();
-        BeginReading(true);
+        BeginPlaying(track);
       }
 
       EndCommand();
@@ -1024,32 +1011,65 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     default:
     {
       Log_ErrorPrintf("Unknown test command 0x%02X", subcommand);
+      Panic("Unknown test command");
       return;
     }
   }
 }
 
-void CDROM::BeginReading(bool cdda)
+void CDROM::BeginReading()
 {
-  Log_DebugPrintf("Starting %s", cdda ? "playing CDDA" : "reading");
-
+  Log_DebugPrintf("Starting reading");
   if (m_setloc_pending)
   {
-    BeginSeeking(!cdda, cdda);
+    BeginSeeking(true, false);
     return;
   }
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
-  m_secondary_status.playing_cdda = cdda;
 
   // TODO: Should the sector buffer be cleared here?
   m_sector_buffer.clear();
 
-  m_last_cdda_report_frame_nibble = 0xFF;
-  m_auto_pause_track_number = Truncate8(m_media->GetTrackNumber());
+  m_drive_state = DriveState::Reading;
+  m_drive_remaining_ticks = GetTicksForRead();
+  m_system->SetDowncount(m_drive_remaining_ticks);
+}
 
-  m_drive_state = cdda ? DriveState::Playing : DriveState::Reading;
+void CDROM::BeginPlaying(u8 track_bcd)
+{
+  Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
+  m_last_cdda_report_frame_nibble = 0xFF;
+  m_play_track_number_bcd = track_bcd;
+
+  // if track zero, start from current position
+  if (track_bcd != 0)
+  {
+    // play specific track?
+    if (track_bcd > m_media->GetTrackCount())
+    {
+      // restart current track
+      track_bcd = DecimalToBCD(Truncate8(m_media->GetTrackNumber()));
+    }
+
+    m_setloc_position = m_media->GetTrackStartMSFPosition(BCDToDecimal(track_bcd));
+    m_setloc_pending = true;
+  }
+
+  if (m_setloc_pending)
+  {
+    BeginSeeking(false, true);
+    return;
+  }
+
+  m_secondary_status.ClearActiveBits();
+  m_secondary_status.motor_on = true;
+
+  // TODO: Should the sector buffer be cleared here?
+  m_sector_buffer.clear();
+
+  m_drive_state = DriveState::Playing;
   m_drive_remaining_ticks = GetTicksForRead();
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
@@ -1098,10 +1118,14 @@ void CDROM::DoSeekComplete()
   if (m_media && m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&m_last_subq))
   {
     // seek complete, transition to play/read if requested
-    if (m_play_after_seek || m_read_after_seek)
+    // INT2 is not sent on play/read
+    if (m_read_after_seek)
     {
-      // INT2 is not sent on play/read
-      BeginReading(m_play_after_seek);
+      BeginReading();
+    }
+    else if (m_play_after_seek)
+    {
+      BeginPlaying(m_play_track_number_bcd);
     }
     else
     {
@@ -1181,31 +1205,53 @@ void CDROM::DoSectorRead()
   if (!m_media->ReadSubChannelQ(&subq))
     Panic("SubChannel Q read failed");
 
-  if (m_mode.auto_pause && BCDToDecimal(subq.track_number_bcd) != m_auto_pause_track_number)
+  const bool is_data_sector = subq.control.data;
+  m_secondary_status.playing_cdda = !is_data_sector;
+  if (!is_data_sector)
   {
-    // we don't want to update the position if the track changes, so we check it before reading the actual sector.
-    Log_DevPrintf("Auto pause at the end of track %u (LBA %u)", m_auto_pause_track_number,
-                  m_media->GetPositionOnDisc());
+    if (m_play_track_number_bcd == 0)
+    {
+      // track number was not specified, but we've found the track now
+      Log_DebugPrintf("Setting playing track number to %u", m_play_track_number_bcd);
+      m_play_track_number_bcd = subq.track_number_bcd;
+    }
+    else if (m_mode.auto_pause && subq.track_number_bcd != m_play_track_number_bcd)
+    {
+      // we don't want to update the position if the track changes, so we check it before reading the actual sector.
+      Log_DevPrintf("Auto pause at the end of track %u (LBA %u)", m_play_track_number_bcd,
+                    m_media->GetPositionOnDisc());
 
-    ClearAsyncInterrupt();
-    m_async_response_fifo.Push(m_secondary_status.bits);
-    SetAsyncInterrupt(Interrupt::INT4);
+      ClearAsyncInterrupt();
+      m_async_response_fifo.Push(m_secondary_status.bits);
+      SetAsyncInterrupt(Interrupt::INT4);
 
-    m_secondary_status.ClearActiveBits();
-    m_drive_state = DriveState::Idle;
-    return;
+      m_secondary_status.ClearActiveBits();
+      m_drive_state = DriveState::Idle;
+      return;
+    }
   }
 
   u8 raw_sector[CDImage::RAW_SECTOR_SIZE];
   if (!m_media->ReadRawSector(raw_sector))
     Panic("Sector read failed");
 
-  if (m_drive_state == DriveState::Reading)
+  if (is_data_sector && m_drive_state == DriveState::Reading)
+  {
     ProcessDataSector(raw_sector, subq);
-  else if (m_drive_state == DriveState::Playing)
+  }
+  else if (!is_data_sector && m_drive_state == DriveState::Playing)
+  {
     ProcessCDDASector(raw_sector, subq);
-  else
+  }
+  else if (m_drive_state != DriveState::Reading && m_drive_state != DriveState::Playing)
+  {
     Panic("Not reading or playing");
+  }
+  else
+  {
+    Log_WarningPrintf("Skipping sector %u as it is a %s sector and we're not %s", m_media->GetPositionOnDisc() - 1,
+                      is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
+  }
 
   m_drive_remaining_ticks += GetTicksForRead();
   m_system->SetDowncount(m_drive_remaining_ticks);
@@ -1279,7 +1325,6 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
 
   m_async_response_fifo.Push(m_secondary_status.bits);
   SetAsyncInterrupt(Interrupt::INT1);
-  UpdateStatusRegister();
 }
 
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
@@ -1416,7 +1461,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
 
   if (m_mode.report_audio)
   {
-    const u8 frame_nibble = m_last_subq.absolute_frame_bcd >> 4;
+    const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
     if (m_last_cdda_report_frame_nibble != frame_nibble)
     {
       m_last_cdda_report_frame_nibble = frame_nibble;
@@ -1429,7 +1474,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
       m_async_response_fifo.Push(m_secondary_status.bits);
       m_async_response_fifo.Push(subq.track_number_bcd);
       m_async_response_fifo.Push(subq.index_number_bcd);
-      if (m_last_subq.absolute_frame_bcd & 0x10)
+      if (subq.absolute_frame_bcd & 0x10)
       {
         m_async_response_fifo.Push(subq.relative_minute_bcd);
         m_async_response_fifo.Push(0x80 | subq.relative_second_bcd);

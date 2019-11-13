@@ -196,7 +196,8 @@ private:
   void EndCommand();                  // also updates status register
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
-  void BeginReading(bool cdda);
+  void BeginReading();
+  void BeginPlaying(u8 track_bcd);
   void DoSpinUpComplete();
   void DoSeekComplete();
   void DoPauseComplete();
@@ -245,7 +246,7 @@ private:
   CDXA::XASubHeader m_last_sector_subheader{};
   CDImage::SubChannelQ m_last_subq{};
   u8 m_last_cdda_report_frame_nibble = 0xFF;
-  u8 m_auto_pause_track_number = 0xFF;
+  u8 m_play_track_number_bcd = 0xFF;
 
   std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};
