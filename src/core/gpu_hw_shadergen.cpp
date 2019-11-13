@@ -649,7 +649,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   int2 icoords = int2(v_pos.xy);
 
   #if INTERLACED
-    if ((((icoords.y - u_base_coords.z) / RESOLUTION_SCALE) & 1) != 0)
+    if (((icoords.y - u_base_coords.z) & 1) != 0)
       discard;
   #endif
 

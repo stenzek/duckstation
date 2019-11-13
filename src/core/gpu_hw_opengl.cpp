@@ -448,8 +448,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
       const u32 scaled_flipped_vram_offset_y =
         m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
-      const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && !m_GPUSTAT.drawing_even_line);
-      const u32 scaled_field_offset = field_offset * m_resolution_scale;
+      const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.interlaced_field);
 
       glDisable(GL_BLEND);
       glDisable(GL_SCISSOR_TEST);
@@ -491,9 +490,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_display_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
         m_vram_texture->Bind();
 
-        glViewport(0, scaled_field_offset, scaled_display_width, scaled_display_height);
+        glViewport(0, field_offset, scaled_display_width, scaled_display_height);
 
-        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_field_offset};
+        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_flipped_vram_offset_y, field_offset};
         UploadUniformBlock(uniforms, sizeof(uniforms));
         m_batch_ubo_dirty = true;
 

@@ -432,6 +432,7 @@ void GPU_HW_D3D11::BlitTexture(ID3D11RenderTargetView* dst, u32 dst_x, u32 dst_y
                              static_cast<float>(src_height) / static_cast<float>(src_texture_height)};
 
   m_context->OMSetRenderTargets(1, &dst, nullptr);
+  m_context->PSSetShaderResources(0, 1, &src);
   SetViewport(dst_x, dst_y, dst_width, dst_height);
   SetScissor(dst_x, dst_y, dst_width, dst_height);
   DrawUtilityShader(m_copy_pixel_shader.Get(), uniforms, sizeof(uniforms));
@@ -535,8 +536,7 @@ void GPU_HW_D3D11::UpdateDisplay()
     }
     else
     {
-      const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && !m_GPUSTAT.drawing_even_line);
-      const u32 scaled_field_offset = field_offset * m_resolution_scale;
+      const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.interlaced_field);
 
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)]
@@ -556,7 +556,7 @@ void GPU_HW_D3D11::UpdateDisplay()
         m_context->PSSetShaderResources(0, 1, m_vram_downsample_texture.GetD3DSRVArray());
 
         const u32 uniforms[4] = {vram_offset_x, vram_offset_y, field_offset};
-        SetViewportAndScissor(0, scaled_field_offset, display_width, display_height);
+        SetViewportAndScissor(0, field_offset, display_width, display_height);
         DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
         UploadUniformBlock(uniforms, sizeof(uniforms));
 
@@ -569,8 +569,8 @@ void GPU_HW_D3D11::UpdateDisplay()
         m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
         m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
-        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_vram_offset_y, scaled_field_offset};
-        SetViewportAndScissor(0, scaled_field_offset, scaled_display_width, scaled_display_height);
+        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_vram_offset_y, field_offset};
+        SetViewportAndScissor(0, field_offset, scaled_display_width, scaled_display_height);
         DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
         UploadUniformBlock(uniforms, sizeof(uniforms));
 
