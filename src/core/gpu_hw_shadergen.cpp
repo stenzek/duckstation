@@ -740,7 +740,7 @@ uint SampleVRAM(int2 coords)
 {
   int2 sample_coords = int2(int(v_pos.x) * 2, int(v_pos.y));
 
-  #if API_OPENGL || API_OPENGL_ES || 1
+  #if API_OPENGL || API_OPENGL_ES
     // Lower-left origin flip for OpenGL.
     // We want to write the image out upside-down so we can read it top-to-bottom.
     sample_coords.y = u_size.y - sample_coords.y - 1;
