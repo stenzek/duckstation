@@ -638,6 +638,16 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 {
   GPU_HW::UpdateVRAM(x, y, width, height, data);
 
+  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
+  {
+    // CPU round trip if oversized for now.
+    Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
+    GPU::UpdateVRAM(x, y, width, height, data);
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    return;
+  }
+
   const u32 num_pixels = width * height;
   const auto map_result = m_texture_stream_buffer.Map(m_context.Get(), sizeof(u16), num_pixels * sizeof(u16));
   std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));

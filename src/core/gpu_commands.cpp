@@ -286,13 +286,6 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 comma
   Log_DebugPrintf("Copy rectangle from CPU to VRAM offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, copy_width,
                   copy_height);
 
-  if ((dst_x + copy_width) > VRAM_WIDTH || (dst_y + copy_height) > VRAM_HEIGHT)
-  {
-    Log_ErrorPrintf("Out of bounds CPU->VRAM copy (%u,%u) @ (%u,%u)", copy_width, copy_height, dst_x, dst_y);
-    command_ptr += num_words;
-    return true;
-  }
-
   if (m_system->GetSettings().debugging.dump_cpu_to_vram_copies)
   {
     DumpVRAMToFile(SmallString::FromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++), copy_width, copy_height,
@@ -320,12 +313,6 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
   command_ptr += 3;
 
   Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", src_x, src_y, width, height);
-
-  if ((src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT)
-  {
-    Panic("Out of bounds VRAM copy");
-    return true;
-  }
 
   // all rendering should be done first...
   FlushRender();

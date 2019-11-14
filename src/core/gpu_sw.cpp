@@ -50,17 +50,6 @@ void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     std::fill_n(GetPixelPtr(x, y + yoffs), width, color16);
 }
 
-void GPU_SW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
-{
-  const u16* src_ptr = static_cast<const u16*>(data);
-  for (u32 yoffs = 0; yoffs < height; yoffs++)
-  {
-    u16* dst_ptr = GetPixelPtr(x, y + yoffs);
-    std::copy_n(src_ptr, width, dst_ptr);
-    src_ptr += width;
-  }
-}
-
 void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
   for (u32 yoffs = 0; yoffs < height; yoffs++)

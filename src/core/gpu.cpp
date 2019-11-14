@@ -698,7 +698,35 @@ void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
 
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 
-void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) {}
+void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+{
+  // Fast path when the copy is not oversized.
+  if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT)
+  {
+    const u16* src_ptr = static_cast<const u16*>(data);
+    u16* dst_ptr = &m_vram_ptr[y * VRAM_WIDTH + x];
+    for (u32 yoffs = 0; yoffs < height; yoffs++)
+    {
+      std::copy_n(src_ptr, width, dst_ptr);
+      src_ptr += width;
+      dst_ptr += VRAM_WIDTH;
+    }
+  }
+  else
+  {
+    // Slow path when we need to handle wrap-around.
+    const u16* src_ptr = static_cast<const u16*>(data);
+    for (u32 row = 0; row < height;)
+    {
+      u16* dst_row_ptr = &m_vram_ptr[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
+      for (u32 col = 0; col < width;)
+      {
+        // TODO: Handle unaligned reads...
+        dst_row_ptr[(x + col++) % VRAM_WIDTH] = *(src_ptr++);
+      }
+    }
+  }
+}
 
 void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) {}
 
