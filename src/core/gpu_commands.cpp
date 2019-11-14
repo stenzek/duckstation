@@ -5,12 +5,52 @@
 #include "system.h"
 Log_SetChannel(GPU);
 
+#define CHECK_COMMAND_SIZE(num_words)                                                                                  \
+  if (command_size < num_words)                                                                                        \
+  {                                                                                                                    \
+    m_command_total_words = num_words;                                                                                 \
+    m_state = State::WaitingForParameters;                                                                             \
+    return false;                                                                                                      \
+  }
+
 static u32 s_cpu_to_vram_dump_id = 1;
 static u32 s_vram_to_cpu_dump_id = 1;
 
 static constexpr u32 ReplaceZero(u32 value, u32 value_for_zero)
 {
   return value == 0 ? value_for_zero : value;
+}
+
+void GPU::ExecuteCommands()
+{
+  Assert(m_GP0_buffer.size() < 1048576);
+
+  const u32* command_ptr = m_GP0_buffer.data();
+  u32 command_size = static_cast<u32>(m_GP0_buffer.size());
+  while (m_state != State::ReadingVRAM && command_size > 0 && command_size >= m_command_total_words)
+  {
+    const u32 command = command_ptr[0] >> 24;
+    const u32* old_command_ptr = command_ptr;
+    if (!(this->*s_GP0_command_handler_table[command])(command_ptr, command_size))
+      break;
+
+    const u32 words_used = static_cast<u32>(command_ptr - old_command_ptr);
+    DebugAssert(words_used <= command_size);
+    command_size -= words_used;
+  }
+
+  if (command_size == 0)
+    m_GP0_buffer.clear();
+  else if (command_ptr > m_GP0_buffer.data())
+    m_GP0_buffer.erase(m_GP0_buffer.begin(), m_GP0_buffer.begin() + (command_ptr - m_GP0_buffer.data()));
+
+  UpdateGPUSTAT();
+}
+
+void GPU::EndCommand()
+{
+  m_state = State::Idle;
+  m_command_total_words = 0;
 }
 
 GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
@@ -50,12 +90,14 @@ bool GPU::HandleUnknownGP0Command(const u32*& command_ptr, u32 command_size)
 {
   const u32 command = *(command_ptr++) >> 24;
   Log_ErrorPrintf("Unimplemented GP0 command 0x%02X", command);
+  EndCommand();
   return true;
 }
 
 bool GPU::HandleNOPCommand(const u32*& command_ptr, u32 command_size)
 {
   command_ptr++;
+  EndCommand();
   return true;
 }
 
@@ -63,6 +105,7 @@ bool GPU::HandleClearCacheCommand(const u32*& command_ptr, u32 command_size)
 {
   Log_DebugPrintf("GP0 clear cache");
   command_ptr++;
+  EndCommand();
   return true;
 }
 
@@ -75,6 +118,7 @@ bool GPU::HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_siz
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::GPU);
   }
 
+  EndCommand();
   return true;
 }
 
@@ -89,6 +133,8 @@ bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
   m_render_state.texture_x_flip = (param & (1 << 12)) != 0;
   m_render_state.texture_y_flip = (param & (1 << 13)) != 0;
   Log_DebugPrintf("Set draw mode %08X", param);
+
+  EndCommand();
   return true;
 }
 
@@ -99,6 +145,8 @@ bool GPU::HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_siz
   Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
                   m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
                   m_render_state.texture_window_offset_y);
+
+  EndCommand();
   return true;
 }
 
@@ -117,6 +165,7 @@ bool GPU::HandleSetDrawingAreaTopLeftCommand(const u32*& command_ptr, u32 comman
     m_drawing_area_changed = true;
   }
 
+  EndCommand();
   return true;
 }
 
@@ -136,6 +185,7 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand(const u32*& command_ptr, u32 co
     m_drawing_area_changed = true;
   }
 
+  EndCommand();
   return true;
 }
 
@@ -153,6 +203,8 @@ bool GPU::HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_siz
     m_drawing_offset.y = y;
     m_drawing_offset_changed = true;
   }
+
+  EndCommand();
   return true;
 }
 
@@ -164,6 +216,8 @@ bool GPU::HandleSetMaskBitCommand(const u32*& command_ptr, u32 command_size)
   m_GPUSTAT.draw_to_masked_pixels = (param & 0x01) != 0;
   Log_DebugPrintf("Set mask bit %u %u", BoolToUInt32(m_GPUSTAT.draw_set_mask_bit),
                   BoolToUInt32(m_GPUSTAT.draw_to_masked_pixels));
+
+  EndCommand();
   return true;
 }
 
@@ -229,8 +283,7 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
       return true;
   }
 
-  if (command_size < total_words)
-    return false;
+  CHECK_COMMAND_SIZE(total_words);
 
   static constexpr std::array<const char*, 4> primitive_names = {{"", "polygon", "line", "rectangle"}};
 
@@ -244,13 +297,13 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
   command_ptr += total_words;
   m_stats.num_vertices += num_vertices;
   m_stats.num_polygons++;
+  EndCommand();
   return true;
 }
 
 bool GPU::HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (command_size < 3)
-    return false;
+  CHECK_COMMAND_SIZE(3);
 
   FlushRender();
 
@@ -265,20 +318,24 @@ bool GPU::HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size)
 
   FillVRAM(dst_x, dst_y, width, height, color);
   m_stats.num_vram_fills++;
+  EndCommand();
   return true;
 }
 
 bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (command_size < 3)
-    return false;
+  CHECK_COMMAND_SIZE(3);
 
   const u32 copy_width = ReplaceZero(command_ptr[2] & 0x3FF, 0x400);
   const u32 copy_height = ReplaceZero((command_ptr[2] >> 16) & 0x1FF, 0x200);
   const u32 num_pixels = copy_width * copy_height;
   const u32 num_words = 3 + ((num_pixels + 1) / 2);
   if (command_size < num_words)
+  {
+    m_command_total_words = num_words;
+    m_state = State::WritingVRAM;
     return false;
+  }
 
   const u32 dst_x = command_ptr[1] & 0x3FF;
   const u32 dst_y = (command_ptr[1] >> 16) & 0x3FF;
@@ -296,57 +353,40 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 comma
   UpdateVRAM(dst_x, dst_y, copy_width, copy_height, &command_ptr[3]);
   command_ptr += num_words;
   m_stats.num_vram_writes++;
+  EndCommand();
   return true;
 }
 
 bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (command_size < 3)
-    return false;
+  CHECK_COMMAND_SIZE(3);
 
-  const u32 width = ReplaceZero(command_ptr[2] & 0x3FF, 0x400);
-  const u32 height = ReplaceZero((command_ptr[2] >> 16) & 0x1FF, 0x200);
-  const u32 num_pixels = width * height;
-  const u32 num_words = ((num_pixels + 1) / 2);
-  const u32 src_x = command_ptr[1] & 0x3FF;
-  const u32 src_y = (command_ptr[1] >> 16) & 0x3FF;
+  m_vram_transfer.width = ((Truncate16(command_ptr[2]) - 1) & 0x3FF) + 1;
+  m_vram_transfer.height = ((Truncate16(command_ptr[2] >> 16) - 1) & 0x1FF) + 1;
+  m_vram_transfer.x = Truncate16(command_ptr[1] & 0x3FF);
+  m_vram_transfer.y = Truncate16((command_ptr[1] >> 16) & 0x3FF);
   command_ptr += 3;
 
-  Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", src_x, src_y, width, height);
+  Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", m_vram_transfer.x, m_vram_transfer.y,
+                  m_vram_transfer.width, m_vram_transfer.height);
+  DebugAssert(m_vram_transfer.col == 0 && m_vram_transfer.row == 0);
 
   // all rendering should be done first...
   FlushRender();
 
-  // TODO: A better way of doing this.. get rid of the m_GPUREAD_buffer.
-  ReadVRAM(src_x, src_y, width, height);
-  for (u32 row = 0; row < height;)
-  {
-    const u32 row_offset = ((src_y + row++) % VRAM_HEIGHT) * VRAM_WIDTH;
-    for (u32 col = 0; col < width;)
-    {
-      // TODO: Handle unaligned reads...
-      const u32 col_offset1 = row_offset + ((src_x + col++) % VRAM_WIDTH);
-      const u32 col_offset2 = row_offset + ((src_x + col++) % VRAM_WIDTH);
-      m_GPUREAD_buffer.push_back(ZeroExtend32(m_vram_ptr[col_offset1]) | (ZeroExtend32(m_vram_ptr[col_offset2]) << 16));
-    }
-  }
+  // ensure VRAM shadow is up to date
+  ReadVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height);
 
-  if (m_system->GetSettings().debugging.dump_vram_to_cpu_copies)
-  {
-    std::vector<u32> temp;
-    std::copy(m_GPUREAD_buffer.begin(), m_GPUREAD_buffer.end(), std::back_inserter(temp));
-    DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++), width, height,
-                   sizeof(u16) * width, temp.data(), true);
-  }
-
+  // switch to pixel-by-pixel read state
   m_stats.num_vram_reads++;
+  m_state = State::ReadingVRAM;
+  m_command_total_words = 0;
   return true;
 }
 
 bool GPU::HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 command_size)
 {
-  if (command_size < 4)
-    return false;
+  CHECK_COMMAND_SIZE(4);
 
   const u32 src_x = command_ptr[1] & 0x3FF;
   const u32 src_y = (command_ptr[1] >> 16) & 0x3FF;
@@ -369,5 +409,6 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 comm
   FlushRender();
   CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
   m_stats.num_vram_copies++;
+  EndCommand();
   return true;
 }

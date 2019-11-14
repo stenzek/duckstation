@@ -34,6 +34,7 @@ void GPU::UpdateSettings() {}
 void GPU::Reset()
 {
   SoftReset();
+  m_GPUREAD_latch = 0;
 }
 
 void GPU::SoftReset()
@@ -47,8 +48,10 @@ void GPU::SoftReset()
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
+  m_state = State::Idle;
+  m_command_total_words = 0;
+  m_vram_transfer = {};
   m_GP0_buffer.clear();
-  m_GPUREAD_buffer.clear();
   m_render_state = {};
   m_render_state.texture_page_changed = true;
   UpdateGPUSTAT();
@@ -108,11 +111,16 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
 
-  if (sw.IsReading())
-    UpdateSliceTicks();
+  sw.Do(&m_GPUREAD_latch);
+
+  sw.Do(&m_vram_transfer.x);
+  sw.Do(&m_vram_transfer.y);
+  sw.Do(&m_vram_transfer.width);
+  sw.Do(&m_vram_transfer.height);
+  sw.Do(&m_vram_transfer.col);
+  sw.Do(&m_vram_transfer.row);
 
   sw.Do(&m_GP0_buffer);
-  sw.Do(&m_GPUREAD_buffer);
 
   if (sw.IsReading())
   {
@@ -133,6 +141,7 @@ bool GPU::DoState(StateWrapper& sw)
     sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data());
     UpdateDisplay();
+    UpdateSliceTicks();
   }
   else
   {
@@ -149,9 +158,10 @@ void GPU::RestoreGraphicsAPIState() {}
 
 void GPU::UpdateGPUSTAT()
 {
-  m_GPUSTAT.ready_to_send_vram = !m_GPUREAD_buffer.empty();
-  m_GPUSTAT.ready_to_recieve_cmd = m_GPUREAD_buffer.empty();
-  m_GPUSTAT.ready_to_recieve_dma = m_GPUREAD_buffer.empty();
+  m_GPUSTAT.ready_to_send_vram = (m_state == State::ReadingVRAM);
+  m_GPUSTAT.ready_to_recieve_cmd = (m_state == State::Idle);
+  m_GPUSTAT.ready_to_recieve_dma =
+    (m_state == State::Idle || (m_state != State::ReadingVRAM && m_command_total_words > 0));
 
   bool dma_request;
   switch (m_GPUSTAT.dma_direction)
@@ -228,22 +238,8 @@ void GPU::DMARead(u32* words, u32 word_count)
     return;
   }
 
-  const u32 words_to_copy = std::min(word_count, static_cast<u32>(m_GPUREAD_buffer.size()));
-  if (!m_GPUREAD_buffer.empty())
-  {
-    auto it = m_GPUREAD_buffer.begin();
-    for (u32 i = 0; i < word_count; i++)
-      words[i] = *(it++);
-
-    m_GPUREAD_buffer.erase(m_GPUREAD_buffer.begin(), it);
-  }
-  if (words_to_copy < word_count)
-  {
-    Log_WarningPrintf("Partially-empty GPUREAD buffer on GPU DMA read");
-    std::fill_n(words + words_to_copy, word_count - words_to_copy, u32(0));
-  }
-
-  UpdateGPUSTAT();
+  for (u32 i = 0; i < word_count; i++)
+    words[i] = ReadGPUREAD();
 }
 
 void GPU::DMAWrite(const u32* words, u32 word_count)
@@ -252,53 +248,8 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
   {
     case DMADirection::CPUtoGP0:
     {
-#if 0
-      // partial command buffered? have to go through the slow path
-      if (!m_GP0_buffer.empty())
-      {
-        std::copy(words, words + word_count, std::back_inserter(m_GP0_buffer));
-        const u32* command_ptr = m_GP0_buffer.data();
-        u32 command_size = static_cast<u32>(m_GP0_buffer.size());
-        do
-        {
-          const u32* prev_command_ptr = command_ptr;
-          const bool result = HandleGP0Command(command_ptr, command_size);
-          command_size -= command_ptr - prev_command_ptr;
-          if (!result)
-            break;
-        } while (command_size > 0);
-
-        if (command_size > 0 && command_size < m_GP0_buffer.size())
-          m_GP0_buffer.erase(m_GP0_buffer.begin(), m_GP0_buffer.begin() + (m_GP0_buffer.size() - command_size));
-        else if (command_size == 0)
-          m_GP0_buffer.clear();
-      }
-      else
-      {
-        // fast path - read directly from DMA buffer
-        const u32* command_ptr = words;
-        u32 command_size = word_count;
-        do
-        {
-          const u32* prev_command_ptr = command_ptr;
-          const bool result = HandleGP0Command(command_ptr, command_size);
-          command_size -= command_ptr - prev_command_ptr;
-          if (!result)
-            break;
-        } while (command_size > 0);
-
-        if (command_size > 0)
-        {
-          // partial command left over
-          std::copy(command_ptr, command_ptr + command_size, std::back_inserter(m_GP0_buffer));
-        }
-      }
-
-      UpdateGPUSTAT();
-#else
-      for (u32 i = 0; i < word_count; i++)
-        WriteGP0(words[i]);
-#endif
+      std::copy(words, words + word_count, std::back_inserter(m_GP0_buffer));
+      ExecuteCommands();
     }
     break;
 
@@ -491,32 +442,44 @@ void GPU::Execute(TickCount ticks)
 
 u32 GPU::ReadGPUREAD()
 {
-  if (m_GPUREAD_buffer.empty())
+  if (m_state != State::ReadingVRAM)
+    return m_GPUREAD_latch;
+
+  // Read two pixels out of VRAM and combine them. Zero fill odd pixel counts.
+  u32 value = 0;
+  for (u32 i = 0; i < 2; i++)
   {
-    Log_DevPrintf("GPUREAD read while buffer is empty");
-    return UINT32_C(0xFFFFFFFF);
+    // Read with correct wrap-around behavior.
+    const u16 read_x = (m_vram_transfer.x + m_vram_transfer.col) % VRAM_WIDTH;
+    const u16 read_y = (m_vram_transfer.y + m_vram_transfer.row) % VRAM_HEIGHT;
+    value = (value << 16) | ZeroExtend32(m_vram_ptr[read_y * VRAM_WIDTH + read_x]);
+
+    if (++m_vram_transfer.col == m_vram_transfer.width)
+    {
+      m_vram_transfer.col = 0;
+
+      if (++m_vram_transfer.row == m_vram_transfer.height)
+      {
+        Log_DebugPrintf("End of VRAM->CPU transfer");
+        m_vram_transfer = {};
+        m_state = State::Idle;
+        UpdateGPUSTAT();
+
+        // end of transfer, catch up on any commands which were written (unlikely)
+        ExecuteCommands();
+        break;
+      }
+    }
   }
 
-  const u32 value = m_GPUREAD_buffer.front();
-  m_GPUREAD_buffer.pop_front();
-  UpdateGPUSTAT();
+  m_GPUREAD_latch = value;
   return value;
 }
 
 void GPU::WriteGP0(u32 value)
 {
   m_GP0_buffer.push_back(value);
-  Assert(m_GP0_buffer.size() <= 1048576);
-
-  const u32* command_ptr = m_GP0_buffer.data();
-  const u32 command = m_GP0_buffer[0] >> 24;
-  if ((this->*s_GP0_command_handler_table[command])(command_ptr, static_cast<u32>(m_GP0_buffer.size())))
-  {
-    DebugAssert(static_cast<size_t>(command_ptr - m_GP0_buffer.data()) == m_GP0_buffer.size());
-    m_GP0_buffer.clear();
-  }
-
-  UpdateGPUSTAT();
+  ExecuteCommands();
 }
 
 void GPU::WriteGP1(u32 value)
@@ -535,6 +498,9 @@ void GPU::WriteGP1(u32 value)
     case 0x01: // Clear FIFO
     {
       Log_DebugPrintf("GP1 clear FIFO");
+      m_state = State::Idle;
+      m_command_total_words = 0;
+      m_vram_transfer = {};
       m_GP0_buffer.clear();
       UpdateGPUSTAT();
     }
@@ -658,31 +624,31 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
     case 0x02: // Get Texture Window
     {
       Log_DebugPrintf("Get texture window");
-      m_GPUREAD_buffer.push_back(m_render_state.texture_window_value);
+      m_GPUREAD_latch = m_render_state.texture_window_value;
     }
     break;
 
     case 0x03: // Get Draw Area Top Left
     {
       Log_DebugPrintf("Get drawing area top left");
-      m_GPUREAD_buffer.push_back((m_drawing_area.left & UINT32_C(0b1111111111)) |
-                                 ((m_drawing_area.top & UINT32_C(0b1111111111)) << 10));
+      m_GPUREAD_latch =
+        ((m_drawing_area.left & UINT32_C(0b1111111111)) | ((m_drawing_area.top & UINT32_C(0b1111111111)) << 10));
     }
     break;
 
     case 0x04: // Get Draw Area Bottom Right
     {
       Log_DebugPrintf("Get drawing area bottom right");
-      m_GPUREAD_buffer.push_back((m_drawing_area.right & UINT32_C(0b1111111111)) |
-                                 ((m_drawing_area.bottom & UINT32_C(0b1111111111)) << 10));
+      m_GPUREAD_latch =
+        ((m_drawing_area.right & UINT32_C(0b1111111111)) | ((m_drawing_area.bottom & UINT32_C(0b1111111111)) << 10));
     }
     break;
 
     case 0x05: // Get Drawing Offset
     {
       Log_DebugPrintf("Get drawing offset");
-      m_GPUREAD_buffer.push_back((m_drawing_offset.x & INT32_C(0b11111111111)) |
-                                 ((m_drawing_offset.y & INT32_C(0b11111111111)) << 11));
+      m_GPUREAD_latch =
+        ((m_drawing_offset.x & INT32_C(0b11111111111)) | ((m_drawing_offset.y & INT32_C(0b11111111111)) << 11));
     }
     break;
 

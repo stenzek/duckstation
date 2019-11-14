@@ -72,6 +72,15 @@ public:
     Disabled = 4 // Not a register value
   };
 
+  enum class State : u8
+  {
+    Idle,
+    WaitingForParameters,
+    ExecutingCommand,
+    ReadingVRAM,
+    WritingVRAM
+  };
+
   enum : u32
   {
     VRAM_WIDTH = 1024,
@@ -285,6 +294,8 @@ protected:
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
+  void ExecuteCommands();
+  void EndCommand();
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering in the backend
@@ -467,8 +478,22 @@ protected:
     bool in_vblank;
   } m_crtc_state = {};
 
+  State m_state = State::Idle;
+  u32 m_command_total_words = 0;
+  struct VRAMTransfer
+  {
+    u16 x;
+    u16 y;
+    u16 width;
+    u16 height;
+    u16 col;
+    u16 row;
+  } m_vram_transfer = {};
+
+  /// GPUREAD value for non-VRAM-reads.
+  u32 m_GPUREAD_latch = 0;
+
   std::vector<u32> m_GP0_buffer;
-  std::deque<u32> m_GPUREAD_buffer;
 
   struct Stats
   {
