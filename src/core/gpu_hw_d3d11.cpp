@@ -435,6 +435,8 @@ void GPU_HW_D3D11::BlitTexture(ID3D11RenderTargetView* dst, u32 dst_x, u32 dst_y
 
   m_context->OMSetRenderTargets(1, &dst, nullptr);
   m_context->PSSetShaderResources(0, 1, &src);
+  m_context->PSSetSamplers(
+    0, 1, linear_filter ? m_linear_sampler_state.GetAddressOf() : m_point_sampler_state.GetAddressOf());
   SetViewport(dst_x, dst_y, dst_width, dst_height);
   SetScissor(dst_x, dst_y, dst_width, dst_height);
   DrawUtilityShader(m_copy_pixel_shader.Get(), uniforms, sizeof(uniforms));
