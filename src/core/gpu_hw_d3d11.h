@@ -69,7 +69,7 @@ private:
   // downsample texture - used for readbacks at >1xIR.
   D3D11::Texture m_vram_texture;
   D3D11::Texture m_vram_read_texture;
-  D3D11::Texture m_vram_downsample_texture;
+  D3D11::Texture m_vram_encoding_texture;
   D3D11::Texture m_display_texture;
 
   D3D11::StreamBuffer m_vertex_stream_buffer;
@@ -77,6 +77,9 @@ private:
   D3D11::StreamBuffer m_uniform_stream_buffer;
 
   D3D11::StreamBuffer m_texture_stream_buffer;
+
+  D3D11::StagingTexture m_vram_readback_texture;
+
   ComPtr<ID3D11ShaderResourceView> m_texture_stream_buffer_srv_r16ui;
 
   ComPtr<ID3D11RasterizerState> m_cull_none_rasterizer_state;
@@ -98,6 +101,7 @@ private:
   ComPtr<ID3D11VertexShader> m_screen_quad_vertex_shader;
   ComPtr<ID3D11PixelShader> m_copy_pixel_shader;
   ComPtr<ID3D11PixelShader> m_fill_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_vram_read_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_write_pixel_shader;
   std::array<std::array<ComPtr<ID3D11PixelShader>, 2>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
 };

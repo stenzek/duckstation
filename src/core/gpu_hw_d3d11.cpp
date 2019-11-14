@@ -159,7 +159,9 @@ bool GPU_HW_D3D11::CreateFramebuffer()
 
   if (!m_vram_texture.Create(m_device.Get(), texture_width, texture_height, texture_format, true, true) ||
       !m_vram_read_texture.Create(m_device.Get(), texture_width, texture_height, texture_format, true, false) ||
-      !m_display_texture.Create(m_device.Get(), texture_width, texture_height, texture_format, true, true))
+      !m_display_texture.Create(m_device.Get(), texture_width, texture_height, texture_format, true, true) ||
+      !m_vram_encoding_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, texture_format, true, true) ||
+      !m_vram_readback_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, texture_format, false))
   {
     return false;
   }
@@ -175,12 +177,6 @@ bool GPU_HW_D3D11::CreateFramebuffer()
     BlitTexture(m_vram_texture.GetD3DRTV(), 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                 old_vram_texture.GetD3DSRV(), 0, 0, old_vram_texture.GetWidth(), old_vram_texture.GetHeight(),
                 old_vram_texture.GetWidth(), old_vram_texture.GetHeight(), linear_filter);
-  }
-
-  if (m_resolution_scale > 1 &&
-      !m_vram_downsample_texture.Create(m_device.Get(), texture_width, texture_height, texture_format, true, true))
-  {
-    return false;
   }
 
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), nullptr);
@@ -199,8 +195,9 @@ void GPU_HW_D3D11::DestroyFramebuffer()
 {
   m_vram_read_texture.Destroy();
   m_vram_texture.Destroy();
-  m_vram_downsample_texture.Destroy();
+  m_vram_encoding_texture.Destroy();
   m_display_texture.Destroy();
+  m_vram_readback_texture.Destroy();
 }
 
 bool GPU_HW_D3D11::CreateVertexBuffer()
@@ -368,6 +365,11 @@ bool GPU_HW_D3D11::CompileShaders()
   m_fill_pixel_shader =
     D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader(), debug);
   if (!m_fill_pixel_shader)
+    return false;
+
+  m_vram_read_pixel_shader = D3D11::ShaderCompiler::CompileAndCreatePixelShader(
+    m_device.Get(), shadergen.GenerateVRAMReadFragmentShader(), debug);
+  if (!m_vram_read_pixel_shader)
     return false;
 
   m_vram_write_pixel_shader = D3D11::ShaderCompiler::CompileAndCreatePixelShader(
@@ -548,17 +550,16 @@ void GPU_HW_D3D11::UpdateDisplay()
       {
         const u32 copy_width = std::min<u32>((display_width * 3) / 2, VRAM_WIDTH - vram_offset_x);
         const u32 scaled_copy_width = copy_width * m_resolution_scale;
-        BlitTexture(m_vram_downsample_texture.GetD3DRTV(), vram_offset_x, vram_offset_y, copy_width, display_height,
+        BlitTexture(m_vram_encoding_texture.GetD3DRTV(), vram_offset_x, vram_offset_y, copy_width, display_height,
                     m_vram_texture.GetD3DSRV(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_copy_width,
                     scaled_display_height, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), false);
 
         m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
-        m_context->PSSetShaderResources(0, 1, m_vram_downsample_texture.GetD3DSRVArray());
+        m_context->PSSetShaderResources(0, 1, m_vram_encoding_texture.GetD3DSRVArray());
 
         const u32 uniforms[4] = {vram_offset_x, vram_offset_y, field_offset};
         SetViewportAndScissor(0, field_offset, display_width, display_height);
         DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
-        UploadUniformBlock(uniforms, sizeof(uniforms));
 
         m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), 0, 0, display_width, display_height,
                                           m_display_texture.GetWidth(), m_display_texture.GetHeight(),
@@ -572,7 +573,6 @@ void GPU_HW_D3D11::UpdateDisplay()
         const u32 uniforms[4] = {scaled_vram_offset_x, scaled_vram_offset_y, field_offset};
         SetViewportAndScissor(0, field_offset, scaled_display_width, scaled_display_height);
         DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
-        UploadUniformBlock(uniforms, sizeof(uniforms));
 
         m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), 0, 0, scaled_display_width,
                                           scaled_display_height, m_display_texture.GetWidth(),
@@ -586,7 +586,37 @@ void GPU_HW_D3D11::UpdateDisplay()
 
 void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
 {
-  Log_WarningPrintf("VRAM readback not implemented");
+  // Get bounds with wrap-around handled.
+  const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
+  const u32 encoded_width = copy_rect.GetWidth() / 2;
+  const u32 encoded_height = copy_rect.GetHeight();
+
+  // Encode the 24-bit texture as 16-bit.
+  const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
+  m_context->OMSetRenderTargets(1, m_vram_encoding_texture.GetD3DRTVArray(), nullptr);
+  m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
+  SetViewportAndScissor(0, 0, encoded_width, encoded_height);
+  DrawUtilityShader(m_vram_read_pixel_shader.Get(), uniforms, sizeof(uniforms));
+
+  // Stage the readback.
+  m_vram_readback_texture.CopyFromTexture(m_context.Get(), m_vram_encoding_texture.GetD3DTexture(), 0, 0, 0, 0, 0,
+                                          encoded_width, encoded_height);
+  // And copy it into our shadow buffer.
+  if (m_vram_readback_texture.Map(m_context.Get(), false))
+  {
+    m_vram_readback_texture.ReadPixels(0, 0, encoded_width * 2, encoded_height, VRAM_WIDTH,
+                                       &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left]);
+    m_vram_readback_texture.Unmap(m_context.Get());
+  }
+  else
+  {
+    Log_ErrorPrintf("Failed to map VRAM readback texture");
+  }
+
+  RestoreGraphicsAPIState();
+
+  // Feed the shadow buffer back to the output.
+  GPU_HW::ReadVRAM(x, y, width, height, buffer);
 }
 
 void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

@@ -1,4 +1,5 @@
 #pragma once
+#include "common/heap_array.h"
 #include "gpu.h"
 #include <sstream>
 #include <string>
@@ -126,6 +127,7 @@ protected:
 
   bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
 
+  void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) override;
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
@@ -138,6 +140,11 @@ protected:
   {
     return std::make_tuple(x * s32(m_resolution_scale), y * s32(m_resolution_scale));
   }
+
+  /// Computes the area affected by a VRAM transfer, including wrap-around of X.
+  Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height);
+
+  HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 
   BatchVertex* m_batch_start_vertex_ptr = nullptr;
   BatchVertex* m_batch_end_vertex_ptr = nullptr;

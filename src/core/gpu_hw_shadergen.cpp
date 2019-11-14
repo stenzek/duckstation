@@ -63,6 +63,7 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT const\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
+    ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) texelFetch(name, index)\n";
   }
   else
@@ -71,6 +72,7 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT static const\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
+    ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(index)\n";
   }
 
@@ -701,6 +703,59 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   #endif
 }
 )";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"int2 u_base_coords", "int2 u_size"});
+
+  DeclareTexture(ss, "samp0", 0);
+
+  ss << R"(
+uint SampleVRAM(int2 coords)
+{
+  if (RESOLUTION_SCALE == 1)
+    return RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, coords, 0));
+
+  // Box filter for downsampling.
+  float4 value = float4(0.0, 0.0, 0.0, 0.0);
+  int2 base_coords = coords * int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  for (int offset_x = 0; offset_x < RESOLUTION_SCALE; offset_x++)
+  {
+    for (int offset_y = 0; offset_y < RESOLUTION_SCALE; offset_y++)
+      value += LOAD_TEXTURE(samp0, base_coords + int2(offset_x, offset_y), 0);
+  }
+  value /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
+  return RGBA8ToRGBA5551(value);
+}
+)";
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  ss << R"(
+{
+  int2 sample_coords = int2(int(v_pos.x) * 2, int(v_pos.y));
+
+  #if API_OPENGL || API_OPENGL_ES || 1
+    // Lower-left origin flip for OpenGL.
+    // We want to write the image out upside-down so we can read it top-to-bottom.
+    sample_coords.y = u_size.y - sample_coords.y - 1;
+  #endif
+
+  sample_coords += u_base_coords;
+
+  // We're encoding as 32-bit, so the output width is halved and we pack two 16-bit pixels in one 32-bit pixel.
+  uint left = SampleVRAM(sample_coords);
+  uint right = SampleVRAM(int2(sample_coords.x + 1, sample_coords.y));
+
+  o_col0 = float4(float(left & 0xFFu), float((left >> 8) & 0xFFu),
+                  float(right & 0xFFu), float((right >> 8) & 0xFFu))
+            / float4(255.0, 255.0, 255.0, 255.0);
+})";
 
   return ss.str();
 }
