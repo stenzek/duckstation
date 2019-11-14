@@ -10,6 +10,7 @@ Log_SetChannel(GPU_SW);
 GPU_SW::GPU_SW()
 {
   m_vram.fill(0);
+  m_vram_ptr = m_vram.data();
 }
 
 GPU_SW::~GPU_SW()
@@ -37,15 +38,9 @@ void GPU_SW::Reset()
   m_vram.fill(0);
 }
 
-void GPU_SW::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
+void GPU_SW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
-  u16* buffer_ptr = static_cast<u16*>(buffer);
-  for (u32 yoffs = 0; yoffs < height; yoffs++)
-  {
-    u16* src_ptr = GetPixelPtr(x, y + yoffs);
-    std::copy_n(src_ptr, width, buffer_ptr);
-    buffer_ptr += width;
-  }
+  // No need to do anything - pointer is already up to date.
 }
 
 void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

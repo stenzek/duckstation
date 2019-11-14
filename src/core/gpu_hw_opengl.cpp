@@ -526,7 +526,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
   }
 }
 
-void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
+void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
   // Get bounds with wrap-around handled.
   const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
@@ -554,9 +554,6 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
   glPixelStorei(GL_PACK_ROW_LENGTH, 0);
   RestoreGraphicsAPIState();
-
-  // Feed the shadow buffer back to the output.
-  GPU_HW::ReadVRAM(x, y, width, height, buffer);
 }
 
 void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

@@ -1,5 +1,6 @@
 #include "gpu.h"
 #include "YBaseLib/Log.h"
+#include "common/heap_array.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
 #include "host_interface.h"
@@ -127,16 +128,16 @@ bool GPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    std::vector<u16> vram;
-    sw.Do(&vram);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, vram.data());
+    // Still need a temporary here.
+    HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
+    sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data());
     UpdateDisplay();
   }
   else
   {
-    std::vector<u16> vram(VRAM_WIDTH * VRAM_HEIGHT);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, vram.data());
-    sw.Do(&vram);
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    sw.DoBytes(m_vram_ptr, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
   }
 
   return !sw.HasError();
@@ -693,7 +694,7 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
 void GPU::UpdateDisplay() {}
 
-void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer) {}
+void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
 
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 

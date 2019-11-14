@@ -8,7 +8,10 @@
 #include <sstream>
 Log_SetChannel(GPU_HW);
 
-GPU_HW::GPU_HW() = default;
+GPU_HW::GPU_HW() : GPU()
+{
+  m_vram_ptr = m_vram_shadow.data();
+}
 
 GPU_HW::~GPU_HW() = default;
 
@@ -207,22 +210,6 @@ GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
     return BatchPrimitive::TriangleStrip;
   else
     return BatchPrimitive::Triangles;
-}
-
-void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer)
-{
-  u8* out_ptr = static_cast<u8*>(buffer);
-
-  for (u32 row = 0; row < height; row++)
-  {
-    const u32 row_offset = ((y + row) % VRAM_HEIGHT) * VRAM_WIDTH;
-    for (u32 col = 0; col < width; col++)
-    {
-      const u32 col_offset = row_offset + ((x + col) % VRAM_WIDTH);
-      std::memcpy(out_ptr, &m_vram_shadow[col_offset], sizeof(u16));
-      out_ptr += sizeof(u16);
-    }
-  }
 }
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

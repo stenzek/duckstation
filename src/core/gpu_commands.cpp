@@ -330,14 +330,24 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
   // all rendering should be done first...
   FlushRender();
 
-  // TODO: A better way of doing this..
-  std::vector<u32> temp(num_words);
-  ReadVRAM(src_x, src_y, width, height, temp.data());
-  for (const u32 bits : temp)
-    m_GPUREAD_buffer.push_back(bits);
+  // TODO: A better way of doing this.. get rid of the m_GPUREAD_buffer.
+  ReadVRAM(src_x, src_y, width, height);
+  for (u32 row = 0; row < height;)
+  {
+    const u32 row_offset = ((src_y + row++) % VRAM_HEIGHT) * VRAM_WIDTH;
+    for (u32 col = 0; col < width;)
+    {
+      // TODO: Handle unaligned reads...
+      const u32 col_offset1 = row_offset + ((src_x + col++) % VRAM_WIDTH);
+      const u32 col_offset2 = row_offset + ((src_x + col++) % VRAM_WIDTH);
+      m_GPUREAD_buffer.push_back(ZeroExtend32(m_vram_ptr[col_offset1]) | (ZeroExtend32(m_vram_ptr[col_offset2]) << 16));
+    }
+  }
 
   if (m_system->GetSettings().debugging.dump_vram_to_cpu_copies)
   {
+    std::vector<u32> temp;
+    std::copy(m_GPUREAD_buffer.begin(), m_GPUREAD_buffer.end(), std::back_inserter(temp));
     DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++), width, height,
                    sizeof(u16) * width, temp.data(), true);
   }

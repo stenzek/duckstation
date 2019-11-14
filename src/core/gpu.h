@@ -288,7 +288,7 @@ protected:
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering in the backend
-  virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height, void* buffer);
+  virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
@@ -302,6 +302,9 @@ protected:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   Timers* m_timers = nullptr;
+
+  // Pointer to VRAM, used for reads/writes. In the hardware backends, this is the shadow buffer.
+  u16* m_vram_ptr = nullptr;
 
   union GPUSTAT
   {
