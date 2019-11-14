@@ -96,7 +96,7 @@ struct Rectangle
     right op## = amount;                                                                                               \
     bottom op## = amount;                                                                                              \
   }                                                                                                                    \
-  constexpr Rectangle operator op(const T amount)                                                                      \
+  constexpr Rectangle operator op(const T amount) const                                                                \
   {                                                                                                                    \
     return Rectangle(left op amount, top op amount, right op amount, bottom op amount);                                \
   }

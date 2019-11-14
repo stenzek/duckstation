@@ -14,7 +14,7 @@ StagingTexture::~StagingTexture()
 bool StagingTexture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT format, bool for_uploading)
 {
   CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, 0, for_uploading ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_STAGING,
-                             0, 1, 0, 0);
+                             for_uploading ? D3D11_CPU_ACCESS_WRITE : D3D11_CPU_ACCESS_READ, 1, 0, 0);
 
   ComPtr<ID3D11Texture2D> texture;
   const HRESULT tex_hr = device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf());
@@ -54,6 +54,7 @@ void StagingTexture::Unmap(ID3D11DeviceContext* context)
 {
   Assert(IsMapped());
   context->Unmap(m_texture.Get(), 0);
+  m_map = {};
 }
 
 void StagingTexture::CopyToTexture(ID3D11DeviceContext* context, u32 src_x, u32 src_y, ID3D11Texture2D* dst_texture,
@@ -88,4 +89,4 @@ void StagingTexture::CopyFromTexture(ID3D11DeviceContext* context, ID3D11Texture
   context->CopySubresourceRegion(m_texture.Get(), 0, dst_x, dst_y, 0, src_texture, src_subresource, &box);
 }
 
-} // namespace D3D
+} // namespace D3D11

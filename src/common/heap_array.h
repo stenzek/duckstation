@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <cassert>
 #include <type_traits>
 
 template<typename T, std::size_t SIZE>
@@ -15,7 +16,7 @@ public:
   using const_pointer = const T*;
   using this_type = HeapArray<T, SIZE>;
 
-  HeapArray() { m_data = new T[size]; }
+  HeapArray() { m_data = new T[SIZE]; }
 
   HeapArray(const this_type& copy)
   {
@@ -44,8 +45,16 @@ public:
   const_pointer cbegin() const { return m_data; }
   const_pointer cend() const { return m_data + SIZE; }
 
-  const_reference operator[](size_type index) const { return m_data[index]; }
-  reference operator[](size_type index) { return m_data[index]; }
+  const_reference operator[](size_type index) const
+  {
+    assert(index < SIZE);
+    return m_data[index];
+  }
+  reference operator[](size_type index)
+  {
+    assert(index < SIZE);
+    return m_data[index];
+  }
 
   const_reference front() const { return m_data[0]; }
   const_reference back() const { return m_data[SIZE - 1]; }
@@ -71,7 +80,7 @@ public:
   }
 
 #define RELATIONAL_OPERATOR(op)                                                                                        \
-  bool operator op (const this_type& rhs) const                                                                        \
+  bool operator op(const this_type& rhs) const                                                                         \
   {                                                                                                                    \
     for (size_type i = 0; i < SIZE; i++)                                                                               \
     {                                                                                                                  \
