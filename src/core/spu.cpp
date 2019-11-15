@@ -669,7 +669,7 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
 
     case ADSRPhase::Attack:
       adsr_target.level = 32767; // 0 -> max
-      adsr_target.step = regs.adsr.attack_step + 4;
+      adsr_target.step = regs.adsr.attack_step;
       adsr_target.shift = regs.adsr.attack_shift;
       adsr_target.decreasing = false;
       adsr_target.exponential = regs.adsr.attack_exponential;
