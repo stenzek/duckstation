@@ -43,6 +43,7 @@ bool DMA::DoState(StateWrapper& sw)
     sw.Do(&cs.base_address);
     sw.Do(&cs.block_control.bits);
     sw.Do(&cs.channel_control.bits);
+    sw.Do(&cs.transfer_ticks);
     sw.Do(&cs.request);
   }
 
