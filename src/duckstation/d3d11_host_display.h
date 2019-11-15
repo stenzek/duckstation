@@ -31,6 +31,7 @@ public:
   void SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height, u32 texture_width,
                          u32 texture_height, float aspect_ratio) override;
   void SetDisplayLinearFiltering(bool enabled) override;
+  void SetDisplayTopMargin(int height) override;
 
   void SetVSync(bool enabled) override;
 
@@ -76,6 +77,7 @@ private:
   s32 m_display_height = 0;
   u32 m_display_texture_width = 0;
   u32 m_display_texture_height = 0;
+  int m_display_top_margin = 0;
   float m_display_aspect_ratio = 1.0f;
 
   bool m_display_texture_changed = false;

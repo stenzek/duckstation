@@ -39,6 +39,7 @@ public:
   virtual void SetDisplayTexture(void* texture_handle, s32 offset_x, s32 offset_y, s32 width, s32 height,
                                  u32 texture_width, u32 texture_height, float aspect_ratio) = 0;
   virtual void SetDisplayLinearFiltering(bool enabled) = 0;
+  virtual void SetDisplayTopMargin(int height) = 0;
 
   virtual void Render() = 0;
 

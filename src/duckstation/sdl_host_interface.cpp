@@ -172,6 +172,15 @@ void SDLHostInterface::ResetPerformanceCounters()
 
 void SDLHostInterface::SwitchGPURenderer() {}
 
+void SDLHostInterface::UpdateFullscreen()
+{
+  SDL_SetWindowFullscreen(m_window, m_settings.display_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+
+  // We set the margin only in windowed mode, the menu bar is drawn on top in fullscreen.
+  m_display->SetDisplayTopMargin(
+    m_settings.display_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
+}
+
 std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename /* = nullptr */,
                                                            const char* exp1_filename /* = nullptr */,
                                                            const char* save_state_filename /* = nullptr */)
@@ -216,6 +225,8 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
 
   intf->UpdateAudioVisualSync();
 
+  intf->UpdateFullscreen();
+
   return intf;
 }
 
@@ -227,11 +238,6 @@ TinyString SDLHostInterface::GetSaveStateFilename(u32 index)
 void SDLHostInterface::ReportMessage(const char* message)
 {
   AddOSDMessage(message, 3.0f);
-}
-
-bool SDLHostInterface::IsWindowFullscreen() const
-{
-  return ((SDL_GetWindowFlags(m_window) & SDL_WINDOW_FULLSCREEN) != 0);
 }
 
 static inline u32 SDLButtonToHostButton(u32 button)
@@ -488,6 +494,13 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
+    case SDL_SCANCODE_F11:
+    {
+      if (!pressed)
+        DoToggleFullscreen();
+    }
+    break;
+
     case SDL_SCANCODE_TAB:
     {
       if (!repeat)
@@ -570,6 +583,15 @@ void SDLHostInterface::DrawImGui()
 
 void SDLHostInterface::DrawMainMenuBar()
 {
+  // We skip drawing the menu bar if we're in fullscreen and the mouse pointer isn't in range.
+  const float SHOW_THRESHOLD = 20.0f;
+  if (m_settings.display_fullscreen &&
+      ImGui::GetIO().MousePos.y >= (SHOW_THRESHOLD * ImGui::GetIO().DisplayFramebufferScale.x) &&
+      !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+  {
+    return;
+  }
+
   if (!ImGui::BeginMainMenuBar())
     return;
 
@@ -730,8 +752,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
-  if (ImGui::MenuItem("Fullscreen", nullptr, IsWindowFullscreen()))
-    SDL_SetWindowFullscreen(m_window, IsWindowFullscreen() ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+  if (ImGui::MenuItem("Fullscreen", nullptr, &m_settings.display_fullscreen))
+    UpdateFullscreen();
 
   if (ImGui::MenuItem("VSync", nullptr, &m_settings.gpu_vsync))
   {
@@ -977,7 +999,9 @@ void SDLHostInterface::DrawSettingsWindow()
 
       if (DrawSettingsSectionHeader("Display Output"))
       {
-        ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen);
+        if (ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen))
+          UpdateFullscreen();
+
         if (ImGui::Checkbox("VSync", &m_settings.gpu_vsync))
         {
           UpdateAudioVisualSync();
@@ -1132,10 +1156,11 @@ void SDLHostInterface::DrawOSDMessages()
                                             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
 
   std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   auto iter = m_osd_messages.begin();
-  float position_x = 10.0f;
-  float position_y = 10.0f + 20.0f;
+  float position_x = 10.0f * scale;
+  float position_y = (10.0f + (m_settings.display_fullscreen ? 0.0f : 20.0f)) * scale;
   u32 index = 0;
   while (iter != m_osd_messages.end())
   {
@@ -1156,7 +1181,7 @@ void SDLHostInterface::DrawOSDMessages()
     if (ImGui::Begin(SmallString::FromFormat("osd_%u", index++), nullptr, window_flags))
     {
       ImGui::TextUnformatted(msg.text);
-      position_y += ImGui::GetWindowSize().y + (4.0f * ImGui::GetIO().DisplayFramebufferScale.x);
+      position_y += ImGui::GetWindowSize().y + (4.0f * scale);
     }
 
     ImGui::End();
@@ -1297,6 +1322,12 @@ void SDLHostInterface::DoToggleSoftwareRendering()
   }
 
   m_system->RecreateGPU();
+}
+
+void SDLHostInterface::DoToggleFullscreen()
+{
+  m_settings.display_fullscreen = !m_settings.display_fullscreen;
+  UpdateFullscreen();
 }
 
 void SDLHostInterface::DoModifyInternalResolution(s32 increment)

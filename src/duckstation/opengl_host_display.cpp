@@ -130,6 +130,11 @@ void OpenGLHostDisplay::SetDisplayLinearFiltering(bool enabled)
   m_display_linear_filtering = enabled;
 }
 
+void OpenGLHostDisplay::SetDisplayTopMargin(int height)
+{
+  m_display_top_margin = height;
+}
+
 void OpenGLHostDisplay::SetVSync(bool enabled)
 {
   // Window framebuffer has to be bound to call SetSwapInterval.
@@ -373,9 +378,9 @@ void OpenGLHostDisplay::RenderDisplay()
 
   // - 20 for main menu padding
   const auto [vp_left, vp_top, vp_width, vp_height] =
-    CalculateDrawRect(m_window_width, std::max(m_window_height - 20, 1), m_display_aspect_ratio);
+    CalculateDrawRect(m_window_width, std::max(m_window_height - m_display_top_margin, 1), m_display_aspect_ratio);
 
-  glViewport(vp_left, m_window_height - (20 + vp_top) - vp_height, vp_width, vp_height);
+  glViewport(vp_left, m_window_height - (m_display_top_margin + vp_top) - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);

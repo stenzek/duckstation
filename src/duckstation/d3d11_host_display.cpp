@@ -149,6 +149,11 @@ void D3D11HostDisplay::SetDisplayLinearFiltering(bool enabled)
   m_display_linear_filtering = enabled;
 }
 
+void D3D11HostDisplay::SetDisplayTopMargin(int height)
+{
+  m_display_top_margin = height;
+}
+
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
   m_vsync = enabled;
@@ -364,8 +369,8 @@ void D3D11HostDisplay::RenderDisplay()
 
   // - 20 for main menu padding
   auto [vp_left, vp_top, vp_width, vp_height] =
-    CalculateDrawRect(m_window_width, std::max(m_window_height - 20, 1), m_display_aspect_ratio);
-  vp_top += 20;
+    CalculateDrawRect(m_window_width, std::max(m_window_height - m_display_top_margin, 1), m_display_aspect_ratio);
+  vp_top += m_display_top_margin;
 
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);

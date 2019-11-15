@@ -68,9 +68,9 @@ private:
   void ConnectDevices();
   void ResetPerformanceCounters();
   void SwitchGPURenderer();
+  void UpdateFullscreen();
 
   // We only pass mouse input through if it's grabbed
-  bool IsWindowFullscreen() const;
   void DrawImGui();
   void DoReset();
   void DoPowerOff();
@@ -83,6 +83,7 @@ private:
   void DoTogglePause();
   void DoFrameStep();
   void DoToggleSoftwareRendering();
+  void DoToggleFullscreen();
   void DoModifyInternalResolution(s32 increment);
 
   void HandleSDLEvent(const SDL_Event* event);
