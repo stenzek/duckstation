@@ -452,7 +452,7 @@ u32 GPU::ReadGPUREAD()
     // Read with correct wrap-around behavior.
     const u16 read_x = (m_vram_transfer.x + m_vram_transfer.col) % VRAM_WIDTH;
     const u16 read_y = (m_vram_transfer.y + m_vram_transfer.row) % VRAM_HEIGHT;
-    value = (value << 16) | ZeroExtend32(m_vram_ptr[read_y * VRAM_WIDTH + read_x]);
+    value = (ZeroExtend32(m_vram_ptr[read_y * VRAM_WIDTH + read_x]) << 16) | (value >> 16);
 
     if (++m_vram_transfer.col == m_vram_transfer.width)
     {
