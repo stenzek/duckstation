@@ -45,6 +45,8 @@ void Settings::Load(const char* filename)
   display_linear_filtering = ini.GetBoolValue("Display", "LinearFiltering", true);
 
   bios_path = ini.GetValue("BIOS", "Path", "scph1001.bin");
+  bios_patch_tty_enable = ini.GetBoolValue("BIOS", "PatchTTYEnable", true);
+  bios_patch_fast_boot = ini.GetBoolValue("BIOS", "PatchFastBoot", false);
 
   memory_card_a_path = ini.GetValue("MemoryCard", "CardAPath", "memory_card_a.mcd");
   memory_card_b_path = ini.GetValue("MemoryCard", "CardBPath", "");
@@ -66,6 +68,8 @@ bool Settings::Save(const char* filename) const
   ini.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
 
   ini.SetValue("BIOS", "Path", bios_path.c_str());
+  ini.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
+  ini.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
   if (!memory_card_a_path.empty())
     ini.SetValue("MemoryCard", "CardAPath", memory_card_a_path.c_str());

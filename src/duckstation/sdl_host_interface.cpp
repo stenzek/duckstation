@@ -924,18 +924,31 @@ void SDLHostInterface::DrawSettingsWindow()
 
     if (ImGui::BeginTabItem("General"))
     {
-      ImGui::Text("Region:");
-      ImGui::SameLine(indent);
-      static int region = 0;
-      ImGui::Combo("##region", &region, "NTSC-U (US)\0NTSC-J (Japan)\0PAL (Europe, Australia)");
+      if (DrawSettingsSectionHeader("Behavior"))
+      {
+        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
+        settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
+      }
 
-      ImGui::Text("BIOS Path:");
-      ImGui::SameLine(indent);
-      settings_changed |= DrawFileChooser("##bios_path", &m_settings.bios_path);
+      ImGui::NewLine();
+      if (DrawSettingsSectionHeader("Console"))
+      {
+        ImGui::Text("Region:");
+        ImGui::SameLine(indent);
+        static int region = 0;
+        ImGui::Combo("##region", &region, "NTSC-U (US)\0NTSC-J (Japan)\0PAL (Europe, Australia)");
+      }
 
-      ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
+      ImGui::NewLine();
+      if (DrawSettingsSectionHeader("BIOS"))
+      {
+        ImGui::Text("ROM Path:");
+        ImGui::SameLine(indent);
+        settings_changed |= DrawFileChooser("##bios_path", &m_settings.bios_path);
 
-      ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
+        settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings.bios_patch_tty_enable);
+        settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings.bios_patch_fast_boot);
+      }
 
       ImGui::EndTabItem();
     }

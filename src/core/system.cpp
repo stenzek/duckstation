@@ -155,14 +155,25 @@ bool System::LoadBIOS()
       bios_hash_string == BIOSHashes::SCPH_1002 || bios_hash_string == BIOSHashes::SCPH_5500 ||
       bios_hash_string == BIOSHashes::SCPH_5501 || bios_hash_string == BIOSHashes::SCPH_5502)
   {
-    // Patch to enable TTY.
-    Log_InfoPrintf("Patching BIOS to enable TTY/printf");
-    m_bus->PatchBIOS(0x1FC06F0C, 0x24010001);
-    m_bus->PatchBIOS(0x1FC06F14, 0xAF81A9C0);
+    if (GetSettings().bios_patch_tty_enable)
+    {
+      Log_InfoPrintf("Patching BIOS to enable TTY/printf");
+      m_bus->PatchBIOS(0x1FC06F0C, 0x24010001);
+      m_bus->PatchBIOS(0x1FC06F14, 0xAF81A9C0);
+    }
+
+    if (GetSettings().bios_patch_fast_boot)
+    {
+      Log_InfoPrintf("Patching BIOS for fast boot");
+
+      // Replace the shell entry point with a return back to the bootstrap.
+      m_bus->PatchBIOS(0x1FC18000, 0x03E00008);
+      m_bus->PatchBIOS(0x1FC18004, 0x00000000);
+    }
   }
   else
   {
-    Log_WarningPrintf("Unknown BIOS version, not patching TTY/printf");
+    Log_WarningPrintf("Unknown BIOS version, not applying patches");
   }
 
   return true;
