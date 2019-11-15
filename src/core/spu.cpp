@@ -662,7 +662,10 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
   {
     case ADSRPhase::Off:
       adsr_target = {};
-      break;
+      adsr_ticks = 0;
+      adsr_ticks_remaining = 0;
+      adsr_step = 0;
+      return;
 
     case ADSRPhase::Attack:
       adsr_target.level = 32767; // 0 -> max
@@ -912,6 +915,11 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     step = Truncate16(step * factor) >> 15;
   }
   step = std::min<u16>(step, 0x4000);
+
+  // Shouldn't ever overflow because if sample_index == 27, step == 0x4000 there won't be a carry out from the
+  // interpolation index. If there is a carry out, bit 12 will never be 1, so it'll never add more than 4 to
+  // sample_index, which should never be >27.
+  DebugAssert(voice.counter.sample_index < NUM_SAMPLES_PER_ADPCM_BLOCK);
   voice.counter.bits += step;
 
   if (voice.counter.sample_index >= NUM_SAMPLES_PER_ADPCM_BLOCK)
@@ -919,6 +927,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     // next block
     voice.counter.sample_index -= NUM_SAMPLES_PER_ADPCM_BLOCK;
     voice.has_samples = false;
+    voice.current_address += 2;
 
     // handle flags
     if (voice.current_block_flags.loop_end)
@@ -927,17 +936,14 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       {
         Log_TracePrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
         m_endx_register |= (u32(1) << voice_index);
-        voice.KeyOff();
+        voice.regs.adsr_volume = 0;
+        voice.SetADSRPhase(ADSRPhase::Off);
       }
       else
       {
         Log_TracePrintf("Voice %u loop end+repeat @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
         voice.current_address = voice.regs.adpcm_repeat_address;
       }
-    }
-    else
-    {
-      voice.current_address += 2;
     }
   }
 
