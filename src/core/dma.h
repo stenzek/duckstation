@@ -48,6 +48,8 @@ public:
   // changing interfaces
   void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
+  void Execute(TickCount ticks);
+
 private:
   static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
@@ -61,12 +63,17 @@ private:
     Reserved = 3
   };
 
+  /// Returns the number of ticks for a given channel's transfer.
+  TickCount GetTransferDelay(Channel channel) const;
+
   // is everything enabled for a channel to operate?
   bool CanTransferChannel(Channel channel) const;
   bool CanRunAnyChannels() const;
   void UpdateIRQ();
 
-  void Transfer();
+  void QueueTransferChannel(Channel channel);
+  void QueueTransfer();
+
   void TransferChannel(Channel channel);
 
   // from device -> memory
@@ -84,7 +91,6 @@ private:
   MDEC* m_mdec = nullptr;
 
   std::vector<u32> m_transfer_buffer;
-  bool m_transfer_in_progress = false;
 
   struct ChannelState
   {
@@ -124,6 +130,7 @@ private:
       static constexpr u32 WRITE_MASK = 0b01110001'01110111'00000111'00000011;
     } channel_control;
 
+    TickCount transfer_ticks = 0;
     bool request = false;
   };
 
@@ -199,4 +206,7 @@ private:
       master_flag = master_enable && ((((bits >> 16) & u32(0b1111111)) & ((bits >> 24) & u32(0b1111111))) != 0);
     }
   } m_DICR = {};
+
+  TickCount m_transfer_min_ticks = 0;
+  bool m_transfer_in_progress = false;
 };

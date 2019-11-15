@@ -367,6 +367,9 @@ bool System::SetExpansionROM(const char* filename)
 void System::Synchronize()
 {
   const TickCount pending_ticks = m_cpu->GetPendingTicks();
+  if (pending_ticks == 0)
+    return;
+
   m_cpu->ResetPendingTicks();
   m_cpu->ResetDowncount();
 
@@ -378,6 +381,7 @@ void System::Synchronize()
   m_pad->Execute(pending_ticks);
   m_spu->Execute(pending_ticks);
   m_mdec->Execute(pending_ticks);
+  m_dma->Execute(pending_ticks);
 }
 
 void System::SetDowncount(TickCount downcount)

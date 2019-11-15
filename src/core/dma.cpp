@@ -48,6 +48,18 @@ bool DMA::DoState(StateWrapper& sw)
 
   sw.Do(&m_DPCR.bits);
   sw.Do(&m_DICR.bits);
+
+  if (sw.IsReading())
+  {
+    m_transfer_min_ticks = std::numeric_limits<TickCount>::max();
+    for (const ChannelState& cs : m_state)
+    {
+      if (cs.transfer_ticks > 0)
+        m_transfer_min_ticks = std::min(m_transfer_min_ticks, cs.transfer_ticks);
+    }
+    m_system->SetDowncount(m_transfer_min_ticks);
+  }
+
   return !sw.HasError();
 }
 
@@ -113,7 +125,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DMA channel %u block control <- 0x%08X", channel_index, value);
         state.block_control.bits = value;
-        Transfer();
+        QueueTransferChannel(static_cast<Channel>(channel_index));
         return;
       }
 
@@ -122,7 +134,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
         Log_TracePrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
-        Transfer();
+        QueueTransferChannel(static_cast<Channel>(channel_index));
         return;
       }
 
@@ -138,7 +150,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DPCR <- 0x%08X", value);
         m_DPCR.bits = value;
-        Transfer();
+        QueueTransfer();
         return;
       }
 
@@ -167,7 +179,26 @@ void DMA::SetRequest(Channel channel, bool request)
 
   cs.request = request;
   if (request)
-    Transfer();
+    QueueTransfer();
+}
+
+TickCount DMA::GetTransferDelay(Channel channel) const
+{
+  const ChannelState& cs = m_state[static_cast<u32>(channel)];
+  switch (channel)
+  {
+    case Channel::SPU:
+    {
+      if (cs.channel_control.sync_mode == SyncMode::Request)
+        return (cs.block_control.request.GetBlockCount() * (cs.block_control.request.GetBlockSize() / 2));
+      else
+        return 1;
+    }
+    break;
+
+    default:
+      return 1;
+  }
 }
 
 bool DMA::CanTransferChannel(Channel channel) const
@@ -183,6 +214,9 @@ bool DMA::CanTransferChannel(Channel channel) const
     return false;
 
   if (cs.channel_control.sync_mode == SyncMode::Manual && !cs.channel_control.start_trigger)
+    return false;
+
+  if (cs.transfer_ticks > 0)
     return false;
 
   return true;
@@ -209,33 +243,66 @@ void DMA::UpdateIRQ()
   }
 }
 
-void DMA::Transfer()
+void DMA::QueueTransferChannel(Channel channel)
 {
-  if (m_transfer_in_progress)
+  ChannelState& cs = m_state[static_cast<u32>(channel)];
+  if (cs.transfer_ticks > 0 || !CanTransferChannel(channel))
     return;
 
-  // prevent recursive calls
+  const TickCount ticks = GetTransferDelay(channel);
+  if (ticks == 0)
+  {
+    // immediate transfer
+    TransferChannel(channel);
+    return;
+  }
+
+  if (!m_transfer_in_progress)
+    m_system->Synchronize();
+
+  cs.transfer_ticks = ticks;
+  m_transfer_min_ticks = std::min(m_transfer_min_ticks, ticks);
+  m_system->SetDowncount(ticks);
+}
+
+void DMA::QueueTransfer()
+{
+  for (u32 i = 0; i < NUM_CHANNELS; i++)
+    QueueTransferChannel(static_cast<Channel>(i));
+}
+
+void DMA::Execute(TickCount ticks)
+{
+  m_transfer_min_ticks -= ticks;
+  if (m_transfer_min_ticks > 0)
+  {
+    m_system->SetDowncount(m_transfer_min_ticks);
+    return;
+  }
+
+  DebugAssert(!m_transfer_in_progress);
   m_transfer_in_progress = true;
 
   // keep going until all transfers are done. one channel can start others (e.g. MDEC)
-  for (;;)
+  m_transfer_min_ticks = std::numeric_limits<TickCount>::max();
+  for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
-    bool any_channels_active = false;
+    const Channel channel = static_cast<Channel>(i);
+    if (m_state[i].transfer_ticks <= 0)
+      continue;
 
-    for (u32 i = 0; i < NUM_CHANNELS; i++)
+    m_state[i].transfer_ticks -= ticks;
+    if (CanTransferChannel(channel))
     {
-      const Channel channel = static_cast<Channel>(i);
-      if (CanTransferChannel(channel))
-      {
-        TransferChannel(channel);
-        any_channels_active = true;
-      }
+      TransferChannel(channel);
     }
-
-    if (!any_channels_active)
-      break;
+    else
+    {
+      m_transfer_min_ticks = std::min(m_transfer_min_ticks, ticks);
+    }
   }
 
+  m_system->SetDowncount(m_transfer_min_ticks);
   m_transfer_in_progress = false;
 }
 
@@ -348,6 +415,7 @@ void DMA::TransferChannel(Channel channel)
   }
 
   // start/busy bit is cleared on end of transfer
+  cs.transfer_ticks = 0;
   cs.channel_control.enable_busy = false;
   if (m_DICR.IsIRQEnabled(channel))
   {
