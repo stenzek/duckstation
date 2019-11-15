@@ -202,11 +202,18 @@ bool D3D11HostDisplay::CreateD3DDevice()
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.OutputWindow = syswm.info.win.window;
   swap_chain_desc.Windowed = TRUE;
-  swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+  swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
   HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0,
                                              D3D11_SDK_VERSION, &swap_chain_desc, m_swap_chain.GetAddressOf(),
                                              m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+
+  if (FAILED(hr))
+  {
+    Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
+    swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+  }
+
   if (FAILED(hr))
   {
     Log_ErrorPrintf("D3D11CreateDeviceAndSwapChain failed: 0x%08X", hr);
