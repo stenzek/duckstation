@@ -72,6 +72,7 @@ bool SPU::DoState(StateWrapper& sw)
 {
   sw.Do(&m_SPUCNT.bits);
   sw.Do(&m_SPUSTAT.bits);
+  sw.Do(&m_transfer_control.bits);
   sw.Do(&m_transfer_address);
   sw.Do(&m_transfer_address_reg);
   sw.Do(&m_irq_address);
@@ -171,6 +172,10 @@ u16 SPU::ReadRegister(u32 offset)
     case 0x1F801DAA - SPU_BASE:
       Log_DebugPrintf("SPU control register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUCNT.bits;
+
+    case 0x1F801DAC - SPU_BASE:
+      Log_DebugPrintf("SPU transfer control register -> 0x%04X", ZeroExtend32(m_transfer_control.bits));
+      return m_transfer_control.bits;
 
     case 0x1F801DAE - SPU_BASE:
       // Log_DebugPrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
@@ -350,7 +355,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
       m_transfer_address_reg = value;
-      m_transfer_address = (ZeroExtend32(value) << VOICE_ADDRESS_SHIFT) & RAM_MASK;
+      m_transfer_address = ZeroExtend32(value) * 8;
       return;
     }
 
@@ -373,6 +378,13 @@ void SPU::WriteRegister(u32 offset, u16 value)
         m_SPUSTAT.irq9_flag = false;
 
       UpdateDMARequest();
+      return;
+    }
+
+    case 0x1F801DAC - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU transfer control register <- 0x%04X", ZeroExtend32(value));
+      m_transfer_control.bits = value;
       return;
     }
 
@@ -529,6 +541,7 @@ void SPU::DMAWrite(const u32* words, u32 word_count)
   }
   else
   {
+    DebugAssert(m_transfer_control.mode == 2);
     std::memcpy(&m_ram[m_transfer_address], words, sizeof(u32) * word_count);
     m_transfer_address = (m_transfer_address + (sizeof(u32) * word_count)) & RAM_MASK;
   }
@@ -557,6 +570,7 @@ void SPU::RAMTransferWrite(u16 value)
 {
   Log_TracePrintf("SPU RAM @ 0x%08X (voice 0x%04X) <- 0x%04X", m_transfer_address,
                   m_transfer_address >> VOICE_ADDRESS_SHIFT, ZeroExtend32(value));
+  DebugAssert(m_transfer_control.mode == 2);
 
   std::memcpy(&m_ram[m_transfer_address], &value, sizeof(value));
   m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;

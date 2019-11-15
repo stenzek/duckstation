@@ -95,6 +95,13 @@ private:
     BitField<u16, u8, 0, 6> mode;
   };
 
+  union TransferControl
+  {
+    u16 bits;
+
+    BitField<u8, u8, 1, 3> mode;
+  };
+
   union ADSRRegister
   {
     u32 bits;
@@ -285,6 +292,7 @@ private:
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};
 
+  TransferControl m_transfer_control = {};
   u16 m_transfer_address_reg = 0;
   u32 m_transfer_address = 0;
 
