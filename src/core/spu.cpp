@@ -667,8 +667,8 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
       break;
 
     case ADSRPhase::Sustain:
-      adsr_target.level = regs.adsr.sustain_direction_decrease ? -1 : 1;
-      adsr_target.step = 0;
+      adsr_target.level = 0;
+      adsr_target.step = regs.adsr.sustain_step;
       adsr_target.shift = regs.adsr.sustain_shift;
       adsr_target.decreasing = regs.adsr.sustain_direction_decrease;
       adsr_target.exponential = regs.adsr.sustain_exponential;
@@ -687,9 +687,9 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
   }
 
   const s16 step = adsr_target.decreasing ? (-8 + adsr_target.step) : (7 - adsr_target.step);
-  adsr_ticks = 1 << std::max<s16>(0, adsr_target.shift - 11);
+  adsr_ticks = 1 << std::max<s16>(0, static_cast<s16>(ZeroExtend16(adsr_target.shift)) - 11);
   adsr_ticks_remaining = adsr_ticks;
-  adsr_step = step << std::max<s16>(0, 11 - adsr_target.shift);
+  adsr_step = step << std::max<s16>(0, 11 - static_cast<s16>(ZeroExtend16(adsr_target.shift)));
 }
 
 void SPU::Voice::TickADSR()
