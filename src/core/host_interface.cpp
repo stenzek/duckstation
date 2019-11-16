@@ -141,7 +141,8 @@ void HostInterface::Throttle()
       m_speed_lost_time_timestamp.Reset();
     }
 #endif
-    m_last_throttle_time = time - MAX_VARIANCE_TIME;
+    m_last_throttle_time = 0;
+    m_throttle_timer.Reset();
   }
   else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
   {
@@ -213,4 +214,6 @@ void HostInterface::UpdateSpeedLimiterState()
 
   m_audio_stream->SetSync(audio_sync_enabled);
   m_display->SetVSync(video_sync_enabled);
+  m_throttle_timer.Reset();
+  m_last_throttle_time = 0;
 }
