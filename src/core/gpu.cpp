@@ -278,6 +278,10 @@ void GPU::UpdateCRTCConfig()
     cs.horizontal_total = 3413;
   }
 
+  const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
+  const double vertical_frequency = static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame);
+  m_system->GetHostInterface()->SetThrottleFrequency(vertical_frequency);
+
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
   cs.horizontal_display_start = static_cast<TickCount>(std::min<u32>(cs.regs.X1, cs.horizontal_total));
