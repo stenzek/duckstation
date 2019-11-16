@@ -1,6 +1,8 @@
 #pragma once
-#include "types.h"
+#include "YBaseLib/Timer.h"
 #include "settings.h"
+#include "types.h"
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -25,6 +27,9 @@ public:
   /// Returns a settings object which can be modified.
   Settings& GetSettings() { return m_settings; }
 
+  /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
+  void SetThrottleFrequency(double frequency) { m_throttle_period = static_cast<s64>(1000000000.0 / frequency); }
+
   bool CreateSystem();
   bool BootSystem(const char* filename, const char* state_filename);
   void DestroySystem();
@@ -42,16 +47,27 @@ public:
   bool SaveState(const char* filename);
 
 protected:
+  using ThrottleClock = std::chrono::steady_clock;
+
   /// Connects controllers. TODO: Clean this up later...
   virtual void ConnectControllers();
 
-  void UpdateAudioVisualSync();
+  /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
+  void Throttle();
+
+  void UpdateSpeedLimiterState();
 
   std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
   Settings m_settings;
 
+  u64 m_last_throttle_time = 0;
+  s64 m_throttle_period = INT64_C(1000000000) / 60;
+  Timer m_throttle_timer;
+  Timer m_speed_lost_time_timestamp;
+
   bool m_paused = false;
   bool m_speed_limiter_temp_disabled = false;
+  bool m_speed_limiter_enabled = false;
 };

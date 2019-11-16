@@ -1,6 +1,7 @@
 #include "host_interface.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
+#include "YBaseLib/Timer.h"
 #include "bios.h"
 #include "common/audio_stream.h"
 #include "host_display.h"
@@ -8,9 +9,16 @@
 #include <filesystem>
 Log_SetChannel(HostInterface);
 
+#ifdef _WIN32
+#include "YBaseLib/Windows/WindowsHeaders.h"
+#else
+#include <time.h>
+#endif
+
 HostInterface::HostInterface()
 {
   m_settings.SetDefaults();
+  m_last_throttle_time = Y_TimerGetValue();
 }
 
 HostInterface::~HostInterface() = default;
@@ -22,7 +30,7 @@ bool HostInterface::CreateSystem()
   // Pull in any invalid settings which have been reset.
   m_settings = m_system->GetSettings();
   m_paused = true;
-  UpdateAudioVisualSync();
+  UpdateSpeedLimiterState();
   return true;
 }
 
@@ -33,7 +41,7 @@ bool HostInterface::BootSystem(const char* filename, const char* state_filename)
 
   m_paused = m_settings.start_paused;
   ConnectControllers();
-  UpdateAudioVisualSync();
+  UpdateSpeedLimiterState();
   return true;
 }
 
@@ -41,7 +49,7 @@ void HostInterface::DestroySystem()
 {
   m_system.reset();
   m_paused = false;
-  UpdateAudioVisualSync();
+  UpdateSpeedLimiterState();
 }
 
 void HostInterface::ReportError(const char* message)
@@ -110,6 +118,44 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
 
 void HostInterface::ConnectControllers() {}
 
+void HostInterface::Throttle()
+{
+  // Allow variance of up to 40ms either way.
+  constexpr s64 MAX_VARIANCE_TIME = INT64_C(40000000);
+
+  // Don't sleep for <1ms or >=period.
+  constexpr s64 MINIMUM_SLEEP_TIME = INT64_C(1000000);
+
+  // Use unsigned for defined overflow/wrap-around.
+  const u64 time = static_cast<u64>(m_throttle_timer.GetTimeNanoseconds());
+  const s64 sleep_time = static_cast<s64>(m_last_throttle_time - time);
+  if (std::abs(sleep_time) >= MAX_VARIANCE_TIME)
+  {
+#ifdef Y_BUILD_CONFIG_RELEASE
+    // Don't display the slow messages in debug, it'll always be slow...
+    // Limit how often the messages are displayed.
+    if (m_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
+    {
+      Log_WarningPrintf("System too %s, lost %.2f ms", sleep_time < 0 ? "slow" : "fast",
+                        static_cast<double>(std::abs(sleep_time) - MAX_VARIANCE_TIME) / 1000000.0);
+      m_speed_lost_time_timestamp.Reset();
+    }
+#endif
+    m_last_throttle_time = time - MAX_VARIANCE_TIME;
+  }
+  else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
+  {
+#ifdef WIN32
+    Sleep(static_cast<u32>(sleep_time / 1000000));
+#else
+    const struct timespec ts = {0, static_cast<long>(sleep_time)};
+    nanosleep(&ts, nullptr);
+#endif
+  }
+
+  m_last_throttle_time += m_throttle_period;
+}
+
 bool HostInterface::LoadState(const char* filename)
 {
   ByteStream* stream;
@@ -156,13 +202,14 @@ bool HostInterface::SaveState(const char* filename)
   return result;
 }
 
-void HostInterface::UpdateAudioVisualSync()
+void HostInterface::UpdateSpeedLimiterState()
 {
-  const bool speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
-  const bool audio_sync_enabled = speed_limiter_enabled;
-  const bool vsync_enabled = !m_system || m_paused || (speed_limiter_enabled && m_settings.gpu_vsync);
+  m_speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
+
+  const bool audio_sync_enabled = m_speed_limiter_enabled;
+  const bool vsync_enabled = !m_system || m_paused || (m_speed_limiter_enabled && m_settings.gpu_vsync);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
-                 (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
+                 (m_speed_limiter_enabled && vsync_enabled) ? " and video" : "");
 
   m_audio_stream->SetSync(false);
   m_display->SetVSync(vsync_enabled);

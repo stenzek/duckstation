@@ -197,6 +197,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
 
   ImGui::NewFrame();
 
+  intf->UpdateSpeedLimiterState();
   intf->OpenGameControllers();
 
   const bool boot = (filename != nullptr || exp1_filename != nullptr || save_state_filename != nullptr);
@@ -208,8 +209,6 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
     if (save_state_filename)
       intf->LoadState(save_state_filename);
   }
-
-  intf->UpdateAudioVisualSync();
 
   intf->UpdateFullscreen();
 
@@ -497,7 +496,7 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
       if (!repeat)
       {
         m_speed_limiter_temp_disabled = pressed;
-        UpdateAudioVisualSync();
+        UpdateSpeedLimiterState();
       }
     }
     break;
@@ -521,7 +520,7 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
       if (pressed && !repeat && m_system)
       {
         m_settings.speed_limiter_enabled = !m_settings.speed_limiter_enabled;
-        UpdateAudioVisualSync();
+        UpdateSpeedLimiterState();
         AddOSDMessage(m_system->GetSettings().speed_limiter_enabled ? "Speed limiter enabled." :
                                                                       "Speed limiter disabled.");
       }
@@ -720,7 +719,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings.speed_limiter_enabled))
   {
     settings_changed = true;
-    UpdateAudioVisualSync();
+    UpdateSpeedLimiterState();
   }
 
   ImGui::Separator();
@@ -749,7 +748,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   if (ImGui::MenuItem("VSync", nullptr, &m_settings.gpu_vsync))
   {
     settings_changed = true;
-    UpdateAudioVisualSync();
+    UpdateSpeedLimiterState();
   }
 
   ImGui::Separator();
@@ -1008,7 +1007,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         if (ImGui::Checkbox("VSync", &m_settings.gpu_vsync))
         {
-          UpdateAudioVisualSync();
+          UpdateSpeedLimiterState();
           settings_changed = true;
         }
         if (ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering))
@@ -1398,7 +1397,12 @@ void SDLHostInterface::Run()
       ImGui::NewFrame();
 
       if (m_system)
+      {
         m_system->GetGPU()->RestoreGraphicsAPIState();
+
+        if (m_speed_limiter_enabled)
+          Throttle();
+      }
     }
 
     if (m_system)
@@ -1426,10 +1430,7 @@ void SDLHostInterface::Run()
   if (m_system)
   {
     if (!SaveState(RESUME_SAVESTATE_FILENAME))
-    {
-      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Save state failed",
-                               "Saving state failed, you will not be able to resume this session.", m_window);
-    }
+      ReportError("Saving state failed, you will not be able to resume this session.");
 
     DestroySystem();
   }
