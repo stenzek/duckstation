@@ -121,6 +121,12 @@ bool System::Boot(const char* filename)
       }
     }
   }
+  else
+  {
+    // Default to NTSC for BIOS boot.
+    if (m_region == ConsoleRegion::Auto)
+      m_region = ConsoleRegion::NTSC_U;
+  }
 
   // Load BIOS image.
   std::optional<BIOS::Image> bios_image = m_host_interface->GetBIOSImage(m_region);
