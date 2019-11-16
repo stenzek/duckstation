@@ -549,7 +549,8 @@ void CDROM::Execute(TickCount ticks)
           DoSpinUpComplete();
           break;
 
-        case DriveState::Seeking:
+        case DriveState::SeekingPhysical:
+        case DriveState::SeekingLogical:
           DoSeekComplete();
           break;
 
@@ -717,8 +718,8 @@ void CDROM::ExecuteCommand()
     case Command::SeekL:
     case Command::SeekP:
     {
-      // TODO: Data vs audio mode
-      Log_DebugPrintf("CDROM seek command");
+      const bool logical = (m_command == Command::SeekL);
+      Log_DebugPrintf("CDROM %s command", logical ? "SeekL" : "SeekP");
       if (!m_media)
       {
         SendErrorResponse(0x80);
@@ -726,7 +727,7 @@ void CDROM::ExecuteCommand()
       else
       {
         SendACKAndStat();
-        BeginSeeking(false, false);
+        BeginSeeking(logical, false, false);
       }
 
       EndCommand();
@@ -1022,7 +1023,7 @@ void CDROM::BeginReading()
   Log_DebugPrintf("Starting reading");
   if (m_setloc_pending)
   {
-    BeginSeeking(true, false);
+    BeginSeeking(true, true, false);
     return;
   }
 
@@ -1059,7 +1060,7 @@ void CDROM::BeginPlaying(u8 track_bcd)
 
   if (m_setloc_pending)
   {
-    BeginSeeking(false, true);
+    BeginSeeking(false, false, true);
     return;
   }
 
@@ -1074,7 +1075,7 @@ void CDROM::BeginPlaying(u8 track_bcd)
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
-void CDROM::BeginSeeking(bool read_after_seek, bool play_after_seek)
+void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek)
 {
   if (!m_setloc_pending)
     Log_WarningPrintf("Seeking without setloc set");
@@ -1084,7 +1085,8 @@ void CDROM::BeginSeeking(bool read_after_seek, bool play_after_seek)
   m_play_after_seek = play_after_seek;
   m_setloc_pending = false;
 
-  Log_DebugPrintf("Seeking to [%02u:%02u:%02u]", m_seek_position.minute, m_seek_position.second, m_seek_position.frame);
+  Log_DebugPrintf("Seeking to [%02u:%02u:%02u] (%s)", m_seek_position.minute, m_seek_position.second,
+                  m_seek_position.frame, logical ? "logical" : "physical");
 
   const TickCount seek_time = GetTicksForSeek();
 
@@ -1092,7 +1094,7 @@ void CDROM::BeginSeeking(bool read_after_seek, bool play_after_seek)
   m_secondary_status.motor_on = true;
   m_sector_buffer.clear();
 
-  m_drive_state = DriveState::Seeking;
+  m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   m_drive_remaining_ticks = seek_time;
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
@@ -1110,12 +1112,38 @@ void CDROM::DoSpinUpComplete()
 
 void CDROM::DoSeekComplete()
 {
+  const bool logical = (m_drive_state == DriveState::SeekingLogical);
   m_drive_state = DriveState::Idle;
   m_secondary_status.ClearActiveBits();
   m_sector_buffer.clear();
 
   // seek and update sub-q for ReadP command
-  if (m_media && m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&m_last_subq))
+  // TODO: Check SubQ checksum
+  CDImage::SubChannelQ subq;
+  bool seek_okay = (m_media && m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&subq));
+  if (seek_okay)
+  {
+    m_last_subq = subq;
+
+    // check for data header for logical seeks
+    if (logical)
+    {
+      u8 raw_sector[CDImage::RAW_SECTOR_SIZE];
+      seek_okay &= m_media->ReadRawSector(raw_sector);
+      seek_okay &= m_media->Seek(m_media->GetPositionOnDisc() - 1);
+      if (seek_okay)
+      {
+        ProcessDataSectorHeader(raw_sector);
+
+        // ensure the location matches up (it should)
+        const auto [seek_mm, seek_ss, seek_ff] = m_seek_position.ToBCD();
+        seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
+                     m_last_sector_header.frame == seek_ff);
+      }
+    }
+  }
+
+  if (seek_okay)
   {
     // seek complete, transition to play/read if requested
     // INT2 is not sent on play/read
@@ -1135,8 +1163,8 @@ void CDROM::DoSeekComplete()
   }
   else
   {
-    Log_WarningPrintf("Seek to [%02u:%02u:%02u] failed", m_seek_position.minute, m_seek_position.second,
-                      m_seek_position.frame);
+    Log_WarningPrintf("%s seek to [%02u:%02u:%02u] failed", logical ? "Logical" : "Physical", m_seek_position.minute,
+                      m_seek_position.second, m_seek_position.frame);
     m_secondary_status.seek_error = true;
     SendAsyncErrorResponse(0x80);
   }
@@ -1201,6 +1229,7 @@ void CDROM::DoTOCRead()
 void CDROM::DoSectorRead()
 {
   // TODO: Error handling
+  // TODO: Check SubQ checksum.
   CDImage::SubChannelQ subq;
   if (!m_media->ReadSubChannelQ(&subq))
     Panic("SubChannel Q read failed");
@@ -1235,6 +1264,8 @@ void CDROM::DoSectorRead()
   if (!m_media->ReadRawSector(raw_sector))
     Panic("Sector read failed");
 
+  m_last_subq = subq;
+
   if (is_data_sector && m_drive_state == DriveState::Reading)
   {
     ProcessDataSector(raw_sector, subq);
@@ -1257,16 +1288,18 @@ void CDROM::DoSectorRead()
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
-void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
+void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 {
   std::memcpy(&m_last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
 
-  // TODO: Check SubQ checksum.
-  m_last_subq = subq;
-
   m_secondary_status.header_valid = true;
+}
+
+void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
+{
+  ProcessDataSectorHeader(raw_sector);
 
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc() - 1,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));
@@ -1493,8 +1526,6 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
     }
   }
 
-  m_last_subq = subq;
-
   // Apply volume when pushing sectors to SPU.
   if (m_muted)
     return;
@@ -1571,8 +1602,9 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 9> drive_state_names = {
-      {"Idle", "Spinning Up", "Seeking", "Reading ID", "Reading TOC", "Reading", "Playing", "Pausing", "Stopping"}};
+    static constexpr std::array<const char*, 10> drive_state_names = {{"Idle", "Spinning Up", "Seeking (Physical)",
+                                                                       "Seeking (Logical)", "Reading ID", "Reading TOC",
+                                                                       "Reading", "Playing", "Pausing", "Stopping"}};
 
     ImGui::Columns(3);
 
@@ -1634,7 +1666,7 @@ void CDROM::DrawDebugWindow()
     ImGui::TextColored(m_status.BUSYSTS ? active_color : inactive_color, "BUSYSTS: %s",
                        m_status.BUSYSTS ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(m_secondary_status.header_valid ? active_color : inactive_color, "Reading: %s",
+    ImGui::TextColored(m_secondary_status.header_valid ? active_color : inactive_color, "Header Valid: %s",
                        m_secondary_status.header_valid ? "Yes" : "No");
     ImGui::NextColumn();
     ImGui::TextColored(m_mode.read_raw_sector ? active_color : inactive_color, "Read Raw Sectors: %s",

@@ -110,7 +110,8 @@ private:
   {
     Idle,
     SpinningUp,
-    Seeking,
+    SeekingPhysical,
+    SeekingLogical,
     ReadingID,
     ReadingTOC,
     Reading,
@@ -205,10 +206,11 @@ private:
   void DoIDRead();
   void DoTOCRead();
   void DoSectorRead();
+  void ProcessDataSectorHeader(const u8* raw_sector);
   void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
-  void BeginSeeking(bool read_after_seek, bool play_after_seek);
+  void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void LoadDataFIFO();
 
   System* m_system = nullptr;
