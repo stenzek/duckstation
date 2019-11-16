@@ -50,6 +50,8 @@ public:
   SPU* GetSPU() const { return m_spu.get(); }
   MDEC* GetMDEC() const { return m_mdec.get(); }
 
+  ConsoleRegion GetRegion() const { return m_region; }
+  bool IsPALRegion() const { return m_region == ConsoleRegion::PAL; }
   u32 GetFrameNumber() const { return m_frame_number; }
   u32 GetInternalFrameNumber() const { return m_internal_frame_number; }
   u32 GetGlobalTickCounter() const { return m_global_tick_counter; }

@@ -40,6 +40,7 @@ void GPU::Reset()
 void GPU::SoftReset()
 {
   m_GPUSTAT.bits = 0x14802000;
+  m_GPUSTAT.pal_mode = m_system->IsPALRegion();
   m_drawing_area.Set(0, 0, 0, 0);
   m_drawing_area_changed = true;
   m_drawing_offset = {};
@@ -279,7 +280,8 @@ void GPU::UpdateCRTCConfig()
   }
 
   const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
-  const double vertical_frequency = static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame);
+  const double vertical_frequency =
+    static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame);
   m_system->GetHostInterface()->SetThrottleFrequency(vertical_frequency);
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
