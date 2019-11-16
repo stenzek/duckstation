@@ -13,9 +13,15 @@ Settings::Settings() = default;
 
 void Settings::SetDefaults()
 {
+  region = ConsoleRegion::Auto;
+
+  audio_sync_enabled = true;
+  video_sync_enabled = true;
+  speed_limiter_enabled = true;
+  start_paused = false;
+
   gpu_renderer = GPURenderer::HardwareOpenGL;
   gpu_resolution_scale = 1;
-  gpu_vsync = true;
   gpu_true_color = true;
 
   display_linear_filtering = true;
@@ -39,9 +45,13 @@ void Settings::Load(const char* filename)
 
   region = ParseConsoleRegionName(ini.GetValue("Console", "Region", "NTSC-U")).value_or(ConsoleRegion::NTSC_U);
 
+  audio_sync_enabled = ini.GetBoolValue("General", "SyncToAudio", true);
+  video_sync_enabled = ini.GetBoolValue("General", "SyncToVideo", true);
+  speed_limiter_enabled = ini.GetBoolValue("General", "SpeedLimiterEnabled", true);
+  start_paused = ini.GetBoolValue("General", "StartPaused", false);
+
   gpu_renderer = ParseRendererName(ini.GetValue("GPU", "Renderer", "OpenGL")).value_or(GPURenderer::HardwareOpenGL);
   gpu_resolution_scale = static_cast<u32>(ini.GetLongValue("GPU", "ResolutionScale", 1));
-  gpu_vsync = static_cast<u32>(ini.GetBoolValue("GPU", "VSync", true));
   gpu_true_color = ini.GetBoolValue("GPU", "TrueColor", false);
 
   display_linear_filtering = ini.GetBoolValue("Display", "LinearFiltering", true);
@@ -64,9 +74,14 @@ bool Settings::Save(const char* filename) const
 
   ini.SetValue("Console", "Region", GetConsoleRegionName(region));
 
+  ini.SetBoolValue("General", "SyncToAudio", audio_sync_enabled);
+  ini.SetBoolValue("General", "SyncToVideo", video_sync_enabled);
+  ini.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
+  ini.SetBoolValue("General", "StartPaused", start_paused);
+
   ini.SetValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   ini.SetLongValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
-  ini.SetBoolValue("GPU", "VSync", gpu_vsync);
+  ini.SetBoolValue("GPU", "VSync", video_sync_enabled);
   ini.SetBoolValue("GPU", "TrueColor", gpu_true_color);
 
   ini.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);

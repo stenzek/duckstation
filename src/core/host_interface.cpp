@@ -206,11 +206,11 @@ void HostInterface::UpdateSpeedLimiterState()
 {
   m_speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
 
-  const bool audio_sync_enabled = !m_system || m_paused || m_speed_limiter_enabled;
-  const bool vsync_enabled = !m_system || m_paused || (m_speed_limiter_enabled && m_settings.gpu_vsync);
+  const bool audio_sync_enabled = !m_system || m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled);
+  const bool video_sync_enabled = !m_system || m_paused || (m_speed_limiter_enabled && m_settings.video_sync_enabled);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
-                 (m_speed_limiter_enabled && vsync_enabled) ? " and video" : "");
+                 (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
 
   m_audio_stream->SetSync(audio_sync_enabled);
-  m_display->SetVSync(vsync_enabled);
+  m_display->SetVSync(video_sync_enabled);
 }

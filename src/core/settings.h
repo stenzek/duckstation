@@ -6,15 +6,16 @@ struct Settings
 {
   Settings();
 
-  ConsoleRegion region = ConsoleRegion::NTSC_U;
+  ConsoleRegion region = ConsoleRegion::Auto;
 
   bool start_paused = false;
   bool speed_limiter_enabled = true;
+  bool audio_sync_enabled = true;
+  bool video_sync_enabled = true;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
   mutable u32 max_gpu_resolution_scale = 1;
-  bool gpu_vsync = true;
   bool gpu_true_color = false;
   bool display_linear_filtering = true;
   bool display_fullscreen = false;

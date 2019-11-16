@@ -743,9 +743,12 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   }
 
   if (ImGui::MenuItem("Fullscreen", nullptr, &m_settings.display_fullscreen))
+  {
+    settings_changed = true;
     UpdateFullscreen();
+  }
 
-  if (ImGui::MenuItem("VSync", nullptr, &m_settings.gpu_vsync))
+  if (ImGui::MenuItem("VSync", nullptr, &m_settings.video_sync_enabled))
   {
     settings_changed = true;
     UpdateSpeedLimiterState();
@@ -914,13 +917,6 @@ void SDLHostInterface::DrawSettingsWindow()
 
     if (ImGui::BeginTabItem("General"))
     {
-      if (DrawSettingsSectionHeader("Behavior"))
-      {
-        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
-        settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
-      }
-
-      ImGui::NewLine();
       if (DrawSettingsSectionHeader("Console"))
       {
         ImGui::Text("Region:");
@@ -937,6 +933,33 @@ void SDLHostInterface::DrawSettingsWindow()
         {
           m_settings.region = static_cast<ConsoleRegion>(region);
           settings_changed = true;
+        }
+      }
+
+      ImGui::NewLine();
+      if (DrawSettingsSectionHeader("Behavior"))
+      {
+        if (ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled))
+        {
+          settings_changed = true;
+          UpdateSpeedLimiterState();
+        }
+
+        settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
+      }
+
+      ImGui::NewLine();
+      if (DrawSettingsSectionHeader("Host Synchronization"))
+      {
+        if (ImGui::Checkbox("Sync To Audio", &m_settings.audio_sync_enabled))
+        {
+          settings_changed = true;
+          UpdateSpeedLimiterState();
+        }
+        if (ImGui::Checkbox("Sync To Video", &m_settings.video_sync_enabled))
+        {
+          settings_changed = true;
+          UpdateSpeedLimiterState();
         }
       }
 
@@ -1017,11 +1040,6 @@ void SDLHostInterface::DrawSettingsWindow()
         if (ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen))
           UpdateFullscreen();
 
-        if (ImGui::Checkbox("VSync", &m_settings.gpu_vsync))
-        {
-          UpdateSpeedLimiterState();
-          settings_changed = true;
-        }
         if (ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering))
         {
           m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
