@@ -14,6 +14,8 @@
 #include "core/timers.h"
 #ifdef Y_PLATFORM_WINDOWS
 #include "d3d11_host_display.h"
+#include "YBaseLib/Windows/WindowsHeaders.h"
+#include <mmsystem.h>
 #endif
 #include "icon.h"
 #include "imgui_styles.h"
@@ -26,7 +28,13 @@
 #include <nfd.h>
 Log_SetChannel(SDLHostInterface);
 
-SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini") {}
+SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini")
+{
+  // Increase timer/sleep resolution since we use it for throttling.
+#ifdef Y_PLATFORM_WINDOWS
+  timeBeginPeriod(1);
+#endif
+}
 
 SDLHostInterface::~SDLHostInterface()
 {
@@ -36,6 +44,10 @@ SDLHostInterface::~SDLHostInterface()
 
   if (m_window)
     SDL_DestroyWindow(m_window);
+
+#ifdef Y_PLATFORM_WINDOWS
+  timeEndPeriod(1);
+#endif
 }
 
 bool SDLHostInterface::CreateSDLWindow()
