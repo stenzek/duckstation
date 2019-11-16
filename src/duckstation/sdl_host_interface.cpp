@@ -925,8 +925,19 @@ void SDLHostInterface::DrawSettingsWindow()
       {
         ImGui::Text("Region:");
         ImGui::SameLine(indent);
-        static int region = 0;
-        ImGui::Combo("##region", &region, "NTSC-U (US)\0NTSC-J (Japan)\0PAL (Europe, Australia)");
+
+        int region = static_cast<int>(m_settings.region);
+        if (ImGui::Combo(
+              "##region", &region,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(ConsoleRegion::Count)))
+        {
+          m_settings.region = static_cast<ConsoleRegion>(region);
+          settings_changed = true;
+        }
       }
 
       ImGui::NewLine();
@@ -994,6 +1005,7 @@ void SDLHostInterface::DrawSettingsWindow()
               nullptr, static_cast<int>(GPURenderer::Count)))
         {
           m_settings.gpu_renderer = static_cast<GPURenderer>(gpu_renderer);
+          settings_changed = true;
           SwitchGPURenderer();
         }
       }

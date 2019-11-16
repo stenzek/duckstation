@@ -115,7 +115,7 @@ bool System::Boot(const char* filename)
         std::optional<ConsoleRegion> detected_region = GetRegionForCDImage(media.get());
         m_region = detected_region.value_or(ConsoleRegion::NTSC_U);
         if (detected_region)
-          Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region));
+          Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region), filename);
         else
           Log_WarningPrintf("Could not determine region for CD. Defaulting to NTSC-U.");
       }

@@ -37,6 +37,8 @@ void Settings::Load(const char* filename)
     return;
   }
 
+  region = ParseConsoleRegionName(ini.GetValue("Console", "Region", "NTSC-U")).value_or(ConsoleRegion::NTSC_U);
+
   gpu_renderer = ParseRendererName(ini.GetValue("GPU", "Renderer", "OpenGL")).value_or(GPURenderer::HardwareOpenGL);
   gpu_resolution_scale = static_cast<u32>(ini.GetLongValue("GPU", "ResolutionScale", 1));
   gpu_vsync = static_cast<u32>(ini.GetBoolValue("GPU", "VSync", true));
@@ -59,6 +61,8 @@ bool Settings::Save(const char* filename) const
   SI_Error err = ini.LoadFile(filename);
   if (err != SI_OK)
     ini.Reset();
+
+  ini.SetValue("Console", "Region", GetConsoleRegionName(region));
 
   ini.SetValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   ini.SetLongValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
