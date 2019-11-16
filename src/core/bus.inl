@@ -22,6 +22,8 @@ TickCount Bus::DoRAMAccess(u32 offset, u32& value)
     {
       std::memcpy(&value, &m_ram[offset], sizeof(u32));
     }
+
+    return 3;
   }
   else
   {
@@ -38,10 +40,10 @@ TickCount Bus::DoRAMAccess(u32 offset, u32& value)
     {
       std::memcpy(&m_ram[offset], &value, sizeof(u32));
     }
-  }
 
-  // Nocash docs say RAM takes 6 cycles to access.
-  return RAM_ACCESS_DELAY;
+    // Technically RAM writes are buffered, and there's a maximum number of in-flight writes.
+    return 0;
+  }
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -105,25 +107,33 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     else
       DoWriteMemoryControl(size, address & PAD_MASK, value);
 
-    return 1;
+    return 0;
   }
   else if (address < (PAD_BASE + PAD_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadPad(size, address & PAD_MASK);
+      return 1;
+    }
     else
+    {
       DoWritePad(size, address & PAD_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < (SIO_BASE + SIO_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadSIO(size, address & SIO_MASK);
+      return 1;
+    }
     else
+    {
       DoWriteSIO(size, address & SIO_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < (MEMCTRL2_BASE + MEMCTRL2_SIZE))
   {
@@ -132,34 +142,46 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     else
       DoWriteMemoryControl2(size, address & PAD_MASK, value);
 
-    return 1;
+    return 0;
   }
   else if (address < (INTERRUPT_CONTROLLER_BASE + INTERRUPT_CONTROLLER_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadInterruptController(size, address & INTERRUPT_CONTROLLER_MASK);
+      return 1;
+    }
     else
+    {
       DoWriteInterruptController(size, address & INTERRUPT_CONTROLLER_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < (DMA_BASE + DMA_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadDMA(size, address & DMA_MASK);
+      return 1;
+    }
     else
+    {
       DoWriteDMA(size, address & DMA_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < (TIMERS_BASE + TIMERS_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadTimers(size, address & TIMERS_MASK);
+      return 1;
+    }
     else
+    {
       DoWriteTimers(size, address & TIMERS_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < CDROM_BASE)
   {
@@ -168,29 +190,41 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   else if (address < (CDROM_BASE + GPU_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadCDROM(size, address & CDROM_MASK);
+      return (TickCount(1) << static_cast<u8>(size));
+    }
     else
+    {
       DoWriteCDROM(size, address & CDROM_MASK, value);
-
-    return m_cdrom_access_time[static_cast<u32>(size)];
+      return 0;
+    }    
   }
   else if (address < (GPU_BASE + GPU_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadGPU(size, address & GPU_MASK);
+      return 1;
+    }
     else
+    {
       DoWriteGPU(size, address & GPU_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < (MDEC_BASE + MDEC_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadMDEC(size, address & MDEC_MASK);
+      return 1;
+    }
     else
+    {
       DoWriteMDEC(size, address & MDEC_MASK, value);
-
-    return 1;
+      return 0;
+    }
   }
   else if (address < SPU_BASE)
   {
@@ -199,11 +233,15 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
   else if (address < (SPU_BASE + SPU_SIZE))
   {
     if constexpr (type == MemoryAccessType::Read)
+    {
       value = DoReadSPU(size, address & SPU_MASK);
+      return (size == MemoryAccessSize::Word) ? 36 : 16;
+    }
     else
+    {
       DoWriteSPU(size, address & SPU_MASK, value);
-
-    return m_spu_access_time[static_cast<u32>(size)];
+      return 0;
+    }
   }
   else if (address < EXP2_BASE)
   {

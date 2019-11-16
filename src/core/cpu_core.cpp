@@ -128,7 +128,7 @@ bool Core::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
     return false;
   }
 
-  AddTicks(cycles - 1);
+  AddTicks(cycles);
   return true;
 }
 
@@ -146,7 +146,7 @@ bool Core::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
     return false;
   }
 
-  AddTicks(cycles - 1);
+  AddTicks(cycles);
   return true;
 }
 
@@ -162,7 +162,7 @@ bool Core::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
     return false;
   }
 
-  AddTicks(cycles - 1);
+  AddTicks(cycles);
   return true;
 }
 
@@ -176,7 +176,7 @@ bool Core::WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
     return false;
   }
 
-  AddTicks(cycles - 1);
+  AddTicks(cycles);
   return true;
 }
 
@@ -193,7 +193,7 @@ bool Core::WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
     return false;
   }
 
-  AddTicks(cycles - 1);
+  AddTicks(cycles);
   return cycles;
 }
 
@@ -209,7 +209,7 @@ bool Core::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
     return false;
   }
 
-  AddTicks(cycles - 1);
+  AddTicks(cycles);
   return true;
 }
 
