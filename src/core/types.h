@@ -22,3 +22,19 @@ using TickCount = s32;
 static constexpr TickCount MASTER_CLOCK = 44100 * 0x300; // 33868800Hz or 33.8688MHz, also used as CPU clock
 static constexpr TickCount MAX_SLICE_SIZE = MASTER_CLOCK / 10;
 
+enum class ConsoleRegion
+{
+  Auto,
+  NTSC_J,
+  NTSC_U,
+  PAL,
+  Count
+};
+
+enum class GPURenderer : u8
+{
+  HardwareD3D11,
+  HardwareOpenGL,
+  Software,
+  Count
+};

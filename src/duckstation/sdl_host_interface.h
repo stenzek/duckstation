@@ -17,7 +17,7 @@ class DigitalController;
 class MemoryCard;
 class AudioStream;
 
-class SDLHostInterface : public HostInterface
+class SDLHostInterface final : public HostInterface
 {
 public:
   SDLHostInterface();
@@ -28,12 +28,16 @@ public:
 
   static TinyString GetSaveStateFilename(u32 index);
 
+  void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
 
   // Adds OSD messages, duration is in seconds.
   void AddOSDMessage(const char* message, float duration = 2.0f) override;
 
   void Run();
+
+protected:
+  void ConnectControllers() override;
 
 private:
   static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
@@ -49,7 +53,7 @@ private:
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
 #ifdef WIN32
-  bool UseOpenGLRenderer() const { return m_settings.gpu_renderer == Settings::GPURenderer::HardwareOpenGL; }
+  bool UseOpenGLRenderer() const { return m_settings.gpu_renderer == GPURenderer::HardwareOpenGL; }
 #else
   bool UseOpenGLRenderer() const { return true; }
 #endif
@@ -64,8 +68,6 @@ private:
 
   void SaveSettings();
 
-  bool InitializeSystem(const char* filename = nullptr, const char* exp1_filename = nullptr);
-  void ConnectDevices();
   void ResetPerformanceCounters();
   void SwitchGPURenderer();
   void UpdateFullscreen();

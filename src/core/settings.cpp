@@ -91,11 +91,39 @@ bool Settings::Save(const char* filename) const
   return true;
 }
 
+static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
+static std::array<const char*, 4> s_console_region_display_names = {
+  {"Auto-Detect", "NTSC-J (Japan)", "NTSC-U (US)", "PAL (Europe, Australia)"}};
+
+std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_console_region_names)
+  {
+    if (strcasecmp(name, str) == 0)
+      return static_cast<ConsoleRegion>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetConsoleRegionName(ConsoleRegion region)
+{
+  return s_console_region_names[static_cast<int>(region)];
+}
+
+const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
+{
+  return s_console_region_display_names[static_cast<int>(region)];
+}
+
 static std::array<const char*, 3> s_gpu_renderer_names = {{"D3D11", "OpenGL", "Software"}};
 static std::array<const char*, 3> s_gpu_renderer_display_names = {
   {"Hardware (D3D11)", "Hardware (OpenGL)", "Software"}};
 
-std::optional<Settings::GPURenderer> Settings::ParseRendererName(const char* str)
+std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {
   int index = 0;
   for (const char* name : s_gpu_renderer_names)

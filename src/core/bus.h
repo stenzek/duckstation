@@ -32,10 +32,6 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  bool LoadBIOS(const char* filename);
-  void PatchBIOS(u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
-  void GetBIOSHash(u8 hash[16]);
-
   bool ReadByte(PhysicalMemoryAddress address, u8* value);
   bool ReadHalfWord(PhysicalMemoryAddress address, u16* value);
   bool ReadWord(PhysicalMemoryAddress address, u32* value);
@@ -51,6 +47,7 @@ public:
   TickCount WriteWords(PhysicalMemoryAddress address, const u32* words, u32 word_count);
 
   void SetExpansionROM(std::vector<u8> data);
+  void SetBIOS(const std::vector<u8>& image);
 
   // changing interfaces
   void SetGPU(GPU* gpu) { m_gpu = gpu; }

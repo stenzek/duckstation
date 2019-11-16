@@ -166,65 +166,20 @@ TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 w
   return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
 }
 
-void Bus::PatchBIOS(u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
-{
-  const u32 phys_address = address & UINT32_C(0x1FFFFFFF);
-  const u32 offset = phys_address - BIOS_BASE;
-  Assert(phys_address >= BIOS_BASE && offset < BIOS_SIZE);
-
-  u32 existing_value;
-  std::memcpy(&existing_value, &m_bios[offset], sizeof(existing_value));
-  u32 new_value = (existing_value & ~mask) | value;
-  std::memcpy(&m_bios[offset], &new_value, sizeof(new_value));
-
-  SmallString old_disasm, new_disasm;
-  CPU::DisassembleInstruction(&old_disasm, address, existing_value);
-  CPU::DisassembleInstruction(&new_disasm, address, new_value);
-  Log_InfoPrintf("BIOS-Patch 0x%08X (+0x%X): 0x%08X %s -> %08X %s", address, offset, existing_value,
-                 old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
-}
-
-void Bus::GetBIOSHash(u8 hash[16])
-{
-  MD5Digest digest;
-  digest.Update(m_bios.data(), static_cast<u32>(m_bios.size()));
-  digest.Final(hash);
-}
-
 void Bus::SetExpansionROM(std::vector<u8> data)
 {
   m_exp1_rom = std::move(data);
 }
 
-bool Bus::LoadBIOS(const char* filename)
+void Bus::SetBIOS(const std::vector<u8>& image)
 {
-  std::FILE* fp = std::fopen(filename, "rb");
-  if (!fp)
+  if (image.size() != static_cast<u32>(BIOS_SIZE))
   {
-    Log_ErrorPrintf("Failed to open BIOS image '%s'", filename);
-    return false;
+    Panic("Incorrect BIOS image size");
+    return;
   }
 
-  std::fseek(fp, 0, SEEK_END);
-  const u32 size = static_cast<u32>(std::ftell(fp));
-  std::fseek(fp, 0, SEEK_SET);
-
-  if (size != m_bios.size())
-  {
-    Log_ErrorPrintf("BIOS image mismatch, expecting %u bytes, got %u bytes", static_cast<u32>(m_bios.size()), size);
-    std::fclose(fp);
-    return false;
-  }
-
-  if (std::fread(m_bios.data(), 1, m_bios.size(), fp) != m_bios.size())
-  {
-    Log_ErrorPrintf("Failed to read BIOS image");
-    std::fclose(fp);
-    return false;
-  }
-
-  std::fclose(fp);
-  return true;
+  std::copy(image.cbegin(), image.cend(), m_bios.begin());
 }
 
 std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)

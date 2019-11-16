@@ -25,6 +25,7 @@
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
+    <ClCompile Include="bios.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="host_display.h" />
+    <ClInclude Include="bios.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

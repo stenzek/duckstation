@@ -4,15 +4,9 @@
 
 struct Settings
 {
-  enum class GPURenderer
-  {
-    HardwareD3D11,
-    HardwareOpenGL,
-    Software,
-    Count
-  };
-
   Settings();
+
+  ConsoleRegion region = ConsoleRegion::NTSC_U;
 
   bool start_paused = false;
   bool speed_limiter_enabled = true;
@@ -51,6 +45,10 @@ struct Settings
   void SetDefaults();
   void Load(const char* filename);
   bool Save(const char* filename) const;
+
+  static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
+  static const char* GetConsoleRegionName(ConsoleRegion region);
+  static const char* GetConsoleRegionDisplayName(ConsoleRegion region);
 
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);

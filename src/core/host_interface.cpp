@@ -1,9 +1,11 @@
 #include "host_interface.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
+#include "bios.h"
 #include "common/audio_stream.h"
 #include "host_display.h"
 #include "system.h"
+#include <filesystem>
 Log_SetChannel(HostInterface);
 
 HostInterface::HostInterface()
@@ -13,54 +15,100 @@ HostInterface::HostInterface()
 
 HostInterface::~HostInterface() = default;
 
-bool HostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
+bool HostInterface::CreateSystem()
 {
-  m_system = std::make_unique<System>(this);
-  if (!m_system->Initialize())
-  {
-    m_system.reset();
-    return false;
-  }
+  m_system = System::Create(this);
 
-  m_system->Reset();
-
-  if (filename)
-  {
-    const StaticString filename_str(filename);
-    if (filename_str.EndsWith(".psexe", false) || filename_str.EndsWith(".exe", false))
-    {
-      Log_InfoPrintf("Sideloading EXE file '%s'", filename);
-      if (!m_system->LoadEXE(filename))
-      {
-        Log_ErrorPrintf("Failed to load EXE file '%s'", filename);
-        return false;
-      }
-    }
-    else
-    {
-      Log_InfoPrintf("Inserting CDROM from image file '%s'", filename);
-      if (!m_system->InsertMedia(filename))
-      {
-        Log_ErrorPrintf("Failed to insert media '%s'", filename);
-        return false;
-      }
-    }
-  }
-
-  if (exp1_filename)
-    m_system->SetExpansionROM(exp1_filename);
-
-  // Resume execution.
+  // Pull in any invalid settings which have been reset.
   m_settings = m_system->GetSettings();
+  m_paused = true;
+  UpdateAudioVisualSync();
   return true;
 }
 
-void HostInterface::ShutdownSystem()
+bool HostInterface::BootSystem(const char* filename, const char* state_filename)
+{
+  if (!m_system->Boot(filename))
+    return false;
+
+  m_paused = m_settings.start_paused;
+  ConnectControllers();
+  UpdateAudioVisualSync();
+  return true;
+}
+
+void HostInterface::DestroySystem()
 {
   m_system.reset();
   m_paused = false;
   UpdateAudioVisualSync();
 }
+
+void HostInterface::ReportError(const char* message)
+{
+  Log_ErrorPrint(message);
+}
+
+void HostInterface::ReportMessage(const char* message)
+{
+  Log_InfoPrintf(message);
+}
+
+std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
+{
+  // Try the other default filenames in the directory of the configured BIOS.
+#define TRY_FILENAME(filename)                                                                                         \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    std::string try_filename = filename;                                                                               \
+    std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(try_filename);                                    \
+    BIOS::Hash found_hash = BIOS::GetHash(*found_image);                                                               \
+    Log_DevPrintf("Hash for BIOS '%s': %s", try_filename.c_str(), found_hash.ToString().c_str());                      \
+    if (BIOS::IsValidHashForRegion(region, found_hash))                                                                \
+    {                                                                                                                  \
+      Log_InfoPrintf("Using BIOS from '%s'", try_filename.c_str());                                                    \
+      return found_image;                                                                                              \
+    }                                                                                                                  \
+  } while (0)
+
+#define RELATIVE_PATH(filename) std::filesystem::path(m_settings.bios_path).replace_filename(filename).string()
+
+  // Try the configured image.
+  TRY_FILENAME(m_settings.bios_path);
+
+  // Try searching in the same folder for other region's images.
+  switch (region)
+  {
+    case ConsoleRegion::NTSC_J:
+      TRY_FILENAME(RELATIVE_PATH("scph1000.bin"));
+      TRY_FILENAME(RELATIVE_PATH("scph5500.bin"));
+      break;
+
+    case ConsoleRegion::NTSC_U:
+      TRY_FILENAME(RELATIVE_PATH("scph1001.bin"));
+      TRY_FILENAME(RELATIVE_PATH("scph5501.bin"));
+      break;
+
+    case ConsoleRegion::PAL:
+      TRY_FILENAME(RELATIVE_PATH("scph1002.bin"));
+      TRY_FILENAME(RELATIVE_PATH("scph5502.bin"));
+      break;
+
+    default:
+      break;
+  }
+
+#undef RELATIVE_PATH
+#undef TRY_FILENAME
+
+  // Fall back to the default image.
+  Log_WarningPrintf("No suitable BIOS image for region %s could be located, using configured image '%s'. This may "
+                    "result in instability.",
+                    Settings::GetConsoleRegionName(region), m_settings.bios_path.c_str());
+  return BIOS::LoadImageFromFile(m_settings.bios_path);
+}
+
+void HostInterface::ConnectControllers() {}
 
 bool HostInterface::LoadState(const char* filename)
 {
@@ -68,12 +116,12 @@ bool HostInterface::LoadState(const char* filename)
   if (!ByteStream_OpenFileStream(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, &stream))
     return false;
 
-  ReportMessage(SmallString::FromFormat("Loading state from %s...", filename));
+  AddOSDMessage(SmallString::FromFormat("Loading state from %s...", filename));
 
   const bool result = m_system->LoadState(stream);
   if (!result)
   {
-    ReportMessage(SmallString::FromFormat("Loading state from %s failed. Resetting.", filename));
+    ReportError(SmallString::FromFormat("Loading state from %s failed. Resetting.", filename));
     m_system->Reset();
   }
 
@@ -95,12 +143,12 @@ bool HostInterface::SaveState(const char* filename)
   const bool result = m_system->SaveState(stream);
   if (!result)
   {
-    ReportMessage(SmallString::FromFormat("Saving state to %s failed.", filename));
+    ReportError(SmallString::FromFormat("Saving state to %s failed.", filename));
     stream->Discard();
   }
   else
   {
-    ReportMessage(SmallString::FromFormat("State saved to %s.", filename));
+    AddOSDMessage(SmallString::FromFormat("State saved to %s.", filename));
     stream->Commit();
   }
 
@@ -112,7 +160,7 @@ void HostInterface::UpdateAudioVisualSync()
 {
   const bool speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
   const bool audio_sync_enabled = speed_limiter_enabled;
-  const bool vsync_enabled = !m_system || (speed_limiter_enabled && m_settings.gpu_vsync);
+  const bool vsync_enabled = !m_system || m_paused || (speed_limiter_enabled && m_settings.gpu_vsync);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (speed_limiter_enabled && vsync_enabled) ? " and video" : "");
 

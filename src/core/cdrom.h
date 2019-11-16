@@ -27,7 +27,7 @@ public:
   bool DoState(StateWrapper& sw);
 
   bool HasMedia() const { return static_cast<bool>(m_media); }
-  bool InsertMedia(const char* filename);
+  void InsertMedia(std::unique_ptr<CDImage> media);
   void RemoveMedia();
 
   // I/O

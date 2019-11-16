@@ -147,20 +147,12 @@ bool CDROM::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-bool CDROM::InsertMedia(const char* filename)
+void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 {
-  auto media = CDImage::Open(filename);
-  if (!media)
-  {
-    Log_ErrorPrintf("Failed to open media at '%s'", filename);
-    return false;
-  }
-
   if (HasMedia())
     RemoveMedia();
 
   m_media = std::move(media);
-  return true;
 }
 
 void CDROM::RemoveMedia()

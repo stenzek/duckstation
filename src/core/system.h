@@ -2,8 +2,10 @@
 #include "types.h"
 #include "host_interface.h"
 #include <memory>
+#include <optional>
 
 class ByteStream;
+class CDImage;
 class StateWrapper;
 
 namespace CPU {
@@ -24,8 +26,16 @@ class MDEC;
 class System
 {
 public:
-  System(HostInterface* host_interface);
   ~System();
+
+  /// Detects region for the specified image file.
+  static std::optional<ConsoleRegion> GetRegionForCDImage(const CDImage* image);
+
+  /// Returns true if the filename is a PlayStation executable we can inject.
+  static bool IsPSExe(const char* filename);
+
+  /// Creates a new System.
+  static std::unique_ptr<System> Create(HostInterface* host_interface);
 
   // Accessing components.
   HostInterface* GetHostInterface() const { return m_host_interface; }
@@ -48,7 +58,7 @@ public:
 
   const Settings& GetSettings() { return m_host_interface->GetSettings(); }
 
-  bool Initialize();
+  bool Boot(const char* filename);
   void Reset();
 
   bool LoadState(ByteStream* state);
@@ -59,7 +69,7 @@ public:
 
   void RunFrame();
 
-  bool LoadEXE(const char* filename);
+  bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
   bool SetExpansionROM(const char* filename);
 
   void SetDowncount(TickCount downcount);
@@ -76,9 +86,12 @@ public:
   void RemoveMedia();
 
 private:
+  System(HostInterface* host_interface);
+
   bool DoState(StateWrapper& sw);
   bool CreateGPU();
-  bool LoadBIOS();
+
+  void InitializeComponents();
 
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;
@@ -91,6 +104,7 @@ private:
   std::unique_ptr<Timers> m_timers;
   std::unique_ptr<SPU> m_spu;
   std::unique_ptr<MDEC> m_mdec;
+  ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
   u32 m_global_tick_counter = 0;

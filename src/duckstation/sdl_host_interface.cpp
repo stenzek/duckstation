@@ -133,21 +133,7 @@ void SDLHostInterface::SaveSettings()
   m_settings.Save(m_settings_filename.c_str());
 }
 
-bool SDLHostInterface::InitializeSystem(const char* filename, const char* exp1_filename)
-{
-  if (!HostInterface::InitializeSystem(filename, exp1_filename))
-  {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "System initialization failed.", m_window);
-    return false;
-  }
-
-  ConnectDevices();
-  UpdateAudioVisualSync();
-  m_paused = m_system->GetSettings().start_paused;
-  return true;
-}
-
-void SDLHostInterface::ConnectDevices()
+void SDLHostInterface::ConnectControllers()
 {
   m_controller = DigitalController::Create();
   m_system->SetController(0, m_controller);
@@ -216,7 +202,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
   const bool boot = (filename != nullptr || exp1_filename != nullptr || save_state_filename != nullptr);
   if (boot)
   {
-    if (!intf->InitializeSystem(filename, exp1_filename))
+    if (!intf->CreateSystem() || !intf->BootSystem(filename, exp1_filename))
       return nullptr;
 
     if (save_state_filename)
@@ -235,9 +221,14 @@ TinyString SDLHostInterface::GetSaveStateFilename(u32 index)
   return TinyString::FromFormat("savestate_%u.bin", index);
 }
 
+void SDLHostInterface::ReportError(const char* message)
+{
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "DuckStation Error", message, m_window);
+}
+
 void SDLHostInterface::ReportMessage(const char* message)
 {
-  AddOSDMessage(message, 3.0f);
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "DuckStation Information", message, m_window);
 }
 
 static inline u32 SDLButtonToHostButton(u32 button)
@@ -736,13 +727,13 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   if (ImGui::BeginMenu("Renderer"))
   {
-    const Settings::GPURenderer current = m_settings.gpu_renderer;
-    for (u32 i = 0; i < static_cast<u32>(Settings::GPURenderer::Count); i++)
+    const GPURenderer current = m_settings.gpu_renderer;
+    for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
     {
-      if (ImGui::MenuItem(Settings::GetRendererDisplayName(static_cast<Settings::GPURenderer>(i)), nullptr,
+      if (ImGui::MenuItem(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i)), nullptr,
                           i == static_cast<u32>(current)))
       {
-        m_settings.gpu_renderer = static_cast<Settings::GPURenderer>(i);
+        m_settings.gpu_renderer = static_cast<GPURenderer>(i);
         settings_changed = true;
         if (m_system)
           SwitchGPURenderer();
@@ -998,12 +989,12 @@ void SDLHostInterface::DrawSettingsWindow()
         if (ImGui::Combo(
               "##gpu_renderer", &gpu_renderer,
               [](void*, int index, const char** out_text) {
-                *out_text = Settings::GetRendererDisplayName(static_cast<Settings::GPURenderer>(index));
+                *out_text = Settings::GetRendererDisplayName(static_cast<GPURenderer>(index));
                 return true;
               },
-              nullptr, static_cast<int>(Settings::GPURenderer::Count)))
+              nullptr, static_cast<int>(GPURenderer::Count)))
         {
-          m_settings.gpu_renderer = static_cast<Settings::GPURenderer>(gpu_renderer);
+          m_settings.gpu_renderer = static_cast<GPURenderer>(gpu_renderer);
           SwitchGPURenderer();
         }
       }
@@ -1213,21 +1204,16 @@ void SDLHostInterface::DoReset()
 void SDLHostInterface::DoPowerOff()
 {
   Assert(m_system);
-  ShutdownSystem();
+  DestroySystem();
   AddOSDMessage("System powered off.");
 }
 
 void SDLHostInterface::DoResume()
 {
   Assert(!m_system);
-  if (!InitializeSystem())
-    return;
-
-  if (!LoadState(RESUME_SAVESTATE_FILENAME))
+  if (!CreateSystem() || !BootSystem(nullptr, RESUME_SAVESTATE_FILENAME))
   {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Load state failed",
-                             "Failed to load the resume save state. Stopping emulation.", m_window);
-    ShutdownSystem();
+    DestroySystem();
     return;
   }
 
@@ -1244,8 +1230,11 @@ void SDLHostInterface::DoStartDisc()
     return;
 
   AddOSDMessage(SmallString::FromFormat("Starting disc from '%s'...", path));
-  if (!InitializeSystem(path, nullptr))
+  if (!CreateSystem() || !BootSystem(path, nullptr))
+  {
+    DestroySystem();
     return;
+  }
 
   ResetPerformanceCounters();
   ClearImGuiFocus();
@@ -1256,8 +1245,11 @@ void SDLHostInterface::DoStartBIOS()
   Assert(!m_system);
 
   AddOSDMessage("Starting BIOS...");
-  if (!InitializeSystem(nullptr, nullptr))
+  if (!CreateSystem() || !BootSystem(nullptr, nullptr))
+  {
+    DestroySystem();
     return;
+  }
 
   ResetPerformanceCounters();
   ClearImGuiFocus();
@@ -1282,10 +1274,19 @@ void SDLHostInterface::DoChangeDisc()
 
 void SDLHostInterface::DoLoadState(u32 index)
 {
-  if (!HasSystem() && !InitializeSystem(nullptr, nullptr))
-    return;
+  if (HasSystem())
+  {
+    LoadState(GetSaveStateFilename(index));
+  }
+  else
+  {
+    if (!CreateSystem() || !BootSystem(nullptr, GetSaveStateFilename(index)))
+    {
+      DestroySystem();
+      return;
+    }
+  }
 
-  LoadState(GetSaveStateFilename(index));
   ResetPerformanceCounters();
   ClearImGuiFocus();
 }
@@ -1321,16 +1322,15 @@ void SDLHostInterface::DoToggleSoftwareRendering()
   if (!m_system)
     return;
 
-  if (m_settings.gpu_renderer != Settings::GPURenderer::Software)
+  if (m_settings.gpu_renderer != GPURenderer::Software)
   {
-    m_settings.gpu_renderer = Settings::GPURenderer::Software;
+    m_settings.gpu_renderer = GPURenderer::Software;
     AddOSDMessage("Switched to software GPU renderer.");
   }
   else
   {
-    m_settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ?
-                                Settings::GPURenderer::HardwareD3D11 :
-                                Settings::GPURenderer::HardwareOpenGL;
+    m_settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ? GPURenderer::HardwareD3D11 :
+                                                                                           GPURenderer::HardwareOpenGL;
     AddOSDMessage("Switched to hardware GPU renderer.");
   }
 
@@ -1431,6 +1431,6 @@ void SDLHostInterface::Run()
                                "Saving state failed, you will not be able to resume this session.", m_window);
     }
 
-    ShutdownSystem();
+    DestroySystem();
   }
 }

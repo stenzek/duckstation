@@ -1,6 +1,7 @@
 #include "system.h"
 #include "YBaseLib/AutoReleasePtr.h"
 #include "YBaseLib/Log.h"
+#include "bios.h"
 #include "bus.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"
@@ -19,15 +20,6 @@
 #include <imgui.h>
 Log_SetChannel(System);
 
-namespace BIOSHashes {
-static constexpr char SCPH_1000[] = "239665b1a3dade1b5a52c06338011044";
-static constexpr char SCPH_1001[] = "924e392ed05558ffdb115408c263dccf";
-static constexpr char SCPH_1002[] = "54847e693405ffeb0359c6287434cbef";
-static constexpr char SCPH_5500[] = "8dd7d5296a650fac7319bce665a6a53c";
-static constexpr char SCPH_5501[] = "490f666e1afb15b7362b406ed1cea246";
-static constexpr char SCPH_5502[] = "32736f17079d0b2b7024407c39bd3050";
-} // namespace BIOSHashes
-
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
@@ -39,9 +31,31 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_timers = std::make_unique<Timers>();
   m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
+  m_region = host_interface->GetSettings().region;
 }
 
 System::~System() = default;
+
+std::optional<ConsoleRegion> System::GetRegionForCDImage(const CDImage* image)
+{
+  // TODO: Implement me.
+  return ConsoleRegion::NTSC_U;
+}
+
+bool System::IsPSExe(const char* filename)
+{
+  const StaticString filename_str(filename);
+  return filename_str.EndsWith(".psexe", false) || filename_str.EndsWith(".exe", false);
+}
+
+std::unique_ptr<System> System::Create(HostInterface* host_interface)
+{
+  std::unique_ptr<System> system(new System(host_interface));
+  if (!system->CreateGPU())
+    return {};
+
+  return system;
+}
 
 bool System::RecreateGPU()
 {
@@ -70,7 +84,83 @@ bool System::RecreateGPU()
   return true;
 }
 
-bool System::Initialize()
+bool System::Boot(const char* filename)
+{
+  // Load CD image up and detect region.
+  std::unique_ptr<CDImage> media;
+  bool exe_boot = false;
+  if (filename)
+  {
+    exe_boot = IsPSExe(filename);
+    if (exe_boot)
+    {
+      if (m_region == ConsoleRegion::Auto)
+      {
+        Log_InfoPrintf("Defaulting to NTSC-U region for executable.");
+        m_region = ConsoleRegion::NTSC_U;
+      }
+    }
+    else
+    {
+      Log_InfoPrintf("Loading CD image '%s'...", filename);
+      media = CDImage::Open(filename);
+      if (!media)
+      {
+        m_host_interface->ReportError(SmallString::FromFormat("Failed to load CD image '%s'", filename));
+        return false;
+      }
+
+      if (m_region == ConsoleRegion::Auto)
+      {
+        std::optional<ConsoleRegion> detected_region = GetRegionForCDImage(media.get());
+        m_region = detected_region.value_or(ConsoleRegion::NTSC_U);
+        if (detected_region)
+          Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region));
+        else
+          Log_WarningPrintf("Could not determine region for CD. Defaulting to NTSC-U.");
+      }
+    }
+  }
+
+  // Load BIOS image.
+  std::optional<BIOS::Image> bios_image = m_host_interface->GetBIOSImage(m_region);
+  if (!bios_image)
+  {
+    m_host_interface->ReportError(
+      TinyString::FromFormat("Failed to load %s BIOS", Settings::GetConsoleRegionName(m_region)));
+    return false;
+  }
+
+  // Component setup.
+  InitializeComponents();
+  UpdateMemoryCards();
+
+  // Enable tty by patching bios.
+  const BIOS::Hash bios_hash = BIOS::GetHash(*bios_image);
+  if (GetSettings().bios_patch_tty_enable)
+    BIOS::PatchBIOSEnableTTY(*bios_image, bios_hash);
+
+  // Load EXE late after BIOS.
+  if (exe_boot && !LoadEXE(filename, *bios_image))
+  {
+    m_host_interface->ReportError(SmallString::FromFormat("Failed to load EXE file '%s'", filename));
+    return false;
+  }
+
+  // Insert CD, and apply fastboot patch if enabled.
+  m_cdrom->InsertMedia(std::move(media));
+  if (m_cdrom->HasMedia() && GetSettings().bios_patch_fast_boot)
+    BIOS::PatchBIOSFastBoot(*bios_image, bios_hash);
+
+  // Load the patched BIOS up.
+  m_bus->SetBIOS(*bios_image);
+
+  // Good to go.
+  Reset();
+  return true;
+}
+
+void System::InitializeComponents()
 {
   m_cpu->Initialize(m_bus.get());
   m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_pad.get(),
@@ -86,32 +176,23 @@ bool System::Initialize()
   m_timers->Initialize(this, m_interrupt_controller.get());
   m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
-
-  if (!CreateGPU())
-    return false;
-
-  if (!LoadBIOS())
-    return false;
-
-  UpdateMemoryCards();
-  return true;
 }
 
 bool System::CreateGPU()
 {
   switch (m_host_interface->GetSettings().gpu_renderer)
   {
-    case Settings::GPURenderer::HardwareOpenGL:
+    case GPURenderer::HardwareOpenGL:
       m_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
 #ifdef WIN32
-    case Settings::GPURenderer::HardwareD3D11:
+    case GPURenderer::HardwareD3D11:
       m_gpu = GPU::CreateHardwareD3D11Renderer();
       break;
 #endif
 
-    case Settings::GPURenderer::Software:
+    case GPURenderer::Software:
     default:
       m_gpu = GPU::CreateSoftwareRenderer();
       break;
@@ -122,7 +203,7 @@ bool System::CreateGPU()
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     m_gpu.reset();
-    m_host_interface->GetSettings().gpu_renderer = Settings::GPURenderer::Software;
+    m_host_interface->GetSettings().gpu_renderer = GPURenderer::Software;
     m_gpu = GPU::CreateSoftwareRenderer();
     if (!m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
                            m_timers.get()))
@@ -133,49 +214,6 @@ bool System::CreateGPU()
 
   m_bus->SetGPU(m_gpu.get());
   m_dma->SetGPU(m_gpu.get());
-  return true;
-}
-
-bool System::LoadBIOS()
-{
-  if (!m_bus->LoadBIOS(GetSettings().bios_path.c_str()))
-    return false;
-
-  // apply patches
-  u8 bios_hash[16];
-  m_bus->GetBIOSHash(bios_hash);
-  SmallString bios_hash_string;
-  bios_hash_string.Format("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", bios_hash[0],
-                          bios_hash[1], bios_hash[2], bios_hash[3], bios_hash[4], bios_hash[5], bios_hash[6],
-                          bios_hash[7], bios_hash[8], bios_hash[9], bios_hash[10], bios_hash[11], bios_hash[12],
-                          bios_hash[13], bios_hash[14], bios_hash[15]);
-  Log_InfoPrintf("BIOS hash: %s", bios_hash_string.GetCharArray());
-
-  if (bios_hash_string == BIOSHashes::SCPH_1000 || bios_hash_string == BIOSHashes::SCPH_1001 ||
-      bios_hash_string == BIOSHashes::SCPH_1002 || bios_hash_string == BIOSHashes::SCPH_5500 ||
-      bios_hash_string == BIOSHashes::SCPH_5501 || bios_hash_string == BIOSHashes::SCPH_5502)
-  {
-    if (GetSettings().bios_patch_tty_enable)
-    {
-      Log_InfoPrintf("Patching BIOS to enable TTY/printf");
-      m_bus->PatchBIOS(0x1FC06F0C, 0x24010001);
-      m_bus->PatchBIOS(0x1FC06F14, 0xAF81A9C0);
-    }
-
-    if (GetSettings().bios_patch_fast_boot)
-    {
-      Log_InfoPrintf("Patching BIOS for fast boot");
-
-      // Replace the shell entry point with a return back to the bootstrap.
-      m_bus->PatchBIOS(0x1FC18000, 0x03E00008);
-      m_bus->PatchBIOS(0x1FC18004, 0x00000000);
-    }
-  }
-  else
-  {
-    Log_WarningPrintf("Unknown BIOS version, not applying patches");
-  }
-
   return true;
 }
 
@@ -260,7 +298,7 @@ void System::RunFrame()
   }
 }
 
-bool System::LoadEXE(const char* filename)
+bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
 {
 #pragma pack(push, 1)
   struct EXEHeader
@@ -326,25 +364,11 @@ bool System::LoadEXE(const char* filename)
   std::fclose(fp);
 
   // patch the BIOS to jump to the executable directly
-  {
-    const u32 r_pc = header.load_address;
-    const u32 r_gp = header.initial_gp;
-    const u32 r_sp = header.initial_sp_base;
-    const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
-
-    // pc has to be done first because we can't load it in the delay slot
-    m_bus->PatchBIOS(0xBFC06FF0, UINT32_C(0x3C080000) | r_pc >> 16);                // lui $t0, (r_pc >> 16)
-    m_bus->PatchBIOS(0xBFC06FF4, UINT32_C(0x35080000) | (r_pc & UINT32_C(0xFFFF))); // ori $t0, $t0, (r_pc & 0xFFFF)
-    m_bus->PatchBIOS(0xBFC06FF8, UINT32_C(0x3C1C0000) | r_gp >> 16);                // lui $gp, (r_gp >> 16)
-    m_bus->PatchBIOS(0xBFC06FFC, UINT32_C(0x379C0000) | (r_gp & UINT32_C(0xFFFF))); // ori $gp, $gp, (r_gp & 0xFFFF)
-    m_bus->PatchBIOS(0xBFC07000, UINT32_C(0x3C1D0000) | r_sp >> 16);                // lui $sp, (r_sp >> 16)
-    m_bus->PatchBIOS(0xBFC07004, UINT32_C(0x37BD0000) | (r_sp & UINT32_C(0xFFFF))); // ori $sp, $sp, (r_sp & 0xFFFF)
-    m_bus->PatchBIOS(0xBFC07008, UINT32_C(0x3C1E0000) | r_fp >> 16);                // lui $fp, (r_fp >> 16)
-    m_bus->PatchBIOS(0xBFC0700C, UINT32_C(0x01000008));                             // jr $t0
-    m_bus->PatchBIOS(0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
-  }
-
-  return true;
+  const u32 r_pc = header.load_address;
+  const u32 r_gp = header.initial_gp;
+  const u32 r_sp = header.initial_sp_base;
+  const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
+  return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
 }
 
 bool System::SetExpansionROM(const char* filename)
@@ -438,7 +462,12 @@ bool System::HasMedia() const
 
 bool System::InsertMedia(const char* path)
 {
-  return m_cdrom->InsertMedia(path);
+  std::unique_ptr<CDImage> image = CDImage::Open(path);
+  if (!image)
+    return false;
+
+  m_cdrom->InsertMedia(std::move(image));
+  return true;
 }
 
 void System::RemoveMedia()

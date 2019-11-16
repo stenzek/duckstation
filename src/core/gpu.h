@@ -21,6 +21,15 @@ class Timers;
 class GPU
 {
 public:
+  enum class State : u8
+  {
+    Idle,
+    WaitingForParameters,
+    ExecutingCommand,
+    ReadingVRAM,
+    WritingVRAM
+  };
+
   enum class DMADirection : u32
   {
     Off = 0,
@@ -70,15 +79,6 @@ public:
     BackgroundPlusQuarterForeground = 3,
 
     Disabled = 4 // Not a register value
-  };
-
-  enum class State : u8
-  {
-    Idle,
-    WaitingForParameters,
-    ExecutingCommand,
-    ReadingVRAM,
-    WritingVRAM
   };
 
   enum : u32

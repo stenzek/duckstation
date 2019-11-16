@@ -1,4 +1,6 @@
 add_library(core
+    bios.cpp
+    bios.h
     bus.cpp
     bus.h
     bus.inl
