@@ -42,6 +42,10 @@ bool HostInterface::BootSystem(const char* filename, const char* state_filename)
   m_paused = m_settings.start_paused;
   ConnectControllers();
   UpdateSpeedLimiterState();
+
+  if (state_filename && !LoadState(state_filename))
+    return false;
+  
   return true;
 }
 
