@@ -1116,7 +1116,10 @@ void SDLHostInterface::DrawSettingsWindow()
       if (DrawSettingsSectionHeader("Display Output"))
       {
         if (ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen))
+        {
           UpdateFullscreen();
+          settings_changed = true;
+        }
 
         if (ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering))
         {
@@ -1176,7 +1179,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
   ImGui::End();
 
-  if (settings_changed)
+  if (settings_changed || gpu_settings_changed)
     SaveSettings();
 
   if (gpu_settings_changed && m_system)

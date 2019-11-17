@@ -314,7 +314,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
 
 bool GPU_HW_D3D11::CompileShaders()
 {
-  const bool debug = false;
+  const bool debug = true;
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
 
   m_screen_quad_vertex_shader = D3D11::ShaderCompiler::CompileAndCreateVertexShader(
