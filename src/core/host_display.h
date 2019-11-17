@@ -26,6 +26,8 @@ public:
     OpenGLES
   };
 
+  virtual ~HostDisplay() {}
+
   virtual RenderAPI GetRenderAPI() const = 0;
   virtual void* GetHostRenderDevice() const = 0;
   virtual void* GetHostRenderContext() const = 0;
