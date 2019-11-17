@@ -140,6 +140,7 @@ bool System::Boot(const char* filename)
   // Component setup.
   InitializeComponents();
   UpdateMemoryCards();
+  Reset();
 
   // Enable tty by patching bios.
   const BIOS::Hash bios_hash = BIOS::GetHash(*bios_image);
@@ -162,7 +163,6 @@ bool System::Boot(const char* filename)
   m_bus->SetBIOS(*bios_image);
 
   // Good to go.
-  Reset();
   return true;
 }
 
