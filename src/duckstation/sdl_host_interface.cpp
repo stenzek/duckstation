@@ -1,4 +1,5 @@
 #include "sdl_host_interface.h"
+#include "YBaseLib/AutoReleasePtr.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
@@ -13,8 +14,8 @@
 #include "core/system.h"
 #include "core/timers.h"
 #ifdef Y_PLATFORM_WINDOWS
-#include "d3d11_host_display.h"
 #include "YBaseLib/Windows/WindowsHeaders.h"
+#include "d3d11_host_display.h"
 #include <mmsystem.h>
 #endif
 #include "icon.h"
@@ -34,6 +35,8 @@ SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini")
 #ifdef Y_PLATFORM_WINDOWS
   timeBeginPeriod(1);
 #endif
+
+  m_switch_gpu_renderer_event_id = SDL_RegisterEvents(1);
 }
 
 SDLHostInterface::~SDLHostInterface()
@@ -78,6 +81,12 @@ bool SDLHostInterface::CreateSDLWindow()
   return true;
 }
 
+void SDLHostInterface::DestroySDLWindow()
+{
+  SDL_DestroyWindow(m_window);
+  m_window = nullptr;
+}
+
 bool SDLHostInterface::CreateDisplay()
 {
 #ifdef WIN32
@@ -97,6 +106,12 @@ bool SDLHostInterface::CreateDisplay()
     return false;
 
   return true;
+}
+
+void SDLHostInterface::DestroyDisplay()
+{
+  m_app_icon_texture.reset();
+  m_display.reset();
 }
 
 void SDLHostInterface::CreateImGuiContext()
@@ -168,7 +183,52 @@ void SDLHostInterface::ResetPerformanceCounters()
   m_fps_timer.Reset();
 }
 
-void SDLHostInterface::SwitchGPURenderer() {}
+void SDLHostInterface::QueueSwitchGPURenderer()
+{
+  SDL_Event ev = {};
+  ev.type = SDL_USEREVENT;
+  ev.user.code = m_switch_gpu_renderer_event_id;
+  SDL_PushEvent(&ev);
+}
+
+void SDLHostInterface::SwitchGPURenderer()
+{
+  // Due to the GPU class owning textures, we have to shut the system down.
+  AutoReleasePtr<ByteStream> stream;
+  if (m_system)
+  {
+    stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
+    if (!m_system->SaveState(stream) || !stream->SeekAbsolute(0))
+      ReportError("Failed to save state before GPU renderer switch");
+
+    DestroySystem();
+  }
+
+  ImGui::EndFrame();
+  DestroyDisplay();
+  DestroySDLWindow();
+
+  if (!CreateSDLWindow())
+    Panic("Failed to recreate SDL window on GPU renderer switch");
+
+  if (!CreateDisplay())
+    Panic("Failed to recreate display on GPU renderer switch");
+
+  ImGui::NewFrame();
+
+  if (stream)
+  {
+    CreateSystem();
+    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream))
+    {
+      ReportError("Failed to load state after GPU renderer switch, resetting");
+      m_system->Reset();
+    }
+  }
+
+  ResetPerformanceCounters();
+  ClearImGuiFocus();
+}
 
 void SDLHostInterface::UpdateFullscreen()
 {
@@ -464,6 +524,13 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
         HandleSDLControllerButtonEventForController(event, m_controller.get());
     }
     break;
+
+    case SDL_USEREVENT:
+    {
+      if (static_cast<u32>(event->user.code) == m_switch_gpu_renderer_event_id)
+        SwitchGPURenderer();
+    }
+    break;
   }
 }
 
@@ -746,8 +813,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       {
         m_settings.gpu_renderer = static_cast<GPURenderer>(i);
         settings_changed = true;
-        if (m_system)
-          SwitchGPURenderer();
+        QueueSwitchGPURenderer();
       }
     }
 
@@ -1041,7 +1107,7 @@ void SDLHostInterface::DrawSettingsWindow()
         {
           m_settings.gpu_renderer = static_cast<GPURenderer>(gpu_renderer);
           settings_changed = true;
-          SwitchGPURenderer();
+          QueueSwitchGPURenderer();
         }
       }
 

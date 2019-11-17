@@ -59,7 +59,9 @@ private:
 #endif
 
   bool CreateSDLWindow();
+  void DestroySDLWindow();
   bool CreateDisplay();
+  void DestroyDisplay();
   void CreateImGuiContext();
   bool CreateAudioStream();
 
@@ -69,6 +71,7 @@ private:
   void SaveSettings();
 
   void ResetPerformanceCounters();
+  void QueueSwitchGPURenderer();
   void SwitchGPURenderer();
   void UpdateFullscreen();
 
@@ -113,6 +116,8 @@ private:
   std::map<int, SDL_GameController*> m_sdl_controllers;
 
   std::shared_ptr<DigitalController> m_controller;
+
+  u32 m_switch_gpu_renderer_event_id = 0;
 
   float m_vps = 0.0f;
   float m_fps = 0.0f;
