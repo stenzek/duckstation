@@ -15,14 +15,14 @@ TickCount Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       if constexpr (type == MemoryAccessType::Write)
       {
         if (m_cop0_regs.sr.Isc)
-          return 0;
+          return 1;
       }
 
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
       if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
       {
         DoScratchpadAccess<type, size>(phys_addr, value);
-        return 0;
+        return 1;
       }
 
       return m_bus->DispatchAccess<type, size>(phys_addr, value);
@@ -41,14 +41,14 @@ TickCount Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
       if constexpr (type == MemoryAccessType::Write)
       {
         if (m_cop0_regs.sr.Isc)
-          return 0;
+          return 1;
       }
 
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
       if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
       {
         DoScratchpadAccess<type, size>(phys_addr, value);
-        return 0;
+        return 1;
       }
 
       return m_bus->DispatchAccess<type, size>(phys_addr, value);
@@ -72,7 +72,7 @@ TickCount Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
         else
           WriteCacheControl(value);
 
-        return 0;
+        return 1;
       }
       else
       {

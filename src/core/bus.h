@@ -104,6 +104,7 @@ private:
 
   enum : u32
   {
+    RAM_ACCESS_DELAY = 6, // Nocash docs say RAM takes 6 cycles to access.
     MEMCTRL_REG_COUNT = 9
   };
 
