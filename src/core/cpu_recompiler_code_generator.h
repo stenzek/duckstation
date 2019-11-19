@@ -126,6 +126,7 @@ public:
   Value AddValues(const Value& lhs, const Value& rhs);
   Value MulValues(const Value& lhs, const Value& rhs);
   Value ShlValues(const Value& lhs, const Value& rhs);
+  Value ShrValues(const Value& lhs, const Value& rhs);
   Value OrValues(const Value& lhs, const Value& rhs);
 
 private:
@@ -157,6 +158,7 @@ private:
   bool Compile_lui(const CodeBlockInstruction& cbi);
   bool Compile_ori(const CodeBlockInstruction& cbi);
   bool Compile_sll(const CodeBlockInstruction& cbi);
+  bool Compile_srl(const CodeBlockInstruction& cbi);
   bool Compile_addiu(const CodeBlockInstruction& cbi);
 
   Core* m_cpu;

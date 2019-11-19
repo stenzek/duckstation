@@ -90,6 +90,10 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
           result = Compile_sll(cbi);
           break;
 
+        case InstructionFunct::srl:
+          result = Compile_srl(cbi);
+          break;
+
         default:
           result = Compile_Fallback(cbi);
           break;
@@ -284,6 +288,39 @@ Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
   EmitCopyValue(res.host_reg, lhs);
   if (!rhs.HasConstantValue(0))
     EmitShl(res.host_reg, res.size, rhs);
+  return res;
+}
+
+Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value >> rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        return Value::FromConstantU8(Truncate8(new_cv));
+
+      case RegSize_16:
+        return Value::FromConstantU16(Truncate16(new_cv));
+
+      case RegSize_32:
+        return Value::FromConstantU32(Truncate32(new_cv));
+
+      case RegSize_64:
+        return Value::FromConstantU64(new_cv);
+
+      default:
+        return Value();
+    }
+  }
+
+  Value res = m_register_cache.AllocateScratch(lhs.size);
+  EmitCopyValue(res.host_reg, lhs);
+  if (!rhs.HasConstantValue(0))
+    EmitShr(res.host_reg, res.size, rhs);
   return res;
 }
 
@@ -552,6 +589,19 @@ bool CodeGenerator::Compile_sll(const CodeBlockInstruction& cbi)
   return true;
 }
 
+bool CodeGenerator::Compile_srl(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  // rd <- rt >> shamt
+  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd,
+                                      ShrValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt),
+                                                Value::FromConstantU32(cbi.instruction.r.shamt)));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
 bool CodeGenerator::Compile_addiu(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
@@ -564,5 +614,4 @@ bool CodeGenerator::Compile_addiu(const CodeBlockInstruction& cbi)
   InstructionEpilogue(cbi);
   return true;
 }
-
 } // namespace CPU::Recompiler
