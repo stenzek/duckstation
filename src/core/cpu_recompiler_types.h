@@ -37,6 +37,9 @@ constexpr RegSize HostPointerSize = RegSize_64;
 // A reasonable "maximum" number of bytes per instruction.
 constexpr u32 MAX_HOST_BYTES_PER_INSTRUCTION = 128;
 
+// Are shifts implicitly masked to 0..31?
+constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
+
 #else
 using HostReg = void;
 using CodeEmitter = void;
@@ -46,6 +49,7 @@ enum : u32
 };
 constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
 constexpr OperandSize HostPointerSize = OperandSize_64;
+constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = false;
 #endif
 
 } // namespace Recompiler

@@ -90,8 +90,16 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
           result = Compile_sll(cbi);
           break;
 
+        case InstructionFunct::sllv:
+          result = Compile_sllv(cbi);
+          break;
+
         case InstructionFunct::srl:
           result = Compile_srl(cbi);
+          break;
+
+        case InstructionFunct::srlv:
+          result = Compile_srlv(cbi);
           break;
 
         default:
@@ -589,6 +597,22 @@ bool CodeGenerator::Compile_sll(const CodeBlockInstruction& cbi)
   return true;
 }
 
+bool CodeGenerator::Compile_sllv(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  // rd <- rt << rs
+  Value shift_amount = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
+    EmitAnd(shift_amount.host_reg, Value::FromConstantU32(0x1F));
+
+  m_register_cache.WriteGuestRegister(
+    cbi.instruction.r.rd, ShlValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), shift_amount));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
 bool CodeGenerator::Compile_srl(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
@@ -597,6 +621,22 @@ bool CodeGenerator::Compile_srl(const CodeBlockInstruction& cbi)
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd,
                                       ShrValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt),
                                                 Value::FromConstantU32(cbi.instruction.r.shamt)));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_srlv(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  // rd <- rt << rs
+  Value shift_amount = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
+    EmitAnd(shift_amount.host_reg, Value::FromConstantU32(0x1F));
+
+  m_register_cache.WriteGuestRegister(
+    cbi.instruction.r.rd, ShrValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), shift_amount));
 
   InstructionEpilogue(cbi);
   return true;
