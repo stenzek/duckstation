@@ -5,8 +5,6 @@
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
 #include "system.h"
-#include <thread>
-#include <chrono>
 Log_SetChannel(CPU::CodeCache);
 
 namespace CPU {
@@ -31,15 +29,18 @@ void CodeCache::Initialize(System* system, Core* core, Bus* bus)
 
 void CodeCache::Execute()
 {
+  CodeBlockKey next_block_key = GetNextBlockKey();
+
   while (m_core->m_downcount >= 0)
   {
     if (m_core->HasPendingInterrupt())
     {
       // TODO: Fill in m_next_instruction...
       m_core->DispatchInterrupt();
+      next_block_key = GetNextBlockKey();
     }
 
-    m_current_block = GetNextBlock();
+    m_current_block = LookupBlock(next_block_key);
     if (!m_current_block)
     {
       Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", m_core->GetRegs().pc);
@@ -47,18 +48,29 @@ void CodeCache::Execute()
       continue;
     }
 
+  reexecute_block:
     if (USE_RECOMPILER)
       m_current_block->host_code(m_core);
     else
       InterpretCachedBlock(*m_current_block);
 
+    next_block_key = GetNextBlockKey();
     if (m_current_block_flushed)
     {
       m_current_block_flushed = false;
       delete m_current_block;
+      m_current_block = nullptr;
+      continue;
     }
 
-    m_current_block = nullptr;
+    // Loop to same block?
+    next_block_key = GetNextBlockKey();
+    if (next_block_key.bits == m_current_block->key.bits)
+    {
+      // we can jump straight to it if there's no pending interrupts
+      if (m_core->m_downcount >= 0 && !m_core->HasPendingInterrupt())
+        goto reexecute_block;
+    }
   }
 }
 
@@ -72,14 +84,18 @@ void CodeCache::Reset()
   m_code_buffer->Reset();
 }
 
-const CPU::CodeBlock* CodeCache::GetNextBlock()
+CodeBlockKey CodeCache::GetNextBlockKey() const
 {
   const u32 address = m_bus->UnmirrorAddress(m_core->m_regs.pc & UINT32_C(0x1FFFFFFF));
 
   CodeBlockKey key = {};
   key.SetPC(address);
   key.user_mode = m_core->InUserMode();
+  return key;
+}
 
+const CPU::CodeBlock* CodeCache::LookupBlock(CodeBlockKey key)
+{
   BlockMap::iterator iter = m_blocks.find(key.bits);
   if (iter != m_blocks.end())
     return iter->second;
@@ -89,7 +105,7 @@ const CPU::CodeBlock* CodeCache::GetNextBlock()
   if (CompileBlock(block))
   {
     // insert into the page map
-    if (m_bus->IsRAMAddress(address))
+    if (m_bus->IsRAMAddress(key.GetPC()))
     {
       const u32 start_page = block->GetStartPageIndex();
       const u32 end_page = block->GetEndPageIndex();
@@ -102,7 +118,7 @@ const CPU::CodeBlock* CodeCache::GetNextBlock()
   }
   else
   {
-    Log_ErrorPrintf("Failed to compile block at PC=0x%08X", address);
+    Log_ErrorPrintf("Failed to compile block at PC=0x%08X", key.GetPC());
   }
 
   iter = m_blocks.emplace(key.bits, block).first;
