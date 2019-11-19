@@ -28,11 +28,6 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
   m_block_start = block->instructions.data();
   m_block_end = block->instructions.data() + block->instructions.size();
 
-  m_current_instruction_in_branch_delay_slot_dirty = true;
-  m_branch_was_taken_dirty = true;
-  m_current_instruction_was_branch_taken_dirty = false;
-  m_load_delay_dirty = true;
-
   EmitBeginBlock();
   BlockPrologue();
 
@@ -340,7 +335,11 @@ void CodeGenerator::BlockPrologue()
 {
   EmitStoreCPUStructField(offsetof(Core, m_exception_raised), Value::FromConstantU8(0));
 
-  // fetching of the first instruction...
+  // we don't know the state of the last block, so assume load delays might be in progress
+  m_current_instruction_in_branch_delay_slot_dirty = true;
+  m_branch_was_taken_dirty = true;
+  m_current_instruction_was_branch_taken_dirty = false;
+  m_load_delay_dirty = true;
 
   // sync m_current_instruction_pc so we can simply add to it
   SyncCurrentInstructionPC();
@@ -435,7 +434,7 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     m_delayed_pc_add = 0;
   }
 
-  if (!cbi.is_branch)
+  if (!cbi.is_branch_instruction)
     m_delayed_pc_add = INSTRUCTION_SIZE;
 
   m_delayed_cycles_add += cycles;
@@ -445,38 +444,18 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
 void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
 {
   // copy if the previous instruction was a load, reset the current value on the next instruction
-  if (m_load_delay_dirty)
+  if (m_next_load_delay_dirty)
   {
-    // cpu->m_load_delay_reg = cpu->m_next_load_delay_reg;
-    // cpu->m_next_load_delay_reg = Reg::count;
-    {
-      Value temp = m_register_cache.AllocateScratch(RegSize_8);
-      EmitLoadCPUStructField(temp.host_reg, RegSize_8, offsetof(Core, m_next_load_delay_reg));
-      EmitStoreCPUStructField(offsetof(Core, m_next_load_delay_reg),
-                              Value::FromConstantU8(static_cast<u8>(Reg::count)));
-      EmitStoreCPUStructField(offsetof(Core, m_load_delay_reg), temp);
-    }
-
-    // cpu->m_load_delay_old_value = cpu->m_next_load_delay_old_value;
-    // cpu->m_next_load_delay_old_value = 0;
-    {
-      Value temp = m_register_cache.AllocateScratch(RegSize_32);
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(Core, m_next_load_delay_old_value));
-      EmitStoreCPUStructField(offsetof(Core, m_next_load_delay_old_value), Value::FromConstantU32(0));
-      EmitStoreCPUStructField(offsetof(Core, m_load_delay_old_value), temp);
-    }
-
-    m_load_delay_dirty = false;
-    m_next_load_delay_dirty = true;
-  }
-  else if (m_next_load_delay_dirty)
-  {
-    // cpu->m_load_delay_reg = Reg::count;
-    // cpu->m_load_delay_old_value = 0;
-    EmitStoreCPUStructField(offsetof(Core, m_load_delay_reg), Value::FromConstantU8(static_cast<u8>(Reg::count)));
-    EmitStoreCPUStructField(offsetof(Core, m_load_delay_old_value), Value::FromConstantU32(0));
-
+    Log_DebugPrint("Emitting delay slot flush (with move next)");
+    EmitDelaySlotUpdate(false, false, true);
     m_next_load_delay_dirty = false;
+    m_load_delay_dirty = true;
+  }
+  else if (m_load_delay_dirty)
+  {
+    Log_DebugPrint("Emitting delay slot flush");
+    EmitDelaySlotUpdate(true, false, false);
+    m_load_delay_dirty = false;
   }
 }
 
@@ -528,9 +507,9 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
     EmitFunctionCall(nullptr, &Thunks::InterpretInstruction, m_register_cache.GetCPUPtr());
   }
 
-  m_current_instruction_in_branch_delay_slot_dirty = cbi.is_branch;
-  m_branch_was_taken_dirty = cbi.is_branch;
-  m_load_delay_dirty = true;
+  m_current_instruction_in_branch_delay_slot_dirty = cbi.is_branch_instruction;
+  m_branch_was_taken_dirty = cbi.is_branch_instruction;
+  m_next_load_delay_dirty = cbi.has_load_delay;
   InstructionEpilogue(cbi);
   return true;
 }

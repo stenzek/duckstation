@@ -40,4 +40,9 @@ bool Thunks::InterpretInstruction(Core* cpu)
   return cpu->m_exception_raised;
 }
 
+void Thunks::UpdateLoadDelay(Core* cpu)
+{
+  cpu->UpdateLoadDelay();
+}
+
 } // namespace CPU::Recompiler

@@ -307,7 +307,7 @@ u32 RegisterCache::PopCallerSavedRegisters() const
   return count;
 }
 
-u32 RegisterCache::PopCalleeSavedRegisters()
+u32 RegisterCache::PopCalleeSavedRegisters(bool commit)
 {
   if (m_host_register_callee_saved_order_count == 0)
     return 0;
@@ -321,7 +321,8 @@ u32 RegisterCache::PopCalleeSavedRegisters()
                 (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
 
     m_code_generator.EmitPopHostReg(reg);
-    m_host_register_state[reg] &= ~HostRegState::CalleeSavedAllocated;
+    if (commit)
+      m_host_register_state[reg] &= ~HostRegState::CalleeSavedAllocated;
     count++;
     i--;
   } while (i > 0);

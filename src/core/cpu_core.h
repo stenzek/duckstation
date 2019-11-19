@@ -14,11 +14,10 @@ namespace CPU {
 
 class CodeCache;
 
-namespace Recompiler
-{
+namespace Recompiler {
 class CodeGenerator;
 class Thunks;
-}
+} // namespace Recompiler
 
 class Core
 {
@@ -28,7 +27,7 @@ public:
   static constexpr PhysicalMemoryAddress DCACHE_LOCATION_MASK = UINT32_C(0xFFFFFC00);
   static constexpr PhysicalMemoryAddress DCACHE_OFFSET_MASK = UINT32_C(0x000003FF);
   static constexpr PhysicalMemoryAddress DCACHE_SIZE = UINT32_C(0x00000400);
-  
+
   friend CodeCache;
   friend Recompiler::CodeGenerator;
   friend Recompiler::Thunks;
@@ -103,6 +102,19 @@ private:
   void DisassembleAndLog(u32 addr);
   void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_after);
 
+  // Updates load delays - call after each instruction
+  ALWAYS_INLINE void UpdateLoadDelay()
+  {
+    // the old value is needed in case the delay slot instruction overwrites the same register
+    if (m_load_delay_reg != Reg::count && m_regs.r[static_cast<u8>(m_load_delay_reg)] == m_load_delay_old_value)
+      m_regs.r[static_cast<u8>(m_load_delay_reg)] = m_load_delay_value;
+
+    m_load_delay_reg = m_next_load_delay_reg;
+    m_load_delay_value = m_next_load_delay_value;
+    m_load_delay_old_value = m_next_load_delay_old_value;
+    m_next_load_delay_reg = Reg::count;
+  }
+
   // Fetches the instruction at m_regs.npc
   bool FetchInstruction();
   void ExecuteInstruction();
@@ -116,9 +128,6 @@ private:
   void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
   bool HasPendingInterrupt();
   void DispatchInterrupt();
-
-  // flushes any load delays if present
-  void FlushLoadDelay();
 
   // clears pipeline of load/branch delays
   void FlushPipeline();
@@ -158,8 +167,10 @@ private:
 
   // load delays
   Reg m_load_delay_reg = Reg::count;
+  u32 m_load_delay_value = 0;
   u32 m_load_delay_old_value = 0;
   Reg m_next_load_delay_reg = Reg::count;
+  u32 m_next_load_delay_value = 0;
   u32 m_next_load_delay_old_value = 0;
 
   u32 m_cache_control = 0;

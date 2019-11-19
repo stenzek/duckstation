@@ -9,6 +9,7 @@
 class JitCodeBuffer;
 
 class Bus;
+class System;
 
 namespace CPU {
 class Core;
@@ -23,7 +24,7 @@ public:
   CodeCache();
   ~CodeCache();
 
-  void Initialize(Core* core, Bus* bus);
+  void Initialize(System* system, Core* core, Bus* bus);
   void Reset();
   void Execute();
 
@@ -39,6 +40,7 @@ private:
   void InterpretCachedBlock(const CodeBlock& block);
   void InterpretUncachedBlock();
 
+  System* m_system;
   Core* m_core;
   Bus* m_bus;
 

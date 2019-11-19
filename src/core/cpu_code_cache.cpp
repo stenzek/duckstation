@@ -4,6 +4,9 @@
 #include "cpu_disasm.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
+#include "system.h"
+#include <thread>
+#include <chrono>
 Log_SetChannel(CPU::CodeCache);
 
 namespace CPU {
@@ -15,8 +18,9 @@ CodeCache::CodeCache() = default;
 
 CodeCache::~CodeCache() = default;
 
-void CodeCache::Initialize(Core* core, Bus* bus)
+void CodeCache::Initialize(System* system, Core* core, Bus* bus)
 {
+  m_system = system;
   m_core = core;
   m_bus = bus;
 
@@ -122,9 +126,12 @@ bool CodeCache::CompileBlock(CodeBlock* block)
     }
 
     cbi.pc = pc;
-    cbi.is_branch = IsBranchInstruction(cbi.instruction);
     cbi.is_branch_delay_slot = is_branch_delay_slot;
     cbi.is_load_delay_slot = is_load_delay_slot;
+    cbi.is_branch_instruction = IsBranchInstruction(cbi.instruction);
+    cbi.is_load_instruction = IsMemoryLoadInstruction(cbi.instruction);
+    cbi.is_store_instruction = IsMemoryStoreInstruction(cbi.instruction);
+    cbi.has_load_delay = InstructionHasLoadDelay(cbi.instruction);
     cbi.can_trap = CanInstructionTrap(cbi.instruction, m_core->InUserMode());
 
     // instruction is decoded now
@@ -133,11 +140,14 @@ bool CodeCache::CompileBlock(CodeBlock* block)
 
     // if we're in a branch delay slot, the block is now done
     // except if this is a branch in a branch delay slot, then we grab the one after that, and so on...
-    if (is_branch_delay_slot && !cbi.is_branch)
+    if (is_branch_delay_slot && !cbi.is_branch_instruction)
       break;
 
     // if this is a branch, we grab the next instruction (delay slot), and then exit
-    is_branch_delay_slot = cbi.is_branch;
+    is_branch_delay_slot = cbi.is_branch_instruction;
+
+    // same for load delay
+    is_load_delay_slot = cbi.has_load_delay;
 
     // is this a non-branchy exit? (e.g. syscall)
     if (IsExitBlockInstruction(cbi.instruction))
@@ -254,10 +264,7 @@ void CodeCache::InterpretCachedBlock(const CodeBlock& block)
     m_core->ExecuteInstruction();
 
     // next load delay
-    m_core->m_load_delay_reg = m_core->m_next_load_delay_reg;
-    m_core->m_next_load_delay_reg = Reg::count;
-    m_core->m_load_delay_old_value = m_core->m_next_load_delay_old_value;
-    m_core->m_next_load_delay_old_value = 0;
+    m_core->UpdateLoadDelay();
 
     if (m_core->m_exception_raised)
       break;
@@ -294,10 +301,7 @@ void CodeCache::InterpretUncachedBlock()
     m_core->ExecuteInstruction();
 
     // next load delay
-    m_core->m_load_delay_reg = m_core->m_next_load_delay_reg;
-    m_core->m_next_load_delay_reg = Reg::count;
-    m_core->m_load_delay_old_value = m_core->m_next_load_delay_old_value;
-    m_core->m_next_load_delay_old_value = 0;
+    m_core->UpdateLoadDelay();
 
     const bool branch = IsBranchInstruction(m_core->m_current_instruction);
     if (m_core->m_exception_raised || (!branch && in_branch_delay_slot) ||

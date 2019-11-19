@@ -176,7 +176,7 @@ public:
   u32 PopCallerSavedRegisters() const;
 
   /// Restore callee-saved registers. Call at the end of the function.
-  u32 PopCalleeSavedRegisters();
+  u32 PopCalleeSavedRegisters(bool commit);
 
   //////////////////////////////////////////////////////////////////////////
   // Scratch Register Allocation

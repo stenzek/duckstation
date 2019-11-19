@@ -147,6 +147,7 @@ private:
   void SyncCurrentInstructionPC();
   void SyncPC();
   void AddPendingCycles();
+  void EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_check_old_value, bool move_next);
 
   //////////////////////////////////////////////////////////////////////////
   // Instruction Code Generators
@@ -172,14 +173,12 @@ private:
 
   std::array<Value, 3> m_operand_memory_addresses{};
 
-  Xbyak::Label m_block_exit_label;
-
   // whether various flags need to be reset.
   bool m_current_instruction_in_branch_delay_slot_dirty = false;
   bool m_branch_was_taken_dirty = false;
   bool m_current_instruction_was_branch_taken_dirty = false;
-  bool m_next_load_delay_dirty = false;
   bool m_load_delay_dirty = false;
+  bool m_next_load_delay_dirty = false;
 };
 
 } // namespace CPU_X86::Recompiler

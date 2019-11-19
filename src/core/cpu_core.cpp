@@ -97,8 +97,10 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_next_instruction_is_branch_delay_slot);
   sw.Do(&m_branch_was_taken);
   sw.Do(&m_load_delay_reg);
+  sw.Do(&m_load_delay_value);
   sw.Do(&m_load_delay_old_value);
   sw.Do(&m_next_load_delay_reg);
+  sw.Do(&m_next_load_delay_value);
   sw.Do(&m_next_load_delay_old_value);
   sw.Do(&m_cache_control);
   sw.DoBytes(m_dcache.data(), m_dcache.size());
@@ -338,7 +340,7 @@ bool Core::HasPendingInterrupt()
   // const bool do_interrupt = m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0);
   const bool do_interrupt =
     m_cop0_regs.sr.IEc && (((m_cop0_regs.cause.bits & m_cop0_regs.sr.bits) & (UINT32_C(0xFF) << 8)) != 0);
-  
+
   return do_interrupt;
 }
 
@@ -354,19 +356,16 @@ void Core::DispatchInterrupt()
                  m_next_instruction.cop.cop_n);
 }
 
-void Core::FlushLoadDelay()
-{
-  m_load_delay_reg = Reg::count;
-  m_load_delay_old_value = 0;
-  m_next_load_delay_reg = Reg::count;
-  m_next_load_delay_old_value = 0;
-}
-
 void Core::FlushPipeline()
 {
   // loads are flushed
-  FlushLoadDelay();
-
+  m_next_load_delay_reg = Reg::count;
+  if (m_load_delay_reg != Reg::count)
+  {
+    m_regs.r[static_cast<u8>(m_load_delay_reg)] = m_load_delay_value;
+    m_load_delay_reg = Reg::count;
+  }
+  
   // not in a branch delay slot
   m_branch_was_taken = false;
   m_next_instruction_is_branch_delay_slot = false;
@@ -383,13 +382,15 @@ void Core::FlushPipeline()
 
 u32 Core::ReadReg(Reg rs)
 {
-  return rs == m_load_delay_reg ? m_load_delay_old_value : m_regs.r[static_cast<u8>(rs)];
+  return m_regs.r[static_cast<u8>(rs)];
 }
 
 void Core::WriteReg(Reg rd, u32 value)
 {
-  if (rd != Reg::zero)
-    m_regs.r[static_cast<u8>(rd)] = value;
+  m_regs.r[static_cast<u8>(rd)] = value;
+
+  // prevent writes to $zero from going through - better than branching/cmov
+  m_regs.zero = 0;
 }
 
 void Core::WriteRegDelayed(Reg rd, u32 value)
@@ -398,10 +399,14 @@ void Core::WriteRegDelayed(Reg rd, u32 value)
   if (rd == Reg::zero)
     return;
 
-  // save the old value, this will be returned if the register is read in the next instruction
+  // double load delays ignore the first value
+  if (m_load_delay_reg == rd)
+    m_load_delay_reg = Reg::count;
+
+  // save the old value, if something else overwrites this reg we want to preserve it
   m_next_load_delay_reg = rd;
-  m_next_load_delay_old_value = ReadReg(rd);
-  m_regs.r[static_cast<u8>(rd)] = value;
+  m_next_load_delay_value = value;
+  m_next_load_delay_old_value = m_regs.r[static_cast<u8>(rd)];
 }
 
 std::optional<u32> Core::ReadCop0Reg(Cop0Reg reg)
@@ -608,10 +613,7 @@ void Core::Execute()
     ExecuteInstruction();
 
     // next load delay
-    m_load_delay_reg = m_next_load_delay_reg;
-    m_next_load_delay_reg = Reg::count;
-    m_load_delay_old_value = m_next_load_delay_old_value;
-    m_next_load_delay_old_value = 0;
+    UpdateLoadDelay();
   }
 }
 
@@ -643,12 +645,12 @@ void Core::ExecuteInstruction()
   }
 #endif
 
-//#ifdef _DEBUG
+  //#ifdef _DEBUG
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, m_current_instruction_pc, this);
   if (LOG_EXECUTION)
     LogInstruction(inst.bits, m_current_instruction_pc, this);
-//#endif
+  //#endif
 
   switch (inst.op)
   {
@@ -1039,8 +1041,8 @@ void Core::ExecuteInstruction()
       if (!ReadMemoryWord(aligned_addr, &aligned_value))
         return;
 
-      // note: bypasses load delay on the read
-      const u32 existing_value = m_regs.r[static_cast<u8>(inst.i.rt.GetValue())];
+      // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
+      const u32 existing_value = (inst.i.rt == m_load_delay_reg) ? m_load_delay_value : ReadReg(inst.i.rt);
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 new_value;
       if (inst.op == InstructionOp::lwl)

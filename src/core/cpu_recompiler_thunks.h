@@ -20,6 +20,7 @@ public:
   static bool WriteMemoryHalfWord(Core* cpu, u32 address, u16 value);
   static bool WriteMemoryWord(Core* cpu, u32 address, u32 value);
   static bool InterpretInstruction(Core* cpu);
+  static void UpdateLoadDelay(Core* cpu);
 };
 
 class ASMFunctions

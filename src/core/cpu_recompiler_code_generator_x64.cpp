@@ -151,9 +151,8 @@ void CodeGenerator::EmitBeginBlock()
 
 void CodeGenerator::EmitEndBlock()
 {
-  m_emit.L(m_block_exit_label);
   m_register_cache.FreeHostReg(RCPUPTR);
-  m_register_cache.PopCalleeSavedRegisters();
+  m_register_cache.PopCalleeSavedRegisters(true);
 
   m_emit.ret();
 }
@@ -166,9 +165,10 @@ void CodeGenerator::EmitBlockExitOnBool(const Value& value)
   m_emit.test(GetHostReg8(value), GetHostReg8(value));
   m_emit.jz(continue_label);
 
-  // flush current state
+  // flush current state and return
   m_register_cache.FlushAllGuestRegisters(false, false);
-  m_emit.jmp(m_block_exit_label, Xbyak::CodeGenerator::T_NEAR);
+  m_register_cache.PopCalleeSavedRegisters(false);
+  m_emit.ret();
 
   m_emit.L(continue_label);
 }
@@ -1300,6 +1300,62 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
       UnreachableCode();
     }
     break;
+  }
+}
+
+void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_check_old_value, bool move_next)
+{
+  Value reg = m_register_cache.AllocateScratch(RegSize_8);
+  Value value = m_register_cache.AllocateScratch(RegSize_32);
+
+  Xbyak::Label skip_flush;
+
+  auto load_delay_reg = m_emit.byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
+  auto load_delay_old_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_old_value)];
+  auto load_delay_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
+  auto reg_ptr = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
+
+  // reg = load_delay_reg
+  m_emit.movzx(GetHostReg32(reg.host_reg), load_delay_reg);
+  if (!skip_check_old_value)
+    m_emit.mov(GetHostReg32(value), load_delay_old_value);
+
+  if (!skip_check_for_delay)
+  {
+    // if load_delay_reg == Reg::count goto skip_flush
+    m_emit.cmp(GetHostReg32(reg.host_reg), static_cast<u8>(Reg::count));
+    m_emit.je(skip_flush);
+  }
+
+  if (!skip_check_old_value)
+  {
+    // if r[reg] != load_delay_old_value goto skip_flush
+    m_emit.cmp(GetHostReg32(value), reg_ptr);
+    m_emit.jne(skip_flush);
+  }
+
+  // r[reg] = load_delay_value
+  m_emit.mov(GetHostReg32(value), load_delay_value);
+  m_emit.mov(reg_ptr, GetHostReg32(value));
+
+  // if !move_next load_delay_reg = Reg::count
+  if (!move_next)
+    m_emit.mov(load_delay_reg, static_cast<u8>(Reg::count));
+
+  m_emit.L(skip_flush);
+
+  if (move_next)
+  {
+    auto next_load_delay_reg = m_emit.byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
+    auto next_load_delay_old_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_old_value)];
+    auto next_load_delay_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
+    m_emit.mov(GetHostReg32(value), next_load_delay_value);
+    m_emit.mov(GetHostReg8(reg), next_load_delay_reg);
+    m_emit.mov(load_delay_value, GetHostReg32(value));
+    m_emit.mov(GetHostReg32(value), next_load_delay_old_value);
+    m_emit.mov(load_delay_reg, GetHostReg8(reg));
+    m_emit.mov(load_delay_old_value, GetHostReg32(value));
+    m_emit.mov(next_load_delay_reg, static_cast<u8>(Reg::count));
   }
 }
 

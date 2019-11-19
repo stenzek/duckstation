@@ -44,6 +44,76 @@ bool IsBranchInstruction(const Instruction& instruction)
   }
 }
 
+bool IsMemoryLoadInstruction(const Instruction& instruction)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::lb:
+    case InstructionOp::lh:
+    case InstructionOp::lw:
+    case InstructionOp::lbu:
+    case InstructionOp::lhu:
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+      return true;
+
+    case InstructionOp::lwc2:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+bool IsMemoryStoreInstruction(const Instruction& instruction)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::sb:
+    case InstructionOp::sh:
+    case InstructionOp::sw:
+    case InstructionOp::swl:
+    case InstructionOp::swr:
+      return true;
+
+    case InstructionOp::swc2:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+bool InstructionHasLoadDelay(const Instruction& instruction)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::lb:
+    case InstructionOp::lh:
+    case InstructionOp::lw:
+    case InstructionOp::lbu:
+    case InstructionOp::lhu:
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+      return true;
+
+    case InstructionOp::cop0:
+    case InstructionOp::cop2:
+    {
+      if (instruction.cop.IsCommonInstruction())
+      {
+        const CopCommonInstruction common_op = instruction.cop.CommonOp();
+        return (common_op == CopCommonInstruction::cfcn || common_op == CopCommonInstruction::mfcn);
+      }
+
+      return false;
+    }
+
+    default:
+      return false;
+  }
+}
+
 bool IsExitBlockInstruction(const Instruction& instruction)
 {
   switch (instruction.op)
@@ -164,26 +234,6 @@ bool CanInstructionTrap(const Instruction& instruction, bool in_user_mode)
 
     default:
       return true;
-  }
-}
-
-bool IsLoadDelayingInstruction(const Instruction& instruction)
-{
-  switch (instruction.op)
-  {
-    case InstructionOp::lb:
-    case InstructionOp::lh:
-    case InstructionOp::lw:
-    case InstructionOp::lbu:
-    case InstructionOp::lhu:
-      return true;
-
-    case InstructionOp::lwl:
-    case InstructionOp::lwr:
-      return false;
-
-    default:
-      return false;
   }
 }
 
