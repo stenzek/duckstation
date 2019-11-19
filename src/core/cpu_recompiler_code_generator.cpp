@@ -89,19 +89,13 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       switch (cbi.instruction.r.funct)
       {
         case InstructionFunct::sll:
-          result = Compile_sll(cbi);
+        case InstructionFunct::srl:
+          result = Compile_ShiftImmediate(cbi);
           break;
 
         case InstructionFunct::sllv:
-          result = Compile_sllv(cbi);
-          break;
-
-        case InstructionFunct::srl:
-          result = Compile_srl(cbi);
-          break;
-
         case InstructionFunct::srlv:
-          result = Compile_srlv(cbi);
+          result = Compile_ShiftVariable(cbi);
           break;
 
         default:
@@ -643,18 +637,6 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
   return true;
 }
 
-bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
-{
-  InstructionPrologue(cbi, 1);
-
-  // rt <- (imm << 16)
-  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt,
-                                      Value::FromConstantU32(cbi.instruction.i.imm_zext32() << 16));
-
-  InstructionEpilogue(cbi);
-  return true;
-}
-
 bool CodeGenerator::Compile_BitwiseImmediate(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
@@ -688,59 +670,74 @@ bool CodeGenerator::Compile_BitwiseImmediate(const CodeBlockInstruction& cbi)
   return true;
 }
 
-bool CodeGenerator::Compile_sll(const CodeBlockInstruction& cbi)
+bool CodeGenerator::Compile_ShiftImmediate(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  // rd <- rt << shamt
-  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd,
-                                      ShlValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt),
-                                                Value::FromConstantU32(cbi.instruction.r.shamt)));
+  // rd <- rt op shamt
+  Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  Value shamt = Value::FromConstantU32(cbi.instruction.r.shamt);
+  Value result;
+  switch (cbi.instruction.r.funct)
+  {
+    case InstructionFunct::sll:
+      result = ShlValues(rt, shamt);
+      break;
+
+    case InstructionFunct::srl:
+      result = ShrValues(rt, shamt);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 
   InstructionEpilogue(cbi);
   return true;
 }
 
-bool CodeGenerator::Compile_sllv(const CodeBlockInstruction& cbi)
+bool CodeGenerator::Compile_ShiftVariable(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  // rd <- rt << rs
-  Value shift_amount = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  // rd <- rt op (rs & 0x1F)
+  Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  Value shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
-    EmitAnd(shift_amount.host_reg, Value::FromConstantU32(0x1F));
+    EmitAnd(shamt.host_reg, Value::FromConstantU32(0x1F));
 
-  m_register_cache.WriteGuestRegister(
-    cbi.instruction.r.rd, ShlValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), shift_amount));
+  Value result;
+  switch (cbi.instruction.r.funct)
+  {
+    case InstructionFunct::sllv:
+      result = ShlValues(rt, shamt);
+      break;
+
+    case InstructionFunct::srlv:
+      result = ShrValues(rt, shamt);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 
   InstructionEpilogue(cbi);
   return true;
 }
 
-bool CodeGenerator::Compile_srl(const CodeBlockInstruction& cbi)
+bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  // rd <- rt >> shamt
-  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd,
-                                      ShrValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt),
-                                                Value::FromConstantU32(cbi.instruction.r.shamt)));
-
-  InstructionEpilogue(cbi);
-  return true;
-}
-
-bool CodeGenerator::Compile_srlv(const CodeBlockInstruction& cbi)
-{
-  InstructionPrologue(cbi, 1);
-
-  // rd <- rt << rs
-  Value shift_amount = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
-  if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
-    EmitAnd(shift_amount.host_reg, Value::FromConstantU32(0x1F));
-
-  m_register_cache.WriteGuestRegister(
-    cbi.instruction.r.rd, ShrValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), shift_amount));
+  // rt <- (imm << 16)
+  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt,
+                                      Value::FromConstantU32(cbi.instruction.i.imm_zext32() << 16));
 
   InstructionEpilogue(cbi);
   return true;

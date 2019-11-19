@@ -157,12 +157,10 @@ private:
   //////////////////////////////////////////////////////////////////////////
   bool CompileInstruction(const CodeBlockInstruction& cbi);
   bool Compile_Fallback(const CodeBlockInstruction& cbi);
-  bool Compile_lui(const CodeBlockInstruction& cbi);
   bool Compile_BitwiseImmediate(const CodeBlockInstruction& cbi);
-  bool Compile_sll(const CodeBlockInstruction& cbi);
-  bool Compile_sllv(const CodeBlockInstruction& cbi);
-  bool Compile_srl(const CodeBlockInstruction& cbi);
-  bool Compile_srlv(const CodeBlockInstruction& cbi);
+  bool Compile_ShiftImmediate(const CodeBlockInstruction& cbi);
+  bool Compile_ShiftVariable(const CodeBlockInstruction& cbi);
+  bool Compile_lui(const CodeBlockInstruction& cbi);
   bool Compile_addiu(const CodeBlockInstruction& cbi);
 
   Core* m_cpu;
