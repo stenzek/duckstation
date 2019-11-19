@@ -90,11 +90,13 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       {
         case InstructionFunct::sll:
         case InstructionFunct::srl:
+        case InstructionFunct::sra:
           result = Compile_ShiftImmediate(cbi);
           break;
 
         case InstructionFunct::sllv:
         case InstructionFunct::srlv:
+        case InstructionFunct::srav:
           result = Compile_ShiftVariable(cbi);
           break;
 
@@ -268,7 +270,7 @@ Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
   if (lhs.IsConstant() && rhs.IsConstant())
   {
     // compile-time
-    u64 new_cv = lhs.constant_value << rhs.constant_value;
+    u64 new_cv = lhs.constant_value << (rhs.constant_value & 0x1F);
     switch (lhs.size)
     {
       case RegSize_8:
@@ -301,7 +303,7 @@ Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
   if (lhs.IsConstant() && rhs.IsConstant())
   {
     // compile-time
-    u64 new_cv = lhs.constant_value >> rhs.constant_value;
+    u64 new_cv = lhs.constant_value >> (rhs.constant_value & 0x1F);
     switch (lhs.size)
     {
       case RegSize_8:
@@ -325,6 +327,42 @@ Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
   EmitCopyValue(res.host_reg, lhs);
   if (!rhs.HasConstantValue(0))
     EmitShr(res.host_reg, res.size, rhs);
+  return res;
+}
+
+Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        return Value::FromConstantU8(
+          static_cast<u8>(static_cast<s8>(Truncate8(lhs.constant_value)) >> (rhs.constant_value & 0x1F)));
+
+      case RegSize_16:
+        return Value::FromConstantU16(
+          static_cast<u16>(static_cast<s16>(Truncate16(lhs.constant_value)) >> (rhs.constant_value & 0x1F)));
+
+      case RegSize_32:
+        return Value::FromConstantU32(
+          static_cast<u32>(static_cast<s32>(Truncate32(lhs.constant_value)) >> (rhs.constant_value & 0x1F)));
+
+      case RegSize_64:
+        return Value::FromConstantU64(
+          static_cast<u64>(static_cast<s64>(lhs.constant_value) >> (rhs.constant_value & 0x3F)));
+
+      default:
+        return Value();
+    }
+  }
+
+  Value res = m_register_cache.AllocateScratch(lhs.size);
+  EmitCopyValue(res.host_reg, lhs);
+  if (!rhs.HasConstantValue(0))
+    EmitSar(res.host_reg, res.size, rhs);
   return res;
 }
 
@@ -688,6 +726,10 @@ bool CodeGenerator::Compile_ShiftImmediate(const CodeBlockInstruction& cbi)
       result = ShrValues(rt, shamt);
       break;
 
+    case InstructionFunct::sra:
+      result = SarValues(rt, shamt);
+      break;
+
     default:
       UnreachableCode();
       break;
@@ -718,6 +760,10 @@ bool CodeGenerator::Compile_ShiftVariable(const CodeBlockInstruction& cbi)
 
     case InstructionFunct::srlv:
       result = ShrValues(rt, shamt);
+      break;
+
+    case InstructionFunct::srav:
+      result = SarValues(rt, shamt);
       break;
 
     default:

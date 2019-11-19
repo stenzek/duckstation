@@ -127,6 +127,7 @@ public:
   Value MulValues(const Value& lhs, const Value& rhs);
   Value ShlValues(const Value& lhs, const Value& rhs);
   Value ShrValues(const Value& lhs, const Value& rhs);
+  Value SarValues(const Value& lhs, const Value& rhs);
   Value OrValues(const Value& lhs, const Value& rhs);
   Value AndValues(const Value& lhs, const Value& rhs);
   Value XorValues(const Value& lhs, const Value& rhs);
