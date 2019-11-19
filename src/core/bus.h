@@ -4,12 +4,14 @@
 #include "common/bitfield.h"
 #include "types.h"
 #include <array>
+#include <bitset>
 
 class StateWrapper;
 
 namespace CPU {
 class Core;
-}
+class CodeCache;
+} // namespace CPU
 
 class DMA;
 class InterruptController;
@@ -27,8 +29,8 @@ public:
   Bus();
   ~Bus();
 
-  void Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad,
-                  Timers* timers, SPU* spu, MDEC* mdec);
+  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, InterruptController* interrupt_controller,
+                  GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu, MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -51,6 +53,34 @@ public:
 
   // changing interfaces
   void SetGPU(GPU* gpu) { m_gpu = gpu; }
+
+  /// Returns the address which should be used for code caching (i.e. removes mirrors).
+  ALWAYS_INLINE static PhysicalMemoryAddress UnmirrorAddress(PhysicalMemoryAddress address)
+  {
+    // RAM
+    if (address < 0x800000)
+      return address & UINT32_C(0x1FFFFF);
+    else
+      return address;
+  }
+
+  /// Returns true if the address specified is cacheable (RAM or BIOS).
+  ALWAYS_INLINE static bool IsCacheableAddress(PhysicalMemoryAddress address)
+  {
+    return (address < RAM_MIRROR_END) || (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE));
+  }
+
+  /// Returns true if the address specified is writable (RAM).
+  ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address) { return address < RAM_MIRROR_END; }
+
+  /// Flags a RAM region as code, so we know when to invalidate blocks.
+  ALWAYS_INLINE void SetRAMCodePage(u32 index) { m_ram_code_bits[index] = true; }
+
+  /// Unflags a RAM region as code, the code cache will no longer be notified when writes occur.
+  ALWAYS_INLINE void ClearRAMCodePage(u32 index) { m_ram_code_bits[index] = false; }
+
+  /// Clears all code bits for RAM regions.
+  ALWAYS_INLINE void ClearRAMCodePageFlags() { m_ram_code_bits.reset(); }
 
 private:
   enum : u32
@@ -204,7 +234,10 @@ private:
   u32 DoReadSPU(MemoryAccessSize size, u32 offset);
   void DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
+  void DoInvalidateCodeCache(u32 page_index);
+
   CPU::Core* m_cpu = nullptr;
+  CPU::CodeCache* m_cpu_code_cache = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
@@ -220,8 +253,9 @@ private:
   std::array<TickCount, 3> m_cdrom_access_time = {};
   std::array<TickCount, 3> m_spu_access_time = {};
 
-  std::array<u8, 2097152> m_ram{}; // 2MB RAM
-  std::array<u8, 524288> m_bios{}; // 512K BIOS ROM
+  std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits{};
+  std::array<u8, RAM_SIZE> m_ram{};   // 2MB RAM
+  std::array<u8, BIOS_SIZE> m_bios{}; // 512K BIOS ROM
   std::vector<u8> m_exp1_rom;
 
   MEMCTRL m_MEMCTRL = {};

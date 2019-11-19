@@ -26,6 +26,13 @@
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
     <ClCompile Include="bios.cpp" />
+    <ClCompile Include="cpu_code_cache.cpp" />
+    <ClCompile Include="cpu_recompiler_register_cache.cpp" />
+    <ClCompile Include="cpu_recompiler_thunks.cpp" />
+    <ClCompile Include="cpu_recompiler_code_generator_x64.cpp" />
+    <ClCompile Include="cpu_recompiler_code_generator.cpp" />
+    <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
+    <ClCompile Include="cpu_types.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -57,6 +64,11 @@
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="host_display.h" />
     <ClInclude Include="bios.h" />
+    <ClInclude Include="cpu_recompiler_types.h" />
+    <ClInclude Include="cpu_code_cache.h" />
+    <ClInclude Include="cpu_recompiler_register_cache.h" />
+    <ClInclude Include="cpu_recompiler_thunks.h" />
+    <ClInclude Include="cpu_recompiler_code_generator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

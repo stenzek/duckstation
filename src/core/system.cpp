@@ -5,6 +5,7 @@
 #include "bus.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
@@ -23,6 +24,7 @@ Log_SetChannel(System);
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
+  m_cpu_code_cache = std::make_unique<CPU::CodeCache>();
   m_bus = std::make_unique<Bus>();
   m_dma = std::make_unique<DMA>();
   m_interrupt_controller = std::make_unique<InterruptController>();
@@ -169,8 +171,9 @@ bool System::Boot(const char* filename)
 void System::InitializeComponents()
 {
   m_cpu->Initialize(m_bus.get());
-  m_bus->Initialize(m_cpu.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_pad.get(),
-                    m_timers.get(), m_spu.get(), m_mdec.get());
+  m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(),
+                    m_cdrom.get(), m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get());
 
   m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get(),
                     m_mdec.get());
@@ -235,6 +238,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("CPU") || !m_cpu->DoState(sw))
     return false;
 
+  if (sw.IsReading())
+    m_cpu_code_cache->Reset();
+
   if (!sw.DoMarker("Bus") || !m_bus->DoState(sw))
     return false;
 
@@ -268,6 +274,7 @@ bool System::DoState(StateWrapper& sw)
 void System::Reset()
 {
   m_cpu->Reset();
+  m_cpu_code_cache->Reset();
   m_bus->Reset();
   m_dma->Reset();
   m_interrupt_controller->Reset();
@@ -299,7 +306,10 @@ void System::RunFrame()
   u32 current_frame_number = m_frame_number;
   while (current_frame_number == m_frame_number)
   {
-    m_cpu->Execute();
+    if (CPU::USE_CODE_CACHE)
+      m_cpu_code_cache->Execute();
+    else
+      m_cpu->Execute();
     Synchronize();
   }
 }

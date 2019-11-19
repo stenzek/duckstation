@@ -12,6 +12,14 @@ class Bus;
 
 namespace CPU {
 
+class CodeCache;
+
+namespace Recompiler
+{
+class CodeGenerator;
+class Thunks;
+}
+
 class Core
 {
 public:
@@ -20,6 +28,10 @@ public:
   static constexpr PhysicalMemoryAddress DCACHE_LOCATION_MASK = UINT32_C(0xFFFFFC00);
   static constexpr PhysicalMemoryAddress DCACHE_OFFSET_MASK = UINT32_C(0x000003FF);
   static constexpr PhysicalMemoryAddress DCACHE_SIZE = UINT32_C(0x00000400);
+  
+  friend CodeCache;
+  friend Recompiler::CodeGenerator;
+  friend Recompiler::Thunks;
 
   Core();
   ~Core();
@@ -102,7 +114,8 @@ private:
   u32 GetExceptionVector(Exception excode) const;
   void RaiseException(Exception excode);
   void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
-  bool DispatchInterrupts();
+  bool HasPendingInterrupt();
+  void DispatchInterrupt();
 
   // flushes any load delays if present
   void FlushLoadDelay();
@@ -141,6 +154,7 @@ private:
   bool m_current_instruction_was_branch_taken = false;
   bool m_next_instruction_is_branch_delay_slot = false;
   bool m_branch_was_taken = false;
+  bool m_exception_raised = false;
 
   // load delays
   Reg m_load_delay_reg = Reg::count;

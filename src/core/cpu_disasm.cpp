@@ -23,10 +23,6 @@ struct TableEntry
   const char* format;
 };
 
-static const std::array<const char*, 32> s_reg_names = {
-  {"$zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
-   "s0",    "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"}};
-
 static const std::array<const char*, 64> s_base_table = {{
   "",                       // 0
   "UNKNOWN",                // 1
@@ -188,11 +184,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
 
     if (std::strncmp(str, "rs", 2) == 0)
     {
-      dest->AppendString(s_reg_names[static_cast<u8>(inst.r.rs.GetValue())]);
+      dest->AppendString(GetRegName(inst.r.rs));
       if (state)
       {
-        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ",
-                                      s_reg_names[static_cast<u8>(inst.r.rs.GetValue())],
+        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rs),
                                       state->GetRegs().r[static_cast<u8>(inst.r.rs.GetValue())]);
       }
 
@@ -200,11 +195,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
-      dest->AppendString(s_reg_names[static_cast<u8>(inst.r.rt.GetValue())]);
+      dest->AppendString(GetRegName(inst.r.rt));
       if (state)
       {
-        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ",
-                                      s_reg_names[static_cast<u8>(inst.r.rt.GetValue())],
+        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rt),
                                       state->GetRegs().r[static_cast<u8>(inst.r.rt.GetValue())]);
       }
 
@@ -212,11 +206,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     }
     else if (std::strncmp(str, "rd", 2) == 0)
     {
-      dest->AppendString(s_reg_names[static_cast<u8>(inst.r.rd.GetValue())]);
+      dest->AppendString(GetRegName(inst.r.rd));
       if (state)
       {
-        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ",
-                                      s_reg_names[static_cast<u8>(inst.r.rd.GetValue())],
+        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rd),
                                       state->GetRegs().r[static_cast<u8>(inst.r.rd.GetValue())]);
       }
 
@@ -247,7 +240,7 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->AppendFormattedString("%d(%s)", offset, s_reg_names[static_cast<u8>(inst.i.rs.GetValue())]);
+      dest->AppendFormattedString("%d(%s)", offset, GetRegName(inst.i.rs));
       if (state)
       {
         comment.AppendFormattedString("%saddr=0x%08X", comment.IsEmpty() ? "" : ", ",

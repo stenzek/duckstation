@@ -6,11 +6,22 @@ add_library(core
     bus.inl
     cdrom.cpp
     cdrom.h
+    cpu_code_cache.cpp
+    cpu_code_cache.h
     cpu_core.cpp
     cpu_core.h
     cpu_core.inl
     cpu_disasm.cpp
     cpu_disasm.h
+    cpu_recompiler_code_generator.cpp
+    cpu_recompiler_code_generator.h
+    cpu_recompiler_code_generator_generic.cpp
+    cpu_recompiler_register_cache.cpp
+    cpu_recompiler_register_cache.h
+    cpu_recompiler_thunks.cpp
+    cpu_recompiler_thunks.h
+    cpu_recompiler_types.h
+    cpu_types.cpp
     cpu_types.h
     digital_controller.cpp
     digital_controller.h
@@ -64,4 +75,12 @@ if(WIN32)
     gpu_hw_d3d11.cpp
     gpu_hw_d3d11.h
   )
+endif()
+
+if(${CPU_ARCH} STREQUAL "x64")
+  target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
+  target_sources(core PRIVATE cpu_recompiler_code_generator_x64.cpp)
+  message("Building x64 recompiler")
+else()
+  message("Not building recompiler")
 endif()

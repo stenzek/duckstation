@@ -38,3 +38,9 @@ enum class GPURenderer : u8
   Software,
   Count
 };
+
+enum : u32
+{
+  CPU_CODE_CACHE_PAGE_SIZE = 1024,
+  CPU_CODE_CACHE_PAGE_COUNT = 0x200000 / CPU_CODE_CACHE_PAGE_SIZE
+};

@@ -5,6 +5,7 @@
 #include "YBaseLib/String.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "dma.h"
@@ -32,10 +33,12 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, DMA* dma, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                     Pad* pad, Timers* timers, SPU* spu, MDEC* mdec)
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
+                     InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers,
+                     SPU* spu, MDEC* mdec)
 {
   m_cpu = cpu;
+  m_cpu_code_cache = cpu_code_cache;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_gpu = gpu;
@@ -516,6 +519,11 @@ void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 
   Assert(Common::IsAlignedPow2(offset, 2));
   m_spu->WriteRegister(offset, Truncate16(value));
+}
+
+void Bus::DoInvalidateCodeCache(u32 page_index)
+{
+  m_cpu_code_cache->FlushBlocksWithPageIndex(page_index);
 }
 
 u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)
