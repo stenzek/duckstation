@@ -70,12 +70,14 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
   switch (cbi.instruction.op)
   {
 #if 1
-    case InstructionOp::lui:
-      result = Compile_lui(cbi);
+    case InstructionOp::ori:
+    case InstructionOp::andi:
+    case InstructionOp::xori:
+      result = Compile_BitwiseImmediate(cbi);
       break;
 
-    case InstructionOp::ori:
-      result = Compile_ori(cbi);
+    case InstructionOp::lui:
+      result = Compile_lui(cbi);
       break;
 
     case InstructionOp::addiu:
@@ -359,7 +361,6 @@ Value CodeGenerator::OrValues(const Value& lhs, const Value& rhs)
   }
 
   Value res = m_register_cache.AllocateScratch(lhs.size);
-  EmitCopyValue(res.host_reg, lhs);
   if (lhs.HasConstantValue(0))
   {
     EmitCopyValue(res.host_reg, rhs);
@@ -373,6 +374,89 @@ Value CodeGenerator::OrValues(const Value& lhs, const Value& rhs)
 
   EmitCopyValue(res.host_reg, lhs);
   EmitOr(res.host_reg, rhs);
+  return res;
+}
+
+Value CodeGenerator::AndValues(const Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value & rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        return Value::FromConstantU8(Truncate8(new_cv));
+
+      case RegSize_16:
+        return Value::FromConstantU16(Truncate16(new_cv));
+
+      case RegSize_32:
+        return Value::FromConstantU32(Truncate32(new_cv));
+
+      case RegSize_64:
+        return Value::FromConstantU64(new_cv);
+
+      default:
+        return Value();
+    }
+  }
+
+  // TODO: and with -1 -> noop
+  Value res = m_register_cache.AllocateScratch(lhs.size);
+  if (lhs.HasConstantValue(0) || rhs.HasConstantValue(0))
+  {
+    EmitXor(res.host_reg, res);
+    return res;
+  }
+
+  EmitCopyValue(res.host_reg, lhs);
+  EmitAnd(res.host_reg, rhs);
+  return res;
+}
+
+Value CodeGenerator::XorValues(const Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value ^ rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        return Value::FromConstantU8(Truncate8(new_cv));
+
+      case RegSize_16:
+        return Value::FromConstantU16(Truncate16(new_cv));
+
+      case RegSize_32:
+        return Value::FromConstantU32(Truncate32(new_cv));
+
+      case RegSize_64:
+        return Value::FromConstantU64(new_cv);
+
+      default:
+        return Value();
+    }
+  }
+
+  Value res = m_register_cache.AllocateScratch(lhs.size);
+  EmitCopyValue(res.host_reg, lhs);
+  if (lhs.HasConstantValue(0))
+  {
+    EmitCopyValue(res.host_reg, rhs);
+    return res;
+  }
+  else if (rhs.HasConstantValue(0))
+  {
+    EmitCopyValue(res.host_reg, lhs);
+    return res;
+  }
+
+  EmitCopyValue(res.host_reg, lhs);
+  EmitXor(res.host_reg, rhs);
   return res;
 }
 
@@ -571,14 +655,34 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
   return true;
 }
 
-bool CodeGenerator::Compile_ori(const CodeBlockInstruction& cbi)
+bool CodeGenerator::Compile_BitwiseImmediate(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  // rt <- rs | zext(imm)
-  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt,
-                                      OrValues(m_register_cache.ReadGuestRegister(cbi.instruction.i.rs),
-                                               Value::FromConstantU32(cbi.instruction.i.imm_zext32())));
+  // rt <- rs op zext(imm)
+  Value rs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value imm = Value::FromConstantU32(cbi.instruction.i.imm_zext32());
+  Value result;
+  switch (cbi.instruction.op)
+  {
+    case InstructionOp::ori:
+      result = OrValues(rs, imm);
+      break;
+
+    case InstructionOp::andi:
+      result = AndValues(rs, imm);
+      break;
+
+    case InstructionOp::xori:
+      result = XorValues(rs, imm);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt, std::move(result));
 
   InstructionEpilogue(cbi);
   return true;

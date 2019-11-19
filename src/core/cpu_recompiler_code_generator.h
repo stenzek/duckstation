@@ -128,6 +128,8 @@ public:
   Value ShlValues(const Value& lhs, const Value& rhs);
   Value ShrValues(const Value& lhs, const Value& rhs);
   Value OrValues(const Value& lhs, const Value& rhs);
+  Value AndValues(const Value& lhs, const Value& rhs);
+  Value XorValues(const Value& lhs, const Value& rhs);
 
 private:
   // Host register setup
@@ -156,7 +158,7 @@ private:
   bool CompileInstruction(const CodeBlockInstruction& cbi);
   bool Compile_Fallback(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
-  bool Compile_ori(const CodeBlockInstruction& cbi);
+  bool Compile_BitwiseImmediate(const CodeBlockInstruction& cbi);
   bool Compile_sll(const CodeBlockInstruction& cbi);
   bool Compile_sllv(const CodeBlockInstruction& cbi);
   bool Compile_srl(const CodeBlockInstruction& cbi);
