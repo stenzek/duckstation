@@ -92,7 +92,7 @@ private:
   bool InKernelMode() const { return !m_cop0_regs.sr.KUc; }
 
   // timing
-  void AddTicks(TickCount ticks)
+  ALWAYS_INLINE void AddTicks(TickCount ticks)
   {
     m_pending_ticks += ticks;
     m_downcount -= ticks;

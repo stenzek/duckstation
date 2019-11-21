@@ -34,6 +34,8 @@ public:
 private:
   using BlockMap = std::unordered_map<u32, CodeBlock*>;
 
+  void LogCurrentState();
+
   CodeBlockKey GetNextBlockKey() const;
   const CodeBlock* LookupBlock(CodeBlockKey key);
   bool CompileBlock(CodeBlock* block);

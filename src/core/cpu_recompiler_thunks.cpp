@@ -4,19 +4,52 @@ namespace CPU::Recompiler {
 
 // TODO: Port thunks to "ASM routines", i.e. code in the jit buffer.
 
-bool Thunks::ReadMemoryByte(Core* cpu, u32 address, u8* value)
+u64 Thunks::ReadMemoryByte(Core* cpu, u32 address)
 {
-  return cpu->ReadMemoryByte(address, value);
+  u32 temp = 0;
+  const TickCount cycles = cpu->DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
+  if (cycles < 0)
+  {
+    cpu->RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  cpu->AddTicks(cycles - 1);
+  return ZeroExtend64(temp);
 }
 
-bool Thunks::ReadMemoryHalfWord(Core* cpu, u32 address, u16* value)
+u64 Thunks::ReadMemoryHalfWord(Core* cpu, u32 address)
 {
-  return cpu->ReadMemoryHalfWord(address, value);
+  if (!cpu->DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address))
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  u32 temp = 0;
+  const TickCount cycles = cpu->DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
+  if (cycles < 0)
+  {
+    cpu->RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  cpu->AddTicks(cycles - 1);
+  return ZeroExtend64(temp);
 }
 
-bool Thunks::ReadMemoryWord(Core* cpu, u32 address, u32* value)
+u64 Thunks::ReadMemoryWord(Core* cpu, u32 address)
 {
-  return cpu->ReadMemoryWord(address, value);
+  if (!cpu->DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(address))
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  u32 temp = 0;
+  const TickCount cycles = cpu->DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, temp);
+  if (cycles < 0)
+  {
+    cpu->RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  cpu->AddTicks(cycles - 1);
+  return ZeroExtend64(temp);
 }
 
 bool Thunks::WriteMemoryByte(Core* cpu, u32 address, u8 value)

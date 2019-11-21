@@ -248,7 +248,7 @@ void RegisterCache::EnsureHostRegFree(HostReg reg)
   for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
   {
     if (m_guest_reg_cache[i].IsInHostRegister() && m_guest_reg_cache[i].GetHostRegister() == reg)
-      FlushGuestRegister(m_guest_reg_cache[i], static_cast<Reg>(i), true, true);
+      FlushGuestRegister(static_cast<Reg>(i), true, true);
   }
 }
 
@@ -332,17 +332,11 @@ u32 RegisterCache::PopCalleeSavedRegisters(bool commit)
 Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, bool force_host_register /* = false */,
                                        HostReg forced_host_reg /* = HostReg_Invalid */)
 {
-  return ReadGuestRegister(m_guest_reg_cache[static_cast<u8>(guest_reg)], guest_reg, cache, force_host_register,
-                           forced_host_reg);
-}
-
-Value RegisterCache::ReadGuestRegister(Value& cache_value, Reg guest_reg, bool cache, bool force_host_register,
-                                       HostReg forced_host_reg)
-{
   // register zero is always zero
   if (guest_reg == Reg::zero)
     return Value::FromConstantU32(0);
 
+  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
   if (cache_value.IsValid())
   {
     if (cache_value.IsInHostRegister())
@@ -428,16 +422,20 @@ Value RegisterCache::ReadGuestRegister(Value& cache_value, Reg guest_reg, bool c
 
 Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
 {
-  return WriteGuestRegister(m_guest_reg_cache[static_cast<u8>(guest_reg)], guest_reg, std::move(value));
-}
-
-Value RegisterCache::WriteGuestRegister(Value& cache_value, Reg guest_reg, Value&& value)
-{
   // ignore writes to register zero
+  DebugAssert(value.size == RegSize_32);
   if (guest_reg == Reg::zero)
     return std::move(value);
 
-  DebugAssert(value.size == RegSize_32);
+  // cancel any load delay delay
+  if (m_load_delay_register == guest_reg)
+  {
+    Log_DebugPrintf("Cancelling load delay of register %s because of non-delayed write", GetRegName(guest_reg));
+    m_load_delay_register = Reg::count;
+    m_load_delay_value.ReleaseAndClear();
+  }
+
+  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
   if (cache_value.IsInHostRegister() && value.IsInHostRegister() && cache_value.host_reg == value.host_reg)
   {
     // updating the register value.
@@ -448,7 +446,7 @@ Value RegisterCache::WriteGuestRegister(Value& cache_value, Reg guest_reg, Value
     return cache_value;
   }
 
-  InvalidateGuestRegister(cache_value, guest_reg);
+  InvalidateGuestRegister(guest_reg);
   DebugAssert(!cache_value.IsValid());
 
   if (value.IsConstant())
@@ -486,13 +484,96 @@ Value RegisterCache::WriteGuestRegister(Value& cache_value, Reg guest_reg, Value
   return Value::FromHostReg(this, cache_value.host_reg, RegSize_32);
 }
 
-void RegisterCache::FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty)
+void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
 {
-  FlushGuestRegister(m_guest_reg_cache[static_cast<u8>(guest_reg)], guest_reg, invalidate, clear_dirty);
+  // ignore writes to register zero
+  DebugAssert(value.size == RegSize_32);
+  if (guest_reg == Reg::zero)
+    return;
+
+  // two load delays in a row? cancel the first one.
+  if (guest_reg == m_load_delay_register)
+  {
+    Log_DebugPrintf("Cancelling load delay of register %s due to new load delay", GetRegName(guest_reg));
+    m_load_delay_register = Reg::count;
+    m_load_delay_value.ReleaseAndClear();
+  }
+
+  // set up the load delay at the end of this instruction
+  Value& cache_value = m_next_load_delay_value;
+  Assert(m_next_load_delay_register == Reg::count);
+  m_next_load_delay_register = guest_reg;
+
+  // If it's a temporary, we can bind that to the guest register.
+  if (value.IsScratch())
+  {
+    Log_DebugPrintf("Binding scratch register %s to load-delayed guest register %s",
+                    m_code_generator.GetHostRegName(value.host_reg, RegSize_32), GetRegName(guest_reg));
+
+    cache_value = std::move(value);
+    return;
+  }
+
+  // Allocate host register, and copy value to it.
+  cache_value = AllocateScratch(RegSize_32);
+  m_code_generator.EmitCopyValue(cache_value.host_reg, value);
+
+  Log_DebugPrintf("Copying non-scratch register %s to %s to load-delayed guest register %s",
+                  m_code_generator.GetHostRegName(value.host_reg, RegSize_32),
+                  m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32), GetRegName(guest_reg));
 }
 
-void RegisterCache::FlushGuestRegister(Value& cache_value, Reg guest_reg, bool invalidate, bool clear_dirty)
+void RegisterCache::UpdateLoadDelay()
 {
+  // flush current load delay
+  if (m_load_delay_register != Reg::count)
+  {
+    // have to clear first because otherwise it'll release the value
+    Reg reg = m_load_delay_register;
+    Value value = std::move(m_load_delay_value);
+    m_load_delay_register = Reg::count;
+    WriteGuestRegister(reg, std::move(value));
+  }
+
+  // next load delay -> load delay
+  if (m_next_load_delay_register != Reg::count)
+  {
+    m_load_delay_register = m_next_load_delay_register;
+    m_load_delay_value = std::move(m_next_load_delay_value);
+    m_next_load_delay_register = Reg::count;
+  }
+}
+
+void RegisterCache::WriteLoadDelayToCPU(bool clear)
+{
+  // There shouldn't be a flush at the same time as there's a new load delay.
+  Assert(m_next_load_delay_register == Reg::count);
+  if (m_load_delay_register != Reg::count)
+  {
+    Log_DebugPrintf("Flushing pending load delay of %s", GetRegName(m_load_delay_register));
+    m_code_generator.EmitStoreLoadDelay(m_load_delay_register, m_load_delay_value);
+    if (clear)
+    {
+      m_load_delay_register = Reg::count;
+      m_load_delay_value.ReleaseAndClear();
+    }
+  }
+}
+
+void RegisterCache::FlushLoadDelayForException()
+{
+  Assert(m_next_load_delay_register == Reg::count);
+  if (m_load_delay_register == Reg::count)
+    return;
+
+  // if this is an exception exit, write the new value to the CPU register file, but keep it tracked for the next
+  // non-exception-raised path. TODO: push/pop whole state would avoid this issue
+  m_code_generator.EmitStoreGuestRegister(m_load_delay_register, m_load_delay_value);
+}
+
+void RegisterCache::FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty)
+{
+  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
   if (cache_value.IsDirty())
   {
     if (cache_value.IsInHostRegister())
@@ -511,16 +592,12 @@ void RegisterCache::FlushGuestRegister(Value& cache_value, Reg guest_reg, bool i
   }
 
   if (invalidate)
-    InvalidateGuestRegister(cache_value, guest_reg);
+    InvalidateGuestRegister(guest_reg);
 }
 
 void RegisterCache::InvalidateGuestRegister(Reg guest_reg)
 {
-  InvalidateGuestRegister(m_guest_reg_cache[static_cast<u8>(guest_reg)], guest_reg);
-}
-
-void RegisterCache::InvalidateGuestRegister(Value& cache_value, Reg guest_reg)
-{
+  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
   if (!cache_value.IsValid())
     return;
 
@@ -601,5 +678,4 @@ void RegisterCache::AppendRegisterToOrder(Reg reg)
   m_guest_register_order[0] = reg;
   m_guest_register_order_count++;
 }
-
 } // namespace CPU::Recompiler

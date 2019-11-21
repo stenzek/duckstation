@@ -157,7 +157,20 @@ void CodeGenerator::EmitEndBlock()
   m_emit.ret();
 }
 
-void CodeGenerator::EmitBlockExitOnBool(const Value& value)
+void CodeGenerator::EmitExceptionExit()
+{
+  // ensure all unflushed registers are written back
+  m_register_cache.FlushAllGuestRegisters(false, false);
+
+  // the interpreter load delay might have its own value, but we'll overwrite it here anyway
+  // technically RaiseException() and FlushPipeline() have already been called, but that should be okay
+  m_register_cache.FlushLoadDelayForException();
+
+  m_register_cache.PopCalleeSavedRegisters(false);
+  m_emit.ret();
+}
+
+void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
 {
   Assert(!value.IsConstant() && value.IsInHostRegister());
 
@@ -165,10 +178,7 @@ void CodeGenerator::EmitBlockExitOnBool(const Value& value)
   m_emit.test(GetHostReg8(value), GetHostReg8(value));
   m_emit.jz(continue_label);
 
-  // flush current state and return
-  m_register_cache.FlushAllGuestRegisters(false, false);
-  m_register_cache.PopCalleeSavedRegisters(false);
-  m_emit.ret();
+  EmitExceptionExit();
 
   m_emit.L(continue_label);
 }
@@ -1301,6 +1311,100 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     }
     break;
   }
+}
+
+Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
+{
+  // We need to use the full 64 bits here since we test the sign bit result.
+  Value result = m_register_cache.AllocateScratch(RegSize_64);
+
+  // NOTE: This can leave junk in the upper bits
+  switch (size)
+  {
+    case RegSize_8:
+      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, m_register_cache.GetCPUPtr(), address);
+      break;
+
+    case RegSize_16:
+      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, m_register_cache.GetCPUPtr(), address);
+      break;
+
+    case RegSize_32:
+      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, m_register_cache.GetCPUPtr(), address);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  Xbyak::Label load_okay;
+
+  m_emit.test(GetHostReg64(result.host_reg), GetHostReg64(result.host_reg));
+
+  // force a 32-bit offset, this will be far code eventually...
+  m_emit.jns(load_okay, Xbyak::CodeGenerator::T_NEAR);
+
+  // load exception path
+  EmitExceptionExit();
+
+  m_emit.L(load_okay);
+
+  // Downcast to ignore upper 56/48/32 bits. This should be a noop.
+  switch (size)
+  {
+    case RegSize_8:
+      ConvertValueSizeInPlace(&result, RegSize_8, false);
+      break;
+
+    case RegSize_16:
+      ConvertValueSizeInPlace(&result, RegSize_16, false);
+      break;
+
+    case RegSize_32:
+      ConvertValueSizeInPlace(&result, RegSize_32, false);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  return result;
+}
+
+void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& value)
+{
+  Value result = m_register_cache.AllocateScratch(RegSize_8);
+
+  switch (value.size)
+  {
+    case RegSize_8:
+      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, m_register_cache.GetCPUPtr(), address, value);
+      break;
+
+    case RegSize_16:
+      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, m_register_cache.GetCPUPtr(), address, value);
+      break;
+
+    case RegSize_32:
+      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, m_register_cache.GetCPUPtr(), address, value);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  Xbyak::Label store_okay;
+
+  m_emit.test(GetHostReg8(result), GetHostReg8(result));
+  m_emit.jnz(store_okay);
+
+  // load exception path
+  EmitExceptionExit();
+
+  m_emit.L(store_okay);
 }
 
 void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_check_old_value, bool move_next)

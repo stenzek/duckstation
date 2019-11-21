@@ -54,6 +54,8 @@ void CodeCache::Execute()
     else
       InterpretCachedBlock(*m_current_block);
 
+    //LogCurrentState();
+
     next_block_key = GetNextBlockKey();
     if (m_current_block_flushed)
     {
@@ -82,6 +84,19 @@ void CodeCache::Reset()
 
   m_blocks.clear();
   m_code_buffer->Reset();
+}
+
+void CodeCache::LogCurrentState()
+{
+  const auto& regs = m_core->m_regs;
+  WriteToExecutionLog(
+    "tick=%u pc=%08X npc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
+    "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
+    "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X\n",
+    m_system->GetGlobalTickCounter(), regs.pc, regs.npc, regs.zero, regs.at, regs.v0, regs.v1, regs.a0, regs.a1,
+    regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5, regs.t6, regs.t7, regs.s0, regs.s1, regs.s2,
+    regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8, regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp,
+    regs.ra);
 }
 
 CodeBlockKey CodeCache::GetNextBlockKey() const

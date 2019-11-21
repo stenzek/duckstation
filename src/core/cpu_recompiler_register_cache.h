@@ -107,6 +107,36 @@ struct Value
   void SetDirty() { flags |= ValueFlags::Dirty; }
   void ClearDirty() { flags &= ~ValueFlags::Dirty; }
 
+  /// Returns the same register viewed as a different size.
+  Value ViewAsSize(RegSize view_size) const
+  {
+    if (view_size == size)
+      return *this;
+
+    if (IsConstant())
+    {
+      // truncate to size
+      switch (view_size)
+      {
+        case RegSize_8:
+          return Value::FromConstant(constant_value & UINT64_C(0xFF), RegSize_8);
+        case RegSize_16:
+          return Value::FromConstant(constant_value & UINT64_C(0xFFFF), RegSize_16);
+        case RegSize_32:
+          return Value::FromConstant(constant_value & UINT64_C(0xFFFFFFFF), RegSize_32);
+        case RegSize_64:
+        default:
+          return Value::FromConstant(constant_value, view_size);
+      }
+    }
+
+    if (IsInHostRegister())
+      return Value::FromHostReg(regcache, host_reg, view_size);
+
+    // invalid?
+    return Value();
+  }
+
   static Value FromHostReg(RegisterCache* regcache, HostReg reg, RegSize size)
   {
     return Value(regcache, reg, size, ValueFlags::Valid | ValueFlags::InHostRegister);
@@ -189,9 +219,10 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   /// Returns true if the specified guest register is cached.
-  bool IsGuestRegisterInHostReg(Reg guest_reg) const
+  bool IsGuestRegisterCached(Reg guest_reg) const
   {
-    return m_guest_reg_cache[static_cast<u8>(guest_reg)].IsInHostRegister();
+    const Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
+    return cache_value.IsConstant() || cache_value.IsInHostRegister();
   }
 
   /// Returns the host register if the guest register is cached.
@@ -202,11 +233,26 @@ public:
     return m_guest_reg_cache[static_cast<u8>(guest_reg)].GetHostRegister();
   }
 
+  /// Returns true if there is a load delay which will be stored at the end of the instruction.
+  bool HasLoadDelay() const { return m_load_delay_register != Reg::count; }
+
   Value ReadGuestRegister(Reg guest_reg, bool cache = true, bool force_host_register = false,
                           HostReg forced_host_reg = HostReg_Invalid);
 
   /// Creates a copy of value, and stores it to guest_reg.
   Value WriteGuestRegister(Reg guest_reg, Value&& value);
+
+  /// Stores the specified value to the guest register after the next instruction (load delay).
+  void WriteGuestRegisterDelayed(Reg guest_reg, Value&& value);
+
+  /// Moves load delay to the next load delay, and writes any previous load delay to the destination register.
+  void UpdateLoadDelay();
+
+  /// Writes the load delay to the CPU structure, so it is synced up with the interpreter.
+  void WriteLoadDelayToCPU(bool clear);
+
+  /// Flushes the load delay, i.e. writes it to the destination register.
+  void FlushLoadDelayForException();
 
   void FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty);
   void InvalidateGuestRegister(Reg guest_reg);
@@ -215,11 +261,6 @@ public:
   bool EvictOneGuestRegister();
 
 private:
-  Value ReadGuestRegister(Value& cache_value, Reg guest_reg, bool cache, bool force_host_register,
-                          HostReg forced_host_reg);
-  Value WriteGuestRegister(Value& cache_value, Reg guest_reg, Value&& value);
-  void FlushGuestRegister(Value& cache_value, Reg guest_reg, bool invalidate, bool clear_dirty);
-  void InvalidateGuestRegister(Value& cache_value, Reg guest_reg);
   void ClearRegisterFromOrder(Reg reg);
   void PushRegisterToOrder(Reg reg);
   void AppendRegisterToOrder(Reg reg);
@@ -238,6 +279,12 @@ private:
 
   std::array<HostReg, HostReg_Count> m_host_register_callee_saved_order{};
   u32 m_host_register_callee_saved_order_count = 0;
+
+  Reg m_load_delay_register = Reg::count;
+  Value m_load_delay_value{};
+
+  Reg m_next_load_delay_register = Reg::count;
+  Value m_next_load_delay_value{};
 };
 
 } // namespace CPU::Recompiler

@@ -76,6 +76,20 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_BitwiseImmediate(cbi);
       break;
 
+    case InstructionOp::lb:
+    case InstructionOp::lbu:
+    case InstructionOp::lh:
+    case InstructionOp::lhu:
+    case InstructionOp::lw:
+      result = Compile_Load(cbi);
+      break;
+
+    case InstructionOp::sb:
+    case InstructionOp::sh:
+    case InstructionOp::sw:
+      result = Compile_Store(cbi);
+      break;
+
     case InstructionOp::lui:
       result = Compile_lui(cbi);
       break;
@@ -497,6 +511,7 @@ void CodeGenerator::BlockPrologue()
   EmitStoreCPUStructField(offsetof(Core, m_exception_raised), Value::FromConstantU8(0));
 
   // we don't know the state of the last block, so assume load delays might be in progress
+  // TODO: Pull load delay into register cache
   m_current_instruction_in_branch_delay_slot_dirty = true;
   m_branch_was_taken_dirty = true;
   m_current_instruction_was_branch_taken_dirty = false;
@@ -517,7 +532,9 @@ void CodeGenerator::BlockEpilogue()
   m_emit.nop();
 #endif
 
-  m_register_cache.FlushAllGuestRegisters(true, false);
+  m_register_cache.FlushAllGuestRegisters(true, true);
+  if (m_register_cache.HasLoadDelay())
+    m_register_cache.WriteLoadDelayToCPU(true);
 
   // if the last instruction wasn't a fallback, we need to add its fetch
   if (m_delayed_pc_add > 0)
@@ -604,6 +621,8 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
 
 void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
 {
+  m_register_cache.UpdateLoadDelay();
+
   // copy if the previous instruction was a load, reset the current value on the next instruction
   if (m_next_load_delay_dirty)
   {
@@ -652,6 +671,11 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
 
   // flush and invalidate all guest registers, since the fallback could change any of them
   m_register_cache.FlushAllGuestRegisters(true, true);
+  if (m_register_cache.HasLoadDelay())
+  {
+    m_load_delay_dirty = true;
+    m_register_cache.WriteLoadDelayToCPU(true);
+  }
 
   EmitStoreCPUStructField(offsetof(Core, m_current_instruction.bits), Value::FromConstantU32(cbi.instruction.bits));
 
@@ -661,7 +685,7 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
     // TODO: Use carry flag or something here too
     Value return_value = m_register_cache.AllocateScratch(RegSize_8);
     EmitFunctionCall(&return_value, &Thunks::InterpretInstruction, m_register_cache.GetCPUPtr());
-    EmitBlockExitOnBool(return_value);
+    EmitExceptionExitOnBool(return_value);
   }
   else
   {
@@ -772,6 +796,78 @@ bool CodeGenerator::Compile_ShiftVariable(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  // rt <- mem[rs + sext(imm)]
+  Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  Value address = AddValues(base, offset);
+
+  Value result;
+  switch (cbi.instruction.op)
+  {
+    case InstructionOp::lb:
+    case InstructionOp::lbu:
+      result = EmitLoadGuestMemory(address, RegSize_8);
+      ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lb));
+      break;
+
+    case InstructionOp::lh:
+    case InstructionOp::lhu:
+      result = EmitLoadGuestMemory(address, RegSize_16);
+      ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lh));
+      break;
+
+    case InstructionOp::lw:
+      result = EmitLoadGuestMemory(address, RegSize_32);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.i.rt, std::move(result));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  // mem[rs + sext(imm)] <- rt
+  Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  Value address = AddValues(base, offset);
+  Value value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
+
+  switch (cbi.instruction.op)
+  {
+    case InstructionOp::sb:
+      EmitStoreGuestMemory(address, value.ViewAsSize(RegSize_8));
+      break;
+
+    case InstructionOp::sh:
+      EmitStoreGuestMemory(address, value.ViewAsSize(RegSize_16));
+      break;
+
+    case InstructionOp::sw:
+      EmitStoreGuestMemory(address, value);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
 
   InstructionEpilogue(cbi);
   return true;

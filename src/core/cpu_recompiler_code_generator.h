@@ -43,7 +43,8 @@ public:
   //////////////////////////////////////////////////////////////////////////
   void EmitBeginBlock();
   void EmitEndBlock();
-  void EmitBlockExitOnBool(const Value& value);
+  void EmitExceptionExit();
+  void EmitExceptionExitOnBool(const Value& value);
   void FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
 
   void EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size);
@@ -65,9 +66,14 @@ public:
 
   void EmitLoadGuestRegister(HostReg host_reg, Reg guest_reg);
   void EmitStoreGuestRegister(Reg guest_reg, const Value& value);
+  void EmitStoreLoadDelay(Reg reg, const Value& value);
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
+
+  // Automatically generates an exception handler.
+  Value EmitLoadGuestMemory(const Value& address, RegSize size);
+  void EmitStoreGuestMemory(const Value& address, const Value& value);
 
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);
@@ -161,6 +167,8 @@ private:
   bool Compile_BitwiseImmediate(const CodeBlockInstruction& cbi);
   bool Compile_ShiftImmediate(const CodeBlockInstruction& cbi);
   bool Compile_ShiftVariable(const CodeBlockInstruction& cbi);
+  bool Compile_Load(const CodeBlockInstruction& cbi);
+  bool Compile_Store(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
   bool Compile_addiu(const CodeBlockInstruction& cbi);
 

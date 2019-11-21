@@ -365,7 +365,7 @@ void Core::FlushPipeline()
     m_regs.r[static_cast<u8>(m_load_delay_reg)] = m_load_delay_value;
     m_load_delay_reg = Reg::count;
   }
-  
+
   // not in a branch delay slot
   m_branch_was_taken = false;
   m_next_instruction_is_branch_delay_slot = false;

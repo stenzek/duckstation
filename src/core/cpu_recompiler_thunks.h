@@ -13,9 +13,9 @@ public:
   // Needed because we can't cast member functions to void*...
   // TODO: Abuse carry flag or something else for exception
   //////////////////////////////////////////////////////////////////////////
-  static bool ReadMemoryByte(Core* cpu, u32 address, u8* value);
-  static bool ReadMemoryHalfWord(Core* cpu, u32 address, u16* value);
-  static bool ReadMemoryWord(Core* cpu, u32 address, u32* value);
+  static u64 ReadMemoryByte(Core* cpu, u32 address);
+  static u64 ReadMemoryHalfWord(Core* cpu, u32 address);
+  static u64 ReadMemoryWord(Core* cpu, u32 address);
   static bool WriteMemoryByte(Core* cpu, u32 address, u8 value);
   static bool WriteMemoryHalfWord(Core* cpu, u32 address, u16 value);
   static bool WriteMemoryWord(Core* cpu, u32 address, u32 value);
