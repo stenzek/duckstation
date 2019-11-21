@@ -50,6 +50,13 @@ enum class Reg : u8
   sp,
   fp,
   ra,
+
+  // not accessible to instructions
+  hi,
+  lo,
+  pc,
+  npc,
+
   count
 };
 
@@ -219,7 +226,7 @@ struct Registers
 {
   union
   {
-    u32 r[32];
+    u32 r[static_cast<u8>(Reg::count)];
 
     struct
     {
@@ -255,13 +262,14 @@ struct Registers
       u32 sp;   // r29
       u32 fp;   // r30
       u32 ra;   // r31
+
+      // not accessible to instructions
+      u32 hi;
+      u32 lo;
+      u32 pc;  // at execution time: the address of the next instruction to execute (already fetched)
+      u32 npc; // at execution time: the address of the next instruction to fetch
     };
   };
-
-  u32 hi;
-  u32 lo;
-  u32 pc;  // at execution time: the address of the next instruction to execute (already fetched)
-  u32 npc; // at execution time: the address of the next instruction to fetch
 };
 
 enum class Cop0Reg : u8
