@@ -40,8 +40,8 @@ void CodeCache::Execute()
       next_block_key = GetNextBlockKey();
     }
 
-    m_current_block = LookupBlock(next_block_key);
-    if (!m_current_block)
+    CodeBlock* block = LookupBlock(next_block_key);
+    if (!block)
     {
       Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", m_core->GetRegs().pc);
       InterpretUncachedBlock();
@@ -50,28 +50,26 @@ void CodeCache::Execute()
 
   reexecute_block:
     if (USE_RECOMPILER)
-      m_current_block->host_code(m_core);
+      block->host_code(m_core);
     else
-      InterpretCachedBlock(*m_current_block);
+      InterpretCachedBlock(*block);
 
-    //LogCurrentState();
+    // LogCurrentState();
 
     next_block_key = GetNextBlockKey();
-    if (m_current_block_flushed)
-    {
-      m_current_block_flushed = false;
-      delete m_current_block;
-      m_current_block = nullptr;
-      continue;
-    }
-
-    // Loop to same block?
-    next_block_key = GetNextBlockKey();
-    if (next_block_key.bits == m_current_block->key.bits)
+    if (next_block_key.bits == block->key.bits)
     {
       // we can jump straight to it if there's no pending interrupts
       if (m_core->m_downcount >= 0 && !m_core->HasPendingInterrupt())
-        goto reexecute_block;
+      {
+        // ensure it's not a self-modifying block
+        if (!block->invalidated || RevalidateBlock(block))
+          goto reexecute_block;
+      }
+    }
+    else
+    {
+      // TODO: linking
     }
   }
 }
@@ -109,35 +107,67 @@ CodeBlockKey CodeCache::GetNextBlockKey() const
   return key;
 }
 
-const CPU::CodeBlock* CodeCache::LookupBlock(CodeBlockKey key)
+CodeBlock* CodeCache::LookupBlock(CodeBlockKey key)
 {
   BlockMap::iterator iter = m_blocks.find(key.bits);
   if (iter != m_blocks.end())
-    return iter->second;
+  {
+    // ensure it hasn't been invalidated
+    CodeBlock* existing_block = iter->second;
+    if (!existing_block || !existing_block->invalidated || RevalidateBlock(existing_block))
+      return existing_block;
+  }
 
-  CodeBlock* block = new CodeBlock();
-  block->key = key;
+  CodeBlock* block = new CodeBlock(key);
   if (CompileBlock(block))
   {
-    // insert into the page map
-    if (m_bus->IsRAMAddress(key.GetPC()))
-    {
-      const u32 start_page = block->GetStartPageIndex();
-      const u32 end_page = block->GetEndPageIndex();
-      for (u32 page = start_page; page < end_page; page++)
-      {
-        m_ram_block_map[page].push_back(block);
-        m_bus->SetRAMCodePage(page);
-      }
-    }
+    // add it to the page map if it's in ram
+    AddBlockToPageMap(block);
   }
   else
   {
     Log_ErrorPrintf("Failed to compile block at PC=0x%08X", key.GetPC());
+    delete block;
+    block = nullptr;
   }
 
   iter = m_blocks.emplace(key.bits, block).first;
   return block;
+}
+
+bool CodeCache::RevalidateBlock(CodeBlock* block)
+{
+  for (const CodeBlockInstruction& cbi : block->instructions)
+  {
+    u32 new_code = 0;
+    m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc, new_code);
+    if (cbi.instruction.bits != new_code)
+    {
+      Log_DebugPrintf("Block 0x%08X changed at PC 0x%08X - %08X to %08X - recompiling.", block->GetPC(), cbi.pc,
+                      cbi.instruction.bits, new_code);
+      goto recompile;
+    }
+  }
+
+  // re-add it to the page map since it's still up-to-date
+  block->invalidated = false;
+  AddBlockToPageMap(block);
+  return true;
+
+recompile:
+  block->instructions.clear();
+  if (!CompileBlock(block))
+  {
+    Log_WarningPrintf("Failed to recompile block 0x%08X - flushing.", block->GetPC());
+    FlushBlock(block);
+    return false;
+  }
+
+  // re-add to page map again
+  if (block->IsInRAM())
+    AddBlockToPageMap(block);
+
+  return true;
 }
 
 bool CodeCache::CompileBlock(CodeBlock* block)
@@ -226,13 +256,19 @@ bool CodeCache::CompileBlock(CodeBlock* block)
   return true;
 }
 
-void CodeCache::FlushBlocksWithPageIndex(u32 page_index)
+void CodeCache::InvalidateBlocksWithPageIndex(u32 page_index)
 {
   DebugAssert(page_index < CPU_CODE_CACHE_PAGE_COUNT);
   auto& blocks = m_ram_block_map[page_index];
-  while (!blocks.empty())
-    FlushBlock(blocks.back());
+  for (CodeBlock* block : blocks)
+  {
+    // Invalidate forces the block to be checked again.
+    Log_DebugPrintf("Invalidating block at 0x%08X", block->GetPC());
+    block->invalidated = true;
+  }
 
+  // Block will be re-added next execution.
+  blocks.clear();
   m_bus->ClearRAMCodePage(page_index);
 }
 
@@ -242,7 +278,33 @@ void CodeCache::FlushBlock(CodeBlock* block)
   Assert(iter != m_blocks.end() && iter->second == block);
   Log_DevPrintf("Flushing block at address 0x%08X", block->GetPC());
 
-  // remove from the page map
+  // if it's been invalidated it won't be in the page map
+  if (block->invalidated)
+    RemoveBlockFromPageMap(block);
+
+  m_blocks.erase(iter);
+  delete block;
+}
+
+void CodeCache::AddBlockToPageMap(CodeBlock* block)
+{
+  if (!block->IsInRAM())
+    return;
+
+  const u32 start_page = block->GetStartPageIndex();
+  const u32 end_page = block->GetEndPageIndex();
+  for (u32 page = start_page; page < end_page; page++)
+  {
+    m_ram_block_map[page].push_back(block);
+    m_bus->SetRAMCodePage(page);
+  }
+}
+
+void CodeCache::RemoveBlockFromPageMap(CodeBlock* block)
+{
+  if (!block->IsInRAM())
+    return;
+
   const u32 start_page = block->GetStartPageIndex();
   const u32 end_page = block->GetEndPageIndex();
   for (u32 page = start_page; page < end_page; page++)
@@ -251,20 +313,6 @@ void CodeCache::FlushBlock(CodeBlock* block)
     auto page_block_iter = std::find(page_blocks.begin(), page_blocks.end(), block);
     Assert(page_block_iter != page_blocks.end());
     page_blocks.erase(page_block_iter);
-  }
-
-  // remove from block map
-  m_blocks.erase(iter);
-
-  // flushing block currently executing?
-  if (m_current_block == block)
-  {
-    Log_WarningPrintf("Flushing currently-executing block 0x%08X", block->GetPC());
-    m_current_block_flushed = true;
-  }
-  else
-  {
-    delete block;
   }
 }
 

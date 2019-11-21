@@ -523,7 +523,7 @@ void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 
 void Bus::DoInvalidateCodeCache(u32 page_index)
 {
-  m_cpu_code_cache->FlushBlocksWithPageIndex(page_index);
+  m_cpu_code_cache->InvalidateBlocksWithPageIndex(page_index);
 }
 
 u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)

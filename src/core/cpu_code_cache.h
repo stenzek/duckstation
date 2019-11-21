@@ -28,8 +28,8 @@ public:
   void Reset();
   void Execute();
 
-  /// Flushes all blocks which are in the range of the specified code page.
-  void FlushBlocksWithPageIndex(u32 page_index);
+  /// Invalidates all blocks which are in the range of the specified code page.
+  void InvalidateBlocksWithPageIndex(u32 page_index);
 
 private:
   using BlockMap = std::unordered_map<u32, CodeBlock*>;
@@ -37,18 +37,18 @@ private:
   void LogCurrentState();
 
   CodeBlockKey GetNextBlockKey() const;
-  const CodeBlock* LookupBlock(CodeBlockKey key);
+  CodeBlock* LookupBlock(CodeBlockKey key);
+  bool RevalidateBlock(CodeBlock* block);
   bool CompileBlock(CodeBlock* block);
   void FlushBlock(CodeBlock* block);
+  void AddBlockToPageMap(CodeBlock* block);
+  void RemoveBlockFromPageMap(CodeBlock* block);
   void InterpretCachedBlock(const CodeBlock& block);
   void InterpretUncachedBlock();
 
   System* m_system;
   Core* m_core;
   Bus* m_bus;
-
-  const CodeBlock* m_current_block = nullptr;
-  bool m_current_block_flushed = false;
 
   std::unique_ptr<JitCodeBuffer> m_code_buffer;
   std::unique_ptr<Recompiler::ASMFunctions> m_asm_functions;

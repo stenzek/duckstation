@@ -410,13 +410,17 @@ struct CodeBlockInstruction
 
 struct CodeBlock
 {
+  CodeBlock(const CodeBlockKey key_) : key(key_) {}
+
   CodeBlockKey key;
 
   std::vector<CodeBlockInstruction> instructions;
 
-  using HostCodePointer = void(*)(Core*);
-  HostCodePointer host_code;
-  u32 host_code_size;
+  using HostCodePointer = void (*)(Core*);
+  HostCodePointer host_code = nullptr;
+  u32 host_code_size = 0;
+
+  bool invalidated = false;
 
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
@@ -424,6 +428,11 @@ struct CodeBlock
   const u32 GetEndPageIndex() const
   {
     return ((key.GetPC() + GetSizeInBytes() + (CPU_CODE_CACHE_PAGE_SIZE - 1)) / CPU_CODE_CACHE_PAGE_SIZE);
+  }
+  bool IsInRAM() const
+  {
+    // TODO: Constant
+    return key.GetPC() < 0x200000;
   }
 };
 
