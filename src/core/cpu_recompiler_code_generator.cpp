@@ -114,6 +114,13 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
           result = Compile_ShiftVariable(cbi);
           break;
 
+        case InstructionFunct::mfhi:
+        case InstructionFunct::mflo:
+        case InstructionFunct::mthi:
+        case InstructionFunct::mtlo:
+          result = Compile_MoveHiLo(cbi);
+          break;
+
         default:
           result = Compile_Fallback(cbi);
           break;
@@ -873,6 +880,37 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   return true;
 }
 
+bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  switch (cbi.instruction.r.funct)
+  {
+    case InstructionFunct::mfhi:
+      m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::hi));
+      break;
+
+    case InstructionFunct::mthi:
+      m_register_cache.WriteGuestRegister(Reg::hi, m_register_cache.ReadGuestRegister(cbi.instruction.r.rs));
+      break;
+
+    case InstructionFunct::mflo:
+      m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::lo));
+      break;
+
+    case InstructionFunct::mtlo:
+      m_register_cache.WriteGuestRegister(Reg::lo, m_register_cache.ReadGuestRegister(cbi.instruction.r.rs));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
 bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
@@ -897,4 +935,5 @@ bool CodeGenerator::Compile_addiu(const CodeBlockInstruction& cbi)
   InstructionEpilogue(cbi);
   return true;
 }
+
 } // namespace CPU::Recompiler

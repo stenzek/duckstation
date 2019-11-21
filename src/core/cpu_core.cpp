@@ -74,10 +74,6 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_pending_ticks);
   sw.Do(&m_downcount);
   sw.DoArray(m_regs.r, countof(m_regs.r));
-  sw.Do(&m_regs.pc);
-  sw.Do(&m_regs.hi);
-  sw.Do(&m_regs.lo);
-  sw.Do(&m_regs.npc);
   sw.Do(&m_cop0_regs.BPC);
   sw.Do(&m_cop0_regs.BDA);
   sw.Do(&m_cop0_regs.TAR);

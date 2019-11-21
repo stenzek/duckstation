@@ -169,6 +169,7 @@ private:
   bool Compile_ShiftVariable(const CodeBlockInstruction& cbi);
   bool Compile_Load(const CodeBlockInstruction& cbi);
   bool Compile_Store(const CodeBlockInstruction& cbi);
+  bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
   bool Compile_addiu(const CodeBlockInstruction& cbi);
 
