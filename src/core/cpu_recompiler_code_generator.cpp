@@ -74,7 +74,7 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
     case InstructionOp::ori:
     case InstructionOp::andi:
     case InstructionOp::xori:
-      result = Compile_BitwiseImmediate(cbi);
+      result = Compile_Bitwise(cbi);
       break;
 
     case InstructionOp::lb:
@@ -114,6 +114,12 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
     {
       switch (cbi.instruction.r.funct)
       {
+        case InstructionFunct::and_:
+        case InstructionFunct::or_:
+        case InstructionFunct::xor_:
+          result = Compile_Bitwise(cbi);
+          break;
+
         case InstructionFunct::sll:
         case InstructionFunct::srl:
         case InstructionFunct::sra:
@@ -842,34 +848,73 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
   return true;
 }
 
-bool CodeGenerator::Compile_BitwiseImmediate(const CodeBlockInstruction& cbi)
+bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  // rt <- rs op zext(imm)
-  Value rs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
-  Value imm = Value::FromConstantU32(cbi.instruction.i.imm_zext32());
+  const InstructionOp op = cbi.instruction.op;
+  const InstructionFunct funct = cbi.instruction.r.funct;
+  Value lhs;
+  Value rhs;
+  Reg dest;
+  if (op != InstructionOp::funct)
+  {
+    // rt <- rs op zext(imm)
+    lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+    rhs = Value::FromConstantU32(cbi.instruction.i.imm_zext32());
+    dest = cbi.instruction.i.rt;
+  }
+  else
+  {
+    lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+    rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+    dest = cbi.instruction.r.rd;
+  }
+
   Value result;
   switch (cbi.instruction.op)
   {
     case InstructionOp::ori:
-      result = OrValues(rs, imm);
+      result = OrValues(lhs, rhs);
       break;
 
     case InstructionOp::andi:
-      result = AndValues(rs, imm);
+      result = AndValues(lhs, rhs);
       break;
 
     case InstructionOp::xori:
-      result = XorValues(rs, imm);
+      result = XorValues(lhs, rhs);
       break;
+
+    case InstructionOp::funct:
+    {
+      switch (cbi.instruction.r.funct)
+      {
+        case InstructionFunct::or_:
+          result = OrValues(lhs, rhs);
+          break;
+
+        case InstructionFunct::and_:
+          result = AndValues(lhs, rhs);
+          break;
+
+        case InstructionFunct::xor_:
+          result = XorValues(lhs, rhs);
+          break;
+
+        default:
+          UnreachableCode();
+          break;
+      }
+    }
+    break;
 
     default:
       UnreachableCode();
       break;
   }
 
-  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt, std::move(result));
+  m_register_cache.WriteGuestRegister(dest, std::move(result));
 
   InstructionEpilogue(cbi);
   return true;
@@ -917,7 +962,6 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
       UnreachableCode();
       break;
   }
-
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 

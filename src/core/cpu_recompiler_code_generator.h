@@ -173,7 +173,7 @@ private:
   //////////////////////////////////////////////////////////////////////////
   bool CompileInstruction(const CodeBlockInstruction& cbi);
   bool Compile_Fallback(const CodeBlockInstruction& cbi);
-  bool Compile_BitwiseImmediate(const CodeBlockInstruction& cbi);
+  bool Compile_Bitwise(const CodeBlockInstruction& cbi);
   bool Compile_Shift(const CodeBlockInstruction& cbi);
   bool Compile_Load(const CodeBlockInstruction& cbi);
   bool Compile_Store(const CodeBlockInstruction& cbi);
