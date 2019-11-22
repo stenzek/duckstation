@@ -1621,12 +1621,28 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
       invert ? emit->jno(label) : emit->jo(label);
       break;
 
-    case Condition::GreaterThanZero:
+    case Condition::Greater:
       invert ? emit->jng(label) : emit->jg(label);
       break;
 
-    case Condition::LessOrEqualToZero:
+    case Condition::GreaterEqual:
+      invert ? emit->jnge(label) : emit->jge(label);
+      break;
+
+    case Condition::Less:
+      invert ? emit->jnl(label) : emit->jl(label);
+      break;
+
+    case Condition::LessOrEqual:
       invert ? emit->jnle(label) : emit->jle(label);
+      break;
+
+    case Condition::Negative:
+      invert ? emit->jns(label) : emit->js(label);
+      break;
+
+    case Condition::PositiveOrZero:
+      invert ? emit->js(label) : emit->jns(label);
       break;
 
     default:
@@ -1635,21 +1651,28 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
   }
 }
 
-void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
+void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool always_link, Value&& branch_target)
 {
-  Xbyak::Label skip_branch;
-
   // we have to always read the old PC.. when we can push/pop the register cache state this won't be needed
   Value old_npc;
   if (lr_reg != Reg::count)
+  {
     old_npc = m_register_cache.ReadGuestRegister(Reg::npc, false, true);
+    if (always_link)
+    {
+      // can't cache because we have two branches
+      m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
+      m_register_cache.FlushGuestRegister(lr_reg, true, true);
+    }
+  }
 
   // condition is inverted because we want the case for skipping it
+  Xbyak::Label skip_branch;
   if (condition != Condition::Always)
     EmitConditionalJump(condition, true, m_emit, skip_branch);
 
   // save the old PC if we want to
-  if (lr_reg != Reg::count)
+  if (lr_reg != Reg::count && !always_link)
   {
     // can't cache because we have two branches
     m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));

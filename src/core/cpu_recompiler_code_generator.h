@@ -74,7 +74,7 @@ public:
   void EmitStoreGuestMemory(const Value& address, const Value& value);
 
   // Branching, generates two paths.
-  void EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target);
+  void EmitBranch(Condition condition, Reg lr_reg, bool always_link, Value&& branch_target);
 
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);

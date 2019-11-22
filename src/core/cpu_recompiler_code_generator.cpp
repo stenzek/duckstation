@@ -93,6 +93,7 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
 
     case InstructionOp::j:
     case InstructionOp::jal:
+    case InstructionOp::b:
     case InstructionOp::beq:
     case InstructionOp::bne:
     case InstructionOp::bgtz:
@@ -1029,7 +1030,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
         OrValues(AndValues(m_register_cache.ReadGuestRegister(Reg::pc, false), Value::FromConstantU32(0xF0000000)),
                  Value::FromConstantU32(cbi.instruction.j.target << 2));
 
-      EmitBranch(Condition::Always, (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count,
+      EmitBranch(Condition::Always, (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count, false,
                  std::move(branch_target));
     }
     break;
@@ -1041,15 +1042,13 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       // npc = rs, link to rt
       Value branch_target = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
       EmitBranch(Condition::Always,
-                 (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count,
+                 (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count, false,
                  std::move(branch_target));
     }
     break;
 
     case InstructionOp::beq:
     case InstructionOp::bne:
-    case InstructionOp::bgtz:
-    case InstructionOp::blez:
     {
       // npc = pc + (sext(imm) << 2)
       Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
@@ -1060,27 +1059,42 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
       EmitCmp(lhs.host_reg, rhs);
 
-      Condition condition;
-      switch (cbi.instruction.op)
-      {
-        case InstructionOp::beq:
-          condition = Condition::Equal;
-          break;
-        case InstructionOp::bne:
-          condition = Condition::NotEqual;
-          break;
-        case InstructionOp::bgtz:
-          condition = Condition::GreaterThanZero;
-          break;
-        case InstructionOp::blez:
-          condition = Condition::LessOrEqualToZero;
-          break;
-        default:
-          condition = Condition::Always;
-          break;
-      }
+      const Condition condition = (cbi.instruction.op == InstructionOp::beq) ? Condition::Equal : Condition::NotEqual;
+      EmitBranch(condition, Reg::count, false, std::move(branch_target));
+    }
+    break;
 
-      EmitBranch(condition, Reg::count, std::move(branch_target));
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    {
+      // npc = pc + (sext(imm) << 2)
+      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
+                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2));
+
+      // branch <- rs op 0
+      Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+      EmitCmp(lhs.host_reg, Value::FromConstantU32(0));
+
+      const Condition condition =
+        (cbi.instruction.op == InstructionOp::bgtz) ? Condition::Greater : Condition::LessOrEqual;
+      EmitBranch(condition, Reg::count, false, std::move(branch_target));
+    }
+    break;
+
+    case InstructionOp::b:
+    {
+      // npc = pc + (sext(imm) << 2)
+      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
+                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2));
+
+      const u8 rt = static_cast<u8>(cbi.instruction.i.rt.GetValue());
+      const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
+      const Condition condition = bgez ? Condition::PositiveOrZero : Condition::Negative;
+      const bool link = (rt & u8(0x1E)) == u8(0x10);
+
+      Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+      EmitTest(lhs.host_reg, lhs);
+      EmitBranch(condition, link ? Reg::ra : Reg::count, link, std::move(branch_target));
     }
     break;
 

@@ -30,8 +30,12 @@ enum class Condition: u8
   NotEqual,
   Equal,
   Overflow,
-  GreaterThanZero,
-  LessOrEqualToZero,
+  Greater,
+  GreaterEqual,
+  LessOrEqual,
+  Less,
+  Negative,
+  PositiveOrZero,
 
   NotZero = NotEqual,
   Zero = Equal

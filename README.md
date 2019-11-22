@@ -60,8 +60,9 @@ To access the menus with the controller, press the right stick down and use the 
  - Passes amidog's CPU and GTE tests, partial passing of CPX tests
 
 ## Screenshots
-![Spyro 2](https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg)
+![Final Fantasy 7](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg)
 ![Final Fantasy 8](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg)
+![Spyro 2](https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg)
 
 ## Disclaimers
 
