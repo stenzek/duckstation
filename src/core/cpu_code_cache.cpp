@@ -9,8 +9,11 @@ Log_SetChannel(CPU::CodeCache);
 
 namespace CPU {
 
-bool USE_CODE_CACHE = true;
-bool USE_RECOMPILER = true;
+bool USE_CODE_CACHE = false;
+bool USE_RECOMPILER = false;
+
+static constexpr size_t RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+static constexpr size_t RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 
 CodeCache::CodeCache() = default;
 
@@ -22,7 +25,7 @@ void CodeCache::Initialize(System* system, Core* core, Bus* bus)
   m_core = core;
   m_bus = bus;
 
-  m_code_buffer = std::make_unique<JitCodeBuffer>();
+  m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
   m_asm_functions = std::make_unique<Recompiler::ASMFunctions>();
   m_asm_functions->Generate(m_code_buffer.get());
 }
@@ -50,7 +53,7 @@ void CodeCache::Execute()
 
 #if 0
     const u32 tick = m_system->GetGlobalTickCounter() + m_core->GetPendingTicks();
-    if (tick == 8950812)
+    if (tick == 58672386)
       __debugbreak();
 #endif
 
@@ -184,6 +187,11 @@ bool CodeCache::CompileBlock(CodeBlock* block)
   bool is_branch_delay_slot = false;
   bool is_load_delay_slot = false;
 
+#if 0
+  if (pc == 0x0005aa90)
+    __debugbreak();
+#endif
+
   for (;;)
   {
     CodeBlockInstruction cbi = {};
@@ -247,7 +255,10 @@ bool CodeCache::CompileBlock(CodeBlock* block)
   if (USE_RECOMPILER)
   {
     // Ensure we're not going to run out of space while compiling this block.
-    if (m_code_buffer->GetFreeCodeSpace() < (block->instructions.size() * Recompiler::MAX_HOST_BYTES_PER_INSTRUCTION))
+    if (m_code_buffer->GetFreeCodeSpace() <
+          (block->instructions.size() * Recompiler::MAX_NEAR_HOST_BYTES_PER_INSTRUCTION) ||
+        m_code_buffer->GetFreeFarCodeSpace() <
+          (block->instructions.size() * Recompiler::MAX_FAR_HOST_BYTES_PER_INSTRUCTION))
     {
       Log_WarningPrintf("Out of code space, flushing all blocks.");
       Reset();

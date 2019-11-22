@@ -33,9 +33,6 @@ public:
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
-  RegisterCache& GetRegisterCache() { return m_register_cache; }
-  CodeEmitter& GetCodeEmitter() { return m_emit; }
-
   bool CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
 
   //////////////////////////////////////////////////////////////////////////
@@ -146,14 +143,18 @@ private:
   Value ConvertValueSize(const Value& value, RegSize size, bool sign_extend);
   void ConvertValueSizeInPlace(Value* value, RegSize size, bool sign_extend);
 
+  void SwitchToFarCode();
+  void SwitchToNearCode();
+  void* GetCurrentNearCodePointer() const;
+  void* GetCurrentFarCodePointer() const;
+
   //////////////////////////////////////////////////////////////////////////
   // Code Generation Helpers
   //////////////////////////////////////////////////////////////////////////
   // branch target, memory address, etc
   void BlockPrologue();
   void BlockEpilogue();
-  void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles,
-                           bool force_sync = false);
+  void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles, bool force_sync = false);
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
   void SyncCurrentInstructionPC();
   void SyncPC();
@@ -182,7 +183,9 @@ private:
   const CodeBlockInstruction* m_block_start = nullptr;
   const CodeBlockInstruction* m_block_end = nullptr;
   RegisterCache m_register_cache;
-  CodeEmitter m_emit;
+  CodeEmitter m_near_emitter;
+  CodeEmitter m_far_emitter;
+  CodeEmitter* m_emit;
 
   u32 m_delayed_pc_add = 0;
   TickCount m_delayed_cycles_add = 0;
@@ -197,4 +200,4 @@ private:
   bool m_next_load_delay_dirty = false;
 };
 
-} // namespace CPU_X86::Recompiler
+} // namespace CPU::Recompiler

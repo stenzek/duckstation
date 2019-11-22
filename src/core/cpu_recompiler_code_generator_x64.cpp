@@ -141,12 +141,32 @@ void CodeGenerator::InitHostRegs()
 #endif
 }
 
+void CodeGenerator::SwitchToFarCode()
+{
+  m_emit = &m_far_emitter;
+}
+
+void CodeGenerator::SwitchToNearCode()
+{
+  m_emit = &m_near_emitter;
+}
+
+void* CodeGenerator::GetCurrentNearCodePointer() const
+{
+  return m_near_emitter.getCurr<void*>();
+}
+
+void* CodeGenerator::GetCurrentFarCodePointer() const
+{
+  return m_far_emitter.getCurr<void*>();
+}
+
 void CodeGenerator::EmitBeginBlock()
 {
   // Store the CPU struct pointer.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
-  m_emit.mov(GetCPUPtrReg(), GetHostReg64(RARG1));
+  m_emit->mov(GetCPUPtrReg(), GetHostReg64(RARG1));
 }
 
 void CodeGenerator::EmitEndBlock()
@@ -154,7 +174,7 @@ void CodeGenerator::EmitEndBlock()
   m_register_cache.FreeHostReg(RCPUPTR);
   m_register_cache.PopCalleeSavedRegisters(true);
 
-  m_emit.ret();
+  m_emit->ret();
 }
 
 void CodeGenerator::EmitExceptionExit()
@@ -167,31 +187,35 @@ void CodeGenerator::EmitExceptionExit()
   m_register_cache.FlushLoadDelayForException();
 
   m_register_cache.PopCalleeSavedRegisters(false);
-  m_emit.ret();
+  m_emit->ret();
 }
 
 void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
 {
   Assert(!value.IsConstant() && value.IsInHostRegister());
 
-  Xbyak::Label continue_label;
-  m_emit.test(GetHostReg8(value), GetHostReg8(value));
-  m_emit.jz(continue_label);
+  m_emit->test(GetHostReg8(value), GetHostReg8(value));
+  m_emit->jnz(GetCurrentFarCodePointer());
 
+  SwitchToFarCode();
   EmitExceptionExit();
-
-  m_emit.L(continue_label);
+  SwitchToNearCode();
 }
 
 void CodeGenerator::FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
 {
-  m_emit.ready();
+  m_near_emitter.ready();
+  m_far_emitter.ready();
 
-  const u32 size = static_cast<u32>(m_emit.getSize());
-  *out_host_code = m_emit.getCode<CodeBlock::HostCodePointer>();
-  *out_host_code_size = size;
-  m_code_buffer->CommitCode(size);
-  m_emit.reset();
+  const u32 near_size = static_cast<u32>(m_near_emitter.getSize());
+  const u32 far_size = static_cast<u32>(m_far_emitter.getSize());
+  *out_host_code = m_near_emitter.getCode<CodeBlock::HostCodePointer>();
+  *out_host_code_size = near_size;
+  m_code_buffer->CommitCode(near_size);
+  m_code_buffer->CommitFarCode(far_size);
+
+  m_near_emitter.reset();
+  m_far_emitter.reset();
 }
 
 void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size)
@@ -203,7 +227,7 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit.movsx(GetHostReg16(to_reg), GetHostReg8(from_reg));
+          m_emit->movsx(GetHostReg16(to_reg), GetHostReg8(from_reg));
           return;
       }
     }
@@ -214,10 +238,10 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit.movsx(GetHostReg32(to_reg), GetHostReg8(from_reg));
+          m_emit->movsx(GetHostReg32(to_reg), GetHostReg8(from_reg));
           return;
         case RegSize_16:
-          m_emit.movsx(GetHostReg32(to_reg), GetHostReg16(from_reg));
+          m_emit->movsx(GetHostReg32(to_reg), GetHostReg16(from_reg));
           return;
       }
     }
@@ -236,7 +260,7 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit.movzx(GetHostReg16(to_reg), GetHostReg8(from_reg));
+          m_emit->movzx(GetHostReg16(to_reg), GetHostReg8(from_reg));
           return;
       }
     }
@@ -247,10 +271,10 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit.movzx(GetHostReg32(to_reg), GetHostReg8(from_reg));
+          m_emit->movzx(GetHostReg32(to_reg), GetHostReg8(from_reg));
           return;
         case RegSize_16:
-          m_emit.movzx(GetHostReg32(to_reg), GetHostReg16(from_reg));
+          m_emit->movzx(GetHostReg32(to_reg), GetHostReg16(from_reg));
           return;
       }
     }
@@ -270,44 +294,44 @@ void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.HasConstantValue(0))
-        m_emit.xor_(GetHostReg8(to_reg), GetHostReg8(to_reg));
+        m_emit->xor_(GetHostReg8(to_reg), GetHostReg8(to_reg));
       else if (value.IsConstant())
-        m_emit.mov(GetHostReg8(to_reg), value.constant_value);
+        m_emit->mov(GetHostReg8(to_reg), value.constant_value);
       else
-        m_emit.mov(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
     }
     break;
 
     case RegSize_16:
     {
       if (value.HasConstantValue(0))
-        m_emit.xor_(GetHostReg16(to_reg), GetHostReg16(to_reg));
+        m_emit->xor_(GetHostReg16(to_reg), GetHostReg16(to_reg));
       else if (value.IsConstant())
-        m_emit.mov(GetHostReg16(to_reg), value.constant_value);
+        m_emit->mov(GetHostReg16(to_reg), value.constant_value);
       else
-        m_emit.mov(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
     }
     break;
 
     case RegSize_32:
     {
       if (value.HasConstantValue(0))
-        m_emit.xor_(GetHostReg32(to_reg), GetHostReg32(to_reg));
+        m_emit->xor_(GetHostReg32(to_reg), GetHostReg32(to_reg));
       else if (value.IsConstant())
-        m_emit.mov(GetHostReg32(to_reg), value.constant_value);
+        m_emit->mov(GetHostReg32(to_reg), value.constant_value);
       else
-        m_emit.mov(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
     }
     break;
 
     case RegSize_64:
     {
       if (value.HasConstantValue(0))
-        m_emit.xor_(GetHostReg64(to_reg), GetHostReg64(to_reg));
+        m_emit->xor_(GetHostReg64(to_reg), GetHostReg64(to_reg));
       else if (value.IsConstant())
-        m_emit.mov(GetHostReg64(to_reg), value.constant_value);
+        m_emit->mov(GetHostReg64(to_reg), value.constant_value);
       else
-        m_emit.mov(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
     }
     break;
   }
@@ -322,27 +346,27 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.add(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
+        m_emit->add(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
       else
-        m_emit.add(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
+        m_emit->add(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.add(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
+        m_emit->add(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
       else
-        m_emit.add(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
+        m_emit->add(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.add(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->add(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.add(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->add(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
     }
     break;
 
@@ -353,17 +377,17 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp.host_reg), value.constant_value);
-          m_emit.add(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
+          m_emit->mov(GetHostReg64(temp.host_reg), value.constant_value);
+          m_emit->add(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
         }
         else
         {
-          m_emit.add(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->add(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.add(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->add(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
       }
     }
     break;
@@ -379,27 +403,27 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.sub(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
+        m_emit->sub(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
       else
-        m_emit.sub(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
+        m_emit->sub(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.sub(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
+        m_emit->sub(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
       else
-        m_emit.sub(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
+        m_emit->sub(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.sub(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->sub(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.sub(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
     }
     break;
 
@@ -410,17 +434,17 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp.host_reg), value.constant_value);
-          m_emit.sub(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
+          m_emit->mov(GetHostReg64(temp.host_reg), value.constant_value);
+          m_emit->sub(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
         }
         else
         {
-          m_emit.sub(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->sub(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.sub(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
       }
     }
     break;
@@ -434,20 +458,20 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
   const bool save_edx = (to_reg_hi != Xbyak::Operand::RDX && to_reg_lo != Xbyak::Operand::RDX);
 
   if (save_eax)
-    m_emit.push(m_emit.rax);
+    m_emit->push(m_emit->rax);
 
   if (save_edx)
-    m_emit.push(m_emit.rdx);
+    m_emit->push(m_emit->rdx);
 
 #define DO_MUL(src)                                                                                                    \
   if (lhs.size == RegSize_8)                                                                                           \
-    signed_multiply ? m_emit.imul(src.changeBit(8)) : m_emit.mul(src.changeBit(8));                                    \
+    signed_multiply ? m_emit->imul(src.changeBit(8)) : m_emit->mul(src.changeBit(8));                                  \
   else if (lhs.size == RegSize_16)                                                                                     \
-    signed_multiply ? m_emit.imul(src.changeBit(16)) : m_emit.mul(src.changeBit(16));                                  \
+    signed_multiply ? m_emit->imul(src.changeBit(16)) : m_emit->mul(src.changeBit(16));                                \
   else if (lhs.size == RegSize_32)                                                                                     \
-    signed_multiply ? m_emit.imul(src.changeBit(32)) : m_emit.mul(src.changeBit(32));                                  \
+    signed_multiply ? m_emit->imul(src.changeBit(32)) : m_emit->mul(src.changeBit(32));                                \
   else                                                                                                                 \
-    signed_multiply ? m_emit.imul(src.changeBit(64)) : m_emit.mul(src.changeBit(64));
+    signed_multiply ? m_emit->imul(src.changeBit(64)) : m_emit->mul(src.changeBit(64));
 
   // x*x
   if (lhs.IsInHostRegister() && rhs.IsInHostRegister() && lhs.GetHostRegister() == rhs.GetHostRegister())
@@ -455,14 +479,14 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
     if (lhs.GetHostRegister() != Xbyak::Operand::RAX)
       EmitCopyValue(Xbyak::Operand::RAX, lhs);
 
-    DO_MUL(m_emit.rax);
+    DO_MUL(m_emit->rax);
   }
   else if (lhs.IsInHostRegister() && lhs.GetHostRegister() == Xbyak::Operand::RAX)
   {
     if (!rhs.IsInHostRegister())
     {
       EmitCopyValue(Xbyak::Operand::RDX, rhs);
-      DO_MUL(m_emit.rdx);
+      DO_MUL(m_emit->rdx);
     }
     else
     {
@@ -474,7 +498,7 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
     if (!lhs.IsInHostRegister())
     {
       EmitCopyValue(Xbyak::Operand::RDX, lhs);
-      DO_MUL(m_emit.rdx);
+      DO_MUL(m_emit->rdx);
     }
     else
     {
@@ -487,31 +511,31 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
     {
       EmitCopyValue(Xbyak::Operand::RAX, rhs);
       if (lhs.size == RegSize_8)
-        signed_multiply ? m_emit.imul(GetHostReg8(lhs)) : m_emit.mul(GetHostReg8(lhs));
+        signed_multiply ? m_emit->imul(GetHostReg8(lhs)) : m_emit->mul(GetHostReg8(lhs));
       else if (lhs.size == RegSize_16)
-        signed_multiply ? m_emit.imul(GetHostReg16(lhs)) : m_emit.mul(GetHostReg16(lhs));
+        signed_multiply ? m_emit->imul(GetHostReg16(lhs)) : m_emit->mul(GetHostReg16(lhs));
       else if (lhs.size == RegSize_32)
-        signed_multiply ? m_emit.imul(GetHostReg32(lhs)) : m_emit.mul(GetHostReg32(lhs));
+        signed_multiply ? m_emit->imul(GetHostReg32(lhs)) : m_emit->mul(GetHostReg32(lhs));
       else
-        signed_multiply ? m_emit.imul(GetHostReg64(lhs)) : m_emit.mul(GetHostReg64(lhs));
+        signed_multiply ? m_emit->imul(GetHostReg64(lhs)) : m_emit->mul(GetHostReg64(lhs));
     }
     else if (rhs.IsInHostRegister())
     {
       EmitCopyValue(Xbyak::Operand::RAX, lhs);
       if (lhs.size == RegSize_8)
-        signed_multiply ? m_emit.imul(GetHostReg8(rhs)) : m_emit.mul(GetHostReg8(rhs));
+        signed_multiply ? m_emit->imul(GetHostReg8(rhs)) : m_emit->mul(GetHostReg8(rhs));
       else if (lhs.size == RegSize_16)
-        signed_multiply ? m_emit.imul(GetHostReg16(rhs)) : m_emit.mul(GetHostReg16(rhs));
+        signed_multiply ? m_emit->imul(GetHostReg16(rhs)) : m_emit->mul(GetHostReg16(rhs));
       else if (lhs.size == RegSize_32)
-        signed_multiply ? m_emit.imul(GetHostReg32(rhs)) : m_emit.mul(GetHostReg32(rhs));
+        signed_multiply ? m_emit->imul(GetHostReg32(rhs)) : m_emit->mul(GetHostReg32(rhs));
       else
-        signed_multiply ? m_emit.imul(GetHostReg64(rhs)) : m_emit.mul(GetHostReg64(rhs));
+        signed_multiply ? m_emit->imul(GetHostReg64(rhs)) : m_emit->mul(GetHostReg64(rhs));
     }
     else
     {
       EmitCopyValue(Xbyak::Operand::RAX, lhs);
       EmitCopyValue(Xbyak::Operand::RDX, rhs);
-      DO_MUL(m_emit.rdx);
+      DO_MUL(m_emit->rdx);
     }
   }
 
@@ -524,23 +548,23 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
   else if (to_reg_hi == Xbyak::Operand::RAX && to_reg_lo == Xbyak::Operand::RDX)
   {
     // what we want, but swapped, so exchange them
-    m_emit.xchg(m_emit.rax, m_emit.rdx);
+    m_emit->xchg(m_emit->rax, m_emit->rdx);
   }
   else
   {
     // store to the registers we want.. this could be optimized better
-    m_emit.push(m_emit.rdx);
-    m_emit.push(m_emit.rax);
-    m_emit.pop(GetHostReg64(to_reg_lo));
-    m_emit.pop(GetHostReg64(to_reg_hi));
+    m_emit->push(m_emit->rdx);
+    m_emit->push(m_emit->rax);
+    m_emit->pop(GetHostReg64(to_reg_lo));
+    m_emit->pop(GetHostReg64(to_reg_hi));
   }
 
   // restore original contents
   if (save_edx)
-    m_emit.pop(m_emit.rdx);
+    m_emit->pop(m_emit->rdx);
 
   if (save_eax)
-    m_emit.pop(m_emit.rax);
+    m_emit->pop(m_emit->rax);
 }
 
 void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
@@ -552,27 +576,27 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.cmp(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
+        m_emit->cmp(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
       else
-        m_emit.cmp(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
+        m_emit->cmp(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.cmp(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
+        m_emit->cmp(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
       else
-        m_emit.cmp(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
+        m_emit->cmp(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.cmp(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->cmp(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.cmp(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->cmp(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
     }
     break;
 
@@ -583,17 +607,17 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp.host_reg), value.constant_value);
-          m_emit.cmp(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
+          m_emit->mov(GetHostReg64(temp.host_reg), value.constant_value);
+          m_emit->cmp(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
         }
         else
         {
-          m_emit.cmp(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->cmp(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.cmp(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->cmp(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
       }
     }
     break;
@@ -605,13 +629,13 @@ void CodeGenerator::EmitInc(HostReg to_reg, RegSize size)
   switch (size)
   {
     case RegSize_8:
-      m_emit.inc(GetHostReg8(to_reg));
+      m_emit->inc(GetHostReg8(to_reg));
       break;
     case RegSize_16:
-      m_emit.inc(GetHostReg16(to_reg));
+      m_emit->inc(GetHostReg16(to_reg));
       break;
     case RegSize_32:
-      m_emit.inc(GetHostReg32(to_reg));
+      m_emit->inc(GetHostReg32(to_reg));
       break;
     default:
       UnreachableCode();
@@ -624,13 +648,13 @@ void CodeGenerator::EmitDec(HostReg to_reg, RegSize size)
   switch (size)
   {
     case RegSize_8:
-      m_emit.dec(GetHostReg8(to_reg));
+      m_emit->dec(GetHostReg8(to_reg));
       break;
     case RegSize_16:
-      m_emit.dec(GetHostReg16(to_reg));
+      m_emit->dec(GetHostReg16(to_reg));
       break;
     case RegSize_32:
-      m_emit.dec(GetHostReg32(to_reg));
+      m_emit->dec(GetHostReg32(to_reg));
       break;
     default:
       UnreachableCode();
@@ -646,52 +670,52 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
   const bool save_cl = (!amount_value.IsConstant() && m_register_cache.IsHostRegInUse(Xbyak::Operand::RCX) &&
                         (!amount_value.IsInHostRegister() || amount_value.host_reg != Xbyak::Operand::RCX));
   if (save_cl)
-    m_emit.push(m_emit.rcx);
+    m_emit->push(m_emit->rcx);
 
   if (!amount_value.IsConstant())
-    m_emit.mov(m_emit.cl, GetHostReg8(amount_value.host_reg));
+    m_emit->mov(m_emit->cl, GetHostReg8(amount_value.host_reg));
 
   switch (size)
   {
     case RegSize_8:
     {
       if (amount_value.IsConstant())
-        m_emit.shl(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
+        m_emit->shl(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
       else
-        m_emit.shl(GetHostReg8(to_reg), m_emit.cl);
+        m_emit->shl(GetHostReg8(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_16:
     {
       if (amount_value.IsConstant())
-        m_emit.shl(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
+        m_emit->shl(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
       else
-        m_emit.shl(GetHostReg16(to_reg), m_emit.cl);
+        m_emit->shl(GetHostReg16(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit.shl(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->shl(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
       else
-        m_emit.shl(GetHostReg32(to_reg), m_emit.cl);
+        m_emit->shl(GetHostReg32(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit.shl(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->shl(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
       else
-        m_emit.shl(GetHostReg64(to_reg), m_emit.cl);
+        m_emit->shl(GetHostReg64(to_reg), m_emit->cl);
     }
     break;
   }
 
   if (save_cl)
-    m_emit.pop(m_emit.rcx);
+    m_emit->pop(m_emit->rcx);
 }
 
 void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_value)
@@ -702,52 +726,52 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
   const bool save_cl = (!amount_value.IsConstant() && m_register_cache.IsHostRegInUse(Xbyak::Operand::RCX) &&
                         (!amount_value.IsInHostRegister() || amount_value.host_reg != Xbyak::Operand::RCX));
   if (save_cl)
-    m_emit.push(m_emit.rcx);
+    m_emit->push(m_emit->rcx);
 
   if (!amount_value.IsConstant())
-    m_emit.mov(m_emit.cl, GetHostReg8(amount_value.host_reg));
+    m_emit->mov(m_emit->cl, GetHostReg8(amount_value.host_reg));
 
   switch (size)
   {
     case RegSize_8:
     {
       if (amount_value.IsConstant())
-        m_emit.shr(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
+        m_emit->shr(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
       else
-        m_emit.shr(GetHostReg8(to_reg), m_emit.cl);
+        m_emit->shr(GetHostReg8(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_16:
     {
       if (amount_value.IsConstant())
-        m_emit.shr(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
+        m_emit->shr(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
       else
-        m_emit.shr(GetHostReg16(to_reg), m_emit.cl);
+        m_emit->shr(GetHostReg16(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit.shr(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->shr(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
       else
-        m_emit.shr(GetHostReg32(to_reg), m_emit.cl);
+        m_emit->shr(GetHostReg32(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit.shr(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->shr(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
       else
-        m_emit.shr(GetHostReg64(to_reg), m_emit.cl);
+        m_emit->shr(GetHostReg64(to_reg), m_emit->cl);
     }
     break;
   }
 
   if (save_cl)
-    m_emit.pop(m_emit.rcx);
+    m_emit->pop(m_emit->rcx);
 }
 
 void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_value)
@@ -758,52 +782,52 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
   const bool save_cl = (!amount_value.IsConstant() && m_register_cache.IsHostRegInUse(Xbyak::Operand::RCX) &&
                         (!amount_value.IsInHostRegister() || amount_value.host_reg != Xbyak::Operand::RCX));
   if (save_cl)
-    m_emit.push(m_emit.rcx);
+    m_emit->push(m_emit->rcx);
 
   if (!amount_value.IsConstant())
-    m_emit.mov(m_emit.cl, GetHostReg8(amount_value.host_reg));
+    m_emit->mov(m_emit->cl, GetHostReg8(amount_value.host_reg));
 
   switch (size)
   {
     case RegSize_8:
     {
       if (amount_value.IsConstant())
-        m_emit.sar(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
+        m_emit->sar(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
       else
-        m_emit.sar(GetHostReg8(to_reg), m_emit.cl);
+        m_emit->sar(GetHostReg8(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_16:
     {
       if (amount_value.IsConstant())
-        m_emit.sar(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
+        m_emit->sar(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
       else
-        m_emit.sar(GetHostReg16(to_reg), m_emit.cl);
+        m_emit->sar(GetHostReg16(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit.sar(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->sar(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
       else
-        m_emit.sar(GetHostReg32(to_reg), m_emit.cl);
+        m_emit->sar(GetHostReg32(to_reg), m_emit->cl);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit.sar(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->sar(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
       else
-        m_emit.sar(GetHostReg64(to_reg), m_emit.cl);
+        m_emit->sar(GetHostReg64(to_reg), m_emit->cl);
     }
     break;
   }
 
   if (save_cl)
-    m_emit.pop(m_emit.rcx);
+    m_emit->pop(m_emit->rcx);
 }
 
 void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
@@ -814,27 +838,27 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.and_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
+        m_emit->and_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
-        m_emit.and_(GetHostReg8(to_reg), GetHostReg8(value));
+        m_emit->and_(GetHostReg8(to_reg), GetHostReg8(value));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.and_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
+        m_emit->and_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
-        m_emit.and_(GetHostReg16(to_reg), GetHostReg16(value));
+        m_emit->and_(GetHostReg16(to_reg), GetHostReg16(value));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.and_(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->and_(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.and_(GetHostReg32(to_reg), GetHostReg32(value));
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(value));
     }
     break;
 
@@ -845,17 +869,17 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp), value.constant_value);
-          m_emit.and_(GetHostReg64(to_reg), GetHostReg64(temp));
+          m_emit->mov(GetHostReg64(temp), value.constant_value);
+          m_emit->and_(GetHostReg64(to_reg), GetHostReg64(temp));
         }
         else
         {
-          m_emit.and_(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->and_(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.and_(GetHostReg64(to_reg), GetHostReg64(value));
+        m_emit->and_(GetHostReg64(to_reg), GetHostReg64(value));
       }
     }
     break;
@@ -870,27 +894,27 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.or_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
+        m_emit->or_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
-        m_emit.or_(GetHostReg8(to_reg), GetHostReg8(value));
+        m_emit->or_(GetHostReg8(to_reg), GetHostReg8(value));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.or_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
+        m_emit->or_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
-        m_emit.or_(GetHostReg16(to_reg), GetHostReg16(value));
+        m_emit->or_(GetHostReg16(to_reg), GetHostReg16(value));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.or_(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->or_(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.or_(GetHostReg32(to_reg), GetHostReg32(value));
+        m_emit->or_(GetHostReg32(to_reg), GetHostReg32(value));
     }
     break;
 
@@ -901,17 +925,17 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp), value.constant_value);
-          m_emit.or_(GetHostReg64(to_reg), GetHostReg64(temp));
+          m_emit->mov(GetHostReg64(temp), value.constant_value);
+          m_emit->or_(GetHostReg64(to_reg), GetHostReg64(temp));
         }
         else
         {
-          m_emit.or_(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->or_(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.or_(GetHostReg64(to_reg), GetHostReg64(value));
+        m_emit->or_(GetHostReg64(to_reg), GetHostReg64(value));
       }
     }
     break;
@@ -926,27 +950,27 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.xor_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
+        m_emit->xor_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
-        m_emit.xor_(GetHostReg8(to_reg), GetHostReg8(value));
+        m_emit->xor_(GetHostReg8(to_reg), GetHostReg8(value));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.xor_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
+        m_emit->xor_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
-        m_emit.xor_(GetHostReg16(to_reg), GetHostReg16(value));
+        m_emit->xor_(GetHostReg16(to_reg), GetHostReg16(value));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.xor_(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->xor_(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.xor_(GetHostReg32(to_reg), GetHostReg32(value));
+        m_emit->xor_(GetHostReg32(to_reg), GetHostReg32(value));
     }
     break;
 
@@ -957,17 +981,17 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp), value.constant_value);
-          m_emit.xor_(GetHostReg64(to_reg), GetHostReg64(temp));
+          m_emit->mov(GetHostReg64(temp), value.constant_value);
+          m_emit->xor_(GetHostReg64(to_reg), GetHostReg64(temp));
         }
         else
         {
-          m_emit.xor_(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->xor_(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.xor_(GetHostReg64(to_reg), GetHostReg64(value));
+        m_emit->xor_(GetHostReg64(to_reg), GetHostReg64(value));
       }
     }
     break;
@@ -982,27 +1006,27 @@ void CodeGenerator::EmitTest(HostReg to_reg, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.test(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
+        m_emit->test(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
-        m_emit.test(GetHostReg8(to_reg), GetHostReg8(value));
+        m_emit->test(GetHostReg8(to_reg), GetHostReg8(value));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.test(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
+        m_emit->test(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
-        m_emit.test(GetHostReg16(to_reg), GetHostReg16(value));
+        m_emit->test(GetHostReg16(to_reg), GetHostReg16(value));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.test(GetHostReg32(to_reg), Truncate32(value.constant_value));
+        m_emit->test(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
-        m_emit.test(GetHostReg32(to_reg), GetHostReg32(value));
+        m_emit->test(GetHostReg32(to_reg), GetHostReg32(value));
     }
     break;
 
@@ -1013,17 +1037,17 @@ void CodeGenerator::EmitTest(HostReg to_reg, const Value& value)
         if (!Xbyak::inner::IsInInt32(value.constant_value))
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit.mov(GetHostReg64(temp), value.constant_value);
-          m_emit.test(GetHostReg64(to_reg), GetHostReg64(temp));
+          m_emit->mov(GetHostReg64(temp), value.constant_value);
+          m_emit->test(GetHostReg64(to_reg), GetHostReg64(temp));
         }
         else
         {
-          m_emit.test(GetHostReg64(to_reg), Truncate32(value.constant_value));
+          m_emit->test(GetHostReg64(to_reg), Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.test(GetHostReg64(to_reg), GetHostReg64(value));
+        m_emit->test(GetHostReg64(to_reg), GetHostReg64(value));
       }
     }
     break;
@@ -1035,19 +1059,19 @@ void CodeGenerator::EmitNot(HostReg to_reg, RegSize size)
   switch (size)
   {
     case RegSize_8:
-      m_emit.not_(GetHostReg8(to_reg));
+      m_emit->not_(GetHostReg8(to_reg));
       break;
 
     case RegSize_16:
-      m_emit.not_(GetHostReg16(to_reg));
+      m_emit->not_(GetHostReg16(to_reg));
       break;
 
     case RegSize_32:
-      m_emit.not_(GetHostReg32(to_reg));
+      m_emit->not_(GetHostReg32(to_reg));
       break;
 
     case RegSize_64:
-      m_emit.not_(GetHostReg64(to_reg));
+      m_emit->not_(GetHostReg64(to_reg));
       break;
 
     default:
@@ -1064,7 +1088,7 @@ u32 CodeGenerator::PrepareStackForCall()
   const u32 aligned_offset = Common::AlignUp(current_offset + FUNCTION_CALL_SHADOW_SPACE, 16);
   const u32 adjust_size = aligned_offset - current_offset;
   if (adjust_size > 0)
-    m_emit.sub(m_emit.rsp, adjust_size);
+    m_emit->sub(m_emit->rsp, adjust_size);
 
   return adjust_size;
 }
@@ -1072,7 +1096,7 @@ u32 CodeGenerator::PrepareStackForCall()
 void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
 {
   if (adjust_size > 0)
-    m_emit.add(m_emit.rsp, adjust_size);
+    m_emit->add(m_emit->rsp, adjust_size);
 
   m_register_cache.PopCallerSavedRegisters();
 }
@@ -1086,8 +1110,8 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
   const u32 adjust_size = PrepareStackForCall();
 
   // actually call the function
-  m_emit.mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-  m_emit.call(GetHostReg64(RRETURN));
+  m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
+  m_emit->call(GetHostReg64(RRETURN));
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1112,14 +1136,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG1, arg1);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit.getCurr())))
+  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
   {
-    m_emit.call(ptr);
+    m_emit->call(ptr);
   }
   else
   {
-    m_emit.mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit.call(GetHostReg64(RRETURN));
+    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
+    m_emit->call(GetHostReg64(RRETURN));
   }
 
   // shadow space release
@@ -1146,14 +1170,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG2, arg2);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit.getCurr())))
+  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
   {
-    m_emit.call(ptr);
+    m_emit->call(ptr);
   }
   else
   {
-    m_emit.mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit.call(GetHostReg64(RRETURN));
+    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
+    m_emit->call(GetHostReg64(RRETURN));
   }
 
   // shadow space release
@@ -1182,14 +1206,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG3, arg3);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit.getCurr())))
+  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
   {
-    m_emit.call(ptr);
+    m_emit->call(ptr);
   }
   else
   {
-    m_emit.mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit.call(GetHostReg64(RRETURN));
+    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
+    m_emit->call(GetHostReg64(RRETURN));
   }
 
   // shadow space release
@@ -1219,14 +1243,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG4, arg4);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit.getCurr())))
+  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
   {
-    m_emit.call(ptr);
+    m_emit->call(ptr);
   }
   else
   {
-    m_emit.mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit.call(GetHostReg64(RRETURN));
+    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
+    m_emit->call(GetHostReg64(RRETURN));
   }
 
   // shadow space release
@@ -1242,20 +1266,20 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 
 void CodeGenerator::EmitPushHostReg(HostReg reg)
 {
-  m_emit.push(GetHostReg64(reg));
+  m_emit->push(GetHostReg64(reg));
 }
 
 void CodeGenerator::EmitPopHostReg(HostReg reg)
 {
-  m_emit.pop(GetHostReg64(reg));
+  m_emit->pop(GetHostReg64(reg));
 }
 
 void CodeGenerator::ReadFlagsFromHost(Value* value)
 {
   // this is a 64-bit push/pop, we ignore the upper 32 bits
   DebugAssert(value->IsInHostRegister());
-  m_emit.pushf();
-  m_emit.pop(GetHostReg64(value->host_reg));
+  m_emit->pushf();
+  m_emit->pop(GetHostReg64(value->host_reg));
 }
 
 Value CodeGenerator::ReadFlagsFromHost()
@@ -1270,19 +1294,19 @@ void CodeGenerator::EmitLoadCPUStructField(HostReg host_reg, RegSize guest_size,
   switch (guest_size)
   {
     case RegSize_8:
-      m_emit.mov(GetHostReg8(host_reg), m_emit.byte[GetCPUPtrReg() + offset]);
+      m_emit->mov(GetHostReg8(host_reg), m_emit->byte[GetCPUPtrReg() + offset]);
       break;
 
     case RegSize_16:
-      m_emit.mov(GetHostReg16(host_reg), m_emit.word[GetCPUPtrReg() + offset]);
+      m_emit->mov(GetHostReg16(host_reg), m_emit->word[GetCPUPtrReg() + offset]);
       break;
 
     case RegSize_32:
-      m_emit.mov(GetHostReg32(host_reg), m_emit.dword[GetCPUPtrReg() + offset]);
+      m_emit->mov(GetHostReg32(host_reg), m_emit->dword[GetCPUPtrReg() + offset]);
       break;
 
     case RegSize_64:
-      m_emit.mov(GetHostReg64(host_reg), m_emit.qword[GetCPUPtrReg() + offset]);
+      m_emit->mov(GetHostReg64(host_reg), m_emit->qword[GetCPUPtrReg() + offset]);
       break;
 
     default:
@@ -1301,27 +1325,27 @@ void CodeGenerator::EmitStoreCPUStructField(u32 offset, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant())
-        m_emit.mov(m_emit.byte[GetCPUPtrReg() + offset], value.constant_value);
+        m_emit->mov(m_emit->byte[GetCPUPtrReg() + offset], value.constant_value);
       else
-        m_emit.mov(m_emit.byte[GetCPUPtrReg() + offset], GetHostReg8(value.host_reg));
+        m_emit->mov(m_emit->byte[GetCPUPtrReg() + offset], GetHostReg8(value.host_reg));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant())
-        m_emit.mov(m_emit.word[GetCPUPtrReg() + offset], value.constant_value);
+        m_emit->mov(m_emit->word[GetCPUPtrReg() + offset], value.constant_value);
       else
-        m_emit.mov(m_emit.word[GetCPUPtrReg() + offset], GetHostReg16(value.host_reg));
+        m_emit->mov(m_emit->word[GetCPUPtrReg() + offset], GetHostReg16(value.host_reg));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant())
-        m_emit.mov(m_emit.dword[GetCPUPtrReg() + offset], value.constant_value);
+        m_emit->mov(m_emit->dword[GetCPUPtrReg() + offset], value.constant_value);
       else
-        m_emit.mov(m_emit.dword[GetCPUPtrReg() + offset], GetHostReg32(value.host_reg));
+        m_emit->mov(m_emit->dword[GetCPUPtrReg() + offset], GetHostReg32(value.host_reg));
     }
     break;
 
@@ -1334,16 +1358,16 @@ void CodeGenerator::EmitStoreCPUStructField(u32 offset, const Value& value)
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
           EmitCopyValue(temp.host_reg, value);
-          m_emit.mov(m_emit.qword[GetCPUPtrReg() + offset], GetHostReg64(temp.host_reg));
+          m_emit->mov(m_emit->qword[GetCPUPtrReg() + offset], GetHostReg64(temp.host_reg));
         }
         else
         {
-          m_emit.mov(m_emit.qword[GetCPUPtrReg() + offset], value.constant_value);
+          m_emit->mov(m_emit->qword[GetCPUPtrReg() + offset], value.constant_value);
         }
       }
       else
       {
-        m_emit.mov(m_emit.qword[GetCPUPtrReg() + offset], GetHostReg64(value.host_reg));
+        m_emit->mov(m_emit->qword[GetCPUPtrReg() + offset], GetHostReg64(value.host_reg));
       }
     }
     break;
@@ -1364,33 +1388,33 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_8:
     {
       if (value.IsConstant() && value.constant_value == 1)
-        m_emit.inc(m_emit.byte[GetCPUPtrReg() + offset]);
+        m_emit->inc(m_emit->byte[GetCPUPtrReg() + offset]);
       else if (value.IsConstant())
-        m_emit.add(m_emit.byte[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
+        m_emit->add(m_emit->byte[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
       else
-        m_emit.add(m_emit.byte[GetCPUPtrReg() + offset], GetHostReg8(value.host_reg));
+        m_emit->add(m_emit->byte[GetCPUPtrReg() + offset], GetHostReg8(value.host_reg));
     }
     break;
 
     case RegSize_16:
     {
       if (value.IsConstant() && value.constant_value == 1)
-        m_emit.inc(m_emit.word[GetCPUPtrReg() + offset]);
+        m_emit->inc(m_emit->word[GetCPUPtrReg() + offset]);
       else if (value.IsConstant())
-        m_emit.add(m_emit.word[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
+        m_emit->add(m_emit->word[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
       else
-        m_emit.add(m_emit.word[GetCPUPtrReg() + offset], GetHostReg16(value.host_reg));
+        m_emit->add(m_emit->word[GetCPUPtrReg() + offset], GetHostReg16(value.host_reg));
     }
     break;
 
     case RegSize_32:
     {
       if (value.IsConstant() && value.constant_value == 1)
-        m_emit.inc(m_emit.dword[GetCPUPtrReg() + offset]);
+        m_emit->inc(m_emit->dword[GetCPUPtrReg() + offset]);
       else if (value.IsConstant())
-        m_emit.add(m_emit.dword[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
+        m_emit->add(m_emit->dword[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
       else
-        m_emit.add(m_emit.dword[GetCPUPtrReg() + offset], GetHostReg32(value.host_reg));
+        m_emit->add(m_emit->dword[GetCPUPtrReg() + offset], GetHostReg32(value.host_reg));
     }
     break;
 
@@ -1398,7 +1422,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     {
       if (value.IsConstant() && value.constant_value == 1)
       {
-        m_emit.inc(m_emit.qword[GetCPUPtrReg() + offset]);
+        m_emit->inc(m_emit->qword[GetCPUPtrReg() + offset]);
       }
       else if (value.IsConstant())
       {
@@ -1407,16 +1431,16 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
         {
           Value temp = m_register_cache.AllocateScratch(RegSize_64);
           EmitCopyValue(temp.host_reg, value);
-          m_emit.add(m_emit.qword[GetCPUPtrReg() + offset], GetHostReg64(temp.host_reg));
+          m_emit->add(m_emit->qword[GetCPUPtrReg() + offset], GetHostReg64(temp.host_reg));
         }
         else
         {
-          m_emit.add(m_emit.qword[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
+          m_emit->add(m_emit->qword[GetCPUPtrReg() + offset], Truncate32(value.constant_value));
         }
       }
       else
       {
-        m_emit.add(m_emit.qword[GetCPUPtrReg() + offset], GetHostReg64(value.host_reg));
+        m_emit->add(m_emit->qword[GetCPUPtrReg() + offset], GetHostReg64(value.host_reg));
       }
     }
     break;
@@ -1454,17 +1478,13 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
       break;
   }
 
-  Xbyak::Label load_okay;
-
-  m_emit.test(GetHostReg64(result.host_reg), GetHostReg64(result.host_reg));
-
-  // force a 32-bit offset, this will be far code eventually...
-  m_emit.jns(load_okay, Xbyak::CodeGenerator::T_NEAR);
+  m_emit->test(GetHostReg64(result.host_reg), GetHostReg64(result.host_reg));
+  m_emit->js(GetCurrentFarCodePointer());
 
   // load exception path
+  SwitchToFarCode();
   EmitExceptionExit();
-
-  m_emit.L(load_okay);
+  SwitchToNearCode();
 
   // Downcast to ignore upper 56/48/32 bits. This should be a noop.
   switch (size)
@@ -1514,13 +1534,13 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
 
   Xbyak::Label store_okay;
 
-  m_emit.test(GetHostReg8(result), GetHostReg8(result));
-  m_emit.jnz(store_okay);
+  m_emit->test(GetHostReg8(result), GetHostReg8(result));
+  m_emit->jz(GetCurrentFarCodePointer());
 
-  // load exception path
+  // store exception path
+  SwitchToFarCode();
   EmitExceptionExit();
-
-  m_emit.L(store_okay);
+  SwitchToNearCode();
 }
 
 void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_check_old_value, bool move_next)
@@ -1530,52 +1550,52 @@ void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_che
 
   Xbyak::Label skip_flush;
 
-  auto load_delay_reg = m_emit.byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
-  auto load_delay_old_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_old_value)];
-  auto load_delay_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
-  auto reg_ptr = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
+  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
+  auto load_delay_old_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_old_value)];
+  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
+  auto reg_ptr = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
 
   // reg = load_delay_reg
-  m_emit.movzx(GetHostReg32(reg.host_reg), load_delay_reg);
+  m_emit->movzx(GetHostReg32(reg.host_reg), load_delay_reg);
   if (!skip_check_old_value)
-    m_emit.mov(GetHostReg32(value), load_delay_old_value);
+    m_emit->mov(GetHostReg32(value), load_delay_old_value);
 
   if (!skip_check_for_delay)
   {
     // if load_delay_reg == Reg::count goto skip_flush
-    m_emit.cmp(GetHostReg32(reg.host_reg), static_cast<u8>(Reg::count));
-    m_emit.je(skip_flush);
+    m_emit->cmp(GetHostReg32(reg.host_reg), static_cast<u8>(Reg::count));
+    m_emit->je(skip_flush);
   }
 
   if (!skip_check_old_value)
   {
     // if r[reg] != load_delay_old_value goto skip_flush
-    m_emit.cmp(GetHostReg32(value), reg_ptr);
-    m_emit.jne(skip_flush);
+    m_emit->cmp(GetHostReg32(value), reg_ptr);
+    m_emit->jne(skip_flush);
   }
 
   // r[reg] = load_delay_value
-  m_emit.mov(GetHostReg32(value), load_delay_value);
-  m_emit.mov(reg_ptr, GetHostReg32(value));
+  m_emit->mov(GetHostReg32(value), load_delay_value);
+  m_emit->mov(reg_ptr, GetHostReg32(value));
 
   // if !move_next load_delay_reg = Reg::count
   if (!move_next)
-    m_emit.mov(load_delay_reg, static_cast<u8>(Reg::count));
+    m_emit->mov(load_delay_reg, static_cast<u8>(Reg::count));
 
-  m_emit.L(skip_flush);
+  m_emit->L(skip_flush);
 
   if (move_next)
   {
-    auto next_load_delay_reg = m_emit.byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
-    auto next_load_delay_old_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_old_value)];
-    auto next_load_delay_value = m_emit.dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
-    m_emit.mov(GetHostReg32(value), next_load_delay_value);
-    m_emit.mov(GetHostReg8(reg), next_load_delay_reg);
-    m_emit.mov(load_delay_value, GetHostReg32(value));
-    m_emit.mov(GetHostReg32(value), next_load_delay_old_value);
-    m_emit.mov(load_delay_reg, GetHostReg8(reg));
-    m_emit.mov(load_delay_old_value, GetHostReg32(value));
-    m_emit.mov(next_load_delay_reg, static_cast<u8>(Reg::count));
+    auto next_load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
+    auto next_load_delay_old_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_old_value)];
+    auto next_load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
+    m_emit->mov(GetHostReg32(value), next_load_delay_value);
+    m_emit->mov(GetHostReg8(reg), next_load_delay_reg);
+    m_emit->mov(load_delay_value, GetHostReg32(value));
+    m_emit->mov(GetHostReg32(value), next_load_delay_old_value);
+    m_emit->mov(load_delay_reg, GetHostReg8(reg));
+    m_emit->mov(load_delay_old_value, GetHostReg32(value));
+    m_emit->mov(next_load_delay_reg, static_cast<u8>(Reg::count));
   }
 }
 

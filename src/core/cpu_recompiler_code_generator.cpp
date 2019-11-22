@@ -7,7 +7,8 @@ namespace CPU::Recompiler {
 
 CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer, const ASMFunctions& asm_functions)
   : m_cpu(cpu), m_code_buffer(code_buffer), m_asm_functions(asm_functions), m_register_cache(*this),
-    m_emit(code_buffer->GetFreeCodeSpace(), code_buffer->GetFreeCodePointer())
+    m_near_emitter(code_buffer->GetFreeCodeSpace(), code_buffer->GetFreeCodePointer()),
+    m_far_emitter(code_buffer->GetFreeFarCodeSpace(), code_buffer->GetFreeFarCodePointer()), m_emit(&m_near_emitter)
 {
   InitHostRegs();
 }
@@ -608,7 +609,7 @@ void CodeGenerator::BlockPrologue()
 void CodeGenerator::BlockEpilogue()
 {
 #if defined(_DEBUG) && defined(Y_CPU_X64)
-  m_emit.nop();
+  m_emit->nop();
 #endif
 
   m_register_cache.FlushAllGuestRegisters(true, true);
@@ -632,7 +633,7 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
                                         bool force_sync /* = false */)
 {
 #if defined(_DEBUG) && defined(Y_CPU_X64)
-  m_emit.nop();
+  m_emit->nop();
 #endif
 
   // reset dirty flags
