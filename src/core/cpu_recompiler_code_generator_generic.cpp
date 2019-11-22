@@ -44,6 +44,10 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool relative, c
 {
   Panic("Not implemented");
 }
+void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
+{
+  Panic("Not implemented");
+}
 #endif
 
 } // namespace CPU::Recompiler

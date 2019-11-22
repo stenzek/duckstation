@@ -186,7 +186,7 @@ void CodeGenerator::EmitExceptionExit()
 
   // the interpreter load delay might have its own value, but we'll overwrite it here anyway
   // technically RaiseException() and FlushPipeline() have already been called, but that should be okay
-  m_register_cache.FlushLoadDelayForException();
+  m_register_cache.FlushLoadDelay(false);
 
   m_register_cache.PopCalleeSavedRegisters(false);
   m_emit->ret();
@@ -339,7 +339,7 @@ void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
   }
 }
 
-void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
 
@@ -1601,7 +1601,8 @@ void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_che
   }
 }
 
-static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGenerator* emit, const Xbyak::Label& label)
+template<typename T>
+static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGenerator* emit, const T& label)
 {
   switch (condition)
   {
@@ -1710,6 +1711,28 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool always_link
 
   // converge point
   m_emit->L(skip_branch);
+}
+
+void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
+{
+  if (condition == Condition::Always)
+  {
+    // no need to use far code if we're always raising the exception
+    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
+                     Value::FromConstantU8(static_cast<u8>(excode)));
+    m_register_cache.FlushAllGuestRegisters(true, true);
+    m_register_cache.FlushLoadDelay(true);
+    return;
+  }
+
+  const void* far_code_ptr = GetCurrentFarCodePointer();
+  EmitConditionalJump(condition, false, m_emit, far_code_ptr);
+
+  SwitchToFarCode();
+  EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
+                   Value::FromConstantU8(static_cast<u8>(excode)));
+  EmitExceptionExit();
+  SwitchToNearCode();
 }
 
 #if 0

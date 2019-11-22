@@ -78,6 +78,11 @@ void Thunks::UpdateLoadDelay(Core* cpu)
   cpu->UpdateLoadDelay();
 }
 
+void Thunks::RaiseException(Core* cpu, u8 excode)
+{
+  cpu->RaiseException(static_cast<Exception>(excode));
+}
+
 void Thunks::RaiseAddressException(Core* cpu, u32 address, bool store, bool branch)
 {
   cpu->m_cop0_regs.BadVaddr = address;

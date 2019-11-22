@@ -47,7 +47,7 @@ public:
   void EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size);
   void EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size);
   void EmitCopyValue(HostReg to_reg, const Value& value);
-  void EmitAdd(HostReg to_reg, const Value& value);
+  void EmitAdd(HostReg to_reg, const Value& value, bool set_flags);
   void EmitSub(HostReg to_reg, const Value& value);
   void EmitCmp(HostReg to_reg, const Value& value);
   void EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs, bool signed_multiply);
@@ -75,6 +75,9 @@ public:
 
   // Branching, generates two paths.
   void EmitBranch(Condition condition, Reg lr_reg, bool always_link, Value&& branch_target);
+
+  // Raising exception if condition is true.
+  void EmitRaiseException(Exception excode, Condition condition = Condition::Always);
 
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);
@@ -130,7 +133,7 @@ public:
 #endif
 
   // Value ops
-  Value AddValues(const Value& lhs, const Value& rhs);
+  Value AddValues(const Value& lhs, const Value& rhs, bool set_flags);
   std::pair<Value, Value> MulValues(const Value& lhs, const Value& rhs, bool signed_multiply);
   Value ShlValues(const Value& lhs, const Value& rhs);
   Value ShrValues(const Value& lhs, const Value& rhs);
@@ -175,10 +178,10 @@ private:
   bool Compile_Load(const CodeBlockInstruction& cbi);
   bool Compile_Store(const CodeBlockInstruction& cbi);
   bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
+  bool Compile_Add(const CodeBlockInstruction& cbi);
   bool Compile_Multiply(const CodeBlockInstruction& cbi);
   bool Compile_Branch(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
-  bool Compile_addiu(const CodeBlockInstruction& cbi);
 
   Core* m_cpu;
   JitCodeBuffer* m_code_buffer;

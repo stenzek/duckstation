@@ -252,7 +252,7 @@ public:
   void WriteLoadDelayToCPU(bool clear);
 
   /// Flushes the load delay, i.e. writes it to the destination register.
-  void FlushLoadDelayForException();
+  void FlushLoadDelay(bool clear);
 
   void FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty);
   void InvalidateGuestRegister(Reg guest_reg);

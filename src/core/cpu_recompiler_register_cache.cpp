@@ -570,7 +570,7 @@ void RegisterCache::WriteLoadDelayToCPU(bool clear)
   }
 }
 
-void RegisterCache::FlushLoadDelayForException()
+void RegisterCache::FlushLoadDelay(bool clear)
 {
   Assert(m_next_load_delay_register == Reg::count);
   if (m_load_delay_register == Reg::count)
@@ -579,6 +579,12 @@ void RegisterCache::FlushLoadDelayForException()
   // if this is an exception exit, write the new value to the CPU register file, but keep it tracked for the next
   // non-exception-raised path. TODO: push/pop whole state would avoid this issue
   m_code_generator.EmitStoreGuestRegister(m_load_delay_register, m_load_delay_value);
+
+  if (clear)
+  {
+    m_load_delay_register = Reg::count;
+    m_load_delay_value.ReleaseAndClear();
+  }
 }
 
 void RegisterCache::FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty)

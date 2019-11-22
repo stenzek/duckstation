@@ -105,8 +105,9 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_lui(cbi);
       break;
 
+    case InstructionOp::addi:
     case InstructionOp::addiu:
-      result = Compile_addiu(cbi);
+      result = Compile_Add(cbi);
       break;
 
     case InstructionOp::funct:
@@ -130,6 +131,11 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
         case InstructionFunct::mthi:
         case InstructionFunct::mtlo:
           result = Compile_MoveHiLo(cbi);
+          break;
+
+        case InstructionFunct::add:
+        case InstructionFunct::addu:
+          result = Compile_Add(cbi);
           break;
 
         case InstructionFunct::mult:
@@ -261,10 +267,10 @@ void CodeGenerator::ConvertValueSizeInPlace(Value* value, RegSize size, bool sig
   value->size = size;
 }
 
-Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs, bool set_flags)
 {
   DebugAssert(lhs.size == rhs.size);
-  if (lhs.IsConstant() && rhs.IsConstant())
+  if (lhs.IsConstant() && rhs.IsConstant() && !set_flags)
   {
     // compile-time
     u64 new_cv = lhs.constant_value + rhs.constant_value;
@@ -288,12 +294,12 @@ Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs)
   }
 
   Value res = m_register_cache.AllocateScratch(lhs.size);
-  if (lhs.HasConstantValue(0))
+  if (lhs.HasConstantValue(0) && !set_flags)
   {
     EmitCopyValue(res.host_reg, rhs);
     return res;
   }
-  else if (rhs.HasConstantValue(0))
+  else if (rhs.HasConstantValue(0) && !set_flags)
   {
     EmitCopyValue(res.host_reg, lhs);
     return res;
@@ -301,7 +307,7 @@ Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs)
   else
   {
     EmitCopyValue(res.host_reg, lhs);
-    EmitAdd(res.host_reg, rhs);
+    EmitAdd(res.host_reg, rhs, set_flags);
     return res;
   }
 }
@@ -903,7 +909,7 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   // rt <- mem[rs + sext(imm)]
   Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
   Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
-  Value address = AddValues(base, offset);
+  Value address = AddValues(base, offset, false);
 
   Value result;
   switch (cbi.instruction.op)
@@ -942,7 +948,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   // mem[rs + sext(imm)] <- rt
   Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
   Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
-  Value address = AddValues(base, offset);
+  Value address = AddValues(base, offset, false);
   Value value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
 
   switch (cbi.instruction.op)
@@ -994,6 +1000,52 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
       UnreachableCode();
       break;
   }
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  const bool check_overflow =
+    (cbi.instruction.op == InstructionOp::addi ||
+     (cbi.instruction.op == InstructionOp::funct && cbi.instruction.r.funct == InstructionFunct::add));
+
+  Value lhs, rhs;
+  Reg dest;
+  switch (cbi.instruction.op)
+  {
+    case InstructionOp::addi:
+    case InstructionOp::addiu:
+    {
+      // rt <- rs + sext(imm)
+      dest = cbi.instruction.i.rt;
+      lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+      rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+    }
+    break;
+
+    case InstructionOp::funct:
+    {
+      Assert(cbi.instruction.r.funct == InstructionFunct::add || cbi.instruction.r.funct == InstructionFunct::addu);
+      dest = cbi.instruction.r.rd;
+      lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+      rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+    }
+    break;
+
+    default:
+      UnreachableCode();
+      return false;
+  }
+
+  Value result = AddValues(lhs, rhs, check_overflow);
+  if (check_overflow)
+    EmitRaiseException(Exception::Ov, Condition::Overflow);
+
+  m_register_cache.WriteGuestRegister(dest, std::move(result));
 
   InstructionEpilogue(cbi);
   return true;
@@ -1052,7 +1104,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     {
       // npc = pc + (sext(imm) << 2)
       Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
-                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2));
+                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
 
       // branch <- rs op rt
       Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
@@ -1069,7 +1121,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     {
       // npc = pc + (sext(imm) << 2)
       Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
-                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2));
+                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
 
       // branch <- rs op 0
       Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
@@ -1085,7 +1137,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     {
       // npc = pc + (sext(imm) << 2)
       Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
-                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2));
+                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
 
       const u8 rt = static_cast<u8>(cbi.instruction.i.rt.GetValue());
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
@@ -1118,18 +1170,4 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
   InstructionEpilogue(cbi);
   return true;
 }
-
-bool CodeGenerator::Compile_addiu(const CodeBlockInstruction& cbi)
-{
-  InstructionPrologue(cbi, 1);
-
-  // rt <- rs + sext(imm)
-  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt,
-                                      AddValues(m_register_cache.ReadGuestRegister(cbi.instruction.i.rs),
-                                                Value::FromConstantU32(cbi.instruction.i.imm_sext32())));
-
-  InstructionEpilogue(cbi);
-  return true;
-}
-
 } // namespace CPU::Recompiler
