@@ -295,8 +295,11 @@ void Core::RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
     Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
                     m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
     DisassembleAndPrint(m_current_instruction_pc, 4, 0);
-    CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n", static_cast<u32>(excode),
-                             m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+    if (LOG_EXECUTION)
+    {
+      CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n", static_cast<u32>(excode),
+                               m_current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+    }
   }
 #endif
 
