@@ -49,8 +49,8 @@ public:
   void EmitCopyValue(HostReg to_reg, const Value& value);
   void EmitAdd(HostReg to_reg, const Value& value);
   void EmitSub(HostReg to_reg, const Value& value);
-  void EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs, bool signed_multiply);
   void EmitCmp(HostReg to_reg, const Value& value);
+  void EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs, bool signed_multiply);
   void EmitInc(HostReg to_reg, RegSize size);
   void EmitDec(HostReg to_reg, RegSize size);
   void EmitShl(HostReg to_reg, RegSize size, const Value& amount_value);
@@ -72,6 +72,9 @@ public:
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const Value& address, RegSize size);
   void EmitStoreGuestMemory(const Value& address, const Value& value);
+
+  // Branching, generates two paths.
+  void EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target);
 
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);
@@ -173,6 +176,7 @@ private:
   bool Compile_Store(const CodeBlockInstruction& cbi);
   bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
   bool Compile_Multiply(const CodeBlockInstruction& cbi);
+  bool Compile_Branch(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
   bool Compile_addiu(const CodeBlockInstruction& cbi);
 

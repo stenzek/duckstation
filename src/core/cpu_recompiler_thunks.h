@@ -21,6 +21,7 @@ public:
   static bool WriteMemoryWord(Core* cpu, u32 address, u32 value);
   static bool InterpretInstruction(Core* cpu);
   static void UpdateLoadDelay(Core* cpu);
+  static void RaiseAddressException(Core* cpu, u32 address, bool store, bool branch);
 };
 
 class ASMFunctions

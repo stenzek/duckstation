@@ -334,7 +334,17 @@ Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, b
 {
   // register zero is always zero
   if (guest_reg == Reg::zero)
+  {
+    // return a scratch value of zero if it's forced
+    if (force_host_register)
+    {
+      Value temp = AllocateScratch(RegSize_32, forced_host_reg);
+      m_code_generator.EmitXor(temp.host_reg, temp);
+      return temp;
+    }
+
     return Value::FromConstantU32(0);
+  }
 
   Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
   if (cache_value.IsValid())

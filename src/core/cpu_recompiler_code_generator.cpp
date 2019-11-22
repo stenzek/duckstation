@@ -91,6 +91,15 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_Store(cbi);
       break;
 
+    case InstructionOp::j:
+    case InstructionOp::jal:
+    case InstructionOp::beq:
+    case InstructionOp::bne:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+      result = Compile_Branch(cbi);
+      break;
+
     case InstructionOp::lui:
       result = Compile_lui(cbi);
       break;
@@ -125,6 +134,11 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
         case InstructionFunct::mult:
         case InstructionFunct::multu:
           result = Compile_Multiply(cbi);
+          break;
+
+        case InstructionFunct::jr:
+        case InstructionFunct::jalr:
+          result = Compile_Branch(cbi);
           break;
 
         default:
@@ -993,6 +1007,87 @@ bool CodeGenerator::Compile_Multiply(const CodeBlockInstruction& cbi)
                                              m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), signed_multiply);
   m_register_cache.WriteGuestRegister(Reg::hi, std::move(result.first));
   m_register_cache.WriteGuestRegister(Reg::lo, std::move(result.second));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
+{
+  // Force sync since we branches are PC-relative.
+  InstructionPrologue(cbi, 1, true);
+
+  // Compute the branch target.
+  // This depends on the form of the instruction.
+  switch (cbi.instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+    {
+      // npc = (pc & 0xF0000000) | (target << 2)
+      Value branch_target =
+        OrValues(AndValues(m_register_cache.ReadGuestRegister(Reg::pc, false), Value::FromConstantU32(0xF0000000)),
+                 Value::FromConstantU32(cbi.instruction.j.target << 2));
+
+      EmitBranch(Condition::Always, (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count,
+                 std::move(branch_target));
+    }
+    break;
+
+    case InstructionOp::funct:
+    {
+      Assert(cbi.instruction.r.funct == InstructionFunct::jr || cbi.instruction.r.funct == InstructionFunct::jalr);
+
+      // npc = rs, link to rt
+      Value branch_target = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+      EmitBranch(Condition::Always,
+                 (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count,
+                 std::move(branch_target));
+    }
+    break;
+
+    case InstructionOp::beq:
+    case InstructionOp::bne:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    {
+      // npc = pc + (sext(imm) << 2)
+      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
+                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2));
+
+      // branch <- rs op rt
+      Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+      Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
+      EmitCmp(lhs.host_reg, rhs);
+
+      Condition condition;
+      switch (cbi.instruction.op)
+      {
+        case InstructionOp::beq:
+          condition = Condition::Equal;
+          break;
+        case InstructionOp::bne:
+          condition = Condition::NotEqual;
+          break;
+        case InstructionOp::bgtz:
+          condition = Condition::GreaterThanZero;
+          break;
+        case InstructionOp::blez:
+          condition = Condition::LessOrEqualToZero;
+          break;
+        default:
+          condition = Condition::Always;
+          break;
+      }
+
+      EmitBranch(condition, Reg::count, std::move(branch_target));
+    }
+    break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
 
   InstructionEpilogue(cbi);
   return true;

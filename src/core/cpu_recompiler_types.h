@@ -24,6 +24,19 @@ enum RegSize : u8
   RegSize_64,
 };
 
+enum class Condition: u8
+{
+  Always,
+  NotEqual,
+  Equal,
+  Overflow,
+  GreaterThanZero,
+  LessOrEqualToZero,
+
+  NotZero = NotEqual,
+  Zero = Equal
+};
+
 #if defined(Y_CPU_X64)
 using HostReg = Xbyak::Operand::Code;
 using CodeEmitter = Xbyak::CodeGenerator;

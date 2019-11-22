@@ -78,4 +78,13 @@ void Thunks::UpdateLoadDelay(Core* cpu)
   cpu->UpdateLoadDelay();
 }
 
+void Thunks::RaiseAddressException(Core* cpu, u32 address, bool store, bool branch)
+{
+  cpu->m_cop0_regs.BadVaddr = address;
+  if (branch)
+    cpu->RaiseException(Exception::AdEL, address, false, false, 0);
+  else
+    cpu->RaiseException(store ? Exception::AdES : Exception::AdEL);
+}
+
 } // namespace CPU::Recompiler

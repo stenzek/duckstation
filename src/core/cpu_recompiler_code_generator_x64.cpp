@@ -1,5 +1,7 @@
+#include "YBaseLib/Log.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
+Log_SetChannel(CPU::Recompiler);
 
 namespace CPU::Recompiler {
 
@@ -451,6 +453,63 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value)
   }
 }
 
+void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
+{
+  DebugAssert(value.IsConstant() || value.IsInHostRegister());
+
+  switch (value.size)
+  {
+    case RegSize_8:
+    {
+      if (value.IsConstant())
+        m_emit->cmp(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
+      else
+        m_emit->cmp(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
+    }
+    break;
+
+    case RegSize_16:
+    {
+      if (value.IsConstant())
+        m_emit->cmp(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
+      else
+        m_emit->cmp(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
+    }
+    break;
+
+    case RegSize_32:
+    {
+      if (value.IsConstant())
+        m_emit->cmp(GetHostReg32(to_reg), Truncate32(value.constant_value));
+      else
+        m_emit->cmp(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+    }
+    break;
+
+    case RegSize_64:
+    {
+      if (value.IsConstant())
+      {
+        if (!Xbyak::inner::IsInInt32(value.constant_value))
+        {
+          Value temp = m_register_cache.AllocateScratch(RegSize_64);
+          m_emit->mov(GetHostReg64(temp.host_reg), value.constant_value);
+          m_emit->cmp(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
+        }
+        else
+        {
+          m_emit->cmp(GetHostReg64(to_reg), Truncate32(value.constant_value));
+        }
+      }
+      else
+      {
+        m_emit->cmp(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+      }
+    }
+    break;
+  }
+}
+
 void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs,
                             bool signed_multiply)
 {
@@ -565,63 +624,6 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
 
   if (save_eax)
     m_emit->pop(m_emit->rax);
-}
-
-void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
-{
-  DebugAssert(value.IsConstant() || value.IsInHostRegister());
-
-  switch (value.size)
-  {
-    case RegSize_8:
-    {
-      if (value.IsConstant())
-        m_emit->cmp(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
-      else
-        m_emit->cmp(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
-    }
-    break;
-
-    case RegSize_16:
-    {
-      if (value.IsConstant())
-        m_emit->cmp(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
-      else
-        m_emit->cmp(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
-    }
-    break;
-
-    case RegSize_32:
-    {
-      if (value.IsConstant())
-        m_emit->cmp(GetHostReg32(to_reg), Truncate32(value.constant_value));
-      else
-        m_emit->cmp(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
-    }
-    break;
-
-    case RegSize_64:
-    {
-      if (value.IsConstant())
-      {
-        if (!Xbyak::inner::IsInInt32(value.constant_value))
-        {
-          Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit->mov(GetHostReg64(temp.host_reg), value.constant_value);
-          m_emit->cmp(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
-        }
-        else
-        {
-          m_emit->cmp(GetHostReg64(to_reg), Truncate32(value.constant_value));
-        }
-      }
-      else
-      {
-        m_emit->cmp(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
-      }
-    }
-    break;
-  }
 }
 
 void CodeGenerator::EmitInc(HostReg to_reg, RegSize size)
@@ -1597,6 +1599,94 @@ void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_che
     m_emit->mov(load_delay_old_value, GetHostReg32(value));
     m_emit->mov(next_load_delay_reg, static_cast<u8>(Reg::count));
   }
+}
+
+static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGenerator* emit, const Xbyak::Label& label)
+{
+  switch (condition)
+  {
+    case Condition::Always:
+      emit->jmp(label);
+      break;
+
+    case Condition::NotEqual:
+      invert ? emit->je(label) : emit->jne(label);
+      break;
+
+    case Condition::Equal:
+      invert ? emit->jne(label) : emit->je(label);
+      break;
+
+    case Condition::Overflow:
+      invert ? emit->jno(label) : emit->jo(label);
+      break;
+
+    case Condition::GreaterThanZero:
+      invert ? emit->jng(label) : emit->jg(label);
+      break;
+
+    case Condition::LessOrEqualToZero:
+      invert ? emit->jnle(label) : emit->jle(label);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+}
+
+void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
+{
+  Xbyak::Label skip_branch;
+
+  // we have to always read the old PC.. when we can push/pop the register cache state this won't be needed
+  Value old_npc;
+  if (lr_reg != Reg::count)
+    old_npc = m_register_cache.ReadGuestRegister(Reg::npc, false, true);
+
+  // condition is inverted because we want the case for skipping it
+  if (condition != Condition::Always)
+    EmitConditionalJump(condition, true, m_emit, skip_branch);
+
+  // save the old PC if we want to
+  if (lr_reg != Reg::count)
+  {
+    // can't cache because we have two branches
+    m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
+    m_register_cache.FlushGuestRegister(lr_reg, true, true);
+  }
+
+  // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
+  // strange.
+  if (!branch_target.IsConstant() || (branch_target.constant_value & 0x3) != 0)
+  {
+    if (branch_target.IsConstant())
+    {
+      Log_WarningPrintf("Misaligned constant target branch 0x%08X, this is strange",
+                        Truncate32(branch_target.constant_value));
+    }
+    else
+    {
+      // check the alignment of the target
+      m_emit->test(GetHostReg32(branch_target), 0x3);
+      m_emit->jnz(GetCurrentFarCodePointer());
+    }
+
+    // exception exit for misaligned target
+    SwitchToFarCode();
+    EmitFunctionCall(nullptr, &Thunks::RaiseAddressException, m_register_cache.GetCPUPtr(), branch_target,
+                     Value::FromConstantU8(0), Value::FromConstantU8(1));
+    EmitExceptionExit();
+    SwitchToNearCode();
+  }
+
+  // branch taken path - write new PC and flush it, since two branches
+  m_register_cache.WriteGuestRegister(Reg::npc, std::move(branch_target));
+  m_register_cache.FlushGuestRegister(Reg::npc, true, true);
+  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_was_branch_taken), Value::FromConstantU8(1));
+
+  // converge point
+  m_emit->L(skip_branch);
 }
 
 #if 0

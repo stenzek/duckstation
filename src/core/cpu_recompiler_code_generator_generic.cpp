@@ -39,4 +39,11 @@ void CodeGenerator::EmitStoreLoadDelay(Reg reg, const Value& value)
   m_load_delay_dirty = true;
 }
 
+#if !defined(Y_CPU_X64)
+void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool relative, const Value& branch_address)
+{
+  Panic("Not implemented");
+}
+#endif
+
 } // namespace CPU::Recompiler
