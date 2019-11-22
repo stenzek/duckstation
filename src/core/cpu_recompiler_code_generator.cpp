@@ -117,13 +117,10 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
         case InstructionFunct::sll:
         case InstructionFunct::srl:
         case InstructionFunct::sra:
-          result = Compile_ShiftImmediate(cbi);
-          break;
-
         case InstructionFunct::sllv:
         case InstructionFunct::srlv:
         case InstructionFunct::srav:
-          result = Compile_ShiftVariable(cbi);
+          result = Compile_Shift(cbi);
           break;
 
         case InstructionFunct::mfhi:
@@ -878,60 +875,40 @@ bool CodeGenerator::Compile_BitwiseImmediate(const CodeBlockInstruction& cbi)
   return true;
 }
 
-bool CodeGenerator::Compile_ShiftImmediate(const CodeBlockInstruction& cbi)
+bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  // rd <- rt op shamt
+  const InstructionFunct funct = cbi.instruction.r.funct;
   Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
-  Value shamt = Value::FromConstantU32(cbi.instruction.r.shamt);
+  Value shamt;
+  if (funct == InstructionFunct::sll || funct == InstructionFunct::srl || funct == InstructionFunct::sra)
+  {
+    // rd <- rt op shamt
+    shamt = Value::FromConstantU32(cbi.instruction.r.shamt);
+  }
+  else
+  {
+    // rd <- rt op (rs & 0x1F)
+    shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+    if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
+      EmitAnd(shamt.host_reg, Value::FromConstantU32(0x1F));
+  }
+
   Value result;
   switch (cbi.instruction.r.funct)
   {
     case InstructionFunct::sll:
-      result = ShlValues(rt, shamt);
-      break;
-
-    case InstructionFunct::srl:
-      result = ShrValues(rt, shamt);
-      break;
-
-    case InstructionFunct::sra:
-      result = SarValues(rt, shamt);
-      break;
-
-    default:
-      UnreachableCode();
-      break;
-  }
-
-  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
-
-  InstructionEpilogue(cbi);
-  return true;
-}
-
-bool CodeGenerator::Compile_ShiftVariable(const CodeBlockInstruction& cbi)
-{
-  InstructionPrologue(cbi, 1);
-
-  // rd <- rt op (rs & 0x1F)
-  Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
-  Value shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
-  if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
-    EmitAnd(shamt.host_reg, Value::FromConstantU32(0x1F));
-
-  Value result;
-  switch (cbi.instruction.r.funct)
-  {
     case InstructionFunct::sllv:
       result = ShlValues(rt, shamt);
       break;
 
+    case InstructionFunct::srl:
     case InstructionFunct::srlv:
       result = ShrValues(rt, shamt);
       break;
 
+    case InstructionFunct::sra:
     case InstructionFunct::srav:
       result = SarValues(rt, shamt);
       break;
@@ -940,6 +917,7 @@ bool CodeGenerator::Compile_ShiftVariable(const CodeBlockInstruction& cbi)
       UnreachableCode();
       break;
   }
+
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 

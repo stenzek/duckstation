@@ -174,8 +174,7 @@ private:
   bool CompileInstruction(const CodeBlockInstruction& cbi);
   bool Compile_Fallback(const CodeBlockInstruction& cbi);
   bool Compile_BitwiseImmediate(const CodeBlockInstruction& cbi);
-  bool Compile_ShiftImmediate(const CodeBlockInstruction& cbi);
-  bool Compile_ShiftVariable(const CodeBlockInstruction& cbi);
+  bool Compile_Shift(const CodeBlockInstruction& cbi);
   bool Compile_Load(const CodeBlockInstruction& cbi);
   bool Compile_Store(const CodeBlockInstruction& cbi);
   bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
