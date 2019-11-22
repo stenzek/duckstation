@@ -101,13 +101,18 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_Branch(cbi);
       break;
 
-    case InstructionOp::lui:
-      result = Compile_lui(cbi);
-      break;
-
     case InstructionOp::addi:
     case InstructionOp::addiu:
       result = Compile_Add(cbi);
+      break;
+
+    case InstructionOp::slti:
+    case InstructionOp::sltiu:
+      result = Compile_SetLess(cbi);
+      break;
+
+    case InstructionOp::lui:
+      result = Compile_lui(cbi);
       break;
 
     case InstructionOp::funct:
@@ -149,6 +154,11 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
         case InstructionFunct::mult:
         case InstructionFunct::multu:
           result = Compile_Multiply(cbi);
+          break;
+
+        case InstructionFunct::slt:
+        case InstructionFunct::sltu:
+          result = Compile_SetLess(cbi);
           break;
 
         case InstructionFunct::jr:
@@ -1148,6 +1158,43 @@ bool CodeGenerator::Compile_Multiply(const CodeBlockInstruction& cbi)
   return true;
 }
 
+bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  const bool signed_comparison =
+    (cbi.instruction.op == InstructionOp::slti ||
+     (cbi.instruction.op == InstructionOp::funct && cbi.instruction.r.funct == InstructionFunct::slt));
+
+  Reg dest;
+  Value lhs, rhs;
+  if (cbi.instruction.op == InstructionOp::slti || cbi.instruction.op == InstructionOp::sltiu)
+  {
+    // rt <- rs < {z,s}ext(imm)
+    dest = cbi.instruction.i.rt;
+    lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+    rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  }
+  else
+  {
+    // rd <- rs < rt
+    dest = cbi.instruction.r.rd;
+    lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs, true, true);
+    rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  }
+
+  // flush the old value which might free up a register
+  m_register_cache.InvalidateGuestRegister(dest);
+
+  Value result = m_register_cache.AllocateScratch(RegSize_32);
+  EmitCmp(lhs.host_reg, rhs);
+  EmitSetConditionResult(result.host_reg, result.size, signed_comparison ? Condition::Less : Condition::Below);
+  m_register_cache.WriteGuestRegister(dest, std::move(result));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
 bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 {
   // Force sync since we branches are PC-relative.
@@ -1211,7 +1258,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       EmitCmp(lhs.host_reg, Value::FromConstantU32(0));
 
       const Condition condition =
-        (cbi.instruction.op == InstructionOp::bgtz) ? Condition::Greater : Condition::LessOrEqual;
+        (cbi.instruction.op == InstructionOp::bgtz) ? Condition::Greater : Condition::LessEqual;
       EmitBranch(condition, Reg::count, false, std::move(branch_target));
     }
     break;
@@ -1253,4 +1300,5 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
   InstructionEpilogue(cbi);
   return true;
 }
+
 } // namespace CPU::Recompiler

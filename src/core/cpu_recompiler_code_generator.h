@@ -61,6 +61,7 @@ public:
   void EmitXor(HostReg to_reg, const Value& value);
   void EmitTest(HostReg to_reg, const Value& value);
   void EmitNot(HostReg to_reg, RegSize size);
+  void EmitSetConditionResult(HostReg to_reg, RegSize to_size, Condition condition);
 
   void EmitLoadGuestRegister(HostReg host_reg, Reg guest_reg);
   void EmitStoreGuestRegister(Reg guest_reg, const Value& value);
@@ -181,6 +182,7 @@ private:
   bool Compile_Add(const CodeBlockInstruction& cbi);
   bool Compile_Subtract(const CodeBlockInstruction& cbi);
   bool Compile_Multiply(const CodeBlockInstruction& cbi);
+  bool Compile_SetLess(const CodeBlockInstruction& cbi);
   bool Compile_Branch(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
 

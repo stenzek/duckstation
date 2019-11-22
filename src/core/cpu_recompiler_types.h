@@ -24,7 +24,7 @@ enum RegSize : u8
   RegSize_64,
 };
 
-enum class Condition: u8
+enum class Condition : u8
 {
   Always,
   NotEqual,
@@ -32,10 +32,14 @@ enum class Condition: u8
   Overflow,
   Greater,
   GreaterEqual,
-  LessOrEqual,
+  LessEqual,
   Less,
   Negative,
   PositiveOrZero,
+  Above,      // unsigned variant of Greater
+  AboveEqual, // unsigned variant of GreaterEqual
+  Below,      // unsigned variant of Less
+  BelowEqual, // unsigned variant of LessEqual
 
   NotZero = NotEqual,
   Zero = Equal

@@ -1081,6 +1081,75 @@ void CodeGenerator::EmitNot(HostReg to_reg, RegSize size)
   }
 }
 
+void CodeGenerator::EmitSetConditionResult(HostReg to_reg, RegSize to_size, Condition condition)
+{
+  switch (condition)
+  {
+    case Condition::Always:
+      m_emit->mov(GetHostReg8(to_reg), 1);
+      break;
+
+    case Condition::NotEqual:
+      m_emit->setne(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Equal:
+      m_emit->sete(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Overflow:
+      m_emit->seto(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Greater:
+      m_emit->setg(GetHostReg8(to_reg));
+      break;
+
+    case Condition::GreaterEqual:
+      m_emit->setge(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Less:
+      m_emit->setl(GetHostReg8(to_reg));
+      break;
+
+    case Condition::LessEqual:
+      m_emit->setle(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Negative:
+      m_emit->sets(GetHostReg8(to_reg));
+      break;
+
+    case Condition::PositiveOrZero:
+      m_emit->setns(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Above:
+      m_emit->seta(GetHostReg8(to_reg));
+      break;
+
+    case Condition::AboveEqual:
+      m_emit->setae(GetHostReg8(to_reg));
+      break;
+
+    case Condition::Below:
+      m_emit->setb(GetHostReg8(to_reg));
+      break;
+
+    case Condition::BelowEqual:
+      m_emit->setbe(GetHostReg8(to_reg));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  if (to_size != RegSize_8)
+    EmitZeroExtend(to_reg, to_size, to_reg, RegSize_8);
+}
+
 u32 CodeGenerator::PrepareStackForCall()
 {
   // we assume that the stack is unaligned at this point
@@ -1634,7 +1703,7 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
       invert ? emit->jnl(label) : emit->jl(label);
       break;
 
-    case Condition::LessOrEqual:
+    case Condition::LessEqual:
       invert ? emit->jnle(label) : emit->jle(label);
       break;
 
@@ -1644,6 +1713,22 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
 
     case Condition::PositiveOrZero:
       invert ? emit->js(label) : emit->jns(label);
+      break;
+
+    case Condition::Above:
+      invert ? emit->jna(label) : emit->ja(label);
+      break;
+
+    case Condition::AboveEqual:
+      invert ? emit->jnae(label) : emit->jae(label);
+      break;
+
+    case Condition::Below:
+      invert ? emit->jnb(label) : emit->jb(label);
+      break;
+
+    case Condition::BelowEqual:
+      invert ? emit->jnbe(label) : emit->jbe(label);
       break;
 
     default:
