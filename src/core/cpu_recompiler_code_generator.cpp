@@ -121,6 +121,11 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
           result = Compile_MoveHiLo(cbi);
           break;
 
+        case InstructionFunct::mult:
+        case InstructionFunct::multu:
+          result = Compile_Multiply(cbi);
+          break;
+
         default:
           result = Compile_Fallback(cbi);
           break;
@@ -283,6 +288,73 @@ Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs)
     EmitAdd(res.host_reg, rhs);
     return res;
   }
+}
+
+std::pair<Value, Value> CodeGenerator::MulValues(const Value& lhs, const Value& rhs, bool signed_multiply)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    switch (lhs.size)
+    {
+      case RegSize_8:
+      {
+        u16 res;
+        if (signed_multiply)
+          res = u16(s16(s8(lhs.constant_value)) * s16(s8(rhs.constant_value)));
+        else
+          res = u16(u8(lhs.constant_value)) * u16(u8(rhs.constant_value));
+
+        return std::make_pair(Value::FromConstantU8(Truncate8(res >> 8)), Value::FromConstantU8(Truncate8(res)));
+      }
+
+      case RegSize_16:
+      {
+        u32 res;
+        if (signed_multiply)
+          res = u32(s32(s16(lhs.constant_value)) * s32(s16(rhs.constant_value)));
+        else
+          res = u32(u16(lhs.constant_value)) * u32(u16(rhs.constant_value));
+
+        return std::make_pair(Value::FromConstantU16(Truncate16(res >> 16)), Value::FromConstantU16(Truncate16(res)));
+      }
+
+      case RegSize_32:
+      {
+        u64 res;
+        if (signed_multiply)
+          res = u64(s64(s32(lhs.constant_value)) * s64(s32(rhs.constant_value)));
+        else
+          res = u64(u32(lhs.constant_value)) * u64(u32(rhs.constant_value));
+
+        return std::make_pair(Value::FromConstantU32(Truncate32(res >> 32)), Value::FromConstantU32(Truncate32(res)));
+      }
+      break;
+
+      case RegSize_64:
+      {
+        u64 res;
+        if (signed_multiply)
+          res = u64(s64(lhs.constant_value) * s64(rhs.constant_value));
+        else
+          res = lhs.constant_value * rhs.constant_value;
+
+        // TODO: 128-bit multiply...
+        Panic("128-bit multiply");
+        return std::make_pair(Value::FromConstantU64(0), Value::FromConstantU64(res));
+      }
+
+      default:
+        return std::make_pair(Value::FromConstantU64(0), Value::FromConstantU64(0));
+    }
+  }
+
+  // We need two registers for both components.
+  Value hi = m_register_cache.AllocateScratch(lhs.size);
+  Value lo = m_register_cache.AllocateScratch(lhs.size);
+  EmitMul(hi.host_reg, lo.host_reg, lhs, rhs, signed_multiply);
+  return std::make_pair(std::move(hi), std::move(lo));
 }
 
 Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
@@ -906,6 +978,20 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
       UnreachableCode();
       break;
   }
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_Multiply(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  const bool signed_multiply = (cbi.instruction.r.funct == InstructionFunct::mult);
+  std::pair<Value, Value> result = MulValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rs),
+                                             m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), signed_multiply);
+  m_register_cache.WriteGuestRegister(Reg::hi, std::move(result.first));
+  m_register_cache.WriteGuestRegister(Reg::lo, std::move(result.second));
 
   InstructionEpilogue(cbi);
   return true;

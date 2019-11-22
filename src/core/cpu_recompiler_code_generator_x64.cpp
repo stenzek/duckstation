@@ -427,6 +427,122 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value)
   }
 }
 
+void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs,
+                            bool signed_multiply)
+{
+  const bool save_eax = (to_reg_hi != Xbyak::Operand::RAX && to_reg_lo != Xbyak::Operand::RAX);
+  const bool save_edx = (to_reg_hi != Xbyak::Operand::RDX && to_reg_lo != Xbyak::Operand::RDX);
+
+  if (save_eax)
+    m_emit.push(m_emit.rax);
+
+  if (save_edx)
+    m_emit.push(m_emit.rdx);
+
+#define DO_MUL(src)                                                                                                    \
+  if (lhs.size == RegSize_8)                                                                                           \
+    signed_multiply ? m_emit.imul(src.changeBit(8)) : m_emit.mul(src.changeBit(8));                                    \
+  else if (lhs.size == RegSize_16)                                                                                     \
+    signed_multiply ? m_emit.imul(src.changeBit(16)) : m_emit.mul(src.changeBit(16));                                  \
+  else if (lhs.size == RegSize_32)                                                                                     \
+    signed_multiply ? m_emit.imul(src.changeBit(32)) : m_emit.mul(src.changeBit(32));                                  \
+  else                                                                                                                 \
+    signed_multiply ? m_emit.imul(src.changeBit(64)) : m_emit.mul(src.changeBit(64));
+
+  // x*x
+  if (lhs.IsInHostRegister() && rhs.IsInHostRegister() && lhs.GetHostRegister() == rhs.GetHostRegister())
+  {
+    if (lhs.GetHostRegister() != Xbyak::Operand::RAX)
+      EmitCopyValue(Xbyak::Operand::RAX, lhs);
+
+    DO_MUL(m_emit.rax);
+  }
+  else if (lhs.IsInHostRegister() && lhs.GetHostRegister() == Xbyak::Operand::RAX)
+  {
+    if (!rhs.IsInHostRegister())
+    {
+      EmitCopyValue(Xbyak::Operand::RDX, rhs);
+      DO_MUL(m_emit.rdx);
+    }
+    else
+    {
+      DO_MUL(GetHostReg64(rhs));
+    }
+  }
+  else if (rhs.IsInHostRegister() && rhs.GetHostRegister() == Xbyak::Operand::RAX)
+  {
+    if (!lhs.IsInHostRegister())
+    {
+      EmitCopyValue(Xbyak::Operand::RDX, lhs);
+      DO_MUL(m_emit.rdx);
+    }
+    else
+    {
+      DO_MUL(GetHostReg64(lhs));
+    }
+  }
+  else
+  {
+    if (lhs.IsInHostRegister())
+    {
+      EmitCopyValue(Xbyak::Operand::RAX, rhs);
+      if (lhs.size == RegSize_8)
+        signed_multiply ? m_emit.imul(GetHostReg8(lhs)) : m_emit.mul(GetHostReg8(lhs));
+      else if (lhs.size == RegSize_16)
+        signed_multiply ? m_emit.imul(GetHostReg16(lhs)) : m_emit.mul(GetHostReg16(lhs));
+      else if (lhs.size == RegSize_32)
+        signed_multiply ? m_emit.imul(GetHostReg32(lhs)) : m_emit.mul(GetHostReg32(lhs));
+      else
+        signed_multiply ? m_emit.imul(GetHostReg64(lhs)) : m_emit.mul(GetHostReg64(lhs));
+    }
+    else if (rhs.IsInHostRegister())
+    {
+      EmitCopyValue(Xbyak::Operand::RAX, lhs);
+      if (lhs.size == RegSize_8)
+        signed_multiply ? m_emit.imul(GetHostReg8(rhs)) : m_emit.mul(GetHostReg8(rhs));
+      else if (lhs.size == RegSize_16)
+        signed_multiply ? m_emit.imul(GetHostReg16(rhs)) : m_emit.mul(GetHostReg16(rhs));
+      else if (lhs.size == RegSize_32)
+        signed_multiply ? m_emit.imul(GetHostReg32(rhs)) : m_emit.mul(GetHostReg32(rhs));
+      else
+        signed_multiply ? m_emit.imul(GetHostReg64(rhs)) : m_emit.mul(GetHostReg64(rhs));
+    }
+    else
+    {
+      EmitCopyValue(Xbyak::Operand::RAX, lhs);
+      EmitCopyValue(Xbyak::Operand::RDX, rhs);
+      DO_MUL(m_emit.rdx);
+    }
+  }
+
+#undef DO_MUL
+
+  if (to_reg_hi == Xbyak::Operand::RDX && to_reg_lo == Xbyak::Operand::RAX)
+  {
+    // ideal case: registers are the ones we want: don't have to do anything
+  }
+  else if (to_reg_hi == Xbyak::Operand::RAX && to_reg_lo == Xbyak::Operand::RDX)
+  {
+    // what we want, but swapped, so exchange them
+    m_emit.xchg(m_emit.rax, m_emit.rdx);
+  }
+  else
+  {
+    // store to the registers we want.. this could be optimized better
+    m_emit.push(m_emit.rdx);
+    m_emit.push(m_emit.rax);
+    m_emit.pop(GetHostReg64(to_reg_lo));
+    m_emit.pop(GetHostReg64(to_reg_hi));
+  }
+
+  // restore original contents
+  if (save_edx)
+    m_emit.pop(m_emit.rdx);
+
+  if (save_eax)
+    m_emit.pop(m_emit.rax);
+}
+
 void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
