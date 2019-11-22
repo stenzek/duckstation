@@ -357,17 +357,17 @@ static bool HandleSDLKeyEventForController(const SDL_Event* event, DigitalContro
       controller->SetButtonState(DigitalController::Button::Right, pressed);
       return true;
 
-    case SDL_SCANCODE_1:
+    case SDL_SCANCODE_Q:
       controller->SetButtonState(DigitalController::Button::L1, pressed);
       return true;
-    case SDL_SCANCODE_3:
+    case SDL_SCANCODE_E:
       controller->SetButtonState(DigitalController::Button::R1, pressed);
       return true;
 
-    case SDL_SCANCODE_Q:
+    case SDL_SCANCODE_1:
       controller->SetButtonState(DigitalController::Button::L2, pressed);
       return true;
-    case SDL_SCANCODE_E:
+    case SDL_SCANCODE_3:
       controller->SetButtonState(DigitalController::Button::R2, pressed);
       return true;
 
