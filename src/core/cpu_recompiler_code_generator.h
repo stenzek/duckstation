@@ -48,7 +48,7 @@ public:
   void EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size);
   void EmitCopyValue(HostReg to_reg, const Value& value);
   void EmitAdd(HostReg to_reg, const Value& value, bool set_flags);
-  void EmitSub(HostReg to_reg, const Value& value);
+  void EmitSub(HostReg to_reg, const Value& value, bool set_flags);
   void EmitCmp(HostReg to_reg, const Value& value);
   void EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs, bool signed_multiply);
   void EmitInc(HostReg to_reg, RegSize size);
@@ -134,6 +134,7 @@ public:
 
   // Value ops
   Value AddValues(const Value& lhs, const Value& rhs, bool set_flags);
+  Value SubValues(const Value& lhs, const Value& rhs, bool set_flags);
   std::pair<Value, Value> MulValues(const Value& lhs, const Value& rhs, bool signed_multiply);
   Value ShlValues(const Value& lhs, const Value& rhs);
   Value ShrValues(const Value& lhs, const Value& rhs);
@@ -179,6 +180,7 @@ private:
   bool Compile_Store(const CodeBlockInstruction& cbi);
   bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
   bool Compile_Add(const CodeBlockInstruction& cbi);
+  bool Compile_Subtract(const CodeBlockInstruction& cbi);
   bool Compile_Multiply(const CodeBlockInstruction& cbi);
   bool Compile_Branch(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);

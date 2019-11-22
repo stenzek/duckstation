@@ -138,6 +138,11 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
           result = Compile_Add(cbi);
           break;
 
+        case InstructionFunct::sub:
+        case InstructionFunct::subu:
+          result = Compile_Subtract(cbi);
+          break;
+
         case InstructionFunct::mult:
         case InstructionFunct::multu:
           result = Compile_Multiply(cbi);
@@ -308,6 +313,46 @@ Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs, bool set_flag
   {
     EmitCopyValue(res.host_reg, lhs);
     EmitAdd(res.host_reg, rhs, set_flags);
+    return res;
+  }
+}
+
+Value CodeGenerator::SubValues(const Value& lhs, const Value& rhs, bool set_flags)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant() && !set_flags)
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value - rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        return Value::FromConstantU8(Truncate8(new_cv));
+
+      case RegSize_16:
+        return Value::FromConstantU16(Truncate16(new_cv));
+
+      case RegSize_32:
+        return Value::FromConstantU32(Truncate32(new_cv));
+
+      case RegSize_64:
+        return Value::FromConstantU64(new_cv);
+
+      default:
+        return Value();
+    }
+  }
+
+  Value res = m_register_cache.AllocateScratch(lhs.size);
+  if (rhs.HasConstantValue(0) && !set_flags)
+  {
+    EmitCopyValue(res.host_reg, lhs);
+    return res;
+  }
+  else
+  {
+    EmitCopyValue(res.host_reg, lhs);
+    EmitSub(res.host_reg, rhs, set_flags);
     return res;
   }
 }
@@ -1046,6 +1091,26 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
     EmitRaiseException(Exception::Ov, Condition::Overflow);
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_Subtract(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  Assert(cbi.instruction.op == InstructionOp::funct);
+  const bool check_overflow = (cbi.instruction.r.funct == InstructionFunct::sub);
+
+  Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+
+  Value result = SubValues(lhs, rhs, check_overflow);
+  if (check_overflow)
+    EmitRaiseException(Exception::Ov, Condition::Overflow);
+
+  m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 
   InstructionEpilogue(cbi);
   return true;

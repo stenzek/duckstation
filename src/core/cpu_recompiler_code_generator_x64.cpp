@@ -396,7 +396,7 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
   }
 }
 
-void CodeGenerator::EmitSub(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
 
