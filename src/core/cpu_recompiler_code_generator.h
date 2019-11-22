@@ -198,8 +198,6 @@ private:
   u32 m_delayed_pc_add = 0;
   TickCount m_delayed_cycles_add = 0;
 
-  std::array<Value, 3> m_operand_memory_addresses{};
-
   // whether various flags need to be reset.
   bool m_current_instruction_in_branch_delay_slot_dirty = false;
   bool m_branch_was_taken_dirty = false;

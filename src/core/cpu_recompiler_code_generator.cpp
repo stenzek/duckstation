@@ -169,10 +169,6 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       break;
   }
 
-  // release temporary effective addresses
-  for (Value& value : m_operand_memory_addresses)
-    value.ReleaseAndClear();
-
   return result;
 }
 
