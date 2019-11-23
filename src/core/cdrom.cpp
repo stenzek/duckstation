@@ -1125,7 +1125,7 @@ void CDROM::DoSeekComplete()
       seek_okay &= m_media->Seek(m_media->GetPositionOnDisc() - 1);
       if (seek_okay)
       {
-        ProcessDataSectorHeader(raw_sector);
+        ProcessDataSectorHeader(raw_sector, false);
 
         // ensure the location matches up (it should)
         const auto [seek_mm, seek_ss, seek_ff] = m_seek_position.ToBCD();
@@ -1280,18 +1280,17 @@ void CDROM::DoSectorRead()
   m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
-void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
+void CDROM::ProcessDataSectorHeader(const u8* raw_sector, bool set_valid)
 {
   std::memcpy(&m_last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
-
-  m_secondary_status.header_valid = true;
+  m_secondary_status.header_valid |= set_valid;
 }
 
 void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
-  ProcessDataSectorHeader(raw_sector);
+  ProcessDataSectorHeader(raw_sector, true);
 
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_media->GetPositionOnDisc() - 1,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));

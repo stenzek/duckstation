@@ -206,7 +206,7 @@ private:
   void DoIDRead();
   void DoTOCRead();
   void DoSectorRead();
-  void ProcessDataSectorHeader(const u8* raw_sector);
+  void ProcessDataSectorHeader(const u8* raw_sector, bool set_valid);
   void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
