@@ -122,6 +122,7 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
         case InstructionFunct::and_:
         case InstructionFunct::or_:
         case InstructionFunct::xor_:
+        case InstructionFunct::nor:
           result = Compile_Bitwise(cbi);
           break;
 
@@ -663,6 +664,37 @@ Value CodeGenerator::XorValues(const Value& lhs, const Value& rhs)
   return res;
 }
 
+Value CodeGenerator::NotValue(const Value& val)
+{
+  if (val.IsConstant())
+  {
+    u64 new_cv = ~val.constant_value;
+    switch (val.size)
+    {
+      case RegSize_8:
+        return Value::FromConstantU8(Truncate8(new_cv));
+
+      case RegSize_16:
+        return Value::FromConstantU16(Truncate16(new_cv));
+
+      case RegSize_32:
+        return Value::FromConstantU32(Truncate32(new_cv));
+
+      case RegSize_64:
+        return Value::FromConstantU64(new_cv);
+
+      default:
+        return Value();
+    }
+  }
+
+  // TODO: Don't allocate scratch if the lhs is a scratch?
+  Value res = m_register_cache.AllocateScratch(RegSize_32);
+  EmitCopyValue(res.host_reg, val);
+  EmitNot(res.host_reg, val.size);
+  return res;
+}
+
 void CodeGenerator::BlockPrologue()
 {
   EmitStoreCPUStructField(offsetof(Core, m_exception_raised), Value::FromConstantU8(0));
@@ -908,6 +940,10 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
 
         case InstructionFunct::xor_:
           result = XorValues(lhs, rhs);
+          break;
+
+        case InstructionFunct::nor:
+          result = NotValue(OrValues(lhs, rhs));
           break;
 
         default:

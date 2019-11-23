@@ -143,6 +143,7 @@ public:
   Value OrValues(const Value& lhs, const Value& rhs);
   Value AndValues(const Value& lhs, const Value& rhs);
   Value XorValues(const Value& lhs, const Value& rhs);
+  Value NotValue(const Value& val);
 
 private:
   // Host register setup
