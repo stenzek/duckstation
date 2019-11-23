@@ -8,6 +8,8 @@ struct Settings
 
   ConsoleRegion region = ConsoleRegion::Auto;
 
+  CPUExecutionMode cpu_execution_mode = CPUExecutionMode::Interpreter;
+
   bool start_paused = false;
   bool speed_limiter_enabled = true;
   bool audio_sync_enabled = true;
@@ -50,6 +52,10 @@ struct Settings
   static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
   static const char* GetConsoleRegionName(ConsoleRegion region);
   static const char* GetConsoleRegionDisplayName(ConsoleRegion region);
+
+  static std::optional<CPUExecutionMode> ParseCPUExecutionMode(const char* str);
+  static const char* GetCPUExecutionModeName(CPUExecutionMode mode);
+  static const char* GetCPUExecutionModeDisplayName(CPUExecutionMode mode);
 
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);

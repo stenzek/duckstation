@@ -24,9 +24,14 @@ public:
   CodeCache();
   ~CodeCache();
 
-  void Initialize(System* system, Core* core, Bus* bus);
-  void Reset();
+  void Initialize(System* system, Core* core, Bus* bus, bool use_recompiler);
   void Execute();
+
+  /// Flushes the code cache, forcing all blocks to be recompiled.
+  void Flush();
+
+  /// Changes whether the recompiler is enabled.
+  void SetUseRecompiler(bool enable);
 
   /// Invalidates all blocks which are in the range of the specified code page.
   void InvalidateBlocksWithPageIndex(u32 page_index);
@@ -69,10 +74,9 @@ private:
 
   BlockMap m_blocks;
 
+  bool m_use_recompiler = false;
+
   std::array<std::vector<CodeBlock*>, CPU_CODE_CACHE_PAGE_COUNT> m_ram_block_map;
 };
-
-extern bool USE_CODE_CACHE;
-extern bool USE_RECOMPILER;
 
 } // namespace CPU

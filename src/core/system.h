@@ -83,6 +83,7 @@ public:
 
   void SetController(u32 slot, std::shared_ptr<PadDevice> dev);
   void UpdateMemoryCards();
+  void UpdateCPUExecutionMode();
 
   bool HasMedia() const;
   bool InsertMedia(const char* path);
@@ -109,6 +110,7 @@ private:
   std::unique_ptr<SPU> m_spu;
   std::unique_ptr<MDEC> m_mdec;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
+  CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
   u32 m_global_tick_counter = 0;

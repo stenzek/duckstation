@@ -34,6 +34,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
   m_region = host_interface->GetSettings().region;
+  m_cpu_execution_mode = host_interface->GetSettings().cpu_execution_mode;
 }
 
 System::~System() = default;
@@ -171,7 +172,7 @@ bool System::Boot(const char* filename)
 void System::InitializeComponents()
 {
   m_cpu->Initialize(m_bus.get());
-  m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get());
+  m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
   m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(),
                     m_cdrom.get(), m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get());
 
@@ -239,7 +240,7 @@ bool System::DoState(StateWrapper& sw)
     return false;
 
   if (sw.IsReading())
-    m_cpu_code_cache->Reset();
+    m_cpu_code_cache->Flush();
 
   if (!sw.DoMarker("Bus") || !m_bus->DoState(sw))
     return false;
@@ -274,7 +275,7 @@ bool System::DoState(StateWrapper& sw)
 void System::Reset()
 {
   m_cpu->Reset();
-  m_cpu_code_cache->Reset();
+  m_cpu_code_cache->Flush();
   m_bus->Reset();
   m_dma->Reset();
   m_interrupt_controller->Reset();
@@ -303,14 +304,23 @@ bool System::SaveState(ByteStream* state)
 
 void System::RunFrame()
 {
+  // Duplicated to avoid branch in the while loop, as the downcount can be quite low at times.
   u32 current_frame_number = m_frame_number;
-  while (current_frame_number == m_frame_number)
+  if (m_cpu_execution_mode == CPUExecutionMode::Interpreter)
   {
-    if (CPU::USE_CODE_CACHE)
-      m_cpu_code_cache->Execute();
-    else
+    while (current_frame_number == m_frame_number)
+    {
       m_cpu->Execute();
-    Synchronize();
+      Synchronize();
+    }
+  }
+  else
+  {
+    while (current_frame_number == m_frame_number)
+    {
+      m_cpu_code_cache->Execute();
+      Synchronize();
+    }
   }
 }
 
@@ -469,6 +479,13 @@ void System::UpdateMemoryCards()
     if (card)
       m_pad->SetMemoryCard(1, std::move(card));
   }
+}
+
+void System::UpdateCPUExecutionMode()
+{
+  m_cpu_execution_mode = GetSettings().cpu_execution_mode;
+  m_cpu_code_cache->Flush();
+  m_cpu_code_cache->SetUseRecompiler(m_cpu_execution_mode == CPUExecutionMode::Recompiler);
 }
 
 bool System::HasMedia() const

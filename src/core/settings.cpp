@@ -14,6 +14,7 @@ Settings::Settings() = default;
 void Settings::SetDefaults()
 {
   region = ConsoleRegion::Auto;
+  cpu_execution_mode = CPUExecutionMode::Interpreter;
 
   audio_sync_enabled = true;
   video_sync_enabled = true;
@@ -50,6 +51,9 @@ void Settings::Load(const char* filename)
   speed_limiter_enabled = ini.GetBoolValue("General", "SpeedLimiterEnabled", true);
   start_paused = ini.GetBoolValue("General", "StartPaused", false);
 
+  cpu_execution_mode =
+    ParseCPUExecutionMode(ini.GetValue("CPU", "ExecutionMode", "Interpreter")).value_or(CPUExecutionMode::Interpreter);
+
   gpu_renderer = ParseRendererName(ini.GetValue("GPU", "Renderer", "OpenGL")).value_or(GPURenderer::HardwareOpenGL);
   gpu_resolution_scale = static_cast<u32>(ini.GetLongValue("GPU", "ResolutionScale", 1));
   gpu_true_color = ini.GetBoolValue("GPU", "TrueColor", false);
@@ -78,6 +82,8 @@ bool Settings::Save(const char* filename) const
   ini.SetBoolValue("General", "SyncToVideo", video_sync_enabled);
   ini.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
   ini.SetBoolValue("General", "StartPaused", start_paused);
+
+  ini.SetValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 
   ini.SetValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   ini.SetLongValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
@@ -136,6 +142,34 @@ const char* Settings::GetConsoleRegionName(ConsoleRegion region)
 const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
 {
   return s_console_region_display_names[static_cast<int>(region)];
+}
+
+static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
+static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
+  {"Intepreter (Slowest)", "Cached Interpreter (Faster)", "Recompiler (Fastest)"}};
+
+std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
+{
+  u8 index = 0;
+  for (const char* name : s_cpu_execution_mode_names)
+  {
+    if (strcasecmp(name, str) == 0)
+      return static_cast<CPUExecutionMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetCPUExecutionModeName(CPUExecutionMode mode)
+{
+  return s_cpu_execution_mode_names[static_cast<u8>(mode)];
+}
+
+const char* Settings::GetCPUExecutionModeDisplayName(CPUExecutionMode mode)
+{
+  return s_cpu_execution_mode_display_names[static_cast<u8>(mode)];
 }
 
 static std::array<const char*, 3> s_gpu_renderer_names = {{"D3D11", "OpenGL", "Software"}};

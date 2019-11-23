@@ -9,8 +9,6 @@ Log_SetChannel(CPU::CodeCache);
 
 namespace CPU {
 
-bool USE_CODE_CACHE = false;
-bool USE_RECOMPILER = false;
 constexpr bool USE_BLOCK_LINKING = true;
 
 static constexpr size_t RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
@@ -20,11 +18,12 @@ CodeCache::CodeCache() = default;
 
 CodeCache::~CodeCache() = default;
 
-void CodeCache::Initialize(System* system, Core* core, Bus* bus)
+void CodeCache::Initialize(System* system, Core* core, Bus* bus, bool use_recompiler)
 {
   m_system = system;
   m_core = core;
   m_bus = bus;
+  m_use_recompiler = use_recompiler;
 
   m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
   m_asm_functions = std::make_unique<Recompiler::ASMFunctions>();
@@ -63,7 +62,7 @@ void CodeCache::Execute()
 #endif
 
   reexecute_block:
-    if (USE_RECOMPILER)
+    if (m_use_recompiler)
       block->host_code(m_core);
     else
       InterpretCachedBlock(*block);
@@ -118,7 +117,16 @@ void CodeCache::Execute()
   }
 }
 
-void CodeCache::Reset()
+void CodeCache::SetUseRecompiler(bool enable)
+{
+  if (m_use_recompiler == enable)
+    return;
+
+  m_use_recompiler = enable;
+  Flush();
+}
+
+void CodeCache::Flush()
 {
   m_bus->ClearRAMCodePageFlags();
   for (auto& it : m_ram_block_map)
@@ -285,7 +293,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
     return false;
   }
 
-  if (USE_RECOMPILER)
+  if (m_use_recompiler)
   {
     // Ensure we're not going to run out of space while compiling this block.
     if (m_code_buffer->GetFreeCodeSpace() <
@@ -294,7 +302,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
           (block->instructions.size() * Recompiler::MAX_FAR_HOST_BYTES_PER_INSTRUCTION))
     {
       Log_WarningPrintf("Out of code space, flushing all blocks.");
-      Reset();
+      Flush();
     }
 
     Recompiler::CodeGenerator codegen(m_core, m_code_buffer.get(), *m_asm_functions.get());

@@ -31,6 +31,14 @@ enum class ConsoleRegion
   Count
 };
 
+enum class CPUExecutionMode : u8
+{
+  Interpreter,
+  CachedInterpreter,
+  Recompiler,
+  Count
+};
+
 enum class GPURenderer : u8
 {
   HardwareD3D11,

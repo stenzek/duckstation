@@ -803,6 +803,26 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   ImGui::Separator();
 
+  if (ImGui::BeginMenu("CPU Execution Mode"))
+  {
+    const CPUExecutionMode current = m_settings.cpu_execution_mode;
+    for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
+                          i == static_cast<u32>(current)))
+      {
+        m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(i);
+        settings_changed = true;
+        if (m_system)
+          m_system->UpdateCPUExecutionMode();
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  ImGui::Separator();
+
   if (ImGui::BeginMenu("Renderer"))
   {
     const GPURenderer current = m_settings.gpu_renderer;
@@ -1012,6 +1032,13 @@ void SDLHostInterface::DrawSettingsWindow()
           m_settings.region = static_cast<ConsoleRegion>(region);
           settings_changed = true;
         }
+
+        ImGui::Text("BIOS Path:");
+        ImGui::SameLine(indent);
+        settings_changed |= DrawFileChooser("##bios_path", &m_settings.bios_path);
+
+        settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings.bios_patch_tty_enable);
+        settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings.bios_patch_fast_boot);
       }
 
       ImGui::NewLine();
@@ -1039,17 +1066,6 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
           UpdateSpeedLimiterState();
         }
-      }
-
-      ImGui::NewLine();
-      if (DrawSettingsSectionHeader("BIOS"))
-      {
-        ImGui::Text("ROM Path:");
-        ImGui::SameLine(indent);
-        settings_changed |= DrawFileChooser("##bios_path", &m_settings.bios_path);
-
-        settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings.bios_patch_tty_enable);
-        settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings.bios_patch_fast_boot);
       }
 
       ImGui::EndTabItem();
@@ -1084,6 +1100,29 @@ void SDLHostInterface::DrawSettingsWindow()
         }
 
         ImGui::NewLine();
+      }
+
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("CPU"))
+    {
+      ImGui::Text("Execution Mode:");
+      ImGui::SameLine(indent);
+
+      int execution_mode = static_cast<int>(m_settings.cpu_execution_mode);
+      if (ImGui::Combo(
+            "##execution_mode", &execution_mode,
+            [](void*, int index, const char** out_text) {
+              *out_text = Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(index));
+              return true;
+            },
+            nullptr, static_cast<int>(CPUExecutionMode::Count)))
+      {
+        m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(execution_mode);
+        settings_changed = true;
+        if (m_system)
+          m_system->UpdateCPUExecutionMode();
       }
 
       ImGui::EndTabItem();
