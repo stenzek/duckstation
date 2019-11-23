@@ -163,6 +163,8 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
 
         case InstructionFunct::jr:
         case InstructionFunct::jalr:
+        case InstructionFunct::syscall:
+        case InstructionFunct::break_:
           result = Compile_Branch(cbi);
           break;
 
@@ -1219,13 +1221,25 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 
     case InstructionOp::funct:
     {
-      Assert(cbi.instruction.r.funct == InstructionFunct::jr || cbi.instruction.r.funct == InstructionFunct::jalr);
-
-      // npc = rs, link to rt
-      Value branch_target = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
-      EmitBranch(Condition::Always,
-                 (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count, false,
-                 std::move(branch_target));
+      if (cbi.instruction.r.funct == InstructionFunct::jr || cbi.instruction.r.funct == InstructionFunct::jalr)
+      {
+        // npc = rs, link to rt
+        Value branch_target = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+        EmitBranch(Condition::Always,
+                   (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count, false,
+                   std::move(branch_target));
+      }
+      else if (cbi.instruction.r.funct == InstructionFunct::syscall ||
+               cbi.instruction.r.funct == InstructionFunct::break_)
+      {
+        const Exception excode =
+          (cbi.instruction.r.funct == InstructionFunct::syscall) ? Exception::Syscall : Exception::BP;
+        EmitRaiseException(excode);
+      }
+      else
+      {
+        UnreachableCode();
+      }
     }
     break;
 
