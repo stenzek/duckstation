@@ -377,6 +377,13 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
   // ensure VRAM shadow is up to date
   ReadVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height);
 
+  if (m_system->GetSettings().debugging.dump_vram_to_cpu_copies)
+  {
+    DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++), m_vram_transfer.width,
+                   m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
+                   &m_vram_ptr[m_vram_transfer.y * VRAM_WIDTH + m_vram_transfer.x], true);
+  }
+
   // switch to pixel-by-pixel read state
   m_stats.num_vram_reads++;
   m_state = State::ReadingVRAM;
