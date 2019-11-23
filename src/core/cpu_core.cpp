@@ -645,12 +645,12 @@ void Core::ExecuteInstruction()
   }
 #endif
 
-  //#ifdef _DEBUG
+#ifdef _DEBUG
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, m_current_instruction_pc, this);
   if (LOG_EXECUTION)
     LogInstruction(inst.bits, m_current_instruction_pc, this);
-  //#endif
+#endif
 
   switch (inst.op)
   {
