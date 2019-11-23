@@ -12,9 +12,6 @@ add_executable(duckstation
   sdl_host_interface.h
 )
 
-target_include_directories(duckstation PRIVATE "${SDL2_INCLUDE_DIRS}")
-target_link_libraries(duckstation PRIVATE YBaseLib core common imgui nativefiledialog glad "${SDL2_LIBRARIES}")
-
 if(WIN32)
   target_sources(duckstation PRIVATE
     d3d11_host_display.cpp
@@ -22,3 +19,5 @@ if(WIN32)
   )
   target_link_libraries(duckstation PRIVATE d3d11.lib winmm.lib)
 endif()
+
+target_link_libraries(duckstation PRIVATE YBaseLib core common imgui nativefiledialog glad SDL2::Main)

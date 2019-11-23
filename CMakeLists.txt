@@ -1,28 +1,35 @@
 cmake_minimum_required(VERSION 3.10)
 project(duckstation C CXX)
 
+# Pull in modules.
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
+
+
 # Common include/library directories on Windows.
 if(WIN32)
+  set(SDL2_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/include/SDL")
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      link_directories("${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib64-debug")
+      set(SDL2_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib64-debug/SDL2.lib")
+      set(SDL2MAIN_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib64-debug/SDL2main.lib")
     else()
-      link_directories("${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib32-debug")
+      set(SDL2_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib32-debug/SDL2.lib")
+      set(SDL2MAIN_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib32-debug/SDL2main.lib")
     endif()
   else()
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      link_directories("${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib64")
+      set(SDL2_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib64/SDL2.lib")
+      set(SDL2MAIN_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib64/SDL2main.lib")
     else()
-      link_directories("${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib32")
+      set(SDL2_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib32/SDL2.lib")
+      set(SDL2MAIN_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/lib32/SDL2main.lib")
     endif()
   endif()
-
-  set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/include/SDL")
-  set(SDL2_LIBRARIES "SDL2")
-  set(SDL2_FOUND TRUE)
-else()
-  find_package(SDL2 REQUIRED)
 endif()
+
+
+# Required libraries.
+find_package(SDL2 REQUIRED)
 
 
 # Set _DEBUG macro for Debug builds.
