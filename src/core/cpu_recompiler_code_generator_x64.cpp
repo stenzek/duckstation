@@ -1614,60 +1614,65 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
   SwitchToNearCode();
 }
 
-void CodeGenerator::EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_check_old_value, bool move_next)
+void CodeGenerator::EmitFlushInterpreterLoadDelay()
 {
   Value reg = m_register_cache.AllocateScratch(RegSize_8);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  Xbyak::Label skip_flush;
-
   auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
-  auto load_delay_old_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_old_value)];
   auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
   auto reg_ptr = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
 
+  Xbyak::Label skip_flush;
+
   // reg = load_delay_reg
   m_emit->movzx(GetHostReg32(reg.host_reg), load_delay_reg);
-  if (!skip_check_old_value)
-    m_emit->mov(GetHostReg32(value), load_delay_old_value);
 
-  if (!skip_check_for_delay)
-  {
-    // if load_delay_reg == Reg::count goto skip_flush
-    m_emit->cmp(GetHostReg32(reg.host_reg), static_cast<u8>(Reg::count));
-    m_emit->je(skip_flush);
-  }
-
-  if (!skip_check_old_value)
-  {
-    // if r[reg] != load_delay_old_value goto skip_flush
-    m_emit->cmp(GetHostReg32(value), reg_ptr);
-    m_emit->jne(skip_flush);
-  }
+  // if load_delay_reg == Reg::count goto skip_flush
+  m_emit->cmp(GetHostReg32(reg.host_reg), static_cast<u8>(Reg::count));
+  m_emit->je(skip_flush);
 
   // r[reg] = load_delay_value
   m_emit->mov(GetHostReg32(value), load_delay_value);
   m_emit->mov(reg_ptr, GetHostReg32(value));
 
-  // if !move_next load_delay_reg = Reg::count
-  if (!move_next)
-    m_emit->mov(load_delay_reg, static_cast<u8>(Reg::count));
+  // load_delay_reg = Reg::count
+  m_emit->mov(load_delay_reg, static_cast<u8>(Reg::count));
 
   m_emit->L(skip_flush);
+}
 
-  if (move_next)
-  {
-    auto next_load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
-    auto next_load_delay_old_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_old_value)];
-    auto next_load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
-    m_emit->mov(GetHostReg32(value), next_load_delay_value);
-    m_emit->mov(GetHostReg8(reg), next_load_delay_reg);
-    m_emit->mov(load_delay_value, GetHostReg32(value));
-    m_emit->mov(GetHostReg32(value), next_load_delay_old_value);
-    m_emit->mov(load_delay_reg, GetHostReg8(reg));
-    m_emit->mov(load_delay_old_value, GetHostReg32(value));
-    m_emit->mov(next_load_delay_reg, static_cast<u8>(Reg::count));
-  }
+void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
+{
+  Value reg = m_register_cache.AllocateScratch(RegSize_8);
+  Value value = m_register_cache.AllocateScratch(RegSize_32);
+
+  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
+  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
+  auto next_load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
+  auto next_load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
+
+  m_emit->mov(GetHostReg32(value), next_load_delay_value);
+  m_emit->mov(GetHostReg8(reg), next_load_delay_reg);
+  m_emit->mov(load_delay_value, GetHostReg32(value));
+  m_emit->mov(load_delay_reg, GetHostReg8(reg));
+  m_emit->mov(next_load_delay_reg, static_cast<u8>(Reg::count));
+}
+
+void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
+{
+  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
+
+  Xbyak::Label skip_cancel;
+
+  // if load_delay_reg != reg goto skip_cancel
+  m_emit->cmp(load_delay_reg, static_cast<u8>(reg));
+  m_emit->jne(skip_cancel);
+
+  // load_delay_reg = Reg::count
+  m_emit->mov(load_delay_reg, static_cast<u8>(Reg::count));
+
+  m_emit->L(skip_cancel);
 }
 
 template<typename T>
@@ -1746,7 +1751,9 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool always_link
     old_npc = m_register_cache.ReadGuestRegister(Reg::npc, false, true);
     if (always_link)
     {
-      // can't cache because we have two branches
+      // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
+      // if we don't cancel it, at the end of the instruction the value we write can be overridden.
+      EmitCancelInterpreterLoadDelayForReg(lr_reg);
       m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
       m_register_cache.FlushGuestRegister(lr_reg, true, true);
     }
@@ -1760,7 +1767,9 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool always_link
   // save the old PC if we want to
   if (lr_reg != Reg::count && !always_link)
   {
-    // can't cache because we have two branches
+    // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
+    // if we don't cancel it, at the end of the instruction the value we write can be overridden.
+    EmitCancelInterpreterLoadDelayForReg(lr_reg);
     m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
     m_register_cache.FlushGuestRegister(lr_reg, true, true);
   }
@@ -1807,6 +1816,10 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
                      Value::FromConstantU8(static_cast<u8>(excode)));
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
+
+    // PC should be synced at this point. If we leave the 4 on here for this instruction, we mess up npc.
+    Assert(m_delayed_pc_add == 4);
+    m_delayed_pc_add = 0;
     return;
   }
 

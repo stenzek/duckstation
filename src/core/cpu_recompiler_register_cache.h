@@ -257,6 +257,7 @@ public:
   void FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty);
   void InvalidateGuestRegister(Reg guest_reg);
 
+  void InvalidateAllNonDirtyGuestRegisters();
   void FlushAllGuestRegisters(bool invalidate, bool clear_dirty);
   bool EvictOneGuestRegister();
 

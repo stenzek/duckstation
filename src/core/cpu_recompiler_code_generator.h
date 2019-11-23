@@ -65,7 +65,10 @@ public:
 
   void EmitLoadGuestRegister(HostReg host_reg, Reg guest_reg);
   void EmitStoreGuestRegister(Reg guest_reg, const Value& value);
-  void EmitStoreLoadDelay(Reg reg, const Value& value);
+  void EmitStoreInterpreterLoadDelay(Reg reg, const Value& value);
+  void EmitFlushInterpreterLoadDelay();
+  void EmitMoveNextInterpreterLoadDelay();
+  void EmitCancelInterpreterLoadDelayForReg(Reg reg);
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
@@ -168,7 +171,6 @@ private:
   void SyncCurrentInstructionPC();
   void SyncPC();
   void AddPendingCycles();
-  void EmitDelaySlotUpdate(bool skip_check_for_delay, bool skip_check_old_value, bool move_next);
 
   //////////////////////////////////////////////////////////////////////////
   // Instruction Code Generators

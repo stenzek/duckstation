@@ -93,7 +93,7 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
 
     case InstructionOp::j:
     case InstructionOp::jal:
-    case InstructionOp::b:
+    //case InstructionOp::b:
     case InstructionOp::beq:
     case InstructionOp::bne:
     case InstructionOp::bgtz:
@@ -812,19 +812,22 @@ void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
 {
   m_register_cache.UpdateLoadDelay();
 
+  if (m_load_delay_dirty)
+  {
+    // we have to invalidate the register cache, since the load delayed register might've been cached
+    Log_DebugPrint("Emitting delay slot flush");
+    EmitFlushInterpreterLoadDelay();
+    m_register_cache.InvalidateAllNonDirtyGuestRegisters();
+    m_load_delay_dirty = false;
+  }
+
   // copy if the previous instruction was a load, reset the current value on the next instruction
   if (m_next_load_delay_dirty)
   {
     Log_DebugPrint("Emitting delay slot flush (with move next)");
-    EmitDelaySlotUpdate(false, false, true);
+    EmitMoveNextInterpreterLoadDelay();
     m_next_load_delay_dirty = false;
     m_load_delay_dirty = true;
-  }
-  else if (m_load_delay_dirty)
-  {
-    Log_DebugPrint("Emitting delay slot flush");
-    EmitDelaySlotUpdate(true, false, false);
-    m_load_delay_dirty = false;
   }
 }
 

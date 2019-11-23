@@ -106,12 +106,11 @@ private:
   ALWAYS_INLINE void UpdateLoadDelay()
   {
     // the old value is needed in case the delay slot instruction overwrites the same register
-    if (m_load_delay_reg != Reg::count && m_regs.r[static_cast<u8>(m_load_delay_reg)] == m_load_delay_old_value)
+    if (m_load_delay_reg != Reg::count)
       m_regs.r[static_cast<u8>(m_load_delay_reg)] = m_load_delay_value;
 
     m_load_delay_reg = m_next_load_delay_reg;
     m_load_delay_value = m_next_load_delay_value;
-    m_load_delay_old_value = m_next_load_delay_old_value;
     m_next_load_delay_reg = Reg::count;
   }
 
@@ -168,10 +167,8 @@ private:
   // load delays
   Reg m_load_delay_reg = Reg::count;
   u32 m_load_delay_value = 0;
-  u32 m_load_delay_old_value = 0;
   Reg m_next_load_delay_reg = Reg::count;
   u32 m_next_load_delay_value = 0;
-  u32 m_next_load_delay_old_value = 0;
 
   u32 m_cache_control = 0;
 

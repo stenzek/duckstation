@@ -94,10 +94,8 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_branch_was_taken);
   sw.Do(&m_load_delay_reg);
   sw.Do(&m_load_delay_value);
-  sw.Do(&m_load_delay_old_value);
   sw.Do(&m_next_load_delay_reg);
   sw.Do(&m_next_load_delay_value);
-  sw.Do(&m_next_load_delay_old_value);
   sw.Do(&m_cache_control);
   sw.DoBytes(m_dcache.data(), m_dcache.size());
 
@@ -389,6 +387,7 @@ u32 Core::ReadReg(Reg rs)
 void Core::WriteReg(Reg rd, u32 value)
 {
   m_regs.r[static_cast<u8>(rd)] = value;
+  m_load_delay_reg = (rd == m_load_delay_reg) ? Reg::count : m_load_delay_reg;
 
   // prevent writes to $zero from going through - better than branching/cmov
   m_regs.zero = 0;
@@ -407,7 +406,6 @@ void Core::WriteRegDelayed(Reg rd, u32 value)
   // save the old value, if something else overwrites this reg we want to preserve it
   m_next_load_delay_reg = rd;
   m_next_load_delay_value = value;
-  m_next_load_delay_old_value = m_regs.r[static_cast<u8>(rd)];
 }
 
 std::optional<u32> Core::ReadCop0Reg(Cop0Reg reg)
@@ -1120,7 +1118,7 @@ void Core::ExecuteInstruction()
 
     case InstructionOp::jal:
     {
-      m_regs.ra = m_regs.npc;
+      WriteReg(Reg::ra, m_regs.npc);
       m_next_instruction_is_branch_delay_slot = true;
       Branch((m_regs.pc & UINT32_C(0xF0000000)) | (inst.j.target << 2));
     }
@@ -1175,7 +1173,7 @@ void Core::ExecuteInstruction()
       // register is still linked even if the branch isn't taken
       const bool link = (rt & u8(0x1E)) == u8(0x10);
       if (link)
-        m_regs.ra = m_regs.npc;
+        WriteReg(Reg::ra, m_regs.npc);
 
       if (branch)
         Branch(m_regs.pc + (inst.i.imm_sext32() << 2));

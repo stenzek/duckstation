@@ -509,6 +509,9 @@ void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
     m_load_delay_value.ReleaseAndClear();
   }
 
+  // two load delay case with interpreter load delay
+  m_code_generator.EmitCancelInterpreterLoadDelayForReg(guest_reg);
+
   // set up the load delay at the end of this instruction
   Value& cache_value = m_next_load_delay_value;
   Assert(m_next_load_delay_register == Reg::count);
@@ -561,7 +564,7 @@ void RegisterCache::WriteLoadDelayToCPU(bool clear)
   if (m_load_delay_register != Reg::count)
   {
     Log_DebugPrintf("Flushing pending load delay of %s", GetRegName(m_load_delay_register));
-    m_code_generator.EmitStoreLoadDelay(m_load_delay_register, m_load_delay_value);
+    m_code_generator.EmitStoreInterpreterLoadDelay(m_load_delay_register, m_load_delay_value);
     if (clear)
     {
       m_load_delay_register = Reg::count;
@@ -573,17 +576,18 @@ void RegisterCache::WriteLoadDelayToCPU(bool clear)
 void RegisterCache::FlushLoadDelay(bool clear)
 {
   Assert(m_next_load_delay_register == Reg::count);
-  if (m_load_delay_register == Reg::count)
-    return;
 
-  // if this is an exception exit, write the new value to the CPU register file, but keep it tracked for the next
-  // non-exception-raised path. TODO: push/pop whole state would avoid this issue
-  m_code_generator.EmitStoreGuestRegister(m_load_delay_register, m_load_delay_value);
-
-  if (clear)
+  if (m_load_delay_register != Reg::count)
   {
-    m_load_delay_register = Reg::count;
-    m_load_delay_value.ReleaseAndClear();
+    // if this is an exception exit, write the new value to the CPU register file, but keep it tracked for the next
+    // non-exception-raised path. TODO: push/pop whole state would avoid this issue
+    m_code_generator.EmitStoreGuestRegister(m_load_delay_register, m_load_delay_value);
+
+    if (clear)
+    {
+      m_load_delay_register = Reg::count;
+      m_load_delay_value.ReleaseAndClear();
+    }
   }
 }
 
@@ -625,6 +629,16 @@ void RegisterCache::InvalidateGuestRegister(Reg guest_reg)
 
   Log_DebugPrintf("Invalidating guest register %s", GetRegName(guest_reg));
   cache_value.Clear();
+}
+
+void RegisterCache::InvalidateAllNonDirtyGuestRegisters()
+{
+  for (u8 reg = 0; reg < static_cast<u8>(Reg::count); reg++)
+  {
+    Value& cache_value = m_guest_reg_cache[reg];
+    if (cache_value.IsValid() && !cache_value.IsDirty())
+      InvalidateGuestRegister(static_cast<Reg>(reg));
+  }
 }
 
 void RegisterCache::FlushAllGuestRegisters(bool invalidate, bool clear_dirty)
@@ -694,4 +708,5 @@ void RegisterCache::AppendRegisterToOrder(Reg reg)
   m_guest_register_order[0] = reg;
   m_guest_register_order_count++;
 }
+
 } // namespace CPU::Recompiler
