@@ -418,15 +418,17 @@ struct CodeBlockInstruction
 
 struct CodeBlock
 {
+  using HostCodePointer = void (*)(Core*);
+
   CodeBlock(const CodeBlockKey key_) : key(key_) {}
 
   CodeBlockKey key;
+  u32 host_code_size = 0;
+  HostCodePointer host_code = nullptr;
 
   std::vector<CodeBlockInstruction> instructions;
-
-  using HostCodePointer = void (*)(Core*);
-  HostCodePointer host_code = nullptr;
-  u32 host_code_size = 0;
+  std::vector<CodeBlock*> link_predecessors;
+  std::vector<CodeBlock*> link_successors;
 
   bool invalidated = false;
 

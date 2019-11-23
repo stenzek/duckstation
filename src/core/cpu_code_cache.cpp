@@ -11,6 +11,7 @@ namespace CPU {
 
 bool USE_CODE_CACHE = false;
 bool USE_RECOMPILER = false;
+constexpr bool USE_BLOCK_LINKING = true;
 
 static constexpr size_t RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr size_t RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
@@ -32,9 +33,12 @@ void CodeCache::Initialize(System* system, Core* core, Bus* bus)
 
 void CodeCache::Execute()
 {
+  if (m_core->m_downcount < 0)
+    return;
+
   CodeBlockKey next_block_key = GetNextBlockKey();
 
-  while (m_core->m_downcount >= 0)
+  for (;;)
   {
     if (m_core->HasPendingInterrupt())
     {
@@ -48,7 +52,8 @@ void CodeCache::Execute()
     {
       Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", m_core->GetRegs().pc);
       InterpretUncachedBlock();
-      continue;
+      if (m_core->m_downcount < 0)
+        break;
     }
 
 #if 0
@@ -67,20 +72,48 @@ void CodeCache::Execute()
     LogCurrentState();
 #endif
 
+    if (m_core->m_downcount < 0)
+      break;
+    else if (m_core->HasPendingInterrupt() || !USE_BLOCK_LINKING)
+      continue;
+
     next_block_key = GetNextBlockKey();
     if (next_block_key.bits == block->key.bits)
     {
       // we can jump straight to it if there's no pending interrupts
-      if (m_core->m_downcount >= 0 && !m_core->HasPendingInterrupt())
-      {
-        // ensure it's not a self-modifying block
-        if (!block->invalidated || RevalidateBlock(block))
-          goto reexecute_block;
-      }
+      // ensure it's not a self-modifying block
+      if (!block->invalidated || RevalidateBlock(block))
+        goto reexecute_block;
     }
-    else
+    else if (!block->invalidated)
     {
-      // TODO: linking
+      // Try to find an already-linked block.
+      // TODO: Don't need to dereference the block, just store a pointer to the code.
+      for (CodeBlock* linked_block : block->link_successors)
+      {
+        if (linked_block->key.bits == next_block_key.bits)
+        {
+          if (linked_block->invalidated && !RevalidateBlock(linked_block))
+          {
+            // CanExecuteBlock can result in a block flush, so stop iterating here.
+            break;
+          }
+
+          // Execute the linked block
+          block = linked_block;
+          goto reexecute_block;
+        }
+      }
+
+      // No acceptable blocks found in the successor list, try a new one.
+      CodeBlock* next_block = LookupBlock(next_block_key);
+      if (next_block)
+      {
+        // Link the previous block to this new block if we find a new block.
+        LinkBlock(block, next_block);
+        block = next_block;
+        goto reexecute_block;
+      }
     }
   }
 }
@@ -333,6 +366,32 @@ void CodeCache::RemoveBlockFromPageMap(CodeBlock* block)
     Assert(page_block_iter != page_blocks.end());
     page_blocks.erase(page_block_iter);
   }
+}
+
+void CodeCache::LinkBlock(CodeBlock* from, CodeBlock* to)
+{
+  Log_DebugPrintf("Linking block %p(%08x) to %p(%08x)", from, from->GetPC(), to, to->GetPC());
+  from->link_successors.push_back(to);
+  to->link_predecessors.push_back(from);
+}
+
+void CodeCache::UnlinkBlock(CodeBlock* block)
+{
+  for (CodeBlock* predecessor : block->link_predecessors)
+  {
+    auto iter = std::find(predecessor->link_successors.begin(), predecessor->link_successors.end(), block);
+    Assert(iter != predecessor->link_successors.end());
+    predecessor->link_successors.erase(iter);
+  }
+  block->link_predecessors.clear();
+
+  for (CodeBlock* successor : block->link_successors)
+  {
+    auto iter = std::find(successor->link_predecessors.begin(), successor->link_predecessors.end(), block);
+    Assert(iter != successor->link_predecessors.end());
+    successor->link_predecessors.erase(iter);
+  }
+  block->link_successors.clear();
 }
 
 void CodeCache::InterpretCachedBlock(const CodeBlock& block)
