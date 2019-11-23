@@ -14,7 +14,7 @@ JitCodeBuffer::JitCodeBuffer(size_t size /* = 64 * 1024 * 1024 */, size_t far_co
 #if defined(Y_PLATFORM_WINDOWS)
   m_code_ptr = VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 #elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
-  m_code_ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  m_code_ptr = mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 #else
   m_code_ptr = nullptr;
 #endif
