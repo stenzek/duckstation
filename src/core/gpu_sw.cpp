@@ -303,7 +303,7 @@ void GPU_SW::DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* 
   s32 max_y = std::max(py0, std::max(py1, py2));
 
   // reject triangles which cover the whole vram area
-  if ((max_x - min_x) >= VRAM_WIDTH || (max_y - min_y) >= VRAM_HEIGHT)
+  if ((max_x - min_x) > MAX_PRIMITIVE_WIDTH || (max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
     return;
 
   // clip to drawing area

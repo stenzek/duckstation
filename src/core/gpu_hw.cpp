@@ -79,14 +79,27 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
+      BatchVertex* old_vertex_ptr = m_batch_current_vertex_ptr;
+      s32 min_x = std::numeric_limits<s32>::max();
+      s32 max_x = std::numeric_limits<s32>::min();
+      s32 min_y = std::numeric_limits<s32>::max();
+      s32 max_y = std::numeric_limits<s32>::min();
+
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
         const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
         const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
+        const s32 x = vp.x;
+        const s32 y = vp.y;
 
-        (m_batch_current_vertex_ptr++)->Set(vp.x, vp.y, color, texpage, packed_texcoord);
+        min_x = std::min(min_x, x);
+        max_x = std::max(max_x, x);
+        min_y = std::min(min_y, y);
+        max_y = std::max(max_y, y);
+
+        (m_batch_current_vertex_ptr++)->Set(x, y, color, texpage, packed_texcoord);
 
         if (restart_strip)
         {
@@ -94,6 +107,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
           restart_strip = false;
         }
       }
+
+      // Cull polygons which are too large.
+      if ((max_x - min_x) > MAX_PRIMITIVE_WIDTH || (max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+        m_batch_current_vertex_ptr = old_vertex_ptr;
     }
     break;
 
@@ -135,6 +152,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
           break;
       }
 
+      if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
+        return;
+
       // TODO: This should repeat the texcoords instead of stretching
       const s32 pos_right = pos_left + static_cast<s32>(rectangle_width);
       const s32 pos_bottom = pos_top + static_cast<s32>(rectangle_height);
@@ -156,13 +176,30 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
 
+      BatchVertex* old_vertex_ptr = m_batch_current_vertex_ptr;
+      s32 min_x = std::numeric_limits<s32>::max();
+      s32 max_x = std::numeric_limits<s32>::min();
+      s32 min_y = std::numeric_limits<s32>::max();
+      s32 max_y = std::numeric_limits<s32>::min();
+
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
         const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
-        (m_batch_current_vertex_ptr++)->Set(vp.x, vp.y, color, 0, 0);
+        const s32 x = vp.x;
+        const s32 y = vp.y;
+
+        min_x = std::min(min_x, x);
+        max_x = std::max(max_x, x);
+        min_y = std::min(min_y, y);
+        max_y = std::max(max_y, y);
+
+        (m_batch_current_vertex_ptr++)->Set(x, y, color, 0, 0);
       }
+
+      if ((max_x - min_x) > MAX_PRIMITIVE_WIDTH || (max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+        m_batch_current_vertex_ptr = old_vertex_ptr;
     }
     break;
 
