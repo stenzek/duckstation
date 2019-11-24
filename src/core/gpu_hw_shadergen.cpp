@@ -1,9 +1,10 @@
 #include "gpu_hw_shadergen.h"
 #include <glad.h>
 
-GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color)
+GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
+                                   bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
-    m_glsl(render_api != HostDisplay::RenderAPI::D3D11)
+    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_supports_dual_source_blend(supports_dual_source_blend)
 {
 }
 
@@ -342,6 +343,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   const GPU::TextureMode actual_texture_mode = texture_mode & ~GPU::TextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPU::TextureMode::RawTextureBit) == GPU::TextureMode::RawTextureBit;
   const bool textured = (texture_mode != GPU::TextureMode::Disabled);
+  const bool use_dual_source =
+    m_supports_dual_source_blend && transparency != GPU_HW::BatchRenderMode::TransparencyDisabled;
 
   std::stringstream ss;
   WriteHeader(ss);
@@ -357,6 +360,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
+  DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
 
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
@@ -451,11 +455,11 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {"nointerpolation in int4 v_texpage"}, true, false);
+    DeclareFragmentEntryPoint(ss, 1, 1, {"nointerpolation in int4 v_texpage"}, true, use_dual_source);
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, false);
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source);
   }
 
   ss << R"(
@@ -500,6 +504,9 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
     icolor = TruncateTo15Bit(icolor);
   #endif
 
+  // Compute output alpha (mask bit)
+  float output_alpha = float(semitransparent);
+
   // Normalize
   float3 color = float3(icolor) / float3(255.0, 255.0, 255.0);
 
@@ -510,17 +517,34 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
       #if TRANSPARENCY_ONLY_OPAQUE
         discard;
       #endif
-      o_col0 = float4(color * u_src_alpha_factor, u_dst_alpha_factor);
+
+      #if USE_DUAL_SOURCE
+        o_col0 = float4(color * u_src_alpha_factor, output_alpha);
+        o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor);
+      #else
+        o_col0 = float4(color * u_src_alpha_factor, u_dst_alpha_factor);
+      #endif
     }
     else
     {
       #if TRANSPARENCY_ONLY_TRANSPARENCY
         discard;
       #endif
-      o_col0 = float4(color, 0.0);
+
+      #if USE_DUAL_SOURCE
+        o_col0 = float4(color, output_alpha);
+        o_col1 = float4(0.0, 0.0, 0.0, 0.0);
+      #else
+        o_col0 = float4(color, 0.0);
+      #endif
     }
   #else
-    o_col0 = float4(color, 0.0);
+    // Non-transparency won't enable blending so we can write the mask here regardless.
+    o_col0 = float4(color, output_alpha);
+
+    #if USE_DUAL_SOURCE
+      o_col1 = float4(0.0, 0.0, 0.0, 0.0);
+    #endif
   #endif
 }
 )";

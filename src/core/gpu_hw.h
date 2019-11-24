@@ -153,6 +153,7 @@ protected:
   u32 m_resolution_scale = 1;
   u32 m_max_resolution_scale = 1;
   bool m_true_color = false;
+  bool m_supports_dual_source_blend = false;
 
   BatchConfig m_batch = {};
   BatchUBOData m_batch_ubo_data = {};

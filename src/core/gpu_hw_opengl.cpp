@@ -144,6 +144,12 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   {
     Log_WarningPrintf("Texture buffers are not supported, VRAM writes will be slower.");
   }
+
+  int max_dual_source_draw_buffers = 0;
+  glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
+  m_supports_dual_source_blend = (max_dual_source_draw_buffers > 0);
+  if (!m_supports_dual_source_blend)
+    Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 }
 
 void GPU_HW_OpenGL::CreateFramebuffer()
@@ -256,7 +262,8 @@ void GPU_HW_OpenGL::CreateTextureBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color,
+                             m_supports_dual_source_blend);
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -310,7 +317,17 @@ bool GPU_HW_OpenGL::CompilePrograms()
         return false;
 
       if (!m_is_gles)
-        prog.BindFragData(0, "o_col0");
+      {
+        if (m_supports_dual_source_blend)
+        {
+          prog.BindFragDataIndexed(0, "o_col0");
+          prog.BindFragDataIndexed(1, "o_col1");
+        }
+        else
+        {
+          prog.BindFragData(0, "o_col0");
+        }
+      }
 
       if (!prog.Link())
         return false;
@@ -381,7 +398,7 @@ void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
     glBlendEquationSeparate(
       m_batch.transparency_mode == TransparencyMode::BackgroundMinusForeground ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD,
       GL_FUNC_ADD);
-    glBlendFuncSeparate(GL_ONE, GL_SRC_ALPHA, GL_ONE, GL_ZERO);
+    glBlendFuncSeparate(GL_ONE, m_supports_dual_source_blend ? GL_SRC1_ALPHA : GL_SRC_ALPHA, GL_ONE, GL_ZERO);
   }
 
   if (m_drawing_area_changed)

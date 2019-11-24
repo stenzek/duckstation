@@ -144,6 +144,8 @@ void GPU_HW_D3D11::SetCapabilities()
 
   m_max_resolution_scale = max_texture_scale;
   Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
+
+  m_supports_dual_source_blend = true;
 }
 
 bool GPU_HW_D3D11::CreateFramebuffer()
@@ -237,7 +239,8 @@ bool GPU_HW_D3D11::CreateBatchInputLayout()
      {"ATTR", 3, DXGI_FORMAT_R32_SINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
 
   // we need a vertex shader...
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color,
+                             m_supports_dual_source_blend);
   ComPtr<ID3DBlob> vs_bytecode = D3D11::ShaderCompiler::CompileShader(
     D3D11::ShaderCompiler::Type::Vertex, m_device->GetFeatureLevel(), shadergen.GenerateBatchVertexShader(true), false);
   if (!vs_bytecode)
@@ -295,7 +298,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
   {
     bl_desc.RenderTarget[0].BlendEnable = TRUE;
     bl_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-    bl_desc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;
+    bl_desc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC1_ALPHA;
     bl_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
     bl_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
     bl_desc.RenderTarget[0].BlendOp =
@@ -315,7 +318,8 @@ bool GPU_HW_D3D11::CreateStateObjects()
 bool GPU_HW_D3D11::CompileShaders()
 {
   const bool debug = true;
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color,
+                             m_supports_dual_source_blend);
 
   m_screen_quad_vertex_shader = D3D11::ShaderCompiler::CompileAndCreateVertexShader(
     m_device.Get(), shadergen.GenerateScreenQuadVertexShader(), debug);
