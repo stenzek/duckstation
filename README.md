@@ -7,7 +7,14 @@
  - Upscaling and true colour (24-bit) in hardware renderers
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
- - Windows and Linux support - macOS may work, but not supported by author
+ - Windows and Linux support - macOS may work, but not actively maintained
+ - Currently only .bin/.cue disc image formats are supported. Additional formats are planned
+ - Direct booting of homebrew executables
+
+## System Requirements
+ - A CPU faster than a potato.
+ - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 and above. So, basically anything made in the last 10 years or so.
+ - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Building
 Clone the respository with submodules (`git clone --recursive` or `git clone` and `git submodule update --init`).
@@ -53,11 +60,11 @@ To access the menus with the controller, press the right stick down and use the 
  - **Tab:** Temporarily disable speed limiter
  - **Pause/Break:** Pause/resume emulation
  - **Space:** Frame step
- - **End:** Toggle software renderering
+ - **End:** Toggle software renderer
  - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
 
 ## Tests
- - Passes amidog's CPU and GTE tests, partial passing of CPX tests
+ - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
 
 ## Screenshots
 ![Final Fantasy 7](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg)
