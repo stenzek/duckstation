@@ -1742,22 +1742,12 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
   }
 }
 
-void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool always_link, Value&& branch_target)
+void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
 {
   // we have to always read the old PC.. when we can push/pop the register cache state this won't be needed
   Value old_npc;
   if (lr_reg != Reg::count)
-  {
     old_npc = m_register_cache.ReadGuestRegister(Reg::npc, false, true);
-    if (always_link)
-    {
-      // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
-      // if we don't cancel it, at the end of the instruction the value we write can be overridden.
-      EmitCancelInterpreterLoadDelayForReg(lr_reg);
-      m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
-      m_register_cache.FlushGuestRegister(lr_reg, true, true);
-    }
-  }
 
   // condition is inverted because we want the case for skipping it
   Xbyak::Label skip_branch;
@@ -1765,7 +1755,7 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, bool always_link
     EmitConditionalJump(condition, true, m_emit, skip_branch);
 
   // save the old PC if we want to
-  if (lr_reg != Reg::count && !always_link)
+  if (lr_reg != Reg::count)
   {
     // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
     // if we don't cancel it, at the end of the instruction the value we write can be overridden.

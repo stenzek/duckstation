@@ -93,7 +93,7 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
 
     case InstructionOp::j:
     case InstructionOp::jal:
-    //case InstructionOp::b:
+    case InstructionOp::b:
     case InstructionOp::beq:
     case InstructionOp::bne:
     case InstructionOp::bgtz:
@@ -1253,7 +1253,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
         OrValues(AndValues(m_register_cache.ReadGuestRegister(Reg::pc, false), Value::FromConstantU32(0xF0000000)),
                  Value::FromConstantU32(cbi.instruction.j.target << 2));
 
-      EmitBranch(Condition::Always, (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count, false,
+      EmitBranch(Condition::Always, (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count,
                  std::move(branch_target));
     }
     break;
@@ -1265,7 +1265,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
         // npc = rs, link to rt
         Value branch_target = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
         EmitBranch(Condition::Always,
-                   (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count, false,
+                   (cbi.instruction.r.funct == InstructionFunct::jalr) ? cbi.instruction.r.rd : Reg::count,
                    std::move(branch_target));
       }
       else if (cbi.instruction.r.funct == InstructionFunct::syscall ||
@@ -1295,7 +1295,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       EmitCmp(lhs.host_reg, rhs);
 
       const Condition condition = (cbi.instruction.op == InstructionOp::beq) ? Condition::Equal : Condition::NotEqual;
-      EmitBranch(condition, Reg::count, false, std::move(branch_target));
+      EmitBranch(condition, Reg::count, std::move(branch_target));
     }
     break;
 
@@ -1312,7 +1312,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 
       const Condition condition =
         (cbi.instruction.op == InstructionOp::bgtz) ? Condition::Greater : Condition::LessEqual;
-      EmitBranch(condition, Reg::count, false, std::move(branch_target));
+      EmitBranch(condition, Reg::count, std::move(branch_target));
     }
     break;
 
@@ -1327,9 +1327,20 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       const Condition condition = bgez ? Condition::PositiveOrZero : Condition::Negative;
       const bool link = (rt & u8(0x1E)) == u8(0x10);
 
+      // Read has to happen before the link as the compare can use ra.
+      // This is a little dangerous since lhs can get freed, but there aren't any allocations inbetween here and the
+      // test so it shouldn't be an issue.
       Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+
+      // The return address is always written if link is set, regardless of whether the branch is taken.
+      if (link)
+      {
+        EmitCancelInterpreterLoadDelayForReg(Reg::ra);
+        m_register_cache.WriteGuestRegister(Reg::ra, m_register_cache.ReadGuestRegister(Reg::npc, false));
+      }
+
       EmitTest(lhs.host_reg, lhs);
-      EmitBranch(condition, link ? Reg::ra : Reg::count, link, std::move(branch_target));
+      EmitBranch(condition, Reg::count, std::move(branch_target));
     }
     break;
 

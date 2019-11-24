@@ -78,7 +78,7 @@ public:
   void EmitStoreGuestMemory(const Value& address, const Value& value);
 
   // Branching, generates two paths.
-  void EmitBranch(Condition condition, Reg lr_reg, bool always_link, Value&& branch_target);
+  void EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target);
 
   // Raising exception if condition is true.
   void EmitRaiseException(Exception excode, Condition condition = Condition::Always);
