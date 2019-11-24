@@ -29,7 +29,10 @@ public:
   bool m_glsl_es;
   bool m_supports_dual_source_blend;
 
+  std::string m_glsl_version_string;
+
 private:
+  void SetGLSLVersionString();
   void WriteHeader(std::stringstream& ss);
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members);
   void DeclareTexture(std::stringstream& ss, const char* name, u32 index);

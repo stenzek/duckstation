@@ -1,11 +1,18 @@
 #include "gpu_hw_shadergen.h"
+#include "YBaseLib/Assert.h"
+#include "YBaseLib/Log.h"
+#include <cstdio>
 #include <glad.h>
+Log_SetChannel(GPU_HW_ShaderGen);
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
                                    bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
-    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_supports_dual_source_blend(supports_dual_source_blend)
+    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_glsl_es(render_api == HostDisplay::RenderAPI::OpenGLES),
+    m_supports_dual_source_blend(supports_dual_source_blend)
 {
+  if (m_glsl)
+    SetGLSLVersionString();
 }
 
 GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
@@ -15,21 +22,52 @@ static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
   ss << "#define " << name << " " << BoolToUInt32(enabled) << "\n";
 }
 
+void GPU_HW_ShaderGen::SetGLSLVersionString()
+{
+  const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+  Assert(glsl_version != nullptr);
+
+  int major_version = 0, minor_version = 0;
+  if (std::sscanf(glsl_version, "%d.%d", &major_version, &minor_version) != 2)
+  {
+    Log_ErrorPrintf("Invalid GLSL version string: '%s'", glsl_version);
+    m_glsl_version_string = m_glsl_es ? "300" : "130";
+    return;
+  }
+
+  // Cap at GLSL 3.3, we're not using anything newer for now.
+  if (!m_glsl_es && major_version >= 4)
+  {
+    major_version = 3;
+    minor_version = 30;
+  }
+  else if (m_glsl_es && (major_version > 3 || minor_version > 20))
+  {
+    major_version = 3;
+    minor_version = 20;
+  }
+
+  m_glsl_version_string = "#version ";
+  m_glsl_version_string += std::to_string(major_version);
+  m_glsl_version_string += std::to_string(minor_version);
+  if (!m_glsl_es && major_version >= 3 && minor_version >= 3)
+    m_glsl_version_string += " core";
+  else if (m_glsl_es)
+    m_glsl_version_string += " es";
+}
+
 void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 {
+  if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
+    ss << m_glsl_version_string << "\n\n";
+
   if (m_render_api == HostDisplay::RenderAPI::OpenGL)
   {
-    ss << "#version 330 core\n\n";
     ss << "#define API_OPENGL 1\n";
   }
   else if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
   {
-    if (GLAD_GL_ES_VERSION_3_2)
-      ss << "#version 320 es\n\n";
-    else if (GLAD_GL_ES_VERSION_3_1)
-      ss << "#version 310 es\n\n";
-    else
-      ss << "#version 300 es\n\n";
+    ss << "#define API_OPENGL_ES 1\n";
 
     ss << "precision highp float;\n";
     ss << "precision highp int;\n";
@@ -39,8 +77,6 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "precision highp usamplerBuffer;\n";
 
     ss << "\n";
-    ss << "#define API_OPENGL 1\n";
-    ss << "#define API_OPENGL_ES 1\n";
   }
   else if (m_render_api == HostDisplay::RenderAPI::D3D11)
   {
