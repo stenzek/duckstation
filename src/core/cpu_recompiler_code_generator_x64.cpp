@@ -1661,6 +1661,9 @@ void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
 
 void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 {
+  if (!m_load_delay_dirty)
+    return;
+
   auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
 
   Xbyak::Label skip_cancel;
