@@ -200,6 +200,9 @@ bool System::CreateGPU()
     case GPURenderer::HardwareD3D11:
       m_gpu = GPU::CreateHardwareD3D11Renderer();
       break;
+#else
+    case GPURenderer::HardwareD3D11:
+      break;
 #endif
 
     case GPURenderer::Software:
