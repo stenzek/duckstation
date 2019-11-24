@@ -712,11 +712,24 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   src_y = m_vram_texture->GetHeight() - src_y - height;
   dst_y = m_vram_texture->GetHeight() - dst_y - height;
 
-  glDisable(GL_SCISSOR_TEST);
-  m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
-  glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
-  glEnable(GL_SCISSOR_TEST);
+  if (GLAD_GL_VERSION_4_3)
+  {
+    glCopyImageSubData(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, src_x, src_y, 0, m_vram_texture->GetGLId(),
+                       GL_TEXTURE_2D, 0, dst_x, dst_y, 0, width, height, 1);
+  }
+  else if (GLAD_GL_EXT_copy_image)
+  {
+    glCopyImageSubDataEXT(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, src_x, src_y, 0, m_vram_texture->GetGLId(),
+                          GL_TEXTURE_2D, 0, dst_x, dst_y, 0, width, height, 1);
+  }
+  else
+  {
+    glDisable(GL_SCISSOR_TEST);
+    m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+    glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glEnable(GL_SCISSOR_TEST);
+  }
 }
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
