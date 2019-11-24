@@ -52,11 +52,22 @@ void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  for (u32 yoffs = 0; yoffs < height; yoffs++)
+  // This doesn't have a fast path, but do we really need one? It's not common.
+  const u16 mask_and = m_GPUSTAT.GetMaskAND();
+  const u16 mask_or = m_GPUSTAT.GetMaskOR();
+
+  for (u32 row = 0; row < height; row++)
   {
-    const u16* src_ptr = GetPixelPtr(src_x, src_y + yoffs);
-    u16* dst_ptr = GetPixelPtr(dst_x, dst_y + yoffs);
-    std::copy_n(src_ptr, width, dst_ptr);
+    const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+    u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+
+    for (u32 col = 0; col < width; col++)
+    {
+      const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
+      u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];
+      if ((*dst_pixel_ptr & mask_and) == mask_and)
+        *dst_pixel_ptr = src_pixel | mask_or;
+    }
   }
 }
 
@@ -502,7 +513,11 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
 #undef BLEND_AVERAGE
   }
 
-  SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits);
+  const u16 mask_and = m_GPUSTAT.GetMaskAND();
+  if ((color.bits & mask_and) != mask_and)
+    return;
+
+  SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());
 }
 
 std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()

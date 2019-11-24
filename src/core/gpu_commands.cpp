@@ -212,10 +212,15 @@ bool GPU::HandleSetMaskBitCommand(const u32*& command_ptr, u32 command_size)
 {
   const u32 param = *(command_ptr++) & 0x00FFFFFF;
 
-  m_GPUSTAT.draw_set_mask_bit = (param & 0x01) != 0;
-  m_GPUSTAT.draw_to_masked_pixels = (param & 0x01) != 0;
-  Log_DebugPrintf("Set mask bit %u %u", BoolToUInt32(m_GPUSTAT.draw_set_mask_bit),
-                  BoolToUInt32(m_GPUSTAT.draw_to_masked_pixels));
+  constexpr u32 gpustat_mask = (1 << 11) | (1 << 12);
+  const u32 gpustat_bits = (param & 0x03) << 11;
+  if ((m_GPUSTAT.bits & gpustat_mask) != gpustat_bits)
+  {
+    FlushRender();
+    m_GPUSTAT.bits = (m_GPUSTAT.bits & ~gpustat_mask) | gpustat_bits;
+  }
+  Log_DebugPrintf("Set mask bit %u %u", BoolToUInt32(m_GPUSTAT.set_mask_while_drawing),
+                  BoolToUInt32(m_GPUSTAT.check_mask_before_draw));
 
   EndCommand();
   return true;

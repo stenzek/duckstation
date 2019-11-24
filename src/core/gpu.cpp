@@ -137,10 +137,19 @@ bool GPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
+    // Need to clear the mask bits since we want to pull it in from the copy.
+    const u32 old_GPUSTAT = m_GPUSTAT.bits;
+    m_GPUSTAT.check_mask_before_draw = false;
+    m_GPUSTAT.set_mask_while_drawing = false;
+
     // Still need a temporary here.
     HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
     sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data());
+
+    // Restore mask setting.
+    m_GPUSTAT.bits = old_GPUSTAT;
+
     UpdateDisplay();
     UpdateSliceTicks();
   }
@@ -673,7 +682,7 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
   // Fast path when the copy is not oversized.
-  if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT)
+  if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !m_GPUSTAT.IsMaskingEnabled())
   {
     const u16* src_ptr = static_cast<const u16*>(data);
     u16* dst_ptr = &m_vram_ptr[y * VRAM_WIDTH + x];
@@ -688,13 +697,18 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
   {
     // Slow path when we need to handle wrap-around.
     const u16* src_ptr = static_cast<const u16*>(data);
+    const u16 mask_and = m_GPUSTAT.GetMaskAND();
+    const u16 mask_or = m_GPUSTAT.GetMaskOR();
+
     for (u32 row = 0; row < height;)
     {
       u16* dst_row_ptr = &m_vram_ptr[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
       for (u32 col = 0; col < width;)
       {
         // TODO: Handle unaligned reads...
-        dst_row_ptr[(x + col++) % VRAM_WIDTH] = *(src_ptr++);
+        u16* pixel_ptr = &dst_row_ptr[(x + col++) % VRAM_WIDTH];
+        if (((*pixel_ptr) & mask_and) == mask_and)
+          *pixel_ptr = *(src_ptr++) | mask_or;
       }
     }
   }
@@ -869,8 +883,8 @@ void GPU::DrawDebugStateWindow()
   {
     ImGui::Text("Dither: %s", m_GPUSTAT.dither_enable ? "Enabled" : "Disabled");
     ImGui::Text("Draw To Display Area: %s", m_GPUSTAT.dither_enable ? "Yes" : "No");
-    ImGui::Text("Draw Set Mask Bit: %s", m_GPUSTAT.draw_set_mask_bit ? "Yes" : "No");
-    ImGui::Text("Draw To Masked Pixels: %s", m_GPUSTAT.draw_to_masked_pixels ? "Yes" : "No");
+    ImGui::Text("Draw Set Mask Bit: %s", m_GPUSTAT.set_mask_while_drawing ? "Yes" : "No");
+    ImGui::Text("Draw To Masked Pixels: %s", m_GPUSTAT.check_mask_before_draw ? "Yes" : "No");
     ImGui::Text("Reverse Flag: %s", m_GPUSTAT.reverse_flag ? "Yes" : "No");
     ImGui::Text("Texture Disable: %s", m_GPUSTAT.texture_disable ? "Yes" : "No");
     ImGui::Text("PAL Mode: %s", m_GPUSTAT.pal_mode ? "Yes" : "No");
