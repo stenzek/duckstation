@@ -310,6 +310,15 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     m_batch_ubo_dirty = true;
   }
 
+  if (m_batch.check_mask_before_draw != m_GPUSTAT.check_mask_before_draw ||
+      m_batch.set_mask_while_drawing != m_GPUSTAT.set_mask_while_drawing)
+  {
+    m_batch.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
+    m_batch.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
+    m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(m_GPUSTAT.set_mask_while_drawing);
+    m_batch_ubo_dirty = true;
+  }
+
   if (m_drawing_offset_changed)
   {
     m_drawing_offset_changed = false;

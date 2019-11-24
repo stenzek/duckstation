@@ -71,6 +71,8 @@ protected:
     TextureMode texture_mode;
     TransparencyMode transparency_mode;
     bool dithering;
+    bool set_mask_while_drawing;
+    bool check_mask_before_draw;
 
     // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
     // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
@@ -95,6 +97,8 @@ protected:
     u32 u_texture_window_offset[2];
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
+    u32 u_set_mask_while_drawing;
+    u32 padding[3];
   };
 
   struct RendererStats

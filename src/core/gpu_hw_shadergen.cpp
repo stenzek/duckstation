@@ -292,7 +292,7 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_
 void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
   DeclareUniformBuffer(ss, {"int2 u_pos_offset", "uint2 u_texture_window_mask", "uint2 u_texture_window_offset",
-                            "float u_src_alpha_factor", "float u_dst_alpha_factor"});
+                            "float u_src_alpha_factor", "float u_dst_alpha_factor", "bool u_set_mask_while_drawing"});
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
@@ -505,7 +505,7 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
   #endif
 
   // Compute output alpha (mask bit)
-  float output_alpha = float(semitransparent);
+  float output_alpha = float(u_set_mask_while_drawing ? 1 : int(semitransparent));
 
   // Normalize
   float3 color = float3(icolor) / float3(255.0, 255.0, 255.0);
