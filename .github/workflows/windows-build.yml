@@ -1,0 +1,40 @@
+name: Windows Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Compile release build
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
+        
+    - name: Copy dependencies to binary directory
+      shell: cmd
+      run: |
+        copy /Y dep\msvc\bin64\*.* bin\x64
+      
+    - name: Create zip archive of binary
+      shell: cmd
+      run: |
+        7z a -t7z duckstation-windows-x64-release.7z .\bin\x64\*
+
+    - name: Upload release archive
+      uses: actions/upload-artifact@v1
+      with:
+        name: "duckstation-windows-x64-release.7z"
+        path: "duckstation-windows-x64-release.7z"
+          
