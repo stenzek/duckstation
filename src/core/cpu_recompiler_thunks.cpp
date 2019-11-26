@@ -14,7 +14,7 @@ u64 Thunks::ReadMemoryByte(Core* cpu, u32 address)
     return UINT64_C(0xFFFFFFFFFFFFFFFF);
   }
 
-  cpu->AddTicks(cycles - 1);
+  cpu->AddTicks(cycles);
   return ZeroExtend64(temp);
 }
 
@@ -31,7 +31,7 @@ u64 Thunks::ReadMemoryHalfWord(Core* cpu, u32 address)
     return UINT64_C(0xFFFFFFFFFFFFFFFF);
   }
 
-  cpu->AddTicks(cycles - 1);
+  cpu->AddTicks(cycles);
   return ZeroExtend64(temp);
 }
 
@@ -48,7 +48,7 @@ u64 Thunks::ReadMemoryWord(Core* cpu, u32 address)
     return UINT64_C(0xFFFFFFFFFFFFFFFF);
   }
 
-  cpu->AddTicks(cycles - 1);
+  cpu->AddTicks(cycles);
   return ZeroExtend64(temp);
 }
 

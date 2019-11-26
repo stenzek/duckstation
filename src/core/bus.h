@@ -134,8 +134,14 @@ private:
 
   enum : u32
   {
-    RAM_ACCESS_DELAY = 6, // Nocash docs say RAM takes 6 cycles to access.
     MEMCTRL_REG_COUNT = 9
+  };
+
+  enum : TickCount
+  {
+    RAM_READ_ACCESS_DELAY = 5,  // Nocash docs say RAM takes 6 cycles to access. Subtract one because we already add a
+                                // tick for the instruction.
+    RAM_WRITE_ACCESS_DELAY = 0, // Writes are free unless we're executing more than 4 stores in a row.
   };
 
   union MEMDELAY

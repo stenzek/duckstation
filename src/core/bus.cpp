@@ -225,7 +225,8 @@ std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY 
   const TickCount byte_access_time = first;
   const TickCount halfword_access_time = mem_delay.data_bus_16bit ? first : (first + seq);
   const TickCount word_access_time = mem_delay.data_bus_16bit ? (first + seq) : (first + seq + seq + seq);
-  return std::tie(byte_access_time, halfword_access_time, word_access_time);
+  return std::tie(std::max(byte_access_time - 1, 0), std::max(halfword_access_time - 1, 0),
+                  std::max(word_access_time - 1, 0));
 }
 
 void Bus::RecalculateMemoryTimings()
@@ -238,14 +239,14 @@ void Bus::RecalculateMemoryTimings()
     CalculateMemoryTiming(m_MEMCTRL.spu_delay_size, m_MEMCTRL.common_delay);
 
   Log_TracePrintf("BIOS Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                  m_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, m_bios_access_time[0], m_bios_access_time[1],
-                  m_bios_access_time[2]);
+                  m_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, m_bios_access_time[0] + 1,
+                  m_bios_access_time[1] + 1, m_bios_access_time[2] + 1);
   Log_TracePrintf("CDROM Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                  m_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, m_cdrom_access_time[0], m_cdrom_access_time[1],
-                  m_cdrom_access_time[2]);
+                  m_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, m_cdrom_access_time[0] + 1,
+                  m_cdrom_access_time[1] + 1, m_cdrom_access_time[2] + 1);
   Log_TracePrintf("SPU Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                  m_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, m_spu_access_time[0], m_spu_access_time[1],
-                  m_spu_access_time[2]);
+                  m_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, m_spu_access_time[0] + 1, m_spu_access_time[1] + 1,
+                  m_spu_access_time[2] + 1);
 }
 
 TickCount Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)
