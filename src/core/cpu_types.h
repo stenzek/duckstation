@@ -435,10 +435,7 @@ struct CodeBlock
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
   const u32 GetStartPageIndex() const { return (key.GetPC() / CPU_CODE_CACHE_PAGE_SIZE); }
-  const u32 GetEndPageIndex() const
-  {
-    return ((key.GetPC() + GetSizeInBytes() + (CPU_CODE_CACHE_PAGE_SIZE - 1)) / CPU_CODE_CACHE_PAGE_SIZE);
-  }
+  const u32 GetEndPageIndex() const { return ((key.GetPC() + GetSizeInBytes()) / CPU_CODE_CACHE_PAGE_SIZE); }
   bool IsInRAM() const
   {
     // TODO: Constant

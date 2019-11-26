@@ -357,7 +357,7 @@ void CodeCache::AddBlockToPageMap(CodeBlock* block)
 
   const u32 start_page = block->GetStartPageIndex();
   const u32 end_page = block->GetEndPageIndex();
-  for (u32 page = start_page; page < end_page; page++)
+  for (u32 page = start_page; page <= end_page; page++)
   {
     m_ram_block_map[page].push_back(block);
     m_bus->SetRAMCodePage(page);
@@ -371,7 +371,7 @@ void CodeCache::RemoveBlockFromPageMap(CodeBlock* block)
 
   const u32 start_page = block->GetStartPageIndex();
   const u32 end_page = block->GetEndPageIndex();
-  for (u32 page = start_page; page < end_page; page++)
+  for (u32 page = start_page; page <= end_page; page++)
   {
     auto& page_blocks = m_ram_block_map[page];
     auto page_block_iter = std::find(page_blocks.begin(), page_blocks.end(), block);

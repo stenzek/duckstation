@@ -165,6 +165,14 @@ TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 w
     return total_ticks;
   }
 
+  const u32 start_page = address / CPU_CODE_CACHE_PAGE_SIZE;
+  const u32 end_page = (address + word_count * sizeof(u32)) / CPU_CODE_CACHE_PAGE_SIZE;
+  for (u32 page = start_page; page <= end_page; page++)
+  {
+    if (m_ram_code_bits[page])
+      DoInvalidateCodeCache(page);
+  }
+
   std::memcpy(&m_ram[address], words, sizeof(u32) * word_count);
   return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
 }
