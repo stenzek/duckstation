@@ -1,9 +1,12 @@
 add_subdirectory(glad)
 add_subdirectory(imgui)
 add_subdirectory(libcue)
-add_subdirectory(nativefiledialog)
 add_subdirectory(simpleini)
 add_subdirectory(stb)
+
+if(NOT ANDROID)
+  add_subdirectory(nativefiledialog)
+endif()
 
 ###################### YBaseLib ############################
 
@@ -11,6 +14,7 @@ set(YBASELIB_SRC_BASE ${CMAKE_SOURCE_DIR}/dep/YBaseLib/Source)
 set(YBASELIB_INCLUDES ${CMAKE_SOURCE_DIR}/dep/YBaseLib/Include)
 set(YBASELIB_SRC_FILES
     ${YBASELIB_SRC_BASE}/YBaseLib/Android
+    ${YBASELIB_SRC_BASE}/YBaseLib/Android/AndroidBarrier.cpp
     ${YBASELIB_SRC_BASE}/YBaseLib/Android/AndroidConditionVariable.cpp
     ${YBASELIB_SRC_BASE}/YBaseLib/Android/AndroidEvent.cpp
     ${YBASELIB_SRC_BASE}/YBaseLib/Android/AndroidFileSystem.cpp
@@ -86,4 +90,8 @@ set(YBASELIB_SRC_FILES
 add_library(YBaseLib STATIC ${YBASELIB_SRC_FILES})
 target_include_directories(YBaseLib PRIVATE ${YBASELIB_INCLUDES} ${YBASELIB_SRC_BASE})
 target_include_directories(YBaseLib PUBLIC ${YBASELIB_INCLUDES})
-target_link_libraries(YBaseLib Threads::Threads)
+target_link_libraries(YBaseLib PUBLIC Threads::Threads)
+
+if(ANDROID)
+  target_link_libraries(YBaseLib PRIVATE log)
+endif()

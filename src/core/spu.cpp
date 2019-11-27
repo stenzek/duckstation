@@ -1054,7 +1054,7 @@ void SPU::DrawDebugStateWindow()
     ImGui::SameLine(offsets[2]);
     ImGui::TextColored(m_SPUCNT.external_audio_enable ? active_color : inactive_color, "External Audio");
     ImGui::SameLine(offsets[3]);
-    ImGui::TextColored(m_SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped ? active_color : inactive_color,
+    ImGui::TextColored(m_SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped ? active_color : inactive_color, "%s",
                        transfer_modes[static_cast<u8>(m_SPUCNT.ram_transfer_mode.GetValue())]);
 
     ImGui::Text("Status: ");
@@ -1138,7 +1138,7 @@ void SPU::DrawDebugStateWindow()
       ImGui::NextColumn();
       ImGui::TextColored(color, "%08X", v.regs.adsr.bits);
       ImGui::NextColumn();
-      ImGui::TextColored(color, adsr_phases[static_cast<u8>(v.adsr_phase)]);
+      ImGui::TextColored(color, "%s", adsr_phases[static_cast<u8>(v.adsr_phase)]);
       ImGui::NextColumn();
       ImGui::TextColored(color, "%d", ZeroExtend32(v.regs.adsr_volume));
       ImGui::NextColumn();

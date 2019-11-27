@@ -2,6 +2,7 @@
 #include "common/bitfield.h"
 #include "types.h"
 #include <array>
+#include <vector>
 
 class StateWrapper;
 

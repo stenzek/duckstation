@@ -20,7 +20,7 @@ public:
 
   HeapArray(const this_type& copy)
   {
-    m_data = new T[size];
+    m_data = new T[SIZE];
     std::copy(copy.cbegin(), copy.cend(), begin());
   }
 

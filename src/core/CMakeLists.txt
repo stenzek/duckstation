@@ -13,14 +13,6 @@ add_library(core
     cpu_core.inl
     cpu_disasm.cpp
     cpu_disasm.h
-    cpu_recompiler_code_generator.cpp
-    cpu_recompiler_code_generator.h
-    cpu_recompiler_code_generator_generic.cpp
-    cpu_recompiler_register_cache.cpp
-    cpu_recompiler_register_cache.h
-    cpu_recompiler_thunks.cpp
-    cpu_recompiler_thunks.h
-    cpu_recompiler_types.h
     cpu_types.cpp
     cpu_types.h
     digital_controller.cpp
@@ -66,9 +58,21 @@ add_library(core
     types.h
 )
 
+set(RECOMPILER_SRCS
+    cpu_recompiler_code_generator.cpp
+    cpu_recompiler_code_generator.h
+    cpu_recompiler_code_generator_generic.cpp
+    cpu_recompiler_register_cache.cpp
+    cpu_recompiler_register_cache.h
+    cpu_recompiler_thunks.cpp
+    cpu_recompiler_thunks.h
+    cpu_recompiler_types.h
+)
+
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PRIVATE Threads::Threads YBaseLib common imgui glad simpleini stb)
+target_link_libraries(core PUBLIC Threads::Threads YBaseLib common imgui)
+target_link_libraries(core PRIVATE glad simpleini stb)
 
 if(WIN32)
   target_sources(core PRIVATE
@@ -79,7 +83,10 @@ endif()
 
 if(${CPU_ARCH} STREQUAL "x64")
   target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
-  target_sources(core PRIVATE cpu_recompiler_code_generator_x64.cpp)
+  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1")
+  target_sources(core PRIVATE ${RECOMPILER_SRCS}
+    cpu_recompiler_code_generator_x64.cpp
+  )
   message("Building x64 recompiler")
 else()
   message("Not building recompiler")

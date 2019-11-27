@@ -18,6 +18,69 @@ namespace Recompiler {
 class ASMFunctions;
 }
 
+union CodeBlockKey
+{
+  u32 bits;
+
+  BitField<u32, bool, 0, 1> user_mode;
+  BitField<u32, u32, 2, 30> aligned_pc;
+
+  ALWAYS_INLINE u32 GetPC() const { return aligned_pc << 2; }
+  ALWAYS_INLINE void SetPC(u32 pc) { aligned_pc = pc >> 2; }
+
+  ALWAYS_INLINE CodeBlockKey& operator=(const CodeBlockKey& rhs)
+  {
+    bits = rhs.bits;
+    return *this;
+  }
+
+  ALWAYS_INLINE bool operator==(const CodeBlockKey& rhs) const { return bits == rhs.bits; }
+  ALWAYS_INLINE bool operator!=(const CodeBlockKey& rhs) const { return bits != rhs.bits; }
+  ALWAYS_INLINE bool operator<(const CodeBlockKey& rhs) const { return bits < rhs.bits; }
+};
+
+struct CodeBlockInstruction
+{
+  Instruction instruction;
+  u32 pc;
+
+  bool is_branch_instruction : 1;
+  bool is_branch_delay_slot : 1;
+  bool is_load_instruction : 1;
+  bool is_store_instruction : 1;
+  bool is_load_delay_slot : 1;
+  bool is_last_instruction : 1;
+  bool has_load_delay : 1;
+  bool can_trap : 1;
+};
+
+struct CodeBlock
+{
+  using HostCodePointer = void (*)(Core*);
+
+  CodeBlock(const CodeBlockKey key_) : key(key_) {}
+
+  CodeBlockKey key;
+  u32 host_code_size = 0;
+  HostCodePointer host_code = nullptr;
+
+  std::vector<CodeBlockInstruction> instructions;
+  std::vector<CodeBlock*> link_predecessors;
+  std::vector<CodeBlock*> link_successors;
+
+  bool invalidated = false;
+
+  const u32 GetPC() const { return key.GetPC(); }
+  const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
+  const u32 GetStartPageIndex() const { return (key.GetPC() / CPU_CODE_CACHE_PAGE_SIZE); }
+  const u32 GetEndPageIndex() const { return ((key.GetPC() + GetSizeInBytes()) / CPU_CODE_CACHE_PAGE_SIZE); }
+  bool IsInRAM() const
+  {
+    // TODO: Constant
+    return key.GetPC() < 0x200000;
+  }
+};
+
 class CodeCache
 {
 public:
@@ -69,8 +132,10 @@ private:
   Core* m_core;
   Bus* m_bus;
 
+#ifdef WITH_RECOMPILER
   std::unique_ptr<JitCodeBuffer> m_code_buffer;
   std::unique_ptr<Recompiler::ASMFunctions> m_asm_functions;
+#endif
 
   BlockMap m_blocks;
 

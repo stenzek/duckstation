@@ -15,6 +15,33 @@ Log_SetChannel(HostInterface);
 #include <time.h>
 #endif
 
+#ifdef ANDROID
+
+#include <cstring>
+
+static std::string GetRelativePath(const std::string& path, const char* new_filename)
+{
+  const char* last = std::strrchr(path.c_str(), '/');
+  if (!last)
+    return new_filename;
+  
+  std::string new_path(path.c_str(), last - path.c_str() + 1);
+  new_path += new_filename;
+  return new_path;
+}
+
+#else
+
+#include <filesystem>
+
+static std::string GetRelativePath(const std::string& path, const char* new_filename)
+{
+  return std::filesystem::path(path).replace_filename(new_filename).string();
+}
+
+#endif
+
+
 HostInterface::HostInterface()
 {
   m_settings.SetDefaults();
@@ -83,8 +110,6 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
     }                                                                                                                  \
   } while (0)
 
-#define RELATIVE_PATH(filename) std::filesystem::path(m_settings.bios_path).replace_filename(filename).string()
-
   // Try the configured image.
   TRY_FILENAME(m_settings.bios_path);
 
@@ -92,18 +117,18 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      TRY_FILENAME(RELATIVE_PATH("scph1000.bin"));
-      TRY_FILENAME(RELATIVE_PATH("scph5500.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1000.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5500.bin"));
       break;
 
     case ConsoleRegion::NTSC_U:
-      TRY_FILENAME(RELATIVE_PATH("scph1001.bin"));
-      TRY_FILENAME(RELATIVE_PATH("scph5501.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1001.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5501.bin"));
       break;
 
     case ConsoleRegion::PAL:
-      TRY_FILENAME(RELATIVE_PATH("scph1002.bin"));
-      TRY_FILENAME(RELATIVE_PATH("scph5502.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1002.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5502.bin"));
       break;
 
     default:

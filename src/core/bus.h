@@ -5,6 +5,7 @@
 #include "types.h"
 #include <array>
 #include <bitset>
+#include <vector>
 
 class StateWrapper;
 

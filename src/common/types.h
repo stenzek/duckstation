@@ -176,7 +176,7 @@ ALWAYS_INLINE constexpr bool ConvertToBool(TValue value)
 
 // Unsafe integer to boolean
 template<typename TValue>
-ALWAYS_INLINE constexpr bool ConvertToBoolUnchecked(TValue value)
+ALWAYS_INLINE bool ConvertToBoolUnchecked(TValue value)
 {
   // static_assert(sizeof(uint8) == sizeof(bool));
   bool ret;

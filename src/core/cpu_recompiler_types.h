@@ -46,6 +46,7 @@ enum class Condition : u8
 };
 
 #if defined(Y_CPU_X64)
+
 using HostReg = Xbyak::Operand::Code;
 using CodeEmitter = Xbyak::CodeGenerator;
 enum : u32
@@ -63,15 +64,22 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
 
 #else
-using HostReg = void;
-using CodeEmitter = void;
+
+using HostReg = int;
+
+class CodeEmitter
+{
+};
+
 enum : u32
 {
-  HostReg_Count = 0
+  HostReg_Count = 1
 };
+
 constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
-constexpr OperandSize HostPointerSize = OperandSize_64;
+constexpr RegSize HostPointerSize = RegSize_64;
 constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = false;
+
 #endif
 
 } // namespace Recompiler

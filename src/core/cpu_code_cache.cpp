@@ -2,10 +2,13 @@
 #include "YBaseLib/Log.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
-#include "cpu_recompiler_code_generator.h"
-#include "cpu_recompiler_thunks.h"
 #include "system.h"
 Log_SetChannel(CPU::CodeCache);
+
+#ifdef WITH_RECOMPILER
+#include "cpu_recompiler_code_generator.h"
+#include "cpu_recompiler_thunks.h"
+#endif
 
 namespace CPU {
 
@@ -23,11 +26,15 @@ void CodeCache::Initialize(System* system, Core* core, Bus* bus, bool use_recomp
   m_system = system;
   m_core = core;
   m_bus = bus;
-  m_use_recompiler = use_recompiler;
 
+#ifdef WITH_RECOMPILER
+  m_use_recompiler = use_recompiler;
   m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
   m_asm_functions = std::make_unique<Recompiler::ASMFunctions>();
   m_asm_functions->Generate(m_code_buffer.get());
+#else
+  m_use_recompiler = false;
+#endif
 }
 
 void CodeCache::Execute()
@@ -120,11 +127,13 @@ void CodeCache::Execute()
 
 void CodeCache::SetUseRecompiler(bool enable)
 {
+#ifdef WITH_RECOMPILER
   if (m_use_recompiler == enable)
     return;
 
   m_use_recompiler = enable;
   Flush();
+#endif
 }
 
 void CodeCache::Flush()
@@ -134,7 +143,9 @@ void CodeCache::Flush()
     it.clear();
 
   m_blocks.clear();
+#ifdef WITH_RECOMPILER
   m_code_buffer->Reset();
+#endif
 }
 
 void CodeCache::LogCurrentState()
@@ -297,6 +308,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
     return false;
   }
 
+#ifdef WITH_RECOMPILER
   if (m_use_recompiler)
   {
     // Ensure we're not going to run out of space while compiling this block.
@@ -316,6 +328,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
       return false;
     }
   }
+#endif
 
   return true;
 }

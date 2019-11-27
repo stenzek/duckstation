@@ -5,6 +5,7 @@
 
 #include "common/jit_code_buffer.h"
 
+#include "cpu_code_cache.h"
 #include "cpu_recompiler_register_cache.h"
 #include "cpu_recompiler_thunks.h"
 #include "cpu_recompiler_types.h"
