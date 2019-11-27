@@ -154,7 +154,6 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
     m_position_on_disc++;
     m_position_in_index++;
     m_position_in_track++;
-    sectors_read++;
   }
 
   return sectors_read;

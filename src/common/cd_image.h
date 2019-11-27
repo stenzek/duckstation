@@ -1,7 +1,9 @@
 #pragma once
 #include "bitfield.h"
 #include "types.h"
+#include <cstdio>
 #include <memory>
+#include <string>
 #include <tuple>
 #include <vector>
 
