@@ -32,3 +32,12 @@ if(SDL2_FOUND)
   target_link_libraries(imgui PRIVATE glad SDL2::Core)
 endif()
 
+if(ANDROID)
+  target_sources(imgui PRIVATE
+    include/imgui_impl_opengl3.h
+    src/imgui_impl_opengl3.cpp
+  )
+  target_link_libraries(imgui PRIVATE glad)
+endif()
+
+

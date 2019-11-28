@@ -78,14 +78,24 @@ HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
   return HostDisplay::RenderAPI::D3D11;
 }
 
-void* D3D11HostDisplay::GetHostRenderDevice() const
+void* D3D11HostDisplay::GetRenderDevice() const
 {
   return m_device.Get();
 }
 
-void* D3D11HostDisplay::GetHostRenderContext() const
+void* D3D11HostDisplay::GetRenderContext() const
 {
   return m_context.Get();
+}
+
+void* D3D11HostDisplay::GetRenderWindow() const
+{
+  return m_window;
+}
+
+void D3D11HostDisplay::ChangeRenderWindow(void* new_window)
+{
+  Panic("Not supported");
 }
 
 std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, const void* data,

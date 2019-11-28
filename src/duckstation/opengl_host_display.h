@@ -15,8 +15,11 @@ public:
   static std::unique_ptr<HostDisplay> Create(SDL_Window* window);
 
   RenderAPI GetRenderAPI() const override;
-  void* GetHostRenderDevice() const override;
-  void* GetHostRenderContext() const override;
+  void* GetRenderDevice() const override;
+  void* GetRenderContext() const override;
+  void* GetRenderWindow() const override;
+
+  void ChangeRenderWindow(void* new_window) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
                                                     bool dynamic) override;

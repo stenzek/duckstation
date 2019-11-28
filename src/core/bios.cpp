@@ -2,6 +2,7 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/MD5Digest.h"
 #include "cpu_disasm.h"
+#include <cerrno>
 Log_SetChannel(BIOS);
 
 namespace BIOS {
@@ -56,7 +57,7 @@ std::optional<Image> LoadImageFromFile(std::string_view filename)
   std::FILE* fp = std::fopen(filename_str.c_str(), "rb");
   if (!fp)
   {
-    Log_ErrorPrintf("Failed to open BIOS image '%s'", filename_str.c_str());
+    Log_ErrorPrintf("Failed to open BIOS image '%s', errno=%d", filename_str.c_str(), errno);
     return std::nullopt;
   }
 

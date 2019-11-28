@@ -34,8 +34,8 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dm
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
-  m_device = static_cast<ID3D11Device*>(host_display->GetHostRenderDevice());
-  m_context = static_cast<ID3D11DeviceContext*>(host_display->GetHostRenderContext());
+  m_device = static_cast<ID3D11Device*>(host_display->GetRenderDevice());
+  m_context = static_cast<ID3D11DeviceContext*>(host_display->GetRenderContext());
   if (!m_device || !m_context)
     return false;
 

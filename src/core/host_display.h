@@ -29,8 +29,12 @@ public:
   virtual ~HostDisplay() {}
 
   virtual RenderAPI GetRenderAPI() const = 0;
-  virtual void* GetHostRenderDevice() const = 0;
-  virtual void* GetHostRenderContext() const = 0;
+  virtual void* GetRenderDevice() const = 0;
+  virtual void* GetRenderContext() const = 0;
+  virtual void* GetRenderWindow() const = 0;
+
+  /// Switches the render window, recreating the surface.
+  virtual void ChangeRenderWindow(void* new_window) = 0;
 
   /// Creates an abstracted RGBA8 texture. If dynamic, the texture can be updated with UpdateTexture() below.
   virtual std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,

@@ -80,14 +80,24 @@ HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
   return m_is_gles ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
-void* OpenGLHostDisplay::GetHostRenderDevice() const
+void* OpenGLHostDisplay::GetRenderDevice() const
 {
   return nullptr;
 }
 
-void* OpenGLHostDisplay::GetHostRenderContext() const
+void* OpenGLHostDisplay::GetRenderContext() const
 {
   return m_gl_context;
+}
+
+void* OpenGLHostDisplay::GetRenderWindow() const
+{
+  return m_window;
+}
+
+void OpenGLHostDisplay::ChangeRenderWindow(void* new_window)
+{
+  Panic("Not implemented");
 }
 
 std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
