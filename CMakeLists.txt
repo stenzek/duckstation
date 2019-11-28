@@ -31,6 +31,8 @@ endif()
 # Required libraries.
 if(NOT ANDROID)
   find_package(SDL2 REQUIRED)
+else()
+  find_package(EGL REQUIRED)
 endif()
 
 

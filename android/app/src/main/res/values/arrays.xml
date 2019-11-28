@@ -1,0 +1,68 @@
+<resources>
+    <string-array name="settings_console_region_entries">
+        <item>Auto-Detect</item>
+        <item>NTSC-J (Japan)</item>
+        <item>NTSC-U (US)</item>
+        <item>PAL (Europe, Australia)</item>
+    </string-array>
+    <string-array name="settings_console_region_values">
+        <item>Auto</item>
+        <item>NTSC-J</item>
+        <item>NTSC-U</item>
+        <item>PAL</item>
+    </string-array>
+    <string-array name="settings_cpu_execution_mode_entries">
+        <item>Interpreter (Slowest)</item>
+        <item>Cached Interpreter (Faster)</item>
+        <item>Recompiler (Fastest)</item>
+    </string-array>
+    <string-array name="settings_cpu_execution_mode_values">
+        <item>Interpreter</item>
+        <item>CachedInterpreter</item>
+        <item>Recompiler</item>
+    </string-array>
+    <string-array name="gpu_renderer_entries">
+        <item>Hardware (OpenGL)</item>
+        <item>Software</item>
+    </string-array>
+    <string-array name="gpu_renderer_values">
+        <item>OpenGL</item>
+        <item>Software</item>
+    </string-array>
+    <string-array name="settings_gpu_resolution_scale_entries">
+        <item>1x (1024x512)</item>
+        <item>2x (2048x1024)</item>
+        <item>3x (3072x1536)</item>
+        <item>4x (4096x2048)</item>
+        <item>5x (5120x2560)</item>
+        <item>6x (6144x3072)</item>
+        <item>7x (7168x3584)</item>
+        <item>8x (8192x4096)</item>
+        <item>9x (9216x4608)</item>
+        <item>10x (10240x5120)</item>
+        <item>11x (11264x5632)</item>
+        <item>12x (12288x6144)</item>
+        <item>13x (13312x6656)</item>
+        <item>14x (14336x7168)</item>
+        <item>15x (15360x7680)</item>
+        <item>16x (16384x8192)</item>
+    </string-array>
+    <string-array name="settings_gpu_resolution_scale_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+    </string-array>
+</resources>

@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">DuckStation</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="settings_console_header">Console</string>
+    <string name="settings_behavior_header">Behavior</string>
+    <string name="settings_host_synchronization_header">Host Synchronization</string>
+    <string name="settings_cpu_header">CPU</string>
+    <string name="settings_gpu_header">GPU</string>
+
+    <!-- Console Preferences -->
+    <string name="settings_console_region">Region</string>
+    <string name="settings_console_region_default">Auto</string>
+    <string name="settings_console_bios_path">BIOS Path</string>
+    <string name="settings_console_tty_output">Enable TTY Output</string>
+    <string name="settings_console_fast_boot">Fast Boot</string>
+
+    <!-- Behavior Preferences -->
+    <string name="settings_behavior_enable_speed_limiter">Enable Speed Limiter</string>
+    <string name="settings_behavior_pause_on_start">Pause On Start</string>
+
+    <!-- Host Synchronization Preferences -->
+    <string name="settings_host_synchronization_sync_to_audio">Sync To Audio</string>
+    <string name="settings_host_synchronization_sync_to_video">Sync To Video</string>
+
+    <!-- CPU Preferences -->
+    <string name="settings_cpu_execution_mode">Execution Mode</string>
+    <string name="settings_cpu_execution_mode_default">Interpreter</string>
+
+    <!-- GPU Preferences -->
+    <string name="settings_gpu_renderer">Renderer</string>
+    <string name="settings_gpu_renderer_default">OpenGL</string>
+    <string name="settings_gpu_display_linear_filtering">Display Linear Filtering</string>
+    <string name="settings_gpu_resolution_scale">Resolution Scale</string>
+    <string name="settings_gpu_true_color">True 24-Bit Color (Disables Dithering)</string>
+
+    <string name="title_activity_emulation">EmulationActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
