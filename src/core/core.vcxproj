@@ -48,6 +48,7 @@
     <ClCompile Include="cpu_recompiler_thunks.cpp" />
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="digital_controller.cpp" />
+    <ClCompile Include="game_list.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
@@ -80,6 +81,7 @@
     <ClInclude Include="cpu_recompiler_thunks.h" />
     <ClInclude Include="cpu_recompiler_types.h" />
     <ClInclude Include="digital_controller.h" />
+    <ClInclude Include="game_list.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />

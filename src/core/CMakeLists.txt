@@ -19,6 +19,8 @@ add_library(core
     digital_controller.h
     dma.cpp
     dma.h
+    game_list.cpp
+    game_list.h
     gpu.cpp
     gpu.h
     gpu_commands.cpp

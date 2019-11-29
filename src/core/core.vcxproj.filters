@@ -33,6 +33,7 @@
     <ClCompile Include="cpu_recompiler_code_generator.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
     <ClCompile Include="cpu_types.cpp" />
+    <ClCompile Include="game_list.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -69,6 +70,7 @@
     <ClInclude Include="cpu_recompiler_register_cache.h" />
     <ClInclude Include="cpu_recompiler_thunks.h" />
     <ClInclude Include="cpu_recompiler_code_generator.h" />
+    <ClInclude Include="game_list.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />
