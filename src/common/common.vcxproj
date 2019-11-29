@@ -47,6 +47,7 @@
     <ClInclude Include="gl\stream_buffer.h" />
     <ClInclude Include="gl\texture.h" />
     <ClInclude Include="heap_array.h" />
+    <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="state_wrapper.h" />
@@ -65,6 +66,7 @@
     <ClCompile Include="gl\program.cpp" />
     <ClCompile Include="gl\stream_buffer.cpp" />
     <ClCompile Include="gl\texture.cpp" />
+    <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />

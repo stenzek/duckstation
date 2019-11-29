@@ -183,6 +183,9 @@ public:
   // Seek to track and position.
   bool Seek(u32 track_number, const Position& pos_in_track);
 
+  // Seek to track and LBA.
+  bool Seek(u32 track_number, LBA lba);
+
   // Read from the current LBA. Returns the number of sectors read.
   u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
 

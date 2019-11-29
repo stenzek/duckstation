@@ -32,6 +32,7 @@
       <Filter>d3d11</Filter>
     </ClInclude>
     <ClInclude Include="rectangle.h" />
+    <ClInclude Include="iso_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -62,6 +63,7 @@
     <ClCompile Include="d3d11\shader_compiler.cpp">
       <Filter>d3d11</Filter>
     </ClCompile>
+    <ClCompile Include="iso_reader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

@@ -14,6 +14,8 @@ add_library(common
   gl/stream_buffer.h
   gl/texture.cpp
   gl/texture.h
+  iso_reader.cpp
+  iso_reader.h
   jit_code_buffer.cpp
   jit_code_buffer.h
   rectangle.h

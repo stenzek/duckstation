@@ -100,6 +100,15 @@ bool CDImage::Seek(const Position& pos)
   return Seek(pos.ToLBA());
 }
 
+bool CDImage::Seek(u32 track_number, LBA lba)
+{
+  if (track_number < 1 || track_number > m_tracks.size())
+    return false;
+
+  const Track& track = m_tracks[track_number - 1];
+  return Seek(track.start_lba + lba);
+}
+
 u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
 {
   u8* buffer_ptr = static_cast<u8*>(buffer);
