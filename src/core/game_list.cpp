@@ -6,6 +6,7 @@
 #include "common/iso_reader.h"
 #include <algorithm>
 #include <cctype>
+#include <tinyxml2.h>
 #include <utility>
 Log_SetChannel(GameList);
 
@@ -78,24 +79,37 @@ std::string GameList::GetGameCodeForImage(CDImage* cdi)
   // cdrom:\SCES_123.45;1
   std::string code = iter->second;
   std::string::size_type pos = code.rfind('\\');
-  if (pos == std::string::npos)
-    return {};
-  code.erase(0, pos + 1);
-  pos = code.find(';');
-  if (pos == std::string::npos)
-    return {};
+  if (pos != std::string::npos)
+  {
+    code.erase(0, pos + 1);
+  }
+  else
+  {
+    // cdrom:SCES_123.45;1
+    pos = code.rfind(':');
+    if (pos != std::string::npos)
+      code.erase(0, pos + 1);
+  }
 
-  code.erase(pos);
+  pos = code.find(';');
+  if (pos != std::string::npos)
+    code.erase(pos);
 
   // SCES_123.45 -> SCES-12345
   for (pos = 0; pos < code.size();)
   {
-    if (code[pos] == '_')
-      code[pos++] = '-';
-    else if (code[pos] == '.')
+    if (code[pos] == '.')
+    {
       code.erase(pos, 1);
+      continue;
+    }
+
+    if (code[pos] == '_')
+      code[pos] = '-';
     else
-      pos++;
+      code[pos] = static_cast<char>(std::toupper(code[pos]));
+
+    pos++;
   }
 
   return code;
@@ -137,11 +151,24 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
     return false;
 
   std::string game_code = GetGameCodeForImage(cdi.get());
+  cdi.reset();
 
   entry->path = path;
-  entry->title = game_code;
   entry->code = game_code;
-  entry->region = GetRegionForCode(game_code).value_or(ConsoleRegion::NTSC_U);
+
+  auto iter = m_database.find(game_code);
+  if (iter != m_database.end())
+  {
+    entry->title = iter->second.title;
+    entry->region = iter->second.region;
+  }
+  else
+  {
+    Log_WarningPrintf("'%s' not found in database", game_code.c_str());
+    entry->title = game_code;
+    entry->region = GetRegionForCode(game_code).value_or(ConsoleRegion::NTSC_U);
+  }
+
   return true;
 }
 
@@ -182,4 +209,106 @@ void GameList::ScanDirectory(const char* path, bool recursive)
       entry = {};
     }
   }
+}
+
+class RedumpDatVisitor final : public tinyxml2::XMLVisitor
+{
+public:
+  RedumpDatVisitor(GameList::DatabaseMap& database) : m_database(database) {}
+
+  static std::string FixupSerial(const std::string_view str)
+  {
+    std::string ret;
+    ret.reserve(str.length());
+    for (size_t i = 0; i < str.length(); i++)
+    {
+      if (str[i] == '.' || str[i] == '#')
+        continue;
+      else if (str[i] == ',')
+        break;
+      else if (str[i] == '_' || str[i] == ' ')
+        ret.push_back('-');
+      else
+        ret.push_back(static_cast<char>(std::toupper(str[i])));
+    }
+
+    return ret;
+  }
+
+  bool VisitEnter(const tinyxml2::XMLElement& element, const tinyxml2::XMLAttribute* firstAttribute) override
+  {
+    // recurse into gamelist
+    if (Y_stricmp(element.Name(), "datafile") == 0)
+      return true;
+
+    if (Y_stricmp(element.Name(), "game") != 0)
+      return false;
+
+    const char* name = element.Attribute("name");
+    if (!name)
+      return false;
+
+    const tinyxml2::XMLElement* serial_elem = element.FirstChildElement("serial");
+    if (!serial_elem)
+      return false;
+
+    const char* serial_text = serial_elem->GetText();
+    if (!serial_text)
+      return false;
+
+    // Handle entries like <serial>SCES-00984, SCES-00984#</serial>
+    const char* start = serial_text;
+    const char* end = std::strchr(start, ',');
+    for (;;)
+    {
+      std::string code = FixupSerial(end ? std::string_view(start, end - start) : std::string_view(start));
+      auto iter = m_database.find(code);
+      if (iter == m_database.end())
+      {
+        GameList::GameDatabaseEntry gde;
+        gde.code = std::move(code);
+        gde.region = GameList::GetRegionForCode(gde.code).value_or(ConsoleRegion::NTSC_U);
+        gde.title = name;
+        m_database.emplace(gde.code, std::move(gde));
+      }
+
+      if (!end)
+        break;
+
+      start = end + 1;
+      while (std::isspace(*start))
+        start++;
+
+      end = std::strchr(start, ',');
+    }
+
+    return false;
+  }
+
+private:
+  GameList::DatabaseMap& m_database;
+};
+
+bool GameList::ParseRedumpDatabase(const char* redump_dat_path)
+{
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError error = doc.LoadFile(redump_dat_path);
+  if (error != tinyxml2::XML_SUCCESS)
+  {
+    Log_ErrorPrintf("Failed to parse redump dat '%s': %s", redump_dat_path,
+                    tinyxml2::XMLDocument::ErrorIDToName(error));
+    return false;
+  }
+
+  const tinyxml2::XMLElement* datafile_elem = doc.FirstChildElement("datafile");
+  if (!datafile_elem)
+  {
+    Log_ErrorPrintf("Failed to get datafile element in '%s'", redump_dat_path);
+    return false;
+  }
+
+  RedumpDatVisitor visitor(m_database);
+  datafile_elem->Accept(&visitor);
+  Log_InfoPrintf("Loaded %zu entries from Redump.org database '%s'", m_database.size(), redump_dat_path);
+  return true;
 }

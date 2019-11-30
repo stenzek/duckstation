@@ -10,16 +10,15 @@ class CDImage;
 class GameList
 {
 public:
-  GameList();
-  ~GameList();
+  struct GameDatabaseEntry
+  {
+    std::string code;
+    std::string title;
+    ConsoleRegion region;
+  };
 
-  static std::string GetGameCodeForImage(CDImage* cdi);
-  static std::string GetGameCodeForPath(const char* image_path);
-  static std::optional<ConsoleRegion> GetRegionForCode(std::string_view code);
+  using DatabaseMap = std::unordered_map<std::string, GameDatabaseEntry>;
 
-  void AddDirectory(const char* path, bool recursive);
-
-private:
   struct GameListEntry
   {
     std::string path;
@@ -28,9 +27,28 @@ private:
     ConsoleRegion region;
   };
 
+  using EntryList = std::vector<GameListEntry>;
+
+  GameList();
+  ~GameList();
+
+  static std::string GetGameCodeForImage(CDImage* cdi);
+  static std::string GetGameCodeForPath(const char* image_path);
+  static std::optional<ConsoleRegion> GetRegionForCode(std::string_view code);
+
+  const DatabaseMap& GetDatabase() const { return m_database; }
+  const EntryList& GetEntries() const { return m_entries; }
+
+  void AddDirectory(const char* path, bool recursive);
+
+  bool ParseRedumpDatabase(const char* redump_dat_path);
+
+private:
+
   bool GetGameListEntry(const char* path, GameListEntry* entry);
 
   void ScanDirectory(const char* path, bool recursive);
 
-  std::vector<GameListEntry> m_entries;
+  DatabaseMap m_database;
+  EntryList m_entries;
 };

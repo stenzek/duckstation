@@ -73,7 +73,7 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads YBaseLib common imgui)
+target_link_libraries(core PUBLIC Threads::Threads YBaseLib common imgui tinyxml2)
 target_link_libraries(core PRIVATE glad simpleini stb)
 
 if(WIN32)
