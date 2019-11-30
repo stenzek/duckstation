@@ -150,13 +150,12 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
   if (!cdi)
     return false;
 
-  std::string game_code = GetGameCodeForImage(cdi.get());
+  entry->path = path;
+  entry->code = GetGameCodeForImage(cdi.get());
+  entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   cdi.reset();
 
-  entry->path = path;
-  entry->code = game_code;
-
-  auto iter = m_database.find(game_code);
+  auto iter = m_database.find(entry->code);
   if (iter != m_database.end())
   {
     entry->title = iter->second.title;
@@ -164,9 +163,9 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
   }
   else
   {
-    Log_WarningPrintf("'%s' not found in database", game_code.c_str());
-    entry->title = game_code;
-    entry->region = GetRegionForCode(game_code).value_or(ConsoleRegion::NTSC_U);
+    Log_WarningPrintf("'%s' not found in database", entry->code.c_str());
+    entry->title = entry->code;
+    entry->region = GetRegionForCode(entry->code).value_or(ConsoleRegion::NTSC_U);
   }
 
   return true;

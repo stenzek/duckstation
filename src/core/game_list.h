@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 class CDImage;
 
@@ -24,6 +25,7 @@ public:
     std::string path;
     std::string code;
     std::string title;
+    u64 total_size;
     ConsoleRegion region;
   };
 
@@ -38,6 +40,7 @@ public:
 
   const DatabaseMap& GetDatabase() const { return m_database; }
   const EntryList& GetEntries() const { return m_entries; }
+  const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
 
   void AddDirectory(const char* path, bool recursive);
 
