@@ -3,8 +3,8 @@ set(SRCS
   android_audio_stream.h
   android_host_interface.cpp
   android_host_interface.h
-  android_gles2_host_display.cpp
-  android_gles2_host_display.h
+  android_gles_host_display.cpp
+  android_gles_host_display.h
   main.cpp
 )
 

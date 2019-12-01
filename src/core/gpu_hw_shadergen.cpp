@@ -22,38 +22,43 @@ static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
   ss << "#define " << name << " " << BoolToUInt32(enabled) << "\n";
 }
 
-void GPU_HW_ShaderGen::SetGLSLVersionString()
-{
-  const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+void GPU_HW_ShaderGen::SetGLSLVersionString() {
+  const char *glsl_version = reinterpret_cast<const char *>(glGetString(
+          GL_SHADING_LANGUAGE_VERSION));
   Assert(glsl_version != nullptr);
 
+  // Skip any strings in front of the version code.
+  const char *glsl_version_start = glsl_version;
+  while (*glsl_version_start != '\0' && (*glsl_version_start < '0' || *glsl_version_start > '9'))
+    glsl_version_start++;
+
   int major_version = 0, minor_version = 0;
-  if (std::sscanf(glsl_version, "%d.%d", &major_version, &minor_version) != 2)
+  if (std::sscanf(glsl_version_start, "%d.%d", &major_version, &minor_version) == 2)
   {
-    Log_ErrorPrintf("Invalid GLSL version string: '%s'", glsl_version);
+    // Cap at GLSL 3.3, we're not using anything newer for now.
+    if (!m_glsl_es && major_version >= 4) {
+      major_version = 3;
+      minor_version = 30;
+    } else if (m_glsl_es && (major_version > 3 || minor_version > 20)) {
+      major_version = 3;
+      minor_version = 20;
+    }
+  }
+  else
+  {
+    Log_ErrorPrintf("Invalid GLSL version string: '%s' ('%s')", glsl_version, glsl_version_start);
+    if (m_glsl_es) {
+      major_version = 3;
+      minor_version = 0;
+    }
     m_glsl_version_string = m_glsl_es ? "300" : "130";
-    return;
   }
 
-  // Cap at GLSL 3.3, we're not using anything newer for now.
-  if (!m_glsl_es && major_version >= 4)
-  {
-    major_version = 3;
-    minor_version = 30;
-  }
-  else if (m_glsl_es && (major_version > 3 || minor_version > 20))
-  {
-    major_version = 3;
-    minor_version = 20;
-  }
 
-  m_glsl_version_string = "#version ";
-  m_glsl_version_string += std::to_string(major_version);
-  m_glsl_version_string += std::to_string(minor_version);
-  if (!m_glsl_es && major_version >= 3 && minor_version >= 3)
-    m_glsl_version_string += " core";
-  else if (m_glsl_es)
-    m_glsl_version_string += " es";
+  char buf[128];
+  std::snprintf(buf, sizeof(buf), "#version %d%02d %s", major_version, minor_version,
+          (!m_glsl_es && major_version >= 3 && minor_version >= 3) ? "core" : (m_glsl_es ? "es" : ""));
+  m_glsl_version_string = buf;
 }
 
 void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
@@ -61,14 +66,12 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
   if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
     ss << m_glsl_version_string << "\n\n";
 
-  if (m_render_api == HostDisplay::RenderAPI::OpenGL)
-  {
-    ss << "#define API_OPENGL 1\n";
-  }
-  else if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
-  {
-    ss << "#define API_OPENGL_ES 1\n";
+  DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
+  DefineMacro(ss, "API_OPENGL_ES", m_render_api == HostDisplay::RenderAPI::OpenGLES);
+  DefineMacro(ss, "API_D3D11", m_render_api == HostDisplay::RenderAPI::D3D11);
 
+  if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
+  {
     ss << "precision highp float;\n";
     ss << "precision highp int;\n";
     ss << "precision highp sampler2D;\n";
@@ -77,10 +80,6 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "precision highp usamplerBuffer;\n";
 
     ss << "\n";
-  }
-  else if (m_render_api == HostDisplay::RenderAPI::D3D11)
-  {
-    ss << "#define API_D3D11 1\n";
   }
 
   if (m_glsl)

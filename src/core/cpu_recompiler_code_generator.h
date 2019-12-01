@@ -15,7 +15,7 @@
 #if defined(Y_CPU_X64)
 #if defined(Y_PLATFORM_WINDOWS)
 #define ABI_WIN64 1
-#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_OSX)
+#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_OSX) || defined(Y_PLATFORM_ANDROID)
 #define ABI_SYSV 1
 #else
 #error Unknown ABI.

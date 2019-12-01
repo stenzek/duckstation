@@ -1,17 +1,17 @@
-#include "android_gles2_host_display.h"
+#include "android_gles_host_display.h"
 #include "YBaseLib/Log.h"
 #include <EGL/eglext.h>
 #include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
-Log_SetChannel(AndroidGLES2HostDisplay);
+Log_SetChannel(AndroidGLESHostDisplay);
 
-class AndroidGLES2HostDisplayTexture : public HostDisplayTexture
+class AndroidGLESHostDisplayTexture : public HostDisplayTexture
 {
 public:
-  AndroidGLES2HostDisplayTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
-  ~AndroidGLES2HostDisplayTexture() override { glDeleteTextures(1, &m_id); }
+  AndroidGLESHostDisplayTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
+  ~AndroidGLESHostDisplayTexture() override { glDeleteTextures(1, &m_id); }
 
   void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_id)); }
   u32 GetWidth() const override { return m_width; }
@@ -19,7 +19,7 @@ public:
 
   GLuint GetGLID() const { return m_id; }
 
-  static std::unique_ptr<AndroidGLES2HostDisplayTexture> Create(u32 width, u32 height, const void* initial_data,
+  static std::unique_ptr<AndroidGLESHostDisplayTexture> Create(u32 width, u32 height, const void* initial_data,
                                                                 u32 initial_data_stride)
   {
     GLuint id;
@@ -38,7 +38,7 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, id);
-    return std::make_unique<AndroidGLES2HostDisplayTexture>(id, width, height);
+    return std::make_unique<AndroidGLESHostDisplayTexture>(id, width, height);
   }
 
 private:
@@ -47,12 +47,12 @@ private:
   u32 m_height;
 };
 
-AndroidGLES2HostDisplay::AndroidGLES2HostDisplay(ANativeWindow* window)
+AndroidGLESHostDisplay::AndroidGLESHostDisplay(ANativeWindow* window)
   : m_window(window), m_window_width(ANativeWindow_getWidth(window)), m_window_height(ANativeWindow_getHeight(window))
 {
 }
 
-AndroidGLES2HostDisplay::~AndroidGLES2HostDisplay()
+AndroidGLESHostDisplay::~AndroidGLESHostDisplay()
 {
   if (m_egl_context != EGL_NO_CONTEXT)
   {
@@ -66,27 +66,27 @@ AndroidGLES2HostDisplay::~AndroidGLES2HostDisplay()
     eglDestroySurface(m_egl_display, m_egl_surface);
 }
 
-HostDisplay::RenderAPI AndroidGLES2HostDisplay::GetRenderAPI() const
+HostDisplay::RenderAPI AndroidGLESHostDisplay::GetRenderAPI() const
 {
   return HostDisplay::RenderAPI::OpenGLES;
 }
 
-void* AndroidGLES2HostDisplay::GetRenderDevice() const
+void* AndroidGLESHostDisplay::GetRenderDevice() const
 {
   return nullptr;
 }
 
-void* AndroidGLES2HostDisplay::GetRenderContext() const
+void* AndroidGLESHostDisplay::GetRenderContext() const
 {
   return m_egl_context;
 }
 
-void* AndroidGLES2HostDisplay::GetRenderWindow() const
+void* AndroidGLESHostDisplay::GetRenderWindow() const
 {
   return m_window;
 }
 
-void AndroidGLES2HostDisplay::ChangeRenderWindow(void* new_window)
+void AndroidGLESHostDisplay::ChangeRenderWindow(void* new_window)
 {
   eglMakeCurrent(m_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
@@ -101,16 +101,16 @@ void AndroidGLES2HostDisplay::ChangeRenderWindow(void* new_window)
     Panic("Failed to make context current after window change");
 }
 
-std::unique_ptr<HostDisplayTexture> AndroidGLES2HostDisplay::CreateTexture(u32 width, u32 height, const void* data,
+std::unique_ptr<HostDisplayTexture> AndroidGLESHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
                                                                            u32 data_stride, bool dynamic)
 {
-  return AndroidGLES2HostDisplayTexture::Create(width, height, data, data_stride);
+  return AndroidGLESHostDisplayTexture::Create(width, height, data, data_stride);
 }
 
-void AndroidGLES2HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+void AndroidGLESHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
                                             const void* data, u32 data_stride)
 {
-  AndroidGLES2HostDisplayTexture* tex = static_cast<AndroidGLES2HostDisplayTexture*>(texture);
+  AndroidGLESHostDisplayTexture* tex = static_cast<AndroidGLESHostDisplayTexture*>(texture);
   Assert(data_stride == (width * sizeof(u32)));
 
   GLint old_texture_binding = 0;
@@ -122,7 +122,7 @@ void AndroidGLES2HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, 
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
-void AndroidGLES2HostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
+void AndroidGLESHostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
                                                 u32 texture_width, u32 texture_height, float aspect_ratio)
 {
   m_display_texture_id = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));
@@ -136,39 +136,41 @@ void AndroidGLES2HostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32
   m_display_texture_changed = true;
 }
 
-void AndroidGLES2HostDisplay::SetDisplayLinearFiltering(bool enabled)
+void AndroidGLESHostDisplay::SetDisplayLinearFiltering(bool enabled)
 {
   m_display_linear_filtering = enabled;
 }
 
-void AndroidGLES2HostDisplay::SetDisplayTopMargin(int height)
+void AndroidGLESHostDisplay::SetDisplayTopMargin(int height)
 {
   m_display_top_margin = height;
 }
 
-void AndroidGLES2HostDisplay::SetVSync(bool enabled)
+void AndroidGLESHostDisplay::SetVSync(bool enabled)
 {
   eglSwapInterval(m_egl_display, enabled ? 1 : 0);
 }
 
-std::tuple<u32, u32> AndroidGLES2HostDisplay::GetWindowSize() const
+std::tuple<u32, u32> AndroidGLESHostDisplay::GetWindowSize() const
 {
   return std::make_tuple(static_cast<u32>(m_window_width), static_cast<u32>(m_window_height));
 }
 
-void AndroidGLES2HostDisplay::WindowResized()
+void AndroidGLESHostDisplay::WindowResized()
 {
   m_window_width = ANativeWindow_getWidth(m_window);
   m_window_height = ANativeWindow_getHeight(m_window);
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
   Log_InfoPrintf("WindowResized %dx%d", m_window_width, m_window_height);
 }
 
-const char* AndroidGLES2HostDisplay::GetGLSLVersionString() const
+const char* AndroidGLESHostDisplay::GetGLSLVersionString() const
 {
   return "#version 100";
 }
 
-std::string AndroidGLES2HostDisplay::GetGLSLVersionHeader() const
+std::string AndroidGLESHostDisplay::GetGLSLVersionHeader() const
 {
   return R"(
 #version 100
@@ -178,7 +180,7 @@ precision highp int;
 )";
 }
 
-bool AndroidGLES2HostDisplay::CreateGLContext()
+bool AndroidGLESHostDisplay::CreateGLContext()
 {
   m_egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if (!m_egl_display)
@@ -209,8 +211,15 @@ bool AndroidGLES2HostDisplay::CreateGLContext()
 
   eglBindAPI(EGL_OPENGL_ES_API);
 
-  static constexpr std::array<int, 3> egl_context_attribs = {{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE}};
-  m_egl_context = eglCreateContext(m_egl_display, m_egl_config, EGL_NO_CONTEXT, egl_context_attribs.data());
+  // Try GLES 3, then fall back to GLES 2.
+  for (int major_version : {3, 2}) {
+    std::array<int, 3> egl_context_attribs = {{EGL_CONTEXT_CLIENT_VERSION, major_version, EGL_NONE}};
+    m_egl_context = eglCreateContext(m_egl_display, m_egl_config, EGL_NO_CONTEXT,
+                                     egl_context_attribs.data());
+    if (m_egl_context)
+      break;
+  }
+
   if (!m_egl_context)
   {
     Log_ErrorPrint("eglCreateContext() failed");
@@ -233,10 +242,12 @@ bool AndroidGLES2HostDisplay::CreateGLContext()
     return false;
   }
 
+  Log_InfoPrintf("GLES Version: %s", glGetString(GL_VERSION));
+  Log_InfoPrintf("GLES Renderer: %s", glGetString(GL_RENDERER));
   return true;
 }
 
-bool AndroidGLES2HostDisplay::CreateSurface()
+bool AndroidGLESHostDisplay::CreateSurface()
 {
   EGLint native_visual;
   eglGetConfigAttrib(m_egl_display, m_egl_config, EGL_NATIVE_VISUAL_ID, &native_visual);
@@ -255,13 +266,13 @@ bool AndroidGLES2HostDisplay::CreateSurface()
   return true;
 }
 
-void AndroidGLES2HostDisplay::DestroySurface()
+void AndroidGLESHostDisplay::DestroySurface()
 {
   eglDestroySurface(m_egl_display, m_egl_surface);
   m_egl_surface = EGL_NO_SURFACE;
 }
 
-bool AndroidGLES2HostDisplay::CreateImGuiContext()
+bool AndroidGLESHostDisplay::CreateImGuiContext()
 {
   if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
     return false;
@@ -272,7 +283,7 @@ bool AndroidGLES2HostDisplay::CreateImGuiContext()
   return true;
 }
 
-bool AndroidGLES2HostDisplay::CreateGLResources()
+bool AndroidGLESHostDisplay::CreateGLResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 attribute vec2 a_pos;
@@ -321,9 +332,9 @@ void main()
   return true;
 }
 
-std::unique_ptr<HostDisplay> AndroidGLES2HostDisplay::Create(ANativeWindow* window)
+std::unique_ptr<HostDisplay> AndroidGLESHostDisplay::Create(ANativeWindow* window)
 {
-  std::unique_ptr<AndroidGLES2HostDisplay> display = std::make_unique<AndroidGLES2HostDisplay>(window);
+  std::unique_ptr<AndroidGLESHostDisplay> display = std::make_unique<AndroidGLESHostDisplay>(window);
   if (!display->CreateGLContext() || !display->CreateImGuiContext() || !display->CreateGLResources())
     return nullptr;
 
@@ -331,7 +342,7 @@ std::unique_ptr<HostDisplay> AndroidGLES2HostDisplay::Create(ANativeWindow* wind
   return display;
 }
 
-void AndroidGLES2HostDisplay::Render()
+void AndroidGLESHostDisplay::Render()
 {
   glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -349,7 +360,7 @@ void AndroidGLES2HostDisplay::Render()
   GL::Program::ResetLastProgram();
 }
 
-void AndroidGLES2HostDisplay::RenderDisplay()
+void AndroidGLESHostDisplay::RenderDisplay()
 {
   if (!m_display_texture_id)
     return;
@@ -378,6 +389,7 @@ void AndroidGLES2HostDisplay::RenderDisplay()
     {{1.0f, 1.0f, tex_right, tex_top}},     // top-right
   }};
 
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), &vertices[0][0]);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), &vertices[0][2]);

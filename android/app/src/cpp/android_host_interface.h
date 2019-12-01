@@ -3,10 +3,8 @@
 #include "YBaseLib/Timer.h"
 #include "core/host_interface.h"
 #include <atomic>
-#include <deque>
 #include <functional>
 #include <jni.h>
-#include <mutex>
 #include <thread>
 
 struct ANativeWindow;
@@ -19,7 +17,6 @@ public:
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
-  void AddOSDMessage(const char* message, float duration = 2.0f) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
   bool StartEmulationThread(ANativeWindow* initial_surface, std::string initial_filename,
@@ -30,25 +27,16 @@ public:
   void SurfaceChanged(ANativeWindow* window, int format, int width, int height);
 
 private:
-  struct OSDMessage
-  {
-    std::string text;
-    Timer time;
-    float duration;
-  };
-
   void EmulationThreadEntryPoint(ANativeWindow* initial_surface, std::string initial_filename,
                                  std::string initial_state_filename);
 
   void CreateImGuiContext();
   void DestroyImGuiContext();
   void DrawImGui();
-  void DrawOSDMessages();
+
+  void DrawFPSWindow();
 
   jobject m_java_object = {};
-
-  std::deque<OSDMessage> m_osd_messages;
-  std::mutex m_osd_messages_lock;
 
   std::mutex m_callback_mutex;
   std::deque<std::function<void()>> m_callback_queue;

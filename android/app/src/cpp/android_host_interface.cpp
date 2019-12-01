@@ -3,11 +3,12 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
 #include "android_audio_stream.h"
-#include "android_gles2_host_display.h"
+#include "android_gles_host_display.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
 #include <android/native_window_jni.h>
+#include <cmath>
 #include <imgui.h>
 Log_SetChannel(AndroidHostInterface);
 
@@ -52,10 +53,12 @@ AndroidHostInterface::AndroidHostInterface(jobject java_object) : m_java_object(
   m_settings.SetDefaults();
   m_settings.bios_path = "/sdcard/PSX/BIOS/scph1001.bin";
   m_settings.memory_card_a_path = "/sdcard/PSX/memory_card_a.mcd";
-  m_settings.gpu_renderer = GPURenderer::Software;
-  m_settings.video_sync_enabled = true;
+  m_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
+  //m_settings.gpu_renderer = GPURenderer::Software;
+  m_settings.speed_limiter_enabled = false;
+  m_settings.video_sync_enabled = false;
   m_settings.audio_sync_enabled = false;
-  // m_settings.debugging.show_vram = true;
+  //m_settings.debugging.show_vram = true;
 }
 
 AndroidHostInterface::~AndroidHostInterface()
@@ -136,7 +139,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
   CreateImGuiContext();
 
   // Create display.
-  m_display = AndroidGLES2HostDisplay::Create(initial_surface);
+  m_display = AndroidGLESHostDisplay::Create(initial_surface);
   if (!m_display)
   {
     Log_ErrorPrint("Failed to create display on emulation thread.");
@@ -219,6 +222,8 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
         if (m_speed_limiter_enabled)
           Throttle();
       }
+
+      UpdatePerformanceCounters();
     }
   }
 
@@ -243,61 +248,69 @@ void AndroidHostInterface::DestroyImGuiContext()
 
 void AndroidHostInterface::DrawImGui()
 {
+  DrawFPSWindow();
   DrawOSDMessages();
 
   ImGui::Render();
 }
 
-void AndroidHostInterface::AddOSDMessage(const char* message, float duration)
+void AndroidHostInterface::DrawFPSWindow()
 {
-  OSDMessage msg;
-  msg.text = message;
-  msg.duration = duration;
+  const bool show_fps = true;
+  const bool show_vps = true;
+  const bool show_speed = true;
 
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  m_osd_messages.push_back(std::move(msg));
-}
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 175.0f, 0.0f), ImGuiCond_Always);
+  ImGui::SetNextWindowSize(ImVec2(175.0f, 16.0f));
 
-void AndroidHostInterface::DrawOSDMessages()
-{
-  constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
-                                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                                            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
-
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-
-  auto iter = m_osd_messages.begin();
-  float position_x = 10.0f * scale;
-  float position_y = (10.0f + (m_settings.display_fullscreen ? 0.0f : 20.0f)) * scale;
-  u32 index = 0;
-  while (iter != m_osd_messages.end())
+  if (!ImGui::Begin("FPSWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                                          ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize |
+                                          ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoBringToFrontOnFocus))
   {
-    const OSDMessage& msg = *iter;
-    const double time = msg.time.GetTimeSeconds();
-    const float time_remaining = static_cast<float>(msg.duration - time);
-    if (time_remaining <= 0.0f)
-    {
-      iter = m_osd_messages.erase(iter);
-      continue;
-    }
-
-    const float opacity = std::min(time_remaining, 1.0f);
-    ImGui::SetNextWindowPos(ImVec2(position_x, position_y));
-    ImGui::SetNextWindowSize(ImVec2(0.0f, 0.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
-
-    if (ImGui::Begin(SmallString::FromFormat("osd_%u", index++), nullptr, window_flags))
-    {
-      ImGui::TextUnformatted(msg.text.c_str());
-      position_y += ImGui::GetWindowSize().y + (4.0f * scale);
-    }
-
     ImGui::End();
-    ImGui::PopStyleVar();
-    ++iter;
+    return;
   }
+
+  bool first = true;
+  if (show_fps)
+  {
+    ImGui::Text("%.2f", m_fps);
+    first = false;
+  }
+  if (show_vps)
+  {
+    if (first) {
+      first = false;
+    }
+    else {
+      ImGui::SameLine();
+      ImGui::Text("/");
+      ImGui::SameLine();
+    }
+
+    ImGui::Text("%.2f", m_vps);
+  }
+  if (show_speed)
+  {
+    if (first) {
+      first = false;
+    }
+    else {
+      ImGui::SameLine();
+      ImGui::Text("/");
+      ImGui::SameLine();
+    }
+
+    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
+    if (m_speed < 90.0f)
+      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
+    else if (m_speed < 110.0f)
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+    else
+      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+  }
+
+  ImGui::End();
 }
 
 void AndroidHostInterface::SurfaceChanged(ANativeWindow* window, int format, int width, int height)

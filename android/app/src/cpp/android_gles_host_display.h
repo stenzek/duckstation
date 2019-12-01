@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
-class AndroidGLES2HostDisplay final : public HostDisplay
+class AndroidGLESHostDisplay final : public HostDisplay
 {
 public:
-  AndroidGLES2HostDisplay(ANativeWindow* window);
-  ~AndroidGLES2HostDisplay();
+  AndroidGLESHostDisplay(ANativeWindow* window);
+  ~AndroidGLESHostDisplay();
 
   static std::unique_ptr<HostDisplay> Create(ANativeWindow* window);
 
