@@ -3,8 +3,11 @@
 #include "settings.h"
 #include "types.h"
 #include <chrono>
+#include <deque>
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <string>
 #include <vector>
 
 class AudioStream;
@@ -38,8 +41,8 @@ public:
   virtual void ReportError(const char* message);
   virtual void ReportMessage(const char* message);
 
-  // Adds OSD messages, duration is in seconds.
-  virtual void AddOSDMessage(const char* message, float duration = 2.0f) = 0;
+  /// Adds OSD messages, duration is in seconds.
+  void AddOSDMessage(const char* message, float duration = 2.0f);
 
   /// Loads the BIOS image for the specified region.
   virtual std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
@@ -50,6 +53,13 @@ public:
 protected:
   using ThrottleClock = std::chrono::steady_clock;
 
+  struct OSDMessage
+  {
+    std::string text;
+    Timer time;
+    float duration;
+  };
+
   /// Connects controllers. TODO: Clean this up later...
   virtual void ConnectControllers();
 
@@ -57,6 +67,9 @@ protected:
   void Throttle();
 
   void UpdateSpeedLimiterState();
+
+  void DrawOSDMessages();
+  void ClearImGuiFocus();
 
   void UpdatePerformanceCounters();
   void ResetPerformanceCounters();
@@ -78,6 +91,9 @@ protected:
   u32 m_last_internal_frame_number = 0;
   u32 m_last_global_tick_counter = 0;
   Timer m_fps_timer;
+
+  std::deque<OSDMessage> m_osd_messages;
+  std::mutex m_osd_messages_lock;
 
   bool m_paused = false;
   bool m_speed_limiter_temp_disabled = false;

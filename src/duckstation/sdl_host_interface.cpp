@@ -608,11 +608,6 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
   }
 }
 
-void SDLHostInterface::ClearImGuiFocus()
-{
-  ImGui::SetWindowFocus(nullptr);
-}
-
 void SDLHostInterface::DrawImGui()
 {
   DrawMainMenuBar();
@@ -1272,58 +1267,6 @@ bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, con
   }
 
   return result;
-}
-
-void SDLHostInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
-{
-  OSDMessage msg;
-  msg.text = message;
-  msg.duration = duration;
-
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  m_osd_messages.push_back(std::move(msg));
-}
-
-void SDLHostInterface::DrawOSDMessages()
-{
-  constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
-                                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                                            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
-
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-
-  auto iter = m_osd_messages.begin();
-  float position_x = 10.0f * scale;
-  float position_y = (10.0f + (m_settings.display_fullscreen ? 0.0f : 20.0f)) * scale;
-  u32 index = 0;
-  while (iter != m_osd_messages.end())
-  {
-    const OSDMessage& msg = *iter;
-    const double time = msg.time.GetTimeSeconds();
-    const float time_remaining = static_cast<float>(msg.duration - time);
-    if (time_remaining <= 0.0f)
-    {
-      iter = m_osd_messages.erase(iter);
-      continue;
-    }
-
-    const float opacity = std::min(time_remaining, 1.0f);
-    ImGui::SetNextWindowPos(ImVec2(position_x, position_y));
-    ImGui::SetNextWindowSize(ImVec2(0.0f, 0.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
-
-    if (ImGui::Begin(SmallString::FromFormat("osd_%u", index++), nullptr, window_flags))
-    {
-      ImGui::TextUnformatted(msg.text);
-      position_y += ImGui::GetWindowSize().y + (4.0f * scale);
-    }
-
-    ImGui::End();
-    ImGui::PopStyleVar();
-    ++iter;
-  }
 }
 
 void SDLHostInterface::DoPowerOff()

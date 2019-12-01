@@ -31,9 +31,6 @@ public:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
 
-  // Adds OSD messages, duration is in seconds.
-  void AddOSDMessage(const char* message, float duration = 2.0f) override;
-
   void Run();
 
 protected:
@@ -42,13 +39,6 @@ protected:
 private:
   static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
   static constexpr char RESUME_SAVESTATE_FILENAME[] = "savestate_resume.bin";
-
-  struct OSDMessage
-  {
-    String text;
-    Timer time;
-    float duration;
-  };
 
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
@@ -91,7 +81,6 @@ private:
 
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
-  void ClearImGuiFocus();
 
   void DrawMainMenuBar();
   void DrawQuickSettingsMenu();
@@ -99,7 +88,6 @@ private:
   void DrawPoweredOffWindow();
   void DrawSettingsWindow();
   void DrawAboutWindow();
-  void DrawOSDMessages();
   void DrawDebugWindows();
   bool DrawFileChooser(const char* label, std::string* path, const char* filter = nullptr);
 
@@ -107,9 +95,6 @@ private:
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
 
   std::string m_settings_filename;
-
-  std::deque<OSDMessage> m_osd_messages;
-  std::mutex m_osd_messages_lock;
 
   std::map<int, SDL_GameController*> m_sdl_controllers;
 
