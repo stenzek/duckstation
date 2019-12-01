@@ -24,7 +24,7 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
   const char* last = std::strrchr(path.c_str(), '/');
   if (!last)
     return new_filename;
-  
+
   std::string new_path(path.c_str(), last - path.c_str() + 1);
   new_path += new_filename;
   return new_path;
@@ -40,7 +40,6 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
 }
 
 #endif
-
 
 HostInterface::HostInterface()
 {
@@ -72,9 +71,17 @@ bool HostInterface::BootSystem(const char* filename, const char* state_filename)
 
   if (state_filename && !LoadState(state_filename))
     return false;
-  
+
   return true;
 }
+
+void HostInterface::ResetSystem()
+{
+  m_system->Reset();
+  ResetPerformanceCounters();
+  AddOSDMessage("System reset.");
+}
+
 
 void HostInterface::DestroySystem()
 {
@@ -245,4 +252,43 @@ void HostInterface::UpdateSpeedLimiterState()
   m_display->SetVSync(video_sync_enabled);
   m_throttle_timer.Reset();
   m_last_throttle_time = 0;
+}
+
+void HostInterface::UpdatePerformanceCounters()
+{
+  if (!m_system)
+    return;
+
+  // update fps counter
+  const double time = m_fps_timer.GetTimeSeconds();
+  if (time >= 0.25f)
+  {
+    m_vps = static_cast<float>(static_cast<double>(m_system->GetFrameNumber() - m_last_frame_number) / time);
+    m_last_frame_number = m_system->GetFrameNumber();
+    m_fps =
+      static_cast<float>(static_cast<double>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time);
+    m_last_internal_frame_number = m_system->GetInternalFrameNumber();
+    m_speed = static_cast<float>(static_cast<double>(m_system->GetGlobalTickCounter() - m_last_global_tick_counter) /
+                                 (static_cast<double>(MASTER_CLOCK) * time)) *
+              100.0f;
+    m_last_global_tick_counter = m_system->GetGlobalTickCounter();
+    m_fps_timer.Reset();
+  }
+}
+
+void HostInterface::ResetPerformanceCounters()
+{
+  if (m_system)
+  {
+    m_last_frame_number = m_system->GetFrameNumber();
+    m_last_internal_frame_number = m_system->GetInternalFrameNumber();
+    m_last_global_tick_counter = m_system->GetGlobalTickCounter();
+  }
+  else
+  {
+    m_last_frame_number = 0;
+    m_last_internal_frame_number = 0;
+    m_last_global_tick_counter = 0;
+  }
+  m_fps_timer.Reset();
 }

@@ -32,6 +32,7 @@ public:
 
   bool CreateSystem();
   bool BootSystem(const char* filename, const char* state_filename);
+  void ResetSystem();
   void DestroySystem();
 
   virtual void ReportError(const char* message);
@@ -57,6 +58,9 @@ protected:
 
   void UpdateSpeedLimiterState();
 
+  void UpdatePerformanceCounters();
+  void ResetPerformanceCounters();
+
   std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
@@ -66,6 +70,14 @@ protected:
   s64 m_throttle_period = INT64_C(1000000000) / 60;
   Timer m_throttle_timer;
   Timer m_speed_lost_time_timestamp;
+
+  float m_vps = 0.0f;
+  float m_fps = 0.0f;
+  float m_speed = 0.0f;
+  u32 m_last_frame_number = 0;
+  u32 m_last_internal_frame_number = 0;
+  u32 m_last_global_tick_counter = 0;
+  Timer m_fps_timer;
 
   bool m_paused = false;
   bool m_speed_limiter_temp_disabled = false;

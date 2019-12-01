@@ -166,23 +166,6 @@ void SDLHostInterface::ConnectControllers()
   m_system->SetController(0, m_controller);
 }
 
-void SDLHostInterface::ResetPerformanceCounters()
-{
-  if (m_system)
-  {
-    m_last_frame_number = m_system->GetFrameNumber();
-    m_last_internal_frame_number = m_system->GetInternalFrameNumber();
-    m_last_global_tick_counter = m_system->GetGlobalTickCounter();
-  }
-  else
-  {
-    m_last_frame_number = 0;
-    m_last_internal_frame_number = 0;
-    m_last_global_tick_counter = 0;
-  }
-  m_fps_timer.Reset();
-}
-
 void SDLHostInterface::QueueSwitchGPURenderer()
 {
   SDL_Event ev = {};
@@ -685,7 +668,7 @@ void SDLHostInterface::DrawMainMenuBar()
       DoPowerOff();
 
     if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
-      DoReset();
+      ResetSystem();
 
     if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
       DoTogglePause();
@@ -1343,13 +1326,6 @@ void SDLHostInterface::DrawOSDMessages()
   }
 }
 
-void SDLHostInterface::DoReset()
-{
-  m_system->Reset();
-  ResetPerformanceCounters();
-  AddOSDMessage("System reset.");
-}
-
 void SDLHostInterface::DoPowerOff()
 {
   Assert(m_system);
@@ -1555,25 +1531,7 @@ void SDLHostInterface::Run()
       }
     }
 
-    if (m_system)
-    {
-      // update fps counter
-      const double time = m_fps_timer.GetTimeSeconds();
-      if (time >= 0.25f)
-      {
-        m_vps = static_cast<float>(static_cast<double>(m_system->GetFrameNumber() - m_last_frame_number) / time);
-        m_last_frame_number = m_system->GetFrameNumber();
-        m_fps = static_cast<float>(
-          static_cast<double>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time);
-        m_last_internal_frame_number = m_system->GetInternalFrameNumber();
-        m_speed =
-          static_cast<float>(static_cast<double>(m_system->GetGlobalTickCounter() - m_last_global_tick_counter) /
-                             (static_cast<double>(MASTER_CLOCK) * time)) *
-          100.0f;
-        m_last_global_tick_counter = m_system->GetGlobalTickCounter();
-        m_fps_timer.Reset();
-      }
-    }
+    UpdatePerformanceCounters();
   }
 
   // Save state on exit so it can be resumed

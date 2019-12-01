@@ -70,14 +70,12 @@ private:
 
   void SaveSettings();
 
-  void ResetPerformanceCounters();
   void QueueSwitchGPURenderer();
   void SwitchGPURenderer();
   void UpdateFullscreen();
 
   // We only pass mouse input through if it's grabbed
   void DrawImGui();
-  void DoReset();
   void DoPowerOff();
   void DoResume();
   void DoStartDisc();
@@ -118,14 +116,6 @@ private:
   std::shared_ptr<DigitalController> m_controller;
 
   u32 m_switch_gpu_renderer_event_id = 0;
-
-  float m_vps = 0.0f;
-  float m_fps = 0.0f;
-  float m_speed = 0.0f;
-  u32 m_last_frame_number = 0;
-  u32 m_last_internal_frame_number = 0;
-  u32 m_last_global_tick_counter = 0;
-  Timer m_fps_timer;
 
   bool m_quit_request = false;
   bool m_frame_step_request = false;
