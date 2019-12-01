@@ -5,6 +5,7 @@
 #include "android_audio_stream.h"
 #include "android_gles_host_display.h"
 #include "core/gpu.h"
+#include "core/game_list.h"
 #include "core/host_display.h"
 #include "core/system.h"
 #include <android/native_window_jni.h>
@@ -35,6 +36,9 @@ static AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj)
 
 static std::string JStringToString(JNIEnv* env, jstring str)
 {
+  if (str == nullptr)
+    return {};
+
   jsize length = env->GetStringUTFLength(str);
   if (length == 0)
     return {};
@@ -426,4 +430,48 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
   AndroidHostInterface* hi = GetNativeClass(env, obj);
   hi->RunOnEmulationThread(
     [hi, native_surface, format, width, height]() { hi->SurfaceChanged(native_surface, format, width, height); }, true);
+}
+
+DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path, jarray j_search_directories, jboolean search_recursively)
+{
+  const std::string cache_path = JStringToString(env, j_cache_path);
+  const std::string redump_dat_path = JStringToString(env, j_redump_dat_path);
+
+  GameList gl;
+  if (!redump_dat_path.empty())
+    gl.ParseRedumpDatabase(redump_dat_path.c_str());
+
+  const jsize search_directories_size = env->GetArrayLength(j_search_directories);
+  for (jsize i = 0; i < search_directories_size; i++)
+  {
+    jobject search_dir_obj = env->GetObjectArrayElement(reinterpret_cast<jobjectArray>(j_search_directories), i);
+    const std::string search_dir = JStringToString(env, reinterpret_cast<jstring>(search_dir_obj));
+    if (!search_dir.empty())
+      gl.AddDirectory(search_dir.c_str(), search_recursively);
+  }
+
+  jclass entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry");
+  Assert(entry_class != nullptr);
+
+  jmethodID entry_constructor = env->GetMethodID(entry_class, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
+  Assert(entry_constructor != nullptr);
+
+  jobjectArray entry_array = env->NewObjectArray(gl.GetEntryCount(), entry_class, nullptr);
+  Assert(entry_array != nullptr);
+
+  u32 counter = 0;
+  for (const GameList::GameListEntry& entry : gl.GetEntries())
+  {
+    jstring path = env->NewStringUTF(entry.path.c_str());
+    jstring code = env->NewStringUTF(entry.code.c_str());
+    jstring title = env->NewStringUTF(entry.title.c_str());
+    jstring region = env->NewStringUTF(Settings::GetConsoleRegionName(entry.region));
+    jlong size = entry.total_size;
+
+    jobject entry_jobject = env->NewObject(entry_class, entry_constructor, path, code, title, region, size);
+
+    env->SetObjectArrayElement(entry_array, counter++, entry_jobject);
+  }
+
+  return entry_array;
 }

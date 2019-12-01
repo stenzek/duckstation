@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- https://raw.githubusercontent.com/Shusshu/android-flags/master/flags/src/main/res/drawable/flag_hp.xml -->
+<vector android:height="15dp" android:viewportHeight="15"
+    android:viewportWidth="21" android:width="21dp"
+    xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillType="evenOdd" android:pathData="M0,0h21v15h-21z"
+        android:strokeColor="#00000000" android:strokeWidth="1">
+        <aapt:attr name="android:fillColor">
+            <gradient android:endX="10.5" android:endY="15"
+                android:startX="10.5" android:startY="0" android:type="linear">
+                <item android:color="#FFFFFFFF" android:offset="0"/>
+                <item android:color="#FFF0F0F0" android:offset="1"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillType="evenOdd"
+        android:pathData="M10.5,7.5m-4.5,0a4.5,4.5 0,1 1,9 0a4.5,4.5 0,1 1,-9 0"
+        android:strokeColor="#00000000" android:strokeWidth="1">
+        <aapt:attr name="android:fillColor">
+            <gradient android:endX="10.5" android:endY="12"
+                android:startX="10.5" android:startY="3" android:type="linear">
+                <item android:color="#FFD81441" android:offset="0"/>
+                <item android:color="#FFBB0831" android:offset="1"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

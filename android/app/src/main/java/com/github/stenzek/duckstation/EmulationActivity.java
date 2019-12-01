@@ -21,7 +21,9 @@ import androidx.core.app.NavUtils;
  * status bar and navigation/system bar) with user interaction.
  */
 public class EmulationActivity extends AppCompatActivity implements SurfaceHolder.Callback {
-    /** Interface to the native emulator core */
+    /**
+     * Interface to the native emulator core
+     */
     AndroidHostInterface mHostInterface;
 
     /**
@@ -104,11 +106,13 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             return;
         }
 
-        String filename = new String();
-        String state_filename = new String();
-        if (!mHostInterface.startEmulationThread(holder.getSurface(),filename, state_filename))
-        {
+        String bootPath = getIntent().getStringExtra("bootPath");
+        String bootSaveStatePath = getIntent().getStringExtra("bootSaveStatePath");
+
+        if (!mHostInterface
+                .startEmulationThread(holder.getSurface(), bootPath, bootSaveStatePath)) {
             Log.e("EmulationActivity", "Failed to start emulation thread");
+            finishActivity(0);
             return;
         }
     }
@@ -133,7 +137,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
 
         mVisible = true;
-        mContentView = (SurfaceView)findViewById(R.id.fullscreen_content);
+        mContentView = (SurfaceView) findViewById(R.id.fullscreen_content);
         Log.e("EmulationActivity", "adding callback");
         mContentView.getHolder().addCallback(this);
 
