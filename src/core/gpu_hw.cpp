@@ -284,7 +284,6 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       case Primitive::Rectangle:
       {
         m_render_state.SetFromRectangleTexcoord(command_ptr[2]);
-        m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
       }
       break;
 
@@ -316,7 +315,6 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   }
   else
   {
-    m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
     texture_mode = TextureMode::Disabled;
   }
 

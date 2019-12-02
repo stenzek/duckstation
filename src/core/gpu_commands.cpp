@@ -128,6 +128,7 @@ bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
 
   // 0..10 bits match GPUSTAT
   const u32 MASK = ((1 << 11) - 1);
+  m_render_state.SetFromPageAttribute(param & MASK);
   m_GPUSTAT.bits = (m_GPUSTAT.bits & ~MASK) | (param & MASK);
   m_GPUSTAT.texture_disable = (param & (1 << 11)) != 0;
   m_render_state.texture_x_flip = (param & (1 << 12)) != 0;
@@ -292,7 +293,7 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
 
   static constexpr std::array<const char*, 4> primitive_names = {{"", "polygon", "line", "rectangle"}};
 
-  Log_DebugPrintf("Render %s %s %s %s %s (%u verts, %u words per vert)", rc.quad_polygon ? "four-point" : "three-point",
+  Log_TracePrintf("Render %s %s %s %s %s (%u verts, %u words per vert)", rc.quad_polygon ? "four-point" : "three-point",
                   rc.transparency_enable ? "semi-transparent" : "opaque",
                   rc.texture_enable ? "textured" : "non-textured", rc.shading_enable ? "shaded" : "monochrome",
                   primitive_names[static_cast<u8>(rc.primitive.GetValue())], ZeroExtend32(num_vertices),

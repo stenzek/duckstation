@@ -171,10 +171,6 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
         else
           m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[4]);
       }
-      else
-      {
-        m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
-      }
 
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
@@ -214,7 +210,6 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       const u32 texcoord_and_palette = rc.texture_enable ? command_ptr[buffer_pos++] : 0;
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(texcoord_and_palette));
 
-      m_render_state.SetFromPageAttribute(Truncate16(m_GPUSTAT.bits));
       m_render_state.SetFromPaletteAttribute(Truncate16(texcoord_and_palette >> 16));
 
       s32 width;
