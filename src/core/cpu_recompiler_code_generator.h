@@ -156,6 +156,8 @@ private:
   Value ConvertValueSize(const Value& value, RegSize size, bool sign_extend);
   void ConvertValueSizeInPlace(Value* value, RegSize size, bool sign_extend);
 
+  Value GetValueInHostRegister(const Value& value);
+
   void SwitchToFarCode();
   void SwitchToNearCode();
   void* GetCurrentNearCodePointer() const;

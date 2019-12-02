@@ -90,6 +90,13 @@ if(${CPU_ARCH} STREQUAL "x64")
     cpu_recompiler_code_generator_x64.cpp
   )
   message("Building x64 recompiler")
+elseif(${CPU_ARCH} STREQUAL "aarch64")
+  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1")
+  target_sources(core PRIVATE ${RECOMPILER_SRCS}
+    cpu_recompiler_code_generator_aarch64.cpp
+  )
+  target_link_libraries(core PRIVATE vixl)
+  message("Building AArch64 recompiler")
 else()
   message("Not building recompiler")
 endif()
