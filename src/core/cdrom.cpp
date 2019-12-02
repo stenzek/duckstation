@@ -1089,6 +1089,12 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   m_drive_remaining_ticks = seek_time;
   m_system->SetDowncount(m_drive_remaining_ticks);
+
+  // Read sub-q early.. this is because we're not reading sectors while seeking.
+  // Fixes music looping in Spyro.
+  CDImage::SubChannelQ subq;
+  if (m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&subq))
+    m_last_subq = subq;
 }
 
 void CDROM::DoSpinUpComplete()
@@ -1111,12 +1117,11 @@ void CDROM::DoSeekComplete()
 
   // seek and update sub-q for ReadP command
   // TODO: Check SubQ checksum
-  CDImage::SubChannelQ subq;
-  bool seek_okay = (m_media && m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&subq));
+  const auto [seek_mm, seek_ss, seek_ff] = m_seek_position.ToBCD();
+  bool seek_okay = (m_last_subq.absolute_minute_bcd == seek_mm && m_last_subq.absolute_second_bcd == seek_ss &&
+                    m_last_subq.absolute_frame_bcd == seek_ff);
   if (seek_okay)
   {
-    m_last_subq = subq;
-
     // check for data header for logical seeks
     if (logical)
     {
@@ -1128,7 +1133,6 @@ void CDROM::DoSeekComplete()
         ProcessDataSectorHeader(raw_sector, false);
 
         // ensure the location matches up (it should)
-        const auto [seek_mm, seek_ss, seek_ff] = m_seek_position.ToBCD();
         seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
                      m_last_sector_header.frame == seek_ff);
       }
