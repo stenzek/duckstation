@@ -6,7 +6,6 @@
 #include "common/audio_stream.h"
 #include "host_display.h"
 #include "system.h"
-#include <filesystem>
 #include <imgui.h>
 Log_SetChannel(HostInterface);
 
@@ -16,7 +15,7 @@ Log_SetChannel(HostInterface);
 #include <time.h>
 #endif
 
-#ifdef ANDROID
+#if defined(ANDROID) || (defined(__GNUC__) && __GNUC__ < 8)
 
 #include <cstring>
 
