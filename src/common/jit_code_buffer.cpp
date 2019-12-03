@@ -7,14 +7,26 @@
 #include <sys/mman.h>
 #endif
 
-JitCodeBuffer::JitCodeBuffer(size_t size /* = 64 * 1024 * 1024 */, size_t far_code_size /* = 0 */)
+static void DoCacheFlush(u8* address, u32 len)
+{
+#if defined(Y_PLATFORM_WINDOWS)
+  FlushInstructionCache(GetCurrentProcess(), address, len);
+#elif defined(Y_COMPILER_GCC) || defined(Y_COMPILER_CLANG)
+  __clear_cache(address, address + len);
+#else
+#error Unknown platform.
+#endif
+}
+
+JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
 {
   m_total_size = size + far_code_size;
 
 #if defined(Y_PLATFORM_WINDOWS)
-  m_code_ptr = VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+  m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
 #elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
-  m_code_ptr = mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  m_code_ptr = static_cast<u8*>(
+    mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 #else
   m_code_ptr = nullptr;
 #endif
@@ -39,28 +51,45 @@ JitCodeBuffer::~JitCodeBuffer()
 #endif
 }
 
-void JitCodeBuffer::CommitCode(size_t length)
+void JitCodeBuffer::CommitCode(u32 length)
 {
+  if (length == 0)
+    return;
+
+#if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
+  // ARM instruction and data caches are not coherent, we need to flush after every block.
+  DoCacheFlush(m_free_code_ptr, length);
+#endif
+
   Assert(length <= (m_code_size - m_code_used));
-  m_free_code_ptr = reinterpret_cast<u8*>(m_free_code_ptr) + length;
+  m_free_code_ptr += length;
   m_code_used += length;
 }
 
-void JitCodeBuffer::CommitFarCode(size_t length)
+void JitCodeBuffer::CommitFarCode(u32 length)
 {
+  if (length == 0)
+    return;
+
+#if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
+  // ARM instruction and data caches are not coherent, we need to flush after every block.
+  DoCacheFlush(m_free_code_ptr, length);
+#endif
+
   Assert(length <= (m_far_code_size - m_far_code_used));
-  m_free_far_code_ptr = reinterpret_cast<u8*>(m_free_far_code_ptr) + length;
+  m_free_far_code_ptr += length;
   m_far_code_used += length;
 }
 
 void JitCodeBuffer::Reset()
 {
-#if defined(Y_PLATFORM_WINDOWS)
-  FlushInstructionCache(GetCurrentProcess(), m_code_ptr, m_total_size);
-#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
-// TODO
-#endif
-
+  std::memset(m_code_ptr, 0, m_code_size);
+  DoCacheFlush(m_code_ptr, m_code_size);
+  if (m_far_code_size > 0)
+  {
+    std::memset(m_far_code_ptr, 0, m_far_code_size);
+    DoCacheFlush(m_far_code_ptr, m_far_code_size);
+  }
   m_free_code_ptr = m_code_ptr;
   m_code_used = 0;
 
@@ -71,11 +100,11 @@ void JitCodeBuffer::Reset()
 void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
 {
   DebugAssert(Common::IsPow2(alignment));
-  const size_t num_padding_bytes =
-    std::min(static_cast<size_t>(Common::AlignUpPow2(reinterpret_cast<uintptr_t>(m_free_code_ptr), alignment) -
-                                 reinterpret_cast<uintptr_t>(m_free_code_ptr)),
+  const u32 num_padding_bytes =
+    std::min(static_cast<u32>(Common::AlignUpPow2(reinterpret_cast<uintptr_t>(m_free_code_ptr), alignment) -
+                              reinterpret_cast<uintptr_t>(m_free_code_ptr)),
              GetFreeCodeSpace());
   std::memset(m_free_code_ptr, padding_value, num_padding_bytes);
-  m_free_code_ptr = reinterpret_cast<char*>(m_free_code_ptr) + num_padding_bytes;
+  m_free_code_ptr += num_padding_bytes;
   m_code_used += num_padding_bytes;
 }
