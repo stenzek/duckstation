@@ -5,6 +5,13 @@ Log_SetChannel(CPU::Recompiler);
 
 namespace a64 = vixl::aarch64;
 
+// Really need push/pop register allocator state...
+#define REG_ALLOC_HACK() do  { \
+  Value temp_alloc_hack_0 = m_register_cache.AllocateScratch(RegSize_64); \
+  Value temp_alloc_hack_1 = m_register_cache.AllocateScratch(RegSize_64); \
+  Value temp_alloc_hack_2 = m_register_cache.AllocateScratch(RegSize_64); \
+} while (0)
+
 namespace CPU::Recompiler {
 
 constexpr HostReg RCPUPTR = 19;
@@ -195,6 +202,7 @@ void CodeGenerator::EmitExceptionExit()
 void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
 {
   Assert(!value.IsConstant() && value.IsInHostRegister());
+  REG_ALLOC_HACK();
 
   // TODO: This is... not great.
   Value temp = m_register_cache.AllocateScratch(RegSize_64);
@@ -226,8 +234,6 @@ void CodeGenerator::FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32
 
 void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size)
 {
-  Panic("Not implemented");
-#if 0
   switch (to_size)
   {
     case RegSize_16:
@@ -235,7 +241,8 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit->movsx(GetHostReg16(to_reg), GetHostReg8(from_reg));
+          m_emit->sxtb(GetHostReg16(to_reg), GetHostReg8(from_reg));
+          m_emit->and_(GetHostReg16(to_reg), GetHostReg16(to_reg), 0xFFFF);
           return;
       }
     }
@@ -246,24 +253,21 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit->movsx(GetHostReg32(to_reg), GetHostReg8(from_reg));
+          m_emit->sxtb(GetHostReg32(to_reg), GetHostReg8(from_reg));
           return;
         case RegSize_16:
-          m_emit->movsx(GetHostReg32(to_reg), GetHostReg16(from_reg));
+          m_emit->sxth(GetHostReg32(to_reg), GetHostReg16(from_reg));
           return;
       }
     }
     break;
   }
-#endif
 
   Panic("Unknown sign-extend combination");
 }
 
 void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size)
 {
-    Panic("Not implemented");
-#if 0
   switch (to_size)
   {
     case RegSize_16:
@@ -271,7 +275,7 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit->movzx(GetHostReg16(to_reg), GetHostReg8(from_reg));
+          m_emit->and_(GetHostReg16(to_reg), GetHostReg8(from_reg), 0xFF);
           return;
       }
     }
@@ -282,16 +286,15 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
       switch (from_size)
       {
         case RegSize_8:
-          m_emit->movzx(GetHostReg32(to_reg), GetHostReg8(from_reg));
+          m_emit->and_(GetHostReg32(to_reg), GetHostReg8(from_reg), 0xFF);
           return;
         case RegSize_16:
-          m_emit->movzx(GetHostReg32(to_reg), GetHostReg16(from_reg));
+          m_emit->and_(GetHostReg32(to_reg), GetHostReg16(from_reg), 0xFFFF);
           return;
       }
     }
     break;
   }
-#endif
 
   Panic("Unknown sign-extend combination");
 }
@@ -331,63 +334,57 @@ void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
 
 void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
 {
-  DebugAssert(value.IsConstant() || value.IsInHostRegister());
-    Panic("Not implemented");
+  Assert(value.IsConstant() || value.IsInHostRegister());
 
-#if 0
-
-  switch (value.size)
+  // if it's in a host register already, this is easy
+  if (value.IsInHostRegister())
   {
-    case RegSize_8:
+    if (value.size < RegSize_64)
     {
-      if (value.IsConstant())
-        m_emit->add(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
+      if (set_flags)
+        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
       else
-        m_emit->add(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
+        m_emit->add(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
     }
-    break;
+    else
+    {
+      if (set_flags)
+        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+      else
+        m_emit->add(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+    }
 
-    case RegSize_16:
-    {
-      if (value.IsConstant())
-        m_emit->add(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
-      else
-        m_emit->add(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
-    }
-    break;
-
-    case RegSize_32:
-    {
-      if (value.IsConstant())
-        m_emit->add(GetHostReg32(to_reg), Truncate32(value.constant_value));
-      else
-        m_emit->add(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
-    }
-    break;
-
-    case RegSize_64:
-    {
-      if (value.IsConstant())
-      {
-        if (!Xbyak::inner::IsInInt32(value.constant_value))
-        {
-          Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit->mov(GetHostReg64(temp.host_reg), value.constant_value);
-          m_emit->add(GetHostReg64(to_reg), GetHostReg64(temp.host_reg));
-        }
-        else
-        {
-          m_emit->add(GetHostReg64(to_reg), Truncate32(value.constant_value));
-        }
-      }
-      else
-      {
-        m_emit->add(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
-      }
-    }
-    break;
+    return;
   }
-#endif
+
+  // do we need temporary storage for the constant, if it won't fit in an immediate?
+  if (a64::Assembler::IsImmAddSub(value.constant_value))
+  {
+    if (value.size < RegSize_64)
+    {
+      if (set_flags)
+        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+      else
+        m_emit->add(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+    }
+    else
+    {
+      if (set_flags)
+        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+      else
+        m_emit->add(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+    }
+
+    return;
+  }
+
+  // need a temporary
+  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  if (value.size < RegSize_64)
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+  else
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+  EmitAdd(to_reg, temp_value, set_flags);
 }
 
 void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
@@ -676,356 +673,207 @@ void CodeGenerator::EmitDec(HostReg to_reg, RegSize size)
 
 void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_value)
 {
-    Panic("Not implemented");
-#if 0
-  DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
-
-  // We have to use CL for the shift amount :(
-  const bool save_cl = (!amount_value.IsConstant() && m_register_cache.IsHostRegInUse(Xbyak::Operand::RCX) &&
-                        (!amount_value.IsInHostRegister() || amount_value.host_reg != Xbyak::Operand::RCX));
-  if (save_cl)
-    m_emit->push(m_emit->rcx);
-
-  if (!amount_value.IsConstant())
-    m_emit->mov(m_emit->cl, GetHostReg8(amount_value.host_reg));
-
   switch (size)
   {
     case RegSize_8:
-    {
-      if (amount_value.IsConstant())
-        m_emit->shl(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
-      else
-        m_emit->shl(GetHostReg8(to_reg), m_emit->cl);
-    }
-    break;
-
     case RegSize_16:
-    {
-      if (amount_value.IsConstant())
-        m_emit->shl(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
-      else
-        m_emit->shl(GetHostReg16(to_reg), m_emit->cl);
-    }
-    break;
-
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit->shl(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->lsl(GetHostReg32(to_reg), GetHostReg32(to_reg), amount_value.constant_value & 0x1F);
       else
-        m_emit->shl(GetHostReg32(to_reg), m_emit->cl);
+        m_emit->lslv(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(amount_value));
+
+      if (size == RegSize_8)
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFF);
+      else if (size == RegSize_16)
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFFFF);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit->shl(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->lsl(GetHostReg64(to_reg), GetHostReg64(to_reg), amount_value.constant_value & 0x3F);
       else
-        m_emit->shl(GetHostReg64(to_reg), m_emit->cl);
+        m_emit->lslv(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(amount_value));
     }
     break;
   }
-
-  if (save_cl)
-    m_emit->pop(m_emit->rcx);
-#endif
 }
 
 void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_value)
 {
-    Panic("Not implemented");
-#if 0
-  DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
-
-  // We have to use CL for the shift amount :(
-  const bool save_cl = (!amount_value.IsConstant() && m_register_cache.IsHostRegInUse(Xbyak::Operand::RCX) &&
-                        (!amount_value.IsInHostRegister() || amount_value.host_reg != Xbyak::Operand::RCX));
-  if (save_cl)
-    m_emit->push(m_emit->rcx);
-
-  if (!amount_value.IsConstant())
-    m_emit->mov(m_emit->cl, GetHostReg8(amount_value.host_reg));
-
   switch (size)
   {
     case RegSize_8:
-    {
-      if (amount_value.IsConstant())
-        m_emit->shr(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
-      else
-        m_emit->shr(GetHostReg8(to_reg), m_emit->cl);
-    }
-    break;
-
     case RegSize_16:
-    {
-      if (amount_value.IsConstant())
-        m_emit->shr(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
-      else
-        m_emit->shr(GetHostReg16(to_reg), m_emit->cl);
-    }
-    break;
-
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit->shr(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->lsr(GetHostReg32(to_reg), GetHostReg32(to_reg), amount_value.constant_value & 0x1F);
       else
-        m_emit->shr(GetHostReg32(to_reg), m_emit->cl);
+        m_emit->lsrv(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(amount_value));
+
+      if (size == RegSize_8)
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFF);
+      else if (size == RegSize_16)
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFFFF);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit->shr(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->lsr(GetHostReg64(to_reg), GetHostReg64(to_reg), amount_value.constant_value & 0x3F);
       else
-        m_emit->shr(GetHostReg64(to_reg), m_emit->cl);
+        m_emit->lsrv(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(amount_value));
     }
     break;
   }
-
-  if (save_cl)
-    m_emit->pop(m_emit->rcx);
-#endif
 }
 
 void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_value)
 {
-    Panic("Not implemented");
-#if 0
-  DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
-
-  // We have to use CL for the shift amount :(
-  const bool save_cl = (!amount_value.IsConstant() && m_register_cache.IsHostRegInUse(Xbyak::Operand::RCX) &&
-                        (!amount_value.IsInHostRegister() || amount_value.host_reg != Xbyak::Operand::RCX));
-  if (save_cl)
-    m_emit->push(m_emit->rcx);
-
-  if (!amount_value.IsConstant())
-    m_emit->mov(m_emit->cl, GetHostReg8(amount_value.host_reg));
-
   switch (size)
   {
     case RegSize_8:
-    {
-      if (amount_value.IsConstant())
-        m_emit->sar(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
-      else
-        m_emit->sar(GetHostReg8(to_reg), m_emit->cl);
-    }
-    break;
-
     case RegSize_16:
-    {
-      if (amount_value.IsConstant())
-        m_emit->sar(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
-      else
-        m_emit->sar(GetHostReg16(to_reg), m_emit->cl);
-    }
-    break;
-
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit->sar(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->asr(GetHostReg32(to_reg), GetHostReg32(to_reg), amount_value.constant_value & 0x1F);
       else
-        m_emit->sar(GetHostReg32(to_reg), m_emit->cl);
+        m_emit->asrv(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(amount_value));
+
+      if (size == RegSize_8)
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFF);
+      else if (size == RegSize_16)
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFFFF);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit->sar(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
+        m_emit->asr(GetHostReg64(to_reg), GetHostReg64(to_reg), amount_value.constant_value & 0x3F);
       else
-        m_emit->sar(GetHostReg64(to_reg), m_emit->cl);
+        m_emit->asrv(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(amount_value));
     }
     break;
   }
+}
 
-  if (save_cl)
-    m_emit->pop(m_emit->rcx);
-#endif
+static bool CanFitInBitwiseImmediate(const Value& value)
+{
+  const unsigned reg_size = (value.size < RegSize_64) ? 32 : 64;
+  unsigned n, imm_s, imm_r;
+  return a64::Assembler::IsImmLogical(s64(value.constant_value), reg_size, &n, &imm_s, &imm_r);
 }
 
 void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
 {
-    Panic("Not implemented");
-#if 0
-  DebugAssert(value.IsConstant() || value.IsInHostRegister());
-  switch (value.size)
+  Assert(value.IsConstant() || value.IsInHostRegister());
+
+  // if it's in a host register already, this is easy
+  if (value.IsInHostRegister())
   {
-    case RegSize_8:
-    {
-      if (value.IsConstant())
-        m_emit->and_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
-      else
-        m_emit->and_(GetHostReg8(to_reg), GetHostReg8(value));
-    }
-    break;
+    if (value.size < RegSize_64)
+      m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+    else
+      m_emit->and_(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
 
-    case RegSize_16:
-    {
-      if (value.IsConstant())
-        m_emit->and_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
-      else
-        m_emit->and_(GetHostReg16(to_reg), GetHostReg16(value));
-    }
-    break;
-
-    case RegSize_32:
-    {
-      if (value.IsConstant())
-        m_emit->and_(GetHostReg32(to_reg), Truncate32(value.constant_value));
-      else
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(value));
-    }
-    break;
-
-    case RegSize_64:
-    {
-      if (value.IsConstant())
-      {
-        if (!Xbyak::inner::IsInInt32(value.constant_value))
-        {
-          Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit->mov(GetHostReg64(temp), value.constant_value);
-          m_emit->and_(GetHostReg64(to_reg), GetHostReg64(temp));
-        }
-        else
-        {
-          m_emit->and_(GetHostReg64(to_reg), Truncate32(value.constant_value));
-        }
-      }
-      else
-      {
-        m_emit->and_(GetHostReg64(to_reg), GetHostReg64(value));
-      }
-    }
-    break;
+    return;
   }
-#endif
+
+  // do we need temporary storage for the constant, if it won't fit in an immediate?
+  if (CanFitInBitwiseImmediate(value))
+  {
+    if (value.size < RegSize_64)
+      m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+    else
+      m_emit->and_(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+
+    return;
+  }
+
+  // need a temporary
+  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  if (value.size < RegSize_64)
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+  else
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+  EmitAnd(to_reg, temp_value);
 }
 
 void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
 {
-    Panic("Not implemented");
-#if 0
-  DebugAssert(value.IsConstant() || value.IsInHostRegister());
-  switch (value.size)
+  Assert(value.IsConstant() || value.IsInHostRegister());
+
+  // if it's in a host register already, this is easy
+  if (value.IsInHostRegister())
   {
-    case RegSize_8:
-    {
-      if (value.IsConstant())
-        m_emit->or_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
-      else
-        m_emit->or_(GetHostReg8(to_reg), GetHostReg8(value));
-    }
-    break;
+    if (value.size < RegSize_64)
+      m_emit->orr(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+    else
+      m_emit->orr(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
 
-    case RegSize_16:
-    {
-      if (value.IsConstant())
-        m_emit->or_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
-      else
-        m_emit->or_(GetHostReg16(to_reg), GetHostReg16(value));
-    }
-    break;
-
-    case RegSize_32:
-    {
-      if (value.IsConstant())
-        m_emit->or_(GetHostReg32(to_reg), Truncate32(value.constant_value));
-      else
-        m_emit->or_(GetHostReg32(to_reg), GetHostReg32(value));
-    }
-    break;
-
-    case RegSize_64:
-    {
-      if (value.IsConstant())
-      {
-        if (!Xbyak::inner::IsInInt32(value.constant_value))
-        {
-          Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit->mov(GetHostReg64(temp), value.constant_value);
-          m_emit->or_(GetHostReg64(to_reg), GetHostReg64(temp));
-        }
-        else
-        {
-          m_emit->or_(GetHostReg64(to_reg), Truncate32(value.constant_value));
-        }
-      }
-      else
-      {
-        m_emit->or_(GetHostReg64(to_reg), GetHostReg64(value));
-      }
-    }
-    break;
+    return;
   }
-#endif
+
+  // do we need temporary storage for the constant, if it won't fit in an immediate?
+  if (CanFitInBitwiseImmediate(value))
+  {
+    if (value.size < RegSize_64)
+      m_emit->orr(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+    else
+      m_emit->orr(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+
+    return;
+  }
+
+  // need a temporary
+  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  if (value.size < RegSize_64)
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+  else
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+  EmitOr(to_reg, temp_value);
 }
 
 void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
 {
-    Panic("Not implemented");
-#if 0
-  DebugAssert(value.IsConstant() || value.IsInHostRegister());
-  switch (value.size)
+  Assert(value.IsConstant() || value.IsInHostRegister());
+
+  // if it's in a host register already, this is easy
+  if (value.IsInHostRegister())
   {
-    case RegSize_8:
-    {
-      if (value.IsConstant())
-        m_emit->xor_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
-      else
-        m_emit->xor_(GetHostReg8(to_reg), GetHostReg8(value));
-    }
-    break;
+    if (value.size < RegSize_64)
+      m_emit->eor(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+    else
+      m_emit->eor(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
 
-    case RegSize_16:
-    {
-      if (value.IsConstant())
-        m_emit->xor_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
-      else
-        m_emit->xor_(GetHostReg16(to_reg), GetHostReg16(value));
-    }
-    break;
-
-    case RegSize_32:
-    {
-      if (value.IsConstant())
-        m_emit->xor_(GetHostReg32(to_reg), Truncate32(value.constant_value));
-      else
-        m_emit->xor_(GetHostReg32(to_reg), GetHostReg32(value));
-    }
-    break;
-
-    case RegSize_64:
-    {
-      if (value.IsConstant())
-      {
-        if (!Xbyak::inner::IsInInt32(value.constant_value))
-        {
-          Value temp = m_register_cache.AllocateScratch(RegSize_64);
-          m_emit->mov(GetHostReg64(temp), value.constant_value);
-          m_emit->xor_(GetHostReg64(to_reg), GetHostReg64(temp));
-        }
-        else
-        {
-          m_emit->xor_(GetHostReg64(to_reg), Truncate32(value.constant_value));
-        }
-      }
-      else
-      {
-        m_emit->xor_(GetHostReg64(to_reg), GetHostReg64(value));
-      }
-    }
-    break;
+    return;
   }
-#endif
+
+  // do we need temporary storage for the constant, if it won't fit in an immediate?
+  if (CanFitInBitwiseImmediate(value))
+  {
+    if (value.size < RegSize_64)
+      m_emit->eor(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+    else
+      m_emit->eor(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+
+    return;
+  }
+
+  // need a temporary
+  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  if (value.size < RegSize_64)
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+  else
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+  EmitXor(to_reg, temp_value);
 }
 
 void CodeGenerator::EmitTest(HostReg to_reg, const Value& value)
@@ -1089,30 +937,29 @@ void CodeGenerator::EmitTest(HostReg to_reg, const Value& value)
 
 void CodeGenerator::EmitNot(HostReg to_reg, RegSize size)
 {
-    Panic("Not implemented");
-#if 0
   switch (size)
   {
     case RegSize_8:
-      m_emit->not_(GetHostReg8(to_reg));
+      m_emit->mvn(GetHostReg8(to_reg), GetHostReg8(to_reg));
+      m_emit->and_(GetHostReg8(to_reg), GetHostReg8(to_reg), 0xFF);
       break;
 
     case RegSize_16:
-      m_emit->not_(GetHostReg16(to_reg));
+      m_emit->mvn(GetHostReg16(to_reg), GetHostReg16(to_reg));
+      m_emit->and_(GetHostReg16(to_reg), GetHostReg16(to_reg), 0xFFFF);
       break;
 
     case RegSize_32:
-      m_emit->not_(GetHostReg32(to_reg));
+      m_emit->mvn(GetHostReg32(to_reg), GetHostReg32(to_reg));
       break;
 
     case RegSize_64:
-      m_emit->not_(GetHostReg64(to_reg));
+      m_emit->mvn(GetHostReg64(to_reg), GetHostReg64(to_reg));
       break;
 
     default:
       break;
   }
-#endif
 }
 
 void CodeGenerator::EmitSetConditionResult(HostReg to_reg, RegSize to_size, Condition condition)
@@ -1481,8 +1328,6 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
 
 Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
 {
-    Panic("Not implemented");
-#if 0
   // We need to use the full 64 bits here since we test the sign bit result.
   Value result = m_register_cache.AllocateScratch(RegSize_64);
 
@@ -1506,8 +1351,13 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
       break;
   }
 
-  m_emit->test(GetHostReg64(result.host_reg), GetHostReg64(result.host_reg));
-  m_emit->js(GetCurrentFarCodePointer());
+  REG_ALLOC_HACK();
+
+  a64::Label load_okay;
+  m_emit->Tbz(GetHostReg64(result.host_reg), 63, &load_okay);
+  m_emit->Mov(GetHostReg64(result.host_reg), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
+  m_emit->Br(GetHostReg64(result.host_reg));
+  m_emit->Bind(&load_okay);
 
   // load exception path
   SwitchToFarCode();
@@ -1535,13 +1385,10 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
   }
 
   return result;
-#endif
 }
 
 void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& value)
 {
-    Panic("Not implemented");
-#if 0
   Value result = m_register_cache.AllocateScratch(RegSize_8);
 
   switch (value.size)
@@ -1563,16 +1410,18 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
       break;
   }
 
-  Xbyak::Label store_okay;
+  REG_ALLOC_HACK();
 
-  m_emit->test(GetHostReg8(result), GetHostReg8(result));
-  m_emit->jz(GetCurrentFarCodePointer());
+  a64::Label store_okay;
+  m_emit->Cbnz(GetHostReg64(result.host_reg), &store_okay);
+  m_emit->Mov(GetHostReg64(result.host_reg), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
+  m_emit->Br(GetHostReg64(result.host_reg));
+  m_emit->Bind(&store_okay);
 
   // store exception path
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
-#endif
 }
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
@@ -1630,86 +1479,85 @@ void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
 
 void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 {
-    Panic("Not implemented");
-#if 0
   if (!m_load_delay_dirty)
     return;
 
-  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
+  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_load_delay_reg));
+  Value temp = m_register_cache.AllocateScratch(RegSize_8);
 
-  Xbyak::Label skip_cancel;
+  a64::Label skip_cancel;
 
   // if load_delay_reg != reg goto skip_cancel
-  m_emit->cmp(load_delay_reg, static_cast<u8>(reg));
-  m_emit->jne(skip_cancel);
+  m_emit->Ldrb(GetHostReg8(temp), load_delay_reg);
+  m_emit->Cmp(GetHostReg8(temp), static_cast<u8>(reg));
+  m_emit->B(a64::ne, &skip_cancel);
 
   // load_delay_reg = Reg::count
-  m_emit->mov(load_delay_reg, static_cast<u8>(Reg::count));
+  m_emit->Mov(GetHostReg8(temp), static_cast<u8>(Reg::count));
+  m_emit->Strb(GetHostReg8(temp), load_delay_reg);
 
-  m_emit->L(skip_cancel);
-#endif
+  m_emit->Bind(&skip_cancel);
 }
 
-#if 0
 template<typename T>
-static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGenerator* emit, const T& label)
+static void EmitConditionalJump(Condition condition, bool invert, a64::MacroAssembler* emit, const T& label)
 {
   switch (condition)
   {
     case Condition::Always:
-      emit->jmp(label);
+      emit->b(label);
       break;
 
     case Condition::NotEqual:
-      invert ? emit->je(label) : emit->jne(label);
+      invert ? emit->b(label, a64::eq) : emit->b(label, a64::ne);
       break;
 
     case Condition::Equal:
-      invert ? emit->jne(label) : emit->je(label);
+      invert ? emit->b(label, a64::ne) : emit->b(label, a64::eq);
       break;
 
     case Condition::Overflow:
-      invert ? emit->jno(label) : emit->jo(label);
+      invert ? emit->b(label, a64::vc) : emit->b(label, a64::vs);
       break;
 
     case Condition::Greater:
-      invert ? emit->jng(label) : emit->jg(label);
+      invert ? emit->b(label, a64::ls) : emit->b(label, a64::hi);
       break;
 
     case Condition::GreaterEqual:
-      invert ? emit->jnge(label) : emit->jge(label);
+      invert ? emit->b(label, a64::cc) : emit->b(label, a64::cs);
       break;
 
     case Condition::Less:
-      invert ? emit->jnl(label) : emit->jl(label);
+      invert ? emit->b(label, a64::cs) : emit->b(label, a64::cc);
       break;
 
     case Condition::LessEqual:
-      invert ? emit->jnle(label) : emit->jle(label);
+      invert ? emit->b(label, a64::hi) : emit->b(label, a64::ls);
       break;
 
     case Condition::Negative:
-      invert ? emit->jns(label) : emit->js(label);
+      invert ? emit->b(label, a64::pl) : emit->b(label, a64::mi);
       break;
 
     case Condition::PositiveOrZero:
-      invert ? emit->js(label) : emit->jns(label);
+      invert ? emit->b(label, a64::mi) : emit->b(label, a64::pl);
       break;
 
     case Condition::Above:
-      invert ? emit->jna(label) : emit->ja(label);
+      invert ? emit->b(label, a64::le) : emit->b(label, a64::gt);
       break;
 
     case Condition::AboveEqual:
-      invert ? emit->jnae(label) : emit->jae(label);
+      invert ? emit->b(label, a64::lt) : emit->b(label, a64::ge);
       break;
 
     case Condition::Below:
-      invert ? emit->jnb(label) : emit->jb(label);
+      invert ? emit->b(label, a64::ge) : emit->b(label, a64::lt);
       break;
 
     case Condition::BelowEqual:
-      invert ? emit->jnbe(label) : emit->jbe(label);
+      invert ? emit->b(label, a64::gt) : emit->b(label, a64::le);
       break;
 
     default:
@@ -1717,7 +1565,6 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
       break;
   }
 }
-#endif
 
 void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
 {
@@ -1779,8 +1626,6 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
 
 void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
 {
-    Panic("Not implemented");
-#if 0
   if (condition == Condition::Always)
   {
     // no need to use far code if we're always raising the exception
@@ -1795,15 +1640,22 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
     return;
   }
 
-  const void* far_code_ptr = GetCurrentFarCodePointer();
-  EmitConditionalJump(condition, false, m_emit, far_code_ptr);
+  Value far_code_addr = m_register_cache.AllocateScratch(RegSize_64);
+
+  REG_ALLOC_HACK();
+
+  a64::Label skip_raise_exception;
+  EmitConditionalJump(condition, true, m_emit, &skip_raise_exception);
+
+  m_emit->Mov(GetHostReg64(far_code_addr), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
+  m_emit->Br(GetHostReg64(far_code_addr));
+  m_emit->Bind(&skip_raise_exception);
 
   SwitchToFarCode();
   EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
                    Value::FromConstantU8(static_cast<u8>(excode)));
   EmitExceptionExit();
   SwitchToNearCode();
-#endif
 }
 
 void ASMFunctions::Generate(JitCodeBuffer* code_buffer)

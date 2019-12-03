@@ -3,6 +3,9 @@
 #include "cpu_disasm.h"
 Log_SetChannel(CPU::Recompiler);
 
+// TODO: Turn load+sext/zext into a single signed/unsigned load
+// TODO: mulx/shlx/etc
+
 namespace CPU::Recompiler {
 
 u32 CodeGenerator::CalculateRegisterOffset(Reg reg)

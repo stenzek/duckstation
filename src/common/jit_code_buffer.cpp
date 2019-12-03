@@ -73,7 +73,7 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 
 #if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
-  DoCacheFlush(m_free_code_ptr, length);
+  DoCacheFlush(m_free_far_code_ptr, length);
 #endif
 
   Assert(length <= (m_far_code_size - m_far_code_used));
