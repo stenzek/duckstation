@@ -14,6 +14,12 @@ constexpr HostReg RARG2 = 1;
 constexpr HostReg RARG3 = 2;
 constexpr HostReg RARG4 = 3;
 constexpr u64 FUNCTION_CALL_STACK_ALIGNMENT = 16;
+constexpr u64 FUNCTION_CALL_SHADOW_SPACE = 32;
+constexpr u64 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;     // 8 registers
+constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144;    // 18 registers -> 224 bytes
+constexpr u64 FUNCTION_STACK_SIZE = FUNCTION_CALLEE_SAVED_SPACE_RESERVE +
+                                    FUNCTION_CALLER_SAVED_SPACE_RESERVE +
+                                    FUNCTION_CALL_SHADOW_SPACE;
 
 static const a64::WRegister GetHostReg8(HostReg reg)
 {
@@ -111,7 +117,7 @@ void CodeGenerator::InitHostRegs()
   m_register_cache.SetHostRegAllocationOrder(
     {19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
   m_register_cache.SetCallerSavedHostRegs({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
-  m_register_cache.SetCalleeSavedHostRegs({19, 20, 21, 22, 23, 24, 25, 26, 27, 28});
+  m_register_cache.SetCalleeSavedHostRegs({19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30});
   m_register_cache.SetCPUPtrHostReg(RCPUPTR);
 }
 
@@ -135,8 +141,27 @@ void* CodeGenerator::GetCurrentFarCodePointer() const
   return static_cast<u8*>(m_code_buffer->GetFreeFarCodePointer()) + m_far_emitter.GetCursorOffset();
 }
 
+Value CodeGenerator::GetValueInHostRegister(const Value& value)
+{
+  if (value.IsInHostRegister())
+    return Value::FromHostReg(&m_register_cache, value.host_reg, value.size);
+  
+  if (value.HasConstantValue(0))
+    return Value::FromHostReg(&m_register_cache, static_cast<HostReg>(31), value.size);
+
+  Value new_value = m_register_cache.AllocateScratch(value.size);
+  EmitCopyValue(new_value.host_reg, value);
+  return new_value;
+}
+
 void CodeGenerator::EmitBeginBlock()
 {
+  m_emit->Sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
+
+  // Save the link register, since we'll be calling functions.
+  const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
+  DebugAssert(link_reg_allocated);
+
   // Store the CPU struct pointer.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
@@ -148,6 +173,7 @@ void CodeGenerator::EmitEndBlock()
   m_register_cache.FreeHostReg(RCPUPTR);
   m_register_cache.PopCalleeSavedRegisters(true);
 
+  m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
   m_emit->Ret();
 }
 
@@ -162,6 +188,7 @@ void CodeGenerator::EmitExceptionExit()
 
   m_register_cache.PopCalleeSavedRegisters(false);
 
+  m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
   m_emit->Ret();
 }
 
@@ -169,12 +196,13 @@ void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
 {
   Assert(!value.IsConstant() && value.IsInHostRegister());
 
-  a64::Label far_exit;
-  m_far_emitter.Bind(&far_exit);
-
-  a64::Label skip_exit;
-  m_emit->Cbnz(GetHostReg64(value.host_reg), &skip_exit);
-  m_emit->B(&far_exit);
+  // TODO: This is... not great.
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  a64::Label skip_branch;
+  m_emit->Cbz(GetHostReg64(value.host_reg), &skip_branch);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
+  m_emit->Br(GetHostReg64(temp));
+  m_emit->Bind(&skip_branch);
 
   SwitchToFarCode();
   EmitExceptionExit();
@@ -270,57 +298,35 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
 
 void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
 {
-#if 0
   // TODO: mov x, 0 -> xor x, x
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
 
   switch (value.size)
   {
     case RegSize_8:
-    {
-      if (value.HasConstantValue(0))
-        m_emit->xor_(GetHostReg8(to_reg), GetHostReg8(to_reg));
-      else if (value.IsConstant())
-        m_emit->mov(GetHostReg8(to_reg), value.constant_value);
-      else
-        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(value.host_reg));
-    }
-    break;
-
     case RegSize_16:
-    {
-      if (value.HasConstantValue(0))
-        m_emit->xor_(GetHostReg16(to_reg), GetHostReg16(to_reg));
-      else if (value.IsConstant())
-        m_emit->mov(GetHostReg16(to_reg), value.constant_value);
-      else
-        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(value.host_reg));
-    }
-    break;
-
     case RegSize_32:
     {
-      if (value.HasConstantValue(0))
-        m_emit->xor_(GetHostReg32(to_reg), GetHostReg32(to_reg));
-      else if (value.IsConstant())
-        m_emit->mov(GetHostReg32(to_reg), value.constant_value);
+      if (value.IsConstant())
+        m_emit->Mov(GetHostReg32(to_reg), value.constant_value);
       else
-        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->Mov(GetHostReg32(to_reg), GetHostReg32(value.host_reg));
     }
     break;
 
     case RegSize_64:
     {
-      if (value.HasConstantValue(0))
-        m_emit->xor_(GetHostReg64(to_reg), GetHostReg64(to_reg));
-      else if (value.IsConstant())
-        m_emit->mov(GetHostReg64(to_reg), value.constant_value);
+      if (value.IsConstant())
+        m_emit->Mov(GetHostReg64(to_reg), value.constant_value);
       else
-        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->Mov(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
     }
     break;
+
+    default:
+      UnreachableCode();
+      break;
   }
-#endif
 }
 
 void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
@@ -1183,36 +1189,17 @@ void CodeGenerator::EmitSetConditionResult(HostReg to_reg, RegSize to_size, Cond
 
 u32 CodeGenerator::PrepareStackForCall()
 {
-    Panic("Not implemented");
-#if 0
-  // we assume that the stack is unaligned at this point
-  const u32 num_callee_saved = m_register_cache.GetActiveCalleeSavedRegisterCount();
-  const u32 num_caller_saved = m_register_cache.PushCallerSavedRegisters();
-  const u32 current_offset = 8 + (num_callee_saved + num_caller_saved) * 8;
-  const u32 aligned_offset = Common::AlignUp(current_offset + FUNCTION_CALL_SHADOW_SPACE, 16);
-  const u32 adjust_size = aligned_offset - current_offset;
-  if (adjust_size > 0)
-    m_emit->sub(m_emit->rsp, adjust_size);
-
-  return adjust_size;
-#endif
+  m_register_cache.PushCallerSavedRegisters();
+  return 0;
 }
 
 void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
 {
-    Panic("Not implemented");
-#if 0
-  if (adjust_size > 0)
-    m_emit->add(m_emit->rsp, adjust_size);
-
   m_register_cache.PopCallerSavedRegisters();
-#endif
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
 {
-    Panic("Not implemented");
-#if 0
   if (return_value)
     return_value->Discard();
 
@@ -1220,8 +1207,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
   const u32 adjust_size = PrepareStackForCall();
 
   // actually call the function
-  m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-  m_emit->call(GetHostReg64(RRETURN));
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
+  m_emit->Blr(GetHostReg64(temp));
+  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1232,13 +1221,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
     return_value->Undiscard();
     EmitCopyValue(return_value->GetHostRegister(), Value::FromHostReg(&m_register_cache, RRETURN, return_value->size));
   }
-#endif
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1)
 {
-    Panic("Not implemented");
-#if 0
   if (return_value)
     return_value->Discard();
 
@@ -1249,15 +1235,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG1, arg1);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
+  m_emit->Blr(GetHostReg64(temp));
+  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1268,13 +1249,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
     return_value->Undiscard();
     EmitCopyValue(return_value->GetHostRegister(), Value::FromHostReg(&m_register_cache, RRETURN, return_value->size));
   }
-#endif
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1, const Value& arg2)
 {
-    Panic("Not implemented");
-#if 0
   if (return_value)
     return_value->Discard();
 
@@ -1286,15 +1264,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG2, arg2);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
+  m_emit->Blr(GetHostReg64(temp));
+  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1305,14 +1278,11 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
     return_value->Undiscard();
     EmitCopyValue(return_value->GetHostRegister(), Value::FromHostReg(&m_register_cache, RRETURN, return_value->size));
   }
-#endif
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1, const Value& arg2,
                                         const Value& arg3)
 {
-    Panic("Not implemented");
-#if 0
   if (return_value)
     m_register_cache.DiscardHostReg(return_value->GetHostRegister());
 
@@ -1325,15 +1295,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG3, arg3);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
+  m_emit->Blr(GetHostReg64(temp));
+  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1344,14 +1309,11 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
     return_value->Undiscard();
     EmitCopyValue(return_value->GetHostRegister(), Value::FromHostReg(&m_register_cache, RRETURN, return_value->size));
   }
-#endif
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1, const Value& arg2,
                                         const Value& arg3, const Value& arg4)
 {
-    Panic("Not implemented");
-#if 0
   if (return_value)
     return_value->Discard();
 
@@ -1365,15 +1327,10 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG4, arg4);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
+  m_emit->Blr(GetHostReg64(temp));
+  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1384,17 +1341,18 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
     return_value->Undiscard();
     EmitCopyValue(return_value->GetHostRegister(), Value::FromHostReg(&m_register_cache, RRETURN, return_value->size));
   }
-#endif
 }
 
-void CodeGenerator::EmitPushHostReg(HostReg reg)
+void CodeGenerator::EmitPushHostReg(HostReg reg, u32 position)
 {
-  m_emit->Push(GetHostReg64(reg));
+  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - FUNCTION_CALL_SHADOW_SPACE - (position * 8));
+  m_emit->Str(GetHostReg64(reg), addr);
 }
 
-void CodeGenerator::EmitPopHostReg(HostReg reg)
+void CodeGenerator::EmitPopHostReg(HostReg reg, u32 position)
 {
-  m_emit->Pop(GetHostReg64(reg));
+  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - FUNCTION_CALL_SHADOW_SPACE - (position * 8));
+  m_emit->Ldr(GetHostReg64(reg), addr);
 }
 
 void CodeGenerator::EmitLoadCPUStructField(HostReg host_reg, RegSize guest_size, u32 offset)
@@ -1619,53 +1577,55 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
 {
-    Panic("Not implemented");
-#if 0
-  Value reg = m_register_cache.AllocateScratch(RegSize_8);
+  Value reg = m_register_cache.AllocateScratch(RegSize_32);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
-  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
-  auto reg_ptr = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
+  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_load_delay_reg));
+  const a64::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(Core, m_load_delay_value));
+  const a64::MemOperand regs_base(GetCPUPtrReg(), offsetof(Core, m_regs.r[0]));
 
-  Xbyak::Label skip_flush;
+  a64::Label skip_flush;
 
   // reg = load_delay_reg
-  m_emit->movzx(GetHostReg32(reg.host_reg), load_delay_reg);
+  m_emit->Ldrb(GetHostReg32(reg), load_delay_reg);
 
   // if load_delay_reg == Reg::count goto skip_flush
-  m_emit->cmp(GetHostReg32(reg.host_reg), static_cast<u8>(Reg::count));
-  m_emit->je(skip_flush);
+  m_emit->Cmp(GetHostReg32(reg), static_cast<u8>(Reg::count));
+  m_emit->B(a64::eq, &skip_flush);
 
-  // r[reg] = load_delay_value
-  m_emit->mov(GetHostReg32(value), load_delay_value);
-  m_emit->mov(reg_ptr, GetHostReg32(value));
+  // value = load_delay_value
+  m_emit->Ldr(GetHostReg32(value), load_delay_value);
+
+  // reg = offset(r[0] + reg << 2)
+  m_emit->Lsl(GetHostReg32(reg), GetHostReg32(reg), 2);
+  m_emit->Add(GetHostReg32(reg), GetHostReg32(reg), offsetof(Core, m_regs.r[0]));
+
+  // r[reg] = value
+  m_emit->Str(GetHostReg32(value), a64::MemOperand(GetCPUPtrReg(), GetHostReg32(reg)));
 
   // load_delay_reg = Reg::count
-  m_emit->mov(load_delay_reg, static_cast<u8>(Reg::count));
+  m_emit->Mov(GetHostReg32(reg), static_cast<u8>(Reg::count));
+  m_emit->Strb(GetHostReg32(reg), load_delay_reg);
 
-  m_emit->L(skip_flush);
-#endif
+  m_emit->Bind(&skip_flush);
 }
 
 void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
 {
-    Panic("Not implemented");
-#if 0
-  Value reg = m_register_cache.AllocateScratch(RegSize_8);
+  Value reg = m_register_cache.AllocateScratch(RegSize_32);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
-  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
-  auto next_load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
-  auto next_load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
+  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_load_delay_reg));
+  const a64::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(Core, m_load_delay_value));
+  const a64::MemOperand next_load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_next_load_delay_reg));
+  const a64::MemOperand next_load_delay_value(GetCPUPtrReg(), offsetof(Core, m_next_load_delay_value));
 
-  m_emit->mov(GetHostReg32(value), next_load_delay_value);
-  m_emit->mov(GetHostReg8(reg), next_load_delay_reg);
-  m_emit->mov(load_delay_value, GetHostReg32(value));
-  m_emit->mov(load_delay_reg, GetHostReg8(reg));
-  m_emit->mov(next_load_delay_reg, static_cast<u8>(Reg::count));
-#endif
+  m_emit->Ldrb(GetHostReg32(reg), next_load_delay_reg);
+  m_emit->Ldr(GetHostReg32(value), next_load_delay_value);
+  m_emit->Strb(GetHostReg32(reg), load_delay_reg);
+  m_emit->Str(GetHostReg32(value), load_delay_value);
+  m_emit->Mov(GetHostReg32(reg), static_cast<u8>(Reg::count));
+  m_emit->Strb(GetHostReg32(reg), next_load_delay_reg);
 }
 
 void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)

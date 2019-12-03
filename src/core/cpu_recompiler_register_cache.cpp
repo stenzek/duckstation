@@ -211,9 +211,9 @@ bool RegisterCache::AllocateHostReg(HostReg reg, HostRegState state /*= HostRegS
   {
     // new register we need to save..
     DebugAssert(m_host_register_callee_saved_order_count < HostReg_Count);
+    m_code_generator.EmitPushHostReg(reg, GetActiveCalleeSavedRegisterCount());
     m_host_register_callee_saved_order[m_host_register_callee_saved_order_count++] = reg;
     m_host_register_state[reg] |= HostRegState::CalleeSavedAllocated;
-    m_code_generator.EmitPushHostReg(reg);
   }
 
   return reg;
@@ -276,13 +276,14 @@ Value RegisterCache::AllocateScratch(RegSize size, HostReg reg /* = HostReg_Inva
 
 u32 RegisterCache::PushCallerSavedRegisters() const
 {
+  u32 position = GetActiveCalleeSavedRegisterCount();
   u32 count = 0;
   for (u32 i = 0; i < HostReg_Count; i++)
   {
     if ((m_host_register_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
         (HostRegState::CallerSaved | HostRegState::InUse))
     {
-      m_code_generator.EmitPushHostReg(static_cast<HostReg>(i));
+      m_code_generator.EmitPushHostReg(static_cast<HostReg>(i), position + count);
       count++;
     }
   }
@@ -293,14 +294,26 @@ u32 RegisterCache::PushCallerSavedRegisters() const
 u32 RegisterCache::PopCallerSavedRegisters() const
 {
   u32 count = 0;
+  for (u32 i = 0; i < HostReg_Count; i++)
+  {
+    if ((m_host_register_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
+        (HostRegState::CallerSaved | HostRegState::InUse))
+    {
+      count++;
+    }
+  }
+  if (count == 0)
+    return 0;
+  
+  u32 position = GetActiveCalleeSavedRegisterCount() + count - 1;
   u32 i = (HostReg_Count - 1);
   do
   {
     if ((m_host_register_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
         (HostRegState::CallerSaved | HostRegState::InUse))
     {
-      m_code_generator.EmitPopHostReg(static_cast<HostReg>(i));
-      count++;
+      m_code_generator.EmitPopHostReg(static_cast<HostReg>(i), position);
+      position--;
     }
     i--;
   } while (i > 0);
@@ -320,12 +333,15 @@ u32 RegisterCache::PopCalleeSavedRegisters(bool commit)
     DebugAssert((m_host_register_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
                 (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
 
-    m_code_generator.EmitPopHostReg(reg);
+    m_code_generator.EmitPopHostReg(reg, i - 1);
     if (commit)
       m_host_register_state[reg] &= ~HostRegState::CalleeSavedAllocated;
     count++;
     i--;
   } while (i > 0);
+  if (commit)
+    m_host_register_callee_saved_order_count = 0;
+    
   return count;
 }
 

@@ -14,8 +14,8 @@ namespace CPU {
 
 constexpr bool USE_BLOCK_LINKING = true;
 
-static constexpr size_t RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
-static constexpr size_t RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 
 CodeCache::CodeCache() = default;
 

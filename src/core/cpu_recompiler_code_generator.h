@@ -128,8 +128,8 @@ public:
   }
 
   // Host register saving.
-  void EmitPushHostReg(HostReg reg);
-  void EmitPopHostReg(HostReg reg);
+  void EmitPushHostReg(HostReg reg, u32 position);
+  void EmitPopHostReg(HostReg reg, u32 position);
 
   // Flags copying from host.
 #if defined(Y_CPU_X64)

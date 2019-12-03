@@ -1345,12 +1345,12 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   }
 }
 
-void CodeGenerator::EmitPushHostReg(HostReg reg)
+void CodeGenerator::EmitPushHostReg(HostReg reg, u32 position)
 {
   m_emit->push(GetHostReg64(reg));
 }
 
-void CodeGenerator::EmitPopHostReg(HostReg reg)
+void CodeGenerator::EmitPopHostReg(HostReg reg, u32 position)
 {
   m_emit->pop(GetHostReg64(reg));
 }
