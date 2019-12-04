@@ -2,7 +2,7 @@
 ![Main Window Screenshot](https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png)
 
 ## Features
- - CPU Recompiler/JIT (x86_64 work-in-progress, AArch64 planned)
+ - CPU Recompiler/JIT (x86-64 and AArch64)
  - Hardware (D3D11 and OpenGL) and software rendering
  - Upscaling and true colour (24-bit) in hardware renderers
  - "Fast boot" for skipping BIOS splash/intro
@@ -37,6 +37,14 @@ Requirements:
 2. Run cmake to configure the build system. Assuming a build subdirectory of `build-release`, `cd build-release && cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..`.
 3. Compile the source code. For the example above, run `ninja`.
 4. Run the binary, located in the build directory under `src/duckstation/duckstation`.
+
+### Android
+Requirements:
+ - Android Studio with the NDK and CMake installed
+
+1. Open the project in the `android` directory.
+2. Select Build -> Build Bundle(s) / APKs(s) -> Build APK(s).
+3. Install APK on device, or use Run menu for attached device.
 
 ## Running
 1. Configure the BIOS path in the settings.
