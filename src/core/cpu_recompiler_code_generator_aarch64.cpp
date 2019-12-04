@@ -86,6 +86,12 @@ CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer, const ASMFun
                   a64::PositionDependentCode),
     m_emit(&m_near_emitter)
 {
+  // remove the temporaries from vixl's list to prevent it from using them.
+  // eventually we won't use the macro assembler and this won't be a problem...
+  m_near_emitter.GetScratchRegisterList()->Remove(16);
+  m_near_emitter.GetScratchRegisterList()->Remove(17);
+  m_far_emitter.GetScratchRegisterList()->Remove(16);
+  m_far_emitter.GetScratchRegisterList()->Remove(17);
   InitHostRegs();
 }
 
