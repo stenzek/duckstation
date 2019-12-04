@@ -41,6 +41,8 @@ public:
   GameList();
   ~GameList();
 
+  static const char* EntryTypeToString(EntryType type);
+
   static std::string GetGameCodeForImage(CDImage* cdi);
   static std::string GetGameCodeForPath(const char* image_path);
   static std::optional<ConsoleRegion> GetRegionForCode(std::string_view code);

@@ -5,6 +5,7 @@
 #include "common/cd_image.h"
 #include "common/iso_reader.h"
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <tinyxml2.h>
 #include <utility>
@@ -19,6 +20,12 @@ Log_SetChannel(GameList);
 GameList::GameList() = default;
 
 GameList::~GameList() = default;
+
+const char* GameList::EntryTypeToString(GameList::EntryType type)
+{
+  static std::array<const char*, 2> names = {{"Disc", "PSExe"}};
+  return names[static_cast<int>(type)];
+}
 
 std::string GameList::GetGameCodeForPath(const char* image_path)
 {
