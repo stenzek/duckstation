@@ -173,6 +173,16 @@ void* CodeGenerator::GetCurrentFarCodePointer() const
   return m_far_emitter.getCurr<void*>();
 }
 
+Value CodeGenerator::GetValueInHostRegister(const Value& value)
+{
+  if (value.IsInHostRegister())
+    return Value(value.regcache, value.host_reg, value.size, ValueFlags::Valid | ValueFlags::InHostRegister);
+
+  Value new_value = m_register_cache.AllocateScratch(value.size);
+  EmitCopyValue(new_value.host_reg, value);
+  return new_value;
+}
+
 void CodeGenerator::EmitBeginBlock()
 {
   // Store the CPU struct pointer.

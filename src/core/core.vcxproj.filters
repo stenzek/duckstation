@@ -34,6 +34,7 @@
     <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="game_list.cpp" />
+    <ClCompile Include="cpu_recompiler_code_generator_aarch64.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
