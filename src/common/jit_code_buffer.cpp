@@ -12,7 +12,7 @@ static void DoCacheFlush(u8* address, u32 len)
 #if defined(Y_PLATFORM_WINDOWS)
   FlushInstructionCache(GetCurrentProcess(), address, len);
 #elif defined(Y_COMPILER_GCC) || defined(Y_COMPILER_CLANG)
-  __clear_cache(address, address + len);
+  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address + len));
 #else
 #error Unknown platform.
 #endif
