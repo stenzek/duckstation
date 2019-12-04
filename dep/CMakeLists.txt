@@ -9,6 +9,10 @@ if(NOT ANDROID)
   add_subdirectory(nativefiledialog)
 endif()
 
+if(${CPU_ARCH} STREQUAL "aarch64")
+  add_subdirectory(vixl)
+endif()
+
 ###################### YBaseLib ############################
 
 set(YBASELIB_SRC_BASE ${CMAKE_SOURCE_DIR}/dep/YBaseLib/Source)
