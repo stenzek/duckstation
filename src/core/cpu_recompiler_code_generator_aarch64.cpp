@@ -359,21 +359,22 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
   }
 
   // do we need temporary storage for the constant, if it won't fit in an immediate?
-  if (a64::Assembler::IsImmAddSub(value.constant_value))
+  const s64 constant_value = value.GetS64ConstantValue();
+  if (a64::Assembler::IsImmAddSub(constant_value))
   {
     if (value.size < RegSize_64)
     {
       if (set_flags)
-        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
       else
-        m_emit->add(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+        m_emit->add(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
     }
     else
     {
       if (set_flags)
-        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
       else
-        m_emit->add(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+        m_emit->add(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
     }
 
     return;
@@ -382,9 +383,9 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
   // need a temporary
   Value temp_value = m_register_cache.AllocateScratch(value.size);
   if (value.size < RegSize_64)
-    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
-    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), constant_value);
   EmitAdd(to_reg, temp_value, set_flags);
 }
 
@@ -414,21 +415,22 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
   }
 
   // do we need temporary storage for the constant, if it won't fit in an immediate?
+  const s64 constant_value = value.GetS64ConstantValue();
   if (a64::Assembler::IsImmAddSub(value.constant_value))
   {
     if (value.size < RegSize_64)
     {
       if (set_flags)
-        m_emit->subs(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+        m_emit->subs(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
       else
-        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
     }
     else
     {
       if (set_flags)
-        m_emit->subs(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+        m_emit->subs(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
       else
-        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
     }
 
     return;
@@ -437,9 +439,9 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
   // need a temporary
   Value temp_value = m_register_cache.AllocateScratch(value.size);
   if (value.size < RegSize_64)
-    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
-    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), constant_value);
   EmitSub(to_reg, temp_value, set_flags);
 }
 
@@ -459,12 +461,13 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
   }
 
   // do we need temporary storage for the constant, if it won't fit in an immediate?
-  if (a64::Assembler::IsImmAddSub(value.constant_value))
+  const s64 constant_value = value.GetS64ConstantValue();
+  if (a64::Assembler::IsImmAddSub(constant_value))
   {
     if (value.size < RegSize_64)
-      m_emit->cmp(GetHostReg32(to_reg), s64(value.constant_value));
+      m_emit->cmp(GetHostReg32(to_reg), constant_value);
     else
-      m_emit->cmp(GetHostReg64(to_reg), s64(value.constant_value));
+      m_emit->cmp(GetHostReg64(to_reg), constant_value);
 
     return;
   }
@@ -472,9 +475,9 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
   // need a temporary
   Value temp_value = m_register_cache.AllocateScratch(value.size);
   if (value.size < RegSize_64)
-    m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
+    m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
-    m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
+    m_emit->Mov(GetHostReg64(temp_value.host_reg), constant_value);
   EmitCmp(to_reg, temp_value);
 }
 
@@ -1137,7 +1140,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     {
       m_emit->Ldrb(GetHostReg8(temp), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg8(temp), GetHostReg8(temp), Truncate8(value.constant_value));
+        m_emit->Add(GetHostReg8(temp), GetHostReg8(temp), value.GetS64ConstantValue());
       else
         m_emit->Add(GetHostReg8(temp), GetHostReg8(temp), GetHostReg8(value));
       m_emit->Strb(GetHostReg8(temp), o_offset);
@@ -1148,7 +1151,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     {
       m_emit->Ldrh(GetHostReg16(temp), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg16(temp), GetHostReg16(temp), Truncate16(value.constant_value));
+        m_emit->Add(GetHostReg16(temp), GetHostReg16(temp), value.GetS64ConstantValue());
       else
         m_emit->Add(GetHostReg16(temp), GetHostReg16(temp), GetHostReg16(value));
       m_emit->Strh(GetHostReg16(temp), o_offset);
@@ -1159,7 +1162,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     {
       m_emit->Ldr(GetHostReg32(temp), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg32(temp), GetHostReg32(temp), Truncate32(value.constant_value));
+        m_emit->Add(GetHostReg32(temp), GetHostReg32(temp), value.GetS64ConstantValue());
       else
         m_emit->Add(GetHostReg32(temp), GetHostReg32(temp), GetHostReg32(value));
       m_emit->Str(GetHostReg32(temp), o_offset);
@@ -1170,7 +1173,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     {
       m_emit->Ldr(GetHostReg64(temp), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg64(temp), GetHostReg64(temp), value.constant_value);
+        m_emit->Add(GetHostReg64(temp), GetHostReg64(temp), s64(value.constant_value));
       else
         m_emit->Add(GetHostReg64(temp), GetHostReg64(temp), GetHostReg64(value));
       m_emit->Str(GetHostReg64(temp), o_offset);

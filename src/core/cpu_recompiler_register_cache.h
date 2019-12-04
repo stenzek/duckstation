@@ -4,8 +4,8 @@
 #include "cpu_types.h"
 
 #include <array>
-#include <tuple>
 #include <optional>
+#include <tuple>
 
 namespace CPU::Recompiler {
 
@@ -135,6 +135,26 @@ struct Value
 
     // invalid?
     return Value();
+  }
+
+  /// Returns the constant value as a signed 64-bit integer, suitable as an immediate.
+  s64 GetS64ConstantValue() const
+  {
+    switch (size)
+    {
+      case RegSize_8:
+        return static_cast<s64>(SignExtend64(Truncate8(constant_value)));
+
+      case RegSize_16:
+        return static_cast<s64>(SignExtend64(Truncate16(constant_value)));
+
+      case RegSize_32:
+        return static_cast<s64>(SignExtend64(Truncate32(constant_value)));
+
+      case RegSize_64:
+      default:
+        return static_cast<s64>(constant_value);
+    }
   }
 
   static Value FromHostReg(RegisterCache* regcache, HostReg reg, RegSize size)

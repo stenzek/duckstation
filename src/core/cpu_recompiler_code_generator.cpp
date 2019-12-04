@@ -5,6 +5,7 @@ Log_SetChannel(CPU::Recompiler);
 
 // TODO: Turn load+sext/zext into a single signed/unsigned load
 // TODO: mulx/shlx/etc
+// TODO: when writing to the same register, don't allocate a temporary and copy it (mainly for shifts)
 
 namespace CPU::Recompiler {
 
