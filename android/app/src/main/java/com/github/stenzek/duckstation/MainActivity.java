@@ -51,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!checkForExternalStoragePermissions())
+                    return;
+
                 Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                 i.addCategory(Intent.CATEGORY_DEFAULT);
                 i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
