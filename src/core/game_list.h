@@ -20,6 +20,12 @@ public:
 
   using DatabaseMap = std::unordered_map<std::string, GameDatabaseEntry>;
 
+  enum class EntryType
+  {
+    Disc,
+    PSExe
+  };
+
   struct GameListEntry
   {
     std::string path;
@@ -27,6 +33,7 @@ public:
     std::string title;
     u64 total_size;
     ConsoleRegion region;
+    EntryType type;
   };
 
   using EntryList = std::vector<GameListEntry>;
@@ -47,6 +54,8 @@ public:
   bool ParseRedumpDatabase(const char* redump_dat_path);
 
 private:
+  static bool IsExeFileName(const char* path);
+  static bool GetExeListEntry(const char* path, GameListEntry* entry);
 
   bool GetGameListEntry(const char* path, GameListEntry* entry);
 

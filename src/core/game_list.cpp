@@ -1,7 +1,7 @@
 #include "game_list.h"
-#include "YBaseLib/CString.h"
 #include "YBaseLib/FileSystem.h"
 #include "YBaseLib/Log.h"
+#include "bios.h"
 #include "common/cd_image.h"
 #include "common/iso_reader.h"
 #include <algorithm>
@@ -9,6 +9,12 @@
 #include <tinyxml2.h>
 #include <utility>
 Log_SetChannel(GameList);
+
+#ifdef _MSC_VER
+#define CASE_COMPARE _stricmp
+#else
+#define CASE_COMPARE strcasecmp
+#endif
 
 GameList::GameList() = default;
 
@@ -71,8 +77,8 @@ std::string GameList::GetGameCodeForImage(CDImage* cdi)
     lines.push_back(std::move(current_line));
 
   // Find the BOOT line
-  auto iter =
-    std::find_if(lines.begin(), lines.end(), [](const auto& it) { return Y_stricmp(it.first.c_str(), "boot") == 0; });
+  auto iter = std::find_if(lines.begin(), lines.end(),
+                           [](const auto& it) { return CASE_COMPARE(it.first.c_str(), "boot") == 0; });
   if (iter == lines.end())
     return {};
 
@@ -144,8 +150,67 @@ void GameList::AddDirectory(const char* path, bool recursive)
   ScanDirectory(path, recursive);
 }
 
+bool GameList::IsExeFileName(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  return (extension && (CASE_COMPARE(extension, ".exe") == 0 || CASE_COMPARE(extension, ".psexe") == 0));
+}
+
+bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
+{
+  std::FILE* fp = std::fopen(path, "rb");
+  if (!fp)
+    return false;
+
+  std::fseek(fp, 0, SEEK_END);
+  const u32 file_size = static_cast<u32>(std::ftell(fp));
+  std::fseek(fp, 0, SEEK_SET);
+
+  BIOS::PSEXEHeader header;
+  if (std::fread(&header, sizeof(header), 1, fp) != 1)
+  {
+    std::fclose(fp);
+    return false;
+  }
+
+  std::fclose(fp);
+
+  if (!BIOS::IsValidPSExeHeader(header, file_size))
+  {
+    Log_DebugPrintf("%s is not a valid PS-EXE", path);
+    return false;
+  }
+
+  const char* extension = std::strrchr(path, '.');
+  if (!extension)
+    return false;
+
+  const char* title_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
+  if (!title_start)
+  {
+    entry->title = path;
+    entry->code = std::string(path, extension - path - 1);
+  }
+  else
+  {
+    entry->title = title_start + 1;
+    entry->code = std::string(title_start + 1, extension - title_start - 1);
+  }
+
+  // no way to detect region...
+  entry->path = path;
+  entry->region = ConsoleRegion::NTSC_U;
+  entry->total_size = ZeroExtend64(file_size);
+  entry->type = EntryType::PSExe;
+
+  return true;
+}
+
 bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
 {
+  if (IsExeFileName(path))
+    return GetExeListEntry(path, entry);
+
   std::unique_ptr<CDImage> cdi = CDImage::Open(path);
   if (!cdi)
     return false;
@@ -153,6 +218,7 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
   entry->path = path;
   entry->code = GetGameCodeForImage(cdi.get());
   entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
+  entry->type = EntryType::Disc;
   cdi.reset();
 
   auto iter = m_database.find(entry->code);
@@ -185,13 +251,13 @@ void GameList::ScanDirectory(const char* path, bool recursive)
 
     // if this is a .bin, check if we have a .cue. if there is one, skip it
     const char* extension = std::strrchr(ffd.FileName, '.');
-    if (extension && Y_stricmp(extension, ".bin") == 0)
+    if (extension && CASE_COMPARE(extension, ".bin") == 0)
     {
 #if 0
       std::string temp(ffd.FileName, extension - ffd.FileName);
       temp += ".cue";
       if (std::any_of(files.begin(), files.end(),
-                      [&temp](const FILESYSTEM_FIND_DATA& it) { return Y_stricmp(it.FileName, temp.c_str()) == 0; }))
+                      [&temp](const FILESYSTEM_FIND_DATA& it) { return CASE_COMPARE(it.FileName, temp.c_str()) == 0; }))
       {
         Log_DebugPrintf("Skipping due to '%s' existing", temp.c_str());
         continue;
@@ -237,10 +303,10 @@ public:
   bool VisitEnter(const tinyxml2::XMLElement& element, const tinyxml2::XMLAttribute* firstAttribute) override
   {
     // recurse into gamelist
-    if (Y_stricmp(element.Name(), "datafile") == 0)
+    if (CASE_COMPARE(element.Name(), "datafile") == 0)
       return true;
 
-    if (Y_stricmp(element.Name(), "game") != 0)
+    if (CASE_COMPARE(element.Name(), "game") != 0)
       return false;
 
     const char* name = element.Attribute("name");

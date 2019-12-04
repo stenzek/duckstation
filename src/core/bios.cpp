@@ -176,4 +176,16 @@ bool PatchBIOSForEXE(Image& image, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp)
   return true;
 }
 
+bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
+{
+  static constexpr char expected_id[] = {'P', 'S', '-', 'X', ' ', 'E', 'X', 'E'};
+  if (std::memcmp(header.id, expected_id, sizeof(expected_id)) != 0)
+    return false;
+
+  if (header.file_size > file_size)
+    return false;
+
+  return true;
+}
+
 } // namespace BIOS

@@ -329,33 +329,16 @@ void System::RunFrame()
 
 bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
 {
-#pragma pack(push, 1)
-  struct EXEHeader
-  {
-    char id[8];            // 0x000-0x007 PS-X EXE
-    char pad1[8];          // 0x008-0x00F
-    u32 initial_pc;        // 0x010
-    u32 initial_gp;        // 0x014
-    u32 load_address;      // 0x018
-    u32 file_size;         // 0x01C excluding 0x800-byte header
-    u32 unk0;              // 0x020
-    u32 unk1;              // 0x024
-    u32 memfill_start;     // 0x028
-    u32 memfill_size;      // 0x02C
-    u32 initial_sp_base;   // 0x030
-    u32 initial_sp_offset; // 0x034
-    u32 reserved[5];       // 0x038-0x04B
-    char marker[0x7B4];    // 0x04C-0x7FF
-  };
-  static_assert(sizeof(EXEHeader) == 0x800);
-#pragma pack(pop)
-
   std::FILE* fp = std::fopen(filename, "rb");
   if (!fp)
     return false;
 
-  EXEHeader header;
-  if (std::fread(&header, sizeof(header), 1, fp) != 1)
+  std::fseek(fp, 0, SEEK_END);
+  const u32 file_size = static_cast<u32>(std::ftell(fp));
+  std::fseek(fp, 0, SEEK_SET);
+
+  BIOS::PSEXEHeader header;
+  if (std::fread(&header, sizeof(header), 1, fp) != 1 || !BIOS::IsValidPSExeHeader(header, file_size))
   {
     std::fclose(fp);
     return false;
@@ -374,7 +357,7 @@ bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
 
   if (header.file_size >= 4)
   {
-    std::vector<u32> data_words(header.file_size / 4);
+    std::vector<u32> data_words((header.file_size + 3) / 4);
     if (std::fread(data_words.data(), header.file_size, 1, fp) != 1)
     {
       std::fclose(fp);
