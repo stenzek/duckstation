@@ -39,7 +39,8 @@ private:
   enum class State : u32
   {
     Idle,
-    Transmitting
+    Transmitting,
+    WaitingForACK
   };
 
   enum class ActiveDevice : u8
@@ -88,15 +89,17 @@ private:
     BitField<u16, u8, 8, 1> clk_polarity;
   };
 
-  bool IsTransmitting() const { return m_state == State::Transmitting; }
+  bool IsTransmitting() const { return m_state != State::Idle; }
   bool CanTransfer() const { return m_transmit_buffer_full && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN; }
 
   TickCount GetTransferTicks() const { return static_cast<TickCount>(ZeroExtend32(m_JOY_BAUD) * 8); }
+  TickCount GetACKTicks() const { return 32; }
 
   void SoftReset();
   void UpdateJoyStat();
   void BeginTransfer();
   void DoTransfer();
+  void DoACK();
   void EndTransfer();
   void ResetDeviceTransferState();
 

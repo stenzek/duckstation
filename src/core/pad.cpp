@@ -100,7 +100,7 @@ u32 Pad::ReadRegister(u32 offset)
   {
     case 0x00: // JOY_DATA
     {
-      if (!m_transmit_buffer_full)
+      if (!m_receive_buffer_full)
         Log_DevPrintf("Read from RX fifo when empty");
 
       const u8 value = m_receive_buffer;
@@ -209,21 +209,20 @@ void Pad::WriteRegister(u32 offset, u32 value)
 
 void Pad::Execute(TickCount ticks)
 {
-  switch (m_state)
-  {
-    case State::Idle:
-      break;
+  if (m_state == State::Idle)
+    return;
 
-    case State::Transmitting:
-    {
-      m_ticks_remaining -= ticks;
-      if (m_ticks_remaining <= 0)
-        DoTransfer();
-      else
-        m_system->SetDowncount(m_ticks_remaining);
-    }
-    break;
+  m_ticks_remaining -= ticks;
+  if (m_ticks_remaining > 0)
+  {
+    m_system->SetDowncount(m_ticks_remaining);
+    return;
   }
+
+  if (m_state == State::Transmitting)
+    DoTransfer();
+  else
+    DoACK();
 }
 
 void Pad::SoftReset()
@@ -344,26 +343,48 @@ void Pad::DoTransfer()
 
   m_receive_buffer = data_in;
   m_receive_buffer_full = true;
-  m_JOY_STAT.ACKINPUT |= ack;
 
   // device no longer active?
   if (!ack)
-    m_active_device = ActiveDevice::None;
-
-  if (m_JOY_STAT.ACKINPUT && m_JOY_CTRL.ACKINTEN)
   {
-    Log_DebugPrintf("Triggering interrupt");
+    m_active_device = ActiveDevice::None;
+    EndTransfer();
+  }
+  else
+  {
+    const TickCount ack_timer = GetACKTicks();
+    Log_DebugPrintf("Delaying ACK for %d ticks", ack_timer);
+    m_state = State::WaitingForACK;
+    m_ticks_remaining += ack_timer;
+    if (m_ticks_remaining <= 0)
+      DoACK();
+    else
+      m_system->SetDowncount(m_ticks_remaining);
+  }
+
+  UpdateJoyStat();
+}
+
+void Pad::DoACK()
+{
+  m_JOY_STAT.ACKINPUT = true;
+
+  if (m_JOY_CTRL.ACKINTEN)
+  {
+    Log_DebugPrintf("Triggering ACK interrupt");
     m_JOY_STAT.INTR = true;
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::IRQ7);
   }
 
   EndTransfer();
-  UpdateJoyStat();
+
+  if (CanTransfer())
+    BeginTransfer();
 }
 
 void Pad::EndTransfer()
 {
-  DebugAssert(m_state == State::Transmitting);
+  DebugAssert(m_state == State::Transmitting || m_state == State::WaitingForACK);
   Log_DebugPrintf("Ending transfer");
 
   m_state = State::Idle;
