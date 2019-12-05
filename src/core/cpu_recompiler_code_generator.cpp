@@ -847,7 +847,6 @@ void CodeGenerator::AddPendingCycles()
     return;
 
   EmitAddCPUStructField(offsetof(Core, m_pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
-  EmitAddCPUStructField(offsetof(Core, m_downcount), Value::FromConstantU32(~u32(m_delayed_cycles_add - 1)));
   m_delayed_cycles_add = 0;
 }
 

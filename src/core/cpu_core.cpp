@@ -123,7 +123,7 @@ bool Core::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
     return false;
   }
 
-  AddTicks(cycles);
+  m_pending_ticks += cycles;
   return true;
 }
 
@@ -141,7 +141,7 @@ bool Core::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
     return false;
   }
 
-  AddTicks(cycles);
+  m_pending_ticks += cycles;
   return true;
 }
 
@@ -157,7 +157,7 @@ bool Core::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
     return false;
   }
 
-  AddTicks(cycles);
+  m_pending_ticks += cycles;
   return true;
 }
 
@@ -579,13 +579,12 @@ void Core::DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 
 
 void Core::Execute()
 {
-  while (m_downcount >= 0)
+  while (m_pending_ticks <= m_downcount)
   {
     if (HasPendingInterrupt())
       DispatchInterrupt();
 
-    m_pending_ticks += 1;
-    m_downcount -= 1;
+    m_pending_ticks++;
 
     // now executing the instruction we previously fetched
     m_current_instruction.bits = m_next_instruction.bits;

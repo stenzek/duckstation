@@ -91,13 +91,6 @@ private:
   bool InUserMode() const { return m_cop0_regs.sr.KUc; }
   bool InKernelMode() const { return !m_cop0_regs.sr.KUc; }
 
-  // timing
-  ALWAYS_INLINE void AddTicks(TickCount ticks)
-  {
-    m_pending_ticks += ticks;
-    m_downcount -= ticks;
-  }
-
   void DisassembleAndPrint(u32 addr);
   void DisassembleAndLog(u32 addr);
   void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_after);

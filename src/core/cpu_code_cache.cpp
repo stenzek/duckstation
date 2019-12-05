@@ -39,16 +39,14 @@ void CodeCache::Initialize(System* system, Core* core, Bus* bus, bool use_recomp
 
 void CodeCache::Execute()
 {
-  if (m_core->m_downcount < 0)
-    return;
-
   CodeBlockKey next_block_key = GetNextBlockKey();
 
-  for (;;)
+  while (m_core->m_pending_ticks < m_core->m_downcount)
   {
     if (m_core->HasPendingInterrupt())
     {
       // TODO: Fill in m_next_instruction...
+      //m_core->SafeReadMemoryWord(m_core->m_regs.pc, &m_core->m_next_instruction.bits);
       m_core->DispatchInterrupt();
       next_block_key = GetNextBlockKey();
     }
@@ -58,8 +56,7 @@ void CodeCache::Execute()
     {
       Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", m_core->GetRegs().pc);
       InterpretUncachedBlock();
-      if (m_core->m_downcount < 0)
-        break;
+      continue;
     }
 
   reexecute_block:
@@ -79,7 +76,7 @@ void CodeCache::Execute()
     else
       InterpretCachedBlock(*block);
 
-    if (m_core->m_downcount < 0)
+    if (m_core->m_pending_ticks >= m_core->m_downcount)
       break;
     else if (m_core->HasPendingInterrupt() || !USE_BLOCK_LINKING)
       continue;
@@ -426,8 +423,7 @@ void CodeCache::InterpretCachedBlock(const CodeBlock& block)
 
   for (const CodeBlockInstruction& cbi : block.instructions)
   {
-    m_core->m_pending_ticks += 1;
-    m_core->m_downcount -= 1;
+    m_core->m_pending_ticks++;
 
     // now executing the instruction we previously fetched
     m_core->m_current_instruction.bits = cbi.instruction.bits;
@@ -463,8 +459,7 @@ void CodeCache::InterpretUncachedBlock()
   bool in_branch_delay_slot = false;
   for (;;)
   {
-    m_core->m_pending_ticks += 1;
-    m_core->m_downcount -= 1;
+    m_core->m_pending_ticks++;
 
     // now executing the instruction we previously fetched
     m_core->m_current_instruction.bits = m_core->m_next_instruction.bits;
