@@ -8,6 +8,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "dma.h"
+#include "game_list.h"
 #include "gpu.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
@@ -38,12 +39,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 }
 
 System::~System() = default;
-
-std::optional<ConsoleRegion> System::GetRegionForCDImage(const CDImage* image)
-{
-  // TODO: Implement me.
-  return ConsoleRegion::NTSC_U;
-}
 
 bool System::IsPSExe(const char* filename)
 {
@@ -115,12 +110,18 @@ bool System::Boot(const char* filename)
 
       if (m_region == ConsoleRegion::Auto)
       {
-        std::optional<ConsoleRegion> detected_region = GetRegionForCDImage(media.get());
-        m_region = detected_region.value_or(ConsoleRegion::NTSC_U);
+        std::optional<ConsoleRegion> detected_region = GameList::GetRegionForImage(media.get());
         if (detected_region)
+        {
+          m_region = detected_region.value();
           Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region), filename);
+        }
         else
-          Log_WarningPrintf("Could not determine region for CD. Defaulting to NTSC-U.");
+        {
+          m_region = ConsoleRegion::NTSC_U;
+          Log_WarningPrintf("Could not determine region for CD. Defaulting to %s.",
+                            Settings::GetConsoleRegionName(m_region));
+        }
       }
     }
   }

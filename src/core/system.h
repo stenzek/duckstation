@@ -29,9 +29,6 @@ class System
 public:
   ~System();
 
-  /// Detects region for the specified image file.
-  static std::optional<ConsoleRegion> GetRegionForCDImage(const CDImage* image);
-
   /// Returns true if the filename is a PlayStation executable we can inject.
   static bool IsPSExe(const char* filename);
 

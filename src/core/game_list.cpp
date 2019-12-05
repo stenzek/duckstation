@@ -140,16 +140,32 @@ std::optional<ConsoleRegion> GameList::GetRegionForCode(std::string_view code)
     prefix.push_back(static_cast<char>(ch));
   }
 
-  // TODO: PAPX?
-
   if (prefix == "sces" || prefix == "sced" || prefix == "sles" || prefix == "sled")
     return ConsoleRegion::PAL;
-  else if (prefix == "scps" || prefix == "scpd" || prefix == "slps" || prefix == "slpd")
+  else if (prefix == "scps" || prefix == "slps" || prefix == "slpm")
     return ConsoleRegion::NTSC_J;
-  else if (prefix == "scus" || prefix == "slus")
+  else if (prefix == "scus" || prefix == "slus" || prefix == "papx")
     return ConsoleRegion::NTSC_U;
   else
     return std::nullopt;
+}
+
+std::optional<ConsoleRegion> GameList::GetRegionForImage(CDImage* cdi)
+{
+  std::string code = GetGameCodeForImage(cdi);
+  if (code.empty())
+    return std::nullopt;
+
+  return GetRegionForCode(code);
+}
+
+std::optional<ConsoleRegion> GameList::GetRegionForPath(const char* image_path)
+{
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  if (!cdi)
+    return {};
+
+  return GetRegionForImage(cdi.get());
 }
 
 void GameList::AddDirectory(const char* path, bool recursive)

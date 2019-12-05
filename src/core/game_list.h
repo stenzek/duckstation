@@ -46,6 +46,8 @@ public:
   static std::string GetGameCodeForImage(CDImage* cdi);
   static std::string GetGameCodeForPath(const char* image_path);
   static std::optional<ConsoleRegion> GetRegionForCode(std::string_view code);
+  static std::optional<ConsoleRegion> GetRegionForImage(CDImage* cdi);
+  static std::optional<ConsoleRegion> GetRegionForPath(const char* image_path);
 
   const DatabaseMap& GetDatabase() const { return m_database; }
   const EntryList& GetEntries() const { return m_entries; }
