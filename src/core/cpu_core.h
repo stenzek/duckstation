@@ -9,6 +9,7 @@
 class StateWrapper;
 
 class Bus;
+class System;
 
 namespace CPU {
 
@@ -41,19 +42,20 @@ public:
 
   void Execute();
 
-  const Registers& GetRegs() const { return m_regs; }
-  Registers& GetRegs() { return m_regs; }
+  ALWAYS_INLINE Bus* GetBus() const { return m_bus; }
 
-  TickCount GetPendingTicks() const { return m_pending_ticks; }
-  void ResetPendingTicks() { m_pending_ticks = 0; }
-  void AddPendingTicks(TickCount ticks)
+  ALWAYS_INLINE const Registers& GetRegs() const { return m_regs; }
+  ALWAYS_INLINE Registers& GetRegs() { return m_regs; }
+
+  ALWAYS_INLINE TickCount GetPendingTicks() const { return m_pending_ticks; }
+  ALWAYS_INLINE void ResetPendingTicks() { m_pending_ticks = 0; }
+  ALWAYS_INLINE void AddPendingTicks(TickCount ticks) { m_pending_ticks += ticks; }
+
+  ALWAYS_INLINE void SetDowncount(TickCount downcount)
   {
-    m_pending_ticks += ticks;
-    m_downcount -= ticks;
+    m_downcount = (downcount < m_downcount) ? downcount : m_downcount;
   }
-
-  void SetDowncount(TickCount downcount) { m_downcount = (downcount < m_downcount) ? downcount : m_downcount; }
-  void ResetDowncount() { m_downcount = MAX_SLICE_SIZE; }
+  ALWAYS_INLINE void ResetDowncount() { m_downcount = MAX_SLICE_SIZE; }
 
   // Sets the PC and flushes the pipeline.
   void SetPC(u32 new_pc);
@@ -88,8 +90,8 @@ private:
   bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 
   // state helpers
-  bool InUserMode() const { return m_cop0_regs.sr.KUc; }
-  bool InKernelMode() const { return !m_cop0_regs.sr.KUc; }
+  ALWAYS_INLINE bool InUserMode() const { return m_cop0_regs.sr.KUc; }
+  ALWAYS_INLINE bool InKernelMode() const { return !m_cop0_regs.sr.KUc; }
 
   void DisassembleAndPrint(u32 addr);
   void DisassembleAndLog(u32 addr);
@@ -164,6 +166,7 @@ private:
   u32 m_next_load_delay_value = 0;
 
   u32 m_cache_control = 0;
+  System* m_system = nullptr;
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> m_dcache = {};
