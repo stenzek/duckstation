@@ -1387,9 +1387,14 @@ static s16 ZigZagInterpolate(const s16* ringbuf, const s16* table, u8 p)
   return static_cast<s16>(std::clamp<s32>(sum, -0x8000, 0x7FFF));
 }
 
-static constexpr s16 ApplyVolume(s16 sample, u8 volume)
+static constexpr s32 ApplyVolume(s16 sample, u8 volume)
 {
-  return static_cast<s16>(std::clamp<s32>(s32(sample) * static_cast<s32>(ZeroExtend32(volume)) >> 7, -0x8000, 0x7FFF));
+  return s32(sample) * static_cast<s32>(ZeroExtend32(volume)) >> 7;
+}
+
+static constexpr s16 SaturateVolume(s32 volume)
+{
+  return static_cast<s16>(std::clamp<s32>(volume, -0x8000, 0x7FFF));
 }
 
 template<bool STEREO, bool SAMPLE_RATE>
@@ -1420,10 +1425,10 @@ static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu,
           const s16 left_interp = ZigZagInterpolate(left_ringbuf, s_zigzag_table[j].data(), p);
           const s16 right_interp = STEREO ? ZigZagInterpolate(right_ringbuf, s_zigzag_table[j].data(), p) : left_interp;
 
-          const s16 left_out =
-            ApplyVolume(left_interp, volume_matrix[0][0]) + ApplyVolume(right_interp, volume_matrix[1][0]);
-          const s16 right_out =
-            ApplyVolume(left_interp, volume_matrix[1][0]) + ApplyVolume(right_interp, volume_matrix[1][1]);
+          const s16 left_out = SaturateVolume(ApplyVolume(left_interp, volume_matrix[0][0]) +
+                                              ApplyVolume(right_interp, volume_matrix[1][0]));
+          const s16 right_out = SaturateVolume(ApplyVolume(left_interp, volume_matrix[1][0]) +
+                                               ApplyVolume(right_interp, volume_matrix[1][1]));
 
           spu->AddCDAudioSample(left_out, right_out);
         }
@@ -1537,10 +1542,10 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
     std::memcpy(&samp_right, sector_ptr + sizeof(s16), sizeof(samp_right));
     sector_ptr += sizeof(s16) * 2;
 
-    const s16 left =
-      ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) + ApplyVolume(samp_right, m_cd_audio_volume_matrix[0][1]);
-    const s16 right =
-      ApplyVolume(samp_left, m_cd_audio_volume_matrix[1][0]) + ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]);
+    const s16 left = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) +
+                                    ApplyVolume(samp_right, m_cd_audio_volume_matrix[0][1]));
+    const s16 right = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[1][0]) +
+                                     ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]));
     m_spu->AddCDAudioSample(left, right);
   }
 }
