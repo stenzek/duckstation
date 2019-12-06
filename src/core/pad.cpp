@@ -91,6 +91,7 @@ bool Pad::DoState(StateWrapper& sw)
   sw.Do(&m_transmit_buffer);
   sw.Do(&m_receive_buffer_full);
   sw.Do(&m_transmit_buffer_full);
+
   return !sw.HasError();
 }
 
@@ -100,11 +101,17 @@ u32 Pad::ReadRegister(u32 offset)
   {
     case 0x00: // JOY_DATA
     {
+      u8 value;
       if (!m_receive_buffer_full)
+      {
         Log_DevPrintf("Read from RX fifo when empty");
-
-      const u8 value = m_receive_buffer;
-      m_receive_buffer_full = false;
+        value = 0xFF;
+      }
+      else
+      {
+        value = m_receive_buffer;
+        m_receive_buffer_full = false;
+      }
 
       UpdateJoyStat();
       Log_DebugPrintf("JOY_DATA (R) -> 0x%02X", ZeroExtend32(value));
@@ -244,7 +251,7 @@ void Pad::SoftReset()
 void Pad::UpdateJoyStat()
 {
   m_JOY_STAT.RXFIFONEMPTY = m_receive_buffer_full;
-  m_JOY_STAT.TXDONE = !m_transmit_buffer_full && m_state == State::Idle;
+  m_JOY_STAT.TXDONE = !m_transmit_buffer_full && m_state != State::Transmitting;
   m_JOY_STAT.TXRDY = !m_transmit_buffer_full;
 }
 
@@ -377,6 +384,7 @@ void Pad::DoACK()
   }
 
   EndTransfer();
+  UpdateJoyStat();
 
   if (CanTransfer())
     BeginTransfer();
