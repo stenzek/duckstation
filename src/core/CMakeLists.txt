@@ -28,6 +28,8 @@ add_library(core
     gpu_hw.h
     gpu_hw_opengl.cpp
     gpu_hw_opengl.h
+    gpu_hw_opengl_es.cpp
+    gpu_hw_opengl_es.h
     gpu_hw_shadergen.cpp
     gpu_hw_shadergen.h
     gpu_sw.cpp

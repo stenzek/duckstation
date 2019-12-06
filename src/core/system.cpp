@@ -10,6 +10,7 @@
 #include "dma.h"
 #include "game_list.h"
 #include "gpu.h"
+#include "host_display.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
@@ -194,7 +195,9 @@ bool System::CreateGPU()
   switch (m_host_interface->GetSettings().gpu_renderer)
   {
     case GPURenderer::HardwareOpenGL:
-      m_gpu = GPU::CreateHardwareOpenGLRenderer();
+      m_gpu = m_host_interface->GetDisplay()->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES ?
+                GPU::CreateHardwareOpenGLESRenderer() :
+                GPU::CreateHardwareOpenGLRenderer();
       break;
 
 #ifdef WIN32

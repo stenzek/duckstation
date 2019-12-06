@@ -61,6 +61,7 @@
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
+    <ClCompile Include="gpu_hw_opengl_es.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gte.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
+    <ClInclude Include="gpu_hw_opengl_es.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gte.h" />

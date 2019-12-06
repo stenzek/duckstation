@@ -35,6 +35,7 @@
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_aarch64.cpp" />
+    <ClCompile Include="gpu_hw_opengl_es.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -72,6 +73,7 @@
     <ClInclude Include="cpu_recompiler_thunks.h" />
     <ClInclude Include="cpu_recompiler_code_generator.h" />
     <ClInclude Include="game_list.h" />
+    <ClInclude Include="gpu_hw_opengl_es.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

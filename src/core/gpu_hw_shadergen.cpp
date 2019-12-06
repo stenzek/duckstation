@@ -22,13 +22,13 @@ static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
   ss << "#define " << name << " " << BoolToUInt32(enabled) << "\n";
 }
 
-void GPU_HW_ShaderGen::SetGLSLVersionString() {
-  const char *glsl_version = reinterpret_cast<const char *>(glGetString(
-          GL_SHADING_LANGUAGE_VERSION));
+void GPU_HW_ShaderGen::SetGLSLVersionString()
+{
+  const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
   Assert(glsl_version != nullptr);
 
   // Skip any strings in front of the version code.
-  const char *glsl_version_start = glsl_version;
+  const char* glsl_version_start = glsl_version;
   while (*glsl_version_start != '\0' && (*glsl_version_start < '0' || *glsl_version_start > '9'))
     glsl_version_start++;
 
@@ -36,10 +36,13 @@ void GPU_HW_ShaderGen::SetGLSLVersionString() {
   if (std::sscanf(glsl_version_start, "%d.%d", &major_version, &minor_version) == 2)
   {
     // Cap at GLSL 3.3, we're not using anything newer for now.
-    if (!m_glsl_es && major_version >= 4) {
+    if (!m_glsl_es && major_version >= 4)
+    {
       major_version = 3;
       minor_version = 30;
-    } else if (m_glsl_es && (major_version > 3 || minor_version > 20)) {
+    }
+    else if (m_glsl_es && (major_version > 3 || minor_version > 20))
+    {
       major_version = 3;
       minor_version = 20;
     }
@@ -47,17 +50,17 @@ void GPU_HW_ShaderGen::SetGLSLVersionString() {
   else
   {
     Log_ErrorPrintf("Invalid GLSL version string: '%s' ('%s')", glsl_version, glsl_version_start);
-    if (m_glsl_es) {
+    if (m_glsl_es)
+    {
       major_version = 3;
       minor_version = 0;
     }
     m_glsl_version_string = m_glsl_es ? "300" : "130";
   }
 
-
   char buf[128];
   std::snprintf(buf, sizeof(buf), "#version %d%02d %s", major_version, minor_version,
-          (!m_glsl_es && major_version >= 3 && minor_version >= 3) ? "core" : (m_glsl_es ? "es" : ""));
+                (!m_glsl_es && major_version >= 3 && minor_version >= 3) ? "core" : (m_glsl_es ? "es" : ""));
   m_glsl_version_string = buf;
 }
 
@@ -168,15 +171,23 @@ float4 RGBA5551ToRGBA8(uint v)
 
 void GPU_HW_ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members)
 {
-  if (m_glsl)
-    ss << "layout(std140) uniform UBOBlock\n";
+  if (m_glsl_es)
+  {
+    for (const char* member : members)
+      ss << "uniform " << member << ";\n";
+  }
   else
-    ss << "cbuffer UBOBlock : register(b0)\n";
+  {
+    if (m_glsl)
+      ss << "layout(std140) uniform UBOBlock\n";
+    else
+      ss << "cbuffer UBOBlock : register(b0)\n";
 
-  ss << "{\n";
-  for (const char* member : members)
-    ss << member << ";\n";
-  ss << "};\n\n";
+    ss << "{\n";
+    for (const char* member : members)
+      ss << member << ";\n";
+    ss << "};\n\n";
+  }
 }
 
 void GPU_HW_ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 index)

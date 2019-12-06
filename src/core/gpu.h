@@ -136,6 +136,9 @@ public:
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 
+  // gpu_hw_opengl_es.cpp
+  static std::unique_ptr<GPU> CreateHardwareOpenGLESRenderer();
+
   // gpu_sw.cpp
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
