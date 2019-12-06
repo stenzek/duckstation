@@ -1093,7 +1093,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   // Read sub-q early.. this is because we're not reading sectors while seeking.
   // Fixes music looping in Spyro.
   CDImage::SubChannelQ subq;
-  if (m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&subq))
+  if (m_media->Seek(m_seek_position) && m_media->ReadSubChannelQ(&subq) && subq.IsCRCValid())
     m_last_subq = subq;
 }
 
@@ -1116,7 +1116,6 @@ void CDROM::DoSeekComplete()
   m_sector_buffer.clear();
 
   // seek and update sub-q for ReadP command
-  // TODO: Check SubQ checksum
   const auto [seek_mm, seek_ss, seek_ff] = m_seek_position.ToBCD();
   bool seek_okay = (m_last_subq.absolute_minute_bcd == seek_mm && m_last_subq.absolute_second_bcd == seek_ss &&
                     m_last_subq.absolute_frame_bcd == seek_ff);
@@ -1260,24 +1259,33 @@ void CDROM::DoSectorRead()
   if (!m_media->ReadRawSector(raw_sector))
     Panic("Sector read failed");
 
-  m_last_subq = subq;
+  if (subq.IsCRCValid())
+  {
+    m_last_subq = subq;
 
-  if (is_data_sector && m_drive_state == DriveState::Reading)
-  {
-    ProcessDataSector(raw_sector, subq);
-  }
-  else if (!is_data_sector && m_drive_state == DriveState::Playing)
-  {
-    ProcessCDDASector(raw_sector, subq);
-  }
-  else if (m_drive_state != DriveState::Reading && m_drive_state != DriveState::Playing)
-  {
-    Panic("Not reading or playing");
+    if (is_data_sector && m_drive_state == DriveState::Reading)
+    {
+      ProcessDataSector(raw_sector, subq);
+    }
+    else if (!is_data_sector && m_drive_state == DriveState::Playing)
+    {
+      ProcessCDDASector(raw_sector, subq);
+    }
+    else if (m_drive_state != DriveState::Reading && m_drive_state != DriveState::Playing)
+    {
+      Panic("Not reading or playing");
+    }
+    else
+    {
+      Log_WarningPrintf("Skipping sector %u as it is a %s sector and we're not %s", m_media->GetPositionOnDisc() - 1,
+                        is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
+    }
   }
   else
   {
-    Log_WarningPrintf("Skipping sector %u as it is a %s sector and we're not %s", m_media->GetPositionOnDisc() - 1,
-                      is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
+    const CDImage::Position pos(CDImage::Position::FromLBA(m_media->GetPositionOnDisc() - 1));
+    Log_DevPrintf("Skipping sector %u [%02u:%02u:%02u] due to invalid subchannel Q", m_media->GetPositionOnDisc() - 1,
+                  pos.minute, pos.second, pos.frame);
   }
 
   m_drive_remaining_ticks += GetTicksForRead();
