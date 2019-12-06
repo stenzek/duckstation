@@ -1,6 +1,6 @@
 #pragma once
-#include "glad.h"
 #include "../types.h"
+#include "glad.h"
 #include <string_view>
 #include <vector>
 
@@ -15,6 +15,7 @@ public:
   static void ResetLastProgram();
 
   bool IsVaild() const { return m_program_id != 0; }
+  bool IsBound() const { return s_last_program_id == m_program_id; }
 
   bool Compile(const std::string_view vertex_shader, const std::string_view fragment_shader);
 
@@ -78,6 +79,8 @@ public:
   void BindUniformBlock(const char* name, u32 index);
 
 private:
+  static u32 s_last_program_id;
+
   GLuint m_program_id = 0;
   GLuint m_vertex_shader_id = 0;
   GLuint m_fragment_shader_id = 0;

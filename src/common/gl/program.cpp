@@ -5,10 +5,10 @@
 #include <fstream>
 Log_SetChannel(GL);
 
-static u32 s_next_bad_shader_id = 1;
-static GLuint s_last_program_id = 0;
-
 namespace GL {
+
+GLuint Program::s_last_program_id = 0;
+static GLuint s_next_bad_shader_id = 1;
 
 Program::Program() = default;
 
