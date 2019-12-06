@@ -267,7 +267,7 @@ bool OpenGLHostDisplay::CreateGLContext()
     return false;
   }
 
-#if 1
+#if 0
   if (GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
