@@ -243,7 +243,8 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
   if (!index)
     return false;
 
-  const u32 index_offset = index->start_lba_on_disc - lba;;
+  const u32 index_offset = index->start_lba_on_disc - lba;
+  ;
   GenerateSubChannelQ(subq, index, index_offset);
   return true;
 }
@@ -251,8 +252,8 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
 void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 index_offset)
 {
   subq->control.bits = index->control.bits;
-  subq->track_number_bcd = DecimalToBCD(index->track_number);
-  subq->index_number_bcd = DecimalToBCD(index->index_number);
+  subq->track_number_bcd = BinaryToBCD(index->track_number);
+  subq->index_number_bcd = BinaryToBCD(index->index_number);
 
   const Position relative_position =
     Position::FromLBA(std::abs(static_cast<s32>(index->start_lba_in_track + index_offset)));
@@ -261,10 +262,10 @@ void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 ind
 
   const Position absolute_position = Position::FromLBA(index->start_lba_on_disc + index_offset);
   std::tie(subq->absolute_minute_bcd, subq->absolute_second_bcd, subq->absolute_frame_bcd) = absolute_position.ToBCD();
-  subq->crc = subq->ComputeCRC();
+  subq->crc = SubChannelQ::ComputeCRC(subq->data);
 }
 
-u16 CDImage::SubChannelQ::ComputeCRC() const
+u16 CDImage::SubChannelQ::ComputeCRC(const u8* data)
 {
   static constexpr std::array<u16, 256> crc16_table = {
     {0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD,
@@ -292,4 +293,9 @@ u16 CDImage::SubChannelQ::ComputeCRC() const
     value = crc16_table[(value >> 8) ^ data[i]] ^ (value << 8);
 
   return ~(value >> 8) | (~(value) << 8);
+}
+
+bool CDImage::SubChannelQ::IsCRCValid() const
+{
+  return crc == ComputeCRC(data);
 }

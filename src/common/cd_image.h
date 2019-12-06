@@ -64,7 +64,7 @@ public:
 
     static constexpr Position FromBCD(u8 minute, u8 second, u8 frame)
     {
-      return Position{BCDToDecimal(minute), BCDToDecimal(second), BCDToDecimal(frame)};
+      return Position{PackedBCDToBinary(minute), PackedBCDToBinary(second), PackedBCDToBinary(frame)};
     }
 
     static constexpr Position FromLBA(LBA lba)
@@ -87,7 +87,7 @@ public:
 
     constexpr std::tuple<u8, u8, u8> ToBCD() const
     {
-      return std::make_tuple<u8, u8, u8>(DecimalToBCD(minute), DecimalToBCD(second), DecimalToBCD(frame));
+      return std::make_tuple<u8, u8, u8>(BinaryToBCD(minute), BinaryToBCD(second), BinaryToBCD(frame));
     }
 
     Position operator+(const Position& rhs) { return FromLBA(ToLBA() + rhs.ToLBA()); }
@@ -143,7 +143,9 @@ public:
 
     u8 data[SUBCHANNEL_BYTES_PER_FRAME];
 
-    u16 ComputeCRC() const;
+    static u16 ComputeCRC(const u8* data);
+
+    bool IsCRCValid() const;
 
     SubChannelQ& operator=(const SubChannelQ& q)
     {

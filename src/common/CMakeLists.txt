@@ -6,6 +6,8 @@ add_library(common
   cd_image.h
   cd_image_bin.cpp
   cd_image_cue.cpp
+  cd_subchannel_replacement.cpp
+  cd_subchannel_replacement.h
   cd_xa.cpp
   cd_xa.h
   gl/program.cpp

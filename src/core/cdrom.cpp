@@ -696,9 +696,9 @@ void CDROM::ExecuteCommand()
     case Command::Setloc:
     {
       // TODO: Verify parameter count
-      m_setloc_position.minute = BCDToDecimal(m_param_fifo.Peek(0));
-      m_setloc_position.second = BCDToDecimal(m_param_fifo.Peek(1));
-      m_setloc_position.frame = BCDToDecimal(m_param_fifo.Peek(2));
+      m_setloc_position.minute = PackedBCDToBinary(m_param_fifo.Peek(0));
+      m_setloc_position.second = PackedBCDToBinary(m_param_fifo.Peek(1));
+      m_setloc_position.frame = PackedBCDToBinary(m_param_fifo.Peek(2));
       m_setloc_pending = true;
       Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
                       ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
@@ -890,8 +890,8 @@ void CDROM::ExecuteCommand()
       if (m_media)
       {
         m_response_fifo.Push(m_secondary_status.bits);
-        m_response_fifo.Push(DecimalToBCD(Truncate8(m_media->GetTrackNumber())));
-        m_response_fifo.Push(DecimalToBCD(Truncate8(m_media->GetTrackCount())));
+        m_response_fifo.Push(BinaryToBCD(Truncate8(m_media->GetTrackNumber())));
+        m_response_fifo.Push(BinaryToBCD(Truncate8(m_media->GetTrackCount())));
         SetInterrupt(Interrupt::ACK);
       }
       else
@@ -907,7 +907,7 @@ void CDROM::ExecuteCommand()
     {
       Log_DebugPrintf("CDROM GetTD command");
       Assert(m_param_fifo.GetSize() >= 1);
-      const u8 track = BCDToDecimal(m_param_fifo.Peek());
+      const u8 track = PackedBCDToBinary(m_param_fifo.Peek());
 
       if (!m_media)
       {
@@ -926,8 +926,8 @@ void CDROM::ExecuteCommand()
           pos = m_media->GetTrackStartMSFPosition(track);
 
         m_response_fifo.Push(m_secondary_status.bits);
-        m_response_fifo.Push(DecimalToBCD(Truncate8(pos.minute)));
-        m_response_fifo.Push(DecimalToBCD(Truncate8(pos.second)));
+        m_response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
+        m_response_fifo.Push(BinaryToBCD(Truncate8(pos.second)));
         SetInterrupt(Interrupt::ACK);
       }
 
@@ -1043,10 +1043,10 @@ void CDROM::BeginPlaying(u8 track_bcd)
     if (track_bcd > m_media->GetTrackCount())
     {
       // restart current track
-      track_bcd = DecimalToBCD(Truncate8(m_media->GetTrackNumber()));
+      track_bcd = BinaryToBCD(Truncate8(m_media->GetTrackNumber()));
     }
 
-    m_setloc_position = m_media->GetTrackStartMSFPosition(BCDToDecimal(track_bcd));
+    m_setloc_position = m_media->GetTrackStartMSFPosition(PackedBCDToBinary(track_bcd));
     m_setloc_pending = true;
   }
 

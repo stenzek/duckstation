@@ -1,5 +1,6 @@
 #include "YBaseLib/Log.h"
 #include "cd_image.h"
+#include "cd_subchannel_replacement.h"
 Log_SetChannel(CDImageBin);
 
 class CDImageBin : public CDImage
@@ -10,9 +11,24 @@ public:
 
   bool Open(const char* filename);
 
+  bool ReadSubChannelQ(SubChannelQ* subq) override;
+
 private:
   std::FILE* m_fp = nullptr;
+
+  CDSubChannelReplacement m_sbi;
 };
+
+static std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
+{
+  std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string::npos)
+    return std::string(path);
+
+  std::string ret(path, 0, pos + 1);
+  ret.append(new_extension);
+  return ret;
+}
 
 CDImageBin::CDImageBin() = default;
 
@@ -77,7 +93,17 @@ bool CDImageBin::Open(const char* filename)
   m_tracks.push_back(
     Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count, mode, control});
 
+  m_sbi.LoadSBI(ReplaceExtension(filename, "sbi").c_str());
+
   return Seek(1, Position{0, 0, 0});
+}
+
+bool CDImageBin::ReadSubChannelQ(SubChannelQ* subq)
+{
+  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq->data))
+    return true;
+
+  return CDImage::ReadSubChannelQ(subq);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename)
