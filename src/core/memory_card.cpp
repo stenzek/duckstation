@@ -256,8 +256,8 @@ std::shared_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view fi
 
 u8 MemoryCard::ChecksumFrame(const u8* fptr)
 {
-  u8 value = fptr[0];
-  for (u32 i = 0; i < SECTOR_SIZE; i++)
+  u8 value = 0;
+  for (u32 i = 0; i < SECTOR_SIZE - 1; i++)
     value ^= fptr[i];
 
   return value;
@@ -274,7 +274,7 @@ void MemoryCard::Format()
     std::fill_n(fptr, SECTOR_SIZE, u8(0));
     fptr[0] = 'M';
     fptr[1] = 'C';
-    fptr[0x7F] = ChecksumFrame(&m_data[0]);
+    fptr[0x7F] = ChecksumFrame(fptr);
   }
 
   // directory
@@ -283,6 +283,8 @@ void MemoryCard::Format()
     u8* fptr = GetSectorPtr(frame);
     std::fill_n(fptr, SECTOR_SIZE, u8(0));
     fptr[0] = 0xA0;                   // free
+    fptr[8] = 0xFF;                   // pointer to next file
+    fptr[9] = 0xFF;                   // pointer to next file
     fptr[0x7F] = ChecksumFrame(fptr); // checksum
   }
 
@@ -295,6 +297,8 @@ void MemoryCard::Format()
     fptr[1] = 0xFF;
     fptr[2] = 0xFF;
     fptr[3] = 0xFF;
+    fptr[8] = 0xFF;                   // pointer to next file
+    fptr[9] = 0xFF;                   // pointer to next file
     fptr[0x7F] = ChecksumFrame(fptr); // checksum
   }
 
@@ -302,14 +306,14 @@ void MemoryCard::Format()
   for (u32 frame = 36; frame < 56; frame++)
   {
     u8* fptr = GetSectorPtr(frame);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0xFF));
+    std::fill_n(fptr, SECTOR_SIZE, u8(0x00));
   }
 
   // unused frames
   for (u32 frame = 56; frame < 63; frame++)
   {
     u8* fptr = GetSectorPtr(frame);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0xFF));
+    std::fill_n(fptr, SECTOR_SIZE, u8(0x00));
   }
 
   // write test frame
