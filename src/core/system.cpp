@@ -17,6 +17,7 @@
 #include "memory_card.h"
 #include "pad.h"
 #include "pad_device.h"
+#include "sio.h"
 #include "spu.h"
 #include "timers.h"
 #include <cstdio>
@@ -35,6 +36,7 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_timers = std::make_unique<Timers>();
   m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
+  m_sio = std::make_unique<SIO>();
   m_region = host_interface->GetSettings().region;
   m_cpu_execution_mode = host_interface->GetSettings().cpu_execution_mode;
 }
@@ -176,7 +178,7 @@ void System::InitializeComponents()
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
   m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(),
-                    m_cdrom.get(), m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get());
+                    m_cdrom.get(), m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get(), m_sio.get());
 
   m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get(),
                     m_mdec.get());
@@ -292,6 +294,7 @@ void System::Reset()
   m_timers->Reset();
   m_spu->Reset();
   m_mdec->Reset();
+  m_sio->Reset();
   m_frame_number = 1;
   m_internal_frame_number = 0;
   m_global_tick_counter = 0;

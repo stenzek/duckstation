@@ -23,6 +23,7 @@ class PadDevice;
 class Timers;
 class SPU;
 class MDEC;
+class SIO;
 
 class System
 {
@@ -106,6 +107,7 @@ private:
   std::unique_ptr<Timers> m_timers;
   std::unique_ptr<SPU> m_spu;
   std::unique_ptr<MDEC> m_mdec;
+  std::unique_ptr<SIO> m_sio;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;
   u32 m_frame_number = 1;

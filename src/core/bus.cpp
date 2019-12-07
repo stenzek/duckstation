@@ -13,6 +13,7 @@
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
+#include "sio.h"
 #include "spu.h"
 #include "timers.h"
 #include <cstdio>
@@ -35,7 +36,7 @@ Bus::~Bus() = default;
 
 void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
                      InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers,
-                     SPU* spu, MDEC* mdec)
+                     SPU* spu, MDEC* mdec, SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
@@ -47,6 +48,7 @@ void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
   m_timers = timers;
   m_spu = spu;
   m_mdec = mdec;
+  m_sio = sio;
 }
 
 void Bus::Reset()
@@ -423,16 +425,12 @@ void Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadSIO(MemoryAccessSize size, u32 offset)
 {
-  Log_ErrorPrintf("SIO Read 0x%08X", offset);
-  if (offset == 0x04)
-    return 0x5;
-  else
-    return 0;
+  return m_sio->ReadRegister(offset);
 }
 
 void Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
 {
-  Log_ErrorPrintf("SIO Write 0x%08X <- 0x%08X", offset, value);
+  m_sio->WriteRegister(offset, value);
 }
 
 u32 Bus::DoReadCDROM(MemoryAccessSize size, u32 offset)

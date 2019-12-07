@@ -22,6 +22,7 @@ class Pad;
 class Timers;
 class SPU;
 class MDEC;
+class SIO;
 class System;
 
 class Bus
@@ -31,7 +32,7 @@ public:
   ~Bus();
 
   void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, InterruptController* interrupt_controller,
-                  GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu, MDEC* mdec);
+                  GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu, MDEC* mdec, SIO* sio);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -253,6 +254,7 @@ private:
   Timers* m_timers = nullptr;
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
+  SIO* m_sio = nullptr;
 
   std::array<TickCount, 3> m_exp1_access_time = {};
   std::array<TickCount, 3> m_exp2_access_time = {};

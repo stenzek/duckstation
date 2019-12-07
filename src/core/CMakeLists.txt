@@ -53,6 +53,8 @@ add_library(core
     save_state_version.h
     settings.cpp
     settings.h
+    sio.cpp
+    sio.h
     spu.cpp
     spu.h
     system.cpp
