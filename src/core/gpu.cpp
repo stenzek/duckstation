@@ -208,12 +208,7 @@ u32 GPU::ReadRegister(u32 offset)
       return ReadGPUREAD();
 
     case 0x04:
-    {
-      // Bit 31 of GPUSTAT is always clear during vblank.
-      u32 bits = m_GPUSTAT.bits;
-      bits &= ~(BoolToUInt32(m_crtc_state.in_vblank) << 31);
-      return bits;
-    }
+      return m_GPUSTAT.bits;
 
     default:
       Log_ErrorPrintf("Unhandled register read: %02X", offset);
@@ -407,10 +402,7 @@ void GPU::Execute(TickCount ticks)
       if (m_GPUSTAT.vertical_interlace)
       {
         m_GPUSTAT.interlaced_field ^= true;
-        m_crtc_state.current_scanline = BoolToUInt32(m_GPUSTAT.interlaced_field);
-
-        if (m_GPUSTAT.vertical_resolution)
-          m_GPUSTAT.drawing_even_line = m_GPUSTAT.interlaced_field;
+        m_crtc_state.current_scanline = BoolToUInt32(!m_GPUSTAT.interlaced_field);
       }
       else
       {
@@ -439,8 +431,16 @@ void GPU::Execute(TickCount ticks)
     }
 
     // alternating even line bit in 240-line mode
-    if (!m_GPUSTAT.In480iMode())
-      m_GPUSTAT.drawing_even_line = ConvertToBoolUnchecked(m_crtc_state.current_scanline & u32(1));
+    if (m_GPUSTAT.In480iMode())
+    {
+      m_GPUSTAT.drawing_even_line =
+        ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(!m_GPUSTAT.interlaced_field)) & u32(1));
+    }
+    else
+    {
+      m_GPUSTAT.drawing_even_line =
+        ConvertToBoolUnchecked(m_crtc_state.regs.Y + m_crtc_state.current_scanline & u32(1));
+    }
   }
 
   const bool new_hblank = m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start ||
