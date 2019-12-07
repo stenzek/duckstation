@@ -850,6 +850,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   }
 
   gpu_settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings.gpu_true_color);
+  gpu_settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings.gpu_texture_filtering);
   if (ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering))
   {
     m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
@@ -1180,6 +1181,7 @@ void SDLHostInterface::DrawSettingsWindow()
         }
 
         ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
+        ImGui::Checkbox("Texture Filtering", &m_settings.gpu_texture_filtering);
       }
 
       ImGui::EndTabItem();

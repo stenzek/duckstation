@@ -119,6 +119,7 @@ void GPU_HW_D3D11::UpdateSettings()
   GPU_HW::UpdateSettings();
 
   CreateFramebuffer();
+  CreateStateObjects();
   CompileShaders();
   UpdateDisplay();
 }
@@ -239,7 +240,7 @@ bool GPU_HW_D3D11::CreateBatchInputLayout()
      {"ATTR", 3, DXGI_FORMAT_R32_SINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
 
   // we need a vertex shader...
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color,
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
                              m_supports_dual_source_blend);
   ComPtr<ID3DBlob> vs_bytecode = D3D11::ShaderCompiler::CompileShader(
     D3D11::ShaderCompiler::Type::Vertex, m_device->GetFeatureLevel(), shadergen.GenerateBatchVertexShader(true), false);
@@ -265,49 +266,54 @@ bool GPU_HW_D3D11::CreateStateObjects()
   CD3D11_RASTERIZER_DESC rs_desc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
   rs_desc.CullMode = D3D11_CULL_NONE;
   rs_desc.ScissorEnable = TRUE;
-  hr = m_device->CreateRasterizerState(&rs_desc, m_cull_none_rasterizer_state.GetAddressOf());
+  hr = m_device->CreateRasterizerState(&rs_desc, m_cull_none_rasterizer_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
 
   CD3D11_DEPTH_STENCIL_DESC ds_desc = CD3D11_DEPTH_STENCIL_DESC(CD3D11_DEFAULT());
   ds_desc.DepthEnable = FALSE;
   ds_desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-  hr = m_device->CreateDepthStencilState(&ds_desc, m_depth_disabled_state.GetAddressOf());
+  hr = m_device->CreateDepthStencilState(&ds_desc, m_depth_disabled_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
 
   CD3D11_BLEND_DESC bl_desc = CD3D11_BLEND_DESC(CD3D11_DEFAULT());
-  hr = m_device->CreateBlendState(&bl_desc, m_blend_disabled_state.GetAddressOf());
+  hr = m_device->CreateBlendState(&bl_desc, m_blend_disabled_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
 
   CD3D11_SAMPLER_DESC sampler_desc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
   sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-  hr = m_device->CreateSamplerState(&sampler_desc, m_point_sampler_state.GetAddressOf());
+  hr = m_device->CreateSamplerState(&sampler_desc, m_point_sampler_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
 
   sampler_desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-  hr = m_device->CreateSamplerState(&sampler_desc, m_linear_sampler_state.GetAddressOf());
+  hr = m_device->CreateSamplerState(&sampler_desc, m_linear_sampler_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
 
-  m_batch_blend_states[static_cast<u8>(TransparencyMode::Disabled)] = m_blend_disabled_state;
-
-  for (u8 transparency_mode = 0; transparency_mode < 4; transparency_mode++)
+  for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
   {
-    bl_desc.RenderTarget[0].BlendEnable = TRUE;
-    bl_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-    bl_desc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC1_ALPHA;
-    bl_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    bl_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    bl_desc.RenderTarget[0].BlendOp =
-      (transparency_mode == static_cast<u8>(TransparencyMode::BackgroundMinusForeground)) ?
-        D3D11_BLEND_OP_REV_SUBTRACT :
-        D3D11_BLEND_OP_ADD;
-    bl_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    if (transparency_mode == static_cast<u8>(TransparencyMode::Disabled) && !m_texture_filtering)
+    {
+      bl_desc = CD3D11_BLEND_DESC(CD3D11_DEFAULT());
+    }
+    else
+    {
+      bl_desc.RenderTarget[0].BlendEnable = TRUE;
+      bl_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+      bl_desc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC1_ALPHA;
+      bl_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+      bl_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+      bl_desc.RenderTarget[0].BlendOp =
+        (transparency_mode == static_cast<u8>(TransparencyMode::BackgroundMinusForeground)) ?
+          D3D11_BLEND_OP_REV_SUBTRACT :
+          D3D11_BLEND_OP_ADD;
+      bl_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    }
 
-    hr = m_device->CreateBlendState(&bl_desc, m_batch_blend_states[transparency_mode].GetAddressOf());
+    hr = m_device->CreateBlendState(&bl_desc, m_batch_blend_states[transparency_mode].ReleaseAndGetAddressOf());
     if (FAILED(hr))
       return false;
   }
@@ -317,8 +323,8 @@ bool GPU_HW_D3D11::CreateStateObjects()
 
 bool GPU_HW_D3D11::CompileShaders()
 {
-  const bool debug = true;
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color,
+  const bool debug = false;
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
                              m_supports_dual_source_blend);
 
   m_screen_quad_vertex_shader = D3D11::ShaderCompiler::CompileAndCreateVertexShader(

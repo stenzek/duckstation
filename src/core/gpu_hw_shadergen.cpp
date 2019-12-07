@@ -6,10 +6,10 @@
 Log_SetChannel(GPU_HW_ShaderGen);
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
-                                   bool supports_dual_source_blend)
+                                   bool texture_filtering, bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
-    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_glsl_es(render_api == HostDisplay::RenderAPI::OpenGLES),
-    m_supports_dual_source_blend(supports_dual_source_blend)
+    m_texture_filering(texture_filtering), m_glsl(render_api != HostDisplay::RenderAPI::D3D11),
+    m_glsl_es(render_api == HostDisplay::RenderAPI::OpenGLES), m_supports_dual_source_blend(supports_dual_source_blend)
 {
   if (m_glsl)
     SetGLSLVersionString();
@@ -98,8 +98,12 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define uint3 uvec3\n";
     ss << "#define uint4 uvec4\n";
     ss << "#define nointerpolation flat\n";
+    ss << "#define frac fract\n";
+    ss << "#define lerp mix\n";
 
     ss << "#define CONSTANT const\n";
+    ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
+    ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -109,6 +113,8 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
   {
     ss << "#define HLSL 1\n";
     ss << "#define CONSTANT static const\n";
+    ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
+    ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
@@ -369,7 +375,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   v_col0 = a_col0;
   #if TEXTURED
-    v_tex0 = float2(float(a_texcoord & 0xFFFF), float(a_texcoord >> 16)) / float2(255.0, 255.0);
+    v_tex0 = float2(float(a_texcoord & 0xFFFF), float(a_texcoord >> 16));
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
@@ -389,8 +395,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   const GPU::TextureMode actual_texture_mode = texture_mode & ~GPU::TextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPU::TextureMode::RawTextureBit) == GPU::TextureMode::RawTextureBit;
   const bool textured = (texture_mode != GPU::TextureMode::Disabled);
-  const bool use_dual_source =
-    m_supports_dual_source_blend && transparency != GPU_HW::BatchRenderMode::TransparencyDisabled;
+  const bool use_dual_source = m_supports_dual_source_blend &&
+                               (transparency != GPU_HW::BatchRenderMode::TransparencyDisabled || m_texture_filering);
 
   std::stringstream ss;
   WriteHeader(ss);
@@ -406,6 +412,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
+  DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filering);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
 
   WriteCommonFunctions(ss);
@@ -442,27 +449,17 @@ int3 TruncateTo15Bit(int3 icol)
 }
 
 #if TEXTURED
-int2 ApplyNativeTextureWindow(int2 coords)
+CONSTANT float4 TRANSPARENT_PIXEL_COLOR = float4(0.0, 0.0, 0.0, 0.0);
+
+int2 ApplyTextureWindow(int2 coords)
 {
   uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u);
   uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u);
   return int2(int(x), int(y));
 }  
 
-int2 ApplyTextureWindow(int2 coords)
+float4 SampleFromVRAM(int4 texpage, int2 icoord)
 {
-  if (RESOLUTION_SCALE == 1)
-    return ApplyNativeTextureWindow(coords);
-
-  int2 downscaled_coords = coords / int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  int2 coords_offset = coords % int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  return (ApplyNativeTextureWindow(downscaled_coords) * int2(RESOLUTION_SCALE, RESOLUTION_SCALE)) + coords_offset;
-}
-
-int4 SampleFromVRAM(int4 texpage, float2 coord)
-{
-  // from 0..1 to 0..255
-  int2 icoord = int2(coord * float2(float(255 * RESOLUTION_SCALE), float(255 * RESOLUTION_SCALE)));
   icoord = ApplyTextureWindow(icoord);
 
   // adjust for tightly packed palette formats
@@ -474,7 +471,7 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
   #endif
 
   // fixup coords
-  int2 vicoord = int2(texpage.x + index_coord.x, fixYCoord(texpage.y + index_coord.y));
+  int2 vicoord = int2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
 
   // load colour/palette
   float4 color = LOAD_TEXTURE(samp0, vicoord, 0);
@@ -482,11 +479,11 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
   // apply palette
   #if PALETTE
     #if PALETTE_4_BIT
-      int subpixel = int(icoord.x / RESOLUTION_SCALE) & 3;
+      int subpixel = int(icoord.x) & 3;
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 4)) & 0x0Fu);
     #elif PALETTE_8_BIT
-      int subpixel = int(icoord.x / RESOLUTION_SCALE) & 1;
+      int subpixel = int(icoord.x) & 1;
       uint vram_value = RGBA8ToRGBA5551(color);
       int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
     #endif
@@ -494,7 +491,7 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
     color = LOAD_TEXTURE(samp0, palette_icoord, 0);
   #endif
 
-  return int4(color * float4(255.0, 255.0, 255.0, 255.0));
+  return color;
 }
 #endif
 )";
@@ -513,31 +510,55 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
   int3 vertcol = int3(v_col0.rgb * float3(255.0, 255.0, 255.0));
 
   bool semitransparent;
-  bool new_mask_bit;
   int3 icolor;
+  float ialpha;
 
   #if TEXTURED
-    int4 texcol = SampleFromVRAM(v_texpage, v_tex0);
-    #if GLSL
-      bool transparent = (texcol == int4(0.0, 0.0, 0.0, 0.0));
-    #else
-      bool transparent = (all(texcol == int4(0.0, 0.0, 0.0, 0.0)));
-    #endif
-    if (transparent)
-      discard;
+    #if TEXTURE_FILTERING
+      int2 icoord = int2(v_tex0);
+      float2 pcoord = frac(v_tex0) - float2(0.5, 0.5);
+      float2 poffs = sign(pcoord);
+      pcoord = abs(pcoord);
 
-    // Grab semitransparent bit from the texture color.
-    semitransparent = (texcol.a != 0);
+      // TODO: Clamp to page
+      float4 tl = SampleFromVRAM(v_texpage, int2(v_tex0));
+      float4 tr = SampleFromVRAM(v_texpage, int2(min(v_tex0.x + poffs.x, 255.0), v_tex0.y));
+      float4 bl = SampleFromVRAM(v_texpage, int2(v_tex0.x, min(v_tex0.y + poffs.y, 255.0)));
+      float4 br = SampleFromVRAM(v_texpage, int2(min(v_tex0.x + poffs.x, 255.0), min(v_tex0.y + poffs.y, 255.0)));
+
+      // Compute alpha from how many texels aren't pixel color 0000h.
+      float tl_a = float(VECTOR_NEQ(tl, TRANSPARENT_PIXEL_COLOR));
+      float tr_a = float(VECTOR_NEQ(tr, TRANSPARENT_PIXEL_COLOR));
+      float bl_a = float(VECTOR_NEQ(bl, TRANSPARENT_PIXEL_COLOR));
+      float br_a = float(VECTOR_NEQ(br, TRANSPARENT_PIXEL_COLOR));
+
+      // Bilinearly interpolate.
+      float4 texcol = lerp(lerp(tl, tr, pcoord.x), lerp(bl, br, pcoord.x), pcoord.y);
+      ialpha = lerp(lerp(tl_a, tr_a, pcoord.x), lerp(bl_a, br_a, pcoord.x), pcoord.y);
+      if (ialpha == 0.0)
+        discard;
+
+      texcol.rgb /= float3(ialpha, ialpha, ialpha);
+      semitransparent = (texcol.a != 0.0);
+    #else
+      float4 texcol = SampleFromVRAM(v_texpage, int2(v_tex0));
+      if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
+        discard;
+
+      semitransparent = (texcol.a != 0.0);
+      ialpha = 1.0;
+    #endif
 
     #if RAW_TEXTURE
-      icolor = texcol.rgb;
+      icolor = int3(texcol.rgb * float3(255.0, 255.0, 255.0));
     #else
-      icolor = (vertcol * texcol.rgb) >> 7;
+      icolor = (vertcol * int3(texcol.rgb * float3(255.0, 255.0, 255.0))) >> 7;
     #endif
   #else
     // All pixels are semitransparent for untextured polygons.
     semitransparent = true;
     icolor = vertcol;
+    ialpha = 1.0;
   #endif
 
   // Apply dithering
@@ -565,10 +586,10 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
       #endif
 
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color * u_src_alpha_factor, output_alpha);
-        o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor);
+        o_col0 = float4(color * (u_src_alpha_factor * ialpha), output_alpha);
+        o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
       #else
-        o_col0 = float4(color * u_src_alpha_factor, u_dst_alpha_factor);
+        o_col0 = float4(color * (u_src_alpha_factor * ialpha), u_dst_alpha_factor / ialpha);
       #endif
     }
     else
@@ -578,18 +599,18 @@ int4 SampleFromVRAM(int4 texpage, float2 coord)
       #endif
 
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color, output_alpha);
+        o_col0 = float4(color * ialpha, output_alpha);
         o_col1 = float4(0.0, 0.0, 0.0, 0.0);
       #else
-        o_col0 = float4(color, 0.0);
+        o_col0 = float4(color * ialpha, 1.0 - ialpha);
       #endif
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
-    o_col0 = float4(color, output_alpha);
+    o_col0 = float4(color * ialpha, output_alpha);
 
     #if USE_DUAL_SOURCE
-      o_col1 = float4(0.0, 0.0, 0.0, 0.0);
+      o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
     #endif
   #endif
 }

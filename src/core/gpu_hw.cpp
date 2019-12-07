@@ -24,6 +24,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Int
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
   m_system->GetSettings().max_gpu_resolution_scale = m_max_resolution_scale;
   m_true_color = m_system->GetSettings().gpu_true_color;
+  m_texture_filtering = m_system->GetSettings().gpu_texture_filtering;
   return true;
 }
 
@@ -58,6 +59,7 @@ void GPU_HW::UpdateSettings()
 
   m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
   m_true_color = m_system->GetSettings().gpu_true_color;
+  m_texture_filtering = m_system->GetSettings().gpu_texture_filtering;
 }
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)

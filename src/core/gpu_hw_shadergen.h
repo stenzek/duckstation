@@ -8,7 +8,7 @@ class GPU_HW_ShaderGen
 {
 public:
   GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
-                   bool supports_dual_source_belnd);
+                   bool texture_filtering, bool supports_dual_source_belnd);
   ~GPU_HW_ShaderGen();
 
   std::string GenerateBatchVertexShader(bool textured);
@@ -25,6 +25,7 @@ public:
   HostDisplay::RenderAPI m_render_api;
   u32 m_resolution_scale;
   bool m_true_color;
+  bool m_texture_filering;
   bool m_glsl;
   bool m_glsl_es;
   bool m_supports_dual_source_blend;

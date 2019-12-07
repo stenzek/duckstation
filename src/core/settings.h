@@ -20,6 +20,7 @@ struct Settings
   u32 gpu_resolution_scale = 1;
   mutable u32 max_gpu_resolution_scale = 1;
   bool gpu_true_color = false;
+  bool gpu_texture_filtering = false;
   bool display_linear_filtering = true;
   bool display_fullscreen = false;
 

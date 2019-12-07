@@ -57,6 +57,7 @@ void Settings::Load(const char* filename)
   gpu_renderer = ParseRendererName(ini.GetValue("GPU", "Renderer", "OpenGL")).value_or(GPURenderer::HardwareOpenGL);
   gpu_resolution_scale = static_cast<u32>(ini.GetLongValue("GPU", "ResolutionScale", 1));
   gpu_true_color = ini.GetBoolValue("GPU", "TrueColor", false);
+  gpu_texture_filtering = ini.GetBoolValue("GPU", "TextureFiltering", false);
 
   display_linear_filtering = ini.GetBoolValue("Display", "LinearFiltering", true);
 
@@ -89,6 +90,7 @@ bool Settings::Save(const char* filename) const
   ini.SetLongValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   ini.SetBoolValue("GPU", "VSync", video_sync_enabled);
   ini.SetBoolValue("GPU", "TrueColor", gpu_true_color);
+  ini.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
 
   ini.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
 

@@ -265,7 +265,7 @@ void GPU_HW_OpenGL::CreateTextureBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color,
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
                              m_supports_dual_source_blend);
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
