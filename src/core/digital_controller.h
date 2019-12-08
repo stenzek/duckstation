@@ -1,6 +1,8 @@
 #pragma once
 #include "pad_device.h"
 #include <memory>
+#include <optional>
+#include <string_view>
 
 class DigitalController final : public PadDevice
 {
@@ -29,6 +31,7 @@ public:
   ~DigitalController() override;
 
   static std::shared_ptr<DigitalController> Create();
+  static std::optional<s32> GetButtonCodeByName(std::string_view button_name);
 
   void SetButtonState(Button button, bool pressed);
 
