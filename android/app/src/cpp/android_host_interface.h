@@ -2,12 +2,16 @@
 #include "YBaseLib/Event.h"
 #include "YBaseLib/Timer.h"
 #include "core/host_interface.h"
+#include <array>
 #include <atomic>
 #include <functional>
 #include <jni.h>
+#include <memory>
 #include <thread>
 
 struct ANativeWindow;
+
+class Controller;
 
 class AndroidHostInterface final : public HostInterface
 {
@@ -26,7 +30,15 @@ public:
 
   void SurfaceChanged(ANativeWindow* window, int format, int width, int height);
 
+  void SetControllerType(u32 index, std::string_view type_name);
+  void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
+
 private:
+  enum : u32
+  {
+    NUM_CONTROLLERS = 2
+  };
+
   void EmulationThreadEntryPoint(ANativeWindow* initial_surface, std::string initial_filename,
                                  std::string initial_state_filename);
 
@@ -35,6 +47,8 @@ private:
   void DrawImGui();
 
   void DrawFPSWindow();
+
+  void ConnectControllers() override;
 
   jobject m_java_object = {};
 
@@ -45,4 +59,7 @@ private:
   std::atomic_bool m_emulation_thread_stop_request{false};
   std::atomic_bool m_emulation_thread_start_result{false};
   Event m_emulation_thread_started;
+
+  std::array<std::string, NUM_CONTROLLERS> m_controller_type_names;
+  std::array<std::shared_ptr<Controller>, NUM_CONTROLLERS> m_controllers;
 };

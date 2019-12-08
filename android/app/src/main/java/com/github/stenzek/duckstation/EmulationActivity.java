@@ -13,6 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 
 import androidx.core.app.NavUtils;
 
@@ -25,6 +26,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
      * Interface to the native emulator core
      */
     AndroidHostInterface mHostInterface;
+
+    /**
+     * Touchscreen controller overlay
+     */
+    TouchscreenControllerView mTouchscreenController;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -153,6 +159,12 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         mHostInterface = AndroidHostInterface.create();
         if (mHostInterface == null)
             throw new InstantiationError("Failed to create host interface");
+
+        // Create touchscreen controller.
+        FrameLayout activityLayout = findViewById(R.id.frameLayout);
+        mTouchscreenController = new TouchscreenControllerView(this);
+        activityLayout.addView(mTouchscreenController);
+        mTouchscreenController.init(0, "DigitalController", mHostInterface);
     }
 
     @Override

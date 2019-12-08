@@ -4,6 +4,7 @@
 #include "YBaseLib/String.h"
 #include "android_audio_stream.h"
 #include "android_gles_host_display.h"
+#include "core/controller.h"
 #include "core/gpu.h"
 #include "core/game_list.h"
 #include "core/host_display.h"
@@ -330,6 +331,51 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* window, int format, int
   m_display->ChangeRenderWindow(window);
 }
 
+void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_name)
+{
+  if (!IsEmulationThreadRunning())
+  {
+    m_controller_type_names[index] = type_name;
+    return;
+  }
+
+  std::string type_name_copy(type_name);
+  RunOnEmulationThread([this, index, type_name_copy]() {
+    Log_InfoPrintf("Changing controller slot %d to %s", index, type_name_copy.c_str());
+    m_controller_type_names[index] = std::move(type_name_copy);
+
+    m_controllers[index] = Controller::Create(m_controller_type_names[index]);
+    m_system->SetController(index, m_controllers[index]);
+  }, false);
+}
+
+void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, bool pressed)
+{
+  if (!IsEmulationThreadRunning())
+    return;
+
+  RunOnEmulationThread([this, index, button_code, pressed]() {
+    if (!m_controllers[index])
+      return;
+
+    m_controllers[index]->SetButtonState(button_code, pressed);
+  }, false);
+}
+
+void AndroidHostInterface::ConnectControllers()
+{
+  for (u32 i = 0; i < NUM_CONTROLLERS; i++)
+  {
+    if (m_controller_type_names[i].empty())
+      continue;
+
+    Log_InfoPrintf("Connecting controller '%s' to port %u", m_controller_type_names[i].c_str(), i);
+    m_controllers[i] = Controller::Create(m_controller_type_names[i]);
+    if (m_controllers[i])
+      m_system->SetController(i, m_controllers[i]);
+  }
+}
+
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
   Log::GetInstance().SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
@@ -431,6 +477,22 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
   AndroidHostInterface* hi = GetNativeClass(env, obj);
   hi->RunOnEmulationThread(
     [hi, native_surface, format, width, height]() { hi->SurfaceChanged(native_surface, format, width, height); }, true);
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerType, jobject obj, jint index, jstring controller_type)
+{
+  GetNativeClass(env, obj)->SetControllerType(index, JStringToString(env, controller_type));
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobject obj, jint index, jint button_code, jboolean pressed)
+{
+  GetNativeClass(env, obj)->SetControllerButtonState(index, button_code, pressed);
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type, jstring button_name)
+{
+  std::optional<s32> code = Controller::GetButtonCodeByName(JStringToString(env, controller_type), JStringToString(env, button_name));
+  return code.value_or(-1);
 }
 
 DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path, jarray j_search_directories, jboolean search_recursively)
