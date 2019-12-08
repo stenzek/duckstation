@@ -24,7 +24,8 @@ public:
     Triangle = 12,
     Circle = 13,
     Cross = 14,
-    Square = 15
+    Square = 15,
+    Count
   };
 
   DigitalController();
@@ -34,6 +35,7 @@ public:
   static std::optional<s32> GetButtonCodeByName(std::string_view button_name);
 
   void SetButtonState(Button button, bool pressed);
+  void SetButtonState(s32 button_code, bool pressed);
 
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;

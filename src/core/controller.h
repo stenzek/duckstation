@@ -20,6 +20,9 @@ public:
   // Returns the value of ACK, as well as filling out_data.
   virtual bool Transfer(const u8 data_in, u8* data_out);
 
+  /// Changes the specified button state.
+  virtual void SetButtonState(s32 button_code, bool pressed);
+
   /// Creates a new controller of the specified type.
   static std::shared_ptr<Controller> Create(std::string_view type_name);
 

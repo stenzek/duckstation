@@ -14,6 +14,14 @@ void DigitalController::SetButtonState(Button button, bool pressed)
     m_button_state |= u16(1) << static_cast<u8>(button);
 }
 
+void DigitalController::SetButtonState(s32 button_code, bool pressed)
+{
+  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
+    return;
+
+  SetButtonState(static_cast<Button>(button_code), pressed);
+}
+
 void DigitalController::ResetTransferState()
 {
   m_transfer_state = TransferState::Idle;

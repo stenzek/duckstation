@@ -21,6 +21,8 @@ bool Controller::Transfer(const u8 data_in, u8* data_out)
   return false;
 }
 
+void Controller::SetButtonState(s32 button_code, bool pressed) {}
+
 std::shared_ptr<Controller> Controller::Create(std::string_view type_name)
 {
   if (type_name == "DigitalController")
