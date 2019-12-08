@@ -245,7 +245,7 @@ std::shared_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view fi
   {
     SmallString message;
     message.AppendString("Memory card at '");
-    message.AppendString(filename.data(), filename.length());
+    message.AppendString(filename.data(), static_cast<u32>(filename.length()));
     message.AppendString("' could not be read, formatting.");
     Log_ErrorPrint(message);
     mc->Format();

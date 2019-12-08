@@ -1,6 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
-#include "pad_device.h"
+#include "controller.h"
 #include <array>
 #include <memory>
 #include <string>
@@ -8,7 +8,7 @@
 
 class System;
 
-class MemoryCard final : public PadDevice
+class MemoryCard final
 {
 public:
   enum : u32
@@ -19,16 +19,16 @@ public:
   };
 
   MemoryCard(System* system);
-  ~MemoryCard() override;
+  ~MemoryCard();
 
   static std::shared_ptr<MemoryCard> Create(System* system);
   static std::shared_ptr<MemoryCard> Open(System* system, std::string_view filename);
 
-  void Reset() override;
-  bool DoState(StateWrapper& sw) override;
+  void Reset();
+  bool DoState(StateWrapper& sw);
 
-  void ResetTransferState() override;
-  bool Transfer(const u8 data_in, u8* data_out) override;
+  void ResetTransferState();
+  bool Transfer(const u8 data_in, u8* data_out);
 
   void Format();
 

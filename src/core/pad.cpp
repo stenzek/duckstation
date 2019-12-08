@@ -4,7 +4,7 @@
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
-#include "pad_device.h"
+#include "controller.h"
 #include "system.h"
 Log_SetChannel(Pad);
 
@@ -289,8 +289,8 @@ void Pad::DoTransfer()
 {
   Log_DebugPrintf("Transferring slot %d", m_JOY_CTRL.SLOT.GetValue());
 
-  const std::shared_ptr<PadDevice>& controller = m_controllers[m_JOY_CTRL.SLOT];
-  const std::shared_ptr<PadDevice>& memory_card = m_memory_cards[m_JOY_CTRL.SLOT];
+  const std::shared_ptr<Controller>& controller = m_controllers[m_JOY_CTRL.SLOT];
+  const std::shared_ptr<MemoryCard>& memory_card = m_memory_cards[m_JOY_CTRL.SLOT];
 
   // set rx?
   m_JOY_CTRL.RXEN = true;

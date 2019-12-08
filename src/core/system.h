@@ -19,7 +19,7 @@ class InterruptController;
 class GPU;
 class CDROM;
 class Pad;
-class PadDevice;
+class Controller;
 class Timers;
 class SPU;
 class MDEC;
@@ -79,7 +79,7 @@ public:
   // Adds ticks to the global tick counter, simulating the CPU being stalled.
   void StallCPU(TickCount ticks);
 
-  void SetController(u32 slot, std::shared_ptr<PadDevice> dev);
+  void SetController(u32 slot, std::shared_ptr<Controller> dev);
   void UpdateMemoryCards();
   void UpdateCPUExecutionMode();
 

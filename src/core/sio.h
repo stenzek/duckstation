@@ -9,7 +9,7 @@ class StateWrapper;
 
 class System;
 class InterruptController;
-class PadDevice;
+class Controller;
 class MemoryCard;
 
 class SIO

@@ -1,10 +1,10 @@
 #pragma once
-#include "pad_device.h"
+#include "controller.h"
 #include <memory>
 #include <optional>
 #include <string_view>
 
-class DigitalController final : public PadDevice
+class DigitalController final : public Controller
 {
 public:
   enum class Button : u8

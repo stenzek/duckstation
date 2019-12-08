@@ -4,7 +4,7 @@
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
-#include "pad_device.h"
+#include "controller.h"
 #include "system.h"
 Log_SetChannel(SIO);
 

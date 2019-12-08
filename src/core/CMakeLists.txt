@@ -6,6 +6,8 @@ add_library(core
     bus.inl
     cdrom.cpp
     cdrom.h
+    controller.cpp
+    controller.h
     cpu_code_cache.cpp
     cpu_code_cache.h
     cpu_core.cpp
@@ -48,8 +50,6 @@ add_library(core
     memory_card.h
     pad.cpp
     pad.h
-    pad_device.cpp
-    pad_device.h
     save_state_version.h
     settings.cpp
     settings.h

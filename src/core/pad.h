@@ -9,7 +9,7 @@ class StateWrapper;
 
 class System;
 class InterruptController;
-class PadDevice;
+class Controller;
 class MemoryCard;
 
 class Pad
@@ -22,8 +22,8 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  PadDevice* GetController(u32 slot) { return m_controllers[slot].get(); }
-  void SetController(u32 slot, std::shared_ptr<PadDevice> dev) { m_controllers[slot] = dev; }
+  Controller* GetController(u32 slot) { return m_controllers[slot].get(); }
+  void SetController(u32 slot, std::shared_ptr<Controller> dev) { m_controllers[slot] = dev; }
 
   MemoryCard* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
   void SetMemoryCard(u32 slot, std::shared_ptr<MemoryCard> dev) { m_memory_cards[slot] = dev; }
@@ -106,7 +106,7 @@ private:
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
 
-  std::array<std::shared_ptr<PadDevice>, NUM_SLOTS> m_controllers;
+  std::array<std::shared_ptr<Controller>, NUM_SLOTS> m_controllers;
   std::array<std::shared_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
 
   State m_state = State::Idle;

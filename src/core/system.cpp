@@ -5,6 +5,7 @@
 #include "bus.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"
+#include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "dma.h"
@@ -16,7 +17,6 @@
 #include "mdec.h"
 #include "memory_card.h"
 #include "pad.h"
-#include "pad_device.h"
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
@@ -448,7 +448,7 @@ void System::StallCPU(TickCount ticks)
   m_cpu->AddPendingTicks(ticks);
 }
 
-void System::SetController(u32 slot, std::shared_ptr<PadDevice> dev)
+void System::SetController(u32 slot, std::shared_ptr<Controller> dev)
 {
   m_pad->SetController(slot, std::move(dev));
 }
