@@ -17,6 +17,20 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory app:title="Game List">
+        <Preference
+            app:key="GameList/SearchPaths"
+            app:title="Game Search Directories"/>
+        <CheckBoxPreference
+            app:key="GameList/SearchRecursively"
+            app:title="Search Directories Recursively"
+            app:defaultValue="true" />
+        <EditTextPreference
+            app:key="GameList/RedumpDatPath"
+            app:title="Redump Database Path"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/settings_console_header">
 
         <ListPreference
@@ -81,14 +95,16 @@
             app:title="@string/settings_gpu_renderer"
             app:entries="@array/gpu_renderer_entries"
             app:entryValues="@array/gpu_renderer_values"
-            app:defaultValue="@string/settings_gpu_renderer_default"/>
+            app:defaultValue="@string/settings_gpu_renderer_default"
+            app:useSimpleSummaryProvider="true" />
 
         <ListPreference
             app:key="GPU/ResolutionScale"
             app:title="@string/settings_gpu_resolution_scale"
             app:entries="@array/settings_gpu_resolution_scale_entries"
             app:entryValues="@array/settings_gpu_resolution_scale_values"
-            app:defaultValue="@string/settings_gpu_renderer_default"/>
+            app:defaultValue="@string/settings_gpu_renderer_default"
+            app:useSimpleSummaryProvider="true" />
         <SwitchPreferenceCompat
             app:key="GPU/TrueColor"
             app:title="@string/settings_gpu_true_color"
