@@ -278,6 +278,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("MDEC") || !m_mdec->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("SIO") || !m_sio->DoState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
