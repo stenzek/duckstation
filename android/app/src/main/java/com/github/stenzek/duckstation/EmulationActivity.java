@@ -50,7 +50,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
      */
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
-    private SurfaceView mContentView;
+    private EmulationSurfaceView mContentView;
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -148,6 +148,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         mTouchscreenController = new TouchscreenControllerView(this);
         activityLayout.addView(mTouchscreenController);
         mTouchscreenController.init(0, "DigitalController", mHostInterface);
+
+        // Hook up controller input.
+        mContentView.initControllerKeyMapping(mHostInterface, "DigitalController");
     }
 
     @Override
