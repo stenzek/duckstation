@@ -85,20 +85,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             hide();
         }
     };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -143,16 +129,13 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
 
         mVisible = true;
-        mContentView = (SurfaceView) findViewById(R.id.fullscreen_content);
-        Log.e("EmulationActivity", "adding callback");
+        mContentView = findViewById(R.id.fullscreen_content);
         mContentView.getHolder().addCallback(this);
-
-
-        // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toggle();
+                if (mVisible)
+                    hide();
             }
         });
 
@@ -188,12 +171,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         return super.onOptionsItemSelected(item);
     }
 
-    private void toggle() {
+    @Override
+    public void onBackPressed() {
         if (mVisible) {
-            hide();
-        } else {
-            show();
+            finish();
+            return;
         }
+
+        show();
     }
 
     private void hide() {

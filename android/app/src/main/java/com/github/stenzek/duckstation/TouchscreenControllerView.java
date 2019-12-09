@@ -44,10 +44,16 @@ public class TouchscreenControllerView extends FrameLayout implements Touchscree
         linkButton(view, R.id.controller_button_right, "Right");
         linkButton(view, R.id.controller_button_down, "Down");
         linkButton(view, R.id.controller_button_left, "Left");
+        linkButton(view, R.id.controller_button_l1, "L1");
+        linkButton(view, R.id.controller_button_l2, "L2");
+        linkButton(view, R.id.controller_button_select, "Select");
+        linkButton(view, R.id.controller_button_start, "Start");
         linkButton(view, R.id.controller_button_triangle, "Triangle");
         linkButton(view, R.id.controller_button_circle, "Circle");
         linkButton(view, R.id.controller_button_cross, "Cross");
         linkButton(view, R.id.controller_button_square, "Square");
+        linkButton(view, R.id.controller_button_r1, "R1");
+        linkButton(view, R.id.controller_button_r2, "R2");
     }
 
     private void linkButton(View view, int id, String buttonName)
