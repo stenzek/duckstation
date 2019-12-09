@@ -5,9 +5,11 @@ import android.annotation.SuppressLint;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -31,6 +33,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
      * Touchscreen controller overlay
      */
     TouchscreenControllerView mTouchscreenController;
+    private boolean mTouchscreenControllerVisible = true;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -148,6 +151,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         mTouchscreenController = new TouchscreenControllerView(this);
         activityLayout.addView(mTouchscreenController);
         mTouchscreenController.init(0, "DigitalController", mHostInterface);
+        setTouchscreenControllerVisibility(true);
 
         // Hook up controller input.
         mContentView.initControllerKeyMapping(mHostInterface, "DigitalController");
@@ -164,13 +168,34 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_emulation, menu);
+        menu.findItem(R.id.show_controller).setChecked(mTouchscreenControllerVisible);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button.
-            NavUtils.navigateUpFromSameTask(this);
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.show_controller) {
+            setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
+            item.setChecked(mTouchscreenControllerVisible);
+            return true;
+        } else if (id == R.id.quit) {
+            finish();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -216,5 +241,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    private void setTouchscreenControllerVisibility(boolean visible) {
+        mTouchscreenControllerVisible = visible;
+        mTouchscreenController.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
     }
 }
