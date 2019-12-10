@@ -359,12 +359,13 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
     const u32 display_height = std::min<u32>(m_crtc_state.display_height, VRAM_HEIGHT - vram_offset_y);
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
+    const bool interlaced = IsDisplayInterlaced();
 
     if (m_GPUSTAT.display_disable)
     {
       m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, m_crtc_state.display_aspect_ratio);
     }
-    else if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
+    else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced)
     {
       m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())),
                                         scaled_vram_offset_x, m_vram_texture->GetHeight() - scaled_vram_offset_y,
@@ -377,13 +378,13 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
       const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
       const u32 scaled_flipped_vram_offset_y =
         m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
-      const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.interlaced_field);
+      const u32 field_offset = BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field);
 
       glDisable(GL_BLEND);
       glDisable(GL_SCISSOR_TEST);
 
-      const GL::Program& prog = m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)]
-                                                  [BoolToUInt8(m_GPUSTAT.vertical_interlace)];
+      const GL::Program& prog =
+        m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)];
       prog.Bind();
 
       // Because of how the reinterpret shader works, we need to use the downscaled version.

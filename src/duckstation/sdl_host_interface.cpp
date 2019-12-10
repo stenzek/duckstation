@@ -1180,8 +1180,9 @@ void SDLHostInterface::DrawSettingsWindow()
           gpu_settings_changed = true;
         }
 
-        ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
-        ImGui::Checkbox("Texture Filtering", &m_settings.gpu_texture_filtering);
+        gpu_settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
+        gpu_settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings.gpu_texture_filtering);
+        gpu_settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings.gpu_force_progressive_scan);
       }
 
       ImGui::EndTabItem();

@@ -296,6 +296,9 @@ protected:
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
   void UpdateGPUSTAT();
 
+  /// Returns true if scanout should be interlaced.
+  bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }
+
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
@@ -436,6 +439,7 @@ protected:
 
   bool m_drawing_area_changed = false;
   bool m_drawing_offset_changed = false;
+  bool m_force_progressive_scan = false;
 
   struct CRTCState
   {

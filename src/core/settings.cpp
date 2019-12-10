@@ -24,6 +24,8 @@ void Settings::SetDefaults()
   gpu_renderer = GPURenderer::HardwareOpenGL;
   gpu_resolution_scale = 1;
   gpu_true_color = true;
+  gpu_texture_filtering = false;
+  gpu_force_progressive_scan = true;
 
   display_linear_filtering = true;
 

@@ -26,10 +26,14 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_timers = timers;
+  m_force_progressive_scan = m_system->GetSettings().gpu_force_progressive_scan;
   return true;
 }
 
-void GPU::UpdateSettings() {}
+void GPU::UpdateSettings()
+{
+  m_force_progressive_scan = m_system->GetSettings().gpu_force_progressive_scan;
+}
 
 void GPU::Reset()
 {

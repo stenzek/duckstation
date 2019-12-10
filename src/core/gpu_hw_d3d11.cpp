@@ -537,12 +537,13 @@ void GPU_HW_D3D11::UpdateDisplay()
     const u32 display_height = std::min<u32>(m_crtc_state.display_height, VRAM_HEIGHT - vram_offset_y);
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
+    const bool interlaced = IsDisplayInterlaced();
 
     if (m_GPUSTAT.display_disable)
     {
       m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, m_crtc_state.display_aspect_ratio);
     }
-    else if (!m_GPUSTAT.display_area_color_depth_24 && !m_GPUSTAT.vertical_interlace)
+    else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced)
     {
       m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), scaled_vram_offset_x, scaled_vram_offset_y,
                                         scaled_display_width, scaled_display_height, m_vram_texture.GetWidth(),
@@ -550,12 +551,10 @@ void GPU_HW_D3D11::UpdateDisplay()
     }
     else
     {
-      const u32 field_offset = BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.interlaced_field);
+      const u32 field_offset = BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field);
 
       ID3D11PixelShader* display_pixel_shader =
-        m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)]
-                               [BoolToUInt8(m_GPUSTAT.vertical_interlace)]
-                                 .Get();
+        m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Get();
 
       // Because of how the reinterpret shader works, we need to use the downscaled version.
       if (m_GPUSTAT.display_area_color_depth_24 && m_resolution_scale > 1)
