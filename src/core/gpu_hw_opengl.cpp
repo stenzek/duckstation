@@ -11,7 +11,14 @@ GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}
 
 GPU_HW_OpenGL::~GPU_HW_OpenGL()
 {
-  // TODO: Destroy objects...
+  // Destroy objects which don't have destructors to clean them up
+  if (m_vao_id != 0)
+    glDeleteVertexArrays(1, &m_vao_id);
+  if (m_attributeless_vao_id != 0)
+    glDeleteVertexArrays(1, &m_attributeless_vao_id);
+  if (m_texture_buffer_r16ui_texture != 0)
+    glDeleteTextures(1, &m_texture_buffer_r16ui_texture);
+
   if (m_host_display)
   {
     m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
