@@ -30,6 +30,8 @@ void Settings::SetDefaults()
   display_linear_filtering = true;
 
   bios_path = "scph1001.bin";
+  bios_patch_tty_enable = false;
+  bios_patch_fast_boot = false;
 
   memory_card_a_path = "memory_card_a.mcd";
   memory_card_b_path.clear();

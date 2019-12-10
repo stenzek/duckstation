@@ -42,7 +42,7 @@ struct Settings
   // TODO: Controllers, memory cards, etc.
 
   std::string bios_path;
-  bool bios_patch_tty_enable = true;
+  bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
 
   std::string memory_card_a_path;
