@@ -52,8 +52,6 @@ private:
   int m_window_width = 0;
   int m_window_height = 0;
 
-  GL::Texture m_app_icon_texture;
-
   GL::Program m_display_program;
   GLuint m_display_vao = 0;
   GLuint m_display_texture_id = 0;

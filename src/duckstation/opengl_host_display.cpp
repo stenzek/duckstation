@@ -1,6 +1,5 @@
 #include "opengl_host_display.h"
 #include "YBaseLib/Log.h"
-#include "icon.h"
 #include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -338,9 +337,6 @@ void main()
   m_display_program.Uniform1i(1, 0);
 
   glGenVertexArrays(1, &m_display_vao);
-
-  if (!m_app_icon_texture.Create(APP_ICON_WIDTH, APP_ICON_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, APP_ICON_DATA, true))
-    return false;
 
   // samplers
   glGenSamplers(1, &m_display_nearest_sampler);
