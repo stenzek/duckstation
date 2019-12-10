@@ -339,8 +339,8 @@ void main()
 
   glGenVertexArrays(1, &m_display_vao);
 
-  m_app_icon_texture =
-    std::make_unique<GL::Texture>(APP_ICON_WIDTH, APP_ICON_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, APP_ICON_DATA, true);
+  if (!m_app_icon_texture.Create(APP_ICON_WIDTH, APP_ICON_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, APP_ICON_DATA, true))
+    return false;
 
   // samplers
   glGenSamplers(1, &m_display_nearest_sampler);

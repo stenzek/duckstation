@@ -5,7 +5,6 @@
 #include "glad.h"
 #include "gpu_hw.h"
 #include <array>
-#include <memory>
 #include <tuple>
 
 class GPU_HW_OpenGL_ES : public GPU_HW
@@ -46,9 +45,8 @@ private:
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
   void SetCapabilities(HostDisplay* host_display);
-  void CreateFramebuffer();
+  bool CreateFramebuffer();
   void ClearFramebuffer();
-  void DestroyFramebuffer();
 
   bool CompilePrograms();
   void SetVertexPointers();
@@ -56,10 +54,10 @@ private:
   void SetScissorFromDrawingArea();
 
   // downsample texture - used for readbacks at >1xIR.
-  std::unique_ptr<GL::Texture> m_vram_texture;
-  std::unique_ptr<GL::Texture> m_vram_read_texture;
-  std::unique_ptr<GL::Texture> m_vram_encoding_texture;
-  std::unique_ptr<GL::Texture> m_display_texture;
+  GL::Texture m_vram_texture;
+  GL::Texture m_vram_read_texture;
+  GL::Texture m_vram_encoding_texture;
+  GL::Texture m_display_texture;
 
   std::vector<BatchVertex> m_vertex_buffer;
 

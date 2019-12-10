@@ -52,7 +52,7 @@ private:
   int m_window_width = 0;
   int m_window_height = 0;
 
-  std::unique_ptr<GL::Texture> m_app_icon_texture = nullptr;
+  GL::Texture m_app_icon_texture;
 
   GL::Program m_display_program;
   GLuint m_display_vao = 0;

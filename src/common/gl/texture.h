@@ -1,15 +1,24 @@
 #pragma once
-#include <glad.h>
 #include "../types.h"
+#include <glad.h>
 
 namespace GL {
 class Texture
 {
 public:
-  Texture(u32 width, u32 height, GLenum format, GLenum type, const void* data = nullptr, bool linear_filter = false,
-          bool create_framebuffer = false);
+  Texture();
+  Texture(Texture&& moved);
   ~Texture();
 
+  bool Create(u32 width, u32 height, GLenum format, GLenum type, const void* data = nullptr,
+              bool linear_filter = false);
+  bool CreateFramebuffer();
+
+  void Destroy();
+
+  void SetLinearFilter(bool enabled);
+
+  bool IsValid() const { return m_id != 0; }
   GLuint GetGLId() const { return m_id; }
   u32 GetWidth() const { return m_width; }
   u32 GetHeight() const { return m_height; }
@@ -21,10 +30,14 @@ public:
 
   static void Unbind();
 
+  Texture& operator=(const Texture& copy) = delete;
+  Texture& operator=(Texture&& moved);
+
 private:
-  GLuint m_id;
-  u32 m_width;
-  u32 m_height;
+
+  GLuint m_id = 0;
+  u32 m_width = 0;
+  u32 m_height = 0;
 
   GLuint m_fbo_id = 0;
 };

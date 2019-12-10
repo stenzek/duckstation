@@ -46,13 +46,12 @@ private:
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
   void SetCapabilities(HostDisplay* host_display);
-  void CreateFramebuffer();
+  bool CreateFramebuffer();
   void ClearFramebuffer();
-  void DestroyFramebuffer();
 
-  void CreateVertexBuffer();
-  void CreateUniformBuffer();
-  void CreateTextureBuffer();
+  bool CreateVertexBuffer();
+  bool CreateUniformBuffer();
+  bool CreateTextureBuffer();
 
   bool CompilePrograms();
   void SetDrawState(BatchRenderMode render_mode);
@@ -60,10 +59,10 @@ private:
   void UploadUniformBlock(const void* data, u32 data_size);
 
   // downsample texture - used for readbacks at >1xIR.
-  std::unique_ptr<GL::Texture> m_vram_texture;
-  std::unique_ptr<GL::Texture> m_vram_read_texture;
-  std::unique_ptr<GL::Texture> m_vram_encoding_texture;
-  std::unique_ptr<GL::Texture> m_display_texture;
+  GL::Texture m_vram_texture;
+  GL::Texture m_vram_read_texture;
+  GL::Texture m_vram_encoding_texture;
+  GL::Texture m_display_texture;
 
   std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
   GLuint m_vao_id = 0;

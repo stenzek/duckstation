@@ -33,13 +33,21 @@ bool GPU_HW_OpenGL_ES::Initialize(HostDisplay* host_display, System* system, DMA
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
-  CreateFramebuffer();
-  if (!CompilePrograms())
+  if (!CreateFramebuffer())
+  {
+    Log_ErrorPrintf("Failed to create framebuffer");
     return false;
+  }
 
-  m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0, 0,
-                                    m_display_texture->GetWidth(), m_display_texture->GetHeight(),
-                                    m_display_texture->GetWidth(), m_display_texture->GetHeight(), 1.0f);
+  if (!CompilePrograms())
+  {
+    Log_ErrorPrintf("Failed to compile programs");
+    return false;
+  }
+
+  m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())), 0, 0,
+                                    m_display_texture.GetWidth(), m_display_texture.GetHeight(),
+                                    m_display_texture.GetWidth(), m_display_texture.GetHeight(), 1.0f);
   RestoreGraphicsAPIState();
   return true;
 }
@@ -69,8 +77,8 @@ void GPU_HW_OpenGL_ES::ResetGraphicsAPIState()
 
 void GPU_HW_OpenGL_ES::RestoreGraphicsAPIState()
 {
-  m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-  glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+  m_vram_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  glViewport(0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
 
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
@@ -127,47 +135,50 @@ void GPU_HW_OpenGL_ES::SetCapabilities(HostDisplay* host_display)
   m_supports_dual_source_blend = false;
 }
 
-void GPU_HW_OpenGL_ES::CreateFramebuffer()
+bool GPU_HW_OpenGL_ES::CreateFramebuffer()
 {
   // save old vram texture/fbo, in case we're changing scale
-  auto old_vram_texture = std::move(m_vram_texture);
-  DestroyFramebuffer();
+  GL::Texture old_vram_texture = std::move(m_vram_texture);
 
   // scale vram size to internal resolution
   const u32 texture_width = VRAM_WIDTH * m_resolution_scale;
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
 
-  m_vram_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
-
-  // do we need to restore the framebuffer after a size change?
-  if (old_vram_texture)
+  if (!m_vram_texture.Create(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+      !m_vram_texture.CreateFramebuffer())
   {
-    const bool linear_filter = old_vram_texture->GetWidth() > m_vram_texture->GetWidth();
-    Log_DevPrintf("Scaling %ux%u VRAM texture to %ux%u using %s filter", old_vram_texture->GetWidth(),
-                  old_vram_texture->GetHeight(), m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
-                  linear_filter ? "linear" : "nearest");
-    glDisable(GL_SCISSOR_TEST);
-    old_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
-    glBlitFramebuffer(0, 0, old_vram_texture->GetWidth(), old_vram_texture->GetHeight(), 0, 0,
-                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), GL_COLOR_BUFFER_BIT,
-                      linear_filter ? GL_LINEAR : GL_NEAREST);
-
-    glEnable(GL_SCISSOR_TEST);
-    old_vram_texture.reset();
+    return false;
   }
 
-  m_vram_read_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
+  // do we need to restore the framebuffer after a size change?
+  if (old_vram_texture.IsValid())
+  {
+    const bool linear_filter = old_vram_texture.GetWidth() > m_vram_texture.GetWidth();
+    Log_DevPrintf("Scaling %ux%u VRAM texture to %ux%u using %s filter", old_vram_texture.GetWidth(),
+                  old_vram_texture.GetHeight(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
+                  linear_filter ? "linear" : "nearest");
+    glDisable(GL_SCISSOR_TEST);
+    old_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
+    glBlitFramebuffer(0, 0, old_vram_texture.GetWidth(), old_vram_texture.GetHeight(), 0, 0, m_vram_texture.GetWidth(),
+                      m_vram_texture.GetHeight(), GL_COLOR_BUFFER_BIT, linear_filter ? GL_LINEAR : GL_NEAREST);
 
-  m_vram_encoding_texture =
-    std::make_unique<GL::Texture>(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
+    glEnable(GL_SCISSOR_TEST);
+    old_vram_texture.Destroy();
+  }
 
-  m_display_texture =
-    std::make_unique<GL::Texture>(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true);
+  if (!m_vram_read_texture.Create(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+      !m_vram_read_texture.CreateFramebuffer() ||
+      !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+      !m_vram_encoding_texture.CreateFramebuffer() ||
+      !m_display_texture.Create(texture_width, texture_height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+      !m_display_texture.CreateFramebuffer())
+  {
+    return false;
+  }
 
-  m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  m_vram_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   SetFullVRAMDirtyRectangle();
+  return true;
 }
 
 void GPU_HW_OpenGL_ES::ClearFramebuffer()
@@ -177,14 +188,6 @@ void GPU_HW_OpenGL_ES::ClearFramebuffer()
   glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_SCISSOR_TEST);
   SetFullVRAMDirtyRectangle();
-}
-
-void GPU_HW_OpenGL_ES::DestroyFramebuffer()
-{
-  m_vram_read_texture.reset();
-  m_vram_texture.reset();
-  m_vram_encoding_texture.reset();
-  m_display_texture.reset();
 }
 
 bool GPU_HW_OpenGL_ES::CompilePrograms()
@@ -290,7 +293,7 @@ void GPU_HW_OpenGL_ES::SetDrawState(BatchRenderMode render_mode)
   prog.Bind();
 
   if (m_batch.texture_mode != TextureMode::Disabled)
-    m_vram_read_texture->Bind();
+    m_vram_read_texture.Bind();
 
   if (m_batch.transparency_mode == TransparencyMode::Disabled || render_mode == BatchRenderMode::OnlyOpaque)
   {
@@ -332,7 +335,7 @@ void GPU_HW_OpenGL_ES::SetScissorFromDrawingArea()
   const int width = right - left;
   const int height = bottom - top;
   const int x = left;
-  const int y = m_vram_texture->GetHeight() - bottom;
+  const int y = m_vram_texture.GetHeight() - bottom;
 
   Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
   glScissor(x, y, width, height);
@@ -344,10 +347,10 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
 
   if (m_system->GetSettings().debugging.show_vram)
   {
-    m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())), 0,
-                                      m_vram_texture->GetHeight(), m_vram_texture->GetWidth(),
-                                      -static_cast<s32>(m_vram_texture->GetHeight()), m_vram_texture->GetWidth(),
-                                      m_vram_texture->GetHeight(), 1.0f);
+    m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())), 0,
+                                      m_vram_texture.GetHeight(), m_vram_texture.GetWidth(),
+                                      -static_cast<s32>(m_vram_texture.GetHeight()), m_vram_texture.GetWidth(),
+                                      m_vram_texture.GetHeight(), 1.0f);
   }
   else
   {
@@ -367,17 +370,17 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced)
     {
-      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture->GetGLId())),
-                                        scaled_vram_offset_x, m_vram_texture->GetHeight() - scaled_vram_offset_y,
+      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
+                                        scaled_vram_offset_x, m_vram_texture.GetHeight() - scaled_vram_offset_y,
                                         scaled_display_width, -static_cast<s32>(scaled_display_height),
-                                        m_vram_texture->GetWidth(), m_vram_texture->GetHeight(),
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                                         m_crtc_state.display_aspect_ratio);
     }
     else
     {
       const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
       const u32 scaled_flipped_vram_offset_y =
-        m_vram_texture->GetHeight() - scaled_vram_offset_y - scaled_display_height;
+        m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
       const u32 field_offset = BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field);
 
       glDisable(GL_BLEND);
@@ -392,15 +395,15 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
       {
         const u32 copy_width = std::min<u32>((display_width * 3) / 2, VRAM_WIDTH - vram_offset_x);
         const u32 scaled_copy_width = copy_width * m_resolution_scale;
-        m_vram_encoding_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-        m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+        m_vram_encoding_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+        m_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
         glBlitFramebuffer(scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_vram_offset_x + scaled_copy_width,
                           scaled_flipped_vram_offset_y + scaled_display_height, vram_offset_x, flipped_vram_offset_y,
                           vram_offset_x + copy_width, flipped_vram_offset_y + display_height, GL_COLOR_BUFFER_BIT,
                           GL_NEAREST);
 
-        m_display_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-        m_vram_encoding_texture->Bind();
+        m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+        m_vram_encoding_texture.Bind();
 
         glViewport(0, field_offset, display_width, display_height);
 
@@ -410,15 +413,15 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture->GetGLId())),
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
                                           0, display_height, display_width, -static_cast<s32>(display_height),
-                                          m_display_texture->GetWidth(), m_display_texture->GetHeight(),
+                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(),
                                           m_crtc_state.display_aspect_ratio);
       }
       else
       {
-        m_display_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-        m_vram_texture->Bind();
+        m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+        m_vram_texture.Bind();
 
         glViewport(0, field_offset, scaled_display_width, scaled_display_height);
 
@@ -428,15 +431,15 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture->GetGLId())),
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
                                           0, scaled_display_height, scaled_display_width,
-                                          -static_cast<s32>(scaled_display_height), m_display_texture->GetWidth(),
-                                          m_display_texture->GetHeight(), m_crtc_state.display_aspect_ratio);
+                                          -static_cast<s32>(scaled_display_height), m_display_texture.GetWidth(),
+                                          m_display_texture.GetHeight(), m_crtc_state.display_aspect_ratio);
       }
 
       // restore state
-      m_vram_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-      glViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+      m_vram_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+      glViewport(0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
       glEnable(GL_SCISSOR_TEST);
     }
   }
@@ -450,8 +453,8 @@ void GPU_HW_OpenGL_ES::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   const u32 encoded_height = copy_rect.GetHeight();
 
   // Encode the 24-bit texture as 16-bit.
-  m_vram_encoding_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-  m_vram_texture->Bind();
+  m_vram_encoding_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  m_vram_texture.Bind();
   m_vram_read_program.Bind();
   m_vram_read_program.Uniform2i(0, copy_rect.left, VRAM_HEIGHT - copy_rect.top - copy_rect.GetHeight());
   m_vram_read_program.Uniform2i(1, copy_rect.GetWidth(), copy_rect.GetHeight());
@@ -461,7 +464,7 @@ void GPU_HW_OpenGL_ES::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   glDrawArrays(GL_TRIANGLES, 0, 3);
 
   // Readback encoded texture.
-  m_vram_encoding_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+  m_vram_encoding_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
   glPixelStorei(GL_PACK_ALIGNMENT, 2);
   glPixelStorei(GL_PACK_ROW_LENGTH, VRAM_WIDTH / 2);
   glReadPixels(0, 0, encoded_width, encoded_height, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -481,7 +484,7 @@ void GPU_HW_OpenGL_ES::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   width *= m_resolution_scale;
   height *= m_resolution_scale;
 
-  glScissor(x, m_vram_texture->GetHeight() - y - height, width, height);
+  glScissor(x, m_vram_texture.GetHeight() - y - height, width, height);
 
   // drop precision unless true colour is enabled
   if (!m_true_color)
@@ -533,9 +536,9 @@ void GPU_HW_OpenGL_ES::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const voi
 
   // have to write to the 1x texture first
   if (m_resolution_scale > 1)
-    m_vram_encoding_texture->Bind();
+    m_vram_encoding_texture.Bind();
   else
-    m_vram_texture->Bind();
+    m_vram_texture.Bind();
 
   // lower-left origin flip happens here
   const u32 flipped_y = VRAM_HEIGHT - y - height;
@@ -550,9 +553,9 @@ void GPU_HW_OpenGL_ES::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const voi
     const u32 scaled_height = height * m_resolution_scale;
     const u32 scaled_x = x * m_resolution_scale;
     const u32 scaled_y = y * m_resolution_scale;
-    const u32 scaled_flipped_y = m_vram_texture->GetHeight() - scaled_y - scaled_height;
+    const u32 scaled_flipped_y = m_vram_texture.GetHeight() - scaled_y - scaled_height;
     glDisable(GL_SCISSOR_TEST);
-    m_vram_encoding_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+    m_vram_encoding_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
     glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y, scaled_x + scaled_width,
                       scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
@@ -571,18 +574,18 @@ void GPU_HW_OpenGL_ES::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 
   height *= m_resolution_scale;
 
   // lower-left origin flip
-  src_y = m_vram_texture->GetHeight() - src_y - height;
-  dst_y = m_vram_texture->GetHeight() - dst_y - height;
+  src_y = m_vram_texture.GetHeight() - src_y - height;
+  dst_y = m_vram_texture.GetHeight() - dst_y - height;
 
   if (GLAD_GL_EXT_copy_image)
   {
-    glCopyImageSubDataEXT(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, src_x, src_y, 0, m_vram_texture->GetGLId(),
+    glCopyImageSubDataEXT(m_vram_texture.GetGLId(), GL_TEXTURE_2D, 0, src_x, src_y, 0, m_vram_texture.GetGLId(),
                           GL_TEXTURE_2D, 0, dst_x, dst_y, 0, width, height, 1);
   }
   else
   {
     glDisable(GL_SCISSOR_TEST);
-    m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+    m_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
     glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
@@ -595,21 +598,21 @@ void GPU_HW_OpenGL_ES::UpdateVRAMReadTexture()
   const u32 width = scaled_rect.GetWidth();
   const u32 height = scaled_rect.GetHeight();
   const u32 x = scaled_rect.left;
-  const u32 y = m_vram_texture->GetHeight() - scaled_rect.top - height;
+  const u32 y = m_vram_texture.GetHeight() - scaled_rect.top - height;
 
   if (GLAD_GL_EXT_copy_image)
   {
-    glCopyImageSubDataEXT(m_vram_texture->GetGLId(), GL_TEXTURE_2D, 0, x, y, 0, m_vram_read_texture->GetGLId(),
+    glCopyImageSubDataEXT(m_vram_texture.GetGLId(), GL_TEXTURE_2D, 0, x, y, 0, m_vram_read_texture.GetGLId(),
                           GL_TEXTURE_2D, 0, x, y, 0, width, height, 1);
   }
   else
   {
-    m_vram_read_texture->BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-    m_vram_texture->BindFramebuffer(GL_READ_FRAMEBUFFER);
+    m_vram_read_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+    m_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
     glDisable(GL_SCISSOR_TEST);
     glBlitFramebuffer(x, y, x + width, y + height, x, y, x + width, y + height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
-    m_vram_texture->BindFramebuffer(GL_FRAMEBUFFER);
+    m_vram_texture.BindFramebuffer(GL_FRAMEBUFFER);
   }
 
   m_renderer_stats.num_vram_read_texture_updates++;
