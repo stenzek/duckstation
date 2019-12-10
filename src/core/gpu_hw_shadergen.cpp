@@ -512,6 +512,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
   bool semitransparent;
   int3 icolor;
   float ialpha;
+  float oalpha;
 
   #if TEXTURED
     #if TEXTURE_FILTERING
@@ -554,11 +555,17 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
     #else
       icolor = (vertcol * int3(texcol.rgb * float3(255.0, 255.0, 255.0))) >> 7;
     #endif
+
+    // Compute output alpha (mask bit)
+    oalpha = float(u_set_mask_while_drawing ? 1 : int(semitransparent));
   #else
     // All pixels are semitransparent for untextured polygons.
     semitransparent = true;
     icolor = vertcol;
     ialpha = 1.0;
+
+    // However, the mask bit is cleared if set mask bit is false.
+    oalpha = float(u_set_mask_while_drawing);
   #endif
 
   // Apply dithering
@@ -570,9 +577,6 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
   #if !TRUE_COLOR
     icolor = TruncateTo15Bit(icolor);
   #endif
-
-  // Compute output alpha (mask bit)
-  float output_alpha = float(u_set_mask_while_drawing ? 1 : int(semitransparent));
 
   // Normalize
   float3 color = float3(icolor) / float3(255.0, 255.0, 255.0);
@@ -586,7 +590,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
       #endif
 
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color * (u_src_alpha_factor * ialpha), output_alpha);
+        o_col0 = float4(color * (u_src_alpha_factor * ialpha), oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
       #else
         o_col0 = float4(color * (u_src_alpha_factor * ialpha), u_dst_alpha_factor / ialpha);
@@ -599,7 +603,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
       #endif
 
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color * ialpha, output_alpha);
+        o_col0 = float4(color * ialpha, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, 0.0);
       #else
         o_col0 = float4(color * ialpha, 1.0 - ialpha);
@@ -607,7 +611,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
-    o_col0 = float4(color * ialpha, output_alpha);
+    o_col0 = float4(color * ialpha, oalpha);
 
     #if USE_DUAL_SOURCE
       o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
