@@ -642,6 +642,14 @@ void Core::ExecuteInstruction()
   }
 #endif
 
+#if 0
+  if (m_current_instruction_pc == 0x8002bf50)
+  {
+    TRACE_EXECUTION = true;
+    __debugbreak();
+  }
+#endif
+
 #ifdef _DEBUG
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, m_current_instruction_pc, this);
@@ -1219,7 +1227,7 @@ void Core::ExecuteInstruction()
       if (!ReadMemoryWord(addr, &value))
         return;
 
-      m_cop2.WriteDataRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
+      m_cop2.WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
     }
     break;
 
@@ -1233,7 +1241,7 @@ void Core::ExecuteInstruction()
       }
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u32 value = m_cop2.ReadDataRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
+      const u32 value = m_cop2.ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
       WriteMemoryWord(addr, value);
     }
     break;
@@ -1317,19 +1325,19 @@ void Core::ExecuteCop2Instruction()
     switch (inst.cop.CommonOp())
     {
       case CopCommonInstruction::cfcn:
-        WriteRegDelayed(inst.r.rt, m_cop2.ReadControlRegister(static_cast<u32>(inst.r.rd.GetValue())));
+        WriteRegDelayed(inst.r.rt, m_cop2.ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32));
         break;
 
       case CopCommonInstruction::ctcn:
-        m_cop2.WriteControlRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+        m_cop2.WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, ReadReg(inst.r.rt));
         break;
 
       case CopCommonInstruction::mfcn:
-        WriteRegDelayed(inst.r.rt, m_cop2.ReadDataRegister(static_cast<u32>(inst.r.rd.GetValue())));
+        WriteRegDelayed(inst.r.rt, m_cop2.ReadRegister(static_cast<u32>(inst.r.rd.GetValue())));
         break;
 
       case CopCommonInstruction::mtcn:
-        m_cop2.WriteDataRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+        m_cop2.WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
         break;
 
       case CopCommonInstruction::bcnc:

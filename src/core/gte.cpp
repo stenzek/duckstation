@@ -55,19 +55,20 @@ void Core::Reset()
 
 bool Core::DoState(StateWrapper& sw)
 {
-  sw.DoArray(m_regs.dr32, NUM_DATA_REGS);
-  sw.DoArray(m_regs.cr32, NUM_CONTROL_REGS);
+  sw.DoArray(m_regs.r32, NUM_DATA_REGS + NUM_CONTROL_REGS);
   return !sw.HasError();
 }
 
-u32 Core::ReadDataRegister(u32 index) const
+u32 Core::ReadRegister(u32 index) const
 {
+  DebugAssert(index < countof(m_regs.r32));
+
   switch (index)
   {
     case 15: // SXY3
     {
       // mirror of SXY2
-      return m_regs.dr32[14];
+      return m_regs.r32[14];
     }
 
     case 28: // IRGB
@@ -80,46 +81,23 @@ u32 Core::ReadDataRegister(u32 index) const
       return ZeroExtend32(r) | (ZeroExtend32(g) << 5) | (ZeroExtend32(b) << 10);
     }
 
-    case 0:  // V0-1 [x,y]
-    case 1:  // V0[z]
-    case 2:  // V1-2 [x,y]
-    case 3:  // V1[z]
-    case 4:  // V2-3 [x,y]
-    case 5:  // V2[z]
-    case 6:  // RGBC
-    case 7:  // OTZ
-    case 8:  // IR0
-    case 9:  // IR1
-    case 10: // IR2
-    case 11: // IR3
-    case 12: // SXY0
-    case 13: // SXY1
-    case 14: // SXY2
-    case 16: // SZ0
-    case 17: // SZ1
-    case 18: // SZ2
-    case 19: // SZ3
-    case 20: // RGB0
-    case 21: // RGB1
-    case 22: // RGB2
-    case 23: // RES1
-    case 24: // MAC0
-    case 25: // MAC1
-    case 26: // MAC2
-    case 27: // MAC3
-    case 30: // LZCS
-    case 31: // LZCR
-      return m_regs.dr32[index];
-
     default:
-      Panic("Unknown register");
-      return 0;
+      return m_regs.r32[index];
   }
 }
 
-void Core::WriteDataRegister(u32 index, u32 value)
+void Core::WriteRegister(u32 index, u32 value)
 {
-  // Log_DebugPrintf("DataReg(%u) <- 0x%08X", index, value);
+#if 0
+  if (index < 32)
+  {
+    Log_DebugPrintf("DataReg(%u) <- 0x%08X", index, value);
+  }
+  else
+  {
+    Log_DebugPrintf("ControlReg(%u) <- 0x%08X", index, value);
+  }
+#endif
 
   switch (index)
   {
@@ -130,9 +108,16 @@ void Core::WriteDataRegister(u32 index, u32 value)
     case 9:  // IR1
     case 10: // IR2
     case 11: // IR3
+    case 36: // RT33
+    case 44: // L33
+    case 52: // LR33
+    case 58: // H       - sign-extended on read but zext on use
+    case 59: // DQA
+    case 61: // ZSF3
+    case 62: // ZSF4
     {
       // sign-extend z component of vector registers
-      m_regs.dr32[index] = SignExtend32(Truncate16(value));
+      m_regs.r32[index] = SignExtend32(Truncate16(value));
     }
     break;
 
@@ -143,16 +128,16 @@ void Core::WriteDataRegister(u32 index, u32 value)
     case 19: // SZ3
     {
       // zero-extend unsigned values
-      m_regs.dr32[index] = ZeroExtend32(Truncate16(value));
+      m_regs.r32[index] = ZeroExtend32(Truncate16(value));
     }
     break;
 
     case 15: // SXY3
     {
       // writing to SXYP pushes to the FIFO
-      m_regs.dr32[12] = m_regs.dr32[13]; // SXY0 <- SXY1
-      m_regs.dr32[13] = m_regs.dr32[14]; // SXY1 <- SXY2
-      m_regs.dr32[14] = value;           // SXY2 <- SXYP
+      m_regs.r32[12] = m_regs.r32[13]; // SXY0 <- SXY1
+      m_regs.r32[13] = m_regs.r32[14]; // SXY1 <- SXY2
+      m_regs.r32[14] = value;          // SXY2 <- SXYP
     }
     break;
 
@@ -160,9 +145,9 @@ void Core::WriteDataRegister(u32 index, u32 value)
     {
       // IRGB register, convert 555 to 16-bit
       m_regs.IRGB = value & UINT32_C(0x7FFF);
-      m_regs.dr32[9] = SignExtend32(static_cast<u16>(Truncate16((value & UINT32_C(0x1F)) * UINT32_C(0x80))));
-      m_regs.dr32[10] = SignExtend32(static_cast<u16>(Truncate16(((value >> 5) & UINT32_C(0x1F)) * UINT32_C(0x80))));
-      m_regs.dr32[11] = SignExtend32(static_cast<u16>(Truncate16(((value >> 10) & UINT32_C(0x1F)) * UINT32_C(0x80))));
+      m_regs.r32[9] = SignExtend32(static_cast<u16>(Truncate16((value & UINT32_C(0x1F)) * UINT32_C(0x80))));
+      m_regs.r32[10] = SignExtend32(static_cast<u16>(Truncate16(((value >> 5) & UINT32_C(0x1F)) * UINT32_C(0x80))));
+      m_regs.r32[11] = SignExtend32(static_cast<u16>(Truncate16(((value >> 10) & UINT32_C(0x1F)) * UINT32_C(0x80))));
     }
     break;
 
@@ -180,94 +165,19 @@ void Core::WriteDataRegister(u32 index, u32 value)
     }
     break;
 
-    case 0:  // V0-1 [x,y]
-    case 2:  // V1-2 [x,y]
-    case 4:  // V2-3 [x,y]
-    case 6:  // RGBC
-    case 12: // SXY0
-    case 13: // SXY1
-    case 14: // SXY2
-    case 20: // RGB0
-    case 21: // RGB1
-    case 22: // RGB2
-    case 23: // RES1
-    case 24: // MAC0
-    case 25: // MAC1
-    case 26: // MAC2
-    case 27: // MAC3
-      m_regs.dr32[index] = value;
-      break;
-
-    default:
-      Panic("Unknown register");
-      break;
-  }
-}
-
-u32 Core::ReadControlRegister(u32 index) const
-{
-  return m_regs.cr32[index];
-}
-
-void Core::WriteControlRegister(u32 index, u32 value)
-{
-  // Log_DebugPrintf("ControlReg(%u,%u) <- 0x%08X", index, index + 32, value);
-
-  switch (index)
-  {
-    case 36 - 32: // RT33
-    case 44 - 32: // L33
-    case 52 - 32: // LR33
-    case 58 - 32: // H       - sign-extended on read but zext on use
-    case 59 - 32: // DQA
-    case 61 - 32: // ZSF3
-    case 62 - 32: // ZSF4
-    {
-      // MSB of the last matrix element is the last element sign-extended
-      m_regs.cr32[index] = SignExtend32(Truncate16(value));
-    }
-    break;
-
-    case 63 - 32: // FLAG
+    case 63: // FLAG
     {
       m_regs.FLAG.bits = value & UINT32_C(0x7FFFF000);
       m_regs.FLAG.UpdateError();
     }
     break;
 
-    case 32 - 32: // RT11,RT12
-    case 33 - 32: // RT13,RT21
-    case 34 - 32: // RT22,RT23
-    case 35 - 32: // RT31,RT32
-    case 37 - 32: // TRX
-    case 38 - 32: // TRY
-    case 39 - 32: // TRZ
-    case 40 - 32: // L11,L12
-    case 41 - 32: // L13,L21
-    case 42 - 32: // L22,L23
-    case 43 - 32: // L31,L32
-    case 45 - 32: // RBK
-    case 46 - 32: // GBK
-    case 47 - 32: // BBK
-    case 48 - 32: // LR11,LR12
-    case 49 - 32: // LR13,LR21
-    case 50 - 32: // LR22,LR23
-    case 51 - 32: // LR31,LR32
-    case 53 - 32: // RFC
-    case 54 - 32: // GFC
-    case 55 - 32: // BFC
-    case 56 - 32: // OFX
-    case 57 - 32: // OFY
-    case 60 - 32: // DQB
+    default:
     {
       // written as-is, 2x16 or 1x32 bits
-      m_regs.cr32[index] = value;
+      m_regs.r32[index] = value;
     }
     break;
-
-    default:
-      Panic("Unknown register");
-      break;
   }
 }
 

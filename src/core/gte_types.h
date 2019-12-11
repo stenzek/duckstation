@@ -48,6 +48,8 @@ union Regs
     u32 cr32[NUM_CONTROL_REGS];
   };
 
+  u32 r32[NUM_DATA_REGS + NUM_CONTROL_REGS];
+
 #pragma pack(push, 1)
   struct
   {

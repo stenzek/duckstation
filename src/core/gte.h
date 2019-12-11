@@ -14,14 +14,9 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  u32 ReadRegister(u32 index) const { return m_regs.dr32[index]; }
-  void WriteRegister(u32 index, u32 value) { m_regs.dr32[index] = value; }
-
-  u32 ReadDataRegister(u32 index) const;
-  void WriteDataRegister(u32 index, u32 value);
-
-  u32 ReadControlRegister(u32 index) const;
-  void WriteControlRegister(u32 index, u32 value);
+  // control registers are offset by +32
+  u32 ReadRegister(u32 index) const;
+  void WriteRegister(u32 index, u32 value);
 
   void ExecuteInstruction(Instruction inst);
 
