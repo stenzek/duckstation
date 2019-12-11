@@ -114,6 +114,8 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       break;
 
     case InstructionOp::cop2:
+    case InstructionOp::lwc2:
+    case InstructionOp::swc2:
       result = Compile_cop2(cbi);
       break;
 
@@ -1504,8 +1506,45 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
   }
 }
 
+Value CodeGenerator::DoGTERegisterRead(u32 index)
+{
+  Value value = m_register_cache.AllocateScratch(RegSize_32);
+  EmitFunctionCallPtr(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index));
+  return value;
+}
+
+void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
+{
+  EmitFunctionCallPtr(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index),
+                      value);
+}
+
 bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
 {
+  if (cbi.instruction.op == InstructionOp::lwc2 || cbi.instruction.op == InstructionOp::swc2)
+  {
+    InstructionPrologue(cbi, 1);
+
+    const u32 reg = static_cast<u32>(cbi.instruction.i.rt.GetValue());
+    Value address = AddValues(m_register_cache.ReadGuestRegister(cbi.instruction.i.rs),
+                              Value::FromConstantU32(cbi.instruction.i.imm_sext32()), false);
+    if (cbi.instruction.op == InstructionOp::lwc2)
+    {
+      Value value = EmitLoadGuestMemory(address, RegSize_32);
+      DoGTERegisterWrite(reg, value);
+    }
+    else
+    {
+      Value value = DoGTERegisterRead(reg);
+      EmitStoreGuestMemory(address, value);
+    }
+
+    InstructionEpilogue(cbi);
+    return true;
+  }
+
+  Assert(cbi.instruction.op == InstructionOp::cop2);
+
   if (cbi.instruction.cop.IsCommonInstruction())
   {
     switch (cbi.instruction.cop.CommonOp())
@@ -1517,12 +1556,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
                         ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::cfcn) ? 32 : 0);
 
         InstructionPrologue(cbi, 1);
-
-        Value value = m_register_cache.AllocateScratch(RegSize_32);
-        EmitFunctionCallPtr(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(),
-                            Value::FromConstantU32(reg));
-        m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
-
+        m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, DoGTERegisterRead(reg));
         InstructionEpilogue(cbi);
         return true;
       }
@@ -1534,11 +1568,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
                         ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::ctcn) ? 32 : 0);
 
         InstructionPrologue(cbi, 1);
-
-        Value value = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
-        EmitFunctionCallPtr(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(),
-                            Value::FromConstantU32(reg), value);
-
+        DoGTERegisterWrite(reg, m_register_cache.ReadGuestRegister(cbi.instruction.r.rt));
         InstructionEpilogue(cbi);
         return true;
       }
