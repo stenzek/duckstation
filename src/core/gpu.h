@@ -469,6 +469,7 @@ protected:
     s32 y;
   } m_drawing_offset = {};
 
+  bool m_set_texture_disable_mask = false;
   bool m_drawing_area_changed = false;
   bool m_drawing_offset_changed = false;
   bool m_force_progressive_scan = false;

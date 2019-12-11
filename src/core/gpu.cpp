@@ -38,6 +38,7 @@ void GPU::UpdateSettings()
 void GPU::Reset()
 {
   SoftReset();
+  m_set_texture_disable_mask = false;
   m_GPUREAD_latch = 0;
 }
 
@@ -95,6 +96,8 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_drawing_offset.x);
   sw.Do(&m_drawing_offset.y);
   sw.Do(&m_drawing_offset.x);
+
+  sw.Do(&m_set_texture_disable_mask);
 
   sw.Do(&m_crtc_state.regs.display_address_start);
   sw.Do(&m_crtc_state.regs.horizontal_display_range);
@@ -600,6 +603,13 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
+    case 0x09: // Allow texture disable
+    {
+      m_set_texture_disable_mask = ConvertToBoolUnchecked(param & 0x01);
+      Log_DebugPrintf("Set texture disable mask <- %s", m_set_texture_disable_mask ? "allowed" : "ignored");
+    }
+    break;
+
     case 0x10:
     case 0x11:
     case 0x12:
@@ -725,22 +735,26 @@ void GPU::FlushRender() {}
 
 void GPU::SetDrawMode(u16 value)
 {
-  const DrawMode::Reg reg{static_cast<u16>(value & DrawMode::Reg::MASK)};
-  if (reg.bits == m_draw_mode.mode_reg.bits)
+  DrawMode::Reg new_mode_reg{static_cast<u16>(value & DrawMode::Reg::MASK)};
+  if (!m_set_texture_disable_mask)
+    new_mode_reg.texture_disable = false;
+
+  if (new_mode_reg.bits == m_draw_mode.mode_reg.bits)
     return;
 
-  if ((reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK) != (m_draw_mode.mode_reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK))
+  if ((new_mode_reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK) !=
+      (m_draw_mode.mode_reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK))
   {
-    m_draw_mode.texture_page_x = reg.GetTexturePageXBase();
-    m_draw_mode.texture_page_y = reg.GetTexturePageYBase();
+    m_draw_mode.texture_page_x = new_mode_reg.GetTexturePageXBase();
+    m_draw_mode.texture_page_y = new_mode_reg.GetTexturePageYBase();
     m_draw_mode.texture_page_changed = true;
   }
 
-  m_draw_mode.mode_reg.bits = reg.bits;
+  m_draw_mode.mode_reg.bits = new_mode_reg.bits;
 
   // Bits 0..10 are returned in the GPU status register.
   m_GPUSTAT.bits =
-    m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK) | (ZeroExtend32(reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
+    m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK) | (ZeroExtend32(new_mode_reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
   m_GPUSTAT.texture_disable = m_draw_mode.mode_reg.texture_disable;
 }
 
