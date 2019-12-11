@@ -75,6 +75,9 @@ bool GPU::DoState(StateWrapper& sw)
 
   sw.Do(&m_GPUSTAT.bits);
 
+  sw.Do(&m_draw_mode.mode_reg.bits);
+  sw.Do(&m_draw_mode.palette_reg);
+  sw.Do(&m_draw_mode.texture_window_value);
   sw.Do(&m_draw_mode.texture_page_x);
   sw.Do(&m_draw_mode.texture_page_y);
   sw.Do(&m_draw_mode.texture_palette_x);
@@ -85,9 +88,6 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_draw_mode.texture_window_offset_y);
   sw.Do(&m_draw_mode.texture_x_flip);
   sw.Do(&m_draw_mode.texture_y_flip);
-  sw.Do(&m_draw_mode.mode_reg.bits);
-  sw.Do(&m_draw_mode.palette_reg);
-  sw.Do(&m_draw_mode.texture_window_value);
 
   sw.Do(&m_drawing_area.left);
   sw.Do(&m_drawing_area.top);

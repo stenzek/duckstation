@@ -401,6 +401,11 @@ protected:
       u32 GetTexturePageYBase() const { return ZeroExtend32(texture_page_y_base.GetValue()) * 256; }
     };
 
+    // original values
+    Reg mode_reg;
+    u16 palette_reg; // from vertex
+    u32 texture_window_value;
+
     // decoded values
     u32 texture_page_x;
     u32 texture_page_y;
@@ -412,12 +417,6 @@ protected:
     u8 texture_window_offset_y; // in 8 pixel steps
     bool texture_x_flip;
     bool texture_y_flip;
-
-    // original values
-    Reg mode_reg;
-    u16 palette_reg; // from vertex
-    u32 texture_window_value;
-
     bool texture_page_changed;
     bool texture_window_changed;
 
@@ -520,7 +519,6 @@ protected:
     u32 current_scanline;
 
     float display_aspect_ratio;
-
     bool in_hblank;
     bool in_vblank;
   } m_crtc_state = {};
