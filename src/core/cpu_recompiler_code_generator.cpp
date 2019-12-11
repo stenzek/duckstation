@@ -1218,6 +1218,10 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
     dest = cbi.instruction.i.rt;
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
     rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+
+    // flush the old value which might free up a register
+    if (dest != cbi.instruction.r.rs)
+      m_register_cache.InvalidateGuestRegister(dest);
   }
   else
   {
@@ -1225,10 +1229,11 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
     dest = cbi.instruction.r.rd;
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs, true, true);
     rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
-  }
 
-  // flush the old value which might free up a register
-  m_register_cache.InvalidateGuestRegister(dest);
+    // flush the old value which might free up a register
+    if (dest != cbi.instruction.i.rs && dest != cbi.instruction.r.rt)
+      m_register_cache.InvalidateGuestRegister(dest);
+  }
 
   Value result = m_register_cache.AllocateScratch(RegSize_32);
   EmitCmp(lhs.host_reg, rhs);
