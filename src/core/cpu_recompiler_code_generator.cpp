@@ -113,6 +113,10 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_cop0(cbi);
       break;
 
+    case InstructionOp::cop2:
+      result = Compile_cop2(cbi);
+      break;
+
     case InstructionOp::funct:
     {
       switch (cbi.instruction.r.funct)
@@ -1497,6 +1501,62 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
       default:
         return Compile_Fallback(cbi);
     }
+  }
+}
+
+bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
+{
+  if (cbi.instruction.cop.IsCommonInstruction())
+  {
+    switch (cbi.instruction.cop.CommonOp())
+    {
+      case CopCommonInstruction::mfcn:
+      case CopCommonInstruction::cfcn:
+      {
+        const u32 reg = static_cast<u32>(cbi.instruction.r.rd.GetValue()) +
+                        ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::cfcn) ? 32 : 0);
+
+        InstructionPrologue(cbi, 1);
+
+        Value value = m_register_cache.AllocateScratch(RegSize_32);
+        EmitFunctionCallPtr(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(),
+                            Value::FromConstantU32(reg));
+        m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+
+        InstructionEpilogue(cbi);
+        return true;
+      }
+
+      case CopCommonInstruction::mtcn:
+      case CopCommonInstruction::ctcn:
+      {
+        const u32 reg = static_cast<u32>(cbi.instruction.r.rd.GetValue()) +
+                        ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::ctcn) ? 32 : 0);
+
+        InstructionPrologue(cbi, 1);
+
+        Value value = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+        EmitFunctionCallPtr(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(),
+                            Value::FromConstantU32(reg), value);
+
+        InstructionEpilogue(cbi);
+        return true;
+      }
+
+      default:
+        return Compile_Fallback(cbi);
+    }
+  }
+  else
+  {
+    // forward everything to the GTE.
+    InstructionPrologue(cbi, 1);
+
+    Value instruction_bits = Value::FromConstantU32(cbi.instruction.bits & GTE::Instruction::REQUIRED_BITS_MASK);
+    EmitFunctionCallPtr(nullptr, &Thunks::ExecuteGTEInstruction, m_register_cache.GetCPUPtr(), instruction_bits);
+
+    InstructionEpilogue(cbi);
+    return true;
   }
 }
 

@@ -133,6 +133,9 @@ union Instruction
   BitField<u32, u8, 0, 6> command;
 
   ALWAYS_INLINE u8 GetShift() const { return sf ? 12 : 0; }
+
+  // only the first 20 bits are needed to execute
+  static constexpr u32 REQUIRED_BITS_MASK = ((1 << 20) - 1);
 };
 
 } // namespace GTE
