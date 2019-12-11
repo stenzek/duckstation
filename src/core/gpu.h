@@ -299,6 +299,12 @@ protected:
   /// Returns true if scanout should be interlaced.
   bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }
 
+  /// Sets/decodes GP0(E1h) (set draw mode).
+  void SetDrawMode(u16 bits);
+
+  /// Sets/decodes polygon/rectangle texture palette value.
+  void SetTexturePalette(u16 bits);
+
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
@@ -362,20 +368,44 @@ protected:
     u16 GetMaskOR() const { return set_mask_while_drawing ? 0x8000 : 0x0000; }
   } m_GPUSTAT = {};
 
-  struct RenderState
+  struct DrawMode
   {
-    static constexpr u16 PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK = UINT16_C(0b0000000000011111);
-    static constexpr u16 PAGE_ATTRIBUTE_MASK = UINT16_C(0b0000000111111111);
-    static constexpr u16 PALETTE_ATTRIBUTE_MASK = UINT16_C(0b0111111111111111);
+    static constexpr u16 PALETTE_MASK = UINT16_C(0b0111111111111111);
     static constexpr u32 TEXTURE_WINDOW_MASK = UINT16_C(0b11111111111111111111);
+
+    // bits in GP0(E1h) or texpage part of polygon
+    union Reg
+    {
+      static constexpr u16 MASK = 0b1111111111111;
+      static constexpr u16 TEXTURE_PAGE_MASK = UINT16_C(0b0000000000011111);
+
+      // Polygon texpage commands only affect bits 0-8, 11
+      static constexpr u16 POLYGON_TEXPAGE_MASK = 0b0000100111111111;
+
+      // Bits 0..5 are returned in the GPU status register, latched at E1h/polygon draw time.
+      static constexpr u32 GPUSTAT_MASK = 0b111111111111;
+
+      u16 bits;
+
+      BitField<u16, u8, 0, 4> texture_page_x_base;
+      BitField<u16, u8, 4, 1> texture_page_y_base;
+      BitField<u16, TransparencyMode, 5, 2> transparency_mode;
+      BitField<u16, TextureMode, 7, 2> texture_mode;
+      BitField<u16, bool, 9, 1> dither_enable;
+      BitField<u16, bool, 10, 1> draw_to_display_area;
+      BitField<u16, bool, 11, 1> texture_disable;
+      BitField<u16, bool, 12, 1> texture_x_flip;
+      BitField<u16, bool, 13, 1> texture_y_flip;
+
+      u32 GetTexturePageXBase() const { return ZeroExtend32(texture_page_x_base.GetValue()) * 64; }
+      u32 GetTexturePageYBase() const { return ZeroExtend32(texture_page_y_base.GetValue()) * 256; }
+    };
 
     // decoded values
     u32 texture_page_x;
     u32 texture_page_y;
     u32 texture_palette_x;
     u32 texture_palette_y;
-    TextureMode texture_mode;
-    TransparencyMode transparency_mode;
     u8 texture_window_mask_x;   // in 8 pixel steps
     u8 texture_window_mask_y;   // in 8 pixel steps
     u8 texture_window_offset_x; // in 8 pixel steps
@@ -384,17 +414,23 @@ protected:
     bool texture_y_flip;
 
     // original values
-    u16 texpage_attribute; // from register in rectangle modes/vertex in polygon modes
-    u16 texlut_attribute;  // from vertex
+    Reg mode_reg;
+    u16 palette_reg; // from vertex
     u32 texture_window_value;
 
-    bool texture_page_changed = false;
-    bool texture_window_changed = false;
+    bool texture_page_changed;
+    bool texture_window_changed;
+
+    /// Returns the texture/palette rendering mode.
+    TextureMode GetTextureMode() const { return mode_reg.texture_mode; }
+
+    /// Returns the semi-transparency mode when enabled.
+    TransparencyMode GetTransparencyMode() const { return mode_reg.transparency_mode; }
 
     /// Returns true if the texture mode requires a palette.
     bool IsUsingPalette() const
     {
-      return (static_cast<u8>(texture_mode) &
+      return (static_cast<u8>(mode_reg.texture_mode.GetValue()) &
               (static_cast<u8>(TextureMode::Palette4Bit) | static_cast<u8>(TextureMode::Palette8Bit))) != 0;
     }
 
@@ -409,8 +445,8 @@ protected:
     Common::Rectangle<u32> GetTexturePaletteRectangle() const
     {
       static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
-      return Common::Rectangle<u32>::FromExtents(texture_palette_x, texture_palette_y,
-                                                 palette_widths[static_cast<u8>(texture_mode) & 3], 1);
+      return Common::Rectangle<u32>::FromExtents(
+        texture_palette_x, texture_palette_y, palette_widths[static_cast<u8>(mode_reg.texture_mode.GetValue()) & 3], 1);
     }
 
     bool IsTexturePageChanged() const { return texture_page_changed; }
@@ -421,13 +457,9 @@ protected:
     void SetTextureWindowChanged() { texture_window_changed = true; }
     void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
 
-    void SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1);
-    void SetFromRectangleTexcoord(u32 texcoord);
-
-    void SetFromPageAttribute(u16 value);
-    void SetFromPaletteAttribute(u16 value);
     void SetTextureWindow(u32 value);
-  } m_render_state = {};
+
+  } m_draw_mode = {};
 
   Common::Rectangle<u32> m_drawing_area;
 

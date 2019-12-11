@@ -64,8 +64,7 @@ void GPU_HW::UpdateSettings()
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
-  const u32 texpage =
-    ZeroExtend32(m_render_state.texpage_attribute) | (ZeroExtend32(m_render_state.texlut_attribute) << 16);
+  const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
 
   // TODO: Move this to the GPU..
   switch (rc.primitive)
@@ -271,34 +270,12 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   TextureMode texture_mode;
   if (rc.texture_enable)
   {
-    // extract texture lut/page
-    switch (rc.primitive)
-    {
-      case Primitive::Polygon:
-      {
-        if (rc.shading_enable)
-          m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[5]);
-        else
-          m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[4]);
-      }
-      break;
-
-      case Primitive::Rectangle:
-      {
-        m_render_state.SetFromRectangleTexcoord(command_ptr[2]);
-      }
-      break;
-
-      default:
-        break;
-    }
-
     // texture page changed - check that the new page doesn't intersect the drawing area
-    if (m_render_state.IsTexturePageChanged())
+    if (m_draw_mode.IsTexturePageChanged())
     {
-      m_render_state.ClearTexturePageChangedFlag();
-      if (m_vram_dirty_rect.Valid() && (m_render_state.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
-                                        m_render_state.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
+      m_draw_mode.ClearTexturePageChangedFlag();
+      if (m_vram_dirty_rect.Valid() && (m_draw_mode.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
+                                        m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
       {
         Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())
@@ -308,7 +285,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       }
     }
 
-    texture_mode = m_render_state.texture_mode;
+    texture_mode = m_draw_mode.GetTextureMode();
     if (rc.raw_texture_enable)
     {
       texture_mode =
@@ -322,7 +299,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
 
   // has any state changed which requires a new batch?
   const TransparencyMode transparency_mode =
-    rc.transparency_enable ? m_render_state.transparency_mode : TransparencyMode::Disabled;
+    rc.transparency_enable ? m_draw_mode.GetTransparencyMode() : TransparencyMode::Disabled;
   const BatchPrimitive rc_primitive = GetPrimitiveForCommand(rc);
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
   const u32 max_added_vertices = num_vertices + 5;
@@ -332,7 +309,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     if (buffer_overflow || rc_primitive == BatchPrimitive::LineStrip || m_batch.texture_mode != texture_mode ||
         m_batch.transparency_mode != transparency_mode || m_batch.primitive != rc_primitive ||
         dithering_enable != m_batch.dithering || m_drawing_area_changed || m_drawing_offset_changed ||
-        m_render_state.IsTextureWindowChanged())
+        m_draw_mode.IsTextureWindowChanged())
     {
       FlushRender();
     }
@@ -374,14 +351,14 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   m_batch.transparency_mode = transparency_mode;
   m_batch.dithering = dithering_enable;
 
-  if (m_render_state.IsTextureWindowChanged())
+  if (m_draw_mode.IsTextureWindowChanged())
   {
-    m_render_state.ClearTextureWindowChangedFlag();
+    m_draw_mode.ClearTextureWindowChangedFlag();
 
-    m_batch_ubo_data.u_texture_window_mask[0] = ZeroExtend32(m_render_state.texture_window_mask_x);
-    m_batch_ubo_data.u_texture_window_mask[1] = ZeroExtend32(m_render_state.texture_window_mask_y);
-    m_batch_ubo_data.u_texture_window_offset[0] = ZeroExtend32(m_render_state.texture_window_offset_x);
-    m_batch_ubo_data.u_texture_window_offset[1] = ZeroExtend32(m_render_state.texture_window_offset_y);
+    m_batch_ubo_data.u_texture_window_mask[0] = ZeroExtend32(m_draw_mode.texture_window_mask_x);
+    m_batch_ubo_data.u_texture_window_mask[1] = ZeroExtend32(m_draw_mode.texture_window_mask_y);
+    m_batch_ubo_data.u_texture_window_offset[0] = ZeroExtend32(m_draw_mode.texture_window_offset_x);
+    m_batch_ubo_data.u_texture_window_offset[1] = ZeroExtend32(m_draw_mode.texture_window_offset_y);
     m_batch_ubo_dirty = true;
   }
 

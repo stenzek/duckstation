@@ -125,16 +125,8 @@ bool GPU::HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_siz
 bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
 {
   const u32 param = *(command_ptr++) & 0x00FFFFFF;
-
-  // 0..10 bits match GPUSTAT
-  const u32 MASK = ((1 << 11) - 1);
-  m_render_state.SetFromPageAttribute(param & MASK);
-  m_GPUSTAT.bits = (m_GPUSTAT.bits & ~MASK) | (param & MASK);
-  m_GPUSTAT.texture_disable = (param & (1 << 11)) != 0;
-  m_render_state.texture_x_flip = (param & (1 << 12)) != 0;
-  m_render_state.texture_y_flip = (param & (1 << 13)) != 0;
   Log_DebugPrintf("Set draw mode %08X", param);
-
+  SetDrawMode(Truncate16(param));
   EndCommand();
   return true;
 }
@@ -142,10 +134,10 @@ bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
 bool GPU::HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_size)
 {
   const u32 param = *(command_ptr++) & 0x00FFFFFF;
-  m_render_state.SetTextureWindow(param);
-  Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_render_state.texture_window_mask_x,
-                  m_render_state.texture_window_mask_y, m_render_state.texture_window_offset_x,
-                  m_render_state.texture_window_offset_y);
+  m_draw_mode.SetTextureWindow(param);
+  Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_draw_mode.texture_window_mask_x,
+                  m_draw_mode.texture_window_mask_y, m_draw_mode.texture_window_offset_x,
+                  m_draw_mode.texture_window_offset_y);
 
   EndCommand();
   return true;
@@ -241,6 +233,16 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
       words_per_vertex = 1 + BoolToUInt8(rc.texture_enable) + BoolToUInt8(rc.shading_enable);
       num_vertices = rc.quad_polygon ? 4 : 3;
       total_words = words_per_vertex * num_vertices + BoolToUInt8(!rc.shading_enable);
+      CHECK_COMMAND_SIZE(total_words);
+
+      // set draw state up
+      if (rc.texture_enable)
+      {
+        const u16 texpage_attribute = Truncate16((rc.shading_enable ? command_ptr[5] : command_ptr[4]) >> 16);
+        SetDrawMode((texpage_attribute & DrawMode::Reg::POLYGON_TEXPAGE_MASK) |
+                    (m_draw_mode.mode_reg.bits & ~DrawMode::Reg::POLYGON_TEXPAGE_MASK));
+        SetTexturePalette(Truncate16(command_ptr[2] >> 16));
+      }
     }
     break;
 
@@ -281,6 +283,9 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
         2 + BoolToUInt8(rc.texture_enable) + BoolToUInt8(rc.rectangle_size == DrawRectangleSize::Variable);
       num_vertices = 1;
       total_words = words_per_vertex;
+
+      if (rc.texture_enable)
+        SetTexturePalette(Truncate16(command_ptr[2] >> 16));
     }
     break;
 

@@ -122,7 +122,7 @@ protected:
   void SetFullVRAMDirtyRectangle()
   {
     m_vram_dirty_rect.Set(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    m_render_state.SetTexturePageChanged();
+    m_draw_mode.SetTexturePageChanged();
   }
   void ClearVRAMDirtyRectangle() { m_vram_dirty_rect.SetInvalid(); }
 

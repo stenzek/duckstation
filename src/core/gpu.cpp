@@ -57,8 +57,9 @@ void GPU::SoftReset()
   m_command_total_words = 0;
   m_vram_transfer = {};
   m_GP0_buffer.clear();
-  m_render_state = {};
-  m_render_state.texture_page_changed = true;
+  SetDrawMode(0);
+  SetTexturePalette(0);
+  m_draw_mode.SetTextureWindow(0);
   UpdateGPUSTAT();
   UpdateCRTCConfig();
 }
@@ -73,21 +74,19 @@ bool GPU::DoState(StateWrapper& sw)
 
   sw.Do(&m_GPUSTAT.bits);
 
-  sw.Do(&m_render_state.texture_page_x);
-  sw.Do(&m_render_state.texture_page_y);
-  sw.Do(&m_render_state.texture_palette_x);
-  sw.Do(&m_render_state.texture_palette_y);
-  sw.Do(&m_render_state.texture_mode);
-  sw.Do(&m_render_state.transparency_mode);
-  sw.Do(&m_render_state.texture_window_mask_x);
-  sw.Do(&m_render_state.texture_window_mask_y);
-  sw.Do(&m_render_state.texture_window_offset_x);
-  sw.Do(&m_render_state.texture_window_offset_y);
-  sw.Do(&m_render_state.texture_x_flip);
-  sw.Do(&m_render_state.texture_y_flip);
-  sw.Do(&m_render_state.texpage_attribute);
-  sw.Do(&m_render_state.texlut_attribute);
-  sw.Do(&m_render_state.texture_window_value);
+  sw.Do(&m_draw_mode.texture_page_x);
+  sw.Do(&m_draw_mode.texture_page_y);
+  sw.Do(&m_draw_mode.texture_palette_x);
+  sw.Do(&m_draw_mode.texture_palette_y);
+  sw.Do(&m_draw_mode.texture_window_mask_x);
+  sw.Do(&m_draw_mode.texture_window_mask_y);
+  sw.Do(&m_draw_mode.texture_window_offset_x);
+  sw.Do(&m_draw_mode.texture_window_offset_y);
+  sw.Do(&m_draw_mode.texture_x_flip);
+  sw.Do(&m_draw_mode.texture_y_flip);
+  sw.Do(&m_draw_mode.mode_reg.bits);
+  sw.Do(&m_draw_mode.palette_reg);
+  sw.Do(&m_draw_mode.texture_window_value);
 
   sw.Do(&m_drawing_area.left);
   sw.Do(&m_drawing_area.top);
@@ -129,8 +128,8 @@ bool GPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    m_render_state.texture_page_changed = true;
-    m_render_state.texture_window_changed = true;
+    m_draw_mode.texture_page_changed = true;
+    m_draw_mode.texture_window_changed = true;
     m_drawing_area_changed = true;
     m_drawing_offset_changed = true;
     UpdateGPUSTAT();
@@ -643,7 +642,7 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
     case 0x02: // Get Texture Window
     {
       Log_DebugPrintf("Get texture window");
-      m_GPUREAD_latch = m_render_state.texture_window_value;
+      m_GPUREAD_latch = m_draw_mode.texture_window_value;
     }
     break;
 
@@ -724,47 +723,40 @@ void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* c
 
 void GPU::FlushRender() {}
 
-void GPU::RenderState::SetFromPolygonTexcoord(u32 texcoord0, u32 texcoord1)
+void GPU::SetDrawMode(u16 value)
 {
-  SetFromPaletteAttribute(Truncate16(texcoord0 >> 16));
-  SetFromPageAttribute(Truncate16(texcoord1 >> 16));
-}
-
-void GPU::RenderState::SetFromRectangleTexcoord(u32 texcoord)
-{
-  SetFromPaletteAttribute(Truncate16(texcoord >> 16));
-}
-
-void GPU::RenderState::SetFromPageAttribute(u16 value)
-{
-  const u16 old_page_attribute = texpage_attribute;
-  value &= PAGE_ATTRIBUTE_MASK;
-  if (texpage_attribute == value)
+  const DrawMode::Reg reg{static_cast<u16>(value & DrawMode::Reg::MASK)};
+  if (reg.bits == m_draw_mode.mode_reg.bits)
     return;
 
-  texpage_attribute = value;
-  texture_page_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x0F)) * UINT32_C(64));
-  texture_page_y = static_cast<s32>(ZeroExtend32((value >> 4) & UINT16_C(1)) * UINT32_C(256));
-  texture_page_changed |=
-    (old_page_attribute & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK) != (value & PAGE_ATTRIBUTE_TEXTURE_PAGE_MASK);
+  if ((reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK) != (m_draw_mode.mode_reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK))
+  {
+    m_draw_mode.texture_page_x = reg.GetTexturePageXBase();
+    m_draw_mode.texture_page_y = reg.GetTexturePageYBase();
+    m_draw_mode.texture_page_changed = true;
+  }
 
-  texture_mode = (static_cast<TextureMode>((value >> 7) & UINT16_C(0x03)));
-  transparency_mode = (static_cast<TransparencyMode>((value >> 5) & UINT16_C(0x03)));
+  m_draw_mode.mode_reg.bits = reg.bits;
+
+  // Bits 0..10 are returned in the GPU status register.
+  m_GPUSTAT.bits =
+    m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK) | (ZeroExtend32(reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
+  m_GPUSTAT.texture_disable = m_draw_mode.mode_reg.texture_disable;
 }
 
-void GPU::RenderState::SetFromPaletteAttribute(u16 value)
+void GPU::SetTexturePalette(u16 value)
 {
-  value &= PALETTE_ATTRIBUTE_MASK;
-  if (texlut_attribute == value)
+  value &= DrawMode::PALETTE_MASK;
+  if (m_draw_mode.palette_reg == value)
     return;
 
-  texture_palette_x = static_cast<s32>(ZeroExtend32(value & UINT16_C(0x3F)) * UINT32_C(16));
-  texture_palette_y = static_cast<s32>(ZeroExtend32((value >> 6) & UINT16_C(0x1FF)));
-  texlut_attribute = value;
-  texture_page_changed = true;
+  m_draw_mode.texture_palette_x = ZeroExtend32(value & 0x3F) * 16;
+  m_draw_mode.texture_palette_y = ZeroExtend32(value >> 6);
+  m_draw_mode.palette_reg = value;
+  m_draw_mode.texture_page_changed = true;
 }
 
-void GPU::RenderState::SetTextureWindow(u32 value)
+void GPU::DrawMode::SetTextureWindow(u32 value)
 {
   value &= TEXTURE_WINDOW_MASK;
   if (texture_window_value == value)

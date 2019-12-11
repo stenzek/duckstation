@@ -164,14 +164,6 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
-      if (textured)
-      {
-        if (shaded)
-          m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[5]);
-        else
-          m_render_state.SetFromPolygonTexcoord(command_ptr[2], command_ptr[4]);
-      }
-
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
@@ -209,8 +201,6 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       const VertexPosition vp{command_ptr[buffer_pos++]};
       const u32 texcoord_and_palette = rc.texture_enable ? command_ptr[buffer_pos++] : 0;
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(texcoord_and_palette));
-
-      m_render_state.SetFromPaletteAttribute(Truncate16(texcoord_and_palette >> 16));
 
       s32 width;
       s32 height;
@@ -400,43 +390,43 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
   {
     // Apply texture window
     // TODO: Precompute the second half
-    texcoord_x = (texcoord_x & ~(m_render_state.texture_window_mask_x * 8u)) |
-                 ((m_render_state.texture_window_offset_x & m_render_state.texture_window_mask_x) * 8u);
-    texcoord_y = (texcoord_y & ~(m_render_state.texture_window_mask_y * 8u)) |
-                 ((m_render_state.texture_window_offset_y & m_render_state.texture_window_mask_y) * 8u);
+    texcoord_x = (texcoord_x & ~(m_draw_mode.texture_window_mask_x * 8u)) |
+                 ((m_draw_mode.texture_window_offset_x & m_draw_mode.texture_window_mask_x) * 8u);
+    texcoord_y = (texcoord_y & ~(m_draw_mode.texture_window_mask_y * 8u)) |
+                 ((m_draw_mode.texture_window_offset_y & m_draw_mode.texture_window_mask_y) * 8u);
 
     VRAMPixel texture_color;
-    switch (m_render_state.texture_mode)
+    switch (m_draw_mode.GetTextureMode())
     {
       case GPU::TextureMode::Palette4Bit:
       {
         const u16 palette_value =
-          GetPixel(std::min<u32>(m_render_state.texture_page_x + ZeroExtend32(texcoord_x / 4), VRAM_WIDTH - 1),
-                   std::min<u32>(m_render_state.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
+          GetPixel(std::min<u32>(m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 4), VRAM_WIDTH - 1),
+                   std::min<u32>(m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
         const u16 palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
         texture_color.bits =
-          GetPixel(std::min<u32>(m_render_state.texture_palette_x + ZeroExtend32(palette_index), VRAM_WIDTH - 1),
-                   m_render_state.texture_palette_y);
+          GetPixel(std::min<u32>(m_draw_mode.texture_palette_x + ZeroExtend32(palette_index), VRAM_WIDTH - 1),
+                   m_draw_mode.texture_palette_y);
       }
       break;
 
       case GPU::TextureMode::Palette8Bit:
       {
         const u16 palette_value =
-          GetPixel(std::min<u32>(m_render_state.texture_page_x + ZeroExtend32(texcoord_x / 2), VRAM_WIDTH - 1),
-                   std::min<u32>(m_render_state.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
+          GetPixel(std::min<u32>(m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 2), VRAM_WIDTH - 1),
+                   std::min<u32>(m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
         const u16 palette_index = (palette_value >> ((texcoord_x % 2) * 8)) & 0xFFu;
         texture_color.bits =
-          GetPixel(std::min<u32>(m_render_state.texture_palette_x + ZeroExtend32(palette_index), VRAM_WIDTH - 1),
-                   m_render_state.texture_palette_y);
+          GetPixel(std::min<u32>(m_draw_mode.texture_palette_x + ZeroExtend32(palette_index), VRAM_WIDTH - 1),
+                   m_draw_mode.texture_palette_y);
       }
       break;
 
       default:
       {
         texture_color.bits =
-          GetPixel(std::min<u32>(m_render_state.texture_page_x + ZeroExtend32(texcoord_x), VRAM_WIDTH - 1),
-                   std::min<u32>(m_render_state.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
+          GetPixel(std::min<u32>(m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x), VRAM_WIDTH - 1),
+                   std::min<u32>(m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
       }
       break;
     }
@@ -482,7 +472,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
   color.Set(func(bg_color.r.GetValue(), color.r.GetValue()), func(bg_color.g.GetValue(), color.g.GetValue()),          \
             func(bg_color.b.GetValue(), color.b.GetValue()), color.c.GetValue())
 
-    switch (m_render_state.transparency_mode)
+    switch (m_draw_mode.GetTransparencyMode())
     {
       case GPU::TransparencyMode::HalfBackgroundPlusHalfForeground:
         BLEND_RGB(BLEND_AVERAGE);
