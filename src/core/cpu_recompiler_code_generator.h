@@ -191,6 +191,7 @@ private:
   bool Compile_SetLess(const CodeBlockInstruction& cbi);
   bool Compile_Branch(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
+  bool Compile_cop0(const CodeBlockInstruction& cbi);
 
   Core* m_cpu;
   JitCodeBuffer* m_code_buffer;

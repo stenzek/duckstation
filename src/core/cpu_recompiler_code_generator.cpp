@@ -109,6 +109,10 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_lui(cbi);
       break;
 
+    case InstructionOp::cop0:
+      result = Compile_cop0(cbi);
+      break;
+
     case InstructionOp::funct:
     {
       switch (cbi.instruction.r.funct)
@@ -1356,6 +1360,144 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
 
   InstructionEpilogue(cbi);
   return true;
+}
+
+bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
+{
+  if (cbi.instruction.cop.IsCommonInstruction())
+  {
+    switch (cbi.instruction.cop.CommonOp())
+    {
+      case CopCommonInstruction::mfcn:
+      case CopCommonInstruction::mtcn:
+      {
+        u32 offset;
+        u32 write_mask = UINT32_C(0xFFFFFFFF);
+        switch (static_cast<Cop0Reg>(cbi.instruction.r.rd.GetValue()))
+        {
+          case Cop0Reg::BPC:
+            offset = offsetof(Core, m_cop0_regs.BPC);
+            break;
+
+          case Cop0Reg::BPCM:
+            offset = offsetof(Core, m_cop0_regs.BPCM);
+            break;
+
+          case Cop0Reg::BDA:
+            offset = offsetof(Core, m_cop0_regs.BDA);
+            break;
+
+          case Cop0Reg::BDAM:
+            offset = offsetof(Core, m_cop0_regs.BDAM);
+            break;
+
+          case Cop0Reg::DCIC:
+            offset = offsetof(Core, m_cop0_regs.dcic.bits);
+            write_mask = Cop0Registers::DCIC::WRITE_MASK;
+            break;
+
+          case Cop0Reg::JUMPDEST:
+            offset = offsetof(Core, m_cop0_regs.TAR);
+            write_mask = 0;
+            break;
+
+          case Cop0Reg::BadVaddr:
+            offset = offsetof(Core, m_cop0_regs.BadVaddr);
+            write_mask = 0;
+            break;
+
+          case Cop0Reg::SR:
+            offset = offsetof(Core, m_cop0_regs.sr.bits);
+            write_mask = Cop0Registers::SR::WRITE_MASK;
+            break;
+
+          case Cop0Reg::CAUSE:
+            offset = offsetof(Core, m_cop0_regs.cause.bits);
+            write_mask = Cop0Registers::CAUSE::WRITE_MASK;
+            break;
+
+          case Cop0Reg::EPC:
+            offset = offsetof(Core, m_cop0_regs.EPC);
+            write_mask = 0;
+            break;
+
+          case Cop0Reg::PRID:
+            offset = offsetof(Core, m_cop0_regs.PRID);
+            write_mask = 0;
+            break;
+
+          default:
+            return Compile_Fallback(cbi);
+        }
+
+        InstructionPrologue(cbi, 1);
+
+        if (cbi.instruction.cop.CommonOp() == CopCommonInstruction::mfcn)
+        {
+          // coprocessor loads are load-delayed
+          Value value = m_register_cache.AllocateScratch(RegSize_32);
+          EmitLoadCPUStructField(value.host_reg, value.size, offset);
+          m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+        }
+        else
+        {
+          // some registers are not writable, so ignore those
+          if (write_mask != 0)
+          {
+            Value value = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+            if (write_mask != UINT32_C(0xFFFFFFFF))
+            {
+              // need to adjust the mask
+              Value scratch = m_register_cache.AllocateScratch(RegSize_32);
+              EmitCopyValue(scratch.host_reg, value);
+              EmitAnd(scratch.host_reg, Value::FromConstantU32(write_mask));
+              value = std::move(scratch);
+            }
+
+            EmitStoreCPUStructField(offset, value);
+          }
+        }
+
+        InstructionEpilogue(cbi);
+        return true;
+      }
+
+      // only mfc/mtc for cop0
+      default:
+        return Compile_Fallback(cbi);
+    }
+  }
+  else
+  {
+    switch (cbi.instruction.cop.Cop0Op())
+    {
+      case Cop0Instruction::rfe:
+      {
+        InstructionPrologue(cbi, 1);
+
+        // shift mode bits right two, preserving upper bits
+        static constexpr u32 mode_bits_mask = UINT32_C(0b1111);
+        Value sr = m_register_cache.AllocateScratch(RegSize_32);
+        EmitLoadCPUStructField(sr.host_reg, RegSize_32, offsetof(Core, m_cop0_regs.sr.bits));
+        {
+          Value new_mode_bits = m_register_cache.AllocateScratch(RegSize_32);
+          EmitCopyValue(new_mode_bits.host_reg, sr);
+          EmitShr(new_mode_bits.host_reg, new_mode_bits.size, Value::FromConstantU32(2));
+          EmitAnd(new_mode_bits.host_reg, Value::FromConstantU32(mode_bits_mask));
+          EmitAnd(sr.host_reg, Value::FromConstantU32(~mode_bits_mask));
+          EmitOr(sr.host_reg, new_mode_bits);
+        }
+
+        EmitStoreCPUStructField(offsetof(Core, m_cop0_regs.sr.bits), sr);
+
+        InstructionEpilogue(cbi);
+        return true;
+      }
+
+      default:
+        return Compile_Fallback(cbi);
+    }
+  }
 }
 
 } // namespace CPU::Recompiler
