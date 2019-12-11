@@ -1509,14 +1509,115 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
 Value CodeGenerator::DoGTERegisterRead(u32 index)
 {
   Value value = m_register_cache.AllocateScratch(RegSize_32);
-  EmitFunctionCallPtr(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index));
+
+  // Most GTE registers can be read directly. Handle the special cases here.
+  if (index == 15) // SXY3
+  {
+    // mirror of SXY2
+    index = 14;
+  }
+
+  switch (index)
+  {
+    case 28: // IRGB
+    case 29: // ORGB
+    {
+      EmitFunctionCallPtr(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(),
+                          Value::FromConstantU32(index));
+    }
+    break;
+
+    default:
+    {
+      EmitLoadCPUStructField(value.host_reg, RegSize_32, offsetof(Core, m_cop2.m_regs.r32[index]));
+    }
+    break;
+  }
+
   return value;
 }
 
 void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
 {
-  EmitFunctionCallPtr(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index),
-                      value);
+  switch (index)
+  {
+    case 1:  // V0[z]
+    case 3:  // V1[z]
+    case 5:  // V2[z]
+    case 8:  // IR0
+    case 9:  // IR1
+    case 10: // IR2
+    case 11: // IR3
+    case 36: // RT33
+    case 44: // L33
+    case 52: // LR33
+    case 58: // H       - sign-extended on read but zext on use
+    case 59: // DQA
+    case 61: // ZSF3
+    case 62: // ZSF4
+    {
+      // sign-extend z component of vector registers
+      Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, true);
+      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[index]), temp);
+      return;
+    }
+    break;
+
+    case 7:  // OTZ
+    case 16: // SZ0
+    case 17: // SZ1
+    case 18: // SZ2
+    case 19: // SZ3
+    {
+      // zero-extend unsigned values
+      Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, false);
+      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[index]), temp);
+      return;
+    }
+    break;
+
+    case 15: // SXY3
+    {
+      // writing to SXYP pushes to the FIFO
+      Value temp = m_register_cache.AllocateScratch(RegSize_32);
+
+      // SXY0 <- SXY1
+      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(Core, m_cop2.m_regs.r32[13]));
+      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[12]), temp);
+
+      // SXY1 <- SXY2
+      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(Core, m_cop2.m_regs.r32[14]));
+      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[13]), temp);
+
+      // SXY2 <- SXYP
+      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[14]), value);
+      return;
+    }
+    break;
+
+    case 28: // IRGB
+    case 30: // LZCS
+    case 63: // FLAG
+    {
+      EmitFunctionCallPtr(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(),
+                          Value::FromConstantU32(index), value);
+      return;
+    }
+
+    case 29: // ORGB
+    case 31: // LZCR
+    {
+      // read-only registers
+      return;
+    }
+
+    default:
+    {
+      // written as-is, 2x16 or 1x32 bits
+      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[index]), value);
+      return;
+    }
+  }
 }
 
 bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)

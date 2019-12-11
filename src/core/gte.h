@@ -2,11 +2,22 @@
 #include "common/state_wrapper.h"
 #include "gte_types.h"
 
+namespace CPU {
+class Core;
+
+namespace Recompiler {
+class CodeGenerator;
+}
+} // namespace CPU
+
 namespace GTE {
 
 class Core
 {
 public:
+  friend CPU::Core;
+  friend CPU::Recompiler::CodeGenerator;
+
   Core();
   ~Core();
 
