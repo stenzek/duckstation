@@ -386,9 +386,9 @@ bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
   std::fclose(fp);
 
   // patch the BIOS to jump to the executable directly
-  const u32 r_pc = header.load_address;
+  const u32 r_pc = header.initial_pc;
   const u32 r_gp = header.initial_gp;
-  const u32 r_sp = header.initial_sp_base;
+  const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
   const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
   return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
 }
