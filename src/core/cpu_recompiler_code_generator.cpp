@@ -1522,8 +1522,7 @@ Value CodeGenerator::DoGTERegisterRead(u32 index)
     case 28: // IRGB
     case 29: // ORGB
     {
-      EmitFunctionCallPtr(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(),
-                          Value::FromConstantU32(index));
+      EmitFunctionCall(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index));
     }
     break;
 
@@ -1599,8 +1598,8 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     case 30: // LZCS
     case 63: // FLAG
     {
-      EmitFunctionCallPtr(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(),
-                          Value::FromConstantU32(index), value);
+      EmitFunctionCall(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index),
+                       value);
       return;
     }
 
@@ -1684,7 +1683,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     InstructionPrologue(cbi, 1);
 
     Value instruction_bits = Value::FromConstantU32(cbi.instruction.bits & GTE::Instruction::REQUIRED_BITS_MASK);
-    EmitFunctionCallPtr(nullptr, &Thunks::ExecuteGTEInstruction, m_register_cache.GetCPUPtr(), instruction_bits);
+    EmitFunctionCall(nullptr, &Thunks::ExecuteGTEInstruction, m_register_cache.GetCPUPtr(), instruction_bits);
 
     InstructionEpilogue(cbi);
     return true;
