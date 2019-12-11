@@ -918,17 +918,21 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
   if (return_value)
     return_value->Discard();
 
+  // must be allocated before the stack push
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
   // actually call the function
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
   m_emit->Blr(GetHostReg64(temp));
-  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
+
+  // must happen after the stack push
+  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -943,6 +947,9 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     return_value->Discard();
 
+  // must be allocated before the stack push
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -950,13 +957,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG1, arg1);
 
   // actually call the function
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
   m_emit->Blr(GetHostReg64(temp));
-  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
+
+  // must happen after the stack push
+  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -971,6 +979,9 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     return_value->Discard();
 
+  // must be allocated before the stack push
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -979,13 +990,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG2, arg2);
 
   // actually call the function
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
   m_emit->Blr(GetHostReg64(temp));
-  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
+
+  // must happen after the stack push
+  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -1001,6 +1013,9 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     m_register_cache.DiscardHostReg(return_value->GetHostRegister());
 
+  // must be allocated before the stack push
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -1010,13 +1025,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG3, arg3);
 
   // actually call the function
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
   m_emit->Blr(GetHostReg64(temp));
-  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
+
+  // must happen after the stack push
+  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -1032,6 +1048,9 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     return_value->Discard();
 
+  // must be allocated before the stack push
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -1042,13 +1061,14 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG4, arg4);
 
   // actually call the function
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
   m_emit->Blr(GetHostReg64(temp));
-  temp.ReleaseAndClear();
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
+
+  // must happen after the stack push
+  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
