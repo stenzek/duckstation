@@ -46,7 +46,7 @@ void CodeCache::Execute()
     if (m_core->HasPendingInterrupt())
     {
       // TODO: Fill in m_next_instruction...
-      //m_core->SafeReadMemoryWord(m_core->m_regs.pc, &m_core->m_next_instruction.bits);
+      // m_core->SafeReadMemoryWord(m_core->m_regs.pc, &m_core->m_next_instruction.bits);
       m_core->DispatchInterrupt();
       next_block_key = GetNextBlockKey();
     }
@@ -163,10 +163,8 @@ void CodeCache::LogCurrentState()
 
 CodeBlockKey CodeCache::GetNextBlockKey() const
 {
-  const u32 address = m_bus->UnmirrorAddress(m_core->m_regs.pc & UINT32_C(0x1FFFFFFF));
-
   CodeBlockKey key = {};
-  key.SetPC(address);
+  key.SetPC(m_core->GetRegs().pc);
   key.user_mode = m_core->InUserMode();
   return key;
 }
@@ -248,8 +246,10 @@ bool CodeCache::CompileBlock(CodeBlock* block)
   for (;;)
   {
     CodeBlockInstruction cbi = {};
-    if (!m_bus->IsCacheableAddress(pc) ||
-        m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(pc, cbi.instruction.bits) < 0 ||
+
+    const PhysicalMemoryAddress phys_addr = pc & PHYSICAL_MEMORY_ADDRESS_MASK;
+    if (!m_bus->IsCacheableAddress(phys_addr) ||
+        m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(phys_addr, cbi.instruction.bits) < 0 ||
         !IsInvalidInstruction(cbi.instruction))
     {
       break;
