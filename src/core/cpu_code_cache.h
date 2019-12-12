@@ -28,6 +28,8 @@ union CodeBlockKey
   ALWAYS_INLINE u32 GetPC() const { return aligned_pc << 2; }
   ALWAYS_INLINE void SetPC(u32 pc) { aligned_pc = pc >> 2; }
 
+  ALWAYS_INLINE u32 GetPCPhysicalAddress() const { return (aligned_pc << 2) & PHYSICAL_MEMORY_ADDRESS_MASK; }
+
   ALWAYS_INLINE CodeBlockKey& operator=(const CodeBlockKey& rhs)
   {
     bits = rhs.bits;
@@ -72,12 +74,15 @@ struct CodeBlock
 
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
-  const u32 GetStartPageIndex() const { return (key.GetPC() / CPU_CODE_CACHE_PAGE_SIZE); }
-  const u32 GetEndPageIndex() const { return ((key.GetPC() + GetSizeInBytes()) / CPU_CODE_CACHE_PAGE_SIZE); }
+  const u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / CPU_CODE_CACHE_PAGE_SIZE); }
+  const u32 GetEndPageIndex() const
+  {
+    return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / CPU_CODE_CACHE_PAGE_SIZE);
+  }
   bool IsInRAM() const
   {
     // TODO: Constant
-    return key.GetPC() < 0x200000;
+    return key.GetPCPhysicalAddress() < 0x200000;
   }
 };
 

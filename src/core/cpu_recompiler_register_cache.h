@@ -252,6 +252,13 @@ public:
     return cache_value.IsConstant() || cache_value.IsInHostRegister();
   }
 
+  /// Returns true if the specified guest register is cached and in a host register.
+  bool IsGuestRegisterInHostRegister(Reg guest_reg) const
+  {
+    const Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
+    return cache_value.IsInHostRegister();
+  }
+
   /// Returns the host register if the guest register is cached.
   std::optional<HostReg> GetHostRegisterForGuestRegister(Reg guest_reg) const
   {

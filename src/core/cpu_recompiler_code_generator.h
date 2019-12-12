@@ -165,8 +165,6 @@ private:
   void BlockEpilogue();
   void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles, bool force_sync = false);
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
-  void SyncCurrentInstructionPC();
-  void SyncPC();
   void AddPendingCycles();
 
   Value DoGTERegisterRead(u32 index);
@@ -202,7 +200,6 @@ private:
   CodeEmitter m_far_emitter;
   CodeEmitter* m_emit;
 
-  u32 m_delayed_pc_add = 0;
   TickCount m_delayed_cycles_add = 0;
 
   // whether various flags need to be reset.

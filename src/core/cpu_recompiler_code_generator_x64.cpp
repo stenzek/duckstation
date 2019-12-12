@@ -201,6 +201,9 @@ void CodeGenerator::EmitEndBlock()
 
 void CodeGenerator::EmitExceptionExit()
 {
+  // toss away our PC value since we're jumping to the exception handler
+  m_register_cache.InvalidateGuestRegister(Reg::pc);
+
   // ensure all unflushed registers are written back
   m_register_cache.FlushAllGuestRegisters(false, false);
 
@@ -1762,28 +1765,33 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
 
 void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
 {
-  // allocate scratch register for reading npc - we return to the main path, so this could cause a reg flush
-  Value old_npc = m_register_cache.AllocateScratch(RegSize_32);
-
-  // npc gets modified by the branch, so we can't trust it on returning. same for lr_reg, which might contain a dirty
-  // value
-  m_register_cache.FlushGuestRegister(Reg::npc, true, true);
-  if (lr_reg != Reg::count)
+  // ensure the lr register is flushed, since we want it's correct value after the branch
+  if (lr_reg != Reg::count && lr_reg != Reg::zero)
     m_register_cache.FlushGuestRegister(lr_reg, true, true);
 
-  // condition is inverted because we want the case for skipping it
+  // compute return address, which is also set as the new pc when the branch isn't taken
+  Value new_pc;
+  if (condition != Condition::Always || lr_reg != Reg::count)
+  {
+    new_pc = AddValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(4), false);
+    if (!new_pc.IsInHostRegister())
+      new_pc = GetValueInHostRegister(new_pc);
+  }
+
   Xbyak::Label skip_branch;
   if (condition != Condition::Always)
+  {
+    // condition is inverted because we want the case for skipping it
     EmitConditionalJump(condition, true, m_emit, skip_branch);
+  }
 
   // save the old PC if we want to
-  if (lr_reg != Reg::count)
+  if (lr_reg != Reg::count && lr_reg != Reg::zero)
   {
     // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
     // if we don't cancel it, at the end of the instruction the value we write can be overridden.
     EmitCancelInterpreterLoadDelayForReg(lr_reg);
-    EmitLoadGuestRegister(old_npc.host_reg, Reg::npc);
-    EmitStoreGuestRegister(lr_reg, old_npc);
+    EmitStoreGuestRegister(lr_reg, new_pc);
   }
 
   // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
@@ -1814,12 +1822,18 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
     m_register_cache.PopState();
   }
 
-  // branch taken path - write new PC and flush it, since two branches
-  EmitStoreGuestRegister(Reg::npc, branch_target);
-  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_was_branch_taken), Value::FromConstantU8(1));
+  // branch taken path - change the return address/new pc
+  if (condition != Condition::Always)
+    EmitCopyValue(new_pc.GetHostRegister(), branch_target);
 
   // converge point
   m_emit->L(skip_branch);
+
+  // update pc
+  if (condition != Condition::Always)
+    m_register_cache.WriteGuestRegister(Reg::pc, std::move(new_pc));
+  else
+    m_register_cache.WriteGuestRegister(Reg::pc, std::move(branch_target));
 }
 
 void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
@@ -1827,14 +1841,12 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
   if (condition == Condition::Always)
   {
     // no need to use far code if we're always raising the exception
-    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
-                     Value::FromConstantU8(static_cast<u8>(excode)));
+    m_register_cache.InvalidateGuestRegister(Reg::pc);
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
 
-    // PC should be synced at this point. If we leave the 4 on here for this instruction, we mess up npc.
-    Assert(m_delayed_pc_add == 4);
-    m_delayed_pc_add = 0;
+    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
+                     Value::FromConstantU8(static_cast<u8>(excode)));
     return;
   }
 

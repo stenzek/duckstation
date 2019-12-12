@@ -189,7 +189,7 @@ bool CanInstructionTrap(const Instruction& instruction, bool in_user_mode)
     case InstructionOp::bgtz:
     case InstructionOp::blez:
     case InstructionOp::bne:
-      return true;
+      return false;
 
     case InstructionOp::funct:
     {

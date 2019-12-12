@@ -50,6 +50,8 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
   EmitEndBlock();
 
   FinalizeBlock(out_host_code, out_host_code_size);
+  Log_ProfilePrintf("JIT block 0x%08X: %zu instructions (%u bytes), %u host bytes", block->GetPC(),
+                    block->instructions.size(), block->GetSizeInBytes(), *out_host_code_size);
 
   DebugAssert(m_register_cache.GetUsedHostRegisters() == 0);
 
@@ -709,14 +711,6 @@ void CodeGenerator::BlockPrologue()
   m_branch_was_taken_dirty = true;
   m_current_instruction_was_branch_taken_dirty = false;
   m_load_delay_dirty = true;
-
-  // sync m_current_instruction_pc so we can simply add to it
-  SyncCurrentInstructionPC();
-
-  // and the same for m_regs.pc
-  SyncPC();
-
-  EmitAddCPUStructField(offsetof(Core, m_regs.npc), Value::FromConstantU32(4));
 }
 
 void CodeGenerator::BlockEpilogue()
@@ -729,17 +723,7 @@ void CodeGenerator::BlockEpilogue()
   if (m_register_cache.HasLoadDelay())
     m_register_cache.WriteLoadDelayToCPU(true);
 
-  // if the last instruction wasn't a fallback, we need to add its fetch
-  if (m_delayed_pc_add > 0)
-  {
-    EmitAddCPUStructField(offsetof(Core, m_regs.npc), Value::FromConstantU32(m_delayed_pc_add));
-    m_delayed_pc_add = 0;
-  }
-
   AddPendingCycles();
-
-  // TODO: correct value for is_branch_delay_slot - branches in branch delay slot.
-  EmitStoreCPUStructField(offsetof(Core, m_next_instruction_is_branch_delay_slot), Value::FromConstantU8(0));
 }
 
 void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles,
@@ -771,42 +755,29 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     m_current_instruction_in_branch_delay_slot_dirty = false;
   }
 
-  if (cbi.is_branch_delay_slot)
+  // increment PC, except if we're in the branch delay slot where it was just changed
+  if (!cbi.is_branch_delay_slot)
   {
-    // m_regs.pc should be synced for the next block, as the branch wrote to npc
-    SyncCurrentInstructionPC();
-    SyncPC();
-
-    // m_current_instruction_in_branch_delay_slot = true
-    EmitStoreCPUStructField(offsetof(Core, m_current_instruction_in_branch_delay_slot), Value::FromConstantU8(1));
-    m_current_instruction_in_branch_delay_slot_dirty = true;
+    Assert(!m_register_cache.IsGuestRegisterInHostRegister(Reg::pc));
+    m_register_cache.WriteGuestRegister(Reg::pc, Value::FromConstantU32(cbi.pc + 4));
   }
 
   if (!CanInstructionTrap(cbi.instruction, m_block->key.user_mode) && !force_sync)
   {
     // Defer updates for non-faulting instructions.
-    m_delayed_pc_add += INSTRUCTION_SIZE;
     m_delayed_cycles_add += cycles;
     return;
   }
 
-  if (m_delayed_pc_add > 0)
+  if (cbi.is_branch_delay_slot)
   {
-    // m_current_instruction_pc += m_delayed_pc_add
-    EmitAddCPUStructField(offsetof(Core, m_current_instruction_pc), Value::FromConstantU32(m_delayed_pc_add));
-
-    // m_regs.pc += m_delayed_pc_add
-    EmitAddCPUStructField(offsetof(Core, m_regs.pc), Value::FromConstantU32(m_delayed_pc_add));
-
-    // m_regs.npc += m_delayed_pc_add
-    // TODO: This can go once we recompile branch instructions and unconditionally set npc
-    EmitAddCPUStructField(offsetof(Core, m_regs.npc), Value::FromConstantU32(m_delayed_pc_add));
-
-    m_delayed_pc_add = 0;
+    // m_current_instruction_in_branch_delay_slot = true
+    EmitStoreCPUStructField(offsetof(Core, m_current_instruction_in_branch_delay_slot), Value::FromConstantU8(1));
+    m_current_instruction_in_branch_delay_slot_dirty = true;
   }
 
-  if (!cbi.is_branch_instruction)
-    m_delayed_pc_add = INSTRUCTION_SIZE;
+  // Sync current instruction PC
+  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_pc), Value::FromConstantU32(cbi.pc));
 
   m_delayed_cycles_add += cycles;
   AddPendingCycles();
@@ -833,22 +804,6 @@ void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
     m_next_load_delay_dirty = false;
     m_load_delay_dirty = true;
   }
-}
-
-void CodeGenerator::SyncCurrentInstructionPC()
-{
-  // m_current_instruction_pc = m_regs.pc
-  Value pc_value = m_register_cache.AllocateScratch(RegSize_32);
-  EmitLoadCPUStructField(pc_value.host_reg, RegSize_32, offsetof(Core, m_regs.pc));
-  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_pc), pc_value);
-}
-
-void CodeGenerator::SyncPC()
-{
-  // m_regs.pc = m_regs.npc
-  Value npc_value = m_register_cache.AllocateScratch(RegSize_32);
-  EmitLoadCPUStructField(npc_value.host_reg, RegSize_32, offsetof(Core, m_regs.npc));
-  EmitStoreCPUStructField(offsetof(Core, m_regs.pc), npc_value);
 }
 
 void CodeGenerator::AddPendingCycles()
@@ -1246,8 +1201,7 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
 
 bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 {
-  // Force sync since we branches are PC-relative.
-  InstructionPrologue(cbi, 1, true);
+  InstructionPrologue(cbi, 1);
 
   // Compute the branch target.
   // This depends on the form of the instruction.
@@ -1258,7 +1212,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     {
       // npc = (pc & 0xF0000000) | (target << 2)
       Value branch_target =
-        OrValues(AndValues(m_register_cache.ReadGuestRegister(Reg::pc, false), Value::FromConstantU32(0xF0000000)),
+        OrValues(AndValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(0xF0000000)),
                  Value::FromConstantU32(cbi.instruction.j.target << 2));
 
       EmitBranch(Condition::Always, (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count,
@@ -1294,7 +1248,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::bne:
     {
       // npc = pc + (sext(imm) << 2)
-      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
+      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc),
                                       Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
 
       // branch <- rs op rt
@@ -1311,7 +1265,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::blez:
     {
       // npc = pc + (sext(imm) << 2)
-      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
+      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc),
                                       Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
 
       // branch <- rs op 0
@@ -1327,7 +1281,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::b:
     {
       // npc = pc + (sext(imm) << 2)
-      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc, false),
+      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc),
                                       Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
 
       const u8 rt = static_cast<u8>(cbi.instruction.i.rt.GetValue());
@@ -1344,7 +1298,8 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       if (link)
       {
         EmitCancelInterpreterLoadDelayForReg(Reg::ra);
-        m_register_cache.WriteGuestRegister(Reg::ra, m_register_cache.ReadGuestRegister(Reg::npc, false));
+        m_register_cache.WriteGuestRegister(
+          Reg::ra, AddValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(4), false));
       }
 
       EmitTest(lhs.host_reg, lhs);

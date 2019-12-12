@@ -120,6 +120,9 @@ void CodeCache::Execute()
       }
     }
   }
+
+  // in case we switch to interpreter...
+  m_core->m_regs.npc = m_core->m_regs.pc;
 }
 
 void CodeCache::SetUseRecompiler(bool enable)
@@ -148,17 +151,17 @@ void CodeCache::Flush()
 void CodeCache::LogCurrentState()
 {
   const auto& regs = m_core->m_regs;
-  WriteToExecutionLog(
-    "tick=%u pc=%08X npc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
-    "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
-    "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X npc=%08X ldr=%s "
-    "ldv=%08X\n",
-    m_system->GetGlobalTickCounter() + m_core->GetPendingTicks(), regs.pc, regs.npc, regs.zero, regs.at, regs.v0,
-    regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5, regs.t6, regs.t7,
-    regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8, regs.t9, regs.k0, regs.k1, regs.gp,
-    regs.sp, regs.fp, regs.ra, regs.npc,
-    (m_core->m_next_load_delay_reg == Reg::count) ? "NONE" : GetRegName(m_core->m_next_load_delay_reg),
-    (m_core->m_next_load_delay_reg == Reg::count) ? 0 : m_core->m_next_load_delay_value);
+  WriteToExecutionLog("tick=%u pc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
+                      "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
+                      "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
+                      "ldv=%08X\n",
+                      m_system->GetGlobalTickCounter() + m_core->GetPendingTicks(), regs.pc, regs.zero, regs.at,
+                      regs.v0, regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4,
+                      regs.t5, regs.t6, regs.t7, regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7,
+                      regs.t8, regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp, regs.ra,
+                      (m_core->m_next_load_delay_reg == Reg::count) ? "NONE" :
+                                                                      GetRegName(m_core->m_next_load_delay_reg),
+                      (m_core->m_next_load_delay_reg == Reg::count) ? 0 : m_core->m_next_load_delay_value);
 }
 
 CodeBlockKey CodeCache::GetNextBlockKey() const
@@ -202,7 +205,8 @@ bool CodeCache::RevalidateBlock(CodeBlock* block)
   for (const CodeBlockInstruction& cbi : block->instructions)
   {
     u32 new_code = 0;
-    m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc, new_code);
+    m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK,
+                                                                          new_code);
     if (cbi.instruction.bits != new_code)
     {
       Log_DebugPrintf("Block 0x%08X changed at PC 0x%08X - %08X to %08X - recompiling.", block->GetPC(), cbi.pc,
@@ -419,7 +423,9 @@ void CodeCache::UnlinkBlock(CodeBlock* block)
 void CodeCache::InterpretCachedBlock(const CodeBlock& block)
 {
   // set up the state so we've already fetched the instruction
-  DebugAssert((m_core->m_regs.pc & PHYSICAL_MEMORY_ADDRESS_MASK) == block.GetPC());
+  DebugAssert(m_core->m_regs.pc == block.GetPC());
+
+  m_core->m_regs.npc = block.GetPC() + 4;
 
   for (const CodeBlockInstruction& cbi : block.instructions)
   {
@@ -427,14 +433,13 @@ void CodeCache::InterpretCachedBlock(const CodeBlock& block)
 
     // now executing the instruction we previously fetched
     m_core->m_current_instruction.bits = cbi.instruction.bits;
-    m_core->m_current_instruction_pc = m_core->m_regs.pc;
+    m_core->m_current_instruction_pc = cbi.pc;
     m_core->m_current_instruction_in_branch_delay_slot = cbi.is_branch_delay_slot;
     m_core->m_current_instruction_was_branch_taken = m_core->m_branch_was_taken;
     m_core->m_branch_was_taken = false;
     m_core->m_exception_raised = false;
 
     // update pc
-    DebugAssert((m_core->m_regs.pc & PHYSICAL_MEMORY_ADDRESS_MASK) == cbi.pc);
     m_core->m_regs.pc = m_core->m_regs.npc;
     m_core->m_regs.npc += 4;
 
@@ -454,6 +459,8 @@ void CodeCache::InterpretCachedBlock(const CodeBlock& block)
 
 void CodeCache::InterpretUncachedBlock()
 {
+  Panic("Fixme with regards to re-fetching PC");
+
   // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
   // yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.
   bool in_branch_delay_slot = false;
