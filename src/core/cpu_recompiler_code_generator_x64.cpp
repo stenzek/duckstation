@@ -366,7 +366,7 @@ void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
   }
 }
 
-void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
+void CodeGenerator::EmitAdd(HostReg to_reg, HostReg from_reg, const Value& value, bool set_flags)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
 
@@ -374,6 +374,9 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (value.IsConstant())
         m_emit->add(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
       else
@@ -383,6 +386,9 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (value.IsConstant())
         m_emit->add(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
       else
@@ -392,6 +398,9 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (value.IsConstant())
         m_emit->add(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
@@ -401,6 +410,9 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (value.IsConstant())
       {
         if (!Xbyak::inner::IsInInt32(value.constant_value))
@@ -423,7 +435,7 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
   }
 }
 
-void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
+void CodeGenerator::EmitSub(HostReg to_reg, HostReg from_reg, const Value& value, bool set_flags)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
 
@@ -431,6 +443,9 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (value.IsConstant())
         m_emit->sub(GetHostReg8(to_reg), SignExtend32(Truncate8(value.constant_value)));
       else
@@ -440,6 +455,9 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (value.IsConstant())
         m_emit->sub(GetHostReg16(to_reg), SignExtend32(Truncate16(value.constant_value)));
       else
@@ -449,6 +467,9 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (value.IsConstant())
         m_emit->sub(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
@@ -458,6 +479,9 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (value.IsConstant())
       {
         if (!Xbyak::inner::IsInInt32(value.constant_value))
@@ -691,7 +715,7 @@ void CodeGenerator::EmitDec(HostReg to_reg, RegSize size)
   }
 }
 
-void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
 {
   DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
 
@@ -708,6 +732,9 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shl(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
       else
@@ -717,6 +744,9 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shl(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
       else
@@ -726,6 +756,9 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shl(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
       else
@@ -735,6 +768,9 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shl(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
       else
@@ -747,7 +783,7 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
     m_emit->pop(m_emit->rcx);
 }
 
-void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
 {
   DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
 
@@ -764,6 +800,9 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shr(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
       else
@@ -773,6 +812,9 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shr(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
       else
@@ -782,6 +824,9 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shr(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
       else
@@ -791,6 +836,9 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->shr(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
       else
@@ -803,7 +851,7 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
     m_emit->pop(m_emit->rcx);
 }
 
-void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
 {
   DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
 
@@ -820,6 +868,9 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->sar(GetHostReg8(to_reg), Truncate8(amount_value.constant_value));
       else
@@ -829,6 +880,9 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->sar(GetHostReg16(to_reg), Truncate8(amount_value.constant_value));
       else
@@ -838,6 +892,9 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->sar(GetHostReg32(to_reg), Truncate32(amount_value.constant_value));
       else
@@ -847,6 +904,9 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (amount_value.IsConstant())
         m_emit->sar(GetHostReg64(to_reg), Truncate32(amount_value.constant_value));
       else
@@ -859,13 +919,16 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
     m_emit->pop(m_emit->rcx);
 }
 
-void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitAnd(HostReg to_reg, HostReg from_reg, const Value& value)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
   switch (value.size)
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (value.IsConstant())
         m_emit->and_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
@@ -875,6 +938,9 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (value.IsConstant())
         m_emit->and_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
@@ -884,6 +950,9 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (value.IsConstant())
         m_emit->and_(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
@@ -893,6 +962,9 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (value.IsConstant())
       {
         if (!Xbyak::inner::IsInInt32(value.constant_value))
@@ -915,13 +987,16 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
   }
 }
 
-void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitOr(HostReg to_reg, HostReg from_reg, const Value& value)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
   switch (value.size)
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (value.IsConstant())
         m_emit->or_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
@@ -931,6 +1006,9 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (value.IsConstant())
         m_emit->or_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
@@ -940,6 +1018,9 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (value.IsConstant())
         m_emit->or_(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
@@ -949,6 +1030,9 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (value.IsConstant())
       {
         if (!Xbyak::inner::IsInInt32(value.constant_value))
@@ -971,13 +1055,16 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
   }
 }
 
-void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitXor(HostReg to_reg, HostReg from_reg, const Value& value)
 {
   DebugAssert(value.IsConstant() || value.IsInHostRegister());
   switch (value.size)
   {
     case RegSize_8:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg8(to_reg), GetHostReg8(from_reg));
+
       if (value.IsConstant())
         m_emit->xor_(GetHostReg8(to_reg), Truncate32(value.constant_value & UINT32_C(0xFF)));
       else
@@ -987,6 +1074,9 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
 
     case RegSize_16:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg16(to_reg), GetHostReg16(from_reg));
+
       if (value.IsConstant())
         m_emit->xor_(GetHostReg16(to_reg), Truncate32(value.constant_value & UINT32_C(0xFFFF)));
       else
@@ -996,6 +1086,9 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
 
     case RegSize_32:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg32(to_reg), GetHostReg32(from_reg));
+
       if (value.IsConstant())
         m_emit->xor_(GetHostReg32(to_reg), Truncate32(value.constant_value));
       else
@@ -1005,6 +1098,9 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
 
     case RegSize_64:
     {
+      if (to_reg != from_reg)
+        m_emit->mov(GetHostReg64(to_reg), GetHostReg64(from_reg));
+
       if (value.IsConstant())
       {
         if (!Xbyak::inner::IsInInt32(value.constant_value))

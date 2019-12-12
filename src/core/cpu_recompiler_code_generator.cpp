@@ -329,8 +329,15 @@ Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs, bool set_flag
   }
   else
   {
-    EmitCopyValue(res.host_reg, lhs);
-    EmitAdd(res.host_reg, rhs, set_flags);
+    if (lhs.IsInHostRegister())
+    {
+      EmitAdd(res.host_reg, lhs.host_reg, rhs, set_flags);
+    }
+    else
+    {
+      EmitCopyValue(res.host_reg, lhs);
+      EmitAdd(res.host_reg, res.host_reg, rhs, set_flags);
+    }
     return res;
   }
 }
@@ -369,8 +376,16 @@ Value CodeGenerator::SubValues(const Value& lhs, const Value& rhs, bool set_flag
   }
   else
   {
-    EmitCopyValue(res.host_reg, lhs);
-    EmitSub(res.host_reg, rhs, set_flags);
+    if (lhs.IsInHostRegister())
+    {
+      EmitSub(res.host_reg, lhs.host_reg, rhs, set_flags);
+    }
+    else
+    {
+      EmitCopyValue(res.host_reg, lhs);
+      EmitSub(res.host_reg, res.host_reg, rhs, set_flags);
+    }
+
     return res;
   }
 }
@@ -469,9 +484,22 @@ Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
   }
 
   Value res = m_register_cache.AllocateScratch(lhs.size);
-  EmitCopyValue(res.host_reg, lhs);
-  if (!rhs.HasConstantValue(0))
-    EmitShl(res.host_reg, res.size, rhs);
+  if (rhs.HasConstantValue(0))
+  {
+    EmitCopyValue(res.host_reg, lhs);
+  }
+  else
+  {
+    if (lhs.IsInHostRegister())
+    {
+      EmitShl(res.host_reg, lhs.host_reg, res.size, rhs);
+    }
+    else
+    {
+      EmitCopyValue(res.host_reg, lhs);
+      EmitShl(res.host_reg, res.host_reg, res.size, rhs);
+    }
+  }
   return res;
 }
 
@@ -502,9 +530,22 @@ Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
   }
 
   Value res = m_register_cache.AllocateScratch(lhs.size);
-  EmitCopyValue(res.host_reg, lhs);
-  if (!rhs.HasConstantValue(0))
-    EmitShr(res.host_reg, res.size, rhs);
+  if (rhs.HasConstantValue(0))
+  {
+    EmitCopyValue(res.host_reg, lhs);
+  }
+  else
+  {
+    if (lhs.IsInHostRegister())
+    {
+      EmitShr(res.host_reg, lhs.host_reg, res.size, rhs);
+    }
+    else
+    {
+      EmitCopyValue(res.host_reg, lhs);
+      EmitShr(res.host_reg, res.host_reg, res.size, rhs);
+    }
+  }
   return res;
 }
 
@@ -538,9 +579,22 @@ Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs)
   }
 
   Value res = m_register_cache.AllocateScratch(lhs.size);
-  EmitCopyValue(res.host_reg, lhs);
-  if (!rhs.HasConstantValue(0))
-    EmitSar(res.host_reg, res.size, rhs);
+  if (rhs.HasConstantValue(0))
+  {
+    EmitCopyValue(res.host_reg, lhs);
+  }
+  else
+  {
+    if (lhs.IsInHostRegister())
+    {
+      EmitSar(res.host_reg, lhs.host_reg, res.size, rhs);
+    }
+    else
+    {
+      EmitCopyValue(res.host_reg, lhs);
+      EmitSar(res.host_reg, res.host_reg, res.size, rhs);
+    }
+  }
   return res;
 }
 
@@ -582,8 +636,15 @@ Value CodeGenerator::OrValues(const Value& lhs, const Value& rhs)
     return res;
   }
 
-  EmitCopyValue(res.host_reg, lhs);
-  EmitOr(res.host_reg, rhs);
+  if (lhs.IsInHostRegister())
+  {
+    EmitOr(res.host_reg, lhs.host_reg, rhs);
+  }
+  else
+  {
+    EmitCopyValue(res.host_reg, lhs);
+    EmitOr(res.host_reg, res.host_reg, rhs);
+  }
   return res;
 }
 
@@ -617,12 +678,19 @@ Value CodeGenerator::AndValues(const Value& lhs, const Value& rhs)
   Value res = m_register_cache.AllocateScratch(lhs.size);
   if (lhs.HasConstantValue(0) || rhs.HasConstantValue(0))
   {
-    EmitXor(res.host_reg, res);
+    EmitXor(res.host_reg, res.host_reg, res);
     return res;
   }
 
-  EmitCopyValue(res.host_reg, lhs);
-  EmitAnd(res.host_reg, rhs);
+  if (lhs.IsInHostRegister())
+  {
+    EmitAnd(res.host_reg, lhs.host_reg, rhs);
+  }
+  else
+  {
+    EmitCopyValue(res.host_reg, lhs);
+    EmitAnd(res.host_reg, res.host_reg, rhs);
+  }
   return res;
 }
 
@@ -665,8 +733,17 @@ Value CodeGenerator::XorValues(const Value& lhs, const Value& rhs)
     return res;
   }
 
-  EmitCopyValue(res.host_reg, lhs);
-  EmitXor(res.host_reg, rhs);
+  if (lhs.IsInHostRegister())
+  {
+    EmitXor(res.host_reg, lhs.host_reg, rhs);
+
+  }
+  else
+  {
+    EmitCopyValue(res.host_reg, lhs);
+    EmitXor(res.host_reg, res.host_reg, rhs);
+  }
+
   return res;
 }
 
@@ -942,7 +1019,7 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
     // rd <- rt op (rs & 0x1F)
     shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
     if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
-      EmitAnd(shamt.host_reg, Value::FromConstantU32(0x1F));
+      EmitAnd(shamt.host_reg, shamt.host_reg, Value::FromConstantU32(0x1F));
   }
 
   Value result;
@@ -1414,10 +1491,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             if (write_mask != UINT32_C(0xFFFFFFFF))
             {
               // need to adjust the mask
-              Value scratch = m_register_cache.AllocateScratch(RegSize_32);
-              EmitCopyValue(scratch.host_reg, value);
-              EmitAnd(scratch.host_reg, Value::FromConstantU32(write_mask));
-              value = std::move(scratch);
+              value = AndValues(value, Value::FromConstantU32(write_mask));
             }
 
             EmitStoreCPUStructField(offset, value);
@@ -1447,11 +1521,10 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
         EmitLoadCPUStructField(sr.host_reg, RegSize_32, offsetof(Core, m_cop0_regs.sr.bits));
         {
           Value new_mode_bits = m_register_cache.AllocateScratch(RegSize_32);
-          EmitCopyValue(new_mode_bits.host_reg, sr);
-          EmitShr(new_mode_bits.host_reg, new_mode_bits.size, Value::FromConstantU32(2));
-          EmitAnd(new_mode_bits.host_reg, Value::FromConstantU32(mode_bits_mask));
-          EmitAnd(sr.host_reg, Value::FromConstantU32(~mode_bits_mask));
-          EmitOr(sr.host_reg, new_mode_bits);
+          EmitShr(new_mode_bits.host_reg, sr.host_reg, new_mode_bits.size, Value::FromConstantU32(2));
+          EmitAnd(new_mode_bits.host_reg, new_mode_bits.host_reg, Value::FromConstantU32(mode_bits_mask));
+          EmitAnd(sr.host_reg, sr.host_reg, Value::FromConstantU32(~mode_bits_mask));
+          EmitOr(sr.host_reg, sr.host_reg, new_mode_bits);
         }
 
         EmitStoreCPUStructField(offsetof(Core, m_cop0_regs.sr.bits), sr);

@@ -394,7 +394,7 @@ Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, b
     if (force_host_register)
     {
       Value temp = AllocateScratch(RegSize_32, forced_host_reg);
-      m_code_generator.EmitXor(temp.host_reg, temp);
+      m_code_generator.EmitXor(temp.host_reg, temp.host_reg, temp);
       return temp;
     }
 
