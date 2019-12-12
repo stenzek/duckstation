@@ -101,32 +101,35 @@ void Value::Undiscard()
 
 RegisterCache::RegisterCache(CodeGenerator& code_generator) : m_code_generator(code_generator)
 {
-  m_guest_register_order.fill(Reg::count);
+  m_state.guest_reg_order.fill(Reg::count);
 }
 
-RegisterCache::~RegisterCache() = default;
+RegisterCache::~RegisterCache()
+{
+  Assert(m_state_stack.empty());
+}
 
 void RegisterCache::SetHostRegAllocationOrder(std::initializer_list<HostReg> regs)
 {
   size_t index = 0;
   for (HostReg reg : regs)
   {
-    m_host_register_state[reg] = HostRegState::Usable;
+    m_state.host_reg_state[reg] = HostRegState::Usable;
     m_host_register_allocation_order[index++] = reg;
   }
-  m_host_register_available_count = static_cast<u32>(index);
+  m_state.available_count = static_cast<u32>(index);
 }
 
 void RegisterCache::SetCallerSavedHostRegs(std::initializer_list<HostReg> regs)
 {
   for (HostReg reg : regs)
-    m_host_register_state[reg] |= HostRegState::CallerSaved;
+    m_state.host_reg_state[reg] |= HostRegState::CallerSaved;
 }
 
 void RegisterCache::SetCalleeSavedHostRegs(std::initializer_list<HostReg> regs)
 {
   for (HostReg reg : regs)
-    m_host_register_state[reg] |= HostRegState::CalleeSaved;
+    m_state.host_reg_state[reg] |= HostRegState::CalleeSaved;
 }
 
 void RegisterCache::SetCPUPtrHostReg(HostReg reg)
@@ -136,17 +139,17 @@ void RegisterCache::SetCPUPtrHostReg(HostReg reg)
 
 bool RegisterCache::IsUsableHostReg(HostReg reg) const
 {
-  return (m_host_register_state[reg] & HostRegState::Usable) != HostRegState::None;
+  return (m_state.host_reg_state[reg] & HostRegState::Usable) != HostRegState::None;
 }
 
 bool RegisterCache::IsHostRegInUse(HostReg reg) const
 {
-  return (m_host_register_state[reg] & HostRegState::InUse) != HostRegState::None;
+  return (m_state.host_reg_state[reg] & HostRegState::InUse) != HostRegState::None;
 }
 
 bool RegisterCache::HasFreeHostRegister() const
 {
-  for (const HostRegState state : m_host_register_state)
+  for (const HostRegState state : m_state.host_reg_state)
   {
     if ((state & (HostRegState::Usable | HostRegState::InUse)) == (HostRegState::Usable))
       return true;
@@ -158,7 +161,7 @@ bool RegisterCache::HasFreeHostRegister() const
 u32 RegisterCache::GetUsedHostRegisters() const
 {
   u32 count = 0;
-  for (const HostRegState state : m_host_register_state)
+  for (const HostRegState state : m_state.host_reg_state)
   {
     if ((state & (HostRegState::Usable | HostRegState::InUse)) == (HostRegState::Usable | HostRegState::InUse))
       count++;
@@ -170,7 +173,7 @@ u32 RegisterCache::GetUsedHostRegisters() const
 u32 RegisterCache::GetFreeHostRegisters() const
 {
   u32 count = 0;
-  for (const HostRegState state : m_host_register_state)
+  for (const HostRegState state : m_state.host_reg_state)
   {
     if ((state & (HostRegState::Usable | HostRegState::InUse)) == (HostRegState::Usable))
       count++;
@@ -182,10 +185,10 @@ u32 RegisterCache::GetFreeHostRegisters() const
 HostReg RegisterCache::AllocateHostReg(HostRegState state /* = HostRegState::InUse */)
 {
   // try for a free register in allocation order
-  for (u32 i = 0; i < m_host_register_available_count; i++)
+  for (u32 i = 0; i < m_state.available_count; i++)
   {
     const HostReg reg = m_host_register_allocation_order[i];
-    if ((m_host_register_state[reg] & (HostRegState::Usable | HostRegState::InUse)) == HostRegState::Usable)
+    if ((m_state.host_reg_state[reg] & (HostRegState::Usable | HostRegState::InUse)) == HostRegState::Usable)
     {
       if (AllocateHostReg(reg, state))
         return reg;
@@ -201,19 +204,19 @@ HostReg RegisterCache::AllocateHostReg(HostRegState state /* = HostRegState::InU
 
 bool RegisterCache::AllocateHostReg(HostReg reg, HostRegState state /*= HostRegState::InUse*/)
 {
-  if ((m_host_register_state[reg] & HostRegState::InUse) == HostRegState::InUse)
+  if ((m_state.host_reg_state[reg] & HostRegState::InUse) == HostRegState::InUse)
     return false;
 
-  m_host_register_state[reg] |= state;
+  m_state.host_reg_state[reg] |= state;
 
-  if ((m_host_register_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+  if ((m_state.host_reg_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
       HostRegState::CalleeSaved)
   {
     // new register we need to save..
-    DebugAssert(m_host_register_callee_saved_order_count < HostReg_Count);
+    DebugAssert(m_state.callee_saved_order_count < HostReg_Count);
     m_code_generator.EmitPushHostReg(reg, GetActiveCalleeSavedRegisterCount());
-    m_host_register_callee_saved_order[m_host_register_callee_saved_order_count++] = reg;
-    m_host_register_state[reg] |= HostRegState::CalleeSavedAllocated;
+    m_state.callee_saved_order[m_state.callee_saved_order_count++] = reg;
+    m_state.host_reg_state[reg] |= HostRegState::CalleeSavedAllocated;
   }
 
   return reg;
@@ -223,21 +226,21 @@ void RegisterCache::DiscardHostReg(HostReg reg)
 {
   DebugAssert(IsHostRegInUse(reg));
   Log_DebugPrintf("Discarding host register %s", m_code_generator.GetHostRegName(reg));
-  m_host_register_state[reg] |= HostRegState::Discarded;
+  m_state.host_reg_state[reg] |= HostRegState::Discarded;
 }
 
 void RegisterCache::UndiscardHostReg(HostReg reg)
 {
   DebugAssert(IsHostRegInUse(reg));
   Log_DebugPrintf("Undiscarding host register %s", m_code_generator.GetHostRegName(reg));
-  m_host_register_state[reg] &= ~HostRegState::Discarded;
+  m_state.host_reg_state[reg] &= ~HostRegState::Discarded;
 }
 
 void RegisterCache::FreeHostReg(HostReg reg)
 {
   DebugAssert(IsHostRegInUse(reg));
   Log_DebugPrintf("Freeing host register %s", m_code_generator.GetHostRegName(reg));
-  m_host_register_state[reg] &= ~HostRegState::InUse;
+  m_state.host_reg_state[reg] &= ~HostRegState::InUse;
 }
 
 void RegisterCache::EnsureHostRegFree(HostReg reg)
@@ -247,7 +250,7 @@ void RegisterCache::EnsureHostRegFree(HostReg reg)
 
   for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
   {
-    if (m_guest_reg_cache[i].IsInHostRegister() && m_guest_reg_cache[i].GetHostRegister() == reg)
+    if (m_state.guest_reg_state[i].IsInHostRegister() && m_state.guest_reg_state[i].GetHostRegister() == reg)
       FlushGuestRegister(static_cast<Reg>(i), true, true);
   }
 }
@@ -280,7 +283,7 @@ u32 RegisterCache::PushCallerSavedRegisters() const
   u32 count = 0;
   for (u32 i = 0; i < HostReg_Count; i++)
   {
-    if ((m_host_register_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
+    if ((m_state.host_reg_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
         (HostRegState::CallerSaved | HostRegState::InUse))
     {
       m_code_generator.EmitPushHostReg(static_cast<HostReg>(i), position + count);
@@ -296,7 +299,7 @@ u32 RegisterCache::PopCallerSavedRegisters() const
   u32 count = 0;
   for (u32 i = 0; i < HostReg_Count; i++)
   {
-    if ((m_host_register_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
+    if ((m_state.host_reg_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
         (HostRegState::CallerSaved | HostRegState::InUse))
     {
       count++;
@@ -304,12 +307,12 @@ u32 RegisterCache::PopCallerSavedRegisters() const
   }
   if (count == 0)
     return 0;
-  
+
   u32 position = GetActiveCalleeSavedRegisterCount() + count - 1;
   u32 i = (HostReg_Count - 1);
   do
   {
-    if ((m_host_register_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
+    if ((m_state.host_reg_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
         (HostRegState::CallerSaved | HostRegState::InUse))
     {
       m_code_generator.EmitPopHostReg(static_cast<HostReg>(i), position);
@@ -322,27 +325,63 @@ u32 RegisterCache::PopCallerSavedRegisters() const
 
 u32 RegisterCache::PopCalleeSavedRegisters(bool commit)
 {
-  if (m_host_register_callee_saved_order_count == 0)
+  if (m_state.callee_saved_order_count == 0)
     return 0;
 
   u32 count = 0;
-  u32 i = m_host_register_callee_saved_order_count;
+  u32 i = m_state.callee_saved_order_count;
   do
   {
-    const HostReg reg = m_host_register_callee_saved_order[i - 1];
-    DebugAssert((m_host_register_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+    const HostReg reg = m_state.callee_saved_order[i - 1];
+    DebugAssert((m_state.host_reg_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
                 (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
 
     m_code_generator.EmitPopHostReg(reg, i - 1);
     if (commit)
-      m_host_register_state[reg] &= ~HostRegState::CalleeSavedAllocated;
+      m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
     count++;
     i--;
   } while (i > 0);
   if (commit)
-    m_host_register_callee_saved_order_count = 0;
-    
+    m_state.callee_saved_order_count = 0;
+
   return count;
+}
+
+void RegisterCache::PushState()
+{
+  // need to copy this manually because of the load delay values
+  RegAllocState save_state;
+  save_state.host_reg_state = m_state.host_reg_state;
+  save_state.callee_saved_order = m_state.callee_saved_order;
+  save_state.guest_reg_state = m_state.guest_reg_state;
+  save_state.guest_reg_order = m_state.guest_reg_order;
+  save_state.available_count = m_state.available_count;
+  save_state.callee_saved_order_count = m_state.callee_saved_order_count;
+  save_state.guest_reg_order_count = m_state.guest_reg_order_count;
+  save_state.load_delay_register = m_state.load_delay_register;
+  save_state.load_delay_value.regcache = m_state.load_delay_value.regcache;
+  save_state.load_delay_value.host_reg = m_state.load_delay_value.host_reg;
+  save_state.load_delay_value.size = m_state.load_delay_value.size;
+  save_state.load_delay_value.flags = m_state.load_delay_value.flags;
+  save_state.next_load_delay_register = m_state.next_load_delay_register;
+  save_state.next_load_delay_value.regcache = m_state.next_load_delay_value.regcache;
+  save_state.next_load_delay_value.host_reg = m_state.next_load_delay_value.host_reg;
+  save_state.next_load_delay_value.size = m_state.next_load_delay_value.size;
+  save_state.next_load_delay_value.flags = m_state.next_load_delay_value.flags;
+  m_state_stack.push(std::move(save_state));
+}
+
+void RegisterCache::PopState()
+{
+  Assert(!m_state_stack.empty());
+
+  // prevent destructor -> freeing of host reg
+  m_state.load_delay_value.Clear();
+  m_state.next_load_delay_value.Clear();
+
+  m_state = std::move(m_state_stack.top());
+  m_state_stack.pop();
 }
 
 Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, bool force_host_register /* = false */,
@@ -362,7 +401,7 @@ Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, b
     return Value::FromConstantU32(0);
   }
 
-  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
+  Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
   if (cache_value.IsValid())
   {
     if (cache_value.IsInHostRegister())
@@ -454,14 +493,14 @@ Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
     return std::move(value);
 
   // cancel any load delay delay
-  if (m_load_delay_register == guest_reg)
+  if (m_state.load_delay_register == guest_reg)
   {
     Log_DebugPrintf("Cancelling load delay of register %s because of non-delayed write", GetRegName(guest_reg));
-    m_load_delay_register = Reg::count;
-    m_load_delay_value.ReleaseAndClear();
+    m_state.load_delay_register = Reg::count;
+    m_state.load_delay_value.ReleaseAndClear();
   }
 
-  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
+  Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
   if (cache_value.IsInHostRegister() && value.IsInHostRegister() && cache_value.host_reg == value.host_reg)
   {
     // updating the register value.
@@ -518,20 +557,20 @@ void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
     return;
 
   // two load delays in a row? cancel the first one.
-  if (guest_reg == m_load_delay_register)
+  if (guest_reg == m_state.load_delay_register)
   {
     Log_DebugPrintf("Cancelling load delay of register %s due to new load delay", GetRegName(guest_reg));
-    m_load_delay_register = Reg::count;
-    m_load_delay_value.ReleaseAndClear();
+    m_state.load_delay_register = Reg::count;
+    m_state.load_delay_value.ReleaseAndClear();
   }
 
   // two load delay case with interpreter load delay
   m_code_generator.EmitCancelInterpreterLoadDelayForReg(guest_reg);
 
   // set up the load delay at the end of this instruction
-  Value& cache_value = m_next_load_delay_value;
-  Assert(m_next_load_delay_register == Reg::count);
-  m_next_load_delay_register = guest_reg;
+  Value& cache_value = m_state.next_load_delay_value;
+  Assert(m_state.next_load_delay_register == Reg::count);
+  m_state.next_load_delay_register = guest_reg;
 
   // If it's a temporary, we can bind that to the guest register.
   if (value.IsScratch())
@@ -555,61 +594,61 @@ void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
 void RegisterCache::UpdateLoadDelay()
 {
   // flush current load delay
-  if (m_load_delay_register != Reg::count)
+  if (m_state.load_delay_register != Reg::count)
   {
     // have to clear first because otherwise it'll release the value
-    Reg reg = m_load_delay_register;
-    Value value = std::move(m_load_delay_value);
-    m_load_delay_register = Reg::count;
+    Reg reg = m_state.load_delay_register;
+    Value value = std::move(m_state.load_delay_value);
+    m_state.load_delay_register = Reg::count;
     WriteGuestRegister(reg, std::move(value));
   }
 
   // next load delay -> load delay
-  if (m_next_load_delay_register != Reg::count)
+  if (m_state.next_load_delay_register != Reg::count)
   {
-    m_load_delay_register = m_next_load_delay_register;
-    m_load_delay_value = std::move(m_next_load_delay_value);
-    m_next_load_delay_register = Reg::count;
+    m_state.load_delay_register = m_state.next_load_delay_register;
+    m_state.load_delay_value = std::move(m_state.next_load_delay_value);
+    m_state.next_load_delay_register = Reg::count;
   }
 }
 
 void RegisterCache::WriteLoadDelayToCPU(bool clear)
 {
   // There shouldn't be a flush at the same time as there's a new load delay.
-  Assert(m_next_load_delay_register == Reg::count);
-  if (m_load_delay_register != Reg::count)
+  Assert(m_state.next_load_delay_register == Reg::count);
+  if (m_state.load_delay_register != Reg::count)
   {
-    Log_DebugPrintf("Flushing pending load delay of %s", GetRegName(m_load_delay_register));
-    m_code_generator.EmitStoreInterpreterLoadDelay(m_load_delay_register, m_load_delay_value);
+    Log_DebugPrintf("Flushing pending load delay of %s", GetRegName(m_state.load_delay_register));
+    m_code_generator.EmitStoreInterpreterLoadDelay(m_state.load_delay_register, m_state.load_delay_value);
     if (clear)
     {
-      m_load_delay_register = Reg::count;
-      m_load_delay_value.ReleaseAndClear();
+      m_state.load_delay_register = Reg::count;
+      m_state.load_delay_value.ReleaseAndClear();
     }
   }
 }
 
 void RegisterCache::FlushLoadDelay(bool clear)
 {
-  Assert(m_next_load_delay_register == Reg::count);
+  Assert(m_state.next_load_delay_register == Reg::count);
 
-  if (m_load_delay_register != Reg::count)
+  if (m_state.load_delay_register != Reg::count)
   {
     // if this is an exception exit, write the new value to the CPU register file, but keep it tracked for the next
     // non-exception-raised path. TODO: push/pop whole state would avoid this issue
-    m_code_generator.EmitStoreGuestRegister(m_load_delay_register, m_load_delay_value);
+    m_code_generator.EmitStoreGuestRegister(m_state.load_delay_register, m_state.load_delay_value);
 
     if (clear)
     {
-      m_load_delay_register = Reg::count;
-      m_load_delay_value.ReleaseAndClear();
+      m_state.load_delay_register = Reg::count;
+      m_state.load_delay_value.ReleaseAndClear();
     }
   }
 }
 
 void RegisterCache::FlushGuestRegister(Reg guest_reg, bool invalidate, bool clear_dirty)
 {
-  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
+  Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
   if (cache_value.IsDirty())
   {
     if (cache_value.IsInHostRegister())
@@ -633,7 +672,7 @@ void RegisterCache::FlushGuestRegister(Reg guest_reg, bool invalidate, bool clea
 
 void RegisterCache::InvalidateGuestRegister(Reg guest_reg)
 {
-  Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
+  Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
   if (!cache_value.IsValid())
     return;
 
@@ -651,7 +690,7 @@ void RegisterCache::InvalidateAllNonDirtyGuestRegisters()
 {
   for (u8 reg = 0; reg < static_cast<u8>(Reg::count); reg++)
   {
-    Value& cache_value = m_guest_reg_cache[reg];
+    Value& cache_value = m_state.guest_reg_state[reg];
     if (cache_value.IsValid() && !cache_value.IsDirty())
       InvalidateGuestRegister(static_cast<Reg>(reg));
   }
@@ -665,11 +704,11 @@ void RegisterCache::FlushAllGuestRegisters(bool invalidate, bool clear_dirty)
 
 bool RegisterCache::EvictOneGuestRegister()
 {
-  if (m_guest_register_order_count == 0)
+  if (m_state.guest_reg_order_count == 0)
     return false;
 
   // evict the register used the longest time ago
-  Reg evict_reg = m_guest_register_order[m_guest_register_order_count - 1];
+  Reg evict_reg = m_state.guest_reg_order[m_state.guest_reg_order_count - 1];
   Log_ProfilePrintf("Evicting guest register %s", GetRegName(evict_reg));
   FlushGuestRegister(evict_reg, true, true);
 
@@ -678,18 +717,18 @@ bool RegisterCache::EvictOneGuestRegister()
 
 void RegisterCache::ClearRegisterFromOrder(Reg reg)
 {
-  for (u32 i = 0; i < m_guest_register_order_count; i++)
+  for (u32 i = 0; i < m_state.guest_reg_order_count; i++)
   {
-    if (m_guest_register_order[i] == reg)
+    if (m_state.guest_reg_order[i] == reg)
     {
       // move the registers after backwards into this spot
-      const u32 count_after = m_guest_register_order_count - i - 1;
+      const u32 count_after = m_state.guest_reg_order_count - i - 1;
       if (count_after > 0)
-        std::memmove(&m_guest_register_order[i], &m_guest_register_order[i + 1], sizeof(Reg) * count_after);
+        std::memmove(&m_state.guest_reg_order[i], &m_state.guest_reg_order[i + 1], sizeof(Reg) * count_after);
       else
-        m_guest_register_order[i] = Reg::count;
+        m_state.guest_reg_order[i] = Reg::count;
 
-      m_guest_register_order_count--;
+      m_state.guest_reg_order_count--;
       return;
     }
   }
@@ -699,16 +738,16 @@ void RegisterCache::ClearRegisterFromOrder(Reg reg)
 
 void RegisterCache::PushRegisterToOrder(Reg reg)
 {
-  for (u32 i = 0; i < m_guest_register_order_count; i++)
+  for (u32 i = 0; i < m_state.guest_reg_order_count; i++)
   {
-    if (m_guest_register_order[i] == reg)
+    if (m_state.guest_reg_order[i] == reg)
     {
       // move the registers after backwards into this spot
       const u32 count_before = i;
       if (count_before > 0)
-        std::memmove(&m_guest_register_order[1], &m_guest_register_order[0], sizeof(Reg) * count_before);
+        std::memmove(&m_state.guest_reg_order[1], &m_state.guest_reg_order[0], sizeof(Reg) * count_before);
 
-      m_guest_register_order[0] = reg;
+      m_state.guest_reg_order[0] = reg;
       return;
     }
   }
@@ -718,11 +757,11 @@ void RegisterCache::PushRegisterToOrder(Reg reg)
 
 void RegisterCache::AppendRegisterToOrder(Reg reg)
 {
-  DebugAssert(m_guest_register_order_count < HostReg_Count);
-  if (m_guest_register_order_count > 0)
-    std::memmove(&m_guest_register_order[1], &m_guest_register_order[0], sizeof(Reg) * m_guest_register_order_count);
-  m_guest_register_order[0] = reg;
-  m_guest_register_order_count++;
+  DebugAssert(m_state.guest_reg_order_count < HostReg_Count);
+  if (m_state.guest_reg_order_count > 0)
+    std::memmove(&m_state.guest_reg_order[1], &m_state.guest_reg_order[0], sizeof(Reg) * m_state.guest_reg_order_count);
+  m_state.guest_reg_order[0] = reg;
+  m_state.guest_reg_order_count++;
 }
 
 } // namespace CPU::Recompiler

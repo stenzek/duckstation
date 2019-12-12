@@ -219,9 +219,13 @@ void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
   m_emit->test(GetHostReg8(value), GetHostReg8(value));
   m_emit->jnz(GetCurrentFarCodePointer());
 
+  m_register_cache.PushState();
+
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 }
 
 void CodeGenerator::FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
@@ -1572,10 +1576,14 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
   m_emit->test(GetHostReg64(result.host_reg), GetHostReg64(result.host_reg));
   m_emit->js(GetCurrentFarCodePointer());
 
+  m_register_cache.PushState();
+
   // load exception path
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 
   // Downcast to ignore upper 56/48/32 bits. This should be a noop.
   switch (size)
@@ -1623,7 +1631,7 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
       break;
   }
 
-  Xbyak::Label store_okay;
+  m_register_cache.PushState();
 
   m_emit->test(GetHostReg8(result), GetHostReg8(result));
   m_emit->jz(GetCurrentFarCodePointer());
@@ -1632,6 +1640,8 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 }
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
@@ -1767,10 +1777,14 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
 
 void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
 {
-  // we have to always read the old PC.. when we can push/pop the register cache state this won't be needed
-  Value old_npc;
+  // allocate scratch register for reading npc - we return to the main path, so this could cause a reg flush
+  Value old_npc = m_register_cache.AllocateScratch(RegSize_32);
+
+  // npc gets modified by the branch, so we can't trust it on returning. same for lr_reg, which might contain a dirty
+  // value
+  m_register_cache.FlushGuestRegister(Reg::npc, true, true);
   if (lr_reg != Reg::count)
-    old_npc = m_register_cache.ReadGuestRegister(Reg::npc, false, true);
+    m_register_cache.FlushGuestRegister(lr_reg, true, true);
 
   // condition is inverted because we want the case for skipping it
   Xbyak::Label skip_branch;
@@ -1783,8 +1797,8 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
     // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
     // if we don't cancel it, at the end of the instruction the value we write can be overridden.
     EmitCancelInterpreterLoadDelayForReg(lr_reg);
-    m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
-    m_register_cache.FlushGuestRegister(lr_reg, true, true);
+    EmitLoadGuestRegister(old_npc.host_reg, Reg::npc);
+    EmitStoreGuestRegister(lr_reg, old_npc);
   }
 
   // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
@@ -1803,17 +1817,20 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
       m_emit->jnz(GetCurrentFarCodePointer());
     }
 
+    m_register_cache.PushState();
+
     // exception exit for misaligned target
     SwitchToFarCode();
     EmitFunctionCall(nullptr, &Thunks::RaiseAddressException, m_register_cache.GetCPUPtr(), branch_target,
                      Value::FromConstantU8(0), Value::FromConstantU8(1));
     EmitExceptionExit();
     SwitchToNearCode();
+
+    m_register_cache.PopState();
   }
 
   // branch taken path - write new PC and flush it, since two branches
-  m_register_cache.WriteGuestRegister(Reg::npc, std::move(branch_target));
-  m_register_cache.FlushGuestRegister(Reg::npc, true, true);
+  EmitStoreGuestRegister(Reg::npc, branch_target);
   EmitStoreCPUStructField(offsetof(Core, m_current_instruction_was_branch_taken), Value::FromConstantU8(1));
 
   // converge point
@@ -1836,6 +1853,8 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
     return;
   }
 
+  m_register_cache.PushState();
+
   const void* far_code_ptr = GetCurrentFarCodePointer();
   EmitConditionalJump(condition, false, m_emit, far_code_ptr);
 
@@ -1844,6 +1863,8 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
                    Value::FromConstantU8(static_cast<u8>(excode)));
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 }
 
 #if 0

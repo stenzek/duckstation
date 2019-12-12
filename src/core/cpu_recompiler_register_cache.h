@@ -5,6 +5,7 @@
 
 #include <array>
 #include <optional>
+#include <stack>
 #include <tuple>
 
 namespace CPU::Recompiler {
@@ -184,7 +185,7 @@ public:
   RegisterCache(CodeGenerator& code_generator);
   ~RegisterCache();
 
-  u32 GetActiveCalleeSavedRegisterCount() const { return m_host_register_callee_saved_order_count; }
+  u32 GetActiveCalleeSavedRegisterCount() const { return m_state.callee_saved_order_count; }
 
   //////////////////////////////////////////////////////////////////////////
   // Register Allocation
@@ -228,6 +229,12 @@ public:
   /// Restore callee-saved registers. Call at the end of the function.
   u32 PopCalleeSavedRegisters(bool commit);
 
+  /// Pushes the register allocator state, use when entering branched code.
+  void PushState();
+
+  /// Pops the register allocator state, use when leaving branched code.
+  void PopState();
+
   //////////////////////////////////////////////////////////////////////////
   // Scratch Register Allocation
   //////////////////////////////////////////////////////////////////////////
@@ -241,20 +248,20 @@ public:
   /// Returns true if the specified guest register is cached.
   bool IsGuestRegisterCached(Reg guest_reg) const
   {
-    const Value& cache_value = m_guest_reg_cache[static_cast<u8>(guest_reg)];
+    const Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
     return cache_value.IsConstant() || cache_value.IsInHostRegister();
   }
 
   /// Returns the host register if the guest register is cached.
   std::optional<HostReg> GetHostRegisterForGuestRegister(Reg guest_reg) const
   {
-    if (!m_guest_reg_cache[static_cast<u8>(guest_reg)].IsInHostRegister())
+    if (!m_state.guest_reg_state[static_cast<u8>(guest_reg)].IsInHostRegister())
       return std::nullopt;
-    return m_guest_reg_cache[static_cast<u8>(guest_reg)].GetHostRegister();
+    return m_state.guest_reg_state[static_cast<u8>(guest_reg)].GetHostRegister();
   }
 
   /// Returns true if there is a load delay which will be stored at the end of the instruction.
-  bool HasLoadDelay() const { return m_load_delay_register != Reg::count; }
+  bool HasLoadDelay() const { return m_state.load_delay_register != Reg::count; }
 
   Value ReadGuestRegister(Reg guest_reg, bool cache = true, bool force_host_register = false,
                           HostReg forced_host_reg = HostReg_Invalid);
@@ -288,24 +295,29 @@ private:
 
   CodeGenerator& m_code_generator;
 
-  HostReg m_cpu_ptr_host_register = {};
-  std::array<HostRegState, HostReg_Count> m_host_register_state{};
   std::array<HostReg, HostReg_Count> m_host_register_allocation_order{};
-  u32 m_host_register_available_count = 0;
 
-  std::array<Value, static_cast<u8>(Reg::count)> m_guest_reg_cache{};
+  HostReg m_cpu_ptr_host_register = {};
 
-  std::array<Reg, HostReg_Count> m_guest_register_order{};
-  u32 m_guest_register_order_count = 0;
+  struct RegAllocState
+  {
+    std::array<HostRegState, HostReg_Count> host_reg_state{};
+    std::array<HostReg, HostReg_Count> callee_saved_order{};
+    std::array<Value, static_cast<u8>(Reg::count)> guest_reg_state{};
+    std::array<Reg, HostReg_Count> guest_reg_order{};
 
-  std::array<HostReg, HostReg_Count> m_host_register_callee_saved_order{};
-  u32 m_host_register_callee_saved_order_count = 0;
+    u32 available_count = 0;
+    u32 callee_saved_order_count = 0;
+    u32 guest_reg_order_count = 0;
 
-  Reg m_load_delay_register = Reg::count;
-  Value m_load_delay_value{};
+    Reg load_delay_register = Reg::count;
+    Value load_delay_value{};
 
-  Reg m_next_load_delay_register = Reg::count;
-  Value m_next_load_delay_value{};
+    Reg next_load_delay_register = Reg::count;
+    Value next_load_delay_value{};
+  } m_state;
+
+  std::stack<RegAllocState> m_state_stack;
 };
 
 } // namespace CPU::Recompiler
