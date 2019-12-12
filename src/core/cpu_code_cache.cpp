@@ -46,7 +46,7 @@ void CodeCache::Execute()
     if (m_core->HasPendingInterrupt())
     {
       // TODO: Fill in m_next_instruction...
-      // m_core->SafeReadMemoryWord(m_core->m_regs.pc, &m_core->m_next_instruction.bits);
+      m_core->SafeReadMemoryWord(m_core->m_regs.pc, &m_core->m_next_instruction.bits);
       m_core->DispatchInterrupt();
       next_block_key = GetNextBlockKey();
     }
