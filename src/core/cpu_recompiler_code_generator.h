@@ -131,12 +131,6 @@ public:
   void EmitPushHostReg(HostReg reg, u32 position);
   void EmitPopHostReg(HostReg reg, u32 position);
 
-  // Flags copying from host.
-#if defined(Y_CPU_X64)
-  void ReadFlagsFromHost(Value* value);
-  Value ReadFlagsFromHost();
-#endif
-
   // Value ops
   Value AddValues(const Value& lhs, const Value& rhs, bool set_flags);
   Value SubValues(const Value& lhs, const Value& rhs, bool set_flags);
