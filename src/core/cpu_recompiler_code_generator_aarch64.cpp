@@ -5,15 +5,6 @@ Log_SetChannel(CPU::Recompiler);
 
 namespace a64 = vixl::aarch64;
 
-// Really need push/pop register allocator state...
-#define REG_ALLOC_HACK()                                                                                               \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    Value temp_alloc_hack_0 = m_register_cache.AllocateScratch(RegSize_64);                                            \
-    Value temp_alloc_hack_1 = m_register_cache.AllocateScratch(RegSize_64);                                            \
-    Value temp_alloc_hack_2 = m_register_cache.AllocateScratch(RegSize_64);                                            \
-  } while (0)
-
 namespace CPU::Recompiler {
 
 constexpr HostReg RCPUPTR = 19;
@@ -193,6 +184,9 @@ void CodeGenerator::EmitEndBlock()
 
 void CodeGenerator::EmitExceptionExit()
 {
+  // toss away our PC value since we're jumping to the exception handler
+  m_register_cache.InvalidateGuestRegister(Reg::pc);
+
   // ensure all unflushed registers are written back
   m_register_cache.FlushAllGuestRegisters(false, false);
 
@@ -209,19 +203,24 @@ void CodeGenerator::EmitExceptionExit()
 void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
 {
   Assert(!value.IsConstant() && value.IsInHostRegister());
-  REG_ALLOC_HACK();
+
+  m_register_cache.PushState();
 
   // TODO: This is... not great.
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
   a64::Label skip_branch;
   m_emit->Cbz(GetHostReg64(value.host_reg), &skip_branch);
-  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
-  m_emit->Br(GetHostReg64(temp));
+  {
+    Value temp = m_register_cache.AllocateScratch(RegSize_64);
+    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
+    m_emit->Br(GetHostReg64(temp));
+  }
   m_emit->Bind(&skip_branch);
 
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 }
 
 void CodeGenerator::FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
@@ -339,7 +338,7 @@ void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
   }
 }
 
-void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
+void CodeGenerator::EmitAdd(HostReg to_reg, HostReg from_reg, const Value& value, bool set_flags)
 {
   Assert(value.IsConstant() || value.IsInHostRegister());
 
@@ -349,16 +348,16 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
     if (value.size < RegSize_64)
     {
       if (set_flags)
-        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
       else
-        m_emit->add(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->add(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
     }
     else
     {
       if (set_flags)
-        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
       else
-        m_emit->add(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->add(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
     }
 
     return;
@@ -371,16 +370,16 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
     if (value.size < RegSize_64)
     {
       if (set_flags)
-        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
+        m_emit->adds(GetHostReg32(to_reg), GetHostReg32(from_reg), constant_value);
       else
-        m_emit->add(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
+        m_emit->add(GetHostReg32(to_reg), GetHostReg32(from_reg), constant_value);
     }
     else
     {
       if (set_flags)
-        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
+        m_emit->adds(GetHostReg64(to_reg), GetHostReg64(from_reg), constant_value);
       else
-        m_emit->add(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
+        m_emit->add(GetHostReg64(to_reg), GetHostReg64(from_reg), constant_value);
     }
 
     return;
@@ -392,10 +391,10 @@ void CodeGenerator::EmitAdd(HostReg to_reg, const Value& value, bool set_flags)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
     m_emit->Mov(GetHostReg64(temp_value.host_reg), constant_value);
-  EmitAdd(to_reg, temp_value, set_flags);
+  EmitAdd(to_reg, from_reg, temp_value, set_flags);
 }
 
-void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
+void CodeGenerator::EmitSub(HostReg to_reg, HostReg from_reg, const Value& value, bool set_flags)
 {
   Assert(value.IsConstant() || value.IsInHostRegister());
 
@@ -405,16 +404,16 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
     if (value.size < RegSize_64)
     {
       if (set_flags)
-        m_emit->subs(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->subs(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
       else
-        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
     }
     else
     {
       if (set_flags)
-        m_emit->subs(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->subs(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
       else
-        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
     }
 
     return;
@@ -427,16 +426,16 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
     if (value.size < RegSize_64)
     {
       if (set_flags)
-        m_emit->subs(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
+        m_emit->subs(GetHostReg32(to_reg), GetHostReg32(from_reg), constant_value);
       else
-        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(to_reg), constant_value);
+        m_emit->sub(GetHostReg32(to_reg), GetHostReg32(from_reg), constant_value);
     }
     else
     {
       if (set_flags)
-        m_emit->subs(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
+        m_emit->subs(GetHostReg64(to_reg), GetHostReg64(from_reg), constant_value);
       else
-        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(to_reg), constant_value);
+        m_emit->sub(GetHostReg64(to_reg), GetHostReg64(from_reg), constant_value);
     }
 
     return;
@@ -448,7 +447,7 @@ void CodeGenerator::EmitSub(HostReg to_reg, const Value& value, bool set_flags)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
     m_emit->Mov(GetHostReg64(temp_value.host_reg), constant_value);
-  EmitSub(to_reg, temp_value, set_flags);
+  EmitSub(to_reg, from_reg, temp_value, set_flags);
 }
 
 void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
@@ -557,7 +556,7 @@ void CodeGenerator::EmitDec(HostReg to_reg, RegSize size)
 #endif
 }
 
-void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
 {
   switch (size)
   {
@@ -566,29 +565,29 @@ void CodeGenerator::EmitShl(HostReg to_reg, RegSize size, const Value& amount_va
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit->lsl(GetHostReg32(to_reg), GetHostReg32(to_reg), amount_value.constant_value & 0x1F);
+        m_emit->lsl(GetHostReg32(to_reg), GetHostReg32(from_reg), amount_value.constant_value & 0x1F);
       else
-        m_emit->lslv(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(amount_value));
+        m_emit->lslv(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(amount_value));
 
       if (size == RegSize_8)
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFF);
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), 0xFF);
       else if (size == RegSize_16)
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFFFF);
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), 0xFFFF);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit->lsl(GetHostReg64(to_reg), GetHostReg64(to_reg), amount_value.constant_value & 0x3F);
+        m_emit->lsl(GetHostReg64(to_reg), GetHostReg64(from_reg), amount_value.constant_value & 0x3F);
       else
-        m_emit->lslv(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(amount_value));
+        m_emit->lslv(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(amount_value));
     }
     break;
   }
 }
 
-void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
 {
   switch (size)
   {
@@ -597,14 +596,14 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit->lsr(GetHostReg32(to_reg), GetHostReg32(to_reg), amount_value.constant_value & 0x1F);
+        m_emit->lsr(GetHostReg32(to_reg), GetHostReg32(from_reg), amount_value.constant_value & 0x1F);
       else
-        m_emit->lsrv(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(amount_value));
+        m_emit->lsrv(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(amount_value));
 
       if (size == RegSize_8)
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFF);
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), 0xFF);
       else if (size == RegSize_16)
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFFFF);
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), 0xFFFF);
     }
     break;
 
@@ -619,7 +618,7 @@ void CodeGenerator::EmitShr(HostReg to_reg, RegSize size, const Value& amount_va
   }
 }
 
-void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
 {
   switch (size)
   {
@@ -628,23 +627,23 @@ void CodeGenerator::EmitSar(HostReg to_reg, RegSize size, const Value& amount_va
     case RegSize_32:
     {
       if (amount_value.IsConstant())
-        m_emit->asr(GetHostReg32(to_reg), GetHostReg32(to_reg), amount_value.constant_value & 0x1F);
+        m_emit->asr(GetHostReg32(to_reg), GetHostReg32(from_reg), amount_value.constant_value & 0x1F);
       else
-        m_emit->asrv(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(amount_value));
+        m_emit->asrv(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(amount_value));
 
       if (size == RegSize_8)
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFF);
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), 0xFF);
       else if (size == RegSize_16)
-        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), 0xFFFF);
+        m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), 0xFFFF);
     }
     break;
 
     case RegSize_64:
     {
       if (amount_value.IsConstant())
-        m_emit->asr(GetHostReg64(to_reg), GetHostReg64(to_reg), amount_value.constant_value & 0x3F);
+        m_emit->asr(GetHostReg64(to_reg), GetHostReg64(from_reg), amount_value.constant_value & 0x3F);
       else
-        m_emit->asrv(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(amount_value));
+        m_emit->asrv(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(amount_value));
     }
     break;
   }
@@ -657,7 +656,7 @@ static bool CanFitInBitwiseImmediate(const Value& value)
   return a64::Assembler::IsImmLogical(s64(value.constant_value), reg_size, &n, &imm_s, &imm_r);
 }
 
-void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitAnd(HostReg to_reg, HostReg from_reg, const Value& value)
 {
   Assert(value.IsConstant() || value.IsInHostRegister());
 
@@ -665,9 +664,9 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
   if (value.IsInHostRegister())
   {
     if (value.size < RegSize_64)
-      m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+      m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
     else
-      m_emit->and_(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+      m_emit->and_(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
 
     return;
   }
@@ -676,9 +675,9 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
   if (CanFitInBitwiseImmediate(value))
   {
     if (value.size < RegSize_64)
-      m_emit->and_(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+      m_emit->and_(GetHostReg32(to_reg), GetHostReg32(from_reg), s64(value.constant_value));
     else
-      m_emit->and_(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+      m_emit->and_(GetHostReg64(to_reg), GetHostReg64(from_reg), s64(value.constant_value));
 
     return;
   }
@@ -689,10 +688,10 @@ void CodeGenerator::EmitAnd(HostReg to_reg, const Value& value)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
     m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
-  EmitAnd(to_reg, temp_value);
+  EmitAnd(to_reg, from_reg, temp_value);
 }
 
-void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitOr(HostReg to_reg, HostReg from_reg, const Value& value)
 {
   Assert(value.IsConstant() || value.IsInHostRegister());
 
@@ -700,9 +699,9 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
   if (value.IsInHostRegister())
   {
     if (value.size < RegSize_64)
-      m_emit->orr(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+      m_emit->orr(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
     else
-      m_emit->orr(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+      m_emit->orr(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
 
     return;
   }
@@ -711,9 +710,9 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
   if (CanFitInBitwiseImmediate(value))
   {
     if (value.size < RegSize_64)
-      m_emit->orr(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+      m_emit->orr(GetHostReg32(to_reg), GetHostReg32(from_reg), s64(value.constant_value));
     else
-      m_emit->orr(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+      m_emit->orr(GetHostReg64(to_reg), GetHostReg64(from_reg), s64(value.constant_value));
 
     return;
   }
@@ -724,10 +723,10 @@ void CodeGenerator::EmitOr(HostReg to_reg, const Value& value)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
     m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
-  EmitOr(to_reg, temp_value);
+  EmitOr(to_reg, from_reg, temp_value);
 }
 
-void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
+void CodeGenerator::EmitXor(HostReg to_reg, HostReg from_reg, const Value& value)
 {
   Assert(value.IsConstant() || value.IsInHostRegister());
 
@@ -735,9 +734,9 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
   if (value.IsInHostRegister())
   {
     if (value.size < RegSize_64)
-      m_emit->eor(GetHostReg32(to_reg), GetHostReg32(to_reg), GetHostReg32(value.host_reg));
+      m_emit->eor(GetHostReg32(to_reg), GetHostReg32(from_reg), GetHostReg32(value.host_reg));
     else
-      m_emit->eor(GetHostReg64(to_reg), GetHostReg64(to_reg), GetHostReg64(value.host_reg));
+      m_emit->eor(GetHostReg64(to_reg), GetHostReg64(from_reg), GetHostReg64(value.host_reg));
 
     return;
   }
@@ -746,9 +745,9 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
   if (CanFitInBitwiseImmediate(value))
   {
     if (value.size < RegSize_64)
-      m_emit->eor(GetHostReg32(to_reg), GetHostReg32(to_reg), s64(value.constant_value));
+      m_emit->eor(GetHostReg32(to_reg), GetHostReg32(from_reg), s64(value.constant_value));
     else
-      m_emit->eor(GetHostReg64(to_reg), GetHostReg64(to_reg), s64(value.constant_value));
+      m_emit->eor(GetHostReg64(to_reg), GetHostReg64(from_reg), s64(value.constant_value));
 
     return;
   }
@@ -759,7 +758,7 @@ void CodeGenerator::EmitXor(HostReg to_reg, const Value& value)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
     m_emit->Mov(GetHostReg64(temp_value.host_reg), s64(value.constant_value));
-  EmitXor(to_reg, temp_value);
+  EmitXor(to_reg, from_reg, temp_value);
 }
 
 void CodeGenerator::EmitTest(HostReg to_reg, const Value& value)
@@ -1239,18 +1238,20 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
       break;
   }
 
-  REG_ALLOC_HACK();
-
   a64::Label load_okay;
   m_emit->Tbz(GetHostReg64(result.host_reg), 63, &load_okay);
   m_emit->Mov(GetHostReg64(result.host_reg), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
   m_emit->Br(GetHostReg64(result.host_reg));
   m_emit->Bind(&load_okay);
 
+  m_register_cache.PushState();
+
   // load exception path
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 
   // Downcast to ignore upper 56/48/32 bits. This should be a noop.
   switch (size)
@@ -1298,18 +1299,20 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
       break;
   }
 
-  REG_ALLOC_HACK();
-
   a64::Label store_okay;
   m_emit->Cbnz(GetHostReg64(result.host_reg), &store_okay);
   m_emit->Mov(GetHostReg64(result.host_reg), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
   m_emit->Br(GetHostReg64(result.host_reg));
   m_emit->Bind(&store_okay);
 
+  m_register_cache.PushState();
+
   // store exception path
   SwitchToFarCode();
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 }
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
@@ -1456,32 +1459,41 @@ static void EmitConditionalJump(Condition condition, bool invert, a64::MacroAsse
 
 void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
 {
-  // we have to always read the old PC.. when we can push/pop the register cache state this won't be needed
-  Value old_npc;
-  if (lr_reg != Reg::count)
-    old_npc = m_register_cache.ReadGuestRegister(Reg::npc, false, true);
+  // ensure the lr register is flushed, since we want it's correct value after the branch
+  if (lr_reg != Reg::count && lr_reg != Reg::zero)
+    m_register_cache.FlushGuestRegister(lr_reg, true, true);
 
-  REG_ALLOC_HACK();
+  // compute return address, which is also set as the new pc when the branch isn't taken
+  Value new_pc;
+  if (condition != Condition::Always || lr_reg != Reg::count)
+  {
+    new_pc = AddValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(4), false);
+    if (!new_pc.IsInHostRegister())
+      new_pc = GetValueInHostRegister(new_pc);
+  }
 
-  // condition is inverted because we want the case for skipping it
   a64::Label skip_branch;
   if (condition != Condition::Always)
+  {
+    // condition is inverted because we want the case for skipping it
     EmitConditionalJump(condition, true, m_emit, &skip_branch);
+  }
 
   // save the old PC if we want to
-  if (lr_reg != Reg::count)
+  if (lr_reg != Reg::count && lr_reg != Reg::zero)
   {
     // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
     // if we don't cancel it, at the end of the instruction the value we write can be overridden.
     EmitCancelInterpreterLoadDelayForReg(lr_reg);
-    m_register_cache.WriteGuestRegister(lr_reg, std::move(old_npc));
-    m_register_cache.FlushGuestRegister(lr_reg, true, true);
+    EmitStoreGuestRegister(lr_reg, new_pc);
   }
 
   // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
   // strange.
   if (!branch_target.IsConstant() || (branch_target.constant_value & 0x3) != 0)
   {
+    m_register_cache.PushState();
+
     if (branch_target.IsConstant())
     {
       Log_WarningPrintf("Misaligned constant target branch 0x%08X, this is strange",
@@ -1491,11 +1503,12 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
     {
       // check the alignment of the target
       a64::Label branch_target_okay;
-      Value far_code_addr = m_register_cache.AllocateScratch(RegSize_64);
       m_emit->tst(GetHostReg32(branch_target), 0x3);
       m_emit->B(a64::eq, &branch_target_okay);
+
+      Value far_code_addr = m_register_cache.AllocateScratch(RegSize_64);
       m_emit->Mov(GetHostReg64(far_code_addr), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
-      m_emit->br(GetHostReg64(far_code_addr));
+      m_emit->br(GetHostReg64(far_code_addr));     
       m_emit->Bind(&branch_target_okay);
     }
 
@@ -1505,15 +1518,22 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
                      Value::FromConstantU8(0), Value::FromConstantU8(1));
     EmitExceptionExit();
     SwitchToNearCode();
+
+    m_register_cache.PopState();
   }
 
-  // branch taken path - write new PC and flush it, since two branches
-  m_register_cache.WriteGuestRegister(Reg::npc, std::move(branch_target));
-  m_register_cache.FlushGuestRegister(Reg::npc, true, true);
-  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_was_branch_taken), Value::FromConstantU8(1));
+  // branch taken path - change the return address/new pc
+  if (condition != Condition::Always)
+    EmitCopyValue(new_pc.GetHostRegister(), branch_target);
 
   // converge point
   m_emit->Bind(&skip_branch);
+
+  // update pc
+  if (condition != Condition::Always)
+    m_register_cache.WriteGuestRegister(Reg::pc, std::move(new_pc));
+  else
+    m_register_cache.WriteGuestRegister(Reg::pc, std::move(branch_target));
 }
 
 void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
@@ -1521,26 +1541,26 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
   if (condition == Condition::Always)
   {
     // no need to use far code if we're always raising the exception
-    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
-                     Value::FromConstantU8(static_cast<u8>(excode)));
+    m_register_cache.InvalidateGuestRegister(Reg::pc);
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
 
-    // PC should be synced at this point. If we leave the 4 on here for this instruction, we mess up npc.
-    Assert(m_delayed_pc_add == 4);
-    m_delayed_pc_add = 0;
+    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
+                     Value::FromConstantU8(static_cast<u8>(excode)));
     return;
   }
-
-  Value far_code_addr = m_register_cache.AllocateScratch(RegSize_64);
-
-  REG_ALLOC_HACK();
 
   a64::Label skip_raise_exception;
   EmitConditionalJump(condition, true, m_emit, &skip_raise_exception);
 
-  m_emit->Mov(GetHostReg64(far_code_addr), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
-  m_emit->Br(GetHostReg64(far_code_addr));
+  m_register_cache.PushState();
+
+  {
+    Value far_code_addr = m_register_cache.AllocateScratch(RegSize_64);
+    m_emit->Mov(GetHostReg64(far_code_addr), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
+    m_emit->Br(GetHostReg64(far_code_addr));
+  }
+
   m_emit->Bind(&skip_raise_exception);
 
   SwitchToFarCode();
@@ -1548,6 +1568,8 @@ void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* 
                    Value::FromConstantU8(static_cast<u8>(excode)));
   EmitExceptionExit();
   SwitchToNearCode();
+
+  m_register_cache.PopState();
 }
 
 void ASMFunctions::Generate(JitCodeBuffer* code_buffer) {}
