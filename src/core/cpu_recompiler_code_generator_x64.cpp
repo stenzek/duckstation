@@ -1862,8 +1862,9 @@ static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGen
 void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
 {
   // ensure the lr register is flushed, since we want it's correct value after the branch
+  // we don't want to invalidate it yet because of "jalr r0, r0", branch_target could be the lr_reg.
   if (lr_reg != Reg::count && lr_reg != Reg::zero)
-    m_register_cache.FlushGuestRegister(lr_reg, true, true);
+    m_register_cache.FlushGuestRegister(lr_reg, false, true);
 
   // compute return address, which is also set as the new pc when the branch isn't taken
   Value new_pc;
@@ -1930,6 +1931,10 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
     m_register_cache.WriteGuestRegister(Reg::pc, std::move(new_pc));
   else
     m_register_cache.WriteGuestRegister(Reg::pc, std::move(branch_target));
+
+  // now invalidate lr becuase it was possibly written in the branch, and we don't need branch_target anymore
+  if (lr_reg != Reg::count && lr_reg != Reg::zero)
+    m_register_cache.InvalidateGuestRegister(lr_reg);
 }
 
 void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
