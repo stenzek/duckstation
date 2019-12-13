@@ -150,8 +150,34 @@ std::optional<ConsoleRegion> GameList::GetRegionForCode(std::string_view code)
     return std::nullopt;
 }
 
+std::optional<ConsoleRegion> GameList::GetRegionFromSystemArea(CDImage* cdi)
+{
+  // The license code is on sector 4 of the disc.
+  u8 sector[CDImage::DATA_SECTOR_SIZE];
+  if (!cdi->Seek(1, 4) || cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
+    return std::nullopt;
+
+  static constexpr char ntsc_u_string[] = "          Licensed  by          Sony Computer Entertainment Amer  ica ";
+  static constexpr char ntsc_j_string[] = "          Licensed  by          Sony Computer Entertainment Inc.";
+  static constexpr char pal_string[] = "          Licensed  by          Sony Computer Entertainment Euro pe";
+
+  // subtract one for the terminating null
+  if (std::equal(ntsc_u_string, ntsc_u_string + countof(ntsc_u_string) - 1, sector))
+    return ConsoleRegion::NTSC_U;
+  else if (std::equal(ntsc_j_string, ntsc_j_string + countof(ntsc_j_string) - 1, sector))
+    return ConsoleRegion::NTSC_J;
+  else if (std::equal(pal_string, pal_string + countof(pal_string) - 1, sector))
+    return ConsoleRegion::PAL;
+
+  return std::nullopt;
+}
+
 std::optional<ConsoleRegion> GameList::GetRegionForImage(CDImage* cdi)
 {
+  std::optional<ConsoleRegion> system_area_region = GetRegionFromSystemArea(cdi);
+  if (system_area_region)
+    return system_area_region;
+
   std::string code = GetGameCodeForImage(cdi);
   if (code.empty())
     return std::nullopt;
@@ -240,6 +266,8 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
 
   entry->path = path;
   entry->code = GetGameCodeForImage(cdi.get());
+  entry->region =
+    GetRegionFromSystemArea(cdi.get()).value_or(GetRegionForCode(entry->code).value_or(ConsoleRegion::NTSC_U));
   entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   entry->type = EntryType::Disc;
   cdi.reset();
@@ -254,7 +282,6 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
   {
     Log_WarningPrintf("'%s' not found in database", entry->code.c_str());
     entry->title = entry->code;
-    entry->region = GetRegionForCode(entry->code).value_or(ConsoleRegion::NTSC_U);
   }
 
   return true;
