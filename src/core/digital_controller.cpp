@@ -11,10 +11,17 @@ ControllerType DigitalController::GetType() const
   return ControllerType::DigitalController;
 }
 
+std::optional<s32> DigitalController::GetAxisCodeByName(std::string_view axis_name) const
+{
+  return StaticGetAxisCodeByName(axis_name);
+}
+
 std::optional<s32> DigitalController::GetButtonCodeByName(std::string_view button_name) const
 {
   return StaticGetButtonCodeByName(button_name);
 }
+
+void DigitalController::SetAxisState(s32 axis_code, float value) {}
 
 void DigitalController::SetButtonState(Button button, bool pressed)
 {
@@ -89,6 +96,11 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 std::unique_ptr<DigitalController> DigitalController::Create()
 {
   return std::make_unique<DigitalController>();
+}
+
+std::optional<s32> DigitalController::StaticGetAxisCodeByName(std::string_view button_name)
+{
+  return std::nullopt;
 }
 
 std::optional<s32> DigitalController::StaticGetButtonCodeByName(std::string_view button_name)

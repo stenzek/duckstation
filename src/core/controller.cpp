@@ -21,6 +21,8 @@ bool Controller::Transfer(const u8 data_in, u8* data_out)
   return false;
 }
 
+void Controller::SetAxisState(s32 axis_code, float value) {}
+
 void Controller::SetButtonState(s32 button_code, bool pressed) {}
 
 std::unique_ptr<Controller> Controller::Create(ControllerType type)
@@ -35,6 +37,24 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type)
     case ControllerType::None:
     default:
       return {};
+  }
+}
+
+std::optional<s32> Controller::GetAxisCodeByName(std::string_view button_name) const
+{
+  return std::nullopt;
+}
+
+std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::string_view axis_name)
+{
+  switch (type)
+  {
+    case ControllerType::DigitalController:
+      return DigitalController::StaticGetAxisCodeByName(axis_name);
+
+    case ControllerType::None:
+    default:
+      return std::nullopt;
   }
 }
 

@@ -15,6 +15,9 @@ public:
   /// Returns the type of controller.
   virtual ControllerType GetType() const = 0;
 
+  /// Gets the integer code for an axis in the specified controller type.
+  virtual std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const;
+
   /// Gets the integer code for a button in the specified controller type.
   virtual std::optional<s32> GetButtonCodeByName(std::string_view button_name) const;
 
@@ -27,11 +30,17 @@ public:
   // Returns the value of ACK, as well as filling out_data.
   virtual bool Transfer(const u8 data_in, u8* data_out);
 
+  /// Changes the specified axis state. Values are normalized from -1..1.
+  virtual void SetAxisState(s32 axis_code, float value);
+
   /// Changes the specified button state.
   virtual void SetButtonState(s32 button_code, bool pressed);
 
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(ControllerType type);
+
+  /// Gets the integer code for an axis in the specified controller type.
+  static std::optional<s32> GetAxisCodeByName(ControllerType type, std::string_view axis_name);
 
   /// Gets the integer code for a button in the specified controller type.
   static std::optional<s32> GetButtonCodeByName(ControllerType type, std::string_view button_name);

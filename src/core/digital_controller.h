@@ -32,16 +32,20 @@ public:
   ~DigitalController() override;
 
   static std::unique_ptr<DigitalController> Create();
+  static std::optional<s32> StaticGetAxisCodeByName(std::string_view button_name);
   static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
 
   ControllerType GetType() const override;
+  std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const override;
   std::optional<s32> GetButtonCodeByName(std::string_view button_name) const override;
 
-  void SetButtonState(Button button, bool pressed);
-  void SetButtonState(s32 button_code, bool pressed);
+  void SetAxisState(s32 axis_code, float value) override;
+  void SetButtonState(s32 button_code, bool pressed) override;
 
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
+
+  void SetButtonState(Button button, bool pressed);
 
 private:
   enum class TransferState : u8

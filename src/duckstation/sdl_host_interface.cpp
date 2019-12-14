@@ -459,7 +459,7 @@ void SDLHostInterface::UpdateKeyboardControllerMapping()
 {
   m_keyboard_button_mapping.fill(-1);
 
-  const Controller* controller = m_system->GetController(0);
+  const Controller* controller = m_system ? m_system->GetController(0) : nullptr;
   if (controller)
   {
 #define SET_BUTTON_MAP(action, name)                                                                                   \
@@ -490,7 +490,8 @@ bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
   Controller* controller;
 
 #define DO_ACTION(action)                                                                                              \
-  if ((controller = m_system->GetController(0)) != nullptr && m_keyboard_button_mapping[static_cast<int>(action)])     \
+  if ((controller = m_system ? m_system->GetController(0) : nullptr) != nullptr &&                                     \
+      m_keyboard_button_mapping[static_cast<int>(action)])                                                             \
   {                                                                                                                    \
     controller->SetButtonState(m_keyboard_button_mapping[static_cast<int>(action)], pressed);                          \
   }
@@ -563,13 +564,22 @@ bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
 
 void SDLHostInterface::UpdateControllerControllerMapping()
 {
+  m_controller_axis_mapping.fill(-1);
   m_controller_button_mapping.fill(-1);
 
-  const Controller* controller = m_system->GetController(0);
+  Controller* controller = m_system ? m_system->GetController(0) : nullptr;
   if (controller)
   {
-#define SET_BUTTON_MAP(action, name)                                                                                   \
-  m_controller_button_mapping[static_cast<int>(action)] = controller->GetButtonCodeByName(name).value_or(-1)
+#define SET_AXIS_MAP(axis, name) m_controller_axis_mapping[axis] = controller->GetAxisCodeByName(name).value_or(-1)
+#define SET_BUTTON_MAP(button, name)                                                                                   \
+  m_controller_button_mapping[button] = controller->GetButtonCodeByName(name).value_or(-1)
+
+    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_LEFTX, "LeftX");
+    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_LEFTY, "LeftY");
+    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_RIGHTX, "RightX");
+    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_RIGHTY, "RightY");
+    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_TRIGGERLEFT, "LeftTrigger");
+    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "RightTrigger");
 
     SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_UP, "Up");
     SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_DOWN, "Down");
@@ -586,6 +596,7 @@ void SDLHostInterface::UpdateControllerControllerMapping()
     SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_START, "Start");
     SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_BACK, "Select");
 
+#undef SET_AXIS_MAP
 #undef SET_BUTTON_MAP
   }
 }
@@ -593,10 +604,19 @@ void SDLHostInterface::UpdateControllerControllerMapping()
 void SDLHostInterface::HandleSDLControllerAxisEventForController(const SDL_Event* ev)
 {
   // Log_DevPrintf("axis %d %d", ev->caxis.axis, ev->caxis.value);
-  Controller* controller = m_system->GetController(0);
+  Controller* controller = m_system ? m_system->GetController(0) : nullptr;
   if (!controller)
     return;
 
+  // proper axis mapping
+  if (m_controller_axis_mapping[ev->caxis.axis] >= 0)
+  {
+    const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
+    controller->SetAxisState(m_controller_axis_mapping[ev->caxis.axis], value);
+    return;
+  }
+
+  // axis-as-button mapping
   static constexpr int deadzone = 8192;
   const bool negative = (ev->caxis.value < 0);
   const bool active = (std::abs(ev->caxis.value) >= deadzone);
