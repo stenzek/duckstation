@@ -3,8 +3,8 @@
 #include "YBaseLib/Timer.h"
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
-#include "core/host_interface.h"
 #include "core/host_display.h"
+#include "core/host_interface.h"
 #include <SDL.h>
 #include <array>
 #include <deque>
@@ -15,6 +15,8 @@
 class System;
 class AudioStream;
 
+class Controller;
+
 class SDLHostInterface final : public HostInterface
 {
 public:
@@ -22,7 +24,7 @@ public:
   ~SDLHostInterface();
 
   static std::unique_ptr<SDLHostInterface> Create(const char* filename = nullptr, const char* exp1_filename = nullptr,
-                                              const char* save_state_filename = nullptr);
+                                                  const char* save_state_filename = nullptr);
 
   static TinyString GetSaveStateFilename(u32 index);
 
@@ -32,6 +34,27 @@ public:
   void Run();
 
 private:
+  enum class KeyboardControllerAction
+  {
+    Up,
+    Down,
+    Left,
+    Right,
+    Triangle,
+    Cross,
+    Square,
+    Circle,
+    L1,
+    R1,
+    L2,
+    R2,
+    Start,
+    Select,
+    Count
+  };
+
+  using KeyboardControllerActionMap = std::array<s32, static_cast<int>(KeyboardControllerAction::Count)>;
+
   static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
   static constexpr char RESUME_SAVESTATE_FILENAME[] = "savestate_resume.bin";
 
@@ -58,6 +81,7 @@ private:
   void QueueSwitchGPURenderer();
   void SwitchGPURenderer();
   void UpdateFullscreen();
+  void UpdateControllerMapping();
 
   // We only pass mouse input through if it's grabbed
   void DrawImGui();
@@ -77,6 +101,13 @@ private:
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
 
+  void UpdateKeyboardControllerMapping();
+  bool HandleSDLKeyEventForController(const SDL_Event* event);
+
+  void UpdateControllerControllerMapping();
+  void HandleSDLControllerAxisEventForController(const SDL_Event* event);
+  void HandleSDLControllerButtonEventForController(const SDL_Event* event);
+
   void DrawMainMenuBar();
   void DrawQuickSettingsMenu();
   void DrawDebugMenu();
@@ -91,7 +122,10 @@ private:
 
   std::string m_settings_filename;
 
+  KeyboardControllerActionMap m_keyboard_button_mapping;
+
   std::map<int, SDL_GameController*> m_sdl_controllers;
+  std::array<s32, SDL_CONTROLLER_BUTTON_MAX> m_controller_button_mapping;
 
   u32 m_switch_gpu_renderer_event_id = 0;
 

@@ -6,6 +6,16 @@ DigitalController::DigitalController() = default;
 
 DigitalController::~DigitalController() = default;
 
+ControllerType DigitalController::GetType() const
+{
+  return ControllerType::DigitalController;
+}
+
+std::optional<s32> DigitalController::GetButtonCodeByName(std::string_view button_name) const
+{
+  return StaticGetButtonCodeByName(button_name);
+}
+
 void DigitalController::SetButtonState(Button button, bool pressed)
 {
   if (pressed)
@@ -81,7 +91,7 @@ std::unique_ptr<DigitalController> DigitalController::Create()
   return std::make_unique<DigitalController>();
 }
 
-std::optional<s32> DigitalController::GetButtonCodeByName(std::string_view button_name)
+std::optional<s32> DigitalController::StaticGetButtonCodeByName(std::string_view button_name)
 {
 #define BUTTON(name)                                                                                                   \
   if (button_name == #name)                                                                                            \

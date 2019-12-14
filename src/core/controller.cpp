@@ -43,10 +43,15 @@ std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::str
   switch (type)
   {
     case ControllerType::DigitalController:
-      return DigitalController::GetButtonCodeByName(button_name);
+      return DigitalController::StaticGetButtonCodeByName(button_name);
 
     case ControllerType::None:
     default:
       return std::nullopt;
   }
+}
+
+std::optional<s32> Controller::GetButtonCodeByName(std::string_view button_name) const
+{
+  return std::nullopt;
 }

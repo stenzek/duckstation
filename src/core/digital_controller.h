@@ -32,7 +32,10 @@ public:
   ~DigitalController() override;
 
   static std::unique_ptr<DigitalController> Create();
-  static std::optional<s32> GetButtonCodeByName(std::string_view button_name);
+  static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
+
+  ControllerType GetType() const override;
+  std::optional<s32> GetButtonCodeByName(std::string_view button_name) const override;
 
   void SetButtonState(Button button, bool pressed);
   void SetButtonState(s32 button_code, bool pressed);

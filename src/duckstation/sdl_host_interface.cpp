@@ -4,7 +4,6 @@
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
 #include "core/cdrom.h"
-#include "core/digital_controller.h"
 #include "core/dma.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
@@ -216,6 +215,12 @@ void SDLHostInterface::UpdateFullscreen()
     m_settings.display_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
 }
 
+void SDLHostInterface::UpdateControllerMapping()
+{
+  UpdateKeyboardControllerMapping();
+  UpdateControllerControllerMapping();
+}
+
 std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename /* = nullptr */,
                                                            const char* exp1_filename /* = nullptr */,
                                                            const char* save_state_filename /* = nullptr */)
@@ -257,6 +262,8 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
 
     if (save_state_filename)
       intf->LoadState(save_state_filename);
+
+    intf->UpdateControllerMapping();
   }
 
   intf->UpdateFullscreen();
@@ -277,156 +284,6 @@ void SDLHostInterface::ReportError(const char* message)
 void SDLHostInterface::ReportMessage(const char* message)
 {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "DuckStation Information", message, m_window);
-}
-
-static inline u32 SDLButtonToHostButton(u32 button)
-{
-  // SDL left = 1, middle = 2, right = 3 :/
-  switch (button)
-  {
-    case 1:
-      return 0;
-    case 2:
-      return 2;
-    case 3:
-      return 1;
-    default:
-      return 0xFFFFFFFF;
-  }
-}
-
-static bool HandleSDLKeyEventForController(const SDL_Event* event, DigitalController* controller)
-{
-  const bool pressed = (event->type == SDL_KEYDOWN);
-  switch (event->key.keysym.scancode)
-  {
-    case SDL_SCANCODE_KP_8:
-    case SDL_SCANCODE_I:
-      controller->SetButtonState(DigitalController::Button::Triangle, pressed);
-      return true;
-    case SDL_SCANCODE_KP_2:
-    case SDL_SCANCODE_K:
-      controller->SetButtonState(DigitalController::Button::Cross, pressed);
-      return true;
-    case SDL_SCANCODE_KP_4:
-    case SDL_SCANCODE_J:
-      controller->SetButtonState(DigitalController::Button::Square, pressed);
-      return true;
-    case SDL_SCANCODE_KP_6:
-    case SDL_SCANCODE_L:
-      controller->SetButtonState(DigitalController::Button::Circle, pressed);
-      return true;
-
-    case SDL_SCANCODE_W:
-    case SDL_SCANCODE_UP:
-      controller->SetButtonState(DigitalController::Button::Up, pressed);
-      return true;
-    case SDL_SCANCODE_S:
-    case SDL_SCANCODE_DOWN:
-      controller->SetButtonState(DigitalController::Button::Down, pressed);
-      return true;
-    case SDL_SCANCODE_A:
-    case SDL_SCANCODE_LEFT:
-      controller->SetButtonState(DigitalController::Button::Left, pressed);
-      return true;
-    case SDL_SCANCODE_D:
-    case SDL_SCANCODE_RIGHT:
-      controller->SetButtonState(DigitalController::Button::Right, pressed);
-      return true;
-
-    case SDL_SCANCODE_Q:
-      controller->SetButtonState(DigitalController::Button::L1, pressed);
-      return true;
-    case SDL_SCANCODE_E:
-      controller->SetButtonState(DigitalController::Button::R1, pressed);
-      return true;
-
-    case SDL_SCANCODE_1:
-      controller->SetButtonState(DigitalController::Button::L2, pressed);
-      return true;
-    case SDL_SCANCODE_3:
-      controller->SetButtonState(DigitalController::Button::R2, pressed);
-      return true;
-
-    case SDL_SCANCODE_RETURN:
-      controller->SetButtonState(DigitalController::Button::Start, pressed);
-      return true;
-    case SDL_SCANCODE_BACKSPACE:
-      controller->SetButtonState(DigitalController::Button::Select, pressed);
-      return true;
-
-    default:
-      break;
-  }
-
-  return false;
-}
-
-static void HandleSDLControllerAxisEventForController(const SDL_Event* ev, DigitalController* controller)
-{
-  // Log_DevPrintf("axis %d %d", ev->caxis.axis, ev->caxis.value);
-
-  static constexpr int deadzone = 8192;
-  const bool negative = (ev->caxis.value < 0);
-  const bool active = (std::abs(ev->caxis.value) >= deadzone);
-
-  if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
-  {
-    controller->SetButtonState(DigitalController::Button::L2, active);
-  }
-  else if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
-  {
-    controller->SetButtonState(DigitalController::Button::R2, active);
-  }
-  else
-  {
-    DigitalController::Button negative_button, positive_button;
-    if (ev->caxis.axis & 1)
-    {
-      negative_button = DigitalController::Button::Up;
-      positive_button = DigitalController::Button::Down;
-    }
-    else
-    {
-      negative_button = DigitalController::Button::Left;
-      positive_button = DigitalController::Button::Right;
-    }
-
-    controller->SetButtonState(negative_button, negative && active);
-    controller->SetButtonState(positive_button, !negative && active);
-  }
-}
-
-static void HandleSDLControllerButtonEventForController(const SDL_Event* ev, DigitalController* controller)
-{
-  // Log_DevPrintf("button %d %s", ev->cbutton.button, ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
-
-  // For xbox one controller..
-  static constexpr std::pair<SDL_GameControllerButton, DigitalController::Button> button_mapping[] = {
-    {SDL_CONTROLLER_BUTTON_A, DigitalController::Button::Cross},
-    {SDL_CONTROLLER_BUTTON_B, DigitalController::Button::Circle},
-    {SDL_CONTROLLER_BUTTON_X, DigitalController::Button::Square},
-    {SDL_CONTROLLER_BUTTON_Y, DigitalController::Button::Triangle},
-    {SDL_CONTROLLER_BUTTON_BACK, DigitalController::Button::Select},
-    {SDL_CONTROLLER_BUTTON_START, DigitalController::Button::Start},
-    {SDL_CONTROLLER_BUTTON_GUIDE, DigitalController::Button::Start},
-    {SDL_CONTROLLER_BUTTON_LEFTSTICK, DigitalController::Button::L3},
-    {SDL_CONTROLLER_BUTTON_RIGHTSTICK, DigitalController::Button::R3},
-    {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, DigitalController::Button::L1},
-    {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, DigitalController::Button::R1},
-    {SDL_CONTROLLER_BUTTON_DPAD_UP, DigitalController::Button::Up},
-    {SDL_CONTROLLER_BUTTON_DPAD_DOWN, DigitalController::Button::Down},
-    {SDL_CONTROLLER_BUTTON_DPAD_LEFT, DigitalController::Button::Left},
-    {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, DigitalController::Button::Right}};
-
-  for (const auto& bm : button_mapping)
-  {
-    if (bm.first == ev->cbutton.button)
-    {
-      controller->SetButtonState(bm.second, ev->cbutton.state == SDL_PRESSED);
-      break;
-    }
-  }
 }
 
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
@@ -482,12 +339,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     break;
 
     case SDL_CONTROLLERAXISMOTION:
-    {
-      DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(0));
-      if (controller)
-        HandleSDLControllerAxisEventForController(event, controller);
-    }
-    break;
+      HandleSDLControllerAxisEventForController(event);
+      break;
 
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
@@ -498,9 +351,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
         m_focus_main_menu_bar = true;
       }
 
-      DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(0));
-      if (controller)
-        HandleSDLControllerButtonEventForController(event, controller);
+      HandleSDLControllerButtonEventForController(event);
     }
     break;
 
@@ -516,8 +367,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
 {
   const bool repeat = event->key.repeat != 0;
-  DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(0));
-  if (!repeat && controller && HandleSDLKeyEventForController(event, controller))
+  if (!repeat && HandleSDLKeyEventForController(event))
     return;
 
   const bool pressed = (event->type == SDL_KEYDOWN);
@@ -603,6 +453,198 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
   }
+}
+
+void SDLHostInterface::UpdateKeyboardControllerMapping()
+{
+  m_keyboard_button_mapping.fill(-1);
+
+  const Controller* controller = m_system->GetController(0);
+  if (controller)
+  {
+#define SET_BUTTON_MAP(action, name)                                                                                   \
+  m_keyboard_button_mapping[static_cast<int>(action)] = controller->GetButtonCodeByName(name).value_or(-1)
+
+    SET_BUTTON_MAP(KeyboardControllerAction::Up, "Up");
+    SET_BUTTON_MAP(KeyboardControllerAction::Down, "Down");
+    SET_BUTTON_MAP(KeyboardControllerAction::Left, "Left");
+    SET_BUTTON_MAP(KeyboardControllerAction::Right, "Right");
+    SET_BUTTON_MAP(KeyboardControllerAction::Triangle, "Triangle");
+    SET_BUTTON_MAP(KeyboardControllerAction::Cross, "Cross");
+    SET_BUTTON_MAP(KeyboardControllerAction::Square, "Square");
+    SET_BUTTON_MAP(KeyboardControllerAction::Circle, "Circle");
+    SET_BUTTON_MAP(KeyboardControllerAction::L1, "L1");
+    SET_BUTTON_MAP(KeyboardControllerAction::R1, "R1");
+    SET_BUTTON_MAP(KeyboardControllerAction::L2, "L2");
+    SET_BUTTON_MAP(KeyboardControllerAction::R2, "R2");
+    SET_BUTTON_MAP(KeyboardControllerAction::Start, "Start");
+    SET_BUTTON_MAP(KeyboardControllerAction::Select, "Select");
+
+#undef SET_BUTTON_MAP
+  }
+}
+
+bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
+{
+  const bool pressed = (event->type == SDL_KEYDOWN);
+  Controller* controller;
+
+#define DO_ACTION(action)                                                                                              \
+  if ((controller = m_system->GetController(0)) != nullptr && m_keyboard_button_mapping[static_cast<int>(action)])     \
+  {                                                                                                                    \
+    controller->SetButtonState(m_keyboard_button_mapping[static_cast<int>(action)], pressed);                          \
+  }
+
+  switch (event->key.keysym.scancode)
+  {
+    case SDL_SCANCODE_KP_8:
+    case SDL_SCANCODE_I:
+      DO_ACTION(KeyboardControllerAction::Triangle);
+      return true;
+    case SDL_SCANCODE_KP_2:
+    case SDL_SCANCODE_K:
+      DO_ACTION(KeyboardControllerAction::Cross);
+      return true;
+    case SDL_SCANCODE_KP_4:
+    case SDL_SCANCODE_J:
+      DO_ACTION(KeyboardControllerAction::Square);
+      return true;
+    case SDL_SCANCODE_KP_6:
+    case SDL_SCANCODE_L:
+      DO_ACTION(KeyboardControllerAction::Circle);
+      return true;
+
+    case SDL_SCANCODE_W:
+    case SDL_SCANCODE_UP:
+      DO_ACTION(KeyboardControllerAction::Up);
+      return true;
+    case SDL_SCANCODE_S:
+    case SDL_SCANCODE_DOWN:
+      DO_ACTION(KeyboardControllerAction::Down);
+      return true;
+    case SDL_SCANCODE_A:
+    case SDL_SCANCODE_LEFT:
+      DO_ACTION(KeyboardControllerAction::Left);
+      return true;
+    case SDL_SCANCODE_D:
+    case SDL_SCANCODE_RIGHT:
+      DO_ACTION(KeyboardControllerAction::Right);
+      return true;
+
+    case SDL_SCANCODE_Q:
+      DO_ACTION(KeyboardControllerAction::L1);
+      return true;
+    case SDL_SCANCODE_E:
+      DO_ACTION(KeyboardControllerAction::R1);
+      return true;
+
+    case SDL_SCANCODE_1:
+      DO_ACTION(KeyboardControllerAction::L2);
+      return true;
+    case SDL_SCANCODE_3:
+      DO_ACTION(KeyboardControllerAction::R2);
+      return true;
+
+    case SDL_SCANCODE_RETURN:
+      DO_ACTION(KeyboardControllerAction::Start);
+      return true;
+    case SDL_SCANCODE_BACKSPACE:
+      DO_ACTION(KeyboardControllerAction::Select);
+      return true;
+
+    default:
+      break;
+  }
+
+#undef DO_ACTION
+
+  return false;
+}
+
+void SDLHostInterface::UpdateControllerControllerMapping()
+{
+  m_controller_button_mapping.fill(-1);
+
+  const Controller* controller = m_system->GetController(0);
+  if (controller)
+  {
+#define SET_BUTTON_MAP(action, name)                                                                                   \
+  m_controller_button_mapping[static_cast<int>(action)] = controller->GetButtonCodeByName(name).value_or(-1)
+
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_UP, "Up");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_DOWN, "Down");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_LEFT, "Left");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "Right");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_Y, "Triangle");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_A, "Cross");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_X, "Square");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_B, "Circle");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_LEFTSHOULDER, "L1");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "R1");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_LEFTSTICK, "L3");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_RIGHTSTICK, "R3");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_START, "Start");
+    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_BACK, "Select");
+
+#undef SET_BUTTON_MAP
+  }
+}
+
+void SDLHostInterface::HandleSDLControllerAxisEventForController(const SDL_Event* ev)
+{
+  // Log_DevPrintf("axis %d %d", ev->caxis.axis, ev->caxis.value);
+  Controller* controller = m_system->GetController(0);
+  if (!controller)
+    return;
+
+  static constexpr int deadzone = 8192;
+  const bool negative = (ev->caxis.value < 0);
+  const bool active = (std::abs(ev->caxis.value) >= deadzone);
+
+  // FIXME
+  if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+  {
+    auto button = controller->GetButtonCodeByName("L2");
+    if (button)
+      controller->SetButtonState(button.value(), active);
+  }
+  else if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+  {
+    auto button = controller->GetButtonCodeByName("R2");
+    if (button)
+      controller->SetButtonState(button.value(), active);
+  }
+  else
+  {
+    SDL_GameControllerButton negative_button, positive_button;
+    if (ev->caxis.axis & 1)
+    {
+      negative_button = SDL_CONTROLLER_BUTTON_DPAD_UP;
+      positive_button = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+    }
+    else
+    {
+      negative_button = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+      positive_button = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+    }
+
+    if (m_controller_button_mapping[negative_button] >= 0)
+      controller->SetButtonState(m_controller_button_mapping[negative_button], negative && active);
+    if (m_controller_button_mapping[positive_button] >= 0)
+      controller->SetButtonState(m_controller_button_mapping[positive_button], !negative && active);
+  }
+}
+
+void SDLHostInterface::HandleSDLControllerButtonEventForController(const SDL_Event* ev)
+{
+  // Log_DevPrintf("button %d %s", ev->cbutton.button, ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
+
+  Controller* controller = m_system->GetController(0);
+  if (!controller)
+    return;
+
+  if (m_controller_button_mapping[ev->cbutton.button] >= 0)
+    controller->SetButtonState(m_controller_button_mapping[ev->cbutton.button], ev->cbutton.state == SDL_PRESSED);
 }
 
 void SDLHostInterface::DrawImGui()
@@ -1285,6 +1327,7 @@ void SDLHostInterface::DoResume()
     return;
   }
 
+  UpdateControllerMapping();
   ResetPerformanceCounters();
   ClearImGuiFocus();
 }
@@ -1304,6 +1347,7 @@ void SDLHostInterface::DoStartDisc()
     return;
   }
 
+  UpdateControllerMapping();
   ResetPerformanceCounters();
   ClearImGuiFocus();
 }
@@ -1319,6 +1363,7 @@ void SDLHostInterface::DoStartBIOS()
     return;
   }
 
+  UpdateControllerMapping();
   ResetPerformanceCounters();
   ClearImGuiFocus();
 }
@@ -1355,6 +1400,7 @@ void SDLHostInterface::DoLoadState(u32 index)
     }
   }
 
+  UpdateControllerMapping();
   ResetPerformanceCounters();
   ClearImGuiFocus();
 }

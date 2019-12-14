@@ -12,6 +12,12 @@ public:
   Controller();
   virtual ~Controller();
 
+  /// Returns the type of controller.
+  virtual ControllerType GetType() const = 0;
+
+  /// Gets the integer code for a button in the specified controller type.
+  virtual std::optional<s32> GetButtonCodeByName(std::string_view button_name) const;
+
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
