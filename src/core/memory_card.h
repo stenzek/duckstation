@@ -21,8 +21,8 @@ public:
   MemoryCard(System* system);
   ~MemoryCard();
 
-  static std::shared_ptr<MemoryCard> Create(System* system);
-  static std::shared_ptr<MemoryCard> Open(System* system, std::string_view filename);
+  static std::unique_ptr<MemoryCard> Create(System* system);
+  static std::unique_ptr<MemoryCard> Open(System* system, std::string_view filename);
 
   void Reset();
   bool DoState(StateWrapper& sw);

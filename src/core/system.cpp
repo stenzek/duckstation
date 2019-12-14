@@ -146,6 +146,7 @@ bool System::Boot(const char* filename)
 
   // Component setup.
   InitializeComponents();
+  UpdateControllers();
   UpdateMemoryCards();
   Reset();
 
@@ -451,9 +452,21 @@ void System::StallCPU(TickCount ticks)
   m_cpu->AddPendingTicks(ticks);
 }
 
-void System::SetController(u32 slot, std::shared_ptr<Controller> dev)
+Controller* System::GetController(u32 slot) const
 {
-  m_pad->SetController(slot, std::move(dev));
+  return m_pad->GetController(slot);
+}
+
+void System::UpdateControllers()
+{
+  m_pad->SetController(0, nullptr);
+  m_pad->SetController(1, nullptr);
+
+  {
+    std::unique_ptr<Controller> controller = Controller::Create("DigitalController");
+    if (controller)
+      m_pad->SetController(0, std::move(controller));
+  }
 }
 
 void System::UpdateMemoryCards()
@@ -464,14 +477,14 @@ void System::UpdateMemoryCards()
   const Settings& settings = m_host_interface->GetSettings();
   if (!settings.memory_card_a_path.empty())
   {
-    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_a_path);
+    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_a_path);
     if (card)
       m_pad->SetMemoryCard(0, std::move(card));
   }
 
   if (!settings.memory_card_b_path.empty())
   {
-    std::shared_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_b_path);
+    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_b_path);
     if (card)
       m_pad->SetMemoryCard(1, std::move(card));
   }

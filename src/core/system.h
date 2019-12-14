@@ -79,7 +79,9 @@ public:
   // Adds ticks to the global tick counter, simulating the CPU being stalled.
   void StallCPU(TickCount ticks);
 
-  void SetController(u32 slot, std::shared_ptr<Controller> dev);
+  // Access controllers for simulating input.
+  Controller* GetController(u32 slot) const;
+  void UpdateControllers();
   void UpdateMemoryCards();
   void UpdateCPUExecutionMode();
 

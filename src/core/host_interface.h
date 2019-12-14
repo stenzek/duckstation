@@ -60,9 +60,6 @@ protected:
     float duration;
   };
 
-  /// Connects controllers. TODO: Clean this up later...
-  virtual void ConnectControllers();
-
   /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
   void Throttle();
 

@@ -230,16 +230,16 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
-std::shared_ptr<MemoryCard> MemoryCard::Create(System* system)
+std::unique_ptr<MemoryCard> MemoryCard::Create(System* system)
 {
-  auto mc = std::make_shared<MemoryCard>(system);
+  std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>(system);
   mc->Format();
   return mc;
 }
 
-std::shared_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view filename)
+std::unique_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view filename)
 {
-  auto mc = std::make_shared<MemoryCard>(system);
+  std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>(system);
   mc->m_filename = filename;
   if (!mc->LoadFromFile())
   {

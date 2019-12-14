@@ -22,11 +22,11 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  Controller* GetController(u32 slot) { return m_controllers[slot].get(); }
-  void SetController(u32 slot, std::shared_ptr<Controller> dev) { m_controllers[slot] = dev; }
+  Controller* GetController(u32 slot) const { return m_controllers[slot].get(); }
+  void SetController(u32 slot, std::unique_ptr<Controller> dev);
 
   MemoryCard* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
-  void SetMemoryCard(u32 slot, std::shared_ptr<MemoryCard> dev) { m_memory_cards[slot] = dev; }
+  void SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -106,8 +106,8 @@ private:
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
 
-  std::array<std::shared_ptr<Controller>, NUM_SLOTS> m_controllers;
-  std::array<std::shared_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
+  std::array<std::unique_ptr<Controller>, NUM_SLOTS> m_controllers;
+  std::array<std::unique_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
 
   State m_state = State::Idle;
   TickCount m_ticks_remaining = 0;

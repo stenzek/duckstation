@@ -95,6 +95,16 @@ bool Pad::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
+void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev)
+{
+  m_controllers[slot] = std::move(dev);
+}
+
+void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
+{
+  m_memory_cards[slot] = std::move(dev);
+}
+
 u32 Pad::ReadRegister(u32 offset)
 {
   switch (offset)
@@ -289,8 +299,8 @@ void Pad::DoTransfer()
 {
   Log_DebugPrintf("Transferring slot %d", m_JOY_CTRL.SLOT.GetValue());
 
-  const std::shared_ptr<Controller>& controller = m_controllers[m_JOY_CTRL.SLOT];
-  const std::shared_ptr<MemoryCard>& memory_card = m_memory_cards[m_JOY_CTRL.SLOT];
+  Controller* const controller = m_controllers[m_JOY_CTRL.SLOT].get();
+  MemoryCard* const memory_card = m_memory_cards[m_JOY_CTRL.SLOT].get();
 
   // set rx?
   m_JOY_CTRL.RXEN = true;

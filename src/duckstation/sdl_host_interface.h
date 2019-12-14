@@ -13,8 +13,6 @@
 #include <mutex>
 
 class System;
-class DigitalController;
-class MemoryCard;
 class AudioStream;
 
 class SDLHostInterface final : public HostInterface
@@ -32,9 +30,6 @@ public:
   void ReportMessage(const char* message) override;
 
   void Run();
-
-protected:
-  void ConnectControllers() override;
 
 private:
   static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
@@ -97,8 +92,6 @@ private:
   std::string m_settings_filename;
 
   std::map<int, SDL_GameController*> m_sdl_controllers;
-
-  std::shared_ptr<DigitalController> m_controller;
 
   u32 m_switch_gpu_renderer_event_id = 0;
 

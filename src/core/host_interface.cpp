@@ -66,7 +66,6 @@ bool HostInterface::BootSystem(const char* filename, const char* state_filename)
     return false;
 
   m_paused = m_settings.start_paused;
-  ConnectControllers();
   UpdateSpeedLimiterState();
 
   if (state_filename && !LoadState(state_filename))
@@ -207,8 +206,6 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
                     Settings::GetConsoleRegionName(region), m_settings.bios_path.c_str());
   return BIOS::LoadImageFromFile(m_settings.bios_path);
 }
-
-void HostInterface::ConnectControllers() {}
 
 void HostInterface::Throttle()
 {

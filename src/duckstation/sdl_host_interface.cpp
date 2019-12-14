@@ -160,12 +160,6 @@ void SDLHostInterface::SaveSettings()
   m_settings.Save(m_settings_filename.c_str());
 }
 
-void SDLHostInterface::ConnectControllers()
-{
-  m_controller = DigitalController::Create();
-  m_system->SetController(0, m_controller);
-}
-
 void SDLHostInterface::QueueSwitchGPURenderer()
 {
   SDL_Event ev = {};
@@ -489,8 +483,9 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_CONTROLLERAXISMOTION:
     {
-      if (m_controller)
-        HandleSDLControllerAxisEventForController(event, m_controller.get());
+      DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(0));
+      if (controller)
+        HandleSDLControllerAxisEventForController(event, controller);
     }
     break;
 
@@ -503,8 +498,9 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
         m_focus_main_menu_bar = true;
       }
 
-      if (m_controller)
-        HandleSDLControllerButtonEventForController(event, m_controller.get());
+      DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(0));
+      if (controller)
+        HandleSDLControllerButtonEventForController(event, controller);
     }
     break;
 
@@ -520,7 +516,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
 {
   const bool repeat = event->key.repeat != 0;
-  if (!repeat && m_controller && HandleSDLKeyEventForController(event, m_controller.get()))
+  DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(0));
+  if (!repeat && controller && HandleSDLKeyEventForController(event, controller))
     return;
 
   const bool pressed = (event->type == SDL_KEYDOWN);

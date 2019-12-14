@@ -25,7 +25,7 @@ public:
   virtual void SetButtonState(s32 button_code, bool pressed);
 
   /// Creates a new controller of the specified type.
-  static std::shared_ptr<Controller> Create(std::string_view type_name);
+  static std::unique_ptr<Controller> Create(std::string_view type_name);
 
   /// Gets the integer code for a button in the specified controller type.
   static std::optional<s32> GetButtonCodeByName(std::string_view type_name, std::string_view button_name);

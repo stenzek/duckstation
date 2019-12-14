@@ -76,9 +76,9 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
   }
 }
 
-std::shared_ptr<DigitalController> DigitalController::Create()
+std::unique_ptr<DigitalController> DigitalController::Create()
 {
-  return std::make_shared<DigitalController>();
+  return std::make_unique<DigitalController>();
 }
 
 std::optional<s32> DigitalController::GetButtonCodeByName(std::string_view button_name)
