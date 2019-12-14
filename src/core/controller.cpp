@@ -23,18 +23,30 @@ bool Controller::Transfer(const u8 data_in, u8* data_out)
 
 void Controller::SetButtonState(s32 button_code, bool pressed) {}
 
-std::unique_ptr<Controller> Controller::Create(std::string_view type_name)
+std::unique_ptr<Controller> Controller::Create(ControllerType type)
 {
-  if (type_name == "DigitalController")
-    return DigitalController::Create();
+  switch (type)
+  {
+    return {};
 
-  return {};
+    case ControllerType::DigitalController:
+      return DigitalController::Create();
+
+    case ControllerType::None:
+    default:
+      return {};
+  }
 }
 
-std::optional<s32> Controller::GetButtonCodeByName(std::string_view type_name, std::string_view button_name)
+std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::string_view button_name)
 {
-  if (type_name == "DigitalController")
-    return DigitalController::GetButtonCodeByName(button_name);
+  switch (type)
+  {
+    case ControllerType::DigitalController:
+      return DigitalController::GetButtonCodeByName(button_name);
 
-  return {};
+    case ControllerType::None:
+    default:
+      return std::nullopt;
+  }
 }

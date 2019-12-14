@@ -33,6 +33,9 @@ void Settings::SetDefaults()
   bios_patch_tty_enable = false;
   bios_patch_fast_boot = false;
 
+  controller_a_type = ControllerType::DigitalController;
+  controller_b_type = ControllerType::None;
+
   memory_card_a_path = "memory_card_a.mcd";
   memory_card_b_path.clear();
 }
@@ -69,6 +72,11 @@ void Settings::Load(const char* filename)
   bios_patch_tty_enable = ini.GetBoolValue("BIOS", "PatchTTYEnable", true);
   bios_patch_fast_boot = ini.GetBoolValue("BIOS", "PatchFastBoot", false);
 
+  controller_a_type = ParseControllerTypeName(ini.GetValue("Controller", "PortAType", "DigitalController"))
+                        .value_or(ControllerType::DigitalController);
+  controller_b_type =
+    ParseControllerTypeName(ini.GetValue("Controller", "PortBType", "None")).value_or(ControllerType::None);
+
   memory_card_a_path = ini.GetValue("MemoryCard", "CardAPath", "memory_card_a.mcd");
   memory_card_b_path = ini.GetValue("MemoryCard", "CardBPath", "");
 }
@@ -101,6 +109,9 @@ bool Settings::Save(const char* filename) const
   ini.SetValue("BIOS", "Path", bios_path.c_str());
   ini.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
   ini.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
+
+  ini.SetValue("Controller", "PortAType", GetControllerTypeName(controller_a_type));
+  ini.SetValue("Controller", "PortBType", GetControllerTypeName(controller_b_type));
 
   if (!memory_card_a_path.empty())
     ini.SetValue("MemoryCard", "CardAPath", memory_card_a_path.c_str());
@@ -204,4 +215,31 @@ const char* Settings::GetRendererName(GPURenderer renderer)
 const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 {
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
+}
+
+static std::array<const char*, 2> s_controller_type_names = {{"None", "DigitalController"}};
+static std::array<const char*, 2> s_controller_display_names = {{"None", "Digital Controller"}};
+
+std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_controller_type_names)
+  {
+    if (strcasecmp(name, str) == 0)
+      return static_cast<ControllerType>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetControllerTypeName(ControllerType type)
+{
+  return s_controller_type_names[static_cast<int>(type)];
+}
+
+const char* Settings::GetControllerTypeDisplayName(ControllerType type)
+{
+  return s_controller_display_names[static_cast<int>(type)];
 }

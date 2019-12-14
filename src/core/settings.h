@@ -45,6 +45,9 @@ struct Settings
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
 
+  ControllerType controller_a_type = ControllerType::None;
+  ControllerType controller_b_type = ControllerType::None;
+
   std::string memory_card_a_path;
   std::string memory_card_b_path;
 
@@ -63,4 +66,8 @@ struct Settings
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
+
+  static std::optional<ControllerType> ParseControllerTypeName(const char* str);
+  static const char* GetControllerTypeName(ControllerType type);
+  static const char* GetControllerTypeDisplayName(ControllerType type);
 };

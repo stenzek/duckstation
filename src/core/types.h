@@ -47,6 +47,12 @@ enum class GPURenderer : u8
   Count
 };
 
+enum class ControllerType
+{
+  None,
+  DigitalController,
+};
+
 enum : u32
 {
   CPU_CODE_CACHE_PAGE_SIZE = 1024,

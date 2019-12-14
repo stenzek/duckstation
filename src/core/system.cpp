@@ -462,10 +462,19 @@ void System::UpdateControllers()
   m_pad->SetController(0, nullptr);
   m_pad->SetController(1, nullptr);
 
+  const Settings& settings = m_host_interface->GetSettings();
+  if (settings.controller_a_type != ControllerType::None)
   {
-    std::unique_ptr<Controller> controller = Controller::Create("DigitalController");
+    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_a_type);
     if (controller)
       m_pad->SetController(0, std::move(controller));
+  }
+
+  if (settings.controller_b_type != ControllerType::None)
+  {
+    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_b_type);
+    if (controller)
+      m_pad->SetController(1, std::move(controller));
   }
 }
 
