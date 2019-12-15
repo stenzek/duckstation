@@ -1109,19 +1109,42 @@ void SDLHostInterface::DrawSettingsWindow()
       ImGui::EndTabItem();
     }
 
-    if (ImGui::BeginTabItem("Memory Cards"))
+    if (ImGui::BeginTabItem("Ports"))
     {
       for (int i = 0; i < 2; i++)
       {
-        if (!DrawSettingsSectionHeader(TinyString::FromFormat("Card %c", 'A' + i)))
-          continue;
+        if (DrawSettingsSectionHeader(TinyString::FromFormat("Front Port %d", 1 + i)))
+        {
+          ImGui::Text("Controller:");
+          ImGui::SameLine(indent);
 
-        ImGui::Text("Card %c", 'A' + i);
+          int controller_type = static_cast<int>((i == 0) ? m_settings.controller_1_type : m_settings.controller_2_type);
+          if (ImGui::Combo(
+                "##controller_type", &controller_type,
+                [](void*, int index, const char** out_text) {
+                  *out_text = Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(index));
+                  return true;
+                },
+                nullptr, static_cast<int>(ControllerType::Count)))
+          {
+            if (i == 0)
+              m_settings.controller_1_type = static_cast<ControllerType>(controller_type);
+            else
+              m_settings.controller_2_type = static_cast<ControllerType>(controller_type);
 
-        ImGui::Text("Path:");
+            settings_changed = true;
+            if (m_system)
+            {
+              m_system->UpdateControllers();
+              UpdateControllerControllerMapping();
+            }
+          }
+        }
+
+        ImGui::Text("Memory Card Path:");
         ImGui::SameLine(indent);
 
-        std::string* path_ptr = (i == 0) ? &m_settings.memory_card_a_path : &m_settings.memory_card_b_path;
+        std::string* path_ptr = (i == 0) ? &m_settings.memory_card_1_path : &m_settings.memory_card_2_path;
         if (DrawFileChooser(TinyString::FromFormat("##memcard_%c_path", 'a' + i), path_ptr))
         {
           settings_changed = true;
@@ -1129,7 +1152,7 @@ void SDLHostInterface::DrawSettingsWindow()
             m_system->UpdateMemoryCards();
         }
 
-        if (ImGui::Button("Eject"))
+        if (ImGui::Button("Eject Memory Card"))
         {
           path_ptr->clear();
           settings_changed = true;

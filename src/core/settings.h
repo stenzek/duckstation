@@ -45,11 +45,11 @@ struct Settings
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
 
-  ControllerType controller_a_type = ControllerType::None;
-  ControllerType controller_b_type = ControllerType::None;
+  ControllerType controller_1_type = ControllerType::None;
+  ControllerType controller_2_type = ControllerType::None;
 
-  std::string memory_card_a_path;
-  std::string memory_card_b_path;
+  std::string memory_card_1_path;
+  std::string memory_card_2_path;
 
   void SetDefaults();
   void Load(const char* filename);

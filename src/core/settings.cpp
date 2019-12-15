@@ -33,11 +33,11 @@ void Settings::SetDefaults()
   bios_patch_tty_enable = false;
   bios_patch_fast_boot = false;
 
-  controller_a_type = ControllerType::DigitalController;
-  controller_b_type = ControllerType::None;
+  controller_1_type = ControllerType::DigitalController;
+  controller_2_type = ControllerType::None;
 
-  memory_card_a_path = "memory_card_a.mcd";
-  memory_card_b_path.clear();
+  memory_card_1_path = "memory_card_1.mcd";
+  memory_card_2_path.clear();
 }
 
 void Settings::Load(const char* filename)
@@ -72,13 +72,13 @@ void Settings::Load(const char* filename)
   bios_patch_tty_enable = ini.GetBoolValue("BIOS", "PatchTTYEnable", true);
   bios_patch_fast_boot = ini.GetBoolValue("BIOS", "PatchFastBoot", false);
 
-  controller_a_type = ParseControllerTypeName(ini.GetValue("Controller", "PortAType", "DigitalController"))
+  controller_1_type = ParseControllerTypeName(ini.GetValue("Ports", "Controller1Type", "DigitalController"))
                         .value_or(ControllerType::DigitalController);
-  controller_b_type =
-    ParseControllerTypeName(ini.GetValue("Controller", "PortBType", "None")).value_or(ControllerType::None);
+  controller_2_type =
+    ParseControllerTypeName(ini.GetValue("Ports", "Controller2Type", "None")).value_or(ControllerType::None);
 
-  memory_card_a_path = ini.GetValue("MemoryCard", "CardAPath", "memory_card_a.mcd");
-  memory_card_b_path = ini.GetValue("MemoryCard", "CardBPath", "");
+  memory_card_1_path = ini.GetValue("Ports", "MemoryCard1Path", "memory_card_1.mcd");
+  memory_card_2_path = ini.GetValue("Ports", "MemoryCard2Path", "");
 }
 
 bool Settings::Save(const char* filename) const
@@ -110,18 +110,25 @@ bool Settings::Save(const char* filename) const
   ini.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
   ini.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
-  ini.SetValue("Controller", "PortAType", GetControllerTypeName(controller_a_type));
-  ini.SetValue("Controller", "PortBType", GetControllerTypeName(controller_b_type));
-
-  if (!memory_card_a_path.empty())
-    ini.SetValue("MemoryCard", "CardAPath", memory_card_a_path.c_str());
+  if (controller_1_type != ControllerType::None)
+    ini.SetValue("Ports", "Controller1Type", GetControllerTypeName(controller_1_type));
   else
-    ini.DeleteValue("MemoryCard", "CardAPath", nullptr);
+    ini.DeleteValue("Ports", "Controller1Type", nullptr);
 
-  if (!memory_card_b_path.empty())
-    ini.SetValue("MemoryCard", "CardBPath", memory_card_b_path.c_str());
+  if (controller_2_type != ControllerType::None)
+    ini.SetValue("Ports", "Controller2Type", GetControllerTypeName(controller_2_type));
   else
-    ini.DeleteValue("MemoryCard", "CardBPath", nullptr);
+    ini.DeleteValue("Ports", "Controller2Type", nullptr);
+
+  if (!memory_card_1_path.empty())
+    ini.SetValue("Ports", "MemoryCard1Path", memory_card_1_path.c_str());
+  else
+    ini.DeleteValue("Ports", "MemoryCard1Path", nullptr);
+
+  if (!memory_card_2_path.empty())
+    ini.SetValue("Ports", "MemoryCard2Path", memory_card_2_path.c_str());
+  else
+    ini.DeleteValue("Ports", "MemoryCard2Path", nullptr);
 
   err = ini.SaveFile(filename, false);
   if (err != SI_OK)

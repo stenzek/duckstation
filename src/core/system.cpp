@@ -463,16 +463,16 @@ void System::UpdateControllers()
   m_pad->SetController(1, nullptr);
 
   const Settings& settings = m_host_interface->GetSettings();
-  if (settings.controller_a_type != ControllerType::None)
+  if (settings.controller_1_type != ControllerType::None)
   {
-    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_a_type);
+    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_1_type);
     if (controller)
       m_pad->SetController(0, std::move(controller));
   }
 
-  if (settings.controller_b_type != ControllerType::None)
+  if (settings.controller_2_type != ControllerType::None)
   {
-    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_b_type);
+    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_2_type);
     if (controller)
       m_pad->SetController(1, std::move(controller));
   }
@@ -484,16 +484,16 @@ void System::UpdateMemoryCards()
   m_pad->SetMemoryCard(1, nullptr);
 
   const Settings& settings = m_host_interface->GetSettings();
-  if (!settings.memory_card_a_path.empty())
+  if (!settings.memory_card_1_path.empty())
   {
-    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_a_path);
+    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_1_path);
     if (card)
       m_pad->SetMemoryCard(0, std::move(card));
   }
 
-  if (!settings.memory_card_b_path.empty())
+  if (!settings.memory_card_2_path.empty())
   {
-    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_b_path);
+    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_2_path);
     if (card)
       m_pad->SetMemoryCard(1, std::move(card));
   }
