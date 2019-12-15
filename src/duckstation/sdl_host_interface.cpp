@@ -659,7 +659,7 @@ void SDLHostInterface::HandleSDLControllerButtonEventForController(const SDL_Eve
 {
   // Log_DevPrintf("button %d %s", ev->cbutton.button, ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
 
-  Controller* controller = m_system->GetController(0);
+  Controller* controller = m_system ? m_system->GetController(0) : nullptr;
   if (!controller)
     return;
 
