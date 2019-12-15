@@ -24,7 +24,7 @@ static int NoGUITest()
 static int Run(int argc, char* argv[])
 {
   // init sdl
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
   {
     Panic("SDL initialization failed");
     return -1;
@@ -51,8 +51,8 @@ static int Run(int argc, char* argv[])
   }
 
   // create display and host interface
-  std::unique_ptr<SDLHostInterface> host_interface =
-    SDLHostInterface::Create(filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray());
+  std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create(
+    filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray());
   if (!host_interface)
   {
     Panic("Failed to create host interface");
@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
 #else
   g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
   // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
-  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL Pad DigitalController MemoryCard InterruptController SPU MDEC", LOGLEVEL_DEBUG);
-  // g_pLog->SetFilterLevel(LOGLEVEL_TRACE);
+  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL Pad DigitalController MemoryCard InterruptController SPU
+  // MDEC", LOGLEVEL_DEBUG); g_pLog->SetFilterLevel(LOGLEVEL_TRACE);
   g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
   // g_pLog->SetFilterLevel(LOGLEVEL_DEV);
 #endif

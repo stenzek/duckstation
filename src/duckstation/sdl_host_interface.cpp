@@ -130,30 +130,6 @@ bool SDLHostInterface::CreateAudioStream()
   return m_audio_stream->Reconfigure(44100, 2);
 }
 
-void SDLHostInterface::OpenGameControllers()
-{
-  for (int i = 0; i < SDL_NumJoysticks(); i++)
-  {
-    SDL_GameController* gcontroller = SDL_GameControllerOpen(i);
-    if (gcontroller)
-    {
-      Log_InfoPrintf("Opened controller %d: %s", i, SDL_GameControllerName(gcontroller));
-      m_sdl_controllers.emplace(i, gcontroller);
-    }
-    else
-    {
-      Log_WarningPrintf("Failed to open controller %d", i);
-    }
-  }
-}
-
-void SDLHostInterface::CloseGameControllers()
-{
-  for (auto& it : m_sdl_controllers)
-    SDL_GameControllerClose(it.second);
-  m_sdl_controllers.clear();
-}
-
 void SDLHostInterface::SaveSettings()
 {
   m_settings.Save(m_settings_filename.c_str());
@@ -252,7 +228,6 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
   ImGui::NewFrame();
 
   intf->UpdateSpeedLimiterState();
-  intf->OpenGameControllers();
 
   const bool boot = (filename != nullptr || exp1_filename != nullptr || save_state_filename != nullptr);
   if (boot)
@@ -313,28 +288,15 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_CONTROLLERDEVICEADDED:
     {
-      auto iter = m_sdl_controllers.find(event->cdevice.which);
-      if (iter == m_sdl_controllers.end())
-      {
-        SDL_GameController* gcontroller = SDL_GameControllerOpen(event->cdevice.which);
-        if (gcontroller)
-        {
-          Log_InfoPrintf("Controller %s inserted", SDL_GameControllerName(gcontroller));
-          m_sdl_controllers.emplace(event->cdevice.which, gcontroller);
-        }
-      }
+      Log_InfoPrintf("Controller %d inserted", event->cdevice.which);
+      OpenGameController(event->cdevice.which);
     }
     break;
 
     case SDL_CONTROLLERDEVICEREMOVED:
     {
-      auto iter = m_sdl_controllers.find(event->cdevice.which);
-      if (iter != m_sdl_controllers.end())
-      {
-        Log_InfoPrintf("Controller %s removed", SDL_GameControllerName(iter->second));
-        SDL_GameControllerClose(iter->second);
-        m_sdl_controllers.erase(iter);
-      }
+      Log_InfoPrintf("Controller %d removed", event->cdevice.which);
+      CloseGameController(event->cdevice.which);
     }
     break;
 
@@ -562,6 +524,61 @@ bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
   return false;
 }
 
+bool SDLHostInterface::OpenGameController(int index)
+{
+  if (m_sdl_controllers.find(index) != m_sdl_controllers.end())
+    CloseGameController(index);
+
+  SDL_GameController* gcontroller = SDL_GameControllerOpen(index);
+  if (!gcontroller)
+  {
+    Log_WarningPrintf("Failed to open controller %d", index);
+    return false;
+  }
+
+  Log_InfoPrintf("Opened controller %d: %s", index, SDL_GameControllerName(gcontroller));
+
+  ControllerData cd = {};
+  cd.controller = gcontroller;
+
+  SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gcontroller);
+  if (joystick)
+  {
+    SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+    if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) == 0)
+      cd.haptic = haptic;
+    else
+      SDL_HapticClose(haptic);
+  }
+
+  if (cd.haptic)
+    Log_InfoPrintf("Rumble is supported on '%s'", SDL_GameControllerName(gcontroller));
+  else
+    Log_WarningPrintf("Rumble is not supported on '%s'", SDL_GameControllerName(gcontroller));
+
+  m_sdl_controllers.emplace(index, cd);
+  return true;
+}
+
+void SDLHostInterface::CloseGameControllers()
+{
+  while (!m_sdl_controllers.empty())
+    CloseGameController(m_sdl_controllers.begin()->first);
+}
+
+bool SDLHostInterface::CloseGameController(int index)
+{
+  auto it = m_sdl_controllers.find(index);
+  if (it == m_sdl_controllers.end())
+    return false;
+
+  if (it->second.haptic)
+    SDL_HapticClose(it->second.haptic);
+
+  SDL_GameControllerClose(it->second.controller);
+  return true;
+}
+
 void SDLHostInterface::UpdateControllerControllerMapping()
 {
   m_controller_axis_mapping.fill(-1);
@@ -665,6 +682,38 @@ void SDLHostInterface::HandleSDLControllerButtonEventForController(const SDL_Eve
 
   if (m_controller_button_mapping[ev->cbutton.button] >= 0)
     controller->SetButtonState(m_controller_button_mapping[ev->cbutton.button], ev->cbutton.state == SDL_PRESSED);
+}
+
+void SDLHostInterface::UpdateControllerRumble()
+{
+  for (auto& it : m_sdl_controllers)
+  {
+    ControllerData& cd = it.second;
+    if (!cd.haptic)
+      continue;
+
+    float new_strength = 0.0f;
+    if (m_system)
+    {
+      Controller* controller = m_system->GetController(cd.controller_index);
+      if (controller)
+      {
+        const u32 motor_count = controller->GetVibrationMotorCount();
+        for (u32 i = 0; i < motor_count; i++)
+          new_strength = std::max(new_strength, controller->GetVibrationMotorStrength(i));
+      }
+    }
+
+    if (cd.last_rumble_strength == new_strength)
+      continue;
+
+    if (new_strength > 0.01f)
+      SDL_HapticRumblePlay(cd.haptic, new_strength, 100000);
+    else
+      SDL_HapticRumbleStop(cd.haptic);
+
+    cd.last_rumble_strength = new_strength;
+  }
 }
 
 void SDLHostInterface::DrawImGui()
@@ -1118,7 +1167,8 @@ void SDLHostInterface::DrawSettingsWindow()
           ImGui::Text("Controller:");
           ImGui::SameLine(indent);
 
-          int controller_type = static_cast<int>((i == 0) ? m_settings.controller_1_type : m_settings.controller_2_type);
+          int controller_type =
+            static_cast<int>((i == 0) ? m_settings.controller_1_type : m_settings.controller_2_type);
           if (ImGui::Combo(
                 "##controller_type", &controller_type,
                 [](void*, int index, const char** out_text) {
@@ -1541,6 +1591,8 @@ void SDLHostInterface::Run()
         m_paused = true;
       }
     }
+
+    UpdateControllerRumble();
 
     // rendering
     {

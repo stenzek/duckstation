@@ -55,6 +55,14 @@ private:
 
   using KeyboardControllerActionMap = std::array<s32, static_cast<int>(KeyboardControllerAction::Count)>;
 
+  struct ControllerData
+  {
+    SDL_GameController* controller;
+    SDL_Haptic* haptic;
+    u32 controller_index;
+    float last_rumble_strength;
+  };
+
   static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
   static constexpr char RESUME_SAVESTATE_FILENAME[] = "savestate_resume.bin";
 
@@ -72,9 +80,6 @@ private:
   void DestroyDisplay();
   void CreateImGuiContext();
   bool CreateAudioStream();
-
-  void OpenGameControllers();
-  void CloseGameControllers();
 
   void SaveSettings();
 
@@ -104,9 +109,13 @@ private:
   void UpdateKeyboardControllerMapping();
   bool HandleSDLKeyEventForController(const SDL_Event* event);
 
+  bool OpenGameController(int index);
+  bool CloseGameController(int index);
+  void CloseGameControllers();
   void UpdateControllerControllerMapping();
   void HandleSDLControllerAxisEventForController(const SDL_Event* event);
   void HandleSDLControllerButtonEventForController(const SDL_Event* event);
+  void UpdateControllerRumble();
 
   void DrawMainMenuBar();
   void DrawQuickSettingsMenu();
@@ -124,7 +133,7 @@ private:
 
   KeyboardControllerActionMap m_keyboard_button_mapping;
 
-  std::map<int, SDL_GameController*> m_sdl_controllers;
+  std::map<int, ControllerData> m_sdl_controllers;
   std::array<s32, SDL_CONTROLLER_AXIS_MAX> m_controller_axis_mapping;
   std::array<s32, SDL_CONTROLLER_BUTTON_MAX> m_controller_button_mapping;
 
