@@ -10,6 +10,7 @@
  - Windows and Linux support - macOS may work, but not actively maintained
  - Currently only .bin/.cue disc image formats are supported. Additional formats are planned
  - Direct booting of homebrew executables
+ - Digital and analog controllers for input (rumble is forwarded to host)
 
 ## System Requirements
  - A CPU faster than a potato.

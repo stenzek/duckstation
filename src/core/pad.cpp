@@ -1,10 +1,10 @@
 #include "pad.h"
 #include "YBaseLib/Log.h"
 #include "common/state_wrapper.h"
+#include "controller.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
-#include "controller.h"
 #include "system.h"
 Log_SetChannel(Pad);
 
@@ -36,14 +36,24 @@ bool Pad::DoState(StateWrapper& sw)
 {
   for (u32 i = 0; i < NUM_SLOTS; i++)
   {
+    ControllerType controller_type = m_controllers[i] ? m_controllers[i]->GetType() : ControllerType::None;
+    ControllerType state_controller_type = controller_type;
+    sw.Do(&state_controller_type);
+
+    if (controller_type != state_controller_type)
+    {
+      m_system->GetHostInterface()->AddOSDMessage(SmallString::FromFormat(
+        "Save state contains controller type %s in port %u, but %s is used. Switching.",
+        Settings::GetControllerTypeName(state_controller_type), i, Settings::GetControllerTypeName(controller_type)));
+
+      m_controllers[i].reset();
+      if (state_controller_type != ControllerType::None)
+        m_controllers[i] = Controller::Create(state_controller_type);
+    }
+
     if (m_controllers[i])
     {
       if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
-        return false;
-    }
-    else
-    {
-      if (!sw.DoMarker("NoController"))
         return false;
     }
 
@@ -72,11 +82,6 @@ bool Pad::DoState(StateWrapper& sw)
     if (m_memory_cards[i])
     {
       if (!sw.DoMarker("MemoryCard") || !m_memory_cards[i]->DoState(sw))
-        return false;
-    }
-    else
-    {
-      if (!sw.DoMarker("NoController"))
         return false;
     }
   }
