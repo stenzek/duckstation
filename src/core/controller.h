@@ -36,6 +36,12 @@ public:
   /// Changes the specified button state.
   virtual void SetButtonState(s32 button_code, bool pressed);
 
+  /// Returns the number of vibration motors.
+  virtual u32 GetVibrationMotorCount() const;
+
+  /// Queries the state of the specified vibration motor. Values are normalized from 0..1.
+  virtual float GetVibrationMotorStrength(u32 motor);
+
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(ControllerType type);
 

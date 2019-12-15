@@ -18,6 +18,7 @@ ControllerType AnalogController::GetType() const
 void AnalogController::Reset()
 {
   m_analog_mode = false;
+  m_rumble_unlocked = false;
   m_configuration_mode = false;
   m_command_param = 0;
 }
@@ -28,9 +29,19 @@ bool AnalogController::DoState(StateWrapper& sw)
     return false;
 
   sw.Do(&m_analog_mode);
+  sw.Do(&m_rumble_unlocked);
   sw.Do(&m_configuration_mode);
   sw.Do(&m_command_param);
   sw.Do(&m_state);
+
+  MotorState motor_state = m_motor_state;
+  sw.Do(&motor_state);
+
+  if (sw.IsReading())
+  {
+    for (u8 i = 0; i < NUM_MOTORS; i++)
+      SetMotorState(i, motor_state[i]);
+  }
   return true;
 }
 
@@ -58,8 +69,6 @@ void AnalogController::SetAxisState(s32 axis_code, float value)
 void AnalogController::SetAxisState(Axis axis, u8 value)
 {
   m_axis_state[static_cast<u8>(axis)] = value;
-
-  // TODO: Map to buttons in digital mode
 }
 
 void AnalogController::SetButtonState(Button button, bool pressed)
@@ -78,6 +87,17 @@ void AnalogController::SetButtonState(s32 button_code, bool pressed)
   SetButtonState(static_cast<Button>(button_code), pressed);
 }
 
+u32 AnalogController::GetVibrationMotorCount() const
+{
+  return NUM_MOTORS;
+}
+
+float AnalogController::GetVibrationMotorStrength(u32 motor)
+{
+  DebugAssert(motor < NUM_MOTORS);
+  return static_cast<float>(m_motor_state[motor]) * (1.0f / 255.0f);
+}
+
 void AnalogController::ResetTransferState()
 {
   m_state = State::Idle;
@@ -93,6 +113,21 @@ u16 AnalogController::GetID() const
     return CONFIG_MODE_ID;
 
   return m_analog_mode ? ANALOG_MODE_ID : DIGITAL_MODE_ID;
+}
+
+void AnalogController::SetAnalogMode(bool enabled)
+{
+  if (m_analog_mode == enabled)
+    return;
+
+  Log_InfoPrintf("Controller switched to %s mode", enabled ? "analog" : "digital");
+  m_analog_mode = enabled;
+}
+
+void AnalogController::SetMotorState(u8 motor, u8 value)
+{
+  DebugAssert(motor < NUM_MOTORS);
+  m_motor_state[motor] = value;
 }
 
 bool AnalogController::Transfer(const u8 data_in, u8* data_out)
@@ -185,9 +220,29 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     break;
 
       ID_STATE_MSB(State::GetStateIDMSB, State::GetStateButtonsLSB);
-      FIXED_REPLY_STATE(State::GetStateButtonsLSB, Truncate8(m_button_state), true, State::GetStateButtonsMSB);
-      FIXED_REPLY_STATE(State::GetStateButtonsMSB, Truncate8(m_button_state >> 8), m_analog_mode,
-                        m_analog_mode ? State::GetStateRightAxisX : State::Idle);
+
+    case State::GetStateButtonsLSB:
+    {
+      if (m_rumble_unlocked)
+        SetMotorState(0, data_in);
+
+      *data_out = Truncate8(m_button_state);
+      m_state = State::GetStateButtonsMSB;
+      ack = true;
+    }
+    break;
+
+    case State::GetStateButtonsMSB:
+    {
+      if (m_rumble_unlocked)
+        SetMotorState(1, data_in);
+
+      *data_out = Truncate8(m_button_state >> 8);
+      m_state = m_analog_mode ? State::GetStateRightAxisX : State::Idle;
+      ack = m_analog_mode;
+    }
+    break;
+
       FIXED_REPLY_STATE(State::GetStateRightAxisX, Truncate8(m_axis_state[static_cast<u8>(Axis::RightX)]), true,
                         State::GetStateRightAxisY);
       FIXED_REPLY_STATE(State::GetStateRightAxisY, Truncate8(m_axis_state[static_cast<u8>(Axis::RightY)]), true,
@@ -225,7 +280,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     {
       Log_DebugPrintf("analog mode sel 0x%02x", data_in);
       if (data_in != 0x00)
-        m_analog_mode = (m_command_param == 0x01);
+        SetAnalogMode(m_command_param == 0x01);
 
       *data_out = 0x00;
       m_state = State::Pad4Bytes;
@@ -271,7 +326,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::Command4CMode:
     {
-      m_analog_mode = (data_in != 0x00);
+      SetAnalogMode(data_in != 0x00);
       Log_DebugPrintf("analog mode %s by 0x4c", m_analog_mode ? "enabled" : "disabled");
       *data_out = 0x00;
       m_state = State::Command4C1;

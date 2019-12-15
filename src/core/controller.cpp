@@ -26,6 +26,16 @@ void Controller::SetAxisState(s32 axis_code, float value) {}
 
 void Controller::SetButtonState(s32 button_code, bool pressed) {}
 
+u32 Controller::GetVibrationMotorCount() const
+{
+  return 0;
+}
+
+float Controller::GetVibrationMotorStrength(u32 motor)
+{
+  return 0.0f;
+}
+
 std::unique_ptr<Controller> Controller::Create(ControllerType type)
 {
   switch (type)

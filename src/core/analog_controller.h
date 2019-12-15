@@ -38,6 +38,8 @@ public:
     Count
   };
 
+  static constexpr u8 NUM_MOTORS = 2;
+
   AnalogController();
   ~AnalogController() override;
 
@@ -61,7 +63,12 @@ public:
   void SetAxisState(Axis axis, u8 value);
   void SetButtonState(Button button, bool pressed);
 
+  u32 GetVibrationMotorCount() const override;
+  float GetVibrationMotorStrength(u32 motor) override;
+
 private:
+  using MotorState = std::array<u8, NUM_MOTORS>;
+
   enum class State : u8
   {
     Idle,
@@ -115,6 +122,8 @@ private:
   };
 
   u16 GetID() const;
+  void SetAnalogMode(bool enabled);
+  void SetMotorState(u8 motor, u8 value);
 
   bool m_analog_mode = false;
   bool m_rumble_unlocked = false;
@@ -126,7 +135,7 @@ private:
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
 
-  std::array<u8, 2> m_motor_state{};
+  MotorState m_motor_state{};
 
   State m_state = State::Idle;
 };
