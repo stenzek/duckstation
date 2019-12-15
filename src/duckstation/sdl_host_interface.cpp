@@ -117,8 +117,7 @@ void SDLHostInterface::CreateImGuiContext()
 {
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-  ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasGamepad;
+  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
   ImGui::StyleColorsDarker();
   ImGui::AddRobotoRegularFont();
