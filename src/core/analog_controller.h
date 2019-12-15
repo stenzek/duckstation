@@ -1,0 +1,132 @@
+#pragma once
+#include "controller.h"
+#include <array>
+#include <memory>
+#include <optional>
+#include <string_view>
+
+class AnalogController final : public Controller
+{
+public:
+  enum class Axis : u8
+  {
+    LeftX,
+    LeftY,
+    RightX,
+    RightY,
+    Count
+  };
+
+  enum class Button : u8
+  {
+    Select = 0,
+    L3 = 1,
+    R3 = 2,
+    Start = 3,
+    Up = 4,
+    Right = 5,
+    Down = 6,
+    Left = 7,
+    L2 = 8,
+    R2 = 9,
+    L1 = 10,
+    R1 = 11,
+    Triangle = 12,
+    Circle = 13,
+    Cross = 14,
+    Square = 15,
+    Count
+  };
+
+  AnalogController();
+  ~AnalogController() override;
+
+  static std::unique_ptr<AnalogController> Create();
+  static std::optional<s32> StaticGetAxisCodeByName(std::string_view axis_name);
+  static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
+
+  ControllerType GetType() const override;
+  std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const override;
+  std::optional<s32> GetButtonCodeByName(std::string_view button_name) const override;
+
+  void Reset() override;
+  bool DoState(StateWrapper& sw) override;
+
+  void SetAxisState(s32 axis_code, float value) override;
+  void SetButtonState(s32 button_code, bool pressed) override;
+
+  void ResetTransferState() override;
+  bool Transfer(const u8 data_in, u8* data_out) override;
+
+  void SetAxisState(Axis axis, u8 value);
+  void SetButtonState(Button button, bool pressed);
+
+private:
+  enum class State : u8
+  {
+    Idle,
+    GetStateIDMSB,
+    GetStateButtonsLSB,
+    GetStateButtonsMSB,
+    GetStateRightAxisX,
+    GetStateRightAxisY,
+    GetStateLeftAxisX,
+    GetStateLeftAxisY,
+    ConfigModeIDMSB,
+    ConfigModeSetMode,
+    SetAnalogModeIDMSB,
+    SetAnalogModeVal,
+    SetAnalogModeSel,
+    GetAnalogModeIDMSB,
+    GetAnalogMode1,
+    GetAnalogMode2,
+    GetAnalogMode3,
+    GetAnalogMode4,
+    GetAnalogMode5,
+    GetAnalogMode6,
+    UnlockRumbleIDMSB,
+    Command46IDMSB,
+    Command461,
+    Command462,
+    Command463,
+    Command464,
+    Command465,
+    Command466,
+    Command47IDMSB,
+    Command471,
+    Command472,
+    Command473,
+    Command474,
+    Command475,
+    Command476,
+    Command4CIDMSB,
+    Command4CMode,
+    Command4C1,
+    Command4C2,
+    Command4C3,
+    Command4C4,
+    Command4C5,
+    Pad6Bytes,
+    Pad5Bytes,
+    Pad4Bytes,
+    Pad3Bytes,
+    Pad2Bytes,
+    Pad1Byte,
+  };
+
+  u16 GetID() const;
+
+  bool m_analog_mode = false;
+  bool m_rumble_unlocked = false;
+  bool m_configuration_mode = false;
+  u8 m_command_param = 0;
+
+  std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
+
+  // buttons are active low
+  u16 m_button_state = UINT16_C(0xFFFF);
+
+  std::array<u8, 2> m_motor_state{};
+
+  State m_state = State::Idle;
+};

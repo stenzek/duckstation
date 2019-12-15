@@ -1,4 +1,6 @@
 add_library(core
+    analog_controller.cpp
+    analog_controller.h
     bios.cpp
     bios.h
     bus.cpp

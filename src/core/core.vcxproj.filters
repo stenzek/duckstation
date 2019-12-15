@@ -37,6 +37,7 @@
     <ClCompile Include="gpu_hw_opengl_es.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="controller.cpp" />
+    <ClCompile Include="analog_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -76,6 +77,7 @@
     <ClInclude Include="gpu_hw_opengl_es.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="controller.h" />
+    <ClInclude Include="analog_controller.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

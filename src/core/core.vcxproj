@@ -35,6 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="analog_controller.cpp" />
     <ClCompile Include="bios.cpp" />
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="cdrom.cpp" />
@@ -82,6 +83,7 @@
     <ClCompile Include="timers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="analog_controller.h" />
     <ClInclude Include="bios.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="cdrom.h" />

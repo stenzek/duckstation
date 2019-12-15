@@ -51,6 +51,7 @@ enum class ControllerType
 {
   None,
   DigitalController,
+  AnalogController
 };
 
 enum : u32

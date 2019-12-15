@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "analog_controller.h"
 #include "common/state_wrapper.h"
 #include "digital_controller.h"
 
@@ -29,10 +30,11 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type)
 {
   switch (type)
   {
-    return {};
-
     case ControllerType::DigitalController:
       return DigitalController::Create();
+
+    case ControllerType::AnalogController:
+      return AnalogController::Create();
 
     case ControllerType::None:
     default:
@@ -45,12 +47,20 @@ std::optional<s32> Controller::GetAxisCodeByName(std::string_view button_name) c
   return std::nullopt;
 }
 
+std::optional<s32> Controller::GetButtonCodeByName(std::string_view button_name) const
+{
+  return std::nullopt;
+}
+
 std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::string_view axis_name)
 {
   switch (type)
   {
     case ControllerType::DigitalController:
       return DigitalController::StaticGetAxisCodeByName(axis_name);
+
+    case ControllerType::AnalogController:
+      return AnalogController::StaticGetAxisCodeByName(axis_name);
 
     case ControllerType::None:
     default:
@@ -65,13 +75,11 @@ std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::str
     case ControllerType::DigitalController:
       return DigitalController::StaticGetButtonCodeByName(button_name);
 
+    case ControllerType::AnalogController:
+      return AnalogController::StaticGetButtonCodeByName(button_name);
+
     case ControllerType::None:
     default:
       return std::nullopt;
   }
-}
-
-std::optional<s32> Controller::GetButtonCodeByName(std::string_view button_name) const
-{
-  return std::nullopt;
 }

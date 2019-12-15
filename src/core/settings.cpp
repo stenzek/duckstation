@@ -217,8 +217,9 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }
 
-static std::array<const char*, 2> s_controller_type_names = {{"None", "DigitalController"}};
-static std::array<const char*, 2> s_controller_display_names = {{"None", "Digital Controller"}};
+static std::array<const char*, 3> s_controller_type_names = {{"None", "DigitalController", "AnalogController"}};
+static std::array<const char*, 3> s_controller_display_names = {
+  {"None", "Digital Controller", "Analog Controller (DualShock)"}};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
 {
