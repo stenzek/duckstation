@@ -48,8 +48,6 @@ private:
 
   void DrawFPSWindow();
 
-  void ConnectControllers() override;
-
   jobject m_java_object = {};
 
   std::mutex m_callback_mutex;
@@ -59,7 +57,4 @@ private:
   std::atomic_bool m_emulation_thread_stop_request{false};
   std::atomic_bool m_emulation_thread_start_result{false};
   Event m_emulation_thread_started;
-
-  std::array<std::string, NUM_CONTROLLERS> m_controller_type_names;
-  std::array<std::shared_ptr<Controller>, NUM_CONTROLLERS> m_controllers;
 };

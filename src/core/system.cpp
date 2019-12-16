@@ -459,43 +459,28 @@ Controller* System::GetController(u32 slot) const
 
 void System::UpdateControllers()
 {
-  m_pad->SetController(0, nullptr);
-  m_pad->SetController(1, nullptr);
-
   const Settings& settings = m_host_interface->GetSettings();
-  if (settings.controller_1_type != ControllerType::None)
-  {
-    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_1_type);
-    if (controller)
-      m_pad->SetController(0, std::move(controller));
-  }
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++) {
+    m_pad->SetController(i, nullptr);
 
-  if (settings.controller_2_type != ControllerType::None)
-  {
-    std::unique_ptr<Controller> controller = Controller::Create(settings.controller_2_type);
-    if (controller)
-      m_pad->SetController(1, std::move(controller));
+    const ControllerType type = settings.controller_types[i];
+    if (type != ControllerType::None) {
+      std::unique_ptr<Controller> controller = Controller::Create(type);
+      if (controller)
+        m_pad->SetController(i, std::move(controller));
+    }
   }
 }
 
 void System::UpdateMemoryCards()
 {
-  m_pad->SetMemoryCard(0, nullptr);
-  m_pad->SetMemoryCard(1, nullptr);
-
   const Settings& settings = m_host_interface->GetSettings();
-  if (!settings.memory_card_1_path.empty())
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_1_path);
+    m_pad->SetMemoryCard(i, nullptr);
+    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_paths[i]);
     if (card)
-      m_pad->SetMemoryCard(0, std::move(card));
-  }
-
-  if (!settings.memory_card_2_path.empty())
-  {
-    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_2_path);
-    if (card)
-      m_pad->SetMemoryCard(1, std::move(card));
+      m_pad->SetMemoryCard(i, std::move(card));
   }
 }
 

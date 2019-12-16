@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <array>
 #include <optional>
 #include <string>
 
@@ -45,11 +46,8 @@ struct Settings
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
 
-  ControllerType controller_1_type = ControllerType::None;
-  ControllerType controller_2_type = ControllerType::None;
-
-  std::string memory_card_1_path;
-  std::string memory_card_2_path;
+  std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
+  std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
 
   void SetDefaults();
   void Load(const char* filename);

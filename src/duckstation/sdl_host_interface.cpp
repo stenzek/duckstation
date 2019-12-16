@@ -1166,8 +1166,7 @@ void SDLHostInterface::DrawSettingsWindow()
           ImGui::Text("Controller:");
           ImGui::SameLine(indent);
 
-          int controller_type =
-            static_cast<int>((i == 0) ? m_settings.controller_1_type : m_settings.controller_2_type);
+          int controller_type = static_cast<int>(m_settings.controller_types[i]);
           if (ImGui::Combo(
                 "##controller_type", &controller_type,
                 [](void*, int index, const char** out_text) {
@@ -1176,11 +1175,7 @@ void SDLHostInterface::DrawSettingsWindow()
                 },
                 nullptr, static_cast<int>(ControllerType::Count)))
           {
-            if (i == 0)
-              m_settings.controller_1_type = static_cast<ControllerType>(controller_type);
-            else
-              m_settings.controller_2_type = static_cast<ControllerType>(controller_type);
-
+            m_settings.controller_types[i] = static_cast<ControllerType>(controller_type);
             settings_changed = true;
             if (m_system)
             {
@@ -1193,7 +1188,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Memory Card Path:");
         ImGui::SameLine(indent);
 
-        std::string* path_ptr = (i == 0) ? &m_settings.memory_card_1_path : &m_settings.memory_card_2_path;
+        std::string* path_ptr = &m_settings.memory_card_paths[i];
         if (DrawFileChooser(TinyString::FromFormat("##memcard_%c_path", 'a' + i), path_ptr))
         {
           settings_changed = true;

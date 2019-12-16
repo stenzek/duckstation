@@ -57,7 +57,8 @@ AndroidHostInterface::AndroidHostInterface(jobject java_object) : m_java_object(
 {
   m_settings.SetDefaults();
   m_settings.bios_path = "/sdcard/PSX/BIOS/scph1001.bin";
-  m_settings.memory_card_a_path = "/sdcard/PSX/memory_card_a.mcd";
+  m_settings.controller_types[0] = ControllerType::DigitalController;
+  m_settings.memory_card_paths[0] = "/sdcard/PSX/memory_card_1.mcd";
   m_settings.cpu_execution_mode = CPUExecutionMode::Recompiler;
   //m_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
   //m_settings.gpu_renderer = GPURenderer::Software;
@@ -333,19 +334,18 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* window, int format, int
 
 void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_name)
 {
+  ControllerType type = Settings::ParseControllerTypeName(std::string(type_name).c_str()).value_or(ControllerType::None);
+
   if (!IsEmulationThreadRunning())
   {
-    m_controller_type_names[index] = type_name;
+    m_settings.controller_types[index] = type;
     return;
   }
 
-  std::string type_name_copy(type_name);
-  RunOnEmulationThread([this, index, type_name_copy]() {
-    Log_InfoPrintf("Changing controller slot %d to %s", index, type_name_copy.c_str());
-    m_controller_type_names[index] = std::move(type_name_copy);
-
-    m_controllers[index] = Controller::Create(m_controller_type_names[index]);
-    m_system->SetController(index, m_controllers[index]);
+  RunOnEmulationThread([this, index, type]() {
+    Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
+    m_settings.controller_types[index] = type;
+    m_system->UpdateControllers();
   }, false);
 }
 
@@ -355,25 +355,12 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
     return;
 
   RunOnEmulationThread([this, index, button_code, pressed]() {
-    if (!m_controllers[index])
+    Controller* controller = m_system->GetController(index);
+    if (!controller)
       return;
 
-    m_controllers[index]->SetButtonState(button_code, pressed);
+    controller->SetButtonState(button_code, pressed);
   }, false);
-}
-
-void AndroidHostInterface::ConnectControllers()
-{
-  for (u32 i = 0; i < NUM_CONTROLLERS; i++)
-  {
-    if (m_controller_type_names[i].empty())
-      continue;
-
-    Log_InfoPrintf("Connecting controller '%s' to port %u", m_controller_type_names[i].c_str(), i);
-    m_controllers[i] = Controller::Create(m_controller_type_names[i]);
-    if (m_controllers[i])
-      m_system->SetController(i, m_controllers[i]);
-  }
 }
 
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
@@ -491,7 +478,11 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobj
 
 DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type, jstring button_name)
 {
-  std::optional<s32> code = Controller::GetButtonCodeByName(JStringToString(env, controller_type), JStringToString(env, button_name));
+  std::optional<ControllerType> type = Settings::ParseControllerTypeName(JStringToString(env, controller_type).c_str());
+  if (!type)
+    return -1;
+
+  std::optional<s32> code = Controller::GetButtonCodeByName(type.value(), JStringToString(env, button_name));
   return code.value_or(-1);
 }
 
