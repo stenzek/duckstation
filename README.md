@@ -40,6 +40,8 @@ Requirements:
 4. Run the binary, located in the build directory under `src/duckstation/duckstation`.
 
 ### Android
+**NOTE:** The Android frontend is still incomplete, not all functionality works and some paths are hard-coded.
+
 Requirements:
  - Android Studio with the NDK and CMake installed
 
