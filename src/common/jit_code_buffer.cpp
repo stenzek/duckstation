@@ -7,16 +7,6 @@
 #include <sys/mman.h>
 #endif
 
-static void DoCacheFlush(u8* address, u32 len)
-{
-#if defined(Y_PLATFORM_WINDOWS)
-  FlushInstructionCache(GetCurrentProcess(), address, len);
-#elif defined(Y_COMPILER_GCC) || defined(Y_COMPILER_CLANG)
-  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address + len));
-#else
-#error Unknown platform.
-#endif
-}
 
 JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
 {
@@ -85,11 +75,11 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 void JitCodeBuffer::Reset()
 {
   std::memset(m_code_ptr, 0, m_code_size);
-  DoCacheFlush(m_code_ptr, m_code_size);
+  FlushInstructionCache(m_code_ptr, m_code_size);
   if (m_far_code_size > 0)
   {
     std::memset(m_far_code_ptr, 0, m_far_code_size);
-    DoCacheFlush(m_far_code_ptr, m_far_code_size);
+    FlushInstructionCache(m_far_code_ptr, m_far_code_size);
   }
   m_free_code_ptr = m_code_ptr;
   m_code_used = 0;
@@ -108,4 +98,15 @@ void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
   std::memset(m_free_code_ptr, padding_value, num_padding_bytes);
   m_free_code_ptr += num_padding_bytes;
   m_code_used += num_padding_bytes;
+}
+
+void JitCodeBuffer::FlushInstructionCache(void* address, u32 size)
+{
+#if defined(Y_PLATFORM_WINDOWS)
+  ::FlushInstructionCache(GetCurrentProcess(), address, size);
+#elif defined(Y_COMPILER_GCC) || defined(Y_COMPILER_CLANG)
+  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address + size));
+#else
+#error Unknown platform.
+#endif
 }

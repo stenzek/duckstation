@@ -21,6 +21,9 @@ public:
   /// Assumes alignment is a power-of-two.
   void Align(u32 alignment, u8 padding_value);
 
+  /// Flushes the instruction cache on the host for the specified range.
+  static void FlushInstructionCache(void* address, u32 size);
+
 private:
   u8* m_code_ptr;
   u8* m_free_code_ptr;
