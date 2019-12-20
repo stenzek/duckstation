@@ -35,6 +35,7 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   m_code_used = 0;
 
   m_far_code_ptr = static_cast<u8*>(m_code_ptr) + size;
+  m_free_far_code_ptr = m_far_code_ptr;
   m_far_code_size = far_code_size;
   m_far_code_used = 0;
 
