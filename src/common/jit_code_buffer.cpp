@@ -36,7 +36,7 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 JitCodeBuffer::~JitCodeBuffer()
 {
 #if defined(Y_PLATFORM_WINDOWS)
-  VirtualFree(m_code_ptr, m_total_size, MEM_RELEASE);
+  VirtualFree(m_code_ptr, 0, MEM_RELEASE);
 #elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
   munmap(m_code_ptr, m_total_size);
 #endif
