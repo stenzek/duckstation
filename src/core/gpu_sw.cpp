@@ -230,6 +230,29 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
 
     case Primitive::Line:
     {
+      const u32 first_color = rc.color_for_first_vertex;
+      const bool shaded = rc.shading_enable;
+
+      std::array<SWVertex, 2> vertices = {};
+      u32 buffer_pos = 1;
+
+      // first vertex
+      SWVertex* p0 = &vertices[0];
+      SWVertex* p1 = &vertices[1];
+      p0->SetPosition(VertexPosition{command_ptr[buffer_pos++]});
+      p0->SetColorRGB24(first_color);
+
+      // remaining vertices in line strip
+      for (u32 i = 1; i < num_vertices; i++)
+      {
+        p1->SetColorRGB24(shaded ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color);
+        p1->SetPosition(VertexPosition{command_ptr[buffer_pos++]});
+
+        DrawLine(rc, p0, p1);
+
+        // swap p0/p1 so that the last vertex is used as the first for the next line
+        std::swap(p0, p1);
+      }
     }
     break;
 
@@ -237,6 +260,31 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       UnreachableCode();
       break;
   }
+}
+
+enum : u32
+{
+  COORD_FRAC_BITS = 32,
+  COLOR_FRAC_BITS = 12
+};
+
+using FixedPointCoord = u64;
+
+constexpr FixedPointCoord IntToFixedCoord(s32 x)
+{
+  return (ZeroExtend64(static_cast<u32>(x)) << COORD_FRAC_BITS) | (ZeroExtend64(1u) << (COORD_FRAC_BITS - 1));
+}
+
+using FixedPointColor = u32;
+
+constexpr FixedPointColor IntToFixedColor(u8 r)
+{
+  return ZeroExtend32(r) << COLOR_FRAC_BITS | (1u << (COLOR_FRAC_BITS - 1));
+}
+
+constexpr u8 FixedColorToInt(FixedPointColor r)
+{
+  return Truncate8(r >> 12);
 }
 
 bool GPU_SW::IsClockwiseWinding(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2)
@@ -503,6 +551,95 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
     return;
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());
+}
+
+
+constexpr FixedPointCoord GetLineCoordStep(s32 delta, s32 k)
+{
+  s64 delta_fp = static_cast<s64>(ZeroExtend64(static_cast<u32>(delta)) << 32);
+  if (delta_fp < 0)
+    delta_fp -= s64(k - 1);
+  if (delta_fp > 0)
+    delta_fp += s64(k - 1);
+
+  return static_cast<FixedPointCoord>(delta_fp / k);
+}
+
+constexpr s32 FixedToIntCoord(FixedPointCoord x)
+{
+  return static_cast<s32>(Truncate32(x >> COORD_FRAC_BITS));
+}
+
+constexpr FixedPointColor GetLineColorStep(s32 delta, s32 k)
+{
+  return static_cast<s32>(static_cast<u32>(delta) << COLOR_FRAC_BITS) / k;
+}
+
+void GPU_SW::DrawLine(RenderCommand rc, const SWVertex* p0, const SWVertex* p1)
+{
+  // Algorithm based on Mednafen.
+
+  const bool dither_enable = rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable;
+  const bool shaded = rc.shading_enable;
+
+  if (p0->x > p1->x)
+    std::swap(p0, p1);
+
+  const s32 dx = p1->x - p0->x;
+  const s32 dy = p1->y - p0->y;
+  const s32 k = std::max(std::abs(dx), std::abs(dy));
+
+  FixedPointCoord step_x, step_y;
+  FixedPointColor step_r = 0, step_g = 0, step_b = 0;
+  if (k > 0)
+  {
+    step_x = GetLineCoordStep(dx, k);
+    step_y = GetLineCoordStep(dy, k);
+
+    if (shaded)
+    {
+      step_r = GetLineColorStep(s32(ZeroExtend32(p1->color_r)) - s32(ZeroExtend32(p0->color_r)), k);
+      step_g = GetLineColorStep(s32(ZeroExtend32(p1->color_g)) - s32(ZeroExtend32(p0->color_g)), k);
+      step_b = GetLineColorStep(s32(ZeroExtend32(p1->color_b)) - s32(ZeroExtend32(p0->color_b)), k);
+    }
+  }
+  else
+  {
+    step_x = 0;
+    step_y = 0;
+  }
+
+  FixedPointCoord current_x = IntToFixedCoord(p0->x);
+  FixedPointCoord current_y = IntToFixedCoord(p0->y);
+  FixedPointColor current_r = IntToFixedColor(p0->color_r);
+  FixedPointColor current_g = IntToFixedColor(p0->color_g);
+  FixedPointColor current_b = IntToFixedColor(p0->color_b);
+
+  for (s32 i = 0; i <= k; i++)
+  {
+    const s32 x = m_drawing_offset.x + FixedToIntCoord(current_x);
+    const s32 y = m_drawing_offset.y + FixedToIntCoord(current_y);
+
+    const u8 r = shaded ? FixedColorToInt(current_r) : p0->color_r;
+    const u8 g = shaded ? FixedColorToInt(current_g) : p0->color_g;
+    const u8 b = shaded ? FixedColorToInt(current_b) : p0->color_b;
+
+    if (x >= static_cast<s32>(m_drawing_area.left) && x <= static_cast<s32>(m_drawing_area.right) &&
+        y >= static_cast<s32>(m_drawing_area.top) && y <= static_cast<s32>(m_drawing_area.bottom))
+    {
+      ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, 0, 0, dither_enable);
+    }
+
+    current_x += step_x;
+    current_y += step_y;
+
+    if (shaded)
+    {
+      current_r += step_r;
+      current_g += step_g;
+      current_b += step_b;
+    }
+  }
 }
 
 std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()

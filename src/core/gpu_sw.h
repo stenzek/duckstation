@@ -32,6 +32,15 @@ protected:
     s32 x, y;
     u8 color_r, color_g, color_b;
     u8 texcoord_x, texcoord_y;
+
+    ALWAYS_INLINE void SetPosition(VertexPosition p)
+    {
+      x = p.x;
+      y = p.y;
+    }
+
+    ALWAYS_INLINE void SetColorRGB24(u32 color) { std::tie(color_r, color_g, color_b) = UnpackColorRGB24(color); }
+    ALWAYS_INLINE void SetTexcoord(u16 value) { std::tie(texcoord_x, texcoord_y) = UnpackTexcoord(value); }
   };
 
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
@@ -60,6 +69,7 @@ protected:
   void DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
   void DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b,
                      u8 origin_texcoord_x, u8 origin_texcoord_y);
+  void DrawLine(RenderCommand rc, const SWVertex* p0, const SWVertex* p1);
 
   std::vector<u32> m_display_texture_buffer;
   std::unique_ptr<HostDisplayTexture> m_display_texture;
