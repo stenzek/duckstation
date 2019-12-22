@@ -156,6 +156,8 @@ void GPU_SW::UpdateDisplay()
 
 void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
+  const bool dithering_enable = rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable;
+
   switch (rc.primitive)
   {
     case Primitive::Polygon:
@@ -164,10 +166,12 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
+      std::array<SWVertex, 4> vertices;
+
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        SWVertex& vert = m_vertex_buffer[i];
+        SWVertex& vert = vertices[i];
         const u32 color_rgb = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         vert.color_r = Truncate8(color_rgb);
         vert.color_g = Truncate8(color_rgb >> 8);
@@ -188,9 +192,12 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
         }
       }
 
-      DrawTriangle(rc, &m_vertex_buffer[0], &m_vertex_buffer[1], &m_vertex_buffer[2]);
+      const DrawTriangleFunction DrawFunction = GetDrawTriangleFunction(
+        rc.shading_enable, rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable, dithering_enable);
+
+      (this->*DrawFunction)(&vertices[0], &vertices[1], &vertices[2]);
       if (num_vertices > 3)
-        DrawTriangle(rc, &m_vertex_buffer[2], &m_vertex_buffer[1], &m_vertex_buffer[3]);
+        (this->*DrawFunction)(&vertices[2], &vertices[1], &vertices[3]);
     }
     break;
 
@@ -224,7 +231,10 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
           break;
       }
 
-      DrawRectangle(rc, vp.x, vp.y, width, height, r, g, b, texcoord_x, texcoord_y);
+      const DrawRectangleFunction DrawFunction =
+        GetDrawRectangleFunction(rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable);
+
+      (this->*DrawFunction)(vp.x, vp.y, width, height, r, g, b, texcoord_x, texcoord_y);
     }
     break;
 
@@ -232,6 +242,8 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     {
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
+
+      const DrawLineFunction DrawFunction = GetDrawLineFunction(shaded, rc.transparency_enable, dithering_enable);
 
       std::array<SWVertex, 2> vertices = {};
       u32 buffer_pos = 1;
@@ -248,7 +260,7 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
         p1->SetColorRGB24(shaded ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color);
         p1->SetPosition(VertexPosition{command_ptr[buffer_pos++]});
 
-        DrawLine(rc, p0, p1);
+        (this->*DrawFunction)(p0, p1);
 
         // swap p0/p1 so that the last vertex is used as the first for the next line
         std::swap(p0, p1);
@@ -309,7 +321,9 @@ static constexpr u8 Interpolate(u8 v0, u8 v1, u8 v2, s32 w0, s32 w1, s32 w2, s32
   return (vd < 0) ? 0 : ((vd > 0xFF) ? 0xFF : static_cast<u8>(vd));
 }
 
-void GPU_SW::DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* v1, const SWVertex* v2)
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+         bool dithering_enable>
+void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2)
 {
 #define orient2d(ax, ay, bx, by, cx, cy) ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax))
 
@@ -375,18 +389,15 @@ void GPU_SW::DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* 
         const s32 b1 = row_w1;
         const s32 b2 = row_w2;
 
-        const u8 r =
-          rc.shading_enable ? Interpolate(v0->color_r, v1->color_r, v2->color_r, b0, b1, b2, ws) : v0->color_r;
-        const u8 g =
-          rc.shading_enable ? Interpolate(v0->color_g, v1->color_g, v2->color_g, b0, b1, b2, ws) : v0->color_g;
-        const u8 b =
-          rc.shading_enable ? Interpolate(v0->color_b, v1->color_b, v2->color_b, b0, b1, b2, ws) : v0->color_b;
+        const u8 r = shading_enable ? Interpolate(v0->color_r, v1->color_r, v2->color_r, b0, b1, b2, ws) : v0->color_r;
+        const u8 g = shading_enable ? Interpolate(v0->color_g, v1->color_g, v2->color_g, b0, b1, b2, ws) : v0->color_g;
+        const u8 b = shading_enable ? Interpolate(v0->color_b, v1->color_b, v2->color_b, b0, b1, b2, ws) : v0->color_b;
 
         const u8 texcoord_x = Interpolate(v0->texcoord_x, v1->texcoord_x, v2->texcoord_x, b0, b1, b2, ws);
         const u8 texcoord_y = Interpolate(v0->texcoord_y, v1->texcoord_y, v2->texcoord_y, b0, b1, b2, ws);
 
-        ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y,
-                   rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable);
+        ShadePixel<texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+          static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y);
       }
 
       row_w0 += a12;
@@ -402,8 +413,40 @@ void GPU_SW::DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* 
 #undef orient2d
 }
 
-void GPU_SW::DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b,
-                           u8 origin_texcoord_x, u8 origin_texcoord_y)
+GPU_SW::DrawTriangleFunction GPU_SW::GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
+                                                             bool raw_texture_enable, bool transparency_enable,
+                                                             bool dithering_enable)
+{
+#define F(SHADING, TEXTURE, RAW_TEXTURE, TRANSPARENCY, DITHERING)                                                      \
+  &GPU_SW::DrawTriangle<SHADING, TEXTURE, RAW_TEXTURE, TRANSPARENCY, DITHERING>
+
+  static constexpr DrawTriangleFunction funcs[2][2][2][2][2] = {
+    {{{{F(false, false, false, false, false), F(false, false, false, false, true)},
+       {F(false, false, false, true, false), F(false, false, false, true, true)}},
+      {{F(false, false, true, false, false), F(false, false, true, false, true)},
+       {F(false, false, true, true, false), F(false, false, true, true, true)}}},
+     {{{F(false, true, false, false, false), F(false, true, false, false, true)},
+       {F(false, true, false, true, false), F(false, true, false, true, true)}},
+      {{F(false, true, true, false, false), F(false, true, true, false, true)},
+       {F(false, true, true, true, false), F(false, true, true, true, true)}}}},
+    {{{{F(true, false, false, false, false), F(true, false, false, false, true)},
+       {F(true, false, false, true, false), F(true, false, false, true, true)}},
+      {{F(true, false, true, false, false), F(true, false, true, false, true)},
+       {F(true, false, true, true, false), F(true, false, true, true, true)}}},
+     {{{F(true, true, false, false, false), F(true, true, false, false, true)},
+       {F(true, true, false, true, false), F(true, true, false, true, true)}},
+      {{F(true, true, true, false, false), F(true, true, true, false, true)},
+       {F(true, true, true, true, false), F(true, true, true, true, true)}}}}};
+
+#undef F
+
+  return funcs[u8(shading_enable)][u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)]
+              [u8(dithering_enable)];
+}
+
+template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b, u8 origin_texcoord_x,
+                           u8 origin_texcoord_y)
 {
   origin_x += m_drawing_offset.x;
   origin_y += m_drawing_offset.y;
@@ -424,17 +467,18 @@ void GPU_SW::DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 wid
 
       const u8 texcoord_x = Truncate8(ZeroExtend32(origin_texcoord_x) + offset_x);
 
-      ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y, false);
+      ShadePixel<texture_enable, raw_texture_enable, transparency_enable, false>(
+        static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y);
     }
   }
 }
 
-void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x,
-                        u8 texcoord_y, bool dithering)
+template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
+void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y)
 {
   VRAMPixel color;
-  bool transparent = true;
-  if (rc.texture_enable)
+  bool transparent;
+  if constexpr (texture_enable)
   {
     // Apply texture window
     // TODO: Precompute the second half
@@ -484,7 +528,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
 
     transparent = texture_color.c;
 
-    if (rc.raw_texture_enable)
+    if constexpr (raw_texture_enable)
     {
       color.bits = texture_color.bits;
     }
@@ -493,7 +537,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
       const u8 r = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetR8()) * ZeroExtend16(color_r)) >> 7, 0xFF));
       const u8 g = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetG8()) * ZeroExtend16(color_g)) >> 7, 0xFF));
       const u8 b = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetB8()) * ZeroExtend16(color_b)) >> 7, 0xFF));
-      if (dithering)
+      if constexpr (dithering_enable)
         color.SetRGB24Dithered(x, y, r, g, b);
       else
         color.SetRGB24(r, g, b);
@@ -501,15 +545,19 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
   }
   else
   {
-    if (dithering)
+    transparent = true;
+
+    if constexpr (dithering_enable)
       color.SetRGB24Dithered(x, y, color_r, color_g, color_b);
     else
       color.SetRGB24(color_r, color_g, color_b);
   }
 
-  if (rc.transparency_enable && transparent)
+  if constexpr (transparency_enable)
   {
-    const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
+    if (transparent)
+    {
+      const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
 
 #define BLEND_AVERAGE(bg, fg) Truncate8(std::min<u32>((ZeroExtend32(bg) / 2) + (ZeroExtend32(fg) / 2), 0x1F))
 #define BLEND_ADD(bg, fg) Truncate8(std::min<u32>(ZeroExtend32(bg) + ZeroExtend32(fg), 0x1F))
@@ -520,23 +568,23 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
   color.Set(func(bg_color.r.GetValue(), color.r.GetValue()), func(bg_color.g.GetValue(), color.g.GetValue()),          \
             func(bg_color.b.GetValue(), color.b.GetValue()), color.c.GetValue())
 
-    switch (m_draw_mode.GetTransparencyMode())
-    {
-      case GPU::TransparencyMode::HalfBackgroundPlusHalfForeground:
-        BLEND_RGB(BLEND_AVERAGE);
-        break;
-      case GPU::TransparencyMode::BackgroundPlusForeground:
-        BLEND_RGB(BLEND_ADD);
-        break;
-      case GPU::TransparencyMode::BackgroundMinusForeground:
-        BLEND_RGB(BLEND_SUBTRACT);
-        break;
-      case GPU::TransparencyMode::BackgroundPlusQuarterForeground:
-        BLEND_RGB(BLEND_QUARTER);
-        break;
-      default:
-        break;
-    }
+      switch (m_draw_mode.GetTransparencyMode())
+      {
+        case GPU::TransparencyMode::HalfBackgroundPlusHalfForeground:
+          BLEND_RGB(BLEND_AVERAGE);
+          break;
+        case GPU::TransparencyMode::BackgroundPlusForeground:
+          BLEND_RGB(BLEND_ADD);
+          break;
+        case GPU::TransparencyMode::BackgroundMinusForeground:
+          BLEND_RGB(BLEND_SUBTRACT);
+          break;
+        case GPU::TransparencyMode::BackgroundPlusQuarterForeground:
+          BLEND_RGB(BLEND_QUARTER);
+          break;
+        default:
+          break;
+      }
 
 #undef BLEND_RGB
 
@@ -544,6 +592,7 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
 #undef BLEND_SUBTRACT
 #undef BLEND_ADD
 #undef BLEND_AVERAGE
+    }
   }
 
   const u16 mask_and = m_GPUSTAT.GetMaskAND();
@@ -552,7 +601,6 @@ void GPU_SW::ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, 
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());
 }
-
 
 constexpr FixedPointCoord GetLineCoordStep(s32 delta, s32 k)
 {
@@ -575,13 +623,10 @@ constexpr FixedPointColor GetLineColorStep(s32 delta, s32 k)
   return static_cast<s32>(static_cast<u32>(delta) << COLOR_FRAC_BITS) / k;
 }
 
-void GPU_SW::DrawLine(RenderCommand rc, const SWVertex* p0, const SWVertex* p1)
+template<bool shading_enable, bool transparency_enable, bool dithering_enable>
+void GPU_SW::DrawLine(const SWVertex* p0, const SWVertex* p1)
 {
   // Algorithm based on Mednafen.
-
-  const bool dither_enable = rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable;
-  const bool shaded = rc.shading_enable;
-
   if (p0->x > p1->x)
     std::swap(p0, p1);
 
@@ -590,23 +635,32 @@ void GPU_SW::DrawLine(RenderCommand rc, const SWVertex* p0, const SWVertex* p1)
   const s32 k = std::max(std::abs(dx), std::abs(dy));
 
   FixedPointCoord step_x, step_y;
-  FixedPointColor step_r = 0, step_g = 0, step_b = 0;
+  FixedPointColor step_r, step_g, step_b;
   if (k > 0)
   {
     step_x = GetLineCoordStep(dx, k);
     step_y = GetLineCoordStep(dy, k);
 
-    if (shaded)
+    if constexpr (shading_enable)
     {
       step_r = GetLineColorStep(s32(ZeroExtend32(p1->color_r)) - s32(ZeroExtend32(p0->color_r)), k);
       step_g = GetLineColorStep(s32(ZeroExtend32(p1->color_g)) - s32(ZeroExtend32(p0->color_g)), k);
       step_b = GetLineColorStep(s32(ZeroExtend32(p1->color_b)) - s32(ZeroExtend32(p0->color_b)), k);
+    }
+    else
+    {
+      step_r = 0;
+      step_g = 0;
+      step_b = 0;
     }
   }
   else
   {
     step_x = 0;
     step_y = 0;
+    step_r = 0;
+    step_g = 0;
+    step_b = 0;
   }
 
   FixedPointCoord current_x = IntToFixedCoord(p0->x);
@@ -620,26 +674,55 @@ void GPU_SW::DrawLine(RenderCommand rc, const SWVertex* p0, const SWVertex* p1)
     const s32 x = m_drawing_offset.x + FixedToIntCoord(current_x);
     const s32 y = m_drawing_offset.y + FixedToIntCoord(current_y);
 
-    const u8 r = shaded ? FixedColorToInt(current_r) : p0->color_r;
-    const u8 g = shaded ? FixedColorToInt(current_g) : p0->color_g;
-    const u8 b = shaded ? FixedColorToInt(current_b) : p0->color_b;
+    const u8 r = shading_enable ? FixedColorToInt(current_r) : p0->color_r;
+    const u8 g = shading_enable ? FixedColorToInt(current_g) : p0->color_g;
+    const u8 b = shading_enable ? FixedColorToInt(current_b) : p0->color_b;
 
     if (x >= static_cast<s32>(m_drawing_area.left) && x <= static_cast<s32>(m_drawing_area.right) &&
         y >= static_cast<s32>(m_drawing_area.top) && y <= static_cast<s32>(m_drawing_area.bottom))
     {
-      ShadePixel(rc, static_cast<u32>(x), static_cast<u32>(y), r, g, b, 0, 0, dither_enable);
+      ShadePixel<false, false, transparency_enable, dithering_enable>(static_cast<u32>(x), static_cast<u32>(y), r, g, b,
+                                                                      0, 0);
     }
 
     current_x += step_x;
     current_y += step_y;
 
-    if (shaded)
+    if constexpr (shading_enable)
     {
       current_r += step_r;
       current_g += step_g;
       current_b += step_b;
     }
   }
+}
+
+GPU_SW::DrawLineFunction GPU_SW::GetDrawLineFunction(bool shading_enable, bool transparency_enable,
+                                                     bool dithering_enable)
+{
+#define F(SHADING, TRANSPARENCY, DITHERING) &GPU_SW::DrawLine<SHADING, TRANSPARENCY, DITHERING>
+
+  static constexpr DrawLineFunction funcs[2][2][2] = {
+    {{F(false, false, false), F(false, false, true)}, {F(false, true, false), F(false, true, true)}},
+    {{F(true, false, false), F(true, false, true)}, {F(true, true, false), F(true, true, true)}}};
+
+#undef F
+
+  return funcs[u8(shading_enable)][u8(transparency_enable)][u8(dithering_enable)];
+}
+
+GPU_SW::DrawRectangleFunction GPU_SW::GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
+                                                               bool transparency_enable)
+{
+#define F(TEXTURE, RAW_TEXTURE, TRANSPARENCY) &GPU_SW::DrawRectangle<TEXTURE, RAW_TEXTURE, TRANSPARENCY>
+
+  static constexpr DrawRectangleFunction funcs[2][2][2] = {
+    {{F(false, false, false), F(false, false, true)}, {F(false, true, false), F(false, true, true)}},
+    {{F(true, false, false), F(true, false, true)}, {F(true, true, false), F(true, true, true)}}};
+
+#undef F
+
+  return funcs[u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)];
 }
 
 std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()

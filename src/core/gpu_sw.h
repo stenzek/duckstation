@@ -22,11 +22,6 @@ public:
   void SetPixel(u32 x, u32 y, u16 value) { m_vram[VRAM_WIDTH * y + x] = value; }
 
 protected:
-  enum : u32
-  {
-    MAX_VERTICES_PER_POLYGON = 4
-  };
-
   struct SWVertex
   {
     s32 x, y;
@@ -64,16 +59,34 @@ protected:
 
   static bool IsClockwiseWinding(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
 
-  void ShadePixel(RenderCommand rc, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y,
-                  bool dithering);
-  void DrawTriangle(RenderCommand rc, const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
-  void DrawRectangle(RenderCommand rc, s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b,
-                     u8 origin_texcoord_x, u8 origin_texcoord_y);
-  void DrawLine(RenderCommand rc, const SWVertex* p0, const SWVertex* p1);
+  template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
+  void ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y);
+
+  template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+           bool dithering_enable>
+  void DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
+
+  using DrawTriangleFunction = void (GPU_SW::*)(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
+  DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable, bool raw_texture_enable,
+                                               bool transparency_enable, bool dithering_enable);
+
+  template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+  void DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b, u8 origin_texcoord_x,
+                     u8 origin_texcoord_y);
+
+  using DrawRectangleFunction = void (GPU_SW::*)(s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b,
+                                                 u8 origin_texcoord_x, u8 origin_texcoord_y);
+  DrawRectangleFunction GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
+                                                 bool transparency_enable);
+
+  template<bool shading_enable, bool transparency_enable, bool dithering_enable>
+  void DrawLine(const SWVertex* p0, const SWVertex* p1);
+
+  using DrawLineFunction = void (GPU_SW::*)(const SWVertex* p0, const SWVertex* p1);
+  DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable, bool dithering_enable);
 
   std::vector<u32> m_display_texture_buffer;
   std::unique_ptr<HostDisplayTexture> m_display_texture;
 
-  std::array<SWVertex, MAX_VERTICES_PER_POLYGON> m_vertex_buffer;
   std::array<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram;
 };
