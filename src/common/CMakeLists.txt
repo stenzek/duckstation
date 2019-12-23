@@ -20,6 +20,8 @@ add_library(common
   iso_reader.h
   jit_code_buffer.cpp
   jit_code_buffer.h
+  null_audio_stream.cpp
+  null_audio_stream.h
   rectangle.h
   state_wrapper.cpp
   state_wrapper.h

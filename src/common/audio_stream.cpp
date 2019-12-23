@@ -97,6 +97,7 @@ void AudioStream::WriteSamples(const SampleType* samples, u32 num_samples)
       m_num_free_buffers--;
       m_first_free_buffer = (m_first_free_buffer + 1) % m_buffers.size();
       m_num_available_buffers++;
+      BufferAvailable();
     }
   }
 }
@@ -116,6 +117,7 @@ void AudioStream::EndWrite(u32 num_samples)
     m_num_free_buffers--;
     m_first_free_buffer = (m_first_free_buffer + 1) % m_buffers.size();
     m_num_available_buffers++;
+    BufferAvailable();
   }
 
   m_buffer_mutex.unlock();

@@ -49,6 +49,7 @@
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
+    <ClInclude Include="null_audio_stream.h" />
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="state_wrapper.h" />
@@ -70,6 +71,7 @@
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="cd_subchannel_replacement.cpp" />
+    <ClCompile Include="null_audio_stream.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />
   </ItemGroup>

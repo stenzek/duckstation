@@ -45,10 +45,13 @@ protected:
   virtual bool OpenDevice() = 0;
   virtual void PauseDevice(bool paused) = 0;
   virtual void CloseDevice() = 0;
+  virtual void BufferAvailable() = 0;
 
   bool IsDeviceOpen() const { return (m_output_sample_rate > 0); }
 
   u32 ReadSamples(SampleType* samples, u32 num_samples);
+
+  void DropBuffer();
 
   u32 m_output_sample_rate = 0;
   u32 m_channels = 0;
@@ -64,7 +67,6 @@ private:
 
   void AllocateBuffers(u32 buffer_count);
   void EnsureBuffer();
-  void DropBuffer();
 
   std::vector<Buffer> m_buffers;
   std::mutex m_buffer_mutex;

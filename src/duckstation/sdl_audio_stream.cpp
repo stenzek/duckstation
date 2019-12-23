@@ -59,3 +59,5 @@ void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
                 silence_samples * this_ptr->m_channels * sizeof(SampleType));
   }
 }
+
+void SDLAudioStream::BufferAvailable() {}

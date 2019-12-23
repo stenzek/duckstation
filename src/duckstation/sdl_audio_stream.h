@@ -12,6 +12,7 @@ protected:
   bool OpenDevice() override;
   void PauseDevice(bool paused) override;
   void CloseDevice() override;
+  void BufferAvailable() override;
 
   static void AudioCallback(void* userdata, uint8_t* stream, int len);
 
