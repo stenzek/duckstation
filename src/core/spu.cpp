@@ -21,7 +21,6 @@ SPU::~SPU() = default;
 
 void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
 {
-  m_audio_stream = system->GetHostInterface()->GetAudioStream();
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
@@ -109,7 +108,7 @@ bool SPU::DoState(StateWrapper& sw)
   sw.DoBytes(m_ram.data(), RAM_SIZE);
 
   if (sw.IsReading())
-    m_audio_stream->EmptyBuffers();
+    m_system->GetHostInterface()->GetAudioStream()->EmptyBuffers();
 
   return !sw.HasError();
 }
@@ -1006,7 +1005,7 @@ void SPU::GenerateSample()
   std::array<AudioStream::SampleType, 2> out_samples;
   out_samples[0] = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
   out_samples[1] = Clamp16(ApplyVolume(right_sum, m_main_volume_right.GetVolume()));
-  m_audio_stream->WriteSamples(out_samples.data(), 1);
+  m_system->GetHostInterface()->GetAudioStream()->WriteSamples(out_samples.data(), 1);
 
   // Write to capture buffers.
   WriteToCaptureBuffer(0, cd_audio_left);

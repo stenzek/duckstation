@@ -85,7 +85,7 @@ private:
 
   void QueueSwitchGPURenderer();
   void SwitchGPURenderer();
-  void SwitchAudioRenderer();
+  void SwitchAudioBackend();
   void UpdateFullscreen();
   void UpdateControllerMapping();
 

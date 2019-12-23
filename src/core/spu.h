@@ -287,7 +287,6 @@ private:
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
-  AudioStream* m_audio_stream = nullptr;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};

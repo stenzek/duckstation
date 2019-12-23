@@ -201,10 +201,16 @@ void SDLHostInterface::SwitchGPURenderer()
   ClearImGuiFocus();
 }
 
-void SDLHostInterface::SwitchAudioRenderer()
+void SDLHostInterface::SwitchAudioBackend()
 {
   m_audio_stream.reset();
   CreateAudioStream();
+
+  if (m_system)
+  {
+    m_audio_stream->PauseOutput(false);
+    UpdateSpeedLimiterState();
+  }
 }
 
 void SDLHostInterface::UpdateFullscreen()
@@ -1162,14 +1168,26 @@ void SDLHostInterface::DrawSettingsWindow()
       }
 
       ImGui::NewLine();
-      if (DrawSettingsSectionHeader("Host Synchronization"))
+      if (DrawSettingsSectionHeader("Audio"))
       {
-        if (ImGui::Checkbox("Sync To Audio", &m_settings.audio_sync_enabled))
+        ImGui::Text("Backend:");
+        ImGui::SameLine(indent);
+
+        int backend = static_cast<int>(m_settings.audio_backend);
+        if (ImGui::Combo(
+              "##backend", &backend,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(AudioBackend::Count)))
         {
+          m_settings.audio_backend = static_cast<AudioBackend>(backend);
           settings_changed = true;
-          UpdateSpeedLimiterState();
+          SwitchAudioBackend();
         }
-        if (ImGui::Checkbox("Sync To Video", &m_settings.video_sync_enabled))
+
+        if (ImGui::Checkbox("Output Sync", &m_settings.audio_sync_enabled))
         {
           settings_changed = true;
           UpdateSpeedLimiterState();
@@ -1291,6 +1309,12 @@ void SDLHostInterface::DrawSettingsWindow()
         {
           m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
           settings_changed = true;
+        }
+
+        if (ImGui::Checkbox("VSync", &m_settings.video_sync_enabled))
+        {
+          settings_changed = true;
+          UpdateSpeedLimiterState();
         }
       }
 
