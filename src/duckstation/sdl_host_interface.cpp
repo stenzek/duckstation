@@ -3,6 +3,7 @@
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
+#include "common/null_audio_stream.h"
 #include "core/cdrom.h"
 #include "core/dma.h"
 #include "core/gpu.h"
@@ -12,11 +13,6 @@
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/timers.h"
-#ifdef Y_PLATFORM_WINDOWS
-#include "YBaseLib/Windows/WindowsHeaders.h"
-#include "d3d11_host_display.h"
-#include <mmsystem.h>
-#endif
 #include "icon.h"
 #include "imgui_styles.h"
 #include "opengl_host_display.h"
@@ -27,6 +23,12 @@
 #include <imgui_stdlib.h>
 #include <nfd.h>
 Log_SetChannel(SDLHostInterface);
+
+#ifdef Y_PLATFORM_WINDOWS
+#include "YBaseLib/Windows/WindowsHeaders.h"
+#include "d3d11_host_display.h"
+#include <mmsystem.h>
+#endif
 
 SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini")
 {
@@ -123,10 +125,28 @@ void SDLHostInterface::CreateImGuiContext()
   ImGui::AddRobotoRegularFont();
 }
 
-bool SDLHostInterface::CreateAudioStream()
+void SDLHostInterface::CreateAudioStream()
 {
-  m_audio_stream = std::make_unique<SDLAudioStream>();
-  return m_audio_stream->Reconfigure(44100, 2);
+  switch (m_settings.audio_backend)
+  {
+    case AudioBackend::Null:
+      m_audio_stream = std::make_unique<NullAudioStream>();
+      break;
+
+    case AudioBackend::Default:
+    default:
+      m_audio_stream = std::make_unique<SDLAudioStream>();
+      break;
+  }
+
+  if (!m_audio_stream->Reconfigure(44100, 2))
+  {
+    ReportError("Failed to recreate audio stream, falling back to null");
+    m_audio_stream.reset();
+    m_audio_stream = std::make_unique<NullAudioStream>();
+    if (!m_audio_stream->Reconfigure(44100, 2))
+      Panic("Failed to reconfigure null audio stream");
+  }
 }
 
 void SDLHostInterface::SaveSettings()
@@ -181,6 +201,12 @@ void SDLHostInterface::SwitchGPURenderer()
   ClearImGuiFocus();
 }
 
+void SDLHostInterface::SwitchAudioRenderer()
+{
+  m_audio_stream.reset();
+  CreateAudioStream();
+}
+
 void SDLHostInterface::UpdateFullscreen()
 {
   SDL_SetWindowFullscreen(m_window, m_settings.display_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
@@ -218,11 +244,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
     return nullptr;
   }
 
-  if (!intf->CreateAudioStream())
-  {
-    Log_ErrorPrintf("Failed to create host audio stream");
-    return nullptr;
-  }
+  intf->CreateAudioStream();
 
   ImGui::NewFrame();
 

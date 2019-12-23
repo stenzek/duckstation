@@ -79,12 +79,13 @@ private:
   bool CreateDisplay();
   void DestroyDisplay();
   void CreateImGuiContext();
-  bool CreateAudioStream();
+  void CreateAudioStream();
 
   void SaveSettings();
 
   void QueueSwitchGPURenderer();
   void SwitchGPURenderer();
+  void SwitchAudioRenderer();
   void UpdateFullscreen();
   void UpdateControllerMapping();
 
