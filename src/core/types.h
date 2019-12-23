@@ -47,6 +47,13 @@ enum class GPURenderer : u8
   Count
 };
 
+enum class AudioBackend : u8
+{
+  Null,
+  Default,
+  Count
+};
+
 enum class ControllerType
 {
   None,

@@ -16,8 +16,6 @@ void Settings::SetDefaults()
   region = ConsoleRegion::Auto;
   cpu_execution_mode = CPUExecutionMode::Interpreter;
 
-  audio_sync_enabled = true;
-  video_sync_enabled = true;
   speed_limiter_enabled = true;
   start_paused = false;
 
@@ -26,8 +24,11 @@ void Settings::SetDefaults()
   gpu_true_color = true;
   gpu_texture_filtering = false;
   gpu_force_progressive_scan = true;
-
   display_linear_filtering = true;
+  video_sync_enabled = true;
+
+  audio_backend = AudioBackend::Default;
+  audio_sync_enabled = true;
 
   bios_path = "scph1001.bin";
   bios_patch_tty_enable = false;
@@ -53,8 +54,6 @@ void Settings::Load(const char* filename)
 
   region = ParseConsoleRegionName(ini.GetValue("Console", "Region", "NTSC-U")).value_or(ConsoleRegion::NTSC_U);
 
-  audio_sync_enabled = ini.GetBoolValue("General", "SyncToAudio", true);
-  video_sync_enabled = ini.GetBoolValue("General", "SyncToVideo", true);
   speed_limiter_enabled = ini.GetBoolValue("General", "SpeedLimiterEnabled", true);
   start_paused = ini.GetBoolValue("General", "StartPaused", false);
 
@@ -67,13 +66,17 @@ void Settings::Load(const char* filename)
   gpu_texture_filtering = ini.GetBoolValue("GPU", "TextureFiltering", false);
 
   display_linear_filtering = ini.GetBoolValue("Display", "LinearFiltering", true);
+  video_sync_enabled = ini.GetBoolValue("Display", "VSync", true);
+
+  audio_backend = ParseAudioBackend(ini.GetValue("Audio", "Backend", "Default")).value_or(AudioBackend::Default);
+  audio_sync_enabled = ini.GetBoolValue("Audio", "Sync", true);
 
   bios_path = ini.GetValue("BIOS", "Path", "scph1001.bin");
   bios_patch_tty_enable = ini.GetBoolValue("BIOS", "PatchTTYEnable", true);
   bios_patch_fast_boot = ini.GetBoolValue("BIOS", "PatchFastBoot", false);
 
   controller_types[0] = ParseControllerTypeName(ini.GetValue("Ports", "Controller1Type", "DigitalController"))
-                        .value_or(ControllerType::DigitalController);
+                          .value_or(ControllerType::DigitalController);
   controller_types[1] =
     ParseControllerTypeName(ini.GetValue("Ports", "Controller2Type", "None")).value_or(ControllerType::None);
 
@@ -91,8 +94,6 @@ bool Settings::Save(const char* filename) const
 
   ini.SetValue("Console", "Region", GetConsoleRegionName(region));
 
-  ini.SetBoolValue("General", "SyncToAudio", audio_sync_enabled);
-  ini.SetBoolValue("General", "SyncToVideo", video_sync_enabled);
   ini.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
   ini.SetBoolValue("General", "StartPaused", start_paused);
 
@@ -100,11 +101,14 @@ bool Settings::Save(const char* filename) const
 
   ini.SetValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   ini.SetLongValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
-  ini.SetBoolValue("GPU", "VSync", video_sync_enabled);
   ini.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   ini.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
 
   ini.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
+  ini.SetBoolValue("Display", "VSync", video_sync_enabled);
+
+  ini.SetValue("Audio", "Backend", GetAudioBackendName(audio_backend));
+  ini.SetBoolValue("Audio", "Sync", audio_sync_enabled);
 
   ini.SetValue("BIOS", "Path", bios_path.c_str());
   ini.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
@@ -222,6 +226,33 @@ const char* Settings::GetRendererName(GPURenderer renderer)
 const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 {
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
+}
+
+static std::array<const char*, 2> s_audio_backend_names = {{"Null", "Default"}};
+static std::array<const char*, 2> s_audio_backend_display_names = {{"Null (No Output)", "Default"}};
+
+std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_audio_backend_names)
+  {
+    if (strcasecmp(name, str) == 0)
+      return static_cast<AudioBackend>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetAudioBackendName(AudioBackend backend)
+{
+  return s_audio_backend_names[static_cast<int>(backend)];
+}
+
+const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
+{
+  return s_audio_backend_display_names[static_cast<int>(backend)];
 }
 
 static std::array<const char*, 3> s_controller_type_names = {{"None", "DigitalController", "AnalogController"}};

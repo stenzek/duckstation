@@ -14,8 +14,6 @@ struct Settings
 
   bool start_paused = false;
   bool speed_limiter_enabled = true;
-  bool audio_sync_enabled = true;
-  bool video_sync_enabled = true;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
@@ -25,6 +23,10 @@ struct Settings
   bool gpu_force_progressive_scan = false;
   bool display_linear_filtering = true;
   bool display_fullscreen = false;
+  bool video_sync_enabled = true;
+
+  AudioBackend audio_backend = AudioBackend::Default;
+  bool audio_sync_enabled = true;
 
   struct DebugSettings
   {
@@ -64,6 +66,10 @@ struct Settings
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
+
+  static std::optional<AudioBackend> ParseAudioBackend(const char* str);
+  static const char* GetAudioBackendName(AudioBackend backend);
+  static const char* GetAudioBackendDisplayName(AudioBackend backend);
 
   static std::optional<ControllerType> ParseControllerTypeName(const char* str);
   static const char* GetControllerTypeName(ControllerType type);
