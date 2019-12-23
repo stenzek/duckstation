@@ -25,6 +25,7 @@ void Settings::SetDefaults()
   gpu_texture_filtering = false;
   gpu_force_progressive_scan = true;
   display_linear_filtering = true;
+  display_fullscreen = false;
   video_sync_enabled = true;
 
   audio_backend = AudioBackend::Default;
@@ -66,6 +67,7 @@ void Settings::Load(const char* filename)
   gpu_texture_filtering = ini.GetBoolValue("GPU", "TextureFiltering", false);
 
   display_linear_filtering = ini.GetBoolValue("Display", "LinearFiltering", true);
+  display_fullscreen = ini.GetBoolValue("Display", "Fullscreen", false);
   video_sync_enabled = ini.GetBoolValue("Display", "VSync", true);
 
   audio_backend = ParseAudioBackend(ini.GetValue("Audio", "Backend", "Default")).value_or(AudioBackend::Default);
@@ -105,6 +107,7 @@ bool Settings::Save(const char* filename) const
   ini.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
 
   ini.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
+  ini.SetBoolValue("Display", "Fullscreen", display_fullscreen);
   ini.SetBoolValue("Display", "VSync", video_sync_enabled);
 
   ini.SetValue("Audio", "Backend", GetAudioBackendName(audio_backend));

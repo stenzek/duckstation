@@ -197,6 +197,7 @@ void SDLHostInterface::SwitchGPURenderer()
     }
   }
 
+  UpdateFullscreen();
   ResetPerformanceCounters();
   ClearImGuiFocus();
 }
