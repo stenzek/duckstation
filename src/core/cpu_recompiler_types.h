@@ -52,6 +52,7 @@ enum class Condition : u8
 
 using HostReg = Xbyak::Operand::Code;
 using CodeEmitter = Xbyak::CodeGenerator;
+using LabelType = Xbyak::Label;
 enum : u32
 {
   HostReg_Count = 16
@@ -70,6 +71,7 @@ constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
 
 using HostReg = unsigned;
 using CodeEmitter = vixl::aarch64::MacroAssembler;
+using LabelType = vixl::aarch64::Label;
 enum : u32
 {
     HostReg_Count = vixl::aarch64::kNumberOfRegisters

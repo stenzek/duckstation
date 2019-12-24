@@ -80,6 +80,8 @@ public:
 
   // Branching, generates two paths.
   void EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target);
+  void EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label);
+  void EmitBindLabel(LabelType* label);
 
   // Raising exception if condition is true.
   void EmitRaiseException(Exception excode, Condition condition = Condition::Always);

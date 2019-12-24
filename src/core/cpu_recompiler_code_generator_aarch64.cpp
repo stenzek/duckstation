@@ -1541,6 +1541,27 @@ void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_t
     m_register_cache.InvalidateGuestRegister(lr_reg);
 }
 
+void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label)
+{
+  switch (size)
+  {
+    case RegSize_8:
+    case RegSize_16:
+    case RegSize_32:
+      m_emit->tbz(GetHostReg32(reg), bit, label);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+}
+
+void CodeGenerator::EmitBindLabel(LabelType* label)
+{
+  m_emit->Bind(label);
+}
+
 void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
 {
   if (condition == Condition::Always)
