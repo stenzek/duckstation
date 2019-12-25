@@ -1792,6 +1792,21 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   m_emit->L(skip_cancel);
 }
 
+void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
+{
+  if (Xbyak::inner::IsInInt32(reinterpret_cast<uintptr_t>(address)))
+  {
+    m_emit->jmp(address);
+    return;
+  }
+
+  Assert(allow_scratch);
+
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(address));
+  m_emit->jmp(GetHostReg64(temp));
+}
+
 template<typename T>
 static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGenerator* emit, const T& label)
 {

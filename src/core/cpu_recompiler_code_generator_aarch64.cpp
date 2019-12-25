@@ -1390,6 +1390,24 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   m_emit->Bind(&skip_cancel);
 }
 
+void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
+{
+  const s64 jump_distance =
+    static_cast<s64>(reinterpret_cast<intptr_t>(address) - reinterpret_cast<intptr_t>(GetCurrentCodePointer()));
+  Assert(Common::IsAligned(jump_distance, 4));
+  if (a64::Instruction::IsValidImmPCOffset(a64::UncondBranchType, jump_distance >> 2))
+  {
+    m_emit->b(jump_distance >> 2);
+    return;
+  }
+
+  Assert(allow_scratch);
+
+  Value temp = m_register_cache.AllocateScratch(RegSize_64);
+  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(address));
+  m_emit->br(GetHostReg64(temp));
+}
+
 template<typename T>
 static void EmitConditionalJump(Condition condition, bool invert, a64::MacroAssembler* emit, const T& label)
 {

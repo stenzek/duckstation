@@ -78,6 +78,9 @@ public:
   Value EmitLoadGuestMemory(const Value& address, RegSize size);
   void EmitStoreGuestMemory(const Value& address, const Value& value);
 
+  // Unconditional branch to pointer. May allocate a scratch register.
+  void EmitBranch(const void* address, bool allow_scratch = true);
+
   // Branching, generates two paths.
   void EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target);
   void EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label);
