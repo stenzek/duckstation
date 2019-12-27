@@ -485,6 +485,38 @@ Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, b
   }
 }
 
+Value RegisterCache::ReadGuestRegisterToScratch(Reg guest_reg)
+{
+  HostReg host_reg = AllocateHostReg();
+
+  Value& cache_value = m_state.guest_reg_state[static_cast<u8>(guest_reg)];
+  if (cache_value.IsValid())
+  {
+    m_code_generator.EmitCopyValue(host_reg, cache_value);
+
+    if (cache_value.IsConstant())
+    {
+      Log_DebugPrintf("Copying guest register %s from constant 0x%08X to scratch host register %s", GetRegName(guest_reg),
+                      static_cast<u32>(cache_value.constant_value),
+                      m_code_generator.GetHostRegName(host_reg, RegSize_32));
+    }
+    else
+    {
+      Log_DebugPrintf("Copying guest register %s from %s to scratch host register %s", GetRegName(guest_reg),
+                      m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32), m_code_generator.GetHostRegName(host_reg, RegSize_32));
+    }
+  }
+  else
+  {
+    m_code_generator.EmitLoadGuestRegister(host_reg, guest_reg);
+
+    Log_DebugPrintf("Loading guest register %s to scratch host register %s", GetRegName(guest_reg),
+                    m_code_generator.GetHostRegName(host_reg, RegSize_32));
+  }
+
+  return Value::FromScratch(this, host_reg, RegSize_32);
+}
+
 Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
 {
   // ignore writes to register zero

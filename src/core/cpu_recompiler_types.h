@@ -44,8 +44,8 @@ enum class Condition : u8
   Below,      // unsigned variant of Less
   BelowEqual, // unsigned variant of LessEqual
 
-  NotZero = NotEqual,
-  Zero = Equal
+  NotZero,
+  Zero
 };
 
 #if defined(Y_CPU_X64)

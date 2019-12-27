@@ -1794,7 +1794,9 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
 {
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<uintptr_t>(address)))
+  const s64 jump_distance =
+    static_cast<s64>(reinterpret_cast<intptr_t>(address) - reinterpret_cast<intptr_t>(GetCurrentCodePointer()));
+  if (Xbyak::inner::IsInInt32(static_cast<u64>(jump_distance)))
   {
     m_emit->jmp(address);
     return;
@@ -1807,149 +1809,177 @@ void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
   m_emit->jmp(GetHostReg64(temp));
 }
 
-template<typename T>
-static void EmitConditionalJump(Condition condition, bool invert, Xbyak::CodeGenerator* emit, const T& label)
+void CodeGenerator::EmitConditionalBranch(Condition condition, bool invert, HostReg value, RegSize size,
+                                          LabelType* label)
+{
+  switch (condition)
+  {
+    case Condition::NotEqual:
+    case Condition::Equal:
+    case Condition::Overflow:
+    case Condition::Greater:
+    case Condition::GreaterEqual:
+    case Condition::LessEqual:
+    case Condition::Less:
+    case Condition::Above:
+    case Condition::AboveEqual:
+    case Condition::Below:
+    case Condition::BelowEqual:
+      Panic("Needs a comparison value");
+      return;
+
+    case Condition::Negative:
+    case Condition::PositiveOrZero:
+    case Condition::NotZero:
+    case Condition::Zero:
+    {
+      switch (size)
+      {
+        case RegSize_8:
+          m_emit->test(GetHostReg8(value), GetHostReg8(value));
+          break;
+        case RegSize_16:
+          m_emit->test(GetHostReg16(value), GetHostReg16(value));
+          break;
+        case RegSize_32:
+          m_emit->test(GetHostReg32(value), GetHostReg32(value));
+          break;
+        case RegSize_64:
+          m_emit->test(GetHostReg64(value), GetHostReg64(value));
+          break;
+        default:
+          UnreachableCode();
+          break;
+      }
+
+      EmitConditionalBranch(condition, invert, label);
+      return;
+    }
+
+    case Condition::Always:
+      m_emit->jmp(*label);
+      return;
+
+    default:
+      UnreachableCode();
+      return;
+  }
+}
+
+void CodeGenerator::EmitConditionalBranch(Condition condition, bool invert, HostReg lhs, const Value& rhs,
+                                          LabelType* label)
+{
+  switch (condition)
+  {
+    case Condition::NotEqual:
+    case Condition::Equal:
+    case Condition::Overflow:
+    case Condition::Greater:
+    case Condition::GreaterEqual:
+    case Condition::LessEqual:
+    case Condition::Less:
+    case Condition::Above:
+    case Condition::AboveEqual:
+    case Condition::Below:
+    case Condition::BelowEqual:
+    {
+      EmitCmp(lhs, rhs);
+      EmitConditionalBranch(condition, invert, label);
+      return;
+    }
+
+    case Condition::Negative:
+    case Condition::PositiveOrZero:
+    case Condition::NotZero:
+    case Condition::Zero:
+    {
+      Assert(!rhs.IsValid() || (rhs.IsConstant() && rhs.GetS64ConstantValue() == 0));
+      EmitConditionalBranch(condition, invert, lhs, rhs.size, label);
+      return;
+    }
+
+    case Condition::Always:
+      m_emit->jmp(*label);
+      return;
+
+    default:
+      UnreachableCode();
+      return;
+  }
+}
+
+void CodeGenerator::EmitConditionalBranch(Condition condition, bool invert, LabelType* label)
 {
   switch (condition)
   {
     case Condition::Always:
-      emit->jmp(label);
+      m_emit->jmp(*label);
       break;
 
     case Condition::NotEqual:
-      invert ? emit->je(label) : emit->jne(label);
+      invert ? m_emit->je(*label) : m_emit->jne(*label);
       break;
 
     case Condition::Equal:
-      invert ? emit->jne(label) : emit->je(label);
+      invert ? m_emit->jne(*label) : m_emit->je(*label);
       break;
 
     case Condition::Overflow:
-      invert ? emit->jno(label) : emit->jo(label);
+      invert ? m_emit->jno(*label) : m_emit->jo(*label);
       break;
 
     case Condition::Greater:
-      invert ? emit->jng(label) : emit->jg(label);
+      invert ? m_emit->jng(*label) : m_emit->jg(*label);
       break;
 
     case Condition::GreaterEqual:
-      invert ? emit->jnge(label) : emit->jge(label);
+      invert ? m_emit->jnge(*label) : m_emit->jge(*label);
       break;
 
     case Condition::Less:
-      invert ? emit->jnl(label) : emit->jl(label);
+      invert ? m_emit->jnl(*label) : m_emit->jl(*label);
       break;
 
     case Condition::LessEqual:
-      invert ? emit->jnle(label) : emit->jle(label);
+      invert ? m_emit->jnle(*label) : m_emit->jle(*label);
       break;
 
     case Condition::Negative:
-      invert ? emit->jns(label) : emit->js(label);
+      invert ? m_emit->jns(*label) : m_emit->js(*label);
       break;
 
     case Condition::PositiveOrZero:
-      invert ? emit->js(label) : emit->jns(label);
+      invert ? m_emit->js(*label) : m_emit->jns(*label);
       break;
 
     case Condition::Above:
-      invert ? emit->jna(label) : emit->ja(label);
+      invert ? m_emit->jna(*label) : m_emit->ja(*label);
       break;
 
     case Condition::AboveEqual:
-      invert ? emit->jnae(label) : emit->jae(label);
+      invert ? m_emit->jnae(*label) : m_emit->jae(*label);
       break;
 
     case Condition::Below:
-      invert ? emit->jnb(label) : emit->jb(label);
+      invert ? m_emit->jnb(*label) : m_emit->jb(*label);
       break;
 
     case Condition::BelowEqual:
-      invert ? emit->jnbe(label) : emit->jbe(label);
+      invert ? m_emit->jnbe(*label) : m_emit->jbe(*label);
+      break;
+
+    case Condition::NotZero:
+      invert ? m_emit->jz(*label) : m_emit->jnz(*label);
+      break;
+
+    case Condition::Zero:
+      invert ? m_emit->jnz(*label) : m_emit->jz(*label);
       break;
 
     default:
       UnreachableCode();
       break;
   }
-}
-
-void CodeGenerator::EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target)
-{
-  // ensure the lr register is flushed, since we want it's correct value after the branch
-  // we don't want to invalidate it yet because of "jalr r0, r0", branch_target could be the lr_reg.
-  if (lr_reg != Reg::count && lr_reg != Reg::zero)
-    m_register_cache.FlushGuestRegister(lr_reg, false, true);
-
-  // compute return address, which is also set as the new pc when the branch isn't taken
-  Value new_pc;
-  if (condition != Condition::Always || lr_reg != Reg::count)
-  {
-    new_pc = AddValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(4), false);
-    if (!new_pc.IsInHostRegister())
-      new_pc = GetValueInHostRegister(new_pc);
-  }
-
-  Xbyak::Label skip_branch;
-  if (condition != Condition::Always)
-  {
-    // condition is inverted because we want the case for skipping it
-    EmitConditionalJump(condition, true, m_emit, skip_branch);
-  }
-
-  // save the old PC if we want to
-  if (lr_reg != Reg::count && lr_reg != Reg::zero)
-  {
-    // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
-    // if we don't cancel it, at the end of the instruction the value we write can be overridden.
-    EmitCancelInterpreterLoadDelayForReg(lr_reg);
-    EmitStoreGuestRegister(lr_reg, new_pc);
-  }
-
-  // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
-  // strange.
-  if (!branch_target.IsConstant() || (branch_target.constant_value & 0x3) != 0)
-  {
-    if (branch_target.IsConstant())
-    {
-      Log_WarningPrintf("Misaligned constant target branch 0x%08X, this is strange",
-                        Truncate32(branch_target.constant_value));
-    }
-    else
-    {
-      // check the alignment of the target
-      m_emit->test(GetHostReg32(branch_target), 0x3);
-      m_emit->jnz(GetCurrentFarCodePointer());
-    }
-
-    m_register_cache.PushState();
-
-    // exception exit for misaligned target
-    SwitchToFarCode();
-    EmitFunctionCall(nullptr, &Thunks::RaiseAddressException, m_register_cache.GetCPUPtr(), branch_target,
-                     Value::FromConstantU8(0), Value::FromConstantU8(1));
-    EmitExceptionExit();
-    SwitchToNearCode();
-
-    m_register_cache.PopState();
-  }
-
-  // branch taken path - change the return address/new pc
-  if (condition != Condition::Always)
-    EmitCopyValue(new_pc.GetHostRegister(), branch_target);
-
-  // converge point
-  m_emit->L(skip_branch);
-
-  // update pc
-  if (condition != Condition::Always)
-    m_register_cache.WriteGuestRegister(Reg::pc, std::move(new_pc));
-  else
-    m_register_cache.WriteGuestRegister(Reg::pc, std::move(branch_target));
-
-  // now invalidate lr becuase it was possibly written in the branch, and we don't need branch_target anymore
-  if (lr_reg != Reg::count && lr_reg != Reg::zero)
-    m_register_cache.InvalidateGuestRegister(lr_reg);
 }
 
 void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label)
@@ -1980,34 +2010,6 @@ void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, Labe
 void CodeGenerator::EmitBindLabel(LabelType* label)
 {
   m_emit->L(*label);
-}
-
-void CodeGenerator::EmitRaiseException(Exception excode, Condition condition /* = Condition::Always */)
-{
-  if (condition == Condition::Always)
-  {
-    // no need to use far code if we're always raising the exception
-    m_register_cache.InvalidateGuestRegister(Reg::pc);
-    m_register_cache.FlushAllGuestRegisters(true, true);
-    m_register_cache.FlushLoadDelay(true);
-
-    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
-                     Value::FromConstantU8(static_cast<u8>(excode)));
-    return;
-  }
-
-  m_register_cache.PushState();
-
-  const void* far_code_ptr = GetCurrentFarCodePointer();
-  EmitConditionalJump(condition, false, m_emit, far_code_ptr);
-
-  SwitchToFarCode();
-  EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
-                   Value::FromConstantU8(static_cast<u8>(excode)));
-  EmitExceptionExit();
-  SwitchToNearCode();
-
-  m_register_cache.PopState();
 }
 
 void ASMFunctions::Generate(JitCodeBuffer* code_buffer) {}

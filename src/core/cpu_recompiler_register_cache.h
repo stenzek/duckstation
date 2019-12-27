@@ -273,6 +273,10 @@ public:
   Value ReadGuestRegister(Reg guest_reg, bool cache = true, bool force_host_register = false,
                           HostReg forced_host_reg = HostReg_Invalid);
 
+  /// Reads the guest register to a caller-owned scratch register. This will ensure the cache won't invalidate the value
+  /// from some other write.
+  Value ReadGuestRegisterToScratch(Reg guest_reg);
+
   /// Creates a copy of value, and stores it to guest_reg.
   Value WriteGuestRegister(Reg guest_reg, Value&& value);
 

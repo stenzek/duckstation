@@ -82,12 +82,11 @@ public:
   void EmitBranch(const void* address, bool allow_scratch = true);
 
   // Branching, generates two paths.
-  void EmitBranch(Condition condition, Reg lr_reg, Value&& branch_target);
+  void EmitConditionalBranch(Condition condition, bool invert, HostReg value, RegSize size, LabelType* label);
+  void EmitConditionalBranch(Condition condition, bool invert, HostReg lhs, const Value& rhs, LabelType* label);
+  void EmitConditionalBranch(Condition condition, bool invert, LabelType* label);
   void EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label);
   void EmitBindLabel(LabelType* label);
-
-  // Raising exception if condition is true.
-  void EmitRaiseException(Exception excode, Condition condition = Condition::Always);
 
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);
@@ -147,6 +146,9 @@ public:
   Value AndValues(const Value& lhs, const Value& rhs);
   Value XorValues(const Value& lhs, const Value& rhs);
   Value NotValue(const Value& val);
+
+  // Raising exception if condition is true.
+  void GenerateExceptionExit(Exception excode, Condition condition = Condition::Always);
 
 private:
   // Host register setup
