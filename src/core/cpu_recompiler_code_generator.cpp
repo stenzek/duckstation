@@ -290,6 +290,17 @@ void CodeGenerator::ConvertValueSizeInPlace(Value* value, RegSize size, bool sig
   value->size = size;
 }
 
+void* CodeGenerator::GetCurrentCodePointer() const
+{
+  if (m_emit == &m_near_emitter)
+    return GetCurrentNearCodePointer();
+  else if (m_emit == &m_far_emitter)
+    return GetCurrentFarCodePointer();
+
+  Panic("unknown emitter");
+  return nullptr;
+}
+
 Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs, bool set_flags)
 {
   DebugAssert(lhs.size == rhs.size);
@@ -1722,5 +1733,4 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     return true;
   }
 }
-
 } // namespace CPU::Recompiler

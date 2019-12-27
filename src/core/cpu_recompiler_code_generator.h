@@ -159,6 +159,7 @@ private:
 
   void SwitchToFarCode();
   void SwitchToNearCode();
+  void* GetCurrentCodePointer() const;
   void* GetCurrentNearCodePointer() const;
   void* GetCurrentFarCodePointer() const;
 
