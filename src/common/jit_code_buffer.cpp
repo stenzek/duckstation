@@ -7,7 +7,6 @@
 #include <sys/mman.h>
 #endif
 
-
 JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
 {
   m_total_size = size + far_code_size;
@@ -49,7 +48,7 @@ void JitCodeBuffer::CommitCode(u32 length)
 
 #if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
-  DoCacheFlush(m_free_code_ptr, length);
+  FlushInstructionCache(m_free_code_ptr, length);
 #endif
 
   Assert(length <= (m_code_size - m_code_used));
@@ -64,7 +63,7 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 
 #if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
-  DoCacheFlush(m_free_far_code_ptr, length);
+  FlushInstructionCache(m_free_far_code_ptr, length);
 #endif
 
   Assert(length <= (m_far_code_size - m_far_code_used));
@@ -105,7 +104,7 @@ void JitCodeBuffer::FlushInstructionCache(void* address, u32 size)
 #if defined(Y_PLATFORM_WINDOWS)
   ::FlushInstructionCache(GetCurrentProcess(), address, size);
 #elif defined(Y_COMPILER_GCC) || defined(Y_COMPILER_CLANG)
-  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address + size));
+  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
 #else
 #error Unknown platform.
 #endif
