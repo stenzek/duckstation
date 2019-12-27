@@ -209,11 +209,7 @@ void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
   // TODO: This is... not great.
   a64::Label skip_branch;
   m_emit->Cbz(GetHostReg64(value.host_reg), &skip_branch);
-  {
-    Value temp = m_register_cache.AllocateScratch(RegSize_64);
-    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
-    m_emit->Br(GetHostReg64(temp));
-  }
+  EmitBranch(GetCurrentFarCodePointer());
   m_emit->Bind(&skip_branch);
 
   SwitchToFarCode();
@@ -1238,13 +1234,12 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
       break;
   }
 
+  m_register_cache.PushState();
+
   a64::Label load_okay;
   m_emit->Tbz(GetHostReg64(result.host_reg), 63, &load_okay);
-  m_emit->Mov(GetHostReg64(result.host_reg), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
-  m_emit->Br(GetHostReg64(result.host_reg));
+  EmitBranch(GetCurrentFarCodePointer());
   m_emit->Bind(&load_okay);
-
-  m_register_cache.PushState();
 
   // load exception path
   SwitchToFarCode();
@@ -1299,13 +1294,12 @@ void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& valu
       break;
   }
 
+  m_register_cache.PushState();
+
   a64::Label store_okay;
   m_emit->Cbnz(GetHostReg64(result.host_reg), &store_okay);
-  m_emit->Mov(GetHostReg64(result.host_reg), reinterpret_cast<intptr_t>(GetCurrentFarCodePointer()));
-  m_emit->Br(GetHostReg64(result.host_reg));
+  EmitBranch(GetCurrentFarCodePointer());
   m_emit->Bind(&store_okay);
-
-  m_register_cache.PushState();
 
   // store exception path
   SwitchToFarCode();
