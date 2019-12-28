@@ -1,6 +1,7 @@
 #include "YBaseLib/Log.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
+#include "cpu_core.h"
 Log_SetChannel(CPU::Recompiler);
 
 namespace a64 = vixl::aarch64;
@@ -1209,8 +1210,11 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   }
 }
 
-Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
+Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size)
 {
+  const Value pc = Value::FromConstantU32(cbi.pc);
+  AddPendingCycles(true);
+
   // We need to use the full 64 bits here since we test the sign bit result.
   Value result = m_register_cache.AllocateScratch(RegSize_64);
 
@@ -1218,15 +1222,15 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
   switch (size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, m_register_cache.GetCPUPtr(), address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, m_register_cache.GetCPUPtr(), pc, address);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, m_register_cache.GetCPUPtr(), address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, m_register_cache.GetCPUPtr(), pc, address);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, m_register_cache.GetCPUPtr(), address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, m_register_cache.GetCPUPtr(), pc, address);
       break;
 
     default:
@@ -1271,22 +1275,25 @@ Value CodeGenerator::EmitLoadGuestMemory(const Value& address, RegSize size)
   return result;
 }
 
-void CodeGenerator::EmitStoreGuestMemory(const Value& address, const Value& value)
+void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
 {
+  const Value pc = Value::FromConstantU32(cbi.pc);
+  AddPendingCycles(true);
+
   Value result = m_register_cache.AllocateScratch(RegSize_8);
 
   switch (value.size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, m_register_cache.GetCPUPtr(), address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, m_register_cache.GetCPUPtr(), pc, address, value);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, m_register_cache.GetCPUPtr(), address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, m_register_cache.GetCPUPtr(), pc, address, value);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, m_register_cache.GetCPUPtr(), address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, m_register_cache.GetCPUPtr(), pc, address, value);
       break;
 
     default:

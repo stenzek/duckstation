@@ -1,3 +1,4 @@
+#include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
 
 namespace CPU::Recompiler {

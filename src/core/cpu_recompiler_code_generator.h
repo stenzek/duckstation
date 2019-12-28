@@ -75,8 +75,8 @@ public:
   void EmitAddCPUStructField(u32 offset, const Value& value);
 
   // Automatically generates an exception handler.
-  Value EmitLoadGuestMemory(const Value& address, RegSize size);
-  void EmitStoreGuestMemory(const Value& address, const Value& value);
+  Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);
+  void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);
@@ -148,7 +148,8 @@ public:
   Value NotValue(const Value& val);
 
   // Raising exception if condition is true.
-  void GenerateExceptionExit(Exception excode, Condition condition = Condition::Always);
+  void GenerateExceptionExit(const CodeBlockInstruction& cbi, Exception excode,
+                             Condition condition = Condition::Always);
 
 private:
   // Host register setup
@@ -173,7 +174,8 @@ private:
   void BlockEpilogue();
   void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles, bool force_sync = false);
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
-  void AddPendingCycles();
+  void SetCurrentInstructionPC(const CodeBlockInstruction& cbi);
+  void AddPendingCycles(bool commit);
 
   Value DoGTERegisterRead(u32 index);
   void DoGTERegisterWrite(u32 index, const Value& value);

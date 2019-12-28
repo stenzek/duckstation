@@ -1,5 +1,6 @@
 #include "cpu_recompiler_code_generator.h"
 #include "YBaseLib/Log.h"
+#include "cpu_core.h"
 #include "cpu_disasm.h"
 Log_SetChannel(CPU::Recompiler);
 
@@ -788,8 +789,12 @@ Value CodeGenerator::NotValue(const Value& val)
   return res;
 }
 
-void CodeGenerator::GenerateExceptionExit(Exception excode, Condition condition /* = Condition::Always */)
+void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Exception excode,
+                                          Condition condition /* = Condition::Always */)
 {
+  const Value epc = Value::FromConstantU32(cbi.pc);
+  const Value ri_bits = Value::FromConstantU32(Thunks::MakeRaiseExceptionInfo(excode, cbi));
+
   if (condition == Condition::Always)
   {
     // no need to use far code if we're always raising the exception
@@ -797,8 +802,7 @@ void CodeGenerator::GenerateExceptionExit(Exception excode, Condition condition 
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
 
-    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
-                     Value::FromConstantU8(static_cast<u8>(excode)));
+    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(), epc, ri_bits);
     return;
   }
 
@@ -810,8 +814,7 @@ void CodeGenerator::GenerateExceptionExit(Exception excode, Condition condition 
   EmitBranch(GetCurrentFarCodePointer());
 
   SwitchToFarCode();
-  EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(),
-                   Value::FromConstantU8(static_cast<u8>(excode)));
+  EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(), epc, ri_bits);
   EmitExceptionExit();
   SwitchToNearCode();
 
@@ -842,7 +845,7 @@ void CodeGenerator::BlockEpilogue()
   if (m_register_cache.HasLoadDelay())
     m_register_cache.WriteLoadDelayToCPU(true);
 
-  AddPendingCycles();
+  AddPendingCycles(true);
 }
 
 void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles,
@@ -881,7 +884,7 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     m_register_cache.WriteGuestRegister(Reg::pc, Value::FromConstantU32(cbi.pc + 4));
   }
 
-  if (!CanInstructionTrap(cbi.instruction, m_block->key.user_mode) && !force_sync)
+  if (!force_sync)
   {
     // Defer updates for non-faulting instructions.
     m_delayed_cycles_add += cycles;
@@ -895,11 +898,9 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     m_current_instruction_in_branch_delay_slot_dirty = true;
   }
 
-  // Sync current instruction PC
-  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_pc), Value::FromConstantU32(cbi.pc));
-
   m_delayed_cycles_add += cycles;
-  AddPendingCycles();
+  SetCurrentInstructionPC(cbi);
+  AddPendingCycles(true);
 }
 
 void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
@@ -925,13 +926,20 @@ void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
   }
 }
 
-void CodeGenerator::AddPendingCycles()
+void CodeGenerator::AddPendingCycles(bool commit)
 {
   if (m_delayed_cycles_add == 0)
     return;
 
   EmitAddCPUStructField(offsetof(Core, m_pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
-  m_delayed_cycles_add = 0;
+  
+  if (commit)
+    m_delayed_cycles_add = 0;
+}
+
+void CodeGenerator::SetCurrentInstructionPC(const CodeBlockInstruction& cbi)
+{
+  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_pc), Value::FromConstantU32(cbi.pc));
 }
 
 bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
@@ -1107,18 +1115,18 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   {
     case InstructionOp::lb:
     case InstructionOp::lbu:
-      result = EmitLoadGuestMemory(address, RegSize_8);
+      result = EmitLoadGuestMemory(cbi, address, RegSize_8);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lb));
       break;
 
     case InstructionOp::lh:
     case InstructionOp::lhu:
-      result = EmitLoadGuestMemory(address, RegSize_16);
+      result = EmitLoadGuestMemory(cbi, address, RegSize_16);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lh));
       break;
 
     case InstructionOp::lw:
-      result = EmitLoadGuestMemory(address, RegSize_32);
+      result = EmitLoadGuestMemory(cbi, address, RegSize_32);
       break;
 
     default:
@@ -1145,15 +1153,15 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   switch (cbi.instruction.op)
   {
     case InstructionOp::sb:
-      EmitStoreGuestMemory(address, value.ViewAsSize(RegSize_8));
+      EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_8));
       break;
 
     case InstructionOp::sh:
-      EmitStoreGuestMemory(address, value.ViewAsSize(RegSize_16));
+      EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_16));
       break;
 
     case InstructionOp::sw:
-      EmitStoreGuestMemory(address, value);
+      EmitStoreGuestMemory(cbi, address, value);
       break;
 
     default:
@@ -1234,7 +1242,7 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
 
   Value result = AddValues(lhs, rhs, check_overflow);
   if (check_overflow)
-    GenerateExceptionExit(Exception::Ov, Condition::Overflow);
+    GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
 
@@ -1254,7 +1262,7 @@ bool CodeGenerator::Compile_Subtract(const CodeBlockInstruction& cbi)
 
   Value result = SubValues(lhs, rhs, check_overflow);
   if (check_overflow)
-    GenerateExceptionExit(Exception::Ov, Condition::Overflow);
+    GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 
@@ -1440,7 +1448,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       {
         const Exception excode =
           (cbi.instruction.r.funct == InstructionFunct::syscall) ? Exception::Syscall : Exception::BP;
-        GenerateExceptionExit(excode);
+        GenerateExceptionExit(cbi, excode);
       }
       else
       {
@@ -1785,13 +1793,13 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
                               Value::FromConstantU32(cbi.instruction.i.imm_sext32()), false);
     if (cbi.instruction.op == InstructionOp::lwc2)
     {
-      Value value = EmitLoadGuestMemory(address, RegSize_32);
+      Value value = EmitLoadGuestMemory(cbi, address, RegSize_32);
       DoGTERegisterWrite(reg, value);
     }
     else
     {
       Value value = DoGTERegisterRead(reg);
-      EmitStoreGuestMemory(address, value);
+      EmitStoreGuestMemory(cbi, address, value);
     }
 
     InstructionEpilogue(cbi);
