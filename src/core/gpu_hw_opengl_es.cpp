@@ -449,7 +449,7 @@ void GPU_HW_OpenGL_ES::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
   // Get bounds with wrap-around handled.
   const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
-  const u32 encoded_width = copy_rect.GetWidth() / 2;
+  const u32 encoded_width = (copy_rect.GetWidth() + 1) / 2;
   const u32 encoded_height = copy_rect.GetHeight();
 
   // Encode the 24-bit texture as 16-bit.
