@@ -18,3 +18,8 @@ void NullAudioStream::BufferAvailable()
   // drop any buffer as soon as they're available
   DropBuffer();
 }
+
+std::unique_ptr<AudioStream> NullAudioStream::Create()
+{
+  return std::unique_ptr<AudioStream>(new NullAudioStream());
+}

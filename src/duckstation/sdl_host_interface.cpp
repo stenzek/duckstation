@@ -130,7 +130,7 @@ void SDLHostInterface::CreateAudioStream()
   switch (m_settings.audio_backend)
   {
     case AudioBackend::Null:
-      m_audio_stream = std::make_unique<NullAudioStream>();
+      m_audio_stream = NullAudioStream::Create();
       break;
 
     case AudioBackend::Default:
@@ -143,7 +143,7 @@ void SDLHostInterface::CreateAudioStream()
   {
     ReportError("Failed to recreate audio stream, falling back to null");
     m_audio_stream.reset();
-    m_audio_stream = std::make_unique<NullAudioStream>();
+    m_audio_stream = NullAudioStream::Create();
     if (!m_audio_stream->Reconfigure(44100, 2))
       Panic("Failed to reconfigure null audio stream");
   }
