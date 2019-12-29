@@ -292,7 +292,7 @@ void GameList::ScanDirectory(const char* path, bool recursive)
   Log_DevPrintf("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
   FileSystem::FindResultsArray files;
-  FileSystem::FindFiles(path, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE, &files);
+  FileSystem::FindFiles(path, "*", FILESYSTEM_FIND_FILES | (recursive ? FILESYSTEM_FIND_RECURSIVE : 0), &files);
 
   GameListEntry entry;
   for (const FILESYSTEM_FIND_DATA& ffd : files)
