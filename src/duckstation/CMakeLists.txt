@@ -10,6 +10,8 @@ add_executable(duckstation
   sdl_audio_stream.h
   sdl_host_interface.cpp
   sdl_host_interface.h
+  sdl_settings_interface.cpp
+  sdl_settings_interface.h
 )
 
 if(WIN32)
@@ -20,4 +22,4 @@ if(WIN32)
   target_link_libraries(duckstation PRIVATE d3d11.lib winmm.lib)
 endif()
 
-target_link_libraries(duckstation PRIVATE YBaseLib core common imgui nativefiledialog glad SDL2::Main)
+target_link_libraries(duckstation PRIVATE YBaseLib core common imgui nativefiledialog glad simpleini SDL2::Main)

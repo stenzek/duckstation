@@ -1,4 +1,5 @@
 #include "sdl_host_interface.h"
+#include "sdl_settings_interface.h"
 #include "YBaseLib/AutoReleasePtr.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
@@ -151,7 +152,8 @@ void SDLHostInterface::CreateAudioStream()
 
 void SDLHostInterface::SaveSettings()
 {
-  m_settings.Save(m_settings_filename.c_str());
+  SDLSettingsInterface si(m_settings_filename.c_str());
+  m_settings.Save(si);
 }
 
 void SDLHostInterface::QueueSwitchGPURenderer()
@@ -236,7 +238,8 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
   std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
 
   // Settings need to be loaded prior to creating the window for OpenGL bits.
-  intf->m_settings.Load(intf->m_settings_filename.c_str());
+  SDLSettingsInterface si(intf->m_settings_filename.c_str());
+  intf->m_settings.Load(si);
 
   if (!intf->CreateSDLWindow())
   {

@@ -1,5 +1,4 @@
 #include "settings.h"
-#include "SimpleIni.h"
 #include "YBaseLib/Log.h"
 #include <array>
 #include <string.h>
@@ -42,109 +41,89 @@ void Settings::SetDefaults()
   memory_card_paths[1].clear();
 }
 
-void Settings::Load(const char* filename)
+void Settings::Load(SettingsInterface& si)
 {
-  CSimpleIniA ini(true);
-  SI_Error err = ini.LoadFile(filename);
-  if (err != SI_OK)
-  {
-    Log_WarningPrintf("Settings could not be loaded from '%s', defaults will be used.", filename);
-    SetDefaults();
-    return;
-  }
+  region =
+    ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(ConsoleRegion::NTSC_U);
 
-  region = ParseConsoleRegionName(ini.GetValue("Console", "Region", "NTSC-U")).value_or(ConsoleRegion::NTSC_U);
+  speed_limiter_enabled = si.GetBoolValue("General", "SpeedLimiterEnabled", true);
+  start_paused = si.GetBoolValue("General", "StartPaused", false);
 
-  speed_limiter_enabled = ini.GetBoolValue("General", "SpeedLimiterEnabled", true);
-  start_paused = ini.GetBoolValue("General", "StartPaused", false);
+  cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Interpreter").c_str())
+                         .value_or(CPUExecutionMode::Interpreter);
 
-  cpu_execution_mode =
-    ParseCPUExecutionMode(ini.GetValue("CPU", "ExecutionMode", "Interpreter")).value_or(CPUExecutionMode::Interpreter);
+  gpu_renderer =
+    ParseRendererName(si.GetStringValue("GPU", "Renderer", "OpenGL").c_str()).value_or(GPURenderer::HardwareOpenGL);
+  gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
+  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
+  gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
 
-  gpu_renderer = ParseRendererName(ini.GetValue("GPU", "Renderer", "OpenGL")).value_or(GPURenderer::HardwareOpenGL);
-  gpu_resolution_scale = static_cast<u32>(ini.GetLongValue("GPU", "ResolutionScale", 1));
-  gpu_true_color = ini.GetBoolValue("GPU", "TrueColor", false);
-  gpu_texture_filtering = ini.GetBoolValue("GPU", "TextureFiltering", false);
+  display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
+  display_fullscreen = si.GetBoolValue("Display", "Fullscreen", false);
+  video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
-  display_linear_filtering = ini.GetBoolValue("Display", "LinearFiltering", true);
-  display_fullscreen = ini.GetBoolValue("Display", "Fullscreen", false);
-  video_sync_enabled = ini.GetBoolValue("Display", "VSync", true);
+  audio_backend =
+    ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Default").c_str()).value_or(AudioBackend::Default);
+  audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
 
-  audio_backend = ParseAudioBackend(ini.GetValue("Audio", "Backend", "Default")).value_or(AudioBackend::Default);
-  audio_sync_enabled = ini.GetBoolValue("Audio", "Sync", true);
+  bios_path = si.GetStringValue("BIOS", "Path", "scph1001.bin");
+  bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", true);
+  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
 
-  bios_path = ini.GetValue("BIOS", "Path", "scph1001.bin");
-  bios_patch_tty_enable = ini.GetBoolValue("BIOS", "PatchTTYEnable", true);
-  bios_patch_fast_boot = ini.GetBoolValue("BIOS", "PatchFastBoot", false);
+  controller_types[0] =
+    ParseControllerTypeName(si.GetStringValue("Ports", "Controller1Type", "DigitalController").c_str())
+      .value_or(ControllerType::DigitalController);
+  controller_types[1] = ParseControllerTypeName(si.GetStringValue("Ports", "Controller2Type", "None").c_str())
+                          .value_or(ControllerType::None);
 
-  controller_types[0] = ParseControllerTypeName(ini.GetValue("Ports", "Controller1Type", "DigitalController"))
-                          .value_or(ControllerType::DigitalController);
-  controller_types[1] =
-    ParseControllerTypeName(ini.GetValue("Ports", "Controller2Type", "None")).value_or(ControllerType::None);
-
-  memory_card_paths[0] = ini.GetValue("Ports", "MemoryCard1Path", "memory_card_1.mcd");
-  memory_card_paths[1] = ini.GetValue("Ports", "MemoryCard2Path", "");
+  memory_card_paths[0] = si.GetStringValue("Ports", "MemoryCard1Path", "memory_card_1.mcd");
+  memory_card_paths[1] = si.GetStringValue("Ports", "MemoryCard2Path", "");
 }
 
-bool Settings::Save(const char* filename) const
+void Settings::Save(SettingsInterface& si) const
 {
-  // Load the file first to preserve the comments.
-  CSimpleIniA ini;
-  SI_Error err = ini.LoadFile(filename);
-  if (err != SI_OK)
-    ini.Reset();
+  si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
 
-  ini.SetValue("Console", "Region", GetConsoleRegionName(region));
+  si.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
+  si.SetBoolValue("General", "StartPaused", start_paused);
 
-  ini.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
-  ini.SetBoolValue("General", "StartPaused", start_paused);
+  si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 
-  ini.SetValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
+  si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
+  si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
+  si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
+  si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
 
-  ini.SetValue("GPU", "Renderer", GetRendererName(gpu_renderer));
-  ini.SetLongValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
-  ini.SetBoolValue("GPU", "TrueColor", gpu_true_color);
-  ini.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
+  si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
+  si.SetBoolValue("Display", "Fullscreen", display_fullscreen);
+  si.SetBoolValue("Display", "VSync", video_sync_enabled);
 
-  ini.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
-  ini.SetBoolValue("Display", "Fullscreen", display_fullscreen);
-  ini.SetBoolValue("Display", "VSync", video_sync_enabled);
+  si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
+  si.SetBoolValue("Audio", "Sync", audio_sync_enabled);
 
-  ini.SetValue("Audio", "Backend", GetAudioBackendName(audio_backend));
-  ini.SetBoolValue("Audio", "Sync", audio_sync_enabled);
-
-  ini.SetValue("BIOS", "Path", bios_path.c_str());
-  ini.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
-  ini.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
+  si.SetStringValue("BIOS", "Path", bios_path.c_str());
+  si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
+  si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
   if (controller_types[0] != ControllerType::None)
-    ini.SetValue("Ports", "Controller1Type", GetControllerTypeName(controller_types[0]));
+    si.SetStringValue("Ports", "Controller1Type", GetControllerTypeName(controller_types[0]));
   else
-    ini.DeleteValue("Ports", "Controller1Type", nullptr);
+    si.DeleteValue("Ports", "Controller1Type");
 
   if (controller_types[1] != ControllerType::None)
-    ini.SetValue("Ports", "Controller2Type", GetControllerTypeName(controller_types[1]));
+    si.SetStringValue("Ports", "Controller2Type", GetControllerTypeName(controller_types[1]));
   else
-    ini.DeleteValue("Ports", "Controller2Type", nullptr);
+    si.DeleteValue("Ports", "Controller2Type");
 
   if (!memory_card_paths[0].empty())
-    ini.SetValue("Ports", "MemoryCard1Path", memory_card_paths[0].c_str());
+    si.SetStringValue("Ports", "MemoryCard1Path", memory_card_paths[0].c_str());
   else
-    ini.DeleteValue("Ports", "MemoryCard1Path", nullptr);
+    si.DeleteValue("Ports", "MemoryCard1Path");
 
   if (!memory_card_paths[1].empty())
-    ini.SetValue("Ports", "MemoryCard2Path", memory_card_paths[1].c_str());
+    si.SetStringValue("Ports", "MemoryCard2Path", memory_card_paths[1].c_str());
   else
-    ini.DeleteValue("Ports", "MemoryCard2Path", nullptr);
-
-  err = ini.SaveFile(filename, false);
-  if (err != SI_OK)
-  {
-    Log_WarningPrintf("Failed to save settings to '%s'.", filename);
-    return false;
-  }
-
-  return true;
+    si.DeleteValue("Ports", "MemoryCard2Path");
 }
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};

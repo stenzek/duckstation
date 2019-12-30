@@ -4,6 +4,22 @@
 #include <optional>
 #include <string>
 
+class SettingsInterface
+{
+public:
+  virtual int GetIntValue(const char* section, const char* key, int default_value = 0) = 0;
+  virtual float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) = 0;
+  virtual bool GetBoolValue(const char* section, const char* key, bool default_value = false) = 0;
+  virtual std::string GetStringValue(const char* section, const char* key, const char* default_value = "") = 0;
+
+  virtual void SetIntValue(const char* section, const char* key, int value) = 0;
+  virtual void SetFloatValue(const char* section, const char* key, float value) = 0;
+  virtual void SetBoolValue(const char* section, const char* key, bool value) = 0;
+  virtual void SetStringValue(const char* section, const char* key, const char* value) = 0;
+
+  virtual void DeleteValue(const char* section, const char* key) = 0;
+};
+
 struct Settings
 {
   Settings();
@@ -52,8 +68,8 @@ struct Settings
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
 
   void SetDefaults();
-  void Load(const char* filename);
-  bool Save(const char* filename) const;
+  void Load(SettingsInterface& si);
+  void Save(SettingsInterface& si) const;
 
   static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
   static const char* GetConsoleRegionName(ConsoleRegion region);
