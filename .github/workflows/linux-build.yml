@@ -27,7 +27,7 @@ jobs:
       run: |
         mkdir build-debug
         cd build-debug
-        cmake -DCMAKE_BUILD_TYPE=Debug ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_QT_FRONTEND=OFF ..
         make
         
     - name: Compile release build
@@ -35,6 +35,6 @@ jobs:
       run: |
         mkdir build-release
         cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_QT_FRONTEND=OFF ..
         make
 

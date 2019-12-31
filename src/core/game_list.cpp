@@ -4,6 +4,7 @@
 #include "bios.h"
 #include "common/cd_image.h"
 #include "common/iso_reader.h"
+#include "settings.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -192,11 +193,6 @@ std::optional<ConsoleRegion> GameList::GetRegionForPath(const char* image_path)
     return {};
 
   return GetRegionForImage(cdi.get());
-}
-
-void GameList::AddDirectory(const char* path, bool recursive)
-{
-  ScanDirectory(path, recursive);
 }
 
 bool GameList::IsExeFileName(const char* path)
@@ -404,6 +400,40 @@ private:
   GameList::DatabaseMap& m_database;
 };
 
+void GameList::AddDirectory(std::string path, bool recursive)
+{
+  auto iter = std::find_if(m_search_directories.begin(), m_search_directories.end(),
+                           [&path](const DirectoryEntry& de) { return de.path == path; });
+  if (iter != m_search_directories.end())
+  {
+    iter->recursive = recursive;
+    return;
+  }
+
+  m_search_directories.push_back({path, recursive});
+}
+
+void GameList::SetDirectoriesFromSettings(SettingsInterface& si)
+{
+  m_search_directories.clear();
+
+  std::vector<std::string> dirs = si.GetStringList("GameList", "Paths");
+  for (std::string& dir : dirs)
+    m_search_directories.push_back({std::move(dir), false});
+
+  dirs = si.GetStringList("GameList", "RecursivePaths");
+  for (std::string& dir : dirs)
+    m_search_directories.push_back({std::move(dir), true});
+}
+
+void GameList::RescanAllDirectories()
+{
+  m_entries.clear();
+
+  for (const DirectoryEntry& de : m_search_directories)
+    ScanDirectory(de.path.c_str(), de.recursive);
+}
+
 bool GameList::ParseRedumpDatabase(const char* redump_dat_path)
 {
   tinyxml2::XMLDocument doc;
@@ -426,4 +456,9 @@ bool GameList::ParseRedumpDatabase(const char* redump_dat_path)
   datafile_elem->Accept(&visitor);
   Log_InfoPrintf("Loaded %zu entries from Redump.org database '%s'", m_database.size(), redump_dat_path);
   return true;
+}
+
+void GameList::ClearDatabase()
+{
+  m_database.clear();
 }

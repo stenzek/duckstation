@@ -8,6 +8,8 @@
 
 class CDImage;
 
+class SettingsInterface;
+
 class GameList
 {
 public:
@@ -54,18 +56,28 @@ public:
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
 
-  void AddDirectory(const char* path, bool recursive);
+  void AddDirectory(std::string path, bool recursive);
+  void SetDirectoriesFromSettings(SettingsInterface& si);
+  void RescanAllDirectories();
 
   bool ParseRedumpDatabase(const char* redump_dat_path);
+  void ClearDatabase();
 
 private:
+  struct DirectoryEntry
+  {
+    std::string path;
+    bool recursive;
+  };
+
   static bool IsExeFileName(const char* path);
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
 
   bool GetGameListEntry(const char* path, GameListEntry* entry);
-
   void ScanDirectory(const char* path, bool recursive);
 
   DatabaseMap m_database;
   EntryList m_entries;
+
+  std::vector<DirectoryEntry> m_search_directories;
 };

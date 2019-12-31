@@ -35,7 +35,7 @@ static std::string GetPathDirectory(const char* path)
   const char* backslash_ptr = std::strrchr(path, '\\');
   const char* slash_ptr;
   if (forwardslash_ptr && backslash_ptr)
-    slash_ptr = std::min(forwardslash_ptr, backslash_ptr);
+    slash_ptr = std::max(forwardslash_ptr, backslash_ptr);
   else if (backslash_ptr)
     slash_ptr = backslash_ptr;
   else if (forwardslash_ptr)

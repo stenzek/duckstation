@@ -4,6 +4,11 @@ project(duckstation C CXX)
 # Pull in modules.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
+if(NOT ANDROID)
+  option(BUILD_SDL_FRONTEND "Build the SDL frontend" ON)
+  option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
+endif()
+
 
 # Common include/library directories on Windows.
 if(WIN32)
@@ -30,8 +35,15 @@ endif()
 
 # Required libraries.
 if(NOT ANDROID)
-  find_package(SDL2 REQUIRED)
-else()
+  if(BUILD_SDL_FRONTEND)
+    find_package(SDL2 REQUIRED)
+  endif()
+  if(BUILD_QT_FRONTEND)
+    find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+  endif()
+endif()
+
+if(ANDROID)
   find_package(EGL REQUIRED)
 endif()
 

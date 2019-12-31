@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="gamelistwidget.cpp" />
+    <ClCompile Include="settingsdialog.cpp" />
+    <ClCompile Include="consolesettingswidget.cpp" />
+    <ClCompile Include="opengldisplaywindow.cpp" />
+    <ClCompile Include="qthostinterface.cpp" />
+    <ClCompile Include="gamelistsettingswidget.cpp" />
+    <ClCompile Include="qtsettingsinterface.cpp" />
+    <ClCompile Include="qtutils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mainwindow.h" />
+    <ClInclude Include="gamelistwidget.h" />
+    <ClInclude Include="settingsdialog.h" />
+    <ClInclude Include="consolesettingswidget.h" />
+    <ClInclude Include="opengldisplaywindow.h" />
+    <ClInclude Include="qthostinterface.h" />
+    <ClInclude Include="gamelistsettingswidget.h" />
+    <ClInclude Include="qtsettingsinterface.h" />
+    <ClInclude Include="qtutils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="consolesettingswidget.ui" />
+    <None Include="gamelistsettingswidget.ui" />
+    <None Include="mainwindow.ui" />
+    <None Include="settingsdialog.ui" />
+    <None Include="resources\icons.qrc">
+      <Filter>resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="resources">
+      <UniqueIdentifier>{3b2587ae-ce3b-4eb5-ada2-237e853620cf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>754</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DuckStation</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
+  </property>
+  <widget class="QStackedWidget" name="mainContainer">
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="page"/>
+   <widget class="QWidget" name="page_2"/>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>754</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuSystem">
+    <property name="title">
+     <string>System</string>
+    </property>
+    <addaction name="actionStartDisc"/>
+    <addaction name="actionStartBios"/>
+    <addaction name="separator"/>
+    <addaction name="actionPowerOff"/>
+    <addaction name="actionReset"/>
+    <addaction name="actionPause"/>
+    <addaction name="actionChangeDisc"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoadState"/>
+    <addaction name="actionSaveState"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>S&amp;ettings</string>
+    </property>
+    <widget class="QMenu" name="menuRenderer">
+     <property name="title">
+      <string>Renderer</string>
+     </property>
+     <addaction name="actionRendererD3D11"/>
+     <addaction name="actionRendererOpenGL"/>
+     <addaction name="actionRendererSoftware"/>
+    </widget>
+    <widget class="QMenu" name="actionCPUExecutionMode">
+     <property name="title">
+      <string>CPU Execution Mode</string>
+     </property>
+     <addaction name="actionCPUExecutionModeInterpreter"/>
+     <addaction name="actionCPUExecutionModeCachedInterpreter"/>
+     <addaction name="actionCPUExecutionModeRecompiler"/>
+    </widget>
+    <addaction name="actionFullscreen"/>
+    <addaction name="separator"/>
+    <addaction name="actionConsoleSettings"/>
+    <addaction name="actionGameListSettings"/>
+    <addaction name="actionPortSettings"/>
+    <addaction name="actionCPUSettings"/>
+    <addaction name="actionGPUSettings"/>
+    <addaction name="actionAudioSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenDirectory"/>
+    <addaction name="separator"/>
+    <addaction name="actionCPUExecutionMode"/>
+    <addaction name="menuRenderer"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionGitHubRepository"/>
+    <addaction name="actionIssueTracker"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuSystem"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionStartDisc"/>
+   <addaction name="actionStartBios"/>
+   <addaction name="actionOpenDirectory"/>
+   <addaction name="separator"/>
+   <addaction name="actionPowerOff"/>
+   <addaction name="actionReset"/>
+   <addaction name="actionPause"/>
+   <addaction name="actionChangeDisc"/>
+   <addaction name="separator"/>
+   <addaction name="actionLoadState"/>
+   <addaction name="actionSaveState"/>
+   <addaction name="separator"/>
+   <addaction name="actionFullscreen"/>
+   <addaction name="actionSettings"/>
+  </widget>
+  <action name="actionStartDisc">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/drive-optical.png</normaloff>:/icons/drive-optical.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start &amp;Disc...</string>
+   </property>
+  </action>
+  <action name="actionStartBios">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/drive-removable-media.png</normaloff>:/icons/drive-removable-media.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start &amp;BIOS</string>
+   </property>
+  </action>
+  <action name="actionPowerOff">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/system-shutdown.png</normaloff>:/icons/system-shutdown.png</iconset>
+   </property>
+   <property name="text">
+    <string>Power &amp;Off</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reset</string>
+   </property>
+  </action>
+  <action name="actionPause">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/media-playback-pause.png</normaloff>:/icons/media-playback-pause.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Pause</string>
+   </property>
+  </action>
+  <action name="actionLoadState">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Load State</string>
+   </property>
+  </action>
+  <action name="actionSaveState">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save State</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="actionConsoleSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Console Settings...</string>
+   </property>
+  </action>
+  <action name="actionPortSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Port Settings...</string>
+   </property>
+  </action>
+  <action name="actionCPUSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;CPU Settings...</string>
+   </property>
+  </action>
+  <action name="actionGPUSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;GPU Settings...</string>
+   </property>
+  </action>
+  <action name="actionFullscreen">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/view-fullscreen.png</normaloff>:/icons/view-fullscreen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fullscreen</string>
+   </property>
+  </action>
+  <action name="actionRendererD3D11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hardware (D3D11)</string>
+   </property>
+  </action>
+  <action name="actionRendererOpenGL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hardware (OpenGL)</string>
+   </property>
+  </action>
+  <action name="actionRendererSoftware">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Software</string>
+   </property>
+  </action>
+  <action name="actionCPUExecutionModeInterpreter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Interpreter (Slowest)</string>
+   </property>
+  </action>
+  <action name="actionCPUExecutionModeCachedInterpreter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cached Interpreter (Slower)</string>
+   </property>
+  </action>
+  <action name="actionCPUExecutionModeRecompiler">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Recompiler (Fastest)</string>
+   </property>
+  </action>
+  <action name="actionResolution_Scale">
+   <property name="text">
+    <string>Resolution Scale</string>
+   </property>
+  </action>
+  <action name="actionGitHubRepository">
+   <property name="text">
+    <string>&amp;GitHub Repository...</string>
+   </property>
+  </action>
+  <action name="actionIssueTracker">
+   <property name="text">
+    <string>&amp;Issue Tracker...</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="actionChangeDisc">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
+   </property>
+   <property name="text">
+    <string>Change Disc...</string>
+   </property>
+  </action>
+  <action name="actionAudioSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
+   </property>
+   <property name="text">
+    <string>Audio Settings...</string>
+   </property>
+  </action>
+  <action name="actionGameListSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Game List Settings...</string>
+   </property>
+  </action>
+  <action name="actionOpenDirectory">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/edit-find.png</normaloff>:/icons/edit-find.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Directory...</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Settings...</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
