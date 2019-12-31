@@ -11,7 +11,10 @@
 class GameListSearchDirectoriesModel : public QAbstractTableModel
 {
 public:
-  GameListSearchDirectoriesModel(QSettings& settings) : m_settings(settings) {}
+  GameListSearchDirectoriesModel(QtHostInterface* host_interface) : m_host_interface(host_interface)
+  {
+    loadFromSettings();
+  }
 
   ~GameListSearchDirectoriesModel() = default;
 
@@ -67,6 +70,26 @@ public:
     return {};
   }
 
+  bool setData(const QModelIndex& index, const QVariant& value, int role) override
+  {
+    if (!index.isValid())
+      return false;
+
+    const int row = index.row();
+    const int column = index.column();
+    if (row < 0 || row >= static_cast<int>(m_entries.size()))
+      return false;
+
+    if (column != 1 || role == Qt::CheckStateRole)
+      return false;
+
+    Entry& entry = m_entries[row];
+    entry.recursive = value == Qt::Checked;
+    saveToSettings();
+    m_host_interface->refreshGameList(false);
+    return true;
+  }
+
   void addEntry(const QString& path, bool recursive)
   {
     if (std::find_if(m_entries.begin(), m_entries.end(), [path](const Entry& e) { return e.path == path; }) !=
@@ -75,9 +98,12 @@ public:
       return;
     }
 
-    beginInsertRows(QModelIndex(), static_cast<int>(m_entries.size()), static_cast<int>(m_entries.size() + 1));
+    beginInsertRows(QModelIndex(), static_cast<int>(m_entries.size()), static_cast<int>(m_entries.size()));
     m_entries.push_back({path, recursive});
     endInsertRows();
+
+    saveToSettings();
+    m_host_interface->refreshGameList(false);
   }
 
   void removeEntry(int row)
@@ -88,15 +114,37 @@ public:
     beginRemoveRows(QModelIndex(), row, row);
     m_entries.erase(m_entries.begin() + row);
     endRemoveRows();
+
+    saveToSettings();
+    m_host_interface->refreshGameList(false);
+  }
+
+  bool isEntryRecursive(int row) const
+  {
+    return (row < 0 || row >= static_cast<int>(m_entries.size())) ? false : m_entries[row].recursive;
+  }
+
+  void setEntryRecursive(int row, bool recursive)
+  {
+    if (row < 0 || row >= static_cast<int>(m_entries.size()))
+      return;
+
+    m_entries[row].recursive = recursive;
+    emit dataChanged(index(row, 1), index(row, 1), {Qt::CheckStateRole});
+
+    saveToSettings();
+    m_host_interface->refreshGameList(false);
   }
 
   void loadFromSettings()
   {
-    QStringList path_list = m_settings.value(QStringLiteral("GameList/Paths")).toStringList();
+    const QSettings& qsettings = m_host_interface->getQSettings();
+
+    QStringList path_list = qsettings.value(QStringLiteral("GameList/Paths")).toStringList();
     for (QString& entry : path_list)
       m_entries.push_back({std::move(entry), false});
 
-    path_list = m_settings.value(QStringLiteral("GameList/RecursivePaths")).toStringList();
+    path_list = qsettings.value(QStringLiteral("GameList/RecursivePaths")).toStringList();
     for (QString& entry : path_list)
       m_entries.push_back({std::move(entry), true});
   }
@@ -114,15 +162,17 @@ public:
         paths.push_back(entry.path);
     }
 
+    QSettings& qsettings = m_host_interface->getQSettings();
+
     if (paths.empty())
-      m_settings.remove(QStringLiteral("GameList/Paths"));
+      qsettings.remove(QStringLiteral("GameList/Paths"));
     else
-      m_settings.setValue(QStringLiteral("GameList/Paths"), paths);
+      qsettings.setValue(QStringLiteral("GameList/Paths"), paths);
 
     if (recursive_paths.empty())
-      m_settings.remove(QStringLiteral("GameList/RecursivePaths"));
+      qsettings.remove(QStringLiteral("GameList/RecursivePaths"));
     else
-      m_settings.setValue(QStringLiteral("GameList/RecursivePaths"), recursive_paths);
+      qsettings.setValue(QStringLiteral("GameList/RecursivePaths"), recursive_paths);
   }
 
 private:
@@ -132,7 +182,7 @@ private:
     bool recursive;
   };
 
-  QSettings& m_settings;
+  QtHostInterface* m_host_interface;
   std::vector<Entry> m_entries;
 };
 
@@ -143,17 +193,18 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
 
   QSettings& qsettings = host_interface->getQSettings();
 
-  m_search_directories_model = new GameListSearchDirectoriesModel(qsettings);
-  m_search_directories_model->loadFromSettings();
+  m_search_directories_model = new GameListSearchDirectoriesModel(host_interface);
   m_ui.redumpDatabasePath->setText(qsettings.value("GameList/RedumpDatabasePath").toString());
   m_ui.searchDirectoryList->setModel(m_search_directories_model);
   m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
   m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_ui.searchDirectoryList->setAlternatingRowColors(true);
   m_ui.searchDirectoryList->setShowGrid(false);
+  m_ui.searchDirectoryList->horizontalHeader()->setHighlightSections(false);
   m_ui.searchDirectoryList->verticalHeader()->hide();
   m_ui.searchDirectoryList->setCurrentIndex({});
 
+  connect(m_ui.searchDirectoryList, &QTableView::clicked, this, &GameListSettingsWidget::onDirectoryListItemClicked);
   connect(m_ui.addSearchDirectoryButton, &QToolButton::pressed, this,
           &GameListSettingsWidget::onAddSearchDirectoryButtonPressed);
   connect(m_ui.removeSearchDirectoryButton, &QToolButton::pressed, this,
@@ -174,6 +225,19 @@ void GameListSettingsWidget::resizeEvent(QResizeEvent* event)
   QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
 }
 
+void GameListSettingsWidget::onDirectoryListItemClicked(const QModelIndex& index)
+{
+  if (!index.isValid())
+    return;
+
+  const int row = index.row();
+  const int column = index.column();
+  if (column != 1)
+    return;
+
+  m_search_directories_model->setEntryRecursive(row, !m_search_directories_model->isEntryRecursive(row));
+}
+
 void GameListSettingsWidget::onAddSearchDirectoryButtonPressed()
 {
   QString dir = QFileDialog::getExistingDirectory(this, tr("Select Search Directory"));
@@ -191,8 +255,6 @@ void GameListSettingsWidget::onAddSearchDirectoryButtonPressed()
 
   const bool recursive = (selection == QMessageBox::Yes);
   m_search_directories_model->addEntry(dir, recursive);
-  m_search_directories_model->saveToSettings();
-  m_host_interface->refreshGameList(false);
 }
 
 void GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed()
@@ -203,8 +265,6 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed()
 
   const int row = selection[0].row();
   m_search_directories_model->removeEntry(row);
-  m_search_directories_model->saveToSettings();
-  m_host_interface->refreshGameList(false);
 }
 
 void GameListSettingsWidget::onRefreshGameListButtonPressed()

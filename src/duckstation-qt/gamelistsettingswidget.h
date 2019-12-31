@@ -17,6 +17,7 @@ public:
   ~GameListSettingsWidget();
 
 private Q_SLOTS:
+  void onDirectoryListItemClicked(const QModelIndex& index);
   void onAddSearchDirectoryButtonPressed();
   void onRemoveSearchDirectoryButtonPressed();
   void onRefreshGameListButtonPressed();

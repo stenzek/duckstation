@@ -105,7 +105,7 @@ public:
     }
 
     m_size = static_cast<int>(m_game_list->GetEntryCount());
-    beginInsertRows(QModelIndex(), 0, m_size);
+    beginInsertRows(QModelIndex(), 0, m_size - 1);
     endInsertRows();
   }
 
