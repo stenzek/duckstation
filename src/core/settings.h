@@ -3,6 +3,8 @@
 #include <array>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <vector>
 
 class SettingsInterface
 {
@@ -16,6 +18,11 @@ public:
   virtual void SetFloatValue(const char* section, const char* key, float value) = 0;
   virtual void SetBoolValue(const char* section, const char* key, bool value) = 0;
   virtual void SetStringValue(const char* section, const char* key, const char* value) = 0;
+
+  virtual std::vector<std::string> GetStringList(const char* section, const char* key) = 0;
+  virtual void SetStringList(const char* section, const char* key, const std::vector<std::string_view>& items) = 0;
+  virtual bool RemoveFromStringList(const char* section, const char* key, const char* item) = 0;
+  virtual bool AddToStringList(const char* section, const char* key, const char* item) = 0;
 
   virtual void DeleteValue(const char* section, const char* key) = 0;
 };

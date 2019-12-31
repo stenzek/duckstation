@@ -1,8 +1,9 @@
 #include "sdl_settings_interface.h"
 #include "YBaseLib/Log.h"
+#include <algorithm>
 Log_SetChannel(SDLSettingsInterface);
 
-SDLSettingsInterface::SDLSettingsInterface(const char* filename) : m_filename(filename), m_ini(true)
+SDLSettingsInterface::SDLSettingsInterface(const char* filename) : m_filename(filename), m_ini(true, true)
 {
   SI_Error err = m_ini.LoadFile(filename);
   if (err != SI_OK)
@@ -54,10 +55,51 @@ void SDLSettingsInterface::SetBoolValue(const char* section, const char* key, bo
 
 void SDLSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
 {
-  m_ini.SetValue(section, key, value);
+  m_ini.SetValue(section, key, value, nullptr, true);
 }
 
 void SDLSettingsInterface::DeleteValue(const char* section, const char* key)
 {
-  m_ini.DeleteValue(section, key, nullptr);
+  m_ini.Delete(section, key);
+}
+
+std::vector<std::string> SDLSettingsInterface::GetStringList(const char* section, const char* key)
+{
+  std::list<CSimpleIniA::Entry> entries;
+  if (!m_ini.GetAllValues(section, key, entries))
+    return {};
+
+  std::vector<std::string> ret;
+  ret.reserve(entries.size());
+  std::transform(entries.begin(), entries.end(), std::back_inserter(ret),
+                 [](const CSimpleIniA::Entry& it) { return std::string(it.pItem); });
+  return ret;
+}
+
+void SDLSettingsInterface::SetStringList(const char* section, const char* key,
+                                         const std::vector<std::string_view>& items)
+{
+  m_ini.Delete(section, key);
+
+  for (const std::string_view& sv : items)
+    m_ini.SetValue(section, key, std::string(sv).c_str(), nullptr, false);
+}
+
+bool SDLSettingsInterface::RemoveFromStringList(const char* section, const char* key, const char* item)
+{
+  return m_ini.DeleteValue(section, key, item, true);
+}
+
+bool SDLSettingsInterface::AddToStringList(const char* section, const char* key, const char* item)
+{
+  std::list<CSimpleIniA::Entry> entries;
+  if (m_ini.GetAllValues(section, key, entries) &&
+      std::find_if(entries.begin(), entries.end(),
+                   [item](const CSimpleIniA::Entry& e) { return (std::strcmp(e.pItem, item) == 0); }) != entries.end())
+  {
+    return false;
+  }
+
+  m_ini.SetValue(section, key, item, nullptr, false);
+  return true;
 }
