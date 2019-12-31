@@ -874,7 +874,7 @@ void Core::ExecuteInstruction()
           if (denom == 0)
           {
             // divide by zero
-            m_regs.lo = (num >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
+            m_regs.lo = UINT32_C(0xFFFFFFFF);
             m_regs.hi = static_cast<u32>(num);
           }
           else
