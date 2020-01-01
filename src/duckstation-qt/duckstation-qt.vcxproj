@@ -47,6 +47,7 @@
     <ClCompile Include="settingsdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
     <QtMoc Include="gamelistwidget.h" />

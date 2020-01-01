@@ -4,14 +4,18 @@
 
 #include "ui_consolesettingswidget.h"
 
+class QtHostInterface;
+
 class ConsoleSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit ConsoleSettingsWidget(QWidget* parent = nullptr);
+  explicit ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~ConsoleSettingsWidget();
 
 private:
   Ui::ConsoleSettingsWidget m_ui;
+
+  QtHostInterface* m_host_interface;
 };

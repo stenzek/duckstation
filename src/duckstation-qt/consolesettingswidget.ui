@@ -40,13 +40,13 @@
         </property>
        </item>
        <item>
-        <property name="text">
-         <string>NTSC-U (US)</string>
-        </property>
+         <property name="text">
+           <string>NTSC-J (Japan)</string>
+         </property>
        </item>
        <item>
         <property name="text">
-         <string>NTSC-J (Japan)</string>
+         <string>NTSC-U (US)</string>
         </property>
        </item>
        <item>

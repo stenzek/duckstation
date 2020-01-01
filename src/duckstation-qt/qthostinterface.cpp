@@ -36,10 +36,15 @@ void QtHostInterface::ReportMessage(const char* message)
 
 void QtHostInterface::setDefaultSettings()
 {
-  QtSettingsInterface si(m_qsettings);
   m_settings.SetDefaults();
+  updateQSettings();
+}
+
+void QtHostInterface::updateQSettings()
+{
+  QtSettingsInterface si(m_qsettings);
   m_settings.Save(si);
-  m_qsettings.sync();
+  // m_qsettings.sync();
 }
 
 void QtHostInterface::applySettings()
@@ -69,6 +74,8 @@ void QtHostInterface::checkSettings()
     m_qsettings.setValue(settings_version_key, expected_version);
     setDefaultSettings();
   }
+
+  applySettings();
 }
 
 void QtHostInterface::createGameList()

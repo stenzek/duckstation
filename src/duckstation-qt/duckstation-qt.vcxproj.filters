@@ -11,30 +11,41 @@
     <ClCompile Include="gamelistsettingswidget.cpp" />
     <ClCompile Include="qtsettingsinterface.cpp" />
     <ClCompile Include="qtutils.cpp" />
+    <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_opengldisplaywindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
+    <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
+    <ClCompile Include="$(IntDir)qrc_icons.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mainwindow.h" />
-    <ClInclude Include="gamelistwidget.h" />
-    <ClInclude Include="settingsdialog.h" />
-    <ClInclude Include="consolesettingswidget.h" />
-    <ClInclude Include="opengldisplaywindow.h" />
-    <ClInclude Include="qthostinterface.h" />
-    <ClInclude Include="gamelistsettingswidget.h" />
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="consolesettingswidget.ui" />
-    <None Include="gamelistsettingswidget.ui" />
-    <None Include="mainwindow.ui" />
-    <None Include="settingsdialog.ui" />
-    <None Include="resources\icons.qrc">
-      <Filter>resources</Filter>
-    </None>
+    <ClInclude Include="settingwidgetbinder.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
       <UniqueIdentifier>{3b2587ae-ce3b-4eb5-ada2-237e853620cf}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <QtResource Include="resources\icons.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="consolesettingswidget.h" />
+    <QtMoc Include="gamelistsettingswidget.h" />
+    <QtMoc Include="gamelistwidget.h" />
+    <QtMoc Include="mainwindow.h" />
+    <QtMoc Include="opengldisplaywindow.h" />
+    <QtMoc Include="qthostinterface.h" />
+    <QtMoc Include="settingsdialog.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUi Include="consolesettingswidget.ui" />
+    <QtUi Include="gamelistsettingswidget.ui" />
+    <QtUi Include="mainwindow.ui" />
+    <QtUi Include="settingsdialog.ui" />
   </ItemGroup>
 </Project>

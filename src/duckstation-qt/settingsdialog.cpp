@@ -9,7 +9,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
 {
   m_ui.setupUi(this);
 
-  m_console_settings = new ConsoleSettingsWidget(m_ui.settingsContainer);
+  m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
   m_cpu_settings = new QWidget(m_ui.settingsContainer);
   m_gpu_settings = new QWidget(m_ui.settingsContainer);

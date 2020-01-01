@@ -25,7 +25,12 @@ public:
   const QSettings& getQSettings() const { return m_qsettings; }
   QSettings& getQSettings() { return m_qsettings; }
   void setDefaultSettings();
+  void updateQSettings();
   void applySettings();
+
+  const Settings& GetCoreSettings() const { return m_settings; }
+  Settings& GetCoreSettings() { return m_settings; }
+  //void UpdateCoreSettingsGPU();
 
   const GameList* getGameList() const { return m_game_list.get(); }
   GameList* getGameList() { return m_game_list.get(); }
