@@ -17,9 +17,6 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
   setupAdditionalUi();
   connectSignals();
 
-  // force a scan of the game list
-  m_host_interface->refreshGameList();
-
   resize(750, 690);
 }
 
