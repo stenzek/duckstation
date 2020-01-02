@@ -2,13 +2,18 @@
 #include "types.h"
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
+#include <vector>
 
 class StateWrapper;
 
 class Controller
 {
 public:
+  using ButtonList = std::vector<std::pair<std::string, s32>>;
+  using AxisList = std::vector<std::pair<std::string, s32>>;
+
   Controller();
   virtual ~Controller();
 
@@ -50,4 +55,10 @@ public:
 
   /// Gets the integer code for a button in the specified controller type.
   static std::optional<s32> GetButtonCodeByName(ControllerType type, std::string_view button_name);
+
+  /// Returns a list of axises for the specified controller type.
+  static AxisList GetAxisNames(ControllerType type);
+
+  /// Returns a list of buttons for the specified controller type.
+  static ButtonList GetButtonNames(ControllerType type);
 };

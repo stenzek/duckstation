@@ -413,3 +413,26 @@ std::optional<s32> AnalogController::StaticGetButtonCodeByName(std::string_view 
 
 #undef BUTTON
 }
+
+Controller::AxisList AnalogController::StaticGetAxisNames()
+{
+#define A(n)                                                                                                           \
+  {                                                                                                                    \
+#n, static_cast < s32>(Axis::n)                                                                                    \
+  }
+
+  return {A(LeftX), A(LeftY), A(RightX), A(RightY)};
+
+#undef A
+}
+
+Controller::ButtonList AnalogController::StaticGetButtonNames()
+{
+#define B(n)                                                                                                           \
+  {                                                                                                                    \
+#n, static_cast < s32>(Button::n)                                                                                  \
+  }
+  return {B(Up),    B(Down),   B(Left), B(Right), B(Select), B(Start), B(Triangle), B(Cross), B(Circle),
+          B(Square), B(L1),   B(L2),    B(R1),     B(R2),    B(L3),       B(R3)};
+#undef B
+}

@@ -62,6 +62,38 @@ std::optional<s32> Controller::GetButtonCodeByName(std::string_view button_name)
   return std::nullopt;
 }
 
+Controller::AxisList Controller::GetAxisNames(ControllerType type)
+{
+  switch (type)
+  {
+    case ControllerType::DigitalController:
+      return DigitalController::StaticGetAxisNames();
+
+    case ControllerType::AnalogController:
+      return AnalogController::StaticGetAxisNames();
+
+    case ControllerType::None:
+    default:
+      return {};
+  }
+}
+
+Controller::ButtonList Controller::GetButtonNames(ControllerType type)
+{
+  switch (type)
+  {
+    case ControllerType::DigitalController:
+      return DigitalController::StaticGetButtonNames();
+
+    case ControllerType::AnalogController:
+      return AnalogController::StaticGetButtonNames();
+
+    case ControllerType::None:
+    default:
+      return {};
+  }
+}
+
 std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::string_view axis_name)
 {
   switch (type)

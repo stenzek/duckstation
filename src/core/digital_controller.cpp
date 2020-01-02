@@ -132,3 +132,19 @@ std::optional<s32> DigitalController::StaticGetButtonCodeByName(std::string_view
 
 #undef BUTTON
 }
+
+Controller::AxisList DigitalController::StaticGetAxisNames()
+{
+  return {};
+}
+
+Controller::ButtonList DigitalController::StaticGetButtonNames()
+{
+#define B(n)                                                                                                           \
+  {                                                                                                                    \
+#n, static_cast < s32>(Button::n)                                                                                  \
+  }
+  return {B(Up),    B(Down),   B(Left),   B(Right), B(Select), B(Start), B(Triangle),
+          B(Cross), B(Circle), B(Square), B(L1),    B(L2),     B(R1),    B(R2)};
+#undef B
+}
