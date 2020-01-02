@@ -48,4 +48,7 @@
     <QtUi Include="mainwindow.ui" />
     <QtUi Include="settingsdialog.ui" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="qt5.natvis" />
+  </ItemGroup>
 </Project>

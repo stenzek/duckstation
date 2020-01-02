@@ -104,6 +104,9 @@
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_icons.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="qt5.natvis" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28F14272-0EC4-41BB-849F-182ADB81AF70}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
