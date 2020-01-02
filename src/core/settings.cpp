@@ -70,14 +70,13 @@ void Settings::Load(SettingsInterface& si)
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", true);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
 
-  controller_types[0] =
-    ParseControllerTypeName(si.GetStringValue("Ports", "Controller1Type", "DigitalController").c_str())
-      .value_or(ControllerType::DigitalController);
-  controller_types[1] = ParseControllerTypeName(si.GetStringValue("Ports", "Controller2Type", "None").c_str())
-                          .value_or(ControllerType::None);
+  controller_types[0] = ParseControllerTypeName(si.GetStringValue("Controller1", "Type", "DigitalController").c_str())
+                          .value_or(ControllerType::DigitalController);
+  controller_types[1] =
+    ParseControllerTypeName(si.GetStringValue("Controller2", "Type", "None").c_str()).value_or(ControllerType::None);
 
-  memory_card_paths[0] = si.GetStringValue("Ports", "MemoryCard1Path", "memory_card_1.mcd");
-  memory_card_paths[1] = si.GetStringValue("Ports", "MemoryCard2Path", "");
+  memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memory_card_1.mcd");
+  memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
 }
 
 void Settings::Save(SettingsInterface& si) const
@@ -106,24 +105,24 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
   if (controller_types[0] != ControllerType::None)
-    si.SetStringValue("Ports", "Controller1Type", GetControllerTypeName(controller_types[0]));
+    si.SetStringValue("Controller1", "Type", GetControllerTypeName(controller_types[0]));
   else
-    si.DeleteValue("Ports", "Controller1Type");
+    si.DeleteValue("Controller1", "Type");
 
   if (controller_types[1] != ControllerType::None)
-    si.SetStringValue("Ports", "Controller2Type", GetControllerTypeName(controller_types[1]));
+    si.SetStringValue("Controller2", "Type", GetControllerTypeName(controller_types[1]));
   else
-    si.DeleteValue("Ports", "Controller2Type");
+    si.DeleteValue("Controller2", "Type");
 
   if (!memory_card_paths[0].empty())
-    si.SetStringValue("Ports", "MemoryCard1Path", memory_card_paths[0].c_str());
+    si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
   else
-    si.DeleteValue("Ports", "MemoryCard1Path");
+    si.DeleteValue("MemoryCards", "Card1Path");
 
   if (!memory_card_paths[1].empty())
-    si.SetStringValue("Ports", "MemoryCard2Path", memory_card_paths[1].c_str());
+    si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
   else
-    si.DeleteValue("Ports", "MemoryCard2Path");
+    si.DeleteValue("MemoryCards", "Card2Path");
 }
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
