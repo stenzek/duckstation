@@ -67,6 +67,7 @@ private Q_SLOTS:
   void doBootSystem(QString initial_filename, QString initial_save_state_filename);
   void doUpdateInputMap();
   void doHandleKeyEvent(int key, bool pressed);
+  void onDisplayWindowResized(int width, int height);
 
 private:
   class Thread : public QThread

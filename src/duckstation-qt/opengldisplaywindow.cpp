@@ -371,6 +371,7 @@ bool OpenGLDisplayWindow::createImGuiContext()
     return false;
 
   ImGui_ImplOpenGL3_NewFrame();
+  ImGui::NewFrame();
   return true;
 }
 
@@ -464,13 +465,13 @@ void OpenGLDisplayWindow::Render()
 
   renderDisplay();
 
-  ImDrawData* draw_data = ImGui::GetDrawData();
-  if (draw_data)
-    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   m_gl_context->makeCurrent(this);
   m_gl_context->swapBuffers(this);
 
+  ImGui::NewFrame();
   ImGui_ImplOpenGL3_NewFrame();
 
   GL::Program::ResetLastProgram();

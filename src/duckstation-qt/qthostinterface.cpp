@@ -130,6 +130,8 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /*= false*/)
 QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 {
   m_display_window = new OpenGLDisplayWindow(this, nullptr);
+  connect(m_display_window, &QtDisplayWindow::windowResizedEvent, this, &QtHostInterface::onDisplayWindowResized);
+
   m_display.release();
   m_display = std::unique_ptr<HostDisplay>(m_display_window->getHostDisplayInterface());
   return QWidget::createWindowContainer(m_display_window, parent);
@@ -174,6 +176,11 @@ void QtHostInterface::doHandleKeyEvent(int key, bool pressed)
     return;
 
   iter->second(pressed);
+}
+
+void QtHostInterface::onDisplayWindowResized(int width, int height)
+{
+  m_display_window->onWindowResized(width, height);
 }
 
 void QtHostInterface::updateInputMap()
@@ -352,15 +359,16 @@ void QtHostInterface::threadEntryPoint()
 
     // rendering
     {
-      // DrawImGui();
-
       if (m_system)
+      {
+        DrawDebugWindows();
         m_system->GetGPU()->ResetGraphicsAPIState();
+      }
 
-      // ImGui::Render();
+      DrawFPSWindow();
+      DrawOSDMessages();
+
       m_display->Render();
-
-      // ImGui::NewFrame();
 
       if (m_system)
       {

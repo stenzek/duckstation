@@ -37,6 +37,11 @@ void QtDisplayWindow::destroyDeviceContext()
 bool QtDisplayWindow::createImGuiContext()
 {
   ImGui::CreateContext();
+
+  auto& io = ImGui::GetIO();
+  io.DisplaySize.x = static_cast<float>(width());
+  io.DisplaySize.y = static_cast<float>(height());
+
   return true;
 }
 
@@ -54,6 +59,17 @@ void QtDisplayWindow::destroyDeviceResources() {}
 
 void QtDisplayWindow::Render() {}
 
+void QtDisplayWindow::onWindowResized(int width, int height)
+{
+  // imgui may not have been initialized yet
+  if (!ImGui::GetCurrentContext())
+    return;
+
+  auto& io = ImGui::GetIO();
+  io.DisplaySize.x = static_cast<float>(width);
+  io.DisplaySize.y = static_cast<float>(height);
+}
+
 void QtDisplayWindow::keyPressEvent(QKeyEvent* event)
 {
   m_host_interface->handleKeyEvent(event->key(), true);
@@ -62,4 +78,10 @@ void QtDisplayWindow::keyPressEvent(QKeyEvent* event)
 void QtDisplayWindow::keyReleaseEvent(QKeyEvent* event)
 {
   m_host_interface->handleKeyEvent(event->key(), false);
+}
+
+void QtDisplayWindow::resizeEvent(QResizeEvent* event)
+{
+  QWindow::resizeEvent(event);
+  emit windowResizedEvent(event->size().width(), event->size().height());
 }

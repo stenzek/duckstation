@@ -7,10 +7,13 @@
 static void InitLogging()
 {
   // set log flags
-  // g_pLog->SetConsoleOutputParams(true);
-  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_PROFILE);
-  g_pLog->SetFilterLevel(LOGLEVEL_PROFILE);
-  // g_pLog->SetDebugOutputParams(true);
+#ifdef Y_BUILD_CONFIG_DEBUG
+  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+  g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
+#else
+  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_INFO);
+  g_pLog->SetFilterLevel(LOGLEVEL_INFO);
+#endif
 }
 
 int main(int argc, char* argv[])
