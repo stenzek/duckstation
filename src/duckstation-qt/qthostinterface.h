@@ -92,7 +92,7 @@ private:
 
   std::unique_ptr<GameList> m_game_list;
 
-  OpenGLDisplayWindow* m_opengl_display_window = nullptr;
+  QtDisplayWindow* m_display_window = nullptr;
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
 

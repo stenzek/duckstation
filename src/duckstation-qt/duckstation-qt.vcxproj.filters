@@ -21,11 +21,13 @@
     <ClCompile Include="$(IntDir)qrc_icons.cpp" />
     <ClCompile Include="portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
+    <ClCompile Include="qtdisplaywindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
+    <ClInclude Include="qtdisplaywindow.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

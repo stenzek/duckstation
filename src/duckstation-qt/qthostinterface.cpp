@@ -24,7 +24,7 @@ QtHostInterface::QtHostInterface(QObject* parent)
 
 QtHostInterface::~QtHostInterface()
 {
-  Assert(!m_opengl_display_window);
+  Assert(!m_display_window);
   stopThread();
 }
 
@@ -129,24 +129,24 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /*= false*/)
 
 QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 {
-  m_opengl_display_window = new OpenGLDisplayWindow(this, nullptr);
+  m_display_window = new OpenGLDisplayWindow(this, nullptr);
   m_display.release();
-  m_display = std::unique_ptr<HostDisplay>(static_cast<HostDisplay*>(m_opengl_display_window));
-  return QWidget::createWindowContainer(m_opengl_display_window, parent);
+  m_display = std::unique_ptr<HostDisplay>(m_display_window->getHostDisplayInterface());
+  return QWidget::createWindowContainer(m_display_window, parent);
 }
 
 void QtHostInterface::destroyDisplayWidget()
 {
   m_display.release();
-  delete m_opengl_display_window;
-  m_opengl_display_window = nullptr;
+  delete m_display_window;
+  m_display_window = nullptr;
 }
 
 void QtHostInterface::bootSystem(QString initial_filename, QString initial_save_state_filename)
 {
   emit emulationStarting();
 
-  if (!m_opengl_display_window->createGLContext(m_worker_thread))
+  if (!m_display_window->createDeviceContext(m_worker_thread))
   {
     emit emulationStopped();
     return;
@@ -252,7 +252,7 @@ void QtHostInterface::powerOffSystem()
   }
 
   m_system.reset();
-  m_opengl_display_window->destroyGLContext();
+  m_display_window->destroyDeviceContext();
 
   emit emulationStopped();
 }
@@ -290,7 +290,7 @@ void QtHostInterface::changeDisc(QString new_disc_filename) {}
 
 void QtHostInterface::doBootSystem(QString initial_filename, QString initial_save_state_filename)
 {
-  if (!m_opengl_display_window->initializeGLContext())
+  if (!m_display_window->initializeDeviceContext())
   {
     emit emulationStopped();
     return;
@@ -305,7 +305,7 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
       !BootSystem(initial_filename_str.empty() ? nullptr : initial_filename_str.c_str(),
                   initial_save_state_filename_str.empty() ? nullptr : initial_save_state_filename_str.c_str()))
   {
-    m_opengl_display_window->destroyGLContext();
+    m_display_window->destroyDeviceContext();
     emit emulationStopped();
     return;
   }

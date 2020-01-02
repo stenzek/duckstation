@@ -20,6 +20,8 @@ add_executable(duckstation-qt
   opengldisplaywindow.h
   portsettingswidget.cpp
   portsettingswidget.h
+  qtdisplaywindow.cpp
+  qtdisplaywindow.h
   qthostinterface.cpp
   qthostinterface.h
   qtsettingsinterface.cpp

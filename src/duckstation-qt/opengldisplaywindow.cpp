@@ -1,9 +1,11 @@
 #include "opengldisplaywindow.h"
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
+#include "imgui.h"
 #include "qthostinterface.h"
 #include <QtGui/QKeyEvent>
 #include <array>
+#include <imgui_impl_opengl3.h>
 #include <tuple>
 Log_SetChannel(OpenGLDisplayWindow);
 
@@ -95,12 +97,17 @@ private:
 };
 
 OpenGLDisplayWindow::OpenGLDisplayWindow(QtHostInterface* host_interface, QWindow* parent)
-  : QWindow(parent), m_host_interface(host_interface)
+  : QtDisplayWindow(host_interface, parent)
 {
   setSurfaceType(QWindow::OpenGLSurface);
 }
 
 OpenGLDisplayWindow::~OpenGLDisplayWindow() = default;
+
+HostDisplay* OpenGLDisplayWindow::getHostDisplayInterface()
+{
+  return this;
+}
 
 HostDisplay::RenderAPI OpenGLDisplayWindow::GetRenderAPI() const
 {
@@ -114,7 +121,7 @@ void* OpenGLDisplayWindow::GetRenderDevice() const
 
 void* OpenGLDisplayWindow::GetRenderContext() const
 {
-  return m_gl_context;
+  return m_gl_context.get();
 }
 
 void* OpenGLDisplayWindow::GetRenderWindow() const
@@ -178,7 +185,7 @@ void OpenGLDisplayWindow::SetVSync(bool enabled)
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  SetSwapInterval(this, m_gl_context, enabled ? 1 : 0);
+  SetSwapInterval(this, m_gl_context.get(), enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
@@ -190,15 +197,6 @@ std::tuple<u32, u32> OpenGLDisplayWindow::GetWindowSize() const
 
 void OpenGLDisplayWindow::WindowResized() {}
 
-void OpenGLDisplayWindow::keyPressEvent(QKeyEvent* event)
-{
-  m_host_interface->handleKeyEvent(event->key(), true);
-}
-
-void OpenGLDisplayWindow::keyReleaseEvent(QKeyEvent* event)
-{
-  m_host_interface->handleKeyEvent(event->key(), false);
-}
 
 const char* OpenGLDisplayWindow::GetGLSLVersionString() const
 {
@@ -238,9 +236,9 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLDisplayWindow::createGLContext(QThread* worker_thread)
+bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread)
 {
-  m_gl_context = new QOpenGLContext();
+  m_gl_context = std::make_unique<QOpenGLContext>();
 
   // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
   static constexpr std::array<std::tuple<int, int>, 11> desktop_versions_to_try = {
@@ -293,16 +291,21 @@ bool OpenGLDisplayWindow::createGLContext(QThread* worker_thread)
   if (!m_gl_context->isValid())
   {
     Log_ErrorPrintf("Failed to create any GL context");
-    delete m_gl_context;
-    m_gl_context = nullptr;
+    m_gl_context.reset();
     return false;
   }
 
   if (!m_gl_context->makeCurrent(this))
   {
     Log_ErrorPrintf("Failed to make GL context current on UI thread");
-    delete m_gl_context;
-    m_gl_context = nullptr;
+    m_gl_context.reset();
+    return false;
+  }
+
+  if (!QtDisplayWindow::createDeviceContext(worker_thread))
+  {
+    m_gl_context->doneCurrent();
+    m_gl_context.reset();
     return false;
   }
 
@@ -311,12 +314,12 @@ bool OpenGLDisplayWindow::createGLContext(QThread* worker_thread)
   return true;
 }
 
-bool OpenGLDisplayWindow::initializeGLContext()
+bool OpenGLDisplayWindow::initializeDeviceContext()
 {
   if (!m_gl_context->makeCurrent(this))
     return false;
 
-  s_thread_gl_context = m_gl_context;
+  s_thread_gl_context = m_gl_context.get();
 
   // Load GLAD.
   const auto load_result =
@@ -324,6 +327,8 @@ bool OpenGLDisplayWindow::initializeGLContext()
   if (!load_result)
   {
     Log_ErrorPrintf("Failed to load GL functions");
+    s_thread_gl_context = nullptr;
+    m_gl_context->doneCurrent();
     return false;
   }
 
@@ -336,7 +341,7 @@ bool OpenGLDisplayWindow::initializeGLContext()
   }
 #endif
 
-  if (!CreateImGuiContext() || !CreateGLResources())
+  if (!QtDisplayWindow::initializeDeviceContext())
   {
     s_thread_gl_context = nullptr;
     m_gl_context->doneCurrent();
@@ -346,31 +351,37 @@ bool OpenGLDisplayWindow::initializeGLContext()
   return true;
 }
 
-void OpenGLDisplayWindow::destroyGLContext()
+void OpenGLDisplayWindow::destroyDeviceContext()
 {
-  Assert(m_gl_context && s_thread_gl_context == m_gl_context);
+  Assert(m_gl_context && s_thread_gl_context == m_gl_context.get());
+
+  QtDisplayWindow::destroyDeviceContext();
+
   s_thread_gl_context = nullptr;
-
-  if (m_display_vao != 0)
-    glDeleteVertexArrays(1, &m_display_vao);
-  if (m_display_linear_sampler != 0)
-    glDeleteSamplers(1, &m_display_linear_sampler);
-  if (m_display_nearest_sampler != 0)
-    glDeleteSamplers(1, &m_display_nearest_sampler);
-
-  m_display_program.Destroy();
-
   m_gl_context->doneCurrent();
-  delete m_gl_context;
-  m_gl_context = nullptr;
+  m_gl_context.reset();
 }
 
-bool OpenGLDisplayWindow::CreateImGuiContext()
+bool OpenGLDisplayWindow::createImGuiContext()
 {
+  if (!QtDisplayWindow::createImGuiContext())
+    return false;
+
+  if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
+    return false;
+
+  ImGui_ImplOpenGL3_NewFrame();
   return true;
 }
 
-bool OpenGLDisplayWindow::CreateGLResources()
+void OpenGLDisplayWindow::destroyImGuiContext()
+{
+  ImGui_ImplOpenGL3_Shutdown();
+
+  QtDisplayWindow::destroyImGuiContext();
+}
+
+bool OpenGLDisplayWindow::createDeviceResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 uniform vec4 u_src_rect;
@@ -430,6 +441,20 @@ void main()
   return true;
 }
 
+void OpenGLDisplayWindow::destroyDeviceResources()
+{
+  QtDisplayWindow::destroyDeviceResources();
+
+  if (m_display_vao != 0)
+    glDeleteVertexArrays(1, &m_display_vao);
+  if (m_display_linear_sampler != 0)
+    glDeleteSamplers(1, &m_display_linear_sampler);
+  if (m_display_nearest_sampler != 0)
+    glDeleteSamplers(1, &m_display_nearest_sampler);
+
+  m_display_program.Destroy();
+}
+
 void OpenGLDisplayWindow::Render()
 {
   glDisable(GL_SCISSOR_TEST);
@@ -437,20 +462,21 @@ void OpenGLDisplayWindow::Render()
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  RenderDisplay();
+  renderDisplay();
 
-  // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  ImDrawData* draw_data = ImGui::GetDrawData();
+  if (draw_data)
+    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
 
   m_gl_context->makeCurrent(this);
   m_gl_context->swapBuffers(this);
 
-  // ImGui_ImplSDL2_NewFrame(m_window);
-  // ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplOpenGL3_NewFrame();
 
   GL::Program::ResetLastProgram();
 }
 
-void OpenGLDisplayWindow::RenderDisplay()
+void OpenGLDisplayWindow::renderDisplay()
 {
   if (!m_display_texture_id)
     return;
@@ -477,3 +503,4 @@ void OpenGLDisplayWindow::RenderDisplay()
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindSampler(0, 0);
 }
+

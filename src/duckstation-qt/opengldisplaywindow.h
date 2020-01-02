@@ -1,17 +1,16 @@
 #pragma once
 #include <glad.h>
 
-#include <QtGui/QWindow>
-#include <QtGui/QOpenGLContext>
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
 #include "core/host_display.h"
-#include <string>
+#include "qtdisplaywindow.h"
+#include <QtGui/QOpenGLContext>
 #include <memory>
 
 class QtHostInterface;
 
-class OpenGLDisplayWindow final : public QWindow, public HostDisplay
+class OpenGLDisplayWindow final : public QtDisplayWindow, public HostDisplay
 {
   Q_OBJECT
 
@@ -19,9 +18,11 @@ public:
   OpenGLDisplayWindow(QtHostInterface* host_interface, QWindow* parent);
   ~OpenGLDisplayWindow();
 
-  bool createGLContext(QThread* worker_thread);
-  bool initializeGLContext();
-  void destroyGLContext();
+  HostDisplay* getHostDisplayInterface() override;
+
+  bool createDeviceContext(QThread* worker_thread) override;
+  bool initializeDeviceContext() override;
+  void destroyDeviceContext() override;
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
@@ -45,23 +46,20 @@ public:
   std::tuple<u32, u32> GetWindowSize() const override;
   void WindowResized() override;
 
-protected:
-  void keyPressEvent(QKeyEvent* event);
-  void keyReleaseEvent(QKeyEvent* event);
+  void Render() override;
 
 private:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
 
-  bool CreateImGuiContext();
-  bool CreateGLResources();
+  bool createImGuiContext() override;
+  void destroyImGuiContext() override;
+  bool createDeviceResources() override;
+  void destroyDeviceResources() override;
 
-  void Render();
-  void RenderDisplay();
+  void renderDisplay();
 
-  QtHostInterface* m_host_interface;
-
-  QOpenGLContext* m_gl_context = nullptr;
+  std::unique_ptr<QOpenGLContext> m_gl_context = nullptr;
 
   GL::Program m_display_program;
   GLuint m_display_vao = 0;
