@@ -18,6 +18,42 @@ static void* GetProcAddressCallback(const char* name)
   return (void*)ctx->getProcAddress(name);
 }
 
+#ifdef WIN32
+#include "YBaseLib/Windows/WindowsHeaders.h"
+#endif
+
+/// Changes the swap interval on a window. Since Qt doesn't expose this functionality, we need to change it manually
+/// ourselves it by calling system-specific functions. Assumes the context is current.
+static void SetSwapInterval(QWindow* window, QOpenGLContext* context, int interval)
+{
+  static QOpenGLContext* last_context = nullptr;
+
+#ifdef WIN32
+  static void(WINAPI * wgl_swap_interval_ext)(int) = nullptr;
+
+  if (last_context != context)
+  {
+    wgl_swap_interval_ext = nullptr;
+    last_context = context;
+
+    HMODULE gl_module = GetModuleHandleA("opengl32.dll");
+    if (!gl_module)
+      return;
+
+    const auto wgl_get_proc_address =
+      reinterpret_cast<PROC(WINAPI*)(LPCSTR)>(GetProcAddress(gl_module, "wglGetProcAddress"));
+    if (!wgl_get_proc_address)
+      return;
+
+    wgl_swap_interval_ext =
+      reinterpret_cast<decltype(wgl_swap_interval_ext)>(wgl_get_proc_address("wglSwapIntervalEXT"));
+  }
+
+  if (wgl_swap_interval_ext)
+    wgl_swap_interval_ext(interval);
+#endif
+}
+
 class OpenGLHostDisplayTexture : public HostDisplayTexture
 {
 public:
@@ -142,7 +178,7 @@ void OpenGLDisplayWindow::SetVSync(bool enabled)
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  // SDL_GL_SetSwapInterval(enabled ? 1 : 0);
+  SetSwapInterval(this, m_gl_context, enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
