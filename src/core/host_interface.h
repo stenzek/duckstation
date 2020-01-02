@@ -65,7 +65,9 @@ protected:
 
   void UpdateSpeedLimiterState();
 
+  void DrawFPSWindow();
   void DrawOSDMessages();
+  void DrawDebugWindows();
   void ClearImGuiFocus();
 
   void UpdatePerformanceCounters();

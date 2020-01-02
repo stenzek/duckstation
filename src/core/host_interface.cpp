@@ -3,9 +3,15 @@
 #include "YBaseLib/Log.h"
 #include "YBaseLib/Timer.h"
 #include "bios.h"
+#include "cdrom.h"
 #include "common/audio_stream.h"
+#include "dma.h"
+#include "gpu.h"
 #include "host_display.h"
+#include "mdec.h"
+#include "spu.h"
 #include "system.h"
+#include "timers.h"
 #include <imgui.h>
 Log_SetChannel(HostInterface);
 
@@ -98,6 +104,73 @@ void HostInterface::ReportMessage(const char* message)
   Log_InfoPrintf(message);
 }
 
+void HostInterface::DrawFPSWindow()
+{
+  const bool show_fps = true;
+  const bool show_vps = true;
+  const bool show_speed = true;
+
+  if (!(show_fps | show_vps | show_speed))
+    return;
+
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 175.0f, 0.0f), ImGuiCond_Always);
+  ImGui::SetNextWindowSize(ImVec2(175.0f, 16.0f));
+
+  if (!ImGui::Begin("FPSWindow", nullptr,
+                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMouseInputs |
+                      ImGuiWindowFlags_NoBringToFrontOnFocus))
+  {
+    ImGui::End();
+    return;
+  }
+
+  bool first = true;
+  if (show_fps)
+  {
+    ImGui::Text("%.2f", m_fps);
+    first = false;
+  }
+  if (show_vps)
+  {
+    if (first)
+    {
+      first = false;
+    }
+    else
+    {
+      ImGui::SameLine();
+      ImGui::Text("/");
+      ImGui::SameLine();
+    }
+
+    ImGui::Text("%.2f", m_vps);
+  }
+  if (show_speed)
+  {
+    if (first)
+    {
+      first = false;
+    }
+    else
+    {
+      ImGui::SameLine();
+      ImGui::Text("/");
+      ImGui::SameLine();
+    }
+
+    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
+    if (m_speed < 90.0f)
+      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
+    else if (m_speed < 110.0f)
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
+    else
+      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+  }
+
+  ImGui::End();
+}
+
 void HostInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/)
 {
   OSDMessage msg;
@@ -148,6 +221,22 @@ void HostInterface::DrawOSDMessages()
     ImGui::PopStyleVar();
     ++iter;
   }
+}
+
+void HostInterface::DrawDebugWindows()
+{
+  const Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
+
+  if (debug_settings.show_gpu_state)
+    m_system->GetGPU()->DrawDebugStateWindow();
+  if (debug_settings.show_cdrom_state)
+    m_system->GetCDROM()->DrawDebugWindow();
+  if (debug_settings.show_timers_state)
+    m_system->GetTimers()->DrawDebugStateWindow();
+  if (debug_settings.show_spu_state)
+    m_system->GetSPU()->DrawDebugStateWindow();
+  if (debug_settings.show_mdec_state)
+    m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
 void HostInterface::ClearImGuiFocus()

@@ -1,23 +1,18 @@
 #include "sdl_host_interface.h"
-#include "sdl_settings_interface.h"
 #include "YBaseLib/AutoReleasePtr.h"
 #include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Error.h"
 #include "YBaseLib/Log.h"
 #include "common/null_audio_stream.h"
-#include "core/cdrom.h"
-#include "core/dma.h"
+#include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
-#include "core/mdec.h"
-#include "core/memory_card.h"
-#include "core/spu.h"
 #include "core/system.h"
-#include "core/timers.h"
 #include "icon.h"
 #include "imgui_styles.h"
 #include "opengl_host_display.h"
 #include "sdl_audio_stream.h"
+#include "sdl_settings_interface.h"
 #include <cinttypes>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
@@ -1410,22 +1405,6 @@ void SDLHostInterface::DrawAboutWindow()
     m_about_window_open = false;
 
   ImGui::EndPopup();
-}
-
-void SDLHostInterface::DrawDebugWindows()
-{
-  const Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
-
-  if (debug_settings.show_gpu_state)
-    m_system->GetGPU()->DrawDebugStateWindow();
-  if (debug_settings.show_cdrom_state)
-    m_system->GetCDROM()->DrawDebugWindow();
-  if (debug_settings.show_timers_state)
-    m_system->GetTimers()->DrawDebugStateWindow();
-  if (debug_settings.show_spu_state)
-    m_system->GetSPU()->DrawDebugStateWindow();
-  if (debug_settings.show_mdec_state)
-    m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
 bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, const char* filter /* = nullptr */)

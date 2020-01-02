@@ -124,7 +124,6 @@ private:
   void DrawPoweredOffWindow();
   void DrawSettingsWindow();
   void DrawAboutWindow();
-  void DrawDebugWindows();
   bool DrawFileChooser(const char* label, std::string* path, const char* filter = nullptr);
 
   SDL_Window* m_window = nullptr;
