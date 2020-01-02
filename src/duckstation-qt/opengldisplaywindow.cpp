@@ -1,6 +1,8 @@
 #include "opengldisplaywindow.h"
 #include "YBaseLib/Assert.h"
 #include "YBaseLib/Log.h"
+#include "qthostinterface.h"
+#include <QtGui/QKeyEvent>
 #include <array>
 #include <tuple>
 Log_SetChannel(OpenGLDisplayWindow);
@@ -56,7 +58,8 @@ private:
   u32 m_height;
 };
 
-OpenGLDisplayWindow::OpenGLDisplayWindow(QWindow* parent) : QWindow(parent)
+OpenGLDisplayWindow::OpenGLDisplayWindow(QtHostInterface* host_interface, QWindow* parent)
+  : QWindow(parent), m_host_interface(host_interface)
 {
   setSurfaceType(QWindow::OpenGLSurface);
 }
@@ -150,6 +153,16 @@ std::tuple<u32, u32> OpenGLDisplayWindow::GetWindowSize() const
 }
 
 void OpenGLDisplayWindow::WindowResized() {}
+
+void OpenGLDisplayWindow::keyPressEvent(QKeyEvent* event)
+{
+  m_host_interface->handleKeyEvent(event->key(), true);
+}
+
+void OpenGLDisplayWindow::keyReleaseEvent(QKeyEvent* event)
+{
+  m_host_interface->handleKeyEvent(event->key(), false);
+}
 
 const char* OpenGLDisplayWindow::GetGLSLVersionString() const
 {
@@ -278,7 +291,7 @@ bool OpenGLDisplayWindow::initializeGLContext()
     return false;
   }
 
-#if 1
+#if 0
   if (GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);

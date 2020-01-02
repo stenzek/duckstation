@@ -1,6 +1,7 @@
 #include "settingsdialog.h"
 #include "consolesettingswidget.h"
 #include "gamelistsettingswidget.h"
+#include "portsettingswidget.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QTextEdit>
 
@@ -11,15 +12,17 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
 
   m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_port_settings = new PortSettingsWidget(host_interface, m_ui.settingsContainer);
   m_cpu_settings = new QWidget(m_ui.settingsContainer);
   m_gpu_settings = new QWidget(m_ui.settingsContainer);
   m_audio_settings = new QWidget(m_ui.settingsContainer);
 
   m_ui.settingsContainer->insertWidget(0, m_console_settings);
   m_ui.settingsContainer->insertWidget(1, m_game_list_settings);
-  m_ui.settingsContainer->insertWidget(2, m_cpu_settings);
-  m_ui.settingsContainer->insertWidget(3, m_gpu_settings);
-  m_ui.settingsContainer->insertWidget(4, m_audio_settings);
+  m_ui.settingsContainer->insertWidget(2, m_port_settings);
+  m_ui.settingsContainer->insertWidget(3, m_cpu_settings);
+  m_ui.settingsContainer->insertWidget(4, m_gpu_settings);
+  m_ui.settingsContainer->insertWidget(5, m_audio_settings);
 
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);

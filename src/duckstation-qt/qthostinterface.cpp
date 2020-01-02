@@ -1,11 +1,14 @@
 #include "qthostinterface.h"
 #include "YBaseLib/Log.h"
 #include "common/null_audio_stream.h"
+#include "core/controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
 #include "qtsettingsinterface.h"
+#include "qtutils.h"
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 #include <QtWidgets/QMessageBox>
 #include <memory>
 Log_SetChannel(QtHostInterface);
@@ -15,6 +18,7 @@ QtHostInterface::QtHostInterface(QObject* parent)
 {
   checkSettings();
   createGameList();
+  doUpdateInputMap();
   createThread();
 }
 
@@ -37,6 +41,24 @@ void QtHostInterface::ReportMessage(const char* message)
 void QtHostInterface::setDefaultSettings()
 {
   m_settings.SetDefaults();
+
+  // default input settings for Qt
+  m_settings.controller_types[0] = ControllerType::DigitalController;
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonUp"), QStringLiteral("Keyboard/W"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonDown"), QStringLiteral("Keyboard/S"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonLeft"), QStringLiteral("Keyboard/A"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonRight"), QStringLiteral("Keyboard/D"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonSelect"), QStringLiteral("Keyboard/Backspace"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonStart"), QStringLiteral("Keyboard/Return"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonTriangle"), QStringLiteral("Keyboard/8"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonCross"), QStringLiteral("Keyboard/2"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonSquare"), QStringLiteral("Keyboard/4"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonCircle"), QStringLiteral("Keyboard/6"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonL1"), QStringLiteral("Keyboard/Q"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonL2"), QStringLiteral("Keyboard/1"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonR1"), QStringLiteral("Keyboard/E"));
+  m_qsettings.setValue(QStringLiteral("Controller1/ButtonR2"), QStringLiteral("Keyboard/3"));
+
   updateQSettings();
 }
 
@@ -107,7 +129,7 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /*= false*/)
 
 QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 {
-  m_opengl_display_window = new OpenGLDisplayWindow(nullptr);
+  m_opengl_display_window = new OpenGLDisplayWindow(this, nullptr);
   m_display.release();
   m_display = std::unique_ptr<HostDisplay>(static_cast<HostDisplay*>(m_opengl_display_window));
   return QWidget::createWindowContainer(m_opengl_display_window, parent);
@@ -132,6 +154,87 @@ void QtHostInterface::bootSystem(QString initial_filename, QString initial_save_
 
   QMetaObject::invokeMethod(this, "doBootSystem", Qt::QueuedConnection, Q_ARG(QString, initial_filename),
                             Q_ARG(QString, initial_save_state_filename));
+}
+
+void QtHostInterface::handleKeyEvent(int key, bool pressed)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "doHandleKeyEvent", Qt::QueuedConnection, Q_ARG(int, key), Q_ARG(bool, pressed));
+    return;
+  }
+
+  doHandleKeyEvent(key, pressed);
+}
+
+void QtHostInterface::doHandleKeyEvent(int key, bool pressed)
+{
+  const auto iter = m_keyboard_input_handlers.find(key);
+  if (iter == m_keyboard_input_handlers.end())
+    return;
+
+  iter->second(pressed);
+}
+
+void QtHostInterface::updateInputMap()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "doUpdateInputMap", Qt::QueuedConnection);
+    return;
+  }
+
+  doUpdateInputMap();
+}
+
+void QtHostInterface::doUpdateInputMap()
+{
+  m_keyboard_input_handlers.clear();
+
+  for (u32 controller_index = 0; controller_index < 2; controller_index++)
+  {
+    const ControllerType ctype = m_settings.controller_types[controller_index];
+    if (ctype == ControllerType::None)
+      continue;
+
+    const auto button_names = Controller::GetButtonNames(ctype);
+    for (const auto& [button_name, button_code] : button_names)
+    {
+      QVariant var = m_qsettings.value(
+        QStringLiteral("Controller%1/Button%2").arg(controller_index + 1).arg(QString::fromStdString(button_name)));
+      if (!var.isValid())
+        continue;
+
+      auto handler = [this, controller_index, button_code](bool pressed) {
+        if (!m_system)
+          return;
+
+        Controller* controller = m_system->GetController(controller_index);
+        if (controller)
+          controller->SetButtonState(button_code, pressed);
+      };
+
+      const QString value = var.toString();
+      const QString device = value.section('/', 0, 0);
+      const QString button = value.section('/', 1, 1);
+      if (device == QStringLiteral("Keyboard"))
+      {
+        std::optional<int> key_id = QtUtils::GetKeyIdForIdentifier(button);
+        if (!key_id.has_value())
+        {
+          qWarning() << "Unknown keyboard key " << button;
+          continue;
+        }
+
+        m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
+      }
+      else
+      {
+        qWarning() << "Unknown input device: " << device;
+        continue;
+      }
+    }
+  }
 }
 
 void QtHostInterface::powerOffSystem()

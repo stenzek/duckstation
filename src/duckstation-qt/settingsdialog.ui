@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>637</width>
-    <height>405</height>
+    <width>640</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,6 +58,15 @@
           <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Port Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
+        </property>
+       </item> 
        <item>
         <property name="text">
          <string>CPU Settings</string>

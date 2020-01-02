@@ -1,11 +1,13 @@
 #pragma once
-#include <atomic>
-#include <memory>
-#include <QtCore/QObject>
-#include <QtCore/QThread>
-#include <QtCore/QSettings>
 #include "core/host_interface.h"
 #include "opengldisplaywindow.h"
+#include <QtCore/QObject>
+#include <QtCore/QSettings>
+#include <QtCore/QThread>
+#include <atomic>
+#include <functional>
+#include <map>
+#include <memory>
 
 class QWidget;
 
@@ -30,7 +32,7 @@ public:
 
   const Settings& GetCoreSettings() const { return m_settings; }
   Settings& GetCoreSettings() { return m_settings; }
-  //void UpdateCoreSettingsGPU();
+  // void UpdateCoreSettingsGPU();
 
   const GameList* getGameList() const { return m_game_list.get(); }
   GameList* getGameList() { return m_game_list.get(); }
@@ -43,6 +45,9 @@ public:
   void destroyDisplayWidget();
 
   void bootSystem(QString initial_filename, QString initial_save_state_filename);
+
+  void updateInputMap();
+  void handleKeyEvent(int key, bool pressed);
 
 Q_SIGNALS:
   void emulationStarting();
@@ -58,8 +63,10 @@ public Q_SLOTS:
   void changeDisc(QString new_disc_filename);
 
 private Q_SLOTS:
-  void doBootSystem(QString initial_filename, QString initial_save_state_filename);
   void doStopThread();
+  void doBootSystem(QString initial_filename, QString initial_save_state_filename);
+  void doUpdateInputMap();
+  void doHandleKeyEvent(int key, bool pressed);
 
 private:
   class Thread : public QThread
@@ -89,6 +96,8 @@ private:
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
 
-  std::atomic_bool m_shutdown_flag{ false };
-};
+  std::atomic_bool m_shutdown_flag{false};
 
+  // input key maps, todo hotkeys
+  std::map<int, std::function<void(bool)>> m_keyboard_input_handlers;
+};

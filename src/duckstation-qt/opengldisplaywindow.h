@@ -9,12 +9,14 @@
 #include <string>
 #include <memory>
 
+class QtHostInterface;
+
 class OpenGLDisplayWindow final : public QWindow, public HostDisplay
 {
   Q_OBJECT
 
 public:
-  explicit OpenGLDisplayWindow(QWindow* parent);
+  OpenGLDisplayWindow(QtHostInterface* host_interface, QWindow* parent);
   ~OpenGLDisplayWindow();
 
   bool createGLContext(QThread* worker_thread);
@@ -43,6 +45,10 @@ public:
   std::tuple<u32, u32> GetWindowSize() const override;
   void WindowResized() override;
 
+protected:
+  void keyPressEvent(QKeyEvent* event);
+  void keyReleaseEvent(QKeyEvent* event);
+
 private:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
@@ -52,6 +58,8 @@ private:
 
   void Render();
   void RenderDisplay();
+
+  QtHostInterface* m_host_interface;
 
   QOpenGLContext* m_gl_context = nullptr;
 

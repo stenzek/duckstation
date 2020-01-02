@@ -41,12 +41,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="opengldisplaywindow.cpp" />
+    <ClCompile Include="portsettingswidget.cpp" />
     <ClCompile Include="qthostinterface.cpp" />
     <ClCompile Include="qtsettingsinterface.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="settingsdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="portsettingswidget.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
@@ -100,6 +102,7 @@
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_opengldisplaywindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_icons.cpp" />

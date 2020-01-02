@@ -16,6 +16,7 @@ public:
   {
     ConsoleSettings,
     GameListSettings,
+    PortSettings,
     CPUSettings,
     GPUSettings,
     AudioSettings,
@@ -38,6 +39,7 @@ private:
 
   ConsoleSettingsWidget* m_console_settings = nullptr;
   QWidget* m_game_list_settings = nullptr;
+  QWidget* m_port_settings = nullptr;
   QWidget* m_cpu_settings = nullptr;
   QWidget* m_gpu_settings = nullptr;
   QWidget* m_audio_settings = nullptr;

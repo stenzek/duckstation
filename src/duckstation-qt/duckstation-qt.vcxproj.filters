@@ -19,6 +19,8 @@
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_icons.cpp" />
+    <ClCompile Include="portsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
@@ -41,6 +43,7 @@
     <QtMoc Include="opengldisplaywindow.h" />
     <QtMoc Include="qthostinterface.h" />
     <QtMoc Include="settingsdialog.h" />
+    <QtMoc Include="portsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
