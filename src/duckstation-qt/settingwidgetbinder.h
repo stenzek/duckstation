@@ -136,4 +136,19 @@ void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, DataType Setti
   });
 }
 
+template<typename WidgetType, typename DataType>
+void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, DataType Settings::*settings_ptr,
+                         std::enable_if_t<std::is_integral_v<DataType>, int>* v = nullptr)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+
+  Accessor::setIntValue(widget, static_cast<int>(hi->GetCoreSettings().*settings_ptr));
+
+  Accessor::connectValueChanged(widget, [hi, widget, settings_ptr](int) {
+    const int value = Accessor::getIntValue(widget);
+    (hi->GetCoreSettings().*settings_ptr) = static_cast<DataType>(value);
+    hi->updateQSettings();
+  });
+}
+
 } // namespace SettingWidgetBinder

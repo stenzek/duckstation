@@ -22,12 +22,14 @@
     <ClCompile Include="portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
     <ClCompile Include="qtdisplaywindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_qtdisplaywindow.cpp" />
+    <ClCompile Include="gpusettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
-    <ClInclude Include="qtdisplaywindow.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -46,12 +48,15 @@
     <QtMoc Include="qthostinterface.h" />
     <QtMoc Include="settingsdialog.h" />
     <QtMoc Include="portsettingswidget.h" />
+    <QtMoc Include="qtdisplaywindow.h" />
+    <QtMoc Include="gpusettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
     <QtUi Include="gamelistsettingswidget.ui" />
     <QtUi Include="mainwindow.ui" />
     <QtUi Include="settingsdialog.ui" />
+    <QtUi Include="gpusettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

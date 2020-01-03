@@ -75,7 +75,6 @@
     <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionPortSettings"/>
-    <addaction name="actionCPUSettings"/>
     <addaction name="actionGPUSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="separator"/>

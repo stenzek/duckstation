@@ -161,7 +161,6 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::GameListSettings); });
   connect(m_ui.actionPortSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::PortSettings); });
-  connect(m_ui.actionCPUSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::CPUSettings); });
   connect(m_ui.actionGPUSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::GPUSettings); });
   connect(m_ui.actionAudioSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });

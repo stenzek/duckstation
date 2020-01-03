@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="consolesettingswidget.cpp" />
+    <ClCompile Include="gpusettingswidget.cpp" />
     <ClCompile Include="qtdisplaywindow.cpp" />
     <ClCompile Include="gamelistsettingswidget.cpp" />
     <ClCompile Include="gamelistwidget.cpp" />
@@ -51,6 +52,7 @@
   <ItemGroup>
     <QtMoc Include="portsettingswidget.h" />
     <QtMoc Include="qtdisplaywindow.h" />
+    <QtMoc Include="gpusettingswidget.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
@@ -102,6 +104,7 @@
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_opengldisplaywindow.cpp" />
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
@@ -112,6 +115,11 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUi Include="gpusettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28F14272-0EC4-41BB-849F-182ADB81AF70}</ProjectGuid>

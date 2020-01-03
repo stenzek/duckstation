@@ -17,7 +17,6 @@ public:
     ConsoleSettings,
     GameListSettings,
     PortSettings,
-    CPUSettings,
     GPUSettings,
     AudioSettings,
     Count

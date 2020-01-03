@@ -69,15 +69,6 @@
        </item> 
        <item>
         <property name="text">
-         <string>CPU Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="icons.qrc">
-          <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
          <string>GPU Settings</string>
         </property>
         <property name="icon">
