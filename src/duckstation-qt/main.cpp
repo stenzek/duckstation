@@ -20,6 +20,8 @@ int main(int argc, char* argv[])
 {
   InitLogging();
 
+  QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling); 
+
   QApplication app(argc, argv);
 
   std::unique_ptr<QtHostInterface> host_interface = std::make_unique<QtHostInterface>();
