@@ -12,6 +12,8 @@
 #include "spu.h"
 #include "system.h"
 #include "timers.h"
+#include <cstring>
+#include <cmath>
 #include <imgui.h>
 Log_SetChannel(HostInterface);
 
@@ -22,8 +24,6 @@ Log_SetChannel(HostInterface);
 #endif
 
 #if defined(ANDROID) || (defined(__GNUC__) && __GNUC__ < 8)
-
-#include <cstring>
 
 static std::string GetRelativePath(const std::string& path, const char* new_filename)
 {
