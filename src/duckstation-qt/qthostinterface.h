@@ -8,6 +8,8 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <vector>
+#include <utility>
 
 class QWidget;
 
@@ -49,6 +51,14 @@ public:
   void updateInputMap();
   void handleKeyEvent(int key, bool pressed);
 
+  struct HotkeyInfo
+  {
+    QString name;
+    QString display_name;
+    QString category;
+  };
+  std::vector<HotkeyInfo> getHotkeyList() const;
+
 Q_SIGNALS:
   void emulationStarting();
   void emulationStarted();
@@ -61,6 +71,7 @@ public Q_SLOTS:
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
+  void toggleFullscreen();
 
 private Q_SLOTS:
   void doStopThread();
@@ -70,6 +81,13 @@ private Q_SLOTS:
   void onDisplayWindowResized(int width, int height);
 
 private:
+  using InputButtonHandler = std::function<void(bool)>;
+
+  enum : u32
+  {
+    NUM_SAVE_STATE_HOTKEYS = 8
+  };
+
   class Thread : public QThread
   {
   public:
@@ -85,6 +103,10 @@ private:
 
   void checkSettings();
   void createGameList();
+  void updateControllerInputMap();
+  void updateHotkeyInputMap();
+  void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
+  void updateFullscreen();
   void createThread();
   void stopThread();
   void threadEntryPoint();
@@ -100,5 +122,5 @@ private:
   std::atomic_bool m_shutdown_flag{false};
 
   // input key maps, todo hotkeys
-  std::map<int, std::function<void(bool)>> m_keyboard_input_handlers;
+  std::map<int, InputButtonHandler> m_keyboard_input_handlers;
 };

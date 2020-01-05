@@ -1,11 +1,15 @@
 #pragma once
 
-#include <QtWidgets/QDialog>
 #include "ui_settingsdialog.h"
+#include <QtWidgets/QDialog>
 
 class QtHostInterface;
 
+class GameListSettingsWidget;
+class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
+class PortSettingsWidget;
+class GPUSettingsWidget;
 
 class SettingsDialog : public QDialog
 {
@@ -14,15 +18,16 @@ class SettingsDialog : public QDialog
 public:
   enum class Category
   {
-    ConsoleSettings,
     GameListSettings,
+    HotkeySettings,
+    ConsoleSettings,
     PortSettings,
     GPUSettings,
     AudioSettings,
     Count
   };
 
-  explicit SettingsDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  SettingsDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~SettingsDialog();
 
 public Q_SLOTS:
@@ -36,10 +41,10 @@ private:
 
   QtHostInterface* m_host_interface;
 
+  GameListSettingsWidget* m_game_list_settings = nullptr;
+  HotkeySettingsWidget* m_hotkey_settings = nullptr;
   ConsoleSettingsWidget* m_console_settings = nullptr;
-  QWidget* m_game_list_settings = nullptr;
-  QWidget* m_port_settings = nullptr;
-  QWidget* m_cpu_settings = nullptr;
-  QWidget* m_gpu_settings = nullptr;
+  PortSettingsWidget* m_port_settings = nullptr;
+  GPUSettingsWidget* m_gpu_settings = nullptr;
   QWidget* m_audio_settings = nullptr;
 };

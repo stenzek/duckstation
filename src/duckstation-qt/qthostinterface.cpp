@@ -1,5 +1,6 @@
 #include "qthostinterface.h"
 #include "YBaseLib/Log.h"
+#include "YBaseLib/String.h"
 #include "common/null_audio_stream.h"
 #include "core/controller.h"
 #include "core/game_list.h"
@@ -198,6 +199,12 @@ void QtHostInterface::doUpdateInputMap()
 {
   m_keyboard_input_handlers.clear();
 
+  updateControllerInputMap();
+  updateHotkeyInputMap();
+}
+
+void QtHostInterface::updateControllerInputMap()
+{
   for (u32 controller_index = 0; controller_index < 2; controller_index++)
   {
     const ControllerType ctype = m_settings.controller_types[controller_index];
@@ -212,37 +219,101 @@ void QtHostInterface::doUpdateInputMap()
       if (!var.isValid())
         continue;
 
-      auto handler = [this, controller_index, button_code](bool pressed) {
+      addButtonToInputMap(var.toString(), [this, controller_index, button_code](bool pressed) {
         if (!m_system)
           return;
 
         Controller* controller = m_system->GetController(controller_index);
         if (controller)
           controller->SetButtonState(button_code, pressed);
-      };
-
-      const QString value = var.toString();
-      const QString device = value.section('/', 0, 0);
-      const QString button = value.section('/', 1, 1);
-      if (device == QStringLiteral("Keyboard"))
-      {
-        std::optional<int> key_id = QtUtils::GetKeyIdForIdentifier(button);
-        if (!key_id.has_value())
-        {
-          qWarning() << "Unknown keyboard key " << button;
-          continue;
-        }
-
-        m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
-      }
-      else
-      {
-        qWarning() << "Unknown input device: " << device;
-        continue;
-      }
+      });
     }
   }
 }
+
+std::vector<QtHostInterface::HotkeyInfo> QtHostInterface::getHotkeyList() const
+{
+  std::vector<HotkeyInfo> hotkeys = {
+    {QStringLiteral("FastForward"), QStringLiteral("Toggle Fast Forward"), QStringLiteral("General")},
+    {QStringLiteral("Fullscreen"), QStringLiteral("Toggle Fullscreen"), QStringLiteral("General")},
+    {QStringLiteral("Pause"), QStringLiteral("Toggle Pause"), QStringLiteral("General")}};
+
+  for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
+  {
+    hotkeys.push_back(
+      {QStringLiteral("LoadState%1").arg(i), QStringLiteral("Load State %1").arg(i), QStringLiteral("Save States")});
+  }
+  for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
+  {
+    hotkeys.push_back(
+      {QStringLiteral("SaveState%1").arg(i), QStringLiteral("Save State %1").arg(i), QStringLiteral("Save States")});
+  }
+
+  return hotkeys;
+}
+
+void QtHostInterface::updateHotkeyInputMap()
+{
+  auto hk = [this](const QString& hotkey_name, InputButtonHandler handler) {
+    QVariant var = m_qsettings.value(QStringLiteral("Hotkeys/%1").arg(hotkey_name));
+    if (!var.isValid())
+      return;
+
+    addButtonToInputMap(var.toString(), std::move(handler));
+  };
+
+  hk(QStringLiteral("FastForward"), [this](bool pressed) {
+    m_speed_limiter_temp_disabled = pressed;
+    HostInterface::UpdateSpeedLimiterState();
+  });
+
+  hk(QStringLiteral("Fullscreen"), [this](bool pressed) {
+    if (!pressed)
+      toggleFullscreen();
+  });
+
+  hk(QStringLiteral("Pause"), [this](bool pressed) {
+    if (!pressed)
+      pauseSystem(!m_paused);
+  });
+
+  for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
+  {
+    hk(QStringLiteral("LoadState%1").arg(i), [this, i](bool pressed) {
+      if (!pressed)
+        HostInterface::LoadState(TinyString::FromFormat("savestate_%u.bin", i));
+    });
+
+    hk(QStringLiteral("SaveState%1").arg(i), [this, i](bool pressed) {
+      if (!pressed)
+        HostInterface::SaveState(TinyString::FromFormat("savestate_%u.bin", i));
+    });
+  }
+}
+
+void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHandler handler)
+{
+  const QString device = binding.section('/', 0, 0);
+  const QString button = binding.section('/', 1, 1);
+  if (device == QStringLiteral("Keyboard"))
+  {
+    std::optional<int> key_id = QtUtils::GetKeyIdForIdentifier(button);
+    if (!key_id.has_value())
+    {
+      qWarning() << "Unknown keyboard key " << button;
+      return;
+    }
+
+    m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
+  }
+  else
+  {
+    qWarning() << "Unknown input device: " << device;
+    return;
+  }
+}
+
+void QtHostInterface::updateFullscreen() {}
 
 void QtHostInterface::powerOffSystem()
 {
@@ -294,6 +365,18 @@ void QtHostInterface::pauseSystem(bool paused)
 }
 
 void QtHostInterface::changeDisc(QString new_disc_filename) {}
+
+void QtHostInterface::toggleFullscreen()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "toggleFullscreen", Qt::QueuedConnection);
+    return;
+  }
+
+  m_settings.display_fullscreen = !m_settings.display_fullscreen;
+  updateFullscreen();
+}
 
 void QtHostInterface::doBootSystem(QString initial_filename, QString initial_save_state_filename)
 {

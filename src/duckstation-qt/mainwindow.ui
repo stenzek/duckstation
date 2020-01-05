@@ -72,8 +72,9 @@
     </widget>
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
-    <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
+    <addaction name="actionHotkeySettings"/>
+    <addaction name="actionConsoleSettings"/>
     <addaction name="actionPortSettings"/>
     <addaction name="actionGPUSettings"/>
     <addaction name="actionAudioSettings"/>
@@ -219,13 +220,13 @@
     <string>&amp;Port Settings...</string>
    </property>
   </action>
-  <action name="actionCPUSettings">
+  <action name="actionHotkeySettings">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;CPU Settings...</string>
+    <string>&amp;Hotkey Settings...</string>
    </property>
   </action>
   <action name="actionGPUSettings">

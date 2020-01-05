@@ -25,11 +25,15 @@
     <ClCompile Include="$(IntDir)moc_qtdisplaywindow.cpp" />
     <ClCompile Include="gpusettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
+    <ClCompile Include="inputbindingwidgets.cpp" />
+    <ClCompile Include="hotkeysettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
+    <ClInclude Include="inputbindingwidgets.h" />
+    <ClInclude Include="hotkeysettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

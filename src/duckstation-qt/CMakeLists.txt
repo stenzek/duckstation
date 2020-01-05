@@ -12,6 +12,10 @@ add_executable(duckstation-qt
   gamelistsettingswidget.ui
   gamelistwidget.cpp
   gamelistwidget.h
+  hotkeysettingswidget.cpp
+  hotkeysettingswidget.h
+  inputbindingwidgets.cpp
+  inputbindingwidgets.h
   main.cpp
   mainwindow.cpp
   mainwindow.h
