@@ -15,8 +15,7 @@ public:
   ~InputButtonBindingWidget();
 
 protected:
-  void keyPressEvent(QKeyEvent* event) override;
-  void keyReleaseEvent(QKeyEvent* event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
 private Q_SLOTS:
   void onPressed();
@@ -26,10 +25,12 @@ private:
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
   void startListeningForInput();
   void stopListeningForInput();
+  void setNewBinding();
 
   QtHostInterface* m_host_interface;
   QString m_setting_name;
   QString m_current_binding_value;
+  QString m_new_binding_value;
   QTimer* m_input_listen_timer = nullptr;
   u32 m_input_listen_remaining_seconds = 0;
 };

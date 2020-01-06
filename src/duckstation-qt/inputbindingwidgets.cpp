@@ -15,34 +15,50 @@ InputButtonBindingWidget::InputButtonBindingWidget(QtHostInterface* host_interfa
   connect(this, &QPushButton::pressed, this, &InputButtonBindingWidget::onPressed);
 }
 
-InputButtonBindingWidget::~InputButtonBindingWidget() = default;
-
-void InputButtonBindingWidget::keyPressEvent(QKeyEvent* event)
+InputButtonBindingWidget::~InputButtonBindingWidget()
 {
-  // ignore the key press if we're listening for input
   if (isListeningForInput())
-    return;
-
-  QPushButton::keyPressEvent(event);
+    stopListeningForInput();
 }
 
-void InputButtonBindingWidget::keyReleaseEvent(QKeyEvent* event)
+bool InputButtonBindingWidget::eventFilter(QObject* watched, QEvent* event)
 {
-  if (!isListeningForInput())
+  const QEvent::Type event_type = event->type();
+
+  // if the key is being released, set the input
+  if (event_type == QEvent::KeyRelease)
   {
-    QPushButton::keyReleaseEvent(event);
+    setNewBinding();
+    stopListeningForInput();
+    return true;
+  }
+  else if (event_type == QEvent::KeyPress)
+  {
+    QString binding = QtUtils::KeyEventToString(static_cast<QKeyEvent*>(event));
+    if (!binding.isEmpty())
+      m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding);
+
+    return true;
+  }
+  else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonRelease ||
+           event_type == QEvent::MouseButtonDblClick)
+  {
+    return true;
+  }
+
+  return false;
+}
+
+void InputButtonBindingWidget::setNewBinding()
+{
+  if (m_new_binding_value.isEmpty())
     return;
-  }
 
-  QString key_name = QtUtils::GetKeyIdentifier(event->key());
-  if (!key_name.isEmpty())
-  {
-    // TODO: Update input map
-    m_current_binding_value = QStringLiteral("Keyboard/%1").arg(key_name);
-    m_host_interface->getQSettings().setValue(m_setting_name, m_current_binding_value);
-  }
+  m_host_interface->getQSettings().setValue(m_setting_name, m_new_binding_value);
+  m_host_interface->updateInputMap();
 
-  stopListeningForInput();
+  m_current_binding_value = std::move(m_new_binding_value);
+  m_new_binding_value.clear();
 }
 
 void InputButtonBindingWidget::onPressed()
@@ -75,6 +91,10 @@ void InputButtonBindingWidget::startListeningForInput()
                                 &InputButtonBindingWidget::onInputListenTimerTimeout);
   m_input_listen_remaining_seconds = 5;
   setText(tr("Push Button... [%1]").arg(m_input_listen_remaining_seconds));
+
+  installEventFilter(this);
+  grabKeyboard();
+  grabMouse();
 }
 
 void InputButtonBindingWidget::stopListeningForInput()
@@ -82,4 +102,8 @@ void InputButtonBindingWidget::stopListeningForInput()
   setText(m_current_binding_value);
   delete m_input_listen_timer;
   m_input_listen_timer = nullptr;
+
+  releaseMouse();
+  releaseKeyboard();
+  removeEventFilter(this);
 }

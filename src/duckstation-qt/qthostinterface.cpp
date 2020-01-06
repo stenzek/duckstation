@@ -297,7 +297,7 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
   const QString button = binding.section('/', 1, 1);
   if (device == QStringLiteral("Keyboard"))
   {
-    std::optional<int> key_id = QtUtils::GetKeyIdForIdentifier(button);
+    std::optional<int> key_id = QtUtils::ParseKeyString(button);
     if (!key_id.has_value())
     {
       qWarning() << "Unknown keyboard key " << button;

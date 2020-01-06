@@ -1,9 +1,31 @@
 #include "qtutils.h"
+#include <QtGui/QKeyEvent>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QMainWindow>
 #include <QtWidgets/QTableView>
 #include <algorithm>
+#include <array>
 #include <map>
 
 namespace QtUtils {
+
+QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
+{
+  QWidget* next_parent = widget->parentWidget();
+  while (next_parent)
+  {
+    if (stop_at_window_or_dialog && (widget->metaObject()->inherits(&QMainWindow::staticMetaObject) ||
+                                     widget->metaObject()->inherits(&QDialog::staticMetaObject)))
+    {
+      break;
+    }
+
+    widget = next_parent;
+    next_parent = widget->parentWidget();
+  }
+
+  return widget;
+}
 
 void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
 {
@@ -461,6 +483,22 @@ static const std::map<int, QString> s_qt_key_names = {
   {Qt::Key_Camera, QStringLiteral("Camera")},
   {Qt::Key_CameraFocus, QStringLiteral("CameraFocus")}};
 
+struct QtKeyModifierEntry
+{
+  Qt::KeyboardModifier mod;
+  Qt::Key key;
+  QString name;
+};
+
+static const std::array<QtKeyModifierEntry, 5> s_qt_key_modifiers = {
+  {{Qt::ShiftModifier, Qt::Key_Shift, QStringLiteral("Shift")},
+   {Qt::ControlModifier, Qt::Key_Control, QStringLiteral("Control")},
+   {Qt::AltModifier, Qt::Key_Alt, QStringLiteral("Alt")},
+   {Qt::MetaModifier, Qt::Key_Meta, QStringLiteral("Meta")},
+   {Qt::KeypadModifier, static_cast<Qt::Key>(0), QStringLiteral("Keypad")}}};
+static const Qt::KeyboardModifiers s_qt_modifier_mask =
+  Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier;
+
 QString GetKeyIdentifier(int key)
 {
   const auto it = s_qt_key_names.find(key);
@@ -476,6 +514,61 @@ std::optional<int> GetKeyIdForIdentifier(const QString& key_identifier)
   }
 
   return std::nullopt;
+}
+
+QString KeyEventToString(const QKeyEvent* ke)
+{
+  const int key = ke->key();
+  QString key_name = GetKeyIdentifier(key);
+  if (key_name.isEmpty())
+    return {};
+
+  QString ret;
+  const Qt::KeyboardModifiers mods = ke->modifiers();
+  for (const QtKeyModifierEntry& mod : s_qt_key_modifiers)
+  {
+    if (mods & mod.mod && key != mod.key)
+    {
+      ret.append(mod.name);
+      ret.append('+');
+    }
+  }
+
+  ret.append(key_name);
+  return ret;
+}
+
+std::optional<int> ParseKeyString(const QString& key_str)
+{
+  const QStringList sections = key_str.split('+');
+  std::optional<int> key_id = GetKeyIdForIdentifier(sections.last());
+  if (!key_id)
+    return std::nullopt;
+
+  int ret = key_id.value();
+
+  if (sections.size() > 1)
+  {
+    const int num_modifiers = sections.size() - 1;
+    for (int i = 0; i < num_modifiers; i++)
+    {
+      for (const QtKeyModifierEntry& mod : s_qt_key_modifiers)
+      {
+        if (sections[i] == mod.name)
+        {
+          ret |= static_cast<int>(mod.mod);
+          break;
+        }
+      }
+    }
+  }
+
+  return ret;
+}
+
+int KeyEventToInt(const QKeyEvent* ke)
+{
+  return static_cast<int>(ke->modifiers() & s_qt_modifier_mask) | ke->key();
 }
 
 } // namespace QtUtils

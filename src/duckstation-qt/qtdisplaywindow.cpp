@@ -1,5 +1,6 @@
 #include "qtdisplaywindow.h"
 #include "imgui.h"
+#include "qtutils.h"
 #include "qthostinterface.h"
 #include <QtGui/QKeyEvent>
 
@@ -75,7 +76,7 @@ void QtDisplayWindow::keyPressEvent(QKeyEvent* event)
   if (event->isAutoRepeat())
     return;
 
-  m_host_interface->handleKeyEvent(event->key(), true);
+  m_host_interface->handleKeyEvent(QtUtils::KeyEventToInt(event), true);
 }
 
 void QtDisplayWindow::keyReleaseEvent(QKeyEvent* event)
@@ -83,7 +84,7 @@ void QtDisplayWindow::keyReleaseEvent(QKeyEvent* event)
   if (event->isAutoRepeat())
     return;
 
-  m_host_interface->handleKeyEvent(event->key(), false);
+  m_host_interface->handleKeyEvent(QtUtils::KeyEventToInt(event), false);
 }
 
 void QtDisplayWindow::resizeEvent(QResizeEvent* event)
