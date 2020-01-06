@@ -65,13 +65,13 @@ Q_SIGNALS:
   void emulationStopped();
   void emulationPaused(bool paused);
   void gameListRefreshed();
+  void toggleFullscreenRequested();
 
 public Q_SLOTS:
   void powerOffSystem();
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
-  void toggleFullscreen();
 
 private Q_SLOTS:
   void doStopThread();
@@ -106,7 +106,6 @@ private:
   void updateControllerInputMap();
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
-  void updateFullscreen();
   void createThread();
   void stopThread();
   void threadEntryPoint();

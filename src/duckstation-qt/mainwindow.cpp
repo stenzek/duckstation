@@ -52,6 +52,28 @@ void MainWindow::onEmulationPaused(bool paused)
   m_ui.actionPause->setChecked(paused);
 }
 
+void MainWindow::toggleFullscreen()
+{
+  const bool fullscreen = !m_display_widget->isFullScreen();
+  if (fullscreen)
+  {
+    m_ui.mainContainer->setCurrentIndex(0);
+    m_ui.mainContainer->removeWidget(m_display_widget);
+    m_display_widget->setParent(nullptr);
+    m_display_widget->showFullScreen();
+  }
+  else
+  {
+    m_ui.mainContainer->insertWidget(1, m_display_widget);
+    m_ui.mainContainer->setCurrentIndex(1);
+  }
+
+  m_display_widget->setFocus();
+
+  QSignalBlocker blocker(m_ui.actionFullscreen);
+  m_ui.actionFullscreen->setChecked(fullscreen);
+}
+
 void MainWindow::onStartDiscActionTriggered()
 {
   QString filename =
@@ -94,8 +116,6 @@ void MainWindow::onOpenDirectoryActionTriggered() {}
 
 void MainWindow::onExitActionTriggered() {}
 
-void MainWindow::onFullscreenActionToggled(bool fullscreen) {}
-
 void MainWindow::onGitHubRepositoryActionTriggered() {}
 
 void MainWindow::onIssueTrackerActionTriggered() {}
@@ -108,7 +128,7 @@ void MainWindow::setupAdditionalUi()
   m_game_list_widget->initialize(m_host_interface);
   m_ui.mainContainer->insertWidget(0, m_game_list_widget);
 
-  m_display_widget = m_host_interface->createDisplayWidget(m_ui.mainContainer);
+  m_display_widget = m_host_interface->createDisplayWidget(nullptr);
   m_ui.mainContainer->insertWidget(1, m_display_widget);
 
   m_ui.mainContainer->setCurrentIndex(0);
@@ -156,7 +176,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
   connect(m_ui.actionPause, &QAction::toggled, m_host_interface, &QtHostInterface::pauseSystem);
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::onExitActionTriggered);
-  connect(m_ui.actionFullscreen, &QAction::toggled, this, &MainWindow::onFullscreenActionToggled);
+  connect(m_ui.actionFullscreen, &QAction::triggered, this, &MainWindow::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
   connect(m_ui.actionGameListSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::GameListSettings); });
@@ -173,6 +193,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);
+  connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
 
   connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameList::GameListEntry& entry) {
     // if we're not running, boot the system, otherwise swap discs

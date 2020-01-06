@@ -19,18 +19,18 @@ public:
   explicit MainWindow(QtHostInterface* host_interface);
   ~MainWindow();
 
-public Q_SLOTS:
+private Q_SLOTS:
   void onEmulationStarting();
   void onEmulationStarted();
   void onEmulationStopped();
   void onEmulationPaused(bool paused);
+  void toggleFullscreen();
 
   void onStartDiscActionTriggered();
   void onChangeDiscActionTriggered();
   void onStartBiosActionTriggered();
   void onOpenDirectoryActionTriggered();
   void onExitActionTriggered();
-  void onFullscreenActionToggled(bool fullscreen);
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onAboutActionTriggered();

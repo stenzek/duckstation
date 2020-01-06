@@ -269,7 +269,7 @@ void QtHostInterface::updateHotkeyInputMap()
 
   hk(QStringLiteral("Fullscreen"), [this](bool pressed) {
     if (!pressed)
-      toggleFullscreen();
+      emit toggleFullscreenRequested();
   });
 
   hk(QStringLiteral("Pause"), [this](bool pressed) {
@@ -312,8 +312,6 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
     return;
   }
 }
-
-void QtHostInterface::updateFullscreen() {}
 
 void QtHostInterface::powerOffSystem()
 {
@@ -365,18 +363,6 @@ void QtHostInterface::pauseSystem(bool paused)
 }
 
 void QtHostInterface::changeDisc(QString new_disc_filename) {}
-
-void QtHostInterface::toggleFullscreen()
-{
-  if (!isOnWorkerThread())
-  {
-    QMetaObject::invokeMethod(this, "toggleFullscreen", Qt::QueuedConnection);
-    return;
-  }
-
-  m_settings.display_fullscreen = !m_settings.display_fullscreen;
-  updateFullscreen();
-}
 
 void QtHostInterface::doBootSystem(QString initial_filename, QString initial_save_state_filename)
 {
