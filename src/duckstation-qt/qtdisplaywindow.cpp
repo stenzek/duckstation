@@ -72,11 +72,17 @@ void QtDisplayWindow::onWindowResized(int width, int height)
 
 void QtDisplayWindow::keyPressEvent(QKeyEvent* event)
 {
+  if (event->isAutoRepeat())
+    return;
+
   m_host_interface->handleKeyEvent(event->key(), true);
 }
 
 void QtDisplayWindow::keyReleaseEvent(QKeyEvent* event)
 {
+  if (event->isAutoRepeat())
+    return;
+
   m_host_interface->handleKeyEvent(event->key(), false);
 }
 
