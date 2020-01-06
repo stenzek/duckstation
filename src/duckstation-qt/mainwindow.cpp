@@ -108,8 +108,8 @@ void MainWindow::setupAdditionalUi()
   m_game_list_widget->initialize(m_host_interface);
   m_ui.mainContainer->insertWidget(0, m_game_list_widget);
 
-  QWidget* display_widget = m_host_interface->createDisplayWidget(m_ui.mainContainer);
-  m_ui.mainContainer->insertWidget(1, display_widget);
+  m_display_widget = m_host_interface->createDisplayWidget(m_ui.mainContainer);
+  m_ui.mainContainer->insertWidget(1, m_display_widget);
 
   m_ui.mainContainer->setCurrentIndex(0);
 }
@@ -140,6 +140,7 @@ void MainWindow::switchToGameListView()
 void MainWindow::switchToEmulationView()
 {
   m_ui.mainContainer->setCurrentIndex(1);
+  m_display_widget->setFocus();
 }
 
 void MainWindow::connectSignals()
