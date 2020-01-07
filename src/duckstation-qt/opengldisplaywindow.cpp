@@ -191,12 +191,10 @@ void OpenGLDisplayWindow::SetVSync(bool enabled)
 
 std::tuple<u32, u32> OpenGLDisplayWindow::GetWindowSize() const
 {
-  const QSize s = size();
-  return std::make_tuple(static_cast<u32>(s.width()), static_cast<u32>(s.height()));
+  return std::make_tuple(static_cast<u32>(m_window_width), static_cast<u32>(m_window_height));
 }
 
 void OpenGLDisplayWindow::WindowResized() {}
-
 
 const char* OpenGLDisplayWindow::GetGLSLVersionString() const
 {
@@ -483,11 +481,10 @@ void OpenGLDisplayWindow::renderDisplay()
     return;
 
   // - 20 for main menu padding
-  const QSize window_size = size();
-  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect(
-    window_size.width(), std::max(window_size.height() - m_display_top_margin, 1), m_display_aspect_ratio);
+  const auto [vp_left, vp_top, vp_width, vp_height] =
+    CalculateDrawRect(m_window_width, std::max(m_window_height - m_display_top_margin, 1), m_display_aspect_ratio);
 
-  glViewport(vp_left, window_size.height() - (m_display_top_margin + vp_top) - vp_height, vp_width, vp_height);
+  glViewport(vp_left, m_window_height - (m_display_top_margin + vp_top) - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
@@ -504,4 +501,3 @@ void OpenGLDisplayWindow::renderDisplay()
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindSampler(0, 0);
 }
-

@@ -20,7 +20,10 @@ int main(int argc, char* argv[])
 {
   InitLogging();
 
-  QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling); 
+  QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif
 
   QApplication app(argc, argv);
 

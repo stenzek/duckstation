@@ -41,4 +41,7 @@ protected:
   virtual void resizeEvent(QResizeEvent* event) override;
 
   QtHostInterface* m_host_interface;
+
+  int m_window_width = 0;
+  int m_window_height = 0;
 };

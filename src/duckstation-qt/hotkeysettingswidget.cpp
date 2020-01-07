@@ -20,6 +20,7 @@ HotkeySettingsWidget::~HotkeySettingsWidget() = default;
 void HotkeySettingsWidget::createUi()
 {
   QGridLayout* layout = new QGridLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
 
   m_tab_widget = new QTabWidget(this);
 
