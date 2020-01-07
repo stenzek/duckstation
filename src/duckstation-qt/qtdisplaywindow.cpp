@@ -42,6 +42,7 @@ bool QtDisplayWindow::createImGuiContext()
   ImGui::CreateContext();
 
   auto& io = ImGui::GetIO();
+  io.IniFilename = nullptr;
   io.DisplaySize.x = static_cast<float>(m_window_width);
   io.DisplaySize.y = static_cast<float>(m_window_height);
 
