@@ -12,8 +12,8 @@
 #include "spu.h"
 #include "system.h"
 #include "timers.h"
-#include <cstring>
 #include <cmath>
+#include <cstring>
 #include <imgui.h>
 Log_SetChannel(HostInterface);
 
@@ -113,8 +113,10 @@ void HostInterface::DrawFPSWindow()
   if (!(show_fps | show_vps | show_speed))
     return;
 
-  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 175.0f, 0.0f), ImGuiCond_Always);
-  ImGui::SetNextWindowSize(ImVec2(175.0f, 16.0f));
+  const ImVec2 window_size =
+    ImVec2(175.0f * ImGui::GetIO().DisplayFramebufferScale.x, 16.0f * ImGui::GetIO().DisplayFramebufferScale.y);
+  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - window_size.x, 0.0f), ImGuiCond_Always);
+  ImGui::SetNextWindowSize(window_size);
 
   if (!ImGui::Begin("FPSWindow", nullptr,
                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |

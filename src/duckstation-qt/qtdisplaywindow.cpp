@@ -45,6 +45,12 @@ bool QtDisplayWindow::createImGuiContext()
   io.DisplaySize.x = static_cast<float>(m_window_width);
   io.DisplaySize.y = static_cast<float>(m_window_height);
 
+  const float framebuffer_scale = static_cast<float>(devicePixelRatio());
+  io.DisplayFramebufferScale.x = framebuffer_scale;
+  io.DisplayFramebufferScale.y = framebuffer_scale;
+  io.FontGlobalScale = framebuffer_scale;
+  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
+
   return true;
 }
 
@@ -95,7 +101,7 @@ void QtDisplayWindow::keyReleaseEvent(QKeyEvent* event)
 void QtDisplayWindow::resizeEvent(QResizeEvent* event)
 {
   QWindow::resizeEvent(event);
-  
+
   const int width = static_cast<int>(static_cast<qreal>(event->size().width()) * devicePixelRatio());
   const int height = static_cast<int>(static_cast<qreal>(event->size().height()) * devicePixelRatio());
   emit windowResizedEvent(width, height);
