@@ -40,3 +40,11 @@ add_executable(duckstation-qt
 )
 
 target_link_libraries(duckstation-qt PRIVATE YBaseLib core common imgui glad Qt5::Core Qt5::Gui Qt5::Widgets)
+
+if(WIN32)
+  target_sources(duckstation-qt PRIVATE
+    d3d11displaywindow.cpp
+    d3d11displaywindow.h
+  )
+  target_link_libraries(duckstation PRIVATE d3d11.lib)
+endif()

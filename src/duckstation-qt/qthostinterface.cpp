@@ -15,6 +15,10 @@
 #include <memory>
 Log_SetChannel(QtHostInterface);
 
+#ifdef WIN32
+#include "d3d11displaywindow.h"
+#endif
+
 QtHostInterface::QtHostInterface(QObject* parent)
   : QObject(parent), m_qsettings("duckstation-qt.ini", QSettings::IniFormat)
 {
@@ -132,7 +136,11 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /*= false*/)
 
 QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 {
+#ifdef WIN32
+  m_display_window = new D3D11DisplayWindow(this, nullptr);
+#else
   m_display_window = new OpenGLDisplayWindow(this, nullptr);
+#endif
   connect(m_display_window, &QtDisplayWindow::windowResizedEvent, this, &QtHostInterface::onDisplayWindowResized);
 
   m_display.release();

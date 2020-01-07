@@ -12,8 +12,8 @@ public:
   template<typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  D3D11DisplayWindowTexture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, u32 width, u32 height,
-                          bool dynamic)
+  D3D11DisplayWindowTexture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, u32 width,
+                            u32 height, bool dynamic)
     : m_texture(std::move(texture)), m_srv(std::move(srv)), m_width(width), m_height(height), m_dynamic(dynamic)
   {
   }
@@ -27,8 +27,8 @@ public:
   ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.Get(); }
   bool IsDynamic() const { return m_dynamic; }
 
-  static std::unique_ptr<D3D11DisplayWindowTexture> Create(ID3D11Device* device, u32 width, u32 height, const void* data,
-                                                         u32 data_stride, bool dynamic)
+  static std::unique_ptr<D3D11DisplayWindowTexture> Create(ID3D11Device* device, u32 width, u32 height,
+                                                           const void* data, u32 data_stride, bool dynamic)
   {
     const CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1, D3D11_BIND_SHADER_RESOURCE,
                                      dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT,
@@ -60,10 +60,14 @@ private:
 D3D11DisplayWindow::D3D11DisplayWindow(QtHostInterface* host_interface, QWindow* parent)
   : QtDisplayWindow(host_interface, parent)
 {
-  
 }
 
 D3D11DisplayWindow::~D3D11DisplayWindow() = default;
+
+HostDisplay* D3D11DisplayWindow::getHostDisplayInterface()
+{
+  return this;
+}
 
 HostDisplay::RenderAPI D3D11DisplayWindow::GetRenderAPI() const
 {
@@ -91,13 +95,13 @@ void D3D11DisplayWindow::ChangeRenderWindow(void* new_window)
 }
 
 std::unique_ptr<HostDisplayTexture> D3D11DisplayWindow::CreateTexture(u32 width, u32 height, const void* data,
-                                                                    u32 data_stride, bool dynamic)
+                                                                      u32 data_stride, bool dynamic)
 {
   return D3D11DisplayWindowTexture::Create(m_device.Get(), width, height, data, data_stride, dynamic);
 }
 
-void D3D11DisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
-                                     u32 data_stride)
+void D3D11DisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+                                       const void* data, u32 data_stride)
 {
   D3D11DisplayWindowTexture* d3d11_texture = static_cast<D3D11DisplayWindowTexture*>(texture);
   if (!d3d11_texture->IsDynamic())
@@ -133,7 +137,7 @@ void D3D11DisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y
 }
 
 void D3D11DisplayWindow::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
-                                         u32 texture_width, u32 texture_height, float aspect_ratio)
+                                           u32 texture_width, u32 texture_height, float aspect_ratio)
 {
   m_display_srv = static_cast<ID3D11ShaderResourceView*>(texture);
   m_display_offset_x = offset_x;
@@ -167,13 +171,14 @@ std::tuple<u32, u32> D3D11DisplayWindow::GetWindowSize() const
   return std::make_tuple(static_cast<u32>(s.width()), static_cast<u32>(s.height()));
 }
 
-void D3D11DisplayWindow::WindowResized()
-{
-}
+void D3D11DisplayWindow::WindowResized() {}
 
 void D3D11DisplayWindow::onWindowResized(int width, int height)
 {
   QtDisplayWindow::onWindowResized(width, height);
+
+  if (!m_swap_chain)
+    return;
 
   m_swap_chain_rtv.Reset();
 
@@ -200,7 +205,7 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
   swap_chain_desc.SampleDesc.Count = 1;
   swap_chain_desc.BufferCount = 3;
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-  swap_chain_desc.OutputWindow = syswm.info.win.window;
+  swap_chain_desc.OutputWindow = reinterpret_cast<HWND>(winId());
   swap_chain_desc.Windowed = TRUE;
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
@@ -220,7 +225,7 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
     return false;
   }
 
-#if 0
+#if 1
   ComPtr<ID3D11InfoQueue> info;
   hr = m_device.As(&info);
   if (SUCCEEDED(hr))
@@ -230,10 +235,36 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
   }
 #endif
 
+  if (!QtDisplayWindow::createDeviceContext(worker_thread))
+  {
+    m_swap_chain.Reset();
+    m_context.Reset();
+    m_device.Reset();
+  }
+
   return true;
 }
 
-bool D3D11DisplayWindow::CreateSwapChainRTV()
+bool D3D11DisplayWindow::initializeDeviceContext()
+{
+  if (!createSwapChainRTV())
+    return false;
+
+  if (!QtDisplayWindow::initializeDeviceContext())
+    return false;
+
+  return true;
+}
+
+void D3D11DisplayWindow::destroyDeviceContext()
+{
+  QtDisplayWindow::destroyDeviceContext();
+  m_swap_chain.Reset();
+  m_context.Reset();
+  m_device.Reset();
+}
+
+bool D3D11DisplayWindow::createSwapChainRTV()
 {
   ComPtr<ID3D11Texture2D> backbuffer;
   HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
@@ -258,7 +289,7 @@ bool D3D11DisplayWindow::CreateSwapChainRTV()
   return true;
 }
 
-bool D3D11DisplayWindow::CreateD3DResources()
+bool D3D11DisplayWindow::createDeviceResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 cbuffer UBOBlock : register(b0)
@@ -331,26 +362,36 @@ void main(in float2 v_tex0 : TEXCOORD0,
   return true;
 }
 
-bool D3D11DisplayWindow::CreateImGuiContext()
+void D3D11DisplayWindow::destroyDeviceResources()
 {
-  if (!ImGui_ImplSDL2_InitForD3D(m_window) || !ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
+  QtDisplayWindow::destroyDeviceResources();
+
+  m_linear_sampler.Reset();
+  m_point_sampler.Reset();
+  m_display_pixel_shader.Reset();
+  m_display_vertex_shader.Reset();
+  m_display_blend_state.Reset();
+  m_display_depth_stencil_state.Reset();
+  m_display_rasterizer_state.Reset();
+}
+
+bool D3D11DisplayWindow::createImGuiContext()
+{
+  if (!QtDisplayWindow::createImGuiContext())
+    return false;
+
+  if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
     return false;
 
   ImGui_ImplDX11_NewFrame();
-  ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui::NewFrame();
   return true;
 }
 
-std::unique_ptr<HostDisplay> D3D11DisplayWindow::Create(SDL_Window* window)
+void D3D11DisplayWindow::destroyImGuiContext()
 {
-  std::unique_ptr<D3D11DisplayWindow> display = std::make_unique<D3D11DisplayWindow>(window);
-  if (!display->CreateD3DDevice() || !display->CreateSwapChainRTV() || !display->CreateD3DResources() ||
-      !display->CreateImGuiContext())
-  {
-    return nullptr;
-  }
-
-  return display;
+  ImGui_ImplDX11_Shutdown();
+  QtDisplayWindow::destroyImGuiContext();
 }
 
 void D3D11DisplayWindow::Render()
@@ -359,17 +400,18 @@ void D3D11DisplayWindow::Render()
   m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
 
-  RenderDisplay();
+  renderDisplay();
 
+  ImGui::Render();
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
   m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
 
-  ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui::NewFrame();
   ImGui_ImplDX11_NewFrame();
 }
 
-void D3D11DisplayWindow::RenderDisplay()
+void D3D11DisplayWindow::renderDisplay()
 {
   if (!m_display_srv)
     return;
@@ -404,3 +446,5 @@ void D3D11DisplayWindow::RenderDisplay()
 
   m_context->Draw(3, 0);
 }
+
+
