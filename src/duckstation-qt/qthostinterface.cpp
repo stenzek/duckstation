@@ -1,4 +1,6 @@
 #include "qthostinterface.h"
+#include "YBaseLib/AutoReleasePtr.h"
+#include "YBaseLib/ByteStream.h"
 #include "YBaseLib/Log.h"
 #include "YBaseLib/String.h"
 #include "common/null_audio_stream.h"
@@ -137,7 +139,10 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /*= false*/)
 QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 {
 #ifdef WIN32
-  m_display_window = new D3D11DisplayWindow(this, nullptr);
+  if (m_settings.gpu_renderer == GPURenderer::HardwareOpenGL)
+    m_display_window = new OpenGLDisplayWindow(this, nullptr);
+  else
+    m_display_window = new D3D11DisplayWindow(this, nullptr);
 #else
   m_display_window = new OpenGLDisplayWindow(this, nullptr);
 #endif
@@ -148,7 +153,7 @@ QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
   return QWidget::createWindowContainer(m_display_window, parent);
 }
 
-void QtHostInterface::destroyDisplayWidget()
+void QtHostInterface::displayWidgetDestroyed()
 {
   m_display.release();
   delete m_display_window;
@@ -157,6 +162,7 @@ void QtHostInterface::destroyDisplayWidget()
 
 void QtHostInterface::bootSystem(QString initial_filename, QString initial_save_state_filename)
 {
+  Assert(!isOnWorkerThread());
   emit emulationStarting();
 
   if (!m_display_window->createDeviceContext(m_worker_thread))
@@ -327,7 +333,7 @@ void QtHostInterface::powerOffSystem()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "doPowerOffSystem", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "powerOffSystem", Qt::QueuedConnection);
     return;
   }
 
@@ -339,10 +345,20 @@ void QtHostInterface::powerOffSystem()
 
   m_system.reset();
   m_audio_stream->PauseOutput(true);
-  m_audio_stream->EmptyBuffers();
   m_display_window->destroyDeviceContext();
 
   emit emulationStopped();
+}
+
+void QtHostInterface::blockingPowerOffSystem()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "powerOffSystem", Qt::BlockingQueuedConnection);
+    return;
+  }
+
+  powerOffSystem();
 }
 
 void QtHostInterface::resetSystem()
@@ -377,6 +393,44 @@ void QtHostInterface::pauseSystem(bool paused)
 
 void QtHostInterface::changeDisc(QString new_disc_filename) {}
 
+void QtHostInterface::loadStateFromMemory(QByteArray arr)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "loadStateFromMemory", Qt::QueuedConnection, Q_ARG(QByteArray, arr));
+    return;
+  }
+
+  AutoReleasePtr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream();
+  if (!m_system || !QtUtils::WriteQByteArrayToStream(arr, stream) || !stream->SeekAbsolute(0) ||
+      !m_system->LoadState(stream))
+  {
+    Log_ErrorPrintf("Failed to load memory state");
+    return;
+  }
+}
+
+QByteArray QtHostInterface::saveStateToMemory()
+{
+  if (!isOnWorkerThread())
+  {
+    QByteArray return_value;
+    QMetaObject::invokeMethod(this, "saveStateToMemory", Qt::BlockingQueuedConnection,
+                              Q_RETURN_ARG(QByteArray, return_value));
+    return return_value;
+  }
+
+  QByteArray ret;
+  if (!m_system)
+    return {};
+
+  AutoReleasePtr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream();
+  if (m_system->SaveState(stream))
+    return QtUtils::ReadStreamToQByteArray(stream, true);
+  else
+    return {};
+}
+
 void QtHostInterface::doBootSystem(QString initial_filename, QString initial_save_state_filename)
 {
   if (!m_display_window->initializeDeviceContext())
@@ -403,8 +457,8 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
 void QtHostInterface::createAudioStream()
 {
   // Qt at least on Windows seems to want a buffer size of at least 8KB.
-  m_audio_stream = QtAudioStream::Create();
-  if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
+  // m_audio_stream = QtAudioStream::Create();
+  // if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
   {
     qWarning() << "Failed to configure audio stream, falling back to null output";
 

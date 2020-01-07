@@ -1,6 +1,7 @@
 #pragma once
 #include "core/host_interface.h"
 #include "opengldisplaywindow.h"
+#include <QtCore/QByteArray>
 #include <QtCore/QObject>
 #include <QtCore/QSettings>
 #include <QtCore/QThread>
@@ -8,8 +9,10 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <vector>
 #include <utility>
+#include <vector>
+
+class ByteStream;
 
 class QWidget;
 
@@ -44,9 +47,10 @@ public:
   bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
   QWidget* createDisplayWidget(QWidget* parent);
-  void destroyDisplayWidget();
+  void displayWidgetDestroyed();
 
   void bootSystem(QString initial_filename, QString initial_save_state_filename);
+  void blockingPowerOffSystem();
 
   void updateInputMap();
   void handleKeyEvent(int key, bool pressed);
@@ -66,12 +70,15 @@ Q_SIGNALS:
   void emulationPaused(bool paused);
   void gameListRefreshed();
   void toggleFullscreenRequested();
+  void switchRendererRequested();
 
 public Q_SLOTS:
   void powerOffSystem();
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
+  void loadStateFromMemory(QByteArray arr);
+  QByteArray saveStateToMemory();
 
 private Q_SLOTS:
   void doStopThread();

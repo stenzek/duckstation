@@ -1,7 +1,10 @@
 #pragma once
 #include <QtCore/QString>
+#include <QtCore/QByteArray>
 #include <initializer_list>
 #include <optional>
+
+class ByteStream;
 
 class QKeyEvent;
 class QTableView;
@@ -30,5 +33,11 @@ std::optional<int> ParseKeyString(const QString& key_str);
 
 /// Returns a key id for a key event, including any modifiers.
 int KeyEventToInt(const QKeyEvent* ke);
+
+/// Reads a whole stream to a Qt byte array.
+QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind = false);
+
+/// Creates a stream from a Qt byte array.
+bool WriteQByteArrayToStream(QByteArray& arr, ByteStream* stream);
 
 } // namespace QtUtils

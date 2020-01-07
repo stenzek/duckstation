@@ -25,6 +25,7 @@ private Q_SLOTS:
   void onEmulationStopped();
   void onEmulationPaused(bool paused);
   void toggleFullscreen();
+  void switchRenderer();
 
   void onStartDiscActionTriggered();
   void onChangeDiscActionTriggered();

@@ -22,7 +22,8 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
 
 MainWindow::~MainWindow()
 {
-  m_host_interface->destroyDisplayWidget();
+  delete m_display_widget;
+  m_host_interface->displayWidgetDestroyed();
 }
 
 void MainWindow::onEmulationStarting()
@@ -72,6 +73,55 @@ void MainWindow::toggleFullscreen()
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
+}
+
+void MainWindow::switchRenderer()
+{
+  const bool was_fullscreen = m_display_widget->isFullScreen();
+  if (was_fullscreen)
+    toggleFullscreen();
+
+  QByteArray state;
+  if (m_emulation_running)
+  {
+    // we need to basically restart the emulator core
+    state = m_host_interface->saveStateToMemory();
+    if (state.isEmpty())
+    {
+      m_host_interface->ReportError("Failed to save emulator state to memory");
+      return;
+    }
+
+    // stop the emulation
+    m_host_interface->blockingPowerOffSystem();
+  }
+
+  // recreate the display widget using the potentially-new renderer
+  m_ui.mainContainer->removeWidget(m_display_widget);
+  m_host_interface->displayWidgetDestroyed();
+  delete m_display_widget;
+  m_display_widget = m_host_interface->createDisplayWidget(m_ui.mainContainer);
+  m_ui.mainContainer->insertWidget(1, m_display_widget);
+
+  // we need the surface visible..
+  QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+  if (!state.isEmpty())
+  {
+    // restart the system with the new state
+    m_host_interface->bootSystem(QString(), QString());
+    m_host_interface->loadStateFromMemory(std::move(state));
+  }
+
+  // update the menu with the selected renderer
+  QObjectList renderer_menu_items = m_ui.menuRenderer->children();
+  QString current_renderer_name(Settings::GetRendererDisplayName(m_host_interface->GetCoreSettings().gpu_renderer));
+  for (QObject* obj : renderer_menu_items)
+  {
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+      action->setChecked(action->text() == current_renderer_name);
+  }
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -128,10 +178,25 @@ void MainWindow::setupAdditionalUi()
   m_game_list_widget->initialize(m_host_interface);
   m_ui.mainContainer->insertWidget(0, m_game_list_widget);
 
-  m_display_widget = m_host_interface->createDisplayWidget(nullptr);
+  m_display_widget = m_host_interface->createDisplayWidget(m_ui.mainContainer);
   m_ui.mainContainer->insertWidget(1, m_display_widget);
 
   m_ui.mainContainer->setCurrentIndex(0);
+
+  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
+  {
+    const GPURenderer renderer = static_cast<GPURenderer>(i);
+    QAction* action = m_ui.menuRenderer->addAction(tr(Settings::GetRendererDisplayName(renderer)));
+    action->setCheckable(true);
+    action->setChecked(m_host_interface->GetCoreSettings().gpu_renderer == renderer);
+    connect(action, &QAction::triggered, [this, action, renderer]() {
+      m_host_interface->getQSettings().setValue(QStringLiteral("GPU/Renderer"),
+                                                QString(Settings::GetRendererName(renderer)));
+      m_host_interface->GetCoreSettings().gpu_renderer = renderer;
+      action->setChecked(true);
+      switchRenderer();
+    });
+  }
 }
 
 void MainWindow::updateEmulationActions(bool starting, bool running)

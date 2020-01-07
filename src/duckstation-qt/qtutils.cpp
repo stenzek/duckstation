@@ -1,4 +1,6 @@
 #include "qtutils.h"
+#include "YBaseLib/ByteStream.h"
+#include <QtCore/QMetaObject>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMainWindow>
@@ -569,6 +571,27 @@ std::optional<int> ParseKeyString(const QString& key_str)
 int KeyEventToInt(const QKeyEvent* ke)
 {
   return static_cast<int>(ke->modifiers() & s_qt_modifier_mask) | ke->key();
+}
+
+QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind /*= false*/)
+{
+  QByteArray ret;
+  const uint64 old_pos = stream->GetPosition();
+  if (rewind && !stream->SeekAbsolute(0))
+    return {};
+
+  const uint64 stream_size = stream->GetSize() - stream->GetPosition();
+  ret.resize(static_cast<int>(stream_size));
+  if (stream_size > 0 && !stream->Read2(ret.data(), static_cast<uint32>(stream_size), nullptr))
+    return {};
+
+  stream->SeekAbsolute(old_pos);
+  return ret;
+}
+
+bool WriteQByteArrayToStream(QByteArray& arr, ByteStream* stream)
+{
+  return arr.isEmpty() || stream->Write2(arr.data(), static_cast<uint32>(arr.size()));
 }
 
 } // namespace QtUtils

@@ -58,9 +58,6 @@
      <property name="title">
       <string>Renderer</string>
      </property>
-     <addaction name="actionRendererD3D11"/>
-     <addaction name="actionRendererOpenGL"/>
-     <addaction name="actionRendererSoftware"/>
     </widget>
     <widget class="QMenu" name="actionCPUExecutionMode">
      <property name="title">
@@ -245,30 +242,6 @@
    </property>
    <property name="text">
     <string>Fullscreen</string>
-   </property>
-  </action>
-  <action name="actionRendererD3D11">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hardware (D3D11)</string>
-   </property>
-  </action>
-  <action name="actionRendererOpenGL">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hardware (OpenGL)</string>
-   </property>
-  </action>
-  <action name="actionRendererSoftware">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Software</string>
    </property>
   </action>
   <action name="actionCPUExecutionModeInterpreter">
