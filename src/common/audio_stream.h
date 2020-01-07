@@ -49,6 +49,7 @@ protected:
 
   bool IsDeviceOpen() const { return (m_output_sample_rate > 0); }
 
+  u32 GetSamplesAvailable() const;
   u32 ReadSamples(SampleType* samples, u32 num_samples);
 
   void DropBuffer();
@@ -69,7 +70,7 @@ private:
   void EnsureBuffer();
 
   std::vector<Buffer> m_buffers;
-  std::mutex m_buffer_mutex;
+  mutable std::mutex m_buffer_mutex;
 
   // For input.
   u32 m_first_free_buffer = 0;

@@ -6,6 +6,7 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "qtaudiostream.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
@@ -20,6 +21,7 @@ QtHostInterface::QtHostInterface(QObject* parent)
   checkSettings();
   createGameList();
   doUpdateInputMap();
+  createAudioStream();
   createThread();
 }
 
@@ -328,6 +330,8 @@ void QtHostInterface::powerOffSystem()
   }
 
   m_system.reset();
+  m_audio_stream->PauseOutput(true);
+  m_audio_stream->EmptyBuffers();
   m_display_window->destroyDeviceContext();
 
   emit emulationStopped();
@@ -359,6 +363,7 @@ void QtHostInterface::pauseSystem(bool paused)
   }
 
   m_paused = paused;
+  m_audio_stream->PauseOutput(paused);
   emit emulationPaused(paused);
 }
 
@@ -372,9 +377,6 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
     return;
   }
 
-  m_audio_stream = NullAudioStream::Create();
-  m_audio_stream->Reconfigure();
-
   std::string initial_filename_str = initial_filename.toStdString();
   std::string initial_save_state_filename_str = initial_save_state_filename.toStdString();
   if (!CreateSystem() ||
@@ -386,7 +388,23 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
     return;
   }
 
+  m_audio_stream->PauseOutput(false);
   emit emulationStarted();
+}
+
+void QtHostInterface::createAudioStream()
+{
+  // Qt at least on Windows seems to want a buffer size of at least 8KB.
+  m_audio_stream = QtAudioStream::Create();
+  if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
+  {
+    qWarning() << "Failed to configure audio stream, falling back to null output";
+
+    // fall back to null output
+    m_audio_stream.reset();
+    m_audio_stream = NullAudioStream::Create();
+    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
+  }
 }
 
 void QtHostInterface::createThread()

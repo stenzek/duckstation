@@ -106,6 +106,7 @@ private:
   void updateControllerInputMap();
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
+  void createAudioStream();
   void createThread();
   void stopThread();
   void threadEntryPoint();

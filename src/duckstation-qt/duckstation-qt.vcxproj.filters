@@ -27,13 +27,15 @@
     <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
+    <ClCompile Include="qtaudiostream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
-    <ClInclude Include="inputbindingwidgets.h" />
-    <ClInclude Include="hotkeysettingswidget.h" />
+    <ClInclude Include="qtaudiostream.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -54,6 +56,8 @@
     <QtMoc Include="portsettingswidget.h" />
     <QtMoc Include="qtdisplaywindow.h" />
     <QtMoc Include="gpusettingswidget.h" />
+    <QtMoc Include="hotkeysettingswidget.h" />
+    <QtMoc Include="inputbindingwidgets.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

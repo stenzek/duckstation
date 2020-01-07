@@ -53,6 +53,14 @@ public:
 protected:
   using ThrottleClock = std::chrono::steady_clock;
 
+  enum : u32
+  {
+    AUDIO_SAMPLE_RATE = 44100,
+    AUDIO_CHANNELS = 2,
+    AUDIO_BUFFER_SIZE = 2048,
+    AUDIO_BUFFERS = 2
+  };
+
   struct OSDMessage
   {
     std::string text;

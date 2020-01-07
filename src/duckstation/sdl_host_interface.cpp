@@ -135,12 +135,12 @@ void SDLHostInterface::CreateAudioStream()
       break;
   }
 
-  if (!m_audio_stream->Reconfigure(44100, 2))
+  if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS))
   {
     ReportError("Failed to recreate audio stream, falling back to null");
     m_audio_stream.reset();
     m_audio_stream = NullAudioStream::Create();
-    if (!m_audio_stream->Reconfigure(44100, 2))
+    if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS))
       Panic("Failed to reconfigure null audio stream");
   }
 }

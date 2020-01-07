@@ -123,6 +123,18 @@ void AudioStream::EndWrite(u32 num_samples)
   m_buffer_mutex.unlock();
 }
 
+u32 AudioStream::GetSamplesAvailable() const
+{
+  // TODO: Use atomic loads
+  u32 available_buffers;
+  {
+    std::unique_lock<std::mutex> lock(m_buffer_mutex);
+    available_buffers = m_num_available_buffers;
+  }
+
+  return available_buffers * m_buffer_size;
+}
+
 u32 AudioStream::ReadSamples(SampleType* samples, u32 num_samples)
 {
   u32 remaining_samples = num_samples;
