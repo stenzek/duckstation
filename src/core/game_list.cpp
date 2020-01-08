@@ -1,4 +1,8 @@
 #include "game_list.h"
+#include "YBaseLib/AutoReleasePtr.h"
+#include "YBaseLib/BinaryReader.h"
+#include "YBaseLib/BinaryWriter.h"
+#include "YBaseLib/ByteStream.h"
 #include "YBaseLib/FileSystem.h"
 #include "YBaseLib/Log.h"
 #include "bios.h"
@@ -8,6 +12,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <string_view>
 #include <tinyxml2.h>
 #include <utility>
 Log_SetChannel(GameList);
@@ -201,8 +206,37 @@ bool GameList::IsExeFileName(const char* path)
   return (extension && (CASE_COMPARE(extension, ".exe") == 0 || CASE_COMPARE(extension, ".psexe") == 0));
 }
 
+static std::string_view GetFileNameFromPath(const char* path)
+{
+  const char* filename_end = path + std::strlen(path);
+  const char* filename_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
+  if (!filename_start)
+    return std::string_view(path, filename_end - path);
+  else
+    return std::string_view(filename_start + 1, filename_end - filename_start);
+}
+
+static std::string_view GetTitleForPath(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  if (path == extension)
+    return path;
+
+  const char* path_end = path + std::strlen(path);
+  const char* title_end = extension ? (extension - 1) : (path_end);
+  const char* title_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
+  if (!title_start || title_start == path)
+    return std::string_view(path, title_end - title_start);
+  else
+    return std::string_view(title_start + 1, title_end - title_start);
+}
+
 bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
 {
+  FILESYSTEM_STAT_DATA ffd;
+  if (!FileSystem::StatFile(path, &ffd))
+    return false;
+
   std::FILE* fp = std::fopen(path, "rb");
   if (!fp)
     return false;
@@ -230,33 +264,25 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   if (!extension)
     return false;
 
-  const char* title_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
-  if (!title_start)
-  {
-    entry->title = path;
-    entry->code = std::string(path, extension - path - 1);
-  }
-  else
-  {
-    entry->title = title_start + 1;
-    entry->code = std::string(title_start + 1, extension - title_start - 1);
-  }
+  entry->code.clear();
+  entry->title = GetFileNameFromPath(path);
 
   // no way to detect region...
   entry->path = path;
   entry->region = ConsoleRegion::NTSC_U;
   entry->total_size = ZeroExtend64(file_size);
+  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = EntryType::PSExe;
 
   return true;
 }
 
-bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
+bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 {
-  if (IsExeFileName(path))
-    return GetExeListEntry(path, entry);
+  if (IsExeFileName(path.c_str()))
+    return GetExeListEntry(path.c_str(), entry);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
   if (!cdi)
     return false;
 
@@ -268,19 +294,178 @@ bool GameList::GetGameListEntry(const char* path, GameListEntry* entry)
   entry->type = EntryType::Disc;
   cdi.reset();
 
-  auto iter = m_database.find(entry->code);
-  if (iter != m_database.end())
+  if (entry->code.empty())
   {
-    entry->title = iter->second.title;
-    entry->region = iter->second.region;
+    // no game code, so use the filename title
+    entry->title = GetTitleForPath(path.c_str());
   }
   else
   {
-    Log_WarningPrintf("'%s' not found in database", entry->code.c_str());
-    entry->title = entry->code;
+    LoadDatabase();
+
+    auto iter = m_database.find(entry->code);
+    if (iter != m_database.end())
+    {
+      entry->title = iter->second.title;
+      entry->region = iter->second.region;
+    }
+    else
+    {
+      Log_WarningPrintf("'%s' not found in database", entry->code.c_str());
+      entry->title = GetTitleForPath(path.c_str());
+    }
+  }
+
+  FILESYSTEM_STAT_DATA ffd;
+  if (!FileSystem::StatFile(path.c_str(), &ffd))
+    return false;
+
+  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
+  return true;
+}
+
+bool GameList::GetGameListEntryFromCache(const std::string& path, GameListEntry* entry)
+{
+  auto iter = m_cache_map.find(path);
+  if (iter == m_cache_map.end())
+    return false;
+
+  *entry = std::move(iter->second);
+  m_cache_map.erase(iter);
+  return true;
+}
+
+void GameList::LoadCache()
+{
+  if (m_cache_filename.empty())
+    return;
+
+  ByteStream* stream = FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
+    return;
+
+  if (!LoadEntriesFromCache(stream))
+  {
+    Log_WarningPrintf("Deleting corrupted cache file '%s'", m_cache_filename.c_str());
+    stream->Release();
+    m_cache_map.clear();
+    DeleteCacheFile();
+    return;
+  }
+
+  stream->Release();
+}
+
+bool GameList::LoadEntriesFromCache(ByteStream* stream)
+{
+  BinaryReader reader(stream);
+  if (reader.ReadUInt32() != GAME_LIST_CACHE_SIGNATURE || reader.ReadUInt32() != GAME_LIST_CACHE_VERSION)
+  {
+    Log_WarningPrintf("Game list cache is corrupted");
+    return false;
+  }
+
+  String path;
+  TinyString code;
+  SmallString title;
+  u64 total_size;
+  u64 last_modified_time;
+  u8 region;
+  u8 type;
+
+  while (stream->GetPosition() != stream->GetSize())
+  {
+    if (!reader.SafeReadSizePrefixedString(&path) || !reader.SafeReadSizePrefixedString(&code) ||
+        !reader.SafeReadSizePrefixedString(&title) || !reader.SafeReadUInt64(&total_size) ||
+        !reader.SafeReadUInt64(&last_modified_time) || !reader.SafeReadUInt8(&region) ||
+        region >= static_cast<u8>(ConsoleRegion::Count) || !reader.SafeReadUInt8(&type) ||
+        type > static_cast<u8>(EntryType::PSExe))
+    {
+      Log_WarningPrintf("Game list cache entry is corrupted");
+      return false;
+    }
+
+    GameListEntry ge;
+    ge.path = path;
+    ge.code = code;
+    ge.title = title;
+    ge.total_size = total_size;
+    ge.last_modified_time = last_modified_time;
+    ge.region = static_cast<ConsoleRegion>(region);
+    ge.type = static_cast<EntryType>(type);
+
+    auto iter = m_cache_map.find(ge.path);
+    if (iter != m_cache_map.end())
+      iter->second = std::move(ge);
+    else
+      m_cache_map.emplace(path, std::move(ge));
   }
 
   return true;
+}
+
+bool GameList::OpenCacheForWriting()
+{
+  if (m_cache_filename.empty())
+    return false;
+
+  Assert(!m_cache_write_stream);
+  m_cache_write_stream =
+    FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
+                                                     BYTESTREAM_OPEN_APPEND | BYTESTREAM_OPEN_STREAMED);
+  if (!m_cache_write_stream)
+    return false;
+
+  if (m_cache_write_stream->GetPosition() == 0)
+  {
+    // new cache file, write header
+    BinaryWriter writer(m_cache_write_stream);
+    if (!writer.SafeWriteUInt32(GAME_LIST_CACHE_SIGNATURE) || !writer.SafeWriteUInt32(GAME_LIST_CACHE_VERSION))
+    {
+      Log_ErrorPrintf("Failed to write game list cache header");
+      m_cache_write_stream->Release();
+      m_cache_write_stream = nullptr;
+      FileSystem::DeleteFile(m_cache_filename.c_str());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool GameList::WriteEntryToCache(const GameListEntry* entry, ByteStream* stream)
+{
+  BinaryWriter writer(stream);
+  bool result = writer.SafeWriteSizePrefixedString(entry->path.c_str());
+  result &= writer.SafeWriteSizePrefixedString(entry->code.c_str());
+  result &= writer.SafeWriteSizePrefixedString(entry->title.c_str());
+  result &= writer.SafeWriteUInt64(entry->total_size);
+  result &= writer.SafeWriteUInt64(entry->last_modified_time);
+  result &= writer.SafeWriteUInt8(static_cast<u8>(entry->region));
+  result &= writer.SafeWriteUInt8(static_cast<u8>(entry->type));
+  return result;
+}
+
+void GameList::CloseCacheFileStream()
+{
+  if (!m_cache_write_stream)
+    return;
+
+  m_cache_write_stream->Commit();
+  m_cache_write_stream->Release();
+  m_cache_write_stream = nullptr;
+}
+
+void GameList::DeleteCacheFile()
+{
+  Assert(!m_cache_write_stream);
+  if (!FileSystem::FileExists(m_cache_filename.c_str()))
+    return;
+
+  if (FileSystem::DeleteFile(m_cache_filename.c_str()))
+    Log_InfoPrintf("Deleted game list cache '%s'", m_cache_filename.c_str());
+  else
+    Log_WarningPrintf("Failed to delete game list cache '%s'", m_cache_filename.c_str());
 }
 
 void GameList::ScanDirectory(const char* path, bool recursive)
@@ -293,8 +478,6 @@ void GameList::ScanDirectory(const char* path, bool recursive)
   GameListEntry entry;
   for (const FILESYSTEM_FIND_DATA& ffd : files)
   {
-    Log_DebugPrintf("Trying '%s'...", ffd.FileName);
-
     // if this is a .bin, check if we have a .cue. if there is one, skip it
     const char* extension = std::strrchr(ffd.FileName, '.');
     if (extension && CASE_COMPARE(extension, ".bin") == 0)
@@ -313,12 +496,34 @@ void GameList::ScanDirectory(const char* path, bool recursive)
 #endif
     }
 
-    // try opening the image
-    if (GetGameListEntry(ffd.FileName, &entry))
+    std::string entry_path(ffd.FileName);
+    if (std::any_of(m_entries.begin(), m_entries.end(),
+                    [&entry_path](const GameListEntry& other) { return other.path == entry_path; }))
     {
-      m_entries.push_back(std::move(entry));
-      entry = {};
+      continue;
     }
+    Log_DebugPrintf("Trying '%s'...", entry_path.c_str());
+
+    // try opening the image
+    if (!GetGameListEntryFromCache(entry_path, &entry) ||
+        entry.last_modified_time != ffd.ModificationTime.AsUnixTimestamp())
+    {
+      if (GetGameListEntry(entry_path, &entry))
+      {
+        if (m_cache_write_stream || OpenCacheForWriting())
+        {
+          if (!WriteEntryToCache(&entry, m_cache_write_stream))
+            Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
+        }
+      }
+      else
+      {
+        continue;
+      }
+    }
+
+    m_entries.push_back(std::move(entry));
+    entry = {};
   }
 }
 
@@ -413,7 +618,7 @@ void GameList::AddDirectory(std::string path, bool recursive)
   m_search_directories.push_back({path, recursive});
 }
 
-void GameList::SetDirectoriesFromSettings(SettingsInterface& si)
+void GameList::SetPathsFromSettings(SettingsInterface& si)
 {
   m_search_directories.clear();
 
@@ -424,41 +629,63 @@ void GameList::SetDirectoriesFromSettings(SettingsInterface& si)
   dirs = si.GetStringList("GameList", "RecursivePaths");
   for (std::string& dir : dirs)
     m_search_directories.push_back({std::move(dir), true});
+
+  m_database_filename = si.GetStringValue("GameList", "RedumpDatabasePath");
+  m_cache_filename = si.GetStringValue("GameList", "CachePath");
 }
 
-void GameList::RescanAllDirectories()
+void GameList::Refresh(bool invalidate_cache, bool invalidate_database)
 {
+  if (invalidate_cache)
+    DeleteCacheFile();
+  else
+    LoadCache();
+
+  if (invalidate_database)
+    ClearDatabase();
+
   m_entries.clear();
 
   for (const DirectoryEntry& de : m_search_directories)
     ScanDirectory(de.path.c_str(), de.recursive);
+
+  // don't need unused cache entries
+  CloseCacheFileStream();
+  m_cache_map.clear();
 }
 
-bool GameList::ParseRedumpDatabase(const char* redump_dat_path)
+void GameList::LoadDatabase()
 {
+  if (m_database_load_tried)
+    return;
+
+  m_database_load_tried = true;
+  if (m_database_filename.empty())
+    return;
+
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(redump_dat_path);
+  tinyxml2::XMLError error = doc.LoadFile(m_database_filename.c_str());
   if (error != tinyxml2::XML_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to parse redump dat '%s': %s", redump_dat_path,
+    Log_ErrorPrintf("Failed to parse redump dat '%s': %s", m_database_filename.c_str(),
                     tinyxml2::XMLDocument::ErrorIDToName(error));
-    return false;
+    return;
   }
 
   const tinyxml2::XMLElement* datafile_elem = doc.FirstChildElement("datafile");
   if (!datafile_elem)
   {
-    Log_ErrorPrintf("Failed to get datafile element in '%s'", redump_dat_path);
-    return false;
+    Log_ErrorPrintf("Failed to get datafile element in '%s'", m_database_filename.c_str());
+    return;
   }
 
   RedumpDatVisitor visitor(m_database);
   datafile_elem->Accept(&visitor);
-  Log_InfoPrintf("Loaded %zu entries from Redump.org database '%s'", m_database.size(), redump_dat_path);
-  return true;
+  Log_InfoPrintf("Loaded %zu entries from Redump.org database '%s'", m_database.size(), m_database_filename.c_str());
 }
 
 void GameList::ClearDatabase()
 {
   m_database.clear();
+  m_database_load_tried = false;
 }

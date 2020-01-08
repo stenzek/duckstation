@@ -112,27 +112,14 @@ void QtHostInterface::checkSettings()
 void QtHostInterface::createGameList()
 {
   m_game_list = std::make_unique<GameList>();
-  updateGameListDatabase(false);
-  refreshGameList(false);
+  refreshGameList(false, false);
 }
 
-void QtHostInterface::updateGameListDatabase(bool refresh_list /*= true*/)
-{
-  m_game_list->ClearDatabase();
-
-  const QString redump_dat_path = m_qsettings.value("GameList/RedumpDatabasePath").toString();
-  if (!redump_dat_path.isEmpty())
-    m_game_list->ParseRedumpDatabase(redump_dat_path.toStdString().c_str());
-
-  if (refresh_list)
-    refreshGameList(true);
-}
-
-void QtHostInterface::refreshGameList(bool invalidate_cache /*= false*/)
+void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
 {
   QtSettingsInterface si(m_qsettings);
-  m_game_list->SetDirectoriesFromSettings(si);
-  m_game_list->RescanAllDirectories();
+  m_game_list->SetPathsFromSettings(si);
+  m_game_list->Refresh(invalidate_cache, invalidate_database);
   emit gameListRefreshed();
 }
 

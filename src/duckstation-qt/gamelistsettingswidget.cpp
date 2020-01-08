@@ -281,7 +281,7 @@ void GameListSettingsWidget::onBrowseRedumpPathButtonPressed()
 
   m_ui.redumpDatabasePath->setText(filename);
   m_host_interface->getQSettings().setValue("GameList/RedumpDatabasePath", filename);
-  m_host_interface->updateGameListDatabase(true);
+  m_host_interface->refreshGameList(true, true);
 }
 
 void GameListSettingsWidget::onDownloadRedumpDatabaseButtonPressed()

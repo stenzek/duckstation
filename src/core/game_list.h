@@ -7,6 +7,7 @@
 #include <vector>
 
 class CDImage;
+class ByteStream;
 
 class SettingsInterface;
 
@@ -34,11 +35,13 @@ public:
     std::string code;
     std::string title;
     u64 total_size;
+    u64 last_modified_time;
     ConsoleRegion region;
     EntryType type;
   };
 
   using EntryList = std::vector<GameListEntry>;
+  using CacheMap = std::unordered_map<std::string, GameListEntry>;
 
   GameList();
   ~GameList();
@@ -56,14 +59,17 @@ public:
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
 
+  void SetPathsFromSettings(SettingsInterface& si);
   void AddDirectory(std::string path, bool recursive);
-  void SetDirectoriesFromSettings(SettingsInterface& si);
-  void RescanAllDirectories();
-
-  bool ParseRedumpDatabase(const char* redump_dat_path);
-  void ClearDatabase();
+  void Refresh(bool invalidate_cache, bool invalidate_database);
 
 private:
+  enum : u32
+  {
+    GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
+    GAME_LIST_CACHE_VERSION = 2
+  };
+
   struct DirectoryEntry
   {
     std::string path;
@@ -73,11 +79,27 @@ private:
   static bool IsExeFileName(const char* path);
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
 
-  bool GetGameListEntry(const char* path, GameListEntry* entry);
+  bool GetGameListEntry(const std::string& path, GameListEntry* entry);
+  bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);
   void ScanDirectory(const char* path, bool recursive);
+
+  void LoadCache();
+  bool LoadEntriesFromCache(ByteStream* stream);
+  bool OpenCacheForWriting();
+  bool WriteEntryToCache(const GameListEntry* entry, ByteStream* stream);
+  void CloseCacheFileStream();
+  void DeleteCacheFile();
+
+  void LoadDatabase();
+  void ClearDatabase();
 
   DatabaseMap m_database;
   EntryList m_entries;
+  CacheMap m_cache_map;
+  ByteStream* m_cache_write_stream = nullptr;
 
   std::vector<DirectoryEntry> m_search_directories;
+  std::string m_cache_filename;
+  std::string m_database_filename;
+  bool m_database_load_tried = false;
 };

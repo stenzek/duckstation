@@ -41,8 +41,7 @@ public:
 
   const GameList* getGameList() const { return m_game_list.get(); }
   GameList* getGameList() { return m_game_list.get(); }
-  void updateGameListDatabase(bool refresh_list = true);
-  void refreshGameList(bool invalidate_cache = false);
+  void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
 
   bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
