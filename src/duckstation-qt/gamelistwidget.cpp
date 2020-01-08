@@ -10,7 +10,7 @@ class GameListModel : public QAbstractTableModel
 public:
   enum Column : int
   {
-    // Column_Icon,
+    Column_Type,
     Column_Code,
     Column_Title,
     Column_Region,
@@ -65,10 +65,6 @@ public:
           case Column_Title:
             return QString::fromStdString(ge.title);
 
-          case Column_Region:
-            // return QString(Settings::GetConsoleRegionName(ge.region));
-            return {};
-
           case Column_Size:
             return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
 
@@ -81,6 +77,18 @@ public:
       {
         switch (index.column())
         {
+          case Column_Type:
+          {
+            switch (ge.type)
+            {
+              case GameList::EntryType::Disc:
+                return m_type_disc_pixmap;
+              case GameList::EntryType::PSExe:
+              default:
+                return m_type_exe_pixmap;
+            }
+          }
+
           case Column_Region:
           {
             switch (ge.region)
@@ -112,6 +120,9 @@ public:
 
     switch (section)
     {
+      case Column_Type:
+        return "Type";
+
       case Column_Code:
         return "Code";
 
@@ -146,6 +157,9 @@ private:
   void loadCommonImages()
   {
     // TODO: Use svg instead of png
+    m_type_disc_pixmap.load(QStringLiteral(":/icons/media-optical-24.png"));
+    m_type_exe_pixmap.load(QStringLiteral(":/icons/applications-system-24.png"));
+    m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
     m_region_jp_pixmap.load(QStringLiteral(":/icons/flag-jp.png"));
     m_region_us_pixmap.load(QStringLiteral(":/icons/flag-us.png"));
     m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
@@ -153,6 +167,9 @@ private:
 
   GameList* m_game_list;
   int m_size;
+
+  QPixmap m_type_disc_pixmap;
+  QPixmap m_type_exe_pixmap;
 
   QPixmap m_region_jp_pixmap;
   QPixmap m_region_eu_pixmap;
@@ -207,5 +224,5 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QStackedWidget::resizeEvent(event);
 
-  QtUtils::ResizeColumnsForTableView(m_table_view, {100, -1, 60, 100});
+  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, 60, 100});
 }

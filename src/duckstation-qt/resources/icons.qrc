@@ -16,6 +16,7 @@
     <file>icons/applications-development.png</file>
     <file>icons/applications-other.png</file>
     <file>icons/applications-system.png</file>
+    <file>icons/applications-system-24.png</file>
     <file>icons/audio-card.png</file>
     <file>icons/document-open.png</file>
     <file>icons/document-save.png</file>
@@ -24,6 +25,7 @@
     <file>icons/input-gaming.png</file>
     <file>icons/media-flash.png</file>
     <file>icons/media-optical.png</file>
+    <file>icons/media-optical-24.png</file>
     <file>icons/media-playback-pause.png</file>
     <file>icons/media-playback-start.png</file>
     <file>icons/system-shutdown.png</file>
