@@ -46,5 +46,5 @@ if(WIN32)
     d3d11displaywindow.cpp
     d3d11displaywindow.h
   )
-  target_link_libraries(duckstation PRIVATE d3d11.lib)
+  target_link_libraries(duckstation PRIVATE d3d11.lib dxgi.lib)
 endif()

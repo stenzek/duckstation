@@ -194,9 +194,26 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
 {
   const bool debug = true;
 
+  ComPtr<IDXGIFactory> dxgi_factory;
+  HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to create DXGI factory: 0x%08X", hr);
+    return false;
+  }
+
   UINT create_flags = 0;
   if (debug)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+
+  hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0, D3D11_SDK_VERSION,
+                         m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to create D3D device: 0x%08X", hr);
+    return false;
+  }
 
   DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
   swap_chain_desc.BufferDesc.Width = m_window_width;
@@ -209,20 +226,17 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
   swap_chain_desc.Windowed = TRUE;
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-  HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0,
-                                             D3D11_SDK_VERSION, &swap_chain_desc, m_swap_chain.GetAddressOf(),
-                                             m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
-
+  hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
   if (FAILED(hr))
   {
     Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
     swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-  }
-
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("D3D11CreateDeviceAndSwapChain failed: 0x%08X", hr);
-    return false;
+    hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+    if (FAILED(hr))
+    {
+      Log_ErrorPrintf("CreateSwapChain failed: 0x%08X", hr);
+      return false;
+    }
   }
 
 #if 1
@@ -366,6 +380,8 @@ void D3D11DisplayWindow::destroyDeviceResources()
 {
   QtDisplayWindow::destroyDeviceResources();
 
+  m_display_uniform_buffer.Release();
+  m_swap_chain_rtv.Reset();
   m_linear_sampler.Reset();
   m_point_sampler.Reset();
   m_display_pixel_shader.Reset();
@@ -446,5 +462,3 @@ void D3D11DisplayWindow::renderDisplay()
 
   m_context->Draw(3, 0);
 }
-
-
