@@ -143,7 +143,6 @@ QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 void QtHostInterface::displayWidgetDestroyed()
 {
   m_display.release();
-  delete m_display_window;
   m_display_window = nullptr;
 }
 
