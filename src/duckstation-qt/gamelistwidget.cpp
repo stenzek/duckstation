@@ -133,6 +133,7 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_view->setAlternatingRowColors(true);
   m_table_view->setShowGrid(false);
   m_table_view->setCurrentIndex({});
+  m_table_view->horizontalHeader()->setHighlightSections(false);
   m_table_view->verticalHeader()->hide();
   m_table_view->resizeColumnsToContents();
 
