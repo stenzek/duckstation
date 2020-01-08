@@ -1,6 +1,5 @@
 #include "digital_controller.h"
-#include "YBaseLib/Log.h"
-Log_SetChannel(DigitalController);
+#include "YBaseLib/Assert.h"
 
 DigitalController::DigitalController() = default;
 

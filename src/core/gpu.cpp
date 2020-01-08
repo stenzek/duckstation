@@ -445,7 +445,7 @@ void GPU::Execute(TickCount ticks)
     else
     {
       m_GPUSTAT.drawing_even_line =
-        ConvertToBoolUnchecked(m_crtc_state.regs.Y + m_crtc_state.current_scanline & u32(1));
+        ConvertToBoolUnchecked((m_crtc_state.regs.Y + m_crtc_state.current_scanline) & u32(1));
     }
   }
 
@@ -754,7 +754,7 @@ void GPU::SetDrawMode(u16 value)
 
   // Bits 0..10 are returned in the GPU status register.
   m_GPUSTAT.bits =
-    m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK) | (ZeroExtend32(new_mode_reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
+    (m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK)) | (ZeroExtend32(new_mode_reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
   m_GPUSTAT.texture_disable = m_draw_mode.mode_reg.texture_disable;
 }
 

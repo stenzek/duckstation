@@ -179,7 +179,6 @@ void Pad::WriteRegister(u32 offset, u32 value)
     case 0x0A: // JOY_CTRL
     {
       Log_DebugPrintf("JOY_CTRL <- 0x%04X", value);
-      const bool old_select = m_JOY_CTRL.SELECT;
 
       m_JOY_CTRL.bits = Truncate16(value);
       if (m_JOY_CTRL.RESET)

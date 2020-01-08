@@ -110,8 +110,11 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       }
 
       // Cull polygons which are too large.
-      if ((max_x - min_x) > MAX_PRIMITIVE_WIDTH || (max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+      if (static_cast<u32>(max_x - min_x) > MAX_PRIMITIVE_WIDTH ||
+          static_cast<u32>(max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+      {
         m_batch_current_vertex_ptr = old_vertex_ptr;
+      }
     }
     break;
 
@@ -199,8 +202,11 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         (m_batch_current_vertex_ptr++)->Set(x, y, color, 0, 0);
       }
 
-      if ((max_x - min_x) > MAX_PRIMITIVE_WIDTH || (max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+      if (static_cast<u32>(max_x - min_x) > MAX_PRIMITIVE_WIDTH ||
+          static_cast<u32>(max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+      {
         m_batch_current_vertex_ptr = old_vertex_ptr;
+      }
     }
     break;
 

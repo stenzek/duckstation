@@ -1,8 +1,6 @@
 #include "gte.h"
-#include "YBaseLib/Log.h"
 #include <algorithm>
 #include <array>
-Log_SetChannel(GTE);
 
 // TODO: Optimize, intrinsics?
 static inline constexpr u32 CountLeadingZeros(u16 value)

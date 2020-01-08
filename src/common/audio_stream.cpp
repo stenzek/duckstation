@@ -1,7 +1,5 @@
 #include "audio_stream.h"
 #include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
-Log_SetChannel(Audio);
 
 AudioStream::AudioStream() = default;
 

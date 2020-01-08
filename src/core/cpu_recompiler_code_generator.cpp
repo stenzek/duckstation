@@ -932,7 +932,7 @@ void CodeGenerator::AddPendingCycles(bool commit)
     return;
 
   EmitAddCPUStructField(offsetof(Core, m_pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
-  
+
   if (commit)
     m_delayed_cycles_add = 0;
 }
@@ -981,7 +981,6 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
   InstructionPrologue(cbi, 1);
 
   const InstructionOp op = cbi.instruction.op;
-  const InstructionFunct funct = cbi.instruction.r.funct;
   Value lhs;
   Value rhs;
   Reg dest;

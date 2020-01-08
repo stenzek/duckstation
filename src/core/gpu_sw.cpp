@@ -1,11 +1,8 @@
 #include "gpu_sw.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/Timer.h"
-#include "common/gl/texture.h"
+#include "YBaseLib/Assert.h"
 #include "host_display.h"
 #include "system.h"
 #include <algorithm>
-Log_SetChannel(GPU_SW);
 
 GPU_SW::GPU_SW()
 {
@@ -350,7 +347,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
   s32 max_y = std::max(py0, std::max(py1, py2));
 
   // reject triangles which cover the whole vram area
-  if ((max_x - min_x) > MAX_PRIMITIVE_WIDTH || (max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+  if (static_cast<u32>(max_x - min_x) > MAX_PRIMITIVE_WIDTH || static_cast<u32>(max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
     return;
 
   // clip to drawing area
@@ -593,6 +590,10 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
 #undef BLEND_ADD
 #undef BLEND_AVERAGE
     }
+  }
+  else
+  {
+    UNREFERENCED_PARAMETER(transparent);
   }
 
   const u16 mask_and = m_GPUSTAT.GetMaskAND();

@@ -1,8 +1,6 @@
 #include "settings.h"
-#include "YBaseLib/Log.h"
 #include <array>
 #include <string.h>
-Log_SetChannel(Settings);
 
 #ifdef _MSC_VER
 #define strcasecmp stricmp

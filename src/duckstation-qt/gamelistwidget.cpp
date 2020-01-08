@@ -91,7 +91,7 @@ public:
             return static_cast<int>(ge.region);
 
           case Column_Size:
-            return ge.total_size;
+            return static_cast<qulonglong>(ge.total_size);
 
           default:
             return {};

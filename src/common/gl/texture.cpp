@@ -33,8 +33,10 @@ bool Texture::Create(u32 width, u32 height, GLenum format, GLenum type, const vo
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
 
-  if (glGetError() != GL_NO_ERROR)
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR)
   {
+    Log_ErrorPrintf("Failed to create texture: 0x%X", error);
     glDeleteTextures(1, &id);
     return false;
   }

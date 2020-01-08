@@ -1419,6 +1419,11 @@ static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu,
     const s16 left = *(samples_in++);
     const s16 right = STEREO ? *(samples_in++) : left;
 
+    if constexpr (!STEREO)
+    {
+      UNREFERENCED_PARAMETER(right);
+    }
+
     for (u32 sample_dup = 0; sample_dup < (SAMPLE_RATE ? 2 : 1); sample_dup++)
     {
       left_ringbuf[p] = left;

@@ -1,8 +1,6 @@
-#include "YBaseLib/Log.h"
+#include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
-#include "cpu_core.h"
-Log_SetChannel(CPU::Recompiler);
 
 namespace CPU::Recompiler {
 
