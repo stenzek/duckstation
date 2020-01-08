@@ -31,13 +31,13 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="qtaudiostream.cpp" />
     <ClCompile Include="d3d11displaywindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_d3d11displaywindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="qtaudiostream.h" />
-    <ClInclude Include="d3d11displaywindow.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -60,6 +60,7 @@
     <QtMoc Include="gpusettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
+    <QtMoc Include="d3d11displaywindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

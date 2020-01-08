@@ -2,6 +2,7 @@
 #include "core/settings.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include <QtGui/QPixmap>
 #include <QtWidgets/QHeaderView>
 
 class GameListModel : public QAbstractTableModel
@@ -21,6 +22,7 @@ public:
   GameListModel(GameList* game_list, QObject* parent = nullptr)
     : QAbstractTableModel(parent), m_game_list(game_list), m_size(static_cast<int>(m_game_list->GetEntryCount()))
   {
+    loadCommonImages();
   }
   ~GameListModel() = default;
 
@@ -45,30 +47,61 @@ public:
     if (!index.isValid())
       return {};
 
-    if (role != Qt::DisplayRole)
-      return {};
-
     const int row = index.row();
     if (row < 0 || row >= static_cast<int>(m_game_list->GetEntryCount()))
       return {};
 
     const GameList::GameListEntry& ge = m_game_list->GetEntries()[row];
-    switch (index.column())
+
+    switch (role)
     {
-      case Column_Code:
-        return QString::fromStdString(ge.code);
+      case Qt::DisplayRole:
+      {
+        switch (index.column())
+        {
+          case Column_Code:
+            return QString::fromStdString(ge.code);
 
-      case Column_Title:
-        return QString::fromStdString(ge.title);
+          case Column_Title:
+            return QString::fromStdString(ge.title);
 
-      case Column_Region:
-        return QString(Settings::GetConsoleRegionName(ge.region));
+          case Column_Region:
+            // return QString(Settings::GetConsoleRegionName(ge.region));
+            return {};
 
-      case Column_Size:
-        return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
+          case Column_Size:
+            return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
 
-      default:
-        return {};
+          default:
+            return {};
+        }
+      }
+
+      case Qt::DecorationRole:
+      {
+        switch (index.column())
+        {
+          case Column_Region:
+          {
+            switch (ge.region)
+            {
+              case ConsoleRegion::NTSC_J:
+                return m_region_jp_pixmap;
+              case ConsoleRegion::NTSC_U:
+                return m_region_us_pixmap;
+              case ConsoleRegion::PAL:
+              default:
+                return m_region_eu_pixmap;
+            }
+          }
+
+          default:
+            return {};
+        }
+
+        default:
+          return {};
+      }
     }
   }
 
@@ -110,8 +143,20 @@ public:
   }
 
 private:
+  void loadCommonImages()
+  {
+    // TODO: Use svg instead of png
+    m_region_jp_pixmap.load(QStringLiteral(":/icons/flag-jp.png"));
+    m_region_us_pixmap.load(QStringLiteral(":/icons/flag-us.png"));
+    m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
+  }
+
   GameList* m_game_list;
   int m_size;
+
+  QPixmap m_region_jp_pixmap;
+  QPixmap m_region_eu_pixmap;
+  QPixmap m_region_us_pixmap;
 };
 
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QStackedWidget(parent) {}
@@ -135,6 +180,7 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_view->setCurrentIndex({});
   m_table_view->horizontalHeader()->setHighlightSections(false);
   m_table_view->verticalHeader()->hide();
+  m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_table_view->resizeColumnsToContents();
 
   connect(m_table_view, &QTableView::doubleClicked, this, &GameListWidget::onTableViewItemDoubleClicked);
@@ -161,5 +207,5 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QStackedWidget::resizeEvent(event);
 
-  QtUtils::ResizeColumnsForTableView(m_table_view, {100, -1, 100, 100});
+  QtUtils::ResizeColumnsForTableView(m_table_view, {100, -1, 60, 100});
 }

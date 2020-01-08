@@ -40,9 +40,9 @@
         </property>
        </item>
        <item>
-         <property name="text">
-           <string>NTSC-J (Japan)</string>
-         </property>
+        <property name="text">
+         <string>NTSC-J (Japan)</string>
+        </property>
        </item>
        <item>
         <property name="text">
@@ -109,6 +109,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

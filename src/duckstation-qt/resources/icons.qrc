@@ -1,5 +1,11 @@
 <RCC>
   <qresource>
+    <file>icons/flag-eu.png</file>
+    <file>icons/flag-eu.svg</file>
+    <file>icons/flag-jp.png</file>
+    <file>icons/flag-jp.svg</file>
+    <file>icons/flag-us.png</file>
+    <file>icons/flag-us.svg</file>
     <file>icons/applications-internet.png</file>
     <file>icons/system-search.png</file>
     <file>icons/list-add.png</file>
