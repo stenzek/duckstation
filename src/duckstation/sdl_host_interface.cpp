@@ -1559,8 +1559,13 @@ void SDLHostInterface::DoToggleSoftwareRendering()
   }
   else
   {
+#ifdef WIN32
     m_settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ? GPURenderer::HardwareD3D11 :
                                                                                            GPURenderer::HardwareOpenGL;
+#else
+    m_settings.gpu_renderer = GPURenderer::HardwareD3D11;
+#endif
+
     AddOSDMessage("Switched to hardware GPU renderer.");
   }
 
