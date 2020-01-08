@@ -4,6 +4,7 @@
 #include <QtWidgets/QTableView>
 
 class GameListModel;
+class GameListSortModel;
 
 class QtHostInterface;
 
@@ -32,5 +33,6 @@ private:
   GameList* m_game_list = nullptr;
 
   GameListModel* m_table_model = nullptr;
+  GameListSortModel* m_table_sort_model = nullptr;
   QTableView* m_table_view = nullptr;
 };

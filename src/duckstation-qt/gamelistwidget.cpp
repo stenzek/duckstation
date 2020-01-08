@@ -2,10 +2,11 @@
 #include "core/settings.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QHeaderView>
 
-class GameListModel : public QAbstractTableModel
+class GameListModel final : public QAbstractTableModel
 {
 public:
   enum Column : int
@@ -67,6 +68,30 @@ public:
 
           case Column_Size:
             return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
+
+          default:
+            return {};
+        }
+      }
+
+      case Qt::InitialSortOrderRole:
+      {
+        switch (index.column())
+        {
+          case Column_Type:
+            return static_cast<int>(ge.type);
+
+          case Column_Code:
+            return QString::fromStdString(ge.code);
+
+          case Column_Title:
+            return QString::fromStdString(ge.title);
+
+          case Column_Region:
+            return static_cast<int>(ge.region);
+
+          case Column_Size:
+            return ge.total_size;
 
           default:
             return {};
@@ -153,6 +178,19 @@ public:
     endInsertRows();
   }
 
+  bool titlesLessThan(int left_row, int right_row, bool ascending) const
+  {
+    if (left_row < 0 || left_row >= static_cast<int>(m_game_list->GetEntryCount()) || right_row < 0 ||
+        right_row >= static_cast<int>(m_game_list->GetEntryCount()))
+    {
+      return false;
+    }
+
+    const GameList::GameListEntry& left = m_game_list->GetEntries().at(left_row);
+    const GameList::GameListEntry& right = m_game_list->GetEntries().at(right_row);
+    return ascending ? (left.title < right.title) : (right.title < left.title);
+  }
+
 private:
   void loadCommonImages()
   {
@@ -176,6 +214,33 @@ private:
   QPixmap m_region_us_pixmap;
 };
 
+class GameListSortModel final : public QSortFilterProxyModel
+{
+public:
+  GameListSortModel(GameListModel* parent) : QSortFilterProxyModel(parent), m_model(parent) {}
+
+  bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override
+  {
+    // TODO: Search
+    return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+  }
+
+  bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override
+  {
+    const bool ascending = sortOrder() == Qt::AscendingOrder;
+    const QVariant left = source_left.data(Qt::InitialSortOrderRole);
+    const QVariant right = source_right.data(Qt::InitialSortOrderRole);
+    if (left != right)
+      return ascending ? (left < right) : (right < left);
+
+    // fallback to sorting by title for equal items
+    return m_model->titlesLessThan(source_left.row(), source_right.row(), ascending);
+  }
+
+private:
+  GameListModel* m_model;
+};
+
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QStackedWidget(parent) {}
 
 GameListWidget::~GameListWidget() = default;
@@ -188,8 +253,11 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   connect(m_host_interface, &QtHostInterface::gameListRefreshed, this, &GameListWidget::onGameListRefreshed);
 
   m_table_model = new GameListModel(m_game_list, this);
+  m_table_sort_model = new GameListSortModel(m_table_model);
+  m_table_sort_model->setSourceModel(m_table_model);
   m_table_view = new QTableView(this);
-  m_table_view->setModel(m_table_model);
+  m_table_view->setModel(m_table_sort_model);
+  m_table_view->setSortingEnabled(true);
   m_table_view->setSelectionMode(QAbstractItemView::SingleSelection);
   m_table_view->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_table_view->setAlternatingRowColors(true);
