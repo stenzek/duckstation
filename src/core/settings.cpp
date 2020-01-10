@@ -1,10 +1,6 @@
 #include "settings.h"
+#include "common/string_util.h"
 #include <array>
-#include <string.h>
-
-#ifdef _MSC_VER
-#define strcasecmp stricmp
-#endif
 
 Settings::Settings() = default;
 
@@ -132,7 +128,7 @@ std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
   int index = 0;
   for (const char* name : s_console_region_names)
   {
-    if (strcasecmp(name, str) == 0)
+    if (StringUtil::Strcasecmp(name, str) == 0)
       return static_cast<ConsoleRegion>(index);
 
     index++;
@@ -160,7 +156,7 @@ std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
   u8 index = 0;
   for (const char* name : s_cpu_execution_mode_names)
   {
-    if (strcasecmp(name, str) == 0)
+    if (StringUtil::Strcasecmp(name, str) == 0)
       return static_cast<CPUExecutionMode>(index);
 
     index++;
@@ -195,7 +191,7 @@ std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
   int index = 0;
   for (const char* name : s_gpu_renderer_names)
   {
-    if (strcasecmp(name, str) == 0)
+    if (StringUtil::Strcasecmp(name, str) == 0)
       return static_cast<GPURenderer>(index);
 
     index++;
@@ -222,7 +218,7 @@ std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
   int index = 0;
   for (const char* name : s_audio_backend_names)
   {
-    if (strcasecmp(name, str) == 0)
+    if (StringUtil::Strcasecmp(name, str) == 0)
       return static_cast<AudioBackend>(index);
 
     index++;
@@ -250,7 +246,7 @@ std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
   int index = 0;
   for (const char* name : s_controller_type_names)
   {
-    if (strcasecmp(name, str) == 0)
+    if (StringUtil::Strcasecmp(name, str) == 0)
       return static_cast<ControllerType>(index);
 
     index++;

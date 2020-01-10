@@ -12,6 +12,9 @@ add_executable(duckstation-qt
   gamelistsettingswidget.ui
   gamelistwidget.cpp
   gamelistwidget.h
+  gpusettingswidget.cpp
+  gpusettingswidget.h
+  gpusettingswidget.ui
   hotkeysettingswidget.cpp
   hotkeysettingswidget.h
   inputbindingwidgets.cpp
@@ -24,8 +27,6 @@ add_executable(duckstation-qt
   opengldisplaywindow.h
   portsettingswidget.cpp
   portsettingswidget.h
-  qtaudiostream.cpp
-  qtaudiostream.h
   qtdisplaywindow.cpp
   qtdisplaywindow.h
   qthostinterface.cpp
@@ -39,7 +40,7 @@ add_executable(duckstation-qt
   settingsdialog.ui
 )
 
-target_link_libraries(duckstation-qt PRIVATE YBaseLib core common imgui glad Qt5::Core Qt5::Gui Qt5::Widgets)
+target_link_libraries(duckstation-qt PRIVATE core common imgui glad Qt5::Core Qt5::Gui Qt5::Widgets)
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE

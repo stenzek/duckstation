@@ -1,13 +1,12 @@
 #include "game_list.h"
-#include "YBaseLib/AutoReleasePtr.h"
-#include "YBaseLib/BinaryReader.h"
-#include "YBaseLib/BinaryWriter.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/FileSystem.h"
-#include "YBaseLib/Log.h"
 #include "bios.h"
+#include "common/assert.h"
+#include "common/byte_stream.h"
 #include "common/cd_image.h"
+#include "common/file_system.h"
 #include "common/iso_reader.h"
+#include "common/log.h"
+#include "common/string_util.h"
 #include "settings.h"
 #include <algorithm>
 #include <array>
@@ -16,12 +15,6 @@
 #include <tinyxml2.h>
 #include <utility>
 Log_SetChannel(GameList);
-
-#ifdef _MSC_VER
-#define CASE_COMPARE _stricmp
-#else
-#define CASE_COMPARE strcasecmp
-#endif
 
 GameList::GameList() = default;
 
@@ -91,7 +84,7 @@ std::string GameList::GetGameCodeForImage(CDImage* cdi)
 
   // Find the BOOT line
   auto iter = std::find_if(lines.begin(), lines.end(),
-                           [](const auto& it) { return CASE_COMPARE(it.first.c_str(), "boot") == 0; });
+                           [](const auto& it) { return StringUtil::Strcasecmp(it.first.c_str(), "boot") == 0; });
   if (iter == lines.end())
     return {};
 
@@ -203,7 +196,8 @@ std::optional<ConsoleRegion> GameList::GetRegionForPath(const char* image_path)
 bool GameList::IsExeFileName(const char* path)
 {
   const char* extension = std::strrchr(path, '.');
-  return (extension && (CASE_COMPARE(extension, ".exe") == 0 || CASE_COMPARE(extension, ".psexe") == 0));
+  return (extension &&
+          (StringUtil::Strcasecmp(extension, ".exe") == 0 || StringUtil::Strcasecmp(extension, ".psexe") == 0));
 }
 
 static std::string_view GetFileNameFromPath(const char* path)
@@ -340,45 +334,93 @@ void GameList::LoadCache()
   if (m_cache_filename.empty())
     return;
 
-  ByteStream* stream = FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  std::unique_ptr<ByteStream> stream =
+    FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return;
 
-  if (!LoadEntriesFromCache(stream))
+  if (!LoadEntriesFromCache(stream.get()))
   {
     Log_WarningPrintf("Deleting corrupted cache file '%s'", m_cache_filename.c_str());
-    stream->Release();
+    stream.reset();
     m_cache_map.clear();
     DeleteCacheFile();
     return;
   }
+}
 
-  stream->Release();
+static bool ReadString(ByteStream* stream, std::string* dest)
+{
+  u32 size;
+  if (!stream->Read2(&size, sizeof(size)))
+    return false;
+
+  dest->resize(size);
+  if (!stream->Read2(dest->data(), size))
+    return false;
+
+  return true;
+}
+
+static bool ReadU8(ByteStream* stream, u8* dest)
+{
+  return stream->Read2(dest, sizeof(u8));
+}
+
+static bool ReadU32(ByteStream* stream, u32* dest)
+{
+  return stream->Read2(dest, sizeof(u32));
+}
+
+static bool ReadU64(ByteStream* stream, u64* dest)
+{
+  return stream->Read2(dest, sizeof(u64));
+}
+
+static bool WriteString(ByteStream* stream, const std::string& str)
+{
+  const u32 size = static_cast<u32>(str.size());
+  return (stream->Write2(&size, sizeof(size)) && (size == 0 || stream->Write2(str.data(), size)));
+}
+
+static bool WriteU8(ByteStream* stream, u8 dest)
+{
+  return stream->Write2(&dest, sizeof(u8));
+}
+
+static bool WriteU32(ByteStream* stream, u32 dest)
+{
+  return stream->Write2(&dest, sizeof(u32));
+}
+
+static bool WriteU64(ByteStream* stream, u64 dest)
+{
+  return stream->Write2(&dest, sizeof(u64));
 }
 
 bool GameList::LoadEntriesFromCache(ByteStream* stream)
 {
-  BinaryReader reader(stream);
-  if (reader.ReadUInt32() != GAME_LIST_CACHE_SIGNATURE || reader.ReadUInt32() != GAME_LIST_CACHE_VERSION)
+  u32 file_signature, file_version;
+  if (!ReadU32(stream, &file_signature) || !ReadU32(stream, &file_version) ||
+      file_signature != GAME_LIST_CACHE_SIGNATURE || file_version != GAME_LIST_CACHE_VERSION)
   {
     Log_WarningPrintf("Game list cache is corrupted");
     return false;
   }
 
-  String path;
-  TinyString code;
-  SmallString title;
-  u64 total_size;
-  u64 last_modified_time;
-  u8 region;
-  u8 type;
-
   while (stream->GetPosition() != stream->GetSize())
   {
-    if (!reader.SafeReadSizePrefixedString(&path) || !reader.SafeReadSizePrefixedString(&code) ||
-        !reader.SafeReadSizePrefixedString(&title) || !reader.SafeReadUInt64(&total_size) ||
-        !reader.SafeReadUInt64(&last_modified_time) || !reader.SafeReadUInt8(&region) ||
-        region >= static_cast<u8>(ConsoleRegion::Count) || !reader.SafeReadUInt8(&type) ||
+    std::string path;
+    std::string code;
+    std::string title;
+    u64 total_size;
+    u64 last_modified_time;
+    u8 region;
+    u8 type;
+
+    if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
+        !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
+        region >= static_cast<u8>(ConsoleRegion::Count) || !ReadU8(stream, &type) ||
         type > static_cast<u8>(EntryType::PSExe))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
@@ -386,9 +428,9 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     }
 
     GameListEntry ge;
-    ge.path = path;
-    ge.code = code;
-    ge.title = title;
+    ge.path = std::move(path);
+    ge.code = std::move(code);
+    ge.title = std::move(title);
     ge.total_size = total_size;
     ge.last_modified_time = last_modified_time;
     ge.region = static_cast<ConsoleRegion>(region);
@@ -419,12 +461,11 @@ bool GameList::OpenCacheForWriting()
   if (m_cache_write_stream->GetPosition() == 0)
   {
     // new cache file, write header
-    BinaryWriter writer(m_cache_write_stream);
-    if (!writer.SafeWriteUInt32(GAME_LIST_CACHE_SIGNATURE) || !writer.SafeWriteUInt32(GAME_LIST_CACHE_VERSION))
+    if (!WriteU32(m_cache_write_stream.get(), GAME_LIST_CACHE_SIGNATURE) ||
+        !WriteU32(m_cache_write_stream.get(), GAME_LIST_CACHE_VERSION))
     {
       Log_ErrorPrintf("Failed to write game list cache header");
-      m_cache_write_stream->Release();
-      m_cache_write_stream = nullptr;
+      m_cache_write_stream.reset();
       FileSystem::DeleteFile(m_cache_filename.c_str());
       return false;
     }
@@ -435,14 +476,13 @@ bool GameList::OpenCacheForWriting()
 
 bool GameList::WriteEntryToCache(const GameListEntry* entry, ByteStream* stream)
 {
-  BinaryWriter writer(stream);
-  bool result = writer.SafeWriteSizePrefixedString(entry->path.c_str());
-  result &= writer.SafeWriteSizePrefixedString(entry->code.c_str());
-  result &= writer.SafeWriteSizePrefixedString(entry->title.c_str());
-  result &= writer.SafeWriteUInt64(entry->total_size);
-  result &= writer.SafeWriteUInt64(entry->last_modified_time);
-  result &= writer.SafeWriteUInt8(static_cast<u8>(entry->region));
-  result &= writer.SafeWriteUInt8(static_cast<u8>(entry->type));
+  bool result = WriteString(stream, entry->path);
+  result &= WriteString(stream, entry->code);
+  result &= WriteString(stream, entry->title);
+  result &= WriteU64(stream, entry->total_size);
+  result &= WriteU64(stream, entry->last_modified_time);
+  result &= WriteU8(stream, static_cast<u8>(entry->region));
+  result &= WriteU8(stream, static_cast<u8>(entry->type));
   return result;
 }
 
@@ -452,8 +492,7 @@ void GameList::CloseCacheFileStream()
     return;
 
   m_cache_write_stream->Commit();
-  m_cache_write_stream->Release();
-  m_cache_write_stream = nullptr;
+  m_cache_write_stream.reset();
 }
 
 void GameList::DeleteCacheFile()
@@ -479,14 +518,14 @@ void GameList::ScanDirectory(const char* path, bool recursive)
   for (const FILESYSTEM_FIND_DATA& ffd : files)
   {
     // if this is a .bin, check if we have a .cue. if there is one, skip it
-    const char* extension = std::strrchr(ffd.FileName, '.');
-    if (extension && CASE_COMPARE(extension, ".bin") == 0)
+    const char* extension = std::strrchr(ffd.FileName.c_str(), '.');
+    if (extension && StringUtil::Strcasecmp(extension, ".bin") == 0)
     {
 #if 0
       std::string temp(ffd.FileName, extension - ffd.FileName);
       temp += ".cue";
       if (std::any_of(files.begin(), files.end(),
-                      [&temp](const FILESYSTEM_FIND_DATA& it) { return CASE_COMPARE(it.FileName, temp.c_str()) == 0; }))
+                      [&temp](const FILESYSTEM_FIND_DATA& it) { return StringUtil::Strcasecmp(it.FileName, temp.c_str()) == 0; }))
       {
         Log_DebugPrintf("Skipping due to '%s' existing", temp.c_str());
         continue;
@@ -512,7 +551,7 @@ void GameList::ScanDirectory(const char* path, bool recursive)
       {
         if (m_cache_write_stream || OpenCacheForWriting())
         {
-          if (!WriteEntryToCache(&entry, m_cache_write_stream))
+          if (!WriteEntryToCache(&entry, m_cache_write_stream.get()))
             Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
         }
       }
@@ -554,10 +593,10 @@ public:
   bool VisitEnter(const tinyxml2::XMLElement& element, const tinyxml2::XMLAttribute* firstAttribute) override
   {
     // recurse into gamelist
-    if (CASE_COMPARE(element.Name(), "datafile") == 0)
+    if (StringUtil::Strcasecmp(element.Name(), "datafile") == 0)
       return true;
 
-    if (CASE_COMPARE(element.Name(), "game") != 0)
+    if (StringUtil::Strcasecmp(element.Name(), "game") != 0)
       return false;
 
     const char* name = element.Attribute("name");

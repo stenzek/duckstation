@@ -1,10 +1,9 @@
 #pragma once
-
-#include "YBaseLib/String.h"
 #include "common/bitfield.h"
 #include "types.h"
 #include <array>
 #include <bitset>
+#include <string>
 #include <vector>
 
 class StateWrapper;
@@ -270,7 +269,7 @@ private:
   MEMCTRL m_MEMCTRL = {};
   u32 m_ram_size_reg = 0;
 
-  String m_tty_line_buffer;
+  std::string m_tty_line_buffer;
 };
 
 #include "bus.inl"

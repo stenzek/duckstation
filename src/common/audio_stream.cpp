@@ -1,5 +1,7 @@
 #include "audio_stream.h"
-#include "YBaseLib/Assert.h"
+#include "assert.h"
+#include <algorithm>
+#include <cstring>
 
 AudioStream::AudioStream() = default;
 

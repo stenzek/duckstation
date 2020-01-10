@@ -1,5 +1,7 @@
 #include "stream_buffer.h"
-#include "YBaseLib/Log.h"
+#include "../align.h"
+#include "../assert.h"
+#include "../log.h"
 Log_SetChannel(D3D11);
 
 namespace D3D11 {

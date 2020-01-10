@@ -1,9 +1,9 @@
 #include "qthostinterface.h"
-#include "YBaseLib/AutoReleasePtr.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/String.h"
+#include "common/assert.h"
+#include "common/byte_stream.h"
+#include "common/log.h"
 #include "common/null_audio_stream.h"
+#include "common/string_util.h"
 #include "core/controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
@@ -284,12 +284,12 @@ void QtHostInterface::updateHotkeyInputMap()
   {
     hk(QStringLiteral("LoadState%1").arg(i), [this, i](bool pressed) {
       if (!pressed)
-        HostInterface::LoadState(TinyString::FromFormat("savestate_%u.bin", i));
+        HostInterface::LoadState(StringUtil::StdStringFromFormat("savestate_%u.bin", i).c_str());
     });
 
     hk(QStringLiteral("SaveState%1").arg(i), [this, i](bool pressed) {
       if (!pressed)
-        HostInterface::SaveState(TinyString::FromFormat("savestate_%u.bin", i));
+        HostInterface::SaveState(StringUtil::StdStringFromFormat("savestate_%u.bin", i).c_str());
     });
   }
 }
@@ -390,9 +390,9 @@ void QtHostInterface::loadStateFromMemory(QByteArray arr)
     return;
   }
 
-  AutoReleasePtr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream();
-  if (!m_system || !QtUtils::WriteQByteArrayToStream(arr, stream) || !stream->SeekAbsolute(0) ||
-      !m_system->LoadState(stream))
+  std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream();
+  if (!m_system || !QtUtils::WriteQByteArrayToStream(arr, stream.get()) || !stream->SeekAbsolute(0) ||
+      !m_system->LoadState(stream.get()))
   {
     Log_ErrorPrintf("Failed to load memory state");
     return;
@@ -413,9 +413,9 @@ QByteArray QtHostInterface::saveStateToMemory()
   if (!m_system)
     return {};
 
-  AutoReleasePtr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream();
-  if (m_system->SaveState(stream))
-    return QtUtils::ReadStreamToQByteArray(stream, true);
+  std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream();
+  if (m_system->SaveState(stream.get()))
+    return QtUtils::ReadStreamToQByteArray(stream.get(), true);
   else
     return {};
 }

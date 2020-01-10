@@ -1,6 +1,6 @@
 #include "texture.h"
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
+#include "../assert.h"
+#include "../log.h"
 Log_SetChannel(GL);
 
 namespace GL {

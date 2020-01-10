@@ -1,6 +1,6 @@
 #include "shader_compiler.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/String.h"
+#include "../log.h"
+#include "../string_util.h"
 #include <array>
 #include <d3dcompiler.h>
 #include <fstream>
@@ -54,33 +54,32 @@ ComPtr<ID3DBlob> CompileShader(Type type, D3D_FEATURE_LEVEL feature_level, std::
     D3DCompile(code.data(), code.size(), "0", nullptr, nullptr, "main", target, debug ? flags_debug : flags_non_debug,
                0, blob.GetAddressOf(), error_blob.GetAddressOf());
 
-  String error_string;
+  std::string error_string;
   if (error_blob)
   {
-    error_string.AppendString(static_cast<const char*>(error_blob->GetBufferPointer()),
-                              static_cast<uint32>(error_blob->GetBufferSize()));
+    error_string.append(static_cast<const char*>(error_blob->GetBufferPointer()), error_blob->GetBufferSize());
     error_blob.Reset();
   }
 
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to compile '%s':\n%s", target, error_string.GetCharArray());
+    Log_ErrorPrintf("Failed to compile '%s':\n%s", target, error_string.c_str());
 
-    std::ofstream ofs(SmallString::FromFormat("bad_shader_%u.txt", s_next_bad_shader_id++),
+    std::ofstream ofs(StringUtil::StdStringFromFormat("bad_shader_%u.txt", s_next_bad_shader_id++).c_str(),
                       std::ofstream::out | std::ofstream::binary);
     if (ofs.is_open())
     {
       ofs << code;
       ofs << "\n\nCompile as " << target << " failed: " << hr << "\n";
-      ofs.write(error_string.GetCharArray(), error_string.GetLength());
+      ofs.write(error_string.c_str(), error_string.size());
       ofs.close();
     }
 
     return {};
   }
 
-  if (!error_string.IsEmpty())
-    Log_WarningPrintf("'%s' compiled with warnings:\n%s", target, error_string.GetCharArray());
+  if (!error_string.empty())
+    Log_WarningPrintf("'%s' compiled with warnings:\n%s", target, error_string.c_str());
 
   return blob;
 }

@@ -1,5 +1,6 @@
 #include "stream_buffer.h"
-#include "YBaseLib/Assert.h"
+#include "../assert.h"
+#include "../align.h"
 #include <array>
 #include <cstdio>
 

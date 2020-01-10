@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/Windows/WindowsHeaders.h"
+#include "../windows_headers.h"
 #include <d3d11.h>
 #include <string_view>
 #include <type_traits>

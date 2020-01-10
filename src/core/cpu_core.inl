@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/Assert.h"
+#include "common/align.h"
 #include "bus.h"
 #include "cpu_core.h"
 

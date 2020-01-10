@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -48,6 +49,9 @@ public:
 
   static const char* EntryTypeToString(EntryType type);
 
+  /// Returns true if the filename is a PlayStation executable we can inject.
+  static bool IsExeFileName(const char* path);
+
   static std::string GetGameCodeForImage(CDImage* cdi);
   static std::string GetGameCodeForPath(const char* image_path);
   static std::optional<ConsoleRegion> GetRegionForCode(std::string_view code);
@@ -76,7 +80,6 @@ private:
     bool recursive;
   };
 
-  static bool IsExeFileName(const char* path);
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
 
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
@@ -96,7 +99,7 @@ private:
   DatabaseMap m_database;
   EntryList m_entries;
   CacheMap m_cache_map;
-  ByteStream* m_cache_write_stream = nullptr;
+  std::unique_ptr<ByteStream> m_cache_write_stream;
 
   std::vector<DirectoryEntry> m_search_directories;
   std::string m_cache_filename;

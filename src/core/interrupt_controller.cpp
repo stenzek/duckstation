@@ -1,5 +1,5 @@
 #include "interrupt_controller.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
 Log_SetChannel(InterruptController);

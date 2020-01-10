@@ -1,8 +1,7 @@
 #pragma once
-
-#include "YBaseLib/Common.h"
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <type_traits>
 
 // Force inline helper
@@ -14,6 +13,41 @@
 #else
 #define ALWAYS_INLINE inline
 #endif
+#endif
+
+// unreferenced parameter macro
+#ifndef UNREFERENCED_VARIABLE
+#if defined(_MSC_VER)
+#define UNREFERENCED_VARIABLE(P) (P)
+#elif defined(__GNUC__) || defined(__clang__) || defined(__EMSCRIPTEN__)
+#define UNREFERENCED_VARIABLE(P) (void)(P)
+#else
+#define UNREFERENCED_VARIABLE(P) (P)
+#endif
+#endif
+
+// countof macro
+#ifndef countof
+#ifdef _countof
+#define countof _countof
+#else
+template<typename T, size_t N>
+char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
+#define countof(array) (sizeof(__countof_ArraySizeHelper(array)))
+#endif
+#endif
+
+// offsetof macro
+#ifndef offsetof
+#define offsetof(st, m) ((size_t)((char*)&((st*)(0))->m - (char*)0))
+#endif
+
+// disable warnings that show up at warning level 4
+// TODO: Move to build system instead
+#ifdef _MSC_VER
+#pragma warning(disable : 4201) // warning C4201: nonstandard extension used : nameless struct/union
+#pragma warning(disable : 4100) // warning C4100: 'Platform' : unreferenced formal parameter
+#pragma warning(disable : 4355) // warning C4355: 'this' : used in base member initializer list
 #endif
 
 using s8 = int8_t;
@@ -202,38 +236,38 @@ ALWAYS_INLINE constexpr T SignExtendN(T value)
 
 // Enum class bitwise operators
 #define IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(type_)                                                                  \
-  ALWAYS_INLINE constexpr type_ operator&(type_ lhs, type_ rhs)                                                               \
+  ALWAYS_INLINE constexpr type_ operator&(type_ lhs, type_ rhs)                                                        \
   {                                                                                                                    \
     return static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) &                                    \
                               static_cast<std::underlying_type<type_>::type>(rhs));                                    \
   }                                                                                                                    \
-  ALWAYS_INLINE constexpr type_ operator|(type_ lhs, type_ rhs)                                                               \
+  ALWAYS_INLINE constexpr type_ operator|(type_ lhs, type_ rhs)                                                        \
   {                                                                                                                    \
     return static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) |                                    \
                               static_cast<std::underlying_type<type_>::type>(rhs));                                    \
   }                                                                                                                    \
-  ALWAYS_INLINE constexpr type_ operator^(type_ lhs, type_ rhs)                                                               \
+  ALWAYS_INLINE constexpr type_ operator^(type_ lhs, type_ rhs)                                                        \
   {                                                                                                                    \
     return static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) ^                                    \
                               static_cast<std::underlying_type<type_>::type>(rhs));                                    \
   }                                                                                                                    \
-  ALWAYS_INLINE constexpr type_ operator~(type_ val)                                                                          \
+  ALWAYS_INLINE constexpr type_ operator~(type_ val)                                                                   \
   {                                                                                                                    \
     return static_cast<type_>(~static_cast<std::underlying_type<type_>::type>(val));                                   \
   }                                                                                                                    \
-  ALWAYS_INLINE constexpr type_& operator&=(type_& lhs, type_ rhs)                                                            \
+  ALWAYS_INLINE constexpr type_& operator&=(type_& lhs, type_ rhs)                                                     \
   {                                                                                                                    \
     lhs = static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) &                                     \
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \
     return lhs;                                                                                                        \
   }                                                                                                                    \
-  ALWAYS_INLINE constexpr type_& operator|=(type_& lhs, type_ rhs)                                                            \
+  ALWAYS_INLINE constexpr type_& operator|=(type_& lhs, type_ rhs)                                                     \
   {                                                                                                                    \
     lhs = static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) |                                     \
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \
     return lhs;                                                                                                        \
   }                                                                                                                    \
-  ALWAYS_INLINE constexpr type_& operator^=(type_& lhs, type_ rhs)                                                            \
+  ALWAYS_INLINE constexpr type_& operator^=(type_& lhs, type_ rhs)                                                     \
   {                                                                                                                    \
     lhs = static_cast<type_>(static_cast<std::underlying_type<type_>::type>(lhs) ^                                     \
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \

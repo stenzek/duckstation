@@ -1,10 +1,12 @@
 #include "host_interface.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/Timer.h"
 #include "bios.h"
 #include "cdrom.h"
 #include "common/audio_stream.h"
+#include "common/byte_stream.h"
+#include "common/file_system.h"
+#include "common/log.h"
+#include "common/string_util.h"
+#include "common/timer.h"
 #include "dma.h"
 #include "gpu.h"
 #include "host_display.h"
@@ -18,7 +20,7 @@
 Log_SetChannel(HostInterface);
 
 #ifdef _WIN32
-#include "YBaseLib/Windows/WindowsHeaders.h"
+#include "common/windows_headers.h"
 #else
 #include <time.h>
 #endif
@@ -50,7 +52,7 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
 HostInterface::HostInterface()
 {
   m_settings.SetDefaults();
-  m_last_throttle_time = Y_TimerGetValue();
+  m_last_throttle_time = Common::Timer::GetValue();
 }
 
 HostInterface::~HostInterface() = default;
@@ -102,6 +104,26 @@ void HostInterface::ReportError(const char* message)
 void HostInterface::ReportMessage(const char* message)
 {
   Log_InfoPrintf(message);
+}
+
+void HostInterface::ReportFormattedError(const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string message = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  ReportError(message.c_str());
+}
+
+void HostInterface::ReportFormattedMessage(const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string message = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  ReportMessage(message.c_str());
 }
 
 void HostInterface::DrawFPSWindow()
@@ -183,6 +205,21 @@ void HostInterface::AddOSDMessage(const char* message, float duration /*= 2.0f*/
   m_osd_messages.push_back(std::move(msg));
 }
 
+void HostInterface::AddFormattedOSDMessage(float duration, const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string message = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  OSDMessage msg;
+  msg.text = std::move(message);
+  msg.duration = duration;
+
+  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  m_osd_messages.push_back(std::move(msg));
+}
+
 void HostInterface::DrawOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
@@ -213,7 +250,10 @@ void HostInterface::DrawOSDMessages()
     ImGui::SetNextWindowSize(ImVec2(0.0f, 0.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
 
-    if (ImGui::Begin(SmallString::FromFormat("osd_%u", index++), nullptr, window_flags))
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "osd_%u", index++);
+
+    if (ImGui::Begin(buf, nullptr, window_flags))
     {
       ImGui::TextUnformatted(msg.text.c_str());
       position_y += ImGui::GetWindowSize().y + (4.0f * scale);
@@ -339,47 +379,42 @@ void HostInterface::Throttle()
 
 bool HostInterface::LoadState(const char* filename)
 {
-  ByteStream* stream;
-  if (!ByteStream_OpenFileStream(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, &stream))
+  std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
     return false;
 
-  AddOSDMessage(SmallString::FromFormat("Loading state from %s...", filename));
+  AddFormattedOSDMessage(2.0f, "Loading state from %s...", filename);
 
-  const bool result = m_system->LoadState(stream);
+  const bool result = m_system->LoadState(stream.get());
   if (!result)
   {
-    ReportError(SmallString::FromFormat("Loading state from %s failed. Resetting.", filename));
+    ReportFormattedError("Loading state from %s failed. Resetting.", filename);
     m_system->Reset();
   }
 
-  stream->Release();
   return result;
 }
 
 bool HostInterface::SaveState(const char* filename)
 {
-  ByteStream* stream;
-  if (!ByteStream_OpenFileStream(filename,
-                                 BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
-                                   BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED,
-                                 &stream))
-  {
+  std::unique_ptr<ByteStream> stream =
+    FileSystem::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
+                                     BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
     return false;
-  }
 
-  const bool result = m_system->SaveState(stream);
+  const bool result = m_system->SaveState(stream.get());
   if (!result)
   {
-    ReportError(SmallString::FromFormat("Saving state to %s failed.", filename));
+    ReportFormattedError("Saving state to %s failed.", filename);
     stream->Discard();
   }
   else
   {
-    AddOSDMessage(SmallString::FromFormat("State saved to %s.", filename));
+    ReportFormattedError("State saved to %s.", filename);
     stream->Commit();
   }
 
-  stream->Release();
   return result;
 }
 

@@ -1,5 +1,5 @@
 #include "cpu_types.h"
-#include "YBaseLib/Assert.h"
+#include "common/assert.h"
 #include <array>
 
 namespace CPU {

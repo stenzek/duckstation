@@ -1,12 +1,22 @@
 #pragma once
+#include "common/cpu_detect.h"
 #include "cpu_types.h"
 
-#if defined(Y_CPU_X64)
+#if defined(CPU_X64)
+
+// We need to include windows.h before xbyak does..
+#ifdef WIN32
+#include "common/windows_headers.h"
+#endif
+
 #define XBYAK_NO_OP_NAMES 1
 #include "xbyak.h"
-#elif defined(Y_CPU_AARCH64)
+
+#elif defined(CPU_AARCH64)
+
 #include <vixl/aarch64/constants-aarch64.h>
 #include <vixl/aarch64/macro-assembler-aarch64.h>
+
 #endif
 
 namespace CPU {
@@ -48,7 +58,7 @@ enum class Condition : u8
   Zero
 };
 
-#if defined(Y_CPU_X64)
+#if defined(CPU_X64)
 
 using HostReg = Xbyak::Operand::Code;
 using CodeEmitter = Xbyak::CodeGenerator;
@@ -67,14 +77,23 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 // Are shifts implicitly masked to 0..31?
 constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
 
-#elif defined(Y_CPU_AARCH64)
+// ABI selection
+#if defined(WIN32)
+#define ABI_WIN64 1
+#elif defined(__linux__) || defined(__ANDROID__)
+#define ABI_SYSV 1
+#else
+#error Unknown ABI.
+#endif
+
+#elif defined(CPU_AARCH64)
 
 using HostReg = unsigned;
 using CodeEmitter = vixl::aarch64::MacroAssembler;
 using LabelType = vixl::aarch64::Label;
 enum : u32
 {
-    HostReg_Count = vixl::aarch64::kNumberOfRegisters
+  HostReg_Count = vixl::aarch64::kNumberOfRegisters
 };
 constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
 constexpr RegSize HostPointerSize = RegSize_64;

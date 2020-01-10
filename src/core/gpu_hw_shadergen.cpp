@@ -1,6 +1,6 @@
 #include "gpu_hw_shadergen.h"
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include <cstdio>
 #include <glad.h>
 Log_SetChannel(GPU_HW_ShaderGen);

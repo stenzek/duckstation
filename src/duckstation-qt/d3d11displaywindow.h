@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/Windows/WindowsHeaders.h"
+#include "common/windows_headers.h"
 #include "common/d3d11/stream_buffer.h"
 #include "common/d3d11/texture.h"
 #include "core/host_display.h"

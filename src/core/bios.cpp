@@ -1,6 +1,7 @@
 #include "bios.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/MD5Digest.h"
+#include "common/log.h"
+#include "common/assert.h"
+#include "common/md5_digest.h"
 #include "cpu_disasm.h"
 #include <cerrno>
 Log_SetChannel(BIOS);

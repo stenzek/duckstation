@@ -1,5 +1,5 @@
 #include "iso_reader.h"
-#include "YBaseLib/Log.h"
+#include "log.h"
 #include "cd_image.h"
 #include <cctype>
 Log_SetChannel(ISOReader);

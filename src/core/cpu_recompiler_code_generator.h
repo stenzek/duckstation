@@ -11,17 +11,6 @@
 #include "cpu_recompiler_types.h"
 #include "cpu_types.h"
 
-// ABI selection
-#if defined(Y_CPU_X64)
-#if defined(Y_PLATFORM_WINDOWS)
-#define ABI_WIN64 1
-#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_OSX) || defined(Y_PLATFORM_ANDROID)
-#define ABI_SYSV 1
-#else
-#error Unknown ABI.
-#endif
-#endif
-
 namespace CPU::Recompiler {
 
 class CodeGenerator

@@ -35,6 +35,17 @@
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="null_audio_stream.h" />
+    <ClInclude Include="log.h" />
+    <ClInclude Include="string.h" />
+    <ClInclude Include="byte_stream.h" />
+    <ClInclude Include="timer.h" />
+    <ClInclude Include="timestamp.h" />
+    <ClInclude Include="assert.h" />
+    <ClInclude Include="align.h" />
+    <ClInclude Include="file_system.h" />
+    <ClInclude Include="string_util.h" />
+    <ClInclude Include="md5_digest.h" />
+    <ClInclude Include="cpu_detect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -68,6 +79,15 @@
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="cd_subchannel_replacement.cpp" />
     <ClCompile Include="null_audio_stream.cpp" />
+    <ClCompile Include="string.cpp" />
+    <ClCompile Include="byte_stream.cpp" />
+    <ClCompile Include="log.cpp" />
+    <ClCompile Include="timestamp.cpp" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="assert.cpp" />
+    <ClCompile Include="file_system.cpp" />
+    <ClCompile Include="string_util.cpp" />
+    <ClCompile Include="md5_digest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

@@ -1,9 +1,8 @@
 #include "bus.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/MD5Digest.h"
-#include "YBaseLib/String.h"
 #include "cdrom.h"
+#include "common/align.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -344,19 +343,19 @@ void Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
 
     if (value == '\n')
     {
-      if (!m_tty_line_buffer.IsEmpty())
+      if (!m_tty_line_buffer.empty())
       {
-        Log_InfoPrintf("TTY: %s", m_tty_line_buffer.GetCharArray());
+        Log_InfoPrintf("TTY: %s", m_tty_line_buffer.c_str());
 #ifdef _DEBUG
         if (CPU::LOG_EXECUTION)
-          CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.GetCharArray());
+          CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.c_str());
 #endif
       }
-      m_tty_line_buffer.Clear();
+      m_tty_line_buffer.clear();
     }
     else
     {
-      m_tty_line_buffer.AppendCharacter(Truncate8(value));
+      m_tty_line_buffer += static_cast<char>(Truncate8(value));
     }
 
     return;

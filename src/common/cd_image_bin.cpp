@@ -1,6 +1,7 @@
-#include "YBaseLib/Log.h"
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+#include "file_system.h"
+#include "log.h"
 Log_SetChannel(CDImageBin);
 
 class CDImageBin : public CDImage
@@ -41,7 +42,7 @@ CDImageBin::~CDImageBin()
 bool CDImageBin::Open(const char* filename)
 {
   m_filename = filename;
-  m_fp = std::fopen(filename, "rb");
+  m_fp = FileSystem::OpenCFile(filename, "rb");
   if (!m_fp)
   {
     Log_ErrorPrintf("Failed to open binfile '%s'", filename);

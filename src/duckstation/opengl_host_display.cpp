@@ -1,5 +1,6 @@
 #include "opengl_host_display.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>

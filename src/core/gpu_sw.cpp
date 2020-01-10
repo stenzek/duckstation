@@ -1,5 +1,5 @@
 #include "gpu_sw.h"
-#include "YBaseLib/Assert.h"
+#include "common/assert.h"
 #include "host_display.h"
 #include "system.h"
 #include <algorithm>
@@ -593,7 +593,7 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
   }
   else
   {
-    UNREFERENCED_PARAMETER(transparent);
+    UNREFERENCED_VARIABLE(transparent);
   }
 
   const u16 mask_and = m_GPUSTAT.GetMaskAND();

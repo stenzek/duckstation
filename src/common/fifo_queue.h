@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/Assert.h"
+#include "assert.h"
 #include "types.h"
 #include <algorithm>
 #include <cstring>

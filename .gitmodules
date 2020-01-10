@@ -1,3 +1,0 @@
-[submodule "dep/YBaseLib"]
-	path = dep/YBaseLib
-	url = https://github.com/stenzek/YBaseLib.git

@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/Assert.h"
+#include "common/assert.h"
 #include "cpu_recompiler_types.h"
 #include "cpu_types.h"
 

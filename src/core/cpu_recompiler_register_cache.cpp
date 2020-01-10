@@ -1,5 +1,5 @@
 #include "cpu_recompiler_register_cache.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "cpu_recompiler_code_generator.h"
 #include <cinttypes>
 Log_SetChannel(CPU::Recompiler);

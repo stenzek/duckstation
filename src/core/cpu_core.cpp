@@ -1,6 +1,7 @@
 #include "cpu_core.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/align.h"
 #include "cpu_disasm.h"
 #include <cstdio>
 Log_SetChannel(CPU::Core);

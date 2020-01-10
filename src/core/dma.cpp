@@ -1,5 +1,5 @@
 #include "dma.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "bus.h"
 #include "cdrom.h"
 #include "common/state_wrapper.h"

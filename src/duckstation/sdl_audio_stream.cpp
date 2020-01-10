@@ -1,6 +1,6 @@
 #include "sdl_audio_stream.h"
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include <SDL.h>
 Log_SetChannel(SDLAudioStream);
 

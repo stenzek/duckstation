@@ -1,6 +1,6 @@
 #pragma once
 #include "../types.h"
-#include "YBaseLib/Windows/WindowsHeaders.h"
+#include "../windows_headers.h"
 #include <d3d11.h>
 #include <wrl/client.h>
 

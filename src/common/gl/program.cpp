@@ -1,6 +1,7 @@
 #include "program.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/String.h"
+#include "../assert.h"
+#include "../log.h"
+#include "../string_util.h"
 #include <array>
 #include <fstream>
 Log_SetChannel(GL);
@@ -46,7 +47,7 @@ GLuint Program::CompileShader(GLenum type, const std::string_view source)
     {
       Log_ErrorPrintf("Shader failed to compile:\n%s", info_log.c_str());
 
-      std::ofstream ofs(SmallString::FromFormat("bad_shader_%u.txt", s_next_bad_shader_id++),
+      std::ofstream ofs(StringUtil::StdStringFromFormat("bad_shader_%u.txt", s_next_bad_shader_id++).c_str(),
                         std::ofstream::out | std::ofstream::binary);
       if (ofs.is_open())
       {

@@ -30,9 +30,6 @@ class System
 public:
   ~System();
 
-  /// Returns true if the filename is a PlayStation executable we can inject.
-  static bool IsPSExe(const char* filename);
-
   /// Creates a new System.
   static std::unique_ptr<System> Create(HostInterface* host_interface);
 

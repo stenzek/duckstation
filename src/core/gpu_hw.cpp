@@ -1,6 +1,6 @@
 #include "gpu_hw.h"
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "settings.h"
 #include "system.h"

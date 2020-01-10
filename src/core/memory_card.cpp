@@ -1,8 +1,7 @@
 #include "memory_card.h"
-#include "YBaseLib/AutoReleasePtr.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/FileSystem.h"
-#include "YBaseLib/Log.h"
+#include "common/byte_stream.h"
+#include "common/file_system.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "host_interface.h"
 #include "system.h"
@@ -328,7 +327,7 @@ u8* MemoryCard::GetSectorPtr(u32 sector)
 
 bool MemoryCard::LoadFromFile()
 {
-  AutoReleasePtr<ByteStream> stream =
+  std::unique_ptr<ByteStream> stream =
     FileSystem::OpenFile(m_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return false;
@@ -348,7 +347,7 @@ bool MemoryCard::SaveToFile()
   if (m_filename.empty())
     return false;
 
-  AutoReleasePtr<ByteStream> stream =
+  std::unique_ptr<ByteStream> stream =
     FileSystem::OpenFile(m_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
                                                BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
   if (!stream)

@@ -1,5 +1,5 @@
 #include "analog_controller.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 Log_SetChannel(AnalogController);
 
@@ -133,7 +133,7 @@ void AnalogController::SetMotorState(u8 motor, u8 value)
 bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 {
   bool ack;
-#ifdef Y_BUILD_CONFIG_DEBUG
+#ifdef _DEBUG
   u8 old_state = static_cast<u8>(m_state);
 #endif
 

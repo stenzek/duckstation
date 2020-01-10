@@ -1,4 +1,4 @@
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
 #include "cpu_core.h"

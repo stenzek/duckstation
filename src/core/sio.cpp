@@ -1,5 +1,5 @@
 #include "sio.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"

@@ -1,5 +1,6 @@
-#include "YBaseLib/Log.h"
-#include "YBaseLib/String.h"
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/string_util.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -356,8 +357,8 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 comma
 
   if (m_system->GetSettings().debugging.dump_cpu_to_vram_copies)
   {
-    DumpVRAMToFile(SmallString::FromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++), copy_width, copy_height,
-                   sizeof(u16) * copy_width, &command_ptr[3], true);
+    DumpVRAMToFile(StringUtil::StdStringFromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++).c_str(),
+                   copy_width, copy_height, sizeof(u16) * copy_width, &command_ptr[3], true);
   }
 
   FlushRender();
@@ -390,8 +391,8 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 comma
 
   if (m_system->GetSettings().debugging.dump_vram_to_cpu_copies)
   {
-    DumpVRAMToFile(SmallString::FromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++), m_vram_transfer.width,
-                   m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
+    DumpVRAMToFile(StringUtil::StdStringFromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++).c_str(),
+                   m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
                    &m_vram_ptr[m_vram_transfer.y * VRAM_WIDTH + m_vram_transfer.x], true);
   }
 

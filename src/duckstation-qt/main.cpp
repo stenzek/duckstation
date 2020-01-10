@@ -1,4 +1,4 @@
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "mainwindow.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QApplication>
@@ -8,11 +8,11 @@ static void InitLogging()
 {
   // set log flags
 #ifdef Y_BUILD_CONFIG_DEBUG
-  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
-  g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
+  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+  Log::SetFilterLevel(LOGLEVEL_DEBUG);
 #else
-  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_INFO);
-  g_pLog->SetFilterLevel(LOGLEVEL_INFO);
+  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_INFO);
+  Log::SetFilterLevel(LOGLEVEL_INFO);
 #endif
 }
 

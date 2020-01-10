@@ -1,6 +1,6 @@
 #include "cd_image.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/Log.h"
+#include "assert.h"
+#include "log.h"
 #include <array>
 Log_SetChannel(CDImage);
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/String.h"
+#include "common/string.h"
 #include "cpu_types.h"
 
 namespace CPU {

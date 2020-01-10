@@ -1,6 +1,6 @@
 #include "opengldisplaywindow.h"
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include "imgui.h"
 #include "qthostinterface.h"
 #include <QtGui/QKeyEvent>
@@ -21,7 +21,7 @@ static void* GetProcAddressCallback(const char* name)
 }
 
 #ifdef WIN32
-#include "YBaseLib/Windows/WindowsHeaders.h"
+#include "common/windows_headers.h"
 #endif
 
 /// Changes the swap interval on a window. Since Qt doesn't expose this functionality, we need to change it manually

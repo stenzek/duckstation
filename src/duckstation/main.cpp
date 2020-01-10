@@ -1,25 +1,9 @@
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/StringConverter.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include "core/system.h"
 #include "sdl_host_interface.h"
 #include <SDL.h>
 #include <cstdio>
-
-#if 0
-static int NoGUITest()
-{
-  std::unique_ptr<System> system = std::make_unique<System>();
-  if (!system->Initialize())
-    return -1;
-  
-  system->Reset();
-
-  while (true)
-    system->RunFrame();
-  return 0;
-}
-#endif
 
 static int Run(int argc, char* argv[])
 {
@@ -33,7 +17,7 @@ static int Run(int argc, char* argv[])
   // parameters
   const char* filename = nullptr;
   const char* exp1_filename = nullptr;
-  TinyString state_filename;
+  std::string state_filename;
   for (int i = 1; i < argc; i++)
   {
 #define CHECK_ARG(str) !std::strcmp(argv[i], str)
@@ -51,8 +35,8 @@ static int Run(int argc, char* argv[])
   }
 
   // create display and host interface
-  std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create(
-    filename, exp1_filename, state_filename.IsEmpty() ? nullptr : state_filename.GetCharArray());
+  std::unique_ptr<SDLHostInterface> host_interface =
+    SDLHostInterface::Create(filename, exp1_filename, state_filename.empty() ? nullptr : state_filename.c_str());
   if (!host_interface)
   {
     Panic("Failed to create host interface");
@@ -78,15 +62,15 @@ int main(int argc, char* argv[])
   const LOGLEVEL level = LOGLEVEL_INFO;
   // const LOGLEVEL level = LOGLEVEL_DEV;
   // const LOGLEVEL level = LOGLEVEL_PROFILE;
-  g_pLog->SetConsoleOutputParams(true, nullptr, level);
-  g_pLog->SetFilterLevel(level);
+  Log::SetConsoleOutputParams(true, nullptr, level);
+  Log::SetFilterLevel(level);
 #else
-  g_pLog->SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
-  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
-  // g_pLog->SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL Pad DigitalController MemoryCard InterruptController SPU
+  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+  // Log::SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
+  // Log::SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL Pad DigitalController MemoryCard InterruptController SPU
   // MDEC", LOGLEVEL_DEBUG); g_pLog->SetFilterLevel(LOGLEVEL_TRACE);
-  g_pLog->SetFilterLevel(LOGLEVEL_DEBUG);
-  // g_pLog->SetFilterLevel(LOGLEVEL_DEV);
+  Log::SetFilterLevel(LOGLEVEL_DEBUG);
+  // Log::SetFilterLevel(LOGLEVEL_DEV);
 #endif
 
   // return NoGUITest();

@@ -1,5 +1,5 @@
 #include "cpu_recompiler_code_generator.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 Log_SetChannel(CPU::Recompiler);
@@ -12,7 +12,7 @@ namespace CPU::Recompiler {
 
 u32 CodeGenerator::CalculateRegisterOffset(Reg reg)
 {
-  return uint32(offsetof(Core, m_regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
+  return u32(offsetof(Core, m_regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
 }
 
 bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code,
@@ -837,7 +837,7 @@ void CodeGenerator::BlockPrologue()
 
 void CodeGenerator::BlockEpilogue()
 {
-#if defined(_DEBUG) && defined(Y_CPU_X64)
+#if defined(_DEBUG) && defined(CPU_X64)
   m_emit->nop();
 #endif
 
@@ -851,7 +851,7 @@ void CodeGenerator::BlockEpilogue()
 void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles,
                                         bool force_sync /* = false */)
 {
-#if defined(_DEBUG) && defined(Y_CPU_X64)
+#if defined(_DEBUG) && defined(CPU_X64)
   m_emit->nop();
 #endif
 

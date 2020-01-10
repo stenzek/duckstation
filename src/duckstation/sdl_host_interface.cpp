@@ -1,9 +1,9 @@
 #include "sdl_host_interface.h"
-#include "YBaseLib/AutoReleasePtr.h"
-#include "YBaseLib/ByteStream.h"
-#include "YBaseLib/Error.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/byte_stream.h"
+#include "common/log.h"
 #include "common/null_audio_stream.h"
+#include "common/string_util.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
@@ -20,8 +20,8 @@
 #include <nfd.h>
 Log_SetChannel(SDLHostInterface);
 
-#ifdef Y_PLATFORM_WINDOWS
-#include "YBaseLib/Windows/WindowsHeaders.h"
+#ifdef WIN32
+#include "common/windows_headers.h"
 #include "d3d11_host_display.h"
 #include <mmsystem.h>
 #endif
@@ -29,7 +29,7 @@ Log_SetChannel(SDLHostInterface);
 SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini")
 {
   // Increase timer/sleep resolution since we use it for throttling.
-#ifdef Y_PLATFORM_WINDOWS
+#ifdef WIN32
   timeBeginPeriod(1);
 #endif
 
@@ -45,7 +45,7 @@ SDLHostInterface::~SDLHostInterface()
   if (m_window)
     SDL_DestroyWindow(m_window);
 
-#ifdef Y_PLATFORM_WINDOWS
+#ifdef WIN32
   timeEndPeriod(1);
 #endif
 }
@@ -162,11 +162,11 @@ void SDLHostInterface::QueueSwitchGPURenderer()
 void SDLHostInterface::SwitchGPURenderer()
 {
   // Due to the GPU class owning textures, we have to shut the system down.
-  AutoReleasePtr<ByteStream> stream;
+  std::unique_ptr<ByteStream> stream;
   if (m_system)
   {
     stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-    if (!m_system->SaveState(stream) || !stream->SeekAbsolute(0))
+    if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
       ReportError("Failed to save state before GPU renderer switch");
 
     DestroySystem();
@@ -187,7 +187,7 @@ void SDLHostInterface::SwitchGPURenderer()
   if (stream)
   {
     CreateSystem();
-    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream))
+    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream.get()))
     {
       ReportError("Failed to load state after GPU renderer switch, resetting");
       m_system->Reset();
@@ -272,9 +272,9 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
   return intf;
 }
 
-TinyString SDLHostInterface::GetSaveStateFilename(u32 index)
+std::string SDLHostInterface::GetSaveStateFilename(u32 index)
 {
-  return TinyString::FromFormat("savestate_%u.bin", index);
+  return StringUtil::StdStringFromFormat("savestate_%u.bin", index);
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -816,7 +816,9 @@ void SDLHostInterface::DrawMainMenuBar()
     {
       for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
       {
-        if (ImGui::MenuItem(TinyString::FromFormat("State %u", i).GetCharArray()))
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "State %u", i);
+        if (ImGui::MenuItem(buf))
           DoLoadState(i);
       }
       ImGui::EndMenu();
@@ -826,7 +828,9 @@ void SDLHostInterface::DrawMainMenuBar()
     {
       for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
       {
-        if (ImGui::MenuItem(TinyString::FromFormat("State %u", i).GetCharArray()))
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "State %u", i);
+        if (ImGui::MenuItem(buf))
           DoSaveState(i);
       }
       ImGui::EndMenu();
@@ -971,9 +975,10 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     const u32 current_internal_resolution = m_settings.gpu_resolution_scale;
     for (u32 scale = 1; scale <= m_settings.max_gpu_resolution_scale; scale++)
     {
-      if (ImGui::MenuItem(
-            TinyString::FromFormat("%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT), nullptr,
-            current_internal_resolution == scale))
+      char buf[32];
+      std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT);
+
+      if (ImGui::MenuItem(buf, nullptr, current_internal_resolution == scale))
       {
         m_settings.gpu_resolution_scale = scale;
         gpu_settings_changed = true;
@@ -1078,7 +1083,9 @@ void SDLHostInterface::DrawPoweredOffWindow()
   {
     for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
     {
-      if (ImGui::MenuItem(TinyString::FromFormat("State %u", i).GetCharArray()))
+      char buf[16];
+      std::snprintf(buf, sizeof(buf), "State %u", i);
+      if (ImGui::MenuItem(buf))
         DoLoadState(i);
     }
     ImGui::EndPopup();
@@ -1200,7 +1207,10 @@ void SDLHostInterface::DrawSettingsWindow()
     {
       for (int i = 0; i < 2; i++)
       {
-        if (DrawSettingsSectionHeader(TinyString::FromFormat("Front Port %d", 1 + i)))
+        char buf[32];
+        std::snprintf(buf, sizeof(buf), "Front Port %d", 1 + i);
+
+        if (DrawSettingsSectionHeader(buf))
         {
           ImGui::Text("Controller:");
           ImGui::SameLine(indent);
@@ -1228,7 +1238,8 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::SameLine(indent);
 
         std::string* path_ptr = &m_settings.memory_card_paths[i];
-        if (DrawFileChooser(TinyString::FromFormat("##memcard_%c_path", 'a' + i), path_ptr))
+        std::snprintf(buf, sizeof(buf), "##memcard_%c_path", 'a' + i);
+        if (DrawFileChooser(buf, path_ptr))
         {
           settings_changed = true;
           if (m_system)
@@ -1456,7 +1467,7 @@ void SDLHostInterface::DoStartDisc()
   if (!NFD_OpenDialog("bin,img,cue,exe,psexe", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
-  AddOSDMessage(SmallString::FromFormat("Starting disc from '%s'...", path));
+  AddFormattedOSDMessage(2.0f, "Starting disc from '%s'...", path);
   if (!CreateSystem() || !BootSystem(path, nullptr))
   {
     DestroySystem();
@@ -1493,7 +1504,7 @@ void SDLHostInterface::DoChangeDisc()
     return;
 
   if (m_system->InsertMedia(path))
-    AddOSDMessage(SmallString::FromFormat("Switched CD to '%s'", path));
+    AddFormattedOSDMessage(2.0f, "Switched CD to '%s'", path);
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
@@ -1505,11 +1516,11 @@ void SDLHostInterface::DoLoadState(u32 index)
 {
   if (HasSystem())
   {
-    LoadState(GetSaveStateFilename(index));
+    LoadState(GetSaveStateFilename(index).c_str());
   }
   else
   {
-    if (!CreateSystem() || !BootSystem(nullptr, GetSaveStateFilename(index)))
+    if (!CreateSystem() || !BootSystem(nullptr, GetSaveStateFilename(index).c_str()))
     {
       DestroySystem();
       return;
@@ -1524,7 +1535,7 @@ void SDLHostInterface::DoLoadState(u32 index)
 void SDLHostInterface::DoSaveState(u32 index)
 {
   Assert(m_system);
-  SaveState(GetSaveStateFilename(index));
+  SaveState(GetSaveStateFilename(index).c_str());
   ClearImGuiFocus();
 }
 
@@ -1590,9 +1601,9 @@ void SDLHostInterface::DoModifyInternalResolution(s32 increment)
   if (m_system)
     m_system->GetGPU()->UpdateSettings();
 
-  AddOSDMessage(TinyString::FromFormat("Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
-                                       GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
-                                       GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale));
+  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
+                         GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
+                         GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale);
 }
 
 void SDLHostInterface::Run()

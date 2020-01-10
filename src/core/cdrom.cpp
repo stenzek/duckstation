@@ -1,5 +1,5 @@
 #include "cdrom.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/cd_image.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
@@ -1421,7 +1421,7 @@ static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu,
 
     if constexpr (!STEREO)
     {
-      UNREFERENCED_PARAMETER(right);
+      UNREFERENCED_VARIABLE(right);
     }
 
     for (u32 sample_dup = 0; sample_dup < (SAMPLE_RATE ? 2 : 1); sample_dup++)

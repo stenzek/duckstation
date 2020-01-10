@@ -1,5 +1,5 @@
 #include "cpu_code_cache.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "system.h"

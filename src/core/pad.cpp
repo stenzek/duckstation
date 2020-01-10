@@ -1,5 +1,5 @@
 #include "pad.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "controller.h"
 #include "host_interface.h"
@@ -42,9 +42,9 @@ bool Pad::DoState(StateWrapper& sw)
 
     if (controller_type != state_controller_type)
     {
-      m_system->GetHostInterface()->AddOSDMessage(SmallString::FromFormat(
-        "Save state contains controller type %s in port %u, but %s is used. Switching.",
-        Settings::GetControllerTypeName(state_controller_type), i, Settings::GetControllerTypeName(controller_type)));
+      m_system->GetHostInterface()->AddFormattedOSDMessage(
+        2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
+        Settings::GetControllerTypeName(state_controller_type), i, Settings::GetControllerTypeName(controller_type));
 
       m_controllers[i].reset();
       if (state_controller_type != ControllerType::None)
@@ -62,20 +62,14 @@ bool Pad::DoState(StateWrapper& sw)
 
     if (card_present && !m_memory_cards[i])
     {
-      const TinyString message = TinyString::FromFormat(
-        "Memory card %c present in save state but not in system. Creating temporary card.", 'A' + i);
-      m_system->GetHostInterface()->AddOSDMessage(message);
-      Log_WarningPrint(message);
-
+      m_system->GetHostInterface()->AddFormattedOSDMessage(
+        2.0f, "Memory card %c present in save state but not in system. Creating temporary card.", 'A' + i);
       m_memory_cards[i] = MemoryCard::Create(m_system);
     }
     else if (!card_present && m_memory_cards[i])
     {
-      const TinyString message =
-        TinyString::FromFormat("Memory card %u present system but not save state. Removing card.", 'A' + i);
-      m_system->GetHostInterface()->AddOSDMessage(message);
-      Log_WarningPrint(message);
-
+      m_system->GetHostInterface()->AddFormattedOSDMessage(
+        2.0f, "Memory card %u present system but not save state. Removing card.", 'A' + i);
       m_memory_cards[i].reset();
     }
 

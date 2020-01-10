@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/Timer.h"
+#include "common/timer.h"
 #include "settings.h"
 #include "types.h"
 #include <chrono>
@@ -41,8 +41,12 @@ public:
   virtual void ReportError(const char* message);
   virtual void ReportMessage(const char* message);
 
+  void ReportFormattedError(const char* format, ...);
+  void ReportFormattedMessage(const char* format, ...);
+
   /// Adds OSD messages, duration is in seconds.
   void AddOSDMessage(const char* message, float duration = 2.0f);
+  void AddFormattedOSDMessage(float duration, const char* format, ...);
 
   /// Loads the BIOS image for the specified region.
   virtual std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
@@ -64,7 +68,7 @@ protected:
   struct OSDMessage
   {
     std::string text;
-    Timer time;
+    Common::Timer time;
     float duration;
   };
 
@@ -88,8 +92,8 @@ protected:
 
   u64 m_last_throttle_time = 0;
   s64 m_throttle_period = INT64_C(1000000000) / 60;
-  Timer m_throttle_timer;
-  Timer m_speed_lost_time_timestamp;
+  Common::Timer m_throttle_timer;
+  Common::Timer m_speed_lost_time_timestamp;
 
   float m_vps = 0.0f;
   float m_fps = 0.0f;
@@ -97,7 +101,7 @@ protected:
   u32 m_last_frame_number = 0;
   u32 m_last_internal_frame_number = 0;
   u32 m_last_global_tick_counter = 0;
-  Timer m_fps_timer;
+  Common::Timer m_fps_timer;
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;

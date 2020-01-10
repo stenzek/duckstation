@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "YBaseLib/Log.h"
+#include "../log.h"
 Log_SetChannel(D3D11);
 
 namespace D3D11 {

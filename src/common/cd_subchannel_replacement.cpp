@@ -1,5 +1,7 @@
 #include "cd_subchannel_replacement.h"
-#include "YBaseLib/Log.h"
+#include "log.h"
+#include "file_system.h"
+#include <algorithm>
 #include <memory>
 Log_SetChannel(CDSubChannelReplacement);
 
@@ -29,7 +31,7 @@ static constexpr u32 MSFToLBA(u8 minute_bcd, u8 second_bcd, u8 frame_bcd)
 
 bool CDSubChannelReplacement::LoadSBI(const char* path)
 {
-  std::unique_ptr<std::FILE, void (*)(std::FILE*)> fp(std::fopen(path, "rb"), [](std::FILE* fp) { std::fclose(fp); });
+  auto fp = FileSystem::OpenManagedCFile(path, "rb");
   if (!fp)
     return false;
 

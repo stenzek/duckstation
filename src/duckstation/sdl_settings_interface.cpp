@@ -1,5 +1,5 @@
 #include "sdl_settings_interface.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include <algorithm>
 Log_SetChannel(SDLSettingsInterface);
 

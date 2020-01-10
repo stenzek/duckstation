@@ -1,5 +1,6 @@
 #include "staging_texture.h"
-#include "YBaseLib/Log.h"
+#include "../log.h"
+#include "../assert.h"
 Log_SetChannel(D3D11);
 
 namespace D3D11 {

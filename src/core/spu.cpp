@@ -1,5 +1,5 @@
 #include "spu.h"
-#include "YBaseLib/Log.h"
+#include "common/log.h"
 #include "common/audio_stream.h"
 #include "common/state_wrapper.h"
 #include "dma.h"

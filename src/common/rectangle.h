@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <limits>
 #include <tuple>
 #include <type_traits>

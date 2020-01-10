@@ -1,5 +1,5 @@
 #include "digital_controller.h"
-#include "YBaseLib/Assert.h"
+#include "common/assert.h"
 
 DigitalController::DigitalController() = default;
 

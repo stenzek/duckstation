@@ -1,9 +1,12 @@
 #include "jit_code_buffer.h"
-#include "YBaseLib/Assert.h"
+#include "align.h"
+#include "assert.h"
+#include "cpu_detect.h"
+#include <algorithm>
 
-#if defined(Y_PLATFORM_WINDOWS)
-#include "YBaseLib/Windows/WindowsHeaders.h"
-#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
+#if defined(WIN32)
+#include "windows_headers.h"
+#else
 #include <sys/mman.h>
 #endif
 
@@ -11,9 +14,9 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 {
   m_total_size = size + far_code_size;
 
-#if defined(Y_PLATFORM_WINDOWS)
+#if defined(WIN32)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
-#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
+#elif defined(__linux__) || defined(__ANDROID__)
   m_code_ptr = static_cast<u8*>(
     mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 #else
@@ -34,9 +37,9 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
 JitCodeBuffer::~JitCodeBuffer()
 {
-#if defined(Y_PLATFORM_WINDOWS)
+#if defined(WIN32)
   VirtualFree(m_code_ptr, 0, MEM_RELEASE);
-#elif defined(Y_PLATFORM_LINUX) || defined(Y_PLATFORM_ANDROID)
+#elif defined(__linux__) || defined(__ANDROID__)
   munmap(m_code_ptr, m_total_size);
 #endif
 }
@@ -46,7 +49,7 @@ void JitCodeBuffer::CommitCode(u32 length)
   if (length == 0)
     return;
 
-#if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
+#if defined(CPU_ARM) || defined(CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
   FlushInstructionCache(m_free_code_ptr, length);
 #endif
@@ -61,7 +64,7 @@ void JitCodeBuffer::CommitFarCode(u32 length)
   if (length == 0)
     return;
 
-#if defined(Y_CPU_ARM) || defined(Y_CPU_AARCH64)
+#if defined(CPU_ARM) || defined(CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
   FlushInstructionCache(m_free_far_code_ptr, length);
 #endif
@@ -101,9 +104,9 @@ void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
 
 void JitCodeBuffer::FlushInstructionCache(void* address, u32 size)
 {
-#if defined(Y_PLATFORM_WINDOWS)
+#if defined(WIN32)
   ::FlushInstructionCache(GetCurrentProcess(), address, size);
-#elif defined(Y_COMPILER_GCC) || defined(Y_COMPILER_CLANG)
+#elif defined(__GNUC__) || defined(__clang__)
   __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
 #else
 #error Unknown platform.

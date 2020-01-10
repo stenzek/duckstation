@@ -1,6 +1,6 @@
 #include "state_wrapper.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/String.h"
+#include "log.h"
+#include "string.h"
 #include <cinttypes>
 #include <cstring>
 Log_SetChannel(StateWrapper);

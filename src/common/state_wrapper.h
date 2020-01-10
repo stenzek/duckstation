@@ -1,5 +1,5 @@
 #pragma once
-#include "YBaseLib/ByteStream.h"
+#include "byte_stream.h"
 #include "fifo_queue.h"
 #include "heap_array.h"
 #include "types.h"

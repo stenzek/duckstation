@@ -1,6 +1,4 @@
 #pragma once
-#include "YBaseLib/String.h"
-#include "YBaseLib/Timer.h"
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
 #include "core/host_display.h"
@@ -11,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <string>
 
 class System;
 class AudioStream;
@@ -26,7 +25,7 @@ public:
   static std::unique_ptr<SDLHostInterface> Create(const char* filename = nullptr, const char* exp1_filename = nullptr,
                                                   const char* save_state_filename = nullptr);
 
-  static TinyString GetSaveStateFilename(u32 index);
+  static std::string GetSaveStateFilename(u32 index);
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;

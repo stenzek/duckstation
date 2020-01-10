@@ -1,9 +1,8 @@
 #include "system.h"
-#include "YBaseLib/AutoReleasePtr.h"
-#include "YBaseLib/Log.h"
 #include "bios.h"
 #include "bus.h"
 #include "cdrom.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "controller.h"
 #include "cpu_code_cache.h"
@@ -43,12 +42,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 
 System::~System() = default;
 
-bool System::IsPSExe(const char* filename)
-{
-  const StaticString filename_str(filename);
-  return filename_str.EndsWith(".psexe", false) || filename_str.EndsWith(".exe", false);
-}
-
 std::unique_ptr<System> System::Create(HostInterface* host_interface)
 {
   std::unique_ptr<System> system(new System(host_interface));
@@ -61,8 +54,8 @@ std::unique_ptr<System> System::Create(HostInterface* host_interface)
 bool System::RecreateGPU()
 {
   // save current state
-  AutoReleasePtr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
-  StateWrapper sw(state_stream, StateWrapper::Mode::Write);
+  std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
+  StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
   const bool state_valid = m_gpu->DoState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
@@ -92,7 +85,7 @@ bool System::Boot(const char* filename)
   bool exe_boot = false;
   if (filename)
   {
-    exe_boot = IsPSExe(filename);
+    exe_boot = GameList::IsExeFileName(filename);
     if (exe_boot)
     {
       if (m_region == ConsoleRegion::Auto)
@@ -107,7 +100,7 @@ bool System::Boot(const char* filename)
       media = CDImage::Open(filename);
       if (!media)
       {
-        m_host_interface->ReportError(SmallString::FromFormat("Failed to load CD image '%s'", filename));
+        m_host_interface->ReportFormattedError("Failed to load CD image '%s'", filename);
         return false;
       }
 
@@ -139,8 +132,7 @@ bool System::Boot(const char* filename)
   std::optional<BIOS::Image> bios_image = m_host_interface->GetBIOSImage(m_region);
   if (!bios_image)
   {
-    m_host_interface->ReportError(
-      TinyString::FromFormat("Failed to load %s BIOS", Settings::GetConsoleRegionName(m_region)));
+    m_host_interface->ReportFormattedError("Failed to load %s BIOS", Settings::GetConsoleRegionName(m_region));
     return false;
   }
 
@@ -158,7 +150,7 @@ bool System::Boot(const char* filename)
   // Load EXE late after BIOS.
   if (exe_boot && !LoadEXE(filename, *bios_image))
   {
-    m_host_interface->ReportError(SmallString::FromFormat("Failed to load EXE file '%s'", filename));
+    m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", filename);
     return false;
   }
 
@@ -457,11 +449,13 @@ Controller* System::GetController(u32 slot) const
 void System::UpdateControllers()
 {
   const Settings& settings = m_host_interface->GetSettings();
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++) {
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
     m_pad->SetController(i, nullptr);
 
     const ControllerType type = settings.controller_types[i];
-    if (type != ControllerType::None) {
+    if (type != ControllerType::None)
+    {
       std::unique_ptr<Controller> controller = Controller::Create(type);
       if (controller)
         m_pad->SetController(i, std::move(controller));

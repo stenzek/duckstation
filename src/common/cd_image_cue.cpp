@@ -1,7 +1,10 @@
-#include "YBaseLib/Log.h"
+#include "assert.h"
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+#include "file_system.h"
+#include "log.h"
 #include <libcue/libcue.h>
+#include <algorithm>
 #include <map>
 Log_SetChannel(CDImageCueSheet);
 
@@ -61,7 +64,7 @@ static std::string ReplaceExtension(std::string_view path, std::string_view new_
 
 bool CDImageCueSheet::OpenAndParse(const char* filename)
 {
-  std::FILE* cue_fp = std::fopen(filename, "rb");
+  std::FILE* cue_fp = FileSystem::OpenCFile(filename, "rb");
   if (!cue_fp)
   {
     Log_ErrorPrintf("Failed to open cuesheet '%s'", filename);
@@ -98,7 +101,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     if (it == m_files.end())
     {
       std::string track_full_filename = basepath + track_filename;
-      std::FILE* track_fp = std::fopen(track_full_filename.c_str(), "rb");
+      std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb");
       if (!track_fp)
       {
         Log_ErrorPrintf("Failed to open track filename '%s' (from '%s' and '%s')", track_full_filename.c_str(),

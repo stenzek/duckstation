@@ -3,6 +3,7 @@
 #include "common/rectangle.h"
 #include "timers.h"
 #include "types.h"
+#include <algorithm>
 #include <array>
 #include <deque>
 #include <memory>
