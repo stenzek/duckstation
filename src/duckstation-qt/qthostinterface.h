@@ -14,6 +14,7 @@
 
 class ByteStream;
 
+class QEventLoop;
 class QWidget;
 
 class GameList;
@@ -116,6 +117,7 @@ private:
   void createThread();
   void stopThread();
   void threadEntryPoint();
+  void wakeThread();
 
   QSettings m_qsettings;
 
@@ -124,6 +126,7 @@ private:
   QtDisplayWindow* m_display_window = nullptr;
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
+  QEventLoop* m_worker_thread_event_loop = nullptr;
 
   std::atomic_bool m_shutdown_flag{false};
 

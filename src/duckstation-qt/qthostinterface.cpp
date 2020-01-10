@@ -13,6 +13,7 @@
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
+#include <QtCore/QEventLoop>
 #include <QtWidgets/QMessageBox>
 #include <memory>
 Log_SetChannel(QtHostInterface);
@@ -374,6 +375,8 @@ void QtHostInterface::pauseSystem(bool paused)
 
   m_paused = paused;
   m_audio_stream->PauseOutput(paused);
+  if (!paused)
+    wakeThread();
   emit emulationPaused(paused);
 }
 
@@ -436,6 +439,7 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
     return;
   }
 
+  wakeThread();
   m_audio_stream->PauseOutput(false);
   emit emulationStarted();
 }
@@ -478,12 +482,13 @@ void QtHostInterface::doStopThread()
 
 void QtHostInterface::threadEntryPoint()
 {
+  m_worker_thread_event_loop = new QEventLoop();
   while (!m_shutdown_flag.load())
   {
-    if (!m_system)
+    if (!m_system || m_paused)
     {
       // wait until we have a system before running
-      QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+      m_worker_thread_event_loop->exec();
       continue;
     }
 
@@ -516,13 +521,23 @@ void QtHostInterface::threadEntryPoint()
       UpdatePerformanceCounters();
     }
 
-    QCoreApplication::processEvents(QEventLoop::AllEvents, m_paused ? 16 : 0);
+    m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
   }
 
   m_system.reset();
+  delete m_worker_thread_event_loop;
+  m_worker_thread_event_loop = nullptr;
 
   // move back to UI thread
   moveToThread(m_original_thread);
+}
+
+void QtHostInterface::wakeThread()
+{
+  if (isOnWorkerThread())
+    m_worker_thread_event_loop->quit();
+  else
+    QMetaObject::invokeMethod(m_worker_thread_event_loop, "quit", Qt::QueuedConnection);
 }
 
 QtHostInterface::Thread::Thread(QtHostInterface* parent) : QThread(parent), m_parent(parent) {}
