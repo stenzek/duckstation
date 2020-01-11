@@ -58,7 +58,7 @@ static int Run(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
   // set log flags
-#ifdef Y_BUILD_CONFIG_RELEASE
+#ifndef _DEBUG
   const LOGLEVEL level = LOGLEVEL_INFO;
   // const LOGLEVEL level = LOGLEVEL_DEV;
   // const LOGLEVEL level = LOGLEVEL_PROFILE;
