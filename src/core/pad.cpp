@@ -110,20 +110,11 @@ u32 Pad::ReadRegister(u32 offset)
   {
     case 0x00: // JOY_DATA
     {
-      u8 value;
-      if (!m_receive_buffer_full)
-      {
-        Log_DevPrintf("Read from RX fifo when empty");
-        value = 0xFF;
-      }
-      else
-      {
-        value = m_receive_buffer;
-        m_receive_buffer_full = false;
-      }
-
+      const u8 value = m_receive_buffer_full ? m_receive_buffer : 0xFF;
+      Log_DebugPrintf("JOY_DATA (R) -> 0x%02X%s", ZeroExtend32(value), m_receive_buffer_full ? "" : "(EMPTY)");
+      m_receive_buffer_full = false;
       UpdateJoyStat();
-      Log_DebugPrintf("JOY_DATA (R) -> 0x%02X", ZeroExtend32(value));
+
       return (ZeroExtend32(value) | (ZeroExtend32(value) << 8) | (ZeroExtend32(value) << 16) |
               (ZeroExtend32(value) << 24));
     }
