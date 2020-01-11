@@ -1,5 +1,6 @@
 #include "qthostinterface.h"
 #include "common/assert.h"
+#include "common/audio_stream.h"
 #include "common/byte_stream.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -7,7 +8,6 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
-#include "qtaudiostream.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>

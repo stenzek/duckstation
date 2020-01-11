@@ -29,7 +29,6 @@
     <ClCompile Include="hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
-    <ClCompile Include="qtaudiostream.cpp" />
     <ClCompile Include="d3d11displaywindow.cpp" />
     <ClCompile Include="$(IntDir)moc_d3d11displaywindow.cpp" />
   </ItemGroup>
@@ -37,7 +36,6 @@
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
-    <ClInclude Include="qtaudiostream.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
