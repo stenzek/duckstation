@@ -27,6 +27,15 @@ jobs:
       run: |
         copy /Y dep\msvc\bin64\*.* bin\x64
       
+    - name: Remove extra bloat before archiving
+      shell: cmd
+      run: |
+        del /Q bin\x64\*.pdb
+        del /Q bin\x64\*.exp
+        del /Q bin\x64\*.lib
+        del /Q bin\x64\*.iobj
+        del /Q bin\x64\*.ipdb
+
     - name: Upload release archive
       uses: actions/upload-artifact@v1
       with:
