@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <QTDIRDefault>$(SolutionDir)dep\msvc\qt5-x64\</QTDIRDefault>
+    <BinaryOutputDir>$(SolutionDir)bin\$(Platform)\</BinaryOutputDir>
+    <QTDIRDefault>$(SolutionDir)dep\msvc\qt\5.14.0\msvc2017_64\</QTDIRDefault>
     <QTDIR Condition="Exists('$(QTDIRDefault)') And ('$(QTDIR)'=='' Or !Exists('$(QTDIR)'))">$(QTDIRDefault)</QTDIR>
     <QTDIR Condition="Exists('$(QTDIR)') And !HasTrailingSlash('$(QTDIR)')">$(QTDIR)\</QTDIR>
     <QtDirValid>false</QtDirValid>
@@ -13,12 +14,12 @@
     <QtToolOutDir>$(SolutionDir)build\$(ProjectName)-$(Platform)-$(Configuration)\</QtToolOutDir>
     <QtMocOutPrefix>$(QtToolOutDir)moc_</QtMocOutPrefix>
     <QtDebugSuffix>d</QtDebugSuffix>
-    <QtLibSuffix Condition="'$(Configuration)'=='Debug'">$(QtDebugSuffix)</QtLibSuffix>
+    <QtLibSuffix Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='DebugFast'">$(QtDebugSuffix)</QtLibSuffix>
     <QtPluginFolder>QtPlugins</QtPluginFolder>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">QT_NO_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='ReleaseLTCG'">QT_NO_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(QtToolOutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(QtIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -71,7 +72,7 @@
   <!--TODO find a way to autocreate from ClCompile settings-->
   <PropertyGroup>
     <MocDefines></MocDefines>
-    <MocDefines Condition="'$(Configuration)'=='Release'">-DQT_NO_DEBUG -DNDEBUG $(MocDefines)</MocDefines>
+    <MocDefines Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='ReleaseLTCG'">-DQT_NO_DEBUG -DNDEBUG $(MocDefines)</MocDefines>
     <!-- !!!HOLY UGLY BATMAN!!!
         Be very careful here when adding include directories. Each path must have the whole arg surrounded by doublequotes - HOWEVER,
         the ending doublequote cannot be directly preceeded by a directory seperator. In other words, you must use:
@@ -113,4 +114,47 @@
       <Targets>QtMoc</Targets>
     </AvailableItemName>
   </ItemGroup>
+
+  <!--Copy the needed dlls-->
+  <ItemGroup>
+    <QtLibNames Include="Qt5Core$(QtLibSuffix);Qt5Gui$(QtLibSuffix);Qt5Widgets$(QtLibSuffix)" />
+    <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
+    <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
+    <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />
+    <QtPlugins Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='DebugFast'" Include="@(QtAllPlugins)" />
+    <QtPlugins Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='ReleaseLTCG'" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).dll" Include="@(QtAllPlugins)" />
+    <QtPluginsDest Include="@(QtPlugins -> '$(BinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </ItemGroup>
+  <PropertyGroup>
+    <QtConfFile>$(BinaryOutputDir)qt.conf</QtConfFile>
+  </PropertyGroup>
+  <Target Name="QtCopyBinaries"
+    AfterTargets="Build"
+    Inputs="@(QtDlls);@(QtPlugins)"
+    Outputs="@(QtDlls -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPlugins -> '$(BinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Qt .dlls" Importance="High" />
+    <Copy
+      SourceFiles="@(QtDlls)"
+      DestinationFolder="$(BinaryOutputDir)"
+      SkipUnchangedFiles="true"
+    />
+    <Copy
+      SourceFiles="@(QtPlugins)"
+      DestinationFiles="@(QtPluginsDest)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+  <Target Name="QtCreateConf"
+    BeforeTargets="QtCopyBinaries"
+    Condition="!Exists('$(QtConfFile)')">
+    <!--
+      Create a file which tells Qt where to look for "plugins".
+      Otherwise Qt only looks in ./<subtype>/type.dll instead of ./$(QtPluginFolder)/<subtype>/type.dll, which is messy
+      -->
+    <WriteLinesToFile
+      File="$(QtConfFile)"
+      Lines="[Paths];Plugins = ./$(QtPluginFolder)"
+      Overwrite="true"
+    />
+  </Target>
 </Project>
