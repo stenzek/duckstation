@@ -17,6 +17,8 @@ protected:
   void CloseDevice() override;
   void BufferAvailable() override;
 
+  void DestroyContext();
+
   static long DataCallback(cubeb_stream* stm, void* user_ptr, const void* input_buffer, void* output_buffer,
                            long nframes);
   static void StateCallback(cubeb_stream* stream, void* user_ptr, cubeb_state state);
@@ -24,4 +26,8 @@ protected:
   cubeb* m_cubeb_context = nullptr;
   cubeb_stream* m_cubeb_stream = nullptr;
   bool m_paused = true;
+
+#ifdef WIN32
+  bool m_com_initialized_by_us = false;
+#endif
 };

@@ -3,6 +3,12 @@
 #include "common/log.h"
 Log_SetChannel(CubebAudioStream);
 
+#ifdef WIN32
+#include "common/windows_headers.h"
+#include <objbase.h>
+#pragma comment(lib, "Ole32.lib")
+#endif
+
 CubebAudioStream::CubebAudioStream() = default;
 
 CubebAudioStream::~CubebAudioStream()
@@ -14,6 +20,16 @@ CubebAudioStream::~CubebAudioStream()
 bool CubebAudioStream::OpenDevice()
 {
   Assert(!IsOpen());
+
+#ifdef WIN32
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  m_com_initialized_by_us = SUCCEEDED(hr);
+  if (FAILED(hr) && hr != RPC_E_CHANGED_MODE && hr != S_FALSE)
+  {
+    Log_ErrorPrintf("Failed to initialize COM");
+    return false;
+  }
+#endif
 
   int rv = cubeb_init(&m_cubeb_context, "DuckStation", nullptr);
   if (rv != CUBEB_OK)
@@ -34,8 +50,7 @@ bool CubebAudioStream::OpenDevice()
   if (rv != CUBEB_OK)
   {
     Log_ErrorPrintf("Could not get minimum latency: %d", rv);
-    cubeb_destroy(m_cubeb_context);
-    m_cubeb_context = nullptr;
+    DestroyContext();
     return false;
   }
 
@@ -53,8 +68,7 @@ bool CubebAudioStream::OpenDevice()
   if (rv != CUBEB_OK)
   {
     Log_ErrorPrintf("Could not create stream: %d", rv);
-    cubeb_destroy(m_cubeb_context);
-    m_cubeb_context = nullptr;
+    DestroyContext();
     return false;
   }
 
@@ -84,8 +98,7 @@ void CubebAudioStream::CloseDevice()
   cubeb_stream_destroy(m_cubeb_stream);
   m_cubeb_stream = nullptr;
 
-  cubeb_destroy(m_cubeb_context);
-  m_cubeb_context = nullptr;
+  DestroyContext();
 }
 
 long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const void* input_buffer, void* output_buffer,
@@ -113,6 +126,17 @@ void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb
 }
 
 void CubebAudioStream::BufferAvailable() {}
+
+void CubebAudioStream::DestroyContext()
+{
+  cubeb_destroy(m_cubeb_context);
+  m_cubeb_context = nullptr;
+
+#ifdef WIN32
+  if (m_com_initialized_by_us)
+    CoUninitialize();
+#endif
+}
 
 std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream()
 {
