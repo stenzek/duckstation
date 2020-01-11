@@ -1,0 +1,3 @@
+[submodule "dep/msvc/qt"]
+	path = dep/msvc/qt
+	url = https://github.com/stenzek/duckstation-ext-qt-minimal.git
