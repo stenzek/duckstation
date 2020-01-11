@@ -18,26 +18,27 @@
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Building
-Clone the respository with submodules (`git clone --recursive` or `git clone` and `git submodule update --init`).
 
 ### Windows
 Requirements:
  - Visual Studio 2019
-
-1. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
-2. Build, binaries are located in `bin/x64`.
-3. Copy the DLL files from `dep/msvc/bin64` to the binary directory.
-4. Run `duckstation-x64-Release.exe` or whichever config you used.
+ 
+1. Clone the respository with submodules (`git clone --recursive` or `git clone` and `git submodule update --init`).
+2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
+3. Build, binaries are located in `bin/x64`.
+4. Copy the DLL files from `dep/msvc/bin64` to the binary directory.
+5. Run `duckstation-x64-Release.exe` or whichever config you used.
 
 ### Linux
 Requirements:
  - CMake
  - SDL2
 
-1. Create a build directory, either in-tree or elsewhere.
-2. Run cmake to configure the build system. Assuming a build subdirectory of `build-release`, `cd build-release && cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..`.
-3. Compile the source code. For the example above, run `ninja`.
-4. Run the binary, located in the build directory under `src/duckstation/duckstation`.
+1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
+2. Create a build directory, either in-tree or elsewhere.
+3. Run cmake to configure the build system. Assuming a build subdirectory of `build-release`, `cd build-release && cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..`.
+4. Compile the source code. For the example above, run `ninja`.
+5. Run the binary, located in the build directory under `src/duckstation/duckstation`.
 
 ### Android
 **NOTE:** The Android frontend is still incomplete, not all functionality works and some paths are hard-coded.
@@ -45,9 +46,10 @@ Requirements:
 Requirements:
  - Android Studio with the NDK and CMake installed
 
-1. Open the project in the `android` directory.
-2. Select Build -> Build Bundle(s) / APKs(s) -> Build APK(s).
-3. Install APK on device, or use Run menu for attached device.
+1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
+2. Open the project in the `android` directory.
+3. Select Build -> Build Bundle(s) / APKs(s) -> Build APK(s).
+4. Install APK on device, or use Run menu for attached device.
 
 ## Running
 1. Configure the BIOS path in the settings.
