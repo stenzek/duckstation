@@ -487,6 +487,7 @@ void QtHostInterface::stopThread()
 void QtHostInterface::doStopThread()
 {
   m_shutdown_flag.store(true);
+  m_worker_thread_event_loop->quit();
 }
 
 void QtHostInterface::threadEntryPoint()
