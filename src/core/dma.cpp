@@ -197,15 +197,6 @@ TickCount DMA::GetTransferDelay(Channel channel) const
     }
     break;
 
-    case Channel::GPU:
-    {
-      if (cs.channel_control.sync_mode == SyncMode::Request)
-        return cs.block_control.request.GetBlockCount();
-      else
-        return 1;
-    }
-    break;
-
     default:
       return 1;
   }

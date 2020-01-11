@@ -54,6 +54,7 @@ public:
 private:
   static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
+  static constexpr u32 TRANSFER_TICKS = 10;
 
   enum class SyncMode : u32
   {
