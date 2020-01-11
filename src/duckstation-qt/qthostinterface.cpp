@@ -27,7 +27,6 @@ QtHostInterface::QtHostInterface(QObject* parent)
   checkSettings();
   createGameList();
   doUpdateInputMap();
-  createAudioStream();
   createThread();
 }
 
@@ -445,9 +444,20 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
 
 void QtHostInterface::createAudioStream()
 {
-  // Qt at least on Windows seems to want a buffer size of at least 8KB.
-  // m_audio_stream = QtAudioStream::Create();
-  // if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
+  switch (m_settings.audio_backend)
+  {
+    case AudioBackend::Default:
+    case AudioBackend::Cubeb:
+      m_audio_stream = AudioStream::CreateCubebAudioStream();
+      break;
+
+    case AudioBackend::Null:
+    default:
+      m_audio_stream = AudioStream::CreateNullAudioStream();
+      break;
+  }
+
+  if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
   {
     qWarning() << "Failed to configure audio stream, falling back to null output";
 
@@ -482,6 +492,10 @@ void QtHostInterface::doStopThread()
 void QtHostInterface::threadEntryPoint()
 {
   m_worker_thread_event_loop = new QEventLoop();
+
+  createAudioStream();
+
+  // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
   {
     if (!m_system || m_paused)
@@ -524,6 +538,7 @@ void QtHostInterface::threadEntryPoint()
   }
 
   m_system.reset();
+  m_audio_stream.reset();
   delete m_worker_thread_event_loop;
   m_worker_thread_event_loop = nullptr;
 

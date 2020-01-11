@@ -53,6 +53,7 @@ enum class AudioBackend : u8
 {
   Null,
   Default,
+  Cubeb,
   Count
 };
 

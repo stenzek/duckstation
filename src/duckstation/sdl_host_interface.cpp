@@ -128,6 +128,10 @@ void SDLHostInterface::CreateAudioStream()
       m_audio_stream = AudioStream::CreateNullAudioStream();
       break;
 
+    case AudioBackend::Cubeb:
+      m_audio_stream = AudioStream::CreateCubebAudioStream();
+      break;
+
     case AudioBackend::Default:
     default:
       m_audio_stream = std::make_unique<SDLAudioStream>();
