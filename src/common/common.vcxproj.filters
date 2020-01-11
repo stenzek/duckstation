@@ -46,6 +46,7 @@
     <ClInclude Include="string_util.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="cpu_detect.h" />
+    <ClInclude Include="cubeb_audio_stream.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -88,6 +89,7 @@
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="md5_digest.cpp" />
+    <ClCompile Include="cubeb_audio_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

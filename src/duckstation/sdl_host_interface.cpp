@@ -2,7 +2,6 @@
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/log.h"
-#include "common/null_audio_stream.h"
 #include "common/string_util.h"
 #include "core/controller.h"
 #include "core/gpu.h"
@@ -126,7 +125,11 @@ void SDLHostInterface::CreateAudioStream()
   switch (m_settings.audio_backend)
   {
     case AudioBackend::Null:
-      m_audio_stream = NullAudioStream::Create();
+      m_audio_stream = AudioStream::CreateNullAudioStream();
+      break;
+
+    case AudioBackend::Cubeb:
+      m_audio_stream = AudioStream::CreateCubebAudioStream();
       break;
 
     case AudioBackend::Default:
@@ -139,7 +142,7 @@ void SDLHostInterface::CreateAudioStream()
   {
     ReportError("Failed to recreate audio stream, falling back to null");
     m_audio_stream.reset();
-    m_audio_stream = NullAudioStream::Create();
+    m_audio_stream = AudioStream::CreateNullAudioStream();
     if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS))
       Panic("Failed to reconfigure null audio stream");
   }

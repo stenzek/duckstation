@@ -41,6 +41,10 @@ public:
   void WriteSamples(const SampleType* samples, u32 num_samples);
   void EndWrite(u32 num_samples);
 
+  static std::unique_ptr<AudioStream> CreateNullAudioStream();
+
+  static std::unique_ptr<AudioStream> CreateCubebAudioStream();
+
 protected:
   virtual bool OpenDevice() = 0;
   virtual void PauseDevice(bool paused) = 0;
