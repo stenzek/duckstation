@@ -42,6 +42,7 @@
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cpu_detect.h" />
+    <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="d3d11\shader_compiler.h" />
     <ClInclude Include="d3d11\staging_texture.h" />
     <ClInclude Include="d3d11\stream_buffer.h" />
@@ -74,6 +75,7 @@
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
+    <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />
     <ClCompile Include="d3d11\staging_texture.cpp" />
     <ClCompile Include="d3d11\stream_buffer.cpp" />
@@ -99,6 +101,9 @@
     <Natvis Include="bitfield.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\dep\cubeb\cubeb.vcxproj">
+      <Project>{72f9423c-91ee-4487-aac6-555ed6f61aa1}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\glad\glad.vcxproj">
       <Project>{43540154-9e1e-409c-834f-b84be5621388}</Project>
     </ProjectReference>
@@ -243,7 +248,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -269,7 +274,7 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -298,7 +303,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -324,7 +329,7 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -354,7 +359,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -384,7 +389,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -414,7 +419,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -444,7 +449,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>

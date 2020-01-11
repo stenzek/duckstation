@@ -2,7 +2,6 @@
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/log.h"
-#include "common/null_audio_stream.h"
 #include "common/string_util.h"
 #include "core/controller.h"
 #include "core/game_list.h"
@@ -454,7 +453,7 @@ void QtHostInterface::createAudioStream()
 
     // fall back to null output
     m_audio_stream.reset();
-    m_audio_stream = NullAudioStream::Create();
+    m_audio_stream = AudioStream::CreateNullAudioStream();
     m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
   }
 }

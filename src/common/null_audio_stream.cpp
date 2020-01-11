@@ -19,7 +19,7 @@ void NullAudioStream::BufferAvailable()
   DropBuffer();
 }
 
-std::unique_ptr<AudioStream> NullAudioStream::Create()
+std::unique_ptr<AudioStream> AudioStream::CreateNullAudioStream()
 {
-  return std::unique_ptr<AudioStream>(new NullAudioStream());
+  return std::make_unique<NullAudioStream>();
 }
