@@ -16,6 +16,8 @@ add_library(common
   cd_xa.cpp
   cd_xa.h
   cpu_detect.h
+  cubeb_audio_stream.cpp
+  cubeb_audio_stream.h
   fifo_queue.h
   file_system.cpp
   file_system.h
@@ -52,7 +54,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad libcue Threads::Threads)
+target_link_libraries(common PRIVATE glad libcue Threads::Threads cubeb)
 
 if(WIN32)
   target_sources(common PRIVATE
