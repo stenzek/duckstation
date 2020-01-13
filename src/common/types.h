@@ -69,47 +69,6 @@ struct dependent_int_false : std::false_type
 {
 };
 
-// Use a signed number for cycle counting
-using CycleCount = int64_t;
-
-// Use int64 for time tracking
-using SimulationTime = int64_t;
-
-// Helpers for simulation time.
-ALWAYS_INLINE constexpr SimulationTime SecondsToSimulationTime(SimulationTime s)
-{
-  return s * INT64_C(1000000000);
-}
-ALWAYS_INLINE constexpr SimulationTime MillisecondsToSimulationTime(SimulationTime ms)
-{
-  return ms * INT64_C(1000000);
-}
-ALWAYS_INLINE constexpr SimulationTime MicrosecondsToSimulationTime(SimulationTime us)
-{
-  return us * INT64_C(1000);
-}
-ALWAYS_INLINE constexpr SimulationTime SimulationTimeToSeconds(SimulationTime s)
-{
-  return s / INT64_C(1000000000);
-}
-ALWAYS_INLINE constexpr SimulationTime SimulationTimeToMilliseconds(SimulationTime ms)
-{
-  return ms / INT64_C(1000000);
-}
-ALWAYS_INLINE constexpr SimulationTime SimulationTimeToMicroseconds(SimulationTime us)
-{
-  return us / INT64_C(1000);
-}
-
-// Calculates the difference between the specified timestamps, accounting for signed overflow.
-ALWAYS_INLINE constexpr SimulationTime GetSimulationTimeDifference(SimulationTime prev, SimulationTime now)
-{
-  if (prev <= now)
-    return now - prev;
-  else
-    return (std::numeric_limits<SimulationTime>::max() - prev) + now;
-}
-
 // Zero-extending helper
 template<typename TReturn, typename TValue>
 ALWAYS_INLINE constexpr TReturn ZeroExtend(TValue value)
