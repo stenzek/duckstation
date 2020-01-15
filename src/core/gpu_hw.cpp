@@ -80,7 +80,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
-      BatchVertex* old_vertex_ptr = m_batch_current_vertex_ptr;
       s32 min_x = std::numeric_limits<s32>::max();
       s32 max_x = std::numeric_limits<s32>::min();
       s32 min_y = std::numeric_limits<s32>::max();
@@ -100,7 +99,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         min_y = std::min(min_y, y);
         max_y = std::max(max_y, y);
 
-        (m_batch_current_vertex_ptr++)->Set(x, y, color, texpage, packed_texcoord);
+        AddVertex(x, y, color, texpage, packed_texcoord);
 
         if (restart_strip)
         {
@@ -113,7 +112,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       if (static_cast<u32>(max_x - min_x) > MAX_PRIMITIVE_WIDTH ||
           static_cast<u32>(max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
       {
-        m_batch_current_vertex_ptr = old_vertex_ptr;
+        m_batch_current_vertex_ptr -= 2;
+        AddDuplicateVertex();
+        AddDuplicateVertex();
       }
     }
     break;
@@ -165,13 +166,13 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const u16 tex_right = tex_left + static_cast<u16>(rectangle_width);
       const u16 tex_bottom = tex_top + static_cast<u16>(rectangle_height);
 
-      (m_batch_current_vertex_ptr++)->Set(pos_left, pos_top, color, texpage, tex_left, tex_top);
+      AddVertex(pos_left, pos_top, color, texpage, tex_left, tex_top);
       if (restart_strip)
         AddDuplicateVertex();
 
-      (m_batch_current_vertex_ptr++)->Set(pos_right, pos_top, color, texpage, tex_right, tex_top);
-      (m_batch_current_vertex_ptr++)->Set(pos_left, pos_bottom, color, texpage, tex_left, tex_bottom);
-      (m_batch_current_vertex_ptr++)->Set(pos_right, pos_bottom, color, texpage, tex_right, tex_bottom);
+      AddVertex(pos_right, pos_top, color, texpage, tex_right, tex_top);
+      AddVertex(pos_left, pos_bottom, color, texpage, tex_left, tex_bottom);
+      AddVertex(pos_right, pos_bottom, color, texpage, tex_right, tex_bottom);
     }
     break;
 
@@ -180,7 +181,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
 
-      BatchVertex* old_vertex_ptr = m_batch_current_vertex_ptr;
       s32 min_x = std::numeric_limits<s32>::max();
       s32 max_x = std::numeric_limits<s32>::min();
       s32 min_y = std::numeric_limits<s32>::max();
@@ -201,12 +201,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
         (m_batch_current_vertex_ptr++)->Set(x, y, color, 0, 0);
       }
-
-      if (static_cast<u32>(max_x - min_x) > MAX_PRIMITIVE_WIDTH ||
-          static_cast<u32>(max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
-      {
-        m_batch_current_vertex_ptr = old_vertex_ptr;
-      }
     }
     break;
 
@@ -218,7 +212,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
 void GPU_HW::AddDuplicateVertex()
 {
-  std::memcpy(m_batch_current_vertex_ptr, m_batch_current_vertex_ptr - 1, sizeof(BatchVertex));
+  std::memcpy(m_batch_current_vertex_ptr, &m_batch_last_vertex, sizeof(BatchVertex));
   m_batch_current_vertex_ptr++;
 }
 

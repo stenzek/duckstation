@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 class GPU_HW : public GPU
@@ -152,6 +153,7 @@ protected:
   BatchVertex* m_batch_start_vertex_ptr = nullptr;
   BatchVertex* m_batch_end_vertex_ptr = nullptr;
   BatchVertex* m_batch_current_vertex_ptr = nullptr;
+  BatchVertex m_batch_last_vertex = {};
   u32 m_batch_base_vertex = 0;
 
   u32 m_resolution_scale = 1;
@@ -184,4 +186,12 @@ private:
 
   void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
   void AddDuplicateVertex();
+
+  template<typename... Args>
+  ALWAYS_INLINE void AddVertex(Args&&... args)
+  {
+    m_batch_last_vertex.Set(std::forward<Args>(args)...);
+    std::memcpy(m_batch_current_vertex_ptr, &m_batch_last_vertex, sizeof(BatchVertex));
+    m_batch_current_vertex_ptr++;
+  }
 };
