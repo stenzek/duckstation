@@ -40,17 +40,17 @@ std::string SDLSettingsInterface::GetStringValue(const char* section, const char
 
 void SDLSettingsInterface::SetIntValue(const char* section, const char* key, int value)
 {
-  m_ini.SetLongValue(section, key, static_cast<long>(value));
+  m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
 }
 
 void SDLSettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
-  m_ini.SetDoubleValue(section, key, static_cast<double>(value));
+  m_ini.SetDoubleValue(section, key, static_cast<double>(value), nullptr, true);
 }
 
 void SDLSettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
-  m_ini.SetBoolValue(section, key, value);
+  m_ini.SetBoolValue(section, key, value, nullptr, true);
 }
 
 void SDLSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
