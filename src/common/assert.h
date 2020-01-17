@@ -14,7 +14,7 @@ void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char*
     Y_OnAssertFailed("Assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                                 \
   }
 
-#if Y_BUILD_CONFIG_DEBUG
+#ifdef _DEBUG
 #define DebugAssert(expr)                                                                                              \
   if (!(expr))                                                                                                         \
   {                                                                                                                    \
