@@ -85,5 +85,6 @@ private:
 
   bool m_display_texture_changed = false;
   bool m_display_linear_filtering = false;
+  bool m_allow_tearing_supported = false;
   bool m_vsync = false;
 };

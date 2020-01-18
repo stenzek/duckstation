@@ -19,7 +19,7 @@ if(WIN32)
     d3d11_host_display.cpp
     d3d11_host_display.h
   )
-  target_link_libraries(duckstation PRIVATE d3d11.lib winmm.lib)
+  target_link_libraries(duckstation PRIVATE d3d11.lib dxgi.lib winmm.lib)
 endif()
 
 target_link_libraries(duckstation PRIVATE core common imgui nativefiledialog glad simpleini SDL2::Main)

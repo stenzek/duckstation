@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include <SDL_syswm.h>
 #include <array>
+#include <dxgi1_5.h>
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_sdl.h>
@@ -191,7 +192,7 @@ void D3D11HostDisplay::WindowResized()
 
 bool D3D11HostDisplay::CreateD3DDevice()
 {
-  const bool debug = false;
+  const bool debug = true;
 
   SDL_SysWMinfo syswm = {};
   if (!SDL_GetWindowWMInfo(m_window, &syswm))
@@ -200,9 +201,38 @@ bool D3D11HostDisplay::CreateD3DDevice()
     return false;
   }
 
+  ComPtr<IDXGIFactory> dxgi_factory;
+  HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to create DXGI factory: 0x%08X", hr);
+    return false;
+  }
+
+  m_allow_tearing_supported = false;
+  ComPtr<IDXGIFactory5> dxgi_factory5;
+  hr = dxgi_factory.As(&dxgi_factory5);
+  if (SUCCEEDED(hr))
+  {
+    BOOL allow_tearing_supported = false;
+    hr = dxgi_factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
+                                            sizeof(allow_tearing_supported));
+    if (SUCCEEDED(hr))
+      m_allow_tearing_supported = (allow_tearing_supported == TRUE);
+  }
+
   UINT create_flags = 0;
   if (debug)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+
+  hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0, D3D11_SDK_VERSION,
+                         m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to create D3D device: 0x%08X", hr);
+    return false;
+  }
 
   DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
   swap_chain_desc.BufferDesc.Width = m_window_width;
@@ -215,31 +245,35 @@ bool D3D11HostDisplay::CreateD3DDevice()
   swap_chain_desc.Windowed = TRUE;
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-  HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0,
-                                             D3D11_SDK_VERSION, &swap_chain_desc, m_swap_chain.GetAddressOf(),
-                                             m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+  if (m_allow_tearing_supported)
+    swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
+  hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
   if (FAILED(hr))
   {
     Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
     swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    swap_chain_desc.Flags = 0;
+    m_allow_tearing_supported = false;
+
+    hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+    if (FAILED(hr))
+    {
+      Log_ErrorPrintf("CreateSwapChain failed: 0x%08X", hr);
+      return false;
+    }
   }
 
-  if (FAILED(hr))
+  if (debug)
   {
-    Log_ErrorPrintf("D3D11CreateDeviceAndSwapChain failed: 0x%08X", hr);
-    return false;
+    ComPtr<ID3D11InfoQueue> info;
+    hr = m_device.As(&info);
+    if (SUCCEEDED(hr))
+    {
+      info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+      info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
+    }
   }
-
-#if 0
-  ComPtr<ID3D11InfoQueue> info;
-  hr = m_device.As(&info);
-  if (SUCCEEDED(hr))
-  {
-    info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
-    info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
-  }
-#endif
 
   return true;
 }
@@ -374,7 +408,10 @@ void D3D11HostDisplay::Render()
 
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-  m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
+  if (!m_vsync && m_allow_tearing_supported)
+    m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+  else
+    m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
 
   ImGui_ImplSDL2_NewFrame(m_window);
   ImGui_ImplDX11_NewFrame();
