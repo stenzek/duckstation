@@ -192,7 +192,7 @@ void D3D11HostDisplay::WindowResized()
 
 bool D3D11HostDisplay::CreateD3DDevice()
 {
-  const bool debug = true;
+  const bool debug = false;
 
   SDL_SysWMinfo syswm = {};
   if (!SDL_GetWindowWMInfo(m_window, &syswm))
