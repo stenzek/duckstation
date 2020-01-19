@@ -18,8 +18,8 @@ public:
 
   virtual HostDisplay* getHostDisplayInterface();
 
-  virtual bool createDeviceContext(QThread* worker_thread);
-  virtual bool initializeDeviceContext();
+  virtual bool createDeviceContext(QThread* worker_thread, bool debug_device);
+  virtual bool initializeDeviceContext(bool debug_device);
   virtual void destroyDeviceContext();
 
   virtual void Render();

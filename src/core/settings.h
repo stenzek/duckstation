@@ -44,6 +44,7 @@ struct Settings
   bool gpu_true_color = false;
   bool gpu_texture_filtering = false;
   bool gpu_force_progressive_scan = false;
+  bool gpu_use_debug_device = false;
   bool display_linear_filtering = true;
   bool display_fullscreen = false;
   bool video_sync_enabled = true;

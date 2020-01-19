@@ -234,7 +234,7 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread)
+bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
   m_gl_context = std::make_unique<QOpenGLContext>();
 
@@ -249,9 +249,8 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread)
   surface_format.setRenderableType(QSurfaceFormat::OpenGL);
   surface_format.setProfile(QSurfaceFormat::CoreProfile);
 
-#ifdef _DEBUG
-  surface_format.setOption(QSurfaceFormat::DebugContext);
-#endif
+  if (debug_device)
+    surface_format.setOption(QSurfaceFormat::DebugContext);
 
   for (const auto [major, minor] : desktop_versions_to_try)
   {
@@ -269,9 +268,8 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread)
     // try es
     surface_format.setRenderableType(QSurfaceFormat::OpenGLES);
     surface_format.setProfile(QSurfaceFormat::NoProfile);
-#ifdef _DEBUG
-    surface_format.setOption(QSurfaceFormat::DebugContext, false);
-#endif
+    if (debug_device)
+      surface_format.setOption(QSurfaceFormat::DebugContext, false);
 
     for (const auto [major, minor] : es_versions_to_try)
     {
@@ -300,7 +298,7 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread)
     return false;
   }
 
-  if (!QtDisplayWindow::createDeviceContext(worker_thread))
+  if (!QtDisplayWindow::createDeviceContext(worker_thread, debug_device))
   {
     m_gl_context->doneCurrent();
     m_gl_context.reset();
@@ -312,7 +310,7 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread)
   return true;
 }
 
-bool OpenGLDisplayWindow::initializeDeviceContext()
+bool OpenGLDisplayWindow::initializeDeviceContext(bool debug_device)
 {
   if (!m_gl_context->makeCurrent(this))
     return false;
@@ -330,16 +328,14 @@ bool OpenGLDisplayWindow::initializeDeviceContext()
     return false;
   }
 
-#if 0
-  if (GLAD_GL_KHR_debug)
+  if (debug_device && GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
-#endif
 
-  if (!QtDisplayWindow::initializeDeviceContext())
+  if (!QtDisplayWindow::initializeDeviceContext(debug_device))
   {
     s_thread_gl_context = nullptr;
     m_gl_context->doneCurrent();

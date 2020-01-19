@@ -203,7 +203,7 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLHostDisplay::CreateGLContext()
+bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
 {
   // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
   static constexpr std::array<std::tuple<int, int>, 11> desktop_versions_to_try = {
@@ -212,9 +212,8 @@ bool OpenGLHostDisplay::CreateGLContext()
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#ifdef _DEBUG
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-#endif
+  if (debug_device)
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
   for (const auto [major, minor] : desktop_versions_to_try)
   {
@@ -267,16 +266,13 @@ bool OpenGLHostDisplay::CreateGLContext()
     return false;
   }
 
-#if 0
-  if (GLAD_GL_KHR_debug)
+  if (debug_device && GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
-#endif
 
-  SDL_GL_SetSwapInterval(0);
   return true;
 }
 
@@ -350,10 +346,10 @@ void main()
   return true;
 }
 
-std::unique_ptr<HostDisplay> OpenGLHostDisplay::Create(SDL_Window* window)
+std::unique_ptr<HostDisplay> OpenGLHostDisplay::Create(SDL_Window* window, bool debug_device)
 {
   std::unique_ptr<OpenGLHostDisplay> display = std::make_unique<OpenGLHostDisplay>(window);
-  if (!display->CreateGLContext() || !display->CreateImGuiContext() || !display->CreateGLResources())
+  if (!display->CreateGLContext(debug_device) || !display->CreateImGuiContext() || !display->CreateGLResources())
     return nullptr;
 
   return display;

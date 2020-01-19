@@ -18,12 +18,12 @@ HostDisplay* QtDisplayWindow::getHostDisplayInterface()
   return nullptr;
 }
 
-bool QtDisplayWindow::createDeviceContext(QThread* worker_thread)
+bool QtDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
   return true;
 }
 
-bool QtDisplayWindow::initializeDeviceContext()
+bool QtDisplayWindow::initializeDeviceContext(bool debug_device)
 {
   if (!createImGuiContext() || !createDeviceResources())
     return false;

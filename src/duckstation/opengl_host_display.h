@@ -12,7 +12,7 @@ public:
   OpenGLHostDisplay(SDL_Window* window);
   ~OpenGLHostDisplay();
 
-  static std::unique_ptr<HostDisplay> Create(SDL_Window* window);
+  static std::unique_ptr<HostDisplay> Create(SDL_Window* window, bool debug_device);
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
@@ -40,7 +40,7 @@ private:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
 
-  bool CreateGLContext();
+  bool CreateGLContext(bool debug_device);
   bool CreateImGuiContext();
   bool CreateGLResources();
 

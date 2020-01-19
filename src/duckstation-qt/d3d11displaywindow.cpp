@@ -192,10 +192,8 @@ void D3D11DisplayWindow::onWindowResized(int width, int height)
     Panic("Failed to recreate swap chain RTV after resize");
 }
 
-bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
+bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
-  const bool debug = false;
-
   ComPtr<IDXGIFactory> dxgi_factory;
   HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
   if (FAILED(hr))
@@ -217,7 +215,7 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
   }
 
   UINT create_flags = 0;
-  if (debug)
+  if (debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
   hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0, D3D11_SDK_VERSION,
@@ -259,7 +257,7 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
     }
   }
 
-  if (debug)
+  if (debug_device)
   {
     ComPtr<ID3D11InfoQueue> info;
     hr = m_device.As(&info);
@@ -270,7 +268,7 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
     }
   }
 
-  if (!QtDisplayWindow::createDeviceContext(worker_thread))
+  if (!QtDisplayWindow::createDeviceContext(worker_thread, debug_device))
   {
     m_swap_chain.Reset();
     m_context.Reset();
@@ -280,12 +278,12 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread)
   return true;
 }
 
-bool D3D11DisplayWindow::initializeDeviceContext()
+bool D3D11DisplayWindow::initializeDeviceContext(bool debug_device)
 {
   if (!createSwapChainRTV())
     return false;
 
-  if (!QtDisplayWindow::initializeDeviceContext())
+  if (!QtDisplayWindow::initializeDeviceContext(debug_device))
     return false;
 
   return true;

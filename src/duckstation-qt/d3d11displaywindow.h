@@ -21,8 +21,8 @@ public:
 
   HostDisplay* getHostDisplayInterface() override;
 
-  bool createDeviceContext(QThread* worker_thread) override;
-  bool initializeDeviceContext() override;
+  bool createDeviceContext(QThread* worker_thread, bool debug_device) override;
+  bool initializeDeviceContext(bool debug_device) override;
   void destroyDeviceContext() override;
 
   RenderAPI GetRenderAPI() const override;

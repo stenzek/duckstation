@@ -190,10 +190,8 @@ void D3D11HostDisplay::WindowResized()
     Panic("Failed to recreate swap chain RTV after resize");
 }
 
-bool D3D11HostDisplay::CreateD3DDevice()
+bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
 {
-  const bool debug = false;
-
   SDL_SysWMinfo syswm = {};
   if (!SDL_GetWindowWMInfo(m_window, &syswm))
   {
@@ -222,7 +220,7 @@ bool D3D11HostDisplay::CreateD3DDevice()
   }
 
   UINT create_flags = 0;
-  if (debug)
+  if (debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
   hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0, D3D11_SDK_VERSION,
@@ -264,7 +262,7 @@ bool D3D11HostDisplay::CreateD3DDevice()
     }
   }
 
-  if (debug)
+  if (debug_device)
   {
     ComPtr<ID3D11InfoQueue> info;
     hr = m_device.As(&info);
@@ -386,10 +384,10 @@ bool D3D11HostDisplay::CreateImGuiContext()
   return true;
 }
 
-std::unique_ptr<HostDisplay> D3D11HostDisplay::Create(SDL_Window* window)
+std::unique_ptr<HostDisplay> D3D11HostDisplay::Create(SDL_Window* window, bool debug_device)
 {
   std::unique_ptr<D3D11HostDisplay> display = std::make_unique<D3D11HostDisplay>(window);
-  if (!display->CreateD3DDevice() || !display->CreateSwapChainRTV() || !display->CreateD3DResources() ||
+  if (!display->CreateD3DDevice(debug_device) || !display->CreateSwapChainRTV() || !display->CreateD3DResources() ||
       !display->CreateImGuiContext())
   {
     return nullptr;

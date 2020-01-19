@@ -17,7 +17,7 @@ public:
   D3D11HostDisplay(SDL_Window* window);
   ~D3D11HostDisplay();
 
-  static std::unique_ptr<HostDisplay> Create(SDL_Window* window);
+  static std::unique_ptr<HostDisplay> Create(SDL_Window* window, bool debug_device);
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
@@ -44,7 +44,7 @@ public:
 private:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
 
-  bool CreateD3DDevice();
+  bool CreateD3DDevice(bool debug_device);
   bool CreateD3DResources();
   bool CreateSwapChainRTV();
   bool CreateImGuiContext();

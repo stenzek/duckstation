@@ -150,7 +150,7 @@ void QtHostInterface::bootSystem(QString initial_filename, QString initial_save_
   Assert(!isOnWorkerThread());
   emit emulationStarting();
 
-  if (!m_display_window->createDeviceContext(m_worker_thread))
+  if (!m_display_window->createDeviceContext(m_worker_thread, m_settings.gpu_use_debug_device))
   {
     emit emulationStopped();
     return;
@@ -420,7 +420,7 @@ QByteArray QtHostInterface::saveStateToMemory()
 
 void QtHostInterface::doBootSystem(QString initial_filename, QString initial_save_state_filename)
 {
-  if (!m_display_window->initializeDeviceContext())
+  if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
   {
     emit emulationStopped();
     return;

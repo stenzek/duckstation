@@ -17,6 +17,7 @@ void Settings::SetDefaults()
   gpu_true_color = true;
   gpu_texture_filtering = false;
   gpu_force_progressive_scan = true;
+  gpu_use_debug_device = false;
   display_linear_filtering = true;
   display_fullscreen = false;
   video_sync_enabled = true;
@@ -51,6 +52,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
+  gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
 
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_fullscreen = si.GetBoolValue("Display", "Fullscreen", false);
@@ -86,6 +88,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
+  si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
 
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "Fullscreen", display_fullscreen);
