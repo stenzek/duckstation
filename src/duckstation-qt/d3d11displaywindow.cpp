@@ -184,7 +184,8 @@ void D3D11DisplayWindow::onWindowResized(int width, int height)
 
   m_swap_chain_rtv.Reset();
 
-  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
+                                           m_allow_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr))
     Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
 
