@@ -215,8 +215,8 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }
 
-static std::array<const char*, 2> s_audio_backend_names = {{"Null", "Default"}};
-static std::array<const char*, 2> s_audio_backend_display_names = {{"Null (No Output)", "Default"}};
+static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Default", "Cubeb"}};
+static std::array<const char*, 3> s_audio_backend_display_names = {{"Null (No Output)", "Default", "Cubeb"}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {
