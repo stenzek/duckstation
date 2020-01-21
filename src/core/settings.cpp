@@ -52,6 +52,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
+  gpu_force_progressive_scan = si.GetBoolValue("GPU", "ForceProgressiveScan", true);
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
 
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
@@ -88,6 +89,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
+  si.SetBoolValue("GPU", "ForceProgressiveScan", gpu_force_progressive_scan);
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
 
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
