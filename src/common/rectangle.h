@@ -151,6 +151,35 @@ struct Rectangle
     bottom = std::max(bottom, rhs.bottom);
   }
 
+  /// Clamps the rectangle to the specified coordinates.
+  constexpr void Clamp(T x1, T y1, T x2, T y2)
+  {
+    left = std::clamp(left, x1, x2);
+    right = std::clamp(right, x1, x2);
+    top = std::clamp(top, y1, y2);
+    bottom = std::clamp(bottom, y1, y2);
+  }
+
+  /// Clamps the rectangle to the specified size.
+  constexpr void ClampSize(T width, T height)
+  {
+    right = std::min(right, left + width);
+    bottom = std::min(bottom, top + height);
+  }
+
+  /// Returns a new rectangle with clamped coordinates.
+  constexpr Rectangle Clamped(T x1, T y1, T x2, T y2) const
+  {
+    return Rectangle(std::clamp(left, x1, x2), std::clamp(top, y1, y2), std::clamp(right, x1, x2),
+                     std::clamp(bottom, y1, y2));
+  }
+
+  /// Returns a new rectangle with clamped size.
+  constexpr Rectangle ClampedSize(T width, T height) const
+  {
+    return Rectangle(left, top, std::min(right, left + width), std::min(bottom, top + height));
+  }
+
   T left;
   T top;
   T right;
