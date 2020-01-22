@@ -252,17 +252,18 @@ GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
-  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
+  DebugAssert((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT);
   m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height));
 }
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height));
+  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)

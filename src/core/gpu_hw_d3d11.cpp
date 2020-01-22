@@ -1,7 +1,7 @@
 #include "gpu_hw_d3d11.h"
 #include "common/assert.h"
-#include "common/log.h"
 #include "common/d3d11/shader_compiler.h"
+#include "common/log.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "host_interface.h"
@@ -628,6 +628,16 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
 void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
+  {
+    // CPU round trip if oversized for now.
+    Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    GPU::FillVRAM(x, y, width, height, color);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    return;
+  }
+
   GPU_HW::FillVRAM(x, y, width, height, color);
 
   // drop precision unless true colour is enabled
@@ -646,17 +656,17 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
-  GPU_HW::UpdateVRAM(x, y, width, height, data);
-
   if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
   {
     // CPU round trip if oversized for now.
     Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    GPU::UpdateVRAM(x, y, width, height, data);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    GPU::UpdateVRAM(x, y, width, height, data);
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
     return;
   }
+
+  GPU_HW::UpdateVRAM(x, y, width, height, data);
 
   const u32 num_pixels = width * height;
   const auto map_result = m_texture_stream_buffer.Map(m_context.Get(), sizeof(u16), num_pixels * sizeof(u16));
@@ -676,6 +686,17 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
 void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  if ((src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT || (dst_x + width) > VRAM_WIDTH ||
+      (dst_y + height) > VRAM_HEIGHT)
+  {
+    Log_WarningPrintf("Oversized VRAM copy (%u,%u, %u,%u, %u,%u), CPU round trip", src_x, src_y, dst_x, dst_y, width,
+                      height);
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    GPU::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    return;
+  }
+
   GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
 
   src_x *= m_resolution_scale;
