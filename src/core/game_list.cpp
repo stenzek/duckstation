@@ -428,7 +428,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     }
 
     GameListEntry ge;
-    ge.path = std::move(path);
+    ge.path = path;
     ge.code = std::move(code);
     ge.title = std::move(title);
     ge.total_size = total_size;
@@ -440,7 +440,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     if (iter != m_cache_map.end())
       iter->second = std::move(ge);
     else
-      m_cache_map.emplace(path, std::move(ge));
+      m_cache_map.emplace(std::move(path), std::move(ge));
   }
 
   return true;
