@@ -346,7 +346,10 @@ std::vector<QtHostInterface::HotkeyInfo> QtHostInterface::getHotkeyList() const
     {QStringLiteral("Pause"), QStringLiteral("Toggle Pause"), QStringLiteral("General")},
     {QStringLiteral("ToggleSoftwareRendering"), QStringLiteral("Toggle Software Rendering"),
      QStringLiteral("Graphics")},
-  };
+    {QStringLiteral("IncreaseResolutionScale"), QStringLiteral("Increase Resolution Scale"),
+     QStringLiteral("Graphics")},
+    {QStringLiteral("DecreaseResolutionScale"), QStringLiteral("Decrease Resolution Scale"),
+     QStringLiteral("Graphics")}};
 
   for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
   {
@@ -390,6 +393,16 @@ void QtHostInterface::updateHotkeyInputMap()
   hk(QStringLiteral("ToggleSoftwareRendering"), [this](bool pressed) {
     if (!pressed)
       ToggleSoftwareRendering();
+  });
+
+  hk(QStringLiteral("IncreaseResolutionScale"), [this](bool pressed) {
+    if (!pressed)
+      ModifyResolutionScale(1);
+  });
+
+  hk(QStringLiteral("DecreaseResolutionScale"), [this](bool pressed) {
+    if (!pressed)
+      ModifyResolutionScale(-1);
   });
 
   for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
