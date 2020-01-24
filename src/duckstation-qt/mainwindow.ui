@@ -48,6 +48,24 @@
      <addaction name="actionChangeDiscFromFile"/>
      <addaction name="actionChangeDiscFromGameList"/>
     </widget>
+    <widget class="QMenu" name="menuLoadState">
+     <property name="title">
+      <string>Load State</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/icons.qrc">
+       <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuSaveState">
+     <property name="title">
+      <string>Save State</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/icons.qrc">
+       <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
+     </property>
+    </widget>
     <addaction name="actionStartDisc"/>
     <addaction name="actionStartBios"/>
     <addaction name="separator"/>
@@ -56,8 +74,8 @@
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
-    <addaction name="actionLoadState"/>
-    <addaction name="actionSaveState"/>
+    <addaction name="menuLoadState"/>
+    <addaction name="menuSaveState"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -359,6 +377,16 @@
   <action name="actionChangeDiscFromGameList">
    <property name="text">
     <string>From Game List...</string>
+   </property>
+  </action>
+  <action name="actionResume_State">
+   <property name="text">
+    <string>Resume State</string>
+   </property>
+  </action>
+  <action name="actionGlobal_State">
+   <property name="text">
+    <string>Global State</string>
    </property>
   </action>
  </widget>

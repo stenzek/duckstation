@@ -32,7 +32,6 @@ private Q_SLOTS:
                                     float worst_frame_time);
 
   void onStartDiscActionTriggered();
-  void onChangeDiscActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
   void onStartBiosActionTriggered();
@@ -43,7 +42,6 @@ private Q_SLOTS:
   void onAboutActionTriggered();
 
 private:
-  void createGameList();
   void setupAdditionalUi();
   void connectSignals();
   void updateEmulationActions(bool starting, bool running);
@@ -51,6 +49,7 @@ private:
   void switchToEmulationView();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
   void updateDebugMenuGPURenderer();
+  void populateLoadSaveStateMenus(QString game_code);
 
   Ui::MainWindow m_ui;
 

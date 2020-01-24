@@ -18,6 +18,7 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
   m_ui.setupUi(this);
   setupAdditionalUi();
   connectSignals();
+  populateLoadSaveStateMenus(QString());
 
   resize(750, 690);
 }
@@ -39,15 +40,16 @@ void MainWindow::onEmulationStarting()
 
 void MainWindow::onEmulationStarted()
 {
-  updateEmulationActions(false, true);
   m_emulation_running = true;
+  updateEmulationActions(false, true);
+  populateLoadSaveStateMenus(QString());
 }
 
 void MainWindow::onEmulationStopped()
 {
+  m_emulation_running = false;
   updateEmulationActions(false, false);
   switchToGameListView();
-  m_emulation_running = false;
 }
 
 void MainWindow::onEmulationPaused(bool paused)
@@ -212,8 +214,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionChangeDisc->setDisabled(starting || !running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
 
-  m_ui.actionLoadState->setDisabled(starting);
-  m_ui.actionSaveState->setDisabled(starting);
+  m_ui.actionSaveState->setDisabled(starting || !running);
+  m_ui.menuSaveState->setDisabled(starting || !running);
 
   m_ui.actionFullscreen->setDisabled(starting || !running);
 
@@ -265,6 +267,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
   connect(m_ui.actionPause, &QAction::toggled, m_host_interface, &QtHostInterface::pauseSystem);
+  connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
+  connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::onExitActionTriggered);
   connect(m_ui.actionFullscreen, &QAction::triggered, this, &MainWindow::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
@@ -307,10 +311,12 @@ void MainWindow::connectSignals()
     if (!entry)
     {
       m_ui.statusBar->clearMessage();
+      populateLoadSaveStateMenus(QString());
       return;
     }
 
     m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
+    populateLoadSaveStateMenus(QString::fromStdString(entry->code));
   });
 }
 
@@ -343,6 +349,44 @@ void MainWindow::updateDebugMenuGPURenderer()
       QAction* action = qobject_cast<QAction*>(obj);
       if (action)
         action->setChecked(action->text() == current_renderer_display_name);
+    }
+  }
+}
+
+void MainWindow::populateLoadSaveStateMenus(QString game_code)
+{
+  static constexpr int NUM_SAVE_STATE_SLOTS = 10;
+
+  QMenu* const load_menu = m_ui.menuLoadState;
+  QMenu* const save_menu = m_ui.menuSaveState;
+
+  load_menu->clear();
+  save_menu->clear();
+
+  load_menu->addAction(tr("Resume State"));
+  load_menu->addSeparator();
+
+  for (int i = 0; i < NUM_SAVE_STATE_SLOTS; i++)
+  {
+    // TODO: Do we want to test for the existance of these on disk here?
+    load_menu->addAction(tr("Global Save %1 (2020-01-01 00:01:02)").arg(i + 1));
+
+    if (m_emulation_running)
+      save_menu->addAction(tr("Global Save %1").arg(i + 1));
+  }
+
+  if (!game_code.isEmpty())
+  {
+    load_menu->addSeparator();
+    if (m_emulation_running)
+      save_menu->addSeparator();
+
+    for (int i = 0; i < NUM_SAVE_STATE_SLOTS; i++)
+    {
+      load_menu->addAction(tr("Game Save %1 (2020-01-01 00:01:02)").arg(i + 1));
+
+      if (m_emulation_running)
+        save_menu->addAction(tr("Game Save %1").arg(i + 1));
     }
   }
 }
