@@ -343,7 +343,10 @@ std::vector<QtHostInterface::HotkeyInfo> QtHostInterface::getHotkeyList() const
   std::vector<HotkeyInfo> hotkeys = {
     {QStringLiteral("FastForward"), QStringLiteral("Toggle Fast Forward"), QStringLiteral("General")},
     {QStringLiteral("Fullscreen"), QStringLiteral("Toggle Fullscreen"), QStringLiteral("General")},
-    {QStringLiteral("Pause"), QStringLiteral("Toggle Pause"), QStringLiteral("General")}};
+    {QStringLiteral("Pause"), QStringLiteral("Toggle Pause"), QStringLiteral("General")},
+    {QStringLiteral("ToggleSoftwareRendering"), QStringLiteral("Toggle Software Rendering"),
+     QStringLiteral("Graphics")},
+  };
 
   for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
   {
@@ -382,6 +385,11 @@ void QtHostInterface::updateHotkeyInputMap()
   hk(QStringLiteral("Pause"), [this](bool pressed) {
     if (!pressed)
       pauseSystem(!m_paused);
+  });
+
+  hk(QStringLiteral("ToggleSoftwareRendering"), [this](bool pressed) {
+    if (!pressed)
+      ToggleSoftwareRendering();
   });
 
   for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
