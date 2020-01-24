@@ -281,11 +281,12 @@ void GameListWidget::onGameListRefreshed()
 
 void GameListWidget::onTableViewItemDoubleClicked(const QModelIndex& index)
 {
-  if (!index.isValid() || index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
+  const QModelIndex source_index = m_table_sort_model->mapToSource(index);
+  if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
     return;
 
-  const GameList::GameListEntry& entry = m_game_list->GetEntries().at(index.row());
-  emit bootEntryRequested(entry);
+  const GameList::GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
+  emit bootEntryRequested(&entry);
 }
 
 void GameListWidget::resizeEvent(QResizeEvent* event)
