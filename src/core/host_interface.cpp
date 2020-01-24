@@ -54,10 +54,10 @@ HostInterface::HostInterface()
 {
   SetUserDirectory();
   CreateUserDirectorySubdirectories();
+  SetDefaultSettings();
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetGameListCacheFileName());
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
-  m_settings.SetDefaults();
   m_last_throttle_time = Common::Timer::GetValue();
 }
 
@@ -540,6 +540,38 @@ std::string HostInterface::GetSharedMemoryCardPath(u32 slot)
 std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot)
 {
   return GetUserDirectoryRelativePath("memcards/game_card_%s_%d.mcd", game_code, slot + 1);
+}
+
+void HostInterface::SetDefaultSettings()
+{
+  m_settings.region = ConsoleRegion::Auto;
+  m_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
+
+  m_settings.speed_limiter_enabled = true;
+  m_settings.start_paused = false;
+
+  m_settings.gpu_renderer = GPURenderer::HardwareOpenGL;
+  m_settings.gpu_resolution_scale = 1;
+  m_settings.gpu_true_color = true;
+  m_settings.gpu_texture_filtering = false;
+  m_settings.gpu_force_progressive_scan = true;
+  m_settings.gpu_use_debug_device = false;
+  m_settings.display_linear_filtering = true;
+  m_settings.display_fullscreen = false;
+  m_settings.video_sync_enabled = true;
+
+  m_settings.audio_backend = AudioBackend::Default;
+  m_settings.audio_sync_enabled = true;
+
+  m_settings.bios_path = "scph1001.bin";
+  m_settings.bios_patch_tty_enable = false;
+  m_settings.bios_patch_fast_boot = false;
+
+  m_settings.controller_types[0] = ControllerType::DigitalController;
+  m_settings.controller_types[1] = ControllerType::None;
+
+  m_settings.memory_card_paths[0] = GetSharedMemoryCardPath(0);
+  m_settings.memory_card_paths[1] = GetSharedMemoryCardPath(1);
 }
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)

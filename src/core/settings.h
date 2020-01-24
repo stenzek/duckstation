@@ -75,7 +75,6 @@ struct Settings
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
 
-  void SetDefaults();
   void Load(SettingsInterface& si);
   void Save(SettingsInterface& si) const;
 

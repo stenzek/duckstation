@@ -52,12 +52,12 @@ void QtHostInterface::ReportMessage(const char* message)
 
 void QtHostInterface::setDefaultSettings()
 {
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
-
-  m_settings.SetDefaults();
+  HostInterface::UpdateSettings([this]() {
+    HostInterface::SetDefaultSettings();
+  });
 
   // default input settings for Qt
-  m_settings.controller_types[0] = ControllerType::DigitalController;
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
   m_qsettings.setValue(QStringLiteral("Controller1/ButtonUp"), QStringLiteral("Keyboard/W"));
   m_qsettings.setValue(QStringLiteral("Controller1/ButtonDown"), QStringLiteral("Keyboard/S"));
   m_qsettings.setValue(QStringLiteral("Controller1/ButtonLeft"), QStringLiteral("Keyboard/A"));

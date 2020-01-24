@@ -4,38 +4,6 @@
 
 Settings::Settings() = default;
 
-void Settings::SetDefaults()
-{
-  region = ConsoleRegion::Auto;
-  cpu_execution_mode = CPUExecutionMode::Interpreter;
-
-  speed_limiter_enabled = true;
-  start_paused = false;
-
-  gpu_renderer = GPURenderer::HardwareOpenGL;
-  gpu_resolution_scale = 1;
-  gpu_true_color = true;
-  gpu_texture_filtering = false;
-  gpu_force_progressive_scan = true;
-  gpu_use_debug_device = false;
-  display_linear_filtering = true;
-  display_fullscreen = false;
-  video_sync_enabled = true;
-
-  audio_backend = AudioBackend::Default;
-  audio_sync_enabled = true;
-
-  bios_path = "scph1001.bin";
-  bios_patch_tty_enable = false;
-  bios_patch_fast_boot = false;
-
-  controller_types[0] = ControllerType::DigitalController;
-  controller_types[1] = ControllerType::None;
-
-  memory_card_paths[0] = "memory_card_1.mcd";
-  memory_card_paths[1].clear();
-}
-
 void Settings::Load(SettingsInterface& si)
 {
   region =
