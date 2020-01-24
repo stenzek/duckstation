@@ -65,8 +65,10 @@ public:
 
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
   void SetDatabaseFilename(std::string filename) { m_database_filename = std::move(filename); }
-
   void SetSearchDirectoriesFromSettings(SettingsInterface& si);
+
+  bool IsDatabasePresent() const;
+
   void AddDirectory(std::string path, bool recursive);
   void Refresh(bool invalidate_cache, bool invalidate_database);
 

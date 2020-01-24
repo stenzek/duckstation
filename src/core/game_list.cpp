@@ -689,6 +689,11 @@ void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
     m_search_directories.push_back({std::move(dir), true});
 }
 
+bool GameList::IsDatabasePresent() const
+{
+  return FileSystem::FileExists(m_database_filename.c_str());
+}
+
 void GameList::Refresh(bool invalidate_cache, bool invalidate_database)
 {
   if (invalidate_cache)
