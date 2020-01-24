@@ -54,19 +54,6 @@
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
-    <widget class="QMenu" name="menuRenderer">
-     <property name="title">
-      <string>Renderer</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="actionCPUExecutionMode">
-     <property name="title">
-      <string>CPU Execution Mode</string>
-     </property>
-     <addaction name="actionCPUExecutionModeInterpreter"/>
-     <addaction name="actionCPUExecutionModeCachedInterpreter"/>
-     <addaction name="actionCPUExecutionModeRecompiler"/>
-    </widget>
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionGameListSettings"/>
@@ -78,8 +65,6 @@
     <addaction name="separator"/>
     <addaction name="actionOpenDirectory"/>
     <addaction name="separator"/>
-    <addaction name="actionCPUExecutionMode"/>
-    <addaction name="menuRenderer"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -90,8 +75,29 @@
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>&amp;Debug</string>
+    </property>
+    <widget class="QMenu" name="menuRenderer">
+     <property name="title">
+      <string>Switch GPU Renderer</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuCPUExecutionMode">
+     <property name="title">
+      <string>Switch CPU Emulation Mode</string>
+     </property>
+     <addaction name="actionCPUExecutionModeInterpreter"/>
+     <addaction name="actionCPUExecutionModeCachedInterpreter"/>
+     <addaction name="actionCPUExecutionModeRecompiler"/>
+    </widget>
+    <addaction name="menuCPUExecutionMode"/>
+    <addaction name="menuRenderer"/>
+   </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuDebug"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
