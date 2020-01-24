@@ -1015,6 +1015,26 @@ std::string GetProgramPath()
   return buffer;
 }
 
+std::string GetWorkingDirectory()
+{
+  DWORD required_size = GetCurrentDirectoryA(0, nullptr);
+  if (!required_size)
+    return {};
+
+  std::string buffer;
+  buffer.resize(required_size - 1);
+
+  if (!GetCurrentDirectoryA(static_cast<DWORD>(buffer.size() + 1), buffer.data()))
+    return {};
+
+  return buffer;
+}
+
+bool SetWorkingDirectory(const char* path)
+{
+  return (SetCurrentDirectoryA(path) == TRUE);
+}
+
 #else
 
 std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch)
@@ -1392,6 +1412,26 @@ std::string GetProgramPath()
 #else
   return {};
 #endif
+}
+
+std::string GetWorkingDirectory()
+{
+  std::string buffer;
+  buffer.resize(PATH_MAX);
+  while (!getcwd(buffer.data(), buffer.size()))
+  {
+    if (errno != ERANGE)
+      return {};
+
+    buffer.resize(buffer.size() * 2);
+  }
+
+  return buffer;
+}
+
+bool SetWorkingDirectory(const char* path)
+{
+  return (chdir(path) == 0);
 }
 
 #endif

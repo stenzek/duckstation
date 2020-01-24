@@ -176,4 +176,10 @@ bool DeleteDirectory(const char* Path, bool Recursive);
 /// Returns the path to the current executable.
 std::string GetProgramPath();
 
+/// Retrieves the current working directory.
+std::string GetWorkingDirectory();
+
+/// Sets the current working directory. Returns true if successful.
+bool SetWorkingDirectory(const char* path);
+
 }; // namespace FileSystem
