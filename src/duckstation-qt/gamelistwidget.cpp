@@ -1,4 +1,5 @@
 #include "gamelistwidget.h"
+#include "core/game_list.h"
 #include "core/settings.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -52,7 +53,7 @@ public:
     if (row < 0 || row >= static_cast<int>(m_game_list->GetEntryCount()))
       return {};
 
-    const GameList::GameListEntry& ge = m_game_list->GetEntries()[row];
+    const GameListEntry& ge = m_game_list->GetEntries()[row];
 
     switch (role)
     {
@@ -106,9 +107,9 @@ public:
           {
             switch (ge.type)
             {
-              case GameList::EntryType::Disc:
+              case GameListEntryType::Disc:
                 return m_type_disc_pixmap;
-              case GameList::EntryType::PSExe:
+              case GameListEntryType::PSExe:
               default:
                 return m_type_exe_pixmap;
             }
@@ -186,8 +187,8 @@ public:
       return false;
     }
 
-    const GameList::GameListEntry& left = m_game_list->GetEntries().at(left_row);
-    const GameList::GameListEntry& right = m_game_list->GetEntries().at(right_row);
+    const GameListEntry& left = m_game_list->GetEntries().at(left_row);
+    const GameListEntry& right = m_game_list->GetEntries().at(right_row);
     return ascending ? (left.title < right.title) : (right.title < left.title);
   }
 
@@ -287,7 +288,7 @@ void GameListWidget::onTableViewItemDoubleClicked(const QModelIndex& index)
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
     return;
 
-  const GameList::GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
+  const GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
   emit bootEntryRequested(&entry);
 }
 
@@ -300,7 +301,7 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
     return;
   }
 
-  const GameList::GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
+  const GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
   emit entrySelected(&entry);
 }
 

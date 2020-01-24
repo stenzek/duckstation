@@ -293,7 +293,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::recreateDisplayWidgetRequested, this, &MainWindow::recreateDisplayWidget,
           Qt::BlockingQueuedConnection);
 
-  connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameList::GameListEntry* entry) {
+  connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameListEntry* entry) {
     // if we're not running, boot the system, otherwise swap discs
     QString path = QString::fromStdString(entry->path);
     if (!m_emulation_running)
@@ -307,7 +307,7 @@ void MainWindow::connectSignals()
       switchToEmulationView();
     }
   });
-  connect(m_game_list_widget, &GameListWidget::entrySelected, [this](const GameList::GameListEntry* entry) {
+  connect(m_game_list_widget, &GameListWidget::entrySelected, [this](const GameListEntry* entry) {
     if (!entry)
     {
       m_ui.statusBar->clearMessage();

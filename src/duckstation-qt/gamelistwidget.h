@@ -1,7 +1,9 @@
 #pragma once
-#include "core/game_list.h"
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QTableView>
+
+class GameList;
+struct GameListEntry;
 
 class GameListModel;
 class GameListSortModel;
@@ -19,8 +21,8 @@ public:
   void initialize(QtHostInterface* host_interface);
 
 Q_SIGNALS:
-  void entrySelected(const GameList::GameListEntry* entry);
-  void bootEntryRequested(const GameList::GameListEntry* entry);
+  void entrySelected(const GameListEntry* entry);
+  void bootEntryRequested(const GameListEntry* entry);
 
 private Q_SLOTS:
   void onGameListRefreshed();

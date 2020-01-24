@@ -12,42 +12,32 @@ class ByteStream;
 
 class SettingsInterface;
 
+enum class GameListEntryType
+{
+  Disc,
+  PSExe
+};
+
+struct GameListEntry
+{
+  std::string path;
+  std::string code;
+  std::string title;
+  u64 total_size;
+  u64 last_modified_time;
+  ConsoleRegion region;
+  GameListEntryType type;
+};
+
 class GameList
 {
 public:
-  struct GameDatabaseEntry
-  {
-    std::string code;
-    std::string title;
-    ConsoleRegion region;
-  };
-
-  using DatabaseMap = std::unordered_map<std::string, GameDatabaseEntry>;
-
-  enum class EntryType
-  {
-    Disc,
-    PSExe
-  };
-
-  struct GameListEntry
-  {
-    std::string path;
-    std::string code;
-    std::string title;
-    u64 total_size;
-    u64 last_modified_time;
-    ConsoleRegion region;
-    EntryType type;
-  };
-
   using EntryList = std::vector<GameListEntry>;
-  using CacheMap = std::unordered_map<std::string, GameListEntry>;
 
   GameList();
   ~GameList();
 
-  static const char* EntryTypeToString(EntryType type);
+  static const char* EntryTypeToString(GameListEntryType type);
 
   /// Returns true if the filename is a PlayStation executable we can inject.
   static bool IsExeFileName(const char* path);
@@ -59,9 +49,10 @@ public:
   static std::optional<ConsoleRegion> GetRegionForImage(CDImage* cdi);
   static std::optional<ConsoleRegion> GetRegionForPath(const char* image_path);
 
-  const DatabaseMap& GetDatabase() const { return m_database; }
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
+
+  const GameListEntry* GetEntryForPath(const char* path) const;
 
   void SetPathsFromSettings(SettingsInterface& si);
   void AddDirectory(std::string path, bool recursive);
@@ -74,11 +65,23 @@ private:
     GAME_LIST_CACHE_VERSION = 2
   };
 
+  struct GameDatabaseEntry
+  {
+    std::string code;
+    std::string title;
+    ConsoleRegion region;
+  };
+
+  using DatabaseMap = std::unordered_map<std::string, GameDatabaseEntry>;
+  using CacheMap = std::unordered_map<std::string, GameListEntry>;
+
   struct DirectoryEntry
   {
     std::string path;
     bool recursive;
   };
+
+  class RedumpDatVisitor;
 
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
 

@@ -20,7 +20,7 @@ GameList::GameList() = default;
 
 GameList::~GameList() = default;
 
-const char* GameList::EntryTypeToString(GameList::EntryType type)
+const char* GameList::EntryTypeToString(GameListEntryType type)
 {
   static std::array<const char*, 2> names = {{"Disc", "PSExe"}};
   return names[static_cast<int>(type)];
@@ -266,7 +266,7 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   entry->region = ConsoleRegion::NTSC_U;
   entry->total_size = ZeroExtend64(file_size);
   entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
-  entry->type = EntryType::PSExe;
+  entry->type = GameListEntryType::PSExe;
 
   return true;
 }
@@ -285,7 +285,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   entry->region =
     GetRegionFromSystemArea(cdi.get()).value_or(GetRegionForCode(entry->code).value_or(ConsoleRegion::NTSC_U));
   entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
-  entry->type = EntryType::Disc;
+  entry->type = GameListEntryType::Disc;
   cdi.reset();
 
   if (entry->code.empty())
@@ -421,7 +421,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
         !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
         region >= static_cast<u8>(ConsoleRegion::Count) || !ReadU8(stream, &type) ||
-        type > static_cast<u8>(EntryType::PSExe))
+        type > static_cast<u8>(GameListEntryType::PSExe))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
       return false;
@@ -434,7 +434,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     ge.total_size = total_size;
     ge.last_modified_time = last_modified_time;
     ge.region = static_cast<ConsoleRegion>(region);
-    ge.type = static_cast<EntryType>(type);
+    ge.type = static_cast<GameListEntryType>(type);
 
     auto iter = m_cache_map.find(ge.path);
     if (iter != m_cache_map.end())
@@ -566,10 +566,10 @@ void GameList::ScanDirectory(const char* path, bool recursive)
   }
 }
 
-class RedumpDatVisitor final : public tinyxml2::XMLVisitor
+class GameList::RedumpDatVisitor final : public tinyxml2::XMLVisitor
 {
 public:
-  RedumpDatVisitor(GameList::DatabaseMap& database) : m_database(database) {}
+  RedumpDatVisitor(DatabaseMap& database) : m_database(database) {}
 
   static std::string FixupSerial(const std::string_view str)
   {
@@ -655,6 +655,18 @@ void GameList::AddDirectory(std::string path, bool recursive)
   }
 
   m_search_directories.push_back({path, recursive});
+}
+
+const GameListEntry* GameList::GetEntryForPath(const char* path) const
+{
+  const size_t path_length = std::strlen(path);
+  for (const GameListEntry& entry : m_entries)
+  {
+    if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path))
+      return &entry;
+  }
+
+  return nullptr;
 }
 
 void GameList::SetPathsFromSettings(SettingsInterface& si)
