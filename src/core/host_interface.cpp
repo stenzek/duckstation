@@ -8,6 +8,7 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 #include "dma.h"
+#include "game_list.h"
 #include "gpu.h"
 #include "host_display.h"
 #include "mdec.h"
@@ -51,6 +52,7 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
 
 HostInterface::HostInterface()
 {
+  m_game_list = std::make_unique<GameList>();
   m_settings.SetDefaults();
   m_last_throttle_time = Common::Timer::GetValue();
 }
@@ -435,6 +437,8 @@ void HostInterface::UpdateSpeedLimiterState()
 
 void HostInterface::OnPerformanceCountersUpdated() {}
 
+void HostInterface::OnRunningGameChanged(const char* path, const char* game_code, const char* game_title) {}
+
 void HostInterface::RunFrame()
 {
   m_frame_timer.Reset();
@@ -489,4 +493,32 @@ void HostInterface::ResetPerformanceCounters()
   m_average_frame_time_accumulator = 0.0f;
   m_worst_frame_time_accumulator = 0.0f;
   m_fps_timer.Reset();
+}
+
+void HostInterface::UpdateRunningGame(const char* path, CDImage* image)
+{
+  if (!path)
+  {
+    OnRunningGameChanged("", "", "");
+    return;
+  }
+
+  const GameListEntry* list_entry = m_game_list->GetEntryForPath(path);
+  if (list_entry)
+  {
+    OnRunningGameChanged(path, list_entry->code.c_str(), list_entry->title.c_str());
+    return;
+  }
+
+  const std::string game_code = image ? GameList::GetGameCodeForImage(image) : std::string();
+  const GameListDatabaseEntry* db_entry =
+    (!game_code.empty()) ? m_game_list->GetDatabaseEntryForCode(game_code) : nullptr;
+  if (!db_entry)
+  {
+    const std::string game_title(GameList::GetTitleForPath(path));
+    OnRunningGameChanged(path, game_code.c_str(), game_title.c_str());
+    return;
+  }
+
+  OnRunningGameChanged(path, db_entry->code.c_str(), db_entry->title.c_str());
 }

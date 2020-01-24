@@ -18,6 +18,13 @@ enum class GameListEntryType
   PSExe
 };
 
+struct GameListDatabaseEntry
+{
+  std::string code;
+  std::string title;
+  ConsoleRegion region;
+};
+
 struct GameListEntry
 {
   std::string path;
@@ -48,11 +55,13 @@ public:
   static std::optional<ConsoleRegion> GetRegionFromSystemArea(CDImage* cdi);
   static std::optional<ConsoleRegion> GetRegionForImage(CDImage* cdi);
   static std::optional<ConsoleRegion> GetRegionForPath(const char* image_path);
+  static std::string_view GetTitleForPath(const char* path);
 
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
 
   const GameListEntry* GetEntryForPath(const char* path) const;
+  const GameListDatabaseEntry* GetDatabaseEntryForCode(const std::string& code) const;
 
   void SetPathsFromSettings(SettingsInterface& si);
   void AddDirectory(std::string path, bool recursive);
@@ -65,14 +74,7 @@ private:
     GAME_LIST_CACHE_VERSION = 2
   };
 
-  struct GameDatabaseEntry
-  {
-    std::string code;
-    std::string title;
-    ConsoleRegion region;
-  };
-
-  using DatabaseMap = std::unordered_map<std::string, GameDatabaseEntry>;
+  using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;
   using CacheMap = std::unordered_map<std::string, GameListEntry>;
 
   struct DirectoryEntry

@@ -210,7 +210,7 @@ static std::string_view GetFileNameFromPath(const char* path)
     return std::string_view(filename_start + 1, filename_end - filename_start);
 }
 
-static std::string_view GetTitleForPath(const char* path)
+std::string_view GameList::GetTitleForPath(const char* path)
 {
   const char* extension = std::strrchr(path, '.');
   if (path == extension)
@@ -295,13 +295,11 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   }
   else
   {
-    LoadDatabase();
-
-    auto iter = m_database.find(entry->code);
-    if (iter != m_database.end())
+    const GameListDatabaseEntry* database_entry = GetDatabaseEntryForCode(entry->code);
+    if (database_entry)
     {
-      entry->title = iter->second.title;
-      entry->region = iter->second.region;
+      entry->title = database_entry->title;
+      entry->region = database_entry->region;
     }
     else
     {
@@ -620,7 +618,7 @@ public:
       auto iter = m_database.find(code);
       if (iter == m_database.end())
       {
-        GameList::GameDatabaseEntry gde;
+        GameListDatabaseEntry gde;
         gde.code = std::move(code);
         gde.region = GameList::GetRegionForCode(gde.code).value_or(ConsoleRegion::NTSC_U);
         gde.title = name;
@@ -641,7 +639,7 @@ public:
   }
 
 private:
-  GameList::DatabaseMap& m_database;
+  DatabaseMap& m_database;
 };
 
 void GameList::AddDirectory(std::string path, bool recursive)
@@ -662,11 +660,20 @@ const GameListEntry* GameList::GetEntryForPath(const char* path) const
   const size_t path_length = std::strlen(path);
   for (const GameListEntry& entry : m_entries)
   {
-    if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path))
+    if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path) == 0)
       return &entry;
   }
 
   return nullptr;
+}
+
+const GameListDatabaseEntry* GameList::GetDatabaseEntryForCode(const std::string& code) const
+{
+  if (!m_database_load_tried)
+    const_cast<GameList*>(this)->LoadDatabase();
+
+  auto iter = m_database.find(code);
+  return (iter != m_database.end()) ? &iter->second : nullptr;
 }
 
 void GameList::SetPathsFromSettings(SettingsInterface& si)

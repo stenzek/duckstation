@@ -70,6 +70,7 @@ Q_SIGNALS:
   void toggleFullscreenRequested();
   void recreateDisplayWidgetRequested(bool create_device_context);
   void performanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time);
+  void runningGameChanged(QString filename, QString game_code, QString game_title);
 
 public Q_SLOTS:
   void applySettings();
@@ -87,6 +88,7 @@ private Q_SLOTS:
 
 protected:
   void OnPerformanceCountersUpdated() override;
+  void OnRunningGameChanged(const char* path, const char* game_code, const char* game_title) override;
 
 private:
   using InputButtonHandler = std::function<void(bool)>;
@@ -125,8 +127,6 @@ private:
 
   QSettings m_qsettings;
   std::mutex m_qsettings_mutex;
-
-  std::unique_ptr<GameList> m_game_list;
 
   QtDisplayWindow* m_display_window = nullptr;
   QThread* m_original_thread = nullptr;

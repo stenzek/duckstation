@@ -42,7 +42,6 @@ void MainWindow::onEmulationStarted()
 {
   m_emulation_running = true;
   updateEmulationActions(false, true);
-  populateLoadSaveStateMenus(QString());
 }
 
 void MainWindow::onEmulationStopped()
@@ -119,6 +118,15 @@ void MainWindow::onPerformanceCountersUpdated(float speed, float fps, float vps,
     QStringLiteral("FPS: %1/%2").arg(std::round(fps), 0, 'f', 0).arg(std::round(vps), 0, 'f', 0));
   m_status_frame_time_widget->setText(
     QStringLiteral("%1ms average, %2ms worst").arg(average_frame_time, 0, 'f', 2).arg(worst_frame_time, 0, 'f', 2));
+}
+
+void MainWindow::onRunningGameChanged(QString filename, QString game_code, QString game_title)
+{
+  populateLoadSaveStateMenus(game_code);
+  if (game_title.isEmpty())
+    setWindowTitle(tr("DuckStation"));
+  else
+    setWindowTitle(game_title);
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -288,10 +296,11 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
-  connect(m_host_interface, &QtHostInterface::performanceCountersUpdated, this,
-          &MainWindow::onPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::recreateDisplayWidgetRequested, this, &MainWindow::recreateDisplayWidget,
           Qt::BlockingQueuedConnection);
+  connect(m_host_interface, &QtHostInterface::performanceCountersUpdated, this,
+          &MainWindow::onPerformanceCountersUpdated);
+  connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
 
   connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameListEntry* entry) {
     // if we're not running, boot the system, otherwise swap discs
@@ -370,23 +379,18 @@ void MainWindow::populateLoadSaveStateMenus(QString game_code)
   {
     // TODO: Do we want to test for the existance of these on disk here?
     load_menu->addAction(tr("Global Save %1 (2020-01-01 00:01:02)").arg(i + 1));
-
-    if (m_emulation_running)
-      save_menu->addAction(tr("Global Save %1").arg(i + 1));
+    save_menu->addAction(tr("Global Save %1").arg(i + 1));
   }
 
   if (!game_code.isEmpty())
   {
     load_menu->addSeparator();
-    if (m_emulation_running)
-      save_menu->addSeparator();
+    save_menu->addSeparator();
 
     for (int i = 0; i < NUM_SAVE_STATE_SLOTS; i++)
     {
       load_menu->addAction(tr("Game Save %1 (2020-01-01 00:01:02)").arg(i + 1));
-
-      if (m_emulation_running)
-        save_menu->addAction(tr("Game Save %1").arg(i + 1));
+      save_menu->addAction(tr("Game Save %1").arg(i + 1));
     }
   }
 }

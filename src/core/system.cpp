@@ -154,6 +154,9 @@ bool System::Boot(const char* filename)
     return false;
   }
 
+  // Notify change of disc.
+  m_host_interface->UpdateRunningGame(filename, media.get());
+
   // Insert CD, and apply fastboot patch if enabled.
   m_cdrom->InsertMedia(std::move(media));
   if (m_cdrom->HasMedia() && GetSettings().bios_patch_fast_boot)

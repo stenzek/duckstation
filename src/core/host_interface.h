@@ -11,12 +11,16 @@
 #include <vector>
 
 class AudioStream;
+class CDImage;
 class HostDisplay;
+class GameList;
 
 class System;
 
 class HostInterface
 {
+  friend System;
+
 public:
   HostInterface();
   virtual ~HostInterface();
@@ -29,6 +33,9 @@ public:
 
   /// Returns a settings object which can be modified.
   Settings& GetSettings() { return m_settings; }
+
+  /// Returns the game list.
+  const GameList* GetGameList() const { return m_game_list.get(); }
 
   /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
   void SetThrottleFrequency(double frequency) { m_throttle_period = static_cast<s64>(1000000000.0 / frequency); }
@@ -73,6 +80,7 @@ protected:
   };
 
   virtual void OnPerformanceCountersUpdated();
+  virtual void OnRunningGameChanged(const char* path, const char* game_code, const char* game_title);
 
   void RunFrame();
 
@@ -89,9 +97,12 @@ protected:
   void UpdatePerformanceCounters();
   void ResetPerformanceCounters();
 
+  void UpdateRunningGame(const char* path, CDImage* image);
+
   std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
+  std::unique_ptr<GameList> m_game_list;
   Settings m_settings;
 
   u64 m_last_throttle_time = 0;

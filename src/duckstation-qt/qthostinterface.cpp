@@ -162,6 +162,7 @@ void QtHostInterface::createGameList()
 
 void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
 {
+  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
   m_game_list->SetPathsFromSettings(si);
   m_game_list->Refresh(invalidate_cache, invalidate_database);
@@ -241,6 +242,13 @@ void QtHostInterface::OnPerformanceCountersUpdated()
   HostInterface::OnPerformanceCountersUpdated();
 
   emit performanceCountersUpdated(m_speed, m_fps, m_vps, m_average_frame_time, m_worst_frame_time);
+}
+
+void QtHostInterface::OnRunningGameChanged(const char* path, const char* game_code, const char* game_title)
+{
+  HostInterface::OnRunningGameChanged(path, game_code, game_title);
+
+  emit runningGameChanged(QString::fromUtf8(path), QString::fromUtf8(game_code), QString::fromUtf8(game_title));
 }
 
 void QtHostInterface::updateInputMap()
@@ -390,6 +398,7 @@ void QtHostInterface::powerOffSystem()
   m_audio_stream->PauseOutput(true);
   m_display_window->destroyDeviceContext();
 
+  emit runningGameChanged(QString(), QString(), QString());
   emit emulationStopped();
 }
 
@@ -437,6 +446,7 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
 
   std::string initial_filename_str = initial_filename.toStdString();
   std::string initial_save_state_filename_str = initial_save_state_filename.toStdString();
+  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
   if (!CreateSystem() ||
       !BootSystem(initial_filename_str.empty() ? nullptr : initial_filename_str.c_str(),
                   initial_save_state_filename_str.empty() ? nullptr : initial_save_state_filename_str.c_str()))
@@ -501,6 +511,7 @@ void QtHostInterface::switchGPURenderer()
   {
     if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
     {
+      emit runningGameChanged(QString(), QString(), QString());
       emit emulationStopped();
       return;
     }

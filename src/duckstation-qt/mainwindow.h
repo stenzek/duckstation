@@ -9,7 +9,6 @@
 
 class QLabel;
 
-class GameList;
 class GameListWidget;
 class QtHostInterface;
 
@@ -30,6 +29,7 @@ private Q_SLOTS:
   void recreateDisplayWidget(bool create_device_context);
   void onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                     float worst_frame_time);
+  void onRunningGameChanged(QString filename, QString game_code, QString game_title);
 
   void onStartDiscActionTriggered();
   void onChangeDiscFromFileActionTriggered();
@@ -55,7 +55,6 @@ private:
 
   QtHostInterface* m_host_interface = nullptr;
 
-  std::unique_ptr<GameList> m_game_list;
   GameListWidget* m_game_list_widget = nullptr;
   QWidget* m_display_widget = nullptr;
 
