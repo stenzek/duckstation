@@ -5,6 +5,7 @@ add_subdirectory(libcue)
 add_subdirectory(simpleini)
 add_subdirectory(stb)
 add_subdirectory(tinyxml2)
+add_subdirectory(zlib)
 
 if(NOT ANDROID)
   add_subdirectory(nativefiledialog)
