@@ -433,26 +433,43 @@ void HostInterface::UpdateSpeedLimiterState()
   m_last_throttle_time = 0;
 }
 
+void HostInterface::OnPerformanceCountersUpdated() {}
+
+void HostInterface::RunFrame()
+{
+  m_frame_timer.Reset();
+  m_system->RunFrame();
+  UpdatePerformanceCounters();
+}
+
 void HostInterface::UpdatePerformanceCounters()
 {
-  if (!m_system)
-    return;
+  const float frame_time = static_cast<float>(m_frame_timer.GetTimeMilliseconds());
+  m_average_frame_time_accumulator += frame_time;
+  m_worst_frame_time_accumulator = std::max(m_worst_frame_time_accumulator, frame_time);
 
   // update fps counter
-  const double time = m_fps_timer.GetTimeSeconds();
-  if (time >= 0.25f)
-  {
-    m_vps = static_cast<float>(static_cast<double>(m_system->GetFrameNumber() - m_last_frame_number) / time);
-    m_last_frame_number = m_system->GetFrameNumber();
-    m_fps =
-      static_cast<float>(static_cast<double>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time);
-    m_last_internal_frame_number = m_system->GetInternalFrameNumber();
-    m_speed = static_cast<float>(static_cast<double>(m_system->GetGlobalTickCounter() - m_last_global_tick_counter) /
-                                 (static_cast<double>(MASTER_CLOCK) * time)) *
-              100.0f;
-    m_last_global_tick_counter = m_system->GetGlobalTickCounter();
-    m_fps_timer.Reset();
-  }
+  const float time = static_cast<float>(m_fps_timer.GetTimeSeconds());
+  if (time < 1.0f)
+    return;
+
+  const float frames_presented = static_cast<float>(m_system->GetFrameNumber() - m_last_frame_number);
+
+  m_worst_frame_time = m_worst_frame_time_accumulator;
+  m_worst_frame_time_accumulator = 0.0f;
+  m_average_frame_time = m_average_frame_time_accumulator / frames_presented;
+  m_average_frame_time_accumulator = 0.0f;
+  m_vps = static_cast<float>(frames_presented / time);
+  m_last_frame_number = m_system->GetFrameNumber();
+  m_fps = static_cast<float>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time;
+  m_last_internal_frame_number = m_system->GetInternalFrameNumber();
+  m_speed = static_cast<float>(static_cast<double>(m_system->GetGlobalTickCounter() - m_last_global_tick_counter) /
+                               (static_cast<double>(MASTER_CLOCK) * time)) *
+            100.0f;
+  m_last_global_tick_counter = m_system->GetGlobalTickCounter();
+  m_fps_timer.Reset();
+
+  OnPerformanceCountersUpdated();
 }
 
 void HostInterface::ResetPerformanceCounters()
@@ -469,5 +486,7 @@ void HostInterface::ResetPerformanceCounters()
     m_last_internal_frame_number = 0;
     m_last_global_tick_counter = 0;
   }
+  m_average_frame_time_accumulator = 0.0f;
+  m_worst_frame_time_accumulator = 0.0f;
   m_fps_timer.Reset();
 }

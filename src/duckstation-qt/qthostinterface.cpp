@@ -185,6 +185,13 @@ void QtHostInterface::onDisplayWindowResized(int width, int height)
   m_display_window->onWindowResized(width, height);
 }
 
+void QtHostInterface::OnPerformanceCountersUpdated()
+{
+  HostInterface::OnPerformanceCountersUpdated();
+
+  emit performanceCountersUpdated(m_speed, m_fps, m_vps, m_average_frame_time, m_worst_frame_time);
+}
+
 void QtHostInterface::updateInputMap()
 {
   if (!isOnWorkerThread())
@@ -508,8 +515,7 @@ void QtHostInterface::threadEntryPoint()
 
     // execute the system, polling events inbetween frames
     // simulate the system if not paused
-    if (m_system && !m_paused)
-      m_system->RunFrame();
+    RunFrame();
 
     // rendering
     {
@@ -519,7 +525,6 @@ void QtHostInterface::threadEntryPoint()
         m_system->GetGPU()->ResetGraphicsAPIState();
       }
 
-      DrawFPSWindow();
       DrawOSDMessages();
 
       m_display->Render();
@@ -531,8 +536,6 @@ void QtHostInterface::threadEntryPoint()
         if (m_speed_limiter_enabled)
           Throttle();
       }
-
-      UpdatePerformanceCounters();
     }
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);

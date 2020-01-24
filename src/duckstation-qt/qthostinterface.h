@@ -71,6 +71,7 @@ Q_SIGNALS:
   void gameListRefreshed();
   void toggleFullscreenRequested();
   void switchRendererRequested();
+  void performanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time);
 
 public Q_SLOTS:
   void powerOffSystem();
@@ -86,6 +87,9 @@ private Q_SLOTS:
   void doUpdateInputMap();
   void doHandleKeyEvent(int key, bool pressed);
   void onDisplayWindowResized(int width, int height);
+
+protected:
+  void OnPerformanceCountersUpdated() override;
 
 private:
   using InputButtonHandler = std::function<void(bool)>;

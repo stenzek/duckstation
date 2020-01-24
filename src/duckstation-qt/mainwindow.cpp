@@ -6,6 +6,7 @@
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
 #include <QtWidgets/QFileDialog>
+#include <cmath>
 
 static constexpr char DISC_IMAGE_FILTER[] =
   "All File Types (*.bin *.img *.cue *.exe *.psexe);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
@@ -124,6 +125,16 @@ void MainWindow::switchRenderer()
   }
 }
 
+void MainWindow::onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
+                                              float worst_frame_time)
+{
+  m_status_speed_widget->setText(QStringLiteral("%1%").arg(speed, 0, 'f', 0));
+  m_status_fps_widget->setText(
+    QStringLiteral("FPS: %1/%2").arg(std::round(fps), 0, 'f', 0).arg(std::round(vps), 0, 'f', 0));
+  m_status_frame_time_widget->setText(
+    QStringLiteral("%1ms average, %2ms worst").arg(average_frame_time, 0, 'f', 2).arg(worst_frame_time, 0, 'f', 2));
+}
+
 void MainWindow::onStartDiscActionTriggered()
 {
   QString filename =
@@ -183,6 +194,21 @@ void MainWindow::setupAdditionalUi()
 
   m_ui.mainContainer->setCurrentIndex(0);
 
+  m_status_speed_widget = new QLabel(m_ui.statusBar);
+  m_status_speed_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_speed_widget->setFixedSize(40, 16);
+  m_status_speed_widget->hide();
+
+  m_status_fps_widget = new QLabel(m_ui.statusBar);
+  m_status_fps_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_fps_widget->setFixedSize(80, 16);
+  m_status_fps_widget->hide();
+
+  m_status_frame_time_widget = new QLabel(m_ui.statusBar);
+  m_status_frame_time_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_frame_time_widget->setFixedSize(190, 16);
+  m_status_frame_time_widget->hide();
+
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
   {
     const GPURenderer renderer = static_cast<GPURenderer>(i);
@@ -215,6 +241,27 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionSaveState->setDisabled(starting);
 
   m_ui.actionFullscreen->setDisabled(starting || !running);
+
+  if (running && m_status_speed_widget->isHidden())
+  {
+    m_status_speed_widget->show();
+    m_status_fps_widget->show();
+    m_status_frame_time_widget->show();
+    m_ui.statusBar->addPermanentWidget(m_status_speed_widget);
+    m_ui.statusBar->addPermanentWidget(m_status_fps_widget);
+    m_ui.statusBar->addPermanentWidget(m_status_frame_time_widget);
+  }
+  else if (!running && m_status_speed_widget->isVisible())
+  {
+    m_ui.statusBar->removeWidget(m_status_speed_widget);
+    m_ui.statusBar->removeWidget(m_status_fps_widget);
+    m_ui.statusBar->removeWidget(m_status_frame_time_widget);
+    m_status_speed_widget->hide();
+    m_status_fps_widget->hide();
+    m_status_frame_time_widget->hide();
+  }
+
+  m_ui.statusBar->clearMessage();
 }
 
 void MainWindow::switchToGameListView()
@@ -259,6 +306,8 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
+  connect(m_host_interface, &QtHostInterface::performanceCountersUpdated, this,
+          &MainWindow::onPerformanceCountersUpdated);
 
   connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameList::GameListEntry* entry) {
     // if we're not running, boot the system, otherwise swap discs
@@ -273,6 +322,15 @@ void MainWindow::connectSignals()
       m_host_interface->pauseSystem(false);
       switchToEmulationView();
     }
+  });
+  connect(m_game_list_widget, &GameListWidget::entrySelected, [this](const GameList::GameListEntry* entry) {
+    if (!entry)
+    {
+      m_ui.statusBar->clearMessage();
+      return;
+    }
+
+    m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
   });
 }
 

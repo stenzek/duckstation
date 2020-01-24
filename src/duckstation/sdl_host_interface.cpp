@@ -1614,7 +1614,7 @@ void SDLHostInterface::Run()
 
     if (m_system && !m_paused)
     {
-      m_system->RunFrame();
+      RunFrame();
       if (m_frame_step_request)
       {
         m_frame_step_request = false;
@@ -1644,8 +1644,6 @@ void SDLHostInterface::Run()
           Throttle();
       }
     }
-
-    UpdatePerformanceCounters();
   }
 
   // Save state on exit so it can be resumed

@@ -7,6 +7,8 @@
 #include "settingsdialog.h"
 #include "ui_mainwindow.h"
 
+class QLabel;
+
 class GameList;
 class GameListWidget;
 class QtHostInterface;
@@ -26,6 +28,8 @@ private Q_SLOTS:
   void onEmulationPaused(bool paused);
   void toggleFullscreen();
   void switchRenderer();
+  void onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
+                                    float worst_frame_time);
 
   void onStartDiscActionTriggered();
   void onChangeDiscActionTriggered();
@@ -52,6 +56,10 @@ private:
   std::unique_ptr<GameList> m_game_list;
   GameListWidget* m_game_list_widget = nullptr;
   QWidget* m_display_widget = nullptr;
+
+  QLabel* m_status_speed_widget = nullptr;
+  QLabel* m_status_fps_widget = nullptr;
+  QLabel* m_status_frame_time_widget = nullptr;
 
   SettingsDialog* m_settings_dialog = nullptr;
 
