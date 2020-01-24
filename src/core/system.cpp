@@ -155,7 +155,7 @@ bool System::Boot(const char* filename)
   }
 
   // Notify change of disc.
-  m_host_interface->UpdateRunningGame(filename, media.get());
+  UpdateRunningGame(filename, media.get());
 
   // Insert CD, and apply fastboot patch if enabled.
   m_cdrom->InsertMedia(std::move(media));
@@ -251,7 +251,7 @@ bool System::DoState(StateWrapper& sw)
         Log_ErrorPrintf("Failed to open CD image from save state: '%s'", media_filename.c_str());
     }
 
-    m_host_interface->UpdateRunningGame(media_filename.c_str(), media.get());
+    UpdateRunningGame(media_filename.c_str(), media.get());
     if (media)
       m_cdrom->InsertMedia(std::move(media));
     else
@@ -516,6 +516,7 @@ bool System::InsertMedia(const char* path)
   if (!image)
     return false;
 
+  UpdateRunningGame(path, image.get());
   m_cdrom->InsertMedia(std::move(image));
   return true;
 }
@@ -523,4 +524,38 @@ bool System::InsertMedia(const char* path)
 void System::RemoveMedia()
 {
   m_cdrom->RemoveMedia();
+}
+
+void System::UpdateRunningGame(const char* path, CDImage* image)
+{
+  m_running_game_path.clear();
+  m_running_game_code.clear();
+  m_running_game_title.clear();
+
+  if (path && std::strlen(path) > 0)
+  {
+    m_running_game_path = path;
+
+    const GameListEntry* list_entry = m_host_interface->GetGameList()->GetEntryForPath(path);
+    if (list_entry)
+    {
+      m_running_game_code = list_entry->code;
+      m_running_game_title = list_entry->title;
+    }
+    else
+    {
+      if (image)
+        m_running_game_code = GameList::GetGameCodeForImage(image);
+
+      const GameListDatabaseEntry* db_entry =
+        (!m_running_game_code.empty()) ? m_host_interface->GetGameList()->GetDatabaseEntryForCode(m_running_game_code) :
+                                         nullptr;
+      if (db_entry)
+        m_running_game_title = db_entry->title;
+      else
+        m_running_game_title = GameList::GetTitleForPath(path);
+    }
+  }
+
+  m_host_interface->OnRunningGameChanged();
 }

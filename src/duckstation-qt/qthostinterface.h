@@ -88,7 +88,7 @@ private Q_SLOTS:
 
 protected:
   void OnPerformanceCountersUpdated() override;
-  void OnRunningGameChanged(const char* path, const char* game_code, const char* game_title) override;
+  void OnRunningGameChanged() override;
 
 private:
   using InputButtonHandler = std::function<void(bool)>;

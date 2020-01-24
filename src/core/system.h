@@ -1,8 +1,9 @@
 #pragma once
-#include "types.h"
 #include "host_interface.h"
+#include "types.h"
 #include <memory>
 #include <optional>
+#include <string>
 
 class ByteStream;
 class CDImage;
@@ -11,7 +12,7 @@ class StateWrapper;
 namespace CPU {
 class Core;
 class CodeCache;
-}
+} // namespace CPU
 
 class Bus;
 class DMA;
@@ -56,6 +57,10 @@ public:
 
   const Settings& GetSettings() { return m_host_interface->GetSettings(); }
 
+  const std::string& GetRunningPath() const { return m_running_game_path; }
+  const std::string& GetRunningCode() const { return m_running_game_code; }
+  const std::string& GetRunningTitle() const { return m_running_game_title; }
+
   bool Boot(const char* filename);
   void Reset();
 
@@ -94,6 +99,8 @@ private:
 
   void InitializeComponents();
 
+  void UpdateRunningGame(const char* path, CDImage* image);
+
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;
   std::unique_ptr<CPU::CodeCache> m_cpu_code_cache;
@@ -112,4 +119,8 @@ private:
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
   u32 m_global_tick_counter = 0;
+
+  std::string m_running_game_path;
+  std::string m_running_game_code;
+  std::string m_running_game_title;
 };

@@ -86,7 +86,7 @@ protected:
   };
 
   virtual void OnPerformanceCountersUpdated();
-  virtual void OnRunningGameChanged(const char* path, const char* game_code, const char* game_title);
+  virtual void OnRunningGameChanged();
 
   void SetUserDirectory();
 
@@ -107,8 +107,6 @@ protected:
 
   void UpdatePerformanceCounters();
   void ResetPerformanceCounters();
-
-  void UpdateRunningGame(const char* path, CDImage* image);
 
   std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;

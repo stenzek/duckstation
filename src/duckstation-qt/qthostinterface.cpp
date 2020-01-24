@@ -247,11 +247,20 @@ void QtHostInterface::OnPerformanceCountersUpdated()
   emit performanceCountersUpdated(m_speed, m_fps, m_vps, m_average_frame_time, m_worst_frame_time);
 }
 
-void QtHostInterface::OnRunningGameChanged(const char* path, const char* game_code, const char* game_title)
+void QtHostInterface::OnRunningGameChanged()
 {
-  HostInterface::OnRunningGameChanged(path, game_code, game_title);
+  HostInterface::OnRunningGameChanged();
 
-  emit runningGameChanged(QString::fromUtf8(path), QString::fromUtf8(game_code), QString::fromUtf8(game_title));
+  if (m_system)
+  {
+    emit runningGameChanged(QString::fromStdString(m_system->GetRunningPath()),
+                            QString::fromStdString(m_system->GetRunningCode()),
+                            QString::fromStdString(m_system->GetRunningTitle()));
+  }
+  else
+  {
+    emit runningGameChanged(QString(), QString(), QString());
+  }
 }
 
 void QtHostInterface::updateInputMap()
