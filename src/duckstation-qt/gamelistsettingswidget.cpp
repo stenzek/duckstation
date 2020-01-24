@@ -1,12 +1,24 @@
 #include "gamelistsettingswidget.h"
+#include "common/assert.h"
+#include "common/string_util.h"
+#include "core/game_list.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include <unzip.h>
 #include <QtCore/QAbstractTableModel>
+#include <QtCore/QDebug>
 #include <QtCore/QSettings>
+#include <QtCore/QUrl>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressDialog>
 #include <algorithm>
+
+static constexpr char REDUMP_DOWNLOAD_URL[] = "http://redump.org/datfile/psx/serial,version,description";
 
 class GameListSearchDirectoriesModel : public QAbstractTableModel
 {
@@ -271,5 +283,198 @@ void GameListSettingsWidget::onRefreshGameListButtonPressed()
 
 void GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed()
 {
-  QMessageBox::information(this, tr("TODO"), tr("TODO"));
+  if (QMessageBox::question(this, tr("Download database from redump.org?"),
+                            tr("Do you wish to download the disc database from redump.org?\n\nThis will download "
+                               "approximately 4 megabytes over your current internet connection.")) != QMessageBox::Yes)
+  {
+    return;
+  }
+
+  if (downloadRedumpDatabase(QString::fromStdString(m_host_interface->getGameList()->GetDatabaseFilename())))
+    m_host_interface->refreshGameList(true, true);
+}
+
+static bool ExtractRedumpDatabase(const QByteArray& data, const QString& destination_path)
+{
+  if (data.isEmpty())
+    return false;
+
+  struct MemoryFileInfo
+  {
+    const QByteArray& data;
+    int position;
+  };
+
+  MemoryFileInfo fi{data, 0};
+
+#define FI static_cast<MemoryFileInfo*>(stream)
+
+  zlib_filefunc64_def funcs = {
+    [](voidpf opaque, const void* filename, int mode) -> voidpf { return opaque; }, // open
+    [](voidpf opaque, voidpf stream, void* buf, uLong size) -> uLong {              // read
+      const int remaining = FI->data.size() - FI->position;
+      const int to_read = std::min(remaining, static_cast<int>(size));
+      if (to_read > 0)
+      {
+        std::memcpy(buf, FI->data.constData() + FI->position, to_read);
+        FI->position += to_read;
+      }
+
+      return static_cast<uLong>(to_read);
+    },
+    [](voidpf opaque, voidpf stream, const void* buf, uLong size) -> uLong { return 0; },         // write
+    [](voidpf opaque, voidpf stream) -> ZPOS64_T { return static_cast<ZPOS64_T>(FI->position); }, // tell
+    [](voidpf opaque, voidpf stream, ZPOS64_T offset, int origin) -> long {                       // seek
+      int new_position = FI->position;
+      if (origin == SEEK_SET)
+        new_position = static_cast<int>(offset);
+      else if (origin == SEEK_CUR)
+        new_position += static_cast<int>(offset);
+      else
+        new_position = FI->data.size();
+      if (new_position < 0 || new_position > FI->data.size())
+        return -1;
+
+      FI->position = new_position;
+      return 0;
+    },
+    [](voidpf opaque, voidpf stream) -> int { return 0; }, // close
+    [](voidpf opaque, voidpf stream) -> int { return 0; }, // testerror
+    static_cast<voidpf>(&fi)};
+
+#undef FI
+
+  unzFile zf = unzOpen2_64("", &funcs);
+  if (!zf)
+  {
+    qCritical() << "unzOpen2_64() failed";
+    return false;
+  }
+
+  // find the first file with a .dat extension (in case there's others)
+  if (unzGoToFirstFile(zf) != UNZ_OK)
+  {
+    qCritical() << "unzGoToFirstFile() failed";
+    unzClose(zf);
+    return false;
+  }
+
+  int dat_size = 0;
+  for (;;)
+  {
+    char zip_filename_buffer[256];
+    unz_file_info64 file_info;
+    if (unzGetCurrentFileInfo64(zf, &file_info, zip_filename_buffer, sizeof(zip_filename_buffer), nullptr, 0, nullptr,
+                                0) != UNZ_OK)
+    {
+      qCritical() << "unzGetCurrentFileInfo() failed";
+      unzClose(zf);
+      return false;
+    }
+
+    const char* extension = std::strrchr(zip_filename_buffer, '.');
+    if (extension && StringUtil::Strcasecmp(extension, ".dat") == 0 && file_info.uncompressed_size > 0)
+    {
+      dat_size = static_cast<int>(file_info.uncompressed_size);
+      qInfo() << "Found redump dat file in zip: " << zip_filename_buffer << "(" << dat_size << " bytes)";
+      break;
+    }
+
+    if (unzGoToNextFile(zf) != UNZ_OK)
+    {
+      qCritical() << "dat file not found in downloaded redump zip";
+      unzClose(zf);
+      return false;
+    }
+  }
+
+  if (unzOpenCurrentFile(zf) != UNZ_OK)
+  {
+    qCritical() << "unzOpenCurrentFile() failed";
+    unzClose(zf);
+    return false;
+  }
+
+  QByteArray dat_buffer;
+  dat_buffer.resize(dat_size);
+  if (unzReadCurrentFile(zf, dat_buffer.data(), dat_size) != dat_size)
+  {
+    qCritical() << "unzReadCurrentFile() failed";
+    unzClose(zf);
+    return false;
+  }
+
+  unzCloseCurrentFile(zf);
+  unzClose(zf);
+
+  QFile dat_output_file(destination_path);
+  if (!dat_output_file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+  {
+    qCritical() << "QFile::open() failed";
+    return false;
+  }
+
+  if (static_cast<int>(dat_output_file.write(dat_buffer)) != dat_buffer.size())
+  {
+    qCritical() << "QFile::write() failed";
+    return false;
+  }
+
+  dat_output_file.close();
+  qInfo() << "Wrote redump dat to " << destination_path;
+  return true;
+}
+
+bool GameListSettingsWidget::downloadRedumpDatabase(const QString& download_path)
+{
+  Assert(!download_path.isEmpty());
+
+  QNetworkAccessManager manager;
+
+  QUrl url(QUrl::fromEncoded(QByteArray(REDUMP_DOWNLOAD_URL, sizeof(REDUMP_DOWNLOAD_URL) - 1)));
+  QNetworkRequest request(url);
+
+  QNetworkReply* reply = manager.get(request);
+
+  QProgressDialog progress(tr("Downloading %1...").arg(REDUMP_DOWNLOAD_URL), tr("Cancel"), 0, 1);
+  progress.setAutoClose(false);
+
+  connect(reply, &QNetworkReply::downloadProgress, [&progress](quint64 received, quint64 total) {
+    progress.setRange(0, static_cast<int>(total));
+    progress.setValue(static_cast<int>(received));
+  });
+
+  connect(&manager, &QNetworkAccessManager::finished, [this, &progress, &download_path](QNetworkReply* reply) {
+    if (reply->error() != QNetworkReply::NoError)
+    {
+      QMessageBox::critical(this, tr("Download failed"), reply->errorString());
+      progress.done(-1);
+      return;
+    }
+
+    progress.setRange(0, 100);
+    progress.setValue(100);
+    progress.setLabelText(tr("Extracting..."));
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    const QByteArray data = reply->readAll();
+    if (!ExtractRedumpDatabase(data, download_path))
+    {
+      QMessageBox::critical(this, tr("Extract failed"), tr("Extracting game database failed."));
+      progress.done(-1);
+      return;
+    }
+
+    progress.done(1);
+  });
+
+  const int result = progress.exec();
+  if (result == 0)
+  {
+    // cancelled
+    reply->abort();
+  }
+
+  reply->deleteLater();
+  return (result == 1);
 }

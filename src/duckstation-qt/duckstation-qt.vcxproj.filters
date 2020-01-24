@@ -31,6 +31,8 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="d3d11displaywindow.cpp" />
     <ClCompile Include="$(IntDir)moc_d3d11displaywindow.cpp" />
+    <ClCompile Include="audiosettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
@@ -59,6 +61,7 @@
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="d3d11displaywindow.h" />
+    <QtMoc Include="audiosettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -66,6 +69,7 @@
     <QtUi Include="mainwindow.ui" />
     <QtUi Include="settingsdialog.ui" />
     <QtUi Include="gpusettingswidget.ui" />
+    <QtUi Include="audiosettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
