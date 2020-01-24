@@ -36,8 +36,8 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
   m_sio = std::make_unique<SIO>();
-  m_region = host_interface->GetSettings().region;
-  m_cpu_execution_mode = host_interface->GetSettings().cpu_execution_mode;
+  m_region = host_interface->m_settings.region;
+  m_cpu_execution_mode = host_interface->m_settings.cpu_execution_mode;
 }
 
 System::~System() = default;
@@ -45,13 +45,13 @@ System::~System() = default;
 std::unique_ptr<System> System::Create(HostInterface* host_interface)
 {
   std::unique_ptr<System> system(new System(host_interface));
-  if (!system->CreateGPU())
+  if (!system->CreateGPU(host_interface->m_settings.gpu_renderer))
     return {};
 
   return system;
 }
 
-bool System::RecreateGPU()
+bool System::RecreateGPU(GPURenderer renderer)
 {
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
@@ -62,7 +62,7 @@ bool System::RecreateGPU()
 
   // create new renderer
   m_gpu.reset();
-  if (!CreateGPU())
+  if (!CreateGPU(renderer))
   {
     Panic("Failed to recreate GPU");
     return false;
@@ -193,9 +193,9 @@ void System::InitializeComponents()
   m_mdec->Initialize(this, m_dma.get());
 }
 
-bool System::CreateGPU()
+bool System::CreateGPU(GPURenderer renderer)
 {
-  switch (m_host_interface->GetSettings().gpu_renderer)
+  switch (renderer)
   {
     case GPURenderer::HardwareOpenGL:
       m_gpu = m_host_interface->GetDisplay()->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES ?
@@ -220,7 +220,6 @@ bool System::CreateGPU()
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     m_gpu.reset();
-    m_host_interface->GetSettings().gpu_renderer = GPURenderer::Software;
     m_gpu = GPU::CreateSoftwareRenderer();
     if (!m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
                            m_timers.get()))

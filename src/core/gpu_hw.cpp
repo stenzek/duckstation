@@ -15,6 +15,11 @@ GPU_HW::GPU_HW() : GPU()
 
 GPU_HW::~GPU_HW() = default;
 
+bool GPU_HW::IsHardwareRenderer() const
+{
+  return true;
+}
+
 bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
                         Timers* timers)
 {

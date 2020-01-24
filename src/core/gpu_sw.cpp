@@ -15,6 +15,11 @@ GPU_SW::~GPU_SW()
   m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
 }
 
+bool GPU_SW::IsHardwareRenderer() const
+{
+  return false;
+}
+
 bool GPU_SW::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
                         Timers* timers)
 {

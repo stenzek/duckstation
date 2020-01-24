@@ -515,7 +515,6 @@ std::string HostInterface::GetGameListDatabaseFileName() const
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 {
-  // TODO: Should we move this to the base class?
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
   const bool old_gpu_true_color = m_settings.gpu_true_color;
@@ -528,7 +527,6 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   apply_callback();
 
-  // TODO: Fast path for hardware->software switches
   if (m_settings.gpu_renderer != old_gpu_renderer)
     SwitchGPURenderer();
 
@@ -547,6 +545,18 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   if (m_settings.display_linear_filtering != old_display_linear_filtering)
     m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+}
+
+void HostInterface::ToggleSoftwareRendering()
+{
+  if (!m_system || m_settings.gpu_renderer == GPURenderer::Software)
+    return;
+
+  const GPURenderer new_renderer =
+    m_system->GetGPU()->IsHardwareRenderer() ? GPURenderer::Software : m_settings.gpu_renderer;
+
+  AddFormattedOSDMessage(2.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
+  m_system->RecreateGPU(new_renderer);
 }
 
 void HostInterface::RunFrame()

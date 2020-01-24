@@ -29,6 +29,8 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
+  virtual bool IsHardwareRenderer() const override;
+
   virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
                           InterruptController* interrupt_controller, Timers* timers) override;
   virtual void Reset() override;

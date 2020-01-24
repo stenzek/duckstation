@@ -68,7 +68,7 @@ public:
   bool SaveState(ByteStream* state);
 
   /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
-  bool RecreateGPU();
+  bool RecreateGPU(GPURenderer renderer);
 
   /// Updates GPU settings, without recreating the renderer.
   void UpdateGPUSettings();
@@ -98,7 +98,7 @@ private:
   System(HostInterface* host_interface);
 
   bool DoState(StateWrapper& sw);
-  bool CreateGPU();
+  bool CreateGPU(GPURenderer renderer);
 
   void InitializeComponents();
 

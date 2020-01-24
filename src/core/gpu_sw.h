@@ -12,6 +12,8 @@ public:
   GPU_SW();
   ~GPU_SW() override;
 
+  bool IsHardwareRenderer() const override;
+
   bool Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
                   Timers* timers) override;
   void Reset() override;

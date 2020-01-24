@@ -105,6 +105,8 @@ public:
   GPU();
   virtual ~GPU();
 
+  virtual bool IsHardwareRenderer() const = 0;
+
   virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
                           InterruptController* interrupt_controller, Timers* timers);
   virtual void Reset();

@@ -99,7 +99,6 @@ private:
   void DoSaveState(u32 index);
   void DoTogglePause();
   void DoFrameStep();
-  void DoToggleSoftwareRendering();
   void DoToggleFullscreen();
   void DoModifyInternalResolution(s32 increment);
 

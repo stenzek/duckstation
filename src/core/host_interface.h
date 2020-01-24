@@ -104,7 +104,12 @@ protected:
   /// Returns the path of the game database cache file.
   std::string GetGameListDatabaseFileName() const;
 
+  /// Applies new settings, updating internal state as needed. apply_callback should call m_settings.Load() after
+  /// locking any required mutexes.
   void UpdateSettings(const std::function<void()>& apply_callback);
+
+  /// Quick switch between software and hardware rendering.
+  void ToggleSoftwareRendering();
 
   void RunFrame();
 

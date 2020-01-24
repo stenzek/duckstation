@@ -419,7 +419,7 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
 
     case SDL_SCANCODE_END: {
       if (pressed)
-        DoToggleSoftwareRendering();
+        ToggleSoftwareRendering();
     }
     break;
 
@@ -1547,31 +1547,6 @@ void SDLHostInterface::DoFrameStep()
 
   m_frame_step_request = true;
   m_paused = false;
-}
-
-void SDLHostInterface::DoToggleSoftwareRendering()
-{
-  if (!m_system)
-    return;
-
-  if (m_settings.gpu_renderer != GPURenderer::Software)
-  {
-    m_settings.gpu_renderer = GPURenderer::Software;
-    AddOSDMessage("Switched to software GPU renderer.");
-  }
-  else
-  {
-#ifdef WIN32
-    m_settings.gpu_renderer = m_display->GetRenderAPI() == HostDisplay::RenderAPI::D3D11 ? GPURenderer::HardwareD3D11 :
-                                                                                           GPURenderer::HardwareOpenGL;
-#else
-    m_settings.gpu_renderer = GPURenderer::HardwareOpenGL;
-#endif
-
-    AddOSDMessage("Switched to hardware GPU renderer.");
-  }
-
-  m_system->RecreateGPU();
 }
 
 void SDLHostInterface::DoToggleFullscreen()
