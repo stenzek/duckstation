@@ -138,13 +138,11 @@ public:
 
   void loadFromSettings()
   {
-    const QSettings& qsettings = m_host_interface->getQSettings();
-
-    QStringList path_list = qsettings.value(QStringLiteral("GameList/Paths")).toStringList();
+    QStringList path_list = m_host_interface->getSettingValue(QStringLiteral("GameList/Paths")).toStringList();
     for (QString& entry : path_list)
       m_entries.push_back({std::move(entry), false});
 
-    path_list = qsettings.value(QStringLiteral("GameList/RecursivePaths")).toStringList();
+    path_list = m_host_interface->getSettingValue(QStringLiteral("GameList/RecursivePaths")).toStringList();
     for (QString& entry : path_list)
       m_entries.push_back({std::move(entry), true});
   }
@@ -162,17 +160,15 @@ public:
         paths.push_back(entry.path);
     }
 
-    QSettings& qsettings = m_host_interface->getQSettings();
-
     if (paths.empty())
-      qsettings.remove(QStringLiteral("GameList/Paths"));
+      m_host_interface->removeSettingValue(QStringLiteral("GameList/Paths"));
     else
-      qsettings.setValue(QStringLiteral("GameList/Paths"), paths);
+      m_host_interface->putSettingValue(QStringLiteral("GameList/Paths"), paths);
 
     if (recursive_paths.empty())
-      qsettings.remove(QStringLiteral("GameList/RecursivePaths"));
+      m_host_interface->removeSettingValue(QStringLiteral("GameList/RecursivePaths"));
     else
-      qsettings.setValue(QStringLiteral("GameList/RecursivePaths"), recursive_paths);
+      m_host_interface->putSettingValue(QStringLiteral("GameList/RecursivePaths"), recursive_paths);
   }
 
 private:
@@ -191,10 +187,8 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
 {
   m_ui.setupUi(this);
 
-  QSettings& qsettings = host_interface->getQSettings();
-
   m_search_directories_model = new GameListSearchDirectoriesModel(host_interface);
-  m_ui.redumpDatabasePath->setText(qsettings.value("GameList/RedumpDatabasePath").toString());
+  m_ui.redumpDatabasePath->setText(host_interface->getSettingValue("GameList/RedumpDatabasePath").toString());
   m_ui.searchDirectoryList->setModel(m_search_directories_model);
   m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
   m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -280,7 +274,7 @@ void GameListSettingsWidget::onBrowseRedumpPathButtonPressed()
     return;
 
   m_ui.redumpDatabasePath->setText(filename);
-  m_host_interface->getQSettings().setValue("GameList/RedumpDatabasePath", filename);
+  m_host_interface->putSettingValue(QStringLiteral("GameList/RedumpDatabasePath"), filename);
   m_host_interface->refreshGameList(true, true);
 }
 

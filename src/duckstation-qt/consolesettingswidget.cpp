@@ -6,12 +6,14 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
 {
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.region, &Settings::region);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.biosPath, &Settings::bios_path);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.enableTTYOutput, &Settings::bios_patch_tty_enable);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.fastBoot, &Settings::bios_patch_fast_boot);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.enableSpeedLimiter, &Settings::speed_limiter_enabled);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.pauseOnStart, &Settings::start_paused);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console/Region",
+                                               &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName);
+  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.biosPath, "BIOS/Path");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableTTYOutput, "BIOS/PatchTTYEnable");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.fastBoot, "BIOS/PatchFastBoot");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter,
+                                               "General/SpeedLimiterEnabled");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "General/StartPaused");
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;

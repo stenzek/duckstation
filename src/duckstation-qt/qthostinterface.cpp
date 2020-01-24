@@ -48,6 +48,8 @@ void QtHostInterface::ReportMessage(const char* message)
 
 void QtHostInterface::setDefaultSettings()
 {
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+
   m_settings.SetDefaults();
 
   // default input settings for Qt
@@ -67,20 +69,57 @@ void QtHostInterface::setDefaultSettings()
   m_qsettings.setValue(QStringLiteral("Controller1/ButtonR1"), QStringLiteral("Keyboard/E"));
   m_qsettings.setValue(QStringLiteral("Controller1/ButtonR2"), QStringLiteral("Keyboard/3"));
 
-  updateQSettings();
+  updateQSettingsFromCoreSettings();
 }
 
-void QtHostInterface::updateQSettings()
+QVariant QtHostInterface::getSettingValue(const QString& name)
+{
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  return m_qsettings.value(name);
+}
+
+void QtHostInterface::putSettingValue(const QString& name, const QVariant& value)
+{
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  m_qsettings.setValue(name, value);
+}
+
+void QtHostInterface::removeSettingValue(const QString& name)
+{
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  m_qsettings.remove(name);
+}
+
+void QtHostInterface::updateQSettingsFromCoreSettings()
 {
   QtSettingsInterface si(m_qsettings);
   m_settings.Save(si);
-  // m_qsettings.sync();
 }
 
 void QtHostInterface::applySettings()
 {
-  QtSettingsInterface si(m_qsettings);
-  m_settings.Load(si);
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "applySettings", Qt::QueuedConnection);
+    return;
+  }
+
+  // TODO: Should we move this to the base class?
+  const bool old_vsync_enabled = m_settings.video_sync_enabled;
+  const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
+  const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
+
+  {
+    std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+    QtSettingsInterface si(m_qsettings);
+    m_settings.Load(si);
+  }
+
+  if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
+      m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
+  {
+    UpdateSpeedLimiterState();
+  }
 }
 
 void QtHostInterface::checkSettings()
@@ -105,7 +144,9 @@ void QtHostInterface::checkSettings()
     setDefaultSettings();
   }
 
-  applySettings();
+  // initial setting init - we don't do this locked since the thread hasn't been created yet
+  QtSettingsInterface si(m_qsettings);
+  m_settings.Load(si);
 }
 
 void QtHostInterface::createGameList()
@@ -446,6 +487,7 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
 
   wakeThread();
   m_audio_stream->PauseOutput(false);
+  UpdateSpeedLimiterState();
   emit emulationStarted();
 }
 

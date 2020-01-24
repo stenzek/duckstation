@@ -9,17 +9,16 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.renderer, &Settings::gpu_renderer);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.fullscreen, &Settings::display_fullscreen);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.displayLinearFiltering,
-                                           &Settings::display_linear_filtering);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.vsync, &Settings::video_sync_enabled);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.resolutionScale, &Settings::gpu_resolution_scale);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.trueColor, &Settings::gpu_true_color);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.linearTextureFiltering,
-                                           &Settings::gpu_texture_filtering);
-  SettingWidgetBinder::BindWidgetToSetting(m_host_interface, m_ui.forceProgressiveScan,
-                                           &Settings::gpu_force_progressive_scan);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, "GPU/Renderer",
+                                               &Settings::ParseRendererName, &Settings::GetRendererName);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.fullscreen, "Display/Fullscreen");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering,
+                                               "Display/LinearFiltering");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display/VSync");
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU/ResolutionScale");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU/TrueColor");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, "GPU/TextureFiltering");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceProgressiveScan, "GPU/ForceProgressiveScan");
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;

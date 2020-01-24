@@ -216,9 +216,8 @@ void MainWindow::setupAdditionalUi()
     action->setCheckable(true);
     action->setChecked(m_host_interface->GetCoreSettings().gpu_renderer == renderer);
     connect(action, &QAction::triggered, [this, action, renderer]() {
-      m_host_interface->getQSettings().setValue(QStringLiteral("GPU/Renderer"),
-                                                QString(Settings::GetRendererName(renderer)));
-      m_host_interface->GetCoreSettings().gpu_renderer = renderer;
+      m_host_interface->putSettingValue(QStringLiteral("GPU/Renderer"), QString(Settings::GetRendererName(renderer)));
+      m_host_interface->applySettings();
       action->setChecked(true);
       switchRenderer();
     });

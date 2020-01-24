@@ -9,7 +9,7 @@ InputButtonBindingWidget::InputButtonBindingWidget(QtHostInterface* host_interfa
                                                    QWidget* parent)
   : QPushButton(parent), m_host_interface(host_interface), m_setting_name(std::move(setting_name))
 {
-  m_current_binding_value = m_host_interface->getQSettings().value(m_setting_name).toString();
+  m_current_binding_value = m_host_interface->getSettingValue(m_setting_name).toString();
   setText(m_current_binding_value);
 
   connect(this, &QPushButton::pressed, this, &InputButtonBindingWidget::onPressed);
@@ -54,7 +54,7 @@ void InputButtonBindingWidget::setNewBinding()
   if (m_new_binding_value.isEmpty())
     return;
 
-  m_host_interface->getQSettings().setValue(m_setting_name, m_new_binding_value);
+  m_host_interface->putSettingValue(m_setting_name, m_new_binding_value);
   m_host_interface->updateInputMap();
 
   m_current_binding_value = std::move(m_new_binding_value);

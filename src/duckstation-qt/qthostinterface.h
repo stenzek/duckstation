@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <utility>
 #include <vector>
 
@@ -30,11 +31,12 @@ public:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
 
-  const QSettings& getQSettings() const { return m_qsettings; }
-  QSettings& getQSettings() { return m_qsettings; }
   void setDefaultSettings();
-  void updateQSettings();
-  void applySettings();
+
+  /// Thread-safe QSettings access.
+  QVariant getSettingValue(const QString& name);
+  void putSettingValue(const QString& name, const QVariant& value);
+  void removeSettingValue(const QString& name);
 
   const Settings& GetCoreSettings() const { return m_settings; }
   Settings& GetCoreSettings() { return m_settings; }
@@ -74,6 +76,7 @@ Q_SIGNALS:
   void performanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time);
 
 public Q_SLOTS:
+  void applySettings();
   void powerOffSystem();
   void resetSystem();
   void pauseSystem(bool paused);
@@ -113,6 +116,8 @@ private:
   };
 
   void checkSettings();
+  void updateQSettingsFromCoreSettings();
+
   void createGameList();
   void updateControllerInputMap();
   void updateHotkeyInputMap();
@@ -124,6 +129,7 @@ private:
   void wakeThread();
 
   QSettings m_qsettings;
+  std::mutex m_qsettings_mutex;
 
   std::unique_ptr<GameList> m_game_list;
 

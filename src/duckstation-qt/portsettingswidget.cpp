@@ -30,13 +30,12 @@ void PortSettingsWidget::createUi()
 
 void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
 {
-  const Settings& settings = m_host_interface->GetCoreSettings();
-
   ui->widget = new QWidget(m_tab_widget);
   ui->layout = new QVBoxLayout(ui->widget);
 
   QHBoxLayout* memory_card_layout = new QHBoxLayout();
-  ui->memory_card_path = new QLineEdit(QString::fromStdString(settings.memory_card_paths[index]), ui->widget);
+  ui->memory_card_path = new QLineEdit(
+    m_host_interface->getSettingValue(QStringLiteral("MemoryCards/Card%1Path").arg(index + 1)).toString(), ui->widget);
   memory_card_layout->addWidget(ui->memory_card_path);
   ui->memory_card_path_browse = new QPushButton(tr("Browse..."), ui->widget);
   memory_card_layout->addWidget(ui->memory_card_path_browse);
@@ -49,13 +48,19 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
     ui->controller_type->addItem(
       QString::fromLocal8Bit(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
-  ui->controller_type->setCurrentIndex(static_cast<int>(settings.controller_types[index]));
+  ControllerType ctype = Settings::ParseControllerTypeName(
+                           m_host_interface->getSettingValue(QStringLiteral("Controller%1/Type").arg(index + 1))
+                             .toString()
+                             .toStdString()
+                             .c_str())
+                           .value_or(ControllerType::None);
+  ui->controller_type->setCurrentIndex(static_cast<int>(ctype));
   connect(ui->controller_type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
           [this, index]() { onControllerTypeChanged(index); });
   ui->layout->addWidget(new QLabel(tr("Controller Type:"), ui->widget));
   ui->layout->addWidget(ui->controller_type);
 
-  createPortBindingSettingsUi(index, ui);
+  createPortBindingSettingsUi(index, ui, ctype);
 
   ui->layout->addStretch(1);
 
@@ -64,12 +69,11 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   m_tab_widget->addTab(ui->widget, tr("Port %1").arg(index + 1));
 }
 
-void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* ui)
+void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype)
 {
   QWidget* container = new QWidget(ui->widget);
   QGridLayout* layout = new QGridLayout(container);
   layout->setContentsMargins(0, 0, 0, 0);
-  const ControllerType ctype = m_host_interface->GetCoreSettings().controller_types[index];
   const auto buttons = Controller::GetButtonNames(ctype);
 
   if (!buttons.empty())
@@ -124,9 +128,9 @@ void PortSettingsWidget::onControllerTypeChanged(int index)
   if (type_index < 0 || type_index >= static_cast<int>(ControllerType::Count))
     return;
 
-  m_host_interface->GetCoreSettings().controller_types[index] = static_cast<ControllerType>(type_index);
-  m_host_interface->getQSettings().setValue(
+  m_host_interface->putSettingValue(
     QStringLiteral("Controller%1/Type").arg(index + 1),
     QString::fromStdString(Settings::GetControllerTypeName(static_cast<ControllerType>(type_index))));
-  createPortBindingSettingsUi(index, &m_port_ui[index]);
+  m_host_interface->applySettings();
+  createPortBindingSettingsUi(index, &m_port_ui[index], static_cast<ControllerType>(type_index));
 }

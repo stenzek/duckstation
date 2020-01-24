@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <type_traits>
 
 #include "core/settings.h"
@@ -63,7 +64,7 @@ struct SettingAccessor<QComboBox>
   template<typename F>
   static void connectValueChanged(QComboBox* widget, F func)
   {
-    widget->connect(widget, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), func);
+    widget->connect(widget, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), func);
   }
 };
 
@@ -90,64 +91,68 @@ struct SettingAccessor<QCheckBox>
 };
 
 /// Binds a widget's value to a setting, updating it when the value changes.
-// template<typename WidgetType, typename DataType, typename = void>
-// void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, DataType Settings::*settings_ptr);
 
 template<typename WidgetType>
-void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, bool Settings::*settings_ptr)
+void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  Accessor::setBoolValue(widget, hi->GetCoreSettings().*settings_ptr);
+  Accessor::setBoolValue(widget, hi->getSettingValue(setting_name).toBool());
 
-  Accessor::connectValueChanged(widget, [hi, widget, settings_ptr]() {
-    (hi->GetCoreSettings().*settings_ptr) = Accessor::getBoolValue(widget);
-    hi->updateQSettings();
+  Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
+    const bool new_value = Accessor::getBoolValue(widget);
+    hi->putSettingValue(setting_name, new_value);
+    hi->applySettings();
   });
 }
 
 template<typename WidgetType>
-void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, std::string Settings::*settings_ptr)
+void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  Accessor::setStringValue(widget, QString::fromStdString(hi->GetCoreSettings().*settings_ptr));
+  Accessor::setIntValue(widget, hi->getSettingValue(setting_name).toInt());
 
-  Accessor::connectValueChanged(widget, [hi, widget, settings_ptr]() {
-    const QString value = Accessor::getStringValue(widget);
-    (hi->GetCoreSettings().*settings_ptr) = value.toStdString();
-    hi->updateQSettings();
+  Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
+    const int new_value = Accessor::getIntValue(widget);
+    hi->putSettingValue(setting_name, new_value);
+    hi->applySettings();
+  });
+}
+
+template<typename WidgetType>
+void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+
+  Accessor::setStringValue(widget, hi->getSettingValue(setting_name).toString());
+
+  Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
+    const QString new_value = Accessor::getStringValue(widget);
+    hi->putSettingValue(setting_name, new_value);
+    hi->applySettings();
   });
 }
 
 template<typename WidgetType, typename DataType>
-void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, DataType Settings::*settings_ptr,
-                         std::enable_if_t<std::is_enum_v<DataType>, int>* v = nullptr)
+void BindWidgetToEnumSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name,
+                             std::optional<DataType> (*from_string_function)(const char* str),
+                             const char* (*to_string_function)(DataType value))
 {
   using Accessor = SettingAccessor<WidgetType>;
   using UnderlyingType = std::underlying_type_t<DataType>;
 
-  Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(hi->GetCoreSettings().*settings_ptr)));
+  const QString old_setting_string_value = hi->getSettingValue(setting_name).toString();
+  const std::optional<DataType> old_setting_value =
+    from_string_function(old_setting_string_value.toStdString().c_str());
+  if (old_setting_value.has_value())
+    Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
 
-  Accessor::connectValueChanged(widget, [hi, widget, settings_ptr](int) {
-    const int value = Accessor::getIntValue(widget);
-    (hi->GetCoreSettings().*settings_ptr) = static_cast<DataType>(static_cast<UnderlyingType>(value));
-    hi->updateQSettings();
-  });
-}
-
-template<typename WidgetType, typename DataType>
-void BindWidgetToSetting(QtHostInterface* hi, WidgetType* widget, DataType Settings::*settings_ptr,
-                         std::enable_if_t<std::is_integral_v<DataType>, int>* v = nullptr)
-{
-  using Accessor = SettingAccessor<WidgetType>;
-
-  Accessor::setIntValue(widget, static_cast<int>(hi->GetCoreSettings().*settings_ptr));
-
-  Accessor::connectValueChanged(widget, [hi, widget, settings_ptr](int) {
-    const int value = Accessor::getIntValue(widget);
-    (hi->GetCoreSettings().*settings_ptr) = static_cast<DataType>(value);
-    hi->updateQSettings();
+  Accessor::connectValueChanged(widget, [hi, widget, setting_name, to_string_function]() {
+    const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
+    const char* string_value = to_string_function(value);
+    hi->putSettingValue(setting_name, QString::fromLocal8Bit(string_value));
+    hi->applySettings();
   });
 }
 
