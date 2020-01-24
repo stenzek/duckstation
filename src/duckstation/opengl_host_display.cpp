@@ -121,30 +121,6 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
-void OpenGLHostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
-                                          u32 texture_width, u32 texture_height, float aspect_ratio)
-{
-  m_display_texture_id = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));
-  m_display_offset_x = offset_x;
-  m_display_offset_y = offset_y;
-  m_display_width = width;
-  m_display_height = height;
-  m_display_texture_width = texture_width;
-  m_display_texture_height = texture_height;
-  m_display_aspect_ratio = aspect_ratio;
-  m_display_texture_changed = true;
-}
-
-void OpenGLHostDisplay::SetDisplayLinearFiltering(bool enabled)
-{
-  m_display_linear_filtering = enabled;
-}
-
-void OpenGLHostDisplay::SetDisplayTopMargin(int height)
-{
-  m_display_top_margin = height;
-}
-
 void OpenGLHostDisplay::SetVSync(bool enabled)
 {
   // Window framebuffer has to be bound to call SetSwapInterval.
@@ -376,7 +352,7 @@ void OpenGLHostDisplay::Render()
 
 void OpenGLHostDisplay::RenderDisplay()
 {
-  if (!m_display_texture_id)
+  if (!m_display_texture_handle)
     return;
 
   // - 20 for main menu padding
@@ -394,7 +370,7 @@ void OpenGLHostDisplay::RenderDisplay()
                               static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height),
                               static_cast<float>(m_display_width) / static_cast<float>(m_display_texture_width),
                               static_cast<float>(m_display_height) / static_cast<float>(m_display_texture_height));
-  glBindTexture(GL_TEXTURE_2D, m_display_texture_id);
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(m_display_texture_handle)));
   glBindSampler(0, m_display_linear_filtering ? m_display_linear_sampler : m_display_nearest_sampler);
   glBindVertexArray(m_display_vao);
   glDrawArrays(GL_TRIANGLES, 0, 3);

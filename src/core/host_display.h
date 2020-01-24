@@ -7,7 +7,7 @@
 class HostDisplayTexture
 {
 public:
-  virtual ~HostDisplayTexture() {}
+  virtual ~HostDisplayTexture();
 
   virtual void* GetHandle() const = 0;
   virtual u32 GetWidth() const = 0;
@@ -26,7 +26,7 @@ public:
     OpenGLES
   };
 
-  virtual ~HostDisplay() {}
+  virtual ~HostDisplay();
 
   virtual RenderAPI GetRenderAPI() const = 0;
   virtual void* GetRenderDevice() const = 0;
@@ -42,11 +42,6 @@ public:
   virtual void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                              u32 data_stride) = 0;
 
-  virtual void SetDisplayTexture(void* texture_handle, s32 offset_x, s32 offset_y, s32 width, s32 height,
-                                 u32 texture_width, u32 texture_height, float aspect_ratio) = 0;
-  virtual void SetDisplayLinearFiltering(bool enabled) = 0;
-  virtual void SetDisplayTopMargin(int height) = 0;
-
   virtual void Render() = 0;
 
   virtual void SetVSync(bool enabled) = 0;
@@ -54,26 +49,39 @@ public:
   virtual std::tuple<u32, u32> GetWindowSize() const = 0;
   virtual void WindowResized() = 0;
 
-  // Helper function for computing the draw rectangle in a larger window.
-  static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio)
-  {
-    const float window_ratio = float(window_width) / float(window_height);
-    int left, top, width, height;
-    if (window_ratio >= display_ratio)
-    {
-      width = static_cast<int>(float(window_height) * display_ratio);
-      height = static_cast<int>(window_height);
-      left = (window_width - width) / 2;
-      top = 0;
-    }
-    else
-    {
-      width = static_cast<int>(window_width);
-      height = static_cast<int>(float(window_width) / display_ratio);
-      left = 0;
-      top = (window_height - height) / 2;
-    }
+  const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
 
-    return std::tie(left, top, width, height);
+  void SetDisplayTexture(void* texture_handle, s32 offset_x, s32 offset_y, s32 width, s32 height, u32 texture_width,
+                         u32 texture_height, float aspect_ratio)
+  {
+    m_display_texture_handle = texture_handle;
+    m_display_offset_x = offset_x;
+    m_display_offset_y = offset_y;
+    m_display_width = width;
+    m_display_height = height;
+    m_display_texture_width = texture_width;
+    m_display_texture_height = texture_height;
+    m_display_aspect_ratio = aspect_ratio;
+    m_display_texture_changed = true;
   }
+
+  void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
+  void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
+
+  // Helper function for computing the draw rectangle in a larger window.
+  static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio);
+
+protected:
+  void* m_display_texture_handle = nullptr;
+  s32 m_display_offset_x = 0;
+  s32 m_display_offset_y = 0;
+  s32 m_display_width = 0;
+  s32 m_display_height = 0;
+  u32 m_display_texture_width = 0;
+  u32 m_display_texture_height = 0;
+  s32 m_display_top_margin = 0;
+  float m_display_aspect_ratio = 1.0f;
+
+  bool m_display_texture_changed = false;
+  bool m_display_linear_filtering = false;
 };

@@ -70,6 +70,7 @@
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
+    <ClCompile Include="host_display.cpp" />
     <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="mdec.cpp" />

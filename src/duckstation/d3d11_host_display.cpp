@@ -142,30 +142,6 @@ void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, 
   }
 }
 
-void D3D11HostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
-                                         u32 texture_width, u32 texture_height, float aspect_ratio)
-{
-  m_display_srv = static_cast<ID3D11ShaderResourceView*>(texture);
-  m_display_offset_x = offset_x;
-  m_display_offset_y = offset_y;
-  m_display_width = width;
-  m_display_height = height;
-  m_display_texture_width = texture_width;
-  m_display_texture_height = texture_height;
-  m_display_aspect_ratio = aspect_ratio;
-  m_display_texture_changed = true;
-}
-
-void D3D11HostDisplay::SetDisplayLinearFiltering(bool enabled)
-{
-  m_display_linear_filtering = enabled;
-}
-
-void D3D11HostDisplay::SetDisplayTopMargin(int height)
-{
-  m_display_top_margin = height;
-}
-
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
   m_vsync = enabled;
@@ -418,7 +394,7 @@ void D3D11HostDisplay::Render()
 
 void D3D11HostDisplay::RenderDisplay()
 {
-  if (!m_display_srv)
+  if (!m_display_texture_handle)
     return;
 
   // - 20 for main menu padding
@@ -429,7 +405,7 @@ void D3D11HostDisplay::RenderDisplay()
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
   m_context->PSSetShader(m_display_pixel_shader.Get(), nullptr, 0);
-  m_context->PSSetShaderResources(0, 1, &m_display_srv);
+  m_context->PSSetShaderResources(0, 1, reinterpret_cast<ID3D11ShaderResourceView**>(&m_display_texture_handle));
   m_context->PSSetSamplers(
     0, 1, m_display_linear_filtering ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 

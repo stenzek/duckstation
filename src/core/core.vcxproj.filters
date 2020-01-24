@@ -38,6 +38,7 @@
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="analog_controller.cpp" />
+    <ClCompile Include="host_display.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />

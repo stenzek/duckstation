@@ -42,6 +42,8 @@ add_library(core
     gte.h
     gte.inl
     gte_types.h
+    host_display.cpp
+    host_display.h
     host_interface.cpp
     host_interface.h
     interrupt_controller.cpp

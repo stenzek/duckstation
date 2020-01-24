@@ -143,7 +143,7 @@ void QtHostInterface::applySettings()
   }
 
   if (m_settings.display_linear_filtering != old_display_linear_filtering)
-    m_display_window->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+    m_display_window->getHostDisplayInterface()->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 }
 
 void QtHostInterface::checkSettings()
