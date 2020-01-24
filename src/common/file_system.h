@@ -8,7 +8,7 @@
 
 class ByteStream;
 
-#ifdef Y_PLATFORM_WINDOWS
+#ifdef WIN32
 #define FS_OSPATH_SEPERATOR_CHARACTER '\\'
 #else
 #define FS_OSPATH_SEPERATOR_CHARACTER '/'
@@ -111,15 +111,12 @@ protected:
 // create a change notifier
 std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch);
 
-// appends a path string to the current path string. optionally canonicalizes it.
-void AppendPath(char* Path, u32 cbPath, const char* NewPath);
-void AppendPath(String& Path, const char* NewPath);
-
 // canonicalize a path string (i.e. replace .. with actual folder name, etc), if OS path is used, on windows, the
 // separators will be \, otherwise /
 void CanonicalizePath(char* Destination, u32 cbDestination, const char* Path, bool OSPath = true);
 void CanonicalizePath(String& Destination, const char* Path, bool OSPath = true);
 void CanonicalizePath(String& Destination, bool OSPath = true);
+void CanonicalizePath(std::string& path, bool OSPath = true);
 
 // translates the specified path into a string compatible with the hosting OS
 void BuildOSPath(char* Destination, u32 cbDestination, const char* Path);
@@ -136,6 +133,9 @@ void BuildPathRelativeToFile(String& Destination, const char* CurrentFileName, c
 void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes = true);
 void SanitizeFileName(String& Destination, const char* FileName, bool StripSlashes = true);
 void SanitizeFileName(String& Destination, bool StripSlashes = true);
+
+/// Returns the directory component of a filename.
+std::string GetPathDirectory(const char* path);
 
 // search for files
 bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults);
@@ -172,5 +172,8 @@ bool CreateDirectory(const char* Path, bool Recursive);
 // deletes a directory in the local filesystem
 // if the directory has files, unless the recursive flag is set, it will fail
 bool DeleteDirectory(const char* Path, bool Recursive);
+
+/// Returns the path to the current executable.
+std::string GetProgramPath();
 
 }; // namespace FileSystem

@@ -144,6 +144,11 @@ void CanonicalizePath(String& Destination, bool OSPath /* = true */)
   CanonicalizePath(Destination, Destination);
 }
 
+void CanonicalizePath(std::string& path, bool OSPath /*= true*/)
+{
+  CanonicalizePath(path.data(), static_cast<u32>(path.size() + 1), path.c_str(), OSPath);
+}
+
 static inline bool FileSystemCharacterIsSane(char c, bool StripSlashes)
 {
   if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != ' ' && c != ' ' &&
@@ -215,6 +220,34 @@ void SanitizeFileName(String& Destination, const char* FileName, bool StripSlash
 void SanitizeFileName(String& Destination, bool StripSlashes /* = true */)
 {
   return SanitizeFileName(Destination, Destination, StripSlashes);
+}
+
+std::string GetPathDirectory(const char* path)
+{
+#ifdef WIN32
+  const char* forwardslash_ptr = std::strrchr(path, '/');
+  const char* backslash_ptr = std::strrchr(path, '\\');
+  const char* slash_ptr;
+  if (forwardslash_ptr && backslash_ptr)
+    slash_ptr = std::max(forwardslash_ptr, backslash_ptr);
+  else if (backslash_ptr)
+    slash_ptr = backslash_ptr;
+  else if (forwardslash_ptr)
+    slash_ptr = forwardslash_ptr;
+  else
+    return {};
+#else
+  const char* slash_ptr = std::strrchr(path, '/');
+  if (!slash_ptr)
+    return {};
+#endif
+
+  if (slash_ptr == path)
+    return {};
+
+  std::string str;
+  str.append(path, slash_ptr - path);
+  return str;
 }
 
 void BuildPathRelativeToFile(char* Destination, u32 cbDestination, const char* CurrentFileName, const char* NewFileName,
@@ -957,6 +990,31 @@ bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
   return true;
 }
 
+std::string GetProgramPath()
+{
+  const HANDLE hProcess = GetCurrentProcess();
+
+  std::string buffer;
+  buffer.resize(MAX_PATH);
+
+  for (;;)
+  {
+    DWORD nChars = static_cast<DWORD>(buffer.size());
+    if (!QueryFullProcessImageNameA(GetCurrentProcess(), 0, buffer.data(), &nChars) &&
+        GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    {
+      buffer.resize(buffer.size() * 2);
+      continue;
+    }
+
+    buffer.resize(nChars);
+    break;
+  }
+
+  CanonicalizePath(buffer);
+  return buffer;
+}
+
 #else
 
 std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch)
@@ -1268,6 +1326,72 @@ bool DeleteDirectory(const char* Path, bool Recursive)
 {
   Log_ErrorPrintf("FileSystem::DeleteDirectory(%s) not implemented", Path);
   return false;
+}
+
+std::string GetProgramPath()
+{
+#if defined(__linux__)
+  static const char* exeFileName = "/proc/self/exe";
+
+  int curSize = PATH_MAX;
+  char* buffer = static_cast<char*>(std::realloc(nullptr, curSize));
+  for (;;)
+  {
+    int len = readlink(exeFileName, buffer, curSize);
+    if (len < 0)
+    {
+      std::free(buffer);
+      return {};
+    }
+    else if (len < curSize)
+    {
+      buffer[len] = '\0';
+      std::string ret(buffer, len);
+      std::free(buffer);
+      return ret;
+    }
+
+    curSize *= 2;
+    buffer = static_cast<char*>(std::realloc(buffer, curSize));
+  }
+
+#elif defined(__APPLE__)
+
+  int curSize = PATH_MAX;
+  char* buffer = static_cast<char*>(std::realloc(nullptr, curSize + 1));
+  for (;;)
+  {
+    uint32 nChars = PATH_MAX - 1;
+    int res = _NSGetExecutablePath(buffer, &nChars);
+    if (res == 0)
+    {
+      buffer[nChars] = 0;
+
+      char* resolvedBuffer = realpath(buffer, nullptr);
+      if (resolvedBuffer == nullptr)
+      {
+        std::free(buffer);
+        return {};
+      }
+
+      std::string ret(buffer, len);
+      std::free(buffer);
+      return ret;
+    }
+
+    if (curSize >= 1048576)
+    {
+      std::free(buffer);
+      return {};
+    }
+
+    curSize *= 2;
+    buffer = static_cast<char*>(std::realloc(buffer, curSize + 1));
+  }
+
+#else
+  return {};
+#endif
 }
 
 #endif

@@ -32,25 +32,6 @@ CDImageCueSheet::~CDImageCueSheet()
   cd_delete(m_cd);
 }
 
-static std::string GetPathDirectory(const char* path)
-{
-  const char* forwardslash_ptr = std::strrchr(path, '/');
-  const char* backslash_ptr = std::strrchr(path, '\\');
-  const char* slash_ptr;
-  if (forwardslash_ptr && backslash_ptr)
-    slash_ptr = std::max(forwardslash_ptr, backslash_ptr);
-  else if (backslash_ptr)
-    slash_ptr = backslash_ptr;
-  else if (forwardslash_ptr)
-    slash_ptr = forwardslash_ptr;
-  else
-    return {};
-
-  std::string str;
-  str.append(path, slash_ptr - path + 1);
-  return str;
-}
-
 static std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
 {
   std::string_view::size_type pos = path.rfind('.');
@@ -80,7 +61,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
   }
 
   // get the directory of the filename
-  std::string basepath = GetPathDirectory(filename);
+  std::string basepath = FileSystem::GetPathDirectory(filename) + "/";
   m_filename = filename;
 
   u32 disc_lba = 0;
