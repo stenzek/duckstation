@@ -161,8 +161,6 @@ void MainWindow::onStartBiosActionTriggered()
   m_host_interface->bootSystem(QString(), QString());
 }
 
-void MainWindow::onExitActionTriggered() {}
-
 void MainWindow::onGitHubRepositoryActionTriggered() {}
 
 void MainWindow::onIssueTrackerActionTriggered() {}
@@ -276,7 +274,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionPause, &QAction::toggled, m_host_interface, &QtHostInterface::pauseSystem);
   connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
   connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
-  connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::onExitActionTriggered);
+  connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
   connect(m_ui.actionFullscreen, &QAction::triggered, this, &MainWindow::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered,
@@ -402,4 +400,10 @@ void MainWindow::populateLoadSaveStateMenus(QString game_code)
       save_menu->addAction(tr("Game Save %1").arg(i + 1));
     }
   }
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+  m_host_interface->powerOffSystem(true, true);
+  QMainWindow::closeEvent(event);
 }

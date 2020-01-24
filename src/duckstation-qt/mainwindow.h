@@ -12,7 +12,7 @@ class QLabel;
 class GameListWidget;
 class QtHostInterface;
 
-class MainWindow : public QMainWindow
+class MainWindow final : public QMainWindow
 {
   Q_OBJECT
 
@@ -35,10 +35,12 @@ private Q_SLOTS:
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
   void onStartBiosActionTriggered();
-  void onExitActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onAboutActionTriggered();
+
+protected:
+  void closeEvent(QCloseEvent* event) override;
 
 private:
   void setupAdditionalUi();
