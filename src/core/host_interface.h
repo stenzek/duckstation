@@ -90,6 +90,9 @@ protected:
 
   void SetUserDirectory();
 
+  /// Ensures all subdirectories of the user directory are created.
+  void CreateUserDirectorySubdirectories();
+
   /// Returns the path of the settings file.
   std::string GetSettingsFileName() const;
 

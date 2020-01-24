@@ -53,6 +53,7 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
 HostInterface::HostInterface()
 {
   SetUserDirectory();
+  CreateUserDirectorySubdirectories();
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetGameListCacheFileName());
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
@@ -462,6 +463,16 @@ void HostInterface::SetUserDirectory()
     if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
       Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
   }
+}
+
+void HostInterface::CreateUserDirectorySubdirectories()
+{
+  bool result = true;
+
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
+
+  if (!result)
+    ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
 }
 
 std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...) const
