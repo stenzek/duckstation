@@ -38,12 +38,16 @@ QtHostInterface::~QtHostInterface()
 
 void QtHostInterface::ReportError(const char* message)
 {
-  // QMessageBox::critical(nullptr, tr("DuckStation Error"), message, QMessageBox::Ok);
+  HostInterface::ReportError(message);
+
+  emit errorReported(QString::fromLocal8Bit(message));
 }
 
 void QtHostInterface::ReportMessage(const char* message)
 {
-  // QMessageBox::information(nullptr, tr("DuckStation Information"), message, QMessageBox::Ok);
+  HostInterface::ReportMessage(message);
+
+  emit messageReported(QString::fromLocal8Bit(message));
 }
 
 void QtHostInterface::setDefaultSettings()

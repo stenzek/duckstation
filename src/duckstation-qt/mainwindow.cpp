@@ -30,6 +30,16 @@ MainWindow::~MainWindow()
   m_host_interface->displayWidgetDestroyed();
 }
 
+void MainWindow::reportError(QString message)
+{
+  QMessageBox::critical(nullptr, tr("DuckStation Error"), message, QMessageBox::Ok);
+}
+
+void MainWindow::reportMessage(QString message)
+{
+  m_ui.statusBar->showMessage(message, 2000);
+}
+
 void MainWindow::onEmulationStarting()
 {
   switchToEmulationView();
@@ -292,6 +302,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
 
+  connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
+          Qt::BlockingQueuedConnection);
+  connect(m_host_interface, &QtHostInterface::messageReported, this, &MainWindow::reportMessage);
   connect(m_host_interface, &QtHostInterface::emulationStarting, this, &MainWindow::onEmulationStarting);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);

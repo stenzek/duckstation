@@ -62,6 +62,8 @@ public:
   std::vector<HotkeyInfo> getHotkeyList() const;
 
 Q_SIGNALS:
+  void errorReported(QString message);
+  void messageReported(QString message);
   void emulationStarting();
   void emulationStarted();
   void emulationStopped();

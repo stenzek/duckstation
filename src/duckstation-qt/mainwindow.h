@@ -21,6 +21,8 @@ public:
   ~MainWindow();
 
 private Q_SLOTS:
+  void reportError(QString message);
+  void reportMessage(QString message);
   void onEmulationStarting();
   void onEmulationStarted();
   void onEmulationStopped();
