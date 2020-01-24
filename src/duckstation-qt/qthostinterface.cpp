@@ -108,42 +108,11 @@ void QtHostInterface::applySettings()
     return;
   }
 
-  // TODO: Should we move this to the base class?
-  const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
-  const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
-  const bool old_gpu_true_color = m_settings.gpu_true_color;
-  const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
-  const bool old_gpu_force_progressive_scan = m_settings.gpu_force_progressive_scan;
-  const bool old_vsync_enabled = m_settings.video_sync_enabled;
-  const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
-  const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
-  const bool old_display_linear_filtering = m_settings.display_linear_filtering;
-
-  {
+  UpdateSettings([this]() {
     std::lock_guard<std::mutex> guard(m_qsettings_mutex);
     QtSettingsInterface si(m_qsettings);
     m_settings.Load(si);
-  }
-
-  // TODO: Fast path for hardware->software switches
-  if (m_settings.gpu_renderer != old_gpu_renderer)
-    switchGPURenderer();
-
-  if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
-      m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
-  {
-    UpdateSpeedLimiterState();
-  }
-
-  if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale || m_settings.gpu_true_color != old_gpu_true_color ||
-      m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
-      m_settings.gpu_force_progressive_scan != old_gpu_force_progressive_scan)
-  {
-    m_system->UpdateGPUSettings();
-  }
-
-  if (m_settings.display_linear_filtering != old_display_linear_filtering)
-    m_display_window->getHostDisplayInterface()->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+  });
 }
 
 void QtHostInterface::checkSettings()
@@ -252,6 +221,51 @@ void QtHostInterface::doHandleKeyEvent(int key, bool pressed)
 void QtHostInterface::onDisplayWindowResized(int width, int height)
 {
   m_display_window->onWindowResized(width, height);
+}
+
+void QtHostInterface::SwitchGPURenderer()
+{
+  // Due to the GPU class owning textures, we have to shut the system down.
+  std::unique_ptr<ByteStream> stream;
+  if (m_system)
+  {
+    stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
+    if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
+      ReportError("Failed to save state before GPU renderer switch");
+
+    DestroySystem();
+    m_audio_stream->PauseOutput(true);
+    m_display_window->destroyDeviceContext();
+  }
+
+  const bool restore_state = static_cast<bool>(stream);
+  emit recreateDisplayWidgetRequested(restore_state);
+  Assert(m_display_window != nullptr);
+
+  if (restore_state)
+  {
+    if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
+    {
+      emit runningGameChanged(QString(), QString(), QString());
+      emit emulationStopped();
+      return;
+    }
+
+    CreateSystem();
+    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream.get()))
+    {
+      ReportError("Failed to load state after GPU renderer switch, resetting");
+      m_system->Reset();
+    }
+
+    if (!m_paused)
+    {
+      m_audio_stream->PauseOutput(false);
+      UpdateSpeedLimiterState();
+    }
+  }
+
+  ResetPerformanceCounters();
 }
 
 void QtHostInterface::OnPerformanceCountersUpdated()
@@ -515,51 +529,6 @@ void QtHostInterface::createAudioStream()
     m_audio_stream = AudioStream::CreateNullAudioStream();
     m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
   }
-}
-
-void QtHostInterface::switchGPURenderer()
-{
-  // Due to the GPU class owning textures, we have to shut the system down.
-  std::unique_ptr<ByteStream> stream;
-  if (m_system)
-  {
-    stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-    if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
-      ReportError("Failed to save state before GPU renderer switch");
-
-    DestroySystem();
-    m_audio_stream->PauseOutput(true);
-    m_display_window->destroyDeviceContext();
-  }
-
-  const bool restore_state = static_cast<bool>(stream);
-  emit recreateDisplayWidgetRequested(restore_state);
-  Assert(m_display_window != nullptr);
-
-  if (restore_state)
-  {
-    if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
-    {
-      emit runningGameChanged(QString(), QString(), QString());
-      emit emulationStopped();
-      return;
-    }
-
-    CreateSystem();
-    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream.get()))
-    {
-      ReportError("Failed to load state after GPU renderer switch, resetting");
-      m_system->Reset();
-    }
-
-    if (!m_paused)
-    {
-      m_audio_stream->PauseOutput(false);
-      UpdateSpeedLimiterState();
-    }
-  }
-
-  ResetPerformanceCounters();
 }
 
 void QtHostInterface::createThread()

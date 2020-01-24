@@ -4,6 +4,7 @@
 #include "types.h"
 #include <chrono>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -85,6 +86,7 @@ protected:
     float duration;
   };
 
+  virtual void SwitchGPURenderer();
   virtual void OnPerformanceCountersUpdated();
   virtual void OnRunningGameChanged();
 
@@ -101,6 +103,8 @@ protected:
 
   /// Returns the path of the game database cache file.
   std::string GetGameListDatabaseFileName() const;
+
+  void UpdateSettings(const std::function<void()>& apply_callback);
 
   void RunFrame();
 

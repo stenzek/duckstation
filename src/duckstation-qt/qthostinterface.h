@@ -89,6 +89,7 @@ private Q_SLOTS:
   void onDisplayWindowResized(int width, int height);
 
 protected:
+  void SwitchGPURenderer() override;
   void OnPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
 
@@ -120,7 +121,6 @@ private:
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
   void createAudioStream();
-  void switchGPURenderer();
   void createThread();
   void stopThread();
   void threadEntryPoint();
