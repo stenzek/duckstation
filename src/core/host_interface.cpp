@@ -559,6 +559,23 @@ void HostInterface::ToggleSoftwareRendering()
   m_system->RecreateGPU(new_renderer);
 }
 
+void HostInterface::ModifyResolutionScale(s32 increment)
+{
+  const u32 new_resolution_scale =
+    std::clamp<u32>(static_cast<u32>(static_cast<s32>(m_settings.gpu_resolution_scale) + increment), 1,
+                    m_settings.max_gpu_resolution_scale);
+  if (new_resolution_scale == m_settings.gpu_resolution_scale)
+    return;
+
+  m_settings.gpu_resolution_scale = new_resolution_scale;
+  if (m_system)
+    m_system->GetGPU()->UpdateSettings();
+
+  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
+                         GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
+                         GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale);
+}
+
 void HostInterface::RunFrame()
 {
   m_frame_timer.Reset();

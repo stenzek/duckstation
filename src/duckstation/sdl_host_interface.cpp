@@ -426,9 +426,7 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     case SDL_SCANCODE_PAGEUP:
     case SDL_SCANCODE_PAGEDOWN: {
       if (pressed)
-      {
-        DoModifyInternalResolution(event->key.keysym.scancode == SDL_SCANCODE_PAGEUP ? 1 : -1);
-      }
+        ModifyResolutionScale(event->key.keysym.scancode == SDL_SCANCODE_PAGEUP ? 1 : -1);
     }
     break;
   }
@@ -1553,23 +1551,6 @@ void SDLHostInterface::DoToggleFullscreen()
 {
   m_settings.display_fullscreen = !m_settings.display_fullscreen;
   UpdateFullscreen();
-}
-
-void SDLHostInterface::DoModifyInternalResolution(s32 increment)
-{
-  const u32 new_resolution_scale =
-    std::clamp<u32>(static_cast<u32>(static_cast<s32>(m_settings.gpu_resolution_scale) + increment), 1,
-                    m_settings.max_gpu_resolution_scale);
-  if (new_resolution_scale == m_settings.gpu_resolution_scale)
-    return;
-
-  m_settings.gpu_resolution_scale = new_resolution_scale;
-  if (m_system)
-    m_system->GetGPU()->UpdateSettings();
-
-  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
-                         GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
-                         GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale);
 }
 
 void SDLHostInterface::Run()

@@ -111,6 +111,9 @@ protected:
   /// Quick switch between software and hardware rendering.
   void ToggleSoftwareRendering();
 
+  /// Adjusts the internal (render) resolution of the hardware backends.
+  void ModifyResolutionScale(s32 increment);
+
   void RunFrame();
 
   /// Throttles the system, i.e. sleeps until it's time to execute the next frame.

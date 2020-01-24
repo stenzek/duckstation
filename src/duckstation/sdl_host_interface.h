@@ -100,7 +100,6 @@ private:
   void DoTogglePause();
   void DoFrameStep();
   void DoToggleFullscreen();
-  void DoModifyInternalResolution(s32 increment);
 
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
