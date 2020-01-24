@@ -6,6 +6,7 @@
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 #include <cmath>
 
 static constexpr char DISC_IMAGE_FILTER[] =
@@ -76,26 +77,13 @@ void MainWindow::toggleFullscreen()
   m_ui.actionFullscreen->setChecked(fullscreen);
 }
 
-void MainWindow::switchRenderer()
+void MainWindow::recreateDisplayWidget(bool create_device_context)
 {
   const bool was_fullscreen = m_display_widget->isFullScreen();
   if (was_fullscreen)
     toggleFullscreen();
 
-  QByteArray state;
-  if (m_emulation_running)
-  {
-    // we need to basically restart the emulator core
-    state = m_host_interface->saveStateToMemory();
-    if (state.isEmpty())
-    {
-      m_host_interface->ReportError("Failed to save emulator state to memory");
-      return;
-    }
-
-    // stop the emulation
-    m_host_interface->blockingPowerOffSystem();
-  }
+  switchToGameListView();
 
   // recreate the display widget using the potentially-new renderer
   m_ui.mainContainer->removeWidget(m_display_widget);
@@ -104,25 +92,21 @@ void MainWindow::switchRenderer()
   m_display_widget = m_host_interface->createDisplayWidget(m_ui.mainContainer);
   m_ui.mainContainer->insertWidget(1, m_display_widget);
 
+  if (create_device_context)
+    switchToEmulationView();
+
   // we need the surface visible..
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  if (!state.isEmpty())
+  if (create_device_context && !m_host_interface->createDisplayDeviceContext())
   {
-    // restart the system with the new state
-    m_host_interface->bootSystem(QString(), QString());
-    m_host_interface->loadStateFromMemory(std::move(state));
+    QMessageBox::critical(this, tr("DuckStation Error"),
+                          tr("Failed to create new device context on renderer switch. Cannot continue."));
+    QCoreApplication::exit();
+    return;
   }
 
-  // update the menu with the selected renderer
-  QObjectList renderer_menu_items = m_ui.menuRenderer->children();
-  QString current_renderer_name(Settings::GetRendererDisplayName(m_host_interface->GetCoreSettings().gpu_renderer));
-  for (QObject* obj : renderer_menu_items)
-  {
-    QAction* action = qobject_cast<QAction*>(obj);
-    if (action)
-      action->setChecked(action->text() == current_renderer_name);
-  }
+  updateDebugMenuGPURenderer();
 }
 
 void MainWindow::onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
@@ -214,14 +198,12 @@ void MainWindow::setupAdditionalUi()
     const GPURenderer renderer = static_cast<GPURenderer>(i);
     QAction* action = m_ui.menuRenderer->addAction(tr(Settings::GetRendererDisplayName(renderer)));
     action->setCheckable(true);
-    action->setChecked(m_host_interface->GetCoreSettings().gpu_renderer == renderer);
     connect(action, &QAction::triggered, [this, action, renderer]() {
       m_host_interface->putSettingValue(QStringLiteral("GPU/Renderer"), QString(Settings::GetRendererName(renderer)));
       m_host_interface->applySettings();
-      action->setChecked(true);
-      switchRenderer();
     });
   }
+  updateDebugMenuGPURenderer();
 }
 
 void MainWindow::updateEmulationActions(bool starting, bool running)
@@ -307,6 +289,8 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
   connect(m_host_interface, &QtHostInterface::performanceCountersUpdated, this,
           &MainWindow::onPerformanceCountersUpdated);
+  connect(m_host_interface, &QtHostInterface::recreateDisplayWidgetRequested, this, &MainWindow::recreateDisplayWidget,
+          Qt::BlockingQueuedConnection);
 
   connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameList::GameListEntry* entry) {
     // if we're not running, boot the system, otherwise swap discs
@@ -346,4 +330,22 @@ void MainWindow::doSettings(SettingsDialog::Category category)
 
   if (category != SettingsDialog::Category::Count)
     m_settings_dialog->setCategory(category);
+}
+
+void MainWindow::updateDebugMenuGPURenderer()
+{
+  // update the menu with the new selected renderer
+  std::optional<GPURenderer> current_renderer = Settings::ParseRendererName(
+    m_host_interface->getSettingValue(QStringLiteral("GPU/Renderer")).toString().toStdString().c_str());
+  if (current_renderer.has_value())
+  {
+    const QString current_renderer_display_name(
+      QString::fromUtf8(Settings::GetRendererDisplayName(current_renderer.value())));
+    for (QObject* obj : m_ui.menuRenderer->children())
+    {
+      QAction* action = qobject_cast<QAction*>(obj);
+      if (action)
+        action->setChecked(action->text() == current_renderer_display_name);
+    }
+  }
 }

@@ -27,7 +27,7 @@ private Q_SLOTS:
   void onEmulationStopped();
   void onEmulationPaused(bool paused);
   void toggleFullscreen();
-  void switchRenderer();
+  void recreateDisplayWidget(bool create_device_context);
   void onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                     float worst_frame_time);
 
@@ -48,6 +48,7 @@ private:
   void switchToGameListView();
   void switchToEmulationView();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
+  void updateDebugMenuGPURenderer();
 
   Ui::MainWindow m_ui;
 

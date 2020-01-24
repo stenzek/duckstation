@@ -49,10 +49,10 @@ public:
   bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
   QWidget* createDisplayWidget(QWidget* parent);
+  bool createDisplayDeviceContext();
   void displayWidgetDestroyed();
 
   void bootSystem(QString initial_filename, QString initial_save_state_filename);
-  void blockingPowerOffSystem();
 
   void updateInputMap();
   void handleKeyEvent(int key, bool pressed);
@@ -72,7 +72,7 @@ Q_SIGNALS:
   void emulationPaused(bool paused);
   void gameListRefreshed();
   void toggleFullscreenRequested();
-  void switchRendererRequested();
+  void recreateDisplayWidgetRequested(bool create_device_context);
   void performanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time);
 
 public Q_SLOTS:
@@ -81,8 +81,6 @@ public Q_SLOTS:
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
-  void loadStateFromMemory(QByteArray arr);
-  QByteArray saveStateToMemory();
 
 private Q_SLOTS:
   void doStopThread();
@@ -123,6 +121,7 @@ private:
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
   void createAudioStream();
+  void switchGPURenderer();
   void createThread();
   void stopThread();
   void threadEntryPoint();
