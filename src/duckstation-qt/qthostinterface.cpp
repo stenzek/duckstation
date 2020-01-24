@@ -183,7 +183,10 @@ QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 
   m_display.release();
   m_display = std::unique_ptr<HostDisplay>(m_display_window->getHostDisplayInterface());
-  return QWidget::createWindowContainer(m_display_window, parent);
+
+  QWidget* widget = QWidget::createWindowContainer(m_display_window, parent);
+  widget->setFocusPolicy(Qt::StrongFocus);
+  return widget;
 }
 
 bool QtHostInterface::createDisplayDeviceContext()
