@@ -413,7 +413,7 @@ bool HostInterface::SaveState(const char* filename)
   }
   else
   {
-    ReportFormattedError("State saved to %s.", filename);
+    AddFormattedOSDMessage(2.0f, "State saved to %s.", filename);
     stream->Commit();
   }
 
