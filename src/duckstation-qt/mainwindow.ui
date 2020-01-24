@@ -37,13 +37,24 @@
     <property name="title">
      <string>System</string>
     </property>
+    <widget class="QMenu" name="menuChangeDisc">
+     <property name="title">
+      <string>Change Disc</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/icons.qrc">
+       <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
+     </property>
+     <addaction name="actionChangeDiscFromFile"/>
+     <addaction name="actionChangeDiscFromGameList"/>
+    </widget>
     <addaction name="actionStartDisc"/>
     <addaction name="actionStartBios"/>
     <addaction name="separator"/>
     <addaction name="actionPowerOff"/>
     <addaction name="actionReset"/>
     <addaction name="actionPause"/>
-    <addaction name="actionChangeDisc"/>
+    <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
     <addaction name="actionLoadState"/>
     <addaction name="actionSaveState"/>
@@ -338,6 +349,16 @@
    </property>
    <property name="text">
     <string>&amp;Settings...</string>
+   </property>
+  </action>
+  <action name="actionChangeDiscFromFile">
+   <property name="text">
+    <string>From File...</string>
+   </property>
+  </action>
+  <action name="actionChangeDiscFromGameList">
+   <property name="text">
+    <string>From Game List...</string>
    </property>
   </action>
  </widget>

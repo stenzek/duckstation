@@ -33,6 +33,8 @@ private Q_SLOTS:
 
   void onStartDiscActionTriggered();
   void onChangeDiscActionTriggered();
+  void onChangeDiscFromFileActionTriggered();
+  void onChangeDiscFromGameListActionTriggered();
   void onStartBiosActionTriggered();
   void onOpenDirectoryActionTriggered();
   void onExitActionTriggered();

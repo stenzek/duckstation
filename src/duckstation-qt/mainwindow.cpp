@@ -129,27 +129,20 @@ void MainWindow::onStartDiscActionTriggered()
   m_host_interface->bootSystem(std::move(filename), QString());
 }
 
-void MainWindow::onChangeDiscActionTriggered()
+void MainWindow::onChangeDiscFromFileActionTriggered()
 {
-  QMenu menu(tr("Change Disc..."), this);
-  QAction* from_file = menu.addAction(tr("From File..."));
-  QAction* from_game_list = menu.addAction(tr("From Game List"));
+  QString filename =
+    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+  if (filename.isEmpty())
+    return;
 
-  QAction* selected = menu.exec(QCursor::pos());
-  if (selected == from_file)
-  {
-    QString filename =
-      QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
-    if (filename.isEmpty())
-      return;
+  m_host_interface->changeDisc(filename);
+}
 
-    m_host_interface->changeDisc(filename);
-  }
-  else if (selected == from_game_list)
-  {
-    m_host_interface->pauseSystem(true);
-    switchToGameListView();
-  }
+void MainWindow::onChangeDiscFromGameListActionTriggered()
+{
+  m_host_interface->pauseSystem(true);
+  switchToGameListView();
 }
 
 void MainWindow::onStartBiosActionTriggered()
@@ -217,6 +210,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
+  m_ui.menuChangeDisc->setDisabled(starting || !running);
 
   m_ui.actionLoadState->setDisabled(starting);
   m_ui.actionSaveState->setDisabled(starting);
@@ -263,7 +257,10 @@ void MainWindow::connectSignals()
 
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBiosActionTriggered);
-  connect(m_ui.actionChangeDisc, &QAction::triggered, this, &MainWindow::onChangeDiscActionTriggered);
+  connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
+  connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
+  connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
+          &MainWindow::onChangeDiscFromGameListActionTriggered);
   connect(m_ui.actionOpenDirectory, &QAction::triggered, this, &MainWindow::onOpenDirectoryActionTriggered);
   connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
