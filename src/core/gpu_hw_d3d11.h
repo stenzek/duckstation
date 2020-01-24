@@ -1,4 +1,5 @@
 #pragma once
+#include "common/d3d11/shader_cache.h"
 #include "common/d3d11/staging_texture.h"
 #include "common/d3d11/stream_buffer.h"
 #include "common/d3d11/texture.h"
@@ -65,6 +66,8 @@ private:
 
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
+
+  D3D11::ShaderCache m_shader_cache;
 
   // downsample texture - used for readbacks at >1xIR.
   D3D11::Texture m_vram_texture;

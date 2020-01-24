@@ -38,6 +38,9 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dm
   if (!m_device || !m_context)
     return false;
 
+  m_shader_cache.Open(system->GetHostInterface()->GetUserDirectoryRelativePath("cache"), m_device->GetFeatureLevel(),
+                      system->GetSettings().gpu_use_debug_device);
+
   if (!CreateFramebuffer())
   {
     Log_ErrorPrintf("Failed to create framebuffer");
@@ -241,8 +244,8 @@ bool GPU_HW_D3D11::CreateBatchInputLayout()
   // we need a vertex shader...
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
                              m_supports_dual_source_blend);
-  ComPtr<ID3DBlob> vs_bytecode = D3D11::ShaderCompiler::CompileShader(
-    D3D11::ShaderCompiler::Type::Vertex, m_device->GetFeatureLevel(), shadergen.GenerateBatchVertexShader(true), false);
+  ComPtr<ID3DBlob> vs_bytecode =
+    m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true));
   if (!vs_bytecode)
     return false;
 
@@ -322,19 +325,18 @@ bool GPU_HW_D3D11::CreateStateObjects()
 
 bool GPU_HW_D3D11::CompileShaders()
 {
-  const bool debug = false;
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
                              m_supports_dual_source_blend);
 
-  m_screen_quad_vertex_shader = D3D11::ShaderCompiler::CompileAndCreateVertexShader(
-    m_device.Get(), shadergen.GenerateScreenQuadVertexShader(), debug);
+  m_screen_quad_vertex_shader =
+    m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
   if (!m_screen_quad_vertex_shader)
     return false;
 
   for (u8 textured = 0; textured < 2; textured++)
   {
     const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured));
-    m_batch_vertex_shaders[textured] = D3D11::ShaderCompiler::CompileAndCreateVertexShader(m_device.Get(), vs, debug);
+    m_batch_vertex_shaders[textured] = m_shader_cache.GetVertexShader(m_device.Get(), vs);
     if (!m_batch_vertex_shaders[textured])
       return false;
   }
@@ -349,8 +351,7 @@ bool GPU_HW_D3D11::CompileShaders()
                                                                      static_cast<TextureMode>(texture_mode),
                                                                      ConvertToBoolUnchecked(dithering));
 
-        m_batch_pixel_shaders[render_mode][texture_mode][dithering] =
-          D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), ps, debug);
+        m_batch_pixel_shaders[render_mode][texture_mode][dithering] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
         if (!m_batch_pixel_shaders[render_mode][texture_mode][dithering])
           return false;
       }
@@ -360,29 +361,26 @@ bool GPU_HW_D3D11::CompileShaders()
   m_batch_line_expand_geometry_shader.Reset();
   if (m_resolution_scale > 1)
   {
-    m_batch_line_expand_geometry_shader = D3D11::ShaderCompiler::CompileAndCreateGeometryShader(
-      m_device.Get(), shadergen.GenerateBatchLineExpandGeometryShader(), debug);
+    m_batch_line_expand_geometry_shader =
+      m_shader_cache.GetGeometryShader(m_device.Get(), shadergen.GenerateBatchLineExpandGeometryShader());
     if (!m_batch_line_expand_geometry_shader)
       return false;
   }
 
-  m_copy_pixel_shader =
-    D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), shadergen.GenerateCopyFragmentShader(), debug);
+  m_copy_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateCopyFragmentShader());
   if (!m_copy_pixel_shader)
     return false;
 
-  m_fill_pixel_shader =
-    D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader(), debug);
+  m_fill_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
   if (!m_fill_pixel_shader)
     return false;
 
-  m_vram_read_pixel_shader = D3D11::ShaderCompiler::CompileAndCreatePixelShader(
-    m_device.Get(), shadergen.GenerateVRAMReadFragmentShader(), debug);
+  m_vram_read_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
   if (!m_vram_read_pixel_shader)
     return false;
 
-  m_vram_write_pixel_shader = D3D11::ShaderCompiler::CompileAndCreatePixelShader(
-    m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader(), debug);
+  m_vram_write_pixel_shader =
+    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader());
   if (!m_vram_write_pixel_shader)
     return false;
 
@@ -392,8 +390,7 @@ bool GPU_HW_D3D11::CompileShaders()
     {
       const std::string ps = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
                                                                      ConvertToBoolUnchecked(interlaced));
-      m_display_pixel_shaders[depth_24bit][interlaced] =
-        D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), ps, debug);
+      m_display_pixel_shaders[depth_24bit][interlaced] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
       if (!m_display_pixel_shaders[depth_24bit][interlaced])
         return false;
     }
