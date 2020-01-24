@@ -16,6 +16,8 @@ void Pad::Initialize(System* system, InterruptController* interrupt_controller)
 {
   m_system = system;
   m_interrupt_controller = interrupt_controller;
+  m_transfer_event = system->CreateTimingEvent("Pad Serial Transfer", 1, 1,
+                                               std::bind(&Pad::TransferEvent, this, std::placeholders::_2), false);
 }
 
 void Pad::Reset()
@@ -81,7 +83,6 @@ bool Pad::DoState(StateWrapper& sw)
   }
 
   sw.Do(&m_state);
-  sw.Do(&m_ticks_remaining);
   sw.Do(&m_JOY_CTRL.bits);
   sw.Do(&m_JOY_STAT.bits);
   sw.Do(&m_JOY_MODE.bits);
@@ -90,6 +91,9 @@ bool Pad::DoState(StateWrapper& sw)
   sw.Do(&m_transmit_buffer);
   sw.Do(&m_receive_buffer_full);
   sw.Do(&m_transmit_buffer_full);
+
+  if (sw.IsReading() && IsTransmitting())
+    m_transfer_event->Activate();
 
   return !sw.HasError();
 }
@@ -213,24 +217,6 @@ void Pad::WriteRegister(u32 offset, u32 value)
   }
 }
 
-void Pad::Execute(TickCount ticks)
-{
-  if (m_state == State::Idle)
-    return;
-
-  m_ticks_remaining -= ticks;
-  if (m_ticks_remaining > 0)
-  {
-    m_system->SetDowncount(m_ticks_remaining);
-    return;
-  }
-
-  if (m_state == State::Transmitting)
-    DoTransfer();
-  else
-    DoACK();
-}
-
 void Pad::SoftReset()
 {
   if (IsTransmitting())
@@ -252,6 +238,14 @@ void Pad::UpdateJoyStat()
   m_JOY_STAT.RXFIFONEMPTY = m_receive_buffer_full;
   m_JOY_STAT.TXDONE = !m_transmit_buffer_full && m_state != State::Transmitting;
   m_JOY_STAT.TXRDY = !m_transmit_buffer_full;
+}
+
+void Pad::TransferEvent(TickCount ticks_late)
+{
+  if (m_state == State::Transmitting)
+    DoTransfer(ticks_late);
+  else
+    DoACK();
 }
 
 void Pad::BeginTransfer()
@@ -278,13 +272,11 @@ void Pad::BeginTransfer()
   // test in (7) will fail, and it won't send any more data. So, the transfer/interrupt must be delayed
   // until after (4) and (5) have been completed.
 
-  m_system->Synchronize();
   m_state = State::Transmitting;
-  m_ticks_remaining = GetTransferTicks();
-  m_system->SetDowncount(m_ticks_remaining);
+  m_transfer_event->SetPeriodAndSchedule(GetTransferTicks());
 }
 
-void Pad::DoTransfer()
+void Pad::DoTransfer(TickCount ticks_late)
 {
   Log_DebugPrintf("Transferring slot %d", m_JOY_CTRL.SLOT.GetValue());
 
@@ -361,11 +353,10 @@ void Pad::DoTransfer()
     const TickCount ack_timer = GetACKTicks();
     Log_DebugPrintf("Delaying ACK for %d ticks", ack_timer);
     m_state = State::WaitingForACK;
-    m_ticks_remaining += ack_timer;
-    if (m_ticks_remaining <= 0)
+    if (ticks_late >= ack_timer)
       DoACK();
     else
-      m_system->SetDowncount(m_ticks_remaining);
+      m_transfer_event->SetPeriodAndSchedule(ack_timer - ticks_late);
   }
 
   UpdateJoyStat();
@@ -395,7 +386,7 @@ void Pad::EndTransfer()
   Log_DebugPrintf("Ending transfer");
 
   m_state = State::Idle;
-  m_ticks_remaining = 0;
+  m_transfer_event->Deactivate();
 }
 
 void Pad::ResetDeviceTransferState()

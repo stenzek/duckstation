@@ -40,7 +40,11 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_cpu_execution_mode = host_interface->m_settings.cpu_execution_mode;
 }
 
-System::~System() = default;
+System::~System()
+{
+  // we have to explicitly destroy components because they can deregister events
+  DestroyComponents();
+}
 
 std::unique_ptr<System> System::Create(HostInterface* host_interface)
 {
@@ -56,7 +60,7 @@ bool System::RecreateGPU(GPURenderer renderer)
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
-  const bool state_valid = m_gpu->DoState(sw);
+  const bool state_valid = m_gpu->DoState(sw) && DoEventsState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
 
@@ -73,6 +77,7 @@ bool System::RecreateGPU(GPURenderer renderer)
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
     m_gpu->DoState(sw);
+    DoEventsState(sw);
   }
 
   return true;
@@ -188,9 +193,24 @@ void System::InitializeComponents()
 
   m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get());
   m_pad->Initialize(this, m_interrupt_controller.get());
-  m_timers->Initialize(this, m_interrupt_controller.get());
+  m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
   m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
+}
+
+void System::DestroyComponents()
+{
+  m_mdec.reset();
+  m_spu.reset();
+  m_timers.reset();
+  m_pad.reset();
+  m_cdrom.reset();
+  m_gpu.reset();
+  m_interrupt_controller.reset();
+  m_dma.reset();
+  m_bus.reset();
+  m_cpu_code_cache.reset();
+  m_cpu.reset();
 }
 
 bool System::CreateGPU(GPURenderer renderer)
@@ -230,6 +250,7 @@ bool System::CreateGPU(GPURenderer renderer)
 
   m_bus->SetGPU(m_gpu.get());
   m_dma->SetGPU(m_gpu.get());
+  m_timers->SetGPU(m_gpu.get());
   return true;
 }
 
@@ -298,6 +319,9 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("SIO") || !m_sio->DoState(sw))
     return false;
 
+  if (!sw.DoMarker("Events") || !DoEventsState(sw))
+    return false;
+
   return !sw.HasError();
 }
 
@@ -318,6 +342,7 @@ void System::Reset()
   m_frame_number = 1;
   m_internal_frame_number = 0;
   m_global_tick_counter = 0;
+  m_last_event_run_time = 0;
 }
 
 bool System::LoadState(ByteStream* state)
@@ -335,23 +360,28 @@ bool System::SaveState(ByteStream* state)
 void System::RunFrame()
 {
   // Duplicated to avoid branch in the while loop, as the downcount can be quite low at times.
-  u32 current_frame_number = m_frame_number;
+  m_frame_done = false;
   if (m_cpu_execution_mode == CPUExecutionMode::Interpreter)
   {
-    while (current_frame_number == m_frame_number)
+    do
     {
+      UpdateCPUDowncount();
       m_cpu->Execute();
-      Synchronize();
-    }
+      RunEvents();
+    } while (!m_frame_done);
   }
   else
   {
-    while (current_frame_number == m_frame_number)
+    do
     {
+      UpdateCPUDowncount();
       m_cpu_code_cache->Execute();
-      Synchronize();
-    }
+      RunEvents();
+    } while (!m_frame_done);
   }
+
+  // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
+  m_spu->GeneratePendingSamples();
 }
 
 bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
@@ -438,34 +468,11 @@ bool System::SetExpansionROM(const char* filename)
   return true;
 }
 
-void System::Synchronize()
-{
-  const TickCount pending_ticks = m_cpu->GetPendingTicks();
-  if (pending_ticks == 0)
-    return;
-
-  m_cpu->ResetPendingTicks();
-  m_cpu->ResetDowncount();
-
-  m_global_tick_counter += static_cast<u32>(pending_ticks);
-
-  m_gpu->Execute(pending_ticks);
-  m_timers->Execute(pending_ticks);
-  m_cdrom->Execute(pending_ticks);
-  m_pad->Execute(pending_ticks);
-  m_spu->Execute(pending_ticks);
-  m_mdec->Execute(pending_ticks);
-  m_dma->Execute(pending_ticks);
-}
-
-void System::SetDowncount(TickCount downcount)
-{
-  m_cpu->SetDowncount(downcount);
-}
-
 void System::StallCPU(TickCount ticks)
 {
   m_cpu->AddPendingTicks(ticks);
+  if (m_cpu->GetPendingTicks() >= m_cpu->GetDowncount() && !m_running_events)
+    RunEvents();
 }
 
 Controller* System::GetController(u32 slot) const
@@ -528,6 +535,202 @@ bool System::InsertMedia(const char* path)
 void System::RemoveMedia()
 {
   m_cdrom->RemoveMedia();
+}
+
+std::unique_ptr<TimingEvent> System::CreateTimingEvent(std::string name, TickCount period, TickCount interval,
+                                                       TimingEventCallback callback, bool activate)
+{
+  std::unique_ptr<TimingEvent> event =
+    std::make_unique<TimingEvent>(this, std::move(name), period, interval, std::move(callback));
+  if (activate)
+    event->Activate();
+
+  return event;
+}
+
+static bool CompareEvents(const TimingEvent* lhs, const TimingEvent* rhs)
+{
+  return lhs->GetDowncount() > rhs->GetDowncount();
+}
+
+void System::AddActiveEvent(TimingEvent* event)
+{
+  m_events.push_back(event);
+  if (!m_running_events)
+  {
+    std::push_heap(m_events.begin(), m_events.end(), CompareEvents);
+    if (!m_frame_done)
+      UpdateCPUDowncount();
+  }
+  else
+  {
+    m_events_need_sorting = true;
+  }
+}
+
+void System::RemoveActiveEvent(TimingEvent* event)
+{
+  auto iter = std::find_if(m_events.begin(), m_events.end(), [event](const auto& it) { return event == it; });
+  if (iter == m_events.end())
+  {
+    Panic("Attempt to remove inactive event");
+    return;
+  }
+
+  m_events.erase(iter);
+  if (!m_running_events)
+  {
+    std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
+    if (!m_events.empty() && !m_frame_done)
+      UpdateCPUDowncount();
+  }
+  else
+  {
+    m_events_need_sorting = true;
+  }
+}
+
+void System::SortEvents()
+{
+  if (!m_running_events)
+  {
+    std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
+    if (!m_frame_done)
+      UpdateCPUDowncount();
+  }
+  else
+  {
+    m_events_need_sorting = true;
+  }
+}
+
+void System::RunEvents()
+{
+  DebugAssert(!m_running_events && !m_events.empty());
+
+  const TickCount pending_ticks = m_cpu->GetPendingTicks();
+  m_global_tick_counter += static_cast<u32>(pending_ticks);
+  m_cpu->ResetPendingTicks();
+
+  TickCount time = static_cast<TickCount>(m_global_tick_counter - m_last_event_run_time);
+  m_running_events = true;
+  m_last_event_run_time = m_global_tick_counter;
+
+  // Apply downcount to all events.
+  // This will result in a negative downcount for those events which are late.
+  for (TimingEvent* evt : m_events)
+  {
+    evt->m_downcount -= time;
+    evt->m_time_since_last_run += time;
+  }
+
+  // Now we can actually run the callbacks.
+  while (m_events.front()->GetDowncount() <= 0)
+  {
+    TimingEvent* evt = m_events.front();
+    const TickCount ticks_late = -evt->m_downcount;
+    std::pop_heap(m_events.begin(), m_events.end(), CompareEvents);
+
+    // Factor late time into the time for the next invocation.
+    const TickCount ticks_to_execute = evt->m_time_since_last_run;
+    evt->m_downcount += evt->m_interval;
+    evt->m_time_since_last_run = 0;
+
+    // The cycles_late is only an indicator, it doesn't modify the cycles to execute.
+    evt->m_callback(ticks_to_execute, ticks_late);
+
+    // Place it in the appropriate position in the queue.
+    if (m_events_need_sorting)
+    {
+      // Another event may have been changed by this event, or the interval/downcount changed.
+      std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
+      m_events_need_sorting = false;
+    }
+    else
+    {
+      // Keep the event list in a heap. The event we just serviced will be in the last place,
+      // so we can use push_here instead of make_heap, which should be faster.
+      std::push_heap(m_events.begin(), m_events.end(), CompareEvents);
+    }
+  }
+
+  m_running_events = false;
+  m_cpu->SetDowncount(m_events.front()->GetDowncount());
+}
+
+void System::UpdateCPUDowncount()
+{
+  m_cpu->SetDowncount(m_events[0]->GetDowncount());
+}
+
+bool System::DoEventsState(StateWrapper& sw)
+{
+  if (sw.IsReading())
+  {
+    // Load timestamps for the clock events.
+    // Any oneshot events should be recreated by the load state method, so we can fix up their times here.
+    u32 event_count = 0;
+    sw.Do(&event_count);
+
+    for (u32 i = 0; i < event_count; i++)
+    {
+      std::string event_name;
+      TickCount downcount, time_since_last_run, period, interval;
+      sw.Do(&event_name);
+      sw.Do(&downcount);
+      sw.Do(&time_since_last_run);
+      sw.Do(&period);
+      sw.Do(&interval);
+      if (sw.HasError())
+        return false;
+
+      TimingEvent* event = FindActiveEvent(event_name.c_str());
+      if (!event)
+      {
+        Log_WarningPrintf("Save state has event '%s', but couldn't find this event when loading.", event_name.c_str());
+        continue;
+      }
+
+      // Using reschedule is safe here since we call sort afterwards.
+      event->m_downcount = downcount;
+      event->m_time_since_last_run = time_since_last_run;
+      event->m_period = period;
+      event->m_interval = interval;
+    }
+
+    sw.Do(&m_last_event_run_time);
+
+    Log_DevPrintf("Loaded %u events from save state.", event_count);
+    SortEvents();
+  }
+  else
+  {
+    u32 event_count = static_cast<u32>(m_events.size());
+    sw.Do(&event_count);
+
+    for (TimingEvent* evt : m_events)
+    {
+      sw.Do(&evt->m_name);
+      sw.Do(&evt->m_downcount);
+      sw.Do(&evt->m_time_since_last_run);
+      sw.Do(&evt->m_period);
+      sw.Do(&evt->m_interval);
+    }
+
+    sw.Do(&m_last_event_run_time);
+
+    Log_DevPrintf("Wrote %u events to save state.", event_count);
+  }
+
+  return !sw.HasError();
+}
+
+TimingEvent* System::FindActiveEvent(const char* name)
+{
+  auto iter =
+    std::find_if(m_events.begin(), m_events.end(), [&name](auto& ev) { return ev->GetName().compare(name) == 0; });
+
+  return (iter != m_events.end()) ? *iter : nullptr;
 }
 
 void System::UpdateRunningGame(const char* path, CDImage* image)

@@ -1,6 +1,6 @@
 #include "cdrom.h"
-#include "common/log.h"
 #include "common/cd_image.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
 #include "imgui.h"
@@ -22,6 +22,10 @@ void CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_spu = spu;
+  m_command_event =
+    m_system->CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
+  m_drive_event = m_system->CreateTimingEvent("CDROM Drive Event", 1, 1,
+                                              std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
 }
 
 void CDROM::Reset()
@@ -35,9 +39,9 @@ void CDROM::Reset()
 void CDROM::SoftReset()
 {
   m_command = Command::None;
+  m_command_event->Deactivate();
   m_drive_state = DriveState::Idle;
-  m_command_remaining_ticks = 0;
-  m_drive_remaining_ticks = 0;
+  m_drive_event->Deactivate();
   m_status.bits = 0;
   m_secondary_status.bits = 0;
   m_mode.bits = 0;
@@ -85,8 +89,6 @@ bool CDROM::DoState(StateWrapper& sw)
 {
   sw.Do(&m_command);
   sw.Do(&m_drive_state);
-  sw.Do(&m_command_remaining_ticks);
-  sw.Do(&m_drive_remaining_ticks);
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
   sw.Do(&m_mode.bits);
@@ -124,10 +126,8 @@ bool CDROM::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    if (HasPendingCommand())
-      m_system->SetDowncount(m_command_remaining_ticks);
-    if (!IsDriveIdle())
-      m_system->SetDowncount(m_drive_remaining_ticks);
+    UpdateCommandEvent();
+    m_drive_event->SetState(!IsDriveIdle());
 
     // load up media if we had something in there before
     if (m_media && !m_media->Seek(media_lba))
@@ -361,8 +361,8 @@ void CDROM::WriteRegister(u32 offset, u8 value)
           {
             if (HasPendingAsyncInterrupt())
               DeliverAsyncInterrupt();
-            else if (HasPendingCommand())
-              m_system->SetDowncount(m_command_remaining_ticks);
+            else
+              UpdateCommandEvent();
           }
 
           // Bit 6 clears the parameter FIFO.
@@ -443,6 +443,7 @@ void CDROM::DeliverAsyncInterrupt()
   m_pending_async_interrupt = 0;
   UpdateInterruptRequest();
   UpdateStatusRegister();
+  UpdateCommandEvent();
 }
 
 void CDROM::SendACKAndStat()
@@ -520,73 +521,11 @@ TickCount CDROM::GetTicksForSeek() const
   return ticks;
 }
 
-void CDROM::Execute(TickCount ticks)
-{
-  if (HasPendingCommand() && !HasPendingInterrupt())
-  {
-    m_command_remaining_ticks -= ticks;
-    if (m_command_remaining_ticks <= 0)
-      ExecuteCommand();
-    else
-      m_system->SetDowncount(m_command_remaining_ticks);
-  }
-
-  if (m_drive_state != DriveState::Idle)
-  {
-    m_drive_remaining_ticks -= ticks;
-    if (m_drive_remaining_ticks <= 0)
-    {
-      switch (m_drive_state)
-      {
-        case DriveState::SpinningUp:
-          DoSpinUpComplete();
-          break;
-
-        case DriveState::SeekingPhysical:
-        case DriveState::SeekingLogical:
-          DoSeekComplete();
-          break;
-
-        case DriveState::Pausing:
-          DoPauseComplete();
-          break;
-
-        case DriveState::Stopping:
-          DoStopComplete();
-          break;
-
-        case DriveState::ReadingID:
-          DoIDRead();
-          break;
-
-        case DriveState::ReadingTOC:
-          DoTOCRead();
-          break;
-
-        case DriveState::Reading:
-        case DriveState::Playing:
-          DoSectorRead();
-          break;
-
-        case DriveState::Idle:
-        default:
-          break;
-      }
-    }
-    else
-    {
-      m_system->SetDowncount(m_drive_remaining_ticks);
-    }
-  }
-}
-
 void CDROM::BeginCommand(Command command)
 {
-  m_system->Synchronize();
-
   m_command = command;
-  m_command_remaining_ticks = GetAckDelayForCommand();
-  m_system->SetDowncount(m_command_remaining_ticks);
+  m_command_event->SetDowncount(GetAckDelayForCommand());
+  UpdateCommandEvent();
   UpdateStatusRegister();
 }
 
@@ -595,7 +534,7 @@ void CDROM::EndCommand()
   m_param_fifo.Clear();
 
   m_command = Command::None;
-  m_command_remaining_ticks = 0;
+  m_command_event->Deactivate();
   UpdateStatusRegister();
 }
 
@@ -645,7 +584,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::ReadingID;
-        m_drive_remaining_ticks = 18000;
+        m_drive_event->Schedule(18000);
       }
 
       EndCommand();
@@ -664,7 +603,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::ReadingTOC;
-        m_drive_remaining_ticks = MASTER_CLOCK / 2; // half a second
+        m_drive_event->Schedule(MASTER_CLOCK / 2); // half a second
       }
 
       EndCommand();
@@ -767,12 +706,12 @@ void CDROM::ExecuteCommand()
     case Command::Pause:
     {
       const bool was_reading = (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
+      const TickCount pause_time = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;
       Log_DebugPrintf("CDROM pause command");
       SendACKAndStat();
 
       m_drive_state = DriveState::Pausing;
-      m_drive_remaining_ticks = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;
-      m_system->SetDowncount(m_drive_remaining_ticks);
+      m_drive_event->Schedule(pause_time);
 
       EndCommand();
       return;
@@ -781,12 +720,12 @@ void CDROM::ExecuteCommand()
     case Command::Stop:
     {
       const bool was_motor_on = m_secondary_status.motor_on;
+      const TickCount stop_time = was_motor_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000;
       Log_DebugPrintf("CDROM stop command");
       SendACKAndStat();
 
       m_drive_state = DriveState::Stopping;
-      m_drive_remaining_ticks = was_motor_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000;
-      m_system->SetDowncount(m_drive_remaining_ticks);
+      m_drive_event->Schedule(stop_time);
 
       EndCommand();
       return;
@@ -801,8 +740,7 @@ void CDROM::ExecuteCommand()
       m_mode.bits = 0;
 
       m_drive_state = DriveState::SpinningUp;
-      m_drive_remaining_ticks = 80000;
-      m_system->SetDowncount(m_drive_remaining_ticks);
+      m_drive_event->Schedule(80000);
 
       EndCommand();
       return;
@@ -821,8 +759,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::SpinningUp;
-        m_drive_remaining_ticks = 80000;
-        m_system->SetDowncount(m_drive_remaining_ticks);
+        m_drive_event->Schedule(80000);
       }
 
       EndCommand();
@@ -1011,7 +948,62 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
   }
 }
 
-void CDROM::BeginReading()
+void CDROM::UpdateCommandEvent()
+{
+  // if there's a pending interrupt, we can't execute the command yet
+  // so deactivate it until the interrupt is acknowledged
+  if (!HasPendingCommand() || HasPendingInterrupt())
+  {
+    m_command_event->Deactivate();
+    return;
+  }
+  else if (HasPendingCommand())
+  {
+    m_command_event->Activate();
+  }
+}
+
+void CDROM::ExecuteDrive(TickCount ticks_late)
+{
+  switch (m_drive_state)
+  {
+    case DriveState::SpinningUp:
+      DoSpinUpComplete();
+      break;
+
+    case DriveState::SeekingPhysical:
+    case DriveState::SeekingLogical:
+      DoSeekComplete(ticks_late);
+      break;
+
+    case DriveState::Pausing:
+      DoPauseComplete();
+      break;
+
+    case DriveState::Stopping:
+      DoStopComplete();
+      break;
+
+    case DriveState::ReadingID:
+      DoIDRead();
+      break;
+
+    case DriveState::ReadingTOC:
+      DoTOCRead();
+      break;
+
+    case DriveState::Reading:
+    case DriveState::Playing:
+      DoSectorRead();
+      break;
+
+    case DriveState::Idle:
+    default:
+      break;
+  }
+}
+
+void CDROM::BeginReading(TickCount ticks_late)
 {
   Log_DebugPrintf("Starting reading");
   if (m_setloc_pending)
@@ -1026,12 +1018,13 @@ void CDROM::BeginReading()
   // TODO: Should the sector buffer be cleared here?
   m_sector_buffer.clear();
 
+  const TickCount ticks = GetTicksForRead();
   m_drive_state = DriveState::Reading;
-  m_drive_remaining_ticks = GetTicksForRead();
-  m_system->SetDowncount(m_drive_remaining_ticks);
+  m_drive_event->SetInterval(ticks);
+  m_drive_event->Schedule(ticks - ticks_late);
 }
 
-void CDROM::BeginPlaying(u8 track_bcd)
+void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
 {
   Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
   m_last_cdda_report_frame_nibble = 0xFF;
@@ -1063,9 +1056,10 @@ void CDROM::BeginPlaying(u8 track_bcd)
   // TODO: Should the sector buffer be cleared here?
   m_sector_buffer.clear();
 
+  const TickCount ticks = GetTicksForRead();
   m_drive_state = DriveState::Playing;
-  m_drive_remaining_ticks = GetTicksForRead();
-  m_system->SetDowncount(m_drive_remaining_ticks);
+  m_drive_event->SetInterval(ticks);
+  m_drive_event->Schedule(ticks - ticks_late);
 }
 
 void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek)
@@ -1088,8 +1082,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_sector_buffer.clear();
 
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
-  m_drive_remaining_ticks = seek_time;
-  m_system->SetDowncount(m_drive_remaining_ticks);
+  m_drive_event->SetIntervalAndSchedule(seek_time);
 
   // Read sub-q early.. this is because we're not reading sectors while seeking.
   // Fixes music looping in Spyro.
@@ -1101,6 +1094,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
 void CDROM::DoSpinUpComplete()
 {
   m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
 
   m_secondary_status.motor_on = true;
 
@@ -1109,10 +1103,11 @@ void CDROM::DoSpinUpComplete()
   SetAsyncInterrupt(Interrupt::INT2);
 }
 
-void CDROM::DoSeekComplete()
+void CDROM::DoSeekComplete(TickCount ticks_late)
 {
   const bool logical = (m_drive_state == DriveState::SeekingLogical);
   m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_sector_buffer.clear();
 
@@ -1145,11 +1140,11 @@ void CDROM::DoSeekComplete()
     // INT2 is not sent on play/read
     if (m_read_after_seek)
     {
-      BeginReading();
+      BeginReading(ticks_late);
     }
     else if (m_play_after_seek)
     {
-      BeginPlaying(m_play_track_number_bcd);
+      BeginPlaying(m_play_track_number_bcd, ticks_late);
     }
     else
     {
@@ -1175,6 +1170,7 @@ void CDROM::DoPauseComplete()
 {
   Log_DebugPrintf("Pause complete");
   m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_sector_buffer.clear();
 
@@ -1187,6 +1183,7 @@ void CDROM::DoStopComplete()
 {
   Log_DebugPrintf("Stop complete");
   m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = false;
   m_sector_buffer.clear();
@@ -1204,6 +1201,7 @@ void CDROM::DoIDRead()
 
   Log_DebugPrintf("ID read complete");
   m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_sector_buffer.clear();
@@ -1219,6 +1217,7 @@ void CDROM::DoTOCRead()
 {
   Log_DebugPrintf("TOC read complete");
   m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
   SetAsyncInterrupt(Interrupt::INT2);
@@ -1254,6 +1253,7 @@ void CDROM::DoSectorRead()
 
       m_secondary_status.ClearActiveBits();
       m_drive_state = DriveState::Idle;
+      m_drive_event->Deactivate();
       return;
     }
   }
@@ -1290,9 +1290,6 @@ void CDROM::DoSectorRead()
     Log_DevPrintf("Skipping sector %u [%02u:%02u:%02u] due to invalid subchannel Q", m_media->GetPositionOnDisc() - 1,
                   pos.minute, pos.second, pos.frame);
   }
-
-  m_drive_remaining_ticks += GetTicksForRead();
-  m_system->SetDowncount(m_drive_remaining_ticks);
 }
 
 void CDROM::ProcessDataSectorHeader(const u8* raw_sector, bool set_valid)
@@ -1711,7 +1708,7 @@ void CDROM::DrawDebugWindow()
     if (HasPendingCommand())
     {
       ImGui::TextColored(active_color, "Command: 0x%02X (%d ticks remaining)", static_cast<u8>(m_command),
-                         m_command_remaining_ticks);
+                         m_command_event->IsActive() ? m_command_event->GetTicksUntilNextExecution() : 0);
     }
     else
     {
@@ -1725,7 +1722,8 @@ void CDROM::DrawDebugWindow()
     else
     {
       ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
-                         drive_state_names[static_cast<u8>(m_drive_state)], m_drive_remaining_ticks);
+                         drive_state_names[static_cast<u8>(m_drive_state)],
+                         m_drive_event->IsActive() ? m_drive_event->GetTicksUntilNextExecution() : 0);
     }
 
     ImGui::Text("Interrupt Enable Register: 0x%02X", m_interrupt_enable_register);

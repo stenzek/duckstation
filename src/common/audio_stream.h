@@ -37,9 +37,9 @@ public:
 
   void Shutdown();
 
-  void BeginWrite(SampleType** buffer_ptr, u32* num_samples);
-  void WriteSamples(const SampleType* samples, u32 num_samples);
-  void EndWrite(u32 num_samples);
+  void BeginWrite(SampleType** buffer_ptr, u32* num_frames);
+  void WriteFrames(const SampleType* frames, u32 num_frames);
+  void EndWrite(u32 num_frames);
 
   static std::unique_ptr<AudioStream> CreateNullAudioStream();
 

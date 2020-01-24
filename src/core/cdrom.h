@@ -12,6 +12,7 @@
 class StateWrapper;
 
 class System;
+class TimingEvent;
 class DMA;
 class InterruptController;
 class SPU;
@@ -35,8 +36,6 @@ public:
   u8 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u8 value);
   void DMARead(u32* words, u32 word_count);
-
-  void Execute(TickCount ticks);
 
   // Render statistics debug window.
   void DrawDebugWindow();
@@ -198,10 +197,12 @@ private:
   void EndCommand();                  // also updates status register
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
-  void BeginReading();
-  void BeginPlaying(u8 track_bcd);
+  void UpdateCommandEvent();
+  void ExecuteDrive(TickCount ticks_late);
+  void BeginReading(TickCount ticks_late = 0);
+  void BeginPlaying(u8 track_bcd, TickCount ticks_late = 0);
   void DoSpinUpComplete();
-  void DoSeekComplete();
+  void DoSeekComplete(TickCount ticks_late);
   void DoPauseComplete();
   void DoStopComplete();
   void DoIDRead();
@@ -219,11 +220,11 @@ private:
   InterruptController* m_interrupt_controller = nullptr;
   SPU* m_spu = nullptr;
   std::unique_ptr<CDImage> m_media;
+  std::unique_ptr<TimingEvent> m_command_event;
+  std::unique_ptr<TimingEvent> m_drive_event;
 
   Command m_command = Command::None;
   DriveState m_drive_state = DriveState::Idle;
-  TickCount m_command_remaining_ticks = 0;
-  TickCount m_drive_remaining_ticks = 0;
 
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};

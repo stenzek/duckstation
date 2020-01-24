@@ -8,6 +8,7 @@
 class StateWrapper;
 
 class System;
+class TimingEvent;
 class InterruptController;
 class Controller;
 class MemoryCard;
@@ -30,8 +31,6 @@ public:
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
-
-  void Execute(TickCount ticks);
 
 private:
   static constexpr u32 NUM_SLOTS = 2;
@@ -97,8 +96,9 @@ private:
 
   void SoftReset();
   void UpdateJoyStat();
+  void TransferEvent(TickCount ticks_late);
   void BeginTransfer();
-  void DoTransfer();
+  void DoTransfer(TickCount ticks_late);
   void DoACK();
   void EndTransfer();
   void ResetDeviceTransferState();
@@ -109,8 +109,8 @@ private:
   std::array<std::unique_ptr<Controller>, NUM_SLOTS> m_controllers;
   std::array<std::unique_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
 
+  std::unique_ptr<TimingEvent> m_transfer_event;
   State m_state = State::Idle;
-  TickCount m_ticks_remaining = 0;
 
   JOY_CTRL m_JOY_CTRL = {};
   JOY_STAT m_JOY_STAT = {};

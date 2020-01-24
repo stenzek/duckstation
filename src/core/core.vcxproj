@@ -82,6 +82,7 @@
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
     <ClCompile Include="timers.cpp" />
+    <ClCompile Include="timing_event.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="analog_controller.h" />
@@ -121,6 +122,7 @@
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="timers.h" />
+    <ClInclude Include="timing_event.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>

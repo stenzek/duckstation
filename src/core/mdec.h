@@ -3,10 +3,12 @@
 #include "common/fifo_queue.h"
 #include "types.h"
 #include <array>
+#include <memory>
 
 class StateWrapper;
 
 class System;
+class TimingEvent;
 class DMA;
 
 class MDEC
@@ -25,8 +27,6 @@ public:
 
   void DMARead(u32* words, u32 word_count);
   void DMAWrite(const u32* words, u32 word_count);
-
-  void Execute(TickCount ticks);
 
   void DrawDebugStateWindow();
 
@@ -88,6 +88,7 @@ private:
   };
 
   bool HasPendingCommand() const { return m_command != Command::None; }
+  bool HasPendingBlockCopyOut() const;
 
   void SoftReset();
   void UpdateStatus();
@@ -138,8 +139,7 @@ private:
   u16 m_current_q_scale = 0;
 
   std::array<u32, 256> m_block_rgb{};
-  TickCount m_block_copy_out_ticks = TICKS_PER_BLOCK;
-  bool m_block_copy_out_pending = false;
+  std::unique_ptr<TimingEvent> m_block_copy_out_event;
 
   u32 m_total_blocks_decoded = 0;
 };

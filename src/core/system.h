@@ -1,5 +1,6 @@
 #pragma once
 #include "host_interface.h"
+#include "timing_event.h"
 #include "types.h"
 #include <memory>
 #include <optional>
@@ -28,6 +29,8 @@ class SIO;
 
 class System
 {
+  friend TimingEvent;
+
 public:
   ~System();
 
@@ -52,7 +55,11 @@ public:
   u32 GetFrameNumber() const { return m_frame_number; }
   u32 GetInternalFrameNumber() const { return m_internal_frame_number; }
   u32 GetGlobalTickCounter() const { return m_global_tick_counter; }
-  void IncrementFrameNumber() { m_frame_number++; }
+  void IncrementFrameNumber()
+  {
+    m_frame_number++;
+    m_frame_done = true;
+  }
   void IncrementInternalFrameNumber() { m_internal_frame_number++; }
 
   const Settings& GetSettings() { return m_host_interface->GetSettings(); }
@@ -78,9 +85,6 @@ public:
   bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
   bool SetExpansionROM(const char* filename);
 
-  void SetDowncount(TickCount downcount);
-  void Synchronize();
-
   // Adds ticks to the global tick counter, simulating the CPU being stalled.
   void StallCPU(TickCount ticks);
 
@@ -94,6 +98,12 @@ public:
   bool InsertMedia(const char* path);
   void RemoveMedia();
 
+  /// Creates a new event.
+  std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
+                                                 TimingEventCallback callback, bool activate);
+
+  bool RUNNING_EVENTS() const { return m_running_events; }
+
 private:
   System(HostInterface* host_interface);
 
@@ -101,6 +111,33 @@ private:
   bool CreateGPU(GPURenderer renderer);
 
   void InitializeComponents();
+  void DestroyComponents();
+
+  // Active event management
+  void AddActiveEvent(TimingEvent* event);
+  void RemoveActiveEvent(TimingEvent* event);
+  void SortEvents();
+
+  // Runs any pending events. Call when CPU downcount is zero.
+  void RunEvents();
+
+  // Updates the downcount of the CPU (event scheduling).
+  void UpdateCPUDowncount();
+
+  bool DoEventsState(StateWrapper& sw);
+
+  // Event lookup, use with care.
+  // If you modify an event, call SortEvents afterwards.
+  TimingEvent* FindActiveEvent(const char* name);
+
+  // Event enumeration, use with care.
+  // Don't remove an event while enumerating the list, as it will invalidate the iterator.
+  template<typename T>
+  void EnumerateActiveEvents(T callback) const
+  {
+    for (const TimingEvent* ev : m_events)
+      callback(ev);
+  }
 
   void UpdateRunningGame(const char* path, CDImage* image);
 
@@ -122,6 +159,12 @@ private:
   u32 m_frame_number = 1;
   u32 m_internal_frame_number = 1;
   u32 m_global_tick_counter = 0;
+
+  std::vector<TimingEvent*> m_events;
+  u32 m_last_event_run_time = 0;
+  bool m_running_events = false;
+  bool m_events_need_sorting = false;
+  bool m_frame_done = false;
 
   std::string m_running_game_path;
   std::string m_running_game_code;

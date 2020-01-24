@@ -59,34 +59,34 @@ void AudioStream::Shutdown()
   m_output_paused = true;
 }
 
-void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_samples)
+void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 {
   m_buffer_mutex.lock();
 
   EnsureBuffer();
 
   Buffer& buffer = m_buffers[m_first_free_buffer];
-  *buffer_ptr = buffer.data.data() + buffer.write_position;
-  *num_samples = m_buffer_size - buffer.write_position;
+  *buffer_ptr = buffer.data.data() + (buffer.write_position * m_channels);
+  *num_frames = m_buffer_size - buffer.write_position;
 }
 
-void AudioStream::WriteSamples(const SampleType* samples, u32 num_samples)
+void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
 {
-  u32 remaining_samples = num_samples;
+  u32 remaining_frames = num_frames;
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
 
-  while (remaining_samples > 0)
+  while (remaining_frames > 0)
   {
     EnsureBuffer();
 
     Buffer& buffer = m_buffers[m_first_free_buffer];
-    const u32 to_this_buffer = std::min(m_buffer_size - buffer.write_position, remaining_samples);
+    const u32 to_this_buffer = std::min(m_buffer_size - buffer.write_position, remaining_frames);
 
     const u32 copy_count = to_this_buffer * m_channels;
-    std::memcpy(&buffer.data[buffer.write_position * m_channels], samples, copy_count * sizeof(SampleType));
-    samples += copy_count;
+    std::memcpy(&buffer.data[buffer.write_position * m_channels], frames, copy_count * sizeof(SampleType));
+    frames += copy_count;
 
-    remaining_samples -= to_this_buffer;
+    remaining_frames -= to_this_buffer;
     buffer.write_position += to_this_buffer;
 
     // End of the buffer?
@@ -102,11 +102,11 @@ void AudioStream::WriteSamples(const SampleType* samples, u32 num_samples)
   }
 }
 
-void AudioStream::EndWrite(u32 num_samples)
+void AudioStream::EndWrite(u32 num_frames)
 {
   Buffer& buffer = m_buffers[m_first_free_buffer];
-  DebugAssert((buffer.write_position + num_samples) <= m_buffer_size);
-  buffer.write_position += num_samples;
+  DebugAssert((buffer.write_position + num_frames) <= m_buffer_size);
+  buffer.write_position += num_frames;
 
   // End of the buffer?
   if (buffer.write_position == m_buffer_size)

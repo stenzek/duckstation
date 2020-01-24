@@ -1,6 +1,6 @@
 #include "spu.h"
-#include "common/log.h"
 #include "common/audio_stream.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
 #include "host_interface.h"
@@ -24,6 +24,8 @@ void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
+  m_sample_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
+                                               std::bind(&SPU::Execute, this, std::placeholders::_1), false);
 }
 
 void SPU::Reset()
@@ -65,6 +67,7 @@ void SPU::Reset()
   }
 
   m_ram.fill(0);
+  UpdateEventInterval();
 }
 
 bool SPU::DoState(StateWrapper& sw)
@@ -108,7 +111,10 @@ bool SPU::DoState(StateWrapper& sw)
   sw.DoBytes(m_ram.data(), RAM_SIZE);
 
   if (sw.IsReading())
+  {
     m_system->GetHostInterface()->GetAudioStream()->EmptyBuffers();
+    UpdateEventInterval();
+  }
 
   return !sw.HasError();
 }
@@ -178,6 +184,7 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801DAE - SPU_BASE:
       // Log_DebugPrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
+      m_sample_event->InvokeEarly();
       return m_SPUSTAT.bits;
 
     case 0x1F801DB0 - SPU_BASE:
@@ -205,7 +212,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D80 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume left <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_main_volume_left.bits = value;
       return;
     }
@@ -213,7 +220,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D82 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume right <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_main_volume_right.bits = value;
       return;
     }
@@ -221,7 +228,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D88 - SPU_BASE:
     {
       Log_DebugPrintf("SPU key on low <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
 
       u16 bits = value;
@@ -240,7 +247,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8A - SPU_BASE:
     {
       Log_DebugPrintf("SPU key on high <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
 
       u16 bits = value;
@@ -259,7 +266,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8C - SPU_BASE:
     {
       Log_DebugPrintf("SPU key off low <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
 
       u16 bits = value;
@@ -278,7 +285,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8E - SPU_BASE:
     {
       Log_DebugPrintf("SPU key off high <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
 
       u16 bits = value;
@@ -296,7 +303,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801D90 - SPU_BASE:
     {
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_pitch_modulation_enable_register = (m_pitch_modulation_enable_register & 0xFFFF0000) | ZeroExtend32(value);
       Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
     }
@@ -304,7 +311,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801D92 - SPU_BASE:
     {
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_pitch_modulation_enable_register =
         (m_pitch_modulation_enable_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
       Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
@@ -314,7 +321,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D94 - SPU_BASE:
     {
       Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_noise_mode_register = (m_noise_mode_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -322,7 +329,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D96 - SPU_BASE:
     {
       Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_noise_mode_register = (m_noise_mode_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -330,7 +337,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D98 - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb on register <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_reverb_on_register = (m_reverb_on_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -338,7 +345,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D9A - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb off register <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -346,6 +353,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DA4 - SPU_BASE:
     {
       Log_DebugPrintf("SPU IRQ address register <- 0x%04X", ZeroExtend32(value));
+      m_sample_event->InvokeEarly();
       m_irq_address = value;
       return;
     }
@@ -369,6 +377,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DAA - SPU_BASE:
     {
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
+      m_sample_event->InvokeEarly(true);
+
       m_SPUCNT.bits = value;
       m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
       m_SPUSTAT.dma_read_write_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
@@ -377,6 +387,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
         m_SPUSTAT.irq9_flag = false;
 
       UpdateDMARequest();
+      UpdateEventInterval();
       return;
     }
 
@@ -390,7 +401,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DB0 - SPU_BASE:
     {
       Log_DebugPrintf("SPU left cd audio register <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_cd_audio_volume_left = value;
     }
     break;
@@ -398,7 +409,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DB2 - SPU_BASE:
     {
       Log_DebugPrintf("SPU right cd audio register <- 0x%04X", ZeroExtend32(value));
-      m_system->Synchronize();
+      m_sample_event->InvokeEarly();
       m_cd_audio_volume_right = value;
     }
     break;
@@ -424,6 +435,12 @@ u16 SPU::ReadVoiceRegister(u32 offset)
   const u32 voice_index = (offset / 0x10);   //((offset >> 4) & 0x1F);
   Assert(voice_index < 24);
 
+  if (reg_index >= 6)
+  {
+    // adsr volume needs to be updated when reading
+    m_sample_event->InvokeEarly();
+  }
+
   return m_voices[voice_index].regs.index[reg_index];
 }
 
@@ -436,7 +453,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
   Voice& voice = m_voices[voice_index];
   if (voice.IsOn())
-    m_system->Synchronize();
+    m_sample_event->InvokeEarly();
 
   switch (reg_index)
   {
@@ -606,13 +623,103 @@ void SPU::IncrementCaptureBufferPosition()
 
 void SPU::Execute(TickCount ticks)
 {
-  TickCount num_samples = (ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
+  DebugAssert(m_SPUCNT.enable || m_SPUCNT.cd_audio_enable);
+
+  u32 remaining_frames = static_cast<u32>((ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK);
   m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
-  if (num_samples == 0 || (!m_SPUCNT.enable && !m_SPUCNT.cd_audio_enable))
+
+  while (remaining_frames > 0)
+  {
+    AudioStream* const output_stream = m_system->GetHostInterface()->GetAudioStream();
+    s16* output_frame;
+    u32 output_frame_space;
+    output_stream->BeginWrite(&output_frame, &output_frame_space);
+
+    const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
+    for (u32 i = 0; i < frames_in_this_batch; i++)
+    {
+      s32 left_sum = 0;
+      s32 right_sum = 0;
+      if (m_SPUCNT.enable)
+      {
+        for (u32 voice = 0; voice < NUM_VOICES; voice++)
+        {
+          const auto [left, right] = SampleVoice(voice);
+          left_sum += left;
+          right_sum += right;
+        }
+
+        if (!m_SPUCNT.mute_n)
+        {
+          left_sum = 0;
+          right_sum = 0;
+        }
+      }
+
+      // Mix in CD audio.
+      s16 cd_audio_left;
+      s16 cd_audio_right;
+      if (!m_cd_audio_buffer.IsEmpty())
+      {
+        cd_audio_left = m_cd_audio_buffer.Pop();
+        cd_audio_right = m_cd_audio_buffer.Pop();
+        if (m_SPUCNT.cd_audio_enable)
+        {
+          left_sum += ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
+          right_sum += ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
+        }
+      }
+      else
+      {
+        cd_audio_left = 0;
+        cd_audio_right = 0;
+      }
+
+      // Apply main volume before clamping.
+      *(output_frame++) = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
+      *(output_frame++) = Clamp16(ApplyVolume(right_sum, m_main_volume_right.GetVolume()));
+
+      // Write to capture buffers.
+      WriteToCaptureBuffer(0, cd_audio_left);
+      WriteToCaptureBuffer(1, cd_audio_right);
+      WriteToCaptureBuffer(2, Clamp16(m_voices[1].last_amplitude));
+      WriteToCaptureBuffer(3, Clamp16(m_voices[3].last_amplitude));
+      IncrementCaptureBufferPosition();
+    }
+
+    output_stream->EndWrite(frames_in_this_batch);
+    remaining_frames -= frames_in_this_batch;
+  }
+}
+
+void SPU::UpdateEventInterval()
+{
+  if (!m_SPUCNT.enable && !m_SPUCNT.cd_audio_enable)
+  {
+    m_sample_event->Deactivate();
+    return;
+  }
+
+  // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
+  // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
+  // the SPU state.
+  const u32 max_slice_frames = m_system->GetHostInterface()->GetAudioStream()->GetBufferSize();
+
+  // TODO: Make this predict how long until the interrupt will be hit instead...
+  const u32 interval = m_SPUCNT.irq9_enable ? 1 : max_slice_frames;
+  const TickCount interval_ticks = static_cast<TickCount>(interval) * SYSCLK_TICKS_PER_SPU_TICK;
+  if (m_sample_event->IsActive() && m_sample_event->GetInterval() == interval_ticks)
     return;
 
-  for (TickCount i = 0; i < num_samples; i++)
-    GenerateSample();
+  // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
+  m_sample_event->InvokeEarly(true);
+  m_sample_event->SetInterval(interval_ticks);
+  m_sample_event->Schedule(interval_ticks - m_ticks_carry);
+}
+
+void SPU::GeneratePendingSamples()
+{
+  m_sample_event->InvokeEarly();
 }
 
 void SPU::Voice::KeyOn()
@@ -952,78 +1059,20 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   return std::make_tuple(left, right);
 }
 
-void SPU::EnsureCDAudioSpace(u32 num_samples)
+void SPU::EnsureCDAudioSpace(u32 remaining_frames)
 {
-  if (m_cd_audio_buffer.GetSpace() < (num_samples * 2))
+  if (m_cd_audio_buffer.IsEmpty())
   {
-    Log_WarningPrintf("SPU CD Audio buffer overflow - writing %u samples with %u samples space", num_samples,
+    // we want the audio to start playing at the right point, not a few cycles early, otherwise this'll cause sync issues.
+    m_sample_event->InvokeEarly();
+  }
+
+  if (m_cd_audio_buffer.GetSpace() < (remaining_frames * 2))
+  {
+    Log_WarningPrintf("SPU CD Audio buffer overflow - writing %u samples with %u samples space", remaining_frames,
                       m_cd_audio_buffer.GetSpace() / 2);
-    m_cd_audio_buffer.Remove((num_samples * 2) - m_cd_audio_buffer.GetSpace());
+    m_cd_audio_buffer.Remove((remaining_frames * 2) - m_cd_audio_buffer.GetSpace());
   }
-}
-
-void SPU::GenerateSample()
-{
-  s32 left_sum = 0;
-  s32 right_sum = 0;
-  if (m_SPUCNT.enable)
-  {
-    for (u32 i = 0; i < NUM_VOICES; i++)
-    {
-      const auto [left, right] = SampleVoice(i);
-      left_sum += left;
-      right_sum += right;
-    }
-
-    if (!m_SPUCNT.mute_n)
-    {
-      left_sum = 0;
-      right_sum = 0;
-    }
-  }
-
-  // Mix in CD audio.
-  s16 cd_audio_left;
-  s16 cd_audio_right;
-  if (!m_cd_audio_buffer.IsEmpty())
-  {
-    cd_audio_left = m_cd_audio_buffer.Pop();
-    cd_audio_right = m_cd_audio_buffer.Pop();
-    if (m_SPUCNT.cd_audio_enable)
-    {
-      left_sum += ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
-      right_sum += ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
-    }
-  }
-  else
-  {
-    cd_audio_left = 0;
-    cd_audio_right = 0;
-  }
-
-  // Apply main volume before clamping.
-  std::array<AudioStream::SampleType, 2> out_samples;
-  out_samples[0] = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
-  out_samples[1] = Clamp16(ApplyVolume(right_sum, m_main_volume_right.GetVolume()));
-  m_system->GetHostInterface()->GetAudioStream()->WriteSamples(out_samples.data(), 1);
-
-  // Write to capture buffers.
-  WriteToCaptureBuffer(0, cd_audio_left);
-  WriteToCaptureBuffer(1, cd_audio_right);
-  WriteToCaptureBuffer(2, Clamp16(m_voices[1].last_amplitude));
-  WriteToCaptureBuffer(3, Clamp16(m_voices[3].last_amplitude));
-  IncrementCaptureBufferPosition();
-
-#if 0
-  static FILE* fp = nullptr;
-  if (!fp)
-    fp = std::fopen("D:\\spu.raw", "wb");
-  if (fp)
-  {
-    std::fwrite(out_samples.data(), sizeof(AudioStream::SampleType), 2, fp);
-    std::fflush(fp);
-  }
-#endif
 }
 
 void SPU::DrawDebugStateWindow()

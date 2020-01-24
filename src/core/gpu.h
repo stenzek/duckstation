@@ -15,6 +15,7 @@ class StateWrapper;
 class HostDisplay;
 
 class System;
+class TimingEvent;
 class DMA;
 class InterruptController;
 class Timers;
@@ -127,11 +128,11 @@ public:
   void DMARead(u32* words, u32 word_count);
   void DMAWrite(const u32* words, u32 word_count);
 
+  // Synchronizes the CRTC, updating the hblank timer.
+  void Synchronize();
+
   // Recompile shaders/recreate framebuffers when needed.
   virtual void UpdateSettings();
-
-  // Ticks for hblank/vblank.
-  void Execute(TickCount ticks);
 
   // gpu_hw_d3d11.cpp
   static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();
@@ -299,6 +300,9 @@ protected:
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
   void UpdateGPUSTAT();
 
+  // Ticks for hblank/vblank.
+  void Execute(TickCount ticks);
+
   /// Returns true if scanout should be interlaced.
   bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }
 
@@ -330,6 +334,8 @@ protected:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   Timers* m_timers = nullptr;
+
+  std::unique_ptr<TimingEvent> m_tick_event;
 
   // Pointer to VRAM, used for reads/writes. In the hardware backends, this is the shadow buffer.
   u16* m_vram_ptr = nullptr;

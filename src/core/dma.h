@@ -2,11 +2,13 @@
 #include "common/bitfield.h"
 #include "types.h"
 #include <array>
+#include <memory>
 #include <vector>
 
 class StateWrapper;
 
 class System;
+class TimingEvent;
 class Bus;
 class InterruptController;
 class GPU;
@@ -49,8 +51,6 @@ public:
   // changing interfaces
   void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
-  void Execute(TickCount ticks);
-
 private:
   static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
@@ -72,10 +72,8 @@ private:
   bool CanRunAnyChannels() const;
   void UpdateIRQ();
 
-  void QueueTransferChannel(Channel channel);
-  void QueueTransfer();
-
-  void TransferChannel(Channel channel);
+  void UpdateChannelTransferEvent(Channel channel);
+  void TransferChannel(Channel channel, TickCount ticks_late);
 
   // from device -> memory
   void TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
@@ -95,6 +93,7 @@ private:
 
   struct ChannelState
   {
+    std::unique_ptr<TimingEvent> transfer_event;
     u32 base_address;
 
     union BlockControl
@@ -131,7 +130,6 @@ private:
       static constexpr u32 WRITE_MASK = 0b01110001'01110111'00000111'00000011;
     } channel_control;
 
-    TickCount transfer_ticks = 0;
     bool request = false;
   };
 
@@ -207,7 +205,4 @@ private:
       master_flag = master_enable && ((((bits >> 16) & u32(0b1111111)) & ((bits >> 24) & u32(0b1111111))) != 0);
     }
   } m_DICR = {};
-
-  TickCount m_transfer_min_ticks = 0;
-  bool m_transfer_in_progress = false;
 };

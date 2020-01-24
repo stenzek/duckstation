@@ -1,6 +1,7 @@
 #include "timers.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
 #include <imgui.h>
@@ -10,10 +11,13 @@ Timers::Timers() = default;
 
 Timers::~Timers() = default;
 
-void Timers::Initialize(System* system, InterruptController* interrupt_controller)
+void Timers::Initialize(System* system, InterruptController* interrupt_controller, GPU* gpu)
 {
   m_system = system;
   m_interrupt_controller = interrupt_controller;
+  m_gpu = gpu;
+  m_sysclk_event = system->CreateTimingEvent("Timer SysClk Interrupt", 1, 1,
+                                             std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
 }
 
 void Timers::Reset()
@@ -30,6 +34,7 @@ void Timers::Reset()
   }
 
   m_sysclk_div_8_carry = 0;
+  UpdateSysClkEvent();
 }
 
 bool Timers::DoState(StateWrapper& sw)
@@ -47,6 +52,10 @@ bool Timers::DoState(StateWrapper& sw)
   }
 
   sw.Do(&m_sysclk_div_8_carry);
+
+  if (sw.IsReading())
+    UpdateSysClkEvent();
+
   return !sw.HasError();
 }
 
@@ -88,12 +97,12 @@ void Timers::AddTicks(u32 timer, TickCount count)
   bool interrupt_request = false;
   if (cs.counter >= cs.target && old_counter < cs.target)
   {
-    interrupt_request = true;
+    interrupt_request |= cs.mode.irq_at_target;
     cs.mode.reached_target = true;
   }
   if (cs.counter >= 0xFFFF)
   {
-    interrupt_request = true;
+    interrupt_request |= cs.mode.irq_on_overflow;
     cs.mode.reached_overflow = true;
   }
 
@@ -126,7 +135,7 @@ void Timers::AddTicks(u32 timer, TickCount count)
   }
 }
 
-void Timers::Execute(TickCount sysclk_ticks)
+void Timers::AddSysClkTicks(TickCount sysclk_ticks)
 {
   if (!m_states[0].external_counting_enabled && m_states[0].counting_enabled)
     AddTicks(0, sysclk_ticks);
@@ -143,7 +152,7 @@ void Timers::Execute(TickCount sysclk_ticks)
     AddTicks(2, sysclk_ticks);
   }
 
-  UpdateDowncount();
+  UpdateSysClkEvent();
 }
 
 u32 Timers::ReadRegister(u32 offset)
@@ -157,13 +166,28 @@ u32 Timers::ReadRegister(u32 offset)
   {
     case 0x00:
     {
-      m_system->Synchronize();
+      if (timer_index < 2)
+      {
+        // timers 0/1 depend on the GPU
+        if (cs.external_counting_enabled)
+          m_gpu->Synchronize();
+      }
+
+      m_sysclk_event->InvokeEarly();
+
       return cs.counter;
     }
 
     case 0x04:
     {
-      m_system->Synchronize();
+      if (timer_index < 2)
+      {
+        // timers 0/1 depend on the GPU
+        if (cs.external_counting_enabled)
+          m_gpu->Synchronize();
+      }
+
+      m_sysclk_event->InvokeEarly();
 
       const u32 bits = cs.mode.bits;
       cs.mode.reached_overflow = false;
@@ -192,7 +216,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x00:
     {
       Log_DebugPrintf("Timer %u write counter %u", timer_index, value);
-      m_system->Synchronize();
+      m_sysclk_event->InvokeEarly();
       cs.counter = value & u32(0xFFFF);
     }
     break;
@@ -200,7 +224,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x04:
     {
       Log_DebugPrintf("Timer %u write mode register 0x%04X", timer_index, value);
-      m_system->Synchronize();
+      m_sysclk_event->InvokeEarly();
       cs.mode.bits = value & u32(0x1FFF);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
@@ -210,13 +234,14 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
       UpdateCountingEnabled(cs);
       UpdateIRQ(timer_index);
+      UpdateSysClkEvent();
     }
     break;
 
     case 0x08:
     {
       Log_DebugPrintf("Timer %u write target 0x%04X", timer_index, ZeroExtend32(Truncate16(value)));
-      m_system->Synchronize();
+      m_sysclk_event->InvokeEarly();
       cs.target = value & u32(0xFFFF);
     }
     break;
@@ -267,16 +292,19 @@ void Timers::UpdateIRQ(u32 index)
     static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + index));
 }
 
-void Timers::UpdateDowncount()
+TickCount Timers::GetTicksUntilNextInterrupt() const
 {
   TickCount min_ticks = std::numeric_limits<TickCount>::max();
   for (u32 i = 0; i < NUM_TIMERS; i++)
   {
-    CounterState& cs = m_states[i];
-    if (!cs.counting_enabled || (i < 2 && cs.external_counting_enabled))
+    const CounterState& cs = m_states[i];
+    if (!cs.counting_enabled || (i < 2 && cs.external_counting_enabled) ||
+        (!cs.mode.irq_at_target && !cs.mode.irq_on_overflow))
+    {
       continue;
+    }
 
-    TickCount min_ticks_for_this_timer = min_ticks;
+    TickCount min_ticks_for_this_timer = std::numeric_limits<TickCount>::max();
     if (cs.mode.irq_at_target && cs.counter < cs.target)
       min_ticks_for_this_timer = static_cast<TickCount>(cs.target - cs.counter);
     if (cs.mode.irq_on_overflow && cs.counter < cs.target)
@@ -288,7 +316,17 @@ void Timers::UpdateDowncount()
     min_ticks = std::min(min_ticks, min_ticks_for_this_timer);
   }
 
-  m_system->SetDowncount(min_ticks);
+  return min_ticks;
+}
+
+void Timers::UpdateSysClkEvent()
+{
+  // Still update once every 100ms. If we get polled we'll execute sooner.
+  const TickCount ticks = GetTicksUntilNextInterrupt();
+  if (ticks == std::numeric_limits<TickCount>::max())
+    m_sysclk_event->Schedule(MAX_SLICE_SIZE);
+  else
+    m_sysclk_event->Schedule(ticks);
 }
 
 void Timers::DrawDebugStateWindow()

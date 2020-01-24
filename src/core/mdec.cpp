@@ -15,6 +15,8 @@ void MDEC::Initialize(System* system, DMA* dma)
 {
   m_system = system;
   m_dma = dma;
+  m_block_copy_out_event = system->CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
+                                                     std::bind(&MDEC::CopyOutBlock, this), false);
 }
 
 void MDEC::Reset()
@@ -39,8 +41,11 @@ bool MDEC::DoState(StateWrapper& sw)
   sw.Do(&m_current_coefficient);
   sw.Do(&m_current_q_scale);
   sw.Do(&m_block_rgb);
-  sw.Do(&m_block_copy_out_ticks);
-  sw.Do(&m_block_copy_out_pending);
+
+  bool block_copy_out_pending = HasPendingBlockCopyOut();
+  sw.Do(&block_copy_out_pending);
+  if (sw.IsReading())
+    m_block_copy_out_event->SetState(block_copy_out_pending);
 
   return !sw.HasError();
 }
@@ -131,6 +136,11 @@ void MDEC::DMAWrite(const u32* words, u32 word_count)
   } while (word_count > 0);
 }
 
+bool MDEC::HasPendingBlockCopyOut() const
+{
+  return m_block_copy_out_event->IsActive();
+}
+
 void MDEC::SoftReset()
 {
   m_status.bits = 0;
@@ -143,8 +153,7 @@ void MDEC::SoftReset()
   m_current_block = 0;
   m_current_coefficient = 64;
   m_current_q_scale = 0;
-  m_block_copy_out_ticks = TICKS_PER_BLOCK;
-  m_block_copy_out_pending = false;
+  m_block_copy_out_event->Deactivate();
   UpdateStatus();
 }
 
@@ -173,11 +182,10 @@ u32 MDEC::ReadDataRegister()
   if (m_data_out_fifo.IsEmpty())
   {
     // Stall the CPU until we're done processing.
-    if (m_block_copy_out_pending)
+    if (HasPendingBlockCopyOut())
     {
       Log_DevPrint("MDEC data out FIFO empty on read - stalling CPU");
-      m_system->StallCPU(m_block_copy_out_ticks);
-      Execute(m_block_copy_out_ticks);
+      m_system->StallCPU(m_block_copy_out_event->GetTicksUntilNextExecution());
     }
     else
     {
@@ -205,27 +213,9 @@ void MDEC::WriteCommandRegister(u32 value)
   ExecutePendingCommand();
 }
 
-void MDEC::Execute(TickCount ticks)
-{
-  if (!m_block_copy_out_pending)
-    return;
-
-  m_block_copy_out_ticks -= ticks;
-  if (m_block_copy_out_ticks <= 0)
-  {
-    DebugAssert(m_command == Command::DecodeMacroblock);
-    CopyOutBlock();
-
-    if (m_remaining_halfwords == 0)
-      EndCommand();
-    else
-      ExecutePendingCommand();
-  }
-}
-
 void MDEC::ExecutePendingCommand()
 {
-  if (m_block_copy_out_pending)
+  if (HasPendingBlockCopyOut())
   {
     // can't do anything while waiting
     UpdateStatus();
@@ -234,7 +224,7 @@ void MDEC::ExecutePendingCommand()
 
   while (!m_data_in_fifo.IsEmpty())
   {
-    DebugAssert(!m_block_copy_out_pending);
+    DebugAssert(!HasPendingBlockCopyOut());
 
     if (m_command == Command::None)
     {
@@ -417,20 +407,16 @@ bool MDEC::DecodeColoredMacroblock()
 
 void MDEC::ScheduleBlockCopyOut(TickCount ticks)
 {
-  DebugAssert(!m_block_copy_out_pending);
+  DebugAssert(!HasPendingBlockCopyOut());
   Log_DebugPrintf("Scheduling block copy out in %d ticks", ticks);
 
-  m_system->Synchronize();
-  m_block_copy_out_pending = true;
-  m_block_copy_out_ticks = ticks;
-  m_system->SetDowncount(ticks);
+  m_block_copy_out_event->Schedule(TICKS_PER_BLOCK);
 }
 
 void MDEC::CopyOutBlock()
 {
-  DebugAssert(m_block_copy_out_pending);
-  m_block_copy_out_pending = false;
-  m_block_copy_out_ticks = 0;
+  DebugAssert(m_command == Command::DecodeMacroblock);
+  m_block_copy_out_event->Deactivate();
 
   Log_DebugPrintf("Copying out block");
 
@@ -535,13 +521,9 @@ void MDEC::CopyOutBlock()
 
   // if we've copied out all blocks, command is complete
   if (m_remaining_halfwords == 0)
-  {
-    DebugAssert(m_command == Command::DecodeMacroblock);
-    m_command = Command::None;
-    m_current_block = 0;
-    m_current_coefficient = 64;
-    m_current_q_scale = 0;
-  }
+    EndCommand();
+  else
+    ExecutePendingCommand();
 }
 
 static constexpr std::array<u8, 64> zigzag = {{0,  1,  5,  6,  14, 15, 27, 28, 2,  4,  7,  13, 16, 26, 29, 42,

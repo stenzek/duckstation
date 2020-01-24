@@ -51,11 +51,8 @@ public:
   ALWAYS_INLINE void ResetPendingTicks() { m_pending_ticks = 0; }
   ALWAYS_INLINE void AddPendingTicks(TickCount ticks) { m_pending_ticks += ticks; }
 
-  ALWAYS_INLINE void SetDowncount(TickCount downcount)
-  {
-    m_downcount = (downcount < m_downcount) ? downcount : m_downcount;
-  }
-  ALWAYS_INLINE void ResetDowncount() { m_downcount = MAX_SLICE_SIZE; }
+  ALWAYS_INLINE TickCount GetDowncount() const { return m_downcount; }
+  ALWAYS_INLINE void SetDowncount(TickCount downcount) { m_downcount = downcount; }
 
   // Sets the PC and flushes the pipeline.
   void SetPC(u32 new_pc);

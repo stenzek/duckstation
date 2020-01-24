@@ -360,7 +360,7 @@ void HostInterface::Throttle()
   const s64 sleep_time = static_cast<s64>(m_last_throttle_time - time);
   if (std::abs(sleep_time) >= MAX_VARIANCE_TIME)
   {
-#ifdef Y_BUILD_CONFIG_RELEASE
+#ifndef _DEBUG
     // Don't display the slow messages in debug, it'll always be slow...
     // Limit how often the messages are displayed.
     if (m_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
@@ -437,6 +437,9 @@ void HostInterface::UpdateSpeedLimiterState()
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
 
   m_audio_stream->SetSync(audio_sync_enabled);
+  if (audio_sync_enabled)
+    m_audio_stream->EmptyBuffers();
+
   m_display->SetVSync(video_sync_enabled);
   m_throttle_timer.Reset();
   m_last_throttle_time = 0;

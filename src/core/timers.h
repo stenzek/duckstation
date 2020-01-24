@@ -2,11 +2,14 @@
 #include "common/bitfield.h"
 #include "types.h"
 #include <array>
+#include <memory>
 
 class StateWrapper;
 
 class System;
+class TimingEvent;
 class InterruptController;
+class GPU;
 
 class Timers
 {
@@ -14,7 +17,7 @@ public:
   Timers();
   ~Timers();
 
-  void Initialize(System* system, InterruptController* interrupt_controller);
+  void Initialize(System* system, InterruptController* interrupt_controller, GPU* gpu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -25,10 +28,12 @@ public:
   // dot clock/hblank/sysclk div 8
   bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
   void AddTicks(u32 timer, TickCount ticks);
-  void Execute(TickCount sysclk_ticks);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
+
+  // changing interfaces
+  void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
 private:
   static constexpr u32 NUM_TIMERS = 3;
@@ -73,10 +78,15 @@ private:
   void UpdateCountingEnabled(CounterState& cs);
   void UpdateIRQ(u32 index);
 
-  void UpdateDowncount();
+  void AddSysClkTicks(TickCount sysclk_ticks);
+
+  TickCount GetTicksUntilNextInterrupt() const;
+  void UpdateSysClkEvent();
 
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
+  GPU* m_gpu = nullptr;
+  std::unique_ptr<TimingEvent> m_sysclk_event = nullptr;
 
   std::array<CounterState, NUM_TIMERS> m_states{};
   u32 m_sysclk_div_8_carry = 0;   // partial ticks for timer 3 with sysclk/8

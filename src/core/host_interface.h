@@ -68,6 +68,9 @@ public:
   /// Returns a path relative to the user directory.
   std::string GetUserDirectoryRelativePath(const char* format, ...) const;
 
+  /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
+  void Throttle();
+
 protected:
   using ThrottleClock = std::chrono::steady_clock;
 
@@ -130,9 +133,6 @@ protected:
   void ModifyResolutionScale(s32 increment);
 
   void RunFrame();
-
-  /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
-  void Throttle();
 
   void UpdateSpeedLimiterState();
 
