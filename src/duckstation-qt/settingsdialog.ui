@@ -42,6 +42,15 @@
        </property>
        <item>
         <property name="text">
+         <string>Console Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Game List Settings</string>
         </property>
         <property name="icon">
@@ -56,15 +65,6 @@
         <property name="icon">
          <iconset resource="icons.qrc">
           <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Console Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="icons.qrc">
-          <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
         </property>
        </item>
        <item>

@@ -85,9 +85,9 @@
     </property>
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
+    <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionHotkeySettings"/>
-    <addaction name="actionConsoleSettings"/>
     <addaction name="actionPortSettings"/>
     <addaction name="actionGPUSettings"/>
     <addaction name="actionAudioSettings"/>

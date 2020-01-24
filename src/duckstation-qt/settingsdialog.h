@@ -18,9 +18,9 @@ class SettingsDialog : public QDialog
 public:
   enum class Category
   {
+    ConsoleSettings,
     GameListSettings,
     HotkeySettings,
-    ConsoleSettings,
     PortSettings,
     GPUSettings,
     AudioSettings,
@@ -41,9 +41,9 @@ private:
 
   QtHostInterface* m_host_interface;
 
+  ConsoleSettingsWidget* m_console_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
-  ConsoleSettingsWidget* m_console_settings = nullptr;
   PortSettingsWidget* m_port_settings = nullptr;
   GPUSettingsWidget* m_gpu_settings = nullptr;
   QWidget* m_audio_settings = nullptr;

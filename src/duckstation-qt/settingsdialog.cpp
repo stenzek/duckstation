@@ -12,16 +12,16 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
 {
   m_ui.setupUi(this);
 
+  m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
   m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
-  m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
   m_port_settings = new PortSettingsWidget(host_interface, m_ui.settingsContainer);
   m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer);
   m_audio_settings = new QWidget(m_ui.settingsContainer);
 
-  m_ui.settingsContainer->insertWidget(0, m_game_list_settings);
-  m_ui.settingsContainer->insertWidget(1, m_hotkey_settings);
-  m_ui.settingsContainer->insertWidget(2, m_console_settings);
+  m_ui.settingsContainer->insertWidget(0, m_console_settings);
+  m_ui.settingsContainer->insertWidget(1, m_game_list_settings);
+  m_ui.settingsContainer->insertWidget(2, m_hotkey_settings);
   m_ui.settingsContainer->insertWidget(3, m_port_settings);
   m_ui.settingsContainer->insertWidget(4, m_gpu_settings);
   m_ui.settingsContainer->insertWidget(5, m_audio_settings);

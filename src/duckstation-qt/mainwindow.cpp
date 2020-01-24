@@ -280,8 +280,12 @@ void MainWindow::connectSignals()
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::onExitActionTriggered);
   connect(m_ui.actionFullscreen, &QAction::triggered, this, &MainWindow::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
+  connect(m_ui.actionConsoleSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::ConsoleSettings); });
   connect(m_ui.actionGameListSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::GameListSettings); });
+  connect(m_ui.actionHotkeySettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::HotkeySettings); });
   connect(m_ui.actionPortSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::PortSettings); });
   connect(m_ui.actionGPUSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::GPUSettings); });
