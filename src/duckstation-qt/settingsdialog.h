@@ -10,6 +10,7 @@ class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
 class PortSettingsWidget;
 class GPUSettingsWidget;
+class AudioSettingsWidget;
 
 class SettingsDialog : public QDialog
 {
@@ -35,7 +36,7 @@ public:
   HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
   PortSettingsWidget* getPortSettingsWidget() const { return m_port_settings; }
   GPUSettingsWidget* getGPUSettingsWidget() const { return m_gpu_settings; }
-  QWidget* getAudioSettingsWidget() const { return m_audio_settings; }
+  AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
 
 public Q_SLOTS:
   void setCategory(Category category);
@@ -53,5 +54,5 @@ private:
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
   PortSettingsWidget* m_port_settings = nullptr;
   GPUSettingsWidget* m_gpu_settings = nullptr;
-  QWidget* m_audio_settings = nullptr;
+  AudioSettingsWidget* m_audio_settings = nullptr;
 };

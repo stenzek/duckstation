@@ -1,4 +1,5 @@
 #include "settingsdialog.h"
+#include "audiosettingswidget.h"
 #include "consolesettingswidget.h"
 #include "gamelistsettingswidget.h"
 #include "gpusettingswidget.h"
@@ -17,7 +18,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
   m_port_settings = new PortSettingsWidget(host_interface, m_ui.settingsContainer);
   m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer);
-  m_audio_settings = new QWidget(m_ui.settingsContainer);
+  m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer);
 
   m_ui.settingsContainer->insertWidget(0, m_console_settings);
   m_ui.settingsContainer->insertWidget(1, m_game_list_settings);
