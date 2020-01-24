@@ -16,6 +16,9 @@ public:
   GameListSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~GameListSettingsWidget();
 
+public Q_SLOTS:
+  void addSearchDirectory(QWidget* parent_widget);
+
 private Q_SLOTS:
   void onDirectoryListItemClicked(const QModelIndex& index);
   void onAddSearchDirectoryButtonPressed();

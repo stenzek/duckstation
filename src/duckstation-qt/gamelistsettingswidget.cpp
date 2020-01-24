@@ -232,9 +232,9 @@ void GameListSettingsWidget::onDirectoryListItemClicked(const QModelIndex& index
   m_search_directories_model->setEntryRecursive(row, !m_search_directories_model->isEntryRecursive(row));
 }
 
-void GameListSettingsWidget::onAddSearchDirectoryButtonPressed()
+void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
 {
-  QString dir = QFileDialog::getExistingDirectory(this, tr("Select Search Directory"));
+  QString dir = QFileDialog::getExistingDirectory(parent_widget, tr("Select Search Directory"));
   if (dir.isEmpty())
     return;
 
@@ -249,6 +249,11 @@ void GameListSettingsWidget::onAddSearchDirectoryButtonPressed()
 
   const bool recursive = (selection == QMessageBox::Yes);
   m_search_directories_model->addEntry(dir, recursive);
+}
+
+void GameListSettingsWidget::onAddSearchDirectoryButtonPressed()
+{
+  addSearchDirectory(this);
 }
 
 void GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed()

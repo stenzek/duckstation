@@ -35,7 +35,6 @@ private Q_SLOTS:
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
   void onStartBiosActionTriggered();
-  void onOpenDirectoryActionTriggered();
   void onExitActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
@@ -47,6 +46,7 @@ private:
   void updateEmulationActions(bool starting, bool running);
   void switchToGameListView();
   void switchToEmulationView();
+  SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
   void updateDebugMenuGPURenderer();
   void populateLoadSaveStateMenus(QString game_code);

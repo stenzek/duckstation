@@ -30,6 +30,13 @@ public:
   SettingsDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~SettingsDialog();
 
+  ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
+  GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
+  HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
+  PortSettingsWidget* getPortSettingsWidget() const { return m_port_settings; }
+  GPUSettingsWidget* getGPUSettingsWidget() const { return m_gpu_settings; }
+  QWidget* getAudioSettingsWidget() const { return m_audio_settings; }
+
 public Q_SLOTS:
   void setCategory(Category category);
 

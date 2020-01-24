@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "core/game_list.h"
 #include "core/settings.h"
+#include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "qthostinterface.h"
 #include "qtsettingsinterface.h"
@@ -160,8 +161,6 @@ void MainWindow::onStartBiosActionTriggered()
   m_host_interface->bootSystem(QString(), QString());
 }
 
-void MainWindow::onOpenDirectoryActionTriggered() {}
-
 void MainWindow::onExitActionTriggered() {}
 
 void MainWindow::onGitHubRepositoryActionTriggered() {}
@@ -213,7 +212,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 {
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
-  m_ui.actionOpenDirectory->setDisabled(starting || running);
   m_ui.actionPowerOff->setDisabled(starting || running);
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
@@ -271,7 +269,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
-  connect(m_ui.actionOpenDirectory, &QAction::triggered, this, &MainWindow::onOpenDirectoryActionTriggered);
+  connect(m_ui.actionAddGameDirectory, &QAction::triggered,
+          [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
   connect(m_ui.actionPause, &QAction::toggled, m_host_interface, &QtHostInterface::pauseSystem);
@@ -333,19 +332,25 @@ void MainWindow::connectSignals()
   });
 }
 
-void MainWindow::doSettings(SettingsDialog::Category category)
+SettingsDialog* MainWindow::getSettingsDialog()
 {
   if (!m_settings_dialog)
     m_settings_dialog = new SettingsDialog(m_host_interface, this);
 
-  if (!m_settings_dialog->isVisible())
+  return m_settings_dialog;
+}
+
+void MainWindow::doSettings(SettingsDialog::Category category)
+{
+  SettingsDialog* dlg = getSettingsDialog();
+  if (!dlg->isVisible())
   {
-    m_settings_dialog->setModal(false);
-    m_settings_dialog->show();
+    dlg->setModal(false);
+    dlg->show();
   }
 
   if (category != SettingsDialog::Category::Count)
-    m_settings_dialog->setCategory(category);
+    dlg->setCategory(category);
 }
 
 void MainWindow::updateDebugMenuGPURenderer()

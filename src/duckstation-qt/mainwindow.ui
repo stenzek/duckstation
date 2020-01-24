@@ -92,7 +92,7 @@
     <addaction name="actionGPUSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="separator"/>
-    <addaction name="actionOpenDirectory"/>
+    <addaction name="actionAddGameDirectory"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -150,7 +150,6 @@
    </attribute>
    <addaction name="actionStartDisc"/>
    <addaction name="actionStartBios"/>
-   <addaction name="actionOpenDirectory"/>
    <addaction name="separator"/>
    <addaction name="actionPowerOff"/>
    <addaction name="actionReset"/>
@@ -351,13 +350,13 @@
     <string>Game List Settings...</string>
    </property>
   </action>
-  <action name="actionOpenDirectory">
+  <action name="actionAddGameDirectory">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/edit-find.png</normaloff>:/icons/edit-find.png</iconset>
    </property>
    <property name="text">
-    <string>Open Directory...</string>
+    <string>Add Game Directory...</string>
    </property>
   </action>
   <action name="actionSettings">
