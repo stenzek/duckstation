@@ -474,7 +474,10 @@ void HostInterface::CreateUserDirectorySubdirectories()
 {
   bool result = true;
 
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("bios").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
 
   if (!result)
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
@@ -511,6 +514,32 @@ std::string HostInterface::GetGameListCacheFileName() const
 std::string HostInterface::GetGameListDatabaseFileName() const
 {
   return GetUserDirectoryRelativePath("cache/redump.dat");
+}
+
+std::string HostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot)
+{
+  if (slot < 0)
+    return GetUserDirectoryRelativePath("savestates/%s_resume.sav", game_code);
+  else
+    return GetUserDirectoryRelativePath("savestates/%s_%d.sav", game_code, slot);
+}
+
+std::string HostInterface::GetGlobalSaveStateFileName(s32 slot)
+{
+  if (slot < 0)
+    return GetUserDirectoryRelativePath("savestates/resume.sav");
+  else
+    return GetUserDirectoryRelativePath("savestates/savestate_%d.sav", slot);
+}
+
+std::string HostInterface::GetSharedMemoryCardPath(u32 slot)
+{
+  return GetUserDirectoryRelativePath("memcards/shared_card_%d.mcd", slot + 1);
+}
+
+std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot)
+{
+  return GetUserDirectoryRelativePath("memcards/game_card_%s_%d.mcd", game_code, slot + 1);
 }
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)

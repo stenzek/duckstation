@@ -104,6 +104,18 @@ protected:
   /// Returns the path of the game database cache file.
   std::string GetGameListDatabaseFileName() const;
 
+  /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
+  std::string GetGameSaveStateFileName(const char* game_code, s32 slot);
+
+  /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
+  std::string GetGlobalSaveStateFileName(s32 slot);
+
+  /// Returns the default path to a memory card.
+  std::string GetSharedMemoryCardPath(u32 slot);
+
+  /// Returns the default path to a memory card for a specific game.
+  std::string GetGameMemoryCardPath(const char* game_code, u32 slot);
+
   /// Applies new settings, updating internal state as needed. apply_callback should call m_settings.Load() after
   /// locking any required mutexes.
   void UpdateSettings(const std::function<void()>& apply_callback);
