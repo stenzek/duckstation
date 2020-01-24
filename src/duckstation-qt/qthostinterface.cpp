@@ -25,7 +25,7 @@ QtHostInterface::QtHostInterface(QObject* parent)
   : QObject(parent), HostInterface(), m_qsettings(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat)
 {
   checkSettings();
-  createGameList();
+  refreshGameList();
   doUpdateInputMap();
   createThread();
 }
@@ -152,12 +152,6 @@ void QtHostInterface::checkSettings()
   // initial setting init - we don't do this locked since the thread hasn't been created yet
   QtSettingsInterface si(m_qsettings);
   m_settings.Load(si);
-}
-
-void QtHostInterface::createGameList()
-{
-  m_game_list = std::make_unique<GameList>();
-  refreshGameList(false, false);
 }
 
 void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
