@@ -234,11 +234,14 @@ void HostInterface::DrawOSDMessages()
                                             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
 
   std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  if (m_osd_messages.empty())
+    return;
+
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   auto iter = m_osd_messages.begin();
   float position_x = 10.0f * scale;
-  float position_y = (10.0f + (m_settings.display_fullscreen ? 0.0f : 20.0f)) * scale;
+  float position_y = (10.0f + (static_cast<float>(m_display->GetDisplayTopMargin()))) * scale;
   u32 index = 0;
   while (iter != m_osd_messages.end())
   {
