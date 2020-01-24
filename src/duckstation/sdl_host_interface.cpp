@@ -25,7 +25,7 @@ Log_SetChannel(SDLHostInterface);
 #include <mmsystem.h>
 #endif
 
-SDLHostInterface::SDLHostInterface() : m_settings_filename("settings.ini")
+SDLHostInterface::SDLHostInterface()
 {
   // Increase timer/sleep resolution since we use it for throttling.
 #ifdef WIN32
@@ -152,7 +152,7 @@ void SDLHostInterface::CreateAudioStream()
 
 void SDLHostInterface::SaveSettings()
 {
-  SDLSettingsInterface si(m_settings_filename.c_str());
+  SDLSettingsInterface si(GetSettingsFileName().c_str());
   m_settings.Save(si);
 }
 
@@ -238,7 +238,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
   std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
 
   // Settings need to be loaded prior to creating the window for OpenGL bits.
-  SDLSettingsInterface si(intf->m_settings_filename.c_str());
+  SDLSettingsInterface si(intf->GetSettingsFileName().c_str());
   intf->m_settings.Load(si);
 
   if (!intf->CreateSDLWindow())

@@ -22,7 +22,7 @@ Log_SetChannel(QtHostInterface);
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent)
-  : QObject(parent), m_qsettings("duckstation-qt.ini", QSettings::IniFormat)
+  : QObject(parent), HostInterface(), m_qsettings(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat)
 {
   checkSettings();
   createGameList();

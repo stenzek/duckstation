@@ -128,8 +128,6 @@ private:
   SDL_Window* m_window = nullptr;
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
 
-  std::string m_settings_filename;
-
   KeyboardControllerActionMap m_keyboard_button_mapping;
 
   std::map<int, ControllerData> m_sdl_controllers;

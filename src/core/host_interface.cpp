@@ -462,7 +462,7 @@ void HostInterface::SetUserDirectory()
   }
 }
 
-std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
+std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...) const
 {
   std::va_list ap;
   va_start(ap, format);
@@ -478,6 +478,11 @@ std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
     return StringUtil::StdStringFromFormat("%s%c%s", m_user_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER,
                                            formatted_path.c_str());
   }
+}
+
+std::string HostInterface::GetSettingsFileName() const
+{
+  return GetUserDirectoryRelativePath("settings.ini");
 }
 
 void HostInterface::RunFrame()

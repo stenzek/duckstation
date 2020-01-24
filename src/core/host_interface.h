@@ -65,7 +65,7 @@ public:
   const std::string& GetUserDirectory() const { return m_user_directory; }
 
   /// Returns a path relative to the user directory.
-  std::string GetUserDirectoryRelativePath(const char* format, ...);
+  std::string GetUserDirectoryRelativePath(const char* format, ...) const;
 
 protected:
   using ThrottleClock = std::chrono::steady_clock;
@@ -89,6 +89,9 @@ protected:
   virtual void OnRunningGameChanged(const char* path, const char* game_code, const char* game_title);
 
   void SetUserDirectory();
+
+  /// Returns the path of the settings file.
+  std::string GetSettingsFileName() const;
 
   void RunFrame();
 
