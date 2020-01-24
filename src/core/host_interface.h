@@ -61,6 +61,12 @@ public:
   bool LoadState(const char* filename);
   bool SaveState(const char* filename);
 
+  /// Returns the base user directory path.
+  const std::string& GetUserDirectory() const { return m_user_directory; }
+
+  /// Returns a path relative to the user directory.
+  std::string GetUserDirectoryRelativePath(const char* format, ...);
+
 protected:
   using ThrottleClock = std::chrono::steady_clock;
 
@@ -81,6 +87,8 @@ protected:
 
   virtual void OnPerformanceCountersUpdated();
   virtual void OnRunningGameChanged(const char* path, const char* game_code, const char* game_title);
+
+  void SetUserDirectory();
 
   void RunFrame();
 
@@ -104,6 +112,7 @@ protected:
   std::unique_ptr<System> m_system;
   std::unique_ptr<GameList> m_game_list;
   Settings m_settings;
+  std::string m_user_directory;
 
   u64 m_last_throttle_time = 0;
   s64 m_throttle_period = INT64_C(1000000000) / 60;

@@ -52,6 +52,7 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
 
 HostInterface::HostInterface()
 {
+  SetUserDirectory();
   m_game_list = std::make_unique<GameList>();
   m_settings.SetDefaults();
   m_last_throttle_time = Common::Timer::GetValue();
@@ -438,6 +439,39 @@ void HostInterface::UpdateSpeedLimiterState()
 void HostInterface::OnPerformanceCountersUpdated() {}
 
 void HostInterface::OnRunningGameChanged(const char* path, const char* game_code, const char* game_title) {}
+
+void HostInterface::SetUserDirectory()
+{
+#ifdef WIN32
+  // On Windows, use the path to the program.
+  // We might want to use My Documents in the future.
+  const std::string program_path = FileSystem::GetProgramPath();
+  Log_InfoPrintf("Program path: %s", program_path.c_str());
+
+  m_user_directory = FileSystem::GetPathDirectory(program_path.c_str());
+#else
+#endif
+
+  Log_InfoPrintf("User directory: %s", m_user_directory.c_str());
+}
+
+std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string formatted_path = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  if (m_user_directory.empty())
+  {
+    return formatted_path;
+  }
+  else
+  {
+    return StringUtil::StdStringFromFormat("%s%c%s", m_user_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER,
+                                           formatted_path.c_str());
+  }
+}
 
 void HostInterface::RunFrame()
 {
