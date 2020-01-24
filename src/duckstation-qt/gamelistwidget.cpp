@@ -269,6 +269,8 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_view->resizeColumnsToContents();
 
   connect(m_table_view, &QTableView::doubleClicked, this, &GameListWidget::onTableViewItemDoubleClicked);
+  connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
+          &GameListWidget::onSelectionModelCurrentChanged);
 
   insertWidget(0, m_table_view);
   setCurrentIndex(0);
@@ -287,6 +289,19 @@ void GameListWidget::onTableViewItemDoubleClicked(const QModelIndex& index)
 
   const GameList::GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
   emit bootEntryRequested(&entry);
+}
+
+void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
+{
+  const QModelIndex source_index = m_table_sort_model->mapToSource(current);
+  if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
+  {
+    emit entrySelected(nullptr);
+    return;
+  }
+
+  const GameList::GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
+  emit entrySelected(&entry);
 }
 
 void GameListWidget::resizeEvent(QResizeEvent* event)

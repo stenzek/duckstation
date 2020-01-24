@@ -260,9 +260,9 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
 
-  connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameList::GameListEntry& entry) {
+  connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameList::GameListEntry* entry) {
     // if we're not running, boot the system, otherwise swap discs
-    QString path = QString::fromStdString(entry.path);
+    QString path = QString::fromStdString(entry->path);
     if (!m_emulation_running)
     {
       m_host_interface->bootSystem(path, QString());

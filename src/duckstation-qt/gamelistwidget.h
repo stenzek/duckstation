@@ -19,11 +19,13 @@ public:
   void initialize(QtHostInterface* host_interface);
 
 Q_SIGNALS:
-  void bootEntryRequested(const GameList::GameListEntry& entry);
+  void entrySelected(const GameList::GameListEntry* entry);
+  void bootEntryRequested(const GameList::GameListEntry* entry);
 
 private Q_SLOTS:
   void onGameListRefreshed();
   void onTableViewItemDoubleClicked(const QModelIndex& index);
+  void onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous);
 
 protected:
   void resizeEvent(QResizeEvent* event);
