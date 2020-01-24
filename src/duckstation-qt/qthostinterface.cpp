@@ -459,6 +459,7 @@ void QtHostInterface::doBootSystem(QString initial_filename, QString initial_sav
       !BootSystem(initial_filename_str.empty() ? nullptr : initial_filename_str.c_str(),
                   initial_save_state_filename_str.empty() ? nullptr : initial_save_state_filename_str.c_str()))
   {
+    DestroySystem();
     m_display_window->destroyDeviceContext();
     emit emulationStopped();
     return;
