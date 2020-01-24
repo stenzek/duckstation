@@ -27,6 +27,7 @@ add_library(common
   gl/stream_buffer.h
   gl/texture.cpp
   gl/texture.h
+  hash_combine.h
   heap_array.h
   iso_reader.cpp
   iso_reader.h
@@ -58,6 +59,8 @@ target_link_libraries(common PRIVATE glad libcue Threads::Threads cubeb)
 
 if(WIN32)
   target_sources(common PRIVATE
+    d3d11/shader_cache.cpp
+    d3d11/shader_cache.h
     d3d11/shader_compiler.cpp
     d3d11/shader_compiler.h
     d3d11/staging_texture.cpp
