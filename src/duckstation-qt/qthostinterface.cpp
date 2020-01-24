@@ -110,6 +110,10 @@ void QtHostInterface::applySettings()
 
   // TODO: Should we move this to the base class?
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
+  const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
+  const bool old_gpu_true_color = m_settings.gpu_true_color;
+  const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
+  const bool old_gpu_force_progressive_scan = m_settings.gpu_force_progressive_scan;
   const bool old_vsync_enabled = m_settings.video_sync_enabled;
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
@@ -120,15 +124,22 @@ void QtHostInterface::applySettings()
     m_settings.Load(si);
   }
 
+  // TODO: Fast path for hardware->software switches
+  if (m_settings.gpu_renderer != old_gpu_renderer)
+    switchGPURenderer();
+
   if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
       m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
   {
     UpdateSpeedLimiterState();
   }
 
-  // TODO: Fast path for hardware->software switches
-  if (m_settings.gpu_renderer != old_gpu_renderer)
-    switchGPURenderer();
+  if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale || m_settings.gpu_true_color != old_gpu_true_color ||
+      m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
+      m_settings.gpu_force_progressive_scan != old_gpu_force_progressive_scan)
+  {
+    m_system->UpdateGPUSettings();
+  }
 }
 
 void QtHostInterface::checkSettings()

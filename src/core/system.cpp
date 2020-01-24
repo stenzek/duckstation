@@ -78,6 +78,11 @@ bool System::RecreateGPU()
   return true;
 }
 
+void System::UpdateGPUSettings()
+{
+  m_gpu->UpdateSettings();
+}
+
 bool System::Boot(const char* filename)
 {
   // Load CD image up and detect region.

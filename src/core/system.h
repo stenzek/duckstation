@@ -70,6 +70,9 @@ public:
   /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
   bool RecreateGPU();
 
+  /// Updates GPU settings, without recreating the renderer.
+  void UpdateGPUSettings();
+
   void RunFrame();
 
   bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
