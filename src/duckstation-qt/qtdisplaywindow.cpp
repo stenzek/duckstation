@@ -67,8 +67,6 @@ bool QtDisplayWindow::createDeviceResources()
 
 void QtDisplayWindow::destroyDeviceResources() {}
 
-void QtDisplayWindow::Render() {}
-
 void QtDisplayWindow::onWindowResized(int width, int height)
 {
   m_window_width = width;

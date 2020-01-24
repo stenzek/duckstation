@@ -117,6 +117,7 @@ void QtHostInterface::applySettings()
   const bool old_vsync_enabled = m_settings.video_sync_enabled;
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
+  const bool old_display_linear_filtering = m_settings.display_linear_filtering;
 
   {
     std::lock_guard<std::mutex> guard(m_qsettings_mutex);
@@ -140,6 +141,9 @@ void QtHostInterface::applySettings()
   {
     m_system->UpdateGPUSettings();
   }
+
+  if (m_settings.display_linear_filtering != old_display_linear_filtering)
+    m_display_window->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 }
 
 void QtHostInterface::checkSettings()
@@ -192,6 +196,7 @@ QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
 
   m_display.release();
   m_display = std::unique_ptr<HostDisplay>(m_display_window->getHostDisplayInterface());
+  m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 
   QWidget* widget = QWidget::createWindowContainer(m_display_window, parent);
   widget->setFocusPolicy(Qt::StrongFocus);

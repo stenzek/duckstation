@@ -22,7 +22,9 @@ public:
   virtual bool initializeDeviceContext(bool debug_device);
   virtual void destroyDeviceContext();
 
-  virtual void Render();
+  virtual void SetDisplayLinearFiltering(bool enabled) = 0;
+  virtual void SetDisplayTopMargin(int height) = 0;
+  virtual void Render() = 0;
 
   // this comes back on the emu thread
   virtual void onWindowResized(int width, int height);
