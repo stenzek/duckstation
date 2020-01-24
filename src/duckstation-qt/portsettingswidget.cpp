@@ -18,6 +18,7 @@ PortSettingsWidget::~PortSettingsWidget() = default;
 void PortSettingsWidget::createUi()
 {
   QGridLayout* layout = new QGridLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
 
   m_tab_widget = new QTabWidget(this);
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
