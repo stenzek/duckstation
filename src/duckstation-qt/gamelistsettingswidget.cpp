@@ -188,7 +188,6 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
   m_ui.setupUi(this);
 
   m_search_directories_model = new GameListSearchDirectoriesModel(host_interface);
-  m_ui.redumpDatabasePath->setText(host_interface->getSettingValue("GameList/RedumpDatabasePath").toString());
   m_ui.searchDirectoryList->setModel(m_search_directories_model);
   m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
   m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -205,9 +204,8 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
           &GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed);
   connect(m_ui.refreshGameListButton, &QToolButton::pressed, this,
           &GameListSettingsWidget::onRefreshGameListButtonPressed);
-  connect(m_ui.browseRedumpPath, &QToolButton::pressed, this, &GameListSettingsWidget::onBrowseRedumpPathButtonPressed);
-  connect(m_ui.downloadRedumpDatabase, &QToolButton::pressed, this,
-          &GameListSettingsWidget::onDownloadRedumpDatabaseButtonPressed);
+  connect(m_ui.updateRedumpDatabase, &QToolButton::pressed, this,
+          &GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed);
 }
 
 GameListSettingsWidget::~GameListSettingsWidget() = default;
@@ -271,19 +269,7 @@ void GameListSettingsWidget::onRefreshGameListButtonPressed()
   m_host_interface->refreshGameList(true);
 }
 
-void GameListSettingsWidget::onBrowseRedumpPathButtonPressed()
-{
-  QString filename = QFileDialog::getOpenFileName(this, tr("Select Redump Database File"), QString(),
-                                                  tr("Redump Database Files (*.dat)"));
-  if (filename.isEmpty())
-    return;
-
-  m_ui.redumpDatabasePath->setText(filename);
-  m_host_interface->putSettingValue(QStringLiteral("GameList/RedumpDatabasePath"), filename);
-  m_host_interface->refreshGameList(true, true);
-}
-
-void GameListSettingsWidget::onDownloadRedumpDatabaseButtonPressed()
+void GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed()
 {
   QMessageBox::information(this, tr("TODO"), tr("TODO"));
 }

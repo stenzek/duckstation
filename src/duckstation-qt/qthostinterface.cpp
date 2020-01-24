@@ -158,7 +158,7 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
 {
   std::lock_guard<std::mutex> lock(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
-  m_game_list->SetPathsFromSettings(si);
+  m_game_list->SetSearchDirectoriesFromSettings(si);
   m_game_list->Refresh(invalidate_cache, invalidate_database);
   emit gameListRefreshed();
 }

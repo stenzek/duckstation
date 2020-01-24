@@ -114,7 +114,6 @@ private:
   void checkSettings();
   void updateQSettingsFromCoreSettings();
 
-  void createGameList();
   void updateControllerInputMap();
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);

@@ -676,7 +676,7 @@ const GameListDatabaseEntry* GameList::GetDatabaseEntryForCode(const std::string
   return (iter != m_database.end()) ? &iter->second : nullptr;
 }
 
-void GameList::SetPathsFromSettings(SettingsInterface& si)
+void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
 {
   m_search_directories.clear();
 
@@ -687,9 +687,6 @@ void GameList::SetPathsFromSettings(SettingsInterface& si)
   dirs = si.GetStringList("GameList", "RecursivePaths");
   for (std::string& dir : dirs)
     m_search_directories.push_back({std::move(dir), true});
-
-  m_database_filename = si.GetStringValue("GameList", "RedumpDatabasePath");
-  m_cache_filename = si.GetStringValue("GameList", "CachePath");
 }
 
 void GameList::Refresh(bool invalidate_cache, bool invalidate_database)

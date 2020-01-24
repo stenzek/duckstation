@@ -46,7 +46,7 @@
           <string>Add</string>
          </property>
          <property name="icon">
-          <iconset resource="icons.qrc">
+          <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
          </property>
          <property name="toolButtonStyle">
@@ -60,7 +60,7 @@
           <string>Remove</string>
          </property>
          <property name="icon">
-          <iconset resource="icons.qrc">
+          <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/list-remove.png</normaloff>:/icons/list-remove.png</iconset>
          </property>
          <property name="toolButtonStyle">
@@ -87,7 +87,7 @@
           <string>Refresh</string>
          </property>
          <property name="icon">
-          <iconset resource="icons.qrc">
+          <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
          </property>
          <property name="toolButtonStyle">
@@ -95,44 +95,13 @@
          </property>
         </widget>
        </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Redump Database Path</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLineEdit" name="redumpDatabasePath"/>
-       </item>
-       <item>
-        <widget class="QToolButton" name="browseRedumpPath">
+        <widget class="QPushButton" name="updateRedumpDatabase">
          <property name="text">
-          <string>Browse...</string>
+          <string>Update Redump Database</string>
          </property>
          <property name="icon">
-          <iconset resource="icons.qrc">
-           <normaloff>:/icons/system-search.png</normaloff>:/icons/system-search.png</iconset>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextBesideIcon</enum>
-         </property>
-         <property name="autoRaise">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="downloadRedumpDatabase">
-         <property name="text">
-          <string>Download...</string>
-         </property>
-         <property name="icon">
-          <iconset resource="icons.qrc">
+          <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/applications-internet.png</normaloff>:/icons/applications-internet.png</iconset>
          </property>
         </widget>
@@ -144,7 +113,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="icons.qrc"/>
+  <include location="resources/icons.qrc"/>
  </resources>
  <connections/>
 </ui>

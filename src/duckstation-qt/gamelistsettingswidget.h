@@ -24,8 +24,7 @@ private Q_SLOTS:
   void onAddSearchDirectoryButtonPressed();
   void onRemoveSearchDirectoryButtonPressed();
   void onRefreshGameListButtonPressed();
-  void onBrowseRedumpPathButtonPressed();
-  void onDownloadRedumpDatabaseButtonPressed();
+  void onUpdateRedumpDatabaseButtonPressed();
 
 protected:
   void resizeEvent(QResizeEvent* event);

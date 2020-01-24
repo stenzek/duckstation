@@ -93,6 +93,12 @@ protected:
   /// Returns the path of the settings file.
   std::string GetSettingsFileName() const;
 
+  /// Returns the path of the game list cache file.
+  std::string GetGameListCacheFileName() const;
+
+  /// Returns the path of the game database cache file.
+  std::string GetGameListDatabaseFileName() const;
+
   void RunFrame();
 
   /// Throttles the system, i.e. sleeps until it's time to execute the next frame.

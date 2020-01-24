@@ -63,7 +63,10 @@ public:
   const GameListEntry* GetEntryForPath(const char* path) const;
   const GameListDatabaseEntry* GetDatabaseEntryForCode(const std::string& code) const;
 
-  void SetPathsFromSettings(SettingsInterface& si);
+  void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
+  void SetDatabaseFilename(std::string filename) { m_database_filename = std::move(filename); }
+
+  void SetSearchDirectoriesFromSettings(SettingsInterface& si);
   void AddDirectory(std::string path, bool recursive);
   void Refresh(bool invalidate_cache, bool invalidate_database);
 

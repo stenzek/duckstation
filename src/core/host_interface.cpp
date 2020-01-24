@@ -54,6 +54,8 @@ HostInterface::HostInterface()
 {
   SetUserDirectory();
   m_game_list = std::make_unique<GameList>();
+  m_game_list->SetCacheFilename(GetGameListCacheFileName());
+  m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
   m_settings.SetDefaults();
   m_last_throttle_time = Common::Timer::GetValue();
 }
@@ -483,6 +485,16 @@ std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
 std::string HostInterface::GetSettingsFileName() const
 {
   return GetUserDirectoryRelativePath("settings.ini");
+}
+
+std::string HostInterface::GetGameListCacheFileName() const
+{
+  return GetUserDirectoryRelativePath("cache/gamelist.cache");
+}
+
+std::string HostInterface::GetGameListDatabaseFileName() const
+{
+  return GetUserDirectoryRelativePath("cache/redump.dat");
 }
 
 void HostInterface::RunFrame()
