@@ -120,8 +120,6 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_sector_buffer);
 
   u32 media_lba = m_media ? m_media->GetPositionOnDisc() : 0;
-  std::string media_filename = m_media ? m_media->GetFileName() : std::string();
-  sw.Do(&media_filename);
   sw.Do(&media_lba);
 
   if (sw.IsReading())
@@ -132,19 +130,22 @@ bool CDROM::DoState(StateWrapper& sw)
       m_system->SetDowncount(m_drive_remaining_ticks);
 
     // load up media if we had something in there before
-    m_media.reset();
-    if (!media_filename.empty())
+    if (m_media && !m_media->Seek(media_lba))
     {
-      m_media = CDImage::Open(media_filename.c_str());
-      if (!m_media || !m_media->Seek(media_lba))
-      {
-        Log_ErrorPrintf("Failed to re-insert CD media from save state: '%s'. Ejecting.", media_filename.c_str());
-        RemoveMedia();
-      }
+      Log_ErrorPrint("Failed to seek CD media from save state. Ejecting.");
+      RemoveMedia();
     }
   }
 
   return !sw.HasError();
+}
+
+std::string CDROM::GetMediaFileName() const
+{
+  if (!m_media)
+    return std::string();
+
+  return m_media->GetFileName();
 }
 
 void CDROM::InsertMedia(std::unique_ptr<CDImage> media)

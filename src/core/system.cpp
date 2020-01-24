@@ -238,6 +238,26 @@ bool System::DoState(StateWrapper& sw)
   sw.Do(&m_internal_frame_number);
   sw.Do(&m_global_tick_counter);
 
+  std::string media_filename = m_cdrom->GetMediaFileName();
+  sw.Do(&media_filename);
+
+  if (sw.IsReading())
+  {
+    std::unique_ptr<CDImage> media;
+    if (!media_filename.empty())
+    {
+      media = CDImage::Open(media_filename.c_str());
+      if (!media)
+        Log_ErrorPrintf("Failed to open CD image from save state: '%s'", media_filename.c_str());
+    }
+
+    m_host_interface->UpdateRunningGame(media_filename.c_str(), media.get());
+    if (media)
+      m_cdrom->InsertMedia(std::move(media));
+    else
+      m_cdrom->RemoveMedia();
+  }
+
   if (!sw.DoMarker("CPU") || !m_cpu->DoState(sw))
     return false;
 

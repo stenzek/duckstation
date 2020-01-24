@@ -497,7 +497,7 @@ void HostInterface::ResetPerformanceCounters()
 
 void HostInterface::UpdateRunningGame(const char* path, CDImage* image)
 {
-  if (!path)
+  if (!path || std::strlen(path) == 0)
   {
     OnRunningGameChanged("", "", "");
     return;
