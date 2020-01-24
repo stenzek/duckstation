@@ -6,6 +6,8 @@
 #include "qthostinterface.h"
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
+#include <QtCore/QUrl>
+#include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <cmath>
@@ -171,9 +173,25 @@ void MainWindow::onStartBiosActionTriggered()
   m_host_interface->bootSystem(QString(), QString());
 }
 
-void MainWindow::onGitHubRepositoryActionTriggered() {}
+static void OpenURL(QWidget* parent, const char* url)
+{
+  const QUrl qurl(QUrl::fromEncoded(QByteArray(url, std::strlen(url))));
+  if (!QDesktopServices::openUrl(qurl))
+  {
+    QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
+                          QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
+  }
+}
 
-void MainWindow::onIssueTrackerActionTriggered() {}
+void MainWindow::onGitHubRepositoryActionTriggered()
+{
+  OpenURL(this, "https://github.com/stenzek/duckstation/");
+}
+
+void MainWindow::onIssueTrackerActionTriggered()
+{
+  OpenURL(this, "https://github.com/stenzek/duckstation/issues");
+}
 
 void MainWindow::onAboutActionTriggered() {}
 
