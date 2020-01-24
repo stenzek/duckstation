@@ -563,7 +563,7 @@ void HostInterface::SetDefaultSettings()
   m_settings.audio_backend = AudioBackend::Default;
   m_settings.audio_sync_enabled = true;
 
-  m_settings.bios_path = "scph1001.bin";
+  m_settings.bios_path = GetUserDirectoryRelativePath("bios/scph1001.bin");
   m_settings.bios_patch_tty_enable = false;
   m_settings.bios_patch_fast_boot = false;
 
