@@ -86,7 +86,7 @@ private:
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   GPU* m_gpu = nullptr;
-  std::unique_ptr<TimingEvent> m_sysclk_event = nullptr;
+  std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};
   u32 m_sysclk_div_8_carry = 0;   // partial ticks for timer 3 with sysclk/8

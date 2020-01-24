@@ -290,7 +290,7 @@ private:
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
-  std::unique_ptr<TimingEvent> m_sample_event = nullptr;
+  std::unique_ptr<TimingEvent> m_sample_event;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};

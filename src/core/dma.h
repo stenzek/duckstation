@@ -94,7 +94,7 @@ private:
   struct ChannelState
   {
     std::unique_ptr<TimingEvent> transfer_event;
-    u32 base_address;
+    u32 base_address = 0;
 
     union BlockControl
     {
@@ -113,7 +113,7 @@ private:
         u32 GetBlockSize() const { return (block_size == 0) ? 0x10000 : block_size; }
         u32 GetBlockCount() const { return (block_count == 0) ? 0x10000 : block_count; }
       } request;
-    } block_control;
+    } block_control = {};
 
     union ChannelControl
     {
@@ -128,12 +128,12 @@ private:
       BitField<u32, bool, 28, 1> start_trigger;
 
       static constexpr u32 WRITE_MASK = 0b01110001'01110111'00000111'00000011;
-    } channel_control;
+    } channel_control = {};
 
     bool request = false;
   };
 
-  std::array<ChannelState, NUM_CHANNELS> m_state = {};
+  std::array<ChannelState, NUM_CHANNELS> m_state;
 
   union DPCR
   {
@@ -161,7 +161,7 @@ private:
     {
       return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) * 4 + 3)) & u32(1));
     }
-  } m_DPCR;
+  } m_DPCR = {};
 
   static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'00111111;
   static constexpr u32 DICR_RESET_MASK = 0b01111111'00000000'00000000'00000000;
