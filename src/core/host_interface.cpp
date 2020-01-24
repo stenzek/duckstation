@@ -453,6 +453,13 @@ void HostInterface::SetUserDirectory()
 #endif
 
   Log_InfoPrintf("User directory: %s", m_user_directory.c_str());
+
+  // Change to the user directory so that all default/relative paths in the config are after this.
+  if (!m_user_directory.empty())
+  {
+    if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
+      Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
+  }
 }
 
 std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
