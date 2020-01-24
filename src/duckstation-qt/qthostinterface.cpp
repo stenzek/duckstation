@@ -383,21 +383,23 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
   }
 }
 
-void QtHostInterface::powerOffSystem()
+void QtHostInterface::powerOffSystem(bool save_resume_state /* = false */, bool block_until_done /* = false */)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "powerOffSystem", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "powerOffSystem",
+                              block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+                              Q_ARG(bool, save_resume_state), Q_ARG(bool, block_until_done));
     return;
   }
 
   if (!m_system)
-  {
-    Log_ErrorPrintf("powerOffSystem() called without system");
     return;
-  }
 
-  m_system.reset();
+  if (save_resume_state)
+    Log_InfoPrintf("TODO: Save resume state");
+
+  DestroySystem();
   m_audio_stream->PauseOutput(true);
   m_display_window->destroyDeviceContext();
 

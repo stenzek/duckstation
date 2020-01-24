@@ -74,7 +74,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
   void applySettings();
-  void powerOffSystem();
+  void powerOffSystem(bool save_resume_state = false, bool block_until_done = false);
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
