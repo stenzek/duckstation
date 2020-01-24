@@ -38,10 +38,6 @@ public:
   void putSettingValue(const QString& name, const QVariant& value);
   void removeSettingValue(const QString& name);
 
-  const Settings& GetCoreSettings() const { return m_settings; }
-  Settings& GetCoreSettings() { return m_settings; }
-  // void UpdateCoreSettingsGPU();
-
   const GameList* getGameList() const { return m_game_list.get(); }
   GameList* getGameList() { return m_game_list.get(); }
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
