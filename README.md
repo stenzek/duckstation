@@ -1,5 +1,5 @@
 # DuckStation - PlayStation (PSX) Emulator
-![Main Window Screenshot](https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png)
+![Main Window Screenshot](https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png)
 
 ## Features
  - CPU Recompiler/JIT (x86-64 and AArch64)
@@ -11,6 +11,9 @@
  - Currently only .bin/.cue disc image formats are supported. Additional formats are planned
  - Direct booting of homebrew executables
  - Digital and analog controllers for input (rumble is forwarded to host)
+ - Qt and SDL frontends for desktop
+ - Qt frontend has graphical configuration, and controller binding
+ - Automatic content scanning - game titles/regions are provided by redump.org
 
 ## System Requirements
  - A CPU faster than a potato.
@@ -81,6 +84,8 @@ To access the menus with the controller, press the right stick down and use the 
 
 ## Screenshots
 ![Final Fantasy 7](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg)
+
+![SDL Frontend](https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png)
 ![Final Fantasy 8](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg)
 ![Spyro 2](https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg)
 
