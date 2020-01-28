@@ -1,5 +1,7 @@
 # DuckStation - PlayStation (PSX) Emulator
-![Main Window Screenshot](https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" />
+</p>
 
 ## Features
  - CPU Recompiler/JIT (x86-64 and AArch64)
@@ -83,11 +85,12 @@ To access the menus with the controller, press the right stick down and use the 
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
 
 ## Screenshots
-![Final Fantasy 7](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg)
-
-![SDL Frontend](https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png)
-![Final Fantasy 8](https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg)
-![Spyro 2](https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg" alt="Final Fantasy 7" width="400" />
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg" alt="Final Fantasy 8" width="400" />
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg" alt="Spyro 2" width="400" />
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png" alt="SDL Frontend" width="400" />
+</p>
 
 ## Disclaimers
 
