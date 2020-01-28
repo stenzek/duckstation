@@ -9,6 +9,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
 {
   m_ui.setupUi(this);
 
+  for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
+    m_ui.cpuExecutionMode->addItem(tr(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
+
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console/Region",
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName);
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.biosPath, "BIOS/Path");
@@ -16,9 +19,17 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.fastBoot, "BIOS/PatchFastBoot");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter,
                                                "General/SpeedLimiterEnabled");
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.emulationSpeed, "General/EmulationSpeed");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "General/StartPaused");
 
   connect(m_ui.biosPathBrowse, &QPushButton::pressed, this, &ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked);
+
+  connect(m_ui.enableSpeedLimiter, &QCheckBox::stateChanged, this,
+          &ConsoleSettingsWidget::onEnableSpeedLimiterStateChanged);
+  connect(m_ui.emulationSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onEmulationSpeedValueChanged);
+
+  onEnableSpeedLimiterStateChanged();
+  onEmulationSpeedValueChanged(m_ui.emulationSpeed->value());
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
@@ -33,4 +44,14 @@ void ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked()
 
   m_host_interface->putSettingValue("BIOS/Path", path);
   m_host_interface->applySettings();
+}
+
+void ConsoleSettingsWidget::onEnableSpeedLimiterStateChanged()
+{
+  m_ui.emulationSpeed->setDisabled(!m_ui.enableSpeedLimiter->isChecked());
+}
+
+void ConsoleSettingsWidget::onEmulationSpeedValueChanged(int value)
+{
+  m_ui.emulationSpeedLabel->setText(tr("%1%").arg(value));
 }

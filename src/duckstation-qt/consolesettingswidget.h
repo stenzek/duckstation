@@ -16,6 +16,8 @@ public:
 
 private Q_SLOTS:
   void onBrowseBIOSPathButtonClicked();
+  void onEnableSpeedLimiterStateChanged();
+  void onEmulationSpeedValueChanged(int value);
 
 private:
   Ui::ConsoleSettingsWidget m_ui;
