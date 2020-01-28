@@ -8,6 +8,7 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QSlider>
 
 namespace SettingWidgetBinder {
 
@@ -87,6 +88,25 @@ struct SettingAccessor<QCheckBox>
   static void connectValueChanged(QCheckBox* widget, F func)
   {
     widget->connect(widget, &QCheckBox::stateChanged, func);
+  }
+};
+
+template<>
+struct SettingAccessor<QSlider>
+{
+  static bool getBoolValue(const QSlider* widget) { return widget->value() > 0; }
+  static void setBoolValue(QSlider* widget, bool value) { widget->setValue(value ? 1 : 0); }
+
+  static int getIntValue(const QSlider* widget) { return widget->value(); }
+  static void setIntValue(QSlider* widget, int value) { widget->setValue(value); }
+
+  static QString getStringValue(const QSlider* widget) { return QStringLiteral("%1").arg(widget->value()); }
+  static void setStringValue(QSlider* widget, const QString& value) { widget->setValue(value.toInt()); }
+
+  template<typename F>
+  static void connectValueChanged(QSlider* widget, F func)
+  {
+    widget->connect(widget, &QSlider::valueChanged, func);
   }
 };
 
