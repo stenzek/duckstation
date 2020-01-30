@@ -11,6 +11,7 @@ add_library(common
   cd_image.h
   cd_image_bin.cpp
   cd_image_cue.cpp
+  cd_image_chd.cpp
   cd_subchannel_replacement.cpp
   cd_subchannel_replacement.h
   cd_xa.cpp
@@ -55,7 +56,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad libcue Threads::Threads cubeb)
+target_link_libraries(common PRIVATE glad libcue Threads::Threads cubeb libchdr)
 
 if(WIN32)
   target_sources(common PRIVATE
