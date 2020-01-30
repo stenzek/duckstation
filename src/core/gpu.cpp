@@ -446,6 +446,7 @@ void GPU::Execute(TickCount ticks)
     if (prev_scanline < m_crtc_state.vertical_display_start &&
         m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end)
     {
+      m_timers->SetGate(HBLANK_TIMER_INDEX, false);
       m_crtc_state.in_vblank = false;
     }
 
@@ -453,13 +454,9 @@ void GPU::Execute(TickCount ticks)
                             m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end;
     if (m_crtc_state.in_vblank != new_vblank)
     {
-      m_crtc_state.in_vblank = new_vblank;
-
       if (new_vblank)
       {
-        static u32 x = 0;
-        Log_DebugPrintf("Now in v-blank %u ticks %u hblanks", m_system->GetGlobalTickCounter() - x);
-        x = m_system->GetGlobalTickCounter();
+        Log_DebugPrintf("Now in v-blank");
         m_interrupt_controller->InterruptRequest(InterruptController::IRQ::VBLANK);
 
         // flush any pending draws and "scan out" the image
@@ -469,6 +466,7 @@ void GPU::Execute(TickCount ticks)
       }
 
       m_timers->SetGate(HBLANK_TIMER_INDEX, new_vblank);
+      m_crtc_state.in_vblank = new_vblank;
     }
 
     // past the end of vblank?
