@@ -33,6 +33,8 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename)
     return OpenCueSheetImage(filename);
   else if (CASE_COMPARE(extension, ".bin") == 0 || CASE_COMPARE(extension, ".img") == 0)
     return OpenBinImage(filename);
+  else if (CASE_COMPARE(extension, ".chd") == 0)
+    return OpenCHDImage(filename);
 
 #undef CASE_COMPARE
 
@@ -69,10 +71,6 @@ bool CDImage::Seek(LBA lba)
 
   const LBA new_index_offset = lba - new_index->start_lba_on_disc;
   if (new_index_offset >= new_index->length)
-    return false;
-
-  const u64 new_file_offset = new_index->file_offset + (u64(new_index_offset) * new_index->file_sector_size);
-  if (new_index->file && std::fseek(new_index->file, static_cast<long>(new_file_offset), SEEK_SET) != 0)
     return false;
 
   m_current_index = new_index;
@@ -115,28 +113,10 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   u32 sectors_read = 0;
   for (; sectors_read < sector_count; sectors_read++)
   {
-    if (m_position_in_index == m_current_index->length)
-    {
-      if (!Seek(m_position_on_disc))
-        break;
-    }
-
     // get raw sector
     u8 raw_sector[RAW_SECTOR_SIZE];
-    if (m_current_index->file)
-    {
-      if (std::fread(raw_sector, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
-      {
-        Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
-        Seek(m_position_on_disc);
-        return false;
-      }
-    }
-    else
-    {
-      // This in an implicit pregap. Return silence.
-      std::fill(raw_sector, raw_sector + RAW_SECTOR_SIZE, u8(0));
-    }
+    if (!ReadRawSector(raw_sector))
+      break;
 
     switch (read_mode)
     {
@@ -176,9 +156,10 @@ bool CDImage::ReadRawSector(void* buffer)
       return false;
   }
 
-  if (m_current_index->file)
+  if (m_current_index->file_sector_size > 0)
   {
-    if (std::fread(buffer, RAW_SECTOR_SIZE, 1, m_current_index->file) != 1)
+    // TODO: This is where we'd reconstruct the header for other mode tracks.
+    if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
     {
       Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
       Seek(m_position_on_disc);

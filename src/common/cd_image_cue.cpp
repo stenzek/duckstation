@@ -18,9 +18,20 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
 
+protected:
+  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+
 private:
   Cd* m_cd = nullptr;
-  std::map<std::string, std::FILE*> m_files;
+
+  struct TrackFile
+  {
+    std::string filename;
+    std::FILE* file;
+    u64 file_position;
+  };
+
+  std::vector<TrackFile> m_files;
   CDSubChannelReplacement m_sbi;
 };
 
@@ -28,7 +39,7 @@ CDImageCueSheet::CDImageCueSheet() = default;
 
 CDImageCueSheet::~CDImageCueSheet()
 {
-  std::for_each(m_files.begin(), m_files.end(), [](const auto& it) { std::fclose(it.second); });
+  std::for_each(m_files.begin(), m_files.end(), [](TrackFile& t) { std::fclose(t.file); });
   cd_delete(m_cd);
 }
 
@@ -67,8 +78,14 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     long track_start = track_get_start(track);
     long track_length = track_get_length(track);
 
-    auto it = m_files.find(track_filename);
-    if (it == m_files.end())
+    u32 track_file_index = 0;
+    for (; track_file_index < m_files.size(); track_file_index++)
+    {
+      const TrackFile& t = m_files[track_file_index];
+      if (t.filename == track_filename)
+        break;
+    }
+    if (track_file_index == m_files.size())
     {
       std::string track_full_filename = basepath + track_filename;
       std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb");
@@ -79,7 +96,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
         return false;
       }
 
-      it = m_files.emplace(track_filename, track_fp).first;
+      m_files.push_back(TrackFile{std::move(track_filename), track_fp, 0});
     }
 
     // data type determines the sector size
@@ -96,9 +113,9 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     // determine the length from the file
     if (track_length < 0)
     {
-      std::fseek(it->second, 0, SEEK_END);
-      long file_size = std::ftell(it->second);
-      std::fseek(it->second, 0, SEEK_SET);
+      std::fseek(m_files[track_file_index].file, 0, SEEK_END);
+      long file_size = std::ftell(m_files[track_file_index].file);
+      std::fseek(m_files[track_file_index].file, 0, SEEK_SET);
 
       file_size /= track_sector_size;
       Assert(track_start < file_size);
@@ -125,7 +142,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       pregap_index.is_pregap = true;
       if (pregap_in_file)
       {
-        pregap_index.file = it->second;
+        pregap_index.file_index = track_file_index;
         pregap_index.file_offset = static_cast<u64>(static_cast<s64>(track_start - pregap_frames)) * track_sector_size;
         pregap_index.file_sector_size = track_sector_size;
       }
@@ -146,7 +163,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     last_index.start_lba_in_track = 0;
     last_index.track_number = track_num;
     last_index.index_number = 1;
-    last_index.file = it->second;
+    last_index.file_index = track_file_index;
     last_index.file_sector_size = track_sector_size;
     last_index.file_offset = static_cast<u64>(static_cast<s64>(track_start)) * track_sector_size;
     last_index.mode = mode;
@@ -202,6 +219,30 @@ bool CDImageCueSheet::ReadSubChannelQ(SubChannelQ* subq)
     return true;
 
   return CDImage::ReadSubChannelQ(subq);
+}
+
+bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+{
+  DebugAssert(index.file_index < m_files.size());
+
+  TrackFile& tf = m_files[index.file_index];
+  const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
+  if (tf.file_position != file_position)
+  {
+    if (std::fseek(tf.file, static_cast<long>(file_position), SEEK_SET) != 0)
+      return false;
+
+    tf.file_position = file_position;
+  }
+
+  if (std::fread(buffer, index.file_sector_size, 1, tf.file) != 1)
+  {
+    std::fseek(tf.file, static_cast<long>(tf.file_position), SEEK_SET);
+    return false;
+  }
+
+  tf.file_position += index.file_sector_size;
+  return true;
 }
 
 std::unique_ptr<CDImage> CDImage::OpenCueSheetImage(const char* filename)

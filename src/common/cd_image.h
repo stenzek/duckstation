@@ -1,13 +1,10 @@
 #pragma once
 #include "bitfield.h"
 #include "types.h"
-#include <cstdio>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
-
-class ByteStream;
 
 class CDImage
 {
@@ -211,7 +208,7 @@ protected:
   struct Index
   {
     u64 file_offset;
-    std::FILE* file;
+    u32 file_index;
     u32 file_sector_size;
     LBA start_lba_on_disc;
     u32 track_number;
@@ -222,6 +219,9 @@ protected:
     SubChannelQ::Control control;
     bool is_pregap;
   };
+
+  // Reads a single sector from an index.
+  virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
 
   const Index* GetIndexForDiscPosition(LBA pos);
   const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos);

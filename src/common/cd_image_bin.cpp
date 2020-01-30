@@ -14,8 +14,12 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
 
+protected:
+  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+
 private:
   std::FILE* m_fp = nullptr;
+  u64 m_file_position = 0;
 
   CDSubChannelReplacement m_sbi;
 };
@@ -78,7 +82,7 @@ bool CDImageBin::Open(const char* filename)
 
   // Data index.
   Index data_index = {};
-  data_index.file = m_fp;
+  data_index.file_index = 0;
   data_index.file_offset = 0;
   data_index.file_sector_size = track_sector_size;
   data_index.start_lba_on_disc = pregap_index.length;
@@ -105,6 +109,27 @@ bool CDImageBin::ReadSubChannelQ(SubChannelQ* subq)
     return true;
 
   return CDImage::ReadSubChannelQ(subq);
+}
+
+bool CDImageBin::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+{
+  const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
+  if (m_file_position != file_position)
+  {
+    if (std::fseek(m_fp, static_cast<long>(file_position), SEEK_SET) != 0)
+      return false;
+
+    m_file_position = file_position;
+  }
+
+  if (std::fread(buffer, index.file_sector_size, 1, m_fp) != 1)
+  {
+    std::fseek(m_fp, static_cast<long>(m_file_position), SEEK_SET);
+    return false;
+  }
+
+  m_file_position += index.file_sector_size;
+  return true;
 }
 
 std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename)
