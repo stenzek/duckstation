@@ -259,7 +259,6 @@ void Timers::UpdateCountingEnabled(CounterState& cs)
     switch (cs.mode.sync_mode)
     {
       case SyncMode::PauseOnGate:
-      case SyncMode::FreeRunOnGate:
         cs.counting_enabled = !cs.gate;
         break;
 
@@ -268,6 +267,7 @@ void Timers::UpdateCountingEnabled(CounterState& cs)
         break;
 
       case SyncMode::ResetAndRunOnGate:
+      case SyncMode::FreeRunOnGate:
         cs.counting_enabled = cs.gate;
         break;
     }
