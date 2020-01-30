@@ -10,7 +10,7 @@
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows and Linux support - macOS may work, but not actively maintained
- - Currently only .bin/.cue disc image formats are supported. Additional formats are planned
+ - Supports bin/cue images, raw bin/img files, and MAME CMD formats.
  - Direct booting of homebrew executables
  - Digital and analog controllers for input (rumble is forwarded to host)
  - Qt and SDL frontends for desktop
@@ -88,8 +88,8 @@ To access the menus with the controller, press the right stick down and use the 
 <p align="center">
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg" alt="Final Fantasy 7" width="400" />
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg" alt="Final Fantasy 8" width="400" />
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg" alt="Spyro 2" width="400" />
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png" alt="SDL Frontend" width="400" />
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg" alt="Spyro 2" width="400" />
 </p>
 
 ## Disclaimers
