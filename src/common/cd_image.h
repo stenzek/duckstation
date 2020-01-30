@@ -159,6 +159,7 @@ public:
   static std::unique_ptr<CDImage> Open(const char* filename);
   static std::unique_ptr<CDImage> OpenBinImage(const char* filename);
   static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename);
 
   // Accessors.
   const std::string& GetFileName() const { return m_filename; }

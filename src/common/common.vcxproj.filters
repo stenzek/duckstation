@@ -97,6 +97,7 @@
     <ClCompile Include="d3d11\shader_cache.cpp">
       <Filter>d3d11</Filter>
     </ClCompile>
+    <ClCompile Include="cd_image_chd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
