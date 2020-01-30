@@ -7,6 +7,7 @@ add_subdirectory(stb)
 add_subdirectory(tinyxml2)
 add_subdirectory(zlib)
 add_subdirectory(minizip)
+add_subdirectory(lzma)
 
 if(NOT ANDROID)
   add_subdirectory(nativefiledialog)
