@@ -22,6 +22,23 @@
  - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 and above. So, basically anything made in the last 10 years or so.
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
+## Downloading and running
+Prebuilt binaries of DuckStation for 64-bit Windows are available via GitHub Actions CI. To download:
+ - Press the tick or cross next to the commit, shown under the "Clone or download" button
+ - Find "Windows Build" and click "details".
+ - Find the "Artifacts (1)" button in the top-right corner of the page, under "Fork".
+ - Download the `duckstation-windows-x64-release` artifact. This is a zip file containing the prebuilt binary.
+
+Once downloaded and extracted, you can launch the Qt frontend from `duckstation-qt-x64-ReleaseLTCG.exe`, or the SDL frontend from `duckstation-x64-ReleaseLTCG.exe`.
+To set up:
+1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory.
+2. If using the SDL frontend, add the directories containing your disc images by clicking Settings->Add Game Directory.
+2. Select a game from the list, or open a disc image file and enjoy.
+
+PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
+This database can be manually downloaded and manually added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in
+the Qt Frontend, and clicking `Update Redump Database`.
+
 ## Building
 
 ### Windows
@@ -55,10 +72,6 @@ Requirements:
 2. Open the project in the `android` directory.
 3. Select Build -> Build Bundle(s) / APKs(s) -> Build APK(s).
 4. Install APK on device, or use Run menu for attached device.
-
-## Running
-1. Configure the BIOS path in the settings.
-2. Open a disc image file, enjoy.
 
 ## Default keyboard bindings
 Keyboard bindings are currently not customizable. For reference:
