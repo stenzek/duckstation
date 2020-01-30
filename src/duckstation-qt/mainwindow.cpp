@@ -14,7 +14,7 @@
 
 static constexpr char DISC_IMAGE_FILTER[] =
   "All File Types (*.bin *.img *.cue *.exe *.psexe);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
-  "(*.cue);;PlayStation Executables (*.exe *.psexe)";
+  "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe)";
 
 MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), m_host_interface(host_interface)
 {
