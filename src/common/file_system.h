@@ -134,6 +134,9 @@ void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName
 void SanitizeFileName(String& Destination, const char* FileName, bool StripSlashes = true);
 void SanitizeFileName(String& Destination, bool StripSlashes = true);
 
+/// Replaces the extension of a filename with another.
+std::string ReplaceExtension(std::string_view path, std::string_view new_extension);
+
 /// Returns the directory component of a filename.
 std::string GetPathDirectory(const char* path);
 

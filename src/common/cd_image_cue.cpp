@@ -3,8 +3,8 @@
 #include "cd_subchannel_replacement.h"
 #include "file_system.h"
 #include "log.h"
-#include <libcue/libcue.h>
 #include <algorithm>
+#include <libcue/libcue.h>
 #include <map>
 Log_SetChannel(CDImageCueSheet);
 
@@ -30,17 +30,6 @@ CDImageCueSheet::~CDImageCueSheet()
 {
   std::for_each(m_files.begin(), m_files.end(), [](const auto& it) { std::fclose(it.second); });
   cd_delete(m_cd);
-}
-
-static std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
-{
-  std::string_view::size_type pos = path.rfind('.');
-  if (pos == std::string::npos)
-    return std::string(path);
-
-  std::string ret(path, 0, pos + 1);
-  ret.append(new_extension);
-  return ret;
 }
 
 bool CDImageCueSheet::OpenAndParse(const char* filename)
@@ -202,7 +191,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
 
   m_lba_count = disc_lba;
 
-  m_sbi.LoadSBI(ReplaceExtension(filename, "sbi").c_str());
+  m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
 
   return Seek(1, Position{0, 0, 0});
 }

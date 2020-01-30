@@ -222,6 +222,17 @@ void SanitizeFileName(String& Destination, bool StripSlashes /* = true */)
   return SanitizeFileName(Destination, Destination, StripSlashes);
 }
 
+std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
+{
+  std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string::npos)
+    return std::string(path);
+
+  std::string ret(path, 0, pos + 1);
+  ret.append(new_extension);
+  return ret;
+}
+
 std::string GetPathDirectory(const char* path)
 {
 #ifdef WIN32
