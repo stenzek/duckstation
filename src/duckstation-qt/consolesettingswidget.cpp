@@ -21,6 +21,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                                                "General/SpeedLimiterEnabled");
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.emulationSpeed, "General/EmulationSpeed");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "General/StartPaused");
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU/ExecutionMode",
+                                               &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName);
 
   connect(m_ui.biosPathBrowse, &QPushButton::pressed, this, &ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked);
 
