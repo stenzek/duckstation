@@ -321,10 +321,12 @@ void Writev(const char* channelName, const char* functionName, LOGLEVEL level, c
   va_copy(apCopy, ap);
 
 #ifdef WIN32
-  u32 requiredSize = static_cast<u32>(_vscprintf(format, ap));
+  u32 requiredSize = static_cast<u32>(_vscprintf(format, apCopy));
 #else
-  u32 requiredSize = std::vsnprintf(nullptr, 0, format, ap);
+  u32 requiredSize = std::vsnprintf(nullptr, 0, format, apCopy);
 #endif
+  va_end(apCopy);
+
   if (requiredSize < 256)
   {
     char buffer[256];
