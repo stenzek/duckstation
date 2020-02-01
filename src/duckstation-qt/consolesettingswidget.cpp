@@ -9,6 +9,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
 {
   m_ui.setupUi(this);
 
+  for (u32 i = 0; i < static_cast<u32>(ConsoleRegion::Count); i++)
+    m_ui.region->addItem(tr(Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
+
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
     m_ui.cpuExecutionMode->addItem(tr(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
 
