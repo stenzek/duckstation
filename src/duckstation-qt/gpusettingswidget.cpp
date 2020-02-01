@@ -19,6 +19,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU/TrueColor");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, "GPU/TextureFiltering");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceProgressiveScan, "GPU/ForceProgressiveScan");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice, "GPU/UseDebugDevice");
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;
