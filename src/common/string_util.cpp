@@ -14,11 +14,15 @@ std::string StdStringFromFormat(const char* format, ...)
 
 std::string StdStringFromFormatV(const char* format, std::va_list ap)
 {
+  std::va_list ap_copy;
+  va_copy(ap_copy, ap);
+
 #ifdef WIN32
-  int len = _vscprintf(format, ap);
+  int len = _vscprintf(format, ap_copy);
 #else
-  int len = std::vsnprintf(nullptr, 0, format, ap);
+  int len = std::vsnprintf(nullptr, 0, format, ap_copy);
 #endif
+  va_end(ap_copy);
 
   std::string ret;
   ret.resize(len);

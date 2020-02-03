@@ -328,7 +328,10 @@ void String::AppendFormattedStringVA(const char* FormatString, va_list ArgPtr)
 
   for (;;)
   {
-    int ret = std::vsnprintf(pBuffer, currentBufferSize, FormatString, ArgPtr);
+    va_list ArgPtrCopy;
+    va_copy(ArgPtrCopy, ArgPtr);
+    int ret = std::vsnprintf(pBuffer, currentBufferSize, FormatString, ArgPtrCopy);
+    va_end(ArgPtrCopy);
     if (ret < 0 || ((u32)ret >= (currentBufferSize - 1)))
     {
       currentBufferSize *= 2;
