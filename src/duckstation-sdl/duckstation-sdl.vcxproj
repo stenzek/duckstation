@@ -72,7 +72,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>duckstation</RootNamespace>
+    <RootNamespace>duckstation-sdl</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

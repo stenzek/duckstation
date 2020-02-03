@@ -1,4 +1,4 @@
-add_executable(duckstation
+add_executable(duckstation-sdl
   icon.cpp
   icon.h
   imgui_impl_sdl.cpp
@@ -17,11 +17,11 @@ add_executable(duckstation
 )
 
 if(WIN32)
-  target_sources(duckstation PRIVATE
+  target_sources(duckstation-sdl PRIVATE
     d3d11_host_display.cpp
     d3d11_host_display.h
   )
-  target_link_libraries(duckstation PRIVATE d3d11.lib dxgi.lib winmm.lib)
+  target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib winmm.lib)
 endif()
 
-target_link_libraries(duckstation PRIVATE core common imgui nativefiledialog glad simpleini SDL2::Main)
+target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad simpleini SDL2::Main)
