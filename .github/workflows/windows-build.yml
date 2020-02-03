@@ -22,11 +22,6 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
         
-    - name: Copy dependencies to binary directory
-      shell: cmd
-      run: |
-        copy /Y dep\msvc\bin64\*.* bin\x64
-      
     - name: Remove extra bloat before archiving
       shell: cmd
       run: |
