@@ -1,4 +1,4 @@
-# DuckStation - PlayStation (PSX) Emulator
+# DuckStation - PlayStation 1, aka. PSX Emulator
 <p align="center">
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" />
 </p>
@@ -32,12 +32,12 @@ Prebuilt binaries of DuckStation for 64-bit Windows are available via GitHub Act
 Once downloaded and extracted, you can launch the Qt frontend from `duckstation-qt-x64-ReleaseLTCG.exe`, or the SDL frontend from `duckstation-x64-ReleaseLTCG.exe`.
 To set up:
 1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory.
-2. If using the SDL frontend, add the directories containing your disc images by clicking Settings->Add Game Directory.
+2. If using the SDL frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
 2. Select a game from the list, or open a disc image file and enjoy.
 
 PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
-This database can be manually downloaded and manually added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in
-the Qt Frontend, and clicking `Update Redump Database`.
+This database can be manually downloaded and added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in the Qt Frontend,
+and clicking `Update Redump Database`.
 
 ## Building
 
@@ -47,8 +47,8 @@ Requirements:
  
 1. Clone the respository with submodules (`git clone --recursive` or `git clone` and `git submodule update --init`).
 2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
-3. Build, binaries are located in `bin/x64`.
-4. Copy the DLL files from `dep/msvc/bin64` to the binary directory.
+3. Build solution.
+4. Binaries are located in `bin/x64`.
 5. Run `duckstation-x64-Release.exe` or whichever config you used.
 
 ### Linux
