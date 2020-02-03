@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <BinaryOutputDir>$(SolutionDir)bin\$(Platform)\</BinaryOutputDir>
+    <SDL2Dir>$(SolutionDir)dep\msvc\sdl2\</SDL2Dir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SDL2Dir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x86'">$(SDL2Dir)lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SDL2Dir)lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!--Copy the needed dlls-->
+  <ItemGroup>
+    <SDL2Dlls Condition="'$(Platform)'=='x86'" Include="$(SDL2Dir)bin32\SDL2.dll" />
+    <SDL2Dlls Condition="'$(Platform)'=='x64'" Include="$(SDL2Dir)bin64\SDL2.dll" />
+  </ItemGroup>
+  <PropertyGroup>
+    <QtConfFile>$(BinaryOutputDir)qt.conf</QtConfFile>
+  </PropertyGroup>
+  <Target Name="SDL2CopyBinaries"
+    AfterTargets="Build"
+    Inputs="@(SDL2Dlls)"
+    Outputs="@(SDL2Dlls -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying SDL2 .dlls" Importance="High" />
+    <Copy
+      SourceFiles="@(SDL2Dlls)"
+      DestinationFolder="$(BinaryOutputDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+</Project>

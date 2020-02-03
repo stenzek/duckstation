@@ -8,13 +8,13 @@
 #include "core/host_display.h"
 #include "core/system.h"
 #include "icon.h"
+#include "imgui_impl_sdl.h"
 #include "imgui_styles.h"
 #include "opengl_host_display.h"
 #include "sdl_audio_stream.h"
 #include "sdl_settings_interface.h"
 #include <cinttypes>
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
 #include <imgui_stdlib.h>
 #include <nfd.h>
 Log_SetChannel(SDLHostInterface);
@@ -298,7 +298,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
   switch (event->type)
   {
-    case SDL_WINDOWEVENT: {
+    case SDL_WINDOWEVENT:
+    {
       if (event->window.event == SDL_WINDOWEVENT_RESIZED)
         m_display->WindowResized();
     }
@@ -309,19 +310,22 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
       break;
 
     case SDL_KEYDOWN:
-    case SDL_KEYUP: {
+    case SDL_KEYUP:
+    {
       if (!ImGui::GetIO().WantCaptureKeyboard)
         HandleSDLKeyEvent(event);
     }
     break;
 
-    case SDL_CONTROLLERDEVICEADDED: {
+    case SDL_CONTROLLERDEVICEADDED:
+    {
       Log_InfoPrintf("Controller %d inserted", event->cdevice.which);
       OpenGameController(event->cdevice.which);
     }
     break;
 
-    case SDL_CONTROLLERDEVICEREMOVED: {
+    case SDL_CONTROLLERDEVICEREMOVED:
+    {
       Log_InfoPrintf("Controller %d removed", event->cdevice.which);
       CloseGameController(event->cdevice.which);
     }
@@ -332,7 +336,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
       break;
 
     case SDL_CONTROLLERBUTTONDOWN:
-    case SDL_CONTROLLERBUTTONUP: {
+    case SDL_CONTROLLERBUTTONUP:
+    {
       if (event->type == SDL_CONTROLLERBUTTONDOWN && event->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSTICK)
       {
         // focus the menu bar
@@ -343,7 +348,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_USEREVENT: {
+    case SDL_USEREVENT:
+    {
       if (static_cast<u32>(event->user.code) == m_switch_gpu_renderer_event_id)
         SwitchGPURenderer();
     }
@@ -367,7 +373,8 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     case SDL_SCANCODE_F5:
     case SDL_SCANCODE_F6:
     case SDL_SCANCODE_F7:
-    case SDL_SCANCODE_F8: {
+    case SDL_SCANCODE_F8:
+    {
       if (!pressed)
       {
         const u32 index = event->key.keysym.scancode - SDL_SCANCODE_F1 + 1;
@@ -379,13 +386,15 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_SCANCODE_F11: {
+    case SDL_SCANCODE_F11:
+    {
       if (!pressed)
         DoToggleFullscreen();
     }
     break;
 
-    case SDL_SCANCODE_TAB: {
+    case SDL_SCANCODE_TAB:
+    {
       if (!repeat)
       {
         m_speed_limiter_temp_disabled = pressed;
@@ -394,19 +403,22 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_SCANCODE_PAUSE: {
+    case SDL_SCANCODE_PAUSE:
+    {
       if (pressed)
         DoTogglePause();
     }
     break;
 
-    case SDL_SCANCODE_SPACE: {
+    case SDL_SCANCODE_SPACE:
+    {
       if (pressed)
         DoFrameStep();
     }
     break;
 
-    case SDL_SCANCODE_HOME: {
+    case SDL_SCANCODE_HOME:
+    {
       if (pressed && !repeat && m_system)
       {
         m_settings.speed_limiter_enabled = !m_settings.speed_limiter_enabled;
@@ -417,14 +429,16 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_SCANCODE_END: {
+    case SDL_SCANCODE_END:
+    {
       if (pressed)
         ToggleSoftwareRendering();
     }
     break;
 
     case SDL_SCANCODE_PAGEUP:
-    case SDL_SCANCODE_PAGEDOWN: {
+    case SDL_SCANCODE_PAGEDOWN:
+    {
       if (pressed)
         ModifyResolutionScale(event->key.keysym.scancode == SDL_SCANCODE_PAGEUP ? 1 : -1);
     }

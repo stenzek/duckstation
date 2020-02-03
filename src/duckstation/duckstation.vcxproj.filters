@@ -9,6 +9,7 @@
     <ClCompile Include="d3d11_host_display.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="sdl_settings_interface.cpp" />
+    <ClCompile Include="imgui_impl_sdl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -18,5 +19,6 @@
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="sdl_settings_interface.h" />
+    <ClInclude Include="imgui_impl_sdl.h" />
   </ItemGroup>
 </Project>

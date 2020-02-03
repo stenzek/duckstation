@@ -1,6 +1,8 @@
 add_executable(duckstation
   icon.cpp
   icon.h
+  imgui_impl_sdl.cpp
+  imgui_impl_sdl.h
   imgui_styles.cpp
   imgui_styles.h
   main.cpp

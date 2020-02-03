@@ -7,7 +7,7 @@
 #include <dxgi1_5.h>
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
-#include <imgui_impl_sdl.h>
+#include "imgui_impl_sdl.h"
 Log_SetChannel(D3D11HostDisplay);
 
 class D3D11HostDisplayTexture : public HostDisplayTexture

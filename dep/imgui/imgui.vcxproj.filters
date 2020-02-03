@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClInclude Include="include\imgui_impl_dx11.h" />
     <ClInclude Include="include\imgui_impl_opengl3.h" />
-    <ClInclude Include="include\imgui_impl_sdl.h" />
     <ClInclude Include="include\imconfig.h" />
     <ClInclude Include="include\imgui.h" />
     <ClInclude Include="src\imgui_internal.h" />
@@ -14,7 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="src\imgui_impl_sdl.cpp" />
     <ClCompile Include="src\imgui_widgets.cpp" />
     <ClCompile Include="src\imgui.cpp" />
     <ClCompile Include="src\imgui_draw.cpp" />
