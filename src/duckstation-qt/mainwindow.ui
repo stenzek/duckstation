@@ -123,6 +123,15 @@
     </widget>
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
+    <addaction name="separator"/>
+    <addaction name="actionDebugShowVRAM"/>
+    <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
+    <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
+    <addaction name="actionDebugShowGPUState"/>
+    <addaction name="actionDebugShowCDROMState"/>
+    <addaction name="actionDebugShowSPUState"/>
+    <addaction name="actionDebugShowTimersState"/>
+    <addaction name="actionDebugShowMDECState"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -386,6 +395,70 @@
   <action name="actionGlobal_State">
    <property name="text">
     <string>Global State</string>
+   </property>
+  </action>
+  <action name="actionDebugShowVRAM">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show VRAM</string>
+   </property>
+  </action>
+  <action name="actionDebugDumpCPUtoVRAMCopies">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dump CPU to VRAM Copies</string>
+   </property>
+  </action>
+  <action name="actionDebugDumpVRAMtoCPUCopies">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dump VRAM to CPU Copies</string>
+   </property>
+  </action>
+  <action name="actionDebugShowGPUState">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show GPU State</string>
+   </property>
+  </action>
+  <action name="actionDebugShowCDROMState">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show CDROM State</string>
+   </property>
+  </action>
+  <action name="actionDebugShowSPUState">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show SPU State</string>
+   </property>
+  </action>
+  <action name="actionDebugShowTimersState">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Timers State</string>
+   </property>
+  </action>
+  <action name="actionDebugShowMDECState">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show MDEC State</string>
    </property>
   </action>
  </widget>

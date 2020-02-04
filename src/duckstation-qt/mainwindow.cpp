@@ -6,6 +6,7 @@
 #include "qthostinterface.h"
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
+#include "settingwidgetbinder.h"
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
@@ -359,6 +360,19 @@ void MainWindow::connectSignals()
     m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
     populateLoadSaveStateMenus(QString::fromStdString(entry->code));
   });
+
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug/ShowVRAM");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies,
+                                               "Debug/DumpCPUToVRAMCopies");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpVRAMtoCPUCopies,
+                                               "Debug/DumpVRAMToCPUCopies");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, "Debug/ShowGPUState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowCDROMState,
+                                               "Debug/ShowCDROMState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowSPUState, "Debug/ShowSPUState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowTimersState,
+                                               "Debug/ShowTimersState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, "Debug/ShowMDECState");
 }
 
 SettingsDialog* MainWindow::getSettingsDialog()
