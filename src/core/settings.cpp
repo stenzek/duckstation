@@ -42,6 +42,15 @@ void Settings::Load(SettingsInterface& si)
 
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memory_card_1.mcd");
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
+
+  debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
+  debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
+  debugging.dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
+  debugging.show_gpu_state = si.GetBoolValue("Debug", "ShowGPUState");
+  debugging.show_cdrom_state = si.GetBoolValue("Debug", "ShowCDROMState");
+  debugging.show_spu_state = si.GetBoolValue("Debug", "ShowSPUState");
+  debugging.show_timers_state = si.GetBoolValue("Debug", "ShowTimersState");
+  debugging.show_mdec_state = si.GetBoolValue("Debug", "ShowMDECState");
 }
 
 void Settings::Save(SettingsInterface& si) const
@@ -90,6 +99,15 @@ void Settings::Save(SettingsInterface& si) const
     si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
   else
     si.DeleteValue("MemoryCards", "Card2Path");
+
+  si.SetBoolValue("Debug", "ShowVRAM", debugging.show_vram);
+  si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", debugging.dump_cpu_to_vram_copies);
+  si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", debugging.dump_vram_to_cpu_copies);
+  si.SetBoolValue("Debug", "ShowGPUState", debugging.show_gpu_state);
+  si.SetBoolValue("Debug", "ShowCDROMState", debugging.show_cdrom_state);
+  si.SetBoolValue("Debug", "ShowSPUState", debugging.show_spu_state);
+  si.SetBoolValue("Debug", "ShowTimersState", debugging.show_timers_state);
+  si.SetBoolValue("Debug", "ShowMDECState", debugging.show_mdec_state);
 }
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
