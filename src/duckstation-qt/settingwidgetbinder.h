@@ -5,6 +5,7 @@
 #include "core/settings.h"
 #include "qthostinterface.h"
 
+#include <QtWidgets/QAction>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLineEdit>
@@ -107,6 +108,28 @@ struct SettingAccessor<QSlider>
   static void connectValueChanged(QSlider* widget, F func)
   {
     widget->connect(widget, &QSlider::valueChanged, func);
+  }
+};
+
+template<>
+struct SettingAccessor<QAction>
+{
+  static bool getBoolValue(const QAction* widget) { return widget->isChecked(); }
+  static void setBoolValue(QAction* widget, bool value) { widget->setChecked(value); }
+
+  static int getIntValue(const QAction* widget) { return widget->isChecked() ? 1 : 0; }
+  static void setIntValue(QAction* widget, int value) { widget->setChecked(value != 0); }
+
+  static QString getStringValue(const QAction* widget)
+  {
+    return widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0");
+  }
+  static void setStringValue(QAction* widget, const QString& value) { widget->setChecked(value.toInt() != 0); }
+
+  template<typename F>
+  static void connectValueChanged(QAction* widget, F func)
+  {
+    widget->connect(widget, &QAction::toggled, func);
   }
 };
 
