@@ -234,7 +234,7 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
     if (m_gl_context->create())
     {
       m_is_gles = m_gl_context->isOpenGLES();
-      Log_InfoPrintf("Got a %s %d.%d context", major, minor, m_is_gles ? "OpenGL ES" : "desktop OpenGL");
+      Log_InfoPrintf("Got a %s %d.%d context", m_is_gles ? "OpenGL ES" : "desktop OpenGL", major, minor);
       break;
     }
   }
