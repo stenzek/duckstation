@@ -117,9 +117,6 @@
      <property name="title">
       <string>Switch CPU Emulation Mode</string>
      </property>
-     <addaction name="actionCPUExecutionModeInterpreter"/>
-     <addaction name="actionCPUExecutionModeCachedInterpreter"/>
-     <addaction name="actionCPUExecutionModeRecompiler"/>
     </widget>
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
@@ -286,30 +283,6 @@
    </property>
    <property name="text">
     <string>Fullscreen</string>
-   </property>
-  </action>
-  <action name="actionCPUExecutionModeInterpreter">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Interpreter (Slowest)</string>
-   </property>
-  </action>
-  <action name="actionCPUExecutionModeCachedInterpreter">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Cached Interpreter (Slower)</string>
-   </property>
-  </action>
-  <action name="actionCPUExecutionModeRecompiler">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Recompiler (Fastest)</string>
    </property>
   </action>
   <action name="actionResolution_Scale">

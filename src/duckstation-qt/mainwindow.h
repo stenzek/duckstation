@@ -52,6 +52,7 @@ private:
   void switchToEmulationView();
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
+  void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
   void populateLoadSaveStateMenus(QString game_code);
 

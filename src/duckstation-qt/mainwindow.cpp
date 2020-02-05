@@ -222,12 +222,26 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
 
+  for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
+  {
+    const CPUExecutionMode mode = static_cast<CPUExecutionMode>(i);
+    QAction* action = m_ui.menuCPUExecutionMode->addAction(tr(Settings::GetCPUExecutionModeDisplayName(mode)));
+    action->setCheckable(true);
+    connect(action, &QAction::triggered, [this, mode]() {
+      m_host_interface->putSettingValue(QStringLiteral("CPU/ExecutionMode"),
+                                        QString(Settings::GetCPUExecutionModeName(mode)));
+      m_host_interface->applySettings();
+      updateDebugMenuCPUExecutionMode();
+    });
+  }
+  updateDebugMenuCPUExecutionMode();
+
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
   {
     const GPURenderer renderer = static_cast<GPURenderer>(i);
     QAction* action = m_ui.menuRenderer->addAction(tr(Settings::GetRendererDisplayName(renderer)));
     action->setCheckable(true);
-    connect(action, &QAction::triggered, [this, action, renderer]() {
+    connect(action, &QAction::triggered, [this, renderer]() {
       m_host_interface->putSettingValue(QStringLiteral("GPU/Renderer"), QString(Settings::GetRendererName(renderer)));
       m_host_interface->applySettings();
     });
@@ -396,21 +410,36 @@ void MainWindow::doSettings(SettingsDialog::Category category)
     dlg->setCategory(category);
 }
 
+void MainWindow::updateDebugMenuCPUExecutionMode()
+{
+  std::optional<CPUExecutionMode> current_mode = Settings::ParseCPUExecutionMode(
+    m_host_interface->getSettingValue(QStringLiteral("CPU/ExecutionMode")).toString().toStdString().c_str());
+  if (!current_mode.has_value())
+    return;
+
+  const QString current_mode_display_name(tr(Settings::GetCPUExecutionModeDisplayName(current_mode.value())));
+  for (QObject* obj : m_ui.menuCPUExecutionMode->children())
+  {
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+      action->setChecked(action->text() == current_mode_display_name);
+  }
+}
+
 void MainWindow::updateDebugMenuGPURenderer()
 {
   // update the menu with the new selected renderer
   std::optional<GPURenderer> current_renderer = Settings::ParseRendererName(
     m_host_interface->getSettingValue(QStringLiteral("GPU/Renderer")).toString().toStdString().c_str());
-  if (current_renderer.has_value())
+  if (!current_renderer.has_value())
+    return;
+
+  const QString current_renderer_display_name(tr(Settings::GetRendererDisplayName(current_renderer.value())));
+  for (QObject* obj : m_ui.menuRenderer->children())
   {
-    const QString current_renderer_display_name(
-      QString::fromUtf8(Settings::GetRendererDisplayName(current_renderer.value())));
-    for (QObject* obj : m_ui.menuRenderer->children())
-    {
-      QAction* action = qobject_cast<QAction*>(obj);
-      if (action)
-        action->setChecked(action->text() == current_renderer_display_name);
-    }
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+      action->setChecked(action->text() == current_renderer_display_name);
   }
 }
 
