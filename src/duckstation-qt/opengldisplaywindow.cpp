@@ -224,7 +224,6 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
   surface_format.setSwapInterval(0);
   surface_format.setRenderableType(QSurfaceFormat::OpenGL);
   surface_format.setProfile(QSurfaceFormat::CoreProfile);
-
   if (debug_device)
     surface_format.setOption(QSurfaceFormat::DebugContext);
 
@@ -234,14 +233,15 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
     m_gl_context->setFormat(surface_format);
     if (m_gl_context->create())
     {
-      Log_InfoPrintf("Got a desktop OpenGL %d.%d context", major, minor);
+      m_is_gles = m_gl_context->isOpenGLES();
+      Log_InfoPrintf("Got a %s %d.%d context", major, minor, m_is_gles ? "OpenGL ES" : "desktop OpenGL");
       break;
     }
   }
 
   if (!m_gl_context)
   {
-    // try es
+    // try forcing ES
     surface_format.setRenderableType(QSurfaceFormat::OpenGLES);
     surface_format.setProfile(QSurfaceFormat::NoProfile);
     if (debug_device)
