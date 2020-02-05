@@ -933,7 +933,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
         m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(i);
         settings_changed = true;
         if (m_system)
-          m_system->UpdateCPUExecutionMode();
+          m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
       }
     }
 
@@ -1280,7 +1280,7 @@ void SDLHostInterface::DrawSettingsWindow()
         m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(execution_mode);
         settings_changed = true;
         if (m_system)
-          m_system->UpdateCPUExecutionMode();
+          m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
       }
 
       ImGui::EndTabItem();

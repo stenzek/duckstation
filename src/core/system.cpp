@@ -88,6 +88,13 @@ void System::UpdateGPUSettings()
   m_gpu->UpdateSettings();
 }
 
+void System::SetCPUExecutionMode(CPUExecutionMode mode)
+{
+  m_cpu_execution_mode = mode;
+  m_cpu_code_cache->Flush();
+  m_cpu_code_cache->SetUseRecompiler(mode == CPUExecutionMode::Recompiler);
+}
+
 bool System::Boot(const char* filename)
 {
   // Load CD image up and detect region.
@@ -507,13 +514,6 @@ void System::UpdateMemoryCards()
     if (card)
       m_pad->SetMemoryCard(i, std::move(card));
   }
-}
-
-void System::UpdateCPUExecutionMode()
-{
-  m_cpu_execution_mode = GetSettings().cpu_execution_mode;
-  m_cpu_code_cache->Flush();
-  m_cpu_code_cache->SetUseRecompiler(m_cpu_execution_mode == CPUExecutionMode::Recompiler);
 }
 
 bool System::HasMedia() const

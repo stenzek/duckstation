@@ -80,6 +80,9 @@ public:
   /// Updates GPU settings, without recreating the renderer.
   void UpdateGPUSettings();
 
+  /// Forcibly changes the CPU execution mode, ignoring settings.
+  void SetCPUExecutionMode(CPUExecutionMode mode);
+
   void RunFrame();
 
   bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
@@ -92,7 +95,6 @@ public:
   Controller* GetController(u32 slot) const;
   void UpdateControllers();
   void UpdateMemoryCards();
-  void UpdateCPUExecutionMode();
 
   bool HasMedia() const;
   bool InsertMedia(const char* path);
