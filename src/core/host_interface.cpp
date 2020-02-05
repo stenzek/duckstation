@@ -579,6 +579,7 @@ void HostInterface::SetDefaultSettings()
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 {
+  const CPUExecutionMode old_cpu_execution_mode = m_settings.cpu_execution_mode;
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
   const bool old_gpu_true_color = m_settings.gpu_true_color;
@@ -600,11 +601,18 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     UpdateSpeedLimiterState();
   }
 
-  if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale || m_settings.gpu_true_color != old_gpu_true_color ||
-      m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
-      m_settings.gpu_force_progressive_scan != old_gpu_force_progressive_scan)
+  if (m_system)
   {
-    m_system->UpdateGPUSettings();
+    if (m_settings.cpu_execution_mode != old_cpu_execution_mode)
+      m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
+
+    if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale ||
+        m_settings.gpu_true_color != old_gpu_true_color ||
+        m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
+        m_settings.gpu_force_progressive_scan != old_gpu_force_progressive_scan)
+    {
+      m_system->UpdateGPUSettings();
+    }
   }
 
   if (m_settings.display_linear_filtering != old_display_linear_filtering)
