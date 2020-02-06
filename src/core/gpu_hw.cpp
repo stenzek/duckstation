@@ -274,7 +274,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   TextureMode texture_mode;
-  if (rc.texture_enable)
+  if (rc.IsTexturingEnabled())
   {
     // texture page changed - check that the new page doesn't intersect the drawing area
     if (m_draw_mode.IsTexturePageChanged())

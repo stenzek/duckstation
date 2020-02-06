@@ -208,7 +208,10 @@ protected:
     BitField<u32, bool, 28, 1> shading_enable;              // 0 - flat, 1 = gouroud
     BitField<u32, Primitive, 29, 21> primitive;
 
-    // Returns true if dithering should be enabled. Depends on the primitive type.
+    /// Returns true if texturing should be enabled. Depends on the primitive type.
+    bool IsTexturingEnabled() const { return (primitive != Primitive::Line) ? texture_enable : false; }
+
+    /// Returns true if dithering should be enabled. Depends on the primitive type.
     bool IsDitheringEnabled() const
     {
       switch (primitive)
