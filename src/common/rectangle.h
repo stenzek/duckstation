@@ -70,6 +70,7 @@ struct Rectangle
     top = rhs.top;
     left = rhs.left;
     bottom = rhs.bottom;
+    return *this;
   }
 
   // Relational operators.
