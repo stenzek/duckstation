@@ -232,14 +232,10 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
     surface_format.setVersion(major, minor);
     m_gl_context->setFormat(surface_format);
     if (m_gl_context->create())
-    {
-      m_is_gles = m_gl_context->isOpenGLES();
-      Log_InfoPrintf("Got a %s %d.%d context", m_is_gles ? "OpenGL ES" : "desktop OpenGL", major, minor);
       break;
-    }
   }
 
-  if (!m_gl_context)
+  if (!m_gl_context->isValid())
   {
     // try forcing ES
     surface_format.setRenderableType(QSurfaceFormat::OpenGLES);
@@ -252,11 +248,7 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
       surface_format.setVersion(major, minor);
       m_gl_context->setFormat(surface_format);
       if (m_gl_context->create())
-      {
-        Log_InfoPrintf("Got a OpenGL ES %d.%d context", major, minor);
-        m_is_gles = true;
         break;
-      }
     }
   }
 
@@ -266,6 +258,11 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
     m_gl_context.reset();
     return false;
   }
+
+  surface_format = m_gl_context->format();
+  m_is_gles = m_gl_context->isOpenGLES();
+  Log_InfoPrintf("Got a %s %d.%d context", (m_is_gles ? "OpenGL ES" : "desktop OpenGL"), surface_format.majorVersion(),
+                 surface_format.minorVersion());
 
   if (!m_gl_context->makeCurrent(this))
   {
