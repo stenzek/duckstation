@@ -555,12 +555,11 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
       color.SetRGB24(color_r, color_g, color_b);
   }
 
+  const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
   if constexpr (transparency_enable)
   {
     if (transparent)
     {
-      const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
-
 #define BLEND_AVERAGE(bg, fg) Truncate8(std::min<u32>((ZeroExtend32(bg) / 2) + (ZeroExtend32(fg) / 2), 0x1F))
 #define BLEND_ADD(bg, fg) Truncate8(std::min<u32>(ZeroExtend32(bg) + ZeroExtend32(fg), 0x1F))
 #define BLEND_SUBTRACT(bg, fg) Truncate8((bg > fg) ? ((bg) - (fg)) : 0)
@@ -601,9 +600,9 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
     UNREFERENCED_VARIABLE(transparent);
   }
 
-  const u16 mask_and = m_GPUSTAT.GetMaskAND();
-  if ((color.bits & mask_and) != mask_and)
-    return;
+   const u16 mask_and = m_GPUSTAT.GetMaskAND();
+   if ((bg_color.bits & mask_and) != mask_and)
+     return;
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());
 }
