@@ -812,9 +812,6 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
     glEnable(GL_SCISSOR_TEST);
     m_vram_texture.BindFramebuffer(GL_FRAMEBUFFER);
   }
-
-  m_renderer_stats.num_vram_read_texture_updates++;
-  ClearVRAMDirtyRectangle();
 }
 
 void GPU_HW_OpenGL::FlushRender()

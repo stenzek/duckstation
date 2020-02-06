@@ -257,7 +257,8 @@ GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
-  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+  m_vram_dirty_rect.Include(
+    Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
@@ -268,7 +269,8 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+  m_vram_dirty_rect.Include(
+    Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
 void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
@@ -288,6 +290,12 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
           FlushRender();
 
         UpdateVRAMReadTexture();
+        m_renderer_stats.num_vram_read_texture_updates++;
+
+        // At this point, we're still drawing to the same area. Without knowing the polygon bounds, potentially the
+        // whole area can be drawn over in this call. So we have to keep that range dirty. This is not ideal, since
+        // we're going to be doing a bunch of potentially redundant copies.
+        m_vram_dirty_rect = m_drawing_area;
       }
     }
 
