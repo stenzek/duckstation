@@ -540,9 +540,9 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
       const u8 g = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetG8()) * ZeroExtend16(color_g)) >> 7, 0xFF));
       const u8 b = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetB8()) * ZeroExtend16(color_b)) >> 7, 0xFF));
       if constexpr (dithering_enable)
-        color.SetRGB24Dithered(x, y, r, g, b);
+        color.SetRGB24Dithered(x, y, r, g, b, texture_color.c);
       else
-        color.SetRGB24(r, g, b);
+        color.SetRGB24(r, g, b, texture_color.c);
     }
   }
   else
