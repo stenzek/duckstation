@@ -395,7 +395,7 @@ protected:
       static constexpr u16 POLYGON_TEXPAGE_MASK = 0b0000100111111111;
 
       // Bits 0..5 are returned in the GPU status register, latched at E1h/polygon draw time.
-      static constexpr u32 GPUSTAT_MASK = 0b111111111111;
+      static constexpr u32 GPUSTAT_MASK = 0b11111111111;
 
       u16 bits;
 
