@@ -60,6 +60,4 @@ private:
   GLuint m_display_vao = 0;
   GLuint m_display_nearest_sampler = 0;
   GLuint m_display_linear_sampler = 0;
-
-  bool m_is_gles = false;
 };

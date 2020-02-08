@@ -111,7 +111,7 @@ HostDisplay* OpenGLDisplayWindow::getHostDisplayInterface()
 
 HostDisplay::RenderAPI OpenGLDisplayWindow::GetRenderAPI() const
 {
-  return HostDisplay::RenderAPI::OpenGL;
+  return m_gl_context->isOpenGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
 void* OpenGLDisplayWindow::GetRenderDevice() const
@@ -174,14 +174,14 @@ void OpenGLDisplayWindow::WindowResized() {}
 
 const char* OpenGLDisplayWindow::GetGLSLVersionString() const
 {
-  return m_is_gles ? "#version 300 es" : "#version 130\n";
+  return m_gl_context->isOpenGLES() ? "#version 300 es" : "#version 130\n";
 }
 
 std::string OpenGLDisplayWindow::GetGLSLVersionHeader() const
 {
   std::string header = GetGLSLVersionString();
   header += "\n\n";
-  if (m_is_gles)
+  if (m_gl_context->isOpenGLES())
   {
     header += "precision highp float;\n";
     header += "precision highp int;\n\n";
@@ -260,9 +260,8 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
   }
 
   surface_format = m_gl_context->format();
-  m_is_gles = m_gl_context->isOpenGLES();
-  Log_InfoPrintf("Got a %s %d.%d context", (m_is_gles ? "OpenGL ES" : "desktop OpenGL"), surface_format.majorVersion(),
-                 surface_format.minorVersion());
+  Log_InfoPrintf("Got a %s %d.%d context", (m_gl_context->isOpenGLES() ? "OpenGL ES" : "desktop OpenGL"),
+                 surface_format.majorVersion(), surface_format.minorVersion());
 
   if (!m_gl_context->makeCurrent(this))
   {
@@ -292,7 +291,7 @@ bool OpenGLDisplayWindow::initializeDeviceContext(bool debug_device)
 
   // Load GLAD.
   const auto load_result =
-    m_is_gles ? gladLoadGLES2Loader(GetProcAddressCallback) : gladLoadGLLoader(GetProcAddressCallback);
+    m_gl_context->isOpenGLES() ? gladLoadGLES2Loader(GetProcAddressCallback) : gladLoadGLLoader(GetProcAddressCallback);
   if (!load_result)
   {
     Log_ErrorPrintf("Failed to load GL functions");
@@ -382,7 +381,7 @@ void main()
     return false;
   }
 
-  if (!m_is_gles)
+  if (!m_gl_context->isOpenGLES())
     m_display_program.BindFragData(0, "o_col0");
 
   if (!m_display_program.Link())
