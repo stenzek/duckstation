@@ -590,30 +590,19 @@ void QtHostInterface::threadEntryPoint()
       continue;
     }
 
-    // execute the system, polling events inbetween frames
-    // simulate the system if not paused
     m_system->RunFrame();
 
-    // rendering
-    {
-      if (m_system)
-      {
-        DrawDebugWindows();
-        m_system->GetGPU()->ResetGraphicsAPIState();
-      }
+    m_system->GetGPU()->ResetGraphicsAPIState();
 
-      DrawOSDMessages();
+    DrawDebugWindows();
+    DrawOSDMessages();
 
-      m_display->Render();
+    m_display->Render();
 
-      if (m_system)
-      {
-        m_system->GetGPU()->RestoreGraphicsAPIState();
+    m_system->GetGPU()->RestoreGraphicsAPIState();
 
-        if (m_speed_limiter_enabled)
-          m_system->Throttle();
-      }
-    }
+    if (m_speed_limiter_enabled)
+      m_system->Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
   }
