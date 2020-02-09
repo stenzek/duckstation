@@ -128,6 +128,7 @@ protected:
     m_draw_mode.SetTexturePageChanged();
   }
   void ClearVRAMDirtyRectangle() { m_vram_dirty_rect.SetInvalid(); }
+  void IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect);
 
   u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }

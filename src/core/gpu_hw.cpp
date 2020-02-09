@@ -71,6 +71,11 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 {
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
 
+  s32 min_x = std::numeric_limits<s32>::max();
+  s32 max_x = std::numeric_limits<s32>::min();
+  s32 min_y = std::numeric_limits<s32>::max();
+  s32 max_y = std::numeric_limits<s32>::min();
+
   // TODO: Move this to the GPU..
   switch (rc.primitive)
   {
@@ -84,11 +89,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
-
-      s32 min_x = std::numeric_limits<s32>::max();
-      s32 max_x = std::numeric_limits<s32>::min();
-      s32 min_y = std::numeric_limits<s32>::max();
-      s32 max_y = std::numeric_limits<s32>::min();
 
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
@@ -120,6 +120,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         m_batch_current_vertex_ptr -= 2;
         AddDuplicateVertex();
         AddDuplicateVertex();
+        return;
       }
     }
     break;
@@ -134,8 +135,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       u32 buffer_pos = 1;
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{command_ptr[buffer_pos++]};
-      const s32 pos_left = vp.x;
-      const s32 pos_top = vp.y;
+      min_x = vp.x;
+      min_y = vp.y;
+
       const auto [texcoord_x, texcoord_y] =
         UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
       const u16 tex_left = ZeroExtend16(texcoord_x);
@@ -165,19 +167,20 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
         return;
 
+      max_x = min_x + static_cast<s32>(rectangle_width);
+      max_y = min_y + static_cast<s32>(rectangle_height);
+
       // TODO: This should repeat the texcoords instead of stretching
-      const s32 pos_right = pos_left + static_cast<s32>(rectangle_width);
-      const s32 pos_bottom = pos_top + static_cast<s32>(rectangle_height);
       const u16 tex_right = tex_left + static_cast<u16>(rectangle_width);
       const u16 tex_bottom = tex_top + static_cast<u16>(rectangle_height);
 
-      AddVertex(pos_left, pos_top, color, texpage, tex_left, tex_top);
+      AddVertex(min_x, min_y, color, texpage, tex_left, tex_top);
       if (restart_strip)
         AddDuplicateVertex();
 
-      AddVertex(pos_right, pos_top, color, texpage, tex_right, tex_top);
-      AddVertex(pos_left, pos_bottom, color, texpage, tex_left, tex_bottom);
-      AddVertex(pos_right, pos_bottom, color, texpage, tex_right, tex_bottom);
+      AddVertex(max_x, min_y, color, texpage, tex_right, tex_top);
+      AddVertex(min_x, max_y, color, texpage, tex_left, tex_bottom);
+      AddVertex(max_x, max_y, color, texpage, tex_right, tex_bottom);
     }
     break;
 
@@ -185,11 +188,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
     {
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
-
-      s32 min_x = std::numeric_limits<s32>::max();
-      s32 max_x = std::numeric_limits<s32>::min();
-      s32 min_y = std::numeric_limits<s32>::max();
-      s32 max_y = std::numeric_limits<s32>::min();
 
       u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
@@ -213,6 +211,19 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       UnreachableCode();
       break;
   }
+
+  const Common::Rectangle<u32> area_covered(
+    std::clamp(m_drawing_offset.x + min_x, static_cast<s32>(m_drawing_area.left),
+               static_cast<s32>(m_drawing_area.right)),
+    std::clamp(m_drawing_offset.y + min_y, static_cast<s32>(m_drawing_area.top),
+               static_cast<s32>(m_drawing_area.bottom)),
+    std::clamp(m_drawing_offset.x + max_x, static_cast<s32>(m_drawing_area.left),
+               static_cast<s32>(m_drawing_area.right)) +
+      1,
+    std::clamp(m_drawing_offset.y + max_y, static_cast<s32>(m_drawing_area.top),
+               static_cast<s32>(m_drawing_area.bottom)) +
+      1);
+  m_vram_dirty_rect.Include(area_covered);
 }
 
 void GPU_HW::AddDuplicateVertex()
@@ -255,21 +266,34 @@ GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
     return BatchPrimitive::Triangles;
 }
 
+void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
+{
+  m_vram_dirty_rect.Include(rect);
+
+  // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
+  // shadow texture is updated
+  if (m_draw_mode.GetTexturePageRectangle().Intersects(rect) ||
+      m_draw_mode.GetTexturePaletteRectangle().Intersects(rect))
+  {
+    m_draw_mode.SetTexturePageChanged();
+  }
+}
+
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
-  m_vram_dirty_rect.Include(
+  IncludeVRAMDityRectangle(
     Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
   DebugAssert((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT);
-  m_vram_dirty_rect.Include(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+  IncludeVRAMDityRectangle(Common::Rectangle<u32>::FromExtents(x, y, width, height));
 }
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  m_vram_dirty_rect.Include(
+  IncludeVRAMDityRectangle(
     Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
@@ -291,11 +315,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
 
         UpdateVRAMReadTexture();
         m_renderer_stats.num_vram_read_texture_updates++;
-
-        // At this point, we're still drawing to the same area. Without knowing the polygon bounds, potentially the
-        // whole area can be drawn over in this call. So we have to keep that range dirty. This is not ideal, since
-        // we're going to be doing a bunch of potentially redundant copies.
-        m_vram_dirty_rect = m_drawing_area;
+        ClearVRAMDirtyRectangle();
       }
     }
 
