@@ -23,6 +23,12 @@
 #include <imgui.h>
 Log_SetChannel(System);
 
+#ifdef WIN32
+#include "common/windows_headers.h"
+#else
+#include <time.h>
+#endif
+
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
@@ -350,6 +356,7 @@ void System::Reset()
   m_internal_frame_number = 0;
   m_global_tick_counter = 0;
   m_last_event_run_time = 0;
+  ResetPerformanceCounters();
 }
 
 bool System::LoadState(ByteStream* state)
@@ -366,8 +373,10 @@ bool System::SaveState(ByteStream* state)
 
 void System::RunFrame()
 {
-  // Duplicated to avoid branch in the while loop, as the downcount can be quite low at times.
+  m_frame_timer.Reset();
   m_frame_done = false;
+
+  // Duplicated to avoid branch in the while loop, as the downcount can be quite low at times.
   if (m_cpu_execution_mode == CPUExecutionMode::Interpreter)
   {
     do
@@ -389,6 +398,89 @@ void System::RunFrame()
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   m_spu->GeneratePendingSamples();
+
+  UpdatePerformanceCounters();
+}
+
+void System::Throttle()
+{
+  // Allow variance of up to 40ms either way.
+  constexpr s64 MAX_VARIANCE_TIME = INT64_C(40000000);
+
+  // Don't sleep for <1ms or >=period.
+  constexpr s64 MINIMUM_SLEEP_TIME = INT64_C(1000000);
+
+  // Use unsigned for defined overflow/wrap-around.
+  const u64 time = static_cast<u64>(m_throttle_timer.GetTimeNanoseconds());
+  const s64 sleep_time = static_cast<s64>(m_last_throttle_time - time);
+  if (std::abs(sleep_time) >= MAX_VARIANCE_TIME)
+  {
+#ifndef _DEBUG
+    // Don't display the slow messages in debug, it'll always be slow...
+    // Limit how often the messages are displayed.
+    if (m_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
+    {
+      Log_WarningPrintf("System too %s, lost %.2f ms", sleep_time < 0 ? "slow" : "fast",
+                        static_cast<double>(std::abs(sleep_time) - MAX_VARIANCE_TIME) / 1000000.0);
+      m_speed_lost_time_timestamp.Reset();
+    }
+#endif
+    m_last_throttle_time = 0;
+    m_throttle_timer.Reset();
+  }
+  else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
+  {
+#ifdef WIN32
+    Sleep(static_cast<u32>(sleep_time / 1000000));
+#else
+    const struct timespec ts = {0, static_cast<long>(sleep_time)};
+    nanosleep(&ts, nullptr);
+#endif
+  }
+
+  m_last_throttle_time += m_throttle_period;
+}
+
+void System::UpdatePerformanceCounters()
+{
+  const float frame_time = static_cast<float>(m_frame_timer.GetTimeMilliseconds());
+  m_average_frame_time_accumulator += frame_time;
+  m_worst_frame_time_accumulator = std::max(m_worst_frame_time_accumulator, frame_time);
+
+  // update fps counter
+  const float time = static_cast<float>(m_fps_timer.GetTimeSeconds());
+  if (time < 1.0f)
+    return;
+
+  const float frames_presented = static_cast<float>(m_frame_number - m_last_frame_number);
+
+  m_worst_frame_time = m_worst_frame_time_accumulator;
+  m_worst_frame_time_accumulator = 0.0f;
+  m_average_frame_time = m_average_frame_time_accumulator / frames_presented;
+  m_average_frame_time_accumulator = 0.0f;
+  m_vps = static_cast<float>(frames_presented / time);
+  m_last_frame_number = m_frame_number;
+  m_fps = static_cast<float>(m_internal_frame_number - m_last_internal_frame_number) / time;
+  m_last_internal_frame_number = m_internal_frame_number;
+  m_speed = static_cast<float>(static_cast<double>(m_global_tick_counter - m_last_global_tick_counter) /
+                               (static_cast<double>(MASTER_CLOCK) * time)) *
+            100.0f;
+  m_last_global_tick_counter = m_global_tick_counter;
+  m_fps_timer.Reset();
+
+  m_host_interface->OnSystemPerformanceCountersUpdated();
+}
+
+void System::ResetPerformanceCounters()
+{
+  m_last_frame_number = m_frame_number;
+  m_last_internal_frame_number = m_internal_frame_number;
+  m_last_global_tick_counter = m_global_tick_counter;
+  m_average_frame_time_accumulator = 0.0f;
+  m_worst_frame_time_accumulator = 0.0f;
+  m_fps_timer.Reset();
+  m_throttle_timer.Reset();
+  m_last_throttle_time = 0;
 }
 
 bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)

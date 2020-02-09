@@ -1,4 +1,5 @@
 #pragma once
+#include "common/timer.h"
 #include "host_interface.h"
 #include "timing_event.h"
 #include "types.h"
@@ -68,6 +69,12 @@ public:
   const std::string& GetRunningCode() const { return m_running_game_code; }
   const std::string& GetRunningTitle() const { return m_running_game_title; }
 
+  float GetFPS() const { return m_fps; }
+  float GetVPS() const { return m_vps; }
+  float GetEmulationSpeed() const { return m_speed; }
+  float GetAverageFrameTime() const { return m_average_frame_time; }
+  float GetWorstFrameTime() const { return m_worst_frame_time; }
+
   bool Boot(const char* filename);
   void Reset();
 
@@ -84,6 +91,15 @@ public:
   void SetCPUExecutionMode(CPUExecutionMode mode);
 
   void RunFrame();
+
+  /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
+  void SetThrottleFrequency(double frequency) { m_throttle_period = static_cast<s64>(1000000000.0 / frequency); }
+
+  /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
+  void Throttle();
+
+  void UpdatePerformanceCounters();
+  void ResetPerformanceCounters();
 
   bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
   bool SetExpansionROM(const char* filename);
@@ -103,8 +119,6 @@ public:
   /// Creates a new event.
   std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
                                                  TimingEventCallback callback, bool activate);
-
-  bool RUNNING_EVENTS() const { return m_running_events; }
 
 private:
   System(HostInterface* host_interface);
@@ -171,4 +185,23 @@ private:
   std::string m_running_game_path;
   std::string m_running_game_code;
   std::string m_running_game_title;
+
+  u64 m_last_throttle_time = 0;
+  s64 m_throttle_period = INT64_C(1000000000) / 60;
+  Common::Timer m_throttle_timer;
+  Common::Timer m_speed_lost_time_timestamp;
+
+  float m_average_frame_time_accumulator = 0.0f;
+  float m_worst_frame_time_accumulator = 0.0f;
+
+  float m_vps = 0.0f;
+  float m_fps = 0.0f;
+  float m_speed = 0.0f;
+  float m_worst_frame_time = 0.0f;
+  float m_average_frame_time = 0.0f;
+  u32 m_last_frame_number = 0;
+  u32 m_last_internal_frame_number = 0;
+  u32 m_last_global_tick_counter = 0;
+  Common::Timer m_fps_timer;
+  Common::Timer m_frame_timer;
 };

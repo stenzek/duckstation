@@ -6,7 +6,6 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "common/timer.h"
 #include "dma.h"
 #include "game_list.h"
 #include "gpu.h"
@@ -19,12 +18,6 @@
 #include <cstring>
 #include <imgui.h>
 Log_SetChannel(HostInterface);
-
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#else
-#include <time.h>
-#endif
 
 #if defined(ANDROID) || (defined(__GNUC__) && __GNUC__ < 8)
 
@@ -58,7 +51,6 @@ HostInterface::HostInterface()
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetGameListCacheFileName());
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
-  m_last_throttle_time = Common::Timer::GetValue();
 }
 
 HostInterface::~HostInterface() = default;
@@ -91,7 +83,6 @@ bool HostInterface::BootSystem(const char* filename, const char* state_filename)
 void HostInterface::ResetSystem()
 {
   m_system->Reset();
-  ResetPerformanceCounters();
   AddOSDMessage("System reset.");
 }
 
@@ -138,7 +129,7 @@ void HostInterface::DrawFPSWindow()
   const bool show_vps = true;
   const bool show_speed = true;
 
-  if (!(show_fps | show_vps | show_speed))
+  if (!(show_fps | show_vps | show_speed) || !m_system)
     return;
 
   const ImVec2 window_size =
@@ -158,7 +149,7 @@ void HostInterface::DrawFPSWindow()
   bool first = true;
   if (show_fps)
   {
-    ImGui::Text("%.2f", m_fps);
+    ImGui::Text("%.2f", m_system->GetFPS());
     first = false;
   }
   if (show_vps)
@@ -174,7 +165,7 @@ void HostInterface::DrawFPSWindow()
       ImGui::SameLine();
     }
 
-    ImGui::Text("%.2f", m_vps);
+    ImGui::Text("%.2f", m_system->GetVPS());
   }
   if (show_speed)
   {
@@ -189,10 +180,11 @@ void HostInterface::DrawFPSWindow()
       ImGui::SameLine();
     }
 
-    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
-    if (m_speed < 90.0f)
+    const float speed = m_system->GetEmulationSpeed();
+    const u32 rounded_speed = static_cast<u32>(std::round(speed));
+    if (speed < 90.0f)
       ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-    else if (m_speed < 110.0f)
+    else if (speed < 110.0f)
       ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
     else
       ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
@@ -347,45 +339,6 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   return BIOS::LoadImageFromFile(m_settings.bios_path);
 }
 
-void HostInterface::Throttle()
-{
-  // Allow variance of up to 40ms either way.
-  constexpr s64 MAX_VARIANCE_TIME = INT64_C(40000000);
-
-  // Don't sleep for <1ms or >=period.
-  constexpr s64 MINIMUM_SLEEP_TIME = INT64_C(1000000);
-
-  // Use unsigned for defined overflow/wrap-around.
-  const u64 time = static_cast<u64>(m_throttle_timer.GetTimeNanoseconds());
-  const s64 sleep_time = static_cast<s64>(m_last_throttle_time - time);
-  if (std::abs(sleep_time) >= MAX_VARIANCE_TIME)
-  {
-#ifndef _DEBUG
-    // Don't display the slow messages in debug, it'll always be slow...
-    // Limit how often the messages are displayed.
-    if (m_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
-    {
-      Log_WarningPrintf("System too %s, lost %.2f ms", sleep_time < 0 ? "slow" : "fast",
-                        static_cast<double>(std::abs(sleep_time) - MAX_VARIANCE_TIME) / 1000000.0);
-      m_speed_lost_time_timestamp.Reset();
-    }
-#endif
-    m_last_throttle_time = 0;
-    m_throttle_timer.Reset();
-  }
-  else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
-  {
-#ifdef WIN32
-    Sleep(static_cast<u32>(sleep_time / 1000000));
-#else
-    const struct timespec ts = {0, static_cast<long>(sleep_time)};
-    nanosleep(&ts, nullptr);
-#endif
-  }
-
-  m_last_throttle_time += m_throttle_period;
-}
-
 bool HostInterface::LoadState(const char* filename)
 {
   std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
@@ -441,13 +394,13 @@ void HostInterface::UpdateSpeedLimiterState()
     m_audio_stream->EmptyBuffers();
 
   m_display->SetVSync(video_sync_enabled);
-  m_throttle_timer.Reset();
-  m_last_throttle_time = 0;
+  if (m_system)
+    m_system->ResetPerformanceCounters();
 }
 
 void HostInterface::SwitchGPURenderer() {}
 
-void HostInterface::OnPerformanceCountersUpdated() {}
+void HostInterface::OnSystemPerformanceCountersUpdated() {}
 
 void HostInterface::OnRunningGameChanged() {}
 
@@ -646,60 +599,4 @@ void HostInterface::ModifyResolutionScale(s32 increment)
   AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
                          GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
                          GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale);
-}
-
-void HostInterface::RunFrame()
-{
-  m_frame_timer.Reset();
-  m_system->RunFrame();
-  UpdatePerformanceCounters();
-}
-
-void HostInterface::UpdatePerformanceCounters()
-{
-  const float frame_time = static_cast<float>(m_frame_timer.GetTimeMilliseconds());
-  m_average_frame_time_accumulator += frame_time;
-  m_worst_frame_time_accumulator = std::max(m_worst_frame_time_accumulator, frame_time);
-
-  // update fps counter
-  const float time = static_cast<float>(m_fps_timer.GetTimeSeconds());
-  if (time < 1.0f)
-    return;
-
-  const float frames_presented = static_cast<float>(m_system->GetFrameNumber() - m_last_frame_number);
-
-  m_worst_frame_time = m_worst_frame_time_accumulator;
-  m_worst_frame_time_accumulator = 0.0f;
-  m_average_frame_time = m_average_frame_time_accumulator / frames_presented;
-  m_average_frame_time_accumulator = 0.0f;
-  m_vps = static_cast<float>(frames_presented / time);
-  m_last_frame_number = m_system->GetFrameNumber();
-  m_fps = static_cast<float>(m_system->GetInternalFrameNumber() - m_last_internal_frame_number) / time;
-  m_last_internal_frame_number = m_system->GetInternalFrameNumber();
-  m_speed = static_cast<float>(static_cast<double>(m_system->GetGlobalTickCounter() - m_last_global_tick_counter) /
-                               (static_cast<double>(MASTER_CLOCK) * time)) *
-            100.0f;
-  m_last_global_tick_counter = m_system->GetGlobalTickCounter();
-  m_fps_timer.Reset();
-
-  OnPerformanceCountersUpdated();
-}
-
-void HostInterface::ResetPerformanceCounters()
-{
-  if (m_system)
-  {
-    m_last_frame_number = m_system->GetFrameNumber();
-    m_last_internal_frame_number = m_system->GetInternalFrameNumber();
-    m_last_global_tick_counter = m_system->GetGlobalTickCounter();
-  }
-  else
-  {
-    m_last_frame_number = 0;
-    m_last_internal_frame_number = 0;
-    m_last_global_tick_counter = 0;
-  }
-  m_average_frame_time_accumulator = 0.0f;
-  m_worst_frame_time_accumulator = 0.0f;
-  m_fps_timer.Reset();
 }

@@ -200,7 +200,8 @@ void SDLHostInterface::SwitchGPURenderer()
   }
 
   UpdateFullscreen();
-  ResetPerformanceCounters();
+  if (m_system)
+    m_system->ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -886,19 +887,20 @@ void SDLHostInterface::DrawMainMenuBar()
     {
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
 
-      const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
-      if (m_speed < 90.0f)
+      const float speed = m_system->GetEmulationSpeed();
+      const u32 rounded_speed = static_cast<u32>(std::round(speed));
+      if (speed < 90.0f)
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-      else if (m_speed < 110.0f)
+      else if (speed < 110.0f)
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
       else
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
-      ImGui::Text("FPS: %.2f", m_fps);
+      ImGui::Text("FPS: %.2f", m_system->GetFPS());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
-      ImGui::Text("VPS: %.2f", m_vps);
+      ImGui::Text("VPS: %.2f", m_system->GetVPS());
     }
     else
     {
@@ -1458,7 +1460,8 @@ void SDLHostInterface::DoResume()
   }
 
   UpdateControllerMapping();
-  ResetPerformanceCounters();
+  if (m_system)
+    m_system->ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1478,7 +1481,8 @@ void SDLHostInterface::DoStartDisc()
   }
 
   UpdateControllerMapping();
-  ResetPerformanceCounters();
+  if (m_system)
+    m_system->ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1494,7 +1498,8 @@ void SDLHostInterface::DoStartBIOS()
   }
 
   UpdateControllerMapping();
-  ResetPerformanceCounters();
+  if (m_system)
+    m_system->ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1511,7 +1516,8 @@ void SDLHostInterface::DoChangeDisc()
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
-  ResetPerformanceCounters();
+  if (m_system)
+    m_system->ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1531,7 +1537,8 @@ void SDLHostInterface::DoLoadState(u32 index)
   }
 
   UpdateControllerMapping();
-  ResetPerformanceCounters();
+  if (m_system)
+    m_system->ResetPerformanceCounters();
   ClearImGuiFocus();
 }
 
@@ -1549,7 +1556,7 @@ void SDLHostInterface::DoTogglePause()
 
   m_paused = !m_paused;
   if (!m_paused)
-    m_fps_timer.Reset();
+    m_system->ResetPerformanceCounters();
 }
 
 void SDLHostInterface::DoFrameStep()
@@ -1584,7 +1591,7 @@ void SDLHostInterface::Run()
 
     if (m_system && !m_paused)
     {
-      RunFrame();
+      m_system->RunFrame();
       if (m_frame_step_request)
       {
         m_frame_step_request = false;
@@ -1611,7 +1618,7 @@ void SDLHostInterface::Run()
         m_system->GetGPU()->RestoreGraphicsAPIState();
 
         if (m_speed_limiter_enabled)
-          Throttle();
+          m_system->Throttle();
       }
     }
   }

@@ -124,8 +124,8 @@ void MainWindow::recreateDisplayWidget(bool create_device_context)
   updateDebugMenuGPURenderer();
 }
 
-void MainWindow::onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
-                                              float worst_frame_time)
+void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
+                                                    float worst_frame_time)
 {
   m_status_speed_widget->setText(QStringLiteral("%1%").arg(speed, 0, 'f', 0));
   m_status_fps_widget->setText(
@@ -345,8 +345,8 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
   connect(m_host_interface, &QtHostInterface::recreateDisplayWidgetRequested, this, &MainWindow::recreateDisplayWidget,
           Qt::BlockingQueuedConnection);
-  connect(m_host_interface, &QtHostInterface::performanceCountersUpdated, this,
-          &MainWindow::onPerformanceCountersUpdated);
+  connect(m_host_interface, &QtHostInterface::systemPerformanceCountersUpdated, this,
+          &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
 
   connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameListEntry* entry) {

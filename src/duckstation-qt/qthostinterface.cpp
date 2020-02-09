@@ -52,9 +52,7 @@ void QtHostInterface::ReportMessage(const char* message)
 
 void QtHostInterface::setDefaultSettings()
 {
-  HostInterface::UpdateSettings([this]() {
-    HostInterface::SetDefaultSettings();
-  });
+  HostInterface::UpdateSettings([this]() { HostInterface::SetDefaultSettings(); });
 
   // default input settings for Qt
   std::lock_guard<std::mutex> guard(m_qsettings_mutex);
@@ -263,16 +261,18 @@ void QtHostInterface::SwitchGPURenderer()
       m_audio_stream->PauseOutput(false);
       UpdateSpeedLimiterState();
     }
-  }
 
-  ResetPerformanceCounters();
+    m_system->ResetPerformanceCounters();
+  }
 }
 
-void QtHostInterface::OnPerformanceCountersUpdated()
+void QtHostInterface::OnSystemPerformanceCountersUpdated()
 {
-  HostInterface::OnPerformanceCountersUpdated();
+  HostInterface::OnSystemPerformanceCountersUpdated();
 
-  emit performanceCountersUpdated(m_speed, m_fps, m_vps, m_average_frame_time, m_worst_frame_time);
+  DebugAssert(m_system);
+  emit systemPerformanceCountersUpdated(m_system->GetEmulationSpeed(), m_system->GetFPS(), m_system->GetVPS(),
+                                        m_system->GetAverageFrameTime(), m_system->GetWorstFrameTime());
 }
 
 void QtHostInterface::OnRunningGameChanged()
@@ -592,7 +592,7 @@ void QtHostInterface::threadEntryPoint()
 
     // execute the system, polling events inbetween frames
     // simulate the system if not paused
-    RunFrame();
+    m_system->RunFrame();
 
     // rendering
     {
@@ -611,7 +611,7 @@ void QtHostInterface::threadEntryPoint()
         m_system->GetGPU()->RestoreGraphicsAPIState();
 
         if (m_speed_limiter_enabled)
-          Throttle();
+          m_system->Throttle();
       }
     }
 

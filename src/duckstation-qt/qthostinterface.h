@@ -71,7 +71,8 @@ Q_SIGNALS:
   void gameListRefreshed();
   void toggleFullscreenRequested();
   void recreateDisplayWidgetRequested(bool create_device_context);
-  void performanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time);
+  void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
+                                        float worst_frame_time);
   void runningGameChanged(QString filename, QString game_code, QString game_title);
 
 public Q_SLOTS:
@@ -90,7 +91,7 @@ private Q_SLOTS:
 
 protected:
   void SwitchGPURenderer() override;
-  void OnPerformanceCountersUpdated() override;
+  void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
 
 private:

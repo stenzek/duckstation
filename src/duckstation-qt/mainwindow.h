@@ -29,8 +29,8 @@ private Q_SLOTS:
   void onEmulationPaused(bool paused);
   void toggleFullscreen();
   void recreateDisplayWidget(bool create_device_context);
-  void onPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
-                                    float worst_frame_time);
+  void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
+                                          float worst_frame_time);
   void onRunningGameChanged(QString filename, QString game_code, QString game_title);
 
   void onStartDiscActionTriggered();
