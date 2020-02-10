@@ -164,6 +164,20 @@ void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const char*
 }
 
 template<typename WidgetType>
+void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name, float range)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+
+  Accessor::setIntValue(widget, static_cast<int>(hi->getSettingValue(setting_name).toFloat() * range));
+
+  Accessor::connectValueChanged(widget, [hi, widget, setting_name, range]() {
+    const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
+    hi->putSettingValue(setting_name, new_value);
+    hi->applySettings();
+  });
+}
+
+template<typename WidgetType>
 void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
 {
   using Accessor = SettingAccessor<WidgetType>;
