@@ -384,8 +384,11 @@ void HostInterface::UpdateSpeedLimiterState()
 {
   m_speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
 
-  const bool audio_sync_enabled = !m_system || m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled);
-  const bool video_sync_enabled = !m_system || m_paused || (m_speed_limiter_enabled && m_settings.video_sync_enabled);
+  const bool is_non_standard_speed = ((m_settings.emulation_speed - 1.0f) > 0.05f);
+  const bool audio_sync_enabled =
+    !m_system || m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled && !is_non_standard_speed);
+  const bool video_sync_enabled =
+    !m_system || m_paused || (m_speed_limiter_enabled && m_settings.video_sync_enabled && !is_non_standard_speed);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
 
@@ -559,7 +562,10 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   if (m_system)
   {
     if (m_settings.emulation_speed != old_emulation_speed)
+    {
       m_system->UpdateThrottlePeriod();
+      UpdateSpeedLimiterState();
+    }
 
     if (m_settings.cpu_execution_mode != old_cpu_execution_mode)
       m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
