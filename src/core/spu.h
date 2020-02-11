@@ -114,15 +114,13 @@ private:
     };
 
     BitField<u32, u8, 0, 4> sustain_level;
-    BitField<u32, u8, 4, 4> decay_shift;
-    BitField<u32, u8, 8, 2> attack_step;
-    BitField<u32, u8, 10, 5> attack_shift;
+    BitField<u32, u8, 4, 4> decay_rate_shr2;
+    BitField<u32, u8, 8, 7> attack_rate;
     BitField<u32, bool, 15, 1> attack_exponential;
 
-    BitField<u32, u8, 16, 5> release_shift;
+    BitField<u32, u8, 16, 5> release_rate_shr2;
     BitField<u32, bool, 21, 1> release_exponential;
-    BitField<u32, u8, 22, 2> sustain_step;
-    BitField<u32, u8, 24, 5> sustain_shift;
+    BitField<u32, u8, 22, 7> sustain_rate;
     BitField<u32, bool, 30, 1> sustain_direction_decrease;
     BitField<u32, bool, 31, 1> sustain_exponential;
   };
@@ -214,15 +212,6 @@ private:
     Release = 4
   };
 
-  struct ADSRTarget
-  {
-    s32 level;
-    s16 step;
-    u8 shift;
-    bool decreasing;
-    bool exponential;
-  };
-
   struct Voice
   {
     u16 current_address;
@@ -234,11 +223,12 @@ private:
     std::array<s32, 2> adpcm_last_samples;
     s32 last_amplitude;
 
-    ADSRPhase adsr_phase;
-    ADSRTarget adsr_target;
-    TickCount adsr_ticks;
     TickCount adsr_ticks_remaining;
-    s16 adsr_step;
+    s32 adsr_target;
+    ADSRPhase adsr_phase;
+    u8 adsr_rate;
+    bool adsr_decreasing;
+    bool adsr_exponential;
     bool has_samples;
 
     bool IsOn() const { return adsr_phase != ADSRPhase::Off; }

@@ -58,11 +58,12 @@ void SPU::Reset()
     v.current_block_samples.fill(s16(0));
     v.previous_block_last_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
-    v.adsr_phase = ADSRPhase::Off;
-    v.adsr_target = {};
-    v.adsr_ticks = 0;
     v.adsr_ticks_remaining = 0;
-    v.adsr_step = 0;
+    v.adsr_phase = ADSRPhase::Off;
+    v.adsr_target = 0;
+    v.adsr_rate = 0;
+    v.adsr_decreasing = false;
+    v.adsr_exponential = false;
     v.has_samples = false;
   }
 
@@ -100,11 +101,12 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.previous_block_last_samples);
     sw.Do(&v.adpcm_last_samples);
     sw.Do(&v.last_amplitude);
-    sw.Do(&v.adsr_phase);
-    sw.DoPOD(&v.adsr_target);
-    sw.Do(&v.adsr_ticks);
     sw.Do(&v.adsr_ticks_remaining);
-    sw.Do(&v.adsr_step);
+    sw.Do(&v.adsr_target);
+    sw.Do(&v.adsr_phase);
+    sw.Do(&v.adsr_rate);
+    sw.Do(&v.adsr_decreasing);
+    sw.Do(&v.adsr_exponential);
     sw.Do(&v.has_samples);
   }
 
@@ -435,13 +437,14 @@ u16 SPU::ReadVoiceRegister(u32 offset)
   const u32 voice_index = (offset / 0x10);   //((offset >> 4) & 0x1F);
   Assert(voice_index < 24);
 
-  if (reg_index >= 6)
+  const Voice& voice = m_voices[voice_index];
+  if (reg_index >= 6 && voice.IsOn())
   {
     // adsr volume needs to be updated when reading
     m_sample_event->InvokeEarly();
   }
 
-  return m_voices[voice_index].regs.index[reg_index];
+  return voice.regs.index[reg_index];
 }
 
 void SPU::WriteVoiceRegister(u32 offset, u16 value)
@@ -728,14 +731,16 @@ void SPU::Voice::KeyOn()
   regs.adsr_volume = 0;
   has_samples = false;
   SetADSRPhase(ADSRPhase::Attack);
+  adsr_ticks_remaining = 0;
 }
 
 void SPU::Voice::KeyOff()
 {
-  if (adsr_phase == ADSRPhase::Off)
+  if (adsr_phase == ADSRPhase::Off || adsr_phase == ADSRPhase::Release)
     return;
 
   SetADSRPhase(ADSRPhase::Release);
+  adsr_ticks_remaining = 0;
 }
 
 SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
@@ -761,79 +766,140 @@ SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
   }
 }
 
+struct ADSRTableEntry
+{
+  s32 ticks;
+  s32 step;
+};
+enum : u32
+{
+  NUM_ADSR_TABLE_ENTRIES = 128,
+  NUM_ADSR_DIRECTIONS = 2 // increasing, decreasing
+};
+using ADSRTableEntries = std::array<std::array<ADSRTableEntry, NUM_ADSR_TABLE_ENTRIES>, NUM_ADSR_DIRECTIONS>;
+
+static constexpr ADSRTableEntries ComputeADSRTableEntries()
+{
+  ADSRTableEntries entries = {};
+  for (u32 decreasing = 0; decreasing < 2; decreasing++)
+  {
+    for (u32 rate = 0; rate < NUM_ADSR_TABLE_ENTRIES; rate++)
+    {
+      if (rate < 48)
+      {
+        entries[decreasing][rate].ticks = 1;
+        if (decreasing != 0)
+          entries[decreasing][rate].step = static_cast<s32>(static_cast<u32>(-8 + static_cast<s32>(rate & 3)) << (11 - (rate >> 2)));
+        else
+          entries[decreasing][rate].step = (7 - static_cast<s32>(rate & 3)) << (11 - (rate >> 2));
+      }
+      else
+      {
+        entries[decreasing][rate].ticks = 1 << (static_cast<s32>(rate >> 2) - 11);
+        if (decreasing != 0)
+          entries[decreasing][rate].step = (-8 + static_cast<s32>(rate & 3));
+        else
+          entries[decreasing][rate].step = (7 - static_cast<s32>(rate & 3));
+      }
+    }
+  }
+
+  return entries;
+}
+
+static constexpr ADSRTableEntries s_adsr_table = ComputeADSRTableEntries();
+
 void SPU::Voice::SetADSRPhase(ADSRPhase phase)
 {
   adsr_phase = phase;
   switch (phase)
   {
     case ADSRPhase::Off:
-      adsr_target = {};
-      adsr_ticks = 0;
-      adsr_ticks_remaining = 0;
-      adsr_step = 0;
+      adsr_target = 0;
+      adsr_decreasing = false;
+      adsr_exponential = false;
       return;
 
     case ADSRPhase::Attack:
-      adsr_target.level = 32767; // 0 -> max
-      adsr_target.step = regs.adsr.attack_step;
-      adsr_target.shift = regs.adsr.attack_shift;
-      adsr_target.decreasing = false;
-      adsr_target.exponential = regs.adsr.attack_exponential;
+      adsr_target = 32767; // 0 -> max
+      adsr_decreasing = false;
+      adsr_exponential = regs.adsr.attack_exponential;
+      adsr_rate = regs.adsr.attack_rate;
       break;
 
     case ADSRPhase::Decay:
-      adsr_target.level = (u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800; // max -> sustain level
-      adsr_target.step = 0;
-      adsr_target.shift = regs.adsr.decay_shift;
-      adsr_target.decreasing = true;
-      adsr_target.exponential = true;
+      adsr_target = (u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800; // max -> sustain level
+      adsr_decreasing = true;
+      adsr_exponential = true;
+      adsr_rate = regs.adsr.decay_rate_shr2 << 2;
       break;
 
     case ADSRPhase::Sustain:
-      adsr_target.level = 0;
-      adsr_target.step = regs.adsr.sustain_step;
-      adsr_target.shift = regs.adsr.sustain_shift;
-      adsr_target.decreasing = regs.adsr.sustain_direction_decrease;
-      adsr_target.exponential = regs.adsr.sustain_exponential;
+      adsr_target = 0;
+      adsr_decreasing = regs.adsr.sustain_direction_decrease;
+      adsr_exponential = regs.adsr.sustain_exponential;
+      adsr_rate = regs.adsr.sustain_rate;
       break;
 
     case ADSRPhase::Release:
-      adsr_target.level = 0;
-      adsr_target.step = 0;
-      adsr_target.shift = regs.adsr.release_shift;
-      adsr_target.decreasing = true;
-      adsr_target.exponential = regs.adsr.release_exponential;
+      adsr_target = 0;
+      adsr_decreasing = true;
+      adsr_exponential = regs.adsr.release_exponential;
+      adsr_rate = regs.adsr.release_rate_shr2 << 2;
       break;
 
     default:
       break;
   }
-
-  const s16 step = adsr_target.decreasing ? (-8 + adsr_target.step) : (7 - adsr_target.step);
-  adsr_ticks = 1 << std::max<s16>(0, static_cast<s16>(ZeroExtend16(adsr_target.shift)) - 11);
-  adsr_ticks_remaining = adsr_ticks;
-  adsr_step = step << std::max<s16>(0, 11 - static_cast<s16>(ZeroExtend16(adsr_target.shift)));
 }
 
 void SPU::Voice::TickADSR()
 {
   adsr_ticks_remaining--;
-  if (adsr_ticks_remaining <= 0)
-  {
-    const s32 new_volume = s32(regs.adsr_volume) + s32(adsr_step);
-    regs.adsr_volume = static_cast<s16>(std::clamp<s32>(new_volume, ADSR_MIN_VOLUME, ADSR_MAX_VOLUME));
+  if (adsr_ticks_remaining > 0)
+    return;
 
-    const bool reached_target =
-      adsr_target.decreasing ? (new_volume <= adsr_target.level) : (new_volume >= adsr_target.level);
-    if (adsr_phase != ADSRPhase::Sustain && reached_target)
+  // set up for next tick
+  const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(adsr_decreasing)][adsr_rate];
+
+  s32 this_step = table_entry.step;
+  adsr_ticks_remaining = table_entry.ticks;
+
+  if (adsr_exponential)
+  {
+    if (adsr_decreasing)
     {
-      // next phase
-      SetADSRPhase(GetNextADSRPhase(adsr_phase));
+      this_step = (this_step * regs.adsr_volume) >> 15;
     }
     else
     {
-      adsr_ticks_remaining = adsr_ticks;
+      if (regs.adsr_volume >= 0x6000)
+      {
+        if (adsr_rate < 40)
+        {
+          this_step >>= 2;
+        }
+        else if (adsr_rate >= 44)
+        {
+          adsr_ticks_remaining >>= 2;
+        }
+        else
+        {
+          this_step >>= 1;
+          adsr_ticks_remaining >>= 1;
+        }
+      }
     }
+  }
+
+  const s32 new_volume = s32(regs.adsr_volume) + s32(this_step);
+  regs.adsr_volume = static_cast<s16>(std::clamp<s32>(new_volume, ADSR_MIN_VOLUME, ADSR_MAX_VOLUME));
+
+  if (adsr_phase != ADSRPhase::Sustain)
+  {
+    const bool reached_target = adsr_decreasing ? (new_volume <= adsr_target) : (new_volume >= adsr_target);
+    if (reached_target)
+      SetADSRPhase(GetNextADSRPhase(adsr_phase));
   }
 }
 
@@ -1063,7 +1129,8 @@ void SPU::EnsureCDAudioSpace(u32 remaining_frames)
 {
   if (m_cd_audio_buffer.IsEmpty())
   {
-    // we want the audio to start playing at the right point, not a few cycles early, otherwise this'll cause sync issues.
+    // we want the audio to start playing at the right point, not a few cycles early, otherwise this'll cause sync
+    // issues.
     m_sample_event->InvokeEarly();
   }
 
@@ -1153,7 +1220,7 @@ void SPU::DrawDebugStateWindow()
     // headers
     static constexpr std::array<const char*, NUM_COLUMNS> column_titles = {
       {"#", "InterpIndex", "SampleIndex", "CurAddr", "StartAddr", "RepeatAddr", "SampleRate", "VolLeft", "VolRight",
-       "ADSR", "ADSRPhase", "ADSRVol"}};
+       "ADSRPhase", "ADSRVol", "ADSRTicks"}};
     static constexpr std::array<const char*, 5> adsr_phases = {{"Off", "Attack", "Decay", "Sustain", "Release"}};
     for (u32 i = 0; i < NUM_COLUMNS; i++)
     {
@@ -1184,11 +1251,11 @@ void SPU::DrawDebugStateWindow()
       ImGui::NextColumn();
       ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.volume_right.bits));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%08X", v.regs.adsr.bits);
-      ImGui::NextColumn();
       ImGui::TextColored(color, "%s", adsr_phases[static_cast<u8>(v.adsr_phase)]);
       ImGui::NextColumn();
       ImGui::TextColored(color, "%d", ZeroExtend32(v.regs.adsr_volume));
+      ImGui::NextColumn();
+      ImGui::TextColored(color, "%d", v.adsr_ticks_remaining);
       ImGui::NextColumn();
     }
 
