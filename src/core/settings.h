@@ -35,6 +35,7 @@ struct Settings
 
   CPUExecutionMode cpu_execution_mode = CPUExecutionMode::Interpreter;
 
+  float emulation_speed = 1.0f;
   bool start_paused = false;
   bool speed_limiter_enabled = true;
 

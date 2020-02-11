@@ -503,6 +503,7 @@ void HostInterface::SetDefaultSettings()
   m_settings.region = ConsoleRegion::Auto;
   m_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
 
+  m_settings.emulation_speed = 1.0f;
   m_settings.speed_limiter_enabled = true;
   m_settings.start_paused = false;
 
@@ -532,6 +533,7 @@ void HostInterface::SetDefaultSettings()
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 {
+  const float old_emulation_speed = m_settings.emulation_speed;
   const CPUExecutionMode old_cpu_execution_mode = m_settings.cpu_execution_mode;
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
@@ -556,6 +558,9 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   if (m_system)
   {
+    if (m_settings.emulation_speed != old_emulation_speed)
+      m_system->UpdateThrottlePeriod();
+
     if (m_settings.cpu_execution_mode != old_cpu_execution_mode)
       m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
 

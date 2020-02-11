@@ -93,7 +93,10 @@ public:
   void RunFrame();
 
   /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
-  void SetThrottleFrequency(double frequency) { m_throttle_period = static_cast<s64>(1000000000.0 / frequency); }
+  void SetThrottleFrequency(float frequency);
+
+  /// Updates the throttle period, call when target emulation speed changes.
+  void UpdateThrottlePeriod();
 
   /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
   void Throttle();
@@ -186,8 +189,9 @@ private:
   std::string m_running_game_code;
   std::string m_running_game_title;
 
+  float m_throttle_frequency = 60.0f;
+  s32 m_throttle_period = 0;
   u64 m_last_throttle_time = 0;
-  s64 m_throttle_period = INT64_C(1000000000) / 60;
   Common::Timer m_throttle_timer;
   Common::Timer m_speed_lost_time_timestamp;
 

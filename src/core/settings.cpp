@@ -9,6 +9,7 @@ void Settings::Load(SettingsInterface& si)
   region =
     ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(ConsoleRegion::NTSC_U);
 
+  emulation_speed = si.GetFloatValue("General", "EmulationSpeed", 1.0f);
   speed_limiter_enabled = si.GetBoolValue("General", "SpeedLimiterEnabled", true);
   start_paused = si.GetBoolValue("General", "StartPaused", false);
 
@@ -57,6 +58,7 @@ void Settings::Save(SettingsInterface& si) const
 {
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
 
+  si.SetFloatValue("General", "EmulationSpeed", emulation_speed);
   si.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
   si.SetBoolValue("General", "StartPaused", start_paused);
 

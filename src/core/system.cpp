@@ -209,6 +209,8 @@ void System::InitializeComponents()
   m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
   m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
+
+  UpdateThrottlePeriod();
 }
 
 void System::DestroyComponents()
@@ -402,6 +404,20 @@ void System::RunFrame()
   UpdatePerformanceCounters();
 }
 
+void System::SetThrottleFrequency(float frequency)
+{
+  m_throttle_frequency = frequency;
+  UpdateThrottlePeriod();
+}
+
+void System::UpdateThrottlePeriod()
+{
+  m_throttle_period = static_cast<s32>(1000000000.0 / static_cast<double>(m_throttle_frequency) /
+                                       static_cast<double>(GetSettings().emulation_speed));
+  m_last_throttle_time = 0;
+  m_throttle_timer.Reset();
+}
+
 void System::Throttle()
 {
   // Allow variance of up to 40ms either way.
@@ -413,15 +429,15 @@ void System::Throttle()
   // Use unsigned for defined overflow/wrap-around.
   const u64 time = static_cast<u64>(m_throttle_timer.GetTimeNanoseconds());
   const s64 sleep_time = static_cast<s64>(m_last_throttle_time - time);
-  if (std::abs(sleep_time) >= MAX_VARIANCE_TIME)
+  if (sleep_time < -MAX_VARIANCE_TIME)
   {
 #ifndef _DEBUG
     // Don't display the slow messages in debug, it'll always be slow...
     // Limit how often the messages are displayed.
     if (m_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
     {
-      Log_WarningPrintf("System too %s, lost %.2f ms", sleep_time < 0 ? "slow" : "fast",
-                        static_cast<double>(std::abs(sleep_time) - MAX_VARIANCE_TIME) / 1000000.0);
+      Log_WarningPrintf("System too slow, lost %.2f ms",
+                        static_cast<double>(-sleep_time - MAX_VARIANCE_TIME) / 1000000.0);
       m_speed_lost_time_timestamp.Reset();
     }
 #endif
