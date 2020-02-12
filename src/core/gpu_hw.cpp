@@ -272,8 +272,9 @@ void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
 
   // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
   // shadow texture is updated
-  if (m_draw_mode.GetTexturePageRectangle().Intersects(rect) ||
-      m_draw_mode.GetTexturePaletteRectangle().Intersects(rect))
+  if (!m_draw_mode.IsTexturePageChanged() &&
+      (m_draw_mode.GetTexturePageRectangle().Intersects(rect) ||
+       m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(rect)))
   {
     m_draw_mode.SetTexturePageChanged();
   }
@@ -306,8 +307,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     if (m_draw_mode.IsTexturePageChanged())
     {
       m_draw_mode.ClearTexturePageChangedFlag();
-      if (m_vram_dirty_rect.Valid() && (m_draw_mode.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
-                                        m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect)))
+      if (m_vram_dirty_rect.Valid() &&
+          (m_draw_mode.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
+           (m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
       {
         Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())

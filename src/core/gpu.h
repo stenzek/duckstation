@@ -448,7 +448,10 @@ protected:
     /// Returns a rectangle comprising the texture page area.
     Common::Rectangle<u32> GetTexturePageRectangle() const
     {
-      return Common::Rectangle<u32>::FromExtents(texture_page_x, texture_page_y, TEXTURE_PAGE_WIDTH,
+      static constexpr std::array<u32, 4> texture_page_widths = {
+        {TEXTURE_PAGE_WIDTH / 4, TEXTURE_PAGE_WIDTH / 2, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_WIDTH}};
+      return Common::Rectangle<u32>::FromExtents(texture_page_x, texture_page_y,
+                                                 texture_page_widths[static_cast<u8>(mode_reg.texture_mode.GetValue())],
                                                  TEXTURE_PAGE_HEIGHT);
     }
 
@@ -456,8 +459,8 @@ protected:
     Common::Rectangle<u32> GetTexturePaletteRectangle() const
     {
       static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
-      return Common::Rectangle<u32>::FromExtents(
-        texture_palette_x, texture_palette_y, palette_widths[static_cast<u8>(mode_reg.texture_mode.GetValue()) & 3], 1);
+      return Common::Rectangle<u32>::FromExtents(texture_palette_x, texture_palette_y,
+                                                 palette_widths[static_cast<u8>(mode_reg.texture_mode.GetValue())], 1);
     }
 
     bool IsTexturePageChanged() const { return texture_page_changed; }
