@@ -384,7 +384,7 @@ void HostInterface::UpdateSpeedLimiterState()
 {
   m_speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
 
-  const bool is_non_standard_speed = ((m_settings.emulation_speed - 1.0f) > 0.05f);
+  const bool is_non_standard_speed = (std::abs(m_settings.emulation_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
     !m_system || m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
