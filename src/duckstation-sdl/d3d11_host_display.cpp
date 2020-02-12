@@ -2,12 +2,12 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
+#include "imgui_impl_sdl.h"
 #include <SDL_syswm.h>
 #include <array>
 #include <dxgi1_5.h>
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
-#include "imgui_impl_sdl.h"
 Log_SetChannel(D3D11HostDisplay);
 
 class D3D11HostDisplayTexture : public HostDisplayTexture
@@ -411,8 +411,9 @@ void D3D11HostDisplay::RenderDisplay()
 
   const float uniforms[4] = {static_cast<float>(m_display_offset_x) / static_cast<float>(m_display_texture_width),
                              static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height),
-                             static_cast<float>(m_display_width) / static_cast<float>(m_display_texture_width),
-                             static_cast<float>(m_display_height) / static_cast<float>(m_display_texture_height)};
+                             (static_cast<float>(m_display_width) - 0.5f) / static_cast<float>(m_display_texture_width),
+                             (static_cast<float>(m_display_height) - 0.5f) /
+                               static_cast<float>(m_display_texture_height)};
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));

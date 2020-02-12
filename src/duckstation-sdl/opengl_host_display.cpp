@@ -1,10 +1,10 @@
 #include "opengl_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "imgui_impl_sdl.h"
 #include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
-#include "imgui_impl_sdl.h"
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
 
@@ -366,10 +366,11 @@ void OpenGLHostDisplay::RenderDisplay()
   glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
-  m_display_program.Uniform4f(0, static_cast<float>(m_display_offset_x) / static_cast<float>(m_display_texture_width),
-                              static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height),
-                              static_cast<float>(m_display_width) / static_cast<float>(m_display_texture_width),
-                              static_cast<float>(m_display_height) / static_cast<float>(m_display_texture_height));
+  m_display_program.Uniform4f(
+    0, static_cast<float>(m_display_offset_x) / static_cast<float>(m_display_texture_width),
+    static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height),
+    (static_cast<float>(m_display_width) - 0.5f) / static_cast<float>(m_display_texture_width),
+    (static_cast<float>(m_display_height) - 0.5f) / static_cast<float>(m_display_texture_height));
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(m_display_texture_handle)));
   glBindSampler(0, m_display_linear_filtering ? m_display_linear_sampler : m_display_nearest_sampler);
   glBindVertexArray(m_display_vao);

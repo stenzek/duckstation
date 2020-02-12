@@ -445,8 +445,9 @@ void D3D11DisplayWindow::renderDisplay()
 
   const float uniforms[4] = {static_cast<float>(m_display_offset_x) / static_cast<float>(m_display_texture_width),
                              static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height),
-                             static_cast<float>(m_display_width) / static_cast<float>(m_display_texture_width),
-                             static_cast<float>(m_display_height) / static_cast<float>(m_display_texture_height)};
+                             (static_cast<float>(m_display_width) - 0.5f) / static_cast<float>(m_display_texture_width),
+                             (static_cast<float>(m_display_height) - 0.5f) /
+                               static_cast<float>(m_display_texture_height)};
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));
