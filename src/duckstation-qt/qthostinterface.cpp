@@ -319,8 +319,11 @@ void QtHostInterface::updateControllerInputMap()
       continue;
 
     const auto button_names = Controller::GetButtonNames(ctype);
-    for (const auto& [button_name, button_code] : button_names)
+    for (const auto& it : button_names)
     {
+      const std::string& button_name = it.first;
+      const s32 button_code = it.second;
+
       QVariant var = m_qsettings.value(
         QStringLiteral("Controller%1/Button%2").arg(controller_index + 1).arg(QString::fromStdString(button_name)));
       if (!var.isValid())

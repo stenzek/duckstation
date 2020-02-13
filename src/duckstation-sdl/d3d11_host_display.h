@@ -44,7 +44,7 @@ private:
   bool CreateSwapChainRTV();
   bool CreateImGuiContext();
 
-  void Render();
+  void Render() override;
   void RenderDisplay();
 
   SDL_Window* m_window = nullptr;

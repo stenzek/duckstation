@@ -274,7 +274,7 @@ void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
   // shadow texture is updated
   if (!m_draw_mode.IsTexturePageChanged() &&
       (m_draw_mode.GetTexturePageRectangle().Intersects(rect) ||
-       m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(rect)))
+       (m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(rect))))
   {
     m_draw_mode.SetTexturePageChanged();
   }

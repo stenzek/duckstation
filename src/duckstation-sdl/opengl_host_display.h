@@ -39,7 +39,7 @@ private:
   bool CreateImGuiContext();
   bool CreateGLResources();
 
-  void Render();
+  void Render() override;
   void RenderDisplay();
 
   SDL_Window* m_window = nullptr;
