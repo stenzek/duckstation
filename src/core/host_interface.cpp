@@ -295,12 +295,15 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   {                                                                                                                    \
     std::string try_filename = filename;                                                                               \
     std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(try_filename);                                    \
-    BIOS::Hash found_hash = BIOS::GetHash(*found_image);                                                               \
-    Log_DevPrintf("Hash for BIOS '%s': %s", try_filename.c_str(), found_hash.ToString().c_str());                      \
-    if (BIOS::IsValidHashForRegion(region, found_hash))                                                                \
+    if (found_image)                                                                                                   \
     {                                                                                                                  \
-      Log_InfoPrintf("Using BIOS from '%s'", try_filename.c_str());                                                    \
-      return found_image;                                                                                              \
+      BIOS::Hash found_hash = BIOS::GetHash(*found_image);                                                             \
+      Log_DevPrintf("Hash for BIOS '%s': %s", try_filename.c_str(), found_hash.ToString().c_str());                    \
+      if (BIOS::IsValidHashForRegion(region, found_hash))                                                              \
+      {                                                                                                                \
+        Log_InfoPrintf("Using BIOS from '%s'", try_filename.c_str());                                                  \
+        return found_image;                                                                                            \
+      }                                                                                                                \
     }                                                                                                                  \
   } while (0)
 
