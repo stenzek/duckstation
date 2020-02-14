@@ -5,7 +5,11 @@
 #include <cstring>
 #include <type_traits>
 
-#include <malloc.h> // _aligned_malloc, memalign
+#ifdef _MSC_VER
+#include <malloc.h> // _aligned_malloc
+#else
+#include <stdlib.h> // posix_memalign
+#endif
 
 template<typename T, u32 CAPACITY>
 class FIFOQueue
@@ -183,7 +187,8 @@ public:
 #ifdef _MSC_VER
       this->m_ptr = static_cast<T*>(_aligned_malloc(sizeof(T) * CAPACITY, ALIGNMENT));
 #else
-      this->m_ptr = static_cast<T*>(memalign(ALIGNMENT, sizeof(T) * CAPACITY));
+      if (posix_memalign(reinterpret_cast<void**>(&this->m_ptr), ALIGNMENT, sizeof(T) * CAPACITY) != 0)
+        this->m_ptr = nullptr;
 #endif
     }
     else
