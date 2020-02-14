@@ -80,7 +80,7 @@ constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
 // ABI selection
 #if defined(WIN32)
 #define ABI_WIN64 1
-#elif defined(__linux__) || defined(__ANDROID__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 #define ABI_SYSV 1
 #else
 #error Unknown ABI.

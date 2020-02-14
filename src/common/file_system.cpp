@@ -1389,10 +1389,10 @@ std::string GetProgramPath()
 #elif defined(__APPLE__)
 
   int curSize = PATH_MAX;
-  char* buffer = static_cast<char*>(std::realloc(nullptr, curSize + 1));
+  char* buffer = static_cast<char*>(std::realloc(nullptr, curSize));
   for (;;)
   {
-    uint32 nChars = PATH_MAX - 1;
+    uint32 nChars = curSize - 1;
     int res = _NSGetExecutablePath(buffer, &nChars);
     if (res == 0)
     {
@@ -1408,12 +1408,6 @@ std::string GetProgramPath()
       std::string ret(buffer, len);
       std::free(buffer);
       return ret;
-    }
-
-    if (curSize >= 1048576)
-    {
-      std::free(buffer);
-      return {};
     }
 
     curSize *= 2;

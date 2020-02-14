@@ -16,7 +16,7 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
 #if defined(WIN32)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
-#elif defined(__linux__) || defined(__ANDROID__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
   m_code_ptr = static_cast<u8*>(
     mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 #else
@@ -39,7 +39,7 @@ JitCodeBuffer::~JitCodeBuffer()
 {
 #if defined(WIN32)
   VirtualFree(m_code_ptr, 0, MEM_RELEASE);
-#elif defined(__linux__) || defined(__ANDROID__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
   munmap(m_code_ptr, m_total_size);
 #endif
 }

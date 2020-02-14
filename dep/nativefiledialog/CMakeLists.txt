@@ -12,7 +12,7 @@ target_include_directories(nativefiledialog INTERFACE "${CMAKE_CURRENT_SOURCE_DI
 if(WIN32)
   target_sources(nativefiledialog PRIVATE src/nfd_win.cpp)
 elseif(APPLE)
-  target_sources(nativefiledialog PRIVATE src/nfd_coca.m)
+  target_sources(nativefiledialog PRIVATE src/nfd_cocoa.m)
 else()
   find_package(GTK2 2.6 COMPONENTS gtk)
   if(GTK2_FOUND)

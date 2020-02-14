@@ -1161,7 +1161,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     std::snprintf(temporaryFileName, fileNameLength + 8, "%s.XXXXXX", fileName);
 
     // fill in random characters
-#if defined(__linux__) || defined(__ANDROID__)
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
     mkstemp(temporaryFileName);
 #else
     mktemp(temporaryFileName);
