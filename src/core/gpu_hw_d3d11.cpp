@@ -328,6 +328,8 @@ bool GPU_HW_D3D11::CompileShaders()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
                              m_supports_dual_source_blend);
 
+  m_system->GetHostInterface()->DisplayLoadingScreen("Compiling shaders...");
+
   m_screen_quad_vertex_shader =
     m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
   if (!m_screen_quad_vertex_shader)

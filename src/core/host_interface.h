@@ -82,6 +82,10 @@ public:
   /// Returns a path relative to the user directory.
   std::string GetUserDirectoryRelativePath(const char* format, ...) const;
 
+  /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
+  /// such as compiling shaders when starting up.
+  void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
+
 protected:
   enum : u32
   {
