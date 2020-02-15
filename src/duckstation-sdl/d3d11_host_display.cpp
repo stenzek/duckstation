@@ -381,6 +381,7 @@ void D3D11HostDisplay::Render()
 
   RenderDisplay();
 
+  ImGui::Render();
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
   if (!m_vsync && m_allow_tearing_supported)

@@ -83,8 +83,10 @@ private:
   void DestroyDisplay();
   void CreateImGuiContext();
 
-  void SaveSettings();
-  void QueueUpdateSettings();
+  /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
+  void RunLater(std::function<void()> callback);
+
+  void SaveAndUpdateSettings();
 
   void UpdateFullscreen();
 
@@ -115,7 +117,7 @@ private:
 
   KeyboardControllerActionMap m_keyboard_button_mapping;
 
-  u32 m_update_settings_event_id = 0;
+  u32 m_run_later_event_id = 0;
 
   bool m_quit_request = false;
   bool m_frame_step_request = false;

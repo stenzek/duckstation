@@ -27,7 +27,7 @@ Log_SetChannel(SDLHostInterface);
 
 SDLHostInterface::SDLHostInterface()
 {
-  m_update_settings_event_id = SDL_RegisterEvents(1);
+  m_run_later_event_id = SDL_RegisterEvents(1);
 }
 
 SDLHostInterface::~SDLHostInterface()
@@ -198,18 +198,20 @@ void SDLHostInterface::OnControllerTypeChanged(u32 slot)
   g_sdl_controller_interface.SetDefaultBindings();
 }
 
-void SDLHostInterface::SaveSettings()
-{
-  SDLSettingsInterface si(GetSettingsFileName().c_str());
-  m_settings.Save(si);
-}
-
-void SDLHostInterface::QueueUpdateSettings()
+void SDLHostInterface::RunLater(std::function<void()> callback)
 {
   SDL_Event ev = {};
   ev.type = SDL_USEREVENT;
-  ev.user.code = m_update_settings_event_id;
+  ev.user.code = m_run_later_event_id;
+  ev.user.data1 = new std::function<void()>(std::move(callback));
   SDL_PushEvent(&ev);
+}
+
+void SDLHostInterface::SaveAndUpdateSettings()
+{
+  SDLSettingsInterface si(GetSettingsFileName().c_str());
+  m_settings.Save(si);
+  m_settings.Load(si);
 }
 
 void SDLHostInterface::UpdateFullscreen()
@@ -309,12 +311,12 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_USEREVENT:
     {
-      if (static_cast<u32>(event->user.code) == m_update_settings_event_id)
+      if (static_cast<u32>(event->user.code) == m_run_later_event_id)
       {
-        UpdateSettings([this]() {
-          SDLSettingsInterface si(GetSettingsFileName().c_str());
-          m_settings.Load(si);
-        });
+        std::function<void()>* callback = static_cast<std::function<void()>*>(event->user.data1);
+        Assert(callback);
+        (*callback)();
+        delete callback;
       }
     }
     break;
@@ -784,10 +786,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering);
 
   if (settings_changed)
-  {
-    SaveSettings();
-    QueueUpdateSettings();
-  }
+    RunLater(std::bind(&SDLHostInterface::SaveAndUpdateSettings, this));
 }
 
 void SDLHostInterface::DrawDebugMenu()
@@ -851,7 +850,7 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Resume", button_size))
   {
-    ResumeSystemFromMostRecentState();
+    RunLater([this]() { ResumeSystemFromMostRecentState(); });
     ClearImGuiFocus();
   }
   ImGui::NewLine();
@@ -859,7 +858,7 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Start Disc", button_size))
   {
-    DoStartDisc();
+    RunLater([this]() { DoStartDisc(); });
     ClearImGuiFocus();
   }
   ImGui::NewLine();
@@ -867,7 +866,7 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Start BIOS", button_size))
   {
-    BootSystemFromFile(nullptr);
+    RunLater([this]() { BootSystemFromFile(nullptr); });
     ClearImGuiFocus();
   }
   ImGui::NewLine();
@@ -883,7 +882,7 @@ void SDLHostInterface::DrawPoweredOffWindow()
       std::snprintf(buf, sizeof(buf), "State %u", i);
       if (ImGui::MenuItem(buf))
       {
-        LoadState(true, i);
+        RunLater([this, i]() { LoadState(true, i); });
         ClearImGuiFocus();
       }
     }
@@ -1152,10 +1151,7 @@ void SDLHostInterface::DrawSettingsWindow()
   ImGui::End();
 
   if (settings_changed)
-  {
-    SaveSettings();
-    QueueUpdateSettings();
-  }
+    RunLater(std::bind(&SDLHostInterface::SaveAndUpdateSettings, this));
 }
 
 void SDLHostInterface::DrawAboutWindow()

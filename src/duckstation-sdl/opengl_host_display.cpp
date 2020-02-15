@@ -355,6 +355,7 @@ void OpenGLHostDisplay::Render()
 
   RenderDisplay();
 
+  ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   SDL_GL_SwapWindow(m_window);
