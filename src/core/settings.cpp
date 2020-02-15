@@ -11,6 +11,7 @@ void Settings::Load(SettingsInterface& si)
 
   emulation_speed = si.GetFloatValue("General", "EmulationSpeed", 1.0f);
   speed_limiter_enabled = si.GetBoolValue("General", "SpeedLimiterEnabled", true);
+  increase_timer_resolution = si.GetBoolValue("General", "IncreaseTimerResolution", true);
   start_paused = si.GetBoolValue("General", "StartPaused", false);
 
   cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Interpreter").c_str())
@@ -60,6 +61,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetFloatValue("General", "EmulationSpeed", emulation_speed);
   si.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
+  si.SetBoolValue("General", "IncreaseTimerResolution", increase_timer_resolution);
   si.SetBoolValue("General", "StartPaused", start_paused);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));

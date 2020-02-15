@@ -153,6 +153,9 @@ protected:
   /// Switches the GPU renderer by saving state, recreating the display window, and restoring state (if needed).
   void RecreateSystem();
 
+  /// Increases timer resolution when supported by the host OS.
+  void SetTimerResolutionIncreased(bool enabled);
+
   void UpdateSpeedLimiterState();
 
   void DrawFPSWindow();
@@ -169,6 +172,7 @@ protected:
   bool m_paused = false;
   bool m_speed_limiter_temp_disabled = false;
   bool m_speed_limiter_enabled = false;
+  bool m_timer_resolution_increased = false;
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;

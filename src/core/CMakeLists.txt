@@ -91,6 +91,7 @@ if(WIN32)
     gpu_hw_d3d11.cpp
     gpu_hw_d3d11.h
   )
+  target_link_libraries(core PRIVATE winmm.lib)
 endif()
 
 if(${CPU_ARCH} STREQUAL "x64")

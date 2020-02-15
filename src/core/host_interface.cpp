@@ -20,6 +20,11 @@
 #include <stdlib.h>
 Log_SetChannel(HostInterface);
 
+#ifdef WIN32
+#include "common/windows_headers.h"
+#include <mmsystem.h>
+#endif
+
 #if defined(ANDROID) || (defined(__GNUC__) && __GNUC__ < 8)
 
 static std::string GetRelativePath(const std::string& path, const char* new_filename)
@@ -129,8 +134,10 @@ void HostInterface::DestroySystem()
   if (!m_system)
     return;
 
-  m_system.reset();
+  SetTimerResolutionIncreased(false);
+
   m_paused = false;
+  m_system.reset();
   m_audio_stream.reset();
   ReleaseHostDisplay();
   OnSystemDestroyed();
@@ -485,8 +492,11 @@ void HostInterface::UpdateSpeedLimiterState()
     m_audio_stream->EmptyBuffers();
 
   m_display->SetVSync(video_sync_enabled);
-  if (m_system)
-    m_system->ResetPerformanceCounters();
+
+  if (m_settings.increase_timer_resolution)
+    SetTimerResolutionIncreased(m_speed_limiter_enabled);
+
+  m_system->ResetPerformanceCounters();
 }
 
 void HostInterface::OnSystemCreated() {}
@@ -670,6 +680,7 @@ void HostInterface::SetDefaultSettings()
   m_settings.emulation_speed = 1.0f;
   m_settings.speed_limiter_enabled = true;
   m_settings.start_paused = false;
+  m_settings.increase_timer_resolution = true;
 
   m_settings.gpu_renderer = Settings::DEFAULT_GPU_RENDERER;
   m_settings.gpu_resolution_scale = 1;
@@ -798,4 +809,19 @@ void HostInterface::RecreateSystem()
   }
 
   m_system->ResetPerformanceCounters();
+}
+
+void HostInterface::SetTimerResolutionIncreased(bool enabled)
+{
+  if (m_timer_resolution_increased == enabled)
+    return;
+
+  m_timer_resolution_increased = enabled;
+
+#ifdef WIN32
+  if (enabled)
+    timeBeginPeriod(1);
+  else
+    timeEndPeriod(1);
+#endif
 }

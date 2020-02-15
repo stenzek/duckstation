@@ -21,18 +21,11 @@
 Log_SetChannel(SDLHostInterface);
 
 #ifdef WIN32
-#include "common/windows_headers.h"
 #include "d3d11_host_display.h"
-#include <mmsystem.h>
 #endif
 
 SDLHostInterface::SDLHostInterface()
 {
-  // Increase timer/sleep resolution since we use it for throttling.
-#ifdef WIN32
-  timeBeginPeriod(1);
-#endif
-
   m_update_settings_event_id = SDL_RegisterEvents(1);
 }
 
@@ -47,10 +40,6 @@ SDLHostInterface::~SDLHostInterface()
 
   if (m_window)
     DestroySDLWindow();
-
-#ifdef WIN32
-  timeEndPeriod(1);
-#endif
 }
 
 bool SDLHostInterface::CreateSDLWindow()

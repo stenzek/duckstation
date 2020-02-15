@@ -18,6 +18,6 @@ if(WIN32)
     d3d11_host_display.cpp
     d3d11_host_display.h
   )
-  target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib winmm.lib ${SDL2MAIN_LIBRARIES})
+  target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib ${SDL2MAIN_LIBRARIES})
 endif()
 
