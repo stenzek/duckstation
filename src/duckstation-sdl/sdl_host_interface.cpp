@@ -7,10 +7,11 @@
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
-#include "imgui_impl_sdl.h"
 #include "frontend-common/icon.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/sdl_audio_stream.h"
+#include "frontend-common/sdl_controller_interface.h"
+#include "imgui_impl_sdl.h"
 #include "opengl_host_display.h"
 #include "sdl_settings_interface.h"
 #include <cinttypes>
@@ -31,7 +32,7 @@ SDLHostInterface::SDLHostInterface()
 
 SDLHostInterface::~SDLHostInterface()
 {
-  CloseGameControllers();
+  g_sdl_controller_interface.Shutdown();
   if (m_display)
   {
     DestroyDisplay();
@@ -172,7 +173,7 @@ void SDLHostInterface::OnSystemCreated()
   HostInterface::OnSystemCreated();
 
   UpdateKeyboardControllerMapping();
-  UpdateControllerControllerMapping();
+  g_sdl_controller_interface.SetDefaultBindings();
   ClearImGuiFocus();
 }
 
@@ -194,7 +195,7 @@ void SDLHostInterface::OnControllerTypeChanged(u32 slot)
   HostInterface::OnControllerTypeChanged(slot);
 
   UpdateKeyboardControllerMapping();
-  UpdateControllerControllerMapping();
+  g_sdl_controller_interface.SetDefaultBindings();
 }
 
 void SDLHostInterface::SaveSettings()
@@ -234,6 +235,12 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
     return nullptr;
   }
 
+  if (!g_sdl_controller_interface.Initialize(intf.get()))
+  {
+    Log_ErrorPrintf("Failed to initialize controller interface.");
+    return nullptr;
+  }
+
   intf->CreateImGuiContext();
   if (!intf->CreateDisplay())
   {
@@ -261,6 +268,7 @@ void SDLHostInterface::ReportMessage(const char* message)
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 {
   ImGui_ImplSDL2_ProcessEvent(event);
+  g_sdl_controller_interface.ProcessSDLEvent(event);
 
   switch (event->type)
   {
@@ -284,21 +292,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     break;
 
     case SDL_CONTROLLERDEVICEADDED:
-    {
-      Log_InfoPrintf("Controller %d inserted", event->cdevice.which);
-      OpenGameController(event->cdevice.which);
-    }
-    break;
-
     case SDL_CONTROLLERDEVICEREMOVED:
-    {
-      Log_InfoPrintf("Controller %d removed", event->cdevice.which);
-      CloseGameController(event->cdevice.which);
-    }
-    break;
-
-    case SDL_CONTROLLERAXISMOTION:
-      HandleSDLControllerAxisEventForController(event);
+      g_sdl_controller_interface.SetDefaultBindings();
       break;
 
     case SDL_CONTROLLERBUTTONDOWN:
@@ -309,8 +304,6 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
         // focus the menu bar
         m_focus_main_menu_bar = true;
       }
-
-      HandleSDLControllerButtonEventForController(event);
     }
     break;
 
@@ -522,198 +515,6 @@ bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
 #undef DO_ACTION
 
   return false;
-}
-
-bool SDLHostInterface::OpenGameController(int index)
-{
-  if (m_sdl_controllers.find(index) != m_sdl_controllers.end())
-    CloseGameController(index);
-
-  SDL_GameController* gcontroller = SDL_GameControllerOpen(index);
-  if (!gcontroller)
-  {
-    Log_WarningPrintf("Failed to open controller %d", index);
-    return false;
-  }
-
-  Log_InfoPrintf("Opened controller %d: %s", index, SDL_GameControllerName(gcontroller));
-
-  ControllerData cd = {};
-  cd.controller = gcontroller;
-
-  SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gcontroller);
-  if (joystick)
-  {
-    SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
-    if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) == 0)
-      cd.haptic = haptic;
-    else
-      SDL_HapticClose(haptic);
-  }
-
-  if (cd.haptic)
-    Log_InfoPrintf("Rumble is supported on '%s'", SDL_GameControllerName(gcontroller));
-  else
-    Log_WarningPrintf("Rumble is not supported on '%s'", SDL_GameControllerName(gcontroller));
-
-  m_sdl_controllers.emplace(index, cd);
-  return true;
-}
-
-void SDLHostInterface::CloseGameControllers()
-{
-  while (!m_sdl_controllers.empty())
-    CloseGameController(m_sdl_controllers.begin()->first);
-}
-
-bool SDLHostInterface::CloseGameController(int index)
-{
-  auto it = m_sdl_controllers.find(index);
-  if (it == m_sdl_controllers.end())
-    return false;
-
-  if (it->second.haptic)
-    SDL_HapticClose(it->second.haptic);
-
-  SDL_GameControllerClose(it->second.controller);
-  return true;
-}
-
-void SDLHostInterface::UpdateControllerControllerMapping()
-{
-  m_controller_axis_mapping.fill(-1);
-  m_controller_button_mapping.fill(-1);
-
-  Controller* controller = m_system ? m_system->GetController(0) : nullptr;
-  if (controller)
-  {
-#define SET_AXIS_MAP(axis, name) m_controller_axis_mapping[axis] = controller->GetAxisCodeByName(name).value_or(-1)
-#define SET_BUTTON_MAP(button, name)                                                                                   \
-  m_controller_button_mapping[button] = controller->GetButtonCodeByName(name).value_or(-1)
-
-    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_LEFTX, "LeftX");
-    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_LEFTY, "LeftY");
-    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_RIGHTX, "RightX");
-    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_RIGHTY, "RightY");
-    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_TRIGGERLEFT, "LeftTrigger");
-    SET_AXIS_MAP(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "RightTrigger");
-
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_UP, "Up");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_DOWN, "Down");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_LEFT, "Left");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "Right");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_Y, "Triangle");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_A, "Cross");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_X, "Square");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_B, "Circle");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_LEFTSHOULDER, "L1");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "R1");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_LEFTSTICK, "L3");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_RIGHTSTICK, "R3");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_START, "Start");
-    SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_BACK, "Select");
-
-#undef SET_AXIS_MAP
-#undef SET_BUTTON_MAP
-  }
-}
-
-void SDLHostInterface::HandleSDLControllerAxisEventForController(const SDL_Event* ev)
-{
-  // Log_DevPrintf("axis %d %d", ev->caxis.axis, ev->caxis.value);
-  Controller* controller = m_system ? m_system->GetController(0) : nullptr;
-  if (!controller)
-    return;
-
-  // proper axis mapping
-  if (m_controller_axis_mapping[ev->caxis.axis] >= 0)
-  {
-    const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
-    controller->SetAxisState(m_controller_axis_mapping[ev->caxis.axis], value);
-    return;
-  }
-
-  // axis-as-button mapping
-  static constexpr int deadzone = 8192;
-  const bool negative = (ev->caxis.value < 0);
-  const bool active = (std::abs(ev->caxis.value) >= deadzone);
-
-  // FIXME
-  if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
-  {
-    auto button = controller->GetButtonCodeByName("L2");
-    if (button)
-      controller->SetButtonState(button.value(), active);
-  }
-  else if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
-  {
-    auto button = controller->GetButtonCodeByName("R2");
-    if (button)
-      controller->SetButtonState(button.value(), active);
-  }
-  else
-  {
-    SDL_GameControllerButton negative_button, positive_button;
-    if (ev->caxis.axis & 1)
-    {
-      negative_button = SDL_CONTROLLER_BUTTON_DPAD_UP;
-      positive_button = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
-    }
-    else
-    {
-      negative_button = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
-      positive_button = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
-    }
-
-    if (m_controller_button_mapping[negative_button] >= 0)
-      controller->SetButtonState(m_controller_button_mapping[negative_button], negative && active);
-    if (m_controller_button_mapping[positive_button] >= 0)
-      controller->SetButtonState(m_controller_button_mapping[positive_button], !negative && active);
-  }
-}
-
-void SDLHostInterface::HandleSDLControllerButtonEventForController(const SDL_Event* ev)
-{
-  // Log_DevPrintf("button %d %s", ev->cbutton.button, ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
-
-  Controller* controller = m_system ? m_system->GetController(0) : nullptr;
-  if (!controller)
-    return;
-
-  if (m_controller_button_mapping[ev->cbutton.button] >= 0)
-    controller->SetButtonState(m_controller_button_mapping[ev->cbutton.button], ev->cbutton.state == SDL_PRESSED);
-}
-
-void SDLHostInterface::UpdateControllerRumble()
-{
-  for (auto& it : m_sdl_controllers)
-  {
-    ControllerData& cd = it.second;
-    if (!cd.haptic)
-      continue;
-
-    float new_strength = 0.0f;
-    if (m_system)
-    {
-      Controller* controller = m_system->GetController(cd.controller_index);
-      if (controller)
-      {
-        const u32 motor_count = controller->GetVibrationMotorCount();
-        for (u32 i = 0; i < motor_count; i++)
-          new_strength = std::max(new_strength, controller->GetVibrationMotorStrength(i));
-      }
-    }
-
-    if (cd.last_rumble_strength == new_strength)
-      continue;
-
-    if (new_strength > 0.01f)
-      SDL_HapticRumblePlay(cd.haptic, new_strength, 100000);
-    else
-      SDL_HapticRumbleStop(cd.haptic);
-
-    cd.last_rumble_strength = new_strength;
-  }
 }
 
 void SDLHostInterface::DrawImGui()
@@ -1478,7 +1279,7 @@ void SDLHostInterface::Run()
       }
     }
 
-    UpdateControllerRumble();
+    g_sdl_controller_interface.UpdateControllerRumble();
 
     // rendering
     {

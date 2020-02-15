@@ -101,14 +101,6 @@ private:
   void UpdateKeyboardControllerMapping();
   bool HandleSDLKeyEventForController(const SDL_Event* event);
 
-  bool OpenGameController(int index);
-  bool CloseGameController(int index);
-  void CloseGameControllers();
-  void UpdateControllerControllerMapping();
-  void HandleSDLControllerAxisEventForController(const SDL_Event* event);
-  void HandleSDLControllerButtonEventForController(const SDL_Event* event);
-  void UpdateControllerRumble();
-
   void DrawMainMenuBar();
   void DrawQuickSettingsMenu();
   void DrawDebugMenu();
@@ -122,10 +114,6 @@ private:
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
 
   KeyboardControllerActionMap m_keyboard_button_mapping;
-
-  std::map<int, ControllerData> m_sdl_controllers;
-  std::array<s32, SDL_CONTROLLER_AXIS_MAX> m_controller_axis_mapping{};
-  std::array<s32, SDL_CONTROLLER_BUTTON_MAX> m_controller_button_mapping{};
 
   u32 m_update_settings_event_id = 0;
 
