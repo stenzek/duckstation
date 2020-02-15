@@ -6,8 +6,11 @@
 #include <algorithm>
 #include <cstring>
 
-#ifndef __APPLE__
+#ifdef __APPLE__
 #include <malloc.h>
+#else
+#include <mach-o/dyld.h>
+#include <sys/param.h>
 #endif
 
 #if defined(WIN32)
@@ -1409,7 +1412,7 @@ std::string GetProgramPath()
         return {};
       }
 
-      std::string ret(buffer, len);
+      std::string ret(buffer);
       std::free(buffer);
       return ret;
     }
