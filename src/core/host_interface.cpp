@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstring>
 #include <imgui.h>
+#include <stdlib.h>
 Log_SetChannel(HostInterface);
 
 #if defined(ANDROID) || (defined(__GNUC__) && __GNUC__ < 8)
@@ -412,24 +413,62 @@ void HostInterface::OnRunningGameChanged() {}
 
 void HostInterface::SetUserDirectory()
 {
-#ifdef WIN32
-  // On Windows, use the path to the program.
-  // We might want to use My Documents in the future.
   const std::string program_path = FileSystem::GetProgramPath();
-  Log_InfoPrintf("Program path: %s", program_path.c_str());
+  const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
+  Log_InfoPrintf("Program path: \"%s\" (directory \"%s\")", program_path.c_str());
 
-  m_user_directory = FileSystem::GetPathDirectory(program_path.c_str());
-#else
+  if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", program_directory.c_str(),
+                                                             FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
+                               .c_str()))
+  {
+    Log_InfoPrintf("portable.txt found, using program directory as user directory.");
+    m_user_directory = program_directory;
+  }
+  else
+  {
+#ifdef WIN32
+    // On Windows, use the path to the program. We might want to use My Documents in the future.
+    m_user_directory = program_directory;
+#elif __linux__
+    // On Linux, use .local/share/duckstation as a user directory by default.
+    const char* xdg_data_home = getenv("XDG_DATA_HOME");
+    if (xdg_data_home && xdg_data_home[0] == '/')
+    {
+      m_user_directory = StringUtil::StdStringFromFormat("%s/duckstation", xdg_data_home);
+    }
+    else
+    {
+      const char* home_path = getenv("HOME");
+      if (!home_path)
+        m_user_directory = program_directory;
+      else
+        m_user_directory = StringUtil::StdStringFromFormat("%s/.local/share/duckstation", home_path);
+    }
+#elif __APPLE__
+    // On macOS, default to ~/Library/Application Support/DuckStation.
+    const char* home_path = getenv("HOME");
+    if (!home_path)
+      m_user_directory = program_directory;
+    else
+      m_user_directory = StringUtil::StdStringFromFormat("%s/Library/Application Support/DuckStation", home_path);
 #endif
+  }
 
-  Log_InfoPrintf("User directory: %s", m_user_directory.c_str());
+  Log_InfoPrintf("User directory: \"%s\"", m_user_directory.c_str());
+
+  if (m_user_directory.empty())
+    Panic("Cannot continue without user directory set.");
+
+  if (!FileSystem::DirectoryExists(m_user_directory.c_str()))
+  {
+    Log_WarningPrintf("User directory \"%s\" does not exist, creating.", m_user_directory.c_str());
+    if (!FileSystem::CreateDirectory(m_user_directory.c_str(), true))
+      Log_ErrorPrintf("Failed to create user directory \"%s\".", m_user_directory.c_str());
+  }
 
   // Change to the user directory so that all default/relative paths in the config are after this.
-  if (!m_user_directory.empty())
-  {
-    if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
-      Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
-  }
+  if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
+    Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
 }
 
 void HostInterface::CreateUserDirectorySubdirectories()
