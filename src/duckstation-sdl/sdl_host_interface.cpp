@@ -14,6 +14,7 @@
 #include "sdl_audio_stream.h"
 #include "sdl_settings_interface.h"
 #include <cinttypes>
+#include <cmath>
 #include <imgui.h>
 #include <imgui_stdlib.h>
 #include <nfd.h>
