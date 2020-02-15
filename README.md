@@ -77,6 +77,21 @@ Requirements:
 3. Select Build -> Build Bundle(s) / APKs(s) -> Build APK(s).
 4. Install APK on device, or use Run menu for attached device.
 
+## User Directories
+The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
+
+This is located in the following places depending on the platform you're using:
+
+Windows: Directory containing DuckStation executable.
+Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
+macOS: `~/Library/Application Support/DuckStation`.
+
+So, if you were using Linux, you would place your BIOS images in `~/.local/share/duckstation/bios`. This directory will be created upon running DuckStation
+for the first time.
+
+If you wish to use a "portable" build, where the user directory is the same as where the executable is located, create an empty file named `portable.txt`
+in the same directory as the DuckStation executable.
+
 ## Bindings for Qt frontend
 Your keyboard can be used to simulate the PS Controller. To bind keys to buttons, go to `Settings` -> `Port Settings`. Each of the buttons will be listed,
 along with the corresponding key it is bound to. To rebind the button to a new key, click the button next to button name, and press the key you want to use
