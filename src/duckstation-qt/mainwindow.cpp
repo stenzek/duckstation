@@ -340,7 +340,7 @@ void MainWindow::connectSignals()
     QString path = QString::fromStdString(entry->path);
     if (!m_emulation_running)
     {
-      if (m_host_interface->getSettingValue("General/SaveStateOnExit", true).toBool())
+      if (!entry->code.empty() && m_host_interface->getSettingValue("General/SaveStateOnExit", true).toBool())
         m_host_interface->resumeSystemFromState(path, true);
       else
         m_host_interface->bootSystemFromFile(path);
