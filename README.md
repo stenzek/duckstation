@@ -98,9 +98,9 @@ The "User Directory" is where you should place your BIOS images, where settings 
 
 This is located in the following places depending on the platform you're using:
 
-Windows: Directory containing DuckStation executable.
-Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
-macOS: `~/Library/Application Support/DuckStation`.
+- Windows: Directory containing DuckStation executable.
+- Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
+- macOS: `~/Library/Application Support/DuckStation`.
 
 So, if you were using Linux, you would place your BIOS images in `~/.local/share/duckstation/bios`. This directory will be created upon running DuckStation
 for the first time.
@@ -109,11 +109,9 @@ If you wish to use a "portable" build, where the user directory is the same as w
 in the same directory as the DuckStation executable.
 
 ## Bindings for Qt frontend
-Your keyboard can be used to simulate the PS Controller. To bind keys to buttons, go to `Settings` -> `Port Settings`. Each of the buttons will be listed,
-along with the corresponding key it is bound to. To rebind the button to a new key, click the button next to button name, and press the key you want to use
-within 5 seconds.
-
-**Controllers are not currently supported in the Qt frontend. Support for controllers and custom bindings will be coming soon.**
+Your keyboard and any SDL-compatible game controller can be used to simulate the PS Controller. To bind keys/controllers to buttons, go to
+Settings` -> `Port Settings`. Each of the buttons will be listed, along with the corresponding key it is bound to. To re-bind the button to a new key,
+click the button next to button name, and press the key/button you want to use within 5 seconds.
 
 **Currently, it is only possible to bind one input to each controller button/axis. Multiple bindings per button are planned for the future.**
 
