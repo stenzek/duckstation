@@ -1,5 +1,12 @@
 #pragma once
+
+// GLAD has to come first so that Qt doesn't pull in the system GL headers, which are incompatible with glad.
 #include <glad.h>
+
+// Hack to prevent Apple's glext.h headers from getting included via qopengl.h, since we still want to use glad.
+#ifdef __APPLE__
+#define __glext_h_
+#endif
 
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
