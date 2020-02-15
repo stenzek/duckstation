@@ -35,7 +35,7 @@ public:
   void setDefaultSettings();
 
   /// Thread-safe QSettings access.
-  QVariant getSettingValue(const QString& name);
+  QVariant getSettingValue(const QString& name, const QVariant& default_value = QVariant());
   void putSettingValue(const QString& name, const QVariant& value);
   void removeSettingValue(const QString& name);
 
@@ -77,8 +77,10 @@ Q_SIGNALS:
 public Q_SLOTS:
   void applySettings();
   void bootSystemFromFile(const QString& filename);
+  void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void bootSystemFromBIOS();
-  void destroySystem(bool save_resume_state = false, bool block_until_done = false);
+  void powerOffSystem();
+  void synchronousPowerOffSystem();
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(const QString& new_disc_filename);

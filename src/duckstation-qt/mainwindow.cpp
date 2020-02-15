@@ -298,7 +298,7 @@ void MainWindow::connectSignals()
           &MainWindow::onChangeDiscFromGameListActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
-  connect(m_ui.actionPowerOff, &QAction::triggered, [this]() { m_host_interface->destroySystem(true, false); });
+  connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
   connect(m_ui.actionPause, &QAction::toggled, m_host_interface, &QtHostInterface::pauseSystem);
   connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
@@ -340,7 +340,10 @@ void MainWindow::connectSignals()
     QString path = QString::fromStdString(entry->path);
     if (!m_emulation_running)
     {
-      m_host_interface->bootSystemFromFile(path);
+      if (m_host_interface->getSettingValue("General/SaveStateOnExit", true).toBool())
+        m_host_interface->resumeSystemFromState(path, true);
+      else
+        m_host_interface->bootSystemFromFile(path);
     }
     else
     {
@@ -433,6 +436,6 @@ void MainWindow::updateDebugMenuGPURenderer()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-  m_host_interface->destroySystem(true, true);
+  m_host_interface->synchronousPowerOffSystem();
   QMainWindow::closeEvent(event);
 }

@@ -1048,7 +1048,11 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0xFF575757);
 
   ImGui::SetCursorPosX(button_left);
-  ImGui::Button("Resume", button_size);
+  if (ImGui::Button("Resume", button_size))
+  {
+    ResumeSystemFromMostRecentState();
+    ClearImGuiFocus();
+  }
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
@@ -1163,6 +1167,7 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::SliderFloat("##speed", &m_settings.emulation_speed, 0.25f, 5.0f);
         settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
+        settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings.save_state_on_exit);
       }
 
       ImGui::NewLine();
@@ -1498,5 +1503,9 @@ void SDLHostInterface::Run()
 
   // Save state on exit so it can be resumed
   if (m_system)
+  {
+    if (m_settings.save_state_on_exit)
+      SaveResumeSaveState();
     DestroySystem();
+  }
 }

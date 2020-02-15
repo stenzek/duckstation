@@ -13,6 +13,7 @@ void Settings::Load(SettingsInterface& si)
   speed_limiter_enabled = si.GetBoolValue("General", "SpeedLimiterEnabled", true);
   increase_timer_resolution = si.GetBoolValue("General", "IncreaseTimerResolution", true);
   start_paused = si.GetBoolValue("General", "StartPaused", false);
+  save_state_on_exit = si.GetBoolValue("General", "SaveStateOnExit", true);
 
   cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Interpreter").c_str())
                          .value_or(CPUExecutionMode::Interpreter);
@@ -63,6 +64,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
   si.SetBoolValue("General", "IncreaseTimerResolution", increase_timer_resolution);
   si.SetBoolValue("General", "StartPaused", start_paused);
+  si.SetBoolValue("General", "SaveStateOnExit", save_state_on_exit);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 

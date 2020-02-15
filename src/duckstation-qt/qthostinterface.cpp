@@ -76,10 +76,10 @@ void QtHostInterface::setDefaultSettings()
   updateQSettingsFromCoreSettings();
 }
 
-QVariant QtHostInterface::getSettingValue(const QString& name)
+QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
 {
   std::lock_guard<std::mutex> guard(m_qsettings_mutex);
-  return m_qsettings.value(name);
+  return m_qsettings.value(name, default_value);
 }
 
 void QtHostInterface::putSettingValue(const QString& name, const QVariant& value)
@@ -176,6 +176,21 @@ void QtHostInterface::bootSystemFromFile(const QString& filename)
   }
 
   HostInterface::BootSystemFromFile(filename.toStdString().c_str());
+}
+
+void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_on_failure)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "resumeSystemFromState", Qt::QueuedConnection, Q_ARG(const QString&, filename),
+                              Q_ARG(bool, boot_on_failure));
+    return;
+  }
+
+  if (filename.isEmpty())
+    HostInterface::ResumeSystemFromMostRecentState();
+  else
+    HostInterface::ResumeSystemFromState(filename.toStdString().c_str(), boot_on_failure);
 }
 
 void QtHostInterface::bootSystemFromBIOS()
@@ -485,20 +500,29 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
   }
 }
 
-void QtHostInterface::destroySystem(bool save_resume_state /* = false */, bool block_until_done /* = false */)
+void QtHostInterface::powerOffSystem()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "destroySystem",
-                              block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
-                              Q_ARG(bool, save_resume_state), Q_ARG(bool, block_until_done));
+    QMetaObject::invokeMethod(this, "powerOffSystem", Qt::QueuedConnection);
     return;
   }
 
   if (!m_system)
     return;
 
+  if (m_settings.save_state_on_exit)
+    SaveResumeSaveState();
+
   DestroySystem();
+}
+
+void QtHostInterface::synchronousPowerOffSystem()
+{
+  if (!isOnWorkerThread())
+    QMetaObject::invokeMethod(this, "powerOffSystem", Qt::BlockingQueuedConnection);
+  else
+    powerOffSystem();
 }
 
 void QtHostInterface::resetSystem()
@@ -555,23 +579,26 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   if (!available_states.empty())
   {
     bool last_global = available_states.front().global;
+    s32 last_slot = available_states.front().slot;
     for (const SaveStateInfo& ssi : available_states)
     {
       const s32 slot = ssi.slot;
       const bool global = ssi.global;
       const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
+      const QString timestamp_str(timestamp.toString(Qt::SystemLocaleShortDate));
       const QString path(QString::fromStdString(ssi.path));
 
-      QString title = tr("%1 Save %2 (%3)")
-                        .arg(global ? tr("Global") : tr("Game"))
-                        .arg(slot)
-                        .arg(timestamp.toString(Qt::SystemLocaleShortDate));
+      QString title;
+      if (slot < 0)
+        title = tr("Resume Save (%1)").arg(timestamp_str);
+      else
+        title = tr("%1 Save %2 (%3)").arg(global ? tr("Global") : tr("Game")).arg(slot).arg(timestamp_str);
 
-      if (global != last_global)
-      {
+      if (global != last_global || last_slot < 0)
         load_menu->addSeparator();
-        last_global = global;
-      }
+
+      last_global = global;
+      last_slot = slot;
 
       QAction* action = load_menu->addAction(title);
       connect(action, &QAction::triggered, [this, path]() { loadState(path); });
