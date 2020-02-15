@@ -487,22 +487,33 @@ bool HostInterface::ResumeSystemFromState(const char* filename, bool boot_on_fai
     return false;
 
   const bool global = m_system->GetRunningCode().empty();
-  const std::string path =
-    global ? GetGlobalSaveStateFileName(-1) : GetGameSaveStateFileName(m_system->GetRunningCode().c_str(), -1);
-  if (FileSystem::FileExists(path.c_str()))
+  if (m_system->GetRunningCode().empty())
   {
-    if (!LoadState(path.c_str()) && !boot_on_failure)
+    ReportFormattedError("Cannot resume system with undetectable game code from '%s'.", filename);
+    if (!boot_on_failure)
     {
+      DestroySystem();
+      return true;
+    }
+  }
+  else
+  {
+    const std::string path = GetGameSaveStateFileName(m_system->GetRunningCode().c_str(), -1);
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      if (!LoadState(path.c_str()) && !boot_on_failure)
+      {
+        DestroySystem();
+        return false;
+      }
+    }
+    else if (!boot_on_failure)
+    {
+      ReportFormattedError("Resume save state not found for '%s' ('%s').", m_system->GetRunningCode().c_str(),
+                           m_system->GetRunningTitle().c_str());
       DestroySystem();
       return false;
     }
-  }
-  else if (!boot_on_failure)
-  {
-    ReportFormattedError("Resume save state not found for '%s' ('%s').", m_system->GetRunningCode().c_str(),
-                         m_system->GetRunningTitle().c_str());
-    DestroySystem();
-    return false;
   }
 
   return true;
