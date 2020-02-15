@@ -20,12 +20,16 @@ protected:
 private Q_SLOTS:
   void onPressed();
   void onInputListenTimerTimeout();
+  void bindToControllerAxis(int controller_index, int axis_index, bool positive);
+  void bindToControllerButton(int controller_index, int button_index);
 
 private:
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
   void startListeningForInput();
   void stopListeningForInput();
   void setNewBinding();
+  void hookControllerInput();
+  void unhookControllerInput();
 
   QtHostInterface* m_host_interface;
   QString m_setting_name;

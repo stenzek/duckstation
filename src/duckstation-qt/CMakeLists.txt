@@ -43,7 +43,7 @@ add_executable(duckstation-qt
   settingsdialog.ui
 )
 
-target_link_libraries(duckstation-qt PRIVATE core common imgui glad minizip Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
+target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE

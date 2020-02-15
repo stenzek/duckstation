@@ -39,6 +39,9 @@ public:
   /// Returns the game list.
   ALWAYS_INLINE const GameList* GetGameList() const { return m_game_list.get(); }
 
+  /// Access to emulated system.
+  ALWAYS_INLINE System* GetSystem() const { return m_system.get(); }
+
   bool BootSystemFromFile(const char* filename);
   bool BootSystemFromBIOS();
   void PauseSystem(bool paused);

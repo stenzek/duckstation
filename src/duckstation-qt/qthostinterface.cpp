@@ -8,12 +8,14 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "frontend-common/sdl_controller_interface.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QEventLoop>
+#include <QtCore/QTimer>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <memory>
@@ -28,7 +30,6 @@ QtHostInterface::QtHostInterface(QObject* parent)
 {
   checkSettings();
   refreshGameList();
-  doUpdateInputMap();
   createThread();
 }
 
@@ -283,6 +284,7 @@ void QtHostInterface::OnSystemCreated()
   HostInterface::OnSystemCreated();
 
   wakeThread();
+  destroyBackgroundControllerPollTimer();
 
   emit emulationStarted();
 }
@@ -300,6 +302,9 @@ void QtHostInterface::OnSystemPaused(bool paused)
 void QtHostInterface::OnSystemDestroyed()
 {
   HostInterface::OnSystemDestroyed();
+
+  if (m_background_controller_polling_enable_count > 0)
+    createBackgroundControllerPollTimer();
 
   emit emulationStopped();
 }
@@ -350,7 +355,9 @@ void QtHostInterface::updateInputMap()
 void QtHostInterface::doUpdateInputMap()
 {
   m_keyboard_input_handlers.clear();
+  g_sdl_controller_interface.ClearControllerBindings();
 
+  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
   updateControllerInputMap();
   updateHotkeyInputMap();
 }
@@ -493,9 +500,41 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
 
     m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
   }
+  else if (device.startsWith(QStringLiteral("Controller")))
+  {
+    bool controller_index_okay;
+    const int controller_index = device.mid(10).toInt(&controller_index_okay);
+
+    if (!controller_index_okay || controller_index < 0)
+    {
+      qWarning() << "Malformed controller binding: " << binding;
+      return;
+    }
+    if (button.startsWith(QStringLiteral("Button")))
+    {
+      bool button_index_okay;
+      const int button_index = button.mid(6).toInt(&button_index_okay);
+      if (!button_index_okay ||
+          !g_sdl_controller_interface.BindControllerButton(controller_index, button_index, std::move(handler)))
+      {
+        qWarning() << "Failed to bind " << binding;
+      }
+    }
+    else if (button.startsWith(QStringLiteral("+Axis")) || button.startsWith(QStringLiteral("-Axis")))
+    {
+      bool axis_index_okay;
+      const int axis_index = button.mid(5).toInt(&axis_index_okay);
+      const bool positive = (button[0] == '+');
+      if (!axis_index_okay || !g_sdl_controller_interface.BindControllerAxisToButton(controller_index, axis_index,
+                                                                                     positive, std::move(handler)))
+      {
+        qWarning() << "Failed to bind " << binding;
+      }
+    }
+  }
   else
   {
-    qWarning() << "Unknown input device: " << device;
+    qWarning() << "Unknown input device: " << binding;
     return;
   }
 }
@@ -659,6 +698,63 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
     SaveState(global, slot);
 }
 
+void QtHostInterface::enableBackgroundControllerPolling()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "enableBackgroundControllerPolling", Qt::BlockingQueuedConnection);
+    return;
+  }
+
+  if (m_background_controller_polling_enable_count++ > 0)
+    return;
+
+  if (!m_system)
+  {
+    createBackgroundControllerPollTimer();
+
+    // drain the event queue so we don't get events late
+    g_sdl_controller_interface.PumpSDLEvents();
+  }
+}
+
+void QtHostInterface::disableBackgroundControllerPolling()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "disableBackgroundControllerPolling");
+    return;
+  }
+
+  Assert(m_background_controller_polling_enable_count > 0);
+  if (--m_background_controller_polling_enable_count > 0)
+    return;
+
+  if (!m_system)
+    destroyBackgroundControllerPollTimer();
+}
+
+void QtHostInterface::doBackgroundControllerPoll()
+{
+  g_sdl_controller_interface.PumpSDLEvents();
+}
+
+void QtHostInterface::createBackgroundControllerPollTimer()
+{
+  DebugAssert(!m_background_controller_polling_timer);
+  m_background_controller_polling_timer = new QTimer(this);
+  m_background_controller_polling_timer->setSingleShot(false);
+  m_background_controller_polling_timer->setTimerType(Qt::VeryCoarseTimer);
+  connect(m_background_controller_polling_timer, &QTimer::timeout, this, &QtHostInterface::doBackgroundControllerPoll);
+  m_background_controller_polling_timer->start(BACKGROUND_CONTROLLER_POLLING_INTERVAL);
+}
+
+void QtHostInterface::destroyBackgroundControllerPollTimer()
+{
+  delete m_background_controller_polling_timer;
+  m_background_controller_polling_timer = nullptr;
+}
+
 void QtHostInterface::createThread()
 {
   m_original_thread = QThread::currentThread();
@@ -685,6 +781,12 @@ void QtHostInterface::threadEntryPoint()
 {
   m_worker_thread_event_loop = new QEventLoop();
 
+  // set up controller interface and immediate poll to pick up the controller attached events
+  g_sdl_controller_interface.Initialize(this, true);
+  g_sdl_controller_interface.PumpSDLEvents();
+
+  doUpdateInputMap();
+
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
   {
@@ -710,10 +812,14 @@ void QtHostInterface::threadEntryPoint()
       m_system->Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
+    g_sdl_controller_interface.PumpSDLEvents();
   }
 
   m_system.reset();
   m_audio_stream.reset();
+
+  g_sdl_controller_interface.Shutdown();
+
   delete m_worker_thread_event_loop;
   m_worker_thread_event_loop = nullptr;
 

@@ -49,11 +49,13 @@
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
+    <ClCompile Include="sdl_controller_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="sdl_audio_stream.h" />
+    <ClInclude Include="sdl_controller_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

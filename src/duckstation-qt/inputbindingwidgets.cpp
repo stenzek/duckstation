@@ -1,5 +1,6 @@
 #include "inputbindingwidgets.h"
 #include "core/settings.h"
+#include "frontend-common/sdl_controller_interface.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QTimer>
@@ -81,6 +82,49 @@ void InputButtonBindingWidget::onInputListenTimerTimeout()
   setText(tr("Push Button... [%1]").arg(m_input_listen_remaining_seconds));
 }
 
+void InputButtonBindingWidget::hookControllerInput()
+{
+  m_host_interface->enableBackgroundControllerPolling();
+  g_sdl_controller_interface.SetHook([this](const SDLControllerInterface::Hook& ei) {
+    if (ei.type == SDLControllerInterface::Hook::Type::Axis)
+    {
+      // TODO: this probably should consider the "last value"
+      QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
+                                Q_ARG(int, ei.button_or_axis_number), Q_ARG(bool, ei.value > 0));
+      return SDLControllerInterface::Hook::CallbackResult::StopMonitoring;
+    }
+    else if (ei.type == SDLControllerInterface::Hook::Type::Button && ei.value > 0.0f)
+    {
+      QMetaObject::invokeMethod(this, "bindToControllerButton", Q_ARG(int, ei.controller_index),
+                                Q_ARG(int, ei.button_or_axis_number));
+      return SDLControllerInterface::Hook::CallbackResult::StopMonitoring;
+    }
+
+    return SDLControllerInterface::Hook::CallbackResult::ContinueMonitoring;
+  });
+}
+
+void InputButtonBindingWidget::unhookControllerInput()
+{
+  g_sdl_controller_interface.ClearHook();
+  m_host_interface->disableBackgroundControllerPolling();
+}
+
+void InputButtonBindingWidget::bindToControllerAxis(int controller_index, int axis_index, bool positive)
+{
+  m_new_binding_value =
+    QStringLiteral("Controller%1/%2Axis%3").arg(controller_index).arg(positive ? '+' : '-').arg(axis_index);
+  setNewBinding();
+  stopListeningForInput();
+}
+
+void InputButtonBindingWidget::bindToControllerButton(int controller_index, int button_index)
+{
+  m_new_binding_value = QStringLiteral("Controller%1/Button%2").arg(controller_index).arg(button_index);
+  setNewBinding();
+  stopListeningForInput();
+}
+
 void InputButtonBindingWidget::startListeningForInput()
 {
   m_input_listen_timer = new QTimer(this);
@@ -95,6 +139,7 @@ void InputButtonBindingWidget::startListeningForInput()
   installEventFilter(this);
   grabKeyboard();
   grabMouse();
+  hookControllerInput();
 }
 
 void InputButtonBindingWidget::stopListeningForInput()
@@ -103,6 +148,7 @@ void InputButtonBindingWidget::stopListeningForInput()
   delete m_input_listen_timer;
   m_input_listen_timer = nullptr;
 
+  unhookControllerInput();
   releaseMouse();
   releaseKeyboard();
   removeEventFilter(this);

@@ -18,6 +18,7 @@ class ByteStream;
 class QEventLoop;
 class QMenu;
 class QWidget;
+class QTimer;
 
 class GameList;
 
@@ -88,11 +89,19 @@ public Q_SLOTS:
   void loadState(bool global, qint32 slot);
   void saveState(bool global, qint32 slot, bool block_until_done = false);
 
+  /// Enables controller polling even without a system active. Must be matched by a call to
+  /// disableBackgroundControllerPolling.
+  void enableBackgroundControllerPolling();
+
+  /// Disables background controller polling.
+  void disableBackgroundControllerPolling();
+
 private Q_SLOTS:
   void doStopThread();
   void doUpdateInputMap();
   void doHandleKeyEvent(int key, bool pressed);
   void onDisplayWindowResized(int width, int height);
+  void doBackgroundControllerPoll();
 
 protected:
   bool AcquireHostDisplay() override;
@@ -107,6 +116,12 @@ protected:
   void OnControllerTypeChanged(u32 slot) override;
 
 private:
+  enum : u32
+  {
+    BACKGROUND_CONTROLLER_POLLING_INTERVAL =
+      100 /// Interval at which the controllers are polled when the system is not active.
+  };
+
   using InputButtonHandler = std::function<void(bool)>;
 
   class Thread : public QThread
@@ -124,6 +139,8 @@ private:
 
   void checkSettings();
   void updateQSettingsFromCoreSettings();
+  void createBackgroundControllerPollTimer();
+  void destroyBackgroundControllerPollTimer();
 
   void updateControllerInputMap();
   void updateHotkeyInputMap();
@@ -145,4 +162,7 @@ private:
 
   // input key maps, todo hotkeys
   std::map<int, InputButtonHandler> m_keyboard_input_handlers;
+
+  QTimer* m_background_controller_polling_timer = nullptr;
+  u32 m_background_controller_polling_enable_count = 0;
 };
