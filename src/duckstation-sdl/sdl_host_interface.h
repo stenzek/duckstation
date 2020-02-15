@@ -129,8 +129,8 @@ private:
   KeyboardControllerActionMap m_keyboard_button_mapping;
 
   std::map<int, ControllerData> m_sdl_controllers;
-  std::array<s32, SDL_CONTROLLER_AXIS_MAX> m_controller_axis_mapping;
-  std::array<s32, SDL_CONTROLLER_BUTTON_MAX> m_controller_button_mapping;
+  std::array<s32, SDL_CONTROLLER_AXIS_MAX> m_controller_axis_mapping{};
+  std::array<s32, SDL_CONTROLLER_BUTTON_MAX> m_controller_button_mapping{};
 
   u32 m_switch_gpu_renderer_event_id = 0;
 
