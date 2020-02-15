@@ -176,4 +176,7 @@ protected:
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
+
+private:
+  void CreateAudioStream();
 };

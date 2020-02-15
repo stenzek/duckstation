@@ -65,6 +65,19 @@ HostInterface::~HostInterface()
   Assert(!m_system && !m_audio_stream && !m_display);
 }
 
+void HostInterface::CreateAudioStream()
+{
+  m_audio_stream = CreateAudioStream(m_settings.audio_backend);
+
+  if (m_audio_stream && m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
+    return;
+
+  ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
+  m_audio_stream.reset();
+  m_audio_stream = AudioStream::CreateNullAudioStream();
+  m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
+}
+
 bool HostInterface::BootSystemFromFile(const char* filename)
 {
   if (!AcquireHostDisplay())
@@ -77,14 +90,7 @@ bool HostInterface::BootSystemFromFile(const char* filename)
   m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 
   // create the audio stream. this will never fail, since we'll just fall back to null
-  m_audio_stream = CreateAudioStream(m_settings.audio_backend);
-  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
-  {
-    ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
-    m_audio_stream.reset();
-    m_audio_stream = AudioStream::CreateNullAudioStream();
-    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
-  }
+  CreateAudioStream();
 
   m_system = System::Create(this);
   if (!m_system->Boot(filename))
@@ -710,6 +716,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 {
   const float old_emulation_speed = m_settings.emulation_speed;
   const CPUExecutionMode old_cpu_execution_mode = m_settings.cpu_execution_mode;
+  const AudioBackend old_audio_backend = m_settings.audio_backend;
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
   const bool old_gpu_true_color = m_settings.gpu_true_color;
@@ -722,11 +729,22 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   apply_callback();
 
-  if (m_settings.gpu_renderer != old_gpu_renderer)
-    RecreateSystem();
-
   if (m_system)
   {
+    if (m_settings.gpu_renderer != old_gpu_renderer)
+    {
+      ReportFormattedMessage("Switching to %s GPU renderer.", Settings::GetRendererName(m_settings.gpu_renderer));
+      RecreateSystem();
+    }
+
+    if (m_settings.audio_backend != old_audio_backend)
+    {
+      ReportFormattedMessage("Switching to %s audio backend.", Settings::GetAudioBackendName(m_settings.audio_backend));
+      DebugAssert(m_audio_stream);
+      m_audio_stream.reset();
+      CreateAudioStream();
+    }
+
     if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
         m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
     {
@@ -740,7 +758,11 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     }
 
     if (m_settings.cpu_execution_mode != old_cpu_execution_mode)
+    {
+      ReportFormattedMessage("Switching to %s CPU execution mode.",
+                             Settings::GetCPUExecutionModeName(m_settings.cpu_execution_mode));
       m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
+    }
 
     if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale ||
         m_settings.gpu_true_color != old_gpu_true_color ||
