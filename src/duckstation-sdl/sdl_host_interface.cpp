@@ -1166,6 +1166,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         settings_changed |= ImGui::SliderFloat("##speed", &m_settings.emulation_speed, 0.25f, 5.0f);
         settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
+        settings_changed |= ImGui::Checkbox("Increase Timer Resolution", &m_settings.increase_timer_resolution);
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
         settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings.save_state_on_exit);
       }

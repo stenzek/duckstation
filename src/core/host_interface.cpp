@@ -780,6 +780,7 @@ void HostInterface::SetDefaultSettings()
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 {
+  const bool old_increase_timer_resolution = m_settings.increase_timer_resolution;
   const float old_emulation_speed = m_settings.emulation_speed;
   const CPUExecutionMode old_cpu_execution_mode = m_settings.cpu_execution_mode;
   const AudioBackend old_audio_backend = m_settings.audio_backend;
@@ -813,7 +814,8 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     }
 
     if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
-        m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
+        m_settings.speed_limiter_enabled != old_speed_limiter_enabled ||
+        m_settings.increase_timer_resolution != old_increase_timer_resolution)
     {
       UpdateSpeedLimiterState();
     }
