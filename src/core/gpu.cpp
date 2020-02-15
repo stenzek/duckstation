@@ -300,8 +300,8 @@ void GPU::UpdateCRTCConfig()
   }
 
   const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
-  const double vertical_frequency =
-    static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame);
+  const float vertical_frequency =
+    static_cast<float>(static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame));
   m_system->SetThrottleFrequency(vertical_frequency);
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
