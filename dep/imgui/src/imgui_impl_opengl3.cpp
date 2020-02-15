@@ -220,9 +220,9 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
 void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 {
-    // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-    int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+    // Avoid rendering when minimized
+    int fb_width = (int)(draw_data->DisplaySize.x);
+    int fb_height = (int)(draw_data->DisplaySize.y);
     if (fb_width <= 0 || fb_height <= 0)
         return;
 
@@ -277,7 +277,6 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 
     // Will project scissor/clipping rectangles into framebuffer space
     ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
-    ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
 
     // Render command lists
     for (int n = 0; n < draw_data->CmdListsCount; n++)
@@ -304,10 +303,10 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
             {
                 // Project scissor/clipping rectangles into framebuffer space
                 ImVec4 clip_rect;
-                clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
-                clip_rect.y = (pcmd->ClipRect.y - clip_off.y) * clip_scale.y;
-                clip_rect.z = (pcmd->ClipRect.z - clip_off.x) * clip_scale.x;
-                clip_rect.w = (pcmd->ClipRect.w - clip_off.y) * clip_scale.y;
+                clip_rect.x = pcmd->ClipRect.x - clip_off.x;
+                clip_rect.y = pcmd->ClipRect.y - clip_off.y;
+                clip_rect.z = pcmd->ClipRect.z - clip_off.x;
+                clip_rect.w = pcmd->ClipRect.w - clip_off.y;
 
                 if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
                 {
