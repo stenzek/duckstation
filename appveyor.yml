@@ -1,0 +1,64 @@
+version: 1.0.{build}
+image:
+- Visual Studio 2019
+#- Ubuntu1804
+#- macOS
+
+clone_depth: 1
+
+install:
+- cmd: >-
+    git submodule update --init --depth 1
+    
+- sh: >-
+    if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu1804" ]; then
+
+      sudo apt-get update
+
+      sudo apt-get install -y cmake ninja-build ccache libsdl2-dev libgtk2.0-dev qtbase5-dev qtbase5-dev-tools
+
+    elif [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
+
+      brew install qt5 sdl2
+
+    fi
+
+
+build_script:
+- cmd: >-
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+
+      msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
+
+      rm -f bin/x64/*.pdb bin/x64/*.exp bin/x64/*.lib bin/x64/*.iobj bin/x64/*.ipdb
+
+      "C:\Program Files\7-Zip\7z.exe" a -r duckstation-win64-release.7z ./bin/x64/*
+
+      appveyor PushArtifact duckstation-win64-release.7z
+
+
+- sh: >-
+    if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu1804" ]; then
+
+      mkdir -p build-debug
+
+      cd build-debug
+
+      cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SDL_FRONTEND=YES -DBUILD_QT_FRONTEND=YES ..
+
+      ninja
+
+    elif [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
+
+      mkdir build-release
+
+      cd build-release
+      
+      cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=YES -DBUILD_QT_FRONTEND=YES -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..
+
+      make
+      
+    fi
+
+
+test: off
