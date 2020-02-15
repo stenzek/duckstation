@@ -783,7 +783,7 @@ void QtHostInterface::threadEntryPoint()
   m_worker_thread_event_loop = new QEventLoop();
 
   // set up controller interface and immediate poll to pick up the controller attached events
-  g_sdl_controller_interface.Initialize(this, true);
+  g_sdl_controller_interface.Initialize(this);
   g_sdl_controller_interface.PumpSDLEvents();
 
   doUpdateInputMap();

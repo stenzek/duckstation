@@ -2,18 +2,12 @@
 #include "common/log.h"
 #include "core/system.h"
 #include "sdl_host_interface.h"
+#include "frontend-common/sdl_initializer.h"
 #include <SDL.h>
 #include <cstdio>
 
 static int Run(int argc, char* argv[])
 {
-  // init sdl
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
-  {
-    Panic("SDL initialization failed");
-    return -1;
-  }
-
   // parameters
   std::optional<s32> state_index;
   const char* boot_filename = nullptr;
@@ -81,6 +75,8 @@ int main(int argc, char* argv[])
   Log::SetFilterLevel(LOGLEVEL_DEBUG);
   // Log::SetFilterLevel(LOGLEVEL_DEV);
 #endif
+
+  FrontendCommon::EnsureSDLInitialized();
 
   // return NoGUITest();
   return Run(argc, argv);

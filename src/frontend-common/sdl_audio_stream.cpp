@@ -1,4 +1,5 @@
 #include "sdl_audio_stream.h"
+#include "sdl_initializer.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include <SDL.h>
@@ -21,6 +22,14 @@ bool SDLAudioStream::OpenDevice()
 {
   DebugAssert(!m_is_open);
 
+  FrontendCommon::EnsureSDLInitialized();
+
+  if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
+  {
+    Log_ErrorPrintf("SDL_InitSubSystem(SDL_INIT_AUDIO) failed");
+    return false;
+  }
+
   SDL_AudioSpec spec = {};
   spec.freq = m_output_sample_rate;
   spec.channels = static_cast<Uint8>(m_channels);
@@ -32,6 +41,7 @@ bool SDLAudioStream::OpenDevice()
   if (SDL_OpenAudio(&spec, nullptr) < 0)
   {
     Log_ErrorPrintf("SDL_OpenAudio failed");
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
     return false;
   }
 
@@ -48,6 +58,7 @@ void SDLAudioStream::CloseDevice()
 {
   DebugAssert(m_is_open);
   SDL_CloseAudio();
+  SDL_QuitSubSystem(SDL_INIT_AUDIO);
   m_is_open = false;
 }
 

@@ -4,6 +4,7 @@
 #include "core/controller.h"
 #include "core/host_interface.h"
 #include "core/system.h"
+#include "sdl_initializer.h"
 #include <SDL.h>
 Log_SetChannel(SDLControllerInterface);
 
@@ -16,19 +17,19 @@ SDLControllerInterface::~SDLControllerInterface()
   Assert(m_controllers.empty());
 }
 
-bool SDLControllerInterface::Initialize(HostInterface* host_interface, bool init_sdl)
+bool SDLControllerInterface::Initialize(HostInterface* host_interface)
 {
-  if (init_sdl)
+  FrontendCommon::EnsureSDLInitialized();
+
+  if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
   {
-    if (SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
-    {
-      Log_ErrorPrintf("SDL_Init() failed");
-      return false;
-    }
+    Log_ErrorPrintf("SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
+    return false;
   }
 
   // we should open the controllers as the connected events come in, so no need to do any more here
   m_host_interface = host_interface;
+  m_initialized = true;
   return true;
 }
 
@@ -37,10 +38,10 @@ void SDLControllerInterface::Shutdown()
   while (!m_controllers.empty())
     CloseGameController(m_controllers.begin()->first);
 
-  if (m_sdl_initialized_by_us)
+  if (m_initialized)
   {
-    SDL_Quit();
-    m_sdl_initialized_by_us = false;
+    SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+    m_initialized = false;
   }
 
   m_host_interface = nullptr;

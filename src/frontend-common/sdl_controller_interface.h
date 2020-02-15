@@ -26,7 +26,7 @@ public:
   SDLControllerInterface();
   ~SDLControllerInterface();
 
-  bool Initialize(HostInterface* host_interface, bool init_sdl);
+  bool Initialize(HostInterface* host_interface);
   void Shutdown();
 
   // Removes all bindings. Call before setting new bindings.
@@ -101,7 +101,7 @@ private:
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;
 
-  bool m_sdl_initialized_by_us = false;
+  bool m_initialized = false;
 };
 
 extern SDLControllerInterface g_sdl_controller_interface;
