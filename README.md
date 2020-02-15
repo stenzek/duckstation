@@ -25,6 +25,7 @@
 ## Downloading and running
 Prebuilt binaries of DuckStation for 64-bit Windows are available via AppVeyor CI. To download:
  - Go to https://ci.appveyor.com/project/stenzek/duckstation
+ - Select "Image: Visual Studio 2019" from the Job list.
  - Click on the "Artifacts" Tab.
  - Download the "duckstation-win64-release.7z" artifact. This is a 7-Zip archive containing the prebuilt binary.
  - Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
