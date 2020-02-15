@@ -527,7 +527,19 @@ void QtHostInterface::pauseSystem(bool paused)
   emit emulationPaused(paused);
 }
 
-void QtHostInterface::changeDisc(const QString& new_disc_filename) {}
+void QtHostInterface::changeDisc(const QString& new_disc_filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(const QString&, new_disc_filename));
+    return;
+  }
+
+  if (!m_system)
+    return;
+
+  m_system->InsertMedia(new_disc_filename.toStdString().c_str());
+}
 
 void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
 {
