@@ -16,12 +16,13 @@ add_executable(duckstation-sdl
   sdl_settings_interface.h
 )
 
+target_include_directories(duckstation-sdl PRIVATE ${SDL2_INCLUDE_DIRS})
+target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad simpleini ${SDL2_LIBRARIES})
+
 if(WIN32)
   target_sources(duckstation-sdl PRIVATE
     d3d11_host_display.cpp
     d3d11_host_display.h
   )
-  target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib winmm.lib)
+  target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib winmm.lib ${SDL2MAIN_LIBRARIES})
 endif()
-
-target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad simpleini SDL2::Main)
