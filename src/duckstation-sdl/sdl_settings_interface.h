@@ -28,4 +28,5 @@ public:
 private:
   std::string m_filename;
   CSimpleIniA m_ini;
+  bool m_dirty = false;
 };

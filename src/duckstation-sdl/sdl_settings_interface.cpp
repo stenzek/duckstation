@@ -12,9 +12,12 @@ SDLSettingsInterface::SDLSettingsInterface(const char* filename) : m_filename(fi
 
 SDLSettingsInterface::~SDLSettingsInterface()
 {
-  SI_Error err = m_ini.SaveFile(m_filename.c_str(), false);
-  if (err != SI_OK)
-    Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
+  if (m_dirty)
+  {
+    SI_Error err = m_ini.SaveFile(m_filename.c_str(), false);
+    if (err != SI_OK)
+      Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
+  }
 }
 
 int SDLSettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
@@ -40,26 +43,31 @@ std::string SDLSettingsInterface::GetStringValue(const char* section, const char
 
 void SDLSettingsInterface::SetIntValue(const char* section, const char* key, int value)
 {
+  m_dirty = true;
   m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
 }
 
 void SDLSettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
+  m_dirty = true;
   m_ini.SetDoubleValue(section, key, static_cast<double>(value), nullptr, true);
 }
 
 void SDLSettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
+  m_dirty = true;
   m_ini.SetBoolValue(section, key, value, nullptr, true);
 }
 
 void SDLSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
 {
+  m_dirty = true;
   m_ini.SetValue(section, key, value, nullptr, true);
 }
 
 void SDLSettingsInterface::DeleteValue(const char* section, const char* key)
 {
+  m_dirty = true;
   m_ini.Delete(section, key);
 }
 
@@ -79,6 +87,7 @@ std::vector<std::string> SDLSettingsInterface::GetStringList(const char* section
 void SDLSettingsInterface::SetStringList(const char* section, const char* key,
                                          const std::vector<std::string_view>& items)
 {
+  m_dirty = true;
   m_ini.Delete(section, key);
 
   for (const std::string_view& sv : items)
@@ -87,6 +96,7 @@ void SDLSettingsInterface::SetStringList(const char* section, const char* key,
 
 bool SDLSettingsInterface::RemoveFromStringList(const char* section, const char* key, const char* item)
 {
+  m_dirty = true;
   return m_ini.DeleteValue(section, key, item, true);
 }
 
@@ -100,6 +110,7 @@ bool SDLSettingsInterface::AddToStringList(const char* section, const char* key,
     return false;
   }
 
+  m_dirty = true;
   m_ini.SetValue(section, key, item, nullptr, false);
   return true;
 }
