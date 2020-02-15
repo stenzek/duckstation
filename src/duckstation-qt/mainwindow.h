@@ -30,6 +30,7 @@ private Q_SLOTS:
   void onEmulationStarted();
   void onEmulationStopped();
   void onEmulationPaused(bool paused);
+  void onStateSaved(const QString& game_code, bool global, qint32 slot);
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                           float worst_frame_time);
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);

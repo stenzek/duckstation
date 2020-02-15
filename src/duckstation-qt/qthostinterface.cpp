@@ -651,7 +651,7 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
     for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
     {
       QAction* action = save_menu->addAction(tr("Game Save %1").arg(i));
-      connect(action, &QAction::triggered, [this, i]() { saveState(i, false); });
+      connect(action, &QAction::triggered, [this, i]() { saveState(false, i); });
     }
 
     save_menu->addSeparator();
@@ -660,7 +660,7 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   for (s32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
   {
     QAction* action = save_menu->addAction(tr("Global Save %1").arg(i));
-    connect(action, &QAction::triggered, [this, i]() { saveState(i, true); });
+    connect(action, &QAction::triggered, [this, i]() { saveState(true, i); });
   }
 }
 
@@ -696,7 +696,10 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
   }
 
   if (m_system)
+  {
     SaveState(global, slot);
+    emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
+  }
 }
 
 void QtHostInterface::enableBackgroundControllerPolling()

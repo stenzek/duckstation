@@ -119,6 +119,15 @@ void MainWindow::onEmulationPaused(bool paused)
   m_ui.actionPause->setChecked(paused);
 }
 
+void MainWindow::onStateSaved(const QString& game_code, bool global, qint32 slot)
+{
+  // don't bother updating for the resume state since we're powering off anyway
+  if (slot < 0)
+    return;
+
+  m_host_interface->populateSaveStateMenus(game_code.toStdString().c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
+}
+
 void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                                     float worst_frame_time)
 {
@@ -331,6 +340,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);
+  connect(m_host_interface, &QtHostInterface::stateSaved, this, &MainWindow::onStateSaved);
   connect(m_host_interface, &QtHostInterface::systemPerformanceCountersUpdated, this,
           &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);

@@ -67,6 +67,7 @@ Q_SIGNALS:
   void emulationStarted();
   void emulationStopped();
   void emulationPaused(bool paused);
+  void stateSaved(const QString& game_code, bool global, qint32 slot);
   void gameListRefreshed();
   void createDisplayWindowRequested(QThread* worker_thread, bool use_debug_device);
   void destroyDisplayWindowRequested();
