@@ -174,7 +174,20 @@ void OpenGLDisplayWindow::WindowResized() {}
 
 const char* OpenGLDisplayWindow::GetGLSLVersionString() const
 {
-  return m_gl_context->isOpenGLES() ? "#version 300 es" : "#version 130\n";
+  if (m_gl_context->isOpenGLES())
+  {
+    if (GLAD_GL_ES_VERSION_3_0)
+      return "#version 300 es";
+    else
+      return "#version 100";
+  }
+  else
+  {
+    if (GLAD_GL_VERSION_3_3)
+      return "#version 330";
+    else
+      return "#version 130";
+  }
 }
 
 std::string OpenGLDisplayWindow::GetGLSLVersionHeader() const

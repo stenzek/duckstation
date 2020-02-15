@@ -59,8 +59,8 @@ void GPU_HW_ShaderGen::SetGLSLVersionString()
   }
 
   char buf[128];
-  std::snprintf(buf, sizeof(buf), "#version %d%02d %s", major_version, minor_version,
-                (!m_glsl_es && major_version >= 3 && minor_version >= 3) ? "core" : (m_glsl_es ? "es" : ""));
+  std::snprintf(buf, sizeof(buf), "#version %d%02d%s", major_version, minor_version,
+                (m_glsl_es && major_version >= 3) ? " es" : "");
   m_glsl_version_string = buf;
 }
 
