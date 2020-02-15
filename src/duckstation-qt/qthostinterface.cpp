@@ -227,7 +227,9 @@ void QtHostInterface::doHandleKeyEvent(int key, bool pressed)
 
 void QtHostInterface::onDisplayWindowResized(int width, int height)
 {
-  m_display_window->onWindowResized(width, height);
+  // this can be null if it was destroyed and the main thread is late catching up
+  if (m_display_window)
+    m_display_window->onWindowResized(width, height);
 }
 
 bool QtHostInterface::AcquireHostDisplay()
@@ -258,7 +260,6 @@ void QtHostInterface::ReleaseHostDisplay()
 {
   DebugAssert(m_display_window && m_display == m_display_window->getHostDisplayInterface());
   m_display = nullptr;
-  m_display_window->disconnect(this);
   m_display_window->destroyDeviceContext();
   m_display_window = nullptr;
   emit destroyDisplayWindowRequested();
