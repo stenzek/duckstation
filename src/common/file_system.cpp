@@ -7,10 +7,11 @@
 #include <cstring>
 
 #ifdef __APPLE__
-#include <malloc.h>
-#else
 #include <mach-o/dyld.h>
+#include <stdlib.h>
 #include <sys/param.h>
+#else
+#include <malloc.h>
 #endif
 
 #if defined(WIN32)
