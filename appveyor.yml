@@ -6,7 +6,7 @@ branches:
 image:
 - Visual Studio 2019
 #- Ubuntu1804
-#- macOS
+- macOS
 
 clone_depth: 1
 
