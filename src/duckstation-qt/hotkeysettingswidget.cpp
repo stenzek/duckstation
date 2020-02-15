@@ -58,13 +58,10 @@ void HotkeySettingsWidget::createButtons()
 
     QWidget* container = iter->container;
     QGridLayout* layout = iter->layout;
-    const int layout_count = layout->count() / 2;
-    const int target_column = (layout_count / ROWS_PER_COLUMN) * 2;
-    const int target_row = layout_count % ROWS_PER_COLUMN;
+    const int target_row = layout->count() / 2;
 
     const QString setting_name = QStringLiteral("Hotkeys/%1").arg(hi.name);
-    layout->addWidget(new QLabel(hi.display_name, container), target_row, target_column);
-    layout->addWidget(new InputButtonBindingWidget(m_host_interface, setting_name, container), target_row,
-                      target_column + 1);
+    layout->addWidget(new QLabel(hi.display_name, container), target_row, 0);
+    layout->addWidget(new InputButtonBindingWidget(m_host_interface, setting_name, container), target_row, 1);
   }
 }

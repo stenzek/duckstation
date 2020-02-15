@@ -17,11 +17,6 @@ public:
   ~HotkeySettingsWidget();
 
 private:
-  enum : u32
-  {
-    ROWS_PER_COLUMN = 10
-  };
-
   void createUi();
   void createButtons();
 
