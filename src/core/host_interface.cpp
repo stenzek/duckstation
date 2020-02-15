@@ -415,7 +415,7 @@ void HostInterface::SetUserDirectory()
 {
   const std::string program_path = FileSystem::GetProgramPath();
   const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
-  Log_InfoPrintf("Program path: \"%s\" (directory \"%s\")", program_path.c_str());
+  Log_InfoPrintf("Program path: \"%s\" (directory \"%s\")", program_path.c_str(), program_directory.c_str());
 
   if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", program_directory.c_str(),
                                                              FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
