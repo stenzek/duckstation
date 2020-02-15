@@ -1396,7 +1396,7 @@ std::string GetProgramPath()
   char* buffer = static_cast<char*>(std::realloc(nullptr, curSize));
   for (;;)
   {
-    uint32 nChars = curSize - 1;
+    u32 nChars = curSize - 1;
     int res = _NSGetExecutablePath(buffer, &nChars);
     if (res == 0)
     {
