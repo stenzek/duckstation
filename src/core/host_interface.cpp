@@ -432,7 +432,7 @@ bool HostInterface::LoadState(const char* filename)
   return true;
 }
 
-bool HostInterface::LoadState(bool global, u32 slot)
+bool HostInterface::LoadState(bool global, s32 slot)
 {
   if (!global && (!m_system || m_system->GetRunningCode().empty()))
   {
@@ -468,7 +468,7 @@ bool HostInterface::SaveState(const char* filename)
   return result;
 }
 
-bool HostInterface::SaveState(bool global, u32 slot)
+bool HostInterface::SaveState(bool global, s32 slot)
 {
   const std::string& code = m_system->GetRunningCode();
   if (!global && code.empty())
@@ -479,6 +479,48 @@ bool HostInterface::SaveState(bool global, u32 slot)
 
   std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
   return SaveState(save_path.c_str());
+}
+
+bool HostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
+{
+  if (!BootSystemFromFile(filename))
+    return false;
+
+  const bool global = m_system->GetRunningCode().empty();
+  const std::string path =
+    global ? GetGlobalSaveStateFileName(-1) : GetGameSaveStateFileName(m_system->GetRunningCode().c_str(), -1);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!LoadState(path.c_str()) && !boot_on_failure)
+    {
+      DestroySystem();
+      return false;
+    }
+  }
+  else
+  {
+    ReportFormattedError("Resume save state not found for '%s' ('%s').", m_system->GetRunningCode().c_str(),
+                         m_system->GetRunningTitle().c_str());
+    if (!boot_on_failure)
+    {
+      DestroySystem();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool HostInterface::ResumeSystemFromMostRecentState()
+{
+  const std::string path = GetMostRecentResumeSaveStatePath();
+  if (path.empty())
+  {
+    ReportError("No resume save state found.");
+    return false;
+  }
+
+  return LoadState(path.c_str());
 }
 
 void HostInterface::UpdateSpeedLimiterState()
@@ -660,7 +702,7 @@ std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(
   std::vector<SaveStateInfo> si;
   std::string path;
 
-  auto add_path = [&si](std::string path, s32 slot, bool global) {
+  auto add_path = [&si](const std::string& path, s32 slot, bool global) {
     FILESYSTEM_STAT_DATA sd;
     if (!FileSystem::StatFile(path.c_str(), &sd))
       return;
@@ -670,6 +712,7 @@ std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(
 
   if (game_code && std::strlen(game_code) > 0)
   {
+    add_path(GetGameSaveStateFileName(game_code, -1), -1, false);
     for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
       add_path(GetGameSaveStateFileName(game_code, i), i, false);
   }
@@ -678,6 +721,26 @@ std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(
     add_path(GetGlobalSaveStateFileName(i), i, true);
 
   return si;
+}
+
+std::string HostInterface::GetMostRecentResumeSaveStatePath() const
+{
+  std::vector<FILESYSTEM_FIND_DATA> files;
+  if (!FileSystem::FindFiles(GetUserDirectoryRelativePath("savestates").c_str(), "*resume.sav", FILESYSTEM_FIND_FILES,
+                             &files) ||
+      files.empty())
+  {
+    return {};
+  }
+
+  FILESYSTEM_FIND_DATA* most_recent = &files[0];
+  for (FILESYSTEM_FIND_DATA& file : files)
+  {
+    if (file.ModificationTime > most_recent->ModificationTime)
+      most_recent = &file;
+  }
+
+  return std::move(most_recent->FileName);
 }
 
 void HostInterface::SetDefaultSettings()
@@ -855,4 +918,13 @@ void HostInterface::SetTimerResolutionIncreased(bool enabled)
   else
     timeEndPeriod(1);
 #endif
+}
+
+bool HostInterface::SaveResumeSaveState()
+{
+  if (!m_system)
+    return false;
+
+  const bool global = m_system->GetRunningCode().empty();
+  return SaveState(global, -1);
 }

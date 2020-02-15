@@ -46,12 +46,22 @@ public:
   void DestroySystem();
 
   /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
-  bool LoadState(bool global, u32 slot);
+  bool LoadState(bool global, s32 slot);
   bool LoadState(const char* filename);
 
   /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
-  bool SaveState(bool global, u32 slot);
+  bool SaveState(bool global, s32 slot);
   bool SaveState(const char* filename);
+
+  /// Loads the resume save state for the given game. Optionally boots the game anyway if loading fails.
+  bool ResumeSystemFromState(const char* filename, bool boot_on_failure);
+
+  /// Loads the most recent resume save state. This may be global or per-game.
+  bool ResumeSystemFromMostRecentState();
+
+  /// Saves the resume save state, call when shutting down. Not called automatically on DestroySystem() since that can
+  /// be called as a result of an error.
+  bool SaveResumeSaveState();
 
   virtual void ReportError(const char* message);
   virtual void ReportMessage(const char* message);
@@ -134,6 +144,9 @@ protected:
 
   /// Returns a list of save states for the specified game code.
   std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code) const;
+
+  /// Returns the most recent resume save state.
+  std::string GetMostRecentResumeSaveStatePath() const;
 
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
