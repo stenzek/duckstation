@@ -5,6 +5,7 @@
 #include "core/host_interface.h"
 #include "core/system.h"
 #include "sdl_initializer.h"
+#include <cmath>
 #include <SDL.h>
 Log_SetChannel(SDLControllerInterface);
 
