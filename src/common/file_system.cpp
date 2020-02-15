@@ -5,8 +5,10 @@
 #include "string_util.h"
 #include <algorithm>
 #include <cstring>
+
+#ifndef __APPLE__
 #include <malloc.h>
-Log_SetChannel(FileSystem);
+#endif
 
 #if defined(WIN32)
 #include <shlobj.h>
@@ -17,6 +19,8 @@ Log_SetChannel(FileSystem);
 #include <sys/types.h>
 #include <unistd.h>
 #endif
+
+Log_SetChannel(FileSystem);
 
 namespace FileSystem {
 
