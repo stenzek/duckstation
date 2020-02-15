@@ -7,8 +7,6 @@
 QtDisplayWindow::QtDisplayWindow(QtHostInterface* host_interface, QWindow* parent)
   : QWindow(parent), m_host_interface(host_interface)
 {
-  m_window_width = static_cast<int>(static_cast<qreal>(width()) * devicePixelRatio());
-  m_window_height = static_cast<int>(static_cast<qreal>(height()) * devicePixelRatio());
 }
 
 QtDisplayWindow::~QtDisplayWindow() = default;
@@ -30,6 +28,9 @@ bool QtDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_dev
 
 bool QtDisplayWindow::initializeDeviceContext(bool debug_device)
 {
+  m_window_width = static_cast<int>(static_cast<qreal>(width()) * devicePixelRatio());
+  m_window_height = static_cast<int>(static_cast<qreal>(height()) * devicePixelRatio());
+
   if (!createImGuiContext() || !createDeviceResources())
     return false;
 
