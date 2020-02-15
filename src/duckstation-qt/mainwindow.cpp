@@ -176,7 +176,7 @@ void MainWindow::onStartBiosActionTriggered()
 
 static void OpenURL(QWidget* parent, const char* url)
 {
-  const QUrl qurl(QUrl::fromEncoded(QByteArray(url, std::strlen(url))));
+  const QUrl qurl(QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
   if (!QDesktopServices::openUrl(qurl))
   {
     QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
