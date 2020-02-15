@@ -899,15 +899,13 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
     // create directories along the path
     for (i = 0; i < pathLength; i++)
     {
-      if (Path[i] == '\\')
+      if (Path[i] == '\\' || Path[i] == '/')
       {
         tempStr[i] = '\0';
         if (!CreateDirectoryA(tempStr, nullptr))
         {
           lastError = GetLastError();
-          if (lastError == ERROR_ALREADY_EXISTS) // fine, continue to next path segment
-            continue;
-          else // anything else is a fail
+          if (lastError != ERROR_ALREADY_EXISTS) // fine, continue to next path segment
             return false;
         }
       }
@@ -1318,9 +1316,7 @@ bool CreateDirectory(const char* Path, bool Recursive)
         if (mkdir(tempStr, 0777) < 0)
         {
           lastError = errno;
-          if (lastError == EEXIST) // fine, continue to next path segment
-            continue;
-          else // anything else is a fail
+          if (lastError != EEXIST) // fine, continue to next path segment
             return false;
         }
       }
