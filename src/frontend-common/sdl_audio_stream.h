@@ -8,6 +8,8 @@ public:
   SDLAudioStream();
   ~SDLAudioStream();
 
+  static std::unique_ptr<SDLAudioStream> Create();
+
 protected:
   bool OpenDevice() override;
   void PauseDevice(bool paused) override;

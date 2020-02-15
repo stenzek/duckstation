@@ -50,7 +50,7 @@ struct Settings
   bool display_fullscreen = false;
   bool video_sync_enabled = true;
 
-  AudioBackend audio_backend = AudioBackend::Default;
+  AudioBackend audio_backend = AudioBackend::Cubeb;
   bool audio_sync_enabled = true;
 
   struct DebugSettings

@@ -252,12 +252,11 @@ std::unique_ptr<AudioStream> QtHostInterface::CreateAudioStream(AudioBackend bac
 {
   switch (backend)
   {
-    case AudioBackend::Default:
-    case AudioBackend::Cubeb:
-      return AudioStream::CreateCubebAudioStream();
-
     case AudioBackend::Null:
       return AudioStream::CreateNullAudioStream();
+
+    case AudioBackend::Cubeb:
+      return AudioStream::CreateCubebAudioStream();
 
     default:
       return nullptr;

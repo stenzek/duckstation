@@ -681,7 +681,7 @@ void HostInterface::SetDefaultSettings()
   m_settings.display_fullscreen = false;
   m_settings.video_sync_enabled = true;
 
-  m_settings.audio_backend = AudioBackend::Default;
+  m_settings.audio_backend = AudioBackend::Cubeb;
   m_settings.audio_sync_enabled = true;
 
   m_settings.bios_path = GetUserDirectoryRelativePath("bios/scph1001.bin");

@@ -12,6 +12,11 @@ SDLAudioStream::~SDLAudioStream()
     SDLAudioStream::CloseDevice();
 }
 
+std::unique_ptr<SDLAudioStream> SDLAudioStream::Create()
+{
+  return std::make_unique<SDLAudioStream>();
+}
+
 bool SDLAudioStream::OpenDevice()
 {
   DebugAssert(!m_is_open);

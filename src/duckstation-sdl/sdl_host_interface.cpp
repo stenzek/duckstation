@@ -93,7 +93,7 @@ bool SDLHostInterface::CreateDisplay()
   std::unique_ptr<HostDisplay> display;
 #ifdef WIN32
   display = UseOpenGLRenderer() ? OpenGLHostDisplay::Create(m_window, debug_device) :
-                                           D3D11HostDisplay::Create(m_window, debug_device);
+                                  D3D11HostDisplay::Create(m_window, debug_device);
 #else
   display = OpenGLHostDisplay::Create(m_window, debug_device);
 #endif
@@ -162,7 +162,7 @@ void SDLHostInterface::ReleaseHostDisplay()
 
 std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend backend)
 {
-  switch (m_settings.audio_backend)
+  switch (backend)
   {
     case AudioBackend::Null:
       return AudioStream::CreateNullAudioStream();
@@ -170,8 +170,8 @@ std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend ba
     case AudioBackend::Cubeb:
       return AudioStream::CreateCubebAudioStream();
 
-    case AudioBackend::Default:
-      return std::make_unique<SDLAudioStream>();
+    case AudioBackend::SDL:
+      return SDLAudioStream::Create();
 
     default:
       return nullptr;

@@ -29,7 +29,7 @@ void Settings::Load(SettingsInterface& si)
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
   audio_backend =
-    ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Default").c_str()).value_or(AudioBackend::Default);
+    ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
 
   bios_path = si.GetStringValue("BIOS", "Path", "scph1001.bin");
@@ -203,8 +203,8 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }
 
-static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Default", "Cubeb"}};
-static std::array<const char*, 3> s_audio_backend_display_names = {{"Null (No Output)", "Default", "Cubeb"}};
+static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};
+static std::array<const char*, 3> s_audio_backend_display_names = {{"Null (No Output)", "Cubeb", "SDL"}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {
