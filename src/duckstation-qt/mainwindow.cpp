@@ -22,7 +22,6 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
   m_ui.setupUi(this);
   setupAdditionalUi();
   connectSignals();
-  populateLoadSaveStateMenus(QString());
 
   resize(750, 690);
 }
@@ -136,7 +135,7 @@ void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, floa
 
 void MainWindow::onRunningGameChanged(QString filename, QString game_code, QString game_title)
 {
-  populateLoadSaveStateMenus(game_code);
+  m_host_interface->populateSaveStateMenus(game_code.toStdString().c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
   if (game_title.isEmpty())
     setWindowTitle(tr("DuckStation"));
   else
@@ -367,13 +366,15 @@ void MainWindow::connectSignals()
     if (!entry)
     {
       m_ui.statusBar->clearMessage();
-      populateLoadSaveStateMenus(QString());
+      m_host_interface->populateSaveStateMenus("", m_ui.menuLoadState, m_ui.menuSaveState);
       return;
     }
 
     m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
-    populateLoadSaveStateMenus(QString::fromStdString(entry->code));
+    m_host_interface->populateSaveStateMenus(entry->code.c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
   });
+
+  m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug/ShowVRAM");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies,
@@ -440,39 +441,6 @@ void MainWindow::updateDebugMenuGPURenderer()
     QAction* action = qobject_cast<QAction*>(obj);
     if (action)
       action->setChecked(action->text() == current_renderer_display_name);
-  }
-}
-
-void MainWindow::populateLoadSaveStateMenus(QString game_code)
-{
-  static constexpr int NUM_SAVE_STATE_SLOTS = 10;
-
-  QMenu* const load_menu = m_ui.menuLoadState;
-  QMenu* const save_menu = m_ui.menuSaveState;
-
-  load_menu->clear();
-  save_menu->clear();
-
-  load_menu->addAction(tr("Resume State"));
-  load_menu->addSeparator();
-
-  for (int i = 0; i < NUM_SAVE_STATE_SLOTS; i++)
-  {
-    // TODO: Do we want to test for the existance of these on disk here?
-    load_menu->addAction(tr("Global Save %1 (2020-01-01 00:01:02)").arg(i + 1));
-    save_menu->addAction(tr("Global Save %1").arg(i + 1));
-  }
-
-  if (!game_code.isEmpty())
-  {
-    load_menu->addSeparator();
-    save_menu->addSeparator();
-
-    for (int i = 0; i < NUM_SAVE_STATE_SLOTS; i++)
-    {
-      load_menu->addAction(tr("Game Save %1 (2020-01-01 00:01:02)").arg(i + 1));
-      save_menu->addAction(tr("Game Save %1").arg(i + 1));
-    }
   }
 }
 

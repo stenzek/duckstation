@@ -16,6 +16,7 @@
 class ByteStream;
 
 class QEventLoop;
+class QMenu;
 class QWidget;
 
 class GameList;
@@ -61,6 +62,8 @@ public:
   };
   std::vector<HotkeyInfo> getHotkeyList() const;
 
+  void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
+
 Q_SIGNALS:
   void errorReported(QString message);
   void messageReported(QString message);
@@ -81,6 +84,9 @@ public Q_SLOTS:
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
+  void loadState(QString filename);
+  void loadState(bool global, qint32 slot);
+  void saveState(bool global, qint32 slot, bool block_until_done = false);
 
 private Q_SLOTS:
   void doStopThread();
@@ -96,11 +102,6 @@ protected:
 
 private:
   using InputButtonHandler = std::function<void(bool)>;
-
-  enum : u32
-  {
-    NUM_SAVE_STATE_HOTKEYS = 8
-  };
 
   class Thread : public QThread
   {

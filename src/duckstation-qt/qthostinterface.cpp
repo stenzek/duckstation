@@ -11,8 +11,10 @@
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QEventLoop>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <memory>
 Log_SetChannel(QtHostInterface);
@@ -354,15 +356,22 @@ std::vector<QtHostInterface::HotkeyInfo> QtHostInterface::getHotkeyList() const
     {QStringLiteral("DecreaseResolutionScale"), QStringLiteral("Decrease Resolution Scale"),
      QStringLiteral("Graphics")}};
 
-  for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
+  for (u32 global_i = 0; global_i < 2; global_i++)
   {
-    hotkeys.push_back(
-      {QStringLiteral("LoadState%1").arg(i), QStringLiteral("Load State %1").arg(i), QStringLiteral("Save States")});
-  }
-  for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
-  {
-    hotkeys.push_back(
-      {QStringLiteral("SaveState%1").arg(i), QStringLiteral("Save State %1").arg(i), QStringLiteral("Save States")});
+    const bool global = ConvertToBoolUnchecked(global_i);
+    const u32 count = global ? GLOBAL_SAVE_STATE_SLOTS : PER_GAME_SAVE_STATE_SLOTS;
+    for (u32 i = 1; i <= count; i++)
+    {
+      hotkeys.push_back({QStringLiteral("Load%1State%2").arg(global ? "Global" : "Game").arg(i),
+                         QStringLiteral("Load %1 State %2").arg(global ? tr("Global") : tr("Game")).arg(i),
+                         QStringLiteral("Save States")});
+    }
+    for (u32 slot = 1; slot <= count; slot++)
+    {
+      hotkeys.push_back({QStringLiteral("Save%1State%2").arg(global ? "Global" : "Game").arg(slot),
+                         QStringLiteral("Save %1 State %2").arg(global ? tr("Global") : tr("Game")).arg(slot),
+                         QStringLiteral("Save States")});
+    }
   }
 
   return hotkeys;
@@ -408,17 +417,21 @@ void QtHostInterface::updateHotkeyInputMap()
       ModifyResolutionScale(-1);
   });
 
-  for (u32 i = 1; i <= NUM_SAVE_STATE_HOTKEYS; i++)
+  for (u32 global_i = 0; global_i < 2; global_i++)
   {
-    hk(QStringLiteral("LoadState%1").arg(i), [this, i](bool pressed) {
-      if (!pressed)
-        HostInterface::LoadState(StringUtil::StdStringFromFormat("savestate_%u.bin", i).c_str());
-    });
-
-    hk(QStringLiteral("SaveState%1").arg(i), [this, i](bool pressed) {
-      if (!pressed)
-        HostInterface::SaveState(StringUtil::StdStringFromFormat("savestate_%u.bin", i).c_str());
-    });
+    const bool global = ConvertToBoolUnchecked(global_i);
+    const u32 count = global ? GLOBAL_SAVE_STATE_SLOTS : PER_GAME_SAVE_STATE_SLOTS;
+    for (u32 slot = 1; slot <= count; slot++)
+    {
+      hk(QStringLiteral("Load%1State%2").arg(global ? "Global" : "Game").arg(slot), [this, global, slot](bool pressed) {
+        if (!pressed)
+          loadState(global, slot);
+      });
+      hk(QStringLiteral("Save%1State%2").arg(global ? "Global" : "Game").arg(slot), [this, global, slot](bool pressed) {
+        if (!pressed)
+          saveState(global, slot);
+      });
+    }
   }
 }
 
@@ -553,6 +566,106 @@ void QtHostInterface::createAudioStream()
     m_audio_stream = AudioStream::CreateNullAudioStream();
     m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
   }
+}
+
+void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
+{
+  const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(game_code));
+
+  load_menu->clear();
+  if (!available_states.empty())
+  {
+    bool last_global = available_states.front().global;
+    for (const SaveStateInfo& ssi : available_states)
+    {
+      const s32 slot = ssi.slot;
+      const bool global = ssi.global;
+      const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
+      const QString path(QString::fromStdString(ssi.path));
+
+      QString title = tr("%1 Save %2 (%3)")
+                        .arg(global ? tr("Global") : tr("Game"))
+                        .arg(slot)
+                        .arg(timestamp.toString(Qt::SystemLocaleShortDate));
+
+      if (global != last_global)
+      {
+        load_menu->addSeparator();
+        last_global = global;
+      }
+
+      QAction* action = load_menu->addAction(title);
+      connect(action, &QAction::triggered, [this, path]() { loadState(path); });
+    }
+  }
+
+  save_menu->clear();
+  if (game_code && std::strlen(game_code) > 0)
+  {
+    for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
+    {
+      QAction* action = save_menu->addAction(tr("Game Save %1").arg(i));
+      connect(action, &QAction::triggered, [this, i]() { saveState(i, false); });
+    }
+
+    save_menu->addSeparator();
+  }
+
+  for (s32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
+  {
+    QAction* action = save_menu->addAction(tr("Global Save %1").arg(i));
+    connect(action, &QAction::triggered, [this, i]() { saveState(i, true); });
+  }
+}
+
+void QtHostInterface::loadState(QString filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "loadState", Qt::QueuedConnection, Q_ARG(QString, filename));
+    return;
+  }
+
+  if (m_system)
+    LoadState(filename.toStdString().c_str());
+  else
+    doBootSystem(QString(), filename);
+}
+
+void QtHostInterface::loadState(bool global, qint32 slot)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "loadState", Qt::QueuedConnection, Q_ARG(bool, global), Q_ARG(qint32, slot));
+    return;
+  }
+
+  if (m_system)
+  {
+    LoadState(slot, global);
+    return;
+  }
+
+  if (!global)
+  {
+    // can't load a non-global system without a game code
+    return;
+  }
+
+  loadState(QString::fromStdString(GetGlobalSaveStateFileName(slot)));
+}
+
+void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "saveState", block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+                              Q_ARG(bool, global), Q_ARG(qint32, slot), Q_ARG(bool, block_until_done));
+    return;
+  }
+
+  if (m_system)
+    SaveState(global, slot);
 }
 
 void QtHostInterface::createThread()

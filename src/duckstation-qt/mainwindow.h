@@ -54,7 +54,6 @@ private:
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
   void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
-  void populateLoadSaveStateMenus(QString game_code);
 
   Ui::MainWindow m_ui;
 
