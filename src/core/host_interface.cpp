@@ -543,7 +543,7 @@ std::string HostInterface::GetGameListDatabaseFileName() const
   return GetUserDirectoryRelativePath("cache/redump.dat");
 }
 
-std::string HostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot)
+std::string HostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot) const
 {
   if (slot < 0)
     return GetUserDirectoryRelativePath("savestates/%s_resume.sav", game_code);
@@ -551,7 +551,7 @@ std::string HostInterface::GetGameSaveStateFileName(const char* game_code, s32 s
     return GetUserDirectoryRelativePath("savestates/%s_%d.sav", game_code, slot);
 }
 
-std::string HostInterface::GetGlobalSaveStateFileName(s32 slot)
+std::string HostInterface::GetGlobalSaveStateFileName(s32 slot) const
 {
   if (slot < 0)
     return GetUserDirectoryRelativePath("savestates/resume.sav");
@@ -559,17 +559,17 @@ std::string HostInterface::GetGlobalSaveStateFileName(s32 slot)
     return GetUserDirectoryRelativePath("savestates/savestate_%d.sav", slot);
 }
 
-std::string HostInterface::GetSharedMemoryCardPath(u32 slot)
+std::string HostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
   return GetUserDirectoryRelativePath("memcards/shared_card_%d.mcd", slot + 1);
 }
 
-std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot)
+std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
   return GetUserDirectoryRelativePath("memcards/game_card_%s_%d.mcd", game_code, slot + 1);
 }
 
-std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(const char* game_code)
+std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(const char* game_code) const
 {
   std::vector<SaveStateInfo> si;
   std::string path;

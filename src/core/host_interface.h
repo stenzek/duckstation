@@ -108,19 +108,19 @@ protected:
   std::string GetGameListDatabaseFileName() const;
 
   /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
-  std::string GetGameSaveStateFileName(const char* game_code, s32 slot);
+  std::string GetGameSaveStateFileName(const char* game_code, s32 slot) const;
 
   /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
-  std::string GetGlobalSaveStateFileName(s32 slot);
+  std::string GetGlobalSaveStateFileName(s32 slot) const;
 
   /// Returns the default path to a memory card.
-  std::string GetSharedMemoryCardPath(u32 slot);
+  std::string GetSharedMemoryCardPath(u32 slot) const;
 
   /// Returns the default path to a memory card for a specific game.
-  std::string GetGameMemoryCardPath(const char* game_code, u32 slot);
+  std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const;
 
   /// Returns a list of save states for the specified game code.
-  std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code);
+  std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code) const;
 
   /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
   bool LoadState(bool global, u32 slot);
