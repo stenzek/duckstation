@@ -497,15 +497,12 @@ bool HostInterface::ResumeSystemFromState(const char* filename, bool boot_on_fai
       return false;
     }
   }
-  else
+  else if (!boot_on_failure)
   {
     ReportFormattedError("Resume save state not found for '%s' ('%s').", m_system->GetRunningCode().c_str(),
                          m_system->GetRunningTitle().c_str());
-    if (!boot_on_failure)
-    {
-      DestroySystem();
-      return false;
-    }
+    DestroySystem();
+    return false;
   }
 
   return true;
