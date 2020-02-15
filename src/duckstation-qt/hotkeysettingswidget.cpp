@@ -8,6 +8,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QScrollArea>
 
 HotkeySettingsWidget::HotkeySettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QWidget(parent), m_host_interface(host_interface)
@@ -40,14 +41,19 @@ void HotkeySettingsWidget::createButtons()
     auto iter = m_categories.find(hi.category);
     if (iter == m_categories.end())
     {
-      QWidget* container = new QWidget(m_tab_widget);
+      QScrollArea* scroll = new QScrollArea(m_tab_widget);
+      QWidget* container = new QWidget(scroll);
       QVBoxLayout* vlayout = new QVBoxLayout(container);
       QGridLayout* layout = new QGridLayout();
       layout->setContentsMargins(0, 0, 0, 0);
       vlayout->addLayout(layout);
       vlayout->addStretch(1);
       iter = m_categories.insert(hi.category, Category{container, layout});
-      m_tab_widget->addTab(container, hi.category);
+      scroll->setWidget(container);
+      scroll->setWidgetResizable(true);
+      scroll->setBackgroundRole(QPalette::Base);
+      scroll->setFrameShape(QFrame::NoFrame);
+      m_tab_widget->addTab(scroll, hi.category);
     }
 
     QWidget* container = iter->container;
