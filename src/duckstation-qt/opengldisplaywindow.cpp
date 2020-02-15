@@ -223,6 +223,11 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
+bool OpenGLDisplayWindow::hasDeviceContext() const
+{
+  return static_cast<bool>(m_gl_context);
+}
+
 bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
   m_gl_context = std::make_unique<QOpenGLContext>();

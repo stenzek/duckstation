@@ -45,11 +45,7 @@ public:
 
   bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
-  QWidget* createDisplayWidget(QWidget* parent);
-  bool createDisplayDeviceContext();
-  void displayWidgetDestroyed();
-
-  void bootSystem(QString initial_filename, QString initial_save_state_filename);
+  QtDisplayWindow* createDisplayWindow();
 
   void updateInputMap();
   void handleKeyEvent(int key, bool pressed);
@@ -67,20 +63,22 @@ public:
 Q_SIGNALS:
   void errorReported(QString message);
   void messageReported(QString message);
-  void emulationStarting();
   void emulationStarted();
   void emulationStopped();
   void emulationPaused(bool paused);
   void gameListRefreshed();
+  void createDisplayWindowRequested(QThread* worker_thread, bool use_debug_device);
+  void destroyDisplayWindowRequested();
   void toggleFullscreenRequested();
-  void recreateDisplayWidgetRequested(bool create_device_context);
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);
   void runningGameChanged(QString filename, QString game_code, QString game_title);
 
 public Q_SLOTS:
   void applySettings();
-  void powerOffSystem(bool save_resume_state = false, bool block_until_done = false);
+  void bootSystemFromFile(QString filename);
+  void bootSystemFromBIOS();
+  void destroySystem(bool save_resume_state = false, bool block_until_done = false);
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(QString new_disc_filename);
@@ -90,13 +88,18 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void doStopThread();
-  void doBootSystem(QString initial_filename, QString initial_save_state_filename);
   void doUpdateInputMap();
   void doHandleKeyEvent(int key, bool pressed);
   void onDisplayWindowResized(int width, int height);
 
 protected:
-  void SwitchGPURenderer() override;
+  bool AcquireHostDisplay() override;
+  void ReleaseHostDisplay() override;
+  std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
+
+  void OnSystemCreated() override;
+  void OnSystemPaused(bool paused) override;
+  void OnSystemDestroyed() override;
   void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
 
@@ -122,7 +125,6 @@ private:
   void updateControllerInputMap();
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
-  void createAudioStream();
   void createThread();
   void stopThread();
   void threadEntryPoint();

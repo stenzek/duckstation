@@ -8,6 +8,7 @@
 #include "ui_mainwindow.h"
 
 class QLabel;
+class QThread;
 
 class GameListWidget;
 class QtHostInterface;
@@ -23,12 +24,12 @@ public:
 private Q_SLOTS:
   void reportError(QString message);
   void reportMessage(QString message);
-  void onEmulationStarting();
+  void createDisplayWindow(QThread* worker_thread, bool use_debug_device);
+  void destroyDisplayWindow();
+  void toggleFullscreen();
   void onEmulationStarted();
   void onEmulationStopped();
   void onEmulationPaused(bool paused);
-  void toggleFullscreen();
-  void recreateDisplayWidget(bool create_device_context);
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                           float worst_frame_time);
   void onRunningGameChanged(QString filename, QString game_code, QString game_title);
@@ -36,7 +37,6 @@ private Q_SLOTS:
   void onStartDiscActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
-  void onStartBiosActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onAboutActionTriggered();

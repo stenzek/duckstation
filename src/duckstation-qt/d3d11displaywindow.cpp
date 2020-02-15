@@ -169,6 +169,11 @@ void D3D11DisplayWindow::onWindowResized(int width, int height)
     Panic("Failed to recreate swap chain RTV after resize");
 }
 
+bool D3D11DisplayWindow::hasDeviceContext() const
+{
+  return static_cast<bool>(m_device);
+}
+
 bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
   ComPtr<IDXGIFactory> dxgi_factory;

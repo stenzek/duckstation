@@ -18,6 +18,11 @@ HostDisplay* QtDisplayWindow::getHostDisplayInterface()
   return nullptr;
 }
 
+bool QtDisplayWindow::hasDeviceContext() const
+{
+  return true;
+}
+
 bool QtDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
   return true;

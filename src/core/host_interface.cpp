@@ -54,44 +54,87 @@ HostInterface::HostInterface()
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
 }
 
-HostInterface::~HostInterface() = default;
-
-bool HostInterface::CreateSystem()
+HostInterface::~HostInterface()
 {
-  m_system = System::Create(this);
+  // system should be shut down prior to the destructor
+  Assert(!m_system && !m_audio_stream && !m_display);
+}
 
-  // Pull in any invalid settings which have been reset.
-  m_settings = m_system->GetSettings();
-  m_paused = true;
+bool HostInterface::BootSystemFromFile(const char* filename)
+{
+  if (!AcquireHostDisplay())
+  {
+    ReportFormattedError("Failed to acquire host display");
+    return false;
+  }
+
+  // set host display settings
+  m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+
+  // create the audio stream. this will never fail, since we'll just fall back to null
+  m_audio_stream = CreateAudioStream(m_settings.audio_backend);
+  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
+  {
+    ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
+    m_audio_stream.reset();
+    m_audio_stream = AudioStream::CreateNullAudioStream();
+    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
+  }
+
+  m_system = System::Create(this);
+  if (!m_system->Boot(filename))
+  {
+    ReportFormattedError("System failed to boot. The log may contain more information.");
+    DestroySystem();
+    return false;
+  }
+
+  OnSystemCreated();
+
+  m_paused = m_settings.start_paused;
+  m_audio_stream->PauseOutput(m_paused);
   UpdateSpeedLimiterState();
+
+  if (m_paused)
+    OnSystemPaused(true);
+
   return true;
 }
 
-bool HostInterface::BootSystem(const char* filename, const char* state_filename)
+bool HostInterface::BootSystemFromBIOS()
 {
-  if (!m_system->Boot(filename))
-    return false;
+  return BootSystemFromFile(nullptr);
+}
 
-  m_paused = m_settings.start_paused;
+void HostInterface::PauseSystem(bool paused)
+{
+  if (paused == m_paused)
+    return;
+
+  m_paused = paused;
+  m_audio_stream->PauseOutput(m_paused);
+  OnSystemPaused(paused);
   UpdateSpeedLimiterState();
-
-  if (state_filename && !LoadState(state_filename))
-    return false;
-
-  return true;
 }
 
 void HostInterface::ResetSystem()
 {
   m_system->Reset();
+  m_system->ResetPerformanceCounters();
   AddOSDMessage("System reset.");
 }
 
 void HostInterface::DestroySystem()
 {
+  if (!m_system)
+    return;
+
   m_system.reset();
   m_paused = false;
-  UpdateSpeedLimiterState();
+  m_audio_stream.reset();
+  ReleaseHostDisplay();
+  OnSystemDestroyed();
+  OnRunningGameChanged();
 }
 
 void HostInterface::ReportError(const char* message)
@@ -283,11 +326,6 @@ void HostInterface::DrawDebugWindows()
     m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
-void HostInterface::ClearImGuiFocus()
-{
-  ImGui::SetWindowFocus(nullptr);
-}
-
 std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
 {
   // Try the other default filenames in the directory of the configured BIOS.
@@ -349,28 +387,48 @@ bool HostInterface::LoadState(const char* filename)
   if (!stream)
     return false;
 
-  AddFormattedOSDMessage(2.0f, "Loading state from %s...", filename);
+  AddFormattedOSDMessage(2.0f, "Loading state from '%s'...", filename);
 
-  const bool result = m_system->LoadState(stream.get());
-  if (!result)
+  if (m_system)
   {
-    ReportFormattedError("Loading state from %s failed. Resetting.", filename);
-    m_system->Reset();
+    if (!m_system->LoadState(stream.get()))
+    {
+      ReportFormattedError("Loading state from '%s' failed. Resetting.", filename);
+      m_system->Reset();
+      return false;
+    }
+
+    m_system->ResetPerformanceCounters();
+  }
+  else
+  {
+    if (!BootSystemFromFile(nullptr))
+    {
+      ReportFormattedError("Failed to boot system to load state from '%s'.", filename);
+      return false;
+    }
+
+    if (!m_system->LoadState(stream.get()))
+    {
+      ReportFormattedError("Failed to load state. The log may contain more information. Shutting down system.");
+      DestroySystem();
+      return false;
+    }
   }
 
-  return result;
+  return true;
 }
 
 bool HostInterface::LoadState(bool global, u32 slot)
 {
-  const std::string& code = m_system->GetRunningCode();
-  if (!global && code.empty())
+  if (!global && (!m_system || m_system->GetRunningCode().empty()))
   {
     ReportFormattedError("Can't save per-game state without a running game code.");
     return false;
   }
 
-  std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
+  std::string save_path =
+    global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(m_system->GetRunningCode().c_str(), slot);
   return LoadState(save_path.c_str());
 }
 
@@ -385,12 +443,12 @@ bool HostInterface::SaveState(const char* filename)
   const bool result = m_system->SaveState(stream.get());
   if (!result)
   {
-    ReportFormattedError("Saving state to %s failed.", filename);
+    ReportFormattedError("Saving state to '%s' failed.", filename);
     stream->Discard();
   }
   else
   {
-    AddFormattedOSDMessage(2.0f, "State saved to %s.", filename);
+    AddFormattedOSDMessage(2.0f, "State saved to '%s'.", filename);
     stream->Commit();
   }
 
@@ -431,7 +489,17 @@ void HostInterface::UpdateSpeedLimiterState()
     m_system->ResetPerformanceCounters();
 }
 
-void HostInterface::SwitchGPURenderer() {}
+void HostInterface::OnSystemCreated() {}
+
+void HostInterface::OnSystemPaused(bool paused)
+{
+  ReportFormattedMessage("System %s.", paused ? "paused" : "resumed");
+}
+
+void HostInterface::OnSystemDestroyed()
+{
+  ReportFormattedMessage("System shut down.");
+}
 
 void HostInterface::OnSystemPerformanceCountersUpdated() {}
 
@@ -644,16 +712,16 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   apply_callback();
 
   if (m_settings.gpu_renderer != old_gpu_renderer)
-    SwitchGPURenderer();
-
-  if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
-      m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
-  {
-    UpdateSpeedLimiterState();
-  }
+    RecreateSystem();
 
   if (m_system)
   {
+    if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
+        m_settings.speed_limiter_enabled != old_speed_limiter_enabled)
+    {
+      UpdateSpeedLimiterState();
+    }
+
     if (m_settings.emulation_speed != old_emulation_speed)
     {
       m_system->UpdateThrottlePeriod();
@@ -672,7 +740,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     }
   }
 
-  if (m_settings.display_linear_filtering != old_display_linear_filtering)
+  if (m_display && m_settings.display_linear_filtering != old_display_linear_filtering)
     m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 }
 
@@ -703,4 +771,31 @@ void HostInterface::ModifyResolutionScale(s32 increment)
   AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
                          GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
                          GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale);
+}
+
+void HostInterface::RecreateSystem()
+{
+  std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
+  if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
+  {
+    ReportError("Failed to save state before system recreation. Shutting down.");
+    DestroySystem();
+    return;
+  }
+
+  DestroySystem();
+  if (!BootSystemFromFile(nullptr))
+  {
+    ReportError("Failed to boot system after recreation.");
+    return;
+  }
+
+  if (!m_system->LoadState(stream.get()))
+  {
+    ReportError("Failed to load state after system recreation. Shutting down.");
+    DestroySystem();
+    return;
+  }
+
+  m_system->ResetPerformanceCounters();
 }

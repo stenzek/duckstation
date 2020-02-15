@@ -151,8 +151,10 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
   emit gameListRefreshed();
 }
 
-QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
+QtDisplayWindow* QtHostInterface::createDisplayWindow()
 {
+  Assert(!m_display_window);
+
 #ifdef WIN32
   if (m_settings.gpu_renderer == GPURenderer::HardwareOpenGL)
     m_display_window = new OpenGLDisplayWindow(this, nullptr);
@@ -162,40 +164,29 @@ QWidget* QtHostInterface::createDisplayWidget(QWidget* parent)
   m_display_window = new OpenGLDisplayWindow(this, nullptr);
 #endif
   connect(m_display_window, &QtDisplayWindow::windowResizedEvent, this, &QtHostInterface::onDisplayWindowResized);
-
-  m_display.release();
-  m_display = std::unique_ptr<HostDisplay>(m_display_window->getHostDisplayInterface());
-  m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
-
-  QWidget* widget = QWidget::createWindowContainer(m_display_window, parent);
-  widget->setFocusPolicy(Qt::StrongFocus);
-  return widget;
+  return m_display_window;
 }
 
-bool QtHostInterface::createDisplayDeviceContext()
+void QtHostInterface::bootSystemFromFile(QString filename)
 {
-  return m_display_window->createDeviceContext(m_worker_thread, m_settings.gpu_use_debug_device);
-}
-
-void QtHostInterface::displayWidgetDestroyed()
-{
-  m_display.release();
-  m_display_window = nullptr;
-}
-
-void QtHostInterface::bootSystem(QString initial_filename, QString initial_save_state_filename)
-{
-  Assert(!isOnWorkerThread());
-  emit emulationStarting();
-
-  if (!createDisplayDeviceContext())
+  if (!isOnWorkerThread())
   {
-    emit emulationStopped();
+    QMetaObject::invokeMethod(this, "bootSystemFromFile", Qt::QueuedConnection, Q_ARG(QString, filename));
     return;
   }
 
-  QMetaObject::invokeMethod(this, "doBootSystem", Qt::QueuedConnection, Q_ARG(QString, initial_filename),
-                            Q_ARG(QString, initial_save_state_filename));
+  HostInterface::BootSystemFromFile(filename.toStdString().c_str());
+}
+
+void QtHostInterface::bootSystemFromBIOS()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "bootSystemFromBIOS", Qt::QueuedConnection);
+    return;
+  }
+
+  HostInterface::BootSystemFromBIOS();
 }
 
 void QtHostInterface::handleKeyEvent(int key, bool pressed)
@@ -223,49 +214,80 @@ void QtHostInterface::onDisplayWindowResized(int width, int height)
   m_display_window->onWindowResized(width, height);
 }
 
-void QtHostInterface::SwitchGPURenderer()
+bool QtHostInterface::AcquireHostDisplay()
 {
-  // Due to the GPU class owning textures, we have to shut the system down.
-  std::unique_ptr<ByteStream> stream;
-  if (m_system)
-  {
-    stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-    if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
-      ReportError("Failed to save state before GPU renderer switch");
+  DebugAssert(!m_display_window);
 
-    DestroySystem();
-    m_audio_stream->PauseOutput(true);
+  emit createDisplayWindowRequested(m_worker_thread, m_settings.gpu_use_debug_device);
+  if (!m_display_window->hasDeviceContext())
+  {
+    m_display_window = nullptr;
+    emit destroyDisplayWindowRequested();
+    return false;
+  }
+
+  if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
+  {
     m_display_window->destroyDeviceContext();
+    m_display_window = nullptr;
+    emit destroyDisplayWindowRequested();
+    return false;
   }
 
-  const bool restore_state = static_cast<bool>(stream);
-  emit recreateDisplayWidgetRequested(restore_state);
-  Assert(m_display_window != nullptr);
+  m_display = m_display_window->getHostDisplayInterface();
+  return true;
+}
 
-  if (restore_state)
+void QtHostInterface::ReleaseHostDisplay()
+{
+  DebugAssert(m_display_window && m_display == m_display_window->getHostDisplayInterface());
+  m_display = nullptr;
+  m_display_window->disconnect(this);
+  m_display_window->destroyDeviceContext();
+  m_display_window = nullptr;
+  emit destroyDisplayWindowRequested();
+}
+
+std::unique_ptr<AudioStream> QtHostInterface::CreateAudioStream(AudioBackend backend)
+{
+  switch (backend)
   {
-    if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
-    {
-      emit runningGameChanged(QString(), QString(), QString());
-      emit emulationStopped();
-      return;
-    }
+    case AudioBackend::Default:
+    case AudioBackend::Cubeb:
+      return AudioStream::CreateCubebAudioStream();
 
-    CreateSystem();
-    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream.get()))
-    {
-      ReportError("Failed to load state after GPU renderer switch, resetting");
-      m_system->Reset();
-    }
+    case AudioBackend::Null:
+      return AudioStream::CreateNullAudioStream();
 
-    if (!m_paused)
-    {
-      m_audio_stream->PauseOutput(false);
-      UpdateSpeedLimiterState();
-    }
-
-    m_system->ResetPerformanceCounters();
+    default:
+      return nullptr;
   }
+}
+
+void QtHostInterface::OnSystemCreated()
+{
+  HostInterface::OnSystemCreated();
+
+  wakeThread();
+
+  emit emulationStarted();
+}
+
+void QtHostInterface::OnSystemPaused(bool paused)
+{
+  HostInterface::OnSystemPaused(paused);
+
+  if (!paused)
+    wakeThread();
+
+  emit emulationPaused(paused);
+}
+
+void QtHostInterface::OnSystemDestroyed()
+{
+  HostInterface::OnSystemDestroyed();
+
+  emit emulationStopped();
 }
 
 void QtHostInterface::OnSystemPerformanceCountersUpdated()
@@ -457,11 +479,11 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
   }
 }
 
-void QtHostInterface::powerOffSystem(bool save_resume_state /* = false */, bool block_until_done /* = false */)
+void QtHostInterface::destroySystem(bool save_resume_state /* = false */, bool block_until_done /* = false */)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "powerOffSystem",
+    QMetaObject::invokeMethod(this, "destroySystem",
                               block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
                               Q_ARG(bool, save_resume_state), Q_ARG(bool, block_until_done));
     return;
@@ -470,15 +492,7 @@ void QtHostInterface::powerOffSystem(bool save_resume_state /* = false */, bool 
   if (!m_system)
     return;
 
-  if (save_resume_state)
-    Log_InfoPrintf("TODO: Save resume state");
-
   DestroySystem();
-  m_audio_stream->PauseOutput(true);
-  m_display_window->destroyDeviceContext();
-
-  emit runningGameChanged(QString(), QString(), QString());
-  emit emulationStopped();
 }
 
 void QtHostInterface::resetSystem()
@@ -514,59 +528,6 @@ void QtHostInterface::pauseSystem(bool paused)
 }
 
 void QtHostInterface::changeDisc(QString new_disc_filename) {}
-
-void QtHostInterface::doBootSystem(QString initial_filename, QString initial_save_state_filename)
-{
-  if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
-  {
-    emit emulationStopped();
-    return;
-  }
-
-  std::string initial_filename_str = initial_filename.toStdString();
-  std::string initial_save_state_filename_str = initial_save_state_filename.toStdString();
-  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
-  if (!CreateSystem() ||
-      !BootSystem(initial_filename_str.empty() ? nullptr : initial_filename_str.c_str(),
-                  initial_save_state_filename_str.empty() ? nullptr : initial_save_state_filename_str.c_str()))
-  {
-    DestroySystem();
-    m_display_window->destroyDeviceContext();
-    emit emulationStopped();
-    return;
-  }
-
-  wakeThread();
-  m_audio_stream->PauseOutput(false);
-  UpdateSpeedLimiterState();
-  emit emulationStarted();
-}
-
-void QtHostInterface::createAudioStream()
-{
-  switch (m_settings.audio_backend)
-  {
-    case AudioBackend::Default:
-    case AudioBackend::Cubeb:
-      m_audio_stream = AudioStream::CreateCubebAudioStream();
-      break;
-
-    case AudioBackend::Null:
-    default:
-      m_audio_stream = AudioStream::CreateNullAudioStream();
-      break;
-  }
-
-  if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
-  {
-    qWarning() << "Failed to configure audio stream, falling back to null output";
-
-    // fall back to null output
-    m_audio_stream.reset();
-    m_audio_stream = AudioStream::CreateNullAudioStream();
-    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
-  }
-}
 
 void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
 {
@@ -626,10 +587,7 @@ void QtHostInterface::loadState(QString filename)
     return;
   }
 
-  if (m_system)
-    LoadState(filename.toStdString().c_str());
-  else
-    doBootSystem(QString(), filename);
+  LoadState(filename.toStdString().c_str());
 }
 
 void QtHostInterface::loadState(bool global, qint32 slot)
@@ -640,19 +598,7 @@ void QtHostInterface::loadState(bool global, qint32 slot)
     return;
   }
 
-  if (m_system)
-  {
-    LoadState(slot, global);
-    return;
-  }
-
-  if (!global)
-  {
-    // can't load a non-global system without a game code
-    return;
-  }
-
-  loadState(QString::fromStdString(GetGlobalSaveStateFileName(slot)));
+  LoadState(global, slot);
 }
 
 void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
@@ -693,8 +639,6 @@ void QtHostInterface::doStopThread()
 void QtHostInterface::threadEntryPoint()
 {
   m_worker_thread_event_loop = new QEventLoop();
-
-  createAudioStream();
 
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())

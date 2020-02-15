@@ -33,17 +33,20 @@ SDLHostInterface::SDLHostInterface()
   timeBeginPeriod(1);
 #endif
 
-  m_switch_gpu_renderer_event_id = SDL_RegisterEvents(1);
+  m_update_settings_event_id = SDL_RegisterEvents(1);
 }
 
 SDLHostInterface::~SDLHostInterface()
 {
   CloseGameControllers();
-  m_display.reset();
-  ImGui::DestroyContext();
+  if (m_display)
+  {
+    DestroyDisplay();
+    ImGui::DestroyContext();
+  }
 
   if (m_window)
-    SDL_DestroyWindow(m_window);
+    DestroySDLWindow();
 
 #ifdef WIN32
   timeEndPeriod(1);
@@ -87,30 +90,31 @@ void SDLHostInterface::DestroySDLWindow()
 bool SDLHostInterface::CreateDisplay()
 {
   const bool debug_device = m_settings.gpu_use_debug_device;
+  std::unique_ptr<HostDisplay> display;
 #ifdef WIN32
-  m_display = UseOpenGLRenderer() ? OpenGLHostDisplay::Create(m_window, debug_device) :
-                                    D3D11HostDisplay::Create(m_window, debug_device);
+  display = UseOpenGLRenderer() ? OpenGLHostDisplay::Create(m_window, debug_device) :
+                                           D3D11HostDisplay::Create(m_window, debug_device);
 #else
-  m_display = OpenGLHostDisplay::Create(m_window, debug_device);
+  display = OpenGLHostDisplay::Create(m_window, debug_device);
 #endif
 
-  if (!m_display)
+  if (!display)
     return false;
-
-  m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 
   m_app_icon_texture =
-    m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
-  if (!m_app_icon_texture)
+    display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
+  if (!display)
     return false;
 
+  m_display = display.release();
   return true;
 }
 
 void SDLHostInterface::DestroyDisplay()
 {
   m_app_icon_texture.reset();
-  m_display.reset();
+  delete m_display;
+  m_display = nullptr;
 }
 
 void SDLHostInterface::CreateImGuiContext()
@@ -123,32 +127,77 @@ void SDLHostInterface::CreateImGuiContext()
   ImGui::AddRobotoRegularFont();
 }
 
-void SDLHostInterface::CreateAudioStream()
+bool SDLHostInterface::AcquireHostDisplay()
+{
+  // Handle renderer switch if required on Windows.
+#ifdef WIN32
+  const HostDisplay::RenderAPI render_api = m_display->GetRenderAPI();
+  const bool render_api_is_gl =
+    render_api == HostDisplay::RenderAPI::OpenGL || render_api == HostDisplay::RenderAPI::OpenGLES;
+  const bool render_api_wants_gl = UseOpenGLRenderer();
+  if (render_api_is_gl != render_api_wants_gl)
+  {
+    ImGui::EndFrame();
+    DestroyDisplay();
+    DestroySDLWindow();
+
+    if (!CreateSDLWindow())
+      Panic("Failed to recreate SDL window on GPU renderer switch");
+
+    if (!CreateDisplay())
+      Panic("Failed to recreate display on GPU renderer switch");
+
+    ImGui::NewFrame();
+  }
+#endif
+
+  return true;
+}
+
+void SDLHostInterface::ReleaseHostDisplay()
+{
+  // restore vsync, since we don't want to burn cycles at the menu
+  m_display->SetVSync(true);
+}
+
+std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend backend)
 {
   switch (m_settings.audio_backend)
   {
     case AudioBackend::Null:
-      m_audio_stream = AudioStream::CreateNullAudioStream();
-      break;
+      return AudioStream::CreateNullAudioStream();
 
     case AudioBackend::Cubeb:
-      m_audio_stream = AudioStream::CreateCubebAudioStream();
-      break;
+      return AudioStream::CreateCubebAudioStream();
 
     case AudioBackend::Default:
-    default:
-      m_audio_stream = std::make_unique<SDLAudioStream>();
-      break;
-  }
+      return std::make_unique<SDLAudioStream>();
 
-  if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS))
-  {
-    ReportError("Failed to recreate audio stream, falling back to null");
-    m_audio_stream.reset();
-    m_audio_stream = AudioStream::CreateNullAudioStream();
-    if (!m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS))
-      Panic("Failed to reconfigure null audio stream");
+    default:
+      return nullptr;
   }
+}
+
+void SDLHostInterface::OnSystemCreated()
+{
+  HostInterface::OnSystemCreated();
+
+  UpdateKeyboardControllerMapping();
+  UpdateControllerControllerMapping();
+  ClearImGuiFocus();
+}
+
+void SDLHostInterface::OnSystemPaused(bool paused)
+{
+  HostInterface::OnSystemPaused(paused);
+
+  if (!paused)
+    ClearImGuiFocus();
+}
+
+void SDLHostInterface::OnSystemDestroyed()
+{
+  HostInterface::OnSystemDestroyed();
 }
 
 void SDLHostInterface::SaveSettings()
@@ -157,65 +206,12 @@ void SDLHostInterface::SaveSettings()
   m_settings.Save(si);
 }
 
-void SDLHostInterface::QueueSwitchGPURenderer()
+void SDLHostInterface::QueueUpdateSettings()
 {
   SDL_Event ev = {};
   ev.type = SDL_USEREVENT;
-  ev.user.code = m_switch_gpu_renderer_event_id;
+  ev.user.code = m_update_settings_event_id;
   SDL_PushEvent(&ev);
-}
-
-void SDLHostInterface::SwitchGPURenderer()
-{
-  // Due to the GPU class owning textures, we have to shut the system down.
-  std::unique_ptr<ByteStream> stream;
-  if (m_system)
-  {
-    stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-    if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
-      ReportError("Failed to save state before GPU renderer switch");
-
-    DestroySystem();
-  }
-
-  ImGui::EndFrame();
-  DestroyDisplay();
-  DestroySDLWindow();
-
-  if (!CreateSDLWindow())
-    Panic("Failed to recreate SDL window on GPU renderer switch");
-
-  if (!CreateDisplay())
-    Panic("Failed to recreate display on GPU renderer switch");
-
-  ImGui::NewFrame();
-
-  if (stream)
-  {
-    CreateSystem();
-    if (!BootSystem(nullptr, nullptr) || !m_system->LoadState(stream.get()))
-    {
-      ReportError("Failed to load state after GPU renderer switch, resetting");
-      m_system->Reset();
-    }
-  }
-
-  UpdateFullscreen();
-  if (m_system)
-    m_system->ResetPerformanceCounters();
-  ClearImGuiFocus();
-}
-
-void SDLHostInterface::SwitchAudioBackend()
-{
-  m_audio_stream.reset();
-  CreateAudioStream();
-
-  if (m_system)
-  {
-    m_audio_stream->PauseOutput(false);
-    UpdateSpeedLimiterState();
-  }
 }
 
 void SDLHostInterface::UpdateFullscreen()
@@ -227,15 +223,7 @@ void SDLHostInterface::UpdateFullscreen()
     m_settings.display_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
 }
 
-void SDLHostInterface::UpdateControllerMapping()
-{
-  UpdateKeyboardControllerMapping();
-  UpdateControllerControllerMapping();
-}
-
-std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename /* = nullptr */,
-                                                           const char* exp1_filename /* = nullptr */,
-                                                           const char* save_state_filename /* = nullptr */)
+std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
 {
   std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
 
@@ -256,32 +244,11 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create(const char* filename 
     return nullptr;
   }
 
-  intf->CreateAudioStream();
-
   ImGui::NewFrame();
-
-  intf->UpdateSpeedLimiterState();
-
-  const bool boot = (filename != nullptr || exp1_filename != nullptr || save_state_filename != nullptr);
-  if (boot)
-  {
-    if (!intf->CreateSystem() || !intf->BootSystem(filename, exp1_filename))
-      return nullptr;
-
-    if (save_state_filename)
-      intf->LoadState(save_state_filename);
-
-    intf->UpdateControllerMapping();
-  }
 
   intf->UpdateFullscreen();
 
   return intf;
-}
-
-std::string SDLHostInterface::GetSaveStateFilename(u32 index)
-{
-  return StringUtil::StdStringFromFormat("savestate_%u.bin", index);
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -291,7 +258,7 @@ void SDLHostInterface::ReportError(const char* message)
 
 void SDLHostInterface::ReportMessage(const char* message)
 {
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "DuckStation Information", message, m_window);
+  AddOSDMessage(message, 2.0f);
 }
 
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
@@ -352,8 +319,13 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_USEREVENT:
     {
-      if (static_cast<u32>(event->user.code) == m_switch_gpu_renderer_event_id)
-        SwitchGPURenderer();
+      if (static_cast<u32>(event->user.code) == m_update_settings_event_id)
+      {
+        UpdateSettings([this]() {
+          SDLSettingsInterface si(GetSettingsFileName().c_str());
+          m_settings.Load(si);
+        });
+      }
     }
     break;
   }
@@ -381,9 +353,9 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
       {
         const u32 index = event->key.keysym.scancode - SDL_SCANCODE_F1 + 1;
         if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
-          DoSaveState(index);
+          SaveState(true, index);
         else
-          DoLoadState(index);
+          LoadState(true, index);
       }
     }
     break;
@@ -408,7 +380,7 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     case SDL_SCANCODE_PAUSE:
     {
       if (pressed)
-        DoTogglePause();
+        PauseSystem(!m_paused);
     }
     break;
 
@@ -792,51 +764,78 @@ void SDLHostInterface::DrawMainMenuBar()
   if (ImGui::BeginMenu("System"))
   {
     if (ImGui::MenuItem("Start Disc", nullptr, false, !system_enabled))
+    {
       DoStartDisc();
+      ClearImGuiFocus();
+    }
     if (ImGui::MenuItem("Start BIOS", nullptr, false, !system_enabled))
-      DoStartBIOS();
+    {
+      BootSystemFromBIOS();
+      ClearImGuiFocus();
+    }
 
     ImGui::Separator();
 
     if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
-      DoPowerOff();
+    {
+      DestroySystem();
+      ClearImGuiFocus();
+    }
 
     if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
+    {
       ResetSystem();
+      ClearImGuiFocus();
+    }
 
     if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
-      DoTogglePause();
+    {
+      PauseSystem(!m_paused);
+      ClearImGuiFocus();
+    }
 
     ImGui::Separator();
 
     if (ImGui::MenuItem("Change Disc", nullptr, false, system_enabled))
+    {
       DoChangeDisc();
+      ClearImGuiFocus();
+    }
 
     if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
+    {
       DoFrameStep();
+      ClearImGuiFocus();
+    }
 
     ImGui::Separator();
 
     if (ImGui::BeginMenu("Load State"))
     {
-      for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
+      for (u32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
       {
         char buf[16];
         std::snprintf(buf, sizeof(buf), "State %u", i);
         if (ImGui::MenuItem(buf))
-          DoLoadState(i);
+        {
+          LoadState(true, i);
+          ClearImGuiFocus();
+        }
       }
       ImGui::EndMenu();
     }
 
     if (ImGui::BeginMenu("Save State", system_enabled))
     {
-      for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
+      for (u32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
       {
         char buf[16];
         std::snprintf(buf, sizeof(buf), "State %u", i);
         if (ImGui::MenuItem(buf))
-          DoSaveState(i);
+        {
+          SaveState(true, i);
+          ClearImGuiFocus();
+        }
       }
       ImGui::EndMenu();
     }
@@ -916,12 +915,7 @@ void SDLHostInterface::DrawMainMenuBar()
 void SDLHostInterface::DrawQuickSettingsMenu()
 {
   bool settings_changed = false;
-  bool gpu_settings_changed = false;
-  if (ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings.speed_limiter_enabled))
-  {
-    settings_changed = true;
-    UpdateSpeedLimiterState();
-  }
+  settings_changed |= ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings.speed_limiter_enabled);
 
   ImGui::Separator();
 
@@ -935,8 +929,6 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       {
         m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(i);
         settings_changed = true;
-        if (m_system)
-          m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
       }
     }
 
@@ -955,7 +947,6 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       {
         m_settings.gpu_renderer = static_cast<GPURenderer>(i);
         settings_changed = true;
-        QueueSwitchGPURenderer();
       }
     }
 
@@ -968,11 +959,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     UpdateFullscreen();
   }
 
-  if (ImGui::MenuItem("VSync", nullptr, &m_settings.video_sync_enabled))
-  {
-    settings_changed = true;
-    UpdateSpeedLimiterState();
-  }
+  settings_changed |= ImGui::MenuItem("VSync", nullptr, &m_settings.video_sync_enabled);
 
   ImGui::Separator();
 
@@ -987,26 +974,22 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       if (ImGui::MenuItem(buf, nullptr, current_internal_resolution == scale))
       {
         m_settings.gpu_resolution_scale = scale;
-        gpu_settings_changed = true;
+        settings_changed = true;
       }
     }
 
     ImGui::EndMenu();
   }
 
-  gpu_settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings.gpu_true_color);
-  gpu_settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings.gpu_texture_filtering);
-  if (ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering))
+  settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings.gpu_true_color);
+  settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings.gpu_texture_filtering);
+  settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering);
+
+  if (settings_changed)
   {
-    m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
-    settings_changed = true;
-  }
-
-  if (settings_changed || gpu_settings_changed)
     SaveSettings();
-
-  if (gpu_settings_changed && m_system)
-    m_system->GetGPU()->UpdateSettings();
+    QueueUpdateSettings();
+  }
 }
 
 void SDLHostInterface::DrawDebugMenu()
@@ -1068,18 +1051,23 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0xFF575757);
 
   ImGui::SetCursorPosX(button_left);
-  if (ImGui::Button("Resume", button_size))
-    DoResume();
+  ImGui::Button("Resume", button_size);
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Start Disc", button_size))
+  {
     DoStartDisc();
+    ClearImGuiFocus();
+  }
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Start BIOS", button_size))
-    DoStartBIOS();
+  {
+    BootSystemFromFile(nullptr);
+    ClearImGuiFocus();
+  }
   ImGui::NewLine();
 
   ImGui::SetCursorPosX(button_left);
@@ -1087,12 +1075,15 @@ void SDLHostInterface::DrawPoweredOffWindow()
     ImGui::OpenPopup("PowerOffWindow_LoadStateMenu");
   if (ImGui::BeginPopup("PowerOffWindow_LoadStateMenu"))
   {
-    for (u32 i = 1; i <= NUM_QUICK_SAVE_STATES; i++)
+    for (u32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
     {
       char buf[16];
       std::snprintf(buf, sizeof(buf), "State %u", i);
       if (ImGui::MenuItem(buf))
-        DoLoadState(i);
+      {
+        LoadState(true, i);
+        ClearImGuiFocus();
+      }
     }
     ImGui::EndPopup();
   }
@@ -1133,7 +1124,6 @@ void SDLHostInterface::DrawSettingsWindow()
   }
 
   bool settings_changed = false;
-  bool gpu_settings_changed = false;
 
   if (ImGui::BeginTabBar("SettingsTabBar", 0))
   {
@@ -1173,19 +1163,8 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Emulation Speed:");
         ImGui::SameLine(indent);
 
-        if (ImGui::SliderFloat("##speed", &m_settings.emulation_speed, 0.25f, 5.0f))
-        {
-          settings_changed = true;
-          if (m_system)
-            m_system->UpdateThrottlePeriod();
-        }
-
-        if (ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled))
-        {
-          settings_changed = true;
-          UpdateSpeedLimiterState();
-        }
-
+        settings_changed |= ImGui::SliderFloat("##speed", &m_settings.emulation_speed, 0.25f, 5.0f);
+        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
       }
 
@@ -1206,14 +1185,9 @@ void SDLHostInterface::DrawSettingsWindow()
         {
           m_settings.audio_backend = static_cast<AudioBackend>(backend);
           settings_changed = true;
-          SwitchAudioBackend();
         }
 
-        if (ImGui::Checkbox("Output Sync", &m_settings.audio_sync_enabled))
-        {
-          settings_changed = true;
-          UpdateSpeedLimiterState();
-        }
+        settings_changed |= ImGui::Checkbox("Output Sync", &m_settings.audio_sync_enabled);
       }
 
       ImGui::EndTabItem();
@@ -1242,11 +1216,6 @@ void SDLHostInterface::DrawSettingsWindow()
           {
             m_settings.controller_types[i] = static_cast<ControllerType>(controller_type);
             settings_changed = true;
-            if (m_system)
-            {
-              m_system->UpdateControllers();
-              UpdateControllerControllerMapping();
-            }
           }
         }
 
@@ -1255,19 +1224,12 @@ void SDLHostInterface::DrawSettingsWindow()
 
         std::string* path_ptr = &m_settings.memory_card_paths[i];
         std::snprintf(buf, sizeof(buf), "##memcard_%c_path", 'a' + i);
-        if (DrawFileChooser(buf, path_ptr))
-        {
-          settings_changed = true;
-          if (m_system)
-            m_system->UpdateMemoryCards();
-        }
+        settings_changed |= DrawFileChooser(buf, path_ptr);
 
         if (ImGui::Button("Eject Memory Card"))
         {
           path_ptr->clear();
           settings_changed = true;
-          if (m_system)
-            m_system->UpdateMemoryCards();
         }
 
         ImGui::NewLine();
@@ -1292,8 +1254,6 @@ void SDLHostInterface::DrawSettingsWindow()
       {
         m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(execution_mode);
         settings_changed = true;
-        if (m_system)
-          m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
       }
 
       ImGui::EndTabItem();
@@ -1317,7 +1277,6 @@ void SDLHostInterface::DrawSettingsWindow()
         {
           m_settings.gpu_renderer = static_cast<GPURenderer>(gpu_renderer);
           settings_changed = true;
-          QueueSwitchGPURenderer();
         }
       }
 
@@ -1331,17 +1290,8 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
-        if (ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering))
-        {
-          m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
-          settings_changed = true;
-        }
-
-        if (ImGui::Checkbox("VSync", &m_settings.video_sync_enabled))
-        {
-          settings_changed = true;
-          UpdateSpeedLimiterState();
-        }
+        settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering);
+        settings_changed |= ImGui::Checkbox("VSync", &m_settings.video_sync_enabled);
       }
 
       ImGui::NewLine();
@@ -1375,12 +1325,12 @@ void SDLHostInterface::DrawSettingsWindow()
                          static_cast<int>(resolutions.size())))
         {
           m_settings.gpu_resolution_scale = static_cast<u32>(current_resolution_index + 1);
-          gpu_settings_changed = true;
+          settings_changed = true;
         }
 
-        gpu_settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
-        gpu_settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings.gpu_texture_filtering);
-        gpu_settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings.gpu_force_progressive_scan);
+        settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
+        settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings.gpu_texture_filtering);
+        settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings.gpu_force_progressive_scan);
       }
 
       ImGui::EndTabItem();
@@ -1397,11 +1347,11 @@ void SDLHostInterface::DrawSettingsWindow()
 
   ImGui::End();
 
-  if (settings_changed || gpu_settings_changed)
+  if (settings_changed)
+  {
     SaveSettings();
-
-  if (gpu_settings_changed && m_system)
-    m_system->GetGPU()->UpdateSettings();
+    QueueUpdateSettings();
+  }
 }
 
 void SDLHostInterface::DrawAboutWindow()
@@ -1454,26 +1404,9 @@ bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, con
   return result;
 }
 
-void SDLHostInterface::DoPowerOff()
+void SDLHostInterface::ClearImGuiFocus()
 {
-  Assert(m_system);
-  DestroySystem();
-  AddOSDMessage("System powered off.");
-}
-
-void SDLHostInterface::DoResume()
-{
-  Assert(!m_system);
-  if (!CreateSystem() || !BootSystem(nullptr, RESUME_SAVESTATE_FILENAME))
-  {
-    DestroySystem();
-    return;
-  }
-
-  UpdateControllerMapping();
-  if (m_system)
-    m_system->ResetPerformanceCounters();
-  ClearImGuiFocus();
+  ImGui::SetWindowFocus(nullptr);
 }
 
 void SDLHostInterface::DoStartDisc()
@@ -1485,33 +1418,7 @@ void SDLHostInterface::DoStartDisc()
     return;
 
   AddFormattedOSDMessage(2.0f, "Starting disc from '%s'...", path);
-  if (!CreateSystem() || !BootSystem(path, nullptr))
-  {
-    DestroySystem();
-    return;
-  }
-
-  UpdateControllerMapping();
-  if (m_system)
-    m_system->ResetPerformanceCounters();
-  ClearImGuiFocus();
-}
-
-void SDLHostInterface::DoStartBIOS()
-{
-  Assert(!m_system);
-
-  AddOSDMessage("Starting BIOS...");
-  if (!CreateSystem() || !BootSystem(nullptr, nullptr))
-  {
-    DestroySystem();
-    return;
-  }
-
-  UpdateControllerMapping();
-  if (m_system)
-    m_system->ResetPerformanceCounters();
-  ClearImGuiFocus();
+  BootSystemFromFile(path);
 }
 
 void SDLHostInterface::DoChangeDisc()
@@ -1527,47 +1434,7 @@ void SDLHostInterface::DoChangeDisc()
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
-  if (m_system)
-    m_system->ResetPerformanceCounters();
-  ClearImGuiFocus();
-}
-
-void SDLHostInterface::DoLoadState(u32 index)
-{
-  if (HasSystem())
-  {
-    LoadState(GetSaveStateFilename(index).c_str());
-  }
-  else
-  {
-    if (!CreateSystem() || !BootSystem(nullptr, GetSaveStateFilename(index).c_str()))
-    {
-      DestroySystem();
-      return;
-    }
-  }
-
-  UpdateControllerMapping();
-  if (m_system)
-    m_system->ResetPerformanceCounters();
-  ClearImGuiFocus();
-}
-
-void SDLHostInterface::DoSaveState(u32 index)
-{
-  Assert(m_system);
-  SaveState(GetSaveStateFilename(index).c_str());
-  ClearImGuiFocus();
-}
-
-void SDLHostInterface::DoTogglePause()
-{
-  if (!m_system)
-    return;
-
-  m_paused = !m_paused;
-  if (!m_paused)
-    m_system->ResetPerformanceCounters();
+  m_system->ResetPerformanceCounters();
 }
 
 void SDLHostInterface::DoFrameStep()
@@ -1587,8 +1454,6 @@ void SDLHostInterface::DoToggleFullscreen()
 
 void SDLHostInterface::Run()
 {
-  m_audio_stream->PauseOutput(false);
-
   while (!m_quit_request)
   {
     for (;;)
@@ -1636,10 +1501,5 @@ void SDLHostInterface::Run()
 
   // Save state on exit so it can be resumed
   if (m_system)
-  {
-    if (!SaveState(RESUME_SAVESTATE_FILENAME))
-      ReportError("Saving state failed, you will not be able to resume this session.");
-
     DestroySystem();
-  }
 }

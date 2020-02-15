@@ -22,15 +22,21 @@ public:
   SDLHostInterface();
   ~SDLHostInterface();
 
-  static std::unique_ptr<SDLHostInterface> Create(const char* filename = nullptr, const char* exp1_filename = nullptr,
-                                                  const char* save_state_filename = nullptr);
-
-  static std::string GetSaveStateFilename(u32 index);
+  static std::unique_ptr<SDLHostInterface> Create();
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
 
   void Run();
+
+protected:
+  bool AcquireHostDisplay() override;
+  void ReleaseHostDisplay() override;
+  std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
+
+  void OnSystemCreated() override;
+  void OnSystemPaused(bool paused) override;
+  void OnSystemDestroyed();
 
 private:
   enum class KeyboardControllerAction
@@ -62,9 +68,6 @@ private:
     float last_rumble_strength;
   };
 
-  static constexpr u32 NUM_QUICK_SAVE_STATES = 10;
-  static constexpr char RESUME_SAVESTATE_FILENAME[] = "savestate_resume.bin";
-
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
 #ifdef WIN32
@@ -78,26 +81,16 @@ private:
   bool CreateDisplay();
   void DestroyDisplay();
   void CreateImGuiContext();
-  void CreateAudioStream();
 
   void SaveSettings();
+  void QueueUpdateSettings();
 
-  void QueueSwitchGPURenderer();
-  void SwitchGPURenderer();
-  void SwitchAudioBackend();
   void UpdateFullscreen();
-  void UpdateControllerMapping();
 
   // We only pass mouse input through if it's grabbed
   void DrawImGui();
-  void DoPowerOff();
-  void DoResume();
   void DoStartDisc();
-  void DoStartBIOS();
   void DoChangeDisc();
-  void DoLoadState(u32 index);
-  void DoSaveState(u32 index);
-  void DoTogglePause();
   void DoFrameStep();
   void DoToggleFullscreen();
 
@@ -122,6 +115,7 @@ private:
   void DrawSettingsWindow();
   void DrawAboutWindow();
   bool DrawFileChooser(const char* label, std::string* path, const char* filter = nullptr);
+  void ClearImGuiFocus();
 
   SDL_Window* m_window = nullptr;
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
@@ -132,7 +126,7 @@ private:
   std::array<s32, SDL_CONTROLLER_AXIS_MAX> m_controller_axis_mapping{};
   std::array<s32, SDL_CONTROLLER_BUTTON_MAX> m_controller_button_mapping{};
 
-  u32 m_switch_gpu_renderer_event_id = 0;
+  u32 m_update_settings_event_id = 0;
 
   bool m_quit_request = false;
   bool m_frame_step_request = false;

@@ -15,33 +15,42 @@ static int Run(int argc, char* argv[])
   }
 
   // parameters
-  const char* filename = nullptr;
-  const char* exp1_filename = nullptr;
-  std::string state_filename;
+  std::optional<s32> state_index;
+  const char* boot_filename = nullptr;
   for (int i = 1; i < argc; i++)
   {
 #define CHECK_ARG(str) !std::strcmp(argv[i], str)
 #define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
 
     if (CHECK_ARG_PARAM("-state"))
-      state_filename = SDLHostInterface::GetSaveStateFilename(std::strtoul(argv[++i], nullptr, 10));
-    else if (CHECK_ARG_PARAM("-exp1"))
-      exp1_filename = argv[++i];
+      state_index = std::atoi(argv[++i]);
+    if (CHECK_ARG_PARAM("-resume"))
+      state_index = -1;
     else
-      filename = argv[i];
+      boot_filename = argv[i];
 
 #undef CHECK_ARG
 #undef CHECK_ARG_PARAM
   }
 
   // create display and host interface
-  std::unique_ptr<SDLHostInterface> host_interface =
-    SDLHostInterface::Create(filename, exp1_filename, state_filename.empty() ? nullptr : state_filename.c_str());
+  std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create();
   if (!host_interface)
   {
     Panic("Failed to create host interface");
     SDL_Quit();
     return -1;
+  }
+
+  // boot/load state
+  if (boot_filename)
+  {
+    if (host_interface->BootSystemFromFile(boot_filename) && state_index.has_value())
+      host_interface->LoadState(false, state_index.value());
+  }
+  else if (state_index.has_value())
+  {
+    host_interface->LoadState(true, state_index.value());
   }
 
   // run

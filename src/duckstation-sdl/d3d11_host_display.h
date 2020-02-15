@@ -69,5 +69,5 @@ private:
   D3D11::StreamBuffer m_display_uniform_buffer;
 
   bool m_allow_tearing_supported = false;
-  bool m_vsync = false;
+  bool m_vsync = true;
 };

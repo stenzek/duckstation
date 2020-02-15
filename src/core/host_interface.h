@@ -12,6 +12,7 @@
 #include <vector>
 
 class AudioStream;
+class ByteStream;
 class CDImage;
 class HostDisplay;
 class GameList;
@@ -27,21 +28,30 @@ public:
   virtual ~HostInterface();
 
   /// Access to host display.
-  ALWAYS_INLINE HostDisplay* GetDisplay() const { return m_display.get(); }
+  ALWAYS_INLINE HostDisplay* GetDisplay() const { return m_display; }
 
   /// Access to host audio stream.
-  AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
+  ALWAYS_INLINE AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
 
   /// Returns a settings object which can be modified.
-  Settings& GetSettings() { return m_settings; }
+  ALWAYS_INLINE Settings& GetSettings() { return m_settings; }
 
   /// Returns the game list.
-  const GameList* GetGameList() const { return m_game_list.get(); }
+  ALWAYS_INLINE const GameList* GetGameList() const { return m_game_list.get(); }
 
-  bool CreateSystem();
-  bool BootSystem(const char* filename, const char* state_filename);
+  bool BootSystemFromFile(const char* filename);
+  bool BootSystemFromBIOS();
+  void PauseSystem(bool paused);
   void ResetSystem();
   void DestroySystem();
+
+  /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
+  bool LoadState(bool global, u32 slot);
+  bool LoadState(const char* filename);
+
+  /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
+  bool SaveState(bool global, u32 slot);
+  bool SaveState(const char* filename);
 
   virtual void ReportError(const char* message);
   virtual void ReportMessage(const char* message);
@@ -53,12 +63,8 @@ public:
   void AddOSDMessage(const char* message, float duration = 2.0f);
   void AddFormattedOSDMessage(float duration, const char* format, ...);
 
-  /// Loads the BIOS image for the specified region.
-  virtual std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
-
-
   /// Returns the base user directory path.
-  const std::string& GetUserDirectory() const { return m_user_directory; }
+  ALWAYS_INLINE const std::string& GetUserDirectory() const { return m_user_directory; }
 
   /// Returns a path relative to the user directory.
   std::string GetUserDirectoryRelativePath(const char* format, ...) const;
@@ -89,7 +95,13 @@ protected:
     bool global;
   };
 
-  virtual void SwitchGPURenderer();
+  virtual bool AcquireHostDisplay() = 0;
+  virtual void ReleaseHostDisplay() = 0;
+  virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) = 0;
+
+  virtual void OnSystemCreated();
+  virtual void OnSystemPaused(bool paused);
+  virtual void OnSystemDestroyed();
   virtual void OnSystemPerformanceCountersUpdated();
   virtual void OnRunningGameChanged();
 
@@ -122,13 +134,8 @@ protected:
   /// Returns a list of save states for the specified game code.
   std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code) const;
 
-  /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
-  bool LoadState(bool global, u32 slot);
-  bool LoadState(const char* filename);
-
-  /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
-  bool SaveState(bool global, u32 slot);
-  bool SaveState(const char* filename);
+  /// Loads the BIOS image for the specified region.
+  std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
   /// Restores all settings to defaults.
   void SetDefaultSettings();
@@ -143,14 +150,16 @@ protected:
   /// Adjusts the internal (render) resolution of the hardware backends.
   void ModifyResolutionScale(s32 increment);
 
+  /// Switches the GPU renderer by saving state, recreating the display window, and restoring state (if needed).
+  void RecreateSystem();
+
   void UpdateSpeedLimiterState();
 
   void DrawFPSWindow();
   void DrawOSDMessages();
   void DrawDebugWindows();
-  void ClearImGuiFocus();
 
-  std::unique_ptr<HostDisplay> m_display;
+  HostDisplay* m_display = nullptr;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
   std::unique_ptr<GameList> m_game_list;

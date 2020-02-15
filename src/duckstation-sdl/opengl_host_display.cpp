@@ -262,6 +262,8 @@ bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
+  // start with vsync on
+  SDL_GL_SetSwapInterval(1);
   return true;
 }
 
