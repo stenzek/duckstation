@@ -1170,6 +1170,16 @@ void SDLHostInterface::DrawSettingsWindow()
       ImGui::NewLine();
       if (DrawSettingsSectionHeader("Behavior"))
       {
+        ImGui::Text("Emulation Speed:");
+        ImGui::SameLine(indent);
+
+        if (ImGui::SliderFloat("##speed", &m_settings.emulation_speed, 0.25f, 5.0f))
+        {
+          settings_changed = true;
+          if (m_system)
+            m_system->UpdateThrottlePeriod();
+        }
+
         if (ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled))
         {
           settings_changed = true;
