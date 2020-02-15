@@ -513,7 +513,7 @@ void HostInterface::SetDefaultSettings()
   m_settings.speed_limiter_enabled = true;
   m_settings.start_paused = false;
 
-  m_settings.gpu_renderer = GPURenderer::HardwareOpenGL;
+  m_settings.gpu_renderer = Settings::DEFAULT_GPU_RENDERER;
   m_settings.gpu_resolution_scale = 1;
   m_settings.gpu_true_color = true;
   m_settings.gpu_texture_filtering = false;

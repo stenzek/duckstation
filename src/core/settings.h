@@ -98,4 +98,11 @@ struct Settings
   static std::optional<ControllerType> ParseControllerTypeName(const char* str);
   static const char* GetControllerTypeName(ControllerType type);
   static const char* GetControllerTypeDisplayName(ControllerType type);
+
+  // Default to D3D11 on Windows as it's more performant and at this point, less buggy.
+#ifdef WIN32
+  static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
+#else
+  static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
+#endif
 };

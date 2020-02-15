@@ -16,8 +16,8 @@ void Settings::Load(SettingsInterface& si)
   cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Interpreter").c_str())
                          .value_or(CPUExecutionMode::Interpreter);
 
-  gpu_renderer =
-    ParseRendererName(si.GetStringValue("GPU", "Renderer", "OpenGL").c_str()).value_or(GPURenderer::HardwareOpenGL);
+  gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
+                   .value_or(DEFAULT_GPU_RENDERER);
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
