@@ -189,6 +189,14 @@ void SDLHostInterface::OnSystemDestroyed()
   HostInterface::OnSystemDestroyed();
 }
 
+void SDLHostInterface::OnControllerTypeChanged(u32 slot)
+{
+  HostInterface::OnControllerTypeChanged(slot);
+
+  UpdateKeyboardControllerMapping();
+  UpdateControllerControllerMapping();
+}
+
 void SDLHostInterface::SaveSettings()
 {
   SDLSettingsInterface si(GetSettingsFileName().c_str());

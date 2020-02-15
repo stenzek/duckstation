@@ -102,6 +102,7 @@ protected:
   void OnSystemDestroyed() override;
   void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
+  void OnControllerTypeChanged(u32 slot) override;
 
 private:
   using InputButtonHandler = std::function<void(bool)>;

@@ -37,6 +37,7 @@ protected:
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed();
+  void OnControllerTypeChanged(u32 slot) override;
 
 private:
   enum class KeyboardControllerAction

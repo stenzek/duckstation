@@ -521,6 +521,8 @@ void HostInterface::OnSystemPerformanceCountersUpdated() {}
 
 void HostInterface::OnRunningGameChanged() {}
 
+void HostInterface::OnControllerTypeChanged(u32 slot) {}
+
 void HostInterface::SetUserDirectory()
 {
   const std::string program_path = FileSystem::GetProgramPath();
@@ -726,6 +728,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
   const bool old_display_linear_filtering = m_settings.display_linear_filtering;
+  std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
 
   apply_callback();
 
@@ -771,6 +774,12 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     {
       m_system->UpdateGPUSettings();
     }
+  }
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    if (m_settings.controller_types[i] != old_controller_types[i])
+      OnControllerTypeChanged(i);
   }
 
   if (m_display && m_settings.display_linear_filtering != old_display_linear_filtering)

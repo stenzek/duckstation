@@ -314,6 +314,13 @@ void QtHostInterface::OnRunningGameChanged()
   }
 }
 
+void QtHostInterface::OnControllerTypeChanged(u32 slot)
+{
+  HostInterface::OnControllerTypeChanged(slot);
+
+  updateInputMap();
+}
+
 void QtHostInterface::updateInputMap()
 {
   if (!isOnWorkerThread())

@@ -104,6 +104,7 @@ protected:
   virtual void OnSystemDestroyed();
   virtual void OnSystemPerformanceCountersUpdated();
   virtual void OnRunningGameChanged();
+  virtual void OnControllerTypeChanged(u32 slot);
 
   void SetUserDirectory();
 
