@@ -22,8 +22,8 @@ public:
   ~MainWindow();
 
 private Q_SLOTS:
-  void reportError(QString message);
-  void reportMessage(QString message);
+  void reportError(const QString& message);
+  void reportMessage(const QString& message);
   void createDisplayWindow(QThread* worker_thread, bool use_debug_device);
   void destroyDisplayWindow();
   void toggleFullscreen();
@@ -32,7 +32,7 @@ private Q_SLOTS:
   void onEmulationPaused(bool paused);
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                           float worst_frame_time);
-  void onRunningGameChanged(QString filename, QString game_code, QString game_title);
+  void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
 
   void onStartDiscActionTriggered();
   void onChangeDiscFromFileActionTriggered();

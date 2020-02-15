@@ -33,12 +33,12 @@ MainWindow::~MainWindow()
   Assert(!m_display_widget);
 }
 
-void MainWindow::reportError(QString message)
+void MainWindow::reportError(const QString& message)
 {
   QMessageBox::critical(nullptr, tr("DuckStation Error"), message, QMessageBox::Ok);
 }
 
-void MainWindow::reportMessage(QString message)
+void MainWindow::reportMessage(const QString& message)
 {
   m_ui.statusBar->showMessage(message, 2000);
 }
@@ -129,7 +129,7 @@ void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, floa
     QStringLiteral("%1ms average, %2ms worst").arg(average_frame_time, 0, 'f', 2).arg(worst_frame_time, 0, 'f', 2));
 }
 
-void MainWindow::onRunningGameChanged(QString filename, QString game_code, QString game_title)
+void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
 {
   m_host_interface->populateSaveStateMenus(game_code.toStdString().c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
   if (game_title.isEmpty())

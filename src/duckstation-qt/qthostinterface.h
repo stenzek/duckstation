@@ -61,8 +61,8 @@ public:
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
 Q_SIGNALS:
-  void errorReported(QString message);
-  void messageReported(QString message);
+  void errorReported(const QString& message);
+  void messageReported(const QString& message);
   void emulationStarted();
   void emulationStopped();
   void emulationPaused(bool paused);
@@ -72,17 +72,17 @@ Q_SIGNALS:
   void toggleFullscreenRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);
-  void runningGameChanged(QString filename, QString game_code, QString game_title);
+  void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
 
 public Q_SLOTS:
   void applySettings();
-  void bootSystemFromFile(QString filename);
+  void bootSystemFromFile(const QString& filename);
   void bootSystemFromBIOS();
   void destroySystem(bool save_resume_state = false, bool block_until_done = false);
   void resetSystem();
   void pauseSystem(bool paused);
-  void changeDisc(QString new_disc_filename);
-  void loadState(QString filename);
+  void changeDisc(const QString& new_disc_filename);
+  void loadState(const QString& filename);
   void loadState(bool global, qint32 slot);
   void saveState(bool global, qint32 slot, bool block_until_done = false);
 
