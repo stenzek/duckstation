@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lzma", "dep\lzma\lzma.vcxpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duckstation-sdl", "src\duckstation-sdl\duckstation-sdl.vcxproj", "{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "frontend-common", "src\frontend-common\frontend-common.vcxproj", "{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -323,6 +325,22 @@ Global
 		{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
 		{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
 		{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Debug|x64.ActiveCfg = Debug|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Debug|x64.Build.0 = Debug|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Debug|x86.ActiveCfg = Debug|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Debug|x86.Build.0 = Debug|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.DebugFast|x64.ActiveCfg = DebugFast|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.DebugFast|x64.Build.0 = DebugFast|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.DebugFast|x86.ActiveCfg = DebugFast|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.DebugFast|x86.Build.0 = DebugFast|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Release|x64.ActiveCfg = Release|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Release|x64.Build.0 = Release|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Release|x86.ActiveCfg = Release|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.Release|x86.Build.0 = Release|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.ReleaseLTCG|x64.ActiveCfg = ReleaseLTCG|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
+		{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

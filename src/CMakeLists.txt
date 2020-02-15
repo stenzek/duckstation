@@ -1,5 +1,6 @@
 add_subdirectory(common)
 add_subdirectory(core)
+add_subdirectory(frontend-common)
 
 if(BUILD_SDL_FRONTEND)
   add_subdirectory(duckstation-sdl)

@@ -7,11 +7,11 @@
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
-#include "icon.h"
 #include "imgui_impl_sdl.h"
-#include "imgui_styles.h"
+#include "frontend-common/icon.h"
+#include "frontend-common/imgui_styles.h"
+#include "frontend-common/sdl_audio_stream.h"
 #include "opengl_host_display.h"
-#include "sdl_audio_stream.h"
 #include "sdl_settings_interface.h"
 #include <cinttypes>
 #include <cmath>

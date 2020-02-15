@@ -88,6 +88,9 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\frontend-common\frontend-common.vcxproj">
+      <Project>{6245dec8-d2da-47ee-a373-cbd6fcf3ece6}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="audiosettingswidget.ui">

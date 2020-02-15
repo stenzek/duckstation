@@ -2,22 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sdl_audio_stream.cpp" />
-    <ClCompile Include="icon.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="sdl_host_interface.cpp" />
     <ClCompile Include="d3d11_host_display.cpp" />
-    <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="sdl_settings_interface.cpp" />
     <ClCompile Include="imgui_impl_sdl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="icon.h" />
-    <ClInclude Include="sdl_audio_stream.h" />
     <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="sdl_host_interface.h" />
     <ClInclude Include="d3d11_host_display.h" />
-    <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="sdl_settings_interface.h" />
     <ClInclude Include="imgui_impl_sdl.h" />
   </ItemGroup>
