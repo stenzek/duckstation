@@ -29,8 +29,7 @@ bool SDLAudioStream::OpenDevice()
   spec.callback = AudioCallback;
   spec.userdata = static_cast<void*>(this);
 
-  SDL_AudioSpec obtained = {};
-  if (SDL_OpenAudio(&spec, &obtained) < 0)
+  if (SDL_OpenAudio(&spec, nullptr) < 0)
   {
     Log_ErrorPrintf("SDL_OpenAudio failed");
     return false;
