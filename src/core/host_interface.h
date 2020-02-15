@@ -56,8 +56,6 @@ public:
   /// Loads the BIOS image for the specified region.
   virtual std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
-  bool LoadState(const char* filename);
-  bool SaveState(const char* filename);
 
   /// Returns the base user directory path.
   const std::string& GetUserDirectory() const { return m_user_directory; }
@@ -71,7 +69,9 @@ protected:
     AUDIO_SAMPLE_RATE = 44100,
     AUDIO_CHANNELS = 2,
     AUDIO_BUFFER_SIZE = 2048,
-    AUDIO_BUFFERS = 2
+    AUDIO_BUFFERS = 2,
+    PER_GAME_SAVE_STATE_SLOTS = 10,
+    GLOBAL_SAVE_STATE_SLOTS = 10
   };
 
   struct OSDMessage
@@ -79,6 +79,14 @@ protected:
     std::string text;
     Common::Timer time;
     float duration;
+  };
+
+  struct SaveStateInfo
+  {
+    std::string path;
+    u64 timestamp;
+    s32 slot;
+    bool global;
   };
 
   virtual void SwitchGPURenderer();
@@ -110,6 +118,17 @@ protected:
 
   /// Returns the default path to a memory card for a specific game.
   std::string GetGameMemoryCardPath(const char* game_code, u32 slot);
+
+  /// Returns a list of save states for the specified game code.
+  std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code);
+
+  /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
+  bool LoadState(bool global, u32 slot);
+  bool LoadState(const char* filename);
+
+  /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
+  bool SaveState(bool global, u32 slot);
+  bool SaveState(const char* filename);
 
   /// Restores all settings to defaults.
   void SetDefaultSettings();

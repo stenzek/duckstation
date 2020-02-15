@@ -361,6 +361,19 @@ bool HostInterface::LoadState(const char* filename)
   return result;
 }
 
+bool HostInterface::LoadState(bool global, u32 slot)
+{
+  const std::string& code = m_system->GetRunningCode();
+  if (!global && code.empty())
+  {
+    ReportFormattedError("Can't save per-game state without a running game code.");
+    return false;
+  }
+
+  std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
+  return LoadState(save_path.c_str());
+}
+
 bool HostInterface::SaveState(const char* filename)
 {
   std::unique_ptr<ByteStream> stream =
@@ -382,6 +395,19 @@ bool HostInterface::SaveState(const char* filename)
   }
 
   return result;
+}
+
+bool HostInterface::SaveState(bool global, u32 slot)
+{
+  const std::string& code = m_system->GetRunningCode();
+  if (!global && code.empty())
+  {
+    ReportFormattedError("Can't save per-game state without a running game code.");
+    return false;
+  }
+
+  std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
+  return SaveState(save_path.c_str());
 }
 
 void HostInterface::UpdateSpeedLimiterState()
@@ -541,6 +567,31 @@ std::string HostInterface::GetSharedMemoryCardPath(u32 slot)
 std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot)
 {
   return GetUserDirectoryRelativePath("memcards/game_card_%s_%d.mcd", game_code, slot + 1);
+}
+
+std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(const char* game_code)
+{
+  std::vector<SaveStateInfo> si;
+  std::string path;
+
+  auto add_path = [&si](std::string path, s32 slot, bool global) {
+    FILESYSTEM_STAT_DATA sd;
+    if (!FileSystem::StatFile(path.c_str(), &sd))
+      return;
+
+    si.push_back(SaveStateInfo{std::move(path), sd.ModificationTime.AsUnixTimestamp(), static_cast<s32>(slot), global});
+  };
+
+  if (game_code && std::strlen(game_code) > 0)
+  {
+    for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
+      add_path(GetGameSaveStateFileName(game_code, i), i, false);
+  }
+
+  for (s32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
+    add_path(GetGlobalSaveStateFileName(i), i, true);
+
+  return si;
 }
 
 void HostInterface::SetDefaultSettings()
