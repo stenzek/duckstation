@@ -439,11 +439,7 @@ protected:
     TransparencyMode GetTransparencyMode() const { return mode_reg.transparency_mode; }
 
     /// Returns true if the texture mode requires a palette.
-    bool IsUsingPalette() const
-    {
-      return (static_cast<u8>(mode_reg.texture_mode.GetValue()) &
-              (static_cast<u8>(TextureMode::Palette4Bit) | static_cast<u8>(TextureMode::Palette8Bit))) != 0;
-    }
+    bool IsUsingPalette() const { return (mode_reg.bits & (2 << 7)) == 0; }
 
     /// Returns a rectangle comprising the texture page area.
     Common::Rectangle<u32> GetTexturePageRectangle() const
