@@ -81,60 +81,87 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
   {
     case Primitive::Polygon:
     {
-      // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      bool restart_strip = (rc.quad_polygon && !IsFlushed());
-      if (restart_strip)
-        AddDuplicateVertex();
+      DebugAssert(num_vertices == 3 || num_vertices == 4);
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
       u32 buffer_pos = 1;
-      for (u32 i = 0; i < num_vertices; i++)
+      std::array<BatchVertex, 4> vertices;
+      for (u32 i = 0; i < 3; i++)
       {
         const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
         const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
-        const s32 x = vp.x;
-        const s32 y = vp.y;
 
-        min_x = std::min(min_x, x);
-        max_x = std::max(max_x, x);
-        min_y = std::min(min_y, y);
-        max_y = std::max(max_y, y);
-
-        AddVertex(x, y, color, texpage, packed_texcoord);
-
-        if (restart_strip)
-        {
-          AddDuplicateVertex();
-          restart_strip = false;
-        }
+        vertices[i].Set(vp.x, vp.y, color, texpage, packed_texcoord);
       }
 
       // Cull polygons which are too large.
-      if (static_cast<u32>(max_x - min_x) > MAX_PRIMITIVE_WIDTH ||
-          static_cast<u32>(max_y - min_y) > MAX_PRIMITIVE_HEIGHT)
+      if (std::abs(vertices[2].x - vertices[0].x) >= MAX_PRIMITIVE_WIDTH ||
+          std::abs(vertices[2].x - vertices[1].x) >= MAX_PRIMITIVE_WIDTH ||
+          std::abs(vertices[1].x - vertices[0].x) >= MAX_PRIMITIVE_WIDTH ||
+          std::abs(vertices[2].y - vertices[0].y) >= MAX_PRIMITIVE_HEIGHT ||
+          std::abs(vertices[2].y - vertices[1].y) >= MAX_PRIMITIVE_HEIGHT ||
+          std::abs(vertices[1].y - vertices[0].y) >= MAX_PRIMITIVE_HEIGHT)
       {
-        m_batch_current_vertex_ptr -= 2;
-        AddDuplicateVertex();
-        AddDuplicateVertex();
-        return;
+        Log_DebugPrintf("Culling too-large polygon: %d,%d %d,%d %d,%d", vertices[0].x, vertices[0].y, vertices[1].x,
+                        vertices[1].y, vertices[2].x, vertices[2].y);
+      }
+      else
+      {
+        min_x = std::min(std::min(vertices[0].x, vertices[1].x), vertices[2].x);
+        max_x = std::max(std::max(vertices[0].x, vertices[1].x), vertices[2].x);
+        min_y = std::min(std::min(vertices[0].y, vertices[1].y), vertices[2].y);
+        max_y = std::max(std::max(vertices[0].y, vertices[1].y), vertices[2].y);
+
+        std::memcpy(m_batch_current_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 3);
+        m_batch_current_vertex_ptr += 3;
+      }
+
+      // quads
+      for (u32 i = 3; i < num_vertices; i++)
+      {
+        const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+        const VertexPosition vp{command_ptr[buffer_pos++]};
+        const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
+
+        vertices[3].Set(vp.x, vp.y, color, texpage, packed_texcoord);
+
+        // Cull polygons which are too large.
+        if (std::abs(vertices[3].x - vertices[2].x) >= MAX_PRIMITIVE_WIDTH ||
+            std::abs(vertices[3].x - vertices[1].x) >= MAX_PRIMITIVE_WIDTH ||
+            std::abs(vertices[1].x - vertices[2].x) >= MAX_PRIMITIVE_WIDTH ||
+            std::abs(vertices[3].y - vertices[2].y) >= MAX_PRIMITIVE_HEIGHT ||
+            std::abs(vertices[3].y - vertices[1].y) >= MAX_PRIMITIVE_HEIGHT ||
+            std::abs(vertices[1].y - vertices[2].y) >= MAX_PRIMITIVE_HEIGHT)
+        {
+          Log_DebugPrintf("Culling too-large polygon (quad second half): %d,%d %d,%d %d,%d", vertices[2].x,
+                          vertices[2].y, vertices[1].x, vertices[1].y, vertices[0].x, vertices[0].y);
+        }
+        else
+        {
+          min_x = std::min(min_x, vertices[3].x);
+          max_x = std::max(max_x, vertices[3].x);
+          min_y = std::min(min_y, vertices[3].y);
+          max_y = std::max(max_y, vertices[3].y);
+
+          AddVertex(vertices[2]);
+          AddVertex(vertices[1]);
+          AddVertex(vertices[3]);
+        }
       }
     }
     break;
 
     case Primitive::Rectangle:
     {
-      // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      bool restart_strip = !IsFlushed();
-
       u32 buffer_pos = 1;
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{command_ptr[buffer_pos++]};
-      min_x = vp.x;
-      min_y = vp.y;
+      const s32 pos_x = vp.x;
+      const s32 pos_y = vp.y;
 
       const auto [texcoord_x, texcoord_y] =
         UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
@@ -163,17 +190,22 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       }
 
       if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
+      {
+        Log_DebugPrintf("Culling too-large rectangle: %d,%d %dx%d", pos_x, pos_y, rectangle_width, rectangle_height);
         return;
+      }
 
-      max_x = min_x + rectangle_width;
-      max_y = min_y + rectangle_height;
+      min_x = pos_x;
+      min_y = pos_y;
+      max_x = pos_x + rectangle_width;
+      max_y = pos_y + rectangle_height;
 
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
       u16 tex_top = orig_tex_top;
       for (s32 y_offset = 0; y_offset < rectangle_height;)
       {
         const s32 quad_height = std::min<s32>(rectangle_height - y_offset, TEXTURE_PAGE_WIDTH - tex_top);
-        const s32 quad_start_y = min_y + y_offset;
+        const s32 quad_start_y = pos_y + y_offset;
         const s32 quad_end_y = quad_start_y + quad_height;
         const u16 tex_bottom = tex_top + static_cast<u16>(quad_height);
 
@@ -181,22 +213,17 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         for (s32 x_offset = 0; x_offset < rectangle_width;)
         {
           const s32 quad_width = std::min<s32>(rectangle_width - x_offset, TEXTURE_PAGE_HEIGHT - tex_left);
-          const s32 quad_start_x = min_x + x_offset;
+          const s32 quad_start_x = pos_x + x_offset;
           const s32 quad_end_x = quad_start_x + quad_width;
           const u16 tex_right = tex_left + static_cast<u16>(quad_width);
 
-          if (restart_strip)
-            AddDuplicateVertex();
+          AddNewVertex(quad_start_x, quad_start_y, color, texpage, tex_left, tex_top);
+          AddNewVertex(quad_end_x, quad_start_y, color, texpage, tex_right, tex_top);
+          AddNewVertex(quad_start_x, quad_end_y, color, texpage, tex_left, tex_bottom);
 
-          AddVertex(quad_start_x, quad_start_y, color, texpage, tex_left, tex_top);
-
-          if (restart_strip)
-            AddDuplicateVertex();
-
-          AddVertex(quad_end_x, quad_start_y, color, texpage, tex_right, tex_top);
-          AddVertex(quad_start_x, quad_end_y, color, texpage, tex_left, tex_bottom);
-          AddVertex(quad_end_x, quad_end_y, color, texpage, tex_right, tex_bottom);
-          restart_strip = true;
+          AddNewVertex(quad_start_x, quad_end_y, color, texpage, tex_left, tex_bottom);
+          AddNewVertex(quad_end_x, quad_start_y, color, texpage, tex_right, tex_top);
+          AddNewVertex(quad_end_x, quad_end_y, color, texpage, tex_right, tex_bottom);
 
           x_offset += quad_width;
           tex_left = 0;
@@ -214,19 +241,35 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       const bool shaded = rc.shading_enable;
 
       u32 buffer_pos = 1;
+      BatchVertex last_vertex;
       for (u32 i = 0; i < num_vertices; i++)
       {
         const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
-        const s32 x = vp.x;
-        const s32 y = vp.y;
 
-        min_x = std::min(min_x, x);
-        max_x = std::max(max_x, x);
-        min_y = std::min(min_y, y);
-        max_y = std::max(max_y, y);
+        BatchVertex vertex;
+        vertex.Set(vp.x, vp.y, color, 0, 0);
 
-        (m_batch_current_vertex_ptr++)->Set(x, y, color, 0, 0);
+        if (i > 0)
+        {
+          if (std::abs(last_vertex.x - vertex.x) >= MAX_PRIMITIVE_WIDTH ||
+              std::abs(last_vertex.y - vertex.y) >= MAX_PRIMITIVE_HEIGHT)
+          {
+            Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_vertex.x, last_vertex.y, vertex.x, vertex.y);
+          }
+          else
+          {
+            AddVertex(last_vertex);
+            AddVertex(vertex);
+
+            min_x = std::min(min_x, std::min(last_vertex.x, vertex.x));
+            max_x = std::max(max_x, std::max(last_vertex.x, vertex.x));
+            min_y = std::min(min_y, std::min(last_vertex.y, vertex.y));
+            max_y = std::max(max_y, std::max(last_vertex.y, vertex.y));
+          }
+        }
+
+        std::memcpy(&last_vertex, &vertex, sizeof(BatchVertex));
       }
     }
     break;
@@ -236,24 +279,21 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       break;
   }
 
-  const Common::Rectangle<u32> area_covered(
-    std::clamp(m_drawing_offset.x + min_x, static_cast<s32>(m_drawing_area.left),
-               static_cast<s32>(m_drawing_area.right)),
-    std::clamp(m_drawing_offset.y + min_y, static_cast<s32>(m_drawing_area.top),
-               static_cast<s32>(m_drawing_area.bottom)),
-    std::clamp(m_drawing_offset.x + max_x, static_cast<s32>(m_drawing_area.left),
-               static_cast<s32>(m_drawing_area.right)) +
-      1,
-    std::clamp(m_drawing_offset.y + max_y, static_cast<s32>(m_drawing_area.top),
-               static_cast<s32>(m_drawing_area.bottom)) +
-      1);
-  m_vram_dirty_rect.Include(area_covered);
-}
-
-void GPU_HW::AddDuplicateVertex()
-{
-  std::memcpy(m_batch_current_vertex_ptr, &m_batch_last_vertex, sizeof(BatchVertex));
-  m_batch_current_vertex_ptr++;
+  if (min_x <= max_x)
+  {
+    const Common::Rectangle<u32> area_covered(
+      std::clamp(m_drawing_offset.x + min_x, static_cast<s32>(m_drawing_area.left),
+                 static_cast<s32>(m_drawing_area.right)),
+      std::clamp(m_drawing_offset.y + min_y, static_cast<s32>(m_drawing_area.top),
+                 static_cast<s32>(m_drawing_area.bottom)),
+      std::clamp(m_drawing_offset.x + max_x, static_cast<s32>(m_drawing_area.left),
+                 static_cast<s32>(m_drawing_area.right)) +
+        1,
+      std::clamp(m_drawing_offset.y + max_y, static_cast<s32>(m_drawing_area.top),
+                 static_cast<s32>(m_drawing_area.bottom)) +
+        1);
+    m_vram_dirty_rect.Include(area_covered);
+  }
 }
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
@@ -283,9 +323,7 @@ Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u3
 GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 {
   if (rc.primitive == Primitive::Line)
-    return rc.polyline ? BatchPrimitive::LineStrip : BatchPrimitive::Lines;
-  else if ((rc.primitive == Primitive::Polygon && rc.quad_polygon) || rc.primitive == Primitive::Rectangle)
-    return BatchPrimitive::TriangleStrip;
+    return BatchPrimitive::Lines;
   else
     return BatchPrimitive::Triangles;
 }
@@ -366,10 +404,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   if (!IsFlushed())
   {
     const bool buffer_overflow = GetBatchVertexSpace() < max_added_vertices;
-    if (buffer_overflow || rc_primitive == BatchPrimitive::LineStrip || m_batch.texture_mode != texture_mode ||
-        m_batch.transparency_mode != transparency_mode || m_batch.primitive != rc_primitive ||
-        dithering_enable != m_batch.dithering || m_drawing_area_changed || m_drawing_offset_changed ||
-        m_draw_mode.IsTextureWindowChanged())
+    if (buffer_overflow || m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
+        m_batch.primitive != rc_primitive || dithering_enable != m_batch.dithering || m_drawing_area_changed ||
+        m_drawing_offset_changed || m_draw_mode.IsTextureWindowChanged())
     {
       FlushRender();
     }

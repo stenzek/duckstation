@@ -156,7 +156,6 @@ protected:
   BatchVertex* m_batch_start_vertex_ptr = nullptr;
   BatchVertex* m_batch_end_vertex_ptr = nullptr;
   BatchVertex* m_batch_current_vertex_ptr = nullptr;
-  BatchVertex m_batch_last_vertex = {};
   u32 m_batch_base_vertex = 0;
 
   u32 m_resolution_scale = 1;
@@ -188,13 +187,17 @@ private:
   static BatchPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
   void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
-  void AddDuplicateVertex();
+
+  ALWAYS_INLINE void AddVertex(const BatchVertex& v)
+  {
+    std::memcpy(m_batch_current_vertex_ptr, &v, sizeof(BatchVertex));
+    m_batch_current_vertex_ptr++;
+  }
 
   template<typename... Args>
-  ALWAYS_INLINE void AddVertex(Args&&... args)
+  ALWAYS_INLINE void AddNewVertex(Args&&... args)
   {
-    m_batch_last_vertex.Set(std::forward<Args>(args)...);
-    std::memcpy(m_batch_current_vertex_ptr, &m_batch_last_vertex, sizeof(BatchVertex));
+    m_batch_current_vertex_ptr->Set(std::forward<Args>(args)...);
     m_batch_current_vertex_ptr++;
   }
 };
