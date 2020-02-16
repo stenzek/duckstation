@@ -128,9 +128,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
     case Primitive::Rectangle:
     {
       // if we're drawing quads, we need to create a degenerate triangle to restart the triangle strip
-      const bool restart_strip = !IsFlushed();
-      if (restart_strip)
-        AddDuplicateVertex();
+      bool restart_strip = !IsFlushed();
 
       u32 buffer_pos = 1;
       const u32 color = rc.color_for_first_vertex;
@@ -140,10 +138,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
       const auto [texcoord_x, texcoord_y] =
         UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
-      const u16 tex_left = ZeroExtend16(texcoord_x);
-      const u16 tex_top = ZeroExtend16(texcoord_y);
-      u32 rectangle_width;
-      u32 rectangle_height;
+      u16 orig_tex_left = ZeroExtend16(texcoord_x);
+      u16 orig_tex_top = ZeroExtend16(texcoord_y);
+      s32 rectangle_width;
+      s32 rectangle_height;
       switch (rc.rectangle_size)
       {
         case DrawRectangleSize::R1x1:
@@ -159,28 +157,54 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
           rectangle_height = 16;
           break;
         default:
-          rectangle_width = command_ptr[buffer_pos] & 0xFFFF;
-          rectangle_height = command_ptr[buffer_pos] >> 16;
+          rectangle_width = static_cast<s32>(command_ptr[buffer_pos] & 0xFFFF);
+          rectangle_height = static_cast<s32>(command_ptr[buffer_pos] >> 16);
           break;
       }
 
       if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
         return;
 
-      max_x = min_x + static_cast<s32>(rectangle_width);
-      max_y = min_y + static_cast<s32>(rectangle_height);
+      max_x = min_x + rectangle_width;
+      max_y = min_y + rectangle_height;
 
-      // TODO: This should repeat the texcoords instead of stretching
-      const u16 tex_right = tex_left + static_cast<u16>(rectangle_width);
-      const u16 tex_bottom = tex_top + static_cast<u16>(rectangle_height);
+      // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
+      u16 tex_top = orig_tex_top;
+      for (s32 y_offset = 0; y_offset < rectangle_height;)
+      {
+        const s32 quad_height = std::min<s32>(rectangle_height - y_offset, TEXTURE_PAGE_WIDTH - tex_top);
+        const s32 quad_start_y = min_y + y_offset;
+        const s32 quad_end_y = quad_start_y + quad_height;
+        const u16 tex_bottom = tex_top + static_cast<u16>(quad_height);
 
-      AddVertex(min_x, min_y, color, texpage, tex_left, tex_top);
-      if (restart_strip)
-        AddDuplicateVertex();
+        u16 tex_left = orig_tex_left;
+        for (s32 x_offset = 0; x_offset < rectangle_width;)
+        {
+          const s32 quad_width = std::min<s32>(rectangle_width - x_offset, TEXTURE_PAGE_HEIGHT - tex_left);
+          const s32 quad_start_x = min_x + x_offset;
+          const s32 quad_end_x = quad_start_x + quad_width;
+          const u16 tex_right = tex_left + static_cast<u16>(quad_width);
 
-      AddVertex(max_x, min_y, color, texpage, tex_right, tex_top);
-      AddVertex(min_x, max_y, color, texpage, tex_left, tex_bottom);
-      AddVertex(max_x, max_y, color, texpage, tex_right, tex_bottom);
+          if (restart_strip)
+            AddDuplicateVertex();
+
+          AddVertex(quad_start_x, quad_start_y, color, texpage, tex_left, tex_top);
+
+          if (restart_strip)
+            AddDuplicateVertex();
+
+          AddVertex(quad_end_x, quad_start_y, color, texpage, tex_right, tex_top);
+          AddVertex(quad_start_x, quad_end_y, color, texpage, tex_left, tex_bottom);
+          AddVertex(quad_end_x, quad_end_y, color, texpage, tex_right, tex_bottom);
+          restart_strip = true;
+
+          x_offset += quad_width;
+          tex_left = 0;
+        }
+
+        y_offset += quad_height;
+        tex_top = 0;
+      }
     }
     break;
 
