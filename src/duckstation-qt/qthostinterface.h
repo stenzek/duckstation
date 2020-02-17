@@ -124,6 +124,7 @@ private:
   };
 
   using InputButtonHandler = std::function<void(bool)>;
+  using InputAxisHandler = std::function<void(float)>;
 
   class Thread : public QThread
   {
@@ -146,6 +147,7 @@ private:
   void updateControllerInputMap();
   void updateHotkeyInputMap();
   void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
+  void addAxisToInputMap(const QString& binding, InputAxisHandler handler);
   void createThread();
   void stopThread();
   void threadEntryPoint();

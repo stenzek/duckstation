@@ -77,15 +77,15 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
   layout->setContentsMargins(0, 0, 0, 0);
   const auto buttons = Controller::GetButtonNames(ctype);
 
+  int start_row = 0;
   if (!buttons.empty())
   {
     QFrame* line = new QFrame(container);
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
-    layout->addWidget(line, 0, 0, 1, 4);
-    layout->addWidget(new QLabel(tr("Button Bindings:"), container), 1, 0, 1, 4);
+    layout->addWidget(line, start_row++, 0, 1, 4);
+    layout->addWidget(new QLabel(tr("Button Bindings:"), container), start_row++, 0, 1, 4);
 
-    const int start_row = 2;
     const int num_rows = (static_cast<int>(buttons.size()) + 1) / 2;
     int current_row = 0;
     int current_column = 0;
@@ -106,6 +106,41 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
 
       current_row++;
     }
+
+    start_row += num_rows;
+  }
+
+  const auto axises = Controller::GetAxisNames(ctype);
+  if (!axises.empty())
+  {
+    QFrame* line = new QFrame(container);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    layout->addWidget(line, start_row++, 0, 1, 4);
+    layout->addWidget(new QLabel(tr("Axis Bindings:"), container), start_row++, 0, 1, 4);
+
+    const int num_rows = (static_cast<int>(axises.size()) + 1) / 2;
+    int current_row = 0;
+    int current_column = 0;
+    for (const auto& [axis_name, axis_code] : axises)
+    {
+      if (current_row == num_rows)
+      {
+        current_row = 0;
+        current_column += 2;
+      }
+
+      const QString axis_name_q = QString::fromStdString(axis_name);
+      const QString setting_name = QStringLiteral("Controller%1/Axis%2").arg(index + 1).arg(axis_name_q);
+      QLabel* label = new QLabel(axis_name_q, container);
+      InputAxisBindingWidget* button = new InputAxisBindingWidget(m_host_interface, setting_name, container);
+      layout->addWidget(label, start_row + current_row, current_column);
+      layout->addWidget(button, start_row + current_row, current_column + 1);
+
+      current_row++;
+    }
+
+    start_row += num_rows;
   }
 
   if (ui->button_binding_container)

@@ -391,6 +391,27 @@ void QtHostInterface::updateControllerInputMap()
           controller->SetButtonState(button_code, pressed);
       });
     }
+
+    const auto axis_names = Controller::GetAxisNames(ctype);
+    for (const auto& it : axis_names)
+    {
+      const std::string& axis_name = it.first;
+      const s32 axis_code = it.second;
+
+      QVariant var = m_qsettings.value(
+        QStringLiteral("Controller%1/Axis%2").arg(controller_index + 1).arg(QString::fromStdString(axis_name)));
+      if (!var.isValid())
+        continue;
+
+      addAxisToInputMap(var.toString(), [this, controller_index, axis_code](float value) {
+        if (!m_system)
+          return;
+
+        Controller* controller = m_system->GetController(controller_index);
+        if (controller)
+          controller->SetAxisState(axis_code, value);
+      });
+    }
   }
 }
 
@@ -505,12 +526,12 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
   {
     bool controller_index_okay;
     const int controller_index = device.mid(10).toInt(&controller_index_okay);
-
     if (!controller_index_okay || controller_index < 0)
     {
       qWarning() << "Malformed controller binding: " << binding;
       return;
     }
+
     if (button.startsWith(QStringLiteral("Button")))
     {
       bool button_index_okay;
@@ -528,6 +549,38 @@ void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHan
       const bool positive = (button[0] == '+');
       if (!axis_index_okay || !g_sdl_controller_interface.BindControllerAxisToButton(controller_index, axis_index,
                                                                                      positive, std::move(handler)))
+      {
+        qWarning() << "Failed to bind " << binding;
+      }
+    }
+  }
+  else
+  {
+    qWarning() << "Unknown input device: " << binding;
+    return;
+  }
+}
+
+void QtHostInterface::addAxisToInputMap(const QString& binding, InputAxisHandler handler)
+{
+  const QString device = binding.section('/', 0, 0);
+  const QString axis = binding.section('/', 1, 1);
+  if (device.startsWith(QStringLiteral("Controller")))
+  {
+    bool controller_index_okay;
+    const int controller_index = device.mid(10).toInt(&controller_index_okay);
+    if (!controller_index_okay || controller_index < 0)
+    {
+      qWarning() << "Malformed controller binding: " << binding;
+      return;
+    }
+
+    if (axis.startsWith(QStringLiteral("Axis")))
+    {
+      bool axis_index_okay;
+      const int axis_index = axis.mid(4).toInt(&axis_index_okay);
+      if (!axis_index_okay ||
+          !g_sdl_controller_interface.BindControllerAxis(controller_index, axis_index, std::move(handler)))
       {
         qWarning() << "Failed to bind " << binding;
       }
