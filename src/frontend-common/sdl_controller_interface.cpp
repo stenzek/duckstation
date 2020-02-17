@@ -5,8 +5,8 @@
 #include "core/host_interface.h"
 #include "core/system.h"
 #include "sdl_initializer.h"
-#include <cmath>
 #include <SDL.h>
+#include <cmath>
 Log_SetChannel(SDLControllerInterface);
 
 SDLControllerInterface g_sdl_controller_interface;
@@ -330,16 +330,13 @@ void SDLControllerInterface::SetDefaultBindings()
 
 bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
 {
-  Log_DebugPrintf("controller %d axis %d %d", ev->caxis.which, ev->caxis.axis, ev->caxis.value);
-
   // TODO: Make deadzone customizable.
   static constexpr float deadzone = 8192.0f / 32768.0f;
 
   const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
-  const bool outside_deadzone = (std::abs(value) >= deadzone);
+  Log_DebugPrintf("controller %d axis %d %d %f", ev->caxis.which, ev->caxis.axis, ev->caxis.value, value);
 
-  // only send monitor events if it's outside of the deadzone, otherwise it's really hard to bind
-  if (outside_deadzone && DoEventHook(Hook::Type::Axis, ev->caxis.which, ev->caxis.axis, value))
+  if (DoEventHook(Hook::Type::Axis, ev->caxis.which, ev->caxis.axis, value))
     return true;
 
   auto it = m_controllers.find(ev->caxis.which);
@@ -355,6 +352,7 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   }
 
   // set the other direction to false so large movements don't leave the opposite on
+  const bool outside_deadzone = (std::abs(value) >= deadzone);
   const bool positive = (value >= 0.0f);
   const ButtonCallback& other_button_cb = cd.axis_button_mapping[ev->caxis.axis][BoolToUInt8(!positive)];
   const ButtonCallback& button_cb = cd.axis_button_mapping[ev->caxis.axis][BoolToUInt8(positive)];
