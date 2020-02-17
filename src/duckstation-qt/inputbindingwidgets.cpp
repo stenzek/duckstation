@@ -5,6 +5,7 @@
 #include "qtutils.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
+#include <cmath>
 
 InputBindingWidget::InputBindingWidget(QtHostInterface* host_interface, QString setting_name, QWidget* parent)
   : QPushButton(parent), m_host_interface(host_interface), m_setting_name(std::move(setting_name))
