@@ -2,6 +2,7 @@
 #include "../file_system.h"
 #include "../log.h"
 #include "../md5_digest.h"
+#include "shader_compiler.h"
 #include <d3dcompiler.h>
 Log_SetChannel(D3D11::ShaderCache);
 
@@ -234,15 +235,7 @@ ShaderCache::ComPtr<ID3D11VertexShader> ShaderCache::GetVertexShader(ID3D11Devic
   if (!blob)
     return {};
 
-  ComPtr<ID3D11VertexShader> vs;
-  HRESULT hr = device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Failed to create vertex shader from blob: 0x%08X", hr);
-    return {};
-  }
-
-  return vs;
+  return D3D11::ShaderCompiler::CreateVertexShader(device, blob.Get());
 }
 
 ShaderCache::ComPtr<ID3D11GeometryShader> ShaderCache::GetGeometryShader(ID3D11Device* device,
@@ -252,16 +245,7 @@ ShaderCache::ComPtr<ID3D11GeometryShader> ShaderCache::GetGeometryShader(ID3D11D
   if (!blob)
     return {};
 
-  ComPtr<ID3D11GeometryShader> gs;
-  HRESULT hr =
-    device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, gs.GetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Failed to create geometry shader from blob: 0x%08X", hr);
-    return {};
-  }
-
-  return gs;
+  return D3D11::ShaderCompiler::CreateGeometryShader(device, blob.Get());
 }
 
 ShaderCache::ComPtr<ID3D11PixelShader> ShaderCache::GetPixelShader(ID3D11Device* device, std::string_view shader_code)
@@ -270,15 +254,7 @@ ShaderCache::ComPtr<ID3D11PixelShader> ShaderCache::GetPixelShader(ID3D11Device*
   if (!blob)
     return {};
 
-  ComPtr<ID3D11PixelShader> ps;
-  HRESULT hr = device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, ps.GetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Failed to create pixel shader from blob: 0x%08X", hr);
-    return {};
-  }
-
-  return ps;
+  return D3D11::ShaderCompiler::CreatePixelShader(device, blob.Get());
 }
 
 ShaderCache::ComPtr<ID3D11ComputeShader> ShaderCache::GetComputeShader(ID3D11Device* device,
@@ -288,15 +264,7 @@ ShaderCache::ComPtr<ID3D11ComputeShader> ShaderCache::GetComputeShader(ID3D11Dev
   if (!blob)
     return {};
 
-  ComPtr<ID3D11ComputeShader> cs;
-  HRESULT hr = device->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, cs.GetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Failed to create compute shader from blob: 0x%08X", hr);
-    return {};
-  }
-
-  return cs;
+  return D3D11::ShaderCompiler::CreateComputeShader(device, blob.Get());
 }
 
 ShaderCache::ComPtr<ID3DBlob> ShaderCache::CompileAndAddShaderBlob(const CacheIndexKey& key,

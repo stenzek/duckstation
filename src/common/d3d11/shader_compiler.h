@@ -24,4 +24,13 @@ ComPtr<ID3D11GeometryShader> CompileAndCreateGeometryShader(ID3D11Device* device
 ComPtr<ID3D11PixelShader> CompileAndCreatePixelShader(ID3D11Device* device, std::string_view code, bool debug);
 ComPtr<ID3D11ComputeShader> CompileAndCreateComputeShader(ID3D11Device* device, std::string_view code, bool debug);
 
+ComPtr<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
+ComPtr<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const ID3DBlob* blob);
+ComPtr<ID3D11GeometryShader> CreateGeometryShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
+ComPtr<ID3D11GeometryShader> CreateGeometryShader(ID3D11Device* device, const ID3DBlob* blob);
+ComPtr<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
+ComPtr<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const ID3DBlob* blob);
+ComPtr<ID3D11ComputeShader> CreateComputeShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
+ComPtr<ID3D11ComputeShader> CreateComputeShader(ID3D11Device* device, const ID3DBlob* blob);
+
 }; // namespace D3D11::ShaderCompiler
