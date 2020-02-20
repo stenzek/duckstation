@@ -3,6 +3,8 @@
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
 #include "imgui_impl_sdl.h"
+#include "frontend-common/display_ps.hlsl.h"
+#include "frontend-common/display_vs.hlsl.h"
 #include <SDL_syswm.h>
 #include <array>
 #include <dxgi1_5.h>
@@ -280,39 +282,12 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
 
 bool D3D11HostDisplay::CreateD3DResources()
 {
-  static constexpr char fullscreen_quad_vertex_shader[] = R"(
-cbuffer UBOBlock : register(b0)
-{
-  float4 u_src_rect;
-};
-
-void main(in uint vertex_id : SV_VertexID,
-          out float2 v_tex0 : TEXCOORD0,
-          out float4 o_pos : SV_Position)
-{
-  float2 pos = float2(float((vertex_id << 1) & 2u), float(vertex_id & 2u));
-  v_tex0 = u_src_rect.xy + pos * u_src_rect.zw;
-  o_pos = float4(pos * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-}
-)";
-
-  static constexpr char display_pixel_shader[] = R"(
-Texture2D samp0 : register(t0);
-SamplerState samp0_ss : register(s0);
-
-void main(in float2 v_tex0 : TEXCOORD0,
-          out float4 o_col0 : SV_Target)
-{
-  o_col0 = samp0.Sample(samp0_ss, v_tex0);
-}
-)";
-
   HRESULT hr;
 
   m_display_vertex_shader =
-    D3D11::ShaderCompiler::CompileAndCreateVertexShader(m_device.Get(), fullscreen_quad_vertex_shader, false);
+    D3D11::ShaderCompiler::CreateVertexShader(m_device.Get(), s_display_vs_bytecode, sizeof(s_display_vs_bytecode));
   m_display_pixel_shader =
-    D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), display_pixel_shader, false);
+    D3D11::ShaderCompiler::CreatePixelShader(m_device.Get(), s_display_ps_bytecode, sizeof(s_display_ps_bytecode));
   if (!m_display_vertex_shader || !m_display_pixel_shader)
     return false;
 
