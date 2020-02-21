@@ -82,7 +82,7 @@ bool CDImageCHD::Open(const char* filename)
   chd_error err = chd_open(filename, CHD_OPEN_READ, nullptr, &m_chd);
   if (err != CHDERR_NONE)
   {
-    Log_ErrorPrintf("Failed to open CHD '%s': %s", chd_error_string(err));
+    Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
     return false;
   }
 
