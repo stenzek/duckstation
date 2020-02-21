@@ -410,8 +410,6 @@ bool HostInterface::LoadState(const char* filename)
       m_system->Reset();
       return false;
     }
-
-    m_system->ResetPerformanceCounters();
   }
   else
   {
@@ -429,6 +427,7 @@ bool HostInterface::LoadState(const char* filename)
     }
   }
 
+  m_system->ResetPerformanceCounters();
   return true;
 }
 
