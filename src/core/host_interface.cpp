@@ -771,6 +771,8 @@ void HostInterface::SetDefaultSettings()
   m_settings.display_fullscreen = false;
   m_settings.video_sync_enabled = true;
 
+  m_settings.cdrom_read_thread = true;
+
   m_settings.audio_backend = AudioBackend::Cubeb;
   m_settings.audio_sync_enabled = true;
 
@@ -800,6 +802,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
   const bool old_display_linear_filtering = m_settings.display_linear_filtering;
+  const bool old_cdrom_read_thread = m_settings.cdrom_read_thread;
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
 
   apply_callback();
@@ -847,6 +850,9 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     {
       m_system->UpdateGPUSettings();
     }
+
+    if (m_settings.cdrom_read_thread != old_cdrom_read_thread)
+      m_system->GetCDROM()->SetUseReadThread(m_settings.cdrom_read_thread);
   }
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)

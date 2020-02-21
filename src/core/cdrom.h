@@ -4,6 +4,7 @@
 #include "common/cd_xa.h"
 #include "common/fifo_queue.h"
 #include "common/heap_array.h"
+#include "cdrom_async_reader.h"
 #include "types.h"
 #include <array>
 #include <string>
@@ -27,7 +28,7 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  bool HasMedia() const { return static_cast<bool>(m_media); }
+  bool HasMedia() const;
   std::string GetMediaFileName() const;
   void InsertMedia(std::unique_ptr<CDImage> media);
   void RemoveMedia();
@@ -39,6 +40,8 @@ public:
 
   // Render statistics debug window.
   void DrawDebugWindow();
+
+  void SetUseReadThread(bool enabled);
 
 private:
   enum : u32
@@ -219,7 +222,6 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   SPU* m_spu = nullptr;
-  std::unique_ptr<CDImage> m_media;
   std::unique_ptr<TimingEvent> m_command_event;
   std::unique_ptr<TimingEvent> m_drive_event;
 
@@ -235,7 +237,7 @@ private:
   u8 m_pending_async_interrupt = 0;
 
   CDImage::Position m_setloc_position = {};
-  CDImage::Position m_seek_position = {};
+  CDImage::LBA m_last_requested_sector{};
   bool m_setloc_pending = false;
   bool m_read_after_seek = false;
   bool m_play_after_seek = false;
@@ -265,4 +267,6 @@ private:
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_async_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
   std::vector<u8> m_sector_buffer;
+
+  CDROMAsyncReader m_reader;
 };

@@ -39,6 +39,7 @@
     <ClCompile Include="bios.cpp" />
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="cdrom.cpp" />
+    <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="bios.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="cdrom.h" />
+    <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="cpu_code_cache.h" />

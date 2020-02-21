@@ -52,6 +52,8 @@ struct Settings
   bool display_fullscreen = false;
   bool video_sync_enabled = true;
 
+  bool cdrom_read_thread = true;
+
   AudioBackend audio_backend = AudioBackend::Cubeb;
   bool audio_sync_enabled = true;
 

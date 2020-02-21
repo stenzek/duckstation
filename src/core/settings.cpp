@@ -30,6 +30,8 @@ void Settings::Load(SettingsInterface& si)
   display_fullscreen = si.GetBoolValue("Display", "Fullscreen", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
+  cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
+
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
@@ -78,6 +80,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "Fullscreen", display_fullscreen);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
+
+  si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetBoolValue("Audio", "Sync", audio_sync_enabled);

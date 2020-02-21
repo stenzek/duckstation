@@ -972,6 +972,12 @@ void SDLHostInterface::DrawSettingsWindow()
       }
 
       ImGui::NewLine();
+      if (DrawSettingsSectionHeader("CDROM Emulation"))
+      {
+        settings_changed |= ImGui::Checkbox("Use Read Thread (Asynchronous)", &m_settings.cdrom_read_thread);
+      }
+
+      ImGui::NewLine();
       if (DrawSettingsSectionHeader("Audio"))
       {
         ImGui::Text("Backend:");
