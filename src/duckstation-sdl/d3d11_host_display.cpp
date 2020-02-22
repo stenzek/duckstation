@@ -364,6 +364,7 @@ void D3D11HostDisplay::Render()
   else
     m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
 
+  ImGui::NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window);
   ImGui_ImplDX11_NewFrame();
 }

@@ -360,6 +360,7 @@ void OpenGLHostDisplay::Render()
 
   SDL_GL_SwapWindow(m_window);
 
+  ImGui::NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window);
   ImGui_ImplOpenGL3_NewFrame();
 

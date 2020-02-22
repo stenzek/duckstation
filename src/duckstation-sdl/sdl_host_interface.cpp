@@ -1290,10 +1290,7 @@ void SDLHostInterface::Run()
       if (m_system)
         m_system->GetGPU()->ResetGraphicsAPIState();
 
-      ImGui::Render();
       m_display->Render();
-
-      ImGui::NewFrame();
 
       if (m_system)
       {
