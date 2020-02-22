@@ -16,6 +16,7 @@
 #include "mdec.h"
 #include "memory_card.h"
 #include "pad.h"
+#include "save_state_version.h"
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
@@ -271,6 +272,20 @@ bool System::CreateGPU(GPURenderer renderer)
 
 bool System::DoState(StateWrapper& sw)
 {
+  u32 magic = SAVE_STATE_MAGIC;
+  u32 version = SAVE_STATE_VERSION;
+  sw.Do(&magic);
+  if (magic != SAVE_STATE_MAGIC)
+    return false;
+
+  sw.Do(&version);
+  if (version != SAVE_STATE_VERSION)
+  {
+    m_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
+                                           SAVE_STATE_VERSION, version);
+    return false;
+  }
+
   if (!sw.DoMarker("System"))
     return false;
 

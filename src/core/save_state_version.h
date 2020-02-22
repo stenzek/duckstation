@@ -1,4 +1,5 @@
 #pragma once
-#include "pse/types.h"
+#include "types.h"
 
-constexpr u32 SAVE_STATE_VERSION = 1;
+static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
+static constexpr u32 SAVE_STATE_VERSION = 1;
