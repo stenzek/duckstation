@@ -241,6 +241,10 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_
     }
   }
 
+  hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
+  if (FAILED(hr))
+    Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
+
   if (debug_device)
   {
     ComPtr<ID3D11InfoQueue> info;

@@ -2,9 +2,9 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
-#include "imgui_impl_sdl.h"
 #include "frontend-common/display_ps.hlsl.h"
 #include "frontend-common/display_vs.hlsl.h"
+#include "imgui_impl_sdl.h"
 #include <SDL_syswm.h>
 #include <array>
 #include <dxgi1_5.h>
@@ -240,6 +240,10 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
       return false;
     }
   }
+
+  hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
+  if (FAILED(hr))
+    Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
 
   if (debug_device)
   {
