@@ -8,6 +8,7 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
@@ -274,6 +275,9 @@ std::unique_ptr<AudioStream> QtHostInterface::CreateAudioStream(AudioBackend bac
 
     case AudioBackend::Cubeb:
       return AudioStream::CreateCubebAudioStream();
+
+    case AudioBackend::SDL:
+      return SDLAudioStream::Create();
 
     default:
       return nullptr;
