@@ -26,6 +26,7 @@ private Q_SLOTS:
   void reportMessage(const QString& message);
   void createDisplayWindow(QThread* worker_thread, bool use_debug_device);
   void destroyDisplayWindow();
+  void setFullscreen(bool fullscreen);
   void toggleFullscreen();
   void onEmulationStarted();
   void onEmulationStopped();

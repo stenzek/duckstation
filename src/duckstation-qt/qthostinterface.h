@@ -71,6 +71,7 @@ Q_SIGNALS:
   void gameListRefreshed();
   void createDisplayWindowRequested(QThread* worker_thread, bool use_debug_device);
   void destroyDisplayWindowRequested();
+  void setFullscreenRequested(bool fullscreen);
   void toggleFullscreenRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);

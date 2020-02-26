@@ -81,7 +81,11 @@ void MainWindow::destroyDisplayWindow()
 
 void MainWindow::toggleFullscreen()
 {
-  const bool fullscreen = !m_display_widget->isFullScreen();
+  setFullscreen(!m_display_widget->isFullScreen());
+}
+
+void MainWindow::setFullscreen(bool fullscreen)
+{
   if (fullscreen)
   {
     m_ui.mainContainer->setCurrentIndex(0);
@@ -335,6 +339,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::createDisplayWindowRequested, this, &MainWindow::createDisplayWindow,
           Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::destroyDisplayWindowRequested, this, &MainWindow::destroyDisplayWindow);
+  connect(m_host_interface, &QtHostInterface::setFullscreenRequested, this, &MainWindow::setFullscreen);
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
   connect(m_host_interface, &QtHostInterface::messageReported, this, &MainWindow::reportMessage);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
