@@ -69,18 +69,10 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "PowerOff", "Keyboard/Escape");
   si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Pause");
   si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt+Return");
+  si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
+  si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
+  si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
 }
-
-#if 0
-void CommonHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
-{
-  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings);
-  m_game_list->SetSearchDirectoriesFromSettings(si);
-  m_game_list->Refresh(invalidate_cache, invalidate_database);
-  emit gameListRefreshed();
-}
-#endif
 
 std::optional<CommonHostInterface::HostKeyCode>
 CommonHostInterface::GetHostKeyCode(const std::string_view key_code) const
