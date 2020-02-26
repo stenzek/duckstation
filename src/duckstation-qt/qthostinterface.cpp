@@ -54,6 +54,11 @@ void QtHostInterface::ReportMessage(const char* message)
   emit messageReported(QString::fromLocal8Bit(message));
 }
 
+bool QtHostInterface::ConfirmMessage(const char* message)
+{
+  return messageConfirmed(QString::fromLocal8Bit(message));
+}
+
 void QtHostInterface::setDefaultSettings()
 {
   HostInterface::UpdateSettings([this]() { HostInterface::SetDefaultSettings(); });

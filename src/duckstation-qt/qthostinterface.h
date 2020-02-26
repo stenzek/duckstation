@@ -32,6 +32,7 @@ public:
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
+  bool ConfirmMessage(const char* message) override;
 
   void setDefaultSettings();
 
@@ -64,6 +65,7 @@ public:
 Q_SIGNALS:
   void errorReported(const QString& message);
   void messageReported(const QString& message);
+  bool messageConfirmed(const QString& message);
   void emulationStarted();
   void emulationStopped();
   void emulationPaused(bool paused);

@@ -24,6 +24,7 @@ public:
 private Q_SLOTS:
   void reportError(const QString& message);
   void reportMessage(const QString& message);
+  bool confirmMessage(const QString& message);
   void createDisplayWindow(QThread* worker_thread, bool use_debug_device);
   void destroyDisplayWindow();
   void setFullscreen(bool fullscreen);

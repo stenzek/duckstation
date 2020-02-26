@@ -160,6 +160,12 @@ void HostInterface::ReportMessage(const char* message)
   Log_InfoPrintf(message);
 }
 
+bool HostInterface::ConfirmMessage(const char* message)
+{
+  Log_WarningPrintf("ConfirmMessage(\"%s\") -> Yes");
+  return true;
+}
+
 void HostInterface::ReportFormattedError(const char* format, ...)
 {
   std::va_list ap;
@@ -178,6 +184,16 @@ void HostInterface::ReportFormattedMessage(const char* format, ...)
   va_end(ap);
 
   ReportMessage(message.c_str());
+}
+
+bool HostInterface::ConfirmFormattedMessage(const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string message = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  return ConfirmMessage(message.c_str());
 }
 
 void HostInterface::DrawFPSWindow()

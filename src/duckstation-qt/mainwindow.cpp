@@ -35,12 +35,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::reportError(const QString& message)
 {
-  QMessageBox::critical(nullptr, tr("DuckStation Error"), message, QMessageBox::Ok);
+  QMessageBox::critical(this, tr("DuckStation"), message, QMessageBox::Ok);
 }
 
 void MainWindow::reportMessage(const QString& message)
 {
   m_ui.statusBar->showMessage(message, 2000);
+}
+
+bool MainWindow::confirmMessage(const QString& message)
+{
+  return (QMessageBox::question(this, tr("DuckStation"), message) == QMessageBox::Yes);
 }
 
 void MainWindow::createDisplayWindow(QThread* worker_thread, bool use_debug_device)
@@ -336,12 +341,14 @@ void MainWindow::connectSignals()
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
+  connect(m_host_interface, &QtHostInterface::messageReported, this, &MainWindow::reportMessage);
+  connect(m_host_interface, &QtHostInterface::messageConfirmed, this, &MainWindow::confirmMessage,
+          Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::createDisplayWindowRequested, this, &MainWindow::createDisplayWindow,
           Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::destroyDisplayWindowRequested, this, &MainWindow::destroyDisplayWindow);
   connect(m_host_interface, &QtHostInterface::setFullscreenRequested, this, &MainWindow::setFullscreen);
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
-  connect(m_host_interface, &QtHostInterface::messageReported, this, &MainWindow::reportMessage);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);

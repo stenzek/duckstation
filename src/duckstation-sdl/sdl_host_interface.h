@@ -26,6 +26,7 @@ public:
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
+  bool ConfirmMessage(const char* message) override;
 
   void Run();
 

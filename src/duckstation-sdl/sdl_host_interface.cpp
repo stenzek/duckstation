@@ -259,12 +259,37 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
 
 void SDLHostInterface::ReportError(const char* message)
 {
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "DuckStation Error", message, m_window);
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "DuckStation", message, m_window);
 }
 
 void SDLHostInterface::ReportMessage(const char* message)
 {
   AddOSDMessage(message, 2.0f);
+}
+
+bool SDLHostInterface::ConfirmMessage(const char* message)
+{
+  SDL_MessageBoxData mbd = {};
+  mbd.flags = SDL_MESSAGEBOX_INFORMATION;
+  mbd.window = m_window;
+  mbd.title = "DuckStation";
+  mbd.message = message;
+  mbd.numbuttons = 2;
+
+  // Why the heck these are reversed I have no idea...
+  SDL_MessageBoxButtonData buttons[2] = {};
+  buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+  buttons[1].buttonid = 0;
+  buttons[1].text = "Yes";
+  buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+  buttons[0].buttonid = 1;
+  buttons[0].text = "No";
+  mbd.buttons = buttons;
+  mbd.numbuttons = countof(buttons);
+
+  int button_id = 0;
+  SDL_ShowMessageBox(&mbd, &button_id);
+  return (button_id == 0);
 }
 
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
