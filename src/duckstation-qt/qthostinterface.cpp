@@ -303,10 +303,13 @@ void QtHostInterface::OnSystemPaused(bool paused)
 {
   HostInterface::OnSystemPaused(paused);
 
-  if (!paused)
-    wakeThread();
-
   emit emulationPaused(paused);
+
+  if (!paused)
+  {
+    wakeThread();
+    emit focusDisplayWidgetRequested();
+  }
 }
 
 void QtHostInterface::OnSystemDestroyed()

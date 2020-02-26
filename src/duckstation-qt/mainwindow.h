@@ -29,6 +29,7 @@ private Q_SLOTS:
   void destroyDisplayWindow();
   void setFullscreen(bool fullscreen);
   void toggleFullscreen();
+  void focusDisplayWidget();
   void onEmulationStarted();
   void onEmulationStopped();
   void onEmulationPaused(bool paused);

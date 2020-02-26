@@ -84,11 +84,6 @@ void MainWindow::destroyDisplayWindow()
   m_display_widget = nullptr;
 }
 
-void MainWindow::toggleFullscreen()
-{
-  setFullscreen(!m_display_widget->isFullScreen());
-}
-
 void MainWindow::setFullscreen(bool fullscreen)
 {
   if (fullscreen)
@@ -108,6 +103,19 @@ void MainWindow::setFullscreen(bool fullscreen)
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
+}
+
+void MainWindow::toggleFullscreen()
+{
+  setFullscreen(!m_display_widget->isFullScreen());
+}
+
+void MainWindow::focusDisplayWidget()
+{
+  if (m_ui.mainContainer->currentIndex() != 1)
+    return;
+
+  m_display_widget->setFocus();
 }
 
 void MainWindow::onEmulationStarted()
@@ -349,6 +357,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::destroyDisplayWindowRequested, this, &MainWindow::destroyDisplayWindow);
   connect(m_host_interface, &QtHostInterface::setFullscreenRequested, this, &MainWindow::setFullscreen);
   connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
+  connect(m_host_interface, &QtHostInterface::focusDisplayWidgetRequested, this, &MainWindow::focusDisplayWidget);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);

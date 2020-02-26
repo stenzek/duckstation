@@ -75,6 +75,7 @@ Q_SIGNALS:
   void destroyDisplayWindowRequested();
   void setFullscreenRequested(bool fullscreen);
   void toggleFullscreenRequested();
+  void focusDisplayWidgetRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
