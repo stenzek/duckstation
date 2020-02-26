@@ -433,6 +433,7 @@ std::vector<QtHostInterface::HotkeyInfo> QtHostInterface::getHotkeyList() const
     {QStringLiteral("FastForward"), QStringLiteral("Toggle Fast Forward"), QStringLiteral("General")},
     {QStringLiteral("Fullscreen"), QStringLiteral("Toggle Fullscreen"), QStringLiteral("General")},
     {QStringLiteral("Pause"), QStringLiteral("Toggle Pause"), QStringLiteral("General")},
+    {QStringLiteral("PowerOff"), QStringLiteral("Power Off System"), QStringLiteral("General")},
     {QStringLiteral("ToggleSoftwareRendering"), QStringLiteral("Toggle Software Rendering"),
      QStringLiteral("Graphics")},
     {QStringLiteral("IncreaseResolutionScale"), QStringLiteral("Increase Resolution Scale"),
@@ -484,6 +485,36 @@ void QtHostInterface::updateHotkeyInputMap()
   hk(QStringLiteral("Pause"), [this](bool pressed) {
     if (!pressed)
       pauseSystem(!m_paused);
+  });
+
+  hk(QStringLiteral("PowerOff"), [this](bool pressed) {
+    if (!pressed && m_system)
+    {
+      if (m_settings.confim_power_off)
+      {
+        emit setFullscreenRequested(false);
+
+        QString confirmation_message = tr("Are you sure you want to stop emulation?");
+        if (m_settings.save_state_on_exit)
+        {
+          confirmation_message += "\n\n";
+          confirmation_message += tr("The current state will be saved.");
+        }
+
+        if (!messageConfirmed(confirmation_message))
+        {
+          if (m_settings.display_fullscreen)
+            emit setFullscreenRequested(true);
+          else
+            emit focusDisplayWidgetRequested();
+
+          m_system->ResetPerformanceCounters();
+          return;
+        }
+      }
+
+      powerOffSystem();
+    }
   });
 
   hk(QStringLiteral("ToggleSoftwareRendering"), [this](bool pressed) {
@@ -654,6 +685,9 @@ void QtHostInterface::pauseSystem(bool paused)
     QMetaObject::invokeMethod(this, "pauseSystem", Qt::QueuedConnection, Q_ARG(bool, paused));
     return;
   }
+
+  if (!m_system)
+    return;
 
   m_paused = paused;
   m_audio_stream->PauseOutput(paused);

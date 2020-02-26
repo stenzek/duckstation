@@ -40,6 +40,7 @@ struct Settings
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool save_state_on_exit = true;
+  bool confim_power_off = true;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;

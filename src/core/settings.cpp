@@ -14,6 +14,7 @@ void Settings::Load(SettingsInterface& si)
   increase_timer_resolution = si.GetBoolValue("General", "IncreaseTimerResolution", true);
   start_paused = si.GetBoolValue("General", "StartPaused", false);
   save_state_on_exit = si.GetBoolValue("General", "SaveStateOnExit", true);
+  confim_power_off = si.GetBoolValue("General", "ConfirmPowerOff", true);
 
   cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Interpreter").c_str())
                          .value_or(CPUExecutionMode::Interpreter);
@@ -67,6 +68,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("General", "IncreaseTimerResolution", increase_timer_resolution);
   si.SetBoolValue("General", "StartPaused", start_paused);
   si.SetBoolValue("General", "SaveStateOnExit", save_state_on_exit);
+  si.SetBoolValue("General", "ConfirmPowerOff", confim_power_off);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 

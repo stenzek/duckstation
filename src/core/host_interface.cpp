@@ -776,6 +776,7 @@ void HostInterface::SetDefaultSettings()
   m_settings.increase_timer_resolution = true;
   m_settings.start_paused = false;
   m_settings.save_state_on_exit = true;
+  m_settings.confim_power_off = true;
 
   m_settings.gpu_renderer = Settings::DEFAULT_GPU_RENDERER;
   m_settings.gpu_resolution_scale = 1;
