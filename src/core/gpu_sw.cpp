@@ -120,7 +120,8 @@ void GPU_SW::UpdateDisplay()
     const u32 vram_offset_x = m_crtc_state.regs.X;
     const u32 vram_offset_y = m_crtc_state.regs.Y;
     const u32 display_width = std::min<u32>(m_crtc_state.active_display_width, VRAM_WIDTH - vram_offset_x);
-    const u32 display_height = std::min<u32>(m_crtc_state.active_display_height, VRAM_HEIGHT - vram_offset_y);
+    const u32 display_height = std::min<u32>(m_crtc_state.active_display_height << BoolToUInt8(m_GPUSTAT.In480iMode()),
+                                             VRAM_HEIGHT - vram_offset_y);
 
     if (m_GPUSTAT.display_disable)
     {
@@ -601,9 +602,9 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
     UNREFERENCED_VARIABLE(transparent);
   }
 
-   const u16 mask_and = m_GPUSTAT.GetMaskAND();
-   if ((bg_color.bits & mask_and) != mask_and)
-     return;
+  const u16 mask_and = m_GPUSTAT.GetMaskAND();
+  if ((bg_color.bits & mask_and) != mask_and)
+    return;
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());
 }
