@@ -68,7 +68,7 @@ struct Rectangle
   {
     left = rhs.left;
     top = rhs.top;
-    left = rhs.left;
+    right = rhs.right;
     bottom = rhs.bottom;
     return *this;
   }
