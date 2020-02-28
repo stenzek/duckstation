@@ -57,10 +57,10 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller1", "ButtonRight", "Keyboard/D");
   si.SetStringValue("Controller1", "ButtonSelect", "Keyboard/Backspace");
   si.SetStringValue("Controller1", "ButtonStart", "Keyboard/Return");
-  si.SetStringValue("Controller1", "ButtonTriangle", "Keyboard/8");
-  si.SetStringValue("Controller1", "ButtonCross", "Keyboard/2");
-  si.SetStringValue("Controller1", "ButtonSquare", "Keyboard/4");
-  si.SetStringValue("Controller1", "ButtonCircle", "Keyboard/6");
+  si.SetStringValue("Controller1", "ButtonTriangle", "Keyboard/Keypad+8");
+  si.SetStringValue("Controller1", "ButtonCross", "Keyboard/Keypad+2");
+  si.SetStringValue("Controller1", "ButtonSquare", "Keyboard/Keypad+4");
+  si.SetStringValue("Controller1", "ButtonCircle", "Keyboard/Keypad+6");
   si.SetStringValue("Controller1", "ButtonL1", "Keyboard/Q");
   si.SetStringValue("Controller1", "ButtonL2", "Keyboard/1");
   si.SetStringValue("Controller1", "ButtonR1", "Keyboard/E");
