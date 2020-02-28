@@ -88,6 +88,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
     case Primitive::Polygon:
     {
       DebugAssert(num_vertices == 3 || num_vertices == 4);
+      EnsureVertexBufferSpace(rc.quad_polygon ? 6 : 3);
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
@@ -201,6 +202,11 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         return;
       }
 
+      // we can split the rectangle up into potentially 8 quads
+      const u32 required_vertices = 6 * ((rectangle_width + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) *
+                                    ((rectangle_height + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT);
+      EnsureVertexBufferSpace(required_vertices);
+
       min_x = pos_x;
       min_y = pos_y;
       max_x = pos_x + rectangle_width;
@@ -243,6 +249,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
     case Primitive::Line:
     {
+      EnsureVertexBufferSpace(num_vertices * 2);
+
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
 
@@ -348,6 +356,19 @@ void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
   }
 }
 
+void GPU_HW::EnsureVertexBufferSpace(u32 required_vertices)
+{
+  if (m_batch_current_vertex_ptr)
+  {
+    if (GetBatchVertexSpace() >= required_vertices)
+      return;
+
+    FlushRender();
+  }
+
+  MapBatchVertexPointer(required_vertices);
+}
+
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   IncludeVRAMDityRectangle(
@@ -406,11 +427,9 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     rc.transparency_enable ? m_draw_mode.GetTransparencyMode() : TransparencyMode::Disabled;
   const BatchPrimitive rc_primitive = GetPrimitiveForCommand(rc);
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
-  const u32 max_added_vertices = num_vertices + 5;
   if (!IsFlushed())
   {
-    const bool buffer_overflow = GetBatchVertexSpace() < max_added_vertices;
-    if (buffer_overflow || m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
+    if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
         m_batch.primitive != rc_primitive || dithering_enable != m_batch.dithering || m_drawing_area_changed ||
         m_drawing_offset_changed || m_draw_mode.IsTextureWindowChanged())
     {
@@ -443,10 +462,6 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     m_batch_ubo_data.u_pos_offset[1] = m_drawing_offset.y;
     m_batch_ubo_dirty = true;
   }
-
-  // map buffer if it's not already done
-  if (!m_batch_current_vertex_ptr)
-    MapBatchVertexPointer(max_added_vertices);
 
   // update state
   m_batch.primitive = rc_primitive;

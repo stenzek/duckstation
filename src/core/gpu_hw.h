@@ -132,6 +132,7 @@ protected:
 
   u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
+  void EnsureVertexBufferSpace(u32 required_vertices);
 
   bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
 
