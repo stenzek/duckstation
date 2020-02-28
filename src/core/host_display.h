@@ -57,17 +57,23 @@ public:
     m_display_texture_handle = nullptr;
     m_display_texture_width = 0;
     m_display_texture_height = 0;
-    m_display_texture_rect = {};
+    m_display_texture_view_x = 0;
+    m_display_texture_view_y = 0;
+    m_display_texture_view_width = 0;
+    m_display_texture_view_height = 0;
     m_display_changed = true;
   }
 
-  void SetDisplayTexture(void* texture_handle, s32 texture_width, s32 texture_height,
-                         const Common::Rectangle<s32>& texture_rect)
+  void SetDisplayTexture(void* texture_handle, s32 texture_width, s32 texture_height, s32 view_x, s32 view_y,
+                         s32 view_width, s32 view_height)
   {
     m_display_texture_handle = texture_handle;
     m_display_texture_width = texture_width;
     m_display_texture_height = texture_height;
-    m_display_texture_rect = texture_rect;
+    m_display_texture_view_x = view_x;
+    m_display_texture_view_y = view_y;
+    m_display_texture_view_width = view_width;
+    m_display_texture_view_height = view_height;
     m_display_changed = true;
   }
 
@@ -99,7 +105,10 @@ protected:
   void* m_display_texture_handle = nullptr;
   s32 m_display_texture_width = 0;
   s32 m_display_texture_height = 0;
-  Common::Rectangle<s32> m_display_texture_rect{};
+  s32 m_display_texture_view_x = 0;
+  s32 m_display_texture_view_y = 0;
+  s32 m_display_texture_view_width = 0;
+  s32 m_display_texture_view_height = 0;
 
   s32 m_display_top_margin = 0;
 

@@ -343,10 +343,10 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
 
   if (m_system->GetSettings().debugging.show_vram)
   {
-    m_host_display->SetDisplayTexture(
-      reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())), m_vram_texture.GetWidth(),
-      -static_cast<s32>(m_vram_texture.GetHeight()),
-      Common::Rectangle<s32>(0, m_vram_texture.GetHeight(), m_vram_texture.GetWidth(), 0));
+    m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
+                                      m_vram_texture.GetWidth(), static_cast<s32>(m_vram_texture.GetHeight()), 0,
+                                      m_vram_texture.GetHeight(), m_vram_texture.GetWidth(),
+                                      -static_cast<s32>(m_vram_texture.GetHeight()));
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT),
                                          1.0f);
   }
@@ -368,11 +368,10 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced)
     {
-      m_host_display->SetDisplayTexture(
-        reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())), m_vram_texture.GetWidth(),
-        m_vram_texture.GetHeight(),
-        Common::Rectangle<s32>(scaled_vram_offset_x, m_vram_texture.GetHeight() - scaled_vram_offset_y,
-                               scaled_display_width, -static_cast<s32>(scaled_display_height)));
+      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), scaled_vram_offset_x,
+                                        m_vram_texture.GetHeight() - scaled_vram_offset_y, scaled_display_width,
+                                        -static_cast<s32>(scaled_display_height));
     }
     else
     {
@@ -411,10 +410,9 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        m_host_display->SetDisplayTexture(
-          reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())), m_display_texture.GetWidth(),
-          m_display_texture.GetHeight(),
-          Common::Rectangle<s32>(0, display_height, display_width, -static_cast<s32>(display_height)));
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
+                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
+                                          display_height, display_width, -static_cast<s32>(display_height));
       }
       else
       {
@@ -430,9 +428,9 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
-                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(),
-                                          Common::Rectangle<s32>(0, scaled_display_height, scaled_display_width,
-                                                                 -static_cast<s32>(scaled_display_height)));
+                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
+                                          scaled_display_height, scaled_display_width,
+                                          -static_cast<s32>(scaled_display_height));
       }
 
       // restore state

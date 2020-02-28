@@ -475,10 +475,10 @@ void OpenGLDisplayWindow::renderDisplay()
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
   m_display_program.Uniform4f(
-    0, static_cast<float>(m_display_texture_rect.left) / static_cast<float>(m_display_texture_width),
-    static_cast<float>(m_display_texture_rect.top) / static_cast<float>(m_display_texture_height),
-    (static_cast<float>(m_display_texture_rect.GetWidth()) - 0.5f) / static_cast<float>(m_display_texture_width),
-    (static_cast<float>(m_display_texture_rect.GetHeight()) - 0.5f) / static_cast<float>(m_display_texture_height));
+    0, static_cast<float>(m_display_texture_view_x) / static_cast<float>(m_display_texture_width),
+    static_cast<float>(m_display_texture_view_y) / static_cast<float>(m_display_texture_height),
+    (static_cast<float>(m_display_texture_view_width) - 0.5f) / static_cast<float>(m_display_texture_width),
+    (static_cast<float>(m_display_texture_view_height) - 0.5f) / static_cast<float>(m_display_texture_height));
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(m_display_texture_handle)));
   glBindSampler(0, m_display_linear_filtering ? m_display_linear_sampler : m_display_nearest_sampler);
   glBindVertexArray(m_display_vao);
