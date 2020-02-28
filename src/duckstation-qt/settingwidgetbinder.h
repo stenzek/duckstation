@@ -172,7 +172,7 @@ void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, cons
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name, range]() {
     const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
-    hi->putSettingValue(setting_name, new_value);
+    hi->putSettingValue(setting_name, QString::number(new_value));
     hi->applySettings();
   });
 }
