@@ -41,39 +41,6 @@ void GPU_SW::Reset()
   m_vram.fill(0);
 }
 
-void GPU_SW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
-{
-  // No need to do anything - pointer is already up to date.
-}
-
-void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
-{
-  const u16 color16 = RGBA8888ToRGBA5551(color);
-  for (u32 yoffs = 0; yoffs < height; yoffs++)
-    std::fill_n(GetPixelPtr(x, y + yoffs), width, color16);
-}
-
-void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
-{
-  // This doesn't have a fast path, but do we really need one? It's not common.
-  const u16 mask_and = m_GPUSTAT.GetMaskAND();
-  const u16 mask_or = m_GPUSTAT.GetMaskOR();
-
-  for (u32 row = 0; row < height; row++)
-  {
-    const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-    u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-
-    for (u32 col = 0; col < width; col++)
-    {
-      const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
-      u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];
-      if ((*dst_pixel_ptr & mask_and) == mask_and)
-        *dst_pixel_ptr = src_pixel | mask_or;
-    }
-  }
-}
-
 void GPU_SW::CopyOut15Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height)
 {
   for (u32 row = 0; row < height; row++)

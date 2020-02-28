@@ -789,7 +789,12 @@ void GPU::UpdateDisplay() {}
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
 
-void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) {}
+void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
+{
+  const u16 color16 = RGBA8888ToRGBA5551(color);
+  for (u32 yoffs = 0; yoffs < height; yoffs++)
+    std::fill_n(&m_vram_ptr[((y + yoffs) * VRAM_WIDTH) + x], width, color16);
+}
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
@@ -826,7 +831,26 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
   }
 }
 
-void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) {}
+void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
+{
+  // This doesn't have a fast path, but do we really need one? It's not common.
+  const u16 mask_and = m_GPUSTAT.GetMaskAND();
+  const u16 mask_or = m_GPUSTAT.GetMaskOR();
+
+  for (u32 row = 0; row < height; row++)
+  {
+    const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+    u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+
+    for (u32 col = 0; col < width; col++)
+    {
+      const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
+      u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];
+      if ((*dst_pixel_ptr & mask_and) == mask_and)
+        *dst_pixel_ptr = src_pixel | mask_or;
+    }
+  }
+}
 
 void GPU::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) {}
 

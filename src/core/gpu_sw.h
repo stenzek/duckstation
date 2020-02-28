@@ -40,10 +40,6 @@ protected:
     ALWAYS_INLINE void SetTexcoord(u16 value) { std::tie(texcoord_x, texcoord_y) = UnpackTexcoord(value); }
   };
 
-  void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
-  void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
-  void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
-
   //////////////////////////////////////////////////////////////////////////
   // Scanout
   //////////////////////////////////////////////////////////////////////////
