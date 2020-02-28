@@ -1224,6 +1224,7 @@ void SDLHostInterface::DrawSettingsWindow()
         if (ImGui::Checkbox("Start Fullscreen", &m_settings_copy.display_fullscreen))
           settings_changed = true;
 
+        settings_changed |= ImGui::Checkbox("Use Debug Device", &m_settings_copy.gpu_use_debug_device);
         settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings_copy.display_linear_filtering);
         settings_changed |= ImGui::Checkbox("VSync", &m_settings_copy.video_sync_enabled);
       }
