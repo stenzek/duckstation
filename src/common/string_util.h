@@ -1,10 +1,15 @@
 #pragma once
-#include <charconv>
 #include <cstdarg>
 #include <cstddef>
 #include <cstring>
 #include <optional>
 #include <string>
+
+#if __cplusplus >= 201703L
+#include <charconv>
+#else
+#include <sstream>
+#endif
 
 namespace StringUtil {
 
@@ -33,9 +38,19 @@ template<typename T>
 std::optional<T> FromChars(const std::string_view str)
 {
   T value;
+
+#if __cplusplus >= 201703L
+  T value;
   const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value);
   if (result.ec != std::errc())
     return std::nullopt;
+#else
+  std::string temp(str);
+  std::istringstream ss(temp);
+  ss >> value;
+  if (ss.fail())
+    return std::nullopt;
+#endif
 
   return value;
 }
