@@ -57,14 +57,12 @@
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="sdl_host_interface.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sdl_settings_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="imgui_impl_sdl.h" />
     <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="sdl_host_interface.h" />
-    <ClInclude Include="sdl_settings_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-sdl.manifest" />

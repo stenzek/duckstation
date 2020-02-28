@@ -9,11 +9,11 @@
 #include "core/system.h"
 #include "frontend-common/icon.h"
 #include "frontend-common/imgui_styles.h"
+#include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
 #include "imgui_impl_sdl.h"
 #include "opengl_host_display.h"
-#include "sdl_settings_interface.h"
 #include <cinttypes>
 #include <cmath>
 #include <imgui.h>
@@ -268,7 +268,7 @@ void SDLHostInterface::RunLater(std::function<void()> callback)
 
 void SDLHostInterface::SaveSettings()
 {
-  SDLSettingsInterface si(GetSettingsFileName().c_str());
+  INISettingsInterface si(GetSettingsFileName().c_str());
   m_settings_copy.Save(si);
 }
 
@@ -296,7 +296,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
   std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
 
   // Settings need to be loaded prior to creating the window for OpenGL bits.
-  SDLSettingsInterface si(intf->GetSettingsFileName().c_str());
+  INISettingsInterface si(intf->GetSettingsFileName().c_str());
   intf->m_settings_copy.Load(si);
   intf->m_settings = intf->m_settings_copy;
   intf->m_fullscreen = intf->m_settings_copy.display_fullscreen;

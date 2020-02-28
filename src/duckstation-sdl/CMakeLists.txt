@@ -6,12 +6,10 @@ add_executable(duckstation-sdl
   opengl_host_display.h
   sdl_host_interface.cpp
   sdl_host_interface.h
-  sdl_settings_interface.cpp
-  sdl_settings_interface.h
 )
 
 target_include_directories(duckstation-sdl PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad simpleini frontend-common ${SDL2_LIBRARIES})
+target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad frontend-common ${SDL2_LIBRARIES})
 
 if(WIN32)
   target_sources(duckstation-sdl PRIVATE

@@ -3,11 +3,11 @@
 
 #include "SimpleIni.h"
 
-class SDLSettingsInterface : public SettingsInterface
+class INISettingsInterface : public SettingsInterface
 {
 public:
-  SDLSettingsInterface(const char* filename);
-  ~SDLSettingsInterface();
+  INISettingsInterface(const char* filename);
+  ~INISettingsInterface();
 
   void Clear() override;
 

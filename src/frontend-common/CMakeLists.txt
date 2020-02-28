@@ -5,6 +5,8 @@ add_library(frontend-common
   icon.h
   imgui_styles.cpp
   imgui_styles.h
+  ini_settings_interface.cpp
+  ini_settings_interface.h
 )
 
 if(SDL2_FOUND)
@@ -21,5 +23,5 @@ if(SDL2_FOUND)
   target_link_libraries(frontend-common PRIVATE ${SDL2_LIBRARIES})
 endif()
 
-target_link_libraries(frontend-common PRIVATE core common imgui)
+target_link_libraries(frontend-common PRIVATE core common imgui simpleini)
 
