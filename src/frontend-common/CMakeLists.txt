@@ -1,4 +1,6 @@
 add_library(frontend-common
+  common_host_interface.cpp
+  common_host_interface.h
   icon.cpp
   icon.h
   imgui_styles.cpp

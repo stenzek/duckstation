@@ -46,15 +46,17 @@ public:
   bool BootSystemFromBIOS();
   void PauseSystem(bool paused);
   void ResetSystem();
+  void PowerOffSystem();
   void DestroySystem();
+
+  /// Loads state from the specified filename.
+  bool LoadState(const char* filename);
 
   /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
   bool LoadState(bool global, s32 slot);
-  bool LoadState(const char* filename);
 
   /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
   bool SaveState(bool global, s32 slot);
-  bool SaveState(const char* filename);
 
   /// Loads the resume save state for the given game. Optionally boots the game anyway if loading fails.
   bool ResumeSystemFromState(const char* filename, bool boot_on_failure);
@@ -91,12 +93,13 @@ public:
 protected:
   enum : u32
   {
+    SETTINGS_VERSION = 2,
     AUDIO_SAMPLE_RATE = 44100,
     AUDIO_CHANNELS = 2,
     AUDIO_BUFFER_SIZE = 2048,
     AUDIO_BUFFERS = 2,
     PER_GAME_SAVE_STATE_SLOTS = 10,
-    GLOBAL_SAVE_STATE_SLOTS = 10
+    GLOBAL_SAVE_STATE_SLOTS = 10,
   };
 
   struct OSDMessage
@@ -122,6 +125,7 @@ protected:
   virtual void OnSystemPaused(bool paused);
   virtual void OnSystemDestroyed();
   virtual void OnSystemPerformanceCountersUpdated();
+  virtual void OnSystemStateSaved(bool global, s32 slot);
   virtual void OnRunningGameChanged();
   virtual void OnControllerTypeChanged(u32 slot);
 
@@ -160,8 +164,11 @@ protected:
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
+  /// Ensures the settings is valid and the correct version. If not, resets to defaults.
+  void CheckSettings(SettingsInterface& si);
+
   /// Restores all settings to defaults.
-  void SetDefaultSettings();
+  virtual void SetDefaultSettings(SettingsInterface& si);
 
   /// Applies new settings, updating internal state as needed. apply_callback should call m_settings.Load() after
   /// locking any required mutexes.
@@ -202,4 +209,5 @@ protected:
 
 private:
   void CreateAudioStream();
+  bool SaveState(const char* filename);
 };

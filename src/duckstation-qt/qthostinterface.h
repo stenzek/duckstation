@@ -1,5 +1,6 @@
 #pragma once
 #include "core/host_interface.h"
+#include "frontend-common/common_host_interface.h"
 #include "opengldisplaywindow.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
@@ -22,7 +23,7 @@ class QTimer;
 
 class GameList;
 
-class QtHostInterface : public QObject, private HostInterface
+class QtHostInterface : public QObject, private CommonHostInterface
 {
   Q_OBJECT
 
@@ -34,8 +35,6 @@ public:
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
 
-  void setDefaultSettings();
-
   /// Thread-safe QSettings access.
   QVariant getSettingValue(const QString& name, const QVariant& default_value = QVariant());
   void putSettingValue(const QString& name, const QVariant& value);
@@ -45,20 +44,11 @@ public:
   GameList* getGameList() { return m_game_list.get(); }
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
 
+  const HotkeyInfoList& getHotkeyInfoList() const { return GetHotkeyInfoList(); }
+
   bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
   QtDisplayWindow* createDisplayWindow();
-
-  void updateInputMap();
-  void handleKeyEvent(int key, bool pressed);
-
-  struct HotkeyInfo
-  {
-    QString name;
-    QString display_name;
-    QString category;
-  };
-  std::vector<HotkeyInfo> getHotkeyList() const;
 
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
@@ -81,7 +71,10 @@ Q_SIGNALS:
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
 
 public Q_SLOTS:
+  void setDefaultSettings();
   void applySettings();
+  void updateInputMap();
+  void handleKeyEvent(int key, bool pressed);
   void bootSystemFromFile(const QString& filename);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void bootSystemFromBIOS();
@@ -103,21 +96,23 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void doStopThread();
-  void doUpdateInputMap();
-  void doHandleKeyEvent(int key, bool pressed);
   void onDisplayWindowResized(int width, int height);
   void doBackgroundControllerPoll();
 
 protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
-  std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
+  void SetFullscreen(bool enabled) override;
+  void ToggleFullscreen() override;
+
+  std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
 
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed() override;
   void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
+  void OnSystemStateSaved(bool global, s32 slot) override;
   void OnControllerTypeChanged(u32 slot) override;
 
 private:
@@ -143,15 +138,10 @@ private:
     QtHostInterface* m_parent;
   };
 
-  void checkSettings();
-  void updateQSettingsFromCoreSettings();
+  void loadSettings();
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
 
-  void updateControllerInputMap();
-  void updateHotkeyInputMap();
-  void addButtonToInputMap(const QString& binding, InputButtonHandler handler);
-  void addAxisToInputMap(const QString& binding, InputAxisHandler handler);
   void createThread();
   void stopThread();
   void threadEntryPoint();

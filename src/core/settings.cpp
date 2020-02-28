@@ -9,12 +9,12 @@ void Settings::Load(SettingsInterface& si)
   region =
     ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(ConsoleRegion::NTSC_U);
 
-  emulation_speed = si.GetFloatValue("General", "EmulationSpeed", 1.0f);
-  speed_limiter_enabled = si.GetBoolValue("General", "SpeedLimiterEnabled", true);
-  increase_timer_resolution = si.GetBoolValue("General", "IncreaseTimerResolution", true);
-  start_paused = si.GetBoolValue("General", "StartPaused", false);
-  save_state_on_exit = si.GetBoolValue("General", "SaveStateOnExit", true);
-  confim_power_off = si.GetBoolValue("General", "ConfirmPowerOff", true);
+  emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
+  speed_limiter_enabled = si.GetBoolValue("Main", "SpeedLimiterEnabled", true);
+  increase_timer_resolution = si.GetBoolValue("Main", "IncreaseTimerResolution", true);
+  start_paused = si.GetBoolValue("Mainal", "StartPaused", false);
+  save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
+  confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
 
   cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Interpreter").c_str())
                          .value_or(CPUExecutionMode::Interpreter);
@@ -63,12 +63,12 @@ void Settings::Save(SettingsInterface& si) const
 {
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
 
-  si.SetFloatValue("General", "EmulationSpeed", emulation_speed);
-  si.SetBoolValue("General", "SpeedLimiterEnabled", speed_limiter_enabled);
-  si.SetBoolValue("General", "IncreaseTimerResolution", increase_timer_resolution);
-  si.SetBoolValue("General", "StartPaused", start_paused);
-  si.SetBoolValue("General", "SaveStateOnExit", save_state_on_exit);
-  si.SetBoolValue("General", "ConfirmPowerOff", confim_power_off);
+  si.SetFloatValue("Main", "EmulationSpeed", emulation_speed);
+  si.SetBoolValue("Main", "SpeedLimiterEnabled", speed_limiter_enabled);
+  si.SetBoolValue("Main", "IncreaseTimerResolution", increase_timer_resolution);
+  si.SetBoolValue("Main", "StartPaused", start_paused);
+  si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
+  si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 

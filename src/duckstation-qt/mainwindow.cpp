@@ -45,7 +45,10 @@ void MainWindow::reportMessage(const QString& message)
 
 bool MainWindow::confirmMessage(const QString& message)
 {
-  return (QMessageBox::question(this, tr("DuckStation"), message) == QMessageBox::Yes);
+  const int result = QMessageBox::question(this, tr("DuckStation"), message);
+  focusDisplayWidget();
+  
+  return (result == QMessageBox::Yes);
 }
 
 void MainWindow::createDisplayWindow(QThread* worker_thread, bool use_debug_device)

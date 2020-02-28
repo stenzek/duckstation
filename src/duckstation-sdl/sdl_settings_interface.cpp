@@ -20,6 +20,11 @@ SDLSettingsInterface::~SDLSettingsInterface()
   }
 }
 
+void SDLSettingsInterface::Clear()
+{
+  m_ini.Reset();
+}
+
 int SDLSettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
 {
   return static_cast<int>(m_ini.GetLongValue(section, key, default_value));

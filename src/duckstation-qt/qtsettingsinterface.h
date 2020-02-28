@@ -9,6 +9,8 @@ public:
   QtSettingsInterface(QSettings& settings);
   ~QtSettingsInterface();
 
+  void Clear() override;
+
   int GetIntValue(const char* section, const char* key, int default_value = 0) override;
   float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) override;
   bool GetBoolValue(const char* section, const char* key, bool default_value = false) override;

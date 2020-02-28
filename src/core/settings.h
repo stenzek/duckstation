@@ -9,6 +9,8 @@
 class SettingsInterface
 {
 public:
+  virtual void Clear() = 0;
+
   virtual int GetIntValue(const char* section, const char* key, int default_value = 0) = 0;
   virtual float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) = 0;
   virtual bool GetBoolValue(const char* section, const char* key, bool default_value = false) = 0;

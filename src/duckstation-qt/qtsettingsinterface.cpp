@@ -11,6 +11,11 @@ QtSettingsInterface::QtSettingsInterface(QSettings& settings) : m_settings(setti
 
 QtSettingsInterface::~QtSettingsInterface() = default;
 
+void QtSettingsInterface::Clear()
+{
+  m_settings.clear();
+}
+
 int QtSettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
 {
   QVariant value = m_settings.value(GetFullKey(section, key));

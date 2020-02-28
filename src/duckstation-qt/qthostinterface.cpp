@@ -27,9 +27,10 @@ Log_SetChannel(QtHostInterface);
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent)
-  : QObject(parent), HostInterface(), m_qsettings(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat)
+  : QObject(parent), CommonHostInterface(),
+    m_qsettings(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat)
 {
-  checkSettings();
+  loadSettings();
   refreshGameList();
   createThread();
 }
@@ -59,34 +60,6 @@ bool QtHostInterface::ConfirmMessage(const char* message)
   return messageConfirmed(QString::fromLocal8Bit(message));
 }
 
-void QtHostInterface::setDefaultSettings()
-{
-  HostInterface::UpdateSettings([this]() { HostInterface::SetDefaultSettings(); });
-
-  // default input settings for Qt
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonUp"), QStringLiteral("Keyboard/W"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonDown"), QStringLiteral("Keyboard/S"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonLeft"), QStringLiteral("Keyboard/A"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonRight"), QStringLiteral("Keyboard/D"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonSelect"), QStringLiteral("Keyboard/Backspace"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonStart"), QStringLiteral("Keyboard/Return"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonTriangle"), QStringLiteral("Keyboard/8"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonCross"), QStringLiteral("Keyboard/2"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonSquare"), QStringLiteral("Keyboard/4"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonCircle"), QStringLiteral("Keyboard/6"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonL1"), QStringLiteral("Keyboard/Q"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonL2"), QStringLiteral("Keyboard/1"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonR1"), QStringLiteral("Keyboard/E"));
-  m_qsettings.setValue(QStringLiteral("Controller1/ButtonR2"), QStringLiteral("Keyboard/3"));
-  m_qsettings.setValue(QStringLiteral("Hotkeys/FastForward"), QStringLiteral("Keyboard/Tab"));
-  m_qsettings.setValue(QStringLiteral("Hotkeys/PowerOff"), QStringLiteral("Keyboard/Escape"));
-  m_qsettings.setValue(QStringLiteral("Hotkeys/TogglePause"), QStringLiteral("Keyboard/Pause"));
-  m_qsettings.setValue(QStringLiteral("Hotkeys/ToggleFullscreen"), QStringLiteral("Keyboard/Alt+Return"));
-
-  updateQSettingsFromCoreSettings();
-}
-
 QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
 {
   std::lock_guard<std::mutex> guard(m_qsettings_mutex);
@@ -105,10 +78,18 @@ void QtHostInterface::removeSettingValue(const QString& name)
   m_qsettings.remove(name);
 }
 
-void QtHostInterface::updateQSettingsFromCoreSettings()
+void QtHostInterface::setDefaultSettings()
 {
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "setDefaultSettings", Qt::QueuedConnection);
+    return;
+  }
+
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
-  m_settings.Save(si);
+  UpdateSettings([this, &si]() { m_settings.Load(si); });
+  UpdateInputMap(si);
 }
 
 void QtHostInterface::applySettings()
@@ -119,38 +100,28 @@ void QtHostInterface::applySettings()
     return;
   }
 
-  UpdateSettings([this]() {
-    std::lock_guard<std::mutex> guard(m_qsettings_mutex);
-    QtSettingsInterface si(m_qsettings);
-    m_settings.Load(si);
-  });
+  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  QtSettingsInterface si(m_qsettings);
+  UpdateSettings([this, &si]() { m_settings.Load(si); });
+  UpdateInputMap(si);
 }
 
-void QtHostInterface::checkSettings()
+void QtHostInterface::loadSettings()
 {
+  // no need to lock here because the emu thread doesn't exist yet
+  QtSettingsInterface si(m_qsettings);
+
   const QSettings::Status settings_status = m_qsettings.status();
   if (settings_status != QSettings::NoError)
-    m_qsettings.clear();
-
-  const QString settings_version_key = QStringLiteral("General/SettingsVersion");
-  const int expected_version = 1;
-  const QVariant settings_version_var = m_qsettings.value(settings_version_key);
-  bool settings_version_okay;
-  int settings_version = settings_version_var.toInt(&settings_version_okay);
-  if (!settings_version_okay)
-    settings_version = 0;
-  if (settings_version != expected_version)
   {
-    Log_WarningPrintf("Settings version %d does not match expected version %d, resetting", settings_version,
-                      expected_version);
     m_qsettings.clear();
-    m_qsettings.setValue(settings_version_key, expected_version);
-    setDefaultSettings();
+    SetDefaultSettings(si);
   }
 
-  // initial setting init - we don't do this locked since the thread hasn't been created yet
-  QtSettingsInterface si(m_qsettings);
+  CheckSettings(si);
   m_settings.Load(si);
+
+  // input map update is done on the emu thread
 }
 
 void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
@@ -219,20 +190,11 @@ void QtHostInterface::handleKeyEvent(int key, bool pressed)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "doHandleKeyEvent", Qt::QueuedConnection, Q_ARG(int, key), Q_ARG(bool, pressed));
+    QMetaObject::invokeMethod(this, "handleKeyEvent", Qt::QueuedConnection, Q_ARG(int, key), Q_ARG(bool, pressed));
     return;
   }
 
-  doHandleKeyEvent(key, pressed);
-}
-
-void QtHostInterface::doHandleKeyEvent(int key, bool pressed)
-{
-  const auto iter = m_keyboard_input_handlers.find(key);
-  if (iter == m_keyboard_input_handlers.end())
-    return;
-
-  iter->second(pressed);
+  HandleHostKeyEvent(key, pressed);
 }
 
 void QtHostInterface::onDisplayWindowResized(int width, int height)
@@ -275,22 +237,24 @@ void QtHostInterface::ReleaseHostDisplay()
   emit destroyDisplayWindowRequested();
 }
 
-std::unique_ptr<AudioStream> QtHostInterface::CreateAudioStream(AudioBackend backend)
+void QtHostInterface::SetFullscreen(bool enabled)
 {
-  switch (backend)
-  {
-    case AudioBackend::Null:
-      return AudioStream::CreateNullAudioStream();
+  emit setFullscreenRequested(enabled);
+}
 
-    case AudioBackend::Cubeb:
-      return AudioStream::CreateCubebAudioStream();
+void QtHostInterface::ToggleFullscreen()
+{
+  emit toggleFullscreenRequested();
+}
 
-    case AudioBackend::SDL:
-      return SDLAudioStream::Create();
+std::optional<CommonHostInterface::HostKeyCode> QtHostInterface::GetHostKeyCode(const std::string_view key_code) const
+{
+  const std::optional<int> code =
+    QtUtils::ParseKeyString(QString::fromUtf8(key_code.data(), static_cast<int>(key_code.length())));
+  if (!code)
+    return std::nullopt;
 
-    default:
-      return nullptr;
-  }
+  return static_cast<s32>(*code);
 }
 
 void QtHostInterface::OnSystemCreated()
@@ -351,6 +315,11 @@ void QtHostInterface::OnRunningGameChanged()
   }
 }
 
+void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
+{
+  emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
+}
+
 void QtHostInterface::OnControllerTypeChanged(u32 slot)
 {
   HostInterface::OnControllerTypeChanged(slot);
@@ -362,282 +331,13 @@ void QtHostInterface::updateInputMap()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "doUpdateInputMap", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "updateInputMap", Qt::QueuedConnection);
     return;
   }
-
-  doUpdateInputMap();
-}
-
-void QtHostInterface::doUpdateInputMap()
-{
-  m_keyboard_input_handlers.clear();
-  g_sdl_controller_interface.ClearControllerBindings();
 
   std::lock_guard<std::mutex> lock(m_qsettings_mutex);
-  updateControllerInputMap();
-  updateHotkeyInputMap();
-}
-
-void QtHostInterface::updateControllerInputMap()
-{
-  for (u32 controller_index = 0; controller_index < 2; controller_index++)
-  {
-    const ControllerType ctype = m_settings.controller_types[controller_index];
-    if (ctype == ControllerType::None)
-      continue;
-
-    const auto button_names = Controller::GetButtonNames(ctype);
-    for (const auto& it : button_names)
-    {
-      const std::string& button_name = it.first;
-      const s32 button_code = it.second;
-
-      QVariant var = m_qsettings.value(
-        QStringLiteral("Controller%1/Button%2").arg(controller_index + 1).arg(QString::fromStdString(button_name)));
-      if (!var.isValid())
-        continue;
-
-      addButtonToInputMap(var.toString(), [this, controller_index, button_code](bool pressed) {
-        if (!m_system)
-          return;
-
-        Controller* controller = m_system->GetController(controller_index);
-        if (controller)
-          controller->SetButtonState(button_code, pressed);
-      });
-    }
-
-    const auto axis_names = Controller::GetAxisNames(ctype);
-    for (const auto& it : axis_names)
-    {
-      const std::string& axis_name = it.first;
-      const s32 axis_code = it.second;
-
-      QVariant var = m_qsettings.value(
-        QStringLiteral("Controller%1/Axis%2").arg(controller_index + 1).arg(QString::fromStdString(axis_name)));
-      if (!var.isValid())
-        continue;
-
-      addAxisToInputMap(var.toString(), [this, controller_index, axis_code](float value) {
-        if (!m_system)
-          return;
-
-        Controller* controller = m_system->GetController(controller_index);
-        if (controller)
-          controller->SetAxisState(axis_code, value);
-      });
-    }
-  }
-}
-
-std::vector<QtHostInterface::HotkeyInfo> QtHostInterface::getHotkeyList() const
-{
-  std::vector<HotkeyInfo> hotkeys = {
-    {QStringLiteral("FastForward"), QStringLiteral("Toggle Fast Forward"), QStringLiteral("General")},
-    {QStringLiteral("ToggleFullscreen"), QStringLiteral("Toggle Fullscreen"), QStringLiteral("General")},
-    {QStringLiteral("TogglePause"), QStringLiteral("Toggle Pause"), QStringLiteral("General")},
-    {QStringLiteral("PowerOff"), QStringLiteral("Power Off System"), QStringLiteral("General")},
-    {QStringLiteral("ToggleSoftwareRendering"), QStringLiteral("Toggle Software Rendering"),
-     QStringLiteral("Graphics")},
-    {QStringLiteral("IncreaseResolutionScale"), QStringLiteral("Increase Resolution Scale"),
-     QStringLiteral("Graphics")},
-    {QStringLiteral("DecreaseResolutionScale"), QStringLiteral("Decrease Resolution Scale"),
-     QStringLiteral("Graphics")}};
-
-  for (u32 global_i = 0; global_i < 2; global_i++)
-  {
-    const bool global = ConvertToBoolUnchecked(global_i);
-    const u32 count = global ? GLOBAL_SAVE_STATE_SLOTS : PER_GAME_SAVE_STATE_SLOTS;
-    for (u32 i = 1; i <= count; i++)
-    {
-      hotkeys.push_back({QStringLiteral("Load%1State%2").arg(global ? "Global" : "Game").arg(i),
-                         QStringLiteral("Load %1 State %2").arg(global ? tr("Global") : tr("Game")).arg(i),
-                         QStringLiteral("Save States")});
-    }
-    for (u32 slot = 1; slot <= count; slot++)
-    {
-      hotkeys.push_back({QStringLiteral("Save%1State%2").arg(global ? "Global" : "Game").arg(slot),
-                         QStringLiteral("Save %1 State %2").arg(global ? tr("Global") : tr("Game")).arg(slot),
-                         QStringLiteral("Save States")});
-    }
-  }
-
-  return hotkeys;
-}
-
-void QtHostInterface::updateHotkeyInputMap()
-{
-  auto hk = [this](const QString& hotkey_name, InputButtonHandler handler) {
-    QVariant var = m_qsettings.value(QStringLiteral("Hotkeys/%1").arg(hotkey_name));
-    if (!var.isValid())
-      return;
-
-    addButtonToInputMap(var.toString(), std::move(handler));
-  };
-
-  hk(QStringLiteral("FastForward"), [this](bool pressed) {
-    m_speed_limiter_temp_disabled = pressed;
-    HostInterface::UpdateSpeedLimiterState();
-  });
-
-  hk(QStringLiteral("ToggleFullscreen"), [this](bool pressed) {
-    if (!pressed)
-      emit toggleFullscreenRequested();
-  });
-
-  hk(QStringLiteral("TogglePause"), [this](bool pressed) {
-    if (!pressed)
-      pauseSystem(!m_paused);
-  });
-
-  hk(QStringLiteral("PowerOff"), [this](bool pressed) {
-    if (!pressed && m_system)
-    {
-      if (m_settings.confim_power_off)
-      {
-        emit setFullscreenRequested(false);
-
-        QString confirmation_message = tr("Are you sure you want to stop emulation?");
-        if (m_settings.save_state_on_exit)
-        {
-          confirmation_message += "\n\n";
-          confirmation_message += tr("The current state will be saved.");
-        }
-
-        if (!messageConfirmed(confirmation_message))
-        {
-          if (m_settings.display_fullscreen)
-            emit setFullscreenRequested(true);
-          else
-            emit focusDisplayWidgetRequested();
-
-          m_system->ResetPerformanceCounters();
-          return;
-        }
-      }
-
-      powerOffSystem();
-    }
-  });
-
-  hk(QStringLiteral("ToggleSoftwareRendering"), [this](bool pressed) {
-    if (!pressed)
-      ToggleSoftwareRendering();
-  });
-
-  hk(QStringLiteral("IncreaseResolutionScale"), [this](bool pressed) {
-    if (!pressed)
-      ModifyResolutionScale(1);
-  });
-
-  hk(QStringLiteral("DecreaseResolutionScale"), [this](bool pressed) {
-    if (!pressed)
-      ModifyResolutionScale(-1);
-  });
-
-  for (u32 global_i = 0; global_i < 2; global_i++)
-  {
-    const bool global = ConvertToBoolUnchecked(global_i);
-    const u32 count = global ? GLOBAL_SAVE_STATE_SLOTS : PER_GAME_SAVE_STATE_SLOTS;
-    for (u32 slot = 1; slot <= count; slot++)
-    {
-      hk(QStringLiteral("Load%1State%2").arg(global ? "Global" : "Game").arg(slot), [this, global, slot](bool pressed) {
-        if (!pressed)
-          loadState(global, slot);
-      });
-      hk(QStringLiteral("Save%1State%2").arg(global ? "Global" : "Game").arg(slot), [this, global, slot](bool pressed) {
-        if (!pressed)
-          saveState(global, slot);
-      });
-    }
-  }
-}
-
-void QtHostInterface::addButtonToInputMap(const QString& binding, InputButtonHandler handler)
-{
-  const QString device = binding.section('/', 0, 0);
-  const QString button = binding.section('/', 1, 1);
-  if (device == QStringLiteral("Keyboard"))
-  {
-    std::optional<int> key_id = QtUtils::ParseKeyString(button);
-    if (!key_id.has_value())
-    {
-      qWarning() << "Unknown keyboard key " << button;
-      return;
-    }
-
-    m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
-  }
-  else if (device.startsWith(QStringLiteral("Controller")))
-  {
-    bool controller_index_okay;
-    const int controller_index = device.mid(10).toInt(&controller_index_okay);
-    if (!controller_index_okay || controller_index < 0)
-    {
-      qWarning() << "Malformed controller binding: " << binding;
-      return;
-    }
-
-    if (button.startsWith(QStringLiteral("Button")))
-    {
-      bool button_index_okay;
-      const int button_index = button.mid(6).toInt(&button_index_okay);
-      if (!button_index_okay ||
-          !g_sdl_controller_interface.BindControllerButton(controller_index, button_index, std::move(handler)))
-      {
-        qWarning() << "Failed to bind " << binding;
-      }
-    }
-    else if (button.startsWith(QStringLiteral("+Axis")) || button.startsWith(QStringLiteral("-Axis")))
-    {
-      bool axis_index_okay;
-      const int axis_index = button.mid(5).toInt(&axis_index_okay);
-      const bool positive = (button[0] == '+');
-      if (!axis_index_okay || !g_sdl_controller_interface.BindControllerAxisToButton(controller_index, axis_index,
-                                                                                     positive, std::move(handler)))
-      {
-        qWarning() << "Failed to bind " << binding;
-      }
-    }
-  }
-  else
-  {
-    qWarning() << "Unknown input device: " << binding;
-    return;
-  }
-}
-
-void QtHostInterface::addAxisToInputMap(const QString& binding, InputAxisHandler handler)
-{
-  const QString device = binding.section('/', 0, 0);
-  const QString axis = binding.section('/', 1, 1);
-  if (device.startsWith(QStringLiteral("Controller")))
-  {
-    bool controller_index_okay;
-    const int controller_index = device.mid(10).toInt(&controller_index_okay);
-    if (!controller_index_okay || controller_index < 0)
-    {
-      qWarning() << "Malformed controller binding: " << binding;
-      return;
-    }
-
-    if (axis.startsWith(QStringLiteral("Axis")))
-    {
-      bool axis_index_okay;
-      const int axis_index = axis.mid(4).toInt(&axis_index_okay);
-      if (!axis_index_okay ||
-          !g_sdl_controller_interface.BindControllerAxis(controller_index, axis_index, std::move(handler)))
-      {
-        qWarning() << "Failed to bind " << binding;
-      }
-    }
-  }
-  else
-  {
-    qWarning() << "Unknown input device: " << binding;
-    return;
-  }
+  QtSettingsInterface si(m_qsettings);
+  UpdateInputMap(si);
 }
 
 void QtHostInterface::powerOffSystem()
@@ -799,10 +499,7 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
   }
 
   if (m_system)
-  {
     SaveState(global, slot);
-    emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
-  }
 }
 
 void QtHostInterface::enableBackgroundControllerPolling()
@@ -891,8 +588,7 @@ void QtHostInterface::threadEntryPoint()
   // set up controller interface and immediate poll to pick up the controller attached events
   g_sdl_controller_interface.Initialize(this);
   g_sdl_controller_interface.PumpSDLEvents();
-
-  doUpdateInputMap();
+  updateInputMap();
 
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())

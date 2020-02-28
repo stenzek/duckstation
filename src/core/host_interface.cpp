@@ -53,7 +53,6 @@ HostInterface::HostInterface()
 {
   SetUserDirectory();
   CreateUserDirectorySubdirectories();
-  SetDefaultSettings();
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetGameListCacheFileName());
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
@@ -133,6 +132,17 @@ void HostInterface::ResetSystem()
   m_system->Reset();
   m_system->ResetPerformanceCounters();
   AddOSDMessage("System reset.");
+}
+
+void HostInterface::PowerOffSystem()
+{
+  if (!m_system)
+    return;
+
+  if (m_settings.save_state_on_exit)
+    SaveResumeSaveState();
+
+  DestroySystem();
 }
 
 void HostInterface::DestroySystem()
@@ -493,7 +503,11 @@ bool HostInterface::SaveState(bool global, s32 slot)
   }
 
   std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
-  return SaveState(save_path.c_str());
+  if (!SaveState(save_path.c_str()))
+    return false;
+
+  OnSystemStateSaved(global, slot);
+  return true;
 }
 
 bool HostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
@@ -583,6 +597,8 @@ void HostInterface::OnSystemDestroyed()
 }
 
 void HostInterface::OnSystemPerformanceCountersUpdated() {}
+
+void HostInterface::OnSystemStateSaved(bool global, s32 slot) {}
 
 void HostInterface::OnRunningGameChanged() {}
 
@@ -725,7 +741,7 @@ std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(
   std::vector<SaveStateInfo> si;
   std::string path;
 
-  auto add_path = [&si](const std::string& path, s32 slot, bool global) {
+  auto add_path = [&si](std::string path, s32 slot, bool global) {
     FILESYSTEM_STAT_DATA sd;
     if (!FileSystem::StatFile(path.c_str(), &sd))
       return;
@@ -766,42 +782,67 @@ std::string HostInterface::GetMostRecentResumeSaveStatePath() const
   return std::move(most_recent->FileName);
 }
 
-void HostInterface::SetDefaultSettings()
+void HostInterface::CheckSettings(SettingsInterface& si)
 {
-  m_settings.region = ConsoleRegion::Auto;
-  m_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
+  const int settings_version = si.GetIntValue("Main", "SettingsVersion", -1);
+  if (settings_version == SETTINGS_VERSION)
+    return;
 
-  m_settings.emulation_speed = 1.0f;
-  m_settings.speed_limiter_enabled = true;
-  m_settings.increase_timer_resolution = true;
-  m_settings.start_paused = false;
-  m_settings.save_state_on_exit = true;
-  m_settings.confim_power_off = true;
+  // TODO: we probably should delete all the sections in the ini...
+  Log_WarningPrintf("Settings version %d does not match expected version %d, resetting", settings_version,
+                    SETTINGS_VERSION);
+  si.Clear();
+  si.SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
+  SetDefaultSettings(si);
+}
 
-  m_settings.gpu_renderer = Settings::DEFAULT_GPU_RENDERER;
-  m_settings.gpu_resolution_scale = 1;
-  m_settings.gpu_true_color = true;
-  m_settings.gpu_texture_filtering = false;
-  m_settings.gpu_force_progressive_scan = true;
-  m_settings.gpu_use_debug_device = false;
-  m_settings.display_linear_filtering = true;
-  m_settings.display_fullscreen = false;
-  m_settings.video_sync_enabled = true;
+void HostInterface::SetDefaultSettings(SettingsInterface& si)
+{
+  si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(ConsoleRegion::Auto));
 
-  m_settings.cdrom_read_thread = true;
+  si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
+  si.SetBoolValue("Main", "SpeedLimiterEnabled", true);
+  si.SetBoolValue("Main", "IncreaseTimerResolution", true);
+  si.SetBoolValue("Main", "StartPaused", false);
+  si.SetBoolValue("Main", "SaveStateOnExit", true);
+  si.SetBoolValue("Main", "ConfirmPowerOff", true);
 
-  m_settings.audio_backend = AudioBackend::Cubeb;
-  m_settings.audio_sync_enabled = true;
+  si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(CPUExecutionMode::Interpreter));
 
-  m_settings.bios_path = "bios/scph1001.bin";
-  m_settings.bios_patch_tty_enable = false;
-  m_settings.bios_patch_fast_boot = false;
+  si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
+  si.SetIntValue("GPU", "ResolutionScale", 1);
+  si.SetBoolValue("GPU", "TrueColor", true);
+  si.SetBoolValue("GPU", "TextureFiltering", false);
+  si.SetBoolValue("GPU", "ForceProgressiveScan", true);
+  si.SetBoolValue("GPU", "UseDebugDevice", false);
 
-  m_settings.controller_types[0] = ControllerType::DigitalController;
-  m_settings.controller_types[1] = ControllerType::None;
+  si.SetBoolValue("Display", "LinearFiltering", true);
+  si.SetBoolValue("Display", "Fullscreen", false);
+  si.SetBoolValue("Display", "VSync", true);
 
-  m_settings.memory_card_paths[0] = "memcards/shared_card_1.mcd";
-  m_settings.memory_card_paths[1].clear();
+  si.SetBoolValue("CDROM", "ReadThread", true);
+
+  si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Cubeb));
+  si.SetBoolValue("Audio", "Sync", true);
+
+  si.SetStringValue("BIOS", "Path", "bios/scph1001.bin");
+  si.SetBoolValue("BIOS", "PatchTTYEnable", false);
+  si.SetBoolValue("BIOS", "PatchFastBoot", false);
+
+  si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
+  si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(ControllerType::None));
+
+  si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
+  si.SetStringValue("MemoryCards", "Card2Path", "");
+
+  si.SetBoolValue("Debug", "ShowVRAM", false);
+  si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", false);
+  si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", false);
+  si.SetBoolValue("Debug", "ShowGPUState", false);
+  si.SetBoolValue("Debug", "ShowCDROMState", false);
+  si.SetBoolValue("Debug", "ShowSPUState", false);
+  si.SetBoolValue("Debug", "ShowTimersState", false);
+  si.SetBoolValue("Debug", "ShowMDECState", false);
 }
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
