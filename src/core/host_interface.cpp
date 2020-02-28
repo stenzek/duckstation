@@ -815,7 +815,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "TextureFiltering", false);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
 
-  si.SetBoolValue("Display", "CropMode", "Overscan");
+  si.SetStringValue("Display", "CropMode", "Overscan");
   si.SetBoolValue("Display", "ForceProgressiveScan", true);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "Fullscreen", false);
