@@ -87,7 +87,8 @@ private:
   /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
   void RunLater(std::function<void()> callback);
 
-  void SaveAndUpdateSettings();
+  void SaveSettings();
+  void UpdateSettings();
 
   void UpdateFullscreen();
 
@@ -125,4 +126,7 @@ private:
   bool m_focus_main_menu_bar = false;
   bool m_settings_window_open = false;
   bool m_about_window_open = false;
+
+  // this copy of the settings is modified by imgui
+  Settings m_settings_copy;
 };

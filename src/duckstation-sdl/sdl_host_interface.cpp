@@ -207,11 +207,15 @@ void SDLHostInterface::RunLater(std::function<void()> callback)
   SDL_PushEvent(&ev);
 }
 
-void SDLHostInterface::SaveAndUpdateSettings()
+void SDLHostInterface::SaveSettings()
 {
   SDLSettingsInterface si(GetSettingsFileName().c_str());
-  m_settings.Save(si);
-  m_settings.Load(si);
+  m_settings_copy.Save(si);
+}
+
+void SDLHostInterface::UpdateSettings()
+{
+  HostInterface::UpdateSettings([this]() { m_settings = m_settings_copy; });
 }
 
 void SDLHostInterface::UpdateFullscreen()
@@ -229,7 +233,8 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
 
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   SDLSettingsInterface si(intf->GetSettingsFileName().c_str());
-  intf->m_settings.Load(si);
+  intf->m_settings_copy.Load(si);
+  intf->m_settings = intf->m_settings_copy;
 
   if (!intf->CreateSDLWindow())
   {
@@ -413,9 +418,9 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
       if (pressed && !repeat && m_system)
       {
         m_settings.speed_limiter_enabled = !m_settings.speed_limiter_enabled;
+        m_settings_copy.speed_limiter_enabled = m_settings.speed_limiter_enabled;
         UpdateSpeedLimiterState();
-        AddOSDMessage(m_system->GetSettings().speed_limiter_enabled ? "Speed limiter enabled." :
-                                                                      "Speed limiter disabled.");
+        AddOSDMessage(m_settings.speed_limiter_enabled ? "Speed limiter enabled." : "Speed limiter disabled.");
       }
     }
     break;
@@ -740,7 +745,7 @@ void SDLHostInterface::DrawMainMenuBar()
 void SDLHostInterface::DrawQuickSettingsMenu()
 {
   bool settings_changed = false;
-  settings_changed |= ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings.speed_limiter_enabled);
+  settings_changed |= ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings_copy.speed_limiter_enabled);
 
   ImGui::Separator();
 
@@ -752,7 +757,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
                           i == static_cast<u32>(current)))
       {
-        m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(i);
+        m_settings_copy.cpu_execution_mode = static_cast<CPUExecutionMode>(i);
         settings_changed = true;
       }
     }
@@ -764,13 +769,13 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   if (ImGui::BeginMenu("Renderer"))
   {
-    const GPURenderer current = m_settings.gpu_renderer;
+    const GPURenderer current = m_settings_copy.gpu_renderer;
     for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
     {
       if (ImGui::MenuItem(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i)), nullptr,
                           i == static_cast<u32>(current)))
       {
-        m_settings.gpu_renderer = static_cast<GPURenderer>(i);
+        m_settings_copy.gpu_renderer = static_cast<GPURenderer>(i);
         settings_changed = true;
       }
     }
@@ -778,27 +783,27 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
-  if (ImGui::MenuItem("Fullscreen", nullptr, &m_settings.display_fullscreen))
+  if (ImGui::MenuItem("Fullscreen", nullptr, &m_settings_copy.display_fullscreen))
   {
     settings_changed = true;
     UpdateFullscreen();
   }
 
-  settings_changed |= ImGui::MenuItem("VSync", nullptr, &m_settings.video_sync_enabled);
+  settings_changed |= ImGui::MenuItem("VSync", nullptr, &m_settings_copy.video_sync_enabled);
 
   ImGui::Separator();
 
   if (ImGui::BeginMenu("Resolution Scale"))
   {
-    const u32 current_internal_resolution = m_settings.gpu_resolution_scale;
-    for (u32 scale = 1; scale <= m_settings.max_gpu_resolution_scale; scale++)
+    const u32 current_internal_resolution = m_settings_copy.gpu_resolution_scale;
+    for (u32 scale = 1; scale <= m_settings_copy.max_gpu_resolution_scale; scale++)
     {
       char buf[32];
       std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT);
 
       if (ImGui::MenuItem(buf, nullptr, current_internal_resolution == scale))
       {
-        m_settings.gpu_resolution_scale = scale;
+        m_settings_copy.gpu_resolution_scale = scale;
         settings_changed = true;
       }
     }
@@ -806,38 +811,59 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
-  settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings.gpu_true_color);
-  settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings.gpu_texture_filtering);
-  settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings.display_linear_filtering);
+  settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings_copy.gpu_true_color);
+  settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings_copy.gpu_texture_filtering);
+  settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
 
   if (settings_changed)
-    RunLater(std::bind(&SDLHostInterface::SaveAndUpdateSettings, this));
+  {
+    RunLater([this]() {
+      SaveSettings();
+      UpdateSettings();
+    });
+  }
 }
 
 void SDLHostInterface::DrawDebugMenu()
 {
   Settings::DebugSettings& debug_settings = m_settings.debugging;
+  bool settings_changed = false;
 
   ImGui::MenuItem("Show System State");
   ImGui::Separator();
 
-  ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
-  ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
-  ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
-  ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
+  settings_changed |= ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
+  settings_changed |= ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
+  settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
+  settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
   ImGui::Separator();
 
-  ImGui::MenuItem("Show CDROM State", nullptr, &debug_settings.show_cdrom_state);
+  settings_changed |= ImGui::MenuItem("Show CDROM State", nullptr, &debug_settings.show_cdrom_state);
   ImGui::Separator();
 
-  ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
+  settings_changed |= ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
   ImGui::Separator();
 
-  ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
+  settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
   ImGui::Separator();
 
-  ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
+  settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
   ImGui::Separator();
+
+  if (settings_changed)
+  {
+    // have to apply it to the copy too, otherwise it won't save
+    Settings::DebugSettings& debug_settings_copy = m_settings_copy.debugging;
+    debug_settings_copy.show_gpu_state = debug_settings.show_gpu_state;
+    debug_settings_copy.show_vram = debug_settings.show_vram;
+    debug_settings_copy.dump_cpu_to_vram_copies = debug_settings.dump_cpu_to_vram_copies;
+    debug_settings_copy.dump_vram_to_cpu_copies = debug_settings.dump_vram_to_cpu_copies;
+    debug_settings_copy.show_cdrom_state = debug_settings.show_cdrom_state;
+    debug_settings_copy.show_spu_state = debug_settings.show_spu_state;
+    debug_settings_copy.show_timers_state = debug_settings.show_timers_state;
+    debug_settings_copy.show_mdec_state = debug_settings.show_mdec_state;
+    SaveSettings();
+  }
 }
 
 void SDLHostInterface::DrawPoweredOffWindow()
@@ -962,7 +988,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Region:");
         ImGui::SameLine(indent);
 
-        int region = static_cast<int>(m_settings.region);
+        int region = static_cast<int>(m_settings_copy.region);
         if (ImGui::Combo(
               "##region", &region,
               [](void*, int index, const char** out_text) {
@@ -971,16 +997,16 @@ void SDLHostInterface::DrawSettingsWindow()
               },
               nullptr, static_cast<int>(ConsoleRegion::Count)))
         {
-          m_settings.region = static_cast<ConsoleRegion>(region);
+          m_settings_copy.region = static_cast<ConsoleRegion>(region);
           settings_changed = true;
         }
 
         ImGui::Text("BIOS Path:");
         ImGui::SameLine(indent);
-        settings_changed |= DrawFileChooser("##bios_path", &m_settings.bios_path);
+        settings_changed |= DrawFileChooser("##bios_path", &m_settings_copy.bios_path);
 
-        settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings.bios_patch_tty_enable);
-        settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings.bios_patch_fast_boot);
+        settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings_copy.bios_patch_tty_enable);
+        settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings_copy.bios_patch_fast_boot);
       }
 
       ImGui::NewLine();
@@ -989,11 +1015,11 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Emulation Speed:");
         ImGui::SameLine(indent);
 
-        settings_changed |= ImGui::SliderFloat("##speed", &m_settings.emulation_speed, 0.25f, 5.0f);
-        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings.speed_limiter_enabled);
-        settings_changed |= ImGui::Checkbox("Increase Timer Resolution", &m_settings.increase_timer_resolution);
-        settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings.start_paused);
-        settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings.save_state_on_exit);
+        settings_changed |= ImGui::SliderFloat("##speed", &m_settings_copy.emulation_speed, 0.25f, 5.0f);
+        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings_copy.speed_limiter_enabled);
+        settings_changed |= ImGui::Checkbox("Increase Timer Resolution", &m_settings_copy.increase_timer_resolution);
+        settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
+        settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings_copy.save_state_on_exit);
       }
 
       ImGui::NewLine();
@@ -1008,7 +1034,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Backend:");
         ImGui::SameLine(indent);
 
-        int backend = static_cast<int>(m_settings.audio_backend);
+        int backend = static_cast<int>(m_settings_copy.audio_backend);
         if (ImGui::Combo(
               "##backend", &backend,
               [](void*, int index, const char** out_text) {
@@ -1017,11 +1043,11 @@ void SDLHostInterface::DrawSettingsWindow()
               },
               nullptr, static_cast<int>(AudioBackend::Count)))
         {
-          m_settings.audio_backend = static_cast<AudioBackend>(backend);
+          m_settings_copy.audio_backend = static_cast<AudioBackend>(backend);
           settings_changed = true;
         }
 
-        settings_changed |= ImGui::Checkbox("Output Sync", &m_settings.audio_sync_enabled);
+        settings_changed |= ImGui::Checkbox("Output Sync", &m_settings_copy.audio_sync_enabled);
       }
 
       ImGui::EndTabItem();
@@ -1039,7 +1065,7 @@ void SDLHostInterface::DrawSettingsWindow()
           ImGui::Text("Controller:");
           ImGui::SameLine(indent);
 
-          int controller_type = static_cast<int>(m_settings.controller_types[i]);
+          int controller_type = static_cast<int>(m_settings_copy.controller_types[i]);
           if (ImGui::Combo(
                 "##controller_type", &controller_type,
                 [](void*, int index, const char** out_text) {
@@ -1048,7 +1074,7 @@ void SDLHostInterface::DrawSettingsWindow()
                 },
                 nullptr, static_cast<int>(ControllerType::Count)))
           {
-            m_settings.controller_types[i] = static_cast<ControllerType>(controller_type);
+            m_settings_copy.controller_types[i] = static_cast<ControllerType>(controller_type);
             settings_changed = true;
           }
         }
@@ -1056,7 +1082,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Memory Card Path:");
         ImGui::SameLine(indent);
 
-        std::string* path_ptr = &m_settings.memory_card_paths[i];
+        std::string* path_ptr = &m_settings_copy.memory_card_paths[i];
         std::snprintf(buf, sizeof(buf), "##memcard_%c_path", 'a' + i);
         settings_changed |= DrawFileChooser(buf, path_ptr);
 
@@ -1077,7 +1103,7 @@ void SDLHostInterface::DrawSettingsWindow()
       ImGui::Text("Execution Mode:");
       ImGui::SameLine(indent);
 
-      int execution_mode = static_cast<int>(m_settings.cpu_execution_mode);
+      int execution_mode = static_cast<int>(m_settings_copy.cpu_execution_mode);
       if (ImGui::Combo(
             "##execution_mode", &execution_mode,
             [](void*, int index, const char** out_text) {
@@ -1086,7 +1112,7 @@ void SDLHostInterface::DrawSettingsWindow()
             },
             nullptr, static_cast<int>(CPUExecutionMode::Count)))
       {
-        m_settings.cpu_execution_mode = static_cast<CPUExecutionMode>(execution_mode);
+        m_settings_copy.cpu_execution_mode = static_cast<CPUExecutionMode>(execution_mode);
         settings_changed = true;
       }
 
@@ -1100,7 +1126,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Renderer:");
         ImGui::SameLine(indent);
 
-        int gpu_renderer = static_cast<int>(m_settings.gpu_renderer);
+        int gpu_renderer = static_cast<int>(m_settings_copy.gpu_renderer);
         if (ImGui::Combo(
               "##gpu_renderer", &gpu_renderer,
               [](void*, int index, const char** out_text) {
@@ -1109,7 +1135,7 @@ void SDLHostInterface::DrawSettingsWindow()
               },
               nullptr, static_cast<int>(GPURenderer::Count)))
         {
-          m_settings.gpu_renderer = static_cast<GPURenderer>(gpu_renderer);
+          m_settings_copy.gpu_renderer = static_cast<GPURenderer>(gpu_renderer);
           settings_changed = true;
         }
       }
@@ -1118,14 +1144,14 @@ void SDLHostInterface::DrawSettingsWindow()
 
       if (DrawSettingsSectionHeader("Display Output"))
       {
-        if (ImGui::Checkbox("Fullscreen", &m_settings.display_fullscreen))
+        if (ImGui::Checkbox("Fullscreen", &m_settings_copy.display_fullscreen))
         {
           UpdateFullscreen();
           settings_changed = true;
         }
 
-        settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings.display_linear_filtering);
-        settings_changed |= ImGui::Checkbox("VSync", &m_settings.video_sync_enabled);
+        settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings_copy.display_linear_filtering);
+        settings_changed |= ImGui::Checkbox("VSync", &m_settings_copy.video_sync_enabled);
       }
 
       ImGui::NewLine();
@@ -1154,17 +1180,17 @@ void SDLHostInterface::DrawSettingsWindow()
           "16x (16384x8192)",
         }};
 
-        int current_resolution_index = static_cast<int>(m_settings.gpu_resolution_scale) - 1;
+        int current_resolution_index = static_cast<int>(m_settings_copy.gpu_resolution_scale) - 1;
         if (ImGui::Combo("##gpu_resolution_scale", &current_resolution_index, resolutions.data(),
                          static_cast<int>(resolutions.size())))
         {
-          m_settings.gpu_resolution_scale = static_cast<u32>(current_resolution_index + 1);
+          m_settings_copy.gpu_resolution_scale = static_cast<u32>(current_resolution_index + 1);
           settings_changed = true;
         }
 
-        settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings.gpu_true_color);
-        settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings.gpu_texture_filtering);
-        settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings.gpu_force_progressive_scan);
+        settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings_copy.gpu_true_color);
+        settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings_copy.gpu_texture_filtering);
+        settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings_copy.gpu_force_progressive_scan);
       }
 
       ImGui::EndTabItem();
@@ -1182,7 +1208,12 @@ void SDLHostInterface::DrawSettingsWindow()
   ImGui::End();
 
   if (settings_changed)
-    RunLater(std::bind(&SDLHostInterface::SaveAndUpdateSettings, this));
+  {
+    RunLater([this]() {
+      SaveSettings();
+      UpdateSettings();
+    });
+  }
 }
 
 void SDLHostInterface::DrawAboutWindow()
