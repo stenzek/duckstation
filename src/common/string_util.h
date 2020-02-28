@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-#if __cplusplus >= 201703L
+#if defined(__has_include) && __has_include(<charconv>)
 #include <charconv>
 #else
 #include <sstream>
@@ -39,8 +39,7 @@ std::optional<T> FromChars(const std::string_view str)
 {
   T value;
 
-#if __cplusplus >= 201703L
-  T value;
+#if defined(__has_include) && __has_include(<charconv>)
   const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value);
   if (result.ec != std::errc())
     return std::nullopt;
