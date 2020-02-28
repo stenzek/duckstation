@@ -815,6 +815,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_gpu_true_color = m_settings.gpu_true_color;
   const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
   const bool old_gpu_force_progressive_scan = m_settings.gpu_force_progressive_scan;
+  const bool old_gpu_debug_device = m_settings.gpu_use_debug_device;
   const bool old_vsync_enabled = m_settings.video_sync_enabled;
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
@@ -826,9 +827,10 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   if (m_system)
   {
-    if (m_settings.gpu_renderer != old_gpu_renderer)
+    if (m_settings.gpu_renderer != old_gpu_renderer || m_settings.gpu_use_debug_device != old_gpu_debug_device)
     {
-      ReportFormattedMessage("Switching to %s GPU renderer.", Settings::GetRendererName(m_settings.gpu_renderer));
+      ReportFormattedMessage("Switching to %s%s GPU renderer.", Settings::GetRendererName(m_settings.gpu_renderer),
+                             m_settings.gpu_use_debug_device ? " (debug)" : "");
       RecreateSystem();
     }
 
