@@ -43,17 +43,60 @@ SDLHostInterface::~SDLHostInterface()
     DestroySDLWindow();
 }
 
+float SDLHostInterface::GetDPIScaleFactor(SDL_Window* window)
+{
+#ifdef __APPLE__
+  static constexpr float DEFAULT_DPI = 72.0f;
+#else
+  static constexpr float DEFAULT_DPI = 96.0f;
+#endif
+
+  if (!window)
+  {
+    SDL_Window* dummy_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1, 1,
+                                                SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
+    if (!dummy_window)
+      return 1.0f;
+
+    const float scale = GetDPIScaleFactor(dummy_window);
+
+    SDL_DestroyWindow(dummy_window);
+
+    return scale;
+  }
+
+  int display_index = SDL_GetWindowDisplayIndex(window);
+  float display_dpi = DEFAULT_DPI;
+  if (SDL_GetDisplayDPI(display_index, &display_dpi, nullptr, nullptr) != 0)
+    return 1.0f;
+
+  return display_dpi / DEFAULT_DPI;
+}
+
 bool SDLHostInterface::CreateSDLWindow()
 {
-  constexpr u32 DEFAULT_WINDOW_WIDTH = 900;
-  constexpr u32 DEFAULT_WINDOW_HEIGHT = 700;
+  static constexpr u32 DEFAULT_WINDOW_WIDTH = 900;
+  static constexpr u32 DEFAULT_WINDOW_HEIGHT = 700;
 
   // Create window.
   const u32 window_flags =
     SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (UseOpenGLRenderer() ? SDL_WINDOW_OPENGL : 0);
 
-  m_window = SDL_CreateWindow("DuckStation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH,
-                              DEFAULT_WINDOW_HEIGHT, window_flags);
+  u32 window_width = DEFAULT_WINDOW_WIDTH;
+  u32 window_height = DEFAULT_WINDOW_HEIGHT;
+
+  // macOS does DPI scaling differently..
+#ifndef __APPLE__
+  {
+    // scale by default monitor's DPI
+    float scale = GetDPIScaleFactor(nullptr);
+    window_width = static_cast<u32>(std::round(static_cast<float>(window_width) * scale));
+    window_height = static_cast<u32>(std::round(static_cast<float>(window_height) * scale));
+  }
+#endif
+
+  m_window = SDL_CreateWindow("DuckStation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width,
+                              window_height, window_flags);
   if (!m_window)
     return false;
 
@@ -113,12 +156,24 @@ void SDLHostInterface::DestroyDisplay()
 
 void SDLHostInterface::CreateImGuiContext()
 {
+  const float framebuffer_scale = GetDPIScaleFactor(m_window);
+
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
   ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  ImGui::GetIO().DisplayFramebufferScale.x = framebuffer_scale;
+  ImGui::GetIO().DisplayFramebufferScale.y = framebuffer_scale;
+  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
 
   ImGui::StyleColorsDarker();
-  ImGui::AddRobotoRegularFont();
+  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
+}
+
+void SDLHostInterface::UpdateFramebufferScale()
+{
+  const float framebuffer_scale = GetDPIScaleFactor(m_window);
+  ImGui::GetIO().DisplayFramebufferScale.x = framebuffer_scale;
+  ImGui::GetIO().DisplayFramebufferScale.y = framebuffer_scale;
 }
 
 bool SDLHostInterface::AcquireHostDisplay()
@@ -315,7 +370,14 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_WINDOWEVENT:
     {
       if (event->window.event == SDL_WINDOWEVENT_RESIZED)
+      {
         m_display->WindowResized();
+        UpdateFramebufferScale();
+      }
+      else if (event->window.event == SDL_WINDOWEVENT_MOVED)
+      {
+        UpdateFramebufferScale();
+      }
     }
     break;
 
@@ -722,9 +784,11 @@ void SDLHostInterface::DrawMainMenuBar()
 
   if (m_system)
   {
+    const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
     if (!m_paused)
     {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 210.0f);
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
 
       const float speed = m_system->GetEmulationSpeed();
       const u32 rounded_speed = static_cast<u32>(std::round(speed));
@@ -735,15 +799,15 @@ void SDLHostInterface::DrawMainMenuBar()
       else
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 165.0f);
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (165.0f * framebuffer_scale));
       ImGui::Text("FPS: %.2f", m_system->GetFPS());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 80.0f);
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (80.0f * framebuffer_scale));
       ImGui::Text("VPS: %.2f", m_system->GetVPS());
     }
     else
     {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - 50.0f);
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
       ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
     }
   }
@@ -875,12 +939,14 @@ void SDLHostInterface::DrawDebugMenu()
 
 void SDLHostInterface::DrawPoweredOffWindow()
 {
-  constexpr int WINDOW_WIDTH = 400;
-  constexpr int WINDOW_HEIGHT = 650;
-  constexpr int BUTTON_WIDTH = 200;
-  constexpr int BUTTON_HEIGHT = 40;
+  static constexpr int WINDOW_WIDTH = 400;
+  static constexpr int WINDOW_HEIGHT = 650;
+  static constexpr int BUTTON_WIDTH = 200;
+  static constexpr int BUTTON_HEIGHT = 40;
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
-  ImGui::SetNextWindowSize(ImVec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+  ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WINDOW_WIDTH) * framebuffer_scale,
+                                  static_cast<float>(WINDOW_HEIGHT) * framebuffer_scale));
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
@@ -892,15 +958,17 @@ void SDLHostInterface::DrawPoweredOffWindow()
     ImGui::End();
   }
 
-  ImGui::SetCursorPosX((WINDOW_WIDTH - APP_ICON_WIDTH) / 2);
-  ImGui::Image(m_app_icon_texture->GetHandle(), ImVec2(APP_ICON_WIDTH, APP_ICON_HEIGHT));
-  ImGui::SetCursorPosY(APP_ICON_HEIGHT + 32);
+  ImGui::SetCursorPosX(static_cast<float>((WINDOW_WIDTH - APP_ICON_WIDTH) / 2) * framebuffer_scale);
+  ImGui::Image(m_app_icon_texture->GetHandle(), ImVec2(static_cast<float>(APP_ICON_WIDTH) * framebuffer_scale,
+                                                       static_cast<float>(APP_ICON_HEIGHT) * framebuffer_scale));
+  ImGui::SetCursorPosY(static_cast<float>(APP_ICON_HEIGHT + 32) * framebuffer_scale);
 
-  static const ImVec2 button_size(static_cast<float>(BUTTON_WIDTH), static_cast<float>(BUTTON_HEIGHT));
-  constexpr float button_left = static_cast<float>((WINDOW_WIDTH - BUTTON_WIDTH) / 2);
+  const ImVec2 button_size(static_cast<float>(BUTTON_WIDTH) * framebuffer_scale,
+                           static_cast<float>(BUTTON_HEIGHT) * framebuffer_scale);
+  const float button_left = static_cast<float>((WINDOW_WIDTH - BUTTON_WIDTH) / 2) * framebuffer_scale;
 
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f * framebuffer_scale);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f * framebuffer_scale);
   ImGui::PushStyleColor(ImGuiCol_Button, 0xFF202020);
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0xFF808080);
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0xFF575757);
@@ -972,9 +1040,11 @@ static bool DrawSettingsSectionHeader(const char* title)
 
 void SDLHostInterface::DrawSettingsWindow()
 {
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
                           ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
-  ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(500 * framebuffer_scale, 400.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
 
   if (!ImGui::Begin("Settings", &m_settings_window_open, ImGuiWindowFlags_NoResize))
   {
@@ -986,7 +1056,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
   if (ImGui::BeginTabBar("SettingsTabBar", 0))
   {
-    const float indent = 150.0f;
+    const float indent = 150.0f * framebuffer_scale;
 
     if (ImGui::BeginTabItem("General"))
     {
@@ -1203,12 +1273,6 @@ void SDLHostInterface::DrawSettingsWindow()
     ImGui::EndTabBar();
   }
 
-  const auto window_size = ImGui::GetWindowSize();
-  ImGui::SetCursorPosX(window_size.x - 50.0f);
-  ImGui::SetCursorPosY(window_size.y - 30.0f);
-  if (ImGui::Button("Close"))
-    m_settings_window_open = false;
-
   ImGui::End();
 
   if (settings_changed)
@@ -1222,6 +1286,8 @@ void SDLHostInterface::DrawSettingsWindow()
 
 void SDLHostInterface::DrawAboutWindow()
 {
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
                           ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
@@ -1243,8 +1309,8 @@ void SDLHostInterface::DrawAboutWindow()
 
   ImGui::NewLine();
 
-  ImGui::SetCursorPosX((ImGui::GetWindowSize().x - 60.0f) / 2.0f);
-  if (ImGui::Button("Close", ImVec2(60.0f, 20.0f)))
+  ImGui::SetCursorPosX((ImGui::GetWindowSize().x - (60.0f * framebuffer_scale)) / 2.0f);
+  if (ImGui::Button("Close", ImVec2(60.0f * framebuffer_scale, 20.0f * framebuffer_scale)))
     m_about_window_open = false;
 
   ImGui::EndPopup();
@@ -1252,11 +1318,13 @@ void SDLHostInterface::DrawAboutWindow()
 
 bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, const char* filter /* = nullptr */)
 {
-  ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - 50.0f);
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
+  ImGui::SetNextItemWidth((ImGui::CalcItemWidth() - 50.0f) * framebuffer_scale);
   bool result = ImGui::InputText(label, path);
   ImGui::SameLine();
 
-  ImGui::SetNextItemWidth(50.0f);
+  ImGui::SetNextItemWidth(50.0f * framebuffer_scale);
   if (ImGui::Button("..."))
   {
     nfdchar_t* out_path = nullptr;

@@ -156,10 +156,6 @@ std::tuple<u32, u32> D3D11HostDisplay::GetWindowSize() const
 
 void D3D11HostDisplay::WindowResized()
 {
-  SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
-
   m_swap_chain_rtv.Reset();
 
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
@@ -169,6 +165,15 @@ void D3D11HostDisplay::WindowResized()
 
   if (!CreateSwapChainRTV())
     Panic("Failed to recreate swap chain RTV after resize");
+
+  DXGI_SWAP_CHAIN_DESC desc;
+  if (SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+  {
+    m_window_width = static_cast<int>(desc.BufferDesc.Width);
+    m_window_height = static_cast<int>(desc.BufferDesc.Height);
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
+  }
 }
 
 bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
@@ -334,6 +339,9 @@ bool D3D11HostDisplay::CreateD3DResources()
 
 bool D3D11HostDisplay::CreateImGuiContext()
 {
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
+
   if (!ImGui_ImplSDL2_InitForD3D(m_window) || !ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
     return false;
 

@@ -17,6 +17,7 @@ if(WIN32)
   target_sources(duckstation-sdl PRIVATE
     d3d11_host_display.cpp
     d3d11_host_display.h
+    duckstation-sdl.manifest
   )
   target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib ${SDL2MAIN_LIBRARIES})
 endif()

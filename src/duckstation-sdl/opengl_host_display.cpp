@@ -138,7 +138,7 @@ std::tuple<u32, u32> OpenGLHostDisplay::GetWindowSize() const
 
 void OpenGLHostDisplay::WindowResized()
 {
-  SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
+  SDL_GL_GetDrawableSize(m_window, &m_window_width, &m_window_height);
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
 }
@@ -264,6 +264,9 @@ bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
+  // this can change due to retina scaling on macos?
+  SDL_GL_GetDrawableSize(m_window, &m_window_width, &m_window_height);
+
   // start with vsync on
   SDL_GL_SetSwapInterval(1);
   return true;
@@ -271,6 +274,9 @@ bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
 
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
+
   if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
     return false;
 

@@ -66,6 +66,9 @@
     <ClInclude Include="sdl_host_interface.h" />
     <ClInclude Include="sdl_settings_interface.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="duckstation-sdl.manifest" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

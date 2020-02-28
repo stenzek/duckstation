@@ -15,4 +15,7 @@
     <ClInclude Include="sdl_settings_interface.h" />
     <ClInclude Include="imgui_impl_sdl.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="duckstation-sdl.manifest" />
+  </ItemGroup>
 </Project>

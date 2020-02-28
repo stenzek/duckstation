@@ -78,11 +78,14 @@ private:
   bool UseOpenGLRenderer() const { return true; }
 #endif
 
+  static float GetDPIScaleFactor(SDL_Window* window);
+
   bool CreateSDLWindow();
   void DestroySDLWindow();
   bool CreateDisplay();
   void DestroyDisplay();
   void CreateImGuiContext();
+  void UpdateFramebufferScale();
 
   /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
   void RunLater(std::function<void()> callback);
