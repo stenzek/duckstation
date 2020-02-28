@@ -590,12 +590,12 @@ void SDLHostInterface::DrawMainMenuBar()
   {
     if (ImGui::MenuItem("Start Disc", nullptr, false, !system_enabled))
     {
-      DoStartDisc();
+      RunLater([this]() { DoStartDisc(); });
       ClearImGuiFocus();
     }
     if (ImGui::MenuItem("Start BIOS", nullptr, false, !system_enabled))
     {
-      BootSystemFromBIOS();
+      RunLater([this]() { BootSystemFromBIOS(); });
       ClearImGuiFocus();
     }
 
@@ -603,19 +603,19 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
     {
-      DestroySystem();
+      RunLater([this]() { DestroySystem(); });
       ClearImGuiFocus();
     }
 
     if (ImGui::MenuItem("Reset", nullptr, false, system_enabled))
     {
-      ResetSystem();
+      RunLater([this]() { ResetSystem(); });
       ClearImGuiFocus();
     }
 
     if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
     {
-      PauseSystem(!m_paused);
+      RunLater([this]() { PauseSystem(!m_paused); });
       ClearImGuiFocus();
     }
 
@@ -623,13 +623,13 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (ImGui::MenuItem("Change Disc", nullptr, false, system_enabled))
     {
-      DoChangeDisc();
+      RunLater([this]() { DoChangeDisc(); });
       ClearImGuiFocus();
     }
 
     if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
     {
-      DoFrameStep();
+      RunLater([this]() { DoFrameStep(); });
       ClearImGuiFocus();
     }
 
@@ -643,7 +643,7 @@ void SDLHostInterface::DrawMainMenuBar()
         std::snprintf(buf, sizeof(buf), "State %u", i);
         if (ImGui::MenuItem(buf))
         {
-          LoadState(true, i);
+          RunLater([this, i]() { LoadState(true, i); });
           ClearImGuiFocus();
         }
       }
@@ -658,7 +658,7 @@ void SDLHostInterface::DrawMainMenuBar()
         std::snprintf(buf, sizeof(buf), "State %u", i);
         if (ImGui::MenuItem(buf))
         {
-          SaveState(true, i);
+          RunLater([this, i]() { SaveState(true, i); });
           ClearImGuiFocus();
         }
       }
