@@ -341,7 +341,9 @@ void Timers::DrawDebugStateWindow()
      {{"SysClk", "HBlank", "SysClk", "HBlank"}},
      {{"SysClk", "DotClk", "SysClk/8", "SysClk/8"}}}};
 
-  ImGui::SetNextWindowSize(ImVec2(800, 100), ImGuiCond_FirstUseEver);
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
+  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 100.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("Timer State", &m_system->GetSettings().debugging.show_timers_state))
   {
     ImGui::End();
@@ -349,16 +351,16 @@ void Timers::DrawDebugStateWindow()
   }
 
   ImGui::Columns(NUM_COLUMNS);
-  ImGui::SetColumnWidth(0, 20.0f);
-  ImGui::SetColumnWidth(1, 50.0f);
-  ImGui::SetColumnWidth(2, 50.0f);
-  ImGui::SetColumnWidth(3, 100.0f);
-  ImGui::SetColumnWidth(4, 80.0f);
-  ImGui::SetColumnWidth(5, 80.0f);
-  ImGui::SetColumnWidth(6, 80.0f);
-  ImGui::SetColumnWidth(7, 80.0f);
-  ImGui::SetColumnWidth(8, 80.0f);
-  ImGui::SetColumnWidth(9, 80.0f);
+  ImGui::SetColumnWidth(0, 20.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(1, 50.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(2, 50.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(3, 100.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(4, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(5, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(6, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(7, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(8, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(9, 80.0f * framebuffer_scale);
 
   for (const char* title : column_names)
   {

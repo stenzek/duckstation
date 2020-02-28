@@ -475,7 +475,7 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
     const auto& stats = m_last_renderer_stats;
 
     ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f);
+    ImGui::SetColumnWidth(0, 200.0f * ImGui::GetIO().DisplayFramebufferScale.x);
 
     ImGui::TextUnformatted("Batches Drawn:");
     ImGui::NextColumn();

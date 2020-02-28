@@ -869,7 +869,9 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
 
 void GPU::DrawDebugStateWindow()
 {
-  ImGui::SetNextWindowSize(ImVec2(450, 550), ImGuiCond_FirstUseEver);
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
+  ImGui::SetNextWindowSize(ImVec2(450.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("GPU", &m_system->GetSettings().debugging.show_gpu_state))
   {
     ImGui::End();
@@ -888,7 +890,7 @@ void GPU::DrawDebugStateWindow()
     const Stats& stats = m_last_stats;
 
     ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f);
+    ImGui::SetColumnWidth(0, 200.0f * framebuffer_scale);
 
     ImGui::TextUnformatted("Idle Frame: ");
     ImGui::NextColumn();
