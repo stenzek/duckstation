@@ -813,9 +813,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("GPU", "ResolutionScale", 1);
   si.SetBoolValue("GPU", "TrueColor", true);
   si.SetBoolValue("GPU", "TextureFiltering", false);
-  si.SetBoolValue("GPU", "ForceProgressiveScan", true);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
 
+  si.SetBoolValue("Display", "CropMode", "Overscan");
+  si.SetBoolValue("Display", "ForceProgressiveScan", true);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
@@ -855,11 +856,12 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
   const bool old_gpu_true_color = m_settings.gpu_true_color;
   const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
-  const bool old_gpu_force_progressive_scan = m_settings.gpu_force_progressive_scan;
+  const bool old_display_force_progressive_scan = m_settings.display_force_progressive_scan;
   const bool old_gpu_debug_device = m_settings.gpu_use_debug_device;
   const bool old_vsync_enabled = m_settings.video_sync_enabled;
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
+  const DisplayCropMode old_display_crop_mode = m_settings.display_crop_mode;
   const bool old_display_linear_filtering = m_settings.display_linear_filtering;
   const bool old_cdrom_read_thread = m_settings.cdrom_read_thread;
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
@@ -906,7 +908,8 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
     if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale ||
         m_settings.gpu_true_color != old_gpu_true_color ||
         m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
-        m_settings.gpu_force_progressive_scan != old_gpu_force_progressive_scan)
+        m_settings.display_force_progressive_scan != old_display_force_progressive_scan ||
+        m_settings.display_crop_mode != old_display_crop_mode)
     {
       m_system->UpdateGPUSettings();
     }

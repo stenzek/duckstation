@@ -24,9 +24,12 @@ void Settings::Load(SettingsInterface& si)
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
-  gpu_force_progressive_scan = si.GetBoolValue("GPU", "ForceProgressiveScan", true);
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
 
+  display_crop_mode = ParseDisplayCropMode(
+                        si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DisplayCropMode::None)).c_str())
+                        .value_or(DisplayCropMode::None);
+  display_force_progressive_scan = si.GetBoolValue("Display", "ForceProgressiveScan", true);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_fullscreen = si.GetBoolValue("Display", "Fullscreen", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
@@ -76,9 +79,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
-  si.SetBoolValue("GPU", "ForceProgressiveScan", gpu_force_progressive_scan);
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
 
+  si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "Fullscreen", display_fullscreen);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
@@ -211,6 +214,33 @@ const char* Settings::GetRendererName(GPURenderer renderer)
 const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 {
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
+}
+
+static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
+static std::array<const char*, 3> s_display_crop_mode_display_names = {{"None", "Only Overscan Area", "All Borders"}};
+
+std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_crop_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayCropMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayCropModeName(DisplayCropMode crop_mode)
+{
+  return s_display_crop_mode_names[static_cast<int>(crop_mode)];
+}
+
+const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
+{
+  return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};

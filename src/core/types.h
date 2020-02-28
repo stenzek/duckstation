@@ -49,6 +49,14 @@ enum class GPURenderer : u8
   Count
 };
 
+enum class DisplayCropMode : u8
+{
+  None,
+  Overscan,
+  Borders,
+  Count
+};
+
 enum class AudioBackend : u8
 {
   Null,

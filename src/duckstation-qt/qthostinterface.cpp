@@ -201,7 +201,7 @@ void QtHostInterface::onDisplayWindowResized(int width, int height)
 {
   // this can be null if it was destroyed and the main thread is late catching up
   if (m_display_window)
-    m_display_window->onWindowResized(width, height);
+    m_display_window->WindowResized(width, height);
 }
 
 bool QtHostInterface::AcquireHostDisplay()

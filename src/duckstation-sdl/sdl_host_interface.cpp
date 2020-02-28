@@ -287,7 +287,9 @@ void SDLHostInterface::SetFullscreen(bool enabled)
   // We set the margin only in windowed mode, the menu bar is drawn on top in fullscreen.
   m_display->SetDisplayTopMargin(enabled ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
 
-  m_display->WindowResized();
+  int window_width, window_height;
+  SDL_GetWindowSize(m_window, &window_width, &window_height);
+  m_display->WindowResized(window_width, window_height);
   m_fullscreen = enabled;
 }
 
@@ -371,7 +373,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     {
       if (event->window.event == SDL_WINDOWEVENT_RESIZED)
       {
-        m_display->WindowResized();
+        m_display->WindowResized(event->window.data1, event->window.data2);
         UpdateFramebufferScale();
       }
       else if (event->window.event == SDL_WINDOWEVENT_MOVED)
@@ -1221,6 +1223,22 @@ void SDLHostInterface::DrawSettingsWindow()
 
       if (DrawSettingsSectionHeader("Display Output"))
       {
+        ImGui::Text("Crop:");
+        ImGui::SameLine(indent);
+
+        int display_crop_mode = static_cast<int>(m_settings_copy.display_crop_mode);
+        if (ImGui::Combo(
+              "##display_crop_mode", &display_crop_mode,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(DisplayCropMode::Count)))
+        {
+          m_settings_copy.display_crop_mode = static_cast<DisplayCropMode>(display_crop_mode);
+          settings_changed = true;
+        }
+
         if (ImGui::Checkbox("Start Fullscreen", &m_settings_copy.display_fullscreen))
           settings_changed = true;
 
@@ -1265,7 +1283,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings_copy.gpu_true_color);
         settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings_copy.gpu_texture_filtering);
-        settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings_copy.gpu_force_progressive_scan);
+        settings_changed |= ImGui::Checkbox("Force Progressive Scan", &m_settings_copy.display_force_progressive_scan);
       }
 
       ImGui::EndTabItem();

@@ -38,6 +38,7 @@ public:
   void* GetRenderWindow() const override;
 
   void ChangeRenderWindow(void* new_window) override;
+  void WindowResized(s32 new_window_width, s32 new_window_height) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
                                                     bool dynamic) override;
@@ -45,9 +46,6 @@ public:
                      u32 data_stride) override;
 
   void SetVSync(bool enabled) override;
-
-  std::tuple<u32, u32> GetWindowSize() const override;
-  void WindowResized() override;
 
   void Render() override;
 

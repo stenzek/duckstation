@@ -102,6 +102,30 @@ void D3D11HostDisplay::ChangeRenderWindow(void* new_window)
   Panic("Not supported");
 }
 
+void D3D11HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
+{
+  HostDisplay::WindowResized(new_window_width, new_window_height);
+
+  m_swap_chain_rtv.Reset();
+
+  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
+                                           m_allow_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+  if (FAILED(hr))
+    Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
+
+  if (!CreateSwapChainRTV())
+    Panic("Failed to recreate swap chain RTV after resize");
+
+  DXGI_SWAP_CHAIN_DESC desc;
+  if (SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+  {
+    m_window_width = static_cast<int>(desc.BufferDesc.Width);
+    m_window_height = static_cast<int>(desc.BufferDesc.Height);
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
+  }
+}
+
 std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, const void* data,
                                                                     u32 data_stride, bool dynamic)
 {
@@ -147,33 +171,6 @@ void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, 
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
   m_vsync = enabled;
-}
-
-std::tuple<u32, u32> D3D11HostDisplay::GetWindowSize() const
-{
-  return std::make_tuple(static_cast<u32>(m_window_width), static_cast<u32>(m_window_height));
-}
-
-void D3D11HostDisplay::WindowResized()
-{
-  m_swap_chain_rtv.Reset();
-
-  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-                                           m_allow_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
-  if (FAILED(hr))
-    Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
-
-  if (!CreateSwapChainRTV())
-    Panic("Failed to recreate swap chain RTV after resize");
-
-  DXGI_SWAP_CHAIN_DESC desc;
-  if (SUCCEEDED(m_swap_chain->GetDesc(&desc)))
-  {
-    m_window_width = static_cast<int>(desc.BufferDesc.Width);
-    m_window_height = static_cast<int>(desc.BufferDesc.Height);
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
-  }
 }
 
 bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
@@ -388,10 +385,7 @@ void D3D11HostDisplay::RenderDisplay()
   if (!m_display_texture_handle)
     return;
 
-  // - 20 for main menu padding
-  auto [vp_left, vp_top, vp_width, vp_height] =
-    CalculateDrawRect(m_window_width, std::max(m_window_height - m_display_top_margin, 1), m_display_aspect_ratio);
-  vp_top += m_display_top_margin;
+  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect();
 
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
@@ -400,11 +394,11 @@ void D3D11HostDisplay::RenderDisplay()
   m_context->PSSetSamplers(
     0, 1, m_display_linear_filtering ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 
-  const float uniforms[4] = {static_cast<float>(m_display_offset_x) / static_cast<float>(m_display_texture_width),
-                             static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height),
-                             (static_cast<float>(m_display_width) - 0.5f) / static_cast<float>(m_display_texture_width),
-                             (static_cast<float>(m_display_height) - 0.5f) /
-                               static_cast<float>(m_display_texture_height)};
+  const float uniforms[4] = {
+    static_cast<float>(m_display_texture_rect.left) / static_cast<float>(m_display_texture_width),
+    static_cast<float>(m_display_texture_rect.top) / static_cast<float>(m_display_texture_height),
+    (static_cast<float>(m_display_texture_rect.GetWidth()) - 0.5f) / static_cast<float>(m_display_texture_width),
+    (static_cast<float>(m_display_texture_rect.GetHeight()) - 0.5f) / static_cast<float>(m_display_texture_height)};
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));

@@ -496,28 +496,32 @@ protected:
       union
       {
         u32 display_address_start;
-        BitField<u32, u32, 0, 10> X;
-        BitField<u32, u32, 10, 9> Y;
+        BitField<u32, u16, 0, 10> X;
+        BitField<u32, u16, 10, 9> Y;
       };
       union
       {
         u32 horizontal_display_range;
-        BitField<u32, u32, 0, 12> X1;
-        BitField<u32, u32, 12, 12> X2;
+        BitField<u32, u16, 0, 12> X1;
+        BitField<u32, u16, 12, 12> X2;
       };
 
       union
       {
         u32 vertical_display_range;
-        BitField<u32, u32, 0, 10> Y1;
-        BitField<u32, u32, 10, 10> Y2;
+        BitField<u32, u16, 0, 10> Y1;
+        BitField<u32, u16, 10, 10> Y2;
       };
     } regs;
 
-    TickCount dot_clock_divider;
+    u16 dot_clock_divider;
 
-    u32 display_width;
-    u32 display_height;
+    u16 visible_display_width;
+    u16 visible_display_height;
+    u16 active_display_left;
+    u16 active_display_top;
+    u16 active_display_width;
+    u16 active_display_height;
 
     TickCount horizontal_total;
     TickCount horizontal_display_start;
@@ -533,6 +537,15 @@ protected:
     float display_aspect_ratio;
     bool in_hblank;
     bool in_vblank;
+
+    /// Returns a rectangle representing the active display region within the visible area of the screen, i.e. where the
+    /// VRAM texture should be "scanned out" to. Areas outside this region (the border) should be displayed as black.
+    Common::Rectangle<s32> GetActiveDisplayRectangle() const
+    {
+      return Common::Rectangle<s32>::FromExtents(
+        static_cast<s32>(ZeroExtend32(active_display_left)), static_cast<s32>(ZeroExtend32(active_display_top)),
+        static_cast<s32>(ZeroExtend32(active_display_width)), static_cast<s32>(ZeroExtend32(active_display_height)));
+    }
   } m_crtc_state = {};
 
   State m_state = State::Idle;

@@ -14,7 +14,7 @@ GPU_HW_D3D11::~GPU_HW_D3D11()
 {
   if (m_host_display)
   {
-    m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
+    m_host_display->ClearDisplayTexture();
     ResetGraphicsAPIState();
   }
 }
@@ -521,9 +521,11 @@ void GPU_HW_D3D11::UpdateDisplay()
 
   if (m_system->GetSettings().debugging.show_vram)
   {
-    m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), 0, 0, m_vram_texture.GetWidth(),
-                                      m_vram_texture.GetHeight(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
-                                      1.0f);
+    m_host_display->SetDisplayTexture(
+      m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
+      Common::Rectangle<s32>(0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight()));
+    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT,
+                                         Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT), 1.0f);
   }
   else
   {
@@ -531,21 +533,23 @@ void GPU_HW_D3D11::UpdateDisplay()
     const u32 vram_offset_y = m_crtc_state.regs.Y;
     const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
     const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
-    const u32 display_width = std::min<u32>(m_crtc_state.display_width, VRAM_WIDTH - vram_offset_x);
-    const u32 display_height = std::min<u32>(m_crtc_state.display_height, VRAM_HEIGHT - vram_offset_y);
+    const u32 display_width = std::min<u32>(m_crtc_state.active_display_width, VRAM_WIDTH - vram_offset_x);
+    const u32 display_height = std::min<u32>(m_crtc_state.active_display_height << BoolToUInt8(m_GPUSTAT.In480iMode()),
+                                             VRAM_HEIGHT - vram_offset_y);
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
     const bool interlaced = IsDisplayInterlaced();
 
     if (m_GPUSTAT.display_disable)
     {
-      m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, m_crtc_state.display_aspect_ratio);
+      m_host_display->ClearDisplayTexture();
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced)
     {
-      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), scaled_vram_offset_x, scaled_vram_offset_y,
-                                        scaled_display_width, scaled_display_height, m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), m_crtc_state.display_aspect_ratio);
+      m_host_display->SetDisplayTexture(
+        m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
+        Common::Rectangle<s32>::FromExtents(scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
+                                            scaled_display_height));
     }
     else
     {
@@ -570,9 +574,9 @@ void GPU_HW_D3D11::UpdateDisplay()
         SetViewportAndScissor(0, field_offset, display_width, display_height);
         DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
-        m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), 0, 0, display_width, display_height,
-                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(),
-                                          m_crtc_state.display_aspect_ratio);
+        m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
+                                          m_display_texture.GetHeight(),
+                                          Common::Rectangle<s32>(0, 0, display_width, display_height));
       }
       else
       {
@@ -583,13 +587,16 @@ void GPU_HW_D3D11::UpdateDisplay()
         SetViewportAndScissor(0, field_offset, scaled_display_width, scaled_display_height);
         DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
-        m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), 0, 0, scaled_display_width,
-                                          scaled_display_height, m_display_texture.GetWidth(),
-                                          m_display_texture.GetHeight(), m_crtc_state.display_aspect_ratio);
+        m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
+                                          m_display_texture.GetHeight(),
+                                          Common::Rectangle<s32>(0, 0, scaled_display_width, scaled_display_height));
       }
 
       RestoreGraphicsAPIState();
     }
+
+    m_host_display->SetDisplayParameters(m_crtc_state.visible_display_width, m_crtc_state.visible_display_height,
+                                         m_crtc_state.GetActiveDisplayRectangle(), m_crtc_state.display_aspect_ratio);
   }
 }
 

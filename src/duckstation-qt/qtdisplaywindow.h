@@ -1,5 +1,6 @@
 #pragma once
 #include <QtGui/QWindow>
+#include "common/types.h"
 
 class QKeyEvent;
 class QResizeEvent;
@@ -26,12 +27,15 @@ public:
   virtual void Render() = 0;
 
   // this comes back on the emu thread
-  virtual void onWindowResized(int width, int height);
+  virtual void WindowResized(s32 new_window_width, s32 new_window_height);
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height);
 
 protected:
+  int getScaledWindowWidth() const { return static_cast<int>(static_cast<qreal>(width()) * devicePixelRatio()); }
+  int getScaledWindowHeight() const { return static_cast<int>(static_cast<qreal>(height()) * devicePixelRatio()); }
+
   virtual bool createImGuiContext();
   virtual void destroyImGuiContext();
   virtual bool createDeviceResources();
@@ -42,7 +46,4 @@ protected:
   virtual void resizeEvent(QResizeEvent* event) override;
 
   QtHostInterface* m_host_interface;
-
-  int m_window_width = 0;
-  int m_window_height = 0;
 };

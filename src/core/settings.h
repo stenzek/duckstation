@@ -48,8 +48,9 @@ struct Settings
   u32 gpu_resolution_scale = 1;
   bool gpu_true_color = false;
   bool gpu_texture_filtering = false;
-  bool gpu_force_progressive_scan = false;
   bool gpu_use_debug_device = false;
+  DisplayCropMode display_crop_mode = DisplayCropMode::None;
+  bool display_force_progressive_scan = false;
   bool display_linear_filtering = true;
   bool display_fullscreen = false;
   bool video_sync_enabled = true;
@@ -96,6 +97,10 @@ struct Settings
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
+
+  static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
+  static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
+  static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
 
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);

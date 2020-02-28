@@ -28,9 +28,6 @@ bool QtDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_dev
 
 bool QtDisplayWindow::initializeDeviceContext(bool debug_device)
 {
-  m_window_width = static_cast<int>(static_cast<qreal>(width()) * devicePixelRatio());
-  m_window_height = static_cast<int>(static_cast<qreal>(height()) * devicePixelRatio());
-
   if (!createImGuiContext() || !createDeviceResources())
     return false;
 
@@ -49,8 +46,8 @@ bool QtDisplayWindow::createImGuiContext()
 
   auto& io = ImGui::GetIO();
   io.IniFilename = nullptr;
-  io.DisplaySize.x = static_cast<float>(m_window_width);
-  io.DisplaySize.y = static_cast<float>(m_window_height);
+  io.DisplaySize.x = static_cast<float>(getScaledWindowWidth());
+  io.DisplaySize.y = static_cast<float>(getScaledWindowHeight());
 
   const float framebuffer_scale = static_cast<float>(devicePixelRatio());
   io.DisplayFramebufferScale.x = framebuffer_scale;
@@ -73,18 +70,15 @@ bool QtDisplayWindow::createDeviceResources()
 
 void QtDisplayWindow::destroyDeviceResources() {}
 
-void QtDisplayWindow::onWindowResized(int width, int height)
+void QtDisplayWindow::WindowResized(s32 new_window_width, s32 new_window_height)
 {
-  m_window_width = width;
-  m_window_height = height;
-
   // imgui may not have been initialized yet
   if (!ImGui::GetCurrentContext())
     return;
 
   auto& io = ImGui::GetIO();
-  io.DisplaySize.x = static_cast<float>(width);
-  io.DisplaySize.y = static_cast<float>(height);
+  io.DisplaySize.x = static_cast<float>(new_window_width);
+  io.DisplaySize.y = static_cast<float>(new_window_height);
 }
 
 void QtDisplayWindow::keyPressEvent(QKeyEvent* event)

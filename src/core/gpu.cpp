@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
+#include "host_display.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "stb_image_write.h"
@@ -26,7 +27,7 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_timers = timers;
-  m_force_progressive_scan = m_system->GetSettings().gpu_force_progressive_scan;
+  m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
   m_tick_event =
     m_system->CreateTimingEvent("GPU Tick", 1, 1, std::bind(&GPU::Execute, this, std::placeholders::_1), true);
   return true;
@@ -34,7 +35,8 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
 
 void GPU::UpdateSettings()
 {
-  m_force_progressive_scan = m_system->GetSettings().gpu_force_progressive_scan;
+  m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
+  UpdateCRTCConfig();
 }
 
 void GPU::Reset()
@@ -108,8 +110,12 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.regs.horizontal_display_range);
   sw.Do(&m_crtc_state.regs.vertical_display_range);
   sw.Do(&m_crtc_state.dot_clock_divider);
-  sw.Do(&m_crtc_state.display_width);
-  sw.Do(&m_crtc_state.display_height);
+  sw.Do(&m_crtc_state.visible_display_width);
+  sw.Do(&m_crtc_state.visible_display_height);
+  sw.Do(&m_crtc_state.active_display_left);
+  sw.Do(&m_crtc_state.active_display_top);
+  sw.Do(&m_crtc_state.active_display_width);
+  sw.Do(&m_crtc_state.active_display_height);
   sw.Do(&m_crtc_state.horizontal_total);
   sw.Do(&m_crtc_state.horizontal_display_start);
   sw.Do(&m_crtc_state.horizontal_display_end);
@@ -161,6 +167,7 @@ bool GPU::DoState(StateWrapper& sw)
     // Restore mask setting.
     m_GPUSTAT.bits = old_GPUSTAT;
 
+    UpdateCRTCConfig();
     UpdateDisplay();
     UpdateSliceTicks();
   }
@@ -285,8 +292,9 @@ void GPU::Synchronize()
 
 void GPU::UpdateCRTCConfig()
 {
-  static constexpr std::array<TickCount, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
+  static constexpr std::array<u16, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
   CRTCState& cs = m_crtc_state;
+  const DisplayCropMode crop_mode = m_system->GetSettings().display_crop_mode;
 
   if (m_GPUSTAT.pal_mode)
   {
@@ -303,6 +311,7 @@ void GPU::UpdateCRTCConfig()
   const float vertical_frequency =
     static_cast<float>(static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame));
   m_system->SetThrottleFrequency(vertical_frequency);
+  m_tick_event->SetInterval(cs.horizontal_total);
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
@@ -311,63 +320,92 @@ void GPU::UpdateCRTCConfig()
   cs.vertical_display_start = static_cast<TickCount>(std::min<u32>(cs.regs.Y1, cs.vertical_total));
   cs.vertical_display_end = static_cast<TickCount>(std::min<u32>(cs.regs.Y2, cs.vertical_total));
 
-  // check for a change in resolution
-  const u32 old_horizontal_resolution = cs.display_width;
-  const u32 old_vertical_resolution = cs.display_height;
-  const u32 visible_lines = cs.regs.Y2 - cs.regs.Y1;
-  cs.display_width = std::max<u32>((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, 1);
-  cs.display_height = visible_lines << BoolToUInt8(m_GPUSTAT.In480iMode());
+  // determine the active display size
+  cs.active_display_width = std::clamp<u16>((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, 1, VRAM_WIDTH);
+  cs.active_display_height =
+    std::clamp<u16>((cs.regs.Y2 - cs.regs.Y1), 1, VRAM_HEIGHT >> BoolToUInt8(m_GPUSTAT.In480iMode()));
 
-  if (cs.display_width != old_horizontal_resolution || cs.display_height != old_vertical_resolution)
-    Log_InfoPrintf("Visible resolution is now %ux%u", cs.display_width, cs.display_height);
+  // Construct screen borders from configured active area and the standard visible range.
+  // TODO: Ensure it doesn't overflow
+  const u16 horizontal_start_display_tick = (crop_mode == DisplayCropMode::None ? 488 : 608);
+  const u16 horizontal_end_display_tick = (crop_mode == DisplayCropMode::None ? 2800 : 2560);
+  cs.visible_display_width = horizontal_end_display_tick / cs.dot_clock_divider;
+  cs.active_display_left =
+    (std::max<u16>(m_crtc_state.regs.X1, horizontal_start_display_tick) - horizontal_start_display_tick) /
+    cs.dot_clock_divider;
 
-  // Compute the aspect ratio necessary to display borders in the inactive region of the picture.
-  // Convert total dots/lines to time.
-  const float dot_clock =
-    (static_cast<float>(MASTER_CLOCK) * (11.0f / 7.0f / static_cast<float>(cs.dot_clock_divider)));
-  const float dot_clock_period = 1.0f / dot_clock;
-  const float dots_per_scanline = static_cast<float>(cs.horizontal_total) / static_cast<float>(cs.dot_clock_divider);
-  const float horizontal_period = dots_per_scanline * dot_clock_period;
-  const float vertical_period = horizontal_period * static_cast<float>(cs.vertical_total);
+  const u16 vertical_start_display_line = (crop_mode == DisplayCropMode::None ? 8 : (m_GPUSTAT.pal_mode ? 20 : 16));
+  const u16 vertical_end_display_line =
+    (crop_mode == DisplayCropMode::None ? static_cast<u16>(cs.vertical_total) :
+                                          static_cast<u16>(m_GPUSTAT.pal_mode ? 308 : 256));
+  const u16 bottom_padding = vertical_end_display_line - std::min<u16>(m_crtc_state.regs.Y2, vertical_end_display_line);
+  cs.active_display_top =
+    std::max<u16>(m_crtc_state.regs.Y1, vertical_start_display_line) - vertical_start_display_line;
+  cs.visible_display_height = cs.active_display_top + cs.active_display_height + bottom_padding;
 
-  // Convert active dots/lines to time.
-  const float visible_dots_per_scanline = static_cast<float>(cs.display_width);
-  const float horizontal_active_time = horizontal_period * visible_dots_per_scanline;
-  const float vertical_active_time = horizontal_active_time * static_cast<float>(visible_lines);
+  // Aspect ratio is always 4:3.
+  cs.display_aspect_ratio = 4.0f / 3.0f;
 
-  // Use the reference active time/lines for the signal to work out the border area, and thus aspect ratio
-  // transformation for the active area in our framebuffer. For the purposes of these calculations, we're assuming
-  // progressive scan.
-  float display_ratio;
-  if (m_GPUSTAT.pal_mode)
+  if (crop_mode == DisplayCropMode::Borders)
   {
-    // Wikipedia says PAL is active 51.95us of 64.00us, and 576/625 lines.
-    const float signal_horizontal_active_time = 51.95f;
-    const float signal_horizontal_total_time = 64.0f;
-    const float signal_vertical_active_lines = 576.0f;
-    const float signal_vertical_total_lines = 625.0f;
-    const float h_ratio =
-      (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
-    const float v_ratio =
-      (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
-    display_ratio = h_ratio / v_ratio;
-  }
-  else
-  {
-    const float signal_horizontal_active_time = 52.66f;
-    const float signal_horizontal_total_time = 63.56f;
-    const float signal_vertical_active_lines = 486.0f;
-    const float signal_vertical_total_lines = 525.0f;
-    const float h_ratio =
-      (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
-    const float v_ratio =
-      (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
-    display_ratio = h_ratio / v_ratio;
+    // Compute the aspect ratio necessary to display borders in the inactive region of the picture.
+    // Convert total dots/lines to time.
+    const float dot_clock =
+      (static_cast<float>(MASTER_CLOCK) * (11.0f / 7.0f / static_cast<float>(cs.dot_clock_divider)));
+    const float dot_clock_period = 1.0f / dot_clock;
+    const float dots_per_scanline = static_cast<float>(cs.horizontal_total) / static_cast<float>(cs.dot_clock_divider);
+    const float horizontal_period = dots_per_scanline * dot_clock_period;
+    const float vertical_period = horizontal_period * static_cast<float>(cs.vertical_total);
+
+    // Convert active dots/lines to time.
+    const float visible_dots_per_scanline = static_cast<float>(cs.active_display_width);
+    const float horizontal_active_time = horizontal_period * visible_dots_per_scanline;
+    const float vertical_active_time = horizontal_active_time * static_cast<float>(cs.regs.Y2 - cs.regs.Y1);
+
+    // Use the reference active time/lines for the signal to work out the border area, and thus aspect ratio
+    // transformation for the active area in our framebuffer. For the purposes of these calculations, we're assuming
+    // progressive scan.
+    float display_ratio;
+    if (m_GPUSTAT.pal_mode)
+    {
+      // Wikipedia says PAL is active 51.95us of 64.00us, and 576/625 lines.
+      const float signal_horizontal_active_time = 51.95f;
+      const float signal_horizontal_total_time = 64.0f;
+      const float signal_vertical_active_lines = 576.0f;
+      const float signal_vertical_total_lines = 625.0f;
+      const float h_ratio =
+        (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
+      const float v_ratio =
+        (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
+      display_ratio = h_ratio / v_ratio;
+    }
+    else
+    {
+      const float signal_horizontal_active_time = 52.66f;
+      const float signal_horizontal_total_time = 63.56f;
+      const float signal_vertical_active_lines = 486.0f;
+      const float signal_vertical_total_lines = 525.0f;
+      const float h_ratio =
+        (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
+      const float v_ratio =
+        (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
+      display_ratio = h_ratio / v_ratio;
+    }
+
+    // Ensure the numbers are sane, and not due to a misconfigured active display range.
+    cs.display_aspect_ratio = (std::isnormal(display_ratio) && display_ratio != 0.0f) ? display_ratio : (4.0f / 3.0f);
+    cs.visible_display_width = cs.active_display_width;
+    cs.visible_display_height = cs.active_display_height;
+    cs.active_display_left = 0;
+    cs.active_display_top = 0;
   }
 
-  // Ensure the numbers are sane, and not due to a misconfigured active display range.
-  cs.display_aspect_ratio = (std::isnormal(display_ratio) && display_ratio != 0.0f) ? display_ratio : (4.0f / 3.0f);
-  m_tick_event->SetInterval(cs.horizontal_total);
+  Log_InfoPrintf("Screen resolution: %ux%u", cs.visible_display_width, cs.visible_display_height);
+  Log_InfoPrintf("Active display: %ux%u @ %u,%u", cs.active_display_width, cs.active_display_height,
+                 cs.active_display_left, cs.active_display_top);
+  Log_InfoPrintf("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.active_display_left, cs.active_display_top,
+                 cs.visible_display_width - cs.active_display_width - cs.active_display_left,
+                 cs.visible_display_height - cs.active_display_height - cs.active_display_top);
 }
 
 static TickCount GPUTicksToSystemTicks(u32 gpu_ticks)
@@ -581,6 +619,7 @@ void GPU::WriteGP1(u32 value)
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
       Log_DebugPrintf("Display %s", disable ? "disabled" : "enabled");
       m_GPUSTAT.display_disable = disable;
+      UpdateCRTCConfig();
     }
     break;
 
@@ -940,7 +979,7 @@ void GPU::DrawDebugStateWindow()
                 m_GPUSTAT.interlaced_field ? "odd" : "even");
     ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
     ImGui::Text("Drawing Even Line: %s", m_GPUSTAT.drawing_even_line ? "Yes" : "No");
-    ImGui::Text("Display Resolution: %ux%u", cs.display_width, cs.display_height);
+    ImGui::Text("Display Resolution: %ux%u", cs.active_display_width, cs.active_display_height);
     ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
     ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
     ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,

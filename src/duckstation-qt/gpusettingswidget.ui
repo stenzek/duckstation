@@ -42,31 +42,57 @@
       <item row="0" column="1">
        <widget class="QComboBox" name="renderer"/>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="1" column="0" colspan="2">
        <widget class="QCheckBox" name="useDebugDevice">
         <property name="text">
          <string>Use Debug Device</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Screen Display</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Crop:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cropMode"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="forceProgressiveScan">
+        <property name="text">
+         <string>Force Progressive Scan</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="displayLinearFiltering">
         <property name="text">
          <string>Linear Upscaling</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QCheckBox" name="vsync">
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="startFullscreen">
         <property name="text">
-         <string>VSync</string>
+         <string>Start Fullscreen</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QCheckBox" name="fullscreen">
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="vsync">
         <property name="text">
-         <string>Fullscreen</string>
+         <string>VSync</string>
         </property>
        </widget>
       </item>
@@ -100,13 +126,6 @@
        <widget class="QCheckBox" name="linearTextureFiltering">
         <property name="text">
          <string>Bilinear Texture Filtering</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="forceProgressiveScan">
-        <property name="text">
-         <string>Force Progressive Scan</string>
         </property>
        </widget>
       </item>

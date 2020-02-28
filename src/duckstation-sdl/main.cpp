@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
   Log::SetFilterLevel(level);
 #else
   Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
-  // Log::SetConsoleOutputParams(true, "Pad DigitalController MemoryCard", LOGLEVEL_DEBUG);
+  Log::SetConsoleOutputParams(true, "Pad DigitalController MemoryCard SPU", LOGLEVEL_DEBUG);
   // Log::SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
   // Log::SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL Pad DigitalController MemoryCard InterruptController SPU
   // MDEC", LOGLEVEL_DEBUG); g_pLog->SetFilterLevel(LOGLEVEL_TRACE);

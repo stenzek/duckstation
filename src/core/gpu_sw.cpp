@@ -12,7 +12,8 @@ GPU_SW::GPU_SW()
 
 GPU_SW::~GPU_SW()
 {
-  m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, 1.0f);
+  if (m_host_display)
+    m_host_display->ClearDisplayTexture();
 }
 
 bool GPU_SW::IsHardwareRenderer() const
@@ -113,21 +114,17 @@ void GPU_SW::UpdateDisplay()
   // fill display texture
   m_display_texture_buffer.resize(VRAM_WIDTH * VRAM_HEIGHT);
 
-  u32 display_width;
-  u32 display_height;
-  float display_aspect_ratio;
   if (!m_system->GetSettings().debugging.show_vram)
   {
     // TODO: Handle interlacing
     const u32 vram_offset_x = m_crtc_state.regs.X;
     const u32 vram_offset_y = m_crtc_state.regs.Y;
-    display_width = std::min<u32>(m_crtc_state.display_width, VRAM_WIDTH - vram_offset_x);
-    display_height = std::min<u32>(m_crtc_state.display_height, VRAM_HEIGHT - vram_offset_y);
-    display_aspect_ratio = m_crtc_state.display_aspect_ratio;
+    const u32 display_width = std::min<u32>(m_crtc_state.active_display_width, VRAM_WIDTH - vram_offset_x);
+    const u32 display_height = std::min<u32>(m_crtc_state.active_display_height, VRAM_HEIGHT - vram_offset_y);
 
     if (m_GPUSTAT.display_disable)
     {
-      m_host_display->SetDisplayTexture(nullptr, 0, 0, 0, 0, 0, 0, display_aspect_ratio);
+      m_host_display->ClearDisplayTexture();
       return;
     }
     else if (m_GPUSTAT.display_area_color_depth_24)
@@ -140,20 +137,24 @@ void GPU_SW::UpdateDisplay()
       CopyOut15Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
                    m_display_texture_buffer.data(), display_width, display_width, display_height);
     }
+
+    m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, display_width, display_height,
+                                  m_display_texture_buffer.data(), display_width * sizeof(u32));
+    m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT,
+                                      Common::Rectangle<s32>(0, 0, display_width, display_height));
+    m_host_display->SetDisplayParameters(m_crtc_state.visible_display_width, m_crtc_state.visible_display_height,
+                                         m_crtc_state.GetActiveDisplayRectangle(), m_crtc_state.display_aspect_ratio);
   }
   else
   {
-    display_width = VRAM_WIDTH;
-    display_height = VRAM_HEIGHT;
-    display_aspect_ratio = 1.0f;
-    CopyOut15Bit(m_vram.data(), VRAM_WIDTH, m_display_texture_buffer.data(), display_width, display_width,
-                 display_height);
+    CopyOut15Bit(m_vram.data(), VRAM_WIDTH, m_display_texture_buffer.data(), VRAM_WIDTH, VRAM_HEIGHT, VRAM_HEIGHT);
+    m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
+                                  m_display_texture_buffer.data(), VRAM_WIDTH * sizeof(u32));
+    m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT,
+                                      Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT,
+                                         Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT), 1.0f);
   }
-
-  m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, display_width, display_height,
-                                m_display_texture_buffer.data(), display_width * sizeof(u32));
-  m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), 0, 0, display_width, display_height, VRAM_WIDTH,
-                                    VRAM_HEIGHT, display_aspect_ratio);
 }
 
 void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)

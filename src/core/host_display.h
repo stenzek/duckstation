@@ -1,4 +1,5 @@
 #pragma once
+#include "common/rectangle.h"
 #include "types.h"
 #include <memory>
 #include <tuple>
@@ -36,6 +37,9 @@ public:
   /// Switches the render window, recreating the surface.
   virtual void ChangeRenderWindow(void* new_window) = 0;
 
+  /// Call when the window size changes externally to recreate any resources.
+  virtual void WindowResized(s32 new_window_width, s32 new_window_height);
+
   /// Creates an abstracted RGBA8 texture. If dynamic, the texture can be updated with UpdateTexture() below.
   virtual std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
                                                             bool dynamic = false) = 0;
@@ -46,42 +50,59 @@ public:
 
   virtual void SetVSync(bool enabled) = 0;
 
-  virtual std::tuple<u32, u32> GetWindowSize() const = 0;
-  virtual void WindowResized() = 0;
-
   const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
 
-  void SetDisplayTexture(void* texture_handle, s32 offset_x, s32 offset_y, s32 width, s32 height, u32 texture_width,
-                         u32 texture_height, float aspect_ratio)
+  void ClearDisplayTexture()
+  {
+    m_display_texture_handle = nullptr;
+    m_display_texture_width = 0;
+    m_display_texture_height = 0;
+    m_display_texture_rect = {};
+    m_display_changed = true;
+  }
+
+  void SetDisplayTexture(void* texture_handle, s32 texture_width, s32 texture_height,
+                         const Common::Rectangle<s32>& texture_rect)
   {
     m_display_texture_handle = texture_handle;
-    m_display_offset_x = offset_x;
-    m_display_offset_y = offset_y;
-    m_display_width = width;
-    m_display_height = height;
     m_display_texture_width = texture_width;
     m_display_texture_height = texture_height;
-    m_display_aspect_ratio = aspect_ratio;
-    m_display_texture_changed = true;
+    m_display_texture_rect = texture_rect;
+    m_display_changed = true;
+  }
+
+  void SetDisplayParameters(s32 display_width, s32 display_height, const Common::Rectangle<s32>& display_area,
+                            float pixel_aspect_ratio)
+  {
+    m_display_width = display_width;
+    m_display_height = display_height;
+    m_display_area = display_area;
+    m_display_aspect_ratio = pixel_aspect_ratio;
+    m_display_changed = true;
   }
 
   void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
 
   // Helper function for computing the draw rectangle in a larger window.
-  static std::tuple<int, int, int, int> CalculateDrawRect(int window_width, int window_height, float display_ratio);
+  std::tuple<s32, s32, s32, s32> CalculateDrawRect() const;
 
 protected:
-  void* m_display_texture_handle = nullptr;
-  s32 m_display_offset_x = 0;
-  s32 m_display_offset_y = 0;
+  s32 m_window_width = 0;
+  s32 m_window_height = 0;
+
   s32 m_display_width = 0;
   s32 m_display_height = 0;
-  u32 m_display_texture_width = 0;
-  u32 m_display_texture_height = 0;
-  s32 m_display_top_margin = 0;
+  Common::Rectangle<s32> m_display_area{};
   float m_display_aspect_ratio = 1.0f;
 
-  bool m_display_texture_changed = false;
+  void* m_display_texture_handle = nullptr;
+  s32 m_display_texture_width = 0;
+  s32 m_display_texture_height = 0;
+  Common::Rectangle<s32> m_display_texture_rect{};
+
+  s32 m_display_top_margin = 0;
+
   bool m_display_linear_filtering = false;
+  bool m_display_changed = false;
 };
