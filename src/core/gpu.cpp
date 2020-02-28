@@ -400,12 +400,12 @@ void GPU::UpdateCRTCConfig()
     cs.active_display_top = 0;
   }
 
-  Log_InfoPrintf("Screen resolution: %ux%u", cs.visible_display_width, cs.visible_display_height);
-  Log_InfoPrintf("Active display: %ux%u @ %u,%u", cs.active_display_width, cs.active_display_height,
-                 cs.active_display_left, cs.active_display_top);
-  Log_InfoPrintf("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.active_display_left, cs.active_display_top,
-                 cs.visible_display_width - cs.active_display_width - cs.active_display_left,
-                 cs.visible_display_height - cs.active_display_height - cs.active_display_top);
+  Log_DevPrintf("Screen resolution: %ux%u", cs.visible_display_width, cs.visible_display_height);
+  Log_DevPrintf("Active display: %ux%u @ %u,%u (VRAM %u,%u)", cs.active_display_width, cs.active_display_height,
+                cs.active_display_left, cs.active_display_top, cs.regs.X.GetValue(), cs.regs.Y.GetValue());
+  Log_DevPrintf("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.active_display_left, cs.active_display_top,
+                cs.visible_display_width - cs.active_display_width - cs.active_display_left,
+                cs.visible_display_height - cs.active_display_height - cs.active_display_top);
 }
 
 static TickCount GPUTicksToSystemTicks(u32 gpu_ticks)
