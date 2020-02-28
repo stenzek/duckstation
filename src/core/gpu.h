@@ -373,8 +373,16 @@ protected:
     BitField<u32, DMADirection, 29, 2> dma_direction;
     BitField<u32, bool, 31, 1> drawing_even_line;
 
-    bool IsMaskingEnabled() const { return (bits & ((1 << 11) | (1 << 12))) != 0; }
-    bool In480iMode() const { return (bits & ((1 << 22) | (1 << 19))) != 0; }
+    bool IsMaskingEnabled() const
+    {
+      static constexpr u32 MASK = ((1 << 11) | (1 << 12));
+      return ((bits & MASK) != 0);
+    }
+    bool In480iMode() const
+    {
+      static constexpr u32 MASK = (1 << 19) | (1 << 22);
+      return ((bits & MASK) == MASK);
+    }
 
     // During transfer/render operations, if ((dst_pixel & mask_and) == mask_and) { pixel = src_pixel | mask_or }
     u16 GetMaskAND() const { return check_mask_before_draw ? 0x8000 : 0x0000; }
