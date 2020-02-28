@@ -23,5 +23,5 @@ if(SDL2_FOUND)
   target_link_libraries(frontend-common PRIVATE ${SDL2_LIBRARIES})
 endif()
 
-target_link_libraries(frontend-common PRIVATE core common imgui simpleini)
+target_link_libraries(frontend-common PUBLIC core common imgui simpleini)
 
