@@ -44,7 +44,6 @@ struct Settings
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
-  mutable u32 max_gpu_resolution_scale = 1;
   bool gpu_true_color = false;
   bool gpu_texture_filtering = false;
   bool gpu_force_progressive_scan = false;

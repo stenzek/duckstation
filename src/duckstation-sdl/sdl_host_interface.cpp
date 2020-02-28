@@ -867,7 +867,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   if (ImGui::BeginMenu("Resolution Scale"))
   {
     const u32 current_internal_resolution = m_settings_copy.gpu_resolution_scale;
-    for (u32 scale = 1; scale <= m_settings_copy.max_gpu_resolution_scale; scale++)
+    for (u32 scale = 1; scale <= GPU::MAX_RESOLUTION_SCALE; scale++)
     {
       char buf[32];
       std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT);
@@ -1235,7 +1235,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::Text("Resolution Scale:");
         ImGui::SameLine(indent);
 
-        static constexpr std::array<const char*, 16> resolutions = {{
+        static constexpr std::array<const char*, GPU::MAX_RESOLUTION_SCALE> resolutions = {{
           "1x (1024x512)",
           "2x (2048x1024)",
           "3x (3072x1536)",

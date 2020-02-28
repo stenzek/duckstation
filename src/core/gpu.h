@@ -93,7 +93,8 @@ public:
     MAX_PRIMITIVE_WIDTH = 1024,
     MAX_PRIMITIVE_HEIGHT = 512,
     DOT_TIMER_INDEX = 0,
-    HBLANK_TIMER_INDEX = 1
+    HBLANK_TIMER_INDEX = 1,
+    MAX_RESOLUTION_SCALE = 16
   };
 
   // 4x4 dither matrix.
