@@ -12,6 +12,7 @@ endif()
 
 # Common include/library directories on Windows.
 if(WIN32)
+  set(SDL2_FOUND TRUE)
   set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/include")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(SDL2_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/lib64/SDL2.lib")

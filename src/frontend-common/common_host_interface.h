@@ -1,14 +1,14 @@
 #pragma once
-#include "core/host_interface.h"
 #include "common/string.h"
+#include "core/host_interface.h"
 #include <atomic>
 #include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string_view>
 #include <utility>
-#include <optional>
 #include <vector>
 
 class CommonHostInterface : public HostInterface
@@ -55,8 +55,10 @@ private:
   void RegisterSaveStateHotkeys();
   void UpdateControllerInputMap(SettingsInterface& si);
   void UpdateHotkeyInputMap(SettingsInterface& si);
-  void AddButtonToInputMap(const std::string& binding, InputButtonHandler handler);
-  void AddAxisToInputMap(const std::string& binding, InputAxisHandler handler);
+  virtual bool AddButtonToInputMap(const std::string& binding, const std::string_view& device,
+                                   const std::string_view& button, InputButtonHandler handler);
+  virtual bool AddAxisToInputMap(const std::string& binding, const std::string_view& device,
+                                 const std::string_view& axis, InputAxisHandler handler);
 
   HotkeyInfoList m_hotkeys;
 

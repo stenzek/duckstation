@@ -7,8 +7,10 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
 #include "sdl_controller_interface.h"
+#endif
 #include <cstring>
 Log_SetChannel(CommonHostInterface);
 
@@ -35,8 +37,10 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
     case AudioBackend::Cubeb:
       return AudioStream::CreateCubebAudioStream();
 
+#ifdef WITH_SDL2
     case AudioBackend::SDL:
       return SDLAudioStream::Create();
+#endif
 
     default:
       return nullptr;
@@ -102,10 +106,26 @@ bool CommonHostInterface::HandleHostKeyEvent(HostKeyCode key, bool pressed)
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
   m_keyboard_input_handlers.clear();
+#ifdef WITH_SDL2
   g_sdl_controller_interface.ClearControllerBindings();
+#endif
 
   UpdateControllerInputMap(si);
   UpdateHotkeyInputMap(si);
+}
+
+static bool SplitBinding(const std::string& binding, std::string_view* device, std::string_view* sub_binding)
+{
+  const std::string::size_type slash_pos = binding.find('/');
+  if (slash_pos == std::string::npos)
+  {
+    Log_WarningPrintf("Malformed binding: '%s'", binding.c_str());
+    return false;
+  }
+
+  *device = std::string_view(binding).substr(0, slash_pos);
+  *sub_binding = std::string_view(binding).substr(slash_pos + 1);
+  return true;
 }
 
 void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
@@ -127,7 +147,11 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         si.GetStringList(category, TinyString::FromFormat("Button%s", button_name.c_str()));
       for (const std::string& binding : bindings)
       {
-        AddButtonToInputMap(binding, [this, controller_index, button_code](bool pressed) {
+        std::string_view device, button;
+        if (!SplitBinding(binding, &device, &button))
+          continue;
+
+        AddButtonToInputMap(binding, device, button, [this, controller_index, button_code](bool pressed) {
           if (!m_system)
             return;
 
@@ -148,7 +172,11 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         si.GetStringList(category, TinyString::FromFormat("Axis%s", axis_name.c_str()));
       for (const std::string& binding : bindings)
       {
-        AddAxisToInputMap(binding, [this, controller_index, axis_code](float value) {
+        std::string_view device, axis;
+        if (!SplitBinding(binding, &device, &axis))
+          continue;
+
+        AddAxisToInputMap(binding, device, axis, [this, controller_index, axis_code](float value) {
           if (!m_system)
             return;
 
@@ -167,39 +195,40 @@ void CommonHostInterface::UpdateHotkeyInputMap(SettingsInterface& si)
   {
     const std::vector<std::string> bindings = si.GetStringList("Hotkeys", hi.name);
     for (const std::string& binding : bindings)
-      AddButtonToInputMap(binding, hi.handler);
+    {
+      std::string_view device, button;
+      if (!SplitBinding(binding, &device, &button))
+        continue;
+
+      AddButtonToInputMap(binding, device, button, hi.handler);
+    }
   }
 }
 
-void CommonHostInterface::AddButtonToInputMap(const std::string& binding, InputButtonHandler handler)
+bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const std::string_view& device,
+                                              const std::string_view& button, InputButtonHandler handler)
 {
-  const std::string::size_type slash_pos = binding.find('/');
-  if (slash_pos == std::string::npos)
-  {
-    Log_WarningPrintf("Malformed button binding: '%s'", binding.c_str());
-    return;
-  }
-
-  const auto device = std::string_view(binding).substr(0, slash_pos);
-  const auto button = std::string_view(binding).substr(slash_pos + 1);
   if (device == "Keyboard")
   {
     std::optional<int> key_id = GetHostKeyCode(button);
     if (!key_id.has_value())
     {
       Log_WarningPrintf("Unknown keyboard key in binding '%s'", binding.c_str());
-      return;
+      return false;
     }
 
     m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
+    return true;
   }
-  else if (device == "Controller")
+
+#ifdef WITH_SDL2
+  if (device == "Controller")
   {
     const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
     if (!controller_index || *controller_index < 0)
     {
       Log_WarningPrintf("Invalid controller index in button binding '%s'", binding.c_str());
-      return;
+      return false;
     }
 
     if (button.find_first_of("Button") == 0)
@@ -209,8 +238,10 @@ void CommonHostInterface::AddButtonToInputMap(const std::string& binding, InputB
           !g_sdl_controller_interface.BindControllerButton(*controller_index, *button_index, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller button '%s' to button", binding.c_str());
-        return;
+        return false;
       }
+
+      return true;
     }
     else if (button.find_first_of("+Axis") == 0 || button.find_first_of("-Axis"))
     {
@@ -220,40 +251,32 @@ void CommonHostInterface::AddButtonToInputMap(const std::string& binding, InputB
                                                                                 positive, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller axis '%s' to button", binding.c_str());
-        return;
+        return false;
       }
+
+      return true;
     }
-    else
-    {
-      Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
-      return;
-    }
+
+    Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
+    return false;
   }
-  else
-  {
-    Log_WarningPrintf("Unknown input device in button binding '%s'", binding.c_str());
-    return;
-  }
+#endif
+
+  Log_WarningPrintf("Unknown input device in button binding '%s'", binding.c_str());
+  return false;
 }
 
-void CommonHostInterface::AddAxisToInputMap(const std::string& binding, InputAxisHandler handler)
+bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const std::string_view& device,
+                                            const std::string_view& axis, InputAxisHandler handler)
 {
-  const std::string::size_type slash_pos = binding.find('/');
-  if (slash_pos == std::string::npos)
-  {
-    Log_WarningPrintf("Malformed axis binding: '%s'", binding.c_str());
-    return;
-  }
-
-  const auto device = std::string_view(binding).substr(0, slash_pos);
-  const auto axis = std::string_view(binding).substr(slash_pos + 1);
+#ifdef WITH_SDL2
   if (device == "Controller")
   {
     const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
     if (!controller_index || *controller_index < 0)
     {
       Log_WarningPrintf("Invalid controller index in axis binding '%s'", binding.c_str());
-      return;
+      return false;
     }
 
     if (axis.find_first_of("Axis") == 0)
@@ -263,20 +286,19 @@ void CommonHostInterface::AddAxisToInputMap(const std::string& binding, InputAxi
           !g_sdl_controller_interface.BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller axis '%s' to axi", binding.c_str());
-        return;
+        return false;
       }
+
+      return true;
     }
-    else
-    {
-      Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
-      return;
-    }
+
+    Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
+    return false;
   }
-  else
-  {
-    Log_WarningPrintf("Unknown input device in axis binding '%s'", binding.c_str());
-    return;
-  }
+#endif
+
+  Log_WarningPrintf("Unknown input device in axis binding '%s'", binding.c_str());
+  return false;
 }
 
 void CommonHostInterface::RegisterGeneralHotkeys()
