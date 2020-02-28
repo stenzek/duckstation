@@ -37,7 +37,7 @@ void Settings::Load(SettingsInterface& si)
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
 
-  bios_path = si.GetStringValue("BIOS", "Path", "scph1001.bin");
+  bios_path = si.GetStringValue("BIOS", "Path", "bios/scph1001.bin");
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", true);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
 
@@ -46,7 +46,7 @@ void Settings::Load(SettingsInterface& si)
   controller_types[1] =
     ParseControllerTypeName(si.GetStringValue("Controller2", "Type", "None").c_str()).value_or(ControllerType::None);
 
-  memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memory_card_1.mcd");
+  memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
 
   debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");

@@ -793,15 +793,15 @@ void HostInterface::SetDefaultSettings()
   m_settings.audio_backend = AudioBackend::Cubeb;
   m_settings.audio_sync_enabled = true;
 
-  m_settings.bios_path = GetUserDirectoryRelativePath("bios/scph1001.bin");
+  m_settings.bios_path = "bios/scph1001.bin";
   m_settings.bios_patch_tty_enable = false;
   m_settings.bios_patch_fast_boot = false;
 
   m_settings.controller_types[0] = ControllerType::DigitalController;
   m_settings.controller_types[1] = ControllerType::None;
 
-  m_settings.memory_card_paths[0] = GetSharedMemoryCardPath(0);
-  m_settings.memory_card_paths[1] = GetSharedMemoryCardPath(1);
+  m_settings.memory_card_paths[0] = "memcards/shared_card_1.mcd";
+  m_settings.memory_card_paths[1].clear();
 }
 
 void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
