@@ -1,7 +1,9 @@
 #pragma once
-#include <cstddef>
+#include <charconv>
 #include <cstdarg>
+#include <cstddef>
 #include <cstring>
+#include <optional>
 #include <string>
 
 namespace StringUtil {
@@ -24,6 +26,18 @@ inline int Strcasecmp(const char* s1, const char* s2)
 #else
   return strcasecmp(s1, s2);
 #endif
+}
+
+/// Wrapper arond std::from_chars
+template<typename T>
+std::optional<T> FromChars(const std::string_view str)
+{
+  T value;
+  const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value);
+  if (result.ec != std::errc())
+    return std::nullopt;
+
+  return value;
 }
 
 } // namespace StringUtil
