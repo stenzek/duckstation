@@ -1,6 +1,6 @@
 #pragma once
 #include "types.h"
-#include <atomic>
+#include <algorithm>
 #include <cstdarg>
 #include <cstring>
 #include <limits>
@@ -29,7 +29,7 @@ public:
     // Reference count of this data object. If set to -1,
     // it is considered noncopyable and any copies of the string
     // will always create their own copy.
-    std::atomic<s32> ReferenceCount;
+    s32 ReferenceCount;
 
     // Whether the memory pointed to by pBuffer is writable.
     bool ReadOnly;
@@ -49,6 +49,9 @@ public:
 
   // Move constructor, take reference from other string.
   String(String&& moveString);
+
+  // Construct a string from a data object, does not increment the reference count on the string data, use carefully.
+  explicit String(StringData* pStringData) : m_pStringData(pStringData) {}
 
   // Destructor. Child classes may not have any destructors, as this is not virtual.
   ~String();
@@ -251,10 +254,6 @@ public:
   bool operator>(const char* compString) const { return (NumericCompare(compString) > 0); }
 
 protected:
-  // Hidden constructor for creating string child classes.
-  // It does not increment the reference count on the string data, therefore dangerous to be public.
-  String(StringData* pStringData) : m_pStringData(pStringData) {}
-
   // Internal append function.
   void InternalPrepend(const char* pString, u32 Length);
   void InternalAppend(const char* pString, u32 Length);
@@ -267,21 +266,14 @@ protected:
 };
 
 // static string, stored in .rodata
-class StaticString : public String
-{
-public:
-  StaticString(const char* Text)
-  {
-    m_sStringData.pBuffer = const_cast<char*>(Text);
-    m_sStringData.StringLength = static_cast<u32>(std::strlen(Text));
-    m_sStringData.BufferSize = m_sStringData.StringLength + 1;
-    m_sStringData.ReadOnly = true;
-    m_sStringData.ReferenceCount = -1;
-  }
-
-private:
-  StringData m_sStringData;
-};
+#define StaticString(Text)                                                                                             \
+  []() noexcept -> String {                                                                                            \
+    static constexpr u32 buffer_size = sizeof(Text);                                                                   \
+    static constexpr u32 length = buffer_size - 1;                                                                     \
+    static constexpr String::StringData data{const_cast<char*>(Text), length, buffer_size, static_cast<s32>(-1),       \
+                                             true};                                                                    \
+    return String(const_cast<String::StringData*>(&data));                                                             \
+  }()
 
 // stack-allocated string
 template<u32 L>

@@ -124,7 +124,7 @@ static String::StringData* StringDataReallocate(String::StringData* pStringData,
 
 static bool StringDataIsSharable(const String::StringData* pStringData)
 {
-  return pStringData->ReferenceCount != -1;
+  return pStringData->ReadOnly || pStringData->ReferenceCount != -1;
 }
 
 static bool StringDataIsShared(const String::StringData* pStringData)
@@ -145,7 +145,8 @@ String::String(const String& copyString)
   else if (StringDataIsSharable(copyString.m_pStringData))
   {
     m_pStringData = copyString.m_pStringData;
-    StringDataAddRef(m_pStringData);
+    if (!m_pStringData->ReadOnly)
+      StringDataAddRef(m_pStringData);
   }
   // create a clone for ourselves
   else
@@ -525,7 +526,8 @@ void String::Assign(const String& copyString)
   else if (StringDataIsSharable(copyString.m_pStringData))
   {
     m_pStringData = copyString.m_pStringData;
-    StringDataAddRef(m_pStringData);
+    if (!m_pStringData->ReadOnly)
+      StringDataAddRef(m_pStringData);
   }
   // create a clone for ourselves
   else
