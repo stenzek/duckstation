@@ -68,6 +68,9 @@ bool SDLHostInterface::CreateSDLWindow()
     SDL_FreeSurface(icon_surface);
   }
 
+  if (m_fullscreen)
+    SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
   return true;
 }
 
@@ -96,6 +99,7 @@ bool SDLHostInterface::CreateDisplay()
   if (!display)
     return false;
 
+  display->SetDisplayTopMargin(m_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
   m_display = display.release();
   return true;
 }
@@ -218,13 +222,18 @@ void SDLHostInterface::UpdateSettings()
   HostInterface::UpdateSettings([this]() { m_settings = m_settings_copy; });
 }
 
-void SDLHostInterface::UpdateFullscreen()
+void SDLHostInterface::SetFullscreen(bool enabled)
 {
-  SDL_SetWindowFullscreen(m_window, m_settings.display_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+  if (m_fullscreen == enabled)
+    return;
+
+  SDL_SetWindowFullscreen(m_window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
   // We set the margin only in windowed mode, the menu bar is drawn on top in fullscreen.
-  m_display->SetDisplayTopMargin(
-    m_settings.display_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
+  m_display->SetDisplayTopMargin(enabled ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
+
+  m_display->WindowResized();
+  m_fullscreen = enabled;
 }
 
 std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
@@ -235,6 +244,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
   SDLSettingsInterface si(intf->GetSettingsFileName().c_str());
   intf->m_settings_copy.Load(si);
   intf->m_settings = intf->m_settings_copy;
+  intf->m_fullscreen = intf->m_settings_copy.display_fullscreen;
 
   if (!intf->CreateSDLWindow())
   {
@@ -256,8 +266,6 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
   }
 
   ImGui::NewFrame();
-
-  intf->UpdateFullscreen();
 
   return intf;
 }
@@ -382,10 +390,11 @@ void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
     }
     break;
 
-    case SDL_SCANCODE_F11:
+    case SDL_SCANCODE_RETURN:
+    case SDL_SCANCODE_KP_ENTER:
     {
-      if (!pressed)
-        DoToggleFullscreen();
+      if ((event->key.keysym.mod & (KMOD_LALT | KMOD_RALT)) && !pressed)
+        SetFullscreen(!m_fullscreen);
     }
     break;
 
@@ -573,7 +582,7 @@ void SDLHostInterface::DrawMainMenuBar()
 {
   // We skip drawing the menu bar if we're in fullscreen and the mouse pointer isn't in range.
   const float SHOW_THRESHOLD = 20.0f;
-  if (m_settings.display_fullscreen &&
+  if (m_fullscreen && !m_system &&
       ImGui::GetIO().MousePos.y >= (SHOW_THRESHOLD * ImGui::GetIO().DisplayFramebufferScale.x) &&
       !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
   {
@@ -783,11 +792,9 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
-  if (ImGui::MenuItem("Fullscreen", nullptr, &m_settings_copy.display_fullscreen))
-  {
-    settings_changed = true;
-    UpdateFullscreen();
-  }
+  bool fullscreen = m_fullscreen;
+  if (ImGui::MenuItem("Fullscreen", nullptr, &fullscreen))
+    RunLater([this, fullscreen] { SetFullscreen(fullscreen); });
 
   settings_changed |= ImGui::MenuItem("VSync", nullptr, &m_settings_copy.video_sync_enabled);
 
@@ -1144,11 +1151,8 @@ void SDLHostInterface::DrawSettingsWindow()
 
       if (DrawSettingsSectionHeader("Display Output"))
       {
-        if (ImGui::Checkbox("Fullscreen", &m_settings_copy.display_fullscreen))
-        {
-          UpdateFullscreen();
+        if (ImGui::Checkbox("Start Fullscreen", &m_settings_copy.display_fullscreen))
           settings_changed = true;
-        }
 
         settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings_copy.display_linear_filtering);
         settings_changed |= ImGui::Checkbox("VSync", &m_settings_copy.video_sync_enabled);
@@ -1306,12 +1310,6 @@ void SDLHostInterface::DoFrameStep()
 
   m_frame_step_request = true;
   m_paused = false;
-}
-
-void SDLHostInterface::DoToggleFullscreen()
-{
-  m_settings.display_fullscreen = !m_settings.display_fullscreen;
-  UpdateFullscreen();
 }
 
 void SDLHostInterface::Run()

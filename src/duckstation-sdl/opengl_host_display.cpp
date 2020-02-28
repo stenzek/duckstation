@@ -139,6 +139,8 @@ std::tuple<u32, u32> OpenGLHostDisplay::GetWindowSize() const
 void OpenGLHostDisplay::WindowResized()
 {
   SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
 }
 
 const char* OpenGLHostDisplay::GetGLSLVersionString() const

@@ -157,6 +157,8 @@ std::tuple<u32, u32> D3D11HostDisplay::GetWindowSize() const
 void D3D11HostDisplay::WindowResized()
 {
   SDL_GetWindowSize(m_window, &m_window_width, &m_window_height);
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
 
   m_swap_chain_rtv.Reset();
 

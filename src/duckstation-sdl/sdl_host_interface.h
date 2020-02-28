@@ -90,14 +90,14 @@ private:
   void SaveSettings();
   void UpdateSettings();
 
-  void UpdateFullscreen();
+  bool IsFullscreen() const { return m_fullscreen; }
+  void SetFullscreen(bool enabled);
 
   // We only pass mouse input through if it's grabbed
   void DrawImGui();
   void DoStartDisc();
   void DoChangeDisc();
   void DoFrameStep();
-  void DoToggleFullscreen();
 
   void HandleSDLEvent(const SDL_Event* event);
   void HandleSDLKeyEvent(const SDL_Event* event);
@@ -121,6 +121,7 @@ private:
 
   u32 m_run_later_event_id = 0;
 
+  bool m_fullscreen = false;
   bool m_quit_request = false;
   bool m_frame_step_request = false;
   bool m_focus_main_menu_bar = false;
