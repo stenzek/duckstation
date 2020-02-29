@@ -7,7 +7,7 @@
 class GPU_HW_ShaderGen
 {
 public:
-  GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
+  GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color, bool scaled_dithering,
                    bool texture_filtering, bool supports_dual_source_belnd);
   ~GPU_HW_ShaderGen();
 
@@ -25,6 +25,7 @@ public:
   HostDisplay::RenderAPI m_render_api;
   u32 m_resolution_scale;
   bool m_true_color;
+  bool m_scaled_dithering;
   bool m_texture_filering;
   bool m_glsl;
   bool m_glsl_es;

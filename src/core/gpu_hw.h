@@ -161,7 +161,8 @@ protected:
 
   u32 m_resolution_scale = 1;
   u32 m_max_resolution_scale = 1;
-  bool m_true_color = false;
+  bool m_true_color = true;
+  bool m_scaled_dithering = false;
   bool m_texture_filtering = false;
   bool m_supports_dual_source_blend = false;
 

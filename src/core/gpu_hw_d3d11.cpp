@@ -242,8 +242,8 @@ bool GPU_HW_D3D11::CreateBatchInputLayout()
      {"ATTR", 3, DXGI_FORMAT_R32_SINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
 
   // we need a vertex shader...
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
-                             m_supports_dual_source_blend);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
+                             m_texture_filtering, m_supports_dual_source_blend);
   ComPtr<ID3DBlob> vs_bytecode =
     m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true));
   if (!vs_bytecode)
@@ -325,8 +325,8 @@ bool GPU_HW_D3D11::CreateStateObjects()
 
 bool GPU_HW_D3D11::CompileShaders()
 {
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_texture_filtering,
-                             m_supports_dual_source_blend);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
+                             m_texture_filtering, m_supports_dual_source_blend);
 
   m_system->GetHostInterface()->DisplayLoadingScreen("Compiling shaders...");
 

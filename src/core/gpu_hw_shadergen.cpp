@@ -6,10 +6,11 @@
 Log_SetChannel(GPU_HW_ShaderGen);
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
-                                   bool texture_filtering, bool supports_dual_source_blend)
+                                   bool scaled_dithering, bool texture_filtering, bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
-    m_texture_filering(texture_filtering), m_glsl(render_api != HostDisplay::RenderAPI::D3D11),
-    m_glsl_es(render_api == HostDisplay::RenderAPI::OpenGLES), m_supports_dual_source_blend(supports_dual_source_blend)
+    m_scaled_dithering(scaled_dithering), m_texture_filering(texture_filtering),
+    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_glsl_es(render_api == HostDisplay::RenderAPI::OpenGLES),
+    m_supports_dual_source_blend(supports_dual_source_blend)
 {
   if (m_glsl)
     SetGLSLVersionString();
@@ -411,6 +412,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPU::TextureMode::Palette8Bit);
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
+  DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filering);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
@@ -570,7 +572,11 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
 
   // Apply dithering
   #if DITHERING
-    icolor = ApplyDithering(int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE), icolor);
+    #if DITHERING_SCALED
+      icolor = ApplyDithering(int2(v_pos.xy), icolor);
+    #else
+      icolor = ApplyDithering(int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE), icolor);
+    #endif
   #endif
 
   // Clip to 15-bit range

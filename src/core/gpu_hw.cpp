@@ -26,9 +26,11 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Int
   if (!GPU::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
-  m_resolution_scale = m_system->GetSettings().gpu_resolution_scale;
-  m_true_color = m_system->GetSettings().gpu_true_color;
-  m_texture_filtering = m_system->GetSettings().gpu_texture_filtering;
+  const Settings& settings = m_system->GetSettings();
+  m_resolution_scale = settings.gpu_resolution_scale;
+  m_true_color = settings.gpu_true_color;
+  m_scaled_dithering = settings.gpu_scaled_dithering;
+  m_texture_filtering = settings.gpu_texture_filtering;
   if (m_resolution_scale < 1 || m_resolution_scale > m_max_resolution_scale)
   {
     m_system->GetHostInterface()->AddFormattedOSDMessage(5.0f, "Invalid resolution scale %ux specified. Maximum is %u.",
@@ -68,9 +70,11 @@ void GPU_HW::UpdateSettings()
 {
   GPU::UpdateSettings();
 
-  m_resolution_scale = std::clamp<u32>(m_system->GetSettings().gpu_resolution_scale, 1, m_max_resolution_scale);
-  m_true_color = m_system->GetSettings().gpu_true_color;
-  m_texture_filtering = m_system->GetSettings().gpu_texture_filtering;
+  const Settings& settings = m_system->GetSettings();
+  m_resolution_scale = std::clamp<u32>(settings.gpu_resolution_scale, 1, m_max_resolution_scale);
+  m_true_color = settings.gpu_true_color;
+  m_scaled_dithering = settings.gpu_scaled_dithering;
+  m_texture_filtering = settings.gpu_texture_filtering;
 }
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)

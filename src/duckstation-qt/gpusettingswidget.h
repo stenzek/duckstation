@@ -14,6 +14,9 @@ public:
   GPUSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~GPUSettingsWidget();
 
+private Q_SLOTS:
+  void updateScaledDitheringEnabled();
+
 private:
   void setupAdditionalUi();
 

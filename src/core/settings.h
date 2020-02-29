@@ -46,7 +46,8 @@ struct Settings
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
-  bool gpu_true_color = false;
+  bool gpu_true_color = true;
+  bool gpu_scaled_dithering = false;
   bool gpu_texture_filtering = false;
   bool gpu_use_debug_device = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;

@@ -812,6 +812,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
   si.SetBoolValue("GPU", "TrueColor", true);
+  si.SetBoolValue("GPU", "ScaledDithering", false);
   si.SetBoolValue("GPU", "TextureFiltering", false);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
 
@@ -855,6 +856,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
   const bool old_gpu_true_color = m_settings.gpu_true_color;
+  const bool old_gpu_scaled_dithering = m_settings.gpu_scaled_dithering;
   const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
   const bool old_display_force_progressive_scan = m_settings.display_force_progressive_scan;
   const bool old_gpu_debug_device = m_settings.gpu_use_debug_device;
@@ -907,6 +909,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
     if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale ||
         m_settings.gpu_true_color != old_gpu_true_color ||
+        m_settings.gpu_scaled_dithering != old_gpu_scaled_dithering ||
         m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
         m_settings.display_force_progressive_scan != old_display_force_progressive_scan ||
         m_settings.display_crop_mode != old_display_crop_mode)

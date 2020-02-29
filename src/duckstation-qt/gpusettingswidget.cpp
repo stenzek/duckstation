@@ -22,10 +22,24 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display/VSync");
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU/ResolutionScale");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU/TrueColor");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU/ScaledDithering");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, "GPU/TextureFiltering");
+
+  connect(m_ui.resolutionScale, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+          &GPUSettingsWidget::updateScaledDitheringEnabled);
+  connect(m_ui.trueColor, &QCheckBox::stateChanged, this, &GPUSettingsWidget::updateScaledDitheringEnabled);
+  updateScaledDitheringEnabled();
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;
+
+void GPUSettingsWidget::updateScaledDitheringEnabled()
+{
+  const int resolution_scale = m_ui.resolutionScale->currentIndex();
+  const bool true_color = m_ui.trueColor->isChecked();
+  const bool allow_scaled_dithering = (resolution_scale != 1 && !true_color);
+  m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
+}
 
 void GPUSettingsWidget::setupAdditionalUi()
 {

@@ -22,7 +22,8 @@ void Settings::Load(SettingsInterface& si)
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
-  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
+  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
+  gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
 
@@ -78,6 +79,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
+  si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
 

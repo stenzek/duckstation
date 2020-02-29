@@ -123,6 +123,13 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="scaledDithering">
+        <property name="text">
+         <string>Scaled Dithering (scale dither pattern to resolution)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
        <widget class="QCheckBox" name="linearTextureFiltering">
         <property name="text">
          <string>Bilinear Texture Filtering</string>
