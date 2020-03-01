@@ -310,6 +310,9 @@ protected:
   /// Returns the number of pending GPU ticks.
   TickCount GetPendingGPUTicks() const;
 
+  /// Returns true if enough ticks have passed for the raster to be on the next line.
+  bool IsRasterScanlinePending() const;
+
   /// Returns true if scanout should be interlaced.
   bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }
 

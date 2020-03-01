@@ -235,7 +235,14 @@ u32 GPU::ReadRegister(u32 offset)
       return ReadGPUREAD();
 
     case 0x04:
+    {
+      // code can be dependent on the odd/even bit, so update the GPU state when reading.
+      // we can mitigate this slightly by only updating when the raster is actually hitting a new line
+      if (IsRasterScanlinePending())
+        m_tick_event->InvokeEarly(true);
+
       return m_GPUSTAT.bits;
+    }
 
     default:
       Log_ErrorPrintf("Unhandled register read: %02X", offset);
@@ -453,6 +460,11 @@ void GPU::UpdateSliceTicks()
   m_tick_event->Schedule(
     GPUTicksToSystemTicks((m_blitter_ticks > 0) ? std::min(m_blitter_ticks, ticks_until_vblank) : ticks_until_vblank));
   m_tick_event->SetPeriod(GPUTicksToSystemTicks(ticks_until_hblank));
+}
+
+bool GPU::IsRasterScanlinePending() const
+{
+  return (GetPendingGPUTicks() + m_crtc_state.current_tick_in_scanline) >= m_crtc_state.horizontal_total;
 }
 
 void GPU::Execute(TickCount ticks)
