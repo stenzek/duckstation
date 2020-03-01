@@ -45,7 +45,7 @@ void GPU::ExecuteCommands()
   else if (command_ptr > m_GP0_buffer.data())
     m_GP0_buffer.erase(m_GP0_buffer.begin(), m_GP0_buffer.begin() + (command_ptr - m_GP0_buffer.data()));
 
-  UpdateGPUSTAT();
+  UpdateDMARequest();
 }
 
 void GPU::EndCommand()
