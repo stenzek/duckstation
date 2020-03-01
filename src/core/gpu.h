@@ -307,6 +307,9 @@ protected:
   // Ticks for hblank/vblank.
   void Execute(TickCount ticks);
 
+  /// Returns the number of pending GPU ticks.
+  TickCount GetPendingGPUTicks() const;
+
   /// Returns true if scanout should be interlaced.
   bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }
 

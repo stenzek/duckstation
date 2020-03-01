@@ -408,10 +408,16 @@ void GPU::UpdateCRTCConfig()
                 cs.visible_display_height - cs.active_display_height - cs.active_display_top);
 }
 
-static TickCount GPUTicksToSystemTicks(u32 gpu_ticks)
+static TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
 {
   // convert to master clock, rounding up as we want to overshoot not undershoot
-  return (gpu_ticks * 7 + 10) / 11;
+  return static_cast<TickCount>((static_cast<u32>(gpu_ticks) * 7u + 10u) / 11u);
+}
+
+TickCount GPU::GetPendingGPUTicks() const
+{
+  const TickCount pending_sysclk_ticks = m_tick_event->GetTicksSinceLastExecution();
+  return ((pending_sysclk_ticks * 11) + m_crtc_state.fractional_ticks) / 7;
 }
 
 void GPU::UpdateSliceTicks()
