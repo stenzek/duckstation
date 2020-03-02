@@ -30,12 +30,14 @@ private Q_SLOTS:
   void onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous);
   void onTableViewItemDoubleClicked(const QModelIndex& index);
   void onTableViewContextMenuRequested(const QPoint& point);
+  void onTableViewHeaderContextMenuRequested(const QPoint& point);
 
 protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
   const GameListEntry* getSelectedEntry() const;
+  void resizeTableViewColumnsToFit();
 
   QtHostInterface* m_host_interface = nullptr;
   GameList* m_game_list = nullptr;

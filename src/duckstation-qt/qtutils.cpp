@@ -46,6 +46,12 @@ void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int
   int column_index = 0;
   for (const int spec_width : widths)
   {
+    if (view->isColumnHidden(column_index))
+    {
+      column_index++;
+      continue;
+    }
+
     const int width = spec_width < 0 ? flex_width : spec_width;
     view->setColumnWidth(column_index, width);
     column_index++;

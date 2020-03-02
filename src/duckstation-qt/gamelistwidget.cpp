@@ -6,6 +6,7 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QMenu>
 
 class GameListModel final : public QAbstractTableModel
 {
@@ -15,11 +16,15 @@ public:
     Column_Type,
     Column_Code,
     Column_Title,
+    Column_FileTitle,
     Column_Region,
     Column_Size,
 
     Column_Count
   };
+
+  static inline constexpr std::array<const char*, static_cast<int>(GameListModel::Column_Count)> s_column_names = {
+    {"Type", "Code", "Title", "File Title", "Region", "Size"}};
 
   GameListModel(GameList* game_list, QObject* parent = nullptr)
     : QAbstractTableModel(parent), m_game_list(game_list), m_size(static_cast<int>(m_game_list->GetEntryCount()))
@@ -67,6 +72,12 @@ public:
           case Column_Title:
             return QString::fromStdString(ge.title);
 
+          case Column_FileTitle:
+          {
+            const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+            return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
+          }
+
           case Column_Size:
             return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
 
@@ -87,6 +98,12 @@ public:
 
           case Column_Title:
             return QString::fromStdString(ge.title);
+
+          case Column_FileTitle:
+          {
+            const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+            return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
+          }
 
           case Column_Region:
             return static_cast<int>(ge.region);
@@ -141,29 +158,10 @@ public:
 
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
   {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= Column_Count)
       return {};
 
-    switch (section)
-    {
-      case Column_Type:
-        return "Type";
-
-      case Column_Code:
-        return "Code";
-
-      case Column_Title:
-        return "Title";
-
-      case Column_Region:
-        return "Region";
-
-      case Column_Size:
-        return "Size";
-
-      default:
-        return {};
-    }
+    return tr(s_column_names[section]);
   }
 
   void refresh()
@@ -266,18 +264,24 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_view->setShowGrid(false);
   m_table_view->setCurrentIndex({});
   m_table_view->horizontalHeader()->setHighlightSections(false);
+  m_table_view->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
   m_table_view->verticalHeader()->hide();
   m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_table_view->resizeColumnsToContents();
 
+  // hide the implicit title by default
+  m_table_view->setColumnHidden(GameListModel::Column_FileTitle, true);
+
   // sort by disc type, then title
-  m_table_sort_model->sort(0, Qt::AscendingOrder);
+  m_table_sort_model->sort(GameListModel::Column_Type, Qt::AscendingOrder);
 
   connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
           &GameListWidget::onSelectionModelCurrentChanged);
   connect(m_table_view, &QTableView::doubleClicked, this, &GameListWidget::onTableViewItemDoubleClicked);
   connect(m_table_view, &QTableView::customContextMenuRequested, this,
           &GameListWidget::onTableViewContextMenuRequested);
+  connect(m_table_view->horizontalHeader(), &QHeaderView::customContextMenuRequested, this,
+          &GameListWidget::onTableViewHeaderContextMenuRequested);
 
   insertWidget(0, m_table_view);
   setCurrentIndex(0);
@@ -320,11 +324,33 @@ void GameListWidget::onTableViewContextMenuRequested(const QPoint& point)
   emit entryContextMenuRequested(m_table_view->mapToGlobal(point), entry);
 }
 
+void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
+{
+  QMenu menu;
+
+  for (int column = 0; column < GameListModel::Column_Count; column++)
+  {
+    QAction* action = menu.addAction(tr(GameListModel::s_column_names[column]));
+    action->setCheckable(true);
+    action->setChecked(!m_table_view->isColumnHidden(column));
+    connect(action, &QAction::toggled, [this, column](bool enabled) {
+      m_table_view->setColumnHidden(column, !enabled);
+      resizeTableViewColumnsToFit();
+    });
+  }
+
+  menu.exec(m_table_view->mapToGlobal(point));
+}
+
 void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QStackedWidget::resizeEvent(event);
+  resizeTableViewColumnsToFit();
+}
 
-  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, 60, 100});
+void GameListWidget::resizeTableViewColumnsToFit()
+{
+  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 60, 100});
 }
 
 const GameListEntry* GameListWidget::getSelectedEntry() const
