@@ -232,7 +232,7 @@ public:
     const QVariant left = source_left.data(Qt::InitialSortOrderRole);
     const QVariant right = source_right.data(Qt::InitialSortOrderRole);
     if (left != right)
-      return ascending ? (left < right) : (right < left);
+      return ascending ? (left < right) : (right > left);
 
     // fallback to sorting by title for equal items
     return m_model->titlesLessThan(source_left.row(), source_right.row(), ascending);
@@ -269,6 +269,9 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_view->verticalHeader()->hide();
   m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_table_view->resizeColumnsToContents();
+
+  // sort by disc type, then title
+  m_table_sort_model->sort(0, Qt::AscendingOrder);
 
   connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
           &GameListWidget::onSelectionModelCurrentChanged);
