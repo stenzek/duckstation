@@ -1,4 +1,5 @@
 #include "gamelistwidget.h"
+#include "common/string_util.h"
 #include "core/game_list.h"
 #include "core/settings.h"
 #include "qthostinterface.h"
@@ -23,8 +24,19 @@ public:
     Column_Count
   };
 
-  static inline constexpr std::array<const char*, static_cast<int>(GameListModel::Column_Count)> s_column_names = {
+  static inline constexpr std::array<const char*, Column_Count> s_column_names = {
     {"Type", "Code", "Title", "File Title", "Region", "Size"}};
+
+  static std::optional<Column> getColumnIdForName(std::string_view name)
+  {
+    for (int column = 0; column < Column_Count; column++)
+    {
+      if (name == s_column_names[column])
+        return static_cast<Column>(column);
+    }
+
+    return std::nullopt;
+  }
 
   GameListModel(GameList* game_list, QObject* parent = nullptr)
     : QAbstractTableModel(parent), m_game_list(game_list), m_size(static_cast<int>(m_game_list->GetEntryCount()))
@@ -267,13 +279,9 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_view->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
   m_table_view->verticalHeader()->hide();
   m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  m_table_view->resizeColumnsToContents();
 
-  // hide the implicit title by default
-  m_table_view->setColumnHidden(GameListModel::Column_FileTitle, true);
-
-  // sort by disc type, then title
-  m_table_sort_model->sort(GameListModel::Column_Type, Qt::AscendingOrder);
+  loadTableViewColumnVisibilitySettings();
+  loadTableViewColumnSortSettings();
 
   connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
           &GameListWidget::onSelectionModelCurrentChanged);
@@ -282,9 +290,13 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
           &GameListWidget::onTableViewContextMenuRequested);
   connect(m_table_view->horizontalHeader(), &QHeaderView::customContextMenuRequested, this,
           &GameListWidget::onTableViewHeaderContextMenuRequested);
+  connect(m_table_view->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this,
+          &GameListWidget::onTableViewHeaderSortIndicatorChanged);
 
   insertWidget(0, m_table_view);
   setCurrentIndex(0);
+
+  resizeTableViewColumnsToFit();
 }
 
 void GameListWidget::onGameListRefreshed()
@@ -335,11 +347,17 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
     action->setChecked(!m_table_view->isColumnHidden(column));
     connect(action, &QAction::toggled, [this, column](bool enabled) {
       m_table_view->setColumnHidden(column, !enabled);
+      saveTableViewColumnVisibilitySettings(column);
       resizeTableViewColumnsToFit();
     });
   }
 
   menu.exec(m_table_view->mapToGlobal(point));
+}
+
+void GameListWidget::onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder)
+{
+  saveTableViewColumnSortSettings();
 }
 
 void GameListWidget::resizeEvent(QResizeEvent* event)
@@ -351,6 +369,69 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 void GameListWidget::resizeTableViewColumnsToFit()
 {
   QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 60, 100});
+}
+
+static QString getColumnVisibilitySettingsKeyName(int column)
+{
+  return QStringLiteral("GameListTableView/Show%1").arg(GameListModel::s_column_names[column]);
+}
+
+void GameListWidget::loadTableViewColumnVisibilitySettings()
+{
+  static constexpr std::array<bool, GameListModel::Column_Count> DEFAULT_VISIBILITY = {
+    {true, true, true, false, true, true}};
+
+  for (int column = 0; column < GameListModel::Column_Count; column++)
+  {
+    const bool visible =
+      m_host_interface->getSettingValue(getColumnVisibilitySettingsKeyName(column), DEFAULT_VISIBILITY[column])
+        .toBool();
+    m_table_view->setColumnHidden(column, !visible);
+  }
+}
+
+void GameListWidget::saveTableViewColumnVisibilitySettings()
+{
+  for (int column = 0; column < GameListModel::Column_Count; column++)
+  {
+    const bool visible = !m_table_view->isColumnHidden(column);
+    m_host_interface->putSettingValue(getColumnVisibilitySettingsKeyName(column), visible);
+  }
+}
+
+void GameListWidget::saveTableViewColumnVisibilitySettings(int column)
+{
+  const bool visible = !m_table_view->isColumnHidden(column);
+  m_host_interface->putSettingValue(getColumnVisibilitySettingsKeyName(column), visible);
+}
+
+void GameListWidget::loadTableViewColumnSortSettings()
+{
+  const GameListModel::Column DEFAULT_SORT_COLUMN = GameListModel::Column_Type;
+  const bool DEFAULT_SORT_DESCENDING = false;
+
+  const GameListModel::Column sort_column =
+    GameListModel::getColumnIdForName(
+      m_host_interface->getSettingValue(QStringLiteral("GameListTableView/SortColumn")).toString().toStdString())
+      .value_or(DEFAULT_SORT_COLUMN);
+  const bool sort_descending =
+    m_host_interface->getSettingValue(QStringLiteral("GameListTableView/SortDescending"), DEFAULT_SORT_DESCENDING)
+      .toBool();
+  m_table_sort_model->sort(sort_column, sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder);
+}
+
+void GameListWidget::saveTableViewColumnSortSettings()
+{
+  const int sort_column = m_table_view->horizontalHeader()->sortIndicatorSection();
+  const bool sort_descending = (m_table_view->horizontalHeader()->sortIndicatorOrder() == Qt::DescendingOrder);
+
+  if (sort_column >= 0 && sort_column < GameListModel::Column_Count)
+  {
+    m_host_interface->putSettingValue(QStringLiteral("GameListTableView/SortColumn"),
+                                      QString::fromUtf8(GameListModel::s_column_names[sort_column]));
+  }
+
+  m_host_interface->putSettingValue(QStringLiteral("GameListTableView/SortDescending"), sort_descending);
 }
 
 const GameListEntry* GameListWidget::getSelectedEntry() const

@@ -31,6 +31,7 @@ private Q_SLOTS:
   void onTableViewItemDoubleClicked(const QModelIndex& index);
   void onTableViewContextMenuRequested(const QPoint& point);
   void onTableViewHeaderContextMenuRequested(const QPoint& point);
+  void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
 
 protected:
   void resizeEvent(QResizeEvent* event);
@@ -38,6 +39,11 @@ protected:
 private:
   const GameListEntry* getSelectedEntry() const;
   void resizeTableViewColumnsToFit();
+  void loadTableViewColumnVisibilitySettings();
+  void saveTableViewColumnVisibilitySettings();
+  void saveTableViewColumnVisibilitySettings(int column);
+  void loadTableViewColumnSortSettings();
+  void saveTableViewColumnSortSettings();
 
   QtHostInterface* m_host_interface = nullptr;
   GameList* m_game_list = nullptr;
