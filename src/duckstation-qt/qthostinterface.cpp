@@ -324,7 +324,9 @@ void QtHostInterface::OnControllerTypeChanged(u32 slot)
 {
   HostInterface::OnControllerTypeChanged(slot);
 
-  updateInputMap();
+  // this assumes the settings mutex is already locked - as it comes from updateSettings().
+  QtSettingsInterface si(m_qsettings);
+  UpdateInputMap(si);
 }
 
 void QtHostInterface::updateInputMap()
