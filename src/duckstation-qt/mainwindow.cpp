@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "core/game_list.h"
 #include "core/settings.h"
+#include "core/system.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "qtdisplaywindow.h"
@@ -9,6 +10,7 @@
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
@@ -47,7 +49,7 @@ bool MainWindow::confirmMessage(const QString& message)
 {
   const int result = QMessageBox::question(this, tr("DuckStation"), message);
   focusDisplayWidget();
-  
+
   return (result == QMessageBox::Yes);
 }
 
@@ -174,7 +176,15 @@ void MainWindow::onStartDiscActionTriggered()
   if (filename.isEmpty())
     return;
 
-  m_host_interface->bootSystemFromFile(std::move(filename));
+  SystemBootParameters boot_params;
+  boot_params.filename = filename.toStdString();
+  m_host_interface->bootSystem(boot_params);
+}
+
+void MainWindow::onStartBIOSActionTriggered()
+{
+  SystemBootParameters boot_params;
+  m_host_interface->bootSystem(boot_params);
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -193,14 +203,18 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
   switchToGameListView();
 }
 
-static void OpenURL(QWidget* parent, const char* url)
+static void OpenURL(QWidget* parent, const QUrl& qurl)
 {
-  const QUrl qurl(QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
   if (!QDesktopServices::openUrl(qurl))
   {
     QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
                           QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
   }
+}
+
+static void OpenURL(QWidget* parent, const char* url)
+{
+  return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -214,6 +228,90 @@ void MainWindow::onIssueTrackerActionTriggered()
 }
 
 void MainWindow::onAboutActionTriggered() {}
+
+void MainWindow::onGameListEntrySelected(const GameListEntry* entry)
+{
+  if (!entry)
+  {
+    m_ui.statusBar->clearMessage();
+    m_host_interface->populateSaveStateMenus("", m_ui.menuLoadState, m_ui.menuSaveState);
+    return;
+  }
+
+  m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
+  m_host_interface->populateSaveStateMenus(entry->code.c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
+}
+
+void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
+{
+  // if we're not running, boot the system, otherwise swap discs
+  QString path = QString::fromStdString(entry->path);
+  if (!m_emulation_running)
+  {
+    if (!entry->code.empty() && m_host_interface->getSettingValue("General/SaveStateOnExit", true).toBool())
+    {
+      m_host_interface->resumeSystemFromState(path, true);
+    }
+    else
+    {
+      SystemBootParameters boot_params;
+      boot_params.filename = path.toStdString();
+      m_host_interface->bootSystem(boot_params);
+    }
+  }
+  else
+  {
+    m_host_interface->changeDisc(path);
+    m_host_interface->pauseSystem(false);
+    switchToEmulationView();
+  }
+}
+
+void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry)
+{
+  QMenu menu;
+
+  // Hopefully this pointer doesn't disappear... it shouldn't.
+  if (entry)
+  {
+    connect(menu.addAction(tr("Properties...")), &QAction::triggered, [this]() { reportError(tr("TODO")); });
+
+    connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
+      const QFileInfo fi(QString::fromStdString(entry->path));
+      OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
+    });
+
+    menu.addSeparator();
+
+    if (!entry->code.empty())
+    {
+      m_host_interface->populateGameListContextMenu(entry->code.c_str(), this, &menu);
+      menu.addSeparator();
+    }
+
+    connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
+            [this, entry]() { m_host_interface->bootSystem(SystemBootParameters(entry->path)); });
+
+    connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
+      SystemBootParameters boot_params(entry->path);
+      boot_params.override_fast_boot = true;
+      m_host_interface->bootSystem(boot_params);
+    });
+
+    connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
+      SystemBootParameters boot_params(entry->path);
+      boot_params.override_fast_boot = false;
+      m_host_interface->bootSystem(boot_params);
+    });
+
+    menu.addSeparator();
+  }
+
+  connect(menu.addAction(tr("Add Search Directory...")), &QAction::triggered,
+          [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+
+  menu.exec(point);
+}
 
 void MainWindow::setupAdditionalUi()
 {
@@ -320,7 +418,7 @@ void MainWindow::connectSignals()
   onEmulationPaused(false);
 
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
-  connect(m_ui.actionStartBios, &QAction::triggered, m_host_interface, &QtHostInterface::bootSystemFromBIOS);
+  connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
@@ -369,34 +467,10 @@ void MainWindow::connectSignals()
           &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
 
-  connect(m_game_list_widget, &GameListWidget::bootEntryRequested, [this](const GameListEntry* entry) {
-    // if we're not running, boot the system, otherwise swap discs
-    QString path = QString::fromStdString(entry->path);
-    if (!m_emulation_running)
-    {
-      if (!entry->code.empty() && m_host_interface->getSettingValue("General/SaveStateOnExit", true).toBool())
-        m_host_interface->resumeSystemFromState(path, true);
-      else
-        m_host_interface->bootSystemFromFile(path);
-    }
-    else
-    {
-      m_host_interface->changeDisc(path);
-      m_host_interface->pauseSystem(false);
-      switchToEmulationView();
-    }
-  });
-  connect(m_game_list_widget, &GameListWidget::entrySelected, [this](const GameListEntry* entry) {
-    if (!entry)
-    {
-      m_ui.statusBar->clearMessage();
-      m_host_interface->populateSaveStateMenus("", m_ui.menuLoadState, m_ui.menuSaveState);
-      return;
-    }
-
-    m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
-    m_host_interface->populateSaveStateMenus(entry->code.c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
-  });
+  connect(m_game_list_widget, &GameListWidget::entrySelected, this, &MainWindow::onGameListEntrySelected);
+  connect(m_game_list_widget, &GameListWidget::entryDoubleClicked, this, &MainWindow::onGameListEntryDoubleClicked);
+  connect(m_game_list_widget, &GameListWidget::entryContextMenuRequested, this,
+          &MainWindow::onGameListContextMenuRequested);
 
   m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 

@@ -28,11 +28,21 @@ class SPU;
 class MDEC;
 class SIO;
 
+struct SystemBootParameters
+{
+  SystemBootParameters();
+  SystemBootParameters(std::string filename_);
+  ~SystemBootParameters();
+
+  std::string filename;
+  std::optional<bool> override_fast_boot;
+};
+
 class System
 {
+public:
   friend TimingEvent;
 
-public:
   ~System();
 
   /// Creates a new System.
@@ -75,7 +85,7 @@ public:
   float GetAverageFrameTime() const { return m_average_frame_time; }
   float GetWorstFrameTime() const { return m_worst_frame_time; }
 
-  bool Boot(const char* filename);
+  bool Boot(const SystemBootParameters& params);
   void Reset();
 
   bool LoadState(ByteStream* state);

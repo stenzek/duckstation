@@ -30,6 +30,12 @@ Log_SetChannel(System);
 #include <time.h>
 #endif
 
+SystemBootParameters::SystemBootParameters() = default;
+
+SystemBootParameters::SystemBootParameters(std::string filename_) : filename(filename_) {}
+
+SystemBootParameters::~SystemBootParameters() = default;
+
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
@@ -102,14 +108,14 @@ void System::SetCPUExecutionMode(CPUExecutionMode mode)
   m_cpu_code_cache->SetUseRecompiler(mode == CPUExecutionMode::Recompiler);
 }
 
-bool System::Boot(const char* filename)
+bool System::Boot(const SystemBootParameters& params)
 {
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> media;
   bool exe_boot = false;
-  if (filename)
+  if (!params.filename.empty())
   {
-    exe_boot = GameList::IsExeFileName(filename);
+    exe_boot = GameList::IsExeFileName(params.filename.c_str());
     if (exe_boot)
     {
       if (m_region == ConsoleRegion::Auto)
@@ -120,11 +126,11 @@ bool System::Boot(const char* filename)
     }
     else
     {
-      Log_InfoPrintf("Loading CD image '%s'...", filename);
-      media = CDImage::Open(filename);
+      Log_InfoPrintf("Loading CD image '%s'...", params.filename.c_str());
+      media = CDImage::Open(params.filename.c_str());
       if (!media)
       {
-        m_host_interface->ReportFormattedError("Failed to load CD image '%s'", filename);
+        m_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
         return false;
       }
 
@@ -134,7 +140,8 @@ bool System::Boot(const char* filename)
         if (detected_region)
         {
           m_region = detected_region.value();
-          Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region), filename);
+          Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region),
+                         params.filename.c_str());
         }
         else
         {
@@ -172,19 +179,22 @@ bool System::Boot(const char* filename)
     BIOS::PatchBIOSEnableTTY(*bios_image, bios_hash);
 
   // Load EXE late after BIOS.
-  if (exe_boot && !LoadEXE(filename, *bios_image))
+  if (exe_boot && !LoadEXE(params.filename.c_str(), *bios_image))
   {
-    m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", filename);
+    m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
     return false;
   }
 
   // Notify change of disc.
-  UpdateRunningGame(filename, media.get());
+  UpdateRunningGame(params.filename.c_str(), media.get());
 
   // Insert CD, and apply fastboot patch if enabled.
   m_cdrom->InsertMedia(std::move(media));
-  if (m_cdrom->HasMedia() && GetSettings().bios_patch_fast_boot)
+  if (m_cdrom->HasMedia() &&
+      (params.override_fast_boot.has_value() ? params.override_fast_boot.value() : GetSettings().bios_patch_fast_boot))
+  {
     BIOS::PatchBIOSFastBoot(*bios_image, bios_hash);
+  }
 
   // Load the patched BIOS up.
   m_bus->SetBIOS(*bios_image);

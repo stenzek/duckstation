@@ -13,6 +13,8 @@ class QThread;
 class GameListWidget;
 class QtHostInterface;
 
+struct GameListEntry;
+
 class MainWindow final : public QMainWindow
 {
   Q_OBJECT
@@ -39,11 +41,16 @@ private Q_SLOTS:
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
 
   void onStartDiscActionTriggered();
+  void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onAboutActionTriggered();
+
+  void onGameListEntrySelected(const GameListEntry* entry);
+  void onGameListEntryDoubleClicked(const GameListEntry* entry);
+  void onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry);
 
 protected:
   void closeEvent(QCloseEvent* event) override;

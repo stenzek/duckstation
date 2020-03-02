@@ -673,7 +673,10 @@ void SDLHostInterface::DrawMainMenuBar()
     }
     if (ImGui::MenuItem("Start BIOS", nullptr, false, !system_enabled))
     {
-      RunLater([this]() { BootSystemFromBIOS(); });
+      RunLater([this]() {
+        SystemBootParameters boot_params;
+        BootSystem(boot_params);
+      });
       ClearImGuiFocus();
     }
 
@@ -995,7 +998,10 @@ void SDLHostInterface::DrawPoweredOffWindow()
   ImGui::SetCursorPosX(button_left);
   if (ImGui::Button("Start BIOS", button_size))
   {
-    RunLater([this]() { BootSystemFromFile(nullptr); });
+    RunLater([this]() {
+      SystemBootParameters boot_params;
+      BootSystem(boot_params);
+    });
     ClearImGuiFocus();
   }
   ImGui::NewLine();
@@ -1372,7 +1378,10 @@ void SDLHostInterface::DoStartDisc()
     return;
 
   AddFormattedOSDMessage(2.0f, "Starting disc from '%s'...", path);
-  BootSystemFromFile(path);
+
+  SystemBootParameters boot_params;
+  boot_params.filename = path;
+  BootSystem(boot_params);
 }
 
 void SDLHostInterface::DoChangeDisc()

@@ -18,6 +18,7 @@ class HostDisplay;
 class GameList;
 
 class System;
+struct SystemBootParameters;
 
 class HostInterface
 {
@@ -42,8 +43,7 @@ public:
   /// Access to emulated system.
   ALWAYS_INLINE System* GetSystem() const { return m_system.get(); }
 
-  bool BootSystemFromFile(const char* filename);
-  bool BootSystemFromBIOS();
+  bool BootSystem(const SystemBootParameters& parameters);
   void PauseSystem(bool paused);
   void ResetSystem();
   void PowerOffSystem();
@@ -89,6 +89,9 @@ public:
   /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
   /// such as compiling shaders when starting up.
   void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
+
+  /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
+  void DeleteSaveStates(const char* game_code, bool resume);
 
 protected:
   enum : u32

@@ -47,7 +47,9 @@ static int Run(int argc, char* argv[])
   // boot/load state
   if (boot_filename)
   {
-    if (host_interface->BootSystemFromFile(boot_filename) && state_index.has_value())
+    SystemBootParameters boot_params;
+    boot_params.filename = boot_filename;
+    if (host_interface->BootSystem(boot_params) && state_index.has_value())
       host_interface->LoadState(state_is_global, state_index.value());
   }
   else if (state_index.has_value())

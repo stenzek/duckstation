@@ -30,6 +30,8 @@ QtHostInterface::QtHostInterface(QObject* parent)
   : QObject(parent), CommonHostInterface(),
     m_qsettings(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat)
 {
+  qRegisterMetaType<SystemBootParameters>();
+
   loadSettings();
   refreshGameList();
   createThread();
@@ -149,15 +151,15 @@ QtDisplayWindow* QtHostInterface::createDisplayWindow()
   return m_display_window;
 }
 
-void QtHostInterface::bootSystemFromFile(const QString& filename)
+void QtHostInterface::bootSystem(const SystemBootParameters& params)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "bootSystemFromFile", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+    QMetaObject::invokeMethod(this, "bootSystem", Qt::QueuedConnection, Q_ARG(const SystemBootParameters&, params));
     return;
   }
 
-  HostInterface::BootSystemFromFile(filename.toStdString().c_str());
+  HostInterface::BootSystem(params);
 }
 
 void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_on_failure)
@@ -173,17 +175,6 @@ void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_o
     HostInterface::ResumeSystemFromMostRecentState();
   else
     HostInterface::ResumeSystemFromState(filename.toStdString().c_str(), boot_on_failure);
-}
-
-void QtHostInterface::bootSystemFromBIOS()
-{
-  if (!isOnWorkerThread())
-  {
-    QMetaObject::invokeMethod(this, "bootSystemFromBIOS", Qt::QueuedConnection);
-    return;
-  }
-
-  HostInterface::BootSystemFromBIOS();
 }
 
 void QtHostInterface::handleKeyEvent(int key, bool pressed)
@@ -466,6 +457,62 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   {
     QAction* action = save_menu->addAction(tr("Global Save %1").arg(i));
     connect(action, &QAction::triggered, [this, i]() { saveState(true, i); });
+  }
+}
+
+void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu)
+{
+  QAction* resume_action = menu->addAction(tr("Resume"));
+  resume_action->setEnabled(false);
+
+  QMenu* load_state_menu = menu->addMenu(tr("Load State"));
+  load_state_menu->setEnabled(false);
+
+  const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(game_code));
+  for (const SaveStateInfo& ssi : available_states)
+  {
+    if (ssi.global)
+      continue;
+
+    const s32 slot = ssi.slot;
+    const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
+    const QString timestamp_str(timestamp.toString(Qt::SystemLocaleShortDate));
+    const QString path(QString::fromStdString(ssi.path));
+
+    QAction* action;
+    if (slot < 0)
+    {
+      resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
+      resume_action->setEnabled(true);
+      action = resume_action;
+    }
+    else
+    {
+      load_state_menu->setEnabled(true);
+      action = load_state_menu->addAction(tr("%1 Save %2 (%3)").arg(tr("Game")).arg(slot).arg(timestamp_str));
+    }
+
+    connect(action, &QAction::triggered, [this, path]() { loadState(path); });
+  }
+
+  const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
+  QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
+  delete_save_states_action->setEnabled(has_any_states);
+  if (has_any_states)
+  {
+    const std::string game_code_copy(game_code);
+    connect(delete_save_states_action, &QAction::triggered, [this, parent_window, game_code_copy] {
+      if (QMessageBox::warning(
+            parent_window, tr("Confirm Save State Deletion"),
+            tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
+              .arg(game_code_copy.c_str()),
+            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+      {
+        return;
+      }
+
+      DeleteSaveStates(game_code_copy.c_str(), true);
+    });
   }
 }
 

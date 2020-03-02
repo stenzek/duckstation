@@ -1,5 +1,6 @@
 #pragma once
 #include "core/host_interface.h"
+#include "core/system.h"
 #include "frontend-common/common_host_interface.h"
 #include "opengldisplaywindow.h"
 #include <QtCore/QByteArray>
@@ -22,6 +23,8 @@ class QWidget;
 class QTimer;
 
 class GameList;
+
+Q_DECLARE_METATYPE(SystemBootParameters);
 
 class QtHostInterface : public QObject, private CommonHostInterface
 {
@@ -52,6 +55,9 @@ public:
 
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
+  /// Fills menu with save state info and handlers.
+  void populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu);
+
 Q_SIGNALS:
   void errorReported(const QString& message);
   void messageReported(const QString& message);
@@ -75,9 +81,8 @@ public Q_SLOTS:
   void applySettings();
   void updateInputMap();
   void handleKeyEvent(int key, bool pressed);
-  void bootSystemFromFile(const QString& filename);
+  void bootSystem(const SystemBootParameters& params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
-  void bootSystemFromBIOS();
   void powerOffSystem();
   void synchronousPowerOffSystem();
   void resetSystem();

@@ -77,7 +77,7 @@ void HostInterface::CreateAudioStream()
   m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
 }
 
-bool HostInterface::BootSystemFromFile(const char* filename)
+bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 {
   if (!AcquireHostDisplay())
   {
@@ -92,7 +92,7 @@ bool HostInterface::BootSystemFromFile(const char* filename)
   CreateAudioStream();
 
   m_system = System::Create(this);
-  if (!m_system->Boot(filename))
+  if (!m_system->Boot(parameters))
   {
     ReportFormattedError("System failed to boot. The log may contain more information.");
     DestroySystem();
@@ -109,11 +109,6 @@ bool HostInterface::BootSystemFromFile(const char* filename)
     OnSystemPaused(true);
 
   return true;
-}
-
-bool HostInterface::BootSystemFromBIOS()
-{
-  return BootSystemFromFile(nullptr);
 }
 
 void HostInterface::PauseSystem(bool paused)
@@ -439,7 +434,8 @@ bool HostInterface::LoadState(const char* filename)
   }
   else
   {
-    if (!BootSystemFromFile(nullptr))
+    SystemBootParameters boot_params;
+    if (!BootSystem(boot_params))
     {
       ReportFormattedError("Failed to boot system to load state from '%s'.", filename);
       return false;
@@ -512,7 +508,9 @@ bool HostInterface::SaveState(bool global, s32 slot)
 
 bool HostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
 {
-  if (!BootSystemFromFile(filename))
+  SystemBootParameters boot_params;
+  boot_params.filename = filename;
+  if (!BootSystem(boot_params))
     return false;
 
   const bool global = m_system->GetRunningCode().empty();
@@ -762,6 +760,20 @@ std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(
   return si;
 }
 
+void HostInterface::DeleteSaveStates(const char* game_code, bool resume)
+{
+  const std::vector<SaveStateInfo> states(GetAvailableSaveStates(game_code));
+  for (const SaveStateInfo& si : states)
+  {
+    if (si.global || (!resume && si.slot < 0))
+      continue;
+
+    Log_InfoPrintf("Removing save state at '%s'", si.path.c_str());
+    if (!FileSystem::DeleteFile(si.path.c_str()))
+      Log_ErrorPrintf("Failed to delete save state file '%s'", si.path.c_str());
+  }
+}
+
 std::string HostInterface::GetMostRecentResumeSaveStatePath() const
 {
   std::vector<FILESYSTEM_FIND_DATA> files;
@@ -970,7 +982,9 @@ void HostInterface::RecreateSystem()
   }
 
   DestroySystem();
-  if (!BootSystemFromFile(nullptr))
+
+  SystemBootParameters boot_params;
+  if (!BootSystem(boot_params))
   {
     ReportError("Failed to boot system after recreation.");
     return;
