@@ -120,6 +120,9 @@ void HostInterface::PauseSystem(bool paused)
   m_audio_stream->PauseOutput(m_paused);
   OnSystemPaused(paused);
   UpdateSpeedLimiterState();
+
+  if (!paused)
+    m_system->ResetPerformanceCounters();
 }
 
 void HostInterface::ResetSystem()
