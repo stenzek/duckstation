@@ -870,7 +870,7 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
       {
         // TODO: Handle unaligned reads...
         u16* pixel_ptr = &dst_row_ptr[(x + col++) % VRAM_WIDTH];
-        if (((*pixel_ptr) & mask_and) == mask_and)
+        if (((*pixel_ptr) & mask_and) == 0)
           *pixel_ptr = *(src_ptr++) | mask_or;
       }
     }
@@ -892,7 +892,7 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
     {
       const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
       u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];
-      if ((*dst_pixel_ptr & mask_and) == mask_and)
+      if ((*dst_pixel_ptr & mask_and) == 0)
         *dst_pixel_ptr = src_pixel | mask_or;
     }
   }

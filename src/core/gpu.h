@@ -390,9 +390,17 @@ protected:
       return ((bits & MASK) == MASK);
     }
 
-    // During transfer/render operations, if ((dst_pixel & mask_and) == mask_and) { pixel = src_pixel | mask_or }
-    u16 GetMaskAND() const { return check_mask_before_draw ? 0x8000 : 0x0000; }
-    u16 GetMaskOR() const { return set_mask_while_drawing ? 0x8000 : 0x0000; }
+    // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
+    u16 GetMaskAND() const
+    {
+      // return check_mask_before_draw ? 0x8000 : 0x0000;
+      return Truncate16((bits << 3) & 0x8000);
+    }
+    u16 GetMaskOR() const
+    {
+      // return set_mask_while_drawing ? 0x8000 : 0x0000;
+      return Truncate16((bits << 4) & 0x8000);
+    }
   } m_GPUSTAT = {};
 
   struct DrawMode
