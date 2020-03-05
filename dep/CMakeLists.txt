@@ -10,6 +10,7 @@ add_subdirectory(minizip)
 add_subdirectory(lzma)
 add_subdirectory(libFLAC)
 add_subdirectory(libchdr)
+add_subdirectory(xxhash)
 
 if(NOT ANDROID)
   add_subdirectory(nativefiledialog)
