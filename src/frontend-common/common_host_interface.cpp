@@ -214,7 +214,7 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
   }
 
 #ifdef WITH_SDL2
-  if (device == "Controller")
+  if (StringUtil::StartsWith(device, "Controller"))
   {
     const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
     if (!controller_index || *controller_index < 0)
@@ -223,7 +223,7 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
       return false;
     }
 
-    if (button.find_first_of("Button") == 0)
+    if (StringUtil::StartsWith(button, "Button"))
     {
       const std::optional<int> button_index = StringUtil::FromChars<int>(button.substr(6));
       if (!button_index ||
@@ -235,7 +235,7 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
 
       return true;
     }
-    else if (button.find_first_of("+Axis") == 0 || button.find_first_of("-Axis"))
+    else if (StringUtil::StartsWith(button, "+Axis") || StringUtil::StartsWith(button, "-Axis"))
     {
       const std::optional<int> axis_index = StringUtil::FromChars<int>(button.substr(5));
       const bool positive = (button[0] == '+');
@@ -262,7 +262,7 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
                                             const std::string_view& axis, InputAxisHandler handler)
 {
 #ifdef WITH_SDL2
-  if (device == "Controller")
+  if (StringUtil::StartsWith(device, "Controller"))
   {
     const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
     if (!controller_index || *controller_index < 0)
@@ -271,7 +271,7 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
       return false;
     }
 
-    if (axis.find_first_of("Axis") == 0)
+    if (StringUtil::StartsWith(axis, "Axis"))
     {
       const std::optional<int> axis_index = StringUtil::FromChars<int>(axis.substr(4));
       if (!axis_index ||

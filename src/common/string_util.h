@@ -1,4 +1,5 @@
 #pragma once
+#include "types.h"
 #include <cstdarg>
 #include <cstddef>
 #include <cstring>
@@ -24,7 +25,7 @@ bool WildcardMatch(const char* subject, const char* mask, bool case_sensitive = 
 std::size_t Strlcpy(char* dst, const char* src, std::size_t size);
 
 /// Platform-independent strcasecmp
-inline int Strcasecmp(const char* s1, const char* s2)
+static inline int Strcasecmp(const char* s1, const char* s2)
 {
 #ifdef _MSC_VER
   return _stricmp(s1, s2);
@@ -35,7 +36,7 @@ inline int Strcasecmp(const char* s1, const char* s2)
 
 /// Wrapper arond std::from_chars
 template<typename T>
-std::optional<T> FromChars(const std::string_view str)
+static inline std::optional<T> FromChars(std::string_view str)
 {
   T value;
 
@@ -52,6 +53,12 @@ std::optional<T> FromChars(const std::string_view str)
 #endif
 
   return value;
+}
+
+/// starts_with from C++20
+ALWAYS_INLINE static bool StartsWith(std::string_view str, const char* prefix)
+{
+  return (str.compare(0, std::strlen(prefix), prefix) == 0);
 }
 
 } // namespace StringUtil
