@@ -264,6 +264,14 @@ void QtHostInterface::OnSystemPaused(bool paused)
 
   emit emulationPaused(paused);
 
+  if (m_background_controller_polling_enable_count > 0)
+  {
+    if (paused)
+      createBackgroundControllerPollTimer();
+    else
+      destroyBackgroundControllerPollTimer();
+  }
+
   if (!paused)
   {
     wakeThread();
@@ -562,7 +570,7 @@ void QtHostInterface::enableBackgroundControllerPolling()
   if (m_background_controller_polling_enable_count++ > 0)
     return;
 
-  if (!m_system)
+  if (!m_system || m_paused)
   {
     createBackgroundControllerPollTimer();
 
@@ -583,7 +591,7 @@ void QtHostInterface::disableBackgroundControllerPolling()
   if (--m_background_controller_polling_enable_count > 0)
     return;
 
-  if (!m_system)
+  if (!m_system || m_paused)
     destroyBackgroundControllerPollTimer();
 }
 
