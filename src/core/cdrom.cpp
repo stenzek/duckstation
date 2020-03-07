@@ -1475,16 +1475,18 @@ static constexpr s16 SaturateVolume(s32 volume)
 }
 
 template<bool STEREO, bool SAMPLE_RATE>
-static void ResampleXAADPCM(const s16* samples_in, u32 num_samples_in, SPU* spu, s16* left_ringbuf, s16* right_ringbuf,
+static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in, SPU* spu, s16* left_ringbuf, s16* right_ringbuf,
                             u8* p_ptr, u8* sixstep_ptr, const std::array<std::array<u8, 2>, 2>& volume_matrix)
 {
   u8 p = *p_ptr;
   u8 sixstep = *sixstep_ptr;
 
-  for (u32 in_sample_index = 0; in_sample_index < num_samples_in; in_sample_index++)
+  spu->EnsureCDAudioSpace(((num_frames_in * 7) / 6) << BoolToUInt8(SAMPLE_RATE));
+
+  for (u32 in_sample_index = 0; in_sample_index < num_frames_in; in_sample_index++)
   {
-    const s16 left = *(samples_in++);
-    const s16 right = STEREO ? *(samples_in++) : left;
+    const s16 left = *(frames_in++);
+    const s16 right = STEREO ? *(frames_in++) : left;
 
     if constexpr (!STEREO)
     {
@@ -1531,11 +1533,11 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   if (m_muted || m_adpcm_muted)
     return;
 
+  m_spu->GeneratePendingSamples();
+
   if (m_last_sector_subheader.codinginfo.IsStereo())
   {
     const u32 num_samples = m_last_sector_subheader.codinginfo.GetSamplesPerSector() / 2;
-    m_spu->EnsureCDAudioSpace(num_samples);
-
     if (m_last_sector_subheader.codinginfo.IsHalfSampleRate())
     {
       ResampleXAADPCM<true, true>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer[0].data(),
@@ -1552,8 +1554,6 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   else
   {
     const u32 num_samples = m_last_sector_subheader.codinginfo.GetSamplesPerSector();
-    m_spu->EnsureCDAudioSpace(num_samples);
-
     if (m_last_sector_subheader.codinginfo.IsHalfSampleRate())
     {
       ResampleXAADPCM<false, true>(sample_buffer.data(), num_samples, m_spu, m_xa_resample_ring_buffer[0].data(),
@@ -1611,6 +1611,8 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   // Apply volume when pushing sectors to SPU.
   if (m_muted)
     return;
+
+  m_spu->GeneratePendingSamples();
 
   constexpr bool is_stereo = true;
   constexpr u32 num_samples = RAW_SECTOR_OUTPUT_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);

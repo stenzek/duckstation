@@ -1128,19 +1128,15 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 
 void SPU::EnsureCDAudioSpace(u32 remaining_frames)
 {
-  if (m_cd_audio_buffer.IsEmpty())
-  {
-    // we want the audio to start playing at the right point, not a few cycles early, otherwise this'll cause sync
-    // issues.
-    m_sample_event->InvokeEarly();
-  }
+  if (m_cd_audio_buffer.GetSpace() >= (remaining_frames * 2))
+    return;
 
-  if (m_cd_audio_buffer.GetSpace() < (remaining_frames * 2))
-  {
-    Log_WarningPrintf("SPU CD Audio buffer overflow - writing %u samples with %u samples space", remaining_frames,
-                      m_cd_audio_buffer.GetSpace() / 2);
-    m_cd_audio_buffer.Remove((remaining_frames * 2) - m_cd_audio_buffer.GetSpace());
-  }
+  const u32 frames_to_drop = (remaining_frames * 2) - m_cd_audio_buffer.GetSpace();
+  Log_WarningPrintf(
+    "SPU CD Audio buffer overflow with %d pending ticks - writing %u frames with %u frames space. Dropping %u frames.",
+    m_sample_event->IsActive() ? (m_sample_event->GetTicksSinceLastExecution() / SYSCLK_TICKS_PER_SPU_TICK) : 0,
+    remaining_frames, m_cd_audio_buffer.GetSpace() / 2, frames_to_drop);
+  m_cd_audio_buffer.Remove(frames_to_drop);
 }
 
 void SPU::DrawDebugStateWindow()
