@@ -64,11 +64,11 @@ private:
 
   enum class Interrupt : u8
   {
-    INT1 = 0x01,
-    INT2 = 0x02,
+    DataReady = 0x01,
+    Complete = 0x02,
     ACK = 0x03,
-    INT4 = 0x04,
-    INT5 = 0x05
+    DataEnd = 0x04,
+    Error = 0x05
   };
 
   enum class Command : u16
@@ -120,7 +120,8 @@ private:
     Reading,
     Playing,
     Pausing,
-    Stopping
+    Stopping,
+    ChangingSession
   };
 
   union StatusRegister
@@ -208,6 +209,7 @@ private:
   void DoSeekComplete(TickCount ticks_late);
   void DoPauseComplete();
   void DoStopComplete();
+  void DoChangeSessionComplete();
   void DoIDRead();
   void DoTOCRead();
   void DoSectorRead();
@@ -253,6 +255,7 @@ private:
   CDImage::SubChannelQ m_last_subq{};
   u8 m_last_cdda_report_frame_nibble = 0xFF;
   u8 m_play_track_number_bcd = 0xFF;
+  u8 m_async_command_parameter = 0x00;
 
   std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};

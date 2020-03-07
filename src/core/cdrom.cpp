@@ -112,6 +112,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
   sw.Do(&m_last_cdda_report_frame_nibble);
   sw.Do(&m_play_track_number_bcd);
+  sw.Do(&m_async_command_parameter);
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);
@@ -464,14 +465,14 @@ void CDROM::SendErrorResponse(u8 reason /*= 0x80*/)
 {
   m_response_fifo.Push(m_secondary_status.bits | 0x01);
   m_response_fifo.Push(reason);
-  SetInterrupt(Interrupt::INT5);
+  SetInterrupt(Interrupt::Error);
 }
 
 void CDROM::SendAsyncErrorResponse(u8 reason /*= 0x80*/)
 {
   m_async_response_fifo.Push(m_secondary_status.bits | 0x01);
   m_async_response_fifo.Push(reason);
-  SetAsyncInterrupt(Interrupt::INT5);
+  SetAsyncInterrupt(Interrupt::Error);
 }
 
 void CDROM::UpdateStatusRegister()
@@ -668,6 +669,32 @@ void CDROM::ExecuteCommand()
       {
         SendACKAndStat();
         BeginSeeking(logical, false, false);
+      }
+
+      EndCommand();
+      return;
+    }
+
+    case Command::SetSession:
+    {
+      const u8 session = m_param_fifo.IsEmpty() ? 0 : m_param_fifo.Peek(0);
+      Log_DebugPrintf("CDROM SetSession command, session=%u", session);
+
+      if (!HasMedia() || m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing)
+      {
+        SendErrorResponse(0x80);
+      }
+      else if (session == 0)
+      {
+        SendErrorResponse(0x10);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        m_async_command_parameter = session;
+        m_drive_state = DriveState::ChangingSession;
+        m_drive_event->Schedule(MASTER_CLOCK / 2); // half a second
       }
 
       EndCommand();
@@ -1011,6 +1038,10 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
       DoSectorRead();
       break;
 
+    case DriveState::ChangingSession:
+      DoChangeSessionComplete();
+      break;
+
     case DriveState::Idle:
     default:
       break;
@@ -1114,7 +1145,7 @@ void CDROM::DoSpinUpComplete()
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
-  SetAsyncInterrupt(Interrupt::INT2);
+  SetAsyncInterrupt(Interrupt::Complete);
 }
 
 void CDROM::DoSeekComplete(TickCount ticks_late)
@@ -1164,7 +1195,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     else
     {
       m_async_response_fifo.Push(m_secondary_status.bits);
-      SetAsyncInterrupt(Interrupt::INT2);
+      SetAsyncInterrupt(Interrupt::Complete);
     }
   }
   else
@@ -1192,7 +1223,7 @@ void CDROM::DoPauseComplete()
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
-  SetAsyncInterrupt(Interrupt::INT2);
+  SetAsyncInterrupt(Interrupt::Complete);
 }
 
 void CDROM::DoStopComplete()
@@ -1208,7 +1239,29 @@ void CDROM::DoStopComplete()
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
-  SetAsyncInterrupt(Interrupt::INT2);
+  SetAsyncInterrupt(Interrupt::Complete);
+}
+
+void CDROM::DoChangeSessionComplete()
+{
+  Log_DebugPrintf("Changing session complete");
+  m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
+  m_secondary_status.ClearActiveBits();
+  m_secondary_status.motor_on = true;
+
+  m_async_response_fifo.Clear();
+  if (m_async_command_parameter == 0x01)
+  {
+    m_async_response_fifo.Push(m_secondary_status.bits);
+    SetAsyncInterrupt(Interrupt::Complete);
+  }
+  else
+  {
+    // we don't emulate multisession discs.. for now
+    m_secondary_status.seek_error = true;
+    SendAsyncErrorResponse(0x40);
+  }
 }
 
 void CDROM::DoIDRead()
@@ -1226,7 +1279,7 @@ void CDROM::DoIDRead()
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
   m_async_response_fifo.PushRange(response2, countof(response2));
-  SetAsyncInterrupt(Interrupt::INT2);
+  SetAsyncInterrupt(Interrupt::Complete);
 }
 
 void CDROM::DoTOCRead()
@@ -1236,7 +1289,7 @@ void CDROM::DoTOCRead()
   m_drive_event->Deactivate();
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
-  SetAsyncInterrupt(Interrupt::INT2);
+  SetAsyncInterrupt(Interrupt::Complete);
 }
 
 void CDROM::DoSectorRead()
@@ -1265,7 +1318,7 @@ void CDROM::DoSectorRead()
 
       ClearAsyncInterrupt();
       m_async_response_fifo.Push(m_secondary_status.bits);
-      SetAsyncInterrupt(Interrupt::INT4);
+      SetAsyncInterrupt(Interrupt::DataEnd);
 
       m_secondary_status.ClearActiveBits();
       m_drive_state = DriveState::Idle;
@@ -1375,7 +1428,7 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   m_async_response_fifo.Push(m_secondary_status.bits);
-  SetAsyncInterrupt(Interrupt::INT1);
+  SetAsyncInterrupt(Interrupt::DataReady);
 }
 
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
@@ -1550,7 +1603,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
 
       m_async_response_fifo.Push(0); // peak low
       m_async_response_fifo.Push(0); // peak high
-      SetAsyncInterrupt(Interrupt::INT1);
+      SetAsyncInterrupt(Interrupt::DataReady);
     }
   }
 
@@ -1632,9 +1685,9 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 10> drive_state_names = {{"Idle", "Spinning Up", "Seeking (Physical)",
-                                                                       "Seeking (Logical)", "Reading ID", "Reading TOC",
-                                                                       "Reading", "Playing", "Pausing", "Stopping"}};
+    static constexpr std::array<const char*, 11> drive_state_names = {
+      {"Idle", "Spinning Up", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC", "Reading",
+       "Playing", "Pausing", "Stopping", "Changing Session"}};
 
     ImGui::Columns(3);
 
