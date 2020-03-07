@@ -153,7 +153,6 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   Log_InfoPrintf("Max line width: %d", line_width_range[1]);
 
   m_max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
-  Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
 
   glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
   Log_InfoPrintf("Uniform buffer offset alignment: %u", m_uniform_buffer_alignment);

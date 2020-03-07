@@ -202,4 +202,6 @@ private:
     m_batch_current_vertex_ptr->Set(std::forward<Args>(args)...);
     m_batch_current_vertex_ptr++;
   }
+
+  void PrintSettingsToLog();
 };

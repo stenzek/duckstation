@@ -126,8 +126,6 @@ void GPU_HW_OpenGL_ES::SetCapabilities(HostDisplay* host_display)
   Log_InfoPrintf("Max line width: %d", line_width_range[1]);
 
   m_max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
-  Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
-
   m_supports_dual_source_blend = false;
 }
 

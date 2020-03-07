@@ -145,12 +145,9 @@ void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
 void GPU_HW_D3D11::SetCapabilities()
 {
   const u32 max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
-  Log_InfoPrintf("Max texture size: %dx%d", max_texture_size, max_texture_size);
   const u32 max_texture_scale = max_texture_size / VRAM_WIDTH;
 
   m_max_resolution_scale = max_texture_scale;
-  Log_InfoPrintf("Maximum resolution scale is %u", m_max_resolution_scale);
-
   m_supports_dual_source_blend = true;
 }
 

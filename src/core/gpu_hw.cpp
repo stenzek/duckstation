@@ -38,6 +38,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Int
     m_resolution_scale = std::clamp<u32>(m_resolution_scale, 1u, m_max_resolution_scale);
   }
 
+  PrintSettingsToLog();
   return true;
 }
 
@@ -75,6 +76,17 @@ void GPU_HW::UpdateSettings()
   m_true_color = settings.gpu_true_color;
   m_scaled_dithering = settings.gpu_scaled_dithering;
   m_texture_filtering = settings.gpu_texture_filtering;
+  PrintSettingsToLog();
+}
+
+void GPU_HW::PrintSettingsToLog()
+{
+  Log_InfoPrintf("Resolution Scale: %u (%ux%u), maximum %u", m_resolution_scale, VRAM_WIDTH * m_resolution_scale,
+                 VRAM_HEIGHT * m_resolution_scale, m_max_resolution_scale);
+  Log_InfoPrintf("Dithering: %s%s", m_true_color ? "Disabled" : "Enabled",
+                 (!m_true_color && m_scaled_dithering) ? " (Scaled)" : "");
+  Log_InfoPrintf("Texture Filtering: %s", m_texture_filtering ? "Enabled" : "Disabled");
+  Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
 }
 
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
