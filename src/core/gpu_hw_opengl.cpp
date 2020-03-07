@@ -819,19 +819,21 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 
 void GPU_HW_OpenGL::FlushRender()
 {
-  const u32 vertex_count = GetBatchVertexCount();
-  if (vertex_count == 0)
+  static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
+
+  if (!m_batch_current_vertex_ptr)
     return;
 
-  m_renderer_stats.num_batches++;
-
+  const u32 vertex_count = GetBatchVertexCount();
   m_vertex_stream_buffer->Unmap(vertex_count * sizeof(BatchVertex));
-  m_vertex_stream_buffer->Bind();
   m_batch_start_vertex_ptr = nullptr;
   m_batch_end_vertex_ptr = nullptr;
   m_batch_current_vertex_ptr = nullptr;
+  if (vertex_count == 0)
+    return;
 
-  static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
+  m_vertex_stream_buffer->Bind();
+  m_renderer_stats.num_batches++;
 
   if (m_batch.NeedsTwoPassRendering())
   {

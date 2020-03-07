@@ -723,16 +723,19 @@ void GPU_HW_D3D11::UpdateVRAMReadTexture()
 
 void GPU_HW_D3D11::FlushRender()
 {
-  const u32 vertex_count = GetBatchVertexCount();
-  if (vertex_count == 0)
+  if (!m_batch_current_vertex_ptr)
     return;
 
-  m_renderer_stats.num_batches++;
-
+  const u32 vertex_count = GetBatchVertexCount();
   m_vertex_stream_buffer.Unmap(m_context.Get(), vertex_count * sizeof(BatchVertex));
   m_batch_start_vertex_ptr = nullptr;
   m_batch_end_vertex_ptr = nullptr;
   m_batch_current_vertex_ptr = nullptr;
+
+  if (vertex_count == 0)
+    return;
+
+  m_renderer_stats.num_batches++;
 
   if (m_batch.NeedsTwoPassRendering())
   {
