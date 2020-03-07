@@ -99,6 +99,9 @@ void GPU_HW_D3D11::ResetGraphicsAPIState()
   GPU_HW::ResetGraphicsAPIState();
 
   m_context->GSSetShader(nullptr, nullptr, 0);
+
+  // In D3D11 we can't leave a buffer mapped across a Present() call.
+  FlushRender();
 }
 
 void GPU_HW_D3D11::RestoreGraphicsAPIState()
