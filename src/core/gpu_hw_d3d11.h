@@ -38,6 +38,12 @@ protected:
   void UpdateVRAMReadTexture() override;
 
 private:
+  enum : u32
+  {
+    // Currently we don't stream uniforms, instead just re-map the buffer every time and let the driver take care of it.
+    MAX_UNIFORM_BUFFER_SIZE = 64
+  };
+
   void SetCapabilities();
   bool CreateFramebuffer();
   void ClearFramebuffer();

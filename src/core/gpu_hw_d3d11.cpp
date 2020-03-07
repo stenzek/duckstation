@@ -212,7 +212,7 @@ bool GPU_HW_D3D11::CreateVertexBuffer()
 
 bool GPU_HW_D3D11::CreateUniformBuffer()
 {
-  return m_uniform_stream_buffer.Create(m_device.Get(), D3D11_BIND_CONSTANT_BUFFER, UNIFORM_BUFFER_SIZE);
+  return m_uniform_stream_buffer.Create(m_device.Get(), D3D11_BIND_CONSTANT_BUFFER, MAX_UNIFORM_BUFFER_SIZE);
 }
 
 bool GPU_HW_D3D11::CreateTextureBuffer()
@@ -403,7 +403,9 @@ bool GPU_HW_D3D11::CompileShaders()
 
 void GPU_HW_D3D11::UploadUniformBlock(const void* data, u32 data_size)
 {
-  const auto res = m_uniform_stream_buffer.Map(m_context.Get(), m_uniform_stream_buffer.GetSize(), data_size);
+  Assert(data_size <= MAX_UNIFORM_BUFFER_SIZE);
+
+  const auto res = m_uniform_stream_buffer.Map(m_context.Get(), MAX_UNIFORM_BUFFER_SIZE, data_size);
   std::memcpy(res.pointer, data, data_size);
   m_uniform_stream_buffer.Unmap(m_context.Get(), data_size);
 
