@@ -642,7 +642,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchLineExpandGeometryShader()
   else
   {
     ss << R"(
-CONSTANT float2 OFFSET = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
 
 struct Vertex
 {
@@ -655,24 +655,28 @@ void main(line Vertex input[2], inout TriangleStream<Vertex> output)
 {
   Vertex v;
 
+  float2 dir = normalize(input[1].pos.xy - input[0].pos.xy);
+  float2 normal = cross(float3(dir, 0.0), float3(0.0, 0.0, 1.0)).xy * WIDTH;
+  float4 offset = float4(normal, 0.0, 0.0);
+
   // top-left
   v.col0 = input[0].col0;
-  v.pos = input[0].pos + float4(-OFFSET.x, +OFFSET.y, 0.0, 0.0);
+  v.pos = input[0].pos - offset;
   output.Append(v);
 
   // top-right
   v.col0 = input[0].col0;
-  v.pos = input[0].pos + float4(+OFFSET.x, +OFFSET.y, 0.0, 0.0);
+  v.pos = input[0].pos + offset;
   output.Append(v);
 
   // bottom-left
   v.col0 = input[1].col0;
-  v.pos = input[1].pos + float4(-OFFSET.x, -OFFSET.y, 0.0, 0.0);
+  v.pos = input[1].pos - offset;
   output.Append(v);
 
   // bottom-right
   v.col0 = input[1].col0;
-  v.pos = input[1].pos + float4(+OFFSET.x, -OFFSET.y, 0.0, 0.0);
+  v.pos = input[1].pos + offset;
   output.Append(v);
 
   output.RestartStrip();
