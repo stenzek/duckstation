@@ -1127,6 +1127,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+  m_secondary_status.seeking = true;
   m_sector_buffer.clear();
 
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
