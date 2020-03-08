@@ -497,9 +497,9 @@ void CDROM::UpdateInterruptRequest()
 
 TickCount CDROM::GetAckDelayForCommand() const
 {
-  const u32 default_ack_delay = 60000;
+  const u32 default_ack_delay = 10000;
   if (m_command == Command::Init || m_command == Command::ReadTOC)
-    return 3000;
+    return 60000;
   else
     return default_ack_delay;
 }
