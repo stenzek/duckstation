@@ -264,6 +264,7 @@ private:
   CDXA::XASubHeader m_last_sector_subheader{};
   CDImage::SubChannelQ m_last_subq{};
   u8 m_last_cdda_report_frame_nibble = 0xFF;
+  u8 m_cdda_report_delay = 0x00;
   u8 m_play_track_number_bcd = 0xFF;
   u8 m_async_command_parameter = 0x00;
 

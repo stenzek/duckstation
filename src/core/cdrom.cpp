@@ -64,6 +64,7 @@ void CDROM::SoftReset()
   std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
   std::memset(&m_last_subq, 0, sizeof(m_last_subq));
   m_last_cdda_report_frame_nibble = 0xFF;
+  m_cdda_report_delay = 0;
 
   m_next_cd_audio_volume_matrix[0][0] = 0x80;
   m_next_cd_audio_volume_matrix[0][1] = 0x00;
@@ -111,6 +112,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
   sw.Do(&m_last_cdda_report_frame_nibble);
+  sw.Do(&m_cdda_report_delay);
   sw.Do(&m_play_track_number_bcd);
   sw.Do(&m_async_command_parameter);
   sw.Do(&m_cd_audio_volume_matrix);
@@ -1075,6 +1077,7 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
 {
   Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
   m_last_cdda_report_frame_nibble = 0xFF;
+  m_cdda_report_delay = CDImage::FRAMES_PER_SECOND;
   m_play_track_number_bcd = track_bcd;
 
   // if track zero, start from current position
@@ -1099,6 +1102,7 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+  m_secondary_status.playing_cdda = true;
 
   // TODO: Should the sector buffer be cleared here?
   m_sector_buffer.clear();
@@ -1300,7 +1304,6 @@ void CDROM::DoSectorRead()
   // TODO: Check SubQ checksum.
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
   const bool is_data_sector = subq.control.data;
-  m_secondary_status.playing_cdda = !is_data_sector;
   if (!is_data_sector)
   {
     if (m_play_track_number_bcd == 0)
@@ -1579,7 +1582,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   if (m_mode.report_audio)
   {
     const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
-    if (m_last_cdda_report_frame_nibble != frame_nibble)
+    if (m_last_cdda_report_frame_nibble != frame_nibble && (m_cdda_report_delay == 0 || --m_cdda_report_delay == 0))
     {
       m_last_cdda_report_frame_nibble = frame_nibble;
 
