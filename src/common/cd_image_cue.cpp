@@ -125,7 +125,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     // two seconds pregap for track 1 is assumed if not specified
     long pregap_frames = track_get_zero_pre(track);
     bool pregap_in_file = pregap_frames > 0 && track_start >= pregap_frames;
-    if (pregap_frames < 0 && mode != TrackMode::Audio)
+    if (pregap_frames < 0)
       pregap_frames = 2 * FRAMES_PER_SECOND;
 
     // create the index for the pregap
