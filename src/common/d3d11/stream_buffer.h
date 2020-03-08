@@ -39,5 +39,6 @@ private:
   ComPtr<ID3D11Buffer> m_buffer;
   u32 m_size;
   u32 m_position;
+  bool m_use_map_no_overwrite = false;
 };
 } // namespace GL
