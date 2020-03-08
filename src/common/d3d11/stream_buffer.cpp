@@ -55,24 +55,19 @@ void StreamBuffer::Release()
 StreamBuffer::MappingResult StreamBuffer::Map(ID3D11DeviceContext* context, u32 alignment, u32 min_size)
 {
   m_position = Common::AlignUp(m_position, alignment);
-
-  D3D11_MAP map;
   if ((m_position + min_size) >= m_size)
   {
     // wrap around
     m_position = 0;
-    map = D3D11_MAP_WRITE_DISCARD;
-  }
-  else
-  {
-    map = D3D11_MAP_WRITE_NO_OVERWRITE;
   }
 
   D3D11_MAPPED_SUBRESOURCE sr;
-  const HRESULT hr = context->Map(m_buffer.Get(), 0, map, 0, &sr);
+  const D3D11_MAP map_type = (m_position == 0) ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE;
+  const HRESULT hr = context->Map(m_buffer.Get(), 0, map_type, 0, &sr);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Map failed: 0x%08X", hr);
+    Log_ErrorPrintf("Map failed: 0x%08X (alignment %u, minsize %u, size %u, position %u, map type %u)", hr, alignment,
+                    min_size, m_size, m_position, static_cast<u32>(map_type));
     Panic("Map failed");
     return {};
   }
