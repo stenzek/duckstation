@@ -136,6 +136,18 @@ private:
     BitField<u8, bool, 7, 1> BUSYSTS;
   };
 
+  enum StatBits : u8
+  {
+    STAT_ERROR = (1 << 0),
+    STAT_MOTOR_ON = (1 << 1),
+    STAT_SEEK_ERROR = (1 << 2),
+    STAT_ID_ERROR = (1 << 3),
+    STAT_SHELL_OPEN = (1 << 4),
+    STAT_HEADER_VALID = (1 << 5),
+    STAT_SEEKING = (1 << 6),
+    STAT_PLAYING_CDDA = (1 << 7)
+  };
+
   union SecondaryStatusRegister
   {
     u8 bits;
@@ -151,9 +163,7 @@ private:
     /// Clears the CDDA/seeking/header valid bits.
     ALWAYS_INLINE void ClearActiveBits()
     {
-      header_valid = false;
-      seeking = false;
-      playing_cdda = false;
+      bits &= ~(STAT_HEADER_VALID | STAT_SEEKING | STAT_PLAYING_CDDA);
     }
   };
 
@@ -189,8 +199,8 @@ private:
   void ClearAsyncInterrupt();
   void DeliverAsyncInterrupt();
   void SendACKAndStat();
-  void SendErrorResponse(u8 reason = 0x80);
-  void SendAsyncErrorResponse(u8 reason = 0x80);
+  void SendErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
+  void SendAsyncErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
   void UpdateStatusRegister();
   void UpdateInterruptRequest();
 

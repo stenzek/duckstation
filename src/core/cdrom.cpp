@@ -461,16 +461,16 @@ void CDROM::SendACKAndStat()
   SetInterrupt(Interrupt::ACK);
 }
 
-void CDROM::SendErrorResponse(u8 reason /*= 0x80*/)
+void CDROM::SendErrorResponse(u8 stat_bits /* = STAT_ERROR */, u8 reason /* = 0x80 */)
 {
-  m_response_fifo.Push(m_secondary_status.bits | 0x01);
+  m_response_fifo.Push(m_secondary_status.bits | stat_bits);
   m_response_fifo.Push(reason);
   SetInterrupt(Interrupt::Error);
 }
 
-void CDROM::SendAsyncErrorResponse(u8 reason /*= 0x80*/)
+void CDROM::SendAsyncErrorResponse(u8 stat_bits /* = STAT_ERROR */, u8 reason /* = 0x80 */)
 {
-  m_async_response_fifo.Push(m_secondary_status.bits | 0x01);
+  m_async_response_fifo.Push(m_secondary_status.bits | stat_bits);
   m_async_response_fifo.Push(reason);
   SetAsyncInterrupt(Interrupt::Error);
 }
@@ -497,9 +497,9 @@ void CDROM::UpdateInterruptRequest()
 
 TickCount CDROM::GetAckDelayForCommand() const
 {
-  const u32 default_ack_delay = 3000;
+  const u32 default_ack_delay = 60000;
   if (m_command == Command::Init || m_command == Command::ReadTOC)
-    return 60000;
+    return 3000;
   else
     return default_ack_delay;
 }
@@ -586,7 +586,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM GetID command");
       if (!HasMedia())
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else
       {
@@ -605,7 +605,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM ReadTOC command");
       if (!HasMedia())
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else
       {
@@ -663,7 +663,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM %s command", logical ? "SeekL" : "SeekP");
       if (!HasMedia())
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else
       {
@@ -682,11 +682,11 @@ void CDROM::ExecuteCommand()
 
       if (!HasMedia() || m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing)
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else if (session == 0)
       {
-        SendErrorResponse(0x10);
+        SendErrorResponse(STAT_ERROR, 0x10);
       }
       else
       {
@@ -707,7 +707,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM read command");
       if (!HasMedia())
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else
       {
@@ -726,7 +726,7 @@ void CDROM::ExecuteCommand()
 
       if (!HasMedia())
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else
       {
@@ -787,7 +787,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM motor on command");
       if (m_secondary_status.motor_on)
       {
-        SendErrorResponse(0x20);
+        SendErrorResponse(STAT_ERROR, 0x20);
       }
       else
       {
@@ -827,7 +827,7 @@ void CDROM::ExecuteCommand()
                       m_last_sector_header.second, m_last_sector_header.frame);
       if (!m_secondary_status.header_valid)
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else
       {
@@ -871,7 +871,7 @@ void CDROM::ExecuteCommand()
       }
       else
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
 
       EndCommand();
@@ -886,11 +886,11 @@ void CDROM::ExecuteCommand()
 
       if (!HasMedia())
       {
-        SendErrorResponse(0x80);
+        SendErrorResponse(STAT_ERROR, 0x80);
       }
       else if (track > m_reader.GetMedia()->GetTrackCount())
       {
-        SendErrorResponse(0x10);
+        SendErrorResponse(STAT_ERROR, 0x10);
       }
       else
       {
@@ -1204,8 +1204,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     CDImage::Position pos(CDImage::Position::FromLBA(m_last_requested_sector));
     Log_WarningPrintf("%s seek to [%02u:%02u:%02u] failed", logical ? "Logical" : "Physical", pos.minute, pos.second,
                       pos.frame);
-    m_secondary_status.seek_error = true;
-    SendAsyncErrorResponse(0x80);
+    SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
   }
 
   m_setloc_pending = false;
@@ -1260,8 +1259,7 @@ void CDROM::DoChangeSessionComplete()
   else
   {
     // we don't emulate multisession discs.. for now
-    m_secondary_status.seek_error = true;
-    SendAsyncErrorResponse(0x40);
+    SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x40);
   }
 }
 
