@@ -1239,8 +1239,6 @@ void CDROM::DoStopComplete()
   m_secondary_status.motor_on = false;
   m_sector_buffer.clear();
 
-  m_reader.QueueReadSector(0);
-
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
   SetAsyncInterrupt(Interrupt::Complete);
