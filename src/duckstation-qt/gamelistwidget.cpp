@@ -38,8 +38,7 @@ public:
     return std::nullopt;
   }
 
-  GameListModel(GameList* game_list, QObject* parent = nullptr)
-    : QAbstractTableModel(parent), m_game_list(game_list), m_size(static_cast<int>(m_game_list->GetEntryCount()))
+  GameListModel(GameList* game_list, QObject* parent = nullptr) : QAbstractTableModel(parent), m_game_list(game_list)
   {
     loadCommonImages();
   }
@@ -178,15 +177,8 @@ public:
 
   void refresh()
   {
-    if (m_size > 0)
-    {
-      beginRemoveRows(QModelIndex(), 0, m_size - 1);
-      endRemoveRows();
-    }
-
-    m_size = static_cast<int>(m_game_list->GetEntryCount());
-    beginInsertRows(QModelIndex(), 0, m_size - 1);
-    endInsertRows();
+    beginResetModel();
+    endResetModel();
   }
 
   bool titlesLessThan(int left_row, int right_row, bool ascending) const
@@ -215,7 +207,6 @@ private:
   }
 
   GameList* m_game_list;
-  int m_size;
 
   QPixmap m_type_disc_pixmap;
   QPixmap m_type_exe_pixmap;
