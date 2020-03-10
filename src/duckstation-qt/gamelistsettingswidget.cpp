@@ -4,7 +4,6 @@
 #include "core/game_list.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
-#include <unzip.h>
 #include <QtCore/QAbstractTableModel>
 #include <QtCore/QDebug>
 #include <QtCore/QSettings>
@@ -17,6 +16,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 #include <algorithm>
+#include <unzip.h>
 
 static constexpr char REDUMP_DOWNLOAD_URL[] = "http://redump.org/datfile/psx/serial,version,description";
 
@@ -104,15 +104,19 @@ public:
 
   void addEntry(const QString& path, bool recursive)
   {
-    if (std::find_if(m_entries.begin(), m_entries.end(), [path](const Entry& e) { return e.path == path; }) !=
-        m_entries.end())
+    auto existing = std::find_if(m_entries.begin(), m_entries.end(), [path](const Entry& e) { return e.path == path; });
+    if (existing != m_entries.end())
     {
-      return;
+      const int row = static_cast<int>(existing - m_entries.begin());
+      existing->recursive = recursive;
+      dataChanged(index(row, 1), index(row, 1), QVector<int>{Qt::CheckStateRole});
     }
-
-    beginInsertRows(QModelIndex(), static_cast<int>(m_entries.size()), static_cast<int>(m_entries.size()));
-    m_entries.push_back({path, recursive});
-    endInsertRows();
+    else
+    {
+      beginInsertRows(QModelIndex(), static_cast<int>(m_entries.size()), static_cast<int>(m_entries.size()));
+      m_entries.push_back({path, recursive});
+      endInsertRows();
+    }
 
     saveToSettings();
     m_host_interface->refreshGameList(false);
