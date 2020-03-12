@@ -12,7 +12,7 @@ void Settings::Load(SettingsInterface& si)
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
   speed_limiter_enabled = si.GetBoolValue("Main", "SpeedLimiterEnabled", true);
   increase_timer_resolution = si.GetBoolValue("Main", "IncreaseTimerResolution", true);
-  start_paused = si.GetBoolValue("Mainal", "StartPaused", false);
+  start_paused = si.GetBoolValue("Main", "StartPaused", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
 
