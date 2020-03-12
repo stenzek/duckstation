@@ -10,6 +10,7 @@
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
@@ -38,6 +39,7 @@ MainWindow::~MainWindow()
 void MainWindow::reportError(const QString& message)
 {
   QMessageBox::critical(this, tr("DuckStation"), message, QMessageBox::Ok);
+  focusDisplayWidget();
 }
 
 void MainWindow::reportMessage(const QString& message)
@@ -88,6 +90,9 @@ void MainWindow::destroyDisplayWindow()
 
 void MainWindow::setFullscreen(bool fullscreen)
 {
+  if (fullscreen == m_display_widget->isFullScreen())
+    return;
+
   if (fullscreen)
   {
     m_ui.mainContainer->setCurrentIndex(0);

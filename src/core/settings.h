@@ -41,6 +41,7 @@ struct Settings
   bool speed_limiter_enabled = true;
   bool increase_timer_resolution = true;
   bool start_paused = false;
+  bool start_fullscreen = false;
   bool save_state_on_exit = true;
   bool confim_power_off = true;
 
@@ -53,7 +54,6 @@ struct Settings
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   bool display_force_progressive_scan = false;
   bool display_linear_filtering = true;
-  bool display_fullscreen = false;
   bool video_sync_enabled = true;
 
   bool cdrom_read_thread = true;

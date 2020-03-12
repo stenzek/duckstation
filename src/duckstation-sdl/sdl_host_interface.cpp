@@ -301,7 +301,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
   INISettingsInterface si(intf->GetSettingsFileName().c_str());
   intf->m_settings_copy.Load(si);
   intf->m_settings = intf->m_settings_copy;
-  intf->m_fullscreen = intf->m_settings_copy.display_fullscreen;
+  intf->m_fullscreen = intf->m_settings_copy.start_fullscreen;
 
   if (!intf->CreateSDLWindow())
   {
@@ -1105,6 +1105,7 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings_copy.speed_limiter_enabled);
         settings_changed |= ImGui::Checkbox("Increase Timer Resolution", &m_settings_copy.increase_timer_resolution);
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
+        settings_changed |= ImGui::Checkbox("Start Fullscreen", &m_settings_copy.start_fullscreen);
         settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings_copy.save_state_on_exit);
       }
 
@@ -1245,9 +1246,6 @@ void SDLHostInterface::DrawSettingsWindow()
           m_settings_copy.display_crop_mode = static_cast<DisplayCropMode>(display_crop_mode);
           settings_changed = true;
         }
-
-        if (ImGui::Checkbox("Start Fullscreen", &m_settings_copy.display_fullscreen))
-          settings_changed = true;
 
         settings_changed |= ImGui::Checkbox("Use Debug Device", &m_settings_copy.gpu_use_debug_device);
         settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings_copy.display_linear_filtering);

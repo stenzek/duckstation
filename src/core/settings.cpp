@@ -13,6 +13,7 @@ void Settings::Load(SettingsInterface& si)
   speed_limiter_enabled = si.GetBoolValue("Main", "SpeedLimiterEnabled", true);
   increase_timer_resolution = si.GetBoolValue("Main", "IncreaseTimerResolution", true);
   start_paused = si.GetBoolValue("Main", "StartPaused", false);
+  start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
 
@@ -32,7 +33,6 @@ void Settings::Load(SettingsInterface& si)
                         .value_or(DisplayCropMode::None);
   display_force_progressive_scan = si.GetBoolValue("Display", "ForceProgressiveScan", true);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
-  display_fullscreen = si.GetBoolValue("Display", "Fullscreen", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
@@ -71,6 +71,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "SpeedLimiterEnabled", speed_limiter_enabled);
   si.SetBoolValue("Main", "IncreaseTimerResolution", increase_timer_resolution);
   si.SetBoolValue("Main", "StartPaused", start_paused);
+  si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
 
@@ -85,7 +86,6 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
-  si.SetBoolValue("Display", "Fullscreen", display_fullscreen);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
 
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);

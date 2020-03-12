@@ -41,6 +41,9 @@ protected:
 
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
 
+  virtual void OnSystemCreated() override;
+  virtual void OnSystemPaused(bool paused) override;
+
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
   virtual std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const;

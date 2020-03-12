@@ -113,7 +113,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
 void HostInterface::PauseSystem(bool paused)
 {
-  if (paused == m_paused)
+  if (paused == m_paused || !m_system)
     return;
 
   m_paused = paused;

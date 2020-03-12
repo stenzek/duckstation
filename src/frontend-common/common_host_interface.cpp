@@ -47,6 +47,24 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
   }
 }
 
+void CommonHostInterface::OnSystemCreated()
+{
+  HostInterface::OnSystemCreated();
+
+  if (m_settings.start_fullscreen)
+    SetFullscreen(true);
+}
+
+void CommonHostInterface::OnSystemPaused(bool paused)
+{
+  HostInterface::OnSystemPaused(paused);
+
+  if (paused)
+    SetFullscreen(false);
+  else if (m_settings.start_fullscreen)
+    SetFullscreen(true);
+}
+
 void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   HostInterface::SetDefaultSettings(si);
@@ -319,17 +337,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    {
                      if (m_settings.confim_power_off)
                      {
-                       SetFullscreen(false);
-
                        SmallString confirmation_message("Are you sure you want to stop emulation?");
                        if (m_settings.save_state_on_exit)
                          confirmation_message.AppendString("\n\nThe current state will be saved.");
 
                        if (!ConfirmMessage(confirmation_message))
                        {
-                         if (m_settings.display_fullscreen)
-                           SetFullscreen(true);
-
                          m_system->ResetPerformanceCounters();
                          return;
                        }

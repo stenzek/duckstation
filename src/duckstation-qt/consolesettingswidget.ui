@@ -154,13 +154,20 @@
        </widget>
       </item>
       <item row="7" column="0" colspan="2">
+       <widget class="QCheckBox" name="startFullscreen">
+        <property name="text">
+         <string>Start Fullscreen</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" colspan="2">
        <widget class="QCheckBox" name="saveStateOnExit">
         <property name="text">
          <string>Save State On Exit</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0" colspan="2">
+      <item row="9" column="0" colspan="2">
        <widget class="QCheckBox" name="confirmPowerOff">
         <property name="text">
          <string>Confirm Power Off</string>
