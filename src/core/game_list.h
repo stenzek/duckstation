@@ -9,6 +9,7 @@
 
 class CDImage;
 class ByteStream;
+class ProgressCallback;
 
 class SettingsInterface;
 
@@ -73,7 +74,7 @@ public:
   bool IsDatabasePresent() const;
 
   void AddDirectory(std::string path, bool recursive);
-  void Refresh(bool invalidate_cache, bool invalidate_database);
+  void Refresh(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress = nullptr);
 
 private:
   enum : u32
@@ -97,7 +98,7 @@ private:
 
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
   bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);
-  void ScanDirectory(const char* path, bool recursive);
+  void ScanDirectory(const char* path, bool recursive, ProgressCallback* progress);
 
   void LoadCache();
   bool LoadEntriesFromCache(ByteStream* stream);

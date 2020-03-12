@@ -6,6 +6,7 @@
 #include "common/file_system.h"
 #include "common/iso_reader.h"
 #include "common/log.h"
+#include "common/progress_callback.h"
 #include "common/string_util.h"
 #include "settings.h"
 #include <algorithm>
@@ -511,14 +512,20 @@ void GameList::DeleteCacheFile()
     Log_WarningPrintf("Failed to delete game list cache '%s'", m_cache_filename.c_str());
 }
 
-void GameList::ScanDirectory(const char* path, bool recursive)
+void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback* progress)
 {
   Log_DevPrintf("Scanning %s%s", path, recursive ? " (recursively)" : "");
+
+  progress->PushState();
+  progress->SetFormattedStatusText("Scanning directory '%s'%s...", path, recursive ? " (recursively)" : "");
 
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(path, "*", FILESYSTEM_FIND_FILES | (recursive ? FILESYSTEM_FIND_RECURSIVE : 0), &files);
 
   GameListEntry entry;
+  progress->SetProgressRange(static_cast<u32>(files.size()));
+  progress->SetProgressValue(0);
+
   for (const FILESYSTEM_FIND_DATA& ffd : files)
   {
     // if this is a .bin, check if we have a .cue. if there is one, skip it
@@ -551,6 +558,12 @@ void GameList::ScanDirectory(const char* path, bool recursive)
     if (!GetGameListEntryFromCache(entry_path, &entry) ||
         entry.last_modified_time != ffd.ModificationTime.AsUnixTimestamp())
     {
+      const char* file_part_slash =
+        std::max(std::strrchr(entry_path.c_str(), '/'), std::strrchr(entry_path.c_str(), '\\'));
+      progress->SetFormattedStatusText("Scanning '%s'...",
+                                       file_part_slash ? (file_part_slash + 1) : entry_path.c_str());
+      progress->IncrementProgressValue();
+
       if (GetGameListEntry(entry_path, &entry))
       {
         if (m_cache_write_stream || OpenCacheForWriting())
@@ -568,6 +581,9 @@ void GameList::ScanDirectory(const char* path, bool recursive)
     m_entries.push_back(std::move(entry));
     entry = {};
   }
+
+  progress->SetProgressValue(static_cast<u32>(files.size()));
+  progress->PopState();
 }
 
 class GameList::RedumpDatVisitor final : public tinyxml2::XMLVisitor
@@ -700,8 +716,11 @@ bool GameList::IsDatabasePresent() const
   return FileSystem::FileExists(m_database_filename.c_str());
 }
 
-void GameList::Refresh(bool invalidate_cache, bool invalidate_database)
+void GameList::Refresh(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress /* = nullptr */)
 {
+  if (!progress)
+    progress = ProgressCallback::NullProgressCallback;
+
   if (invalidate_cache)
     DeleteCacheFile();
   else
@@ -712,8 +731,17 @@ void GameList::Refresh(bool invalidate_cache, bool invalidate_database)
 
   m_entries.clear();
 
-  for (const DirectoryEntry& de : m_search_directories)
-    ScanDirectory(de.path.c_str(), de.recursive);
+  if (!m_search_directories.empty())
+  {
+    progress->SetProgressRange(static_cast<u32>(m_search_directories.size()));
+    progress->SetProgressValue(0);
+
+    for (DirectoryEntry& de : m_search_directories)
+    {
+      ScanDirectory(de.path.c_str(), de.recursive, progress);
+      progress->IncrementProgressValue();
+    }
+  }
 
   // don't need unused cache entries
   CloseCacheFileStream();
