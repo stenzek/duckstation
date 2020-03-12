@@ -59,6 +59,23 @@ System::~System()
   DestroyComponents();
 }
 
+ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
+{
+  switch (region)
+  {
+    case DiscRegion::NTSC_J:
+      return ConsoleRegion::NTSC_J;
+
+    case DiscRegion::NTSC_U:
+    case DiscRegion::Other:
+    default:
+      return ConsoleRegion::NTSC_U;
+
+    case DiscRegion::PAL:
+      return ConsoleRegion::PAL;
+  }
+}
+
 std::unique_ptr<System> System::Create(HostInterface* host_interface)
 {
   std::unique_ptr<System> system(new System(host_interface));
@@ -136,18 +153,19 @@ bool System::Boot(const SystemBootParameters& params)
 
       if (m_region == ConsoleRegion::Auto)
       {
-        std::optional<ConsoleRegion> detected_region = GameList::GetRegionForImage(media.get());
-        if (detected_region)
+        const DiscRegion disc_region = GameList::GetRegionForImage(media.get());
+        if (disc_region != DiscRegion::Other)
         {
-          m_region = detected_region.value();
-          Log_InfoPrintf("Auto-detected %s region for '%s'", Settings::GetConsoleRegionName(m_region),
-                         params.filename.c_str());
+          m_region = GetConsoleRegionForDiscRegion(disc_region);
+          Log_InfoPrintf("Auto-detected console %s region for '%s' (region %s)",
+                         Settings::GetConsoleRegionName(m_region), params.filename.c_str(),
+                         Settings::GetDiscRegionName(disc_region));
         }
         else
         {
           m_region = ConsoleRegion::NTSC_U;
-          Log_WarningPrintf("Could not determine region for CD. Defaulting to %s.",
-                            Settings::GetConsoleRegionName(m_region));
+          Log_WarningPrintf("Could not determine console region for disc region %s. Defaulting to %s.",
+                            Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(m_region));
         }
       }
     }

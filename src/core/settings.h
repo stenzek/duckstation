@@ -91,6 +91,10 @@ struct Settings
   static const char* GetConsoleRegionName(ConsoleRegion region);
   static const char* GetConsoleRegionDisplayName(ConsoleRegion region);
 
+  static std::optional<DiscRegion> ParseDiscRegionName(const char* str);
+  static const char* GetDiscRegionName(DiscRegion region);
+  static const char* GetDiscRegionDisplayName(DiscRegion region);
+
   static std::optional<CPUExecutionMode> ParseCPUExecutionMode(const char* str);
   static const char* GetCPUExecutionModeName(CPUExecutionMode mode);
   static const char* GetCPUExecutionModeDisplayName(CPUExecutionMode mode);

@@ -147,11 +147,11 @@ public:
           {
             switch (ge.region)
             {
-              case ConsoleRegion::NTSC_J:
+              case DiscRegion::NTSC_J:
                 return m_region_jp_pixmap;
-              case ConsoleRegion::NTSC_U:
+              case DiscRegion::NTSC_U:
                 return m_region_us_pixmap;
-              case ConsoleRegion::PAL:
+              case DiscRegion::PAL:
               default:
                 return m_region_eu_pixmap;
             }

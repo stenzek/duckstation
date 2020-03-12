@@ -127,7 +127,7 @@ std::string GameList::GetGameCodeForImage(CDImage* cdi)
   return code;
 }
 
-std::optional<ConsoleRegion> GameList::GetRegionForCode(std::string_view code)
+DiscRegion GameList::GetRegionForCode(std::string_view code)
 {
   std::string prefix;
   for (size_t pos = 0; pos < code.length(); pos++)
@@ -140,21 +140,21 @@ std::optional<ConsoleRegion> GameList::GetRegionForCode(std::string_view code)
   }
 
   if (prefix == "sces" || prefix == "sced" || prefix == "sles" || prefix == "sled")
-    return ConsoleRegion::PAL;
+    return DiscRegion::PAL;
   else if (prefix == "scps" || prefix == "slps" || prefix == "slpm")
-    return ConsoleRegion::NTSC_J;
+    return DiscRegion::NTSC_J;
   else if (prefix == "scus" || prefix == "slus" || prefix == "papx")
-    return ConsoleRegion::NTSC_U;
+    return DiscRegion::NTSC_U;
   else
-    return std::nullopt;
+    return DiscRegion::Other;
 }
 
-std::optional<ConsoleRegion> GameList::GetRegionFromSystemArea(CDImage* cdi)
+DiscRegion GameList::GetRegionFromSystemArea(CDImage* cdi)
 {
   // The license code is on sector 4 of the disc.
   u8 sector[CDImage::DATA_SECTOR_SIZE];
   if (!cdi->Seek(1, 4) || cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
-    return std::nullopt;
+    return DiscRegion::Other;
 
   static constexpr char ntsc_u_string[] = "          Licensed  by          Sony Computer Entertainment Amer  ica ";
   static constexpr char ntsc_j_string[] = "          Licensed  by          Sony Computer Entertainment Inc.";
@@ -162,29 +162,29 @@ std::optional<ConsoleRegion> GameList::GetRegionFromSystemArea(CDImage* cdi)
 
   // subtract one for the terminating null
   if (std::equal(ntsc_u_string, ntsc_u_string + countof(ntsc_u_string) - 1, sector))
-    return ConsoleRegion::NTSC_U;
+    return DiscRegion::NTSC_U;
   else if (std::equal(ntsc_j_string, ntsc_j_string + countof(ntsc_j_string) - 1, sector))
-    return ConsoleRegion::NTSC_J;
+    return DiscRegion::NTSC_J;
   else if (std::equal(pal_string, pal_string + countof(pal_string) - 1, sector))
-    return ConsoleRegion::PAL;
-
-  return std::nullopt;
+    return DiscRegion::PAL;
+  else
+    return DiscRegion::Other;
 }
 
-std::optional<ConsoleRegion> GameList::GetRegionForImage(CDImage* cdi)
+DiscRegion GameList::GetRegionForImage(CDImage* cdi)
 {
-  std::optional<ConsoleRegion> system_area_region = GetRegionFromSystemArea(cdi);
-  if (system_area_region)
+  DiscRegion system_area_region = GetRegionFromSystemArea(cdi);
+  if (system_area_region != DiscRegion::Other)
     return system_area_region;
 
   std::string code = GetGameCodeForImage(cdi);
   if (code.empty())
-    return std::nullopt;
+    return DiscRegion::Other;
 
   return GetRegionForCode(code);
 }
 
-std::optional<ConsoleRegion> GameList::GetRegionForPath(const char* image_path)
+std::optional<DiscRegion> GameList::GetRegionForPath(const char* image_path)
 {
   std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
   if (!cdi)
@@ -263,7 +263,7 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
 
   // no way to detect region...
   entry->path = path;
-  entry->region = ConsoleRegion::NTSC_U;
+  entry->region = DiscRegion::Other;
   entry->total_size = ZeroExtend64(file_size);
   entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = GameListEntryType::PSExe;
@@ -280,10 +280,14 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   if (!cdi)
     return false;
 
+  std::string code = GetGameCodeForImage(cdi.get());
+  DiscRegion region = GetRegionFromSystemArea(cdi.get());
+  if (region == DiscRegion::Other)
+    region = GetRegionForCode(code);
+
   entry->path = path;
-  entry->code = GetGameCodeForImage(cdi.get());
-  entry->region =
-    GetRegionFromSystemArea(cdi.get()).value_or(GetRegionForCode(entry->code).value_or(ConsoleRegion::NTSC_U));
+  entry->code = std::move(code);
+  entry->region = region;
   entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   entry->type = GameListEntryType::Disc;
   cdi.reset();
@@ -299,7 +303,9 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
     if (database_entry)
     {
       entry->title = database_entry->title;
-      entry->region = database_entry->region;
+
+      if (entry->region != database_entry->region)
+        Log_WarningPrintf("Region mismatch between disc and database for '%s'", entry->code.c_str());
     }
     else
     {
@@ -418,7 +424,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
 
     if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
         !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
-        region >= static_cast<u8>(ConsoleRegion::Count) || !ReadU8(stream, &type) ||
+        region >= static_cast<u8>(DiscRegion::Count) || !ReadU8(stream, &type) ||
         type > static_cast<u8>(GameListEntryType::PSExe))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
@@ -431,7 +437,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     ge.title = std::move(title);
     ge.total_size = total_size;
     ge.last_modified_time = last_modified_time;
-    ge.region = static_cast<ConsoleRegion>(region);
+    ge.region = static_cast<DiscRegion>(region);
     ge.type = static_cast<GameListEntryType>(type);
 
     auto iter = m_cache_map.find(ge.path);
@@ -620,7 +626,7 @@ public:
       {
         GameListDatabaseEntry gde;
         gde.code = std::move(code);
-        gde.region = GameList::GetRegionForCode(gde.code).value_or(ConsoleRegion::NTSC_U);
+        gde.region = GameList::GetRegionForCode(gde.code);
         gde.title = name;
         m_database.emplace(gde.code, std::move(gde));
       }

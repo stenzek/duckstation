@@ -45,6 +45,9 @@ public:
 
   ~System();
 
+  /// Returns the preferred console type for a disc.
+  static ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
+
   /// Creates a new System.
   static std::unique_ptr<System> Create(HostInterface* host_interface);
 

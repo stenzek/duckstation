@@ -31,6 +31,15 @@ enum class ConsoleRegion
   Count
 };
 
+enum class DiscRegion : u8
+{
+  NTSC_J, // SCEI
+  NTSC_U, // SCEA
+  PAL,    // SCEE
+  Other,
+  Count
+};
+
 enum class CPUExecutionMode : u8
 {
   Interpreter,
@@ -77,7 +86,6 @@ enum : u32
 {
   NUM_CONTROLLER_AND_CARD_PORTS = 2
 };
-
 
 enum : u32
 {

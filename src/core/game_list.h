@@ -22,7 +22,7 @@ struct GameListDatabaseEntry
 {
   std::string code;
   std::string title;
-  ConsoleRegion region;
+  DiscRegion region;
 };
 
 struct GameListEntry
@@ -32,7 +32,7 @@ struct GameListEntry
   std::string title;
   u64 total_size;
   u64 last_modified_time;
-  ConsoleRegion region;
+  DiscRegion region;
   GameListEntryType type;
 };
 
@@ -51,10 +51,10 @@ public:
 
   static std::string GetGameCodeForImage(CDImage* cdi);
   static std::string GetGameCodeForPath(const char* image_path);
-  static std::optional<ConsoleRegion> GetRegionForCode(std::string_view code);
-  static std::optional<ConsoleRegion> GetRegionFromSystemArea(CDImage* cdi);
-  static std::optional<ConsoleRegion> GetRegionForImage(CDImage* cdi);
-  static std::optional<ConsoleRegion> GetRegionForPath(const char* image_path);
+  static DiscRegion GetRegionForCode(std::string_view code);
+  static DiscRegion GetRegionFromSystemArea(CDImage* cdi);
+  static DiscRegion GetRegionForImage(CDImage* cdi);
+  static std::optional<DiscRegion> GetRegionForPath(const char* image_path);
   static std::string_view GetTitleForPath(const char* path);
 
   const EntryList& GetEntries() const { return m_entries; }
@@ -79,7 +79,7 @@ private:
   enum : u32
   {
     GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-    GAME_LIST_CACHE_VERSION = 2
+    GAME_LIST_CACHE_VERSION = 3
   };
 
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;

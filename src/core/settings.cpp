@@ -155,6 +155,34 @@ const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
   return s_console_region_display_names[static_cast<int>(region)];
 }
 
+static std::array<const char*, 4> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other"}};
+static std::array<const char*, 4> s_disc_region_display_names = {
+  {"NTSC-J (Japan)", "NTSC-U (US)", "PAL (Europe, Australia)", "Other"}};
+
+std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_console_region_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DiscRegion>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDiscRegionName(DiscRegion region)
+{
+  return s_disc_region_names[static_cast<int>(region)];
+}
+
+const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
+{
+  return s_disc_region_display_names[static_cast<int>(region)];
+}
+
 static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
 static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
   {"Intepreter (Slowest)", "Cached Interpreter (Faster)", "Recompiler (Fastest)"}};
