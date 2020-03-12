@@ -207,7 +207,8 @@ bool System::Boot(const SystemBootParameters& params)
   UpdateRunningGame(params.filename.c_str(), media.get());
 
   // Insert CD, and apply fastboot patch if enabled.
-  m_cdrom->InsertMedia(std::move(media));
+  if (media)
+    m_cdrom->InsertMedia(std::move(media));
   if (m_cdrom->HasMedia() &&
       (params.override_fast_boot.has_value() ? params.override_fast_boot.value() : GetSettings().bios_patch_fast_boot))
   {

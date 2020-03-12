@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
+#include "game_list.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
@@ -153,6 +154,11 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   if (HasMedia())
     RemoveMedia();
 
+  // set the region from the system area of the disc
+  m_disc_region = GameList::GetRegionForImage(media.get());
+  Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(m_disc_region),
+                 Settings::GetConsoleRegionName(m_system->GetRegion()));
+
   m_reader.SetMedia(std::move(media));
 }
 
@@ -165,6 +171,7 @@ void CDROM::RemoveMedia()
   m_reader.RemoveMedia();
 
   m_secondary_status.shell_open = true;
+  m_disc_region = DiscRegion::Other;
 
   // If the drive was doing anything, we need to abort the command.
   if (m_drive_state != DriveState::Idle)
@@ -586,17 +593,10 @@ void CDROM::ExecuteCommand()
     case Command::GetID:
     {
       Log_DebugPrintf("CDROM GetID command");
-      if (!HasMedia())
-      {
-        SendErrorResponse(STAT_ERROR, 0x80);
-      }
-      else
-      {
-        SendACKAndStat();
+      SendACKAndStat();
 
-        m_drive_state = DriveState::ReadingID;
-        m_drive_event->Schedule(18000);
-      }
+      m_drive_state = DriveState::ReadingID;
+      m_drive_event->Schedule(18000);
 
       EndCommand();
       return;
@@ -1291,20 +1291,38 @@ void CDROM::DoChangeSessionComplete()
 
 void CDROM::DoIDRead()
 {
-  // TODO: This should depend on the disc type/region...
-
   Log_DebugPrintf("ID read complete");
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
-  m_secondary_status.motor_on = true;
+  m_secondary_status.motor_on = HasMedia();
   m_sector_buffer.clear();
 
-  static constexpr u8 response2[] = {0x00, 0x20, 0x00, 0x53, 0x43, 0x45, 0x41}; // last byte is 0x49 for EU
+  // TODO: Audio CD.
+  u8 stat_byte = m_secondary_status.bits;
+  u8 flags_byte = 0;
+  if (!HasMedia())
+  {
+    flags_byte |= (1 << 6); // Disc Missing
+  }
+  else if (m_disc_region == DiscRegion::Other)
+  {
+    stat_byte |= STAT_ID_ERROR;
+    flags_byte |= (1 << 7); // Unlicensed
+  }
+
   m_async_response_fifo.Clear();
-  m_async_response_fifo.Push(m_secondary_status.bits);
-  m_async_response_fifo.PushRange(response2, countof(response2));
-  SetAsyncInterrupt(Interrupt::Complete);
+  m_async_response_fifo.Push(stat_byte);
+  m_async_response_fifo.Push(flags_byte);
+  m_async_response_fifo.Push(0x20); // TODO: Disc type from TOC
+  m_async_response_fifo.Push(0x00); // TODO: Session info?
+
+  static constexpr u32 REGION_STRING_LENGTH = 4;
+  static constexpr std::array<std::array<u8, REGION_STRING_LENGTH>, static_cast<size_t>(DiscRegion::Count)>
+    region_strings = {{{'S', 'C', 'E', 'I'}, {'S', 'C', 'E', 'A'}, {'S', 'C', 'E', 'E'}, {0, 0, 0, 0}}};
+  m_async_response_fifo.PushRange(region_strings[static_cast<u8>(m_disc_region)].data(), REGION_STRING_LENGTH);
+
+  SetAsyncInterrupt((flags_byte != 0) ? Interrupt::Error : Interrupt::Complete);
 }
 
 void CDROM::DoTOCRead()

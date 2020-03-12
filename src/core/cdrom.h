@@ -1,10 +1,10 @@
 #pragma once
+#include "cdrom_async_reader.h"
 #include "common/bitfield.h"
 #include "common/cd_image.h"
 #include "common/cd_xa.h"
 #include "common/fifo_queue.h"
 #include "common/heap_array.h"
-#include "cdrom_async_reader.h"
 #include "types.h"
 #include <array>
 #include <string>
@@ -239,6 +239,7 @@ private:
 
   Command m_command = Command::None;
   DriveState m_drive_state = DriveState::Idle;
+  DiscRegion m_disc_region = DiscRegion::Other;
 
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
