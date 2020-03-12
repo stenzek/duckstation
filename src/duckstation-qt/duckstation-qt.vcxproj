@@ -49,6 +49,7 @@
     <ClCompile Include="opengldisplaywidget.cpp" />
     <ClCompile Include="portsettingswidget.cpp" />
     <ClCompile Include="qthostinterface.cpp" />
+    <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtsettingsinterface.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="settingsdialog.cpp" />
@@ -61,6 +62,7 @@
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="d3d11displaywidget.h" />
+    <QtMoc Include="qtprogresscallback.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
@@ -128,6 +130,7 @@
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
+    <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_icons.cpp" />
   </ItemGroup>

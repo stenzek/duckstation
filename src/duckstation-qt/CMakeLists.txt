@@ -34,6 +34,8 @@ add_executable(duckstation-qt
   qtdisplaywidget.h
   qthostinterface.cpp
   qthostinterface.h
+  qtprogresscallback.cpp
+  qtprogresscallback.h
   qtsettingsinterface.cpp
   qtsettingsinterface.h
   qtutils.cpp

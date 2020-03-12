@@ -33,11 +33,14 @@
     <ClCompile Include="$(IntDir)moc_opengldisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
     <ClCompile Include="qtdisplaywidget.cpp" />
+    <ClCompile Include="qtprogresscallback.cpp" />
+    <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
+    <ClInclude Include="qtprogresscallback.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
