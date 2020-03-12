@@ -161,6 +161,9 @@ protected:
   /// Returns a list of save states for the specified game code.
   std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code) const;
 
+  /// Returns save state info if present. If game_code is null or empty, assumes global state.
+  std::optional<SaveStateInfo> GetSaveStateInfo(const char* game_code, s32 slot);
+
   /// Returns the most recent resume save state.
   std::string GetMostRecentResumeSaveStatePath() const;
 

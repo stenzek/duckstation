@@ -763,6 +763,18 @@ std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(
   return si;
 }
 
+std::optional<HostInterface::SaveStateInfo> HostInterface::GetSaveStateInfo(const char* game_code, s32 slot)
+{
+  const bool global = (!game_code || game_code[0] == 0);
+  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
+
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(path.c_str(), &sd))
+    return std::nullopt;
+
+  return SaveStateInfo{std::move(path), sd.ModificationTime.AsUnixTimestamp(), slot, global};
+}
+
 void HostInterface::DeleteSaveStates(const char* game_code, bool resume)
 {
   const std::vector<SaveStateInfo> states(GetAvailableSaveStates(game_code));

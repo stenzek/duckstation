@@ -415,57 +415,48 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
   m_system->InsertMedia(new_disc_filename.toStdString().c_str());
 }
 
+static QString FormatTimestampForSaveStateMenu(u64 timestamp)
+{
+  const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
+  return qtime.toString(Qt::SystemLocaleShortDate);
+}
+
 void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
 {
-  const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(game_code));
+  auto add_slot = [this, game_code, load_menu, save_menu](const char* title, const char* empty_title, bool global,
+                                                          s32 slot) {
+    std::optional<SaveStateInfo> ssi = GetSaveStateInfo(global ? nullptr : game_code, slot);
+
+    const QString menu_title = ssi.has_value() ?
+                                 tr(title).arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) :
+                                 tr(empty_title).arg(slot);
+
+    QAction* load_action = load_menu->addAction(menu_title);
+    load_action->setEnabled(ssi.has_value());
+    if (ssi.has_value())
+    {
+      const QString path(QString::fromStdString(ssi->path));
+      connect(load_action, &QAction::triggered, [this, path]() { loadState(path); });
+    }
+
+    QAction* save_action = save_menu->addAction(menu_title);
+    connect(save_action, &QAction::triggered, [this, global, slot]() { saveState(global, slot); });
+  };
 
   load_menu->clear();
-  if (!available_states.empty())
-  {
-    bool last_global = available_states.front().global;
-    s32 last_slot = available_states.front().slot;
-    for (const SaveStateInfo& ssi : available_states)
-    {
-      const s32 slot = ssi.slot;
-      const bool global = ssi.global;
-      const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
-      const QString timestamp_str(timestamp.toString(Qt::SystemLocaleShortDate));
-      const QString path(QString::fromStdString(ssi.path));
-
-      QString title;
-      if (slot < 0)
-        title = tr("Resume Save (%1)").arg(timestamp_str);
-      else
-        title = tr("%1 Save %2 (%3)").arg(global ? tr("Global") : tr("Game")).arg(slot).arg(timestamp_str);
-
-      if (global != last_global || last_slot < 0)
-        load_menu->addSeparator();
-
-      last_global = global;
-      last_slot = slot;
-
-      QAction* action = load_menu->addAction(title);
-      connect(action, &QAction::triggered, [this, path]() { loadState(path); });
-    }
-  }
-
   save_menu->clear();
+
   if (game_code && std::strlen(game_code) > 0)
   {
-    for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
-    {
-      QAction* action = save_menu->addAction(tr("Game Save %1").arg(i));
-      connect(action, &QAction::triggered, [this, i]() { saveState(false, i); });
-    }
+    for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
+      add_slot("Game Save %1 (%2)", "Game Save %1 (Empty)", false, static_cast<s32>(slot));
 
+    load_menu->addSeparator();
     save_menu->addSeparator();
   }
 
-  for (s32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
-  {
-    QAction* action = save_menu->addAction(tr("Global Save %1").arg(i));
-    connect(action, &QAction::triggered, [this, i]() { saveState(true, i); });
-  }
+  for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)
+    add_slot("Global Save %1 (%2)", "Global Save %1 (Empty)", true, static_cast<s32>(slot));
 }
 
 void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu)
