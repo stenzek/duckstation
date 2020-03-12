@@ -11,10 +11,7 @@
 #include "system.h"
 Log_SetChannel(CDROM);
 
-CDROM::CDROM()
-{
-  m_sector_buffer.reserve(RAW_SECTOR_OUTPUT_SIZE);
-}
+CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
 
@@ -85,7 +82,12 @@ void CDROM::SoftReset()
   m_response_fifo.Clear();
   m_async_response_fifo.Clear();
   m_data_fifo.Clear();
-  m_sector_buffer.clear();
+
+  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
+  {
+    m_sector_buffers[i].data.fill(0);
+    m_sector_buffers[i].size = 0;
+  }
 
   UpdateStatusRegister();
 }
@@ -126,7 +128,12 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_response_fifo);
   sw.Do(&m_async_response_fifo);
   sw.Do(&m_data_fifo);
-  sw.Do(&m_sector_buffer);
+
+  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
+  {
+    sw.Do(&m_sector_buffers[i].data);
+    sw.Do(&m_sector_buffers[i].size);
+  }
 
   if (sw.IsReading())
   {
@@ -507,10 +514,7 @@ void CDROM::UpdateInterruptRequest()
 TickCount CDROM::GetAckDelayForCommand() const
 {
   const u32 default_ack_delay = 10000;
-  if (m_command == Command::Init || m_command == Command::ReadTOC)
-    return 60000;
-  else
-    return default_ack_delay;
+  return default_ack_delay;
 }
 
 TickCount CDROM::GetTicksForRead() const
@@ -1077,6 +1081,8 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
 void CDROM::BeginReading(TickCount ticks_late)
 {
   Log_DebugPrintf("Starting reading @ LBA %u", m_last_requested_sector);
+  ClearSectorBuffers();
+
   if (m_setloc_pending)
   {
     BeginSeeking(true, true, false);
@@ -1085,9 +1091,6 @@ void CDROM::BeginReading(TickCount ticks_late)
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
-
-  // TODO: Should the sector buffer be cleared here?
-  m_sector_buffer.clear();
 
   const TickCount ticks = GetTicksForRead();
   m_drive_state = DriveState::Reading;
@@ -1127,9 +1130,7 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_secondary_status.playing_cdda = true;
-
-  // TODO: Should the sector buffer be cleared here?
-  m_sector_buffer.clear();
+  ClearSectorBuffers();
 
   const TickCount ticks = GetTicksForRead();
   m_drive_state = DriveState::Playing;
@@ -1156,7 +1157,6 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = true;
-  m_sector_buffer.clear();
 
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   m_drive_event->SetIntervalAndSchedule(seek_time);
@@ -1183,7 +1183,6 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
-  m_sector_buffer.clear();
 
   bool seek_okay = m_reader.WaitForReadToComplete();
   if (seek_okay)
@@ -1247,7 +1246,6 @@ void CDROM::DoPauseComplete()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
-  m_sector_buffer.clear();
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
@@ -1261,7 +1259,6 @@ void CDROM::DoStopComplete()
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = false;
-  m_sector_buffer.clear();
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
@@ -1296,7 +1293,6 @@ void CDROM::DoIDRead()
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = HasMedia();
-  m_sector_buffer.clear();
 
   // TODO: Audio CD.
   u8 stat_byte = m_secondary_status.bits;
@@ -1450,23 +1446,30 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
     Log_WarningPrintf("Data interrupt was not delivered");
     ClearAsyncInterrupt();
   }
-  if (!m_sector_buffer.empty())
+
+  // TODO: How does XA relate to this buffering?
+  SectorBuffer* sb = &m_sector_buffers[0];
+  if (sb->size > 0)
   {
-    Log_WarningPrintf("Sector buffer was not empty");
+    sb = &m_sector_buffers[1];
+    if (sb->size > 0)
+      Log_WarningPrintf("Sector buffer was not read, previous sector dropped");
+    else
+      Log_DevPrintf("Sector buffer was not read, buffering sector");
   }
 
   Assert(!m_mode.ignore_bit);
   if (m_mode.read_raw_sector)
   {
-    m_sector_buffer.resize(RAW_SECTOR_OUTPUT_SIZE);
-    std::memcpy(m_sector_buffer.data(), raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_OUTPUT_SIZE);
+    std::memcpy(sb->data.data(), raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_OUTPUT_SIZE);
+    sb->size = RAW_SECTOR_OUTPUT_SIZE;
   }
   else
   {
     // TODO: This should actually depend on the mode...
     Assert(m_last_sector_header.sector_mode == 2);
-    m_sector_buffer.resize(DATA_SECTOR_OUTPUT_SIZE);
-    std::memcpy(m_sector_buffer.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
+    std::memcpy(sb->data.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
+    sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
 
   m_async_response_fifo.Push(m_secondary_status.bits);
@@ -1681,18 +1684,39 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
 
 void CDROM::LoadDataFIFO()
 {
-  // any data to load?
-  if (m_sector_buffer.empty())
+  if (!m_data_fifo.IsEmpty())
   {
-    Log_DevPrintf("Attempting to load empty sector buffer");
+    Log_DevPrintf("Load data fifo when not empty");
     return;
   }
 
-  m_data_fifo.Clear();
-  m_data_fifo.PushRange(m_sector_buffer.data(), static_cast<u32>(m_sector_buffer.size()));
-  m_sector_buffer.clear();
+  // any data to load?
+  SectorBuffer& sb = m_sector_buffers[0];
+  if (sb.size == 0)
+  {
+    Log_WarningPrintf("Attempting to load empty sector buffer");
+    m_data_fifo.PushRange(sb.data.data(), RAW_SECTOR_OUTPUT_SIZE);
+  }
+  else
+  {
+    m_data_fifo.PushRange(sb.data.data(), m_sector_buffers[0].size);
+    sb.size = 0;
+  }
+
+  SectorBuffer& next_sb = m_sector_buffers[1];
+  if (next_sb.size > 0)
+  {
+    sb.data.swap(next_sb.data);
+    std::swap(sb.size, next_sb.size);
+  }
 
   Log_DebugPrintf("Loaded %u bytes to data FIFO", m_data_fifo.GetSize());
+}
+
+void CDROM::ClearSectorBuffers()
+{
+  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
+    m_sector_buffers[i].size = 0;
 }
 
 void CDROM::DrawDebugWindow()

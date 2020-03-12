@@ -57,7 +57,7 @@ private:
     PARAM_FIFO_SIZE = 16,
     RESPONSE_FIFO_SIZE = 16,
     DATA_FIFO_SIZE = RAW_SECTOR_OUTPUT_SIZE,
-    NUM_INTERRUPTS = 32
+    NUM_SECTOR_BUFFERS = 2,
   };
 
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -229,6 +229,7 @@ private:
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void LoadDataFIFO();
+  void ClearSectorBuffers();
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
@@ -281,7 +282,14 @@ private:
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_response_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> m_async_response_fifo;
   HeapFIFOQueue<u8, DATA_FIFO_SIZE> m_data_fifo;
-  std::vector<u8> m_sector_buffer;
+
+  struct SectorBuffer
+  {
+    HeapArray<u8, RAW_SECTOR_OUTPUT_SIZE> data;
+    u32 size;
+  };
+
+  std::array<SectorBuffer, NUM_SECTOR_BUFFERS> m_sector_buffers;
 
   CDROMAsyncReader m_reader;
 };
