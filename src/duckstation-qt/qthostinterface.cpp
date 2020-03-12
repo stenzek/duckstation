@@ -10,6 +10,7 @@
 #include "core/system.h"
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
+#include "mainwindow.h"
 #include "opengldisplaywidget.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
@@ -145,6 +146,12 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
   m_game_list->SetSearchDirectoriesFromSettings(si);
   m_game_list->Refresh(invalidate_cache, invalidate_database);
   emit gameListRefreshed();
+}
+
+void QtHostInterface::setMainWindow(MainWindow* window)
+{
+  DebugAssert((!m_main_window && window) || (m_main_window && !window));
+  m_main_window = window;
 }
 
 QtDisplayWidget* QtHostInterface::createDisplayWidget()

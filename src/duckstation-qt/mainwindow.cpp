@@ -24,6 +24,8 @@ static constexpr char DISC_IMAGE_FILTER[] =
 
 MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), m_host_interface(host_interface)
 {
+  m_host_interface->setMainWindow(this);
+
   m_ui.setupUi(this);
   setupAdditionalUi();
   connectSignals();
@@ -34,6 +36,7 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
 MainWindow::~MainWindow()
 {
   Assert(!m_display_widget);
+  m_host_interface->setMainWindow(nullptr);
 }
 
 void MainWindow::reportError(const QString& message)

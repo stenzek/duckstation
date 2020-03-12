@@ -23,6 +23,7 @@ class QTimer;
 
 class GameList;
 
+class MainWindow;
 class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(SystemBootParameters);
@@ -44,14 +45,16 @@ public:
   void putSettingValue(const QString& name, const QVariant& value);
   void removeSettingValue(const QString& name);
 
-  const GameList* getGameList() const { return m_game_list.get(); }
-  GameList* getGameList() { return m_game_list.get(); }
+  ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
+  ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
 
-  const HotkeyInfoList& getHotkeyInfoList() const { return GetHotkeyInfoList(); }
+  ALWAYS_INLINE const HotkeyInfoList& getHotkeyInfoList() const { return GetHotkeyInfoList(); }
 
-  bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
+  ALWAYS_INLINE bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
+  ALWAYS_INLINE MainWindow* getMainWindow() const { return m_main_window; }
+  void setMainWindow(MainWindow* window);
   QtDisplayWidget* createDisplayWidget();
 
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
@@ -156,6 +159,7 @@ private:
   QSettings m_qsettings;
   std::mutex m_qsettings_mutex;
 
+  MainWindow* m_main_window = nullptr;
   QtDisplayWidget* m_display_widget = nullptr;
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
