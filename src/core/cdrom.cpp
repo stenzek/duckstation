@@ -964,8 +964,8 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     case 0x20: // Get CDROM BIOS Date/Version
     {
       Log_DebugPrintf("Get CDROM BIOS Date/Version");
-      static constexpr u8 response[] = {0x94, 0x09, 0x19, 0xC0};
-      // static constexpr u8 response[] = {0x96, 0x09, 0x12, 0xC2};
+
+      static constexpr u8 response[] = {0x95, 0x05, 0x16, 0xC1};
       m_response_fifo.PushRange(response, countof(response));
       SetInterrupt(Interrupt::ACK);
       EndCommand();
@@ -975,8 +975,32 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     case 0x22:
     {
       Log_DebugPrintf("Get CDROM region ID string");
-      static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'U', '/', 'C'};
-      m_response_fifo.PushRange(response, countof(response));
+
+      switch (m_system->GetRegion())
+      {
+        case ConsoleRegion::NTSC_J:
+        {
+          static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'J', 'a', 'p', 'a', 'n'};
+          m_response_fifo.PushRange(response, countof(response));
+        }
+        break;
+
+        case ConsoleRegion::PAL:
+        {
+          static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'E', 'u', 'r', 'o', 'p', 'e'};
+          m_response_fifo.PushRange(response, countof(response));
+        }
+        break;
+
+        case ConsoleRegion::NTSC_U:
+        default:
+        {
+          static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'U', '/', 'C'};
+          m_response_fifo.PushRange(response, countof(response));
+        }
+        break;
+      }
+
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
