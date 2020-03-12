@@ -41,6 +41,8 @@ add_library(common
   null_audio_stream.cpp
   null_audio_stream.h
   rectangle.h
+  progress_callback.cpp
+  progress_callback.h
   state_wrapper.cpp
   state_wrapper.h
   string.cpp

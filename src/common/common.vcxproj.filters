@@ -51,6 +51,7 @@
       <Filter>d3d11</Filter>
     </ClInclude>
     <ClInclude Include="hash_combine.h" />
+    <ClInclude Include="progress_callback.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -98,6 +99,7 @@
       <Filter>d3d11</Filter>
     </ClCompile>
     <ClCompile Include="cd_image_chd.cpp" />
+    <ClCompile Include="progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
