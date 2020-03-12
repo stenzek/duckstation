@@ -1,4 +1,4 @@
-#include "d3d11displaywindow.h"
+#include "d3d11displaywidget.h"
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
@@ -8,20 +8,20 @@
 #include <dxgi1_5.h>
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
-Log_SetChannel(D3D11DisplayWindow);
+Log_SetChannel(D3D11DisplayWidget);
 
-class D3D11DisplayWindowTexture : public HostDisplayTexture
+class D3D11DisplayWidgetTexture : public HostDisplayTexture
 {
 public:
   template<typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  D3D11DisplayWindowTexture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, u32 width,
+  D3D11DisplayWidgetTexture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, u32 width,
                             u32 height, bool dynamic)
     : m_texture(std::move(texture)), m_srv(std::move(srv)), m_width(width), m_height(height), m_dynamic(dynamic)
   {
   }
-  ~D3D11DisplayWindowTexture() override = default;
+  ~D3D11DisplayWidgetTexture() override = default;
 
   void* GetHandle() const override { return m_srv.Get(); }
   u32 GetWidth() const override { return m_width; }
@@ -31,7 +31,7 @@ public:
   ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.Get(); }
   bool IsDynamic() const { return m_dynamic; }
 
-  static std::unique_ptr<D3D11DisplayWindowTexture> Create(ID3D11Device* device, u32 width, u32 height,
+  static std::unique_ptr<D3D11DisplayWidgetTexture> Create(ID3D11Device* device, u32 width, u32 height,
                                                            const void* data, u32 data_stride, bool dynamic)
   {
     const CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1, D3D11_BIND_SHADER_RESOURCE,
@@ -50,7 +50,7 @@ public:
     if (FAILED(hr))
       return {};
 
-    return std::make_unique<D3D11DisplayWindowTexture>(std::move(texture), std::move(srv), width, height, dynamic);
+    return std::make_unique<D3D11DisplayWidgetTexture>(std::move(texture), std::move(srv), width, height, dynamic);
   }
 
 private:
@@ -61,76 +61,58 @@ private:
   bool m_dynamic;
 };
 
-D3D11DisplayWindow::D3D11DisplayWindow(QtHostInterface* host_interface, QWindow* parent)
-  : QtDisplayWindow(host_interface, parent)
+D3D11DisplayWidget::D3D11DisplayWidget(QtHostInterface* host_interface, QWidget* parent)
+  : QtDisplayWidget(host_interface, parent)
 {
 }
 
-D3D11DisplayWindow::~D3D11DisplayWindow() = default;
+D3D11DisplayWidget::~D3D11DisplayWidget() = default;
 
-HostDisplay* D3D11DisplayWindow::getHostDisplayInterface()
+HostDisplay* D3D11DisplayWidget::getHostDisplayInterface()
 {
   return this;
 }
 
-HostDisplay::RenderAPI D3D11DisplayWindow::GetRenderAPI() const
+HostDisplay::RenderAPI D3D11DisplayWidget::GetRenderAPI() const
 {
   return HostDisplay::RenderAPI::D3D11;
 }
 
-void* D3D11DisplayWindow::GetRenderDevice() const
+void* D3D11DisplayWidget::GetRenderDevice() const
 {
   return m_device.Get();
 }
 
-void* D3D11DisplayWindow::GetRenderContext() const
+void* D3D11DisplayWidget::GetRenderContext() const
 {
   return m_context.Get();
 }
 
-void* D3D11DisplayWindow::GetRenderWindow() const
+void* D3D11DisplayWidget::GetRenderWindow() const
 {
-  return const_cast<QWindow*>(static_cast<const QWindow*>(this));
+  return const_cast<QWidget*>(static_cast<const QWidget*>(this));
 }
 
-void D3D11DisplayWindow::ChangeRenderWindow(void* new_window)
+void D3D11DisplayWidget::ChangeRenderWindow(void* new_window)
 {
   Panic("Not supported");
 }
 
-void D3D11DisplayWindow::WindowResized(s32 new_window_width, s32 new_window_height)
+std::unique_ptr<HostDisplayTexture> D3D11DisplayWidget::CreateTexture(u32 width, u32 height, const void* initial_data,
+                                                                      u32 initial_data_stride, bool dynamic)
 {
-  QtDisplayWindow::WindowResized(new_window_width, new_window_height);
-  HostDisplay::WindowResized(new_window_width, new_window_height);
-
-  if (!m_swap_chain)
-    return;
-
-  m_swap_chain_rtv.Reset();
-
-  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-                                           m_allow_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
-  if (FAILED(hr))
-    Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
-
-  if (!createSwapChainRTV())
-    Panic("Failed to recreate swap chain RTV after resize");
+  return D3D11DisplayWidgetTexture::Create(m_device.Get(), width, height, initial_data, initial_data_stride, dynamic);
 }
 
-std::unique_ptr<HostDisplayTexture> D3D11DisplayWindow::CreateTexture(u32 width, u32 height, const void* data,
-                                                                      u32 data_stride, bool dynamic)
+void D3D11DisplayWidget::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+                                       const void* texture_data, u32 texture_data_stride)
 {
-  return D3D11DisplayWindowTexture::Create(m_device.Get(), width, height, data, data_stride, dynamic);
-}
-
-void D3D11DisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                       const void* data, u32 data_stride)
-{
-  D3D11DisplayWindowTexture* d3d11_texture = static_cast<D3D11DisplayWindowTexture*>(texture);
+  D3D11DisplayWidgetTexture* d3d11_texture = static_cast<D3D11DisplayWidgetTexture*>(texture);
   if (!d3d11_texture->IsDynamic())
   {
     const CD3D11_BOX dst_box(x, y, 0, x + width, y + height, 1);
-    m_context->UpdateSubresource(d3d11_texture->GetD3DTexture(), 0, &dst_box, data, data_stride, data_stride * height);
+    m_context->UpdateSubresource(d3d11_texture->GetD3DTexture(), 0, &dst_box, texture_data, texture_data_stride,
+                                 texture_data_stride * height);
   }
   else
   {
@@ -140,17 +122,17 @@ void D3D11DisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y
       Panic("Failed to map dynamic host display texture");
 
     char* dst_ptr = static_cast<char*>(sr.pData) + (y * sr.RowPitch) + (x * sizeof(u32));
-    const char* src_ptr = static_cast<const char*>(data);
-    if (sr.RowPitch == data_stride)
+    const char* src_ptr = static_cast<const char*>(texture_data);
+    if (sr.RowPitch == texture_data_stride)
     {
-      std::memcpy(dst_ptr, src_ptr, data_stride * height);
+      std::memcpy(dst_ptr, src_ptr, texture_data_stride * height);
     }
     else
     {
       for (u32 row = 0; row < height; row++)
       {
         std::memcpy(dst_ptr, src_ptr, width * sizeof(u32));
-        src_ptr += data_stride;
+        src_ptr += texture_data_stride;
         dst_ptr += sr.RowPitch;
       }
     }
@@ -159,84 +141,30 @@ void D3D11DisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y
   }
 }
 
-void D3D11DisplayWindow::SetVSync(bool enabled)
+void D3D11DisplayWidget::SetVSync(bool enabled)
 {
   m_vsync = enabled;
 }
 
-bool D3D11DisplayWindow::hasDeviceContext() const
+bool D3D11DisplayWidget::hasDeviceContext() const
 {
   return static_cast<bool>(m_device);
 }
 
-bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
+bool D3D11DisplayWidget::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
-  ComPtr<IDXGIFactory> dxgi_factory;
-  HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Failed to create DXGI factory: 0x%08X", hr);
-    return false;
-  }
-
-  m_allow_tearing_supported = false;
-  ComPtr<IDXGIFactory5> dxgi_factory5;
-  hr = dxgi_factory.As(&dxgi_factory5);
-  if (SUCCEEDED(hr))
-  {
-    BOOL allow_tearing_supported = false;
-    hr = dxgi_factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
-                                            sizeof(allow_tearing_supported));
-    if (SUCCEEDED(hr))
-      m_allow_tearing_supported = (allow_tearing_supported == TRUE);
-  }
-
   UINT create_flags = 0;
   if (debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
-  hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0, D3D11_SDK_VERSION,
-                         m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+  HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0,
+                                 D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
 
   if (FAILED(hr))
   {
     Log_ErrorPrintf("Failed to create D3D device: 0x%08X", hr);
     return false;
   }
-
-  DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
-  swap_chain_desc.BufferDesc.Width = m_window_width;
-  swap_chain_desc.BufferDesc.Height = m_window_height;
-  swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-  swap_chain_desc.SampleDesc.Count = 1;
-  swap_chain_desc.BufferCount = 3;
-  swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-  swap_chain_desc.OutputWindow = reinterpret_cast<HWND>(winId());
-  swap_chain_desc.Windowed = TRUE;
-  swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
-  if (m_allow_tearing_supported)
-    swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-  hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
-    swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    swap_chain_desc.Flags = 0;
-    m_allow_tearing_supported = false;
-
-    hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
-    if (FAILED(hr))
-    {
-      Log_ErrorPrintf("CreateSwapChain failed: 0x%08X", hr);
-      return false;
-    }
-  }
-
-  hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
-  if (FAILED(hr))
-    Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
 
   if (debug_device)
   {
@@ -249,7 +177,46 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_
     }
   }
 
-  if (!QtDisplayWindow::createDeviceContext(worker_thread, debug_device))
+  // we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
+  ComPtr<IDXGIDevice> dxgi_device;
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  if (FAILED(m_device.As(&dxgi_device)) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))) ||
+      FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.GetAddressOf()))))
+  {
+    Log_WarningPrint("Failed to get parent adapter/device/factory");
+    return false;
+  }
+
+  DXGI_ADAPTER_DESC adapter_desc;
+  if (SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
+  {
+    char adapter_name_buffer[128];
+    const int name_length =
+      WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description, static_cast<int>(std::wcslen(adapter_desc.Description)),
+                          adapter_name_buffer, countof(adapter_name_buffer), 0, nullptr);
+    if (name_length >= 0)
+    {
+      adapter_name_buffer[name_length] = 0;
+      Log_InfoPrintf("D3D Adapter: %s", adapter_name_buffer);
+    }
+  }
+
+  m_allow_tearing_supported = false;
+  ComPtr<IDXGIFactory5> dxgi_factory5;
+  hr = m_dxgi_factory.As(&dxgi_factory5);
+  if (SUCCEEDED(hr))
+  {
+    BOOL allow_tearing_supported = false;
+    hr = dxgi_factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
+                                            sizeof(allow_tearing_supported));
+    if (SUCCEEDED(hr))
+      m_allow_tearing_supported = (allow_tearing_supported == TRUE);
+  }
+
+  if (!createSwapChain(reinterpret_cast<HWND>(winId())))
+    return false;
+
+  if (!QtDisplayWidget::createDeviceContext(worker_thread, debug_device))
   {
     m_swap_chain.Reset();
     m_context.Reset();
@@ -259,26 +226,86 @@ bool D3D11DisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_
   return true;
 }
 
-bool D3D11DisplayWindow::initializeDeviceContext(bool debug_device)
+bool D3D11DisplayWidget::initializeDeviceContext(bool debug_device)
 {
   if (!createSwapChainRTV())
     return false;
 
-  if (!QtDisplayWindow::initializeDeviceContext(debug_device))
+  if (!QtDisplayWidget::initializeDeviceContext(debug_device))
     return false;
 
   return true;
 }
 
-void D3D11DisplayWindow::destroyDeviceContext()
+void D3D11DisplayWidget::destroyDeviceContext()
 {
-  QtDisplayWindow::destroyDeviceContext();
+  QtDisplayWidget::destroyDeviceContext();
   m_swap_chain.Reset();
   m_context.Reset();
   m_device.Reset();
 }
 
-bool D3D11DisplayWindow::createSwapChainRTV()
+bool D3D11DisplayWidget::createSwapChain(HWND hwnd)
+{
+  HRESULT hr;
+
+  DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
+  swap_chain_desc.BufferDesc.Width = m_window_width;
+  swap_chain_desc.BufferDesc.Height = m_window_height;
+  swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  swap_chain_desc.SampleDesc.Count = 1;
+  swap_chain_desc.BufferCount = 3;
+  swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  swap_chain_desc.OutputWindow = hwnd;
+  swap_chain_desc.Windowed = TRUE;
+  swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+  if (m_allow_tearing_supported)
+    swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+  hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+  if (FAILED(hr))
+  {
+    Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
+    swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    swap_chain_desc.Flags = 0;
+    m_allow_tearing_supported = false;
+
+    hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+    if (FAILED(hr))
+    {
+      Log_ErrorPrintf("CreateSwapChain failed: 0x%08X", hr);
+      return false;
+    }
+  }
+
+  hr = m_dxgi_factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+  if (FAILED(hr))
+    Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
+
+  return true;
+}
+
+void D3D11DisplayWidget::windowResized(s32 new_window_width, s32 new_window_height)
+{
+  QtDisplayWidget::windowResized(new_window_width, new_window_height);
+  HostDisplay::WindowResized(new_window_width, new_window_height);
+
+  if (!m_swap_chain)
+    return;
+
+  m_swap_chain_rtv.Reset();
+
+  HRESULT hr = m_swap_chain->ResizeBuffers(0, new_window_width, new_window_height, DXGI_FORMAT_UNKNOWN,
+                                           m_allow_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+  if (FAILED(hr))
+    Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
+
+  if (!createSwapChainRTV())
+    Panic("Failed to recreate swap chain RTV after resize");
+}
+
+bool D3D11DisplayWidget::createSwapChainRTV()
 {
   ComPtr<ID3D11Texture2D> backbuffer;
   HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
@@ -303,7 +330,7 @@ bool D3D11DisplayWindow::createSwapChainRTV()
   return true;
 }
 
-bool D3D11DisplayWindow::createDeviceResources()
+bool D3D11DisplayWidget::createDeviceResources()
 {
   HRESULT hr;
 
@@ -349,9 +376,9 @@ bool D3D11DisplayWindow::createDeviceResources()
   return true;
 }
 
-void D3D11DisplayWindow::destroyDeviceResources()
+void D3D11DisplayWidget::destroyDeviceResources()
 {
-  QtDisplayWindow::destroyDeviceResources();
+  QtDisplayWidget::destroyDeviceResources();
 
   m_display_uniform_buffer.Release();
   m_swap_chain_rtv.Reset();
@@ -364,9 +391,9 @@ void D3D11DisplayWindow::destroyDeviceResources()
   m_display_rasterizer_state.Reset();
 }
 
-bool D3D11DisplayWindow::createImGuiContext()
+bool D3D11DisplayWidget::createImGuiContext()
 {
-  if (!QtDisplayWindow::createImGuiContext())
+  if (!QtDisplayWidget::createImGuiContext())
     return false;
 
   if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
@@ -377,13 +404,13 @@ bool D3D11DisplayWindow::createImGuiContext()
   return true;
 }
 
-void D3D11DisplayWindow::destroyImGuiContext()
+void D3D11DisplayWidget::destroyImGuiContext()
 {
   ImGui_ImplDX11_Shutdown();
-  QtDisplayWindow::destroyImGuiContext();
+  QtDisplayWidget::destroyImGuiContext();
 }
 
-void D3D11DisplayWindow::Render()
+void D3D11DisplayWidget::Render()
 {
   static constexpr std::array<float, 4> clear_color = {};
   m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
@@ -403,7 +430,7 @@ void D3D11DisplayWindow::Render()
   ImGui_ImplDX11_NewFrame();
 }
 
-void D3D11DisplayWindow::renderDisplay()
+void D3D11DisplayWidget::renderDisplay()
 {
   if (!m_display_texture_handle)
     return;

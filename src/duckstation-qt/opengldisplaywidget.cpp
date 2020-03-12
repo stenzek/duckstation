@@ -1,13 +1,14 @@
-#include "opengldisplaywindow.h"
+#include "opengldisplaywidget.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "imgui.h"
 #include "qthostinterface.h"
 #include <QtGui/QKeyEvent>
+#include <QtGui/QWindow>
 #include <array>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
-Log_SetChannel(OpenGLDisplayWindow);
+Log_SetChannel(OpenGLDisplayWidget);
 
 static thread_local QOpenGLContext* s_thread_gl_context;
 
@@ -56,11 +57,11 @@ static void SetSwapInterval(QWindow* window, QOpenGLContext* context, int interv
 #endif
 }
 
-class OpenGLHostDisplayTexture : public HostDisplayTexture
+class OpenGLDisplayWidgetTexture : public HostDisplayTexture
 {
 public:
-  OpenGLHostDisplayTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
-  ~OpenGLHostDisplayTexture() override { glDeleteTextures(1, &m_id); }
+  OpenGLDisplayWidgetTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
+  ~OpenGLDisplayWidgetTexture() override { glDeleteTextures(1, &m_id); }
 
   void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_id)); }
   u32 GetWidth() const override { return m_width; }
@@ -68,8 +69,8 @@ public:
 
   GLuint GetGLID() const { return m_id; }
 
-  static std::unique_ptr<OpenGLHostDisplayTexture> Create(u32 width, u32 height, const void* initial_data,
-                                                          u32 initial_data_stride)
+  static std::unique_ptr<OpenGLDisplayWidgetTexture> Create(u32 width, u32 height, const void* initial_data,
+                                                            u32 initial_data_stride)
   {
     GLuint id;
     glGenTextures(1, &id);
@@ -87,7 +88,7 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, id);
-    return std::make_unique<OpenGLHostDisplayTexture>(id, width, height);
+    return std::make_unique<OpenGLDisplayWidgetTexture>(id, width, height);
   }
 
 private:
@@ -96,82 +97,84 @@ private:
   u32 m_height;
 };
 
-OpenGLDisplayWindow::OpenGLDisplayWindow(QtHostInterface* host_interface, QWindow* parent)
-  : QtDisplayWindow(host_interface, parent)
+OpenGLDisplayWidget::OpenGLDisplayWidget(QtHostInterface* host_interface, QWidget* parent)
+  : QtDisplayWidget(host_interface, parent)
 {
-  setSurfaceType(QWindow::OpenGLSurface);
+  QWindow* native_window = windowHandle();
+  Assert(native_window);
+  native_window->setSurfaceType(QWindow::OpenGLSurface);
 }
 
-OpenGLDisplayWindow::~OpenGLDisplayWindow() = default;
+OpenGLDisplayWidget::~OpenGLDisplayWidget() = default;
 
-HostDisplay* OpenGLDisplayWindow::getHostDisplayInterface()
+HostDisplay* OpenGLDisplayWidget::getHostDisplayInterface()
 {
   return this;
 }
 
-HostDisplay::RenderAPI OpenGLDisplayWindow::GetRenderAPI() const
+HostDisplay::RenderAPI OpenGLDisplayWidget::GetRenderAPI() const
 {
   return m_gl_context->isOpenGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
-void* OpenGLDisplayWindow::GetRenderDevice() const
+void* OpenGLDisplayWidget::GetRenderDevice() const
 {
   return nullptr;
 }
 
-void* OpenGLDisplayWindow::GetRenderContext() const
+void* OpenGLDisplayWidget::GetRenderContext() const
 {
   return m_gl_context.get();
 }
 
-void* OpenGLDisplayWindow::GetRenderWindow() const
+void* OpenGLDisplayWidget::GetRenderWindow() const
 {
-  return const_cast<QWindow*>(static_cast<const QWindow*>(this));
+  return const_cast<QWidget*>(static_cast<const QWidget*>(this));
 }
 
-void OpenGLDisplayWindow::ChangeRenderWindow(void* new_window)
+void OpenGLDisplayWidget::ChangeRenderWindow(void* new_window)
 {
   Panic("Not implemented");
 }
 
-void OpenGLDisplayWindow::WindowResized(s32 new_window_width, s32 new_window_height)
+void OpenGLDisplayWidget::windowResized(s32 new_window_width, s32 new_window_height)
 {
-  QtDisplayWindow::WindowResized(new_window_width, new_window_height);
+  QtDisplayWidget::windowResized(new_window_width, new_window_height);
   HostDisplay::WindowResized(new_window_width, new_window_height);
 }
 
-std::unique_ptr<HostDisplayTexture> OpenGLDisplayWindow::CreateTexture(u32 width, u32 height, const void* data,
-                                                                       u32 data_stride, bool dynamic)
+std::unique_ptr<HostDisplayTexture> OpenGLDisplayWidget::CreateTexture(u32 width, u32 height, const void* initial_data,
+                                                                       u32 initial_data_stride, bool dynamic)
 {
-  return OpenGLHostDisplayTexture::Create(width, height, data, data_stride);
+  return OpenGLDisplayWidgetTexture::Create(width, height, initial_data, initial_data_stride);
 }
 
-void OpenGLDisplayWindow::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                        const void* data, u32 data_stride)
+void OpenGLDisplayWidget::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+                                        const void* texture_data, u32 texture_data_stride)
 {
-  OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
-  Assert(data_stride == (width * sizeof(u32)));
+  OpenGLDisplayWidgetTexture* tex = static_cast<OpenGLDisplayWidgetTexture*>(texture);
+  Assert(texture_data_stride == (width * sizeof(u32)));
 
   GLint old_texture_binding = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
 
   glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
 
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
-void OpenGLDisplayWindow::SetVSync(bool enabled)
+void OpenGLDisplayWidget::SetVSync(bool enabled)
 {
   // Window framebuffer has to be bound to call SetSwapInterval.
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  SetSwapInterval(this, m_gl_context.get(), enabled ? 1 : 0);
+  SetSwapInterval(windowHandle(), m_gl_context.get(), enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
-const char* OpenGLDisplayWindow::GetGLSLVersionString() const
+const char* OpenGLDisplayWidget::GetGLSLVersionString() const
 {
   if (m_gl_context->isOpenGLES())
   {
@@ -189,7 +192,7 @@ const char* OpenGLDisplayWindow::GetGLSLVersionString() const
   }
 }
 
-std::string OpenGLDisplayWindow::GetGLSLVersionHeader() const
+std::string OpenGLDisplayWidget::GetGLSLVersionHeader() const
 {
   std::string header = GetGLSLVersionString();
   header += "\n\n";
@@ -222,12 +225,12 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLDisplayWindow::hasDeviceContext() const
+bool OpenGLDisplayWidget::hasDeviceContext() const
 {
   return static_cast<bool>(m_gl_context);
 }
 
-bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug_device)
+bool OpenGLDisplayWidget::createDeviceContext(QThread* worker_thread, bool debug_device)
 {
   m_gl_context = std::make_unique<QOpenGLContext>();
 
@@ -236,7 +239,7 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
     {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}, {3, 1}, {3, 0}}};
   static constexpr std::array<std::tuple<int, int>, 4> es_versions_to_try = {{{3, 2}, {3, 1}, {3, 0}}};
 
-  QSurfaceFormat surface_format = requestedFormat();
+  QSurfaceFormat surface_format; // = requestedFormat();
   surface_format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
   surface_format.setSwapInterval(0);
   surface_format.setRenderableType(QSurfaceFormat::OpenGL);
@@ -280,14 +283,14 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
   Log_InfoPrintf("Got a %s %d.%d context", (m_gl_context->isOpenGLES() ? "OpenGL ES" : "desktop OpenGL"),
                  surface_format.majorVersion(), surface_format.minorVersion());
 
-  if (!m_gl_context->makeCurrent(this))
+  if (!m_gl_context->makeCurrent(windowHandle()))
   {
     Log_ErrorPrintf("Failed to make GL context current on UI thread");
     m_gl_context.reset();
     return false;
   }
 
-  if (!QtDisplayWindow::createDeviceContext(worker_thread, debug_device))
+  if (!QtDisplayWidget::createDeviceContext(worker_thread, debug_device))
   {
     m_gl_context->doneCurrent();
     m_gl_context.reset();
@@ -299,9 +302,9 @@ bool OpenGLDisplayWindow::createDeviceContext(QThread* worker_thread, bool debug
   return true;
 }
 
-bool OpenGLDisplayWindow::initializeDeviceContext(bool debug_device)
+bool OpenGLDisplayWidget::initializeDeviceContext(bool debug_device)
 {
-  if (!m_gl_context->makeCurrent(this))
+  if (!m_gl_context->makeCurrent(windowHandle()))
     return false;
 
   s_thread_gl_context = m_gl_context.get();
@@ -324,7 +327,7 @@ bool OpenGLDisplayWindow::initializeDeviceContext(bool debug_device)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  if (!QtDisplayWindow::initializeDeviceContext(debug_device))
+  if (!QtDisplayWidget::initializeDeviceContext(debug_device))
   {
     s_thread_gl_context = nullptr;
     m_gl_context->doneCurrent();
@@ -334,20 +337,20 @@ bool OpenGLDisplayWindow::initializeDeviceContext(bool debug_device)
   return true;
 }
 
-void OpenGLDisplayWindow::destroyDeviceContext()
+void OpenGLDisplayWidget::destroyDeviceContext()
 {
   Assert(m_gl_context && s_thread_gl_context == m_gl_context.get());
 
-  QtDisplayWindow::destroyDeviceContext();
+  QtDisplayWidget::destroyDeviceContext();
 
   s_thread_gl_context = nullptr;
   m_gl_context->doneCurrent();
   m_gl_context.reset();
 }
 
-bool OpenGLDisplayWindow::createImGuiContext()
+bool OpenGLDisplayWidget::createImGuiContext()
 {
-  if (!QtDisplayWindow::createImGuiContext())
+  if (!QtDisplayWidget::createImGuiContext())
     return false;
 
   if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
@@ -358,14 +361,14 @@ bool OpenGLDisplayWindow::createImGuiContext()
   return true;
 }
 
-void OpenGLDisplayWindow::destroyImGuiContext()
+void OpenGLDisplayWidget::destroyImGuiContext()
 {
   ImGui_ImplOpenGL3_Shutdown();
 
-  QtDisplayWindow::destroyImGuiContext();
+  QtDisplayWidget::destroyImGuiContext();
 }
 
-bool OpenGLDisplayWindow::createDeviceResources()
+bool OpenGLDisplayWidget::createDeviceResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 uniform vec4 u_src_rect;
@@ -425,9 +428,9 @@ void main()
   return true;
 }
 
-void OpenGLDisplayWindow::destroyDeviceResources()
+void OpenGLDisplayWidget::destroyDeviceResources()
 {
-  QtDisplayWindow::destroyDeviceResources();
+  QtDisplayWidget::destroyDeviceResources();
 
   if (m_display_vao != 0)
     glDeleteVertexArrays(1, &m_display_vao);
@@ -439,7 +442,7 @@ void OpenGLDisplayWindow::destroyDeviceResources()
   m_display_program.Destroy();
 }
 
-void OpenGLDisplayWindow::Render()
+void OpenGLDisplayWidget::Render()
 {
   glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -451,8 +454,9 @@ void OpenGLDisplayWindow::Render()
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-  m_gl_context->makeCurrent(this);
-  m_gl_context->swapBuffers(this);
+  QWindow* window_handle = windowHandle();
+  m_gl_context->makeCurrent(window_handle);
+  m_gl_context->swapBuffers(window_handle);
 
   ImGui::NewFrame();
   ImGui_ImplOpenGL3_NewFrame();
@@ -460,7 +464,7 @@ void OpenGLDisplayWindow::Render()
   GL::Program::ResetLastProgram();
 }
 
-void OpenGLDisplayWindow::renderDisplay()
+void OpenGLDisplayWidget::renderDisplay()
 {
   if (!m_display_texture_handle)
     return;

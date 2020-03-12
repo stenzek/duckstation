@@ -1,6 +1,6 @@
 #pragma once
-#include <QtGui/QWindow>
 #include "common/types.h"
+#include <QtWidgets/QWidget>
 
 class QKeyEvent;
 class QResizeEvent;
@@ -9,13 +9,13 @@ class HostDisplay;
 
 class QtHostInterface;
 
-class QtDisplayWindow : public QWindow
+class QtDisplayWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  QtDisplayWindow(QtHostInterface* host_interface, QWindow* parent);
-  virtual ~QtDisplayWindow();
+  QtDisplayWidget(QtHostInterface* host_interface, QWidget* parent);
+  virtual ~QtDisplayWidget();
 
   virtual HostDisplay* getHostDisplayInterface();
 
@@ -27,23 +27,24 @@ public:
   virtual void Render() = 0;
 
   // this comes back on the emu thread
-  virtual void WindowResized(s32 new_window_width, s32 new_window_height);
+  virtual void windowResized(s32 new_window_width, s32 new_window_height);
+
+  virtual QPaintEngine* paintEngine() const override;
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height);
 
 protected:
-  int getScaledWindowWidth() const { return static_cast<int>(static_cast<qreal>(width()) * devicePixelRatio()); }
-  int getScaledWindowHeight() const { return static_cast<int>(static_cast<qreal>(height()) * devicePixelRatio()); }
+  qreal getDevicePixelRatioFromScreen() const;
+  int getScaledWindowWidth() const;
+  int getScaledWindowHeight() const;
 
   virtual bool createImGuiContext();
   virtual void destroyImGuiContext();
   virtual bool createDeviceResources();
   virtual void destroyDeviceResources();
 
-  virtual void keyPressEvent(QKeyEvent* event) override;
-  virtual void keyReleaseEvent(QKeyEvent* event) override;
-  virtual void resizeEvent(QResizeEvent* event) override;
+  virtual bool event(QEvent* event) override;
 
   QtHostInterface* m_host_interface;
 };

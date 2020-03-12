@@ -11,19 +11,19 @@
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
 #include "core/host_display.h"
-#include "qtdisplaywindow.h"
+#include "qtdisplaywidget.h"
 #include <QtGui/QOpenGLContext>
 #include <memory>
 
 class QtHostInterface;
 
-class OpenGLDisplayWindow final : public QtDisplayWindow, public HostDisplay
+class OpenGLDisplayWidget final : public QtDisplayWidget, public HostDisplay
 {
   Q_OBJECT
 
 public:
-  OpenGLDisplayWindow(QtHostInterface* host_interface, QWindow* parent);
-  ~OpenGLDisplayWindow();
+  OpenGLDisplayWidget(QtHostInterface* host_interface, QWidget* parent);
+  ~OpenGLDisplayWidget();
 
   HostDisplay* getHostDisplayInterface() override;
 
@@ -38,12 +38,12 @@ public:
   void* GetRenderWindow() const override;
 
   void ChangeRenderWindow(void* new_window) override;
-  void WindowResized(s32 new_window_width, s32 new_window_height) override;
+  void windowResized(s32 new_window_width, s32 new_window_height) override;
 
-  std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
-                                                    bool dynamic) override;
-  void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
-                     u32 data_stride) override;
+  std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
+                                                    u32 initial_data_stride, bool dynamic) override;
+  void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data,
+                     u32 texture_data_stride) override;
 
   void SetVSync(bool enabled) override;
 

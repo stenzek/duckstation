@@ -5,7 +5,7 @@
 #include "core/system.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
-#include "qtdisplaywindow.h"
+#include "qtdisplaywidget.h"
 #include "qthostinterface.h"
 #include "qtsettingsinterface.h"
 #include "settingsdialog.h"
@@ -57,10 +57,7 @@ void MainWindow::createDisplayWindow(QThread* worker_thread, bool use_debug_devi
 {
   DebugAssert(!m_display_widget);
 
-  QtDisplayWindow* display_window = m_host_interface->createDisplayWindow();
-  DebugAssert(display_window);
-
-  m_display_widget = QWidget::createWindowContainer(display_window, m_ui.mainContainer);
+  m_display_widget = m_host_interface->createDisplayWidget();
   DebugAssert(m_display_widget);
 
   m_display_widget->setFocusPolicy(Qt::StrongFocus);
@@ -70,7 +67,7 @@ void MainWindow::createDisplayWindow(QThread* worker_thread, bool use_debug_devi
   switchToEmulationView();
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  display_window->createDeviceContext(worker_thread, use_debug_device);
+  m_display_widget->createDeviceContext(worker_thread, use_debug_device);
 }
 
 void MainWindow::destroyDisplayWindow()

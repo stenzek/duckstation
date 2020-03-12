@@ -2,7 +2,6 @@
 #include "core/host_interface.h"
 #include "core/system.h"
 #include "frontend-common/common_host_interface.h"
-#include "opengldisplaywindow.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
 #include <QtCore/QSettings>
@@ -23,6 +22,8 @@ class QWidget;
 class QTimer;
 
 class GameList;
+
+class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(SystemBootParameters);
 
@@ -51,7 +52,7 @@ public:
 
   bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
-  QtDisplayWindow* createDisplayWindow();
+  QtDisplayWidget* createDisplayWidget();
 
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
@@ -101,7 +102,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void doStopThread();
-  void onDisplayWindowResized(int width, int height);
+  void onDisplayWidgetResized(int width, int height);
   void doBackgroundControllerPoll();
 
 protected:
@@ -155,7 +156,7 @@ private:
   QSettings m_qsettings;
   std::mutex m_qsettings_mutex;
 
-  QtDisplayWindow* m_display_window = nullptr;
+  QtDisplayWidget* m_display_widget = nullptr;
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
   QEventLoop* m_worker_thread_event_loop = nullptr;

@@ -10,6 +10,7 @@
 #include "core/system.h"
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
+#include "opengldisplaywidget.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
@@ -23,7 +24,7 @@
 Log_SetChannel(QtHostInterface);
 
 #ifdef WIN32
-#include "d3d11displaywindow.h"
+#include "d3d11displaywidget.h"
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent)
@@ -39,7 +40,7 @@ QtHostInterface::QtHostInterface(QObject* parent)
 
 QtHostInterface::~QtHostInterface()
 {
-  Assert(!m_display_window);
+  Assert(!m_display_widget);
   stopThread();
 }
 
@@ -135,20 +136,20 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
   emit gameListRefreshed();
 }
 
-QtDisplayWindow* QtHostInterface::createDisplayWindow()
+QtDisplayWidget* QtHostInterface::createDisplayWidget()
 {
-  Assert(!m_display_window);
+  Assert(!m_display_widget);
 
 #ifdef WIN32
   if (m_settings.gpu_renderer == GPURenderer::HardwareOpenGL)
-    m_display_window = new OpenGLDisplayWindow(this, nullptr);
+    m_display_widget = new OpenGLDisplayWidget(this, nullptr);
   else
-    m_display_window = new D3D11DisplayWindow(this, nullptr);
+    m_display_widget = new D3D11DisplayWidget(this, nullptr);
 #else
-  m_display_window = new OpenGLDisplayWindow(this, nullptr);
+  m_display_widget = new OpenGLDisplayWidget(this, nullptr);
 #endif
-  connect(m_display_window, &QtDisplayWindow::windowResizedEvent, this, &QtHostInterface::onDisplayWindowResized);
-  return m_display_window;
+  connect(m_display_widget, &QtDisplayWidget::windowResizedEvent, this, &QtHostInterface::onDisplayWidgetResized);
+  return m_display_widget;
 }
 
 void QtHostInterface::bootSystem(const SystemBootParameters& params)
@@ -188,43 +189,43 @@ void QtHostInterface::handleKeyEvent(int key, bool pressed)
   HandleHostKeyEvent(key, pressed);
 }
 
-void QtHostInterface::onDisplayWindowResized(int width, int height)
+void QtHostInterface::onDisplayWidgetResized(int width, int height)
 {
   // this can be null if it was destroyed and the main thread is late catching up
-  if (m_display_window)
-    m_display_window->WindowResized(width, height);
+  if (m_display_widget)
+    m_display_widget->windowResized(width, height);
 }
 
 bool QtHostInterface::AcquireHostDisplay()
 {
-  DebugAssert(!m_display_window);
+  DebugAssert(!m_display_widget);
 
   emit createDisplayWindowRequested(m_worker_thread, m_settings.gpu_use_debug_device);
-  if (!m_display_window->hasDeviceContext())
+  if (!m_display_widget->hasDeviceContext())
   {
-    m_display_window = nullptr;
+    m_display_widget = nullptr;
     emit destroyDisplayWindowRequested();
     return false;
   }
 
-  if (!m_display_window->initializeDeviceContext(m_settings.gpu_use_debug_device))
+  if (!m_display_widget->initializeDeviceContext(m_settings.gpu_use_debug_device))
   {
-    m_display_window->destroyDeviceContext();
-    m_display_window = nullptr;
+    m_display_widget->destroyDeviceContext();
+    m_display_widget = nullptr;
     emit destroyDisplayWindowRequested();
     return false;
   }
 
-  m_display = m_display_window->getHostDisplayInterface();
+  m_display = m_display_widget->getHostDisplayInterface();
   return true;
 }
 
 void QtHostInterface::ReleaseHostDisplay()
 {
-  DebugAssert(m_display_window && m_display == m_display_window->getHostDisplayInterface());
+  DebugAssert(m_display_widget && m_display == m_display_widget->getHostDisplayInterface());
   m_display = nullptr;
-  m_display_window->destroyDeviceContext();
-  m_display_window = nullptr;
+  m_display_widget->destroyDeviceContext();
+  m_display_widget = nullptr;
   emit destroyDisplayWindowRequested();
 }
 

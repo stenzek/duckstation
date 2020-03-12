@@ -8,11 +8,11 @@
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
 
-class OpenGLHostDisplayTexture : public HostDisplayTexture
+class OpenGLDisplayWidgetTexture : public HostDisplayTexture
 {
 public:
-  OpenGLHostDisplayTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
-  ~OpenGLHostDisplayTexture() override { glDeleteTextures(1, &m_id); }
+  OpenGLDisplayWidgetTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
+  ~OpenGLDisplayWidgetTexture() override { glDeleteTextures(1, &m_id); }
 
   void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_id)); }
   u32 GetWidth() const override { return m_width; }
@@ -20,7 +20,7 @@ public:
 
   GLuint GetGLID() const { return m_id; }
 
-  static std::unique_ptr<OpenGLHostDisplayTexture> Create(u32 width, u32 height, const void* initial_data,
+  static std::unique_ptr<OpenGLDisplayWidgetTexture> Create(u32 width, u32 height, const void* initial_data,
                                                           u32 initial_data_stride)
   {
     GLuint id;
@@ -39,7 +39,7 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, id);
-    return std::make_unique<OpenGLHostDisplayTexture>(id, width, height);
+    return std::make_unique<OpenGLDisplayWidgetTexture>(id, width, height);
   }
 
 private:
@@ -111,13 +111,13 @@ void OpenGLHostDisplay::WindowResized(s32 new_window_width, s32 new_window_heigh
 std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
                                                                      u32 data_stride, bool dynamic)
 {
-  return OpenGLHostDisplayTexture::Create(width, height, data, data_stride);
+  return OpenGLDisplayWidgetTexture::Create(width, height, data, data_stride);
 }
 
 void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
                                       const void* data, u32 data_stride)
 {
-  OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
+  OpenGLDisplayWidgetTexture* tex = static_cast<OpenGLDisplayWidgetTexture*>(texture);
   Assert(data_stride == (width * sizeof(u32)));
 
   GLint old_texture_binding = 0;

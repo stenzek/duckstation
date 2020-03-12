@@ -12,6 +12,7 @@ class QThread;
 
 class GameListWidget;
 class QtHostInterface;
+class QtDisplayWidget;
 
 struct GameListEntry;
 
@@ -71,7 +72,7 @@ private:
   QtHostInterface* m_host_interface = nullptr;
 
   GameListWidget* m_game_list_widget = nullptr;
-  QWidget* m_display_widget = nullptr;
+  QtDisplayWidget* m_display_widget = nullptr;
 
   QLabel* m_status_speed_widget = nullptr;
   QLabel* m_status_fps_widget = nullptr;
