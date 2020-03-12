@@ -12,6 +12,7 @@
 #include "frontend-common/sdl_controller_interface.h"
 #include "mainwindow.h"
 #include "opengldisplaywidget.h"
+#include "qtprogresscallback.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
@@ -35,7 +36,6 @@ QtHostInterface::QtHostInterface(QObject* parent)
   qRegisterMetaType<SystemBootParameters>();
 
   loadSettings();
-  refreshGameList();
   createThread();
 }
 
@@ -141,10 +141,14 @@ void QtHostInterface::loadSettings()
 
 void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
 {
+  Assert(!isOnWorkerThread());
+
   std::lock_guard<std::mutex> lock(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
   m_game_list->SetSearchDirectoriesFromSettings(si);
-  m_game_list->Refresh(invalidate_cache, invalidate_database);
+
+  QtProgressCallback progress(m_main_window);
+  m_game_list->Refresh(invalidate_cache, invalidate_database, &progress);
   emit gameListRefreshed();
 }
 

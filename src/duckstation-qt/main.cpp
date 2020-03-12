@@ -32,5 +32,7 @@ int main(int argc, char* argv[])
   std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
   window->show();
 
+  host_interface->refreshGameList();
+
   return app.exec();
 }
