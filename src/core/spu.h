@@ -274,13 +274,15 @@ private:
 
   void ReadADPCMBlock(u16 address, ADPCMBlock* block);
   std::tuple<s32, s32> SampleVoice(u32 voice_index);
+  void VoiceKeyOn(u32 voice_index);
+  void VoiceKeyOff(u32 voice_index);
   void Execute(TickCount ticks);
   void UpdateEventInterval();
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
-  std::unique_ptr<TimingEvent> m_sample_event;
+  std::unique_ptr<TimingEvent> m_tick_event;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};

@@ -24,8 +24,8 @@ void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
   m_system = system;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
-  m_sample_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
-                                               std::bind(&SPU::Execute, this, std::placeholders::_1), false);
+  m_tick_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
+                                             std::bind(&SPU::Execute, this, std::placeholders::_1), false);
 }
 
 void SPU::Reset()
@@ -186,7 +186,7 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801DAE - SPU_BASE:
       // Log_DebugPrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       return m_SPUSTAT.bits;
 
     case 0x1F801DB0 - SPU_BASE:
@@ -214,7 +214,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D80 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume left <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_main_volume_left.bits = value;
       return;
     }
@@ -222,7 +222,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D82 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume right <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_main_volume_right.bits = value;
       return;
     }
@@ -230,17 +230,15 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D88 - SPU_BASE:
     {
       Log_DebugPrintf("SPU key on low <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
 
       u16 bits = value;
       for (u32 i = 0; i < 16; i++)
       {
         if (bits & 0x01)
-        {
-          Log_DebugPrintf("Voice %u key on", i);
-          m_voices[i].KeyOn();
-        }
+          VoiceKeyOn(i);
+
         bits >>= 1;
       }
     }
@@ -249,17 +247,15 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8A - SPU_BASE:
     {
       Log_DebugPrintf("SPU key on high <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
 
       u16 bits = value;
       for (u32 i = 16; i < NUM_VOICES; i++)
       {
         if (bits & 0x01)
-        {
-          Log_DebugPrintf("Voice %u key on", i);
-          m_voices[i].KeyOn();
-        }
+          VoiceKeyOn(i);
+
         bits >>= 1;
       }
     }
@@ -268,17 +264,15 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8C - SPU_BASE:
     {
       Log_DebugPrintf("SPU key off low <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
 
       u16 bits = value;
       for (u32 i = 0; i < 16; i++)
       {
         if (bits & 0x01)
-        {
-          Log_DebugPrintf("Voice %u key off", i);
-          m_voices[i].KeyOff();
-        }
+          VoiceKeyOff(i);
+
         bits >>= 1;
       }
     }
@@ -287,17 +281,15 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8E - SPU_BASE:
     {
       Log_DebugPrintf("SPU key off high <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
 
       u16 bits = value;
       for (u32 i = 16; i < NUM_VOICES; i++)
       {
         if (bits & 0x01)
-        {
-          Log_DebugPrintf("Voice %u key off", i);
-          m_voices[i].KeyOff();
-        }
+          VoiceKeyOff(i);
+
         bits >>= 1;
       }
     }
@@ -305,7 +297,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801D90 - SPU_BASE:
     {
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_pitch_modulation_enable_register = (m_pitch_modulation_enable_register & 0xFFFF0000) | ZeroExtend32(value);
       Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
     }
@@ -313,7 +305,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801D92 - SPU_BASE:
     {
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_pitch_modulation_enable_register =
         (m_pitch_modulation_enable_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
       Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
@@ -323,7 +315,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D94 - SPU_BASE:
     {
       Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_noise_mode_register = (m_noise_mode_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -331,7 +323,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D96 - SPU_BASE:
     {
       Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_noise_mode_register = (m_noise_mode_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -339,7 +331,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D98 - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb on register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_reverb_on_register = (m_reverb_on_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -347,7 +339,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D9A - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb off register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -355,7 +347,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DA4 - SPU_BASE:
     {
       Log_DebugPrintf("SPU IRQ address register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_irq_address = value;
       return;
     }
@@ -379,7 +371,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DAA - SPU_BASE:
     {
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly(true);
+      m_tick_event->InvokeEarly(true);
 
       m_SPUCNT.bits = value;
       m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
@@ -403,7 +395,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DB0 - SPU_BASE:
     {
       Log_DebugPrintf("SPU left cd audio register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_cd_audio_volume_left = value;
     }
     break;
@@ -411,7 +403,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DB2 - SPU_BASE:
     {
       Log_DebugPrintf("SPU right cd audio register <- 0x%04X", ZeroExtend32(value));
-      m_sample_event->InvokeEarly();
+      m_tick_event->InvokeEarly();
       m_cd_audio_volume_right = value;
     }
     break;
@@ -441,7 +433,7 @@ u16 SPU::ReadVoiceRegister(u32 offset)
   if (reg_index >= 6 && voice.IsOn())
   {
     // adsr volume needs to be updated when reading
-    m_sample_event->InvokeEarly();
+    m_tick_event->InvokeEarly();
   }
 
   return voice.regs.index[reg_index];
@@ -456,7 +448,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
   Voice& voice = m_voices[voice_index];
   if (voice.IsOn())
-    m_sample_event->InvokeEarly();
+    m_tick_event->InvokeEarly();
 
   switch (reg_index)
   {
@@ -703,18 +695,18 @@ void SPU::UpdateEventInterval()
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;
   const TickCount interval_ticks = static_cast<TickCount>(interval) * SYSCLK_TICKS_PER_SPU_TICK;
-  if (m_sample_event->IsActive() && m_sample_event->GetInterval() == interval_ticks)
+  if (m_tick_event->IsActive() && m_tick_event->GetInterval() == interval_ticks)
     return;
 
   // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
-  m_sample_event->InvokeEarly(true);
-  m_sample_event->SetInterval(interval_ticks);
-  m_sample_event->Schedule(interval_ticks - m_ticks_carry);
+  m_tick_event->InvokeEarly(true);
+  m_tick_event->SetInterval(interval_ticks);
+  m_tick_event->Schedule(interval_ticks - m_ticks_carry);
 }
 
 void SPU::GeneratePendingSamples()
 {
-  m_sample_event->InvokeEarly();
+  m_tick_event->InvokeEarly();
 }
 
 void SPU::Voice::KeyOn()
@@ -1118,6 +1110,18 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   return std::make_tuple(left, right);
 }
 
+void SPU::VoiceKeyOn(u32 voice_index)
+{
+  Log_DebugPrintf("Voice %u key on", voice_index);
+  m_voices[voice_index].KeyOn();
+}
+
+void SPU::VoiceKeyOff(u32 voice_index)
+{
+  Log_DebugPrintf("Voice %u key off", voice_index);
+  m_voices[voice_index].KeyOff();
+}
+
 void SPU::EnsureCDAudioSpace(u32 remaining_frames)
 {
   if (m_cd_audio_buffer.GetSpace() >= (remaining_frames * 2))
@@ -1126,7 +1130,7 @@ void SPU::EnsureCDAudioSpace(u32 remaining_frames)
   const u32 frames_to_drop = (remaining_frames * 2) - m_cd_audio_buffer.GetSpace();
   Log_WarningPrintf(
     "SPU CD Audio buffer overflow with %d pending ticks - writing %u frames with %u frames space. Dropping %u frames.",
-    m_sample_event->IsActive() ? (m_sample_event->GetTicksSinceLastExecution() / SYSCLK_TICKS_PER_SPU_TICK) : 0,
+    m_tick_event->IsActive() ? (m_tick_event->GetTicksSinceLastExecution() / SYSCLK_TICKS_PER_SPU_TICK) : 0,
     remaining_frames, m_cd_audio_buffer.GetSpace() / 2, frames_to_drop);
   m_cd_audio_buffer.Remove(frames_to_drop);
 }
