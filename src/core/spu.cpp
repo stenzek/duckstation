@@ -626,8 +626,6 @@ void SPU::IncrementCaptureBufferPosition()
 
 void SPU::Execute(TickCount ticks)
 {
-  DebugAssert(m_SPUCNT.enable || m_SPUCNT.cd_audio_enable);
-
   u32 remaining_frames = static_cast<u32>((ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK);
   m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
 
@@ -697,19 +695,13 @@ void SPU::Execute(TickCount ticks)
 
 void SPU::UpdateEventInterval()
 {
-  if (!m_SPUCNT.enable && !m_SPUCNT.cd_audio_enable)
-  {
-    m_sample_event->Deactivate();
-    return;
-  }
-
   // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
   // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
   // the SPU state.
   const u32 max_slice_frames = m_system->GetHostInterface()->GetAudioStream()->GetBufferSize();
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
-  const u32 interval = m_SPUCNT.irq9_enable ? 1 : max_slice_frames;
+  const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;
   const TickCount interval_ticks = static_cast<TickCount>(interval) * SYSCLK_TICKS_PER_SPU_TICK;
   if (m_sample_event->IsActive() && m_sample_event->GetInterval() == interval_ticks)
     return;
