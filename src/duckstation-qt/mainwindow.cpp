@@ -362,6 +362,7 @@ void MainWindow::setupAdditionalUi()
     connect(action, &QAction::triggered, [this, renderer]() {
       m_host_interface->putSettingValue(QStringLiteral("GPU/Renderer"), QString(Settings::GetRendererName(renderer)));
       m_host_interface->applySettings();
+      updateDebugMenuGPURenderer();
     });
   }
   updateDebugMenuGPURenderer();
