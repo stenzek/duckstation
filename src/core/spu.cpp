@@ -30,6 +30,8 @@ void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
 
 void SPU::Reset()
 {
+  m_tick_counter = 0;
+
   m_SPUCNT.bits = 0;
   m_SPUSTAT.bits = 0;
   m_transfer_address = 0;
@@ -67,12 +69,15 @@ void SPU::Reset()
     v.has_samples = false;
   }
 
+  m_voice_key_on_off_delay.fill(0);
+
   m_ram.fill(0);
   UpdateEventInterval();
 }
 
 bool SPU::DoState(StateWrapper& sw)
 {
+  sw.Do(&m_tick_counter);
   sw.Do(&m_SPUCNT.bits);
   sw.Do(&m_SPUSTAT.bits);
   sw.Do(&m_transfer_control.bits);
@@ -109,6 +114,8 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.adsr_exponential);
     sw.Do(&v.has_samples);
   }
+
+  sw.Do(&m_voice_key_on_off_delay);
 
   sw.DoBytes(m_ram.data(), RAM_SIZE);
 
@@ -683,6 +690,15 @@ void SPU::Execute(TickCount ticks)
     output_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
+
+  for (u32 i = 0; i < NUM_VOICES; i++)
+  {
+    const u32 delay = static_cast<u32>(m_voice_key_on_off_delay[i]);
+    if (delay == 0)
+      continue;
+
+    m_voice_key_on_off_delay[i] -= static_cast<u8>(std::min(delay, static_cast<u32>(ticks)));
+  }
 }
 
 void SPU::UpdateEventInterval()
@@ -1113,13 +1129,31 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 void SPU::VoiceKeyOn(u32 voice_index)
 {
   Log_DebugPrintf("Voice %u key on", voice_index);
+
+  if (m_voice_key_on_off_delay[voice_index] > 0)
+  {
+    Log_DevPrintf("Ignoring key on for voice %u due to only %u ticks passed since last write", voice_index,
+                  m_voice_key_on_off_delay[voice_index]);
+    return;
+  }
+
   m_voices[voice_index].KeyOn();
+  m_voice_key_on_off_delay[voice_index] = MINIMUM_TICKS_BETWEEN_KEY_ON_OFF;
 }
 
 void SPU::VoiceKeyOff(u32 voice_index)
 {
   Log_DebugPrintf("Voice %u key off", voice_index);
+
+  if (m_voice_key_on_off_delay[voice_index] > 0)
+  {
+    Log_DevPrintf("Ignoring key off for voice %u due to only %u ticks passed since last write", voice_index,
+                  m_voice_key_on_off_delay[voice_index]);
+    return;
+  }
+
   m_voices[voice_index].KeyOff();
+  m_voice_key_on_off_delay[voice_index] = MINIMUM_TICKS_BETWEEN_KEY_ON_OFF;
 }
 
 void SPU::EnsureCDAudioSpace(u32 remaining_frames)

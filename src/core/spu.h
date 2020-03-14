@@ -56,6 +56,7 @@ private:
   static constexpr s16 ADSR_MAX_VOLUME = 0x7FFF;
   static constexpr u32 CD_AUDIO_SAMPLE_BUFFER_SIZE = 44100 * 2;
   static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
+  static constexpr u32 MINIMUM_TICKS_BETWEEN_KEY_ON_OFF = 2;
 
   enum class RAMTransferMode : u8
   {
@@ -283,6 +284,7 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   std::unique_ptr<TimingEvent> m_tick_event;
+  u32 m_tick_counter = 0;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};
@@ -310,6 +312,7 @@ private:
   TickCount m_ticks_carry = 0;
 
   std::array<Voice, NUM_VOICES> m_voices{};
+  std::array<u8, NUM_VOICES> m_voice_key_on_off_delay{};
   std::array<u8, RAM_SIZE> m_ram{};
 
   InlineFIFOQueue<s16, CD_AUDIO_SAMPLE_BUFFER_SIZE> m_cd_audio_buffer;
