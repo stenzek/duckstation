@@ -86,6 +86,13 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="startDumpingOnBoot">
+        <property name="text">
+         <string>Start Dumping On Boot</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

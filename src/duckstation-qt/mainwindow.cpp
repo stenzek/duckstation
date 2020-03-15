@@ -480,11 +480,17 @@ void MainWindow::connectSignals()
 
   m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug/ShowVRAM");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies,
                                                "Debug/DumpCPUToVRAMCopies");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpVRAMtoCPUCopies,
                                                "Debug/DumpVRAMToCPUCopies");
+  connect(m_ui.actionDumpAudio, &QAction::toggled, [this](bool checked) {
+    if (checked)
+      m_host_interface->startDumpingAudio();
+    else
+      m_host_interface->stopDumpingAudio();
+  });
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug/ShowVRAM");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, "Debug/ShowGPUState");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowCDROMState,
                                                "Debug/ShowCDROMState");

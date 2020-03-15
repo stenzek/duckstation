@@ -121,9 +121,11 @@
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="separator"/>
-    <addaction name="actionDebugShowVRAM"/>
+    <addaction name="actionDumpAudio"/>
     <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
+    <addaction name="separator"/>
+    <addaction name="actionDebugShowVRAM"/>
     <addaction name="actionDebugShowGPUState"/>
     <addaction name="actionDebugShowCDROMState"/>
     <addaction name="actionDebugShowSPUState"/>
@@ -392,6 +394,14 @@
    </property>
    <property name="text">
     <string>Dump VRAM to CPU Copies</string>
+   </property>
+  </action>
+  <action name="actionDumpAudio">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dump Audio</string>
    </property>
   </action>
   <action name="actionDebugShowGPUState">

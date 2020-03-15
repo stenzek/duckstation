@@ -12,6 +12,7 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.audioBackend, "Audio/Backend",
                                                &Settings::ParseAudioBackend, &Settings::GetAudioBackendName);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToOutput, "Audio/Sync");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio/DumpOnBoot");
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;

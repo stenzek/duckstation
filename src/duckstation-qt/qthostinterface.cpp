@@ -566,6 +566,28 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
     SaveState(global, slot);
 }
 
+void QtHostInterface::startDumpingAudio()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "startDumpingAudio");
+    return;
+  }
+
+  StartDumpingAudio();
+}
+
+void QtHostInterface::stopDumpingAudio()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "stopDumpingAudio");
+    return;
+  }
+
+  StopDumpingAudio();
+}
+
 void QtHostInterface::enableBackgroundControllerPolling()
 {
   if (!isOnWorkerThread())
