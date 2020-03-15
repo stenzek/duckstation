@@ -892,6 +892,16 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings_copy.gpu_texture_filtering);
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
 
+  ImGui::Separator();
+
+  if (ImGui::MenuItem("Dump Audio", nullptr, IsDumpingAudio(), HasSystem()))
+  {
+    if (!IsDumpingAudio())
+      StartDumpingAudio();
+    else
+      StopDumpingAudio();
+  }
+
   if (settings_changed)
   {
     RunLater([this]() {
@@ -906,26 +916,17 @@ void SDLHostInterface::DrawDebugMenu()
   Settings::DebugSettings& debug_settings = m_settings.debugging;
   bool settings_changed = false;
 
-  ImGui::MenuItem("Show System State");
-  ImGui::Separator();
-
-  settings_changed |= ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
-  settings_changed |= ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
   settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
+
   ImGui::Separator();
 
+  settings_changed |= ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
+  settings_changed |= ImGui::MenuItem("Show GPU State", nullptr, &debug_settings.show_gpu_state);
   settings_changed |= ImGui::MenuItem("Show CDROM State", nullptr, &debug_settings.show_cdrom_state);
-  ImGui::Separator();
-
   settings_changed |= ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
-  ImGui::Separator();
-
   settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
-  ImGui::Separator();
-
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
-  ImGui::Separator();
 
   if (settings_changed)
   {
@@ -1135,6 +1136,7 @@ void SDLHostInterface::DrawSettingsWindow()
         }
 
         settings_changed |= ImGui::Checkbox("Output Sync", &m_settings_copy.audio_sync_enabled);
+        settings_changed |= ImGui::Checkbox("Start Dumping On Boot", &m_settings_copy.audio_dump_on_boot);
       }
 
       ImGui::EndTabItem();
