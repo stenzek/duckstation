@@ -60,6 +60,7 @@ struct Settings
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   bool audio_sync_enabled = true;
+  bool audio_dump_on_boot = true;
 
   struct DebugSettings
   {

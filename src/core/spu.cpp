@@ -2,6 +2,7 @@
 #include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/wav_writer.h"
 #include "dma.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
@@ -631,10 +632,11 @@ void SPU::Execute(TickCount ticks)
   while (remaining_frames > 0)
   {
     AudioStream* const output_stream = m_system->GetHostInterface()->GetAudioStream();
-    s16* output_frame;
+    s16* output_frame_start;
     u32 output_frame_space;
-    output_stream->BeginWrite(&output_frame, &output_frame_space);
+    output_stream->BeginWrite(&output_frame_start, &output_frame_space);
 
+    s16* output_frame = output_frame_start;
     const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
     for (u32 i = 0; i < frames_in_this_batch; i++)
     {
@@ -687,6 +689,9 @@ void SPU::Execute(TickCount ticks)
       IncrementCaptureBufferPosition();
     }
 
+    if (m_dump_writer)
+      m_dump_writer->WriteFrames(output_frame_start, frames_in_this_batch);
+
     output_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
@@ -723,6 +728,31 @@ void SPU::UpdateEventInterval()
 void SPU::GeneratePendingSamples()
 {
   m_tick_event->InvokeEarly();
+}
+
+bool SPU::StartDumpingAudio(const char* filename)
+{
+  if (m_dump_writer)
+    m_dump_writer.reset();
+
+  m_dump_writer = std::make_unique<Common::WAVWriter>();
+  if (!m_dump_writer->Open(filename, SAMPLE_RATE, 2))
+  {
+    Log_ErrorPrintf("Failed to open '%s'", filename);
+    m_dump_writer.reset();
+    return false;
+  }
+
+  return true;
+}
+
+bool SPU::StopDumpingAudio()
+{
+  if (!m_dump_writer)
+    return false;
+
+  m_dump_writer.reset();
+  return true;
 }
 
 void SPU::Voice::KeyOn()

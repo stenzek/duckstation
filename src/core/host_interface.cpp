@@ -108,6 +108,9 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   if (m_paused)
     OnSystemPaused(true);
 
+  if (m_settings.audio_dump_on_boot)
+    StartDumpingAudio();
+
   return true;
 }
 
@@ -673,6 +676,8 @@ void HostInterface::CreateUserDirectorySubdirectories()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
 
   if (!result)
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
@@ -862,6 +867,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Cubeb));
   si.SetBoolValue("Audio", "Sync", true);
+  si.SetBoolValue("Audio", "DumpOnBoot", false);
 
   si.SetStringValue("BIOS", "Path", "bios/scph1001.bin");
   si.SetBoolValue("BIOS", "PatchTTYEnable", false);
@@ -1086,4 +1092,51 @@ bool HostInterface::SaveResumeSaveState()
 
   const bool global = m_system->GetRunningCode().empty();
   return SaveState(global, -1);
+}
+
+bool HostInterface::IsDumpingAudio() const
+{
+  return m_system ? m_system->GetSPU()->IsDumpingAudio() : false;
+}
+
+bool HostInterface::StartDumpingAudio(const char* filename)
+{
+  if (!m_system)
+    return false;
+
+  std::string auto_filename;
+  if (!filename)
+  {
+    const auto& code = m_system->GetRunningCode();
+    if (code.empty())
+    {
+      auto_filename = GetUserDirectoryRelativePath("dump/audio/%s.wav", GetTimestampStringForFileName().GetCharArray());
+    }
+    else
+    {
+      auto_filename = GetUserDirectoryRelativePath("dump/audio/%s_%s.wav", code.c_str(),
+                                                   GetTimestampStringForFileName().GetCharArray());
+    }
+
+    filename = auto_filename.c_str();
+  }
+
+  if (m_system->GetSPU()->StartDumpingAudio(filename))
+  {
+    AddFormattedOSDMessage(5.0f, "Started dumping audio to '%s'.", filename);
+    return true;
+  }
+  else
+  {
+    AddFormattedOSDMessage(10.0f, "Failed to start dumping audio to '%s'.", filename);
+    return false;
+  }
+}
+
+void HostInterface::StopDumpingAudio()
+{
+  if (!m_system || !m_system->GetSPU()->StopDumpingAudio())
+    return;
+
+  AddOSDMessage("Stopped dumping audio.", 5.0f);
 }

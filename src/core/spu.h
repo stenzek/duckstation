@@ -7,6 +7,11 @@
 
 class StateWrapper;
 
+namespace Common
+{
+class WAVWriter;
+}
+
 class System;
 class TimingEvent;
 class DMA;
@@ -41,6 +46,15 @@ public:
 
   // Executes the SPU, generating any pending samples.
   void GeneratePendingSamples();
+
+  /// Returns true if currently dumping audio.
+  ALWAYS_INLINE bool IsDumpingAudio() const { return static_cast<bool>(m_dump_writer); }
+
+  /// Starts dumping audio to file.
+  bool StartDumpingAudio(const char* filename);
+
+  /// Stops dumping audio to file, if started.
+  bool StopDumpingAudio();
 
 private:
   static constexpr u32 RAM_SIZE = 512 * 1024;
@@ -284,7 +298,9 @@ private:
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   std::unique_ptr<TimingEvent> m_tick_event;
+  std::unique_ptr<Common::WAVWriter> m_dump_writer;
   u32 m_tick_counter = 0;
+  TickCount m_ticks_carry = 0;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};
@@ -308,8 +324,6 @@ private:
   u32 m_reverb_on_register = 0;
   u32 m_noise_mode_register = 0;
   u32 m_pitch_modulation_enable_register = 0;
-
-  TickCount m_ticks_carry = 0;
 
   std::array<Voice, NUM_VOICES> m_voices{};
   std::array<u8, NUM_VOICES> m_voice_key_on_off_delay{};

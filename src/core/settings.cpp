@@ -40,6 +40,7 @@ void Settings::Load(SettingsInterface& si)
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
+  audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
 
   bios_path = si.GetStringValue("BIOS", "Path", "bios/scph1001.bin");
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", true);
@@ -92,6 +93,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetBoolValue("Audio", "Sync", audio_sync_enabled);
+  si.SetBoolValue("Audio", "DumpOnBoot", audio_dump_on_boot);
 
   si.SetStringValue("BIOS", "Path", bios_path.c_str());
   si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);

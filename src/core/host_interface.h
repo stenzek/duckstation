@@ -69,6 +69,15 @@ public:
   /// be called as a result of an error.
   bool SaveResumeSaveState();
 
+  /// Returns true if currently dumping audio.
+  bool IsDumpingAudio() const;
+
+  /// Starts dumping audio to a file. If no file name is provided, one will be generated automatically.
+  bool StartDumpingAudio(const char* filename = nullptr);
+
+  /// Stops dumping audio to file if it has been started.
+  void StopDumpingAudio();
+
   virtual void ReportError(const char* message);
   virtual void ReportMessage(const char* message);
   virtual bool ConfirmMessage(const char* message);
