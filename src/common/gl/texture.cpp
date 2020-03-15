@@ -131,4 +131,36 @@ Texture& Texture::operator=(Texture&& moved)
   return *this;
 }
 
+void Texture::GetTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+                                 GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
+                                 GLsizei bufSize, void* pixels)
+{
+  if (GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image)
+  {
+    glGetTextureSubImage(texture, level, xoffset, yoffset, zoffset, width, height, depth, format, type, bufSize,
+                         pixels);
+    return;
+  }
+
+  Assert(depth == 1);
+
+  GLuint old_read_fbo;
+  glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&old_read_fbo));
+
+  GLuint temp_fbo;
+  glGenFramebuffers(1, &temp_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
+  if (zoffset > 0 && (GLAD_GL_VERSION_3_0 || GLAD_GL_ES_VERSION_3_0))
+    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, level, zoffset);
+  else
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, level);
+
+  GLuint status = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER);
+  DebugAssert(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+  glReadPixels(xoffset, yoffset, width, height, format, type, pixels);
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, old_read_fbo);
+  glDeleteFramebuffers(1, &temp_fbo);
+}
+
 } // namespace GL

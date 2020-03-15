@@ -33,8 +33,12 @@ public:
   Texture& operator=(const Texture& copy) = delete;
   Texture& operator=(Texture&& moved);
 
-private:
+  // Helper which uses glGetTextureSubImage where available, otherwise a temporary FBO.
+  static void GetTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+                                 GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
+                                 GLsizei bufSize, void* pixels);
 
+private:
   GLuint m_id = 0;
   u32 m_width = 0;
   u32 m_height = 0;
