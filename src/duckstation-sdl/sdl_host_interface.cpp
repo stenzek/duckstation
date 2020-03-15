@@ -902,6 +902,9 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       StopDumpingAudio();
   }
 
+  if (ImGui::MenuItem("Save Screenshot"))
+    RunLater([this]() { SaveScreenshot(); });
+
   if (settings_changed)
   {
     RunLater([this]() {
