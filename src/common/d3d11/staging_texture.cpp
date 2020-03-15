@@ -1,6 +1,6 @@
 #include "staging_texture.h"
-#include "../log.h"
 #include "../assert.h"
+#include "../log.h"
 Log_SetChannel(D3D11);
 
 namespace D3D11 {
@@ -58,36 +58,60 @@ void StagingTexture::Unmap(ID3D11DeviceContext* context)
   m_map = {};
 }
 
-void StagingTexture::CopyToTexture(ID3D11DeviceContext* context, u32 src_x, u32 src_y, ID3D11Texture2D* dst_texture,
+void StagingTexture::CopyToTexture(ID3D11DeviceContext* context, u32 src_x, u32 src_y, ID3D11Resource* dst_texture,
                                    u32 dst_subresource, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-#ifdef _DEBUG
-  Assert((src_x + width) <= m_width && (src_y + height) <= m_height);
-
-  D3D11_TEXTURE2D_DESC dst_desc;
-  dst_texture->GetDesc(&dst_desc);
-  Assert((dst_x + width) <= dst_desc.Width && (dst_y + height) <= dst_desc.Height);
-#endif
+  DebugAssert((src_x + width) <= m_width && (src_y + height) <= m_height);
 
   const CD3D11_BOX box(static_cast<LONG>(src_x), static_cast<LONG>(src_y), 0, static_cast<LONG>(src_x + width),
                        static_cast<LONG>(src_y + height), 1);
   context->CopySubresourceRegion(dst_texture, dst_subresource, dst_x, dst_y, 0, m_texture.Get(), 0, &box);
 }
 
-void StagingTexture::CopyFromTexture(ID3D11DeviceContext* context, ID3D11Texture2D* src_texture, u32 src_subresource,
+void StagingTexture::CopyFromTexture(ID3D11DeviceContext* context, ID3D11Resource* src_texture, u32 src_subresource,
                                      u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-#ifdef _DEBUG
-  Assert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
-
-  D3D11_TEXTURE2D_DESC src_desc;
-  src_texture->GetDesc(&src_desc);
-  Assert((src_x + width) <= src_desc.Width && (src_y + height) <= src_desc.Height);
-#endif
+  DebugAssert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
 
   const CD3D11_BOX box(static_cast<LONG>(src_x), static_cast<LONG>(src_y), 0, static_cast<LONG>(src_x + width),
                        static_cast<LONG>(src_y + height), 1);
   context->CopySubresourceRegion(m_texture.Get(), 0, dst_x, dst_y, 0, src_texture, src_subresource, &box);
+}
+
+bool AutoStagingTexture::EnsureSize(ID3D11DeviceContext* context, u32 width, u32 height, DXGI_FORMAT format,
+                                    bool for_uploading)
+{
+  if (m_texture && m_width >= width && m_height >= height && m_format == format)
+    return true;
+
+  ID3D11Device* device;
+  context->GetDevice(&device);
+
+  CD3D11_TEXTURE2D_DESC new_desc(format, width, height, 1, 1, 0,
+                                 for_uploading ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_STAGING,
+                                 for_uploading ? D3D11_CPU_ACCESS_WRITE : D3D11_CPU_ACCESS_READ, 1, 0, 0);
+  ComPtr<ID3D11Texture2D> new_texture;
+  HRESULT hr = device->CreateTexture2D(&new_desc, nullptr, new_texture.GetAddressOf());
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Create texture failed: 0x%08X", hr);
+    return false;
+  }
+
+  m_texture = std::move(new_texture);
+  m_width = width;
+  m_height = height;
+  m_format = format;
+  return true;
+}
+
+void AutoStagingTexture::CopyFromTexture(ID3D11DeviceContext* context, ID3D11Resource* src_texture, u32 src_subresource,
+                                         u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
+{
+  if (!EnsureSize(context, width, height, m_format, false))
+    return;
+
+  StagingTexture::CopyFromTexture(context, src_texture, src_subresource, src_x, src_y, dst_x, dst_y, width, height);
 }
 
 } // namespace D3D11

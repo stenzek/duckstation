@@ -30,9 +30,9 @@ public:
   bool Map(ID3D11DeviceContext* context, bool writing);
   void Unmap(ID3D11DeviceContext* context);
 
-  void CopyToTexture(ID3D11DeviceContext* context, u32 src_x, u32 src_y, ID3D11Texture2D* dst_texture,
+  void CopyToTexture(ID3D11DeviceContext* context, u32 src_x, u32 src_y, ID3D11Resource* dst_texture,
                      u32 dst_subresource, u32 dst_x, u32 dst_y, u32 width, u32 height);
-  void CopyFromTexture(ID3D11DeviceContext* context, ID3D11Texture2D* src_texture, u32 src_subresource, u32 src_x,
+  void CopyFromTexture(ID3D11DeviceContext* context, ID3D11Resource* src_texture, u32 src_subresource, u32 src_x,
                        u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   template<typename T>
@@ -70,6 +70,20 @@ public:
   }
 
   template<typename T>
+  bool ReadPixels(ID3D11DeviceContext* context, u32 x, u32 y, u32 width, u32 height, u32 stride, T* data)
+  {
+    const bool was_mapped = IsMapped();
+    if (!was_mapped && !Map(context, false))
+      return false;
+
+    ReadPixels<T>(x, y, width, height, stride, data);
+    if (!was_mapped)
+      Unmap(context);
+
+    return true;
+  }
+
+  template<typename T>
   void WritePixels(u32 x, u32 y, u32 width, u32 height, u32 stride, const T* data)
   {
     const u8* src_ptr = reinterpret_cast<const u8*>(data);
@@ -89,12 +103,53 @@ public:
     }
   }
 
-private:
+  template<typename T>
+  bool WritePixels(ID3D11DeviceContext* context, u32 x, u32 y, u32 width, u32 height, u32 stride, const T* data)
+  {
+    const bool was_mapped = IsMapped();
+    if (!was_mapped && !Map(context, true))
+      return false;
+
+    WritePixels<T>(context, x, y, width, height, stride, data);
+    if (!was_mapped)
+      Unmap(context);
+
+    return true;
+  }
+
+protected:
   ComPtr<ID3D11Texture2D> m_texture;
   u32 m_width;
   u32 m_height;
   DXGI_FORMAT m_format;
 
   D3D11_MAPPED_SUBRESOURCE m_map = {};
+};
+
+class AutoStagingTexture : public StagingTexture
+{
+public:
+  bool EnsureSize(ID3D11DeviceContext* context, u32 width, u32 height, DXGI_FORMAT format, bool for_uploading);
+
+  void CopyFromTexture(ID3D11DeviceContext* context, ID3D11Resource* src_texture, u32 src_subresource, u32 src_x,
+                       u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
+
+  template<typename T>
+  bool WritePixels(ID3D11DeviceContext* context, u32 x, u32 y, u32 width, u32 height, u32 stride, const T* data)
+  {
+    if (!EnsureSize(context, width, height, m_format, true))
+      return false;
+
+    const bool was_mapped = IsMapped();
+    if (!was_mapped && !Map(context, true))
+      return false;
+
+    WritePixels<T>(context, x, y, width, height, stride, data);
+
+    if (!was_mapped)
+      Unmap(context);
+
+    return true;
+  }
 };
 } // namespace D3D11
