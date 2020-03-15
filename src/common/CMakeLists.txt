@@ -55,7 +55,7 @@ add_library(common
   timestamp.h
   types.h
   wav_writer.cpp
-  wav_Writer.h
+  wav_writer.h
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
