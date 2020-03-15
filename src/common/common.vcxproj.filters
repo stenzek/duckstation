@@ -52,6 +52,7 @@
     </ClInclude>
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="progress_callback.h" />
+    <ClInclude Include="wav_writer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -100,6 +101,7 @@
     </ClCompile>
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="progress_callback.cpp" />
+    <ClCompile Include="wav_writer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
