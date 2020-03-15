@@ -1,4 +1,5 @@
 #pragma once
+#include "common/string.h"
 #include "common/timer.h"
 #include "settings.h"
 #include "types.h"
@@ -85,6 +86,9 @@ public:
 
   /// Returns a path relative to the user directory.
   std::string GetUserDirectoryRelativePath(const char* format, ...) const;
+
+  /// Returns a string which can be used as part of a filename, based on the current date/time.
+  static TinyString GetTimestampStringForFileName();
 
   /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
   /// such as compiling shaders when starting up.

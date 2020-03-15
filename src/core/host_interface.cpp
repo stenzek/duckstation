@@ -696,6 +696,15 @@ std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
   }
 }
 
+TinyString HostInterface::GetTimestampStringForFileName()
+{
+  const Timestamp ts(Timestamp::Now());
+
+  TinyString str;
+  ts.ToString(str, "%Y-%m-%d_%H-%M-%S");
+  return str;
+}
+
 std::string HostInterface::GetSettingsFileName() const
 {
   return GetUserDirectoryRelativePath("settings.ini");
