@@ -674,10 +674,11 @@ void HostInterface::CreateUserDirectorySubdirectories()
 
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("bios").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
-  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
-  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
 
   if (!result)
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
@@ -1139,4 +1140,39 @@ void HostInterface::StopDumpingAudio()
     return;
 
   AddOSDMessage("Stopped dumping audio.", 5.0f);
+}
+
+bool HostInterface::SaveScreenshot(const char* filename /* = nullptr */, bool full_resolution /* = true */,
+                                   bool apply_aspect_ratio /* = true */)
+{
+  if (!m_system)
+    return false;
+
+  std::string auto_filename;
+  if (!filename)
+  {
+    const auto& code = m_system->GetRunningCode();
+    const char* extension = "png";
+    if (code.empty())
+    {
+      auto_filename =
+        GetUserDirectoryRelativePath("screenshots/%s.%s", GetTimestampStringForFileName().GetCharArray(), extension);
+    }
+    else
+    {
+      auto_filename = GetUserDirectoryRelativePath("screenshots/%s_%s.%s", code.c_str(),
+                                                   GetTimestampStringForFileName().GetCharArray(), extension);
+    }
+
+    filename = auto_filename.c_str();
+  }
+
+  if (!m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio))
+  {
+    AddFormattedOSDMessage(10.0f, "Failed to save screenshot to '%s'", filename);
+    return false;
+  }
+
+  AddFormattedOSDMessage(5.0f, "Screenshot saved to '%s'.", filename);
+  return true;
 }
