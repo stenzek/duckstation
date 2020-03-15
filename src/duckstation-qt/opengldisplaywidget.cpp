@@ -164,6 +164,24 @@ void OpenGLDisplayWidget::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
+bool OpenGLDisplayWidget::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
+                                          void* out_data, u32 out_data_stride)
+{
+  GLint old_alignment = 0, old_row_length = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
+  glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
+  glPixelStorei(GL_PACK_ALIGNMENT, sizeof(u32));
+  glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / sizeof(u32));
+
+  const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
+  GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  height * out_data_stride, out_data);
+
+  glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
+  return true;
+}
+
 void OpenGLDisplayWidget::SetVSync(bool enabled)
 {
   // Window framebuffer has to be bound to call SetSwapInterval.

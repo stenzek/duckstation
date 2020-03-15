@@ -21,7 +21,7 @@ public:
   GLuint GetGLID() const { return m_id; }
 
   static std::unique_ptr<OpenGLDisplayWidgetTexture> Create(u32 width, u32 height, const void* initial_data,
-                                                          u32 initial_data_stride)
+                                                            u32 initial_data_stride)
   {
     GLuint id;
     glGenTextures(1, &id);
@@ -127,6 +127,24 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
   glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
+}
+
+bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                                        u32 out_data_stride)
+{
+  GLint old_alignment = 0, old_row_length = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
+  glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
+  glPixelStorei(GL_PACK_ALIGNMENT, sizeof(u32));
+  glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / sizeof(u32));
+
+  const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
+  GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  height * out_data_stride, out_data);
+
+  glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
+  return true;
 }
 
 void OpenGLHostDisplay::SetVSync(bool enabled)

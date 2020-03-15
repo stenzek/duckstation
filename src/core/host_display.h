@@ -46,6 +46,9 @@ public:
   virtual void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                              u32 data_stride) = 0;
 
+  virtual bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                               u32 out_data_stride) = 0;
+
   virtual void Render() = 0;
 
   virtual void SetVSync(bool enabled) = 0;
@@ -90,8 +93,15 @@ public:
   void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
 
-  // Helper function for computing the draw rectangle in a larger window.
+  /// Helper function for computing the draw rectangle in a larger window.
   std::tuple<s32, s32, s32, s32> CalculateDrawRect() const;
+
+  /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
+  bool WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, const char* filename,
+                          bool clear_alpha = true, bool flip_y = false, u32 resize_width = 0, u32 resize_height = 0);
+
+  /// Helper function to save current display texture to PNG.
+  bool WriteDisplayTextureToFile(const char* filename, bool full_resolution = true, bool apply_aspect_ratio = true);
 
 protected:
   s32 m_window_width = 0;

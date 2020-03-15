@@ -1,5 +1,6 @@
 #pragma once
 #include "common/d3d11/stream_buffer.h"
+#include "common/d3d11/staging_texture.h"
 #include "common/d3d11/texture.h"
 #include "common/windows_headers.h"
 #include "core/host_display.h"
@@ -31,6 +32,8 @@ public:
                                                     bool dynamic) override;
   void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                      u32 data_stride) override;
+  bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                       u32 out_data_stride) override;
 
   void SetVSync(bool enabled) override;
 
@@ -63,6 +66,7 @@ private:
 
   D3D11::Texture m_display_pixels_texture;
   D3D11::StreamBuffer m_display_uniform_buffer;
+  D3D11::AutoStagingTexture m_readback_staging_texture;
 
   bool m_allow_tearing_supported = false;
   bool m_vsync = true;
