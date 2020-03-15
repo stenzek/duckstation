@@ -588,6 +588,17 @@ void QtHostInterface::stopDumpingAudio()
   StopDumpingAudio();
 }
 
+void QtHostInterface::saveScreenshot()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "saveScreenshot");
+    return;
+  }
+
+  SaveScreenshot(nullptr, true, true);
+}
+
 void QtHostInterface::enableBackgroundControllerPolling()
 {
   if (!isOnWorkerThread())

@@ -163,6 +163,7 @@
    <addaction name="actionReset"/>
    <addaction name="actionPause"/>
    <addaction name="actionChangeDisc"/>
+   <addaction name="actionScreenshot"/>
    <addaction name="separator"/>
    <addaction name="actionLoadState"/>
    <addaction name="actionSaveState"/>
@@ -442,6 +443,15 @@
    </property>
    <property name="text">
     <string>Show MDEC State</string>
+   </property>
+  </action>
+  <action name="actionScreenshot">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Screenshot</string>
    </property>
   </action>
  </widget>
