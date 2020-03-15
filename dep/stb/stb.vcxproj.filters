@@ -2,8 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\stb_image_write.c" />
+    <ClCompile Include="src\stb_image_resize.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stb_image_write.h" />
+    <ClInclude Include="include\stb_image_resize.h" />
   </ItemGroup>
 </Project>

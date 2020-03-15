@@ -1,5 +1,8 @@
 set(SRCS
-    src/stb_image_write.c
+  include/stb_image_resize.h
+  include/stb_image_write.h
+  src/stb_image_resize.c
+  src/stb_image_write.c
 )
 
 add_library(stb ${SRCS})
