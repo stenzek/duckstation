@@ -7,8 +7,7 @@
 
 class StateWrapper;
 
-namespace Common
-{
+namespace Common {
 class WAVWriter;
 }
 
@@ -71,6 +70,7 @@ private:
   static constexpr u32 CD_AUDIO_SAMPLE_BUFFER_SIZE = 44100 * 2;
   static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
   static constexpr u32 MINIMUM_TICKS_BETWEEN_KEY_ON_OFF = 2;
+  static constexpr u32 NUM_REVERB_REGS = 16;
 
   enum class RAMTransferMode : u8
   {
@@ -262,6 +262,54 @@ private:
     void TickADSR();
   };
 
+  struct ReverbRegisters
+  {
+    s16 vLOUT;
+    s16 vROUT;
+    u16 mBASE;
+
+    union
+    {
+      struct
+      {
+        u16 dAPF1;
+        u16 dAPF2;
+        s16 vIIR;
+        s16 vCOMB1;
+        s16 vCOMB2;
+        s16 vCOMB3;
+        s16 vCOMB4;
+        s16 vWALL;
+        s16 vAPF1;
+        s16 vAPF2;
+        u16 mLSAME;
+        u16 mRSAME;
+        u16 mLCOMB1;
+        u16 mRCOMB1;
+        u16 mLCOMB2;
+        u16 mRCOMB2;
+        u16 dLSAME;
+        u16 dRSAME;
+        u16 mLDIFF;
+        u16 mRDIFF;
+        u16 mLCOMB3;
+        u16 mRCOMB3;
+        u16 mLCOMB4;
+        u16 mRCOMB4;
+        u16 dLDIFF;
+        u16 dRDIFF;
+        u16 mLAPF1;
+        u16 mRAPF1;
+        u16 mLAPF2;
+        u16 mRAPF2;
+        s16 vLIN;
+        s16 vRIN;
+      };
+
+      u16 rev[NUM_REVERB_REGS];
+    };
+  };
+
   static constexpr s16 Clamp16(s32 value)
   {
     return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : static_cast<s16>(value);
@@ -291,6 +339,12 @@ private:
   std::tuple<s32, s32> SampleVoice(u32 voice_index);
   void VoiceKeyOn(u32 voice_index);
   void VoiceKeyOff(u32 voice_index);
+
+  u32 ReverbMemoryAddress(u32 address) const;
+  s16 ReverbRead(u32 address);
+  void ReverbWrite(u32 address, s16 data);
+  void DoReverb();
+
   void Execute(TickCount ticks);
   void UpdateEventInterval();
 
@@ -321,9 +375,16 @@ private:
   u32 m_key_on_register = 0;
   u32 m_key_off_register = 0;
   u32 m_endx_register = 0;
-  u32 m_reverb_on_register = 0;
   u32 m_noise_mode_register = 0;
   u32 m_pitch_modulation_enable_register = 0;
+
+  u32 m_reverb_on_register = 0;
+  u32 m_reverb_current_address = 0;
+  ReverbRegisters m_reverb_registers{};
+  s16 m_reverb_left_input = 0;
+  s16 m_reverb_right_input = 0;
+  s16 m_reverb_left_output = 0;
+  s16 m_reverb_right_output = 0;
 
   std::array<Voice, NUM_VOICES> m_voices{};
   std::array<u8, NUM_VOICES> m_voice_key_on_off_delay{};

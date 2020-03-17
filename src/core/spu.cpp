@@ -32,6 +32,7 @@ void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
 void SPU::Reset()
 {
   m_tick_counter = 0;
+  m_ticks_carry = 0;
 
   m_SPUCNT.bits = 0;
   m_SPUSTAT.bits = 0;
@@ -46,10 +47,13 @@ void SPU::Reset()
   m_key_on_register = 0;
   m_key_off_register = 0;
   m_endx_register = 0;
-  m_reverb_on_register = 0;
   m_noise_mode_register = 0;
   m_pitch_modulation_enable_register = 0;
-  m_ticks_carry = 0;
+
+  m_reverb_on_register = 0;
+  m_reverb_registers = {};
+  m_reverb_registers.mBASE = 0xE128;
+  m_reverb_current_address = ZeroExtend32(m_reverb_registers.mBASE) * 8;
 
   for (u32 i = 0; i < NUM_VOICES; i++)
   {
@@ -79,6 +83,7 @@ void SPU::Reset()
 bool SPU::DoState(StateWrapper& sw)
 {
   sw.Do(&m_tick_counter);
+  sw.Do(&m_ticks_carry);
   sw.Do(&m_SPUCNT.bits);
   sw.Do(&m_SPUSTAT.bits);
   sw.Do(&m_transfer_control.bits);
@@ -93,9 +98,14 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_key_on_register);
   sw.Do(&m_key_off_register);
   sw.Do(&m_endx_register);
-  sw.Do(&m_reverb_on_register);
   sw.Do(&m_noise_mode_register);
-  sw.Do(&m_ticks_carry);
+  sw.Do(&m_reverb_on_register);
+  sw.Do(&m_reverb_current_address);
+  sw.DoArray(m_reverb_registers.rev, NUM_REVERB_REGS);
+  sw.Do(&m_reverb_left_input);
+  sw.Do(&m_reverb_right_input);
+  sw.Do(&m_reverb_left_output);
+  sw.Do(&m_reverb_right_output);
   for (u32 i = 0; i < NUM_VOICES; i++)
   {
     Voice& v = m_voices[i];
@@ -131,9 +141,6 @@ bool SPU::DoState(StateWrapper& sw)
 
 u16 SPU::ReadRegister(u32 offset)
 {
-  if (offset < (0x1F801D80 - SPU_BASE))
-    return ReadVoiceRegister(offset);
-
   switch (offset)
   {
     case 0x1F801D80 - SPU_BASE:
@@ -141,6 +148,12 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801D82 - SPU_BASE:
       return m_main_volume_right.bits;
+
+    case 0x1F801D84 - SPU_BASE:
+      return m_reverb_registers.vLOUT;
+
+    case 0x1F801D86 - SPU_BASE:
+      return m_reverb_registers.vROUT;
 
     case 0x1F801D88 - SPU_BASE:
       return Truncate16(m_key_on_register);
@@ -171,6 +184,9 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801D9A - SPU_BASE:
       return Truncate16(m_reverb_on_register >> 16);
+
+    case 0x1F801DA2 - SPU_BASE:
+      return m_reverb_registers.mBASE;
 
     case 0x1F801DA4 - SPU_BASE:
       Log_DebugPrintf("SPU IRQ address -> 0x%04X", ZeroExtend32(m_irq_address));
@@ -204,19 +220,21 @@ u16 SPU::ReadRegister(u32 offset)
       return m_cd_audio_volume_right;
 
     default:
+    {
+      if (offset < (0x1F801D80 - SPU_BASE))
+        return ReadVoiceRegister(offset);
+
+      if (offset >= (0x1F801DC0 - SPU_BASE) && offset <= (0x1F801DFE - SPU_BASE))
+        return m_reverb_registers.rev[(offset - (0x1F801DC0 - SPU_BASE)) / 2];
+
       Log_ErrorPrintf("Unknown SPU register read: offset 0x%X (address 0x%08X)", offset, offset | SPU_BASE);
       return UINT16_C(0xFFFF);
+    }
   }
 }
 
 void SPU::WriteRegister(u32 offset, u16 value)
 {
-  if (offset < (0x1F801D80 - SPU_BASE))
-  {
-    WriteVoiceRegister(offset, value);
-    return;
-  }
-
   switch (offset)
   {
     case 0x1F801D80 - SPU_BASE:
@@ -232,6 +250,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU main volume right <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
       m_main_volume_right.bits = value;
+      return;
+    }
+
+    case 0x1F801D84 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU reverb output volume left <- 0x%04X", ZeroExtend32(value));
+      m_tick_event->InvokeEarly();
+      m_reverb_registers.vLOUT = value;
+      return;
+    }
+
+    case 0x1F801D86 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU reverb output volume right <- 0x%04X", ZeroExtend32(value));
+      m_tick_event->InvokeEarly();
+      m_reverb_registers.vROUT = value;
       return;
     }
 
@@ -352,6 +386,15 @@ void SPU::WriteRegister(u32 offset, u16 value)
     }
     break;
 
+    case 0x1F801DA2 - SPU_BASE:
+    {
+      Log_DebugPrintf("SPU reverb base address < 0x%04X", ZeroExtend32(value));
+      m_tick_event->InvokeEarly();
+      m_reverb_registers.mBASE = value;
+      m_reverb_current_address = ZeroExtend32(m_reverb_registers.mBASE) * 8u;
+    }
+    break;
+
     case 0x1F801DA4 - SPU_BASE:
     {
       Log_DebugPrintf("SPU IRQ address register <- 0x%04X", ZeroExtend32(value));
@@ -424,6 +467,21 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     default:
     {
+      if (offset < (0x1F801D80 - SPU_BASE))
+      {
+        WriteVoiceRegister(offset, value);
+        return;
+      }
+
+      if (offset >= (0x1F801DC0 - SPU_BASE) && offset <= (0x1F801DFE - SPU_BASE))
+      {
+        const u32 reg = (offset - (0x1F801DC0 - SPU_BASE)) / 2;
+        Log_DebugPrintf("SPU reverb register %u <- 0x%04X", reg, value);
+        m_tick_event->InvokeEarly();
+        m_reverb_registers.rev[reg] = value;
+        return;
+      }
+
       Log_ErrorPrintf("Unknown SPU register write: offset 0x%X (address 0x%08X) value 0x%04X", offset,
                       offset | SPU_BASE, ZeroExtend32(value));
       return;
@@ -642,13 +700,24 @@ void SPU::Execute(TickCount ticks)
     {
       s32 left_sum = 0;
       s32 right_sum = 0;
+      s32 reverb_in_left = 0;
+      s32 reverb_in_right = 0;
       if (m_SPUCNT.enable)
       {
+        u32 reverb_on = m_reverb_on_register;
+
         for (u32 voice = 0; voice < NUM_VOICES; voice++)
         {
           const auto [left, right] = SampleVoice(voice);
           left_sum += left;
           right_sum += right;
+
+          if (reverb_on & 1u)
+          {
+            reverb_in_left += left;
+            reverb_in_right += right;
+          }
+          reverb_on >>= 1;
         }
 
         if (!m_SPUCNT.mute_n)
@@ -667,8 +736,17 @@ void SPU::Execute(TickCount ticks)
         cd_audio_right = m_cd_audio_buffer.Pop();
         if (m_SPUCNT.cd_audio_enable)
         {
-          left_sum += ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
-          right_sum += ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
+          const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
+          const s32 cd_audio_volume_right = ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
+
+          left_sum += cd_audio_volume_left;
+          right_sum += cd_audio_volume_right;
+
+          if (m_SPUCNT.cd_audio_reverb)
+          {
+            reverb_in_left += cd_audio_volume_left;
+            reverb_in_right += cd_audio_volume_right;
+          }
         }
       }
       else
@@ -676,6 +754,22 @@ void SPU::Execute(TickCount ticks)
         cd_audio_left = 0;
         cd_audio_right = 0;
       }
+
+      // Compute reverb.
+      m_tick_counter++;
+      if ((m_tick_counter & 1u) != 0)
+      {
+        m_reverb_left_input = Clamp16(reverb_in_left);
+      }
+      else
+      {
+        m_reverb_right_input = Clamp16(reverb_in_right);
+        DoReverb();
+      }
+
+      // Mix in reverb.
+      left_sum += m_reverb_left_output;
+      right_sum += m_reverb_right_output;
 
       // Apply main volume before clamping.
       *(output_frame++) = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
@@ -1186,6 +1280,145 @@ void SPU::VoiceKeyOff(u32 voice_index)
   m_voice_key_on_off_delay[voice_index] = MINIMUM_TICKS_BETWEEN_KEY_ON_OFF;
 }
 
+u32 SPU::ReverbMemoryAddress(u32 address) const
+{
+  // Ensures address does not leave the reverb work area.
+  const u32 mBASE = ZeroExtend32(m_reverb_registers.mBASE) * 8;
+  const u32 relative_address = (address - mBASE) % (RAM_SIZE - mBASE);
+  return (mBASE + relative_address) & 0x7FFFEu;
+}
+
+s16 SPU::ReverbRead(u32 address)
+{
+  const u32 real_address = ReverbMemoryAddress(m_reverb_current_address + address);
+
+  // TODO: Should this check interrupts?
+  s16 data;
+  std::memcpy(&data, &m_ram[real_address & RAM_MASK], sizeof(data));
+  return data;
+}
+
+void SPU::ReverbWrite(u32 address, s16 data)
+{
+  if (!m_SPUCNT.reverb_master_enable)
+    return;
+
+  // TODO: Should this check interrupts?
+  const u32 real_address = ReverbMemoryAddress(m_reverb_current_address + address);
+  std::memcpy(&m_ram[real_address & RAM_MASK], &data, sizeof(data));
+}
+
+// Implements saturated add, subtract and multiply for reverb computations.
+struct ReverbSample
+{
+  s16 value;
+
+  static ALWAYS_INLINE s16 OpAdd(s16 lhs, s16 rhs)
+  {
+    s32 result = s32(lhs) + s32(rhs);
+    return s16((result < -32768) ? -32768 : ((result > 32767) ? 32767 : result));
+  }
+
+  static ALWAYS_INLINE s16 OpSub(s16 lhs, s16 rhs)
+  {
+    s32 result = s32(lhs) - s32(rhs);
+    return s16((result < -32768) ? -32768 : ((result > 32767) ? 32767 : result));
+  }
+
+  static ALWAYS_INLINE s16 OpMul(s16 lhs, s16 rhs) { return s16((s32(lhs) * s32(rhs)) >> 15); }
+
+  ALWAYS_INLINE ReverbSample operator+(ReverbSample rhs) const { return ReverbSample{OpAdd(value, rhs.value)}; }
+
+  ALWAYS_INLINE ReverbSample operator-(ReverbSample rhs) const { return ReverbSample{OpSub(value, rhs.value)}; }
+
+  ALWAYS_INLINE ReverbSample operator*(ReverbSample rhs) const { return ReverbSample{OpMul(value, rhs.value)}; }
+
+  ALWAYS_INLINE ReverbSample& operator+=(ReverbSample rhs)
+  {
+    value = OpAdd(value, rhs.value);
+    return *this;
+  }
+
+  ALWAYS_INLINE ReverbSample& operator-=(ReverbSample rhs)
+  {
+    value = OpSub(value, rhs.value);
+    return *this;
+  }
+
+  ALWAYS_INLINE ReverbSample& operator*=(ReverbSample rhs)
+  {
+    value = OpMul(value, rhs.value);
+    return *this;
+  }
+};
+
+void SPU::DoReverb()
+{
+  const ReverbSample Lin(ReverbSample{m_reverb_left_input} * ReverbSample{m_reverb_registers.vLIN});
+  const ReverbSample Rin(ReverbSample{m_reverb_right_input} * ReverbSample{m_reverb_registers.vRIN});
+
+#define R(name)                                                                                                        \
+  ReverbSample { m_reverb_registers.name }
+#define Rm(name) (u32(m_reverb_registers.name) * 8u)
+#define MR(addr)                                                                                                       \
+  ReverbSample { ReverbRead(addr) }
+#define MW(addr, value_) ReverbWrite((addr), (value_).value)
+
+  // [mLSAME] = (Lin + [dLSAME]*vWALL - [mLSAME-2])*vIIR + [mLSAME-2]  ;L-to-L
+  MW(Rm(mLSAME), ((Lin + (MR(Rm(dLSAME)) * R(vWALL)) - MR(Rm(mLSAME) - 2)) * R(vIIR)) + MR(Rm(mLSAME) - 2));
+
+  // [mRSAME] = (Rin + [dRSAME]*vWALL - [mRSAME-2])*vIIR + [mRSAME-2]  ;R-to-R
+  MW(Rm(mLSAME), ((Rin + (MR(Rm(dRSAME)) * R(vWALL)) - MR(Rm(mRSAME) - 2)) * R(vIIR)) + MR(Rm(mRSAME) - 2));
+
+  // [mLDIFF] = (Lin + [dRDIFF]*vWALL - [mLDIFF-2])*vIIR + [mLDIFF-2]  ;R-to-L
+  MW(Rm(mLDIFF), ((Lin + (MR(Rm(dRDIFF)) * R(vWALL)) - MR(Rm(mLDIFF) - 2)) * R(vIIR)) + MR(Rm(mLDIFF) - 2));
+
+  // [mRDIFF] = (Rin + [dLDIFF]*vWALL - [mRDIFF-2])*vIIR + [mRDIFF-2]  ;L-to-R
+  MW(Rm(mRDIFF), ((Rin + (MR(Rm(dLDIFF)) * R(vWALL)) - MR(Rm(mRDIFF) - 2)) * R(vIIR)) + MR(Rm(mRDIFF) - 2));
+
+  // Lout = vCOMB1 * [mLCOMB1] + vCOMB2 * [mLCOMB2] + vCOMB3 * [mLCOMB3] + vCOMB4 * [mLCOMB4]
+  ReverbSample Lout{(R(vCOMB1) * MR(Rm(mLCOMB1))) + (R(vCOMB2) * MR(Rm(mLCOMB2))) + (R(vCOMB3) * MR(Rm(mLCOMB3))) +
+                    (R(vCOMB4) * MR(Rm(mLCOMB4)))};
+
+  // Rout = vCOMB1 * [mRCOMB1] + vCOMB2 * [mRCOMB2] + vCOMB3 * [mRCOMB3] + vCOMB4 * [mRCOMB4]
+  ReverbSample Rout{(R(vCOMB1) * MR(Rm(mRCOMB1))) + (R(vCOMB2) * MR(Rm(mRCOMB2))) + (R(vCOMB3) * MR(Rm(mRCOMB3))) +
+                    (R(vCOMB4) * MR(Rm(mRCOMB4)))};
+
+  // Lout = Lout - vAPF1 * [mLAPF1 - dAPF1], [mLAPF1] = Lout, Lout = Lout * vAPF1 + [mLAPF1 - dAPF1]
+  Lout = Lout - (R(vAPF1) * MR(Rm(mLAPF1) - Rm(dAPF1)));
+  MW(Rm(mLAPF1), Lout);
+  Lout = (Lout * R(vAPF1)) + MR(Rm(mLAPF1) - Rm(dAPF1));
+
+  // Rout = Rout - vAPF1 * [mRAPF1 - dAPF1], [mRAPF1] = Rout, Rout = Rout * vAPF1 + [mRAPF1 - dAPF1]
+  Rout = Rout - (R(vAPF1) * MR(Rm(mRAPF1) - Rm(dAPF1)));
+  MW(Rm(mRAPF1), Rout);
+  Rout = (Rout * R(vAPF1)) + MR(Rm(mRAPF1) - Rm(dAPF1));
+
+  // Lout = Lout - vAPF2 * [mLAPF2 - dAPF2], [mLAPF2] = Lout, Lout = Lout * vAPF2 + [mLAPF2 - dAPF2]
+  Lout = Lout - (R(vAPF2) * MR(Rm(mLAPF2) - Rm(dAPF2)));
+  MW(Rm(mLAPF2), Lout);
+  Lout = (Lout * R(vAPF2)) + MR(Rm(mLAPF2) - Rm(dAPF2));
+
+  // Rout = Rout - vAPF2 * [mRAPF2 - dAPF2], [mRAPF2] = Rout, Rout = Rout * vAPF2 + [mRAPF2 - dAPF2]
+  Rout = Rout - (R(vAPF2) * MR(Rm(mRAPF2) - Rm(dAPF2)));
+  MW(Rm(mRAPF2), Rout);
+  Rout = (Rout * R(vAPF2)) + MR(Rm(mRAPF2) - Rm(dAPF2));
+
+  // LeftOutput  = Lout*vLOUT
+  m_reverb_left_output = (Lout * R(vLOUT)).value;
+
+  // RightOutput = Rout*vROUT
+  m_reverb_right_output = (Rout * R(vROUT)).value;
+
+  // BufferAddress = MAX(mBASE, (BufferAddress+2) AND 7FFFEh)
+  m_reverb_current_address = ReverbMemoryAddress(m_reverb_current_address + 2);
+
+#undef MW
+#undef MR
+#undef Rm
+#undef R
+}
+
 void SPU::EnsureCDAudioSpace(u32 remaining_frames)
 {
   if (m_cd_audio_buffer.GetSpace() >= (remaining_frames * 2))
@@ -1341,6 +1574,10 @@ void SPU::DrawDebugStateWindow()
 
     ImGui::TextColored(m_SPUCNT.external_audio_reverb ? active_color : inactive_color, "External Audio Enable: %s",
                        m_SPUCNT.external_audio_reverb ? "Yes" : "No");
+
+    ImGui::Text("Current Address: 0x%08X", m_reverb_current_address);
+    ImGui::Text("Current Volume: Input (%d, %d) Output (%d, %d)", m_reverb_left_input, m_reverb_right_input,
+                m_reverb_left_output, m_reverb_right_output);
 
     ImGui::Text("Pitch Modulation: ");
     for (u32 i = 1; i < NUM_VOICES; i++)
