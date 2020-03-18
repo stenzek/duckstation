@@ -371,8 +371,8 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 9:
     {
-      Log_DebugPrintf("Audio volume for right-to-left output <- 0x%02X", value);
-      m_next_cd_audio_volume_matrix[1][0] = value;
+      Log_DebugPrintf("Audio volume for right-to-right output <- 0x%02X", value);
+      m_next_cd_audio_volume_matrix[1][1] = value;
       return;
     }
 
@@ -1533,7 +1533,7 @@ static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in, SPU* spu, s
 
           const s16 left_out = SaturateVolume(ApplyVolume(left_interp, volume_matrix[0][0]) +
                                               ApplyVolume(right_interp, volume_matrix[1][0]));
-          const s16 right_out = SaturateVolume(ApplyVolume(left_interp, volume_matrix[1][0]) +
+          const s16 right_out = SaturateVolume(ApplyVolume(left_interp, volume_matrix[0][1]) +
                                                ApplyVolume(right_interp, volume_matrix[1][1]));
 
           spu->AddCDAudioSample(left_out, right_out);
@@ -1653,8 +1653,8 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
     sector_ptr += sizeof(s16) * 2;
 
     const s16 left = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) +
-                                    ApplyVolume(samp_right, m_cd_audio_volume_matrix[0][1]));
-    const s16 right = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[1][0]) +
+                                    ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][0]));
+    const s16 right = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][1]) +
                                      ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]));
     m_spu->AddCDAudioSample(left, right);
   }
@@ -1860,10 +1860,10 @@ void CDROM::DrawDebugWindow()
                          (m_secondary_status.playing_cdda ? "CDDA" : "Disabled"));
     ImGui::TextColored(m_muted ? inactive_color : active_color, "Muted: %s", m_muted ? "Yes" : "No");
     ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[0][0],
-                ZeroExtend32(m_cd_audio_volume_matrix[0][0]) * 100 / 0x80, m_cd_audio_volume_matrix[0][1],
-                ZeroExtend32(m_cd_audio_volume_matrix[0][1]) * 100 / 0x80);
-    ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[1][0],
-                ZeroExtend32(m_cd_audio_volume_matrix[1][0]) * 100 / 0x80, m_cd_audio_volume_matrix[1][1],
+                ZeroExtend32(m_cd_audio_volume_matrix[0][0]) * 100 / 0x80, m_cd_audio_volume_matrix[1][0],
+                ZeroExtend32(m_cd_audio_volume_matrix[1][0]) * 100 / 0x80);
+    ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[0][1],
+                ZeroExtend32(m_cd_audio_volume_matrix[0][1]) * 100 / 0x80, m_cd_audio_volume_matrix[1][1],
                 ZeroExtend32(m_cd_audio_volume_matrix[1][1]) * 100 / 0x80);
   }
 
