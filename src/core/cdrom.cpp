@@ -233,23 +233,17 @@ u8 CDROM::ReadRegister(u32 offset)
 
     case 3:
     {
-      switch (m_status.index)
+      if (m_status.index & 1)
       {
-        case 0:
-        case 2:
-        {
-          const u8 value = m_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
-          Log_DebugPrintf("CDROM read interrupt enable register <- 0x%02X", ZeroExtend32(value));
-          return value;
-        }
-
-        case 1:
-        case 3:
-        {
-          const u8 value = m_interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
-          Log_DebugPrintf("CDROM read interrupt flag register <- 0x%02X", ZeroExtend32(value));
-          return value;
-        }
+        const u8 value = m_interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
+        Log_DebugPrintf("CDROM read interrupt flag register <- 0x%02X", ZeroExtend32(value));
+        return value;
+      }
+      else
+      {
+        const u8 value = m_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
+        Log_DebugPrintf("CDROM read interrupt enable register <- 0x%02X", ZeroExtend32(value));
+        return value;
       }
     }
     break;
@@ -263,165 +257,148 @@ u8 CDROM::ReadRegister(u32 offset)
 
 void CDROM::WriteRegister(u32 offset, u8 value)
 {
-  switch (offset)
+  if (offset == 0)
+  {
+    Log_TracePrintf("CDROM status register <- 0x%02X", value);
+    m_status.bits = (m_status.bits & static_cast<u8>(~3)) | (value & u8(3));
+    return;
+  }
+
+  const u32 reg = (m_status.index * 3u) + (offset - 1);
+  switch (reg)
   {
     case 0:
     {
-      Log_TracePrintf("CDROM status register <- 0x%02X", value);
-      m_status.bits = (m_status.bits & static_cast<u8>(~3)) | (value & u8(3));
+      Log_DebugPrintf("CDROM command register <- 0x%02X", value);
+      if (HasPendingCommand())
+      {
+        Log_WarningPrintf("Cancelling pending command 0x%02X", static_cast<u8>(m_command));
+        m_command = Command::None;
+      }
+
+      BeginCommand(static_cast<Command>(value));
       return;
     }
-    break;
 
     case 1:
     {
-      switch (m_status.index)
+      if (m_param_fifo.IsFull())
       {
-        case 0:
-        {
-          Log_DebugPrintf("CDROM command register <- 0x%02X", value);
-          if (HasPendingCommand())
-          {
-            Log_WarningPrintf("Cancelling pending command 0x%02X", static_cast<u8>(m_command));
-            m_command = Command::None;
-          }
-
-          BeginCommand(static_cast<Command>(value));
-          return;
-        }
-
-        case 1:
-        {
-          Log_ErrorPrintf("Sound map data out <- 0x%02X", value);
-          return;
-        }
-
-        case 2:
-        {
-          Log_ErrorPrintf("Sound map coding info <- 0x%02X", value);
-          return;
-        }
-
-        case 3:
-        {
-          Log_DebugPrintf("Audio volume for right-to-left output <- 0x%02X", value);
-          m_next_cd_audio_volume_matrix[1][0] = value;
-          return;
-        }
+        Log_WarningPrintf("Parameter FIFO overflow");
+        m_param_fifo.RemoveOne();
       }
+
+      m_param_fifo.Push(value);
+      UpdateStatusRegister();
+      return;
     }
-    break;
 
     case 2:
     {
-      switch (m_status.index)
+      // TODO: sector buffer is not the data fifo
+      Log_DebugPrintf("Request register <- 0x%02X", value);
+      const RequestRegister rr{value};
+      Assert(!rr.SMEN);
+      if (rr.BFRD)
       {
-        case 0:
-        {
-          if (m_param_fifo.IsFull())
-          {
-            Log_WarningPrintf("Parameter FIFO overflow");
-            m_param_fifo.RemoveOne();
-          }
-
-          m_param_fifo.Push(value);
-          UpdateStatusRegister();
-          return;
-        }
-
-        case 1:
-        {
-          Log_DebugPrintf("Interrupt enable register <- 0x%02X", value);
-          m_interrupt_enable_register = value & INTERRUPT_REGISTER_MASK;
-          UpdateInterruptRequest();
-          return;
-        }
-
-        case 2:
-        {
-          Log_DebugPrintf("Audio volume for left-to-left output <- 0x%02X", value);
-          m_next_cd_audio_volume_matrix[0][0] = value;
-          return;
-        }
-
-        case 3:
-        {
-          Log_DebugPrintf("Audio volume for right-to-left output <- 0x%02X", value);
-          m_next_cd_audio_volume_matrix[1][0] = value;
-          return;
-        }
+        LoadDataFIFO();
       }
+      else
+      {
+        Log_DebugPrintf("Clearing data FIFO");
+        m_data_fifo.Clear();
+      }
+
+      UpdateStatusRegister();
+      return;
     }
-    break;
 
     case 3:
     {
-      switch (m_status.index)
-      {
-        case 0:
-        {
-          // TODO: sector buffer is not the data fifo
-          Log_DebugPrintf("Request register <- 0x%02X", value);
-          const RequestRegister rr{value};
-          Assert(!rr.SMEN);
-          if (rr.BFRD)
-          {
-            LoadDataFIFO();
-          }
-          else
-          {
-            Log_DebugPrintf("Clearing data FIFO");
-            m_data_fifo.Clear();
-          }
-
-          UpdateStatusRegister();
-          return;
-        }
-
-        case 1:
-        {
-          Log_DebugPrintf("Interrupt flag register <- 0x%02X", value);
-          m_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
-          if (m_interrupt_flag_register == 0)
-          {
-            if (HasPendingAsyncInterrupt())
-              DeliverAsyncInterrupt();
-            else
-              UpdateCommandEvent();
-          }
-
-          // Bit 6 clears the parameter FIFO.
-          if (value & 0x40)
-          {
-            m_param_fifo.Clear();
-            UpdateStatusRegister();
-          }
-
-          return;
-        }
-
-        case 2:
-        {
-          Log_DebugPrintf("Audio volume for left-to-right output <- 0x%02X", value);
-          m_next_cd_audio_volume_matrix[0][1] = value;
-          return;
-        }
-
-        case 3:
-        {
-          Log_DebugPrintf("Audio volume apply changes <- 0x%02X", value);
-          m_adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
-          if (value & 0x20)
-            m_cd_audio_volume_matrix = m_next_cd_audio_volume_matrix;
-          return;
-        }
-      }
+      Log_ErrorPrintf("Sound map data out <- 0x%02X", value);
+      return;
     }
-    break;
-  }
 
-  Log_ErrorPrintf("Unknown CDROM register write: offset=0x%02X, index=%d, value=0x%02X", offset,
-                  m_status.index.GetValue(), value);
+    case 4:
+    {
+      Log_DebugPrintf("Interrupt enable register <- 0x%02X", value);
+      m_interrupt_enable_register = value & INTERRUPT_REGISTER_MASK;
+      UpdateInterruptRequest();
+      return;
+    }
+
+    case 5:
+    {
+      Log_DebugPrintf("Interrupt flag register <- 0x%02X", value);
+      m_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
+      if (m_interrupt_flag_register == 0)
+      {
+        if (HasPendingAsyncInterrupt())
+          DeliverAsyncInterrupt();
+        else
+          UpdateCommandEvent();
+      }
+
+      // Bit 6 clears the parameter FIFO.
+      if (value & 0x40)
+      {
+        m_param_fifo.Clear();
+        UpdateStatusRegister();
+      }
+
+      return;
+    }
+
+    case 6:
+    {
+      Log_ErrorPrintf("Sound map coding info <- 0x%02X", value);
+      return;
+    }
+
+    case 7:
+    {
+      Log_DebugPrintf("Audio volume for left-to-left output <- 0x%02X", value);
+      m_next_cd_audio_volume_matrix[0][0] = value;
+      return;
+    }
+
+    case 8:
+    {
+      Log_DebugPrintf("Audio volume for left-to-right output <- 0x%02X", value);
+      m_next_cd_audio_volume_matrix[0][1] = value;
+      return;
+    }
+
+    case 9:
+    {
+      Log_DebugPrintf("Audio volume for right-to-left output <- 0x%02X", value);
+      m_next_cd_audio_volume_matrix[1][0] = value;
+      return;
+    }
+
+    case 10:
+    {
+      Log_DebugPrintf("Audio volume for right-to-left output <- 0x%02X", value);
+      m_next_cd_audio_volume_matrix[1][0] = value;
+      return;
+    }
+
+    case 11:
+    {
+      Log_DebugPrintf("Audio volume apply changes <- 0x%02X", value);
+      m_adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
+      if (value & 0x20)
+        m_cd_audio_volume_matrix = m_next_cd_audio_volume_matrix;
+      return;
+    }
+
+    default:
+    {
+      Log_ErrorPrintf("Unknown CDROM register write: offset=0x%02X, index=%d, reg=%u, value=0x%02X", offset,
+                      m_status.index.GetValue(), reg, value);
+      return;
+    }
+  }
 }
 
 void CDROM::DMARead(u32* words, u32 word_count)
