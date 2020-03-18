@@ -214,8 +214,14 @@ void QtHostInterface::handleKeyEvent(int key, bool pressed)
 void QtHostInterface::onDisplayWidgetResized(int width, int height)
 {
   // this can be null if it was destroyed and the main thread is late catching up
-  if (m_display_widget)
-    m_display_widget->windowResized(width, height);
+  if (!m_display_widget)
+    return;
+
+  m_display_widget->windowResized(width, height);
+
+  // re-render the display, since otherwise it will be out of date and stretched if paused
+  if (m_system)
+    renderDisplay();
 }
 
 bool QtHostInterface::AcquireHostDisplay()
@@ -699,14 +705,7 @@ void QtHostInterface::threadEntryPoint()
 
     m_system->RunFrame();
 
-    m_system->GetGPU()->ResetGraphicsAPIState();
-
-    DrawDebugWindows();
-    DrawOSDMessages();
-
-    m_display->Render();
-
-    m_system->GetGPU()->RestoreGraphicsAPIState();
+    renderDisplay();
 
     if (m_speed_limiter_enabled)
       m_system->Throttle();
@@ -725,6 +724,18 @@ void QtHostInterface::threadEntryPoint()
 
   // move back to UI thread
   moveToThread(m_original_thread);
+}
+
+void QtHostInterface::renderDisplay()
+{
+  m_system->GetGPU()->ResetGraphicsAPIState();
+
+  DrawDebugWindows();
+  DrawOSDMessages();
+
+  m_display->Render();
+
+  m_system->GetGPU()->RestoreGraphicsAPIState();
 }
 
 void QtHostInterface::wakeThread()

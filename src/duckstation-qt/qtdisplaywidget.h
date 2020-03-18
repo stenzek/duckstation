@@ -24,8 +24,6 @@ public:
   virtual bool initializeDeviceContext(bool debug_device);
   virtual void destroyDeviceContext();
 
-  virtual void Render() = 0;
-
   // this comes back on the emu thread
   virtual void windowResized(s32 new_window_width, s32 new_window_height);
 

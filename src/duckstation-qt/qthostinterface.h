@@ -157,6 +157,7 @@ private:
   void createThread();
   void stopThread();
   void threadEntryPoint();
+  void renderDisplay();
   void wakeThread();
 
   QSettings m_qsettings;
