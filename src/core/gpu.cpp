@@ -321,13 +321,17 @@ void GPU::UpdateCRTCConfig()
 
   if (m_GPUSTAT.pal_mode)
   {
-    cs.vertical_total = 314;
-    cs.horizontal_total = 3406;
+    cs.vertical_total = PAL_TOTAL_LINES;
+    cs.current_scanline %= PAL_TOTAL_LINES;
+    cs.horizontal_total = PAL_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
   }
   else
   {
-    cs.vertical_total = 263;
-    cs.horizontal_total = 3413;
+    cs.vertical_total = NTSC_TOTAL_LINES;
+    cs.current_scanline %= NTSC_TOTAL_LINES;
+    cs.horizontal_total = NTSC_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
 
   const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
