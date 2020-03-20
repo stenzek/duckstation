@@ -356,7 +356,7 @@ void DMA::TransferChannel(Channel channel, TickCount ticks_late)
                       copy_to_device ? "from" : "to", current_address);
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
-      u32 blocks_remaining = cs.block_control.request.block_count;
+      u32 blocks_remaining = cs.block_control.request.GetBlockCount();
 
       if (copy_to_device)
       {
