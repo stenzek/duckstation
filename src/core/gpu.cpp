@@ -842,8 +842,27 @@ void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   const u16 color16 = RGBA8888ToRGBA5551(color);
-  for (u32 yoffs = 0; yoffs < height; yoffs++)
-    std::fill_n(&m_vram_ptr[((y + yoffs) * VRAM_WIDTH) + x], width, color16);
+  if ((x + width) <= VRAM_WIDTH)
+  {
+    for (u32 yoffs = 0; yoffs < height; yoffs++)
+    {
+      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      std::fill_n(&m_vram_ptr[row * VRAM_WIDTH + x], width, color16);
+    }
+  }
+  else
+  {
+    for (u32 yoffs = 0; yoffs < height; yoffs++)
+    {
+      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      u16* row_ptr = &m_vram_ptr[row * VRAM_WIDTH];
+      for (u32 xoffs = 0; xoffs < width; xoffs++)
+      {
+        const u32 col = (x + xoffs) % VRAM_WIDTH;
+        row_ptr[col] = color16;
+      }
+    }
+  }
 }
 
 void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
