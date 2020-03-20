@@ -147,6 +147,11 @@ void DMA::WriteRegister(u32 offset, u32 value)
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
         Log_TracePrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
+
+        // start/trigger bit must be enabled for OTC
+        if (static_cast<Channel>(channel_index) == Channel::OTC)
+          SetRequest(static_cast<Channel>(channel_index), state.channel_control.start_trigger);
+
         UpdateChannelTransferEvent(static_cast<Channel>(channel_index));
         return;
       }
@@ -228,13 +233,7 @@ bool DMA::CanTransferChannel(Channel channel) const
   if (!cs.channel_control.enable_busy)
     return false;
 
-  if (!cs.request && channel != Channel::OTC)
-    return false;
-
-  if (cs.channel_control.sync_mode == SyncMode::Manual && !cs.channel_control.start_trigger)
-    return false;
-
-  return true;
+  return cs.request;
 }
 
 bool DMA::CanRunAnyChannels() const
