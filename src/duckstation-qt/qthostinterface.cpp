@@ -741,8 +741,7 @@ void QtHostInterface::renderDisplay()
 {
   m_system->GetGPU()->ResetGraphicsAPIState();
 
-  DrawDebugWindows();
-  DrawOSDMessages();
+  DrawImGuiWindows();
 
   m_display->Render();
 

@@ -147,6 +147,7 @@ protected:
   virtual void OnSystemStateSaved(bool global, s32 slot);
   virtual void OnRunningGameChanged();
   virtual void OnControllerTypeChanged(u32 slot);
+  virtual void DrawImGuiWindows();
 
   void SetUserDirectory();
 

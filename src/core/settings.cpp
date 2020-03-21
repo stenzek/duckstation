@@ -33,6 +33,10 @@ void Settings::Load(SettingsInterface& si)
                         .value_or(DisplayCropMode::None);
   display_force_progressive_scan = si.GetBoolValue("Display", "ForceProgressiveScan", true);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
+  display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
+  display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
+  display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
+  display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
@@ -87,6 +91,10 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
+  si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
+  si.SetBoolValue("Display", "ShowFPS", display_show_fps);
+  si.SetBoolValue("Display", "ShowVPS", display_show_vps);
+  si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
 
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);

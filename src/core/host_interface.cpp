@@ -207,13 +207,20 @@ bool HostInterface::ConfirmFormattedMessage(const char* format, ...)
   return ConfirmMessage(message.c_str());
 }
 
+void HostInterface::DrawImGuiWindows()
+{
+  if (m_system)
+  {
+    DrawDebugWindows();
+    DrawFPSWindow();
+  }
+
+  DrawOSDMessages();
+}
+
 void HostInterface::DrawFPSWindow()
 {
-  const bool show_fps = true;
-  const bool show_vps = true;
-  const bool show_speed = true;
-
-  if (!(show_fps | show_vps | show_speed) || !m_system)
+  if (!(m_settings.display_show_fps | m_settings.display_show_vps | m_settings.display_show_speed))
     return;
 
   const ImVec2 window_size =
@@ -231,12 +238,12 @@ void HostInterface::DrawFPSWindow()
   }
 
   bool first = true;
-  if (show_fps)
+  if (m_settings.display_show_fps)
   {
     ImGui::Text("%.2f", m_system->GetFPS());
     first = false;
   }
-  if (show_vps)
+  if (m_settings.display_show_vps)
   {
     if (first)
     {
@@ -251,7 +258,7 @@ void HostInterface::DrawFPSWindow()
 
     ImGui::Text("%.2f", m_system->GetVPS());
   }
-  if (show_speed)
+  if (m_settings.display_show_speed)
   {
     if (first)
     {
@@ -329,6 +336,9 @@ void HostInterface::DrawOSDMessages()
       iter = m_osd_messages.erase(iter);
       continue;
     }
+
+    if (!m_settings.display_show_osd_messages)
+      continue;
 
     const float opacity = std::min(time_remaining, 1.0f);
     ImGui::SetNextWindowPos(ImVec2(position_x, position_y));
@@ -861,6 +871,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Display", "CropMode", "Overscan");
   si.SetBoolValue("Display", "ForceProgressiveScan", true);
   si.SetBoolValue("Display", "LinearFiltering", true);
+  si.SetBoolValue("Display", "ShowOSDMessages", true);
+  si.SetBoolValue("Display", "ShowFPS", false);
+  si.SetBoolValue("Display", "ShowVPS", false);
+  si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
 

@@ -98,7 +98,7 @@ private:
   void SetFullscreen(bool enabled);
 
   // We only pass mouse input through if it's grabbed
-  void DrawImGui();
+  void DrawImGuiWindows() override;
   void DoStartDisc();
   void DoChangeDisc();
   void DoFrameStep();

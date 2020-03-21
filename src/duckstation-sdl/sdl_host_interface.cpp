@@ -613,13 +613,13 @@ bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
   return false;
 }
 
-void SDLHostInterface::DrawImGui()
+void SDLHostInterface::DrawImGuiWindows()
 {
   DrawMainMenuBar();
 
-  if (m_system)
-    DrawDebugWindows();
-  else
+  HostInterface::DrawImGuiWindows();
+
+  if (!m_system)
     DrawPoweredOffWindow();
 
   if (m_settings_window_open)
@@ -627,8 +627,6 @@ void SDLHostInterface::DrawImGui()
 
   if (m_about_window_open)
     DrawAboutWindow();
-
-  DrawOSDMessages();
 
   ImGui::Render();
 }
@@ -1430,7 +1428,7 @@ void SDLHostInterface::Run()
 
     // rendering
     {
-      DrawImGui();
+      DrawImGuiWindows();
 
       if (m_system)
         m_system->GetGPU()->ResetGraphicsAPIState();

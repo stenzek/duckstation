@@ -54,6 +54,10 @@ struct Settings
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   bool display_force_progressive_scan = false;
   bool display_linear_filtering = true;
+  bool display_show_osd_messages = false;
+  bool display_show_fps = false;
+  bool display_show_vps = false;
+  bool display_show_speed = false;
   bool video_sync_enabled = true;
 
   bool cdrom_read_thread = true;
