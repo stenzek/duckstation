@@ -16,6 +16,7 @@ public:
 
 protected:
   virtual bool eventFilter(QObject* watched, QEvent* event) override;
+  virtual void mouseReleaseEvent(QMouseEvent* e) override;
 
 protected Q_SLOTS:
   void onPressed();
@@ -27,6 +28,7 @@ protected:
 
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
   void setNewBinding();
+  void clearBinding();
 
   QtHostInterface* m_host_interface;
   QString m_setting_name;

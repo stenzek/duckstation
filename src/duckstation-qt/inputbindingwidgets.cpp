@@ -4,6 +4,7 @@
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QTimer>
+#include <QtGui/QMouseEvent>
 #include <QtGui/QKeyEvent>
 #include <cmath>
 
@@ -34,6 +35,17 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
   return false;
 }
 
+void InputBindingWidget::mouseReleaseEvent(QMouseEvent* e)
+{
+  if (e->button() == Qt::RightButton)
+  {
+    clearBinding();
+    return;
+  }
+
+  QPushButton::mouseReleaseEvent(e);
+}
+
 void InputBindingWidget::setNewBinding()
 {
   if (m_new_binding_value.isEmpty())
@@ -44,6 +56,14 @@ void InputBindingWidget::setNewBinding()
 
   m_current_binding_value = std::move(m_new_binding_value);
   m_new_binding_value.clear();
+}
+
+void InputBindingWidget::clearBinding()
+{
+  m_current_binding_value.clear();
+  m_host_interface->removeSettingValue(m_setting_name);
+  m_host_interface->updateInputMap();
+  setText(m_current_binding_value);
 }
 
 void InputBindingWidget::onPressed()
