@@ -128,7 +128,7 @@ struct Rectangle
   /// Tests for intersection between two rectangles.
   constexpr bool Intersects(const Rectangle& rhs) const
   {
-    return !(left > rhs.right || rhs.left > right || top > rhs.bottom || rhs.top > bottom);
+    return !(left >= rhs.right || rhs.left >= right || top >= rhs.bottom || rhs.top >= bottom);
   }
 
   /// Tests whether the specified point is contained in the rectangle.
