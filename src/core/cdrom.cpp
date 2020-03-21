@@ -1641,7 +1641,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   m_spu->GeneratePendingSamples();
 
   constexpr bool is_stereo = true;
-  constexpr u32 num_samples = RAW_SECTOR_OUTPUT_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
+  constexpr u32 num_samples = CDImage::RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
   m_spu->EnsureCDAudioSpace(num_samples);
 
   const u8* sector_ptr = raw_sector;
