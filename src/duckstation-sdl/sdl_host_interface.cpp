@@ -32,7 +32,6 @@ SDLHostInterface::SDLHostInterface()
 
 SDLHostInterface::~SDLHostInterface()
 {
-  g_sdl_controller_interface.Shutdown();
   if (m_display)
   {
     DestroyDisplay();
@@ -232,7 +231,6 @@ void SDLHostInterface::OnSystemCreated()
   HostInterface::OnSystemCreated();
 
   UpdateKeyboardControllerMapping();
-  g_sdl_controller_interface.SetDefaultBindings();
   ClearImGuiFocus();
 }
 
@@ -254,7 +252,6 @@ void SDLHostInterface::OnControllerTypeChanged(u32 slot)
   HostInterface::OnControllerTypeChanged(slot);
 
   UpdateKeyboardControllerMapping();
-  g_sdl_controller_interface.SetDefaultBindings();
 }
 
 void SDLHostInterface::RunLater(std::function<void()> callback)
@@ -309,12 +306,6 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
     return nullptr;
   }
 
-  if (!g_sdl_controller_interface.Initialize(intf.get()))
-  {
-    Log_ErrorPrintf("Failed to initialize controller interface.");
-    return nullptr;
-  }
-
   intf->CreateImGuiContext();
   if (!intf->CreateDisplay())
   {
@@ -365,7 +356,7 @@ bool SDLHostInterface::ConfirmMessage(const char* message)
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 {
   ImGui_ImplSDL2_ProcessEvent(event);
-  g_sdl_controller_interface.ProcessSDLEvent(event);
+  //g_sdl_controller_interface.ProcessSDLEvent(event);
 
   switch (event->type)
   {
@@ -397,7 +388,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_CONTROLLERDEVICEADDED:
     case SDL_CONTROLLERDEVICEREMOVED:
-      g_sdl_controller_interface.SetDefaultBindings();
+      //g_sdl_controller_interface.SetDefaultBindings();
       break;
 
     case SDL_CONTROLLERBUTTONDOWN:
@@ -1435,7 +1426,7 @@ void SDLHostInterface::Run()
       }
     }
 
-    g_sdl_controller_interface.UpdateControllerRumble();
+    //g_sdl_controller_interface.UpdateControllerRumble();
 
     // rendering
     {

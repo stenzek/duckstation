@@ -28,13 +28,16 @@ class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(SystemBootParameters);
 
-class QtHostInterface : public QObject, private CommonHostInterface
+class QtHostInterface final : public QObject, private CommonHostInterface
 {
   Q_OBJECT
 
 public:
   explicit QtHostInterface(QObject* parent = nullptr);
   ~QtHostInterface();
+
+  bool Initialize() override;
+  void Shutdown() override;
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
@@ -50,6 +53,7 @@ public:
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
 
   ALWAYS_INLINE const HotkeyInfoList& getHotkeyInfoList() const { return GetHotkeyInfoList(); }
+  ALWAYS_INLINE ControllerInterface* getControllerInterface() const { return GetControllerInterface(); }
 
   ALWAYS_INLINE bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
@@ -125,7 +129,8 @@ protected:
   void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
   void OnSystemStateSaved(bool global, s32 slot) override;
-  void OnControllerTypeChanged(u32 slot) override;
+
+  void UpdateInputMap() override;  
 
 private:
   enum : u32
@@ -161,7 +166,7 @@ private:
   void wakeThread();
 
   QSettings m_qsettings;
-  std::mutex m_qsettings_mutex;
+  std::recursive_mutex m_qsettings_mutex;
 
   MainWindow* m_main_window = nullptr;
   QtDisplayWidget* m_display_widget = nullptr;

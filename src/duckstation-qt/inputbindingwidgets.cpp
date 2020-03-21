@@ -1,6 +1,6 @@
 #include "inputbindingwidgets.h"
 #include "core/settings.h"
-#include "frontend-common/sdl_controller_interface.h"
+#include "frontend-common/controller_interface.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QTimer>
@@ -130,33 +130,41 @@ bool InputButtonBindingWidget::eventFilter(QObject* watched, QEvent* event)
 
 void InputButtonBindingWidget::hookControllerInput()
 {
+  ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
+  if (!controller_interface)
+    return;
+
   m_host_interface->enableBackgroundControllerPolling();
-  g_sdl_controller_interface.SetHook([this](const SDLControllerInterface::Hook& ei) {
-    if (ei.type == SDLControllerInterface::Hook::Type::Axis)
+  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
+    if (ei.type == ControllerInterface::Hook::Type::Axis)
     {
       // wait until it's at least half pushed so we don't get confused between axises with small movement
       if (std::abs(ei.value) < 0.5f)
-        return SDLControllerInterface::Hook::CallbackResult::ContinueMonitoring;
+        return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
 
       // TODO: this probably should consider the "last value"
       QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
                                 Q_ARG(int, ei.button_or_axis_number), Q_ARG(bool, ei.value > 0));
-      return SDLControllerInterface::Hook::CallbackResult::StopMonitoring;
+      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
     }
-    else if (ei.type == SDLControllerInterface::Hook::Type::Button && ei.value > 0.0f)
+    else if (ei.type == ControllerInterface::Hook::Type::Button && ei.value > 0.0f)
     {
       QMetaObject::invokeMethod(this, "bindToControllerButton", Q_ARG(int, ei.controller_index),
                                 Q_ARG(int, ei.button_or_axis_number));
-      return SDLControllerInterface::Hook::CallbackResult::StopMonitoring;
+      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
     }
 
-    return SDLControllerInterface::Hook::CallbackResult::ContinueMonitoring;
+    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
   });
 }
 
 void InputButtonBindingWidget::unhookControllerInput()
 {
-  g_sdl_controller_interface.ClearHook();
+  ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
+  if (!controller_interface)
+    return;
+
+  controller_interface->ClearHook();
   m_host_interface->disableBackgroundControllerPolling();
 }
 
@@ -200,26 +208,34 @@ InputAxisBindingWidget::~InputAxisBindingWidget()
 
 void InputAxisBindingWidget::hookControllerInput()
 {
+  ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
+  if (!controller_interface)
+    return;
+
   m_host_interface->enableBackgroundControllerPolling();
-  g_sdl_controller_interface.SetHook([this](const SDLControllerInterface::Hook& ei) {
-    if (ei.type == SDLControllerInterface::Hook::Type::Axis)
+  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
+    if (ei.type == ControllerInterface::Hook::Type::Axis)
     {
       // wait until it's at least half pushed so we don't get confused between axises with small movement
       if (std::abs(ei.value) < 0.5f)
-        return SDLControllerInterface::Hook::CallbackResult::ContinueMonitoring;
+        return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
 
       QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
                                 Q_ARG(int, ei.button_or_axis_number));
-      return SDLControllerInterface::Hook::CallbackResult::StopMonitoring;
+      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
     }
 
-    return SDLControllerInterface::Hook::CallbackResult::ContinueMonitoring;
+    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
   });
 }
 
 void InputAxisBindingWidget::unhookControllerInput()
 {
-  g_sdl_controller_interface.ClearHook();
+  ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
+  if (!controller_interface)
+    return;
+
+  controller_interface->ClearHook();
   m_host_interface->disableBackgroundControllerPolling();
 }
 

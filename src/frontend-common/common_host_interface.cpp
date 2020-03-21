@@ -3,6 +3,7 @@
 #include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "controller_interface.h"
 #include "core/controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
@@ -14,14 +15,41 @@
 #include <cstring>
 Log_SetChannel(CommonHostInterface);
 
-CommonHostInterface::CommonHostInterface() : HostInterface()
+CommonHostInterface::CommonHostInterface() = default;
+
+CommonHostInterface::~CommonHostInterface() = default;
+
+bool CommonHostInterface::Initialize()
 {
   RegisterGeneralHotkeys();
   RegisterGraphicsHotkeys();
   RegisterSaveStateHotkeys();
+
+  m_controller_interface = CreateControllerInterface();
+  if (m_controller_interface && !m_controller_interface->Initialize(this))
+  {
+    Log_WarningPrintf("Failed to initialize controller bindings are not possible.");
+    m_controller_interface.reset();
+  }
+  else if (!m_controller_interface)
+  {
+    Log_WarningPrintf("No controller interface created, controller bindings are not possible.");
+  }
+
+  return true;
 }
 
-CommonHostInterface::~CommonHostInterface() = default;
+void CommonHostInterface::Shutdown()
+{
+  m_system.reset();
+  m_audio_stream.reset();
+
+  if (m_controller_interface)
+  {
+    m_controller_interface->Shutdown();
+    m_controller_interface.reset();
+  }
+}
 
 void CommonHostInterface::SetFullscreen(bool enabled) {}
 
@@ -47,6 +75,16 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
   }
 }
 
+std::unique_ptr<ControllerInterface> CommonHostInterface::CreateControllerInterface()
+{
+  // In the future we might want to use different controller interfaces.
+#ifdef WITH_SDL2
+  return std::make_unique<SDLControllerInterface>();
+#else
+  return nullptr;
+#endif
+}
+
 void CommonHostInterface::OnSystemCreated()
 {
   HostInterface::OnSystemCreated();
@@ -63,6 +101,13 @@ void CommonHostInterface::OnSystemPaused(bool paused)
     SetFullscreen(false);
   else if (m_settings.start_fullscreen)
     SetFullscreen(true);
+}
+
+void CommonHostInterface::OnControllerTypeChanged(u32 slot)
+{
+  HostInterface::OnControllerTypeChanged(slot);
+
+  UpdateInputMap();
 }
 
 void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -117,9 +162,8 @@ bool CommonHostInterface::HandleHostKeyEvent(HostKeyCode key, bool pressed)
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
   m_keyboard_input_handlers.clear();
-#ifdef WITH_SDL2
-  g_sdl_controller_interface.ClearControllerBindings();
-#endif
+  if (m_controller_interface)
+    m_controller_interface->ClearBindings();
 
   UpdateControllerInputMap(si);
   UpdateHotkeyInputMap(si);
@@ -232,9 +276,14 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
     return true;
   }
 
-#ifdef WITH_SDL2
   if (StringUtil::StartsWith(device, "Controller"))
   {
+    if (!m_controller_interface)
+    {
+      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
+      return false;
+    }
+
     const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
     if (!controller_index || *controller_index < 0)
     {
@@ -246,7 +295,7 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
     {
       const std::optional<int> button_index = StringUtil::FromChars<int>(button.substr(6));
       if (!button_index ||
-          !g_sdl_controller_interface.BindControllerButton(*controller_index, *button_index, std::move(handler)))
+          !m_controller_interface->BindControllerButton(*controller_index, *button_index, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller button '%s' to button", binding.c_str());
         return false;
@@ -258,8 +307,8 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
     {
       const std::optional<int> axis_index = StringUtil::FromChars<int>(button.substr(5));
       const bool positive = (button[0] == '+');
-      if (!axis_index || !g_sdl_controller_interface.BindControllerAxisToButton(*controller_index, *axis_index,
-                                                                                positive, std::move(handler)))
+      if (!axis_index || !m_controller_interface->BindControllerAxisToButton(*controller_index, *axis_index, positive,
+                                                                             std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller axis '%s' to button", binding.c_str());
         return false;
@@ -271,7 +320,6 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
     Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
     return false;
   }
-#endif
 
   Log_WarningPrintf("Unknown input device in button binding '%s'", binding.c_str());
   return false;
@@ -280,9 +328,14 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
 bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const std::string_view& device,
                                             const std::string_view& axis, InputAxisHandler handler)
 {
-#ifdef WITH_SDL2
   if (StringUtil::StartsWith(device, "Controller"))
   {
+    if (!m_controller_interface)
+    {
+      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
+      return false;
+    }
+
     const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
     if (!controller_index || *controller_index < 0)
     {
@@ -294,7 +347,7 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
     {
       const std::optional<int> axis_index = StringUtil::FromChars<int>(axis.substr(4));
       if (!axis_index ||
-          !g_sdl_controller_interface.BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
+          !m_controller_interface->BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller axis '%s' to axi", binding.c_str());
         return false;
@@ -306,7 +359,6 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
     Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
     return false;
   }
-#endif
 
   Log_WarningPrintf("Unknown input device in axis binding '%s'", binding.c_str());
   return false;

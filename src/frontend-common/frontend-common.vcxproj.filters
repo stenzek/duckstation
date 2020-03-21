@@ -8,6 +8,7 @@
     <ClCompile Include="sdl_initializer.cpp" />
     <ClCompile Include="common_host_interface.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
+    <ClCompile Include="controller_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -17,6 +18,7 @@
     <ClInclude Include="sdl_initializer.h" />
     <ClInclude Include="common_host_interface.h" />
     <ClInclude Include="ini_settings_interface.h" />
+    <ClInclude Include="controller_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

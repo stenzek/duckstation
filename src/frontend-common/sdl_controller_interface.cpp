@@ -9,8 +9,6 @@
 #include <cmath>
 Log_SetChannel(SDLControllerInterface);
 
-SDLControllerInterface g_sdl_controller_interface;
-
 SDLControllerInterface::SDLControllerInterface() = default;
 
 SDLControllerInterface::~SDLControllerInterface()
@@ -18,8 +16,11 @@ SDLControllerInterface::~SDLControllerInterface()
   Assert(m_controllers.empty());
 }
 
-bool SDLControllerInterface::Initialize(HostInterface* host_interface)
+bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
 {
+  if (!ControllerInterface::Initialize(host_interface))
+    return false;
+
   FrontendCommon::EnsureSDLInitialized();
 
   if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
@@ -29,26 +30,25 @@ bool SDLControllerInterface::Initialize(HostInterface* host_interface)
   }
 
   // we should open the controllers as the connected events come in, so no need to do any more here
-  m_host_interface = host_interface;
-  m_initialized = true;
+  m_sdl_subsystem_initialized = true;
   return true;
 }
 
 void SDLControllerInterface::Shutdown()
 {
-  while (!m_controllers.empty())
-    CloseGameController(m_controllers.begin()->first);
+  ControllerInterface::Shutdown();
 
-  if (m_initialized)
+  while (!m_controllers.empty())
+    CloseGameController(m_controllers.begin()->joystick_id);
+
+  if (m_sdl_subsystem_initialized)
   {
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-    m_initialized = false;
+    m_sdl_subsystem_initialized = false;
   }
-
-  m_host_interface = nullptr;
 }
 
-void SDLControllerInterface::PumpSDLEvents()
+void SDLControllerInterface::PollEvents()
 {
   for (;;)
   {
@@ -90,242 +90,138 @@ bool SDLControllerInterface::ProcessSDLEvent(const SDL_Event* event)
   }
 }
 
-System* SDLControllerInterface::GetSystem() const
+SDLControllerInterface::ControllerDataVector::iterator
+SDLControllerInterface::GetControllerDataForController(void* controller)
 {
-  return m_host_interface->GetSystem();
+  return std::find_if(m_controllers.begin(), m_controllers.end(),
+                      [controller](const ControllerData& cd) { return cd.controller == controller; });
 }
 
-Controller* SDLControllerInterface::GetController(u32 slot) const
+SDLControllerInterface::ControllerDataVector::iterator SDLControllerInterface::GetControllerDataForJoystickId(int id)
 {
-  System* system = GetSystem();
-  return system ? system->GetController(slot) : nullptr;
+  return std::find_if(m_controllers.begin(), m_controllers.end(),
+                      [id](const ControllerData& cd) { return cd.joystick_id == id; });
 }
 
-void SDLControllerInterface::SetHook(Hook::Callback callback)
+SDLControllerInterface::ControllerDataVector::iterator SDLControllerInterface::GetControllerDataForPlayerId(int id)
 {
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
-  Assert(!m_event_intercept_callback);
-  m_event_intercept_callback = std::move(callback);
-}
-
-void SDLControllerInterface::ClearHook()
-{
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
-  if (m_event_intercept_callback)
-    m_event_intercept_callback = {};
-}
-
-bool SDLControllerInterface::DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value)
-{
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
-  if (!m_event_intercept_callback)
-    return false;
-
-  const Hook ei{type, controller_index, button_or_axis_number, value};
-  const Hook::CallbackResult action = m_event_intercept_callback(ei);
-  if (action == Hook::CallbackResult::StopMonitoring)
-    m_event_intercept_callback = {};
-
-  return true;
+  return std::find_if(m_controllers.begin(), m_controllers.end(),
+                      [id](const ControllerData& cd) { return cd.player_id == id; });
 }
 
 bool SDLControllerInterface::OpenGameController(int index)
 {
-  if (m_controllers.find(index) != m_controllers.end())
-    CloseGameController(index);
-
   SDL_GameController* gcontroller = SDL_GameControllerOpen(index);
-  if (!gcontroller)
+  SDL_Joystick* joystick = gcontroller ? SDL_GameControllerGetJoystick(gcontroller) : nullptr;
+  if (!gcontroller || !joystick)
   {
     Log_WarningPrintf("Failed to open controller %d", index);
+    if (gcontroller)
+      SDL_GameControllerClose(gcontroller);
+
     return false;
   }
 
-  Log_InfoPrintf("Opened controller %d: %s", index, SDL_GameControllerName(gcontroller));
+  int player_index = SDL_GameControllerGetPlayerIndex(gcontroller);
+  int joystick_id = SDL_JoystickInstanceID(joystick);
+
+  Log_InfoPrintf("Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_index,
+                 SDL_GameControllerName(gcontroller));
 
   ControllerData cd = {};
   cd.controller = gcontroller;
+  cd.player_id = player_index;
+  cd.joystick_id = joystick_id;
 
-  SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gcontroller);
-  if (joystick)
-  {
-    SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
-    if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) == 0)
-      cd.haptic = haptic;
-    else
-      SDL_HapticClose(haptic);
-  }
+  SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+  if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) == 0)
+    cd.haptic = haptic;
+  else if (haptic)
+    SDL_HapticClose(haptic);
 
   if (cd.haptic)
     Log_InfoPrintf("Rumble is supported on '%s'", SDL_GameControllerName(gcontroller));
   else
     Log_WarningPrintf("Rumble is not supported on '%s'", SDL_GameControllerName(gcontroller));
 
-  m_controllers.emplace(index, cd);
+  m_controllers.push_back(std::move(cd));
+  OnControllerConnected(player_index);
   return true;
 }
 
 void SDLControllerInterface::CloseGameControllers()
 {
   while (!m_controllers.empty())
-    CloseGameController(m_controllers.begin()->first);
+    CloseGameController(m_controllers.begin()->player_id);
 }
 
-bool SDLControllerInterface::CloseGameController(int index)
+bool SDLControllerInterface::CloseGameController(int joystick_index)
 {
-  auto it = m_controllers.find(index);
+  auto it = GetControllerDataForJoystickId(joystick_index);
   if (it == m_controllers.end())
     return false;
 
-  if (it->second.haptic)
-    SDL_HapticClose(static_cast<SDL_Haptic*>(it->second.haptic));
+  const int player_index = it->player_id;
 
-  SDL_GameControllerClose(static_cast<SDL_GameController*>(it->second.controller));
+  if (it->haptic)
+    SDL_HapticClose(static_cast<SDL_Haptic*>(it->haptic));
+
+  SDL_GameControllerClose(static_cast<SDL_GameController*>(it->controller));
   m_controllers.erase(it);
+
+  OnControllerDisconnected(player_index);
   return true;
 }
 
-void SDLControllerInterface::ClearControllerBindings()
+void SDLControllerInterface::ClearBindings()
 {
   for (auto& it : m_controllers)
   {
-    for (AxisCallback& ac : it.second.axis_mapping)
+    for (AxisCallback& ac : it.axis_mapping)
       ac = {};
-    for (ButtonCallback& bc : it.second.button_mapping)
+    for (ButtonCallback& bc : it.button_mapping)
       bc = {};
   }
 }
 
 bool SDLControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisCallback callback)
 {
-  auto it = m_controllers.find(controller_index);
+  auto it = GetControllerDataForPlayerId(controller_index);
   if (it == m_controllers.end())
     return false;
 
   if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
     return false;
 
-  it->second.axis_mapping[axis_number] = std::move(callback);
+  it->axis_mapping[axis_number] = std::move(callback);
   return true;
 }
 
 bool SDLControllerInterface::BindControllerButton(int controller_index, int button_number, ButtonCallback callback)
 {
-  auto it = m_controllers.find(controller_index);
+  auto it = GetControllerDataForPlayerId(controller_index);
   if (it == m_controllers.end())
     return false;
 
   if (button_number < 0 || button_number >= MAX_NUM_BUTTONS)
     return false;
 
-  it->second.button_mapping[button_number] = std::move(callback);
+  it->button_mapping[button_number] = std::move(callback);
   return true;
 }
 
 bool SDLControllerInterface::BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                                         ButtonCallback callback)
 {
-  auto it = m_controllers.find(controller_index);
+  auto it = GetControllerDataForPlayerId(controller_index);
   if (it == m_controllers.end())
     return false;
 
   if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
     return false;
 
-  it->second.axis_button_mapping[axis_number][BoolToUInt8(direction)] = std::move(callback);
+  it->axis_button_mapping[axis_number][BoolToUInt8(direction)] = std::move(callback);
   return true;
-}
-
-void SDLControllerInterface::SetDefaultBindings()
-{
-  ClearControllerBindings();
-
-  const ControllerType type = m_host_interface->GetSettings().controller_types[0];
-  if (type == ControllerType::None || m_controllers.empty())
-    return;
-
-  const int first_controller_index = m_controllers.begin()->first;
-
-#define SET_AXIS_MAP(axis, name)                                                                                       \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    std::optional<s32> code = Controller::GetAxisCodeByName(type, name);                                               \
-    if (code)                                                                                                          \
-    {                                                                                                                  \
-      const s32 code_value = code.value();                                                                             \
-      BindControllerAxis(first_controller_index, axis, [this, code_value](float value) {                               \
-        Controller* controller = GetController(0);                                                                     \
-        if (controller)                                                                                                \
-          controller->SetAxisState(code_value, value);                                                                 \
-      });                                                                                                              \
-    }                                                                                                                  \
-  } while (0)
-
-#define SET_BUTTON_MAP(button, name)                                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    std::optional<s32> code = Controller::GetButtonCodeByName(type, name);                                             \
-    if (code)                                                                                                          \
-    {                                                                                                                  \
-      const s32 code_value = code.value();                                                                             \
-      BindControllerButton(first_controller_index, button, [this, code_value](bool pressed) {                          \
-        Controller* controller = GetController(0);                                                                     \
-        if (controller)                                                                                                \
-          controller->SetButtonState(code_value, pressed);                                                             \
-      });                                                                                                              \
-    }                                                                                                                  \
-  } while (0)
-
-#define SET_AXIS_BUTTON_MAP(axis, direction, name)                                                                     \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    std::optional<s32> code = Controller::GetButtonCodeByName(type, name);                                             \
-    if (code)                                                                                                          \
-    {                                                                                                                  \
-      const s32 code_value = code.value();                                                                             \
-      BindControllerAxisToButton(first_controller_index, axis, direction, [this, code_value](bool pressed) {           \
-        Controller* controller = GetController(0);                                                                     \
-        if (controller)                                                                                                \
-          controller->SetButtonState(code_value, pressed);                                                             \
-      });                                                                                                              \
-    }                                                                                                                  \
-  } while (0)
-
-  SET_AXIS_MAP(SDL_CONTROLLER_AXIS_LEFTX, "LeftX");
-  SET_AXIS_MAP(SDL_CONTROLLER_AXIS_LEFTY, "LeftY");
-  SET_AXIS_MAP(SDL_CONTROLLER_AXIS_RIGHTX, "RightX");
-  SET_AXIS_MAP(SDL_CONTROLLER_AXIS_RIGHTY, "RightY");
-  SET_AXIS_MAP(SDL_CONTROLLER_AXIS_TRIGGERLEFT, "LeftTrigger");
-  SET_AXIS_MAP(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "RightTrigger");
-
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_UP, "Up");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_DOWN, "Down");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_LEFT, "Left");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "Right");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_Y, "Triangle");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_A, "Cross");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_X, "Square");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_B, "Circle");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_LEFTSHOULDER, "L1");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "R1");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_LEFTSTICK, "L3");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_RIGHTSTICK, "R3");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_START, "Start");
-  SET_BUTTON_MAP(SDL_CONTROLLER_BUTTON_BACK, "Select");
-
-  // fallback axis -> button mappings
-  SET_AXIS_BUTTON_MAP(SDL_CONTROLLER_AXIS_LEFTX, false, "Left");
-  SET_AXIS_BUTTON_MAP(SDL_CONTROLLER_AXIS_LEFTX, true, "Right");
-  SET_AXIS_BUTTON_MAP(SDL_CONTROLLER_AXIS_LEFTY, false, "Up");
-  SET_AXIS_BUTTON_MAP(SDL_CONTROLLER_AXIS_LEFTY, true, "Down");
-  SET_AXIS_BUTTON_MAP(SDL_CONTROLLER_AXIS_TRIGGERLEFT, true, "L2");
-  SET_AXIS_BUTTON_MAP(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, true, "R2");
-
-#undef SET_AXIS_MAP
-#undef SET_BUTTON_MAP
-#undef SET_AXIS_BUTTON_MAP
-
-  // TODO: L2/R2 -> buttons
 }
 
 bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
@@ -339,12 +235,11 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   if (DoEventHook(Hook::Type::Axis, ev->caxis.which, ev->caxis.axis, value))
     return true;
 
-  auto it = m_controllers.find(ev->caxis.which);
+  auto it = GetControllerDataForJoystickId(ev->caxis.which);
   if (it == m_controllers.end())
     return false;
 
-  const ControllerData& cd = it->second;
-  const AxisCallback& cb = cd.axis_mapping[ev->caxis.axis];
+  const AxisCallback& cb = it->axis_mapping[ev->caxis.axis];
   if (cb)
   {
     cb(value);
@@ -354,8 +249,8 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   // set the other direction to false so large movements don't leave the opposite on
   const bool outside_deadzone = (std::abs(value) >= deadzone);
   const bool positive = (value >= 0.0f);
-  const ButtonCallback& other_button_cb = cd.axis_button_mapping[ev->caxis.axis][BoolToUInt8(!positive)];
-  const ButtonCallback& button_cb = cd.axis_button_mapping[ev->caxis.axis][BoolToUInt8(positive)];
+  const ButtonCallback& other_button_cb = it->axis_button_mapping[ev->caxis.axis][BoolToUInt8(!positive)];
+  const ButtonCallback& button_cb = it->axis_button_mapping[ev->caxis.axis][BoolToUInt8(positive)];
   if (button_cb)
   {
     button_cb(outside_deadzone);
@@ -383,11 +278,11 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
   if (DoEventHook(Hook::Type::Button, ev->cbutton.which, ev->cbutton.button, pressed ? 1.0f : 0.0f))
     return true;
 
-  auto it = m_controllers.find(ev->caxis.which);
+  auto it = GetControllerDataForJoystickId(ev->caxis.which);
   if (it == m_controllers.end())
     return false;
 
-  const ButtonCallback& cb = it->second.button_mapping[ev->cbutton.button];
+  const ButtonCallback& cb = it->button_mapping[ev->cbutton.button];
   if (!cb)
     return false;
 
@@ -397,14 +292,14 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
 
 void SDLControllerInterface::UpdateControllerRumble()
 {
-  for (auto& it : m_controllers)
+  for (auto& cd : m_controllers)
   {
-    ControllerData& cd = it.second;
-    if (!cd.haptic)
+    // TODO: FIXME proper binding
+    if (!cd.haptic || cd.player_id < 0 || cd.player_id >= 2)
       continue;
 
     float new_strength = 0.0f;
-    Controller* controller = GetController(cd.controller_index);
+    Controller* controller = GetController(cd.player_id);
     if (controller)
     {
       const u32 motor_count = controller->GetVibrationMotorCount();

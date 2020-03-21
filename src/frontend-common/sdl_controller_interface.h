@@ -1,92 +1,43 @@
 #pragma once
 #include "core/types.h"
+#include "controller_interface.h"
 #include <array>
 #include <functional>
-#include <map>
+#include <vector>
 #include <mutex>
-
-class HostInterface;
-class System;
-class Controller;
 
 union SDL_Event;
 
-class SDLControllerInterface
+class SDLControllerInterface final : public ControllerInterface
 {
 public:
-  enum : int
-  {
-    MAX_NUM_AXISES = 7,
-    MAX_NUM_BUTTONS = 15
-  };
-
-  using AxisCallback = std::function<void(float value)>;
-  using ButtonCallback = std::function<void(bool pressed)>;
-
   SDLControllerInterface();
   ~SDLControllerInterface();
 
-  bool Initialize(HostInterface* host_interface);
-  void Shutdown();
+  bool Initialize(CommonHostInterface* host_interface) override;
+  void Shutdown() override;
 
   // Removes all bindings. Call before setting new bindings.
-  void ClearControllerBindings();
+  void ClearBindings() override;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
-  bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback);
-  bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback);
-  bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction, ButtonCallback callback);
+  bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback) override;
+  bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
+  bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction, ButtonCallback callback) override;
 
-  // Default bindings, used by SDL frontend.
-  void SetDefaultBindings();
-
-  void PumpSDLEvents();
+  void PollEvents() override;
 
   bool ProcessSDLEvent(const SDL_Event* event);
 
-  void UpdateControllerRumble();
-
-  // Input monitoring for external access.
-  struct Hook
-  {
-    enum class Type
-    {
-      Axis,
-      Button
-    };
-
-    enum class CallbackResult
-    {
-      StopMonitoring,
-      ContinueMonitoring
-    };
-
-    using Callback = std::function<CallbackResult(const Hook& ei)>;
-
-    Type type;
-    int controller_index;
-    int button_or_axis_number;
-    float value; // 0/1 for buttons, -1..1 for axises
-  };
-  void SetHook(Hook::Callback callback);
-  void ClearHook();
+  void UpdateControllerRumble() override;
 
 private:
-  System* GetSystem() const;
-  Controller* GetController(u32 slot) const;
-  bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value);
-
-  bool OpenGameController(int index);
-  bool CloseGameController(int index);
-  void CloseGameControllers();
-  bool HandleControllerAxisEvent(const SDL_Event* event);
-  bool HandleControllerButtonEvent(const SDL_Event* event);
-
   struct ControllerData
   {
     void* controller;
     void* haptic;
-    u32 controller_index;
+    int joystick_id;
+    int player_id;
     float last_rumble_strength;
 
     std::array<AxisCallback, MAX_NUM_AXISES> axis_mapping;
@@ -94,14 +45,22 @@ private:
     std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
   };
 
-  HostInterface* m_host_interface = nullptr;
+  using ControllerDataVector = std::vector<ControllerData>;
 
-  std::map<int, ControllerData> m_controllers;
+  ControllerDataVector::iterator GetControllerDataForController(void* controller);
+  ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
+  ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
+
+  bool OpenGameController(int index);
+  bool CloseGameController(int joystick_index);
+  void CloseGameControllers();
+  bool HandleControllerAxisEvent(const SDL_Event* event);
+  bool HandleControllerButtonEvent(const SDL_Event* event);
+
+  ControllerDataVector m_controllers;
 
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;
 
-  bool m_initialized = false;
+  bool m_sdl_subsystem_initialized = false;
 };
-
-extern SDLControllerInterface g_sdl_controller_interface;

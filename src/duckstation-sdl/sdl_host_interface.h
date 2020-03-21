@@ -3,6 +3,7 @@
 #include "common/gl/texture.h"
 #include "core/host_display.h"
 #include "core/host_interface.h"
+#include "frontend-common/sdl_controller_interface.h"
 #include <SDL.h>
 #include <array>
 #include <deque>
@@ -121,7 +122,7 @@ private:
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
 
   KeyboardControllerActionMap m_keyboard_button_mapping;
-
+  
   u32 m_run_later_event_id = 0;
 
   bool m_fullscreen = false;

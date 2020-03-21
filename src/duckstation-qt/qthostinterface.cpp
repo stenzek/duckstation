@@ -35,6 +35,7 @@ QtHostInterface::QtHostInterface(QObject* parent)
 {
   qRegisterMetaType<SystemBootParameters>();
 
+  // TODO: This probably should wait until the thread finishes initializing.
   loadSettings();
   createThread();
 }
@@ -43,6 +44,23 @@ QtHostInterface::~QtHostInterface()
 {
   Assert(!m_display_widget);
   stopThread();
+}
+
+bool QtHostInterface::Initialize()
+{
+  if (!CommonHostInterface::Initialize())
+    return false;
+
+  if (m_controller_interface)
+    m_controller_interface->PollEvents();
+
+  updateInputMap();
+  return true;
+}
+
+void QtHostInterface::Shutdown()
+{
+  CommonHostInterface::Shutdown();
 }
 
 void QtHostInterface::ReportError(const char* message)
@@ -77,19 +95,19 @@ bool QtHostInterface::ConfirmMessage(const char* message)
 
 QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
 {
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   return m_qsettings.value(name, default_value);
 }
 
 void QtHostInterface::putSettingValue(const QString& name, const QVariant& value)
 {
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   m_qsettings.setValue(name, value);
 }
 
 void QtHostInterface::removeSettingValue(const QString& name)
 {
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   m_qsettings.remove(name);
 }
 
@@ -101,10 +119,10 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
   UpdateSettings([this, &si]() { m_settings.Load(si); });
-  UpdateInputMap(si);
+  CommonHostInterface::UpdateInputMap(si);
 }
 
 void QtHostInterface::applySettings()
@@ -115,10 +133,10 @@ void QtHostInterface::applySettings()
     return;
   }
 
-  std::lock_guard<std::mutex> guard(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
   UpdateSettings([this, &si]() { m_settings.Load(si); });
-  UpdateInputMap(si);
+  CommonHostInterface::UpdateInputMap(si);
 }
 
 void QtHostInterface::loadSettings()
@@ -143,7 +161,7 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
 {
   Assert(!isOnWorkerThread());
 
-  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
   m_game_list->SetSearchDirectoriesFromSettings(si);
 
@@ -348,13 +366,9 @@ void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
   emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
 }
 
-void QtHostInterface::OnControllerTypeChanged(u32 slot)
+void QtHostInterface::UpdateInputMap()
 {
-  HostInterface::OnControllerTypeChanged(slot);
-
-  // this assumes the settings mutex is already locked - as it comes from updateSettings().
-  QtSettingsInterface si(m_qsettings);
-  UpdateInputMap(si);
+  updateInputMap();
 }
 
 void QtHostInterface::updateInputMap()
@@ -365,9 +379,9 @@ void QtHostInterface::updateInputMap()
     return;
   }
 
-  std::lock_guard<std::mutex> lock(m_qsettings_mutex);
+  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings);
-  UpdateInputMap(si);
+  CommonHostInterface::UpdateInputMap(si);
 }
 
 void QtHostInterface::powerOffSystem()
@@ -613,7 +627,7 @@ void QtHostInterface::enableBackgroundControllerPolling()
     return;
   }
 
-  if (m_background_controller_polling_enable_count++ > 0)
+  if (!m_controller_interface || m_background_controller_polling_enable_count++ > 0)
     return;
 
   if (!m_system || m_paused)
@@ -621,7 +635,7 @@ void QtHostInterface::enableBackgroundControllerPolling()
     createBackgroundControllerPollTimer();
 
     // drain the event queue so we don't get events late
-    g_sdl_controller_interface.PumpSDLEvents();
+    m_controller_interface->PollEvents();
   }
 }
 
@@ -634,7 +648,7 @@ void QtHostInterface::disableBackgroundControllerPolling()
   }
 
   Assert(m_background_controller_polling_enable_count > 0);
-  if (--m_background_controller_polling_enable_count > 0)
+  if (!m_controller_interface || --m_background_controller_polling_enable_count > 0)
     return;
 
   if (!m_system || m_paused)
@@ -643,7 +657,7 @@ void QtHostInterface::disableBackgroundControllerPolling()
 
 void QtHostInterface::doBackgroundControllerPoll()
 {
-  g_sdl_controller_interface.PumpSDLEvents();
+  m_controller_interface->PollEvents();
 }
 
 void QtHostInterface::createBackgroundControllerPollTimer()
@@ -689,9 +703,8 @@ void QtHostInterface::threadEntryPoint()
   m_worker_thread_event_loop = new QEventLoop();
 
   // set up controller interface and immediate poll to pick up the controller attached events
-  g_sdl_controller_interface.Initialize(this);
-  g_sdl_controller_interface.PumpSDLEvents();
-  updateInputMap();
+  if (!Initialize())
+    Panic("Failed to initialize host interface");
 
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
@@ -711,14 +724,12 @@ void QtHostInterface::threadEntryPoint()
       m_system->Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
-    g_sdl_controller_interface.PumpSDLEvents();
+    if (m_controller_interface)
+      m_controller_interface->PollEvents();
   }
 
-  m_system.reset();
-  m_audio_stream.reset();
-
-  g_sdl_controller_interface.Shutdown();
-
+  Shutdown();
+  
   delete m_worker_thread_event_loop;
   m_worker_thread_event_loop = nullptr;
 
