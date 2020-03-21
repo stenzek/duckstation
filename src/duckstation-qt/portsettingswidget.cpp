@@ -6,6 +6,7 @@
 #include "qtutils.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
+#include <QtWidgets/QMessageBox>
 
 PortSettingsWidget::PortSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QWidget(parent), m_host_interface(host_interface)
@@ -43,6 +44,8 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   ui->layout->addWidget(new QLabel(tr("Memory Card Path:"), ui->widget));
   ui->layout->addLayout(memory_card_layout);
 
+  ui->layout->addWidget(new QLabel(tr("Controller Type:"), ui->widget));
+
   ui->controller_type = new QComboBox(ui->widget);
   for (int i = 0; i < static_cast<int>(ControllerType::Count); i++)
   {
@@ -58,7 +61,7 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   ui->controller_type->setCurrentIndex(static_cast<int>(ctype));
   connect(ui->controller_type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
           [this, index]() { onControllerTypeChanged(index); });
-  ui->layout->addWidget(new QLabel(tr("Controller Type:"), ui->widget));
+
   ui->layout->addWidget(ui->controller_type);
 
   createPortBindingSettingsUi(index, ui, ctype);
@@ -77,13 +80,13 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
   layout->setContentsMargins(0, 0, 0, 0);
   const auto buttons = Controller::GetButtonNames(ctype);
 
+  InputBindingWidget* first_button = nullptr;
+  InputBindingWidget* last_button = nullptr;
+
   int start_row = 0;
   if (!buttons.empty())
   {
-    QFrame* line = new QFrame(container);
-    line->setFrameShape(QFrame::HLine);
-    line->setFrameShadow(QFrame::Sunken);
-    layout->addWidget(line, start_row++, 0, 1, 4);
+    layout->addWidget(QtUtils::CreateHorizontalLine(container), start_row++, 0, 1, 4);
     layout->addWidget(new QLabel(tr("Button Bindings:"), container), start_row++, 0, 1, 4);
 
     const int num_rows = (static_cast<int>(buttons.size()) + 1) / 2;
@@ -103,6 +106,12 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
       InputButtonBindingWidget* button = new InputButtonBindingWidget(m_host_interface, setting_name, container);
       layout->addWidget(label, start_row + current_row, current_column);
       layout->addWidget(button, start_row + current_row, current_column + 1);
+
+      if (!first_button)
+        first_button = button;
+      if (last_button)
+        last_button->setNextWidget(button);
+      last_button = button;
 
       current_row++;
     }
@@ -137,10 +146,60 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
       layout->addWidget(label, start_row + current_row, current_column);
       layout->addWidget(button, start_row + current_row, current_column + 1);
 
+      if (!first_button)
+        first_button = button;
+      if (last_button)
+        last_button->setNextWidget(button);
+      last_button = button;
+
       current_row++;
     }
 
     start_row += num_rows;
+  }
+
+  layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
+
+  if (first_button)
+  {
+    QHBoxLayout* hbox = new QHBoxLayout();
+
+    QPushButton* clear_all_button = new QPushButton(tr("Clear All"), ui->widget);
+    clear_all_button->connect(clear_all_button, &QPushButton::pressed, [this, first_button]() {
+      if (QMessageBox::question(this, tr("Clear Bindings"),
+                                tr("Are you sure you want to clear all bound controls? This cannot be reversed.")) !=
+          QMessageBox::Yes)
+      {
+        return;
+      }
+
+      InputBindingWidget* widget = first_button;
+      while (widget)
+      {
+        widget->clearBinding();
+        widget = widget->getNextWidget();
+      }
+    });
+
+    QPushButton* rebind_all_button = new QPushButton(tr("Rebind All"), ui->widget);
+    rebind_all_button->connect(rebind_all_button, &QPushButton::pressed, [this, first_button]() {
+      if (QMessageBox::question(this, tr("Clear Bindings"), tr("Do you want to clear all currently-bound controls?")) ==
+          QMessageBox::Yes)
+      {
+        InputBindingWidget* widget = first_button;
+        while (widget)
+        {
+          widget->clearBinding();
+          widget = widget->getNextWidget();
+        }
+      }
+
+      first_button->beginRebindAll();
+    });
+
+    hbox->addWidget(clear_all_button);
+    hbox->addWidget(rebind_all_button);
+    layout->addLayout(hbox, start_row++, 0, 1, 4, Qt::AlignRight);
   }
 
   if (ui->button_binding_container)

@@ -22,6 +22,15 @@ InputBindingWidget::~InputBindingWidget()
   Q_ASSERT(!isListeningForInput());
 }
 
+void InputBindingWidget::beginRebindAll()
+{
+  m_is_binding_all = true;
+  if (isListeningForInput())
+    stopListeningForInput();
+
+  startListeningForInput(TIMEOUT_FOR_ALL_BINDING);
+}
+
 bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 {
   const QEvent::Type event_type = event->type();
@@ -71,7 +80,7 @@ void InputBindingWidget::onPressed()
   if (isListeningForInput())
     stopListeningForInput();
 
-  startListeningForInput();
+  startListeningForInput(TIMEOUT_FOR_SINGLE_BINDING);
 }
 
 void InputBindingWidget::onInputListenTimerTimeout()
@@ -86,7 +95,7 @@ void InputBindingWidget::onInputListenTimerTimeout()
   setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
 }
 
-void InputBindingWidget::startListeningForInput()
+void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
   m_input_listen_timer = new QTimer(this);
   m_input_listen_timer->setSingleShot(false);
@@ -94,7 +103,7 @@ void InputBindingWidget::startListeningForInput()
 
   m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this,
                                 &InputBindingWidget::onInputListenTimerTimeout);
-  m_input_listen_remaining_seconds = 5;
+  m_input_listen_remaining_seconds = timeout_in_seconds;
   setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
 
   installEventFilter(this);
@@ -111,6 +120,10 @@ void InputBindingWidget::stopListeningForInput()
   releaseMouse();
   releaseKeyboard();
   removeEventFilter(this);
+
+  if (m_is_binding_all && m_next_widget)
+    m_next_widget->beginRebindAll();
+  m_is_binding_all = false;
 }
 
 InputButtonBindingWidget::InputButtonBindingWidget(QtHostInterface* host_interface, QString setting_name,
@@ -203,9 +216,9 @@ void InputButtonBindingWidget::bindToControllerButton(int controller_index, int 
   stopListeningForInput();
 }
 
-void InputButtonBindingWidget::startListeningForInput()
+void InputButtonBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
-  InputBindingWidget::startListeningForInput();
+  InputBindingWidget::startListeningForInput(timeout_in_seconds);
   hookControllerInput();
 }
 
@@ -266,9 +279,9 @@ void InputAxisBindingWidget::bindToControllerAxis(int controller_index, int axis
   stopListeningForInput();
 }
 
-void InputAxisBindingWidget::startListeningForInput()
+void InputAxisBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
-  InputBindingWidget::startListeningForInput();
+  InputBindingWidget::startListeningForInput(timeout_in_seconds);
   hookControllerInput();
 }
 

@@ -6,11 +6,15 @@
 
 class ByteStream;
 
+class QFrame;
 class QKeyEvent;
 class QTableView;
 class QWidget;
 
 namespace QtUtils {
+
+/// Creates a horizontal line widget.
+QFrame* CreateHorizontalLine(QWidget* parent);
 
 /// Returns the greatest parent of a widget, i.e. its dialog/window.
 QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog = true);

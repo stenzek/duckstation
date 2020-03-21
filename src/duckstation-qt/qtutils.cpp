@@ -13,6 +13,14 @@
 
 namespace QtUtils {
 
+QFrame* CreateHorizontalLine(QWidget* parent)
+{
+  QFrame* line = new QFrame(parent);
+  line->setFrameShape(QFrame::HLine);
+  line->setFrameShadow(QFrame::Sunken);
+  return line;
+}
+
 QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
 {
   QWidget* next_parent = widget->parentWidget();
