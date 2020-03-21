@@ -10,6 +10,9 @@ public:
   WAVWriter();
   ~WAVWriter();
 
+  ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }
+  ALWAYS_INLINE u32 GetNumChannels() const { return m_num_channels; }
+  ALWAYS_INLINE u32 GetNumFrames() const { return m_num_frames; }
   ALWAYS_INLINE bool IsOpen() const { return (m_file != nullptr); }
 
   bool Open(const char* filename, u32 sample_rate, u32 num_channels);
