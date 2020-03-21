@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="include\gtest\gtest.h" />
+    <ClInclude Include="include\gtest\gtest_pred_impl.h" />
+    <ClInclude Include="include\gtest\gtest_prod.h" />
+    <ClInclude Include="include\gtest\gtest-death-test.h" />
+    <ClInclude Include="include\gtest\gtest-matchers.h" />
+    <ClInclude Include="include\gtest\gtest-message.h" />
+    <ClInclude Include="include\gtest\gtest-param-test.h" />
+    <ClInclude Include="include\gtest\gtest-printers.h" />
+    <ClInclude Include="include\gtest\gtest-spi.h" />
+    <ClInclude Include="include\gtest\gtest-test-part.h" />
+    <ClInclude Include="include\gtest\gtest-typed-test.h" />
+    <ClInclude Include="src\gtest-internal-inl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\gtest.cc" />
+    <ClCompile Include="src\gtest-death-test.cc" />
+    <ClCompile Include="src\gtest-filepath.cc" />
+    <ClCompile Include="src\gtest-matchers.cc" />
+    <ClCompile Include="src\gtest-port.cc" />
+    <ClCompile Include="src\gtest-printers.cc" />
+    <ClCompile Include="src\gtest-test-part.cc" />
+    <ClCompile Include="src\gtest-typed-test.cc" />
+  </ItemGroup>
+</Project>
