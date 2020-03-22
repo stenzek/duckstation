@@ -37,6 +37,8 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
 {
   m_ui.setupUi(this);
 
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
   m_general_settings = new GeneralSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
