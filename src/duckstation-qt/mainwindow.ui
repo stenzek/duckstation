@@ -85,6 +85,7 @@
     </property>
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
+    <addaction name="actionGeneralSettings"/>
     <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionHotkeySettings"/>
@@ -343,6 +344,15 @@
    </property>
    <property name="text">
     <string>Game List Settings...</string>
+   </property>
+  </action>
+  <action name="actionGeneralSettings">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>General Settings...</string>
    </property>
   </action>
   <action name="actionAddGameDirectory">

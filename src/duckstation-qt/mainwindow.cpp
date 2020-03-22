@@ -443,6 +443,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
   connect(m_ui.actionFullscreen, &QAction::triggered, this, &MainWindow::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
+  connect(m_ui.actionGeneralSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::GeneralSettings); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::ConsoleSettings); });
   connect(m_ui.actionGameListSettings, &QAction::triggered,

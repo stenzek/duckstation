@@ -42,6 +42,15 @@
        </property>
        <item>
         <property name="text">
+         <string>General Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Console Settings</string>
         </property>
         <property name="icon">

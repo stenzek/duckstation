@@ -5,6 +5,7 @@
 
 class QtHostInterface;
 
+class GeneralSettingsWidget;
 class GameListSettingsWidget;
 class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
@@ -19,6 +20,7 @@ class SettingsDialog : public QDialog
 public:
   enum class Category
   {
+    GeneralSettings,
     ConsoleSettings,
     GameListSettings,
     HotkeySettings,
@@ -31,6 +33,7 @@ public:
   SettingsDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~SettingsDialog();
 
+  GeneralSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
   ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
   GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
   HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
@@ -49,6 +52,7 @@ private:
 
   QtHostInterface* m_host_interface;
 
+  GeneralSettingsWidget* m_general_settings = nullptr;
   ConsoleSettingsWidget* m_console_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
   HotkeySettingsWidget* m_hotkey_settings = nullptr;

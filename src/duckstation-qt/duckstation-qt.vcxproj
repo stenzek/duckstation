@@ -38,6 +38,7 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="d3d11displaywidget.cpp" />
+    <ClCompile Include="generalsettingswidget.cpp" />
     <ClCompile Include="gpusettingswidget.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
@@ -58,6 +59,7 @@
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="portsettingswidget.h" />
     <QtMoc Include="qtdisplaywidget.h" />
+    <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="gpusettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
@@ -104,6 +106,9 @@
     <QtUi Include="gamelistsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="generalsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="mainwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -122,6 +127,7 @@
     <ClCompile Include="$(IntDir)moc_d3d11displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />

@@ -20,27 +20,11 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.biosPath, "BIOS/Path");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableTTYOutput, "BIOS/PatchTTYEnable");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.fastBoot, "BIOS/PatchFastBoot");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter, "Main/SpeedLimiterEnabled");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.increaseTimerResolution,
-                                               "Main/IncreaseTimerResolution");
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(m_host_interface, m_ui.emulationSpeed, "Main/EmulationSpeed",
-                                                     100.0f);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "Main/StartPaused");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, "Main/StartFullscreen");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.saveStateOnExit, "Main/SaveStateOnExit");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, "Main/ConfirmPowerOff");
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU/ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromReadThread, "CDROM/ReadThread");
 
   connect(m_ui.biosPathBrowse, &QPushButton::pressed, this, &ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked);
-
-  connect(m_ui.enableSpeedLimiter, &QCheckBox::stateChanged, this,
-          &ConsoleSettingsWidget::onEnableSpeedLimiterStateChanged);
-  connect(m_ui.emulationSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onEmulationSpeedValueChanged);
-
-  onEnableSpeedLimiterStateChanged();
-  onEmulationSpeedValueChanged(m_ui.emulationSpeed->value());
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
@@ -55,14 +39,4 @@ void ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked()
 
   m_host_interface->putSettingValue("BIOS/Path", path);
   m_host_interface->applySettings();
-}
-
-void ConsoleSettingsWidget::onEnableSpeedLimiterStateChanged()
-{
-  m_ui.emulationSpeed->setDisabled(!m_ui.enableSpeedLimiter->isChecked());
-}
-
-void ConsoleSettingsWidget::onEmulationSpeedValueChanged(int value)
-{
-  m_ui.emulationSpeedLabel->setText(tr("%1%").arg(value));
 }
