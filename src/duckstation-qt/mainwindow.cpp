@@ -475,8 +475,11 @@ void MainWindow::connectSignals()
           &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
 
-  connect(m_game_list_widget, &GameListWidget::entrySelected, this, &MainWindow::onGameListEntrySelected);
-  connect(m_game_list_widget, &GameListWidget::entryDoubleClicked, this, &MainWindow::onGameListEntryDoubleClicked);
+  // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
+  connect(m_game_list_widget, &GameListWidget::entrySelected, this, &MainWindow::onGameListEntrySelected,
+          Qt::QueuedConnection);
+  connect(m_game_list_widget, &GameListWidget::entryDoubleClicked, this, &MainWindow::onGameListEntryDoubleClicked,
+          Qt::QueuedConnection);
   connect(m_game_list_widget, &GameListWidget::entryContextMenuRequested, this,
           &MainWindow::onGameListContextMenuRequested);
 
