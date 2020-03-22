@@ -65,8 +65,8 @@ private:
   static constexpr u32 NUM_SAMPLES_PER_ADPCM_BLOCK = 28;
   static constexpr u32 SAMPLE_RATE = 44100;
   static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = MASTER_CLOCK / SAMPLE_RATE; // 0x300
-  static constexpr s16 ADSR_MIN_VOLUME = 0;
-  static constexpr s16 ADSR_MAX_VOLUME = 0x7FFF;
+  static constexpr s16 ENVELOPE_MIN_VOLUME = 0;
+  static constexpr s16 ENVELOPE_MAX_VOLUME = 0x7FFF;
   static constexpr u32 CD_AUDIO_SAMPLE_BUFFER_SIZE = 44100 * 2;
   static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
   static constexpr u32 MINIMUM_TICKS_BETWEEN_KEY_ON_OFF = 2;
@@ -145,15 +145,12 @@ private:
     u16 bits;
 
     BitField<u16, bool, 15, 1> sweep_mode;
-    BitField<u16, s16, 0, 15> fixed_volume; // divided by 2
+    BitField<u16, s16, 0, 15> fixed_volume_shr1; // divided by 2
 
     BitField<u16, bool, 14, 1> sweep_exponential;
     BitField<u16, bool, 13, 1> sweep_direction_decrease;
     BitField<u16, bool, 12, 1> sweep_phase_negative;
-    BitField<u16, u8, 2, 5> sweep_shift;
-    BitField<u16, u8, 0, 2> sweep_step;
-
-    s16 GetVolume() { return fixed_volume * 2; }
+    BitField<u16, u8, 0, 7> sweep_rate;
   };
 
   // organized so we can replace this with a u16 array in the future
@@ -218,6 +215,27 @@ private:
     u8 GetNibble(u32 index) const { return (data[index / 2] >> ((index % 2) * 4)) & 0x0F; }
   };
 
+  struct VolumeEnvelope
+  {
+    s32 counter;
+    u8 rate;
+    bool decreasing;
+    bool exponential;
+
+    void Reset(u8 rate_, bool decreasing_, bool exponential_);
+    s16 Tick(s16 current_level);
+  };
+
+  struct VolumeSweep
+  {
+    VolumeEnvelope envelope;
+    bool envelope_active;
+    s16 current_level;
+
+    void Reset(VolumeRegister reg);
+    void Tick();
+  };
+
   enum class ADSRPhase : u8
   {
     Off = 0,
@@ -238,12 +256,12 @@ private:
     std::array<s32, 2> adpcm_last_samples;
     s32 last_amplitude;
 
-    TickCount adsr_ticks_remaining;
-    s32 adsr_target;
+    VolumeSweep left_volume;
+    VolumeSweep right_volume;
+
+    VolumeEnvelope adsr_envelope;
     ADSRPhase adsr_phase;
-    u8 adsr_rate;
-    bool adsr_decreasing;
-    bool adsr_exponential;
+    s16 adsr_target;
     bool has_samples;
 
     bool IsOn() const { return adsr_phase != ADSRPhase::Off; }
@@ -366,8 +384,10 @@ private:
   u16 m_irq_address = 0;
   u16 m_capture_buffer_position = 0;
 
-  VolumeRegister m_main_volume_left = {};
-  VolumeRegister m_main_volume_right = {};
+  VolumeRegister m_main_volume_left_reg = {};
+  VolumeRegister m_main_volume_right_reg = {};
+  VolumeSweep m_main_volume_left = {};
+  VolumeSweep m_main_volume_right = {};
 
   s16 m_cd_audio_volume_left = 0;
   s16 m_cd_audio_volume_right = 0;

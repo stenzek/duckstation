@@ -11,10 +11,7 @@
 Log_SetChannel(SPU);
 
 // TODO:
-//   - Reverb
 //   - Noise
-//   - Volume Sweep
-//   - Pulse Modulation
 
 SPU::SPU() = default;
 
@@ -40,8 +37,10 @@ void SPU::Reset()
   m_transfer_address_reg = 0;
   m_irq_address = 0;
   m_capture_buffer_position = 0;
-  m_main_volume_left.bits = 0;
-  m_main_volume_right.bits = 0;
+  m_main_volume_left_reg.bits = 0;
+  m_main_volume_right_reg.bits = 0;
+  m_main_volume_left = {};
+  m_main_volume_right = {};
   m_cd_audio_volume_left = 0;
   m_cd_audio_volume_right = 0;
   m_key_on_register = 0;
@@ -65,12 +64,7 @@ void SPU::Reset()
     v.current_block_samples.fill(s16(0));
     v.previous_block_last_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
-    v.adsr_ticks_remaining = 0;
-    v.adsr_phase = ADSRPhase::Off;
-    v.adsr_target = 0;
-    v.adsr_rate = 0;
-    v.adsr_decreasing = false;
-    v.adsr_exponential = false;
+    v.SetADSRPhase(ADSRPhase::Off);
     v.has_samples = false;
   }
 
@@ -91,8 +85,10 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_transfer_address_reg);
   sw.Do(&m_irq_address);
   sw.Do(&m_capture_buffer_position);
-  sw.Do(&m_main_volume_left.bits);
-  sw.Do(&m_main_volume_right.bits);
+  sw.Do(&m_main_volume_left_reg.bits);
+  sw.Do(&m_main_volume_right_reg.bits);
+  sw.DoPOD(&m_main_volume_left);
+  sw.DoPOD(&m_main_volume_right);
   sw.Do(&m_cd_audio_volume_left);
   sw.Do(&m_cd_audio_volume_right);
   sw.Do(&m_key_on_register);
@@ -117,12 +113,11 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.previous_block_last_samples);
     sw.Do(&v.adpcm_last_samples);
     sw.Do(&v.last_amplitude);
-    sw.Do(&v.adsr_ticks_remaining);
-    sw.Do(&v.adsr_target);
+    sw.DoPOD(&v.left_volume);
+    sw.DoPOD(&v.right_volume);
+    sw.DoPOD(&v.adsr_envelope);
     sw.Do(&v.adsr_phase);
-    sw.Do(&v.adsr_rate);
-    sw.Do(&v.adsr_decreasing);
-    sw.Do(&v.adsr_exponential);
+    sw.Do(&v.adsr_target);
     sw.Do(&v.has_samples);
   }
 
@@ -144,10 +139,10 @@ u16 SPU::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0x1F801D80 - SPU_BASE:
-      return m_main_volume_left.bits;
+      return m_main_volume_left_reg.bits;
 
     case 0x1F801D82 - SPU_BASE:
-      return m_main_volume_right.bits;
+      return m_main_volume_right_reg.bits;
 
     case 0x1F801D84 - SPU_BASE:
       return m_reverb_registers.vLOUT;
@@ -241,7 +236,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU main volume left <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
-      m_main_volume_left.bits = value;
+      m_main_volume_left_reg.bits = value;
+      m_main_volume_left.Reset(m_main_volume_left_reg);
       return;
     }
 
@@ -249,7 +245,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU main volume right <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
-      m_main_volume_right.bits = value;
+      m_main_volume_right_reg.bits = value;
+      m_main_volume_right.Reset(m_main_volume_right_reg);
       return;
     }
 
@@ -522,6 +519,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU voice %u volume left <- 0x%04X", voice_index, value);
       voice.regs.volume_left.bits = value;
+      voice.left_volume.Reset(voice.regs.volume_left);
     }
     break;
 
@@ -529,6 +527,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU voice %u volume right <- 0x%04X", voice_index, value);
       voice.regs.volume_right.bits = value;
+      voice.right_volume.Reset(voice.regs.volume_right);
     }
     break;
 
@@ -772,8 +771,10 @@ void SPU::Execute(TickCount ticks)
       right_sum += m_reverb_right_output;
 
       // Apply main volume before clamping.
-      *(output_frame++) = Clamp16(ApplyVolume(left_sum, m_main_volume_left.GetVolume()));
-      *(output_frame++) = Clamp16(ApplyVolume(right_sum, m_main_volume_right.GetVolume()));
+      *(output_frame++) = Clamp16(ApplyVolume(left_sum, m_main_volume_left.current_level));
+      *(output_frame++) = Clamp16(ApplyVolume(right_sum, m_main_volume_right.current_level));
+      m_main_volume_left.Tick();
+      m_main_volume_right.Tick();
 
       // Write to capture buffers.
       WriteToCaptureBuffer(0, cd_audio_left);
@@ -855,7 +856,6 @@ void SPU::Voice::KeyOn()
   regs.adsr_volume = 0;
   has_samples = false;
   SetADSRPhase(ADSRPhase::Attack);
-  adsr_ticks_remaining = 0;
 }
 
 void SPU::Voice::KeyOff()
@@ -864,7 +864,6 @@ void SPU::Voice::KeyOff()
     return;
 
   SetADSRPhase(ADSRPhase::Release);
-  adsr_ticks_remaining = 0;
 }
 
 SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
@@ -934,6 +933,80 @@ static constexpr ADSRTableEntries ComputeADSRTableEntries()
 
 static constexpr ADSRTableEntries s_adsr_table = ComputeADSRTableEntries();
 
+void SPU::VolumeEnvelope::Reset(u8 rate_, bool decreasing_, bool exponential_)
+{
+  rate = rate_;
+  decreasing = decreasing_;
+  exponential = exponential_;
+
+  const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(decreasing)][rate];
+  counter = table_entry.ticks;
+}
+
+s16 SPU::VolumeEnvelope::Tick(s16 current_level)
+{
+  counter--;
+  if (counter > 0)
+    return current_level;
+
+  const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(decreasing)][rate];
+  s32 this_step = table_entry.step;
+  counter = table_entry.ticks;
+
+  if (exponential)
+  {
+    if (decreasing)
+    {
+      this_step = (this_step * current_level) >> 15;
+    }
+    else
+    {
+      if (current_level >= 0x6000)
+      {
+        if (rate < 40)
+        {
+          this_step >>= 2;
+        }
+        else if (rate >= 44)
+        {
+          counter >>= 2;
+        }
+        else
+        {
+          this_step >>= 1;
+          counter >>= 1;
+        }
+      }
+    }
+  }
+
+  return static_cast<s16>(
+    std::clamp<s32>(static_cast<s32>(current_level) + this_step, ENVELOPE_MIN_VOLUME, ENVELOPE_MAX_VOLUME));
+}
+
+void SPU::VolumeSweep::Reset(VolumeRegister reg)
+{
+  if (!reg.sweep_mode)
+  {
+    current_level = reg.fixed_volume_shr1 * 2;
+    envelope_active = false;
+    return;
+  }
+
+  envelope.Reset(reg.sweep_rate, reg.sweep_direction_decrease, reg.sweep_exponential);
+  envelope_active = true;
+}
+
+void SPU::VolumeSweep::Tick()
+{
+  if (!envelope_active)
+    return;
+
+  current_level = envelope.Tick(current_level);
+  envelope_active =
+    (envelope.decreasing ? (current_level > ENVELOPE_MIN_VOLUME) : (current_level < ENVELOPE_MAX_VOLUME));
+}
+
 void SPU::Voice::SetADSRPhase(ADSRPhase phase)
 {
   adsr_phase = phase;
@@ -941,36 +1014,28 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
   {
     case ADSRPhase::Off:
       adsr_target = 0;
-      adsr_decreasing = false;
-      adsr_exponential = false;
+      adsr_envelope.Reset(0, false, false);
       return;
 
     case ADSRPhase::Attack:
       adsr_target = 32767; // 0 -> max
-      adsr_decreasing = false;
-      adsr_exponential = regs.adsr.attack_exponential;
-      adsr_rate = regs.adsr.attack_rate;
+      adsr_envelope.Reset(regs.adsr.attack_rate, false, regs.adsr.attack_exponential);
       break;
 
     case ADSRPhase::Decay:
-      adsr_target = (u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800; // max -> sustain level
-      adsr_decreasing = true;
-      adsr_exponential = true;
-      adsr_rate = regs.adsr.decay_rate_shr2 << 2;
+      adsr_target = static_cast<s16>(std::min<s32>((u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800,
+                                                   ENVELOPE_MAX_VOLUME)); // max -> sustain level
+      adsr_envelope.Reset(regs.adsr.decay_rate_shr2 << 2, true, true);
       break;
 
     case ADSRPhase::Sustain:
       adsr_target = 0;
-      adsr_decreasing = regs.adsr.sustain_direction_decrease;
-      adsr_exponential = regs.adsr.sustain_exponential;
-      adsr_rate = regs.adsr.sustain_rate;
+      adsr_envelope.Reset(regs.adsr.sustain_rate, regs.adsr.sustain_direction_decrease, regs.adsr.sustain_exponential);
       break;
 
     case ADSRPhase::Release:
       adsr_target = 0;
-      adsr_decreasing = true;
-      adsr_exponential = regs.adsr.release_exponential;
-      adsr_rate = regs.adsr.release_rate_shr2 << 2;
+      adsr_envelope.Reset(regs.adsr.release_rate_shr2 << 2, true, regs.adsr.release_exponential);
       break;
 
     default:
@@ -980,49 +1045,12 @@ void SPU::Voice::SetADSRPhase(ADSRPhase phase)
 
 void SPU::Voice::TickADSR()
 {
-  adsr_ticks_remaining--;
-  if (adsr_ticks_remaining > 0)
-    return;
-
-  // set up for next tick
-  const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(adsr_decreasing)][adsr_rate];
-
-  s32 this_step = table_entry.step;
-  adsr_ticks_remaining = table_entry.ticks;
-
-  if (adsr_exponential)
-  {
-    if (adsr_decreasing)
-    {
-      this_step = (this_step * regs.adsr_volume) >> 15;
-    }
-    else
-    {
-      if (regs.adsr_volume >= 0x6000)
-      {
-        if (adsr_rate < 40)
-        {
-          this_step >>= 2;
-        }
-        else if (adsr_rate >= 44)
-        {
-          adsr_ticks_remaining >>= 2;
-        }
-        else
-        {
-          this_step >>= 1;
-          adsr_ticks_remaining >>= 1;
-        }
-      }
-    }
-  }
-
-  const s32 new_volume = s32(regs.adsr_volume) + s32(this_step);
-  regs.adsr_volume = static_cast<s16>(std::clamp<s32>(new_volume, ADSR_MIN_VOLUME, ADSR_MAX_VOLUME));
+  regs.adsr_volume = adsr_envelope.Tick(regs.adsr_volume);
 
   if (adsr_phase != ADSRPhase::Sustain)
   {
-    const bool reached_target = adsr_decreasing ? (new_volume <= adsr_target) : (new_volume >= adsr_target);
+    const bool reached_target =
+      adsr_envelope.decreasing ? (regs.adsr_volume <= adsr_target) : (regs.adsr_volume >= adsr_target);
     if (reached_target)
       SetADSRPhase(GetNextADSRPhase(adsr_phase));
   }
@@ -1245,8 +1273,10 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   }
 
   // apply per-channel volume
-  const s32 left = ApplyVolume(amplitude, voice.regs.volume_left.GetVolume());
-  const s32 right = ApplyVolume(amplitude, voice.regs.volume_right.GetVolume());
+  const s32 left = ApplyVolume(amplitude, voice.left_volume.current_level);
+  const s32 right = ApplyVolume(amplitude, voice.right_volume.current_level);
+  voice.left_volume.Tick();
+  voice.right_volume.Tick();
   return std::make_tuple(left, right);
 }
 
@@ -1438,7 +1468,7 @@ void SPU::DrawDebugStateWindow()
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 600.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 800.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("SPU State", &m_system->GetSettings().debugging.show_spu_state))
   {
     ImGui::End();
@@ -1487,9 +1517,9 @@ void SPU::DrawDebugStateWindow()
 
     ImGui::Text("Volume: ");
     ImGui::SameLine(offsets[0]);
-    ImGui::Text("Left: %d%%", ApplyVolume(100, m_main_volume_left.GetVolume()));
+    ImGui::Text("Left: %d%%", ApplyVolume(100, m_main_volume_left.current_level));
     ImGui::SameLine(offsets[1]);
-    ImGui::Text("Right: %d%%", ApplyVolume(100, m_main_volume_right.GetVolume()));
+    ImGui::Text("Right: %d%%", ApplyVolume(100, m_main_volume_right.current_level));
 
     ImGui::Text("CD Audio: ");
     ImGui::SameLine(offsets[0]);
@@ -1540,15 +1570,15 @@ void SPU::DrawDebugStateWindow()
       ImGui::NextColumn();
       ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.volume_left.bits));
+      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.left_volume.current_level));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.volume_right.bits));
+      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.right_volume.current_level));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%s", adsr_phases[static_cast<u8>(v.adsr_phase)]);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d", ZeroExtend32(v.regs.adsr_volume));
+      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.regs.adsr_volume));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d", v.adsr_ticks_remaining);
+      ImGui::TextColored(color, "%d", v.adsr_envelope.counter);
       ImGui::NextColumn();
     }
 
