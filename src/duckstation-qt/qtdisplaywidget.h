@@ -31,6 +31,7 @@ public:
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height);
+  void windowRestoredEvent();
 
 protected:
   qreal getDevicePixelRatioFromScreen() const;

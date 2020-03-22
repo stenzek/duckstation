@@ -189,6 +189,7 @@ QtDisplayWidget* QtHostInterface::createDisplayWidget()
   m_display_widget = new OpenGLDisplayWidget(this, nullptr);
 #endif
   connect(m_display_widget, &QtDisplayWidget::windowResizedEvent, this, &QtHostInterface::onDisplayWidgetResized);
+  connect(m_display_widget, &QtDisplayWidget::windowRestoredEvent, this, &QtHostInterface::redrawDisplayWindow);
   return m_display_widget;
 }
 
@@ -240,6 +241,20 @@ void QtHostInterface::onDisplayWidgetResized(int width, int height)
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (m_system)
     renderDisplay();
+}
+
+void QtHostInterface::redrawDisplayWindow()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "redrawDisplayWindow", Qt::QueuedConnection);
+    return;
+  }
+
+  if (!m_display_widget || !m_system)
+    return;
+
+  renderDisplay();
 }
 
 bool QtHostInterface::AcquireHostDisplay()

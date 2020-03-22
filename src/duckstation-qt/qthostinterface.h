@@ -102,6 +102,7 @@ public Q_SLOTS:
   void startDumpingAudio();
   void stopDumpingAudio();
   void saveScreenshot();
+  void redrawDisplayWindow();
 
   /// Enables controller polling even without a system active. Must be matched by a call to
   /// disableBackgroundControllerPolling.

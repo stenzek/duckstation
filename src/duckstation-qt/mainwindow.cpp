@@ -14,6 +14,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
+#include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <cmath>
@@ -567,4 +568,16 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
   m_host_interface->synchronousPowerOffSystem();
   QMainWindow::closeEvent(event);
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+  if (static_cast<QWindowStateChangeEvent*>(event)->oldState()& Qt::WindowMinimized)
+  {
+    // TODO: This should check the render-to-main option.
+    if (m_display_widget)
+      m_host_interface->redrawDisplayWindow();
+  }
+
+  QMainWindow::changeEvent(event);
 }

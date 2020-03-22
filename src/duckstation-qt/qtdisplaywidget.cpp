@@ -7,6 +7,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
+#include <QtGui/QWindowStateChangeEvent>
 #include <cmath>
 
 QtDisplayWidget::QtDisplayWidget(QtHostInterface* host_interface, QWidget* parent)
@@ -141,6 +142,16 @@ bool QtDisplayWidget::event(QEvent* event)
       QWidget::event(event);
 
       emit windowResizedEvent(getScaledWindowWidth(), getScaledWindowHeight());
+      return true;
+    }
+
+    case QEvent::WindowStateChange:
+    {
+      QWidget::event(event);
+
+      if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
+        emit windowRestoredEvent();
+
       return true;
     }
 
