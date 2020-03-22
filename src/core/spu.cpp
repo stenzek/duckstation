@@ -46,8 +46,11 @@ void SPU::Reset()
   m_key_on_register = 0;
   m_key_off_register = 0;
   m_endx_register = 0;
-  m_noise_mode_register = 0;
   m_pitch_modulation_enable_register = 0;
+
+  m_noise_mode_register = 0;
+  m_noise_count = 0;
+  m_noise_level = 1;
 
   m_reverb_on_register = 0;
   m_reverb_registers = {};
@@ -95,6 +98,8 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_key_off_register);
   sw.Do(&m_endx_register);
   sw.Do(&m_noise_mode_register);
+  sw.Do(&m_noise_count);
+  sw.Do(&m_noise_level);
   sw.Do(&m_reverb_on_register);
   sw.Do(&m_reverb_current_address);
   sw.DoArray(m_reverb_registers.rev, NUM_REVERB_REGS);
@@ -112,7 +117,7 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.current_block_samples);
     sw.Do(&v.previous_block_last_samples);
     sw.Do(&v.adpcm_last_samples);
-    sw.Do(&v.last_amplitude);
+    sw.Do(&v.last_volume);
     sw.DoPOD(&v.left_volume);
     sw.DoPOD(&v.right_volume);
     sw.DoPOD(&v.adsr_envelope);
@@ -726,6 +731,9 @@ void SPU::Execute(TickCount ticks)
         }
       }
 
+      // Update noise once per frame.
+      UpdateNoise();
+
       // Mix in CD audio.
       s16 cd_audio_left;
       s16 cd_audio_right;
@@ -779,8 +787,8 @@ void SPU::Execute(TickCount ticks)
       // Write to capture buffers.
       WriteToCaptureBuffer(0, cd_audio_left);
       WriteToCaptureBuffer(1, cd_audio_right);
-      WriteToCaptureBuffer(2, Clamp16(m_voices[1].last_amplitude));
-      WriteToCaptureBuffer(3, Clamp16(m_voices[3].last_amplitude));
+      WriteToCaptureBuffer(2, Clamp16(m_voices[1].last_volume));
+      WriteToCaptureBuffer(3, Clamp16(m_voices[3].last_volume));
       IncrementCaptureBufferPosition();
     }
 
@@ -1209,7 +1217,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   Voice& voice = m_voices[voice_index];
   if (!voice.IsOn())
   {
-    voice.last_amplitude = 0;
+    voice.last_volume = 0;
     return {};
   }
 
@@ -1228,15 +1236,21 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   }
 
   // interpolate/sample and apply ADSR volume
-  const s32 amplitude = ApplyVolume(voice.Interpolate(), voice.regs.adsr_volume);
-  voice.last_amplitude = amplitude;
+  s16 sample;
+  if (IsVoiceNoiseEnabled(voice_index))
+    sample = GetVoiceNoiseLevel();
+  else
+    sample = voice.Interpolate();
+
+  const s32 volume = ApplyVolume(sample, voice.regs.adsr_volume);
+  voice.last_volume = volume;
   voice.TickADSR();
 
   // Pitch modulation
   u16 step = voice.regs.adpcm_sample_rate;
   if (IsPitchModulationEnabled(voice_index))
   {
-    const u32 factor = u32(std::clamp<s32>(m_voices[voice_index - 1].last_amplitude, -0x8000, 0x7FFF) + 0x8000);
+    const u32 factor = u32(std::clamp<s32>(m_voices[voice_index - 1].last_volume, -0x8000, 0x7FFF) + 0x8000);
     step = Truncate16(step * factor) >> 15;
   }
   step = std::min<u16>(step, 0x4000);
@@ -1273,8 +1287,8 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   }
 
   // apply per-channel volume
-  const s32 left = ApplyVolume(amplitude, voice.left_volume.current_level);
-  const s32 right = ApplyVolume(amplitude, voice.right_volume.current_level);
+  const s32 left = ApplyVolume(volume, voice.left_volume.current_level);
+  const s32 right = ApplyVolume(volume, voice.right_volume.current_level);
   voice.left_volume.Tick();
   voice.right_volume.Tick();
   return std::make_tuple(left, right);
@@ -1308,6 +1322,31 @@ void SPU::VoiceKeyOff(u32 voice_index)
 
   m_voices[voice_index].KeyOff();
   m_voice_key_on_off_delay[voice_index] = MINIMUM_TICKS_BETWEEN_KEY_ON_OFF;
+}
+
+void SPU::UpdateNoise()
+{
+  // Dr Hell's noise waveform, implementation borrowed from pcsx-r.
+  static constexpr std::array<u8, 64> noise_wave_add = {
+    {1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0,
+     0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1}};
+  static constexpr std::array<u8, 5> noise_freq_add = {{0, 84, 140, 180, 210}};
+
+  const u32 noise_clock = m_SPUCNT.noise_clock;
+  const u32 level = (0x8000u >> (noise_clock >> 2)) << 16;
+
+  m_noise_count += 0x10000u + noise_freq_add[noise_clock & 3u];
+  if ((m_noise_count & 0xFFFFu) >= noise_freq_add[4])
+  {
+    m_noise_count += 0x10000;
+    m_noise_count -= noise_freq_add[noise_clock & 3u];
+  }
+
+  if (m_noise_count < level)
+    return;
+
+  m_noise_count %= level;
+  m_noise_level = (m_noise_level << 1) | noise_wave_add[(m_noise_level >> 10) & 63u];
 }
 
 u32 SPU::ReverbMemoryAddress(u32 address) const
@@ -1558,7 +1597,10 @@ void SPU::DrawDebugStateWindow()
       ImVec4 color = v.IsOn() ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
       ImGui::TextColored(color, "%u", ZeroExtend32(voice_index));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.interpolation_index.GetValue()));
+      if (IsVoiceNoiseEnabled(voice_index))
+        ImGui::TextColored(color, "NOISE");
+      else
+        ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.interpolation_index.GetValue()));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.sample_index.GetValue()));
       ImGui::NextColumn();

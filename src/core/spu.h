@@ -86,8 +86,7 @@ private:
 
     BitField<u16, bool, 15, 1> enable;
     BitField<u16, bool, 14, 1> mute_n;
-    BitField<u16, u8, 10, 4> noise_frequency_shift;
-    BitField<u16, u8, 8, 2> noise_frequency_step;
+    BitField<u16, u8, 8, 6> noise_clock;
     BitField<u16, bool, 7, 1> reverb_master_enable;
     BitField<u16, bool, 6, 1> irq9_enable;
     BitField<u16, RAMTransferMode, 4, 2> ram_transfer_mode;
@@ -254,7 +253,7 @@ private:
     std::array<s16, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<s16, 3> previous_block_last_samples;
     std::array<s32, 2> adpcm_last_samples;
-    s32 last_amplitude;
+    s32 last_volume;
 
     VolumeSweep left_volume;
     VolumeSweep right_volume;
@@ -337,11 +336,19 @@ private:
 
   static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
-  bool IsVoiceReverbEnabled(u32 i) const { return (m_reverb_on_register & (u32(1) << i)) != 0; }
-  bool IsPitchModulationEnabled(u32 i) const
+  ALWAYS_INLINE bool IsVoiceReverbEnabled(u32 i) const
   {
-    return (i > 0 && ((m_pitch_modulation_enable_register & (u32(1) << i)) != 0));
+    return ConvertToBoolUnchecked((m_reverb_on_register >> i) & u32(1));
   }
+  ALWAYS_INLINE bool IsVoiceNoiseEnabled(u32 i) const
+  {
+    return ConvertToBoolUnchecked((m_noise_mode_register >> i) & u32(1));
+  }
+  ALWAYS_INLINE bool IsPitchModulationEnabled(u32 i) const
+  {
+    return ((i > 0) & ConvertToBoolUnchecked((m_pitch_modulation_enable_register >> i) & u32(1)));
+  }
+  ALWAYS_INLINE s16 GetVoiceNoiseLevel() const { return static_cast<s16>(static_cast<u16>(m_noise_level)); }
 
   u16 ReadVoiceRegister(u32 offset);
   void WriteVoiceRegister(u32 offset, u16 value);
@@ -357,6 +364,8 @@ private:
   std::tuple<s32, s32> SampleVoice(u32 voice_index);
   void VoiceKeyOn(u32 voice_index);
   void VoiceKeyOff(u32 voice_index);
+
+  void UpdateNoise();
 
   u32 ReverbMemoryAddress(u32 address) const;
   s16 ReverbRead(u32 address);
@@ -395,8 +404,11 @@ private:
   u32 m_key_on_register = 0;
   u32 m_key_off_register = 0;
   u32 m_endx_register = 0;
-  u32 m_noise_mode_register = 0;
   u32 m_pitch_modulation_enable_register = 0;
+
+  u32 m_noise_mode_register = 0;
+  u32 m_noise_count = 0;
+  u32 m_noise_level = 0;
 
   u32 m_reverb_on_register = 0;
   u32 m_reverb_current_address = 0;
