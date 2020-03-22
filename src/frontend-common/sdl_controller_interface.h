@@ -52,8 +52,7 @@ private:
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
 
   bool OpenGameController(int index);
-  bool CloseGameController(int joystick_index);
-  void CloseGameControllers();
+  bool CloseGameController(int joystick_index, bool notify);
   bool HandleControllerAxisEvent(const SDL_Event* event);
   bool HandleControllerButtonEvent(const SDL_Event* event);
 

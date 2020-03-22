@@ -36,16 +36,16 @@ bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
 
 void SDLControllerInterface::Shutdown()
 {
-  ControllerInterface::Shutdown();
-
   while (!m_controllers.empty())
-    CloseGameController(m_controllers.begin()->joystick_id);
+    CloseGameController(m_controllers.begin()->joystick_id, false);
 
   if (m_sdl_subsystem_initialized)
   {
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     m_sdl_subsystem_initialized = false;
   }
+
+  ControllerInterface::Shutdown();
 }
 
 void SDLControllerInterface::PollEvents()
@@ -74,7 +74,7 @@ bool SDLControllerInterface::ProcessSDLEvent(const SDL_Event* event)
     case SDL_CONTROLLERDEVICEREMOVED:
     {
       Log_InfoPrintf("Controller %d removed", event->cdevice.which);
-      CloseGameController(event->cdevice.which);
+      CloseGameController(event->cdevice.which, true);
       return true;
     }
 
@@ -153,13 +153,7 @@ bool SDLControllerInterface::OpenGameController(int index)
   return true;
 }
 
-void SDLControllerInterface::CloseGameControllers()
-{
-  while (!m_controllers.empty())
-    CloseGameController(m_controllers.begin()->player_id);
-}
-
-bool SDLControllerInterface::CloseGameController(int joystick_index)
+bool SDLControllerInterface::CloseGameController(int joystick_index, bool notify)
 {
   auto it = GetControllerDataForJoystickId(joystick_index);
   if (it == m_controllers.end())
@@ -173,7 +167,8 @@ bool SDLControllerInterface::CloseGameController(int joystick_index)
   SDL_GameControllerClose(static_cast<SDL_GameController*>(it->controller));
   m_controllers.erase(it);
 
-  OnControllerDisconnected(player_index);
+  if (notify)
+    OnControllerDisconnected(player_index);
   return true;
 }
 
