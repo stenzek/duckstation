@@ -122,19 +122,26 @@ bool SDLControllerInterface::OpenGameController(int index)
     return false;
   }
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-  int player_index = SDL_GameControllerGetPlayerIndex(gcontroller);
-#else
-  int player_index = 0;
-#endif
   int joystick_id = SDL_JoystickInstanceID(joystick);
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+  int player_id = SDL_GameControllerGetPlayerIndex(gcontroller);
+#else
+  int player_id = -1;
+#endif
+  if (player_id < 0)
+  {
+    Log_WarningPrintf("Controller %d (joystick %d) returned player ID %d. Setting to zero, but this may cause issues "
+                      "if you try to use multiple controllers.",
+                      index, joystick_id, player_id);
+    player_id = 0;
+  }
 
-  Log_InfoPrintf("Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_index,
+  Log_InfoPrintf("Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_id,
                  SDL_GameControllerName(gcontroller));
 
   ControllerData cd = {};
   cd.controller = gcontroller;
-  cd.player_id = player_index;
+  cd.player_id = player_id;
   cd.joystick_id = joystick_id;
 
   SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
@@ -149,7 +156,7 @@ bool SDLControllerInterface::OpenGameController(int index)
     Log_WarningPrintf("Rumble is not supported on '%s'", SDL_GameControllerName(gcontroller));
 
   m_controllers.push_back(std::move(cd));
-  OnControllerConnected(player_index);
+  OnControllerConnected(player_id);
   return true;
 }
 
@@ -159,7 +166,7 @@ bool SDLControllerInterface::CloseGameController(int joystick_index, bool notify
   if (it == m_controllers.end())
     return false;
 
-  const int player_index = it->player_id;
+  const int player_id = it->player_id;
 
   if (it->haptic)
     SDL_HapticClose(static_cast<SDL_Haptic*>(it->haptic));
@@ -168,7 +175,7 @@ bool SDLControllerInterface::CloseGameController(int joystick_index, bool notify
   m_controllers.erase(it);
 
   if (notify)
-    OnControllerDisconnected(player_index);
+    OnControllerDisconnected(player_id);
   return true;
 }
 
