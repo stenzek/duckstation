@@ -27,6 +27,12 @@ int main(int argc, char* argv[])
 
   QApplication app(argc, argv);
 
+#ifdef _WIN32
+  // Use Segoe UI on Windows rather than MS Shell Dlg 2, courtesy of Dolphin.
+  // Can be removed once switched to Qt 6.
+  QApplication::setFont(QApplication::font("QMenu"));
+#endif
+
   std::unique_ptr<QtHostInterface> host_interface = std::make_unique<QtHostInterface>();
 
   std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());

@@ -31,7 +31,7 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
   setupAdditionalUi();
   connectSignals();
 
-  resize(750, 690);
+  resize(800, 700);
 }
 
 MainWindow::~MainWindow()
