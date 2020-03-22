@@ -964,10 +964,19 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
       m_system->GetCDROM()->SetUseReadThread(m_settings.cdrom_read_thread);
   }
 
+  bool controllers_updated = false;
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (m_settings.controller_types[i] != old_controller_types[i])
+    {
+      if (!controllers_updated)
+      {
+        m_system->UpdateControllers();
+        controllers_updated = true;
+      }
+
       OnControllerTypeChanged(i);
+    }
   }
 
   if (m_display && m_settings.display_linear_filtering != old_display_linear_filtering)
