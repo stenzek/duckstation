@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>480</height>
+    <width>700</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
       <widget class="QListWidget" name="settingsCategory">
        <property name="maximumSize">
         <size>
-         <width>160</width>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>
