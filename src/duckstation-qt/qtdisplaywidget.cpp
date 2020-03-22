@@ -1,4 +1,5 @@
 #include "qtdisplaywidget.h"
+#include "frontend-common/imgui_styles.h"
 #include "imgui.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -83,8 +84,10 @@ bool QtDisplayWidget::createImGuiContext()
   const float framebuffer_scale = static_cast<float>(getDevicePixelRatioFromScreen());
   io.DisplayFramebufferScale.x = framebuffer_scale;
   io.DisplayFramebufferScale.y = framebuffer_scale;
-  io.FontGlobalScale = framebuffer_scale;
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
+
+  ImGui::StyleColorsDarker();
+  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
 
   return true;
 }
