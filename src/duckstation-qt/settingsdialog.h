@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui_settingsdialog.h"
+#include <QtCore/QMap>
 #include <QtWidgets/QDialog>
 
 class QtHostInterface;
@@ -13,7 +14,7 @@ class PortSettingsWidget;
 class GPUSettingsWidget;
 class AudioSettingsWidget;
 
-class SettingsDialog : public QDialog
+class SettingsDialog final : public QDialog
 {
   Q_OBJECT
 
@@ -41,6 +42,9 @@ public:
   GPUSettingsWidget* getGPUSettingsWidget() const { return m_gpu_settings; }
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
 
+  void registerWidgetHelp(QObject* object, const char* title, const char* recommended_value, const char* text);
+  bool eventFilter(QObject* object, QEvent* event) override;
+
 public Q_SLOTS:
   void setCategory(Category category);
 
@@ -59,4 +63,7 @@ private:
   PortSettingsWidget* m_port_settings = nullptr;
   GPUSettingsWidget* m_gpu_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
+
+  QObject* m_current_help_widget = nullptr;
+  QMap<QObject*, QString> m_widget_help_text_map;
 };
