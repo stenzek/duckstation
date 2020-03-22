@@ -27,19 +27,49 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
       <string>Behaviour</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_5">
+     <layout class="QGridLayout" name="formLayout_4">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
-         <string>Emulation Speed:</string>
+         <string>Pause On Start</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="startFullscreen">
+        <property name="text">
+         <string>Start Fullscreen</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="saveStateOnExit">
+        <property name="text">
+         <string>Save State On Exit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="confirmPowerOff">
+        <property name="text">
+         <string>Confirm Power Off</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Emulation Speed</string>
+     </property>
+     <layout class="QGridLayout" name="formLayout_3">
+      <item row="0" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QSlider" name="emulationSpeed">
@@ -78,45 +108,54 @@
         </item>
        </layout>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="1" column="0">
        <widget class="QCheckBox" name="enableSpeedLimiter">
         <property name="text">
          <string>Enable Speed Limiter</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+      <item row="1" column="1">
        <widget class="QCheckBox" name="increaseTimerResolution">
         <property name="text">
          <string>Increase Timer Resolution</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QCheckBox" name="pauseOnStart">
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_5">
+     <property name="title">
+      <string>On-Screen Display</string>
+     </property>
+     <layout class="QGridLayout" name="formLayout_5">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="showOSDMessages">
         <property name="text">
-         <string>Pause On Start</string>
+         <string>Show Messages</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0" colspan="2">
-       <widget class="QCheckBox" name="startFullscreen">
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="showFPS">
         <property name="text">
-         <string>Start Fullscreen</string>
+         <string>Show FPS</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0" colspan="2">
-       <widget class="QCheckBox" name="saveStateOnExit">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="showSpeed">
         <property name="text">
-         <string>Save State On Exit</string>
+         <string>Show Emulation Speed</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0" colspan="2">
-       <widget class="QCheckBox" name="confirmPowerOff">
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="showVPS">
         <property name="text">
-         <string>Confirm Power Off</string>
+         <string>Show VPS</string>
         </property>
        </widget>
       </item>
