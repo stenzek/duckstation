@@ -10,9 +10,6 @@
 #include <imgui.h>
 Log_SetChannel(SPU);
 
-// TODO:
-//   - Noise
-
 SPU::SPU() = default;
 
 SPU::~SPU() = default;
@@ -54,8 +51,12 @@ void SPU::Reset()
 
   m_reverb_on_register = 0;
   m_reverb_registers = {};
-  m_reverb_registers.mBASE = 0xE128;
+  m_reverb_registers.mBASE = 0;
   m_reverb_current_address = ZeroExtend32(m_reverb_registers.mBASE) * 8;
+  m_reverb_left_input = 0;
+  m_reverb_left_output = 0;
+  m_reverb_right_input = 0;
+  m_reverb_right_output = 0;
 
   for (u32 i = 0; i < NUM_VOICES; i++)
   {
@@ -102,6 +103,9 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_noise_level);
   sw.Do(&m_reverb_on_register);
   sw.Do(&m_reverb_current_address);
+  sw.Do(&m_reverb_registers.vLOUT);
+  sw.Do(&m_reverb_registers.vROUT);
+  sw.Do(&m_reverb_registers.mBASE);
   sw.DoArray(m_reverb_registers.rev, NUM_REVERB_REGS);
   sw.Do(&m_reverb_left_input);
   sw.Do(&m_reverb_right_input);
@@ -1243,6 +1247,8 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     sample = voice.Interpolate();
 
   const s32 volume = ApplyVolume(sample, voice.regs.adsr_volume);
+  // if (voice_index == 3 || voice_index == 4)
+  // Log_WarningPrintf("voice %u %d", voice_index, volume);
   voice.last_volume = volume;
   voice.TickADSR();
 
