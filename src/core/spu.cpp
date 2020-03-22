@@ -193,28 +193,28 @@ u16 SPU::ReadRegister(u32 offset)
       return m_reverb_registers.mBASE;
 
     case 0x1F801DA4 - SPU_BASE:
-      Log_DebugPrintf("SPU IRQ address -> 0x%04X", ZeroExtend32(m_irq_address));
+      Log_TracePrintf("SPU IRQ address -> 0x%04X", ZeroExtend32(m_irq_address));
       return m_irq_address;
 
     case 0x1F801DA6 - SPU_BASE:
-      Log_DebugPrintf("SPU transfer address register -> 0x%04X", ZeroExtend32(m_transfer_address_reg));
+      Log_TracePrintf("SPU transfer address register -> 0x%04X", ZeroExtend32(m_transfer_address_reg));
       return m_transfer_address_reg;
 
     case 0x1F801DA8 - SPU_BASE:
-      Log_ErrorPrintf("SPU transfer data register read");
+      Log_TracePrintf("SPU transfer data register read");
       return UINT16_C(0xFFFF);
 
     case 0x1F801DAA - SPU_BASE:
-      Log_DebugPrintf("SPU control register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
+      Log_TracePrintf("SPU control register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUCNT.bits;
 
     case 0x1F801DAC - SPU_BASE:
-      Log_DebugPrintf("SPU transfer control register -> 0x%04X", ZeroExtend32(m_transfer_control.bits));
+      Log_TracePrintf("SPU transfer control register -> 0x%04X", ZeroExtend32(m_transfer_control.bits));
       return m_transfer_control.bits;
 
     case 0x1F801DAE - SPU_BASE:
-      // Log_DebugPrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       m_tick_event->InvokeEarly();
+      Log_TracePrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUSTAT.bits;
 
     case 0x1F801DB0 - SPU_BASE:
@@ -432,7 +432,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
       m_SPUCNT.bits = value;
       m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
-      m_SPUSTAT.dma_read_write_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
+      m_SPUSTAT.dma_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
 
       if (!m_SPUCNT.irq9_enable)
         m_SPUSTAT.irq9_flag = false;
@@ -1544,7 +1544,7 @@ void SPU::DrawDebugStateWindow()
     ImGui::SameLine(offsets[0]);
     ImGui::TextColored(m_SPUSTAT.irq9_flag ? active_color : inactive_color, "IRQ9");
     ImGui::SameLine(offsets[1]);
-    ImGui::TextColored(m_SPUSTAT.dma_read_write_request ? active_color : inactive_color, "DMA Request");
+    ImGui::TextColored(m_SPUSTAT.dma_request ? active_color : inactive_color, "DMA Request");
     ImGui::SameLine(offsets[2]);
     ImGui::TextColored(m_SPUSTAT.dma_read_request ? active_color : inactive_color, "DMA Read");
     ImGui::SameLine(offsets[3]);

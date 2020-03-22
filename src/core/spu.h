@@ -104,9 +104,9 @@ private:
 
     BitField<u16, bool, 11, 1> second_half_capture_buffer;
     BitField<u16, bool, 10, 1> transfer_busy;
-    BitField<u16, bool, 9, 1> dma_read_request;
-    BitField<u16, bool, 8, 1> dma_write_request;
-    BitField<u16, bool, 7, 1> dma_read_write_request;
+    BitField<u16, bool, 9, 1> dma_write_request;
+    BitField<u16, bool, 8, 1> dma_read_request;
+    BitField<u16, bool, 7, 1> dma_request;
     BitField<u16, bool, 6, 1> irq9_flag;
     BitField<u16, u8, 0, 6> mode;
   };
