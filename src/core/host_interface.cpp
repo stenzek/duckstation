@@ -969,7 +969,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   {
     if (m_settings.controller_types[i] != old_controller_types[i])
     {
-      if (!controllers_updated)
+      if (m_system && !controllers_updated)
       {
         m_system->UpdateControllers();
         controllers_updated = true;
