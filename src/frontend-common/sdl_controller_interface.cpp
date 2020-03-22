@@ -122,7 +122,11 @@ bool SDLControllerInterface::OpenGameController(int index)
     return false;
   }
 
+#if SDL_VERSION_ATLEAST(2, 0, 9)
   int player_index = SDL_GameControllerGetPlayerIndex(gcontroller);
+#else
+  int player_index = 0;
+#endif
   int joystick_id = SDL_JoystickInstanceID(joystick);
 
   Log_InfoPrintf("Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_index,
