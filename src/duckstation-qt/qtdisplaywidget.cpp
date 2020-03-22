@@ -13,7 +13,9 @@ QtDisplayWidget::QtDisplayWidget(QtHostInterface* host_interface, QWidget* paren
   : QWidget(parent), m_host_interface(host_interface)
 {
   // We want a native window for both D3D and OpenGL.
+  setAutoFillBackground(false);
   setAttribute(Qt::WA_NativeWindow, true);
+  setAttribute(Qt::WA_NoSystemBackground, true);
   setAttribute(Qt::WA_PaintOnScreen, true);
 }
 
