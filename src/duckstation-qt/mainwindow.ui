@@ -158,6 +158,7 @@
    </attribute>
    <addaction name="actionStartDisc"/>
    <addaction name="actionStartBios"/>
+   <addaction name="actionRefreshGameList"/>
    <addaction name="separator"/>
    <addaction name="actionPowerOff"/>
    <addaction name="actionReset"/>
@@ -188,6 +189,15 @@
    </property>
    <property name="text">
     <string>Start &amp;BIOS</string>
+   </property>
+  </action>
+  <action name="actionRefreshGameList">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh</string>
    </property>
   </action>
   <action name="actionPowerOff">
