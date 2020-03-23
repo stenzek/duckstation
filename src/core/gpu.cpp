@@ -289,7 +289,8 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
 
       if (m_state == State::WritingVRAM)
       {
-        m_blitter_ticks += word_count;
+        Assert(m_blitter_ticks == 0);
+        m_blitter_ticks = GetPendingGPUTicks() + word_count;
         UpdateDMARequest();
         UpdateSliceTicks();
       }
