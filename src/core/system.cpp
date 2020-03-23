@@ -445,8 +445,6 @@ void System::RunFrame()
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   m_spu->GeneratePendingSamples();
-
-  UpdatePerformanceCounters();
 }
 
 void System::SetThrottleFrequency(float frequency)

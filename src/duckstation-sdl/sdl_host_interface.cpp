@@ -1438,6 +1438,7 @@ void SDLHostInterface::Run()
       if (m_system)
       {
         m_system->GetGPU()->RestoreGraphicsAPIState();
+        m_system->UpdatePerformanceCounters();
 
         if (m_speed_limiter_enabled)
           m_system->Throttle();

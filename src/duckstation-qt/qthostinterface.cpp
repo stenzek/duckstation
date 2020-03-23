@@ -735,6 +735,8 @@ void QtHostInterface::threadEntryPoint()
 
     renderDisplay();
 
+    m_system->UpdatePerformanceCounters();
+
     if (m_speed_limiter_enabled)
       m_system->Throttle();
 
