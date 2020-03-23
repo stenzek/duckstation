@@ -399,6 +399,9 @@ private:
   s16 m_cd_audio_volume_left = 0;
   s16 m_cd_audio_volume_right = 0;
 
+  s16 m_external_volume_left = 0;
+  s16 m_external_volume_right = 0;
+
   u32 m_key_on_register = 0;
   u32 m_key_off_register = 0;
   u32 m_endx_register = 0;

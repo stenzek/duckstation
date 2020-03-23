@@ -40,6 +40,8 @@ void SPU::Reset()
   m_main_volume_right = {};
   m_cd_audio_volume_left = 0;
   m_cd_audio_volume_right = 0;
+  m_external_volume_left = 0;
+  m_external_volume_right = 0;
   m_key_on_register = 0;
   m_key_off_register = 0;
   m_endx_register = 0;
@@ -93,6 +95,8 @@ bool SPU::DoState(StateWrapper& sw)
   sw.DoPOD(&m_main_volume_right);
   sw.Do(&m_cd_audio_volume_left);
   sw.Do(&m_cd_audio_volume_right);
+  sw.Do(&m_external_volume_left);
+  sw.Do(&m_external_volume_right);
   sw.Do(&m_key_on_register);
   sw.Do(&m_key_off_register);
   sw.Do(&m_endx_register);
@@ -218,6 +222,12 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801DB2 - SPU_BASE:
       return m_cd_audio_volume_right;
+
+    case 0x1F801DB4 - SPU_BASE:
+      return m_external_volume_left;
+
+    case 0x1F801DB6 - SPU_BASE:
+      return m_external_volume_right;
 
     case 0x1F801DB8 - SPU_BASE:
       m_tick_event->InvokeEarly();
@@ -440,6 +450,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU right cd audio register <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
       m_cd_audio_volume_right = value;
+    }
+    break;
+
+    case 0x1F801DB4 - SPU_BASE:
+    {
+      // External volumes aren't used, so don't bother syncing.
+      Log_DebugPrintf("SPU left external volume register <- 0x%04X", ZeroExtend32(value));
+      m_external_volume_left = value;
+    }
+    break;
+
+    case 0x1F801DB6 - SPU_BASE:
+    {
+      // External volumes aren't used, so don't bother syncing.
+      Log_DebugPrintf("SPU right external volume register <- 0x%04X", ZeroExtend32(value));
+      m_external_volume_right = value;
     }
     break;
 
