@@ -218,7 +218,6 @@ bool GPU_HW_OpenGL_ES::CompilePrograms()
 
         prog.Bind();
 
-        prog.RegisterUniform("u_pos_offset");
         prog.RegisterUniform("u_texture_window_mask");
         prog.RegisterUniform("u_texture_window_offset");
         prog.RegisterUniform("u_src_alpha_factor");
@@ -311,12 +310,11 @@ void GPU_HW_OpenGL_ES::SetDrawState(BatchRenderMode render_mode)
 
   if (m_batch_ubo_dirty)
   {
-    prog.Uniform2iv(0, m_batch_ubo_data.u_pos_offset);
-    prog.Uniform2uiv(1, m_batch_ubo_data.u_texture_window_mask);
-    prog.Uniform2uiv(2, m_batch_ubo_data.u_texture_window_offset);
-    prog.Uniform1f(3, m_batch_ubo_data.u_src_alpha_factor);
-    prog.Uniform1f(4, m_batch_ubo_data.u_dst_alpha_factor);
-    prog.Uniform1i(5, static_cast<s32>(m_batch_ubo_data.u_set_mask_while_drawing));
+    prog.Uniform2uiv(0, m_batch_ubo_data.u_texture_window_mask);
+    prog.Uniform2uiv(1, m_batch_ubo_data.u_texture_window_offset);
+    prog.Uniform1f(2, m_batch_ubo_data.u_src_alpha_factor);
+    prog.Uniform1f(3, m_batch_ubo_data.u_dst_alpha_factor);
+    prog.Uniform1i(4, static_cast<s32>(m_batch_ubo_data.u_set_mask_while_drawing));
     m_batch_ubo_dirty = false;
   }
 }

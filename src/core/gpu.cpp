@@ -53,7 +53,6 @@ void GPU::SoftReset()
   m_drawing_area.Set(0, 0, 0, 0);
   m_drawing_area_changed = true;
   m_drawing_offset = {};
-  m_drawing_offset_changed = true;
   std::memset(&m_crtc_state, 0, sizeof(m_crtc_state));
   m_crtc_state.regs.display_address_start = 0;
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
@@ -148,7 +147,6 @@ bool GPU::DoState(StateWrapper& sw)
     m_draw_mode.texture_page_changed = true;
     m_draw_mode.texture_window_changed = true;
     m_drawing_area_changed = true;
-    m_drawing_offset_changed = true;
     UpdateDMARequest();
   }
 

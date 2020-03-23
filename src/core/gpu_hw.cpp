@@ -118,7 +118,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         const VertexPosition vp{command_ptr[buffer_pos++]};
         const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
 
-        vertices[i].Set(vp.x, vp.y, color, texpage, packed_texcoord);
+        vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
       }
 
       // Cull polygons which are too large.
@@ -150,7 +150,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         const VertexPosition vp{command_ptr[buffer_pos++]};
         const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
 
-        vertices[3].Set(vp.x, vp.y, color, texpage, packed_texcoord);
+        vertices[3].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
 
         // Cull polygons which are too large.
         if (std::abs(vertices[3].x - vertices[2].x) >= MAX_PRIMITIVE_WIDTH ||
@@ -183,8 +183,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       u32 buffer_pos = 1;
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{command_ptr[buffer_pos++]};
-      const s32 pos_x = vp.x;
-      const s32 pos_y = vp.y;
+      const s32 pos_x = m_drawing_offset.x + vp.x;
+      const s32 pos_y = m_drawing_offset.y + vp.y;
 
       const auto [texcoord_x, texcoord_y] =
         UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
@@ -278,7 +278,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         const VertexPosition vp{command_ptr[buffer_pos++]};
 
         BatchVertex vertex;
-        vertex.Set(vp.x, vp.y, color, 0, 0);
+        vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, 0, 0);
 
         if (i > 0)
         {
@@ -312,16 +312,10 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
   if (min_x <= max_x)
   {
     const Common::Rectangle<u32> area_covered(
-      std::clamp(m_drawing_offset.x + min_x, static_cast<s32>(m_drawing_area.left),
-                 static_cast<s32>(m_drawing_area.right)),
-      std::clamp(m_drawing_offset.y + min_y, static_cast<s32>(m_drawing_area.top),
-                 static_cast<s32>(m_drawing_area.bottom)),
-      std::clamp(m_drawing_offset.x + max_x, static_cast<s32>(m_drawing_area.left),
-                 static_cast<s32>(m_drawing_area.right)) +
-        1,
-      std::clamp(m_drawing_offset.y + max_y, static_cast<s32>(m_drawing_area.top),
-                 static_cast<s32>(m_drawing_area.bottom)) +
-        1);
+      std::clamp(min_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right)),
+      std::clamp(min_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom)),
+      std::clamp(max_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right)) + 1,
+      std::clamp(max_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom)) + 1);
     m_vram_dirty_rect.Include(area_covered);
   }
 }
@@ -447,7 +441,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   {
     if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
         m_batch.primitive != rc_primitive || dithering_enable != m_batch.dithering || m_drawing_area_changed ||
-        m_drawing_offset_changed || m_draw_mode.IsTextureWindowChanged())
+        m_draw_mode.IsTextureWindowChanged())
     {
       FlushRender();
     }
@@ -468,14 +462,6 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     m_batch.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
     m_batch.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
     m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(m_GPUSTAT.set_mask_while_drawing);
-    m_batch_ubo_dirty = true;
-  }
-
-  if (m_drawing_offset_changed)
-  {
-    m_drawing_offset_changed = false;
-    m_batch_ubo_data.u_pos_offset[0] = m_drawing_offset.x;
-    m_batch_ubo_data.u_pos_offset[1] = m_drawing_offset.y;
     m_batch_ubo_dirty = true;
   }
 

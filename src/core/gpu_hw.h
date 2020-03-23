@@ -95,13 +95,12 @@ protected:
 
   struct BatchUBOData
   {
-    s32 u_pos_offset[2];
     u32 u_texture_window_mask[2];
     u32 u_texture_window_offset[2];
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
     u32 u_set_mask_while_drawing;
-    u32 padding[3];
+    u32 padding[1];
   };
 
   struct RendererStats

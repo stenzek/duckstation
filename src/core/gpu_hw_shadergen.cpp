@@ -344,8 +344,8 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_
 
 void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
-  DeclareUniformBuffer(ss, {"int2 u_pos_offset", "uint2 u_texture_window_mask", "uint2 u_texture_window_offset",
-                            "float u_src_alpha_factor", "float u_dst_alpha_factor", "bool u_set_mask_while_drawing"});
+  DeclareUniformBuffer(ss, {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
+                            "float u_dst_alpha_factor", "bool u_set_mask_while_drawing"});
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
@@ -370,8 +370,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   ss << R"(
 {
   // 0..+1023 -> -1..1
-  float pos_x = (float(a_pos.x + u_pos_offset.x) / 512.0) - 1.0;
-  float pos_y = (float(a_pos.y + u_pos_offset.y) / -256.0) + 1.0;
+  float pos_x = (float(a_pos.x) / 512.0) - 1.0;
+  float pos_y = (float(a_pos.y) / -256.0) + 1.0;
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
   v_col0 = a_col0;
