@@ -72,8 +72,6 @@ void SPU::Reset()
     v.has_samples = false;
   }
 
-  m_voice_key_on_off_delay.fill(0);
-
   m_ram.fill(0);
   UpdateEventInterval();
 }
@@ -129,8 +127,6 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.adsr_target);
     sw.Do(&v.has_samples);
   }
-
-  sw.Do(&m_voice_key_on_off_delay);
 
   sw.DoBytes(m_ram.data(), RAM_SIZE);
 
@@ -280,15 +276,6 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU key on low <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
-
-      u16 bits = value;
-      for (u32 i = 0; i < 16; i++)
-      {
-        if (bits & 0x01)
-          VoiceKeyOn(i);
-
-        bits >>= 1;
-      }
     }
     break;
 
@@ -297,15 +284,6 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU key on high <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
       m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
-
-      u16 bits = value;
-      for (u32 i = 16; i < NUM_VOICES; i++)
-      {
-        if (bits & 0x01)
-          VoiceKeyOn(i);
-
-        bits >>= 1;
-      }
     }
     break;
 
@@ -313,16 +291,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU key off low <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
-      m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
-
-      u16 bits = value;
-      for (u32 i = 0; i < 16; i++)
-      {
-        if (bits & 0x01)
-          VoiceKeyOff(i);
-
-        bits >>= 1;
-      }
+      m_key_off_register = (m_key_off_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
 
@@ -330,16 +299,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU key off high <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
-      m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
-
-      u16 bits = value;
-      for (u32 i = 16; i < NUM_VOICES; i++)
-      {
-        if (bits & 0x01)
-          VoiceKeyOff(i);
-
-        bits >>= 1;
-      }
+      m_key_off_register = (m_key_off_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
 
@@ -508,6 +468,7 @@ u16 SPU::ReadVoiceRegister(u32 offset)
     m_tick_event->InvokeEarly();
   }
 
+  Log_TracePrintf("Read voice %u register %u -> 0x%02X", voice_index, reg_index, voice.regs.index[reg_index]);
   return voice.regs.index[reg_index];
 }
 
@@ -710,29 +671,39 @@ void SPU::Execute(TickCount ticks)
       s32 right_sum = 0;
       s32 reverb_in_left = 0;
       s32 reverb_in_right = 0;
-      if (m_SPUCNT.enable)
+
+      u32 key_on_register = m_key_on_register;
+      m_key_on_register = 0;
+      u32 key_off_register = m_key_off_register;
+      m_key_off_register = 0;
+      u32 reverb_on_register = m_reverb_on_register;
+
+      for (u32 voice = 0; voice < NUM_VOICES; voice++)
       {
-        u32 reverb_on = m_reverb_on_register;
+        const auto [left, right] = SampleVoice(voice);
+        left_sum += left;
+        right_sum += right;
 
-        for (u32 voice = 0; voice < NUM_VOICES; voice++)
+        if (reverb_on_register & 1u)
         {
-          const auto [left, right] = SampleVoice(voice);
-          left_sum += left;
-          right_sum += right;
-
-          if (reverb_on & 1u)
-          {
-            reverb_in_left += left;
-            reverb_in_right += right;
-          }
-          reverb_on >>= 1;
+          reverb_in_left += left;
+          reverb_in_right += right;
         }
+        reverb_on_register >>= 1;
 
-        if (!m_SPUCNT.mute_n)
-        {
-          left_sum = 0;
-          right_sum = 0;
-        }
+        if (key_off_register & 1u)
+          m_voices[voice].KeyOff();
+        key_off_register >>= 1;
+
+        if (key_on_register & 1u)
+          m_voices[voice].KeyOn();
+        key_on_register >>= 1;
+      }
+
+      if (!m_SPUCNT.mute_n)
+      {
+        left_sum = 0;
+        right_sum = 0;
       }
 
       // Update noise once per frame.
@@ -801,15 +772,6 @@ void SPU::Execute(TickCount ticks)
 
     output_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
-  }
-
-  for (u32 i = 0; i < NUM_VOICES; i++)
-  {
-    const u32 delay = static_cast<u32>(m_voice_key_on_off_delay[i]);
-    if (delay == 0)
-      continue;
-
-    m_voice_key_on_off_delay[i] -= static_cast<u8>(std::min(delay, static_cast<u32>(ticks)));
   }
 }
 
@@ -1298,36 +1260,6 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   voice.left_volume.Tick();
   voice.right_volume.Tick();
   return std::make_tuple(left, right);
-}
-
-void SPU::VoiceKeyOn(u32 voice_index)
-{
-  Log_DebugPrintf("Voice %u key on", voice_index);
-
-  if (m_voice_key_on_off_delay[voice_index] > 0)
-  {
-    Log_DevPrintf("Ignoring key on for voice %u due to only %u ticks passed since last write", voice_index,
-                  m_voice_key_on_off_delay[voice_index]);
-    return;
-  }
-
-  m_voices[voice_index].KeyOn();
-  m_voice_key_on_off_delay[voice_index] = MINIMUM_TICKS_BETWEEN_KEY_ON_OFF;
-}
-
-void SPU::VoiceKeyOff(u32 voice_index)
-{
-  Log_DebugPrintf("Voice %u key off", voice_index);
-
-  if (m_voice_key_on_off_delay[voice_index] > 0)
-  {
-    Log_DevPrintf("Ignoring key off for voice %u due to only %u ticks passed since last write", voice_index,
-                  m_voice_key_on_off_delay[voice_index]);
-    return;
-  }
-
-  m_voices[voice_index].KeyOff();
-  m_voice_key_on_off_delay[voice_index] = MINIMUM_TICKS_BETWEEN_KEY_ON_OFF;
 }
 
 void SPU::UpdateNoise()

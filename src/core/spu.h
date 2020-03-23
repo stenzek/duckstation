@@ -362,8 +362,6 @@ private:
 
   void ReadADPCMBlock(u16 address, ADPCMBlock* block);
   std::tuple<s32, s32> SampleVoice(u32 voice_index);
-  void VoiceKeyOn(u32 voice_index);
-  void VoiceKeyOff(u32 voice_index);
 
   void UpdateNoise();
 
@@ -419,7 +417,6 @@ private:
   s16 m_reverb_right_output = 0;
 
   std::array<Voice, NUM_VOICES> m_voices{};
-  std::array<u8, NUM_VOICES> m_voice_key_on_off_delay{};
   std::array<u8, RAM_SIZE> m_ram{};
 
   InlineFIFOQueue<s16, CD_AUDIO_SAMPLE_BUFFER_SIZE> m_cd_audio_buffer;
