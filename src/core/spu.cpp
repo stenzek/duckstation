@@ -219,6 +219,14 @@ u16 SPU::ReadRegister(u32 offset)
     case 0x1F801DB2 - SPU_BASE:
       return m_cd_audio_volume_right;
 
+    case 0x1F801DB8 - SPU_BASE:
+      m_tick_event->InvokeEarly();
+      return m_main_volume_left.current_level;
+
+    case 0x1F801DBA - SPU_BASE:
+      m_tick_event->InvokeEarly();
+      return m_main_volume_right.current_level;
+
     default:
     {
       if (offset < (0x1F801D80 - SPU_BASE))
@@ -226,6 +234,16 @@ u16 SPU::ReadRegister(u32 offset)
 
       if (offset >= (0x1F801DC0 - SPU_BASE) && offset <= (0x1F801DFE - SPU_BASE))
         return m_reverb_registers.rev[(offset - (0x1F801DC0 - SPU_BASE)) / 2];
+
+      if (offset >= (0x1F801E00 - SPU_BASE) && offset <= (0x1F801E60 - SPU_BASE))
+      {
+        const u32 voice_index = offset - (0x1F801E00 - SPU_BASE);
+        m_tick_event->InvokeEarly();
+        if (offset & 0x02)
+          return m_voices[voice_index].left_volume.current_level;
+        else
+          return m_voices[voice_index].right_volume.current_level;
+      }
 
       Log_ErrorPrintf("Unknown SPU register read: offset 0x%X (address 0x%08X)", offset, offset | SPU_BASE);
       return UINT16_C(0xFFFF);
