@@ -211,12 +211,15 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
   CounterState& cs = m_states[timer_index];
 
+  if (timer_index < 2)
+    m_gpu->Synchronize();
+  m_sysclk_event->InvokeEarly();
+
   switch (port_offset)
   {
     case 0x00:
     {
       Log_DebugPrintf("Timer %u write counter %u", timer_index, value);
-      m_sysclk_event->InvokeEarly();
       cs.counter = value & u32(0xFFFF);
     }
     break;
@@ -224,7 +227,6 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x04:
     {
       Log_DebugPrintf("Timer %u write mode register 0x%04X", timer_index, value);
-      m_sysclk_event->InvokeEarly();
       cs.mode.bits = value & u32(0x1FFF);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
@@ -241,7 +243,6 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x08:
     {
       Log_DebugPrintf("Timer %u write target 0x%04X", timer_index, ZeroExtend32(Truncate16(value)));
-      m_sysclk_event->InvokeEarly();
       cs.target = value & u32(0xFFFF);
     }
     break;
