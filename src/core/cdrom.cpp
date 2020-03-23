@@ -422,6 +422,14 @@ void CDROM::SetInterrupt(Interrupt interrupt)
 
 void CDROM::SetAsyncInterrupt(Interrupt interrupt)
 {
+  if (m_interrupt_flag_register == static_cast<u8>(interrupt))
+  {
+    Log_WarningPrintf("Not setting async interrupt %u because there is already one unacknowledged",
+                      static_cast<u8>(interrupt));
+    m_async_response_fifo.Clear();
+    return;
+  }
+
   Assert(m_pending_async_interrupt == 0);
   m_pending_async_interrupt = static_cast<u8>(interrupt);
   if (!HasPendingInterrupt())
@@ -1418,13 +1426,6 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
     }
   }
 
-  // Deliver to CPU
-  if (HasPendingAsyncInterrupt())
-  {
-    Log_WarningPrintf("Data interrupt was not delivered");
-    ClearAsyncInterrupt();
-  }
-
   // TODO: How does XA relate to this buffering?
   SectorBuffer* sb = &m_sector_buffers[0];
   if (sb->size > 0)
@@ -1448,6 +1449,13 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
     Assert(m_last_sector_header.sector_mode == 2);
     std::memcpy(sb->data.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
+  }
+
+  // Deliver to CPU
+  if (HasPendingAsyncInterrupt())
+  {
+    Log_WarningPrintf("Data interrupt was not delivered");
+    ClearAsyncInterrupt();
   }
 
   m_async_response_fifo.Push(m_secondary_status.bits);
