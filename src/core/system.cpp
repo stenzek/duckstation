@@ -2,6 +2,7 @@
 #include "bios.h"
 #include "bus.h"
 #include "cdrom.h"
+#include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "controller.h"
@@ -457,8 +458,6 @@ void System::UpdateThrottlePeriod()
 {
   m_throttle_period = static_cast<s32>(1000000000.0 / static_cast<double>(m_throttle_frequency) /
                                        static_cast<double>(GetSettings().emulation_speed));
-  m_last_throttle_time = 0;
-  m_throttle_timer.Reset();
 }
 
 void System::Throttle()
@@ -486,6 +485,7 @@ void System::Throttle()
 #endif
     m_last_throttle_time = 0;
     m_throttle_timer.Reset();
+    m_host_interface->GetAudioStream()->EmptyBuffers();
   }
   else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
   {

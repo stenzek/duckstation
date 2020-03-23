@@ -36,7 +36,6 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
 void GPU::UpdateSettings()
 {
   m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
-  UpdateCRTCConfig();
 }
 
 void GPU::Reset()
@@ -336,7 +335,6 @@ void GPU::UpdateCRTCConfig()
   const float vertical_frequency =
     static_cast<float>(static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame));
   m_system->SetThrottleFrequency(vertical_frequency);
-  m_tick_event->SetInterval(cs.horizontal_total);
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
@@ -431,6 +429,8 @@ void GPU::UpdateCRTCConfig()
   Log_DevPrintf("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.active_display_left, cs.active_display_top,
                 cs.visible_display_width - cs.active_display_width - cs.active_display_left,
                 cs.visible_display_height - cs.active_display_height - cs.active_display_top);
+
+  UpdateSliceTicks();
 }
 
 static TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
@@ -563,14 +563,9 @@ void GPU::Execute(TickCount ticks)
 
       // switch fields for interlaced modes
       if (m_GPUSTAT.vertical_interlace)
-      {
         m_GPUSTAT.interlaced_field ^= true;
-        m_crtc_state.current_scanline = BoolToUInt32(!m_GPUSTAT.interlaced_field);
-      }
       else
-      {
         m_GPUSTAT.interlaced_field = false;
-      }
     }
   }
 
@@ -666,8 +661,8 @@ void GPU::WriteGP1(u32 value)
     {
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
       Log_DebugPrintf("Display %s", disable ? "disabled" : "enabled");
+      m_tick_event->InvokeEarly();
       m_GPUSTAT.display_disable = disable;
-      UpdateCRTCConfig();
     }
     break;
 
