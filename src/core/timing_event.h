@@ -57,9 +57,6 @@ public:
       Deactivate();
   }
 
-  // Directly alters the downcount of the event.
-  void SetDowncount(TickCount downcount);
-
   // Directly alters the interval of the event.
   void SetInterval(TickCount interval) { m_interval = interval; }
   void SetPeriod(TickCount period) { m_period = period; }

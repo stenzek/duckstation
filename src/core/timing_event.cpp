@@ -28,26 +28,21 @@ TickCount TimingEvent::GetTicksUntilNextExecution() const
 
 void TimingEvent::Schedule(TickCount ticks)
 {
-  m_downcount = ticks;
-  m_time_since_last_run = 0;
+  const TickCount pending_ticks = m_system->m_cpu->GetPendingTicks();
+  m_downcount = pending_ticks + ticks;
 
-  // Factor in partial time if this was rescheduled outside of an event handler. Say, an MMIO write.
-  if (!m_system->m_running_events)
+  if (!m_active)
   {
-    const TickCount pending_ticks = m_system->m_cpu->GetPendingTicks();
-    m_downcount += pending_ticks;
-    m_time_since_last_run -= pending_ticks;
-  }
-
-  if (m_active)
-  {
-    // If this is a call from an IO handler for example, re-sort the event queue.
-    m_system->SortEvents();
+    // Event is going active, so we want it to only execute ticks from the current timestamp.
+    m_time_since_last_run = -pending_ticks;
+    m_active = true;
+    m_system->AddActiveEvent(this);
   }
   else
   {
-    m_active = true;
-    m_system->AddActiveEvent(this);
+    // Event is already active, so we leave the time since last run alone, and just modify the downcount.
+    // If this is a call from an IO handler for example, re-sort the event queue.
+    m_system->SortEvents();
   }
 }
 
@@ -117,14 +112,4 @@ void TimingEvent::Deactivate()
 
   m_active = false;
   m_system->RemoveActiveEvent(this);
-}
-
-void TimingEvent::SetDowncount(TickCount downcount)
-{
-  const TickCount pending_ticks = m_system->m_running_events ? 0 : m_system->m_cpu->GetPendingTicks();
-  m_downcount = downcount + pending_ticks;
-  m_time_since_last_run = -pending_ticks;
-
-  if (m_active)
-    m_system->SortEvents();
 }

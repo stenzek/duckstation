@@ -523,7 +523,7 @@ TickCount CDROM::GetTicksForSeek() const
 void CDROM::BeginCommand(Command command)
 {
   m_command = command;
-  m_command_event->SetDowncount(GetAckDelayForCommand());
+  m_command_event->Schedule(GetAckDelayForCommand());
   UpdateCommandEvent();
   UpdateStatusRegister();
 }
