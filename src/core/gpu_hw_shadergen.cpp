@@ -376,7 +376,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   v_col0 = a_col0;
   #if TEXTURED
-    v_tex0 = float2(float(a_texcoord & 0xFFFF), float(a_texcoord >> 16));
+    // Fudge the texture coordinates by half a pixel in screen-space.
+    // This fixes the rounding/interpolation error on NVIDIA GPUs with shared edges between triangles.
+    v_tex0 = float2(float(a_texcoord & 0xFFFF) + (RCP_VRAM_SIZE.x * 0.5),
+                    float(a_texcoord >> 16) + (RCP_VRAM_SIZE.y * 0.5));
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
