@@ -1027,6 +1027,8 @@ void HostInterface::ModifyResolutionScale(s32 increment)
 
 void HostInterface::RecreateSystem()
 {
+  const bool was_paused = m_paused;
+
   std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
   if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
   {
@@ -1052,6 +1054,7 @@ void HostInterface::RecreateSystem()
   }
 
   m_system->ResetPerformanceCounters();
+  PauseSystem(was_paused);
 }
 
 void HostInterface::SetTimerResolutionIncreased(bool enabled)
