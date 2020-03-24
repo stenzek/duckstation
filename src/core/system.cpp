@@ -319,6 +319,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("System"))
     return false;
 
+  sw.Do(&m_region);
   sw.Do(&m_frame_number);
   sw.Do(&m_internal_frame_number);
   sw.Do(&m_global_tick_counter);
