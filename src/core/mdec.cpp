@@ -31,7 +31,7 @@ bool MDEC::DoState(StateWrapper& sw)
   sw.Do(&m_enable_dma_out);
   sw.Do(&m_data_in_fifo);
   sw.Do(&m_data_out_fifo);
-  sw.Do(&m_command);
+  sw.Do(&m_state);
   sw.Do(&m_remaining_halfwords);
   sw.Do(&m_iq_uv);
   sw.Do(&m_iq_y);
@@ -91,7 +91,7 @@ void MDEC::WriteRegister(u32 offset, u32 value)
 
       m_enable_dma_in = cr.enable_dma_in;
       m_enable_dma_out = cr.enable_dma_out;
-      UpdateStatus();
+      Execute();
       return;
     }
 
@@ -105,35 +105,35 @@ void MDEC::WriteRegister(u32 offset, u32 value)
 
 void MDEC::DMARead(u32* words, u32 word_count)
 {
-  do
+  if (m_data_out_fifo.GetSize() < word_count)
   {
-    const u32 words_to_read = std::min(word_count, m_data_out_fifo.GetSize());
-    if (words_to_read > 0)
-    {
-      m_data_out_fifo.PopRange(words, words_to_read);
-      words += words_to_read;
-      word_count -= words_to_read;
-    }
-    else
-    {
-      UpdateStatus();
-      break;
-    }
+    Log_WarningPrintf("Insufficient data in output FIFO (requested %u, have %u)", word_count,
+                      m_data_out_fifo.GetSize());
+  }
 
-    ExecutePendingCommand();
-  } while (word_count > 0);
+  const u32 words_to_read = std::min(word_count, m_data_out_fifo.GetSize());
+  if (words_to_read > 0)
+  {
+    m_data_out_fifo.PopRange(words, words_to_read);
+    words += words_to_read;
+    word_count -= words_to_read;
+  }
+
+  Log_DebugPrintf("DMA read complete, %u bytes left", m_data_out_fifo.GetSize() * sizeof(u32));
+  if (m_data_out_fifo.IsEmpty())
+    Execute();
 }
 
 void MDEC::DMAWrite(const u32* words, u32 word_count)
 {
-  do
+  if (m_data_in_fifo.GetSpace() < (word_count * 2))
   {
-    const u32 halfwords_to_write = std::min(word_count * 2, m_data_in_fifo.GetSpace() & ~u32(2));
-    m_data_in_fifo.PushRange(reinterpret_cast<const u16*>(words), halfwords_to_write);
-    words += halfwords_to_write / 2;
-    word_count -= halfwords_to_write / 2;
-    ExecutePendingCommand();
-  } while (word_count > 0);
+    Log_WarningPrintf("Input FIFO overflow (writing %u, space %u)", word_count * 2, m_data_in_fifo.GetSpace());
+  }
+
+  const u32 halfwords_to_write = std::min(word_count * 2, m_data_in_fifo.GetSpace() & ~u32(2));
+  m_data_in_fifo.PushRange(reinterpret_cast<const u16*>(words), halfwords_to_write);
+  Execute();
 }
 
 bool MDEC::HasPendingBlockCopyOut() const
@@ -148,7 +148,7 @@ void MDEC::SoftReset()
   m_enable_dma_out = false;
   m_data_in_fifo.Clear();
   m_data_out_fifo.Clear();
-  m_command = Command::None;
+  m_state = State::Idle;
   m_remaining_halfwords = 0;
   m_current_block = 0;
   m_current_coefficient = 64;
@@ -157,22 +157,29 @@ void MDEC::SoftReset()
   UpdateStatus();
 }
 
+void MDEC::ResetDecoder()
+{
+  m_current_block = 0;
+  m_current_coefficient = 64;
+  m_current_q_scale = 0;
+}
+
 void MDEC::UpdateStatus()
 {
   m_status.data_out_fifo_empty = m_data_out_fifo.IsEmpty();
   m_status.data_in_fifo_full = m_data_in_fifo.IsFull();
 
-  m_status.command_busy = m_command != Command::None;
+  m_status.command_busy = (m_state != State::Idle);
   m_status.parameter_words_remaining = Truncate16((m_remaining_halfwords / 2) - 1);
   m_status.current_block = (m_current_block + 4) % NUM_BLOCKS;
 
   // we always want data in if it's enabled
-  const bool data_in_request = m_enable_dma_in && m_data_in_fifo.GetSpace() >= (32 * 2) && !m_data_out_fifo.IsFull();
+  const bool data_in_request = m_enable_dma_in && m_data_in_fifo.GetSpace() >= (32 * 2);
   m_status.data_in_request = data_in_request;
   m_dma->SetRequest(DMA::Channel::MDECin, data_in_request);
 
   // we only want to send data out if we have some in the fifo
-  const bool data_out_request = m_enable_dma_out && m_data_out_fifo.GetSize() >= 32;
+  const bool data_out_request = m_enable_dma_out && !m_data_out_fifo.IsEmpty();
   m_status.data_out_request = data_out_request;
   m_dma->SetRequest(DMA::Channel::MDECout, data_out_request);
 }
@@ -196,7 +203,7 @@ u32 MDEC::ReadDataRegister()
 
   const u32 value = m_data_out_fifo.Pop();
   if (m_data_out_fifo.IsEmpty())
-    ExecutePendingCommand();
+    Execute();
   else
     UpdateStatus();
 
@@ -210,126 +217,120 @@ void MDEC::WriteCommandRegister(u32 value)
   m_data_in_fifo.Push(Truncate16(value));
   m_data_in_fifo.Push(Truncate16(value >> 16));
 
-  ExecutePendingCommand();
+  Execute();
 }
 
-void MDEC::ExecutePendingCommand()
+void MDEC::Execute()
 {
-  if (HasPendingBlockCopyOut())
+  for (;;)
   {
-    // can't do anything while waiting
-    UpdateStatus();
-    return;
-  }
-
-  while (!m_data_in_fifo.IsEmpty())
-  {
-    DebugAssert(!HasPendingBlockCopyOut());
-
-    if (m_command == Command::None)
+    switch (m_state)
     {
-      // first word
-      const CommandWord cw{ZeroExtend32(m_data_in_fifo.Peek(0)) | (ZeroExtend32(m_data_in_fifo.Peek(1)) << 16)};
-      m_command = cw.command;
-      m_status.data_output_depth = cw.data_output_depth;
-      m_status.data_output_signed = cw.data_output_signed;
-      m_status.data_output_bit15 = cw.data_output_bit15;
-      m_data_in_fifo.Remove(2);
-      m_data_out_fifo.Clear();
-
-      u32 num_words;
-      switch (cw.command)
+      case State::Idle:
       {
-        case Command::DecodeMacroblock:
-          num_words = ZeroExtend32(cw.parameter_word_count.GetValue());
-          break;
+        if (m_data_in_fifo.GetSize() < 2)
+          goto finished;
 
-        case Command::SetIqTab:
-          num_words = 16 + (((cw.bits & 1) != 0) ? 16 : 0);
-          break;
+        // first word
+        const CommandWord cw{ZeroExtend32(m_data_in_fifo.Peek(0)) | (ZeroExtend32(m_data_in_fifo.Peek(1)) << 16)};
+        m_status.data_output_depth = cw.data_output_depth;
+        m_status.data_output_signed = cw.data_output_signed;
+        m_status.data_output_bit15 = cw.data_output_bit15;
+        m_data_in_fifo.Remove(2);
+        m_data_out_fifo.Clear();
 
-        case Command::SetScale:
-          num_words = 32;
-          break;
+        u32 num_words;
+        State new_state;
+        switch (cw.command)
+        {
+          case Command::DecodeMacroblock:
+            num_words = ZeroExtend32(cw.parameter_word_count.GetValue());
+            new_state = State::DecodingMacroblock;
+            break;
 
-        default:
-          Panic("Unknown command");
-          num_words = 0;
-          break;
+          case Command::SetIqTab:
+            num_words = 16 + (((cw.bits & 1) != 0) ? 16 : 0);
+            new_state = State::SetIqTable;
+            break;
+
+          case Command::SetScale:
+            num_words = 32;
+            new_state = State::SetScaleTable;
+            break;
+
+          default:
+            Panic("Unknown command");
+            num_words = 0;
+            new_state = State::Idle;
+            break;
+        }
+
+        Log_DebugPrintf("MDEC command: 0x%08X (%u, %u words in parameter, %u expected)", cw.bits,
+                        ZeroExtend32(static_cast<u8>(cw.command.GetValue())),
+                        ZeroExtend32(cw.parameter_word_count.GetValue()), num_words);
+
+        m_remaining_halfwords = num_words * 2;
+        m_state = new_state;
+        UpdateStatus();
+        continue;
       }
 
-      m_remaining_halfwords = num_words * 2;
-
-      Log_DebugPrintf("MDEC command: 0x%08X (%u, %u words in parameter, %u expected)", cw.bits,
-                      ZeroExtend32(static_cast<u8>(cw.command.GetValue())),
-                      ZeroExtend32(cw.parameter_word_count.GetValue()), num_words);
-    }
-
-    switch (m_command)
-    {
-      case Command::DecodeMacroblock:
+      case State::DecodingMacroblock:
       {
         if (HandleDecodeMacroblockCommand())
         {
-          // block decoded, waiting to copy out
-          UpdateStatus();
-          return;
+          // we should be writing out now
+          Assert(m_state == State::WritingMacroblock);
+          goto finished;
         }
 
-        // data needed
-        if (m_remaining_halfwords == 0)
+        if (m_remaining_halfwords == 0 && m_current_block != NUM_BLOCKS)
         {
-          // but no more data expected, abort command here
-          EndCommand();
-        }
-        else
-        {
-          // waiting for data
-          UpdateStatus();
+          // expecting data, but nothing more will be coming. bail out
+          ResetDecoder();
+          m_state = State::Idle;
+          continue;
         }
 
-        return;
+        goto finished;
       }
 
-      case Command::SetIqTab:
+      case State::WritingMacroblock:
+      {
+        // this gets executed via the event, so if we get here, wait.
+        goto finished;
+      }
+
+      case State::SetIqTable:
       {
         if (m_data_in_fifo.GetSize() < m_remaining_halfwords)
-        {
-          UpdateStatus();
-          return;
-        }
+          goto finished;
 
         HandleSetQuantTableCommand();
-        EndCommand();
+        m_state = State::Idle;
+        UpdateStatus();
+        continue;
       }
-      break;
 
-      case Command::SetScale:
+      case State::SetScaleTable:
       {
         if (m_data_in_fifo.GetSize() < m_remaining_halfwords)
-        {
-          UpdateStatus();
-          return;
-        }
+          goto finished;
 
         HandleSetScaleCommand();
-        EndCommand();
+        m_state = State::Idle;
+        UpdateStatus();
+        continue;
       }
-      break;
 
       default:
         UnreachableCode();
         return;
     }
   }
-}
 
-void MDEC::EndCommand()
-{
-  m_command = Command::None;
-  m_current_block = 0;
-  m_current_coefficient = 64;
-  m_current_q_scale = 0;
+finished:
+  // if we get here, it's because the FIFO is now empty
   UpdateStatus();
 }
 
@@ -343,22 +344,18 @@ bool MDEC::HandleDecodeMacroblockCommand()
 
 bool MDEC::DecodeMonoMacroblock()
 {
-  // sufficient space in output?
-  if (m_status.data_output_depth == DataOutputDepth_4Bit)
-  {
-    if (m_data_out_fifo.GetSpace() < (64 / 8))
-      return false;
-  }
-  else
-  {
-    if (m_data_out_fifo.GetSpace() < (64 / 4))
-      return false;
-  }
+  // TODO: This should guard the output not the input
+  if (!m_data_out_fifo.IsEmpty())
+    return false;
 
   if (!rl_decode_block(m_blocks[0].data(), m_iq_y.data()))
     return false;
 
   IDCT(m_blocks[0].data());
+
+  Log_DebugPrintf("Decoded mono macroblock, %u words remaining", m_remaining_halfwords / 2);
+  ResetDecoder();
+  m_state = State::WritingMacroblock;
 
   y_to_mono(m_blocks[0]);
 
@@ -370,18 +367,6 @@ bool MDEC::DecodeMonoMacroblock()
 
 bool MDEC::DecodeColoredMacroblock()
 {
-  // sufficient space in output?
-  if (m_status.data_output_depth == DataOutputDepth_24Bit)
-  {
-    if (m_data_out_fifo.GetSpace() < (256 - (256 / 4)))
-      return false;
-  }
-  else
-  {
-    if (m_data_out_fifo.GetSpace() < (256 / 2))
-      return false;
-  }
-
   for (; m_current_block < NUM_BLOCKS; m_current_block++)
   {
     if (!rl_decode_block(m_blocks[m_current_block].data(), (m_current_block >= 2) ? m_iq_y.data() : m_iq_uv.data()))
@@ -390,18 +375,21 @@ bool MDEC::DecodeColoredMacroblock()
     IDCT(m_blocks[m_current_block].data());
   }
 
+  if (!m_data_out_fifo.IsEmpty())
+    return false;
+
   // done decoding
-  m_current_block = 0;
   Log_DebugPrintf("Decoded colored macroblock, %u words remaining", m_remaining_halfwords / 2);
+  ResetDecoder();
+  m_state = State::WritingMacroblock;
 
   yuv_to_rgb(0, 0, m_blocks[0], m_blocks[1], m_blocks[2]);
   yuv_to_rgb(8, 0, m_blocks[0], m_blocks[1], m_blocks[3]);
   yuv_to_rgb(0, 8, m_blocks[0], m_blocks[1], m_blocks[4]);
   yuv_to_rgb(8, 8, m_blocks[0], m_blocks[1], m_blocks[5]);
-
-  ScheduleBlockCopyOut(TICKS_PER_BLOCK);
-
   m_total_blocks_decoded += 4;
+
+  ScheduleBlockCopyOut(TICKS_PER_BLOCK * 4);
   return true;
 }
 
@@ -410,15 +398,13 @@ void MDEC::ScheduleBlockCopyOut(TickCount ticks)
   DebugAssert(!HasPendingBlockCopyOut());
   Log_DebugPrintf("Scheduling block copy out in %d ticks", ticks);
 
-  m_block_copy_out_event->Schedule(TICKS_PER_BLOCK);
+  m_block_copy_out_event->Schedule(ticks);
 }
 
 void MDEC::CopyOutBlock()
 {
-  DebugAssert(m_command == Command::DecodeMacroblock);
+  Assert(m_state == State::WritingMacroblock);
   m_block_copy_out_event->Deactivate();
-
-  Log_DebugPrintf("Copying out block");
 
   switch (m_status.data_output_depth)
   {
@@ -519,11 +505,12 @@ void MDEC::CopyOutBlock()
       break;
   }
 
+  Log_DebugPrintf("Block copied out, fifo size = %u (%u bytes)", m_data_out_fifo.GetSize(),
+                  m_data_out_fifo.GetSize() * sizeof(u32));
+
   // if we've copied out all blocks, command is complete
-  if (m_remaining_halfwords == 0)
-    EndCommand();
-  else
-    ExecutePendingCommand();
+  m_state = (m_remaining_halfwords == 0) ? State::Idle : State::DecodingMacroblock;
+  Execute();
 }
 
 static constexpr std::array<u8, 64> zigzag = {{0,  1,  5,  6,  14, 15, 27, 28, 2,  4,  7,  13, 16, 26, 29, 42,
@@ -714,15 +701,16 @@ void MDEC::DrawDebugStateWindow()
     return;
   }
 
-  static constexpr std::array<const char*, 4> command_names = {{"None", "Decode Macroblock", "SetIqTab", "SetScale"}};
+  static constexpr std::array<const char*, 5> state_names = {
+    {"None", "Decoding Macroblock", "Writing Macroblock", "SetIqTab", "SetScale"}};
   static constexpr std::array<const char*, 4> output_depths = {{"4-bit", "8-bit", "24-bit", "15-bit"}};
-  static constexpr std::array<const char*, 6> block_names = {{"Crblk", "Cbblk", "Y1", "Y2", "Y3", "Y4"}};
+  static constexpr std::array<const char*, 7> block_names = {{"Crblk", "Cbblk", "Y1", "Y2", "Y3", "Y4", "Output"}};
 
   ImGui::Text("Blocks Decoded: %u", m_total_blocks_decoded);
   ImGui::Text("Data-In FIFO Size: %u (%u bytes)", m_data_in_fifo.GetSize(), m_data_in_fifo.GetSize() * 4);
   ImGui::Text("Data-Out FIFO Size: %u (%u bytes)", m_data_out_fifo.GetSize(), m_data_out_fifo.GetSize() * 4);
   ImGui::Text("DMA Enable: %s%s", m_enable_dma_in ? "In " : "", m_enable_dma_out ? "Out" : "");
-  ImGui::Text("Current Command: %s", command_names[static_cast<u8>(m_command)]);
+  ImGui::Text("Current State: %s", state_names[static_cast<u8>(m_state)]);
   ImGui::Text("Current Block: %s", block_names[m_current_block]);
   ImGui::Text("Current Coefficient: %u", m_current_coefficient);
 

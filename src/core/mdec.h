@@ -31,10 +31,10 @@ public:
   void DrawDebugStateWindow();
 
 private:
-  static constexpr u32 DATA_IN_FIFO_SIZE = 256 * 4;
-  static constexpr u32 DATA_OUT_FIFO_SIZE = 192 * 4;
+  static constexpr u32 DATA_IN_FIFO_SIZE = 1024;
+  static constexpr u32 DATA_OUT_FIFO_SIZE = 768;
   static constexpr u32 NUM_BLOCKS = 6;
-  static constexpr TickCount TICKS_PER_BLOCK = 3072;
+  static constexpr TickCount TICKS_PER_BLOCK = 3072 / 4;
 
   enum DataOutputDepth : u8
   {
@@ -50,6 +50,15 @@ private:
     DecodeMacroblock = 1,
     SetIqTab = 2,
     SetScale = 3
+  };
+
+  enum class State : u8
+  {
+    Idle,
+    DecodingMacroblock,
+    WritingMacroblock,
+    SetIqTable,
+    SetScaleTable
   };
 
   union StatusRegister
@@ -87,16 +96,15 @@ private:
     BitField<u32, u16, 0, 16> parameter_word_count;
   };
 
-  bool HasPendingCommand() const { return m_command != Command::None; }
   bool HasPendingBlockCopyOut() const;
 
   void SoftReset();
+  void ResetDecoder();
   void UpdateStatus();
 
   u32 ReadDataRegister();
   void WriteCommandRegister(u32 value);
-  void ExecutePendingCommand();
-  void EndCommand();
+  void Execute();
 
   bool HandleDecodeMacroblockCommand();
   void HandleSetQuantTableCommand();
@@ -124,7 +132,7 @@ private:
   // Even though the DMA is in words, we access the FIFO as halfwords.
   InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE / sizeof(u16)> m_data_in_fifo;
   InlineFIFOQueue<u32, DATA_OUT_FIFO_SIZE / sizeof(u32)> m_data_out_fifo;
-  Command m_command = Command::None;
+  State m_state = State::Idle;
   u32 m_remaining_halfwords = 0;
 
   std::array<u8, 64> m_iq_uv{};
