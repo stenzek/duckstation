@@ -317,7 +317,7 @@ void DMA::TransferChannel(Channel channel, TickCount ticks_late)
         Log_DebugPrintf("DMA%u: Copying linked list starting at 0x%08X to device", static_cast<u32>(channel),
                         current_address);
 
-        for (;;)
+        while (cs.request)
         {
           u32 header;
           m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(current_address & ADDRESS_MASK, header);
@@ -344,6 +344,12 @@ void DMA::TransferChannel(Channel channel, TickCount ticks_late)
       }
 
       cs.base_address = current_address;
+
+      if ((current_address & UINT32_C(0x800000)) == 0)
+      {
+        // linked list not yet complete
+        return;
+      }
     }
     break;
 
