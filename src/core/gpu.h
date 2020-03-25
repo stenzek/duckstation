@@ -133,6 +133,12 @@ public:
   void DMARead(u32* words, u32 word_count);
   void DMAWrite(const u32* words, u32 word_count);
 
+  /// Returns the number of pending GPU ticks.
+  TickCount GetPendingGPUTicks() const;
+
+  /// Returns true if enough ticks have passed for the raster to be on the next line.
+  bool IsRasterScanlinePending() const;
+
   // Synchronizes the CRTC, updating the hblank timer.
   void Synchronize();
 
@@ -152,6 +158,12 @@ public:
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
 protected:
+  static TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
+  {
+    // convert to master clock, rounding up as we want to overshoot not undershoot
+    return static_cast<TickCount>((static_cast<u32>(gpu_ticks) * 7u + 10u) / 11u);
+  }
+
   // Helper/format conversion functions.
   static constexpr u8 Convert5To8(u8 x5) { return (x5 << 3) | (x5 & 7); }
   static constexpr u8 Convert8To5(u8 x8) { return (x8 >> 3); }
@@ -310,12 +322,6 @@ protected:
 
   // Ticks for hblank/vblank.
   void Execute(TickCount ticks);
-
-  /// Returns the number of pending GPU ticks.
-  TickCount GetPendingGPUTicks() const;
-
-  /// Returns true if enough ticks have passed for the raster to be on the next line.
-  bool IsRasterScanlinePending() const;
 
   /// Returns true if scanout should be interlaced.
   bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }

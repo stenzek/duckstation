@@ -65,8 +65,6 @@ void GPU::SoftReset()
   m_draw_mode.SetTextureWindow(0);
   UpdateDMARequest();
   UpdateCRTCConfig();
-
-  m_tick_event->Deactivate();
   UpdateSliceTicks();
 }
 
@@ -291,8 +289,13 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
       {
         Assert(m_blitter_ticks == 0);
         m_blitter_ticks = GetPendingGPUTicks() + word_count;
+
+        // reschedule GPU tick event
+        const TickCount sysclk_ticks = GPUTicksToSystemTicks(word_count);
+        if (m_tick_event->GetTicksUntilNextExecution() > sysclk_ticks)
+          m_tick_event->Schedule(sysclk_ticks);
+
         UpdateDMARequest();
-        UpdateSliceTicks();
       }
     }
     break;
@@ -434,12 +437,6 @@ void GPU::UpdateCRTCConfig()
   UpdateSliceTicks();
 }
 
-static TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
-{
-  // convert to master clock, rounding up as we want to overshoot not undershoot
-  return static_cast<TickCount>((static_cast<u32>(gpu_ticks) * 7u + 10u) / 11u);
-}
-
 TickCount GPU::GetPendingGPUTicks() const
 {
   const TickCount pending_sysclk_ticks = m_tick_event->GetTicksSinceLastExecution();
@@ -462,7 +459,6 @@ void GPU::UpdateSliceTicks()
 
   m_tick_event->Schedule(
     GPUTicksToSystemTicks((m_blitter_ticks > 0) ? std::min(m_blitter_ticks, ticks_until_vblank) : ticks_until_vblank));
-  m_tick_event->SetPeriod(GPUTicksToSystemTicks(ticks_until_hblank));
 }
 
 bool GPU::IsRasterScanlinePending() const
@@ -479,14 +475,14 @@ void GPU::Execute(TickCount ticks)
     m_crtc_state.fractional_ticks = ticks_mul_11 % 7;
     m_crtc_state.current_tick_in_scanline += gpu_ticks;
 
-    if (m_blitter_ticks > 0)
+    // handle blits
+    TickCount blit_ticks_remaining = gpu_ticks;
+    while (m_blitter_ticks > 0 && blit_ticks_remaining > 0)
     {
-      m_blitter_ticks -= gpu_ticks;
-      if (m_blitter_ticks <= 0)
-      {
-        m_blitter_ticks = 0;
-        UpdateDMARequest();
-      }
+      const TickCount slice = std::min(blit_ticks_remaining, m_blitter_ticks);
+      m_blitter_ticks -= slice;
+      blit_ticks_remaining -= slice;
+      UpdateDMARequest();
     }
   }
 
@@ -636,6 +632,7 @@ void GPU::WriteGP1(u32 value)
     case 0x00: // Reset GPU
     {
       Log_DebugPrintf("GP1 reset GPU");
+      Synchronize();
       SoftReset();
     }
     break;
@@ -647,6 +644,7 @@ void GPU::WriteGP1(u32 value)
       m_command_total_words = 0;
       m_vram_transfer = {};
       m_GP0_buffer.clear();
+      m_blitter_ticks = 0;
       UpdateDMARequest();
     }
     break;
@@ -662,7 +660,7 @@ void GPU::WriteGP1(u32 value)
     {
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
       Log_DebugPrintf("Display %s", disable ? "disabled" : "enabled");
-      m_tick_event->InvokeEarly();
+      Synchronize();
       m_GPUSTAT.display_disable = disable;
     }
     break;
@@ -690,7 +688,7 @@ void GPU::WriteGP1(u32 value)
 
       if (m_crtc_state.regs.horizontal_display_range != new_value)
       {
-        m_tick_event->InvokeEarly(true);
+        Synchronize();
         m_crtc_state.regs.horizontal_display_range = new_value;
         UpdateCRTCConfig();
       }
@@ -704,7 +702,7 @@ void GPU::WriteGP1(u32 value)
 
       if (m_crtc_state.regs.vertical_display_range != new_value)
       {
-        m_tick_event->InvokeEarly(true);
+        Synchronize();
         m_crtc_state.regs.vertical_display_range = new_value;
         UpdateCRTCConfig();
       }
@@ -739,7 +737,7 @@ void GPU::WriteGP1(u32 value)
 
       if (m_GPUSTAT.bits != new_GPUSTAT.bits)
       {
-        m_tick_event->InvokeEarly(true);
+        Synchronize();
         m_GPUSTAT.bits = new_GPUSTAT.bits;
         UpdateCRTCConfig();
       }

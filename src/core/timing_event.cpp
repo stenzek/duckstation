@@ -74,7 +74,7 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
   if (!m_active)
     return;
 
-  const TickCount pending_ticks = m_system->m_running_events ? 0 : m_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = m_system->m_cpu->GetPendingTicks();
   const TickCount ticks_to_execute = m_time_since_last_run + pending_ticks;
   if (!force && ticks_to_execute < m_period)
     return;
@@ -93,7 +93,7 @@ void TimingEvent::Activate()
     return;
 
   // leave the downcount intact
-  const TickCount pending_ticks = m_system->m_running_events ? 0 : m_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = m_system->m_cpu->GetPendingTicks();
   m_downcount += pending_ticks;
   m_time_since_last_run -= pending_ticks;
 
@@ -106,7 +106,7 @@ void TimingEvent::Deactivate()
   if (!m_active)
     return;
 
-  const TickCount pending_ticks = m_system->m_running_events ? 0 : m_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = m_system->m_cpu->GetPendingTicks();
   m_downcount -= pending_ticks;
   m_time_since_last_run += pending_ticks;
 
