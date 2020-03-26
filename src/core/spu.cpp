@@ -130,6 +130,7 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.adsr_phase);
     sw.Do(&v.adsr_target);
     sw.Do(&v.has_samples);
+    sw.Do(&v.ignore_loop_address);
   }
 
   sw.DoBytes(m_ram.data(), RAM_SIZE);
@@ -584,6 +585,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X", voice_index, value);
       voice.regs.adpcm_repeat_address = value;
+      voice.ignore_loop_address = true;
     }
     break;
 
@@ -873,6 +875,7 @@ void SPU::Voice::KeyOn()
   current_address = regs.adpcm_start_address;
   regs.adsr_volume = 0;
   has_samples = false;
+  ignore_loop_address = false;
   SetADSRPhase(ADSRPhase::Attack);
 }
 
@@ -1238,7 +1241,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     voice.DecodeBlock(block);
     voice.has_samples = true;
 
-    if (voice.current_block_flags.loop_start)
+    if (voice.current_block_flags.loop_start && !voice.ignore_loop_address)
     {
       Log_TracePrintf("Voice %u loop start @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
       voice.regs.adpcm_repeat_address = voice.current_address;

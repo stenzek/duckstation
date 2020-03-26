@@ -262,6 +262,7 @@ private:
     ADSRPhase adsr_phase;
     s16 adsr_target;
     bool has_samples;
+    bool ignore_loop_address;
 
     bool IsOn() const { return adsr_phase != ADSRPhase::Off; }
 
