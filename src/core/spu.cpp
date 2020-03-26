@@ -1225,7 +1225,7 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
 std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 {
   Voice& voice = m_voices[voice_index];
-  if (!voice.IsOn())
+  if (!voice.IsOn() && !m_SPUCNT.irq9_enable)
   {
     voice.last_volume = 0;
     return {};
@@ -1245,18 +1245,28 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     }
   }
 
-  // interpolate/sample and apply ADSR volume
-  s16 sample;
-  if (IsVoiceNoiseEnabled(voice_index))
-    sample = GetVoiceNoiseLevel();
-  else
-    sample = voice.Interpolate();
+  // skip interpolation when the volume is muted anyway
+  s32 volume;
+  if (voice.regs.adsr_volume != 0)
+  {
+    // interpolate/sample and apply ADSR volume
+    s16 sample;
+    if (IsVoiceNoiseEnabled(voice_index))
+      sample = GetVoiceNoiseLevel();
+    else
+      sample = voice.Interpolate();
 
-  const s32 volume = ApplyVolume(sample, voice.regs.adsr_volume);
-  // if (voice_index == 3 || voice_index == 4)
-  // Log_WarningPrintf("voice %u %d", voice_index, volume);
+    volume = ApplyVolume(sample, voice.regs.adsr_volume);
+  }
+  else
+  {
+    volume = 0;
+  }
+
   voice.last_volume = volume;
-  voice.TickADSR();
+
+  if (voice.adsr_phase != ADSRPhase::Off)
+    voice.TickADSR();
 
   // Pitch modulation
   u16 step = voice.regs.adpcm_sample_rate;
