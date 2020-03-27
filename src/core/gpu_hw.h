@@ -51,20 +51,22 @@ protected:
     s32 y;
     u32 color;
     u32 texpage;
-    u32 texcoord; // 16-bit texcoords are needed for 256 extent rectangles
+    u16 u; // 16-bit texcoords are needed for 256 extent rectangles
+    u16 v;
 
     ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 packed_texcoord)
     {
       Set(x_, y_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
     }
 
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 texcoord_x, u16 texcoord_y)
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 u_, u16 v_)
     {
       x = x_;
       y = y_;
       color = color_;
       texpage = texpage_;
-      texcoord = ZeroExtend32(texcoord_x) | (ZeroExtend32(texcoord_y) << 16);
+      u = u_;
+      v = v_;
     }
   };
 
@@ -150,6 +152,9 @@ protected:
 
   /// Computes the area affected by a VRAM transfer, including wrap-around of X.
   Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height);
+
+  /// Handles quads with flipped texture coordinate directions.
+  static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 

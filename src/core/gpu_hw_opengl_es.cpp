@@ -274,7 +274,7 @@ void GPU_HW_OpenGL_ES::SetVertexPointers()
   glEnableVertexAttribArray(3);
   glVertexAttribIPointer(0, 2, GL_INT, sizeof(BatchVertex), &m_vertex_buffer[0].x);
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex), &m_vertex_buffer[0].color);
-  glVertexAttribIPointer(2, 1, GL_INT, sizeof(BatchVertex), &m_vertex_buffer[0].texcoord);
+  glVertexAttribIPointer(2, 1, GL_INT, sizeof(BatchVertex), &m_vertex_buffer[0].u);
   glVertexAttribIPointer(3, 1, GL_INT, sizeof(BatchVertex), &m_vertex_buffer[0].texpage);
 }
 

@@ -89,6 +89,89 @@ void GPU_HW::PrintSettingsToLog()
   Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
 }
 
+void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
+{
+  // Taken from beetle-psx gpu_polygon.cpp
+  // For X/Y flipped 2D sprites, PSX games rely on a very specific rasterization behavior. If U or V is decreasing in X
+  // or Y, and we use the provided U/V as is, we will sample the wrong texel as interpolation covers an entire pixel,
+  // while PSX samples its interpolation essentially in the top-left corner and splats that interpolant across the
+  // entire pixel. While we could emulate this reasonably well in native resolution by shifting our vertex coords by
+  // 0.5, this breaks in upscaling scenarios, because we have several samples per native sample and we need NN rules to
+  // hit the same UV every time. One approach here is to use interpolate at offset or similar tricks to generalize the
+  // PSX interpolation patterns, but the problem is that vertices sharing an edge will no longer see the same UV (due to
+  // different plane derivatives), we end up sampling outside the intended boundary and artifacts are inevitable, so the
+  // only case where we can apply this fixup is for "sprites" or similar which should not share edges, which leads to
+  // this unfortunate code below.
+
+  // It might be faster to do more direct checking here, but the code below handles primitives in any order and
+  // orientation, and is far more SIMD-friendly if needed.
+  const s32 abx = vertices[1].x - vertices[0].x;
+  const s32 aby = vertices[1].y - vertices[0].y;
+  const s32 bcx = vertices[2].x - vertices[1].x;
+  const s32 bcy = vertices[2].y - vertices[1].y;
+  const s32 cax = vertices[0].x - vertices[2].x;
+  const s32 cay = vertices[0].y - vertices[2].y;
+
+  // Compute static derivatives, just assume W is uniform across the primitive and that the plane equation remains the
+  // same across the quad. (which it is, there is no Z.. yet).
+  const s32 dudx = -aby * vertices[2].u - bcy * vertices[0].u - cay * vertices[1].u;
+  const s32 dvdx = -aby * vertices[2].v - bcy * vertices[0].v - cay * vertices[1].v;
+  const s32 dudy = +abx * vertices[2].u + bcx * vertices[0].u + cax * vertices[1].u;
+  const s32 dvdy = +abx * vertices[2].v + bcx * vertices[0].v + cax * vertices[1].v;
+  const s32 area = bcx * cay - bcy * cax;
+
+  // Detect and reject any triangles with 0 size texture area
+  const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
+                      (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
+
+  // Shouldn't matter as degenerate primitives will be culled anyways.
+  if (area == 0 && texArea == 0)
+    return;
+
+  // Use floats here as it'll be faster than integer divides.
+  const float rcp_area = 1.0f / static_cast<float>(area);
+  const float dudx_area = static_cast<float>(dudx) * rcp_area;
+  const float dudy_area = static_cast<float>(dudy) * rcp_area;
+  const float dvdx_area = static_cast<float>(dvdx) * rcp_area;
+  const float dvdy_area = static_cast<float>(dvdy) * rcp_area;
+  const bool neg_dudx = dudx_area < 0.0f;
+  const bool neg_dudy = dudy_area < 0.0f;
+  const bool neg_dvdx = dvdx_area < 0.0f;
+  const bool neg_dvdy = dvdy_area < 0.0f;
+  const bool zero_dudx = dudx_area == 0.0f;
+  const bool zero_dudy = dudy_area == 0.0f;
+  const bool zero_dvdx = dvdx_area == 0.0f;
+  const bool zero_dvdy = dvdy_area == 0.0f;
+
+  // If we have negative dU or dV in any direction, increment the U or V to work properly with nearest-neighbor in
+  // this impl. If we don't have 1:1 pixel correspondence, this creates a slight "shift" in the sprite, but we
+  // guarantee that we don't sample garbage at least. Overall, this is kinda hacky because there can be legitimate,
+  // rare cases where 3D meshes hit this scenario, and a single texel offset can pop in, but this is way better than
+  // having borked 2D overall.
+  //
+  // TODO: If perf becomes an issue, we can probably SIMD the 8 comparisons above,
+  // create an 8-bit code, and use a LUT to get the offsets.
+  // Case 1: U is decreasing in X, but no change in Y.
+  // Case 2: U is decreasing in Y, but no change in X.
+  // Case 3: V is decreasing in X, but no change in Y.
+  // Case 4: V is decreasing in Y, but no change in X.
+  if ((neg_dudx && zero_dudy) || (neg_dudy && zero_dudx))
+  {
+    vertices[0].u++;
+    vertices[1].u++;
+    vertices[2].u++;
+    vertices[3].u++;
+  }
+
+  if ((neg_dvdx && zero_dvdy) || (neg_dvdy && zero_dvdx))
+  {
+    vertices[0].v++;
+    vertices[1].v++;
+    vertices[2].v++;
+    vertices[3].v++;
+  }
+}
+
 void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
 {
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
@@ -112,7 +195,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
       u32 buffer_pos = 1;
       std::array<BatchVertex, 4> vertices;
-      for (u32 i = 0; i < 3; i++)
+      for (u32 i = 0; i < num_vertices; i++)
       {
         const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
         const VertexPosition vp{command_ptr[buffer_pos++]};
@@ -120,6 +203,9 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
         vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
       }
+
+      if (rc.quad_polygon)
+        HandleFlippedQuadTextureCoordinates(vertices.data());
 
       // Cull polygons which are too large.
       if (std::abs(vertices[2].x - vertices[0].x) >= MAX_PRIMITIVE_WIDTH ||
@@ -144,14 +230,8 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       }
 
       // quads
-      for (u32 i = 3; i < num_vertices; i++)
+      if (rc.quad_polygon)
       {
-        const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-        const VertexPosition vp{command_ptr[buffer_pos++]};
-        const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
-
-        vertices[3].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
-
         // Cull polygons which are too large.
         if (std::abs(vertices[3].x - vertices[2].x) >= MAX_PRIMITIVE_WIDTH ||
             std::abs(vertices[3].x - vertices[1].x) >= MAX_PRIMITIVE_WIDTH ||
