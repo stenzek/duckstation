@@ -915,6 +915,15 @@ void CDROM::ExecuteCommand()
     }
     break;
 
+    case Command::Sync:
+    {
+      Log_DebugPrintf("CDROM sync command");
+
+      SendErrorResponse(STAT_ERROR, 0x40);
+      EndCommand();
+    }
+    break;
+
     default:
     {
       Log_ErrorPrintf("Unknown CDROM command 0x%04X with %u parameters, please report", static_cast<u16>(m_command),
