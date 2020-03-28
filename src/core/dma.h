@@ -64,16 +64,11 @@ private:
     Reserved = 3
   };
 
-  /// Returns the number of ticks for a given channel's transfer.
-  TickCount GetTransferDelay(Channel channel) const;
-
   // is everything enabled for a channel to operate?
   bool CanTransferChannel(Channel channel) const;
-  bool CanRunAnyChannels() const;
   void UpdateIRQ();
 
-  void UpdateChannelTransferEvent(Channel channel);
-  void TransferChannel(Channel channel, TickCount ticks_late);
+  void TransferChannel(Channel channel);
 
   // from device -> memory
   void TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
@@ -93,7 +88,6 @@ private:
 
   struct ChannelState
   {
-    std::unique_ptr<TimingEvent> transfer_event;
     u32 base_address = 0;
 
     union BlockControl
