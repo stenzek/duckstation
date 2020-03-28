@@ -118,7 +118,8 @@ bool GPU::HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_siz
     m_GPUSTAT.interrupt_request = true;
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::GPU);
   }
-
+  
+  command_ptr++;
   EndCommand();
   return true;
 }
