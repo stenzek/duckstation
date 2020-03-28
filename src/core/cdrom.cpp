@@ -766,9 +766,6 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM init command");
       SendACKAndStat();
 
-      m_secondary_status.ClearActiveBits();
-      m_mode.bits = 0;
-
       m_drive_state = DriveState::SpinningUp;
       m_drive_event->Schedule(80000);
 
@@ -1172,7 +1169,10 @@ void CDROM::DoSpinUpComplete()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
 
+  m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+  m_mode.bits = 0;
+  m_mode.read_raw_sector = true;
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
