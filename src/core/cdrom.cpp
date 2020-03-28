@@ -43,6 +43,7 @@ void CDROM::SoftReset()
   m_drive_event->Deactivate();
   m_status.bits = 0;
   m_secondary_status.bits = 0;
+  m_secondary_status.motor_on = HasMedia();
   m_mode.bits = 0;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
@@ -170,6 +171,9 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(m_disc_region),
                  Settings::GetConsoleRegionName(m_system->GetRegion()));
 
+  // motor automatically spins up
+  m_secondary_status.motor_on = true;
+
   m_reader.SetMedia(std::move(media));
 }
 
@@ -181,17 +185,19 @@ void CDROM::RemoveMedia()
   Log_InfoPrintf("Removing CD...");
   m_reader.RemoveMedia();
 
+  m_secondary_status.motor_on = false;
   m_secondary_status.shell_open = true;
+  m_secondary_status.ClearActiveBits();
   m_disc_region = DiscRegion::Other;
 
   // If the drive was doing anything, we need to abort the command.
-  if (m_drive_state != DriveState::Idle)
-  {
-    // TODO: Verify this.
-    Log_WarningPrintf("Aborting drive operation");
-    SendAsyncErrorResponse(0x08);
-    m_drive_state = DriveState::Idle;
-  }
+  m_drive_state = DriveState::Idle;
+  m_command = Command::None;
+  m_command_event->Deactivate();
+  m_drive_event->Deactivate();
+
+  // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
+  SendAsyncErrorResponse(STAT_ERROR, 0x08);
 }
 
 void CDROM::SetUseReadThread(bool enabled)
@@ -761,12 +767,12 @@ void CDROM::ExecuteCommand()
       return;
     }
 
-    case Command::Init:
+    case Command::Reset:
     {
-      Log_DebugPrintf("CDROM init command");
+      Log_DebugPrintf("CDROM reset command");
       SendACKAndStat();
 
-      m_drive_state = DriveState::SpinningUp;
+      m_drive_state = DriveState::Resetting;
       m_drive_event->Schedule(80000);
 
       EndCommand();
@@ -785,7 +791,7 @@ void CDROM::ExecuteCommand()
       {
         SendACKAndStat();
 
-        m_drive_state = DriveState::SpinningUp;
+        m_drive_state = DriveState::Resetting;
         m_drive_event->Schedule(80000);
       }
 
@@ -1033,8 +1039,8 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
 {
   switch (m_drive_state)
   {
-    case DriveState::SpinningUp:
-      DoSpinUpComplete();
+    case DriveState::Resetting:
+      DoResetComplete(ticks_late);
       break;
 
     case DriveState::SeekingPhysical:
@@ -1164,7 +1170,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_reader.QueueReadSector(m_last_requested_sector);
 }
 
-void CDROM::DoSpinUpComplete()
+void CDROM::DoResetComplete(TickCount ticks_late)
 {
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
@@ -1174,9 +1180,24 @@ void CDROM::DoSpinUpComplete()
   m_mode.bits = 0;
   m_mode.read_raw_sector = true;
 
+  if (!HasMedia())
+  {
+    Log_DevPrintf("CDROM reset - no disc");
+    m_secondary_status.shell_open = true;
+    m_secondary_status.motor_on = false;
+    SendAsyncErrorResponse(STAT_ERROR, 0x08);
+    return;
+  }
+
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
   SetAsyncInterrupt(Interrupt::Complete);
+
+  if (!HasMedia())
+  {
+    m_secondary_status.motor_on = false;
+    m_secondary_status.shell_open = true;
+  }
 }
 
 void CDROM::DoSeekComplete(TickCount ticks_late)
@@ -1329,6 +1350,7 @@ void CDROM::DoTOCRead()
   Log_DebugPrintf("TOC read complete");
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
+
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
   SetAsyncInterrupt(Interrupt::Complete);
@@ -1754,7 +1776,7 @@ void CDROM::DrawDebugWindow()
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
     static constexpr std::array<const char*, 11> drive_state_names = {
-      {"Idle", "Spinning Up", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC", "Reading",
+      {"Idle", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC", "Reading",
        "Playing", "Pausing", "Stopping", "Changing Session"}};
 
     ImGui::Columns(3);

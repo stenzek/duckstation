@@ -83,7 +83,7 @@ private:
     MotorOn = 0x07,
     Stop = 0x08,
     Pause = 0x09,
-    Init = 0x0A,
+    Reset = 0x0A,
     Mute = 0x0B,
     Demute = 0x0C,
     Setfilter = 0x0D,
@@ -101,7 +101,7 @@ private:
     Test = 0x19,
     GetID = 0x1A,
     ReadS = 0x1B,
-    Reset = 0x1C,
+    Init = 0x1C,
     GetQ = 0x1D,
     ReadTOC = 0x1E,
     VideoCD = 0x1F,
@@ -112,7 +112,7 @@ private:
   enum class DriveState : u8
   {
     Idle,
-    SpinningUp,
+    Resetting,
     SeekingPhysical,
     SeekingLogical,
     ReadingID,
@@ -215,7 +215,7 @@ private:
   void ExecuteDrive(TickCount ticks_late);
   void BeginReading(TickCount ticks_late = 0);
   void BeginPlaying(u8 track_bcd, TickCount ticks_late = 0);
-  void DoSpinUpComplete();
+  void DoResetComplete(TickCount ticks_late);
   void DoSeekComplete(TickCount ticks_late);
   void DoPauseComplete();
   void DoStopComplete();
