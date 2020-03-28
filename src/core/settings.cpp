@@ -89,6 +89,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
 
+  si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
