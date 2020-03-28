@@ -57,6 +57,7 @@ void GPU::SoftReset()
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
   m_state = State::Idle;
+  m_blitter_ticks = 0;
   m_command_total_words = 0;
   m_vram_transfer = {};
   m_GP0_buffer.clear();
