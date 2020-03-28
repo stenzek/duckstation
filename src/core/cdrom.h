@@ -160,10 +160,10 @@ private:
     BitField<u8, bool, 6, 1> seeking;
     BitField<u8, bool, 7, 1> playing_cdda;
 
-    /// Clears the CDDA/seeking/header valid bits.
+    /// Clears the CDDA/seeking bits.
     ALWAYS_INLINE void ClearActiveBits()
     {
-      bits &= ~(STAT_HEADER_VALID | STAT_SEEKING | STAT_PLAYING_CDDA);
+      bits &= ~(STAT_SEEKING | STAT_PLAYING_CDDA);
     }
   };
 

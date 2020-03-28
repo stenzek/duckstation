@@ -1160,6 +1160,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   const TickCount seek_time = GetTicksForSeek();
 
   m_secondary_status.ClearActiveBits();
+  m_secondary_status.header_valid = false;
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = true;
 
@@ -1175,8 +1176,8 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
 
-  m_secondary_status.ClearActiveBits();
-  m_secondary_status.motor_on = true;
+  m_secondary_status.bits = 0;
+  m_secondary_status.motor_on = HasMedia();
   m_mode.bits = 0;
   m_mode.read_raw_sector = true;
 
@@ -1184,7 +1185,6 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   {
     Log_DevPrintf("CDROM reset - no disc");
     m_secondary_status.shell_open = true;
-    m_secondary_status.motor_on = false;
     SendAsyncErrorResponse(STAT_ERROR, 0x08);
     return;
   }
@@ -1222,11 +1222,19 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
       // check for data header for logical seeks
       if (logical)
       {
-        ProcessDataSectorHeader(m_reader.GetSectorBuffer().data(), false);
+        if (!m_last_subq.control.data)
+        {
+          Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]", seek_mm, seek_ss, seek_ff);
+          seek_okay = false;
+        }
+        else
+        {
+          ProcessDataSectorHeader(m_reader.GetSectorBuffer().data(), true);
 
-        // ensure the location matches up (it should)
-        seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
-                     m_last_sector_header.frame == seek_ff);
+          // ensure the location matches up (it should)
+          seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
+                       m_last_sector_header.frame == seek_ff);
+        }
       }
     }
   }
@@ -1281,6 +1289,7 @@ void CDROM::DoStopComplete()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
+  m_secondary_status.header_valid = false;
   m_secondary_status.motor_on = false;
 
   m_async_response_fifo.Clear();
@@ -1294,6 +1303,7 @@ void CDROM::DoChangeSessionComplete()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
+  m_secondary_status.header_valid = false;
   m_secondary_status.motor_on = true;
 
   m_async_response_fifo.Clear();
