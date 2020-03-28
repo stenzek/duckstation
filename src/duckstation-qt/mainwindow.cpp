@@ -13,6 +13,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
+#include <QtGui/QCursor>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
@@ -103,9 +104,11 @@ void MainWindow::setFullscreen(bool fullscreen)
     m_ui.mainContainer->removeWidget(m_display_widget);
     m_display_widget->setParent(nullptr);
     m_display_widget->showFullScreen();
+    m_display_widget->setCursor(Qt::BlankCursor);
   }
   else
   {
+    m_display_widget->setCursor(QCursor());
     m_ui.mainContainer->insertWidget(1, m_display_widget);
     m_ui.mainContainer->setCurrentIndex(1);
   }
@@ -572,7 +575,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::changeEvent(QEvent* event)
 {
-  if (static_cast<QWindowStateChangeEvent*>(event)->oldState()& Qt::WindowMinimized)
+  if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
   {
     // TODO: This should check the render-to-main option.
     if (m_display_widget)
