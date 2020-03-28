@@ -24,7 +24,7 @@ public:
     std::copy(copy.cbegin(), copy.cend(), begin());
   }
 
-  HeapArray(const this_type&& move)
+  HeapArray(this_type&& move)
   {
     m_data = move.m_data;
     move.m_data = nullptr;
@@ -71,7 +71,7 @@ public:
     return *this;
   }
 
-  this_type& operator=(const this_type&& move)
+  this_type& operator=(this_type&& move)
   {
     delete[] m_data;
     m_data = move.m_data;
