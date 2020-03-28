@@ -57,7 +57,7 @@ private:
     PARAM_FIFO_SIZE = 16,
     RESPONSE_FIFO_SIZE = 16,
     DATA_FIFO_SIZE = RAW_SECTOR_OUTPUT_SIZE,
-    NUM_SECTOR_BUFFERS = 2,
+    NUM_SECTOR_BUFFERS = 8,
   };
 
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -289,6 +289,8 @@ private:
     u32 size;
   };
 
+  u32 m_current_read_sector_buffer = 0;
+  u32 m_current_write_sector_buffer = 0;
   std::array<SectorBuffer, NUM_SECTOR_BUFFERS> m_sector_buffers;
 
   CDROMAsyncReader m_reader;

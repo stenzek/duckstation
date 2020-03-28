@@ -83,6 +83,8 @@ void CDROM::SoftReset()
   m_async_response_fifo.Clear();
   m_data_fifo.Clear();
 
+  m_current_read_sector_buffer = 0;
+  m_current_write_sector_buffer = 0;
   for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
   {
     m_sector_buffers[i].data.fill(0);
@@ -129,6 +131,8 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_async_response_fifo);
   sw.Do(&m_data_fifo);
 
+  sw.Do(&m_current_read_sector_buffer);
+  sw.Do(&m_current_write_sector_buffer);
   for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
   {
     sw.Do(&m_sector_buffers[i].data);
@@ -1090,6 +1094,8 @@ void CDROM::BeginReading(TickCount ticks_late)
   m_drive_state = DriveState::Reading;
   m_drive_event->SetInterval(ticks);
   m_drive_event->Schedule(ticks - ticks_late);
+  m_current_read_sector_buffer = 0;
+  m_current_write_sector_buffer = 0;
 
   m_reader.QueueReadSector(m_last_requested_sector);
 }
@@ -1130,6 +1136,8 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
   m_drive_state = DriveState::Playing;
   m_drive_event->SetInterval(ticks);
   m_drive_event->Schedule(ticks - ticks_late);
+  m_current_read_sector_buffer = 0;
+  m_current_write_sector_buffer = 0;
 
   m_reader.QueueReadSector(m_last_requested_sector);
 }
@@ -1405,8 +1413,9 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
 {
   ProcessDataSectorHeader(raw_sector, true);
 
-  Log_DevPrintf("Read sector %u: mode %u submode 0x%02X", m_last_requested_sector,
-                ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits));
+  Log_DevPrintf("Read sector %u: mode %u submode 0x%02X into buffer %u", m_last_requested_sector,
+                ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits),
+                m_current_write_sector_buffer);
 
   if (m_mode.xa_enable && m_last_sector_header.sector_mode == 2)
   {
@@ -1436,14 +1445,12 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // TODO: How does XA relate to this buffering?
-  SectorBuffer* sb = &m_sector_buffers[0];
+  SectorBuffer* sb = &m_sector_buffers[m_current_write_sector_buffer];
+  m_current_write_sector_buffer = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
   if (sb->size > 0)
   {
-    sb = &m_sector_buffers[1];
-    if (sb->size > 0)
-      Log_WarningPrintf("Sector buffer was not read, previous sector dropped");
-    else
-      Log_DevPrintf("Sector buffer was not read, buffering sector");
+    Log_WarningPrintf("Sector buffer %u was not read, previous sector dropped",
+                      (m_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
   }
 
   Assert(!m_mode.ignore_bit);
@@ -1686,7 +1693,7 @@ void CDROM::LoadDataFIFO()
   }
 
   // any data to load?
-  SectorBuffer& sb = m_sector_buffers[0];
+  SectorBuffer& sb = m_sector_buffers[m_current_read_sector_buffer];
   if (sb.size == 0)
   {
     Log_WarningPrintf("Attempting to load empty sector buffer");
@@ -1694,18 +1701,12 @@ void CDROM::LoadDataFIFO()
   }
   else
   {
-    m_data_fifo.PushRange(sb.data.data(), m_sector_buffers[0].size);
+    m_data_fifo.PushRange(sb.data.data(), sb.size);
     sb.size = 0;
   }
 
-  SectorBuffer& next_sb = m_sector_buffers[1];
-  if (next_sb.size > 0)
-  {
-    sb.data.swap(next_sb.data);
-    std::swap(sb.size, next_sb.size);
-  }
-
-  Log_DebugPrintf("Loaded %u bytes to data FIFO", m_data_fifo.GetSize());
+  Log_DevPrintf("Loaded %u bytes to data FIFO from buffer %u", m_data_fifo.GetSize(), m_current_read_sector_buffer);
+  m_current_read_sector_buffer = m_current_write_sector_buffer;
 }
 
 void CDROM::ClearSectorBuffers()
