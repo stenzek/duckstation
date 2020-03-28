@@ -344,7 +344,7 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
                                       m_vram_texture.GetHeight(), m_vram_texture.GetWidth(),
                                       -static_cast<s32>(m_vram_texture.GetHeight()));
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT),
-                                         1.0f);
+                                         static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {

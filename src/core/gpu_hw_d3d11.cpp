@@ -526,7 +526,7 @@ void GPU_HW_D3D11::UpdateDisplay()
     m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                                       0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT),
-                                         1.0f);
+                                         static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {
