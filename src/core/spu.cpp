@@ -21,6 +21,9 @@ void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_co
   m_interrupt_controller = interrupt_controller;
   m_tick_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
                                              std::bind(&SPU::Execute, this, std::placeholders::_1), false);
+  m_transfer_event =
+    m_system->CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
+                                std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
 }
 
 void SPU::Reset()
@@ -74,7 +77,9 @@ void SPU::Reset()
     v.has_samples = false;
   }
 
+  m_transfer_fifo.Clear();
   m_ram.fill(0);
+  m_cd_audio_buffer.Clear();
   UpdateEventInterval();
 }
 
@@ -133,7 +138,9 @@ bool SPU::DoState(StateWrapper& sw)
     sw.Do(&v.ignore_loop_address);
   }
 
+  sw.Do(&m_transfer_fifo);
   sw.DoBytes(m_ram.data(), RAM_SIZE);
+  sw.Do(&m_cd_audio_buffer);
 
   if (sw.IsReading())
   {
@@ -215,6 +222,7 @@ u16 SPU::ReadRegister(u32 offset)
 
     case 0x1F801DAE - SPU_BASE:
       m_tick_event->InvokeEarly();
+      m_transfer_event->InvokeEarly();
       Log_TracePrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUSTAT.bits;
 
@@ -410,7 +418,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
     {
       Log_TracePrintf("SPU transfer data register <- 0x%04X (RAM offset 0x%08X)", ZeroExtend32(value),
                       m_transfer_address);
-      RAMTransferWrite(value);
+
+      ManualTransferWrite(value);
       return;
     }
 
@@ -419,15 +428,24 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly(true);
 
-      m_SPUCNT.bits = value;
+      const SPUCNT new_value{value};
+      if (new_value.ram_transfer_mode != m_SPUCNT.ram_transfer_mode &&
+          new_value.ram_transfer_mode == RAMTransferMode::Stopped)
+      {
+        // clear the fifo here?
+        Log_DebugPrintf("Clearing SPU transfer FIFO");
+        m_transfer_fifo.Clear();
+      }
+
+      m_SPUCNT.bits = new_value.bits;
       m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
-      m_SPUSTAT.dma_request = m_SPUCNT.ram_transfer_mode >= RAMTransferMode::DMAWrite;
 
       if (!m_SPUCNT.irq9_enable)
         m_SPUSTAT.irq9_flag = false;
 
-      UpdateDMARequest();
       UpdateEventInterval();
+      UpdateDMARequest();
+      UpdateTransferEvent();
       return;
     }
 
@@ -596,77 +614,6 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     }
     break;
   }
-}
-
-void SPU::DMARead(u32* words, u32 word_count)
-{
-  // test for wrap-around
-  if ((m_transfer_address & ~RAM_MASK) != ((m_transfer_address + (word_count * sizeof(u32))) & ~RAM_MASK))
-  {
-    // this could still be optimized to copy in two parts - end/start, but is unlikely.
-    for (u32 i = 0; i < word_count; i++)
-    {
-      const u16 lsb = RAMTransferRead();
-      const u16 msb = RAMTransferRead();
-      words[i] = ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
-    }
-  }
-  else
-  {
-    std::memcpy(words, &m_ram[m_transfer_address], sizeof(u32) * word_count);
-    m_transfer_address = (m_transfer_address + (sizeof(u32) * word_count)) & RAM_MASK;
-  }
-}
-
-void SPU::DMAWrite(const u32* words, u32 word_count)
-{
-  // test for wrap-around
-  if ((m_transfer_address & ~RAM_MASK) != ((m_transfer_address + (word_count * sizeof(u32))) & ~RAM_MASK))
-  {
-    // this could still be optimized to copy in two parts - end/start, but is unlikely.
-    for (u32 i = 0; i < word_count; i++)
-    {
-      const u32 value = words[i];
-      RAMTransferWrite(Truncate16(value));
-      RAMTransferWrite(Truncate16(value >> 16));
-    }
-  }
-  else
-  {
-    DebugAssert(m_transfer_control.mode == 2);
-    std::memcpy(&m_ram[m_transfer_address], words, sizeof(u32) * word_count);
-    m_transfer_address = (m_transfer_address + (sizeof(u32) * word_count)) & RAM_MASK;
-  }
-}
-
-void SPU::UpdateDMARequest()
-{
-  const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
-  const bool request = (mode == RAMTransferMode::DMAWrite || mode == RAMTransferMode::DMARead);
-  m_dma->SetRequest(DMA::Channel::SPU, true);
-  m_SPUSTAT.dma_read_request = request && mode == RAMTransferMode::DMARead;
-  m_SPUSTAT.dma_write_request = request && mode == RAMTransferMode::DMAWrite;
-}
-
-u16 SPU::RAMTransferRead()
-{
-  CheckRAMIRQ(m_transfer_address);
-
-  u16 value;
-  std::memcpy(&value, &m_ram[m_transfer_address], sizeof(value));
-  m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
-  return value;
-}
-
-void SPU::RAMTransferWrite(u16 value)
-{
-  Log_TracePrintf("SPU RAM @ 0x%08X (voice 0x%04X) <- 0x%04X", m_transfer_address,
-                  m_transfer_address >> VOICE_ADDRESS_SHIFT, ZeroExtend32(value));
-  DebugAssert(m_transfer_control.mode == 2);
-
-  std::memcpy(&m_ram[m_transfer_address], &value, sizeof(value));
-  m_transfer_address = (m_transfer_address + sizeof(value)) & RAM_MASK;
-  CheckRAMIRQ(m_transfer_address);
 }
 
 void SPU::CheckRAMIRQ(u32 address)
@@ -838,6 +785,227 @@ void SPU::UpdateEventInterval()
   m_tick_event->InvokeEarly(true);
   m_tick_event->SetInterval(interval_ticks);
   m_tick_event->Schedule(interval_ticks - m_ticks_carry);
+}
+
+void SPU::ExecuteTransfer(TickCount ticks)
+{
+  const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
+  Assert(mode != RAMTransferMode::Stopped);
+
+  if (mode == RAMTransferMode::DMARead)
+  {
+    while (ticks > 0 && !m_transfer_fifo.IsFull())
+    {
+      while (ticks > 0 && !m_transfer_fifo.IsFull())
+      {
+        u16 value;
+        std::memcpy(&value, &m_ram[m_transfer_address], sizeof(u16));
+        m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
+        m_transfer_fifo.Push(value);
+        ticks -= TRANSFER_TICKS_PER_HALFWORD;
+      }
+
+      // this can result in the FIFO being emptied, hence double the while loop
+      UpdateDMARequest();
+    }
+
+    // we're done if we have no more data to read
+    if (m_transfer_fifo.IsFull())
+    {
+      m_SPUSTAT.transfer_busy = false;
+      m_transfer_event->Deactivate();
+      return;
+    }
+
+    m_SPUSTAT.transfer_busy = true;
+    const TickCount ticks_until_complete =
+      TickCount(m_transfer_fifo.GetSpace() * u32(TRANSFER_TICKS_PER_HALFWORD)) + ((ticks < 0) ? -ticks : 0);
+    m_transfer_event->Schedule(ticks_until_complete);
+  }
+  else
+  {
+    // write the fifo to ram, request dma again when empty
+    while (ticks > 0 && !m_transfer_fifo.IsEmpty())
+    {
+      while (ticks > 0 && !m_transfer_fifo.IsEmpty())
+      {
+        u16 value = m_transfer_fifo.Pop();
+        std::memcpy(&m_ram[m_transfer_address], &value, sizeof(u16));
+        m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
+        ticks -= TRANSFER_TICKS_PER_HALFWORD;
+      }
+
+      // similar deal here, the FIFO can be written out in a long slice
+      UpdateDMARequest();
+    }
+
+    // we're done if we have no more data to write
+    if (m_transfer_fifo.IsEmpty())
+    {
+      m_SPUSTAT.transfer_busy = false;
+      m_transfer_event->Deactivate();
+      return;
+    }
+
+    m_SPUSTAT.transfer_busy = true;
+    const TickCount ticks_until_complete =
+      TickCount(m_transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)) + ((ticks < 0) ? -ticks : 0);
+    m_transfer_event->Schedule(ticks_until_complete);
+  }
+}
+
+void SPU::ManualTransferWrite(u16 value)
+{
+  if (m_transfer_fifo.IsFull())
+  {
+    Log_WarningPrintf("FIFO full, dropping write of 0x%04X", value);
+    return;
+  }
+
+  m_transfer_fifo.Push(value);
+  UpdateTransferEvent();
+}
+
+void SPU::UpdateTransferEvent()
+{
+  const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
+  if (mode == RAMTransferMode::Stopped)
+  {
+    m_transfer_event->Deactivate();
+    return;
+  }
+
+  if (mode == RAMTransferMode::DMARead)
+  {
+    // transfer event fills the fifo
+    if (m_transfer_fifo.IsFull())
+      m_transfer_event->Deactivate();
+    else if (!m_transfer_event->IsActive())
+      m_transfer_event->Schedule(TickCount(m_transfer_fifo.GetSpace() * u32(TRANSFER_TICKS_PER_HALFWORD)));
+  }
+  else
+  {
+    // transfer event copies from fifo to ram
+    if (m_transfer_fifo.IsEmpty())
+      m_transfer_event->Deactivate();
+    if (!m_transfer_event->IsActive())
+      m_transfer_event->Schedule(TickCount(m_transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)));
+  }
+
+  m_SPUSTAT.transfer_busy = m_transfer_event->IsActive();
+}
+
+void SPU::UpdateDMARequest()
+{
+  switch (m_SPUCNT.ram_transfer_mode)
+  {
+    case RAMTransferMode::DMARead:
+      m_SPUSTAT.dma_read_request = m_transfer_fifo.IsFull();
+      m_SPUSTAT.dma_write_request = false;
+      m_SPUSTAT.dma_request = m_SPUSTAT.dma_read_request;
+      break;
+
+    case RAMTransferMode::DMAWrite:
+      m_SPUSTAT.dma_read_request = false;
+      m_SPUSTAT.dma_write_request = m_transfer_fifo.IsEmpty();
+      m_SPUSTAT.dma_request = m_SPUSTAT.dma_write_request;
+      break;
+
+    case RAMTransferMode::Stopped:
+    case RAMTransferMode::ManualWrite:
+    default:
+      m_SPUSTAT.dma_read_request = false;
+      m_SPUSTAT.dma_write_request = false;
+      m_SPUSTAT.dma_request = false;
+      break;
+  }
+
+  // This might call us back directly.
+  m_dma->SetRequest(DMA::Channel::SPU, m_SPUSTAT.dma_request);
+}
+
+void SPU::DMARead(u32* words, u32 word_count)
+{
+  /*
+    From @JaCzekanski - behavior when block size is larger than the FIFO size
+    for blocks <= 0x16 - all data is transferred correctly
+    using block size 0x20 transfer behaves strange:
+    % Writing 524288 bytes to SPU RAM to 0x00000000 using DMA... ok
+    % Reading 256 bytes from SPU RAM from 0x00001000 using DMA... ok
+    % 0x00001000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f ................
+    % 0x00001010: 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f ................
+    % 0x00001020: 20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  !"#$%&'()*+,-./
+    % 0x00001030: 30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f 0123456789:;<=>?
+    % 0x00001040: 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f >?>?>?>?>?>?>?>?
+    % 0x00001050: 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f >?>?>?>?>?>?>?>?
+    % 0x00001060: 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f >?>?>?>?>?>?>?>?
+    % 0x00001070: 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f 3e 3f >?>?>?>?>?>?>?>?
+    % 0x00001080: 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f @ABCDEFGHIJKLMNO
+    % 0x00001090: 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f PQRSTUVWXYZ[\]^_
+    % 0x000010a0: 60 61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f `abcdefghijklmno
+    % 0x000010b0: 70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f pqrstuvwxyz{|}~.
+    % 0x000010c0: 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f ~.~.~.~.~.~.~.~.
+    % 0x000010d0: 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f ~.~.~.~.~.~.~.~.
+    % 0x000010e0: 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f ~.~.~.~.~.~.~.~.
+    % 0x000010f0: 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f 7e 7f ~.~.~.~.~.~.~.~.
+    Using Block size = 0x10 (correct data)
+    % Reading 256 bytes from SPU RAM from 0x00001000 using DMA... ok
+    % 0x00001000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f ................
+    % 0x00001010: 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f ................
+    % 0x00001020: 20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  !"#$%&'()*+,-./
+    % 0x00001030: 30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f 0123456789:;<=>?
+    % 0x00001040: 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f @ABCDEFGHIJKLMNO
+    % 0x00001050: 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f PQRSTUVWXYZ[\]^_
+    % 0x00001060: 60 61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f `abcdefghijklmno
+    % 0x00001070: 70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f pqrstuvwxyz{|}~.
+    % 0x00001080: 80 81 82 83 84 85 86 87 88 89 8a 8b 8c 8d 8e 8f ................
+    % 0x00001090: 90 91 92 93 94 95 96 97 98 99 9a 9b 9c 9d 9e 9f ................
+    % 0x000010a0: a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af ................
+    % 0x000010b0: b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 ba bb bc bd be bf ................
+    % 0x000010c0: c0 c1 c2 c3 c4 c5 c6 c7 c8 c9 ca cb cc cd ce cf ................
+    % 0x000010d0: d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 da db dc dd de df ................
+    % 0x000010e0: e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 ea eb ec ed ee ef ................
+    % 0x000010f0: f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff ................
+   */
+
+  u16* halfwords = reinterpret_cast<u16*>(words);
+  u32 halfword_count = word_count * 2;
+
+  const u32 size = m_transfer_fifo.GetSize();
+  if (word_count > size)
+  {
+    u16 fill_value = 0;
+    if (size > 0)
+    {
+      m_transfer_fifo.PopRange(halfwords, size);
+      fill_value = halfwords[size - 1];
+    }
+
+    Log_WarningPrintf("Transfer FIFO underflow, filling with 0x%04X", fill_value);
+    std::fill_n(&halfwords[size], halfword_count - size, fill_value);
+  }
+  else
+  {
+    m_transfer_fifo.PopRange(halfwords, halfword_count);
+  }
+
+  UpdateDMARequest();
+  UpdateTransferEvent();
+}
+
+void SPU::DMAWrite(const u32* words, u32 word_count)
+{
+  const u16* halfwords = reinterpret_cast<const u16*>(words);
+  u32 halfword_count = word_count * 2;
+
+  const u32 words_to_transfer = std::min(m_transfer_fifo.GetSpace(), halfword_count);
+  m_transfer_fifo.PushRange(halfwords, words_to_transfer);
+
+  if (words_to_transfer != halfword_count)
+    Log_WarningPrintf("Transfer FIFO overflow, dropping %u halfwords", halfword_count - words_to_transfer);
+
+  UpdateDMARequest();
+  UpdateTransferEvent();
 }
 
 void SPU::GeneratePendingSamples()
@@ -1565,6 +1733,11 @@ void SPU::DrawDebugStateWindow()
     ImGui::SameLine(offsets[3]);
     ImGui::TextColored(m_SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %d%%",
                        ApplyVolume(100, m_cd_audio_volume_left));
+
+    ImGui::Text("Transfer FIFO: ");
+    ImGui::SameLine(offsets[0]);
+    ImGui::TextColored(m_transfer_event->IsActive() ? active_color : inactive_color, "%u halfwords (%u bytes)",
+                       m_transfer_fifo.GetSize(), m_transfer_fifo.GetSize() * 2);
   }
 
   // draw voice states

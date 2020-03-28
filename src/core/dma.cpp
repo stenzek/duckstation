@@ -206,15 +206,6 @@ TickCount DMA::GetTransferDelay(Channel channel) const
   const ChannelState& cs = m_state[static_cast<u32>(channel)];
   switch (channel)
   {
-    case Channel::SPU:
-    {
-      if (cs.channel_control.sync_mode == SyncMode::Request)
-        return (cs.block_control.request.GetBlockCount() * (cs.block_control.request.GetBlockSize() / 2));
-      else
-        return 1;
-    }
-    break;
-
     default:
       return 0;
   }

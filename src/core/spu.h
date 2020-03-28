@@ -71,6 +71,8 @@ private:
   static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
   static constexpr u32 MINIMUM_TICKS_BETWEEN_KEY_ON_OFF = 2;
   static constexpr u32 NUM_REVERB_REGS = 16;
+  static constexpr u32 FIFO_SIZE_IN_HALFWORDS = 32;
+  static constexpr TickCount TRANSFER_TICKS_PER_HALFWORD = 32;
 
   enum class RAMTransferMode : u8
   {
@@ -354,9 +356,6 @@ private:
   u16 ReadVoiceRegister(u32 offset);
   void WriteVoiceRegister(u32 offset, u16 value);
 
-  void UpdateDMARequest();
-  u16 RAMTransferRead();
-  void RAMTransferWrite(u16 value);
   void CheckRAMIRQ(u32 address);
   void WriteToCaptureBuffer(u32 index, s16 value);
   void IncrementCaptureBufferPosition();
@@ -374,10 +373,16 @@ private:
   void Execute(TickCount ticks);
   void UpdateEventInterval();
 
+  void ExecuteTransfer(TickCount ticks);
+  void ManualTransferWrite(u16 value);
+  void UpdateTransferEvent();
+  void UpdateDMARequest();
+
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
   std::unique_ptr<TimingEvent> m_tick_event;
+  std::unique_ptr<TimingEvent> m_transfer_event;
   std::unique_ptr<Common::WAVWriter> m_dump_writer;
   u32 m_tick_counter = 0;
   TickCount m_ticks_carry = 0;
@@ -421,6 +426,9 @@ private:
   s16 m_reverb_right_output = 0;
 
   std::array<Voice, NUM_VOICES> m_voices{};
+
+  InlineFIFOQueue<u16, FIFO_SIZE_IN_HALFWORDS> m_transfer_fifo;
+
   std::array<u8, RAM_SIZE> m_ram{};
 
   InlineFIFOQueue<s16, CD_AUDIO_SAMPLE_BUFFER_SIZE> m_cd_audio_buffer;
