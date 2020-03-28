@@ -80,13 +80,16 @@ public:
     m_display_changed = true;
   }
 
-  void SetDisplayParameters(s32 display_width, s32 display_height, const Common::Rectangle<s32>& display_area,
-                            float pixel_aspect_ratio)
+  void SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top, s32 active_width,
+                            s32 active_height, float pixel_aspect_ratio)
   {
     m_display_width = display_width;
     m_display_height = display_height;
-    m_display_area = display_area;
-    m_display_aspect_ratio = pixel_aspect_ratio;
+    m_display_active_left = active_left;
+    m_display_active_top = active_top;
+    m_display_active_width = active_width;
+    m_display_active_height = active_height;
+    m_display_pixel_aspect_ratio = pixel_aspect_ratio;
     m_display_changed = true;
   }
 
@@ -109,8 +112,11 @@ protected:
 
   s32 m_display_width = 0;
   s32 m_display_height = 0;
-  Common::Rectangle<s32> m_display_area{};
-  float m_display_aspect_ratio = 1.0f;
+  s32 m_display_active_left = 0;
+  s32 m_display_active_top = 0;
+  s32 m_display_active_width = 0;
+  s32 m_display_active_height = 0;
+  float m_display_pixel_aspect_ratio = 1.0f;
 
   void* m_display_texture_handle = nullptr;
   s32 m_display_texture_width = 0;

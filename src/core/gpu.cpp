@@ -36,6 +36,9 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
 void GPU::UpdateSettings()
 {
   m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
+
+  // Crop mode calls this, so recalculate the display area
+  UpdateCRTCDisplayParameters();
 }
 
 void GPU::Reset()
@@ -107,12 +110,14 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.regs.horizontal_display_range);
   sw.Do(&m_crtc_state.regs.vertical_display_range);
   sw.Do(&m_crtc_state.dot_clock_divider);
-  sw.Do(&m_crtc_state.visible_display_width);
-  sw.Do(&m_crtc_state.visible_display_height);
-  sw.Do(&m_crtc_state.active_display_left);
-  sw.Do(&m_crtc_state.active_display_top);
-  sw.Do(&m_crtc_state.active_display_width);
-  sw.Do(&m_crtc_state.active_display_height);
+  sw.Do(&m_crtc_state.display_width);
+  sw.Do(&m_crtc_state.display_height);
+  sw.Do(&m_crtc_state.display_origin_left);
+  sw.Do(&m_crtc_state.display_origin_top);
+  sw.Do(&m_crtc_state.display_vram_left);
+  sw.Do(&m_crtc_state.display_vram_top);
+  sw.Do(&m_crtc_state.display_vram_width);
+  sw.Do(&m_crtc_state.display_vram_height);
   sw.Do(&m_crtc_state.horizontal_total);
   sw.Do(&m_crtc_state.horizontal_display_start);
   sw.Do(&m_crtc_state.horizontal_display_end);
@@ -319,7 +324,6 @@ void GPU::UpdateCRTCConfig()
 {
   static constexpr std::array<u16, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
   CRTCState& cs = m_crtc_state;
-  const DisplayCropMode crop_mode = m_system->GetSettings().display_crop_mode;
 
   if (m_GPUSTAT.pal_mode)
   {
@@ -343,99 +347,154 @@ void GPU::UpdateCRTCConfig()
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
-  cs.horizontal_display_start = static_cast<TickCount>(std::min<u32>(cs.regs.X1, cs.horizontal_total));
-  cs.horizontal_display_end = static_cast<TickCount>(std::min<u32>(cs.regs.X2, cs.horizontal_total));
-  cs.vertical_display_start = static_cast<TickCount>(std::min<u32>(cs.regs.Y1, cs.vertical_total));
-  cs.vertical_display_end = static_cast<TickCount>(std::min<u32>(cs.regs.Y2, cs.vertical_total));
+  cs.horizontal_display_start = std::min<u16>(cs.regs.X1, cs.horizontal_total);
+  cs.horizontal_display_end = std::min<u16>(cs.regs.X2, cs.horizontal_total);
+  cs.vertical_display_start = std::min<u16>(cs.regs.Y1, cs.vertical_total);
+  cs.vertical_display_end = std::min<u16>(cs.regs.Y2, cs.vertical_total);
 
-  // determine the active display size
-  cs.active_display_width = std::clamp<u16>((cs.regs.X2 - cs.regs.X1) / cs.dot_clock_divider, 1, VRAM_WIDTH);
-  cs.active_display_height =
-    std::clamp<u16>((cs.regs.Y2 - cs.regs.Y1), 1, VRAM_HEIGHT >> BoolToUInt8(m_GPUSTAT.In480iMode()));
+  UpdateCRTCDisplayParameters();
+  UpdateSliceTicks();
+}
 
-  // Construct screen borders from configured active area and the standard visible range.
-  // TODO: Ensure it doesn't overflow
-  const u16 horizontal_start_display_tick = (crop_mode == DisplayCropMode::None ? 488 : 608);
-  const u16 horizontal_end_display_tick = (crop_mode == DisplayCropMode::None ? 2800 : 2560);
-  cs.visible_display_width = horizontal_end_display_tick / cs.dot_clock_divider;
-  cs.active_display_left =
-    (std::max<u16>(m_crtc_state.regs.X1, horizontal_start_display_tick) - horizontal_start_display_tick) /
-    cs.dot_clock_divider;
+void GPU::UpdateCRTCDisplayParameters()
+{
+  CRTCState& cs = m_crtc_state;
+  const DisplayCropMode crop_mode = m_system->GetSettings().display_crop_mode;
 
-  const u16 vertical_start_display_line = (crop_mode == DisplayCropMode::None ? 8 : (m_GPUSTAT.pal_mode ? 20 : 16));
-  const u16 vertical_end_display_line =
-    (crop_mode == DisplayCropMode::None ? static_cast<u16>(cs.vertical_total) :
-                                          static_cast<u16>(m_GPUSTAT.pal_mode ? 308 : 256));
-  const u16 bottom_padding = vertical_end_display_line - std::min<u16>(m_crtc_state.regs.Y2, vertical_end_display_line);
-  cs.active_display_top =
-    std::max<u16>(m_crtc_state.regs.Y1, vertical_start_display_line) - vertical_start_display_line;
-  cs.visible_display_height = cs.active_display_top + cs.active_display_height + bottom_padding;
+  u16 horizontal_display_start_tick, horizontal_display_end_tick;
+  u16 vertical_display_start_line, vertical_display_end_line;
+  if (m_GPUSTAT.pal_mode)
+  {
+    // TODO: Verify PAL numbers.
+    switch (crop_mode)
+    {
+      case DisplayCropMode::None:
+        horizontal_display_start_tick = 487;
+        horizontal_display_end_tick = 3282;
+        vertical_display_start_line = 12;
+        vertical_display_end_line = 312;
+        break;
+
+      case DisplayCropMode::Overscan:
+        horizontal_display_start_tick = 628;
+        horizontal_display_end_tick = 3188;
+        vertical_display_start_line = 19;
+        vertical_display_end_line = 307;
+        break;
+
+      case DisplayCropMode::Borders:
+      default:
+        horizontal_display_start_tick = m_crtc_state.horizontal_display_start;
+        horizontal_display_end_tick = m_crtc_state.horizontal_display_end;
+        vertical_display_start_line = m_crtc_state.vertical_display_start;
+        vertical_display_end_line = m_crtc_state.vertical_display_end;
+        break;
+    }
+  }
+  else
+  {
+    switch (crop_mode)
+    {
+      case DisplayCropMode::None:
+        horizontal_display_start_tick = 488;
+        horizontal_display_end_tick = 3288;
+        vertical_display_start_line = 8;
+        vertical_display_end_line = 260;
+        break;
+
+      case DisplayCropMode::Overscan:
+        horizontal_display_start_tick = 608;
+        horizontal_display_end_tick = 3168;
+        vertical_display_start_line = 16;
+        vertical_display_end_line = 256;
+        break;
+
+      case DisplayCropMode::Borders:
+      default:
+        horizontal_display_start_tick = m_crtc_state.horizontal_display_start;
+        horizontal_display_end_tick = m_crtc_state.horizontal_display_end;
+        vertical_display_start_line = m_crtc_state.vertical_display_start;
+        vertical_display_end_line = m_crtc_state.vertical_display_end;
+        break;
+    }
+  }
+
+  const u8 height_shift = BoolToUInt8(m_GPUSTAT.In480iMode());
+
+  // Determine screen size.
+  cs.display_width = std::max<u16>(
+    ((horizontal_display_end_tick - horizontal_display_start_tick) + (cs.dot_clock_divider - 1)) / cs.dot_clock_divider,
+    1u);
+  cs.display_height = std::max<u16>((vertical_display_end_line - vertical_display_start_line) << height_shift, 1u);
+
+  // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
+  // padding.
+  if (cs.horizontal_display_start >= horizontal_display_start_tick)
+  {
+    cs.display_origin_left = (cs.horizontal_display_start - horizontal_display_start_tick) / cs.dot_clock_divider;
+    cs.display_vram_left = m_crtc_state.regs.X;
+  }
+  else
+  {
+    cs.display_origin_left = 0;
+    cs.display_vram_left = std::min<u16>(
+      m_crtc_state.regs.X + ((horizontal_display_start_tick - cs.horizontal_display_start) / cs.dot_clock_divider),
+      VRAM_WIDTH - 1);
+
+    // for 24-bit scanout we must stay aligned
+    if (m_GPUSTAT.display_area_color_depth_24 && ((cs.display_vram_left - cs.regs.X) & 1u))
+      cs.display_vram_left--;
+  }
+
+  if (cs.horizontal_display_end <= horizontal_display_end_tick)
+  {
+    cs.display_vram_width = std::min<u16>(
+      std::max<u16>(
+        (((cs.horizontal_display_end - std::max(cs.horizontal_display_start, horizontal_display_start_tick)) +
+          (cs.dot_clock_divider - 1)) /
+         cs.dot_clock_divider),
+        1u),
+      VRAM_WIDTH - cs.display_vram_left);
+  }
+  else
+  {
+    cs.display_vram_width = std::min<u16>(
+      std::max<u16>(
+        (((horizontal_display_end_tick - std::max(cs.horizontal_display_start, horizontal_display_start_tick)) +
+          (cs.dot_clock_divider - 1)) /
+         cs.dot_clock_divider),
+        1u),
+      VRAM_WIDTH - cs.display_vram_left);
+  }
+
+  if (cs.vertical_display_start >= vertical_display_start_line)
+  {
+    cs.display_origin_top = (cs.vertical_display_start - vertical_display_start_line) << height_shift;
+    cs.display_vram_top = m_crtc_state.regs.Y;
+  }
+  else
+  {
+    cs.display_origin_top = 0;
+    cs.display_vram_top =
+      std::min<u16>(m_crtc_state.regs.Y + ((cs.vertical_display_start - vertical_display_start_line) << height_shift),
+                    VRAM_HEIGHT - 1);
+  }
+
+  if (cs.vertical_display_end <= vertical_display_end_line)
+  {
+    cs.display_vram_height = std::min<u16>(
+      (cs.vertical_display_end - std::max(cs.vertical_display_start, vertical_display_start_line)) << height_shift,
+      VRAM_HEIGHT - cs.display_vram_top);
+  }
+  else
+  {
+    cs.display_vram_height = std::min<u16>(
+      (vertical_display_end_line - std::max(cs.vertical_display_start, vertical_display_start_line)) << height_shift,
+      VRAM_HEIGHT - cs.display_vram_top);
+  }
 
   // Aspect ratio is always 4:3.
   cs.display_aspect_ratio = 4.0f / 3.0f;
-
-  if (crop_mode == DisplayCropMode::Borders)
-  {
-    // Compute the aspect ratio necessary to display borders in the inactive region of the picture.
-    // Convert total dots/lines to time.
-    const float dot_clock =
-      (static_cast<float>(MASTER_CLOCK) * (11.0f / 7.0f / static_cast<float>(cs.dot_clock_divider)));
-    const float dot_clock_period = 1.0f / dot_clock;
-    const float dots_per_scanline = static_cast<float>(cs.horizontal_total) / static_cast<float>(cs.dot_clock_divider);
-    const float horizontal_period = dots_per_scanline * dot_clock_period;
-    const float vertical_period = horizontal_period * static_cast<float>(cs.vertical_total);
-
-    // Convert active dots/lines to time.
-    const float visible_dots_per_scanline = static_cast<float>(cs.active_display_width);
-    const float horizontal_active_time = horizontal_period * visible_dots_per_scanline;
-    const float vertical_active_time = horizontal_active_time * static_cast<float>(cs.regs.Y2 - cs.regs.Y1);
-
-    // Use the reference active time/lines for the signal to work out the border area, and thus aspect ratio
-    // transformation for the active area in our framebuffer. For the purposes of these calculations, we're assuming
-    // progressive scan.
-    float display_ratio;
-    if (m_GPUSTAT.pal_mode)
-    {
-      // Wikipedia says PAL is active 51.95us of 64.00us, and 576/625 lines.
-      const float signal_horizontal_active_time = 51.95f;
-      const float signal_horizontal_total_time = 64.0f;
-      const float signal_vertical_active_lines = 576.0f;
-      const float signal_vertical_total_lines = 625.0f;
-      const float h_ratio =
-        (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
-      const float v_ratio =
-        (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
-      display_ratio = h_ratio / v_ratio;
-    }
-    else
-    {
-      const float signal_horizontal_active_time = 52.66f;
-      const float signal_horizontal_total_time = 63.56f;
-      const float signal_vertical_active_lines = 486.0f;
-      const float signal_vertical_total_lines = 525.0f;
-      const float h_ratio =
-        (horizontal_active_time / horizontal_period) * (signal_horizontal_total_time / signal_horizontal_active_time);
-      const float v_ratio =
-        (vertical_active_time / vertical_period) * (signal_vertical_total_lines / signal_vertical_active_lines);
-      display_ratio = h_ratio / v_ratio;
-    }
-
-    // Ensure the numbers are sane, and not due to a misconfigured active display range.
-    cs.display_aspect_ratio = (std::isnormal(display_ratio) && display_ratio != 0.0f) ? display_ratio : (4.0f / 3.0f);
-    cs.visible_display_width = cs.active_display_width;
-    cs.visible_display_height = cs.active_display_height;
-    cs.active_display_left = 0;
-    cs.active_display_top = 0;
-  }
-
-  Log_DevPrintf("Screen resolution: %ux%u", cs.visible_display_width, cs.visible_display_height);
-  Log_DevPrintf("Active display: %ux%u @ %u,%u (VRAM %u,%u)", cs.active_display_width, cs.active_display_height,
-                cs.active_display_left, cs.active_display_top, cs.regs.X.GetValue(), cs.regs.Y.GetValue());
-  Log_DevPrintf("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.active_display_left, cs.active_display_top,
-                cs.visible_display_width - cs.active_display_width - cs.active_display_left,
-                cs.visible_display_height - cs.active_display_height - cs.active_display_top);
-
-  UpdateSliceTicks();
 }
 
 TickCount GPU::GetPendingGPUTicks() const
@@ -679,6 +738,7 @@ void GPU::WriteGP1(u32 value)
       m_crtc_state.regs.display_address_start = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
       Log_DebugPrintf("Display address start <- 0x%08X", m_crtc_state.regs.display_address_start);
       m_system->IncrementInternalFrameNumber();
+      UpdateCRTCDisplayParameters();
     }
     break;
 
@@ -1065,7 +1125,6 @@ void GPU::DrawDebugStateWindow()
                 m_GPUSTAT.interlaced_field ? "odd" : "even");
     ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
     ImGui::Text("Drawing Even Line: %s", m_GPUSTAT.drawing_even_line ? "Yes" : "No");
-    ImGui::Text("Display Resolution: %ux%u", cs.active_display_width, cs.active_display_height);
     ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
     ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
     ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,
@@ -1074,6 +1133,13 @@ void GPU::DrawDebugStateWindow()
                 cs.regs.X1.GetValue() / cs.dot_clock_divider, cs.regs.X2.GetValue() / cs.dot_clock_divider,
                 cs.regs.Y1.GetValue(), cs.regs.Y2.GetValue());
     ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
+    ImGui::Text("Display resolution: %ux%u", cs.display_width, cs.display_height);
+    ImGui::Text("Display origin: %u, %u", cs.display_origin_left, cs.display_origin_top);
+    ImGui::Text("Active display: %ux%u @ (%u, %u)", cs.display_vram_width, cs.display_vram_height, cs.display_vram_left,
+                cs.display_vram_top);
+    ImGui::Text("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.display_origin_left, cs.display_origin_top,
+                cs.display_width - cs.display_vram_width - cs.display_origin_left,
+                cs.display_height - cs.display_vram_height - cs.display_origin_top);
   }
 
   if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))

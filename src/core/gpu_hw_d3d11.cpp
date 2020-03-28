@@ -525,18 +525,17 @@ void GPU_HW_D3D11::UpdateDisplay()
   {
     m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                                       0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
-    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, Common::Rectangle<s32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT),
+    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {
-    const u32 vram_offset_x = m_crtc_state.regs.X;
-    const u32 vram_offset_y = m_crtc_state.regs.Y;
+    const u32 vram_offset_x = m_crtc_state.display_vram_left;
+    const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
     const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
-    const u32 display_width = std::min<u32>(m_crtc_state.active_display_width, VRAM_WIDTH - vram_offset_x);
-    const u32 display_height = std::min<u32>(m_crtc_state.active_display_height << BoolToUInt8(m_GPUSTAT.In480iMode()),
-                                             VRAM_HEIGHT - vram_offset_y);
+    const u32 display_width = m_crtc_state.display_vram_width;
+    const u32 display_height = m_crtc_state.display_vram_height;
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
     const bool interlaced = IsDisplayInterlaced();
@@ -594,8 +593,10 @@ void GPU_HW_D3D11::UpdateDisplay()
       RestoreGraphicsAPIState();
     }
 
-    m_host_display->SetDisplayParameters(m_crtc_state.visible_display_width, m_crtc_state.visible_display_height,
-                                         m_crtc_state.GetActiveDisplayRectangle(), m_crtc_state.display_aspect_ratio);
+    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
+                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
+                                         m_crtc_state.display_aspect_ratio);
   }
 }
 

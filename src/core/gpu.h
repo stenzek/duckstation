@@ -313,6 +313,7 @@ protected:
 
   // Sets dots per scanline
   void UpdateCRTCConfig();
+  void UpdateCRTCDisplayParameters();
 
   // Update ticks for this execution slice
   void UpdateSliceTicks();
@@ -547,19 +548,26 @@ protected:
 
     u16 dot_clock_divider;
 
-    u16 visible_display_width;
-    u16 visible_display_height;
-    u16 active_display_left;
-    u16 active_display_top;
-    u16 active_display_width;
-    u16 active_display_height;
+    // Size of the simulated screen in pixels. Depending on crop mode, this may include overscan area.
+    u16 display_width;
+    u16 display_height;
 
-    TickCount horizontal_total;
-    TickCount horizontal_display_start;
-    TickCount horizontal_display_end;
-    u32 vertical_total;
-    u32 vertical_display_start;
-    u32 vertical_display_end;
+    // Top-left corner where the VRAM is displayed. Depending on the CRTC config, this may indicate padding.
+    u16 display_origin_left;
+    u16 display_origin_top;
+
+    // Rectangle describing the displayed area of VRAM, in coordinates.
+    u16 display_vram_left;
+    u16 display_vram_top;
+    u16 display_vram_width;
+    u16 display_vram_height;
+
+    u16 horizontal_total;
+    u16 horizontal_display_start;
+    u16 horizontal_display_end;
+    u16 vertical_total;
+    u16 vertical_display_start;
+    u16 vertical_display_end;
 
     TickCount fractional_ticks;
     TickCount current_tick_in_scanline;
@@ -568,15 +576,6 @@ protected:
     float display_aspect_ratio;
     bool in_hblank;
     bool in_vblank;
-
-    /// Returns a rectangle representing the active display region within the visible area of the screen, i.e. where the
-    /// VRAM texture should be "scanned out" to. Areas outside this region (the border) should be displayed as black.
-    Common::Rectangle<s32> GetActiveDisplayRectangle() const
-    {
-      return Common::Rectangle<s32>::FromExtents(
-        static_cast<s32>(ZeroExtend32(active_display_left)), static_cast<s32>(ZeroExtend32(active_display_top)),
-        static_cast<s32>(ZeroExtend32(active_display_width)), static_cast<s32>(ZeroExtend32(active_display_height)));
-    }
   } m_crtc_state = {};
 
   State m_state = State::Idle;

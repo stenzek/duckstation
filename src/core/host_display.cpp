@@ -20,35 +20,71 @@ void HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 
 std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
 {
+#if 0
+  // convert display region to correct pixel aspect ratio
+  float display_width, display_height, active_left, active_top, active_width, active_height;
+  if (m_display_width >= m_display_height)
+  {
+    display_width = static_cast<float>(m_display_width);
+    display_height = static_cast<float>(m_display_width) / m_display_pixel_aspect_ratio;
+
+    const float scale = display_height / static_cast<float>(m_display_height);
+    active_left = static_cast<float>(m_display_active_left);
+    active_top = static_cast<float>(m_display_active_top) * scale;
+    active_width = static_cast<float>(m_display_active_width);
+    active_height = static_cast<float>(m_display_active_width) / m_display_pixel_aspect_ratio;
+  }
+  else
+  {
+    display_width = static_cast<float>(m_display_height) * m_display_pixel_aspect_ratio;
+    display_height = static_cast<float>(m_display_height);
+
+    const float scale = display_width / static_cast<float>(m_display_width);
+    active_left = static_cast<float>(m_display_active_left) * scale;
+    active_top = static_cast<float>(m_display_active_top);
+    active_width = static_cast<float>(m_display_active_height) * m_display_pixel_aspect_ratio;
+    active_height = static_cast<float>(m_display_active_height);
+  }
+#else
+  const float y_scale =
+    (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_pixel_aspect_ratio;
+  const float display_width = static_cast<float>(m_display_width);
+  const float display_height = static_cast<float>(m_display_height) * y_scale;
+  const float active_left = static_cast<float>(m_display_active_left);
+  const float active_top = static_cast<float>(m_display_active_top) * y_scale;
+  const float active_width = static_cast<float>(m_display_active_width);
+  const float active_height = static_cast<float>(m_display_active_height) * y_scale;
+#endif
+
+  // now fit it within the window
   const s32 window_width = m_window_width;
   const s32 window_height = m_window_height - m_display_top_margin;
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
 
   float scale;
-  int left, top, width, height;
-  if (window_ratio >= m_display_aspect_ratio)
+  int top_padding = 0, left_padding = 0;
+
+  if ((display_width / display_height) >= window_ratio)
   {
-    width = static_cast<int>(static_cast<float>(window_height) * m_display_aspect_ratio);
-    height = static_cast<int>(window_height);
-    scale = static_cast<float>(window_height) / static_cast<float>(m_display_height);
-    left = (window_width - width) / 2;
-    top = 0;
+    // align in middle vertically
+    scale = static_cast<float>(window_width) / display_width;
+    top_padding = (window_height - static_cast<s32>(display_height * scale)) / 2;
   }
   else
   {
-    width = static_cast<int>(window_width);
-    height = static_cast<int>(float(window_width) / m_display_aspect_ratio);
-    scale = static_cast<float>(window_width) / static_cast<float>(m_display_width);
-    left = 0;
-    top = (window_height - height) / 2;
+    // align in middle horizontally
+    scale = static_cast<float>(window_height) / display_height;
+    left_padding = (window_width - static_cast<s32>(display_width * scale)) / 2;
   }
 
-  // add in padding
-  left += static_cast<s32>(static_cast<float>(m_display_area.left) * scale);
-  top += static_cast<s32>(static_cast<float>(m_display_area.top) * scale);
-  width -= static_cast<s32>(static_cast<float>(m_display_area.left + (m_display_width - m_display_area.right)) * scale);
-  height -=
-    static_cast<s32>(static_cast<float>(m_display_area.top + (m_display_height - m_display_area.bottom)) * scale);
+  int left, top, width, height;
+  width = static_cast<s32>(active_width * scale);
+  height = static_cast<s32>(active_height * scale);
+  left = static_cast<s32>(active_left * scale);
+  top = static_cast<s32>(active_top * scale);
+
+  left += std::max(left_padding, 0);
+  top += std::max(top_padding, 0);
 
   // add in margin
   top += m_display_top_margin;
@@ -153,15 +189,15 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   s32 resize_height = 0;
   if (apply_aspect_ratio && full_resolution)
   {
-    if (m_display_aspect_ratio > 1.0f)
+    if (m_display_pixel_aspect_ratio > 1.0f)
     {
       resize_width = m_display_texture_view_width;
-      resize_height = static_cast<s32>(static_cast<float>(resize_width) / m_display_aspect_ratio);
+      resize_height = static_cast<s32>(static_cast<float>(resize_width) / m_display_pixel_aspect_ratio);
     }
     else
     {
       resize_height = m_display_texture_view_height;
-      resize_width = static_cast<s32>(static_cast<float>(resize_height) * m_display_aspect_ratio);
+      resize_width = static_cast<s32>(static_cast<float>(resize_height) * m_display_pixel_aspect_ratio);
     }
   }
   else if (apply_aspect_ratio)

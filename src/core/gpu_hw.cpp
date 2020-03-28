@@ -490,7 +490,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
           (m_draw_mode.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
            (m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
       {
-        Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
+        //Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())
           FlushRender();
 
