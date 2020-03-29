@@ -1265,7 +1265,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     }
     else if (m_play_after_seek)
     {
-      BeginPlaying(m_play_track_number_bcd, ticks_late);
+      BeginPlaying(0, ticks_late);
     }
     else
     {
