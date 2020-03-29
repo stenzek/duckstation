@@ -143,7 +143,7 @@ private:
     STAT_SEEK_ERROR = (1 << 2),
     STAT_ID_ERROR = (1 << 3),
     STAT_SHELL_OPEN = (1 << 4),
-    STAT_HEADER_VALID = (1 << 5),
+    STAT_READING = (1 << 5),
     STAT_SEEKING = (1 << 6),
     STAT_PLAYING_CDDA = (1 << 7)
   };
@@ -156,15 +156,12 @@ private:
     BitField<u8, bool, 2, 1> seek_error;
     BitField<u8, bool, 3, 1> id_error;
     BitField<u8, bool, 4, 1> shell_open;
-    BitField<u8, bool, 5, 1> header_valid;
+    BitField<u8, bool, 5, 1> reading;
     BitField<u8, bool, 6, 1> seeking;
     BitField<u8, bool, 7, 1> playing_cdda;
 
     /// Clears the CDDA/seeking bits.
-    ALWAYS_INLINE void ClearActiveBits()
-    {
-      bits &= ~(STAT_SEEKING | STAT_PLAYING_CDDA);
-    }
+    ALWAYS_INLINE void ClearActiveBits() { bits &= ~(STAT_SEEKING | STAT_READING | STAT_PLAYING_CDDA); }
   };
 
   union ModeRegister
@@ -223,7 +220,7 @@ private:
   void DoIDRead();
   void DoTOCRead();
   void DoSectorRead();
-  void ProcessDataSectorHeader(const u8* raw_sector, bool set_valid);
+  void ProcessDataSectorHeader(const u8* raw_sector);
   void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
@@ -264,7 +261,9 @@ private:
 
   CDImage::SectorHeader m_last_sector_header{};
   CDXA::XASubHeader m_last_sector_subheader{};
+  bool m_last_sector_header_valid = false;
   CDImage::SubChannelQ m_last_subq{};
+  bool m_last_subq_valid = false;
   u8 m_last_cdda_report_frame_nibble = 0xFF;
   u8 m_cdda_report_delay = 0x00;
   u8 m_play_track_number_bcd = 0xFF;

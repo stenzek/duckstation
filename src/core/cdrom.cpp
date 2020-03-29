@@ -61,7 +61,9 @@ void CDROM::SoftReset()
   m_filter_channel_number = 0;
   std::memset(&m_last_sector_header, 0, sizeof(m_last_sector_header));
   std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
+  m_last_sector_header_valid = false;
   std::memset(&m_last_subq, 0, sizeof(m_last_subq));
+  m_last_subq_valid = false;
   m_last_cdda_report_frame_nibble = 0xFF;
   m_cdda_report_delay = 0;
 
@@ -116,7 +118,9 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_filter_channel_number);
   sw.DoBytes(&m_last_sector_header, sizeof(m_last_sector_header));
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
+  sw.Do(&m_last_sector_header_valid);
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
+  sw.Do(&m_last_subq_valid);
   sw.Do(&m_last_cdda_report_frame_nibble);
   sw.Do(&m_cdda_report_delay);
   sw.Do(&m_play_track_number_bcd);
@@ -174,6 +178,9 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   // motor automatically spins up
   m_secondary_status.motor_on = true;
 
+  // reading TOC? interestingly this doesn't work for GetlocL though...
+  m_last_subq_valid = media->Seek(0) && media->ReadSubChannelQ(&m_last_subq);
+
   m_reader.SetMedia(std::move(media));
 }
 
@@ -184,6 +191,9 @@ void CDROM::RemoveMedia()
 
   Log_InfoPrintf("Removing CD...");
   m_reader.RemoveMedia();
+
+  m_last_sector_header_valid = false;
+  m_last_subq_valid = false;
 
   m_secondary_status.motor_on = false;
   m_secondary_status.shell_open = true;
@@ -821,9 +831,9 @@ void CDROM::ExecuteCommand()
     case Command::GetlocL:
     {
       Log_DebugPrintf("CDROM GetlocL command - header %s [%02X:%02X:%02X]",
-                      m_secondary_status.header_valid ? "valid" : "invalid", m_last_sector_header.minute,
+                      m_last_sector_header_valid ? "valid" : "invalid", m_last_sector_header.minute,
                       m_last_sector_header.second, m_last_sector_header.frame);
-      if (!m_secondary_status.header_valid)
+      if (!m_last_sector_header_valid)
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -841,19 +851,27 @@ void CDROM::ExecuteCommand()
 
     case Command::GetlocP:
     {
-      Log_DebugPrintf("CDROM GetlocP command");
-      m_response_fifo.Push(m_last_subq.track_number_bcd);
-      m_response_fifo.Push(m_last_subq.index_number_bcd);
-      m_response_fifo.Push(m_last_subq.relative_minute_bcd);
-      m_response_fifo.Push(m_last_subq.relative_second_bcd);
-      m_response_fifo.Push(m_last_subq.relative_frame_bcd);
-      m_response_fifo.Push(m_last_subq.absolute_minute_bcd);
-      m_response_fifo.Push(m_last_subq.absolute_second_bcd);
-      m_response_fifo.Push(m_last_subq.absolute_frame_bcd);
-      SetInterrupt(Interrupt::ACK);
+      Log_DebugPrintf("CDROM GetlocP command - %s", m_last_subq_valid ? "valid" : "invalid");
+      if (!m_last_subq_valid)
+      {
+        SendErrorResponse(STAT_ERROR, 0x80);
+      }
+      else
+      {
+        m_response_fifo.Push(m_last_subq.track_number_bcd);
+        m_response_fifo.Push(m_last_subq.index_number_bcd);
+        m_response_fifo.Push(m_last_subq.relative_minute_bcd);
+        m_response_fifo.Push(m_last_subq.relative_second_bcd);
+        m_response_fifo.Push(m_last_subq.relative_frame_bcd);
+        m_response_fifo.Push(m_last_subq.absolute_minute_bcd);
+        m_response_fifo.Push(m_last_subq.absolute_second_bcd);
+        m_response_fifo.Push(m_last_subq.absolute_frame_bcd);
+        SetInterrupt(Interrupt::ACK);
+      }
+
       EndCommand();
+      return;
     }
-    break;
 
     case Command::GetTN:
     {
@@ -1092,6 +1110,7 @@ void CDROM::BeginReading(TickCount ticks_late)
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+  m_secondary_status.reading = true;
 
   const TickCount ticks = GetTicksForRead();
   m_drive_state = DriveState::Reading;
@@ -1160,7 +1179,6 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   const TickCount seek_time = GetTicksForSeek();
 
   m_secondary_status.ClearActiveBits();
-  m_secondary_status.header_valid = false;
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = true;
 
@@ -1219,21 +1237,19 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
                  m_last_subq.absolute_second_bcd == seek_ss && m_last_subq.absolute_frame_bcd == seek_ff);
     if (seek_okay)
     {
-      // check for data header for logical seeks
-      if (logical)
+      if (m_last_subq.control.data)
       {
-        if (!m_last_subq.control.data)
+        // ensure the location matches up (it should)
+        ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
+        seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
+                     m_last_sector_header.frame == seek_ff);
+      }
+      else
+      {
+        if (logical)
         {
           Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]", seek_mm, seek_ss, seek_ff);
           seek_okay = false;
-        }
-        else
-        {
-          ProcessDataSectorHeader(m_reader.GetSectorBuffer().data(), true);
-
-          // ensure the location matches up (it should)
-          seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
-                       m_last_sector_header.frame == seek_ff);
         }
       }
     }
@@ -1263,6 +1279,8 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     Log_WarningPrintf("%s seek to [%02u:%02u:%02u] failed", logical ? "Logical" : "Physical", pos.minute, pos.second,
                       pos.frame);
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
+    m_last_sector_header_valid = false;
+    m_last_subq_valid = false;
   }
 
   m_setloc_pending = false;
@@ -1289,7 +1307,6 @@ void CDROM::DoStopComplete()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
-  m_secondary_status.header_valid = false;
   m_secondary_status.motor_on = false;
 
   m_async_response_fifo.Clear();
@@ -1303,7 +1320,6 @@ void CDROM::DoChangeSessionComplete()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
-  m_secondary_status.header_valid = false;
   m_secondary_status.motor_on = true;
 
   m_async_response_fifo.Clear();
@@ -1399,6 +1415,10 @@ void CDROM::DoSectorRead()
       return;
     }
   }
+  else
+  {
+    ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
+  }
 
   if (subq.IsCRCValid())
   {
@@ -1433,18 +1453,16 @@ void CDROM::DoSectorRead()
   m_reader.QueueReadSector(m_last_requested_sector);
 }
 
-void CDROM::ProcessDataSectorHeader(const u8* raw_sector, bool set_valid)
+void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 {
   std::memcpy(&m_last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(m_last_sector_header));
   std::memcpy(&m_last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(m_last_sector_header)],
               sizeof(m_last_sector_subheader));
-  m_secondary_status.header_valid |= set_valid;
+  m_last_sector_header_valid = true;
 }
 
 void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
-  ProcessDataSectorHeader(raw_sector, true);
-
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X into buffer %u", m_last_requested_sector,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits),
                 m_current_write_sector_buffer);
@@ -1849,8 +1867,8 @@ void CDROM::DrawDebugWindow()
     ImGui::TextColored(m_status.BUSYSTS ? active_color : inactive_color, "BUSYSTS: %s",
                        m_status.BUSYSTS ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(m_secondary_status.header_valid ? active_color : inactive_color, "Header Valid: %s",
-                       m_secondary_status.header_valid ? "Yes" : "No");
+    ImGui::TextColored(m_secondary_status.reading ? active_color : inactive_color, "Reading: %s",
+                       m_secondary_status.reading ? "Yes" : "No");
     ImGui::NextColumn();
     ImGui::TextColored(m_mode.read_raw_sector ? active_color : inactive_color, "Read Raw Sectors: %s",
                        m_mode.read_raw_sector ? "Yes" : "No");
@@ -1902,10 +1920,9 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    const bool playing_anything =
-      (m_secondary_status.header_valid && m_mode.xa_enable) || m_secondary_status.playing_cdda;
+    const bool playing_anything = (m_secondary_status.reading && m_mode.xa_enable) || m_secondary_status.playing_cdda;
     ImGui::TextColored(playing_anything ? active_color : inactive_color, "Playing: %s",
-                       (m_secondary_status.header_valid && m_mode.xa_enable) ?
+                       (m_secondary_status.reading && m_mode.xa_enable) ?
                          "XA-ADPCM" :
                          (m_secondary_status.playing_cdda ? "CDDA" : "Disabled"));
     ImGui::TextColored(m_muted ? inactive_color : active_color, "Muted: %s", m_muted ? "Yes" : "No");
