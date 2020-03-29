@@ -66,9 +66,6 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
 
   u32 disc_lba = 0;
 
-  // "last track" subchannel q - used for the pregap
-  SubChannelQ::Control last_track_control{};
-
   // for each track..
   const int num_tracks = cd_get_ntrack(m_cd);
   for (int track_num = 1; track_num <= num_tracks; track_num++)
@@ -138,7 +135,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
       pregap_index.mode = mode;
-      pregap_index.control.bits = (track_num > 1) ? last_track_control.bits : control.bits;
+      pregap_index.control.bits = control.bits;
       pregap_index.is_pregap = true;
       if (pregap_in_file)
       {
@@ -153,9 +150,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     }
 
     // add the track itself
-    m_tracks.push_back(
-      Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()), static_cast<u32>(track_length)});
-    last_track_control.bits = control.bits;
+    m_tracks.push_back(Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()),
+                             static_cast<u32>(track_length), mode, control});
 
     // how many indices in this track?
     Index last_index;

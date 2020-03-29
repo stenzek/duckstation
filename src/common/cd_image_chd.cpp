@@ -101,9 +101,6 @@ bool CDImageCHD::Open(const char* filename)
   u32 disc_lba = 0;
   u64 disc_frame = 0;
 
-  // "last track" subchannel q - used for the pregap
-  SubChannelQ::Control last_track_control{};
-
   // for each track..
   int num_tracks = 0;
   for (;;)
@@ -178,7 +175,7 @@ bool CDImageCHD::Open(const char* filename)
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
       pregap_index.mode = mode.value();
-      pregap_index.control.bits = (track_num > 1) ? last_track_control.bits : control.bits;
+      pregap_index.control.bits = control.bits;
       pregap_index.is_pregap = true;
 
       if (pregap_in_file)
@@ -203,7 +200,6 @@ bool CDImageCHD::Open(const char* filename)
     // add the track itself
     m_tracks.push_back(Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()),
                              static_cast<u32>(frames), mode.value(), control});
-    last_track_control.bits = control.bits;
 
     // how many indices in this track?
     Index index = {};
