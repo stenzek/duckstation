@@ -881,8 +881,8 @@ void CDROM::ExecuteCommand()
         m_reader.WaitForReadToComplete();
 
         m_response_fifo.Push(m_secondary_status.bits);
-        m_response_fifo.Push(BinaryToBCD(Truncate8(m_reader.GetMedia()->GetTrackNumber())));
-        m_response_fifo.Push(BinaryToBCD(Truncate8(m_reader.GetMedia()->GetTrackCount())));
+        m_response_fifo.Push(BinaryToBCD(Truncate8(m_reader.GetMedia()->GetFirstTrackNumber())));
+        m_response_fifo.Push(BinaryToBCD(Truncate8(m_reader.GetMedia()->GetLastTrackNumber())));
         SetInterrupt(Interrupt::ACK);
       }
       else
@@ -1396,8 +1396,8 @@ void CDROM::DoSectorRead()
     if (m_play_track_number_bcd == 0)
     {
       // track number was not specified, but we've found the track now
-      Log_DebugPrintf("Setting playing track number to %u", m_play_track_number_bcd);
       m_play_track_number_bcd = subq.track_number_bcd;
+      Log_DebugPrintf("Setting playing track number to %u", m_play_track_number_bcd);
     }
     else if (m_mode.auto_pause && subq.track_number_bcd != m_play_track_number_bcd)
     {
