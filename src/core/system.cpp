@@ -662,6 +662,9 @@ void System::UpdateMemoryCards()
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     m_pad->SetMemoryCard(i, nullptr);
+    if (settings.memory_card_paths[i].empty())
+      continue;
+
     std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_paths[i]);
     if (card)
       m_pad->SetMemoryCard(i, std::move(card));
