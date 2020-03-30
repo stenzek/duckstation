@@ -118,7 +118,7 @@ bool GPU::HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_siz
     m_GPUSTAT.interrupt_request = true;
     m_interrupt_controller->InterruptRequest(InterruptController::IRQ::GPU);
   }
-  
+
   command_ptr++;
   EndCommand();
   return true;
@@ -252,10 +252,11 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
       words_per_vertex = 1 + BoolToUInt8(rc.shading_enable);
       if (rc.polyline)
       {
-        // polyline goes until we hit the termination code
-        num_vertices = 1;
+        // polyline must have at least two vertices, and the terminator is (word & 0xf000f000) == 0x50005000. terminator
+        // is on the first word for the vertex
+        num_vertices = 2;
         bool found_terminator = false;
-        for (u32 pos = 2; pos < command_size; pos += words_per_vertex)
+        for (u32 pos = words_per_vertex * 2; pos < command_size; pos += words_per_vertex)
         {
           if ((command_ptr[pos] & UINT32_C(0xF000F000)) == UINT32_C(0x50005000))
           {
