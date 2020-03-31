@@ -767,6 +767,14 @@ void CDROM::ExecuteCommand()
 
     case Command::Pause:
     {
+      if (m_secondary_status.seeking)
+      {
+        Log_WarningPrintf("CDROM Pause command while seeking - sending error response");
+        SendErrorResponse(STAT_ERROR, ERROR_NOT_READY);
+        EndCommand();
+        return;
+      }
+
       // TODO: Should return an error if seeking.
       const bool was_reading = (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
       const TickCount pause_time = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;

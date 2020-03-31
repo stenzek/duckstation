@@ -148,6 +148,15 @@ private:
     STAT_PLAYING_CDDA = (1 << 7)
   };
 
+  enum ErrorReason : u8
+  {
+    ERROR_INVALID_ARGUMENT = 0x10,
+    ERROR_INCORRECT_NUMBER_OF_PARAMETERS = 0x20,
+    ERROR_INVALID_COMMAND = 0x40,
+    ERROR_NOT_READY = 0x80
+  };
+
+
   union SecondaryStatusRegister
   {
     u8 bits;
