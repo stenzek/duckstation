@@ -201,11 +201,12 @@ private:
   void UpdateStatusRegister();
   void UpdateInterruptRequest();
 
-  TickCount GetAckDelayForCommand() const;
+  TickCount GetAckDelayForCommand(Command command) const;
   TickCount GetTicksForRead() const;
   TickCount GetTicksForSeek() const;
   void BeginCommand(Command command); // also update status register
   void EndCommand();                  // also updates status register
+  void AbortCommand();
   void ExecuteCommand();
   void ExecuteTestCommand(u8 subcommand);
   void UpdateCommandEvent();

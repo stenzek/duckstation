@@ -226,7 +226,7 @@ u8 CDROM::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0: // status register
-      Log_TracePrintf("CDROM read status register <- 0x%08X", m_status.bits);
+      Log_TracePrintf("CDROM read status register -> 0x%08X", m_status.bits);
       return m_status.bits;
 
     case 1: // always response FIFO
@@ -239,7 +239,7 @@ u8 CDROM::ReadRegister(u32 offset)
 
       const u8 value = m_response_fifo.Pop();
       UpdateStatusRegister();
-      Log_DebugPrintf("CDROM read response FIFO <- 0x%08X", ZeroExtend32(value));
+      Log_DebugPrintf("CDROM read response FIFO -> 0x%08X", ZeroExtend32(value));
       return value;
     }
 
@@ -247,7 +247,7 @@ u8 CDROM::ReadRegister(u32 offset)
     {
       const u8 value = m_data_fifo.Pop();
       UpdateStatusRegister();
-      Log_DebugPrintf("CDROM read data FIFO <- 0x%08X", ZeroExtend32(value));
+      Log_DebugPrintf("CDROM read data FIFO -> 0x%08X", ZeroExtend32(value));
       return value;
     }
 
@@ -256,13 +256,13 @@ u8 CDROM::ReadRegister(u32 offset)
       if (m_status.index & 1)
       {
         const u8 value = m_interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
-        Log_DebugPrintf("CDROM read interrupt flag register <- 0x%02X", ZeroExtend32(value));
+        Log_DebugPrintf("CDROM read interrupt flag register -> 0x%02X", ZeroExtend32(value));
         return value;
       }
       else
       {
         const u8 value = m_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
-        Log_DebugPrintf("CDROM read interrupt enable register <- 0x%02X", ZeroExtend32(value));
+        Log_DebugPrintf("CDROM read interrupt enable register -> 0x%02X", ZeroExtend32(value));
         return value;
       }
     }
@@ -293,7 +293,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       if (HasPendingCommand())
       {
         Log_WarningPrintf("Cancelling pending command 0x%02X", static_cast<u8>(m_command));
-        m_command = Command::None;
+        AbortCommand();
       }
 
       BeginCommand(static_cast<Command>(value));
@@ -516,10 +516,19 @@ void CDROM::UpdateInterruptRequest()
   m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
-TickCount CDROM::GetAckDelayForCommand() const
+TickCount CDROM::GetAckDelayForCommand(Command command) const
 {
-  const u32 default_ack_delay = 10000;
-  return default_ack_delay;
+  if (command == Command::Init)
+  {
+    // Init takes longer.
+    return 120000;
+  }
+
+  // Tests show that the average time to acknowledge a command is significantly higher when a disc is in the drive,
+  // presumably because the controller is busy doing discy-things.
+  constexpr u32 default_ack_delay_no_disc = 20000;
+  constexpr u32 default_ack_delay_with_disc = 30000;
+  return HasMedia() ? default_ack_delay_with_disc : default_ack_delay_no_disc;
 }
 
 TickCount CDROM::GetTicksForRead() const
@@ -551,7 +560,7 @@ TickCount CDROM::GetTicksForSeek() const
 void CDROM::BeginCommand(Command command)
 {
   m_command = command;
-  m_command_event->Schedule(GetAckDelayForCommand());
+  m_command_event->Schedule(GetAckDelayForCommand(command));
   UpdateCommandEvent();
   UpdateStatusRegister();
 }
@@ -560,6 +569,13 @@ void CDROM::EndCommand()
 {
   m_param_fifo.Clear();
 
+  m_command = Command::None;
+  m_command_event->Deactivate();
+  UpdateStatusRegister();
+}
+
+void CDROM::AbortCommand()
+{
   m_command = Command::None;
   m_command_event->Deactivate();
   UpdateStatusRegister();
@@ -751,6 +767,7 @@ void CDROM::ExecuteCommand()
 
     case Command::Pause:
     {
+      // TODO: Should return an error if seeking.
       const bool was_reading = (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
       const TickCount pause_time = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;
       Log_DebugPrintf("CDROM pause command");
