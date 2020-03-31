@@ -1375,8 +1375,9 @@ void CDROM::DoIDRead()
   {
     flags_byte |= (1 << 6); // Disc Missing
   }
-  else if (m_disc_region == DiscRegion::Other ||
-           m_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region))
+  else if (m_system->GetSettings().cdrom_region_check &&
+           (m_disc_region == DiscRegion::Other ||
+            m_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
   {
     stat_byte |= STAT_ID_ERROR;
     flags_byte |= (1 << 7); // Unlicensed

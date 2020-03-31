@@ -61,6 +61,7 @@ struct Settings
   bool video_sync_enabled = true;
 
   bool cdrom_read_thread = true;
+  bool cdrom_region_check = true;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   bool audio_sync_enabled = true;

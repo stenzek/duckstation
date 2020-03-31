@@ -40,6 +40,7 @@ void Settings::Load(SettingsInterface& si)
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
+  cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
 
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
@@ -99,6 +100,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
 
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
+  si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetBoolValue("Audio", "Sync", audio_sync_enabled);

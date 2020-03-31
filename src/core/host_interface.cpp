@@ -879,6 +879,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "VSync", true);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
+  si.SetBoolValue("CDROM", "RegionCheck", true);
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Cubeb));
   si.SetBoolValue("Audio", "Sync", true);
