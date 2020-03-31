@@ -1524,8 +1524,8 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   m_current_write_sector_buffer = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
   if (sb->size > 0)
   {
-    Log_WarningPrintf("Sector buffer %u was not read, previous sector dropped",
-                      (m_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
+    Log_DevPrintf("Sector buffer %u was not read, previous sector dropped",
+                  (m_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
   }
 
   Assert(!m_mode.ignore_bit);
