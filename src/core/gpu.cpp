@@ -371,15 +371,15 @@ void GPU::UpdateCRTCDisplayParameters()
       case DisplayCropMode::None:
         horizontal_display_start_tick = 487;
         horizontal_display_end_tick = 3282;
-        vertical_display_start_line = 12;
-        vertical_display_end_line = 312;
+        vertical_display_start_line = 20;
+        vertical_display_end_line = 308;
         break;
 
       case DisplayCropMode::Overscan:
         horizontal_display_start_tick = 628;
         horizontal_display_end_tick = 3188;
-        vertical_display_start_line = 19;
-        vertical_display_end_line = 307;
+        vertical_display_start_line = 30;
+        vertical_display_end_line = 298;
         break;
 
       case DisplayCropMode::Borders:
@@ -398,15 +398,15 @@ void GPU::UpdateCRTCDisplayParameters()
       case DisplayCropMode::None:
         horizontal_display_start_tick = 488;
         horizontal_display_end_tick = 3288;
-        vertical_display_start_line = 8;
-        vertical_display_end_line = 260;
+        vertical_display_start_line = 16;
+        vertical_display_end_line = 256;
         break;
 
       case DisplayCropMode::Overscan:
         horizontal_display_start_tick = 608;
         horizontal_display_end_tick = 3168;
-        vertical_display_start_line = 16;
-        vertical_display_end_line = 256;
+        vertical_display_start_line = 24;
+        vertical_display_end_line = 248;
         break;
 
       case DisplayCropMode::Borders:
@@ -476,7 +476,7 @@ void GPU::UpdateCRTCDisplayParameters()
   {
     cs.display_origin_top = 0;
     cs.display_vram_top =
-      std::min<u16>(m_crtc_state.regs.Y + ((cs.vertical_display_start - vertical_display_start_line) << height_shift),
+      std::min<u16>(m_crtc_state.regs.Y + ((vertical_display_start_line - cs.vertical_display_start) << height_shift),
                     VRAM_HEIGHT - 1);
   }
 
