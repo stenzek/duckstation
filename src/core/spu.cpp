@@ -146,6 +146,7 @@ bool SPU::DoState(StateWrapper& sw)
   {
     m_system->GetHostInterface()->GetAudioStream()->EmptyBuffers();
     UpdateEventInterval();
+    UpdateTransferEvent();
   }
 
   return !sw.HasError();
