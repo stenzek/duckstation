@@ -507,63 +507,32 @@ void GPU_HW_OpenGL::UpdateDisplay()
     }
     else
     {
-      const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
-      const u32 scaled_flipped_vram_offset_y =
-        m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
-      const u32 field_offset = BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field);
-
       glDisable(GL_BLEND);
       glDisable(GL_SCISSOR_TEST);
 
-      const GL::Program& prog =
-        m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)];
-      prog.Bind();
+      m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Bind();
+      m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+      m_vram_texture.Bind();
 
-      // Because of how the reinterpret shader works, we need to use the downscaled version.
-      if (m_GPUSTAT.display_area_color_depth_24 && m_resolution_scale > 1)
-      {
-        const u32 copy_width = std::min<u32>((display_width * 3) / 2, VRAM_WIDTH - vram_offset_x);
-        const u32 scaled_copy_width = copy_width * m_resolution_scale;
-        m_vram_encoding_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-        m_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
-        glBlitFramebuffer(scaled_vram_offset_x, scaled_flipped_vram_offset_y, scaled_vram_offset_x + scaled_copy_width,
-                          scaled_flipped_vram_offset_y + scaled_display_height, vram_offset_x, flipped_vram_offset_y,
-                          vram_offset_x + copy_width, flipped_vram_offset_y + display_height, GL_COLOR_BUFFER_BIT,
-                          GL_NEAREST);
+      const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
+      const u32 scaled_flipped_vram_offset_y =
+        m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
-        m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-        m_vram_encoding_texture.Bind();
+      const u32 reinterpret_field_offset =
+        (m_crtc_state.regs.Y + BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field)) & 1u;
+      const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
+      const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
+      const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};
+      UploadUniformBlock(uniforms, sizeof(uniforms));
+      m_batch_ubo_dirty = true;
 
-        glViewport(0, field_offset, display_width, display_height);
+      glViewport(reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_width, scaled_display_height);
+      glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        const u32 uniforms[4] = {vram_offset_x, flipped_vram_offset_y, field_offset};
-        UploadUniformBlock(uniforms, sizeof(uniforms));
-        m_batch_ubo_dirty = true;
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
-                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
-                                          display_height, display_width, -static_cast<s32>(display_height));
-      }
-      else
-      {
-        m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-        m_vram_texture.Bind();
-
-        glViewport(0, field_offset, scaled_display_width, scaled_display_height);
-
-        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_flipped_vram_offset_y, field_offset};
-        UploadUniformBlock(uniforms, sizeof(uniforms));
-        m_batch_ubo_dirty = true;
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
-                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
-                                          scaled_display_height, scaled_display_width,
-                                          -static_cast<s32>(scaled_display_height));
-      }
+      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
+                                        m_display_texture.GetWidth(), m_display_texture.GetHeight(),
+                                        scaled_vram_offset_x, m_vram_texture.GetHeight() - scaled_vram_offset_y,
+                                        scaled_display_width, -static_cast<s32>(scaled_display_height));
 
       // restore state
       m_vram_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);

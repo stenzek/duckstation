@@ -440,10 +440,6 @@ void GPU::UpdateCRTCDisplayParameters()
     cs.display_vram_left = std::min<u16>(
       m_crtc_state.regs.X + ((horizontal_display_start_tick - cs.horizontal_display_start) / cs.dot_clock_divider),
       VRAM_WIDTH - 1);
-
-    // for 24-bit scanout we must stay aligned
-    if (m_GPUSTAT.display_area_color_depth_24 && ((cs.display_vram_left - cs.regs.X) & 1u))
-      cs.display_vram_left--;
   }
 
   if (cs.horizontal_display_end <= horizontal_display_end_tick)

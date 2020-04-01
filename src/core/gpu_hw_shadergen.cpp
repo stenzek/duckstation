@@ -750,7 +750,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   DefineMacro(ss, "INTERLACED", interlaced);
 
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"int3 u_base_coords"});
+  DeclareUniformBuffer(ss, {"int u_field_offset", "int u_vram_start_x"});
   DeclareTexture(ss, "samp0", 0);
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
@@ -759,55 +759,28 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   int2 icoords = int2(v_pos.xy);
 
   #if INTERLACED
-    if (((icoords.y - u_base_coords.z) & 1) != 0)
+    if (((icoords.y / RESOLUTION_SCALE) & 1) != u_field_offset)
       discard;
   #endif
 
   #if DEPTH_24BIT
-    // compute offset in dwords from the start of the 24-bit values
-    int2 base = int2(u_base_coords.x, u_base_coords.y + icoords.y);
-    int xoff = int(icoords.x);
-    int dword_index = (xoff / 2) + (xoff / 4);
+    // relative to start of scanout
+    int relative_x = (icoords.x - u_vram_start_x) / RESOLUTION_SCALE;
+    icoords.x = u_vram_start_x + ((relative_x * 3) / 2) * RESOLUTION_SCALE;
 
-    // sample two adjacent dwords, or four 16-bit values as the 24-bit value will lie somewhere between these
-    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + dword_index * 2 + 0, base.y), 0));
-    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + dword_index * 2 + 1, base.y), 0));
-    uint s2 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + (dword_index + 1) * 2 + 0, base.y), 0));
-    uint s3 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(base.x + (dword_index + 1) * 2 + 1, base.y), 0));
-
-    // select the bit for this pixel depending on its offset in the 4-pixel block
-    uint r, g, b;
-    int block_offset = xoff & 3;
-    if (block_offset == 0)
-    {
-      r = s0 & 0xFFu;
-      g = s0 >> 8;
-      b = s1 & 0xFFu;
-    }
-    else if (block_offset == 1)
-    {
-      r = s1 >> 8;
-      g = s2 & 0xFFu;
-      b = s2 >> 8;
-    }
-    else if (block_offset == 2)
-    {
-      r = s1 & 0xFFu;
-      g = s1 >> 8;
-      b = s2 & 0xFFu;
-    }
-    else
-    {
-      r = s2 >> 8;
-      g = s3 & 0xFFu;
-      b = s3 >> 8;
-    }
-
-    // and normalize
-    o_col0 = float4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, 1.0);
+    // load adjacent 16-bit texels
+    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, icoords, 0));
+    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, icoords + int2(RESOLUTION_SCALE, 0), 0));
+    
+    // select which part of the combined 16-bit texels we are currently shading
+    uint s1s0 = ((s1 << 16) | s0) >> ((relative_x & 1) * 8);
+    
+    // extract components and normalize
+    o_col0 = float4(float(s1s0 & 0xFFu) / 255.0, float((s1s0 >> 8u) & 0xFFu) / 255.0,
+                    float((s1s0 >> 16u) & 0xFFu) / 255.0, 1.0);
   #else
     // load and return
-    o_col0 = LOAD_TEXTURE(samp0, u_base_coords.xy + icoords, 0);
+    o_col0 = LOAD_TEXTURE(samp0, icoords, 0);
   #endif
 }
 )";

@@ -552,43 +552,24 @@ void GPU_HW_D3D11::UpdateDisplay()
     }
     else
     {
-      const u32 field_offset = BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field);
+      m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
+      m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
+      const u32 reinterpret_field_offset =
+        (m_crtc_state.regs.Y + BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field)) & 1u;
+      const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
+      const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
+      const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Get();
 
-      // Because of how the reinterpret shader works, we need to use the downscaled version.
-      if (m_GPUSTAT.display_area_color_depth_24 && m_resolution_scale > 1)
-      {
-        const u32 copy_width = std::min<u32>((display_width * 3) / 2, VRAM_WIDTH - vram_offset_x);
-        const u32 scaled_copy_width = copy_width * m_resolution_scale;
-        BlitTexture(m_vram_encoding_texture.GetD3DRTV(), vram_offset_x, vram_offset_y, copy_width, display_height,
-                    m_vram_texture.GetD3DSRV(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_copy_width,
-                    scaled_display_height, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), false);
+      SetViewportAndScissor(reinterpret_start_x, m_crtc_state.display_vram_top, reinterpret_width,
+                            scaled_display_height);
+      DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
-        m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
-        m_context->PSSetShaderResources(0, 1, m_vram_encoding_texture.GetD3DSRVArray());
-
-        const u32 uniforms[4] = {vram_offset_x, vram_offset_y, field_offset};
-        SetViewportAndScissor(0, field_offset, display_width, display_height);
-        DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
-
-        m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
-                                          m_display_texture.GetHeight(), 0, 0, display_width, display_height);
-      }
-      else
-      {
-        m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
-        m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
-
-        const u32 uniforms[4] = {scaled_vram_offset_x, scaled_vram_offset_y, field_offset};
-        SetViewportAndScissor(0, field_offset, scaled_display_width, scaled_display_height);
-        DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
-
-        m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
-                                          m_display_texture.GetHeight(), 0, 0, scaled_display_width,
-                                          scaled_display_height);
-      }
+      m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
+                                        m_display_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
+                                        scaled_display_width, scaled_display_height);
 
       RestoreGraphicsAPIState();
     }
