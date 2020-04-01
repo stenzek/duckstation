@@ -35,12 +35,13 @@
     <ClCompile Include="qtdisplaywidget.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
+    <ClCompile Include="generalsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
-    <ClInclude Include="qtprogresscallback.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -65,6 +66,8 @@
     <QtMoc Include="opengldisplaywidget.h" />
     <QtMoc Include="d3d11displaywidget.h" />
     <QtMoc Include="qtdisplaywidget.h" />
+    <QtMoc Include="generalsettingswidget.h" />
+    <QtMoc Include="qtprogresscallback.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -73,6 +76,7 @@
     <QtUi Include="settingsdialog.ui" />
     <QtUi Include="gpusettingswidget.ui" />
     <QtUi Include="audiosettingswidget.ui" />
+    <QtUi Include="generalsettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
