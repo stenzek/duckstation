@@ -256,7 +256,7 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
         // is on the first word for the vertex
         num_vertices = 2;
         bool found_terminator = false;
-        for (u32 pos = words_per_vertex * 2; pos < command_size; pos += words_per_vertex)
+        for (u32 pos = rc.shading_enable ? 4 : 3; pos < command_size; pos += words_per_vertex)
         {
           if ((command_ptr[pos] & UINT32_C(0xF000F000)) == UINT32_C(0x50005000))
           {
