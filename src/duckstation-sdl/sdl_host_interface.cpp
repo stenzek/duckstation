@@ -1105,7 +1105,8 @@ void SDLHostInterface::DrawSettingsWindow()
       ImGui::NewLine();
       if (DrawSettingsSectionHeader("CDROM Emulation"))
       {
-        settings_changed |= ImGui::Checkbox("Use Read Thread (Asynchronous)", &m_settings.cdrom_read_thread);
+        settings_changed |= ImGui::Checkbox("Use Read Thread (Asynchronous)", &m_settings_copy.cdrom_read_thread);
+        settings_changed |= ImGui::Checkbox("Enable Region Check", &m_settings_copy.cdrom_region_check);
       }
 
       ImGui::NewLine();
