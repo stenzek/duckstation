@@ -1145,7 +1145,7 @@ void GPU::DrawDebugStateWindow()
   if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Dither: %s", m_GPUSTAT.dither_enable ? "Enabled" : "Disabled");
-    ImGui::Text("Draw To Display Area: %s", m_GPUSTAT.dither_enable ? "Yes" : "No");
+    ImGui::Text("Draw To Display Area: %s", m_GPUSTAT.draw_to_display_area ? "Enabled" : "Disabled");
     ImGui::Text("Draw Set Mask Bit: %s", m_GPUSTAT.set_mask_while_drawing ? "Yes" : "No");
     ImGui::Text("Draw To Masked Pixels: %s", m_GPUSTAT.check_mask_before_draw ? "Yes" : "No");
     ImGui::Text("Reverse Flag: %s", m_GPUSTAT.reverse_flag ? "Yes" : "No");
