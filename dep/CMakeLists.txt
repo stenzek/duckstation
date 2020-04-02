@@ -1,5 +1,6 @@
 add_subdirectory(cubeb)
 add_subdirectory(glad)
+add_subdirectory(googletest)
 add_subdirectory(imgui)
 add_subdirectory(libcue)
 add_subdirectory(simpleini)
