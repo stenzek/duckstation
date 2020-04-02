@@ -36,6 +36,8 @@ build_script:
 
       rm -f bin/x64/*.pdb bin/x64/*.exp bin/x64/*.lib bin/x64/*.iobj bin/x64/*.ipdb
 
+      rm -f bin/x64/common-tests*
+
       "C:\Program Files\7-Zip\7z.exe" a -r duckstation-win64-release.7z ./bin/x64/*
 
       appveyor PushArtifact duckstation-win64-release.7z
