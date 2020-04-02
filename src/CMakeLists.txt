@@ -1,4 +1,5 @@
 add_subdirectory(common)
+add_subdirectory(common-tests)
 add_subdirectory(core)
 add_subdirectory(frontend-common)
 

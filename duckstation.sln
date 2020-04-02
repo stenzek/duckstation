@@ -45,6 +45,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xxhash", "dep\xxhash\xxhash
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "googletest", "dep\googletest\googletest.vcxproj", "{49953E1B-2EF7-46A4-B88B-1BF9E099093B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common-tests", "src\common-tests\common-tests.vcxproj", "{EA2B9C7A-B8CC-42F9-879B-191A98680C10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -377,6 +379,22 @@ Global
 		{49953E1B-2EF7-46A4-B88B-1BF9E099093B}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
 		{49953E1B-2EF7-46A4-B88B-1BF9E099093B}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
 		{49953E1B-2EF7-46A4-B88B-1BF9E099093B}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Debug|x64.ActiveCfg = Debug|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Debug|x64.Build.0 = Debug|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Debug|x86.ActiveCfg = Debug|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Debug|x86.Build.0 = Debug|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.DebugFast|x64.ActiveCfg = DebugFast|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.DebugFast|x64.Build.0 = DebugFast|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.DebugFast|x86.ActiveCfg = DebugFast|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.DebugFast|x86.Build.0 = DebugFast|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Release|x64.ActiveCfg = Release|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Release|x64.Build.0 = Release|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Release|x86.ActiveCfg = Release|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.Release|x86.Build.0 = Release|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.ReleaseLTCG|x64.ActiveCfg = ReleaseLTCG|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
+		{EA2B9C7A-B8CC-42F9-879B-191A98680C10}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
