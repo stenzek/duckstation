@@ -13,6 +13,17 @@ static GLuint s_next_bad_shader_id = 1;
 
 Program::Program() = default;
 
+Program::Program(Program&& prog)
+{
+  m_program_id = prog.m_program_id;
+  prog.m_program_id = 0;
+  m_vertex_shader_id = prog.m_vertex_shader_id;
+  prog.m_vertex_shader_id = 0;
+  m_fragment_shader_id = prog.m_fragment_shader_id;
+  prog.m_fragment_shader_id = 0;
+  m_uniform_locations = std::move(prog.m_uniform_locations);
+}
+
 Program::~Program()
 {
   Destroy();
@@ -174,6 +185,8 @@ void Program::Destroy()
     glDeleteProgram(m_program_id);
     m_program_id = 0;
   }
+
+  m_uniform_locations.clear();
 }
 
 int Program::RegisterUniform(const char* name)
@@ -503,6 +516,19 @@ void Program::BindUniformBlock(const char* name, u32 index)
   const GLint location = glGetUniformBlockIndex(m_program_id, name);
   if (location >= 0)
     glUniformBlockBinding(m_program_id, location, index);
+}
+
+Program& Program::operator=(Program&& prog)
+{
+  Destroy();
+  m_program_id = prog.m_program_id;
+  prog.m_program_id = 0;
+  m_vertex_shader_id = prog.m_vertex_shader_id;
+  prog.m_vertex_shader_id = 0;
+  m_fragment_shader_id = prog.m_fragment_shader_id;
+  prog.m_fragment_shader_id = 0;
+  m_uniform_locations = std::move(prog.m_uniform_locations);
+  return *this;
 }
 
 } // namespace GL

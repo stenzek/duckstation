@@ -9,6 +9,8 @@ class Program
 {
 public:
   Program();
+  Program(const Program&) = delete;
+  Program(Program&& prog);
   ~Program();
 
   static GLuint CompileShader(GLenum type, const std::string_view source);
@@ -77,6 +79,9 @@ public:
   void Uniform4fv(const char* name, const float* v) const;
 
   void BindUniformBlock(const char* name, u32 index);
+
+  Program& operator=(const Program&) = delete;
+  Program& operator=(Program&& prog);
 
 private:
   static u32 s_last_program_id;
