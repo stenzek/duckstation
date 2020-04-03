@@ -37,6 +37,8 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* d
 
   SetCapabilities(host_display);
 
+  m_shader_cache.Open(m_is_gles, system->GetHostInterface()->GetUserDirectoryRelativePath("cache"));
+
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
@@ -306,30 +308,29 @@ bool GPU_HW_OpenGL::CompilePrograms()
                                                                      static_cast<TextureMode>(texture_mode),
                                                                      ConvertToBoolUnchecked(dithering));
 
-        GL::Program& prog = m_render_programs[render_mode][texture_mode][dithering];
-        if (!prog.Compile(vs, fs))
+        std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this, textured](GL::Program& prog) {
+          prog.BindAttribute(0, "a_pos");
+          prog.BindAttribute(1, "a_col0");
+          if (textured)
+          {
+            prog.BindAttribute(2, "a_texcoord");
+            prog.BindAttribute(3, "a_texpage");
+          }
+
+          if (!m_is_gles)
+            prog.BindFragData(0, "o_col0");
+        });
+        if (!prog)
           return false;
 
-        prog.BindAttribute(0, "a_pos");
-        prog.BindAttribute(1, "a_col0");
+        prog->BindUniformBlock("UBOBlock", 1);
         if (textured)
         {
-          prog.BindAttribute(2, "a_texcoord");
-          prog.BindAttribute(3, "a_texpage");
+          prog->Bind();
+          prog->Uniform1i("samp0", 0);
         }
 
-        if (!m_is_gles)
-          prog.BindFragData(0, "o_col0");
-
-        if (!prog.Link())
-          return false;
-
-        prog.BindUniformBlock("UBOBlock", 1);
-        if (textured)
-        {
-          prog.Bind();
-          prog.Uniform1i("samp0", 0);
-        }
+        m_render_programs[render_mode][texture_mode][dithering] = std::move(*prog);
       }
     }
   }
@@ -338,71 +339,65 @@ bool GPU_HW_OpenGL::CompilePrograms()
   {
     for (u8 interlaced = 0; interlaced < 2; interlaced++)
     {
-      GL::Program& prog = m_display_programs[depth_24bit][interlaced];
       const std::string vs = shadergen.GenerateScreenQuadVertexShader();
       const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
                                                                      ConvertToBoolUnchecked(interlaced));
-      if (!prog.Compile(vs, fs))
+
+      std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this](GL::Program& prog) {
+        if (!m_is_gles)
+        {
+          if (m_supports_dual_source_blend)
+          {
+            prog.BindFragDataIndexed(0, "o_col0");
+            prog.BindFragDataIndexed(1, "o_col1");
+          }
+          else
+          {
+            prog.BindFragData(0, "o_col0");
+          }
+        }
+      });
+      if (!prog)
         return false;
 
-      if (!m_is_gles)
-      {
-        if (m_supports_dual_source_blend)
-        {
-          prog.BindFragDataIndexed(0, "o_col0");
-          prog.BindFragDataIndexed(1, "o_col1");
-        }
-        else
-        {
-          prog.BindFragData(0, "o_col0");
-        }
-      }
+      prog->BindUniformBlock("UBOBlock", 1);
 
-      if (!prog.Link())
-        return false;
+      prog->Bind();
+      prog->Uniform1i("samp0", 0);
 
-      prog.BindUniformBlock("UBOBlock", 1);
-
-      prog.Bind();
-      prog.Uniform1i("samp0", 0);
+      m_display_programs[depth_24bit][interlaced] = std::move(*prog);
     }
   }
 
-  if (!m_vram_read_program.Compile(shadergen.GenerateScreenQuadVertexShader(),
-                                   shadergen.GenerateVRAMReadFragmentShader()))
-  {
-    return false;
-  }
-
-  if (!m_is_gles)
-    m_vram_read_program.BindFragData(0, "o_col0");
-
-  if (!m_vram_read_program.Link())
+  std::optional<GL::Program> prog = m_shader_cache.GetProgram(
+    shadergen.GenerateScreenQuadVertexShader(), shadergen.GenerateVRAMReadFragmentShader(), [this](GL::Program& prog) {
+      if (!m_is_gles)
+        prog.BindFragData(0, "o_col0");
+    });
+  if (!prog)
     return false;
 
-  m_vram_read_program.BindUniformBlock("UBOBlock", 1);
+  prog->BindUniformBlock("UBOBlock", 1);
+  prog->Bind();
+  prog->Uniform1i("samp0", 0);
 
-  m_vram_read_program.Bind();
-  m_vram_read_program.Uniform1i("samp0", 0);
+  m_vram_read_program = std::move(*prog);
 
   if (m_supports_texture_buffer)
   {
-    if (!m_vram_write_program.Compile(shadergen.GenerateScreenQuadVertexShader(),
-                                      shadergen.GenerateVRAMWriteFragmentShader()))
-    {
-      return false;
-    }
-
-    if (!m_is_gles)
-      m_vram_write_program.BindFragData(0, "o_col0");
-
-    if (!m_vram_write_program.Link())
+    prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+                                     shadergen.GenerateVRAMWriteFragmentShader(), [this](GL::Program& prog) {
+                                       if (!m_is_gles)
+                                         prog.BindFragData(0, "o_col0");
+                                     });
+    if (!prog)
       return false;
 
-    m_vram_write_program.BindUniformBlock("UBOBlock", 1);
+    prog->BindUniformBlock("UBOBlock", 1);
+    prog->Bind();
+    prog->Uniform1i("samp0", 0);
 
-    m_vram_write_program.Bind();
-    m_vram_write_program.Uniform1i("samp0", 0);
+    m_vram_write_program = std::move(*prog);
   }
 
   return true;

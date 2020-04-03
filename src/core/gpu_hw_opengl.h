@@ -2,6 +2,7 @@
 #include "common/gl/program.h"
 #include "common/gl/stream_buffer.h"
 #include "common/gl/texture.h"
+#include "common/gl/shader_cache.h"
 #include "glad.h"
 #include "gpu_hw.h"
 #include <array>
@@ -57,6 +58,8 @@ private:
   void SetDrawState(BatchRenderMode render_mode);
   void SetScissorFromDrawingArea();
   void UploadUniformBlock(const void* data, u32 data_size);
+
+  GL::ShaderCache m_shader_cache;
 
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
