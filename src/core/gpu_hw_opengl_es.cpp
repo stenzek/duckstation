@@ -253,7 +253,17 @@ bool GPU_HW_OpenGL_ES::CompilePrograms()
     }
   }
 
-  std::optional<GL::Program> prog =
+  std::optional<GL::Program> prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+                                                              shadergen.GenerateInterlacedFillFragmentShader());
+  if (!prog)
+    return false;
+
+  prog->Bind();
+  prog->RegisterUniform("u_fill_color");
+  prog->RegisterUniform("u_u_interlaced_displayed_field");
+  m_vram_interlaced_fill_program = std::move(*prog);
+
+  prog =
     m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), shadergen.GenerateVRAMReadFragmentShader());
   if (!prog)
     return false;
@@ -357,7 +367,7 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
-    const bool interlaced = IsDisplayInterlaced();
+    const bool interlaced = IsInterlacedDisplayEnabled();
 
     if (m_GPUSTAT.display_disable)
     {
@@ -385,7 +395,7 @@ void GPU_HW_OpenGL_ES::UpdateDisplay()
       const u32 scaled_flipped_vram_offset_y =
         m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
-      const u32 reinterpret_field_offset = BoolToUInt32(m_GPUSTAT.displaying_odd_line);
+      const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
 
@@ -469,10 +479,21 @@ void GPU_HW_OpenGL_ES::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
 
   const auto [r, g, b, a] = RGBA8ToFloat(color);
-  glClearColor(r, g, b, a);
-  glClear(GL_COLOR_BUFFER_BIT);
 
-  SetScissorFromDrawingArea();
+  if (!IsInterlacedRenderingEnabled())
+  {
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SetScissorFromDrawingArea();
+  }
+  else
+  {
+    m_vram_interlaced_fill_program.Bind();
+    m_vram_interlaced_fill_program.Uniform4f(0, r, g, b, a);
+    m_vram_interlaced_fill_program.Uniform1i(1, GetInterlacedField());
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    RestoreGraphicsAPIState();
+  }
 }
 
 void GPU_HW_OpenGL_ES::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)

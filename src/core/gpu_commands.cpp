@@ -306,7 +306,7 @@ bool GPU::HandleRenderCommand(const u32*& command_ptr, u32 command_size)
                   primitive_names[static_cast<u8>(rc.primitive.GetValue())], ZeroExtend32(num_vertices),
                   ZeroExtend32(words_per_vertex));
 
-  if (m_GPUSTAT.SkipDrawingToActiveField() && IsRasterScanlinePending())
+  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
     Synchronize();
 
   DispatchRenderCommand(rc, num_vertices, command_ptr);

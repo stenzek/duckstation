@@ -893,12 +893,32 @@ void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   const u16 color16 = RGBA8888ToRGBA5551(color);
-  if ((x + width) <= VRAM_WIDTH)
+  if ((x + width) <= VRAM_WIDTH && !IsInterlacedRenderingEnabled())
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
       std::fill_n(&m_vram_ptr[row * VRAM_WIDTH + x], width, color16);
+    }
+  }
+  else if (IsInterlacedRenderingEnabled())
+  {
+    // Hardware tests show that fills seem to break on the first two lines when the offset matches the displayed field.
+    if (IsRasterScanlinePending())
+      Synchronize();
+    const u32 active_field = GetInterlacedField();
+    for (u32 yoffs = 0; yoffs < height; yoffs++)
+    {
+      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      if ((row & u32(1)) == active_field)
+        continue;
+
+      u16* row_ptr = &m_vram_ptr[row * VRAM_WIDTH];
+      for (u32 xoffs = 0; xoffs < width; xoffs++)
+      {
+        const u32 col = (x + xoffs) % VRAM_WIDTH;
+        row_ptr[col] = color16;
+      }
     }
   }
   else

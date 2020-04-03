@@ -367,23 +367,34 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
       prog->Bind();
       prog->Uniform1i("samp0", 0);
-
       m_display_programs[depth_24bit][interlaced] = std::move(*prog);
     }
   }
 
-  std::optional<GL::Program> prog = m_shader_cache.GetProgram(
-    shadergen.GenerateScreenQuadVertexShader(), shadergen.GenerateVRAMReadFragmentShader(), [this](GL::Program& prog) {
-      if (!m_is_gles)
-        prog.BindFragData(0, "o_col0");
-    });
+  std::optional<GL::Program> prog =
+    m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+                              shadergen.GenerateInterlacedFillFragmentShader(), [this](GL::Program& prog) {
+                                if (!m_is_gles)
+                                  prog.BindFragData(0, "o_col0");
+                              });
+  if (!prog)
+    return false;
+
+  prog->BindUniformBlock("UBOBlock", 1);
+  prog->Bind();
+  m_vram_interlaced_fill_program = std::move(*prog);
+
+  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+                                   shadergen.GenerateVRAMReadFragmentShader(), [this](GL::Program& prog) {
+                                     if (!m_is_gles)
+                                       prog.BindFragData(0, "o_col0");
+                                   });
   if (!prog)
     return false;
 
   prog->BindUniformBlock("UBOBlock", 1);
   prog->Bind();
   prog->Uniform1i("samp0", 0);
-
   m_vram_read_program = std::move(*prog);
 
   if (m_supports_texture_buffer)
@@ -399,7 +410,6 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->BindUniformBlock("UBOBlock", 1);
     prog->Bind();
     prog->Uniform1i("samp0", 0);
-
     m_vram_write_program = std::move(*prog);
   }
 
@@ -490,7 +500,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
-    const bool interlaced = IsDisplayInterlaced();
+    const bool interlaced = IsInterlacedDisplayEnabled();
 
     if (m_GPUSTAT.display_disable)
     {
@@ -516,7 +526,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       const u32 scaled_flipped_vram_offset_y =
         m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
-      const u32 reinterpret_field_offset = BoolToUInt32(m_GPUSTAT.displaying_odd_line);
+      const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
       const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};
@@ -600,11 +610,32 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   if (!m_true_color)
     color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
 
-  const auto [r, g, b, a] = RGBA8ToFloat(color);
-  glClearColor(r, g, b, a);
-  glClear(GL_COLOR_BUFFER_BIT);
+  // fast path when not using interlaced rendering
+  if (!IsInterlacedRenderingEnabled())
+  {
+    const auto [r, g, b, a] = RGBA8ToFloat(color);
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SetScissorFromDrawingArea();
+  }
+  else
+  {
+    struct Uniforms
+    {
+      float u_fill_color[4];
+      u32 u_interlaced_displayed_field;
+    };
+    Uniforms uniforms;
+    std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
+      RGBA8ToFloat(color);
+    uniforms.u_interlaced_displayed_field = GetInterlacedField();
 
-  SetScissorFromDrawingArea();
+    m_vram_interlaced_fill_program.Bind();
+    UploadUniformBlock(&uniforms, sizeof(uniforms));
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    RestoreGraphicsAPIState();
+  }
 }
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)

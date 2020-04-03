@@ -17,6 +17,7 @@ public:
   std::string GenerateBatchLineExpandGeometryShader();
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
+  std::string GenerateInterlacedFillFragmentShader();
   std::string GenerateCopyFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
   std::string GenerateVRAMReadFragmentShader();

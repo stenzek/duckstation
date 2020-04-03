@@ -377,8 +377,13 @@ bool GPU_HW_D3D11::CompileShaders()
   if (!m_copy_pixel_shader)
     return false;
 
-  m_fill_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
-  if (!m_fill_pixel_shader)
+  m_vram_fill_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
+  if (!m_vram_fill_pixel_shader)
+    return false;
+
+  m_vram_interlaced_fill_pixel_shader =
+    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateInterlacedFillFragmentShader());
+  if (!m_vram_interlaced_fill_pixel_shader)
     return false;
 
   m_vram_read_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
@@ -542,7 +547,7 @@ void GPU_HW_D3D11::UpdateDisplay()
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
-    const bool interlaced = IsDisplayInterlaced();
+    const bool interlaced = IsInterlacedDisplayEnabled();
 
     if (m_GPUSTAT.display_disable)
     {
@@ -559,7 +564,7 @@ void GPU_HW_D3D11::UpdateDisplay()
       m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
       m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
-      const u32 reinterpret_field_offset = BoolToUInt32(m_GPUSTAT.displaying_odd_line);
+      const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
       const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};
@@ -634,12 +639,21 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   if (!m_true_color)
     color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
 
-  float uniforms[4];
-  std::tie(uniforms[0], uniforms[1], uniforms[2], uniforms[3]) = RGBA8ToFloat(color);
+  struct Uniforms
+  {
+    float u_fill_color[4];
+    u32 u_interlaced_displayed_field;
+  };
+  Uniforms uniforms;
+  std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
+    RGBA8ToFloat(color);
+  uniforms.u_interlaced_displayed_field = GetInterlacedField();
 
   SetViewportAndScissor(x * m_resolution_scale, y * m_resolution_scale, width * m_resolution_scale,
                         height * m_resolution_scale);
-  DrawUtilityShader(m_fill_pixel_shader.Get(), uniforms, sizeof(uniforms));
+  DrawUtilityShader(IsInterlacedRenderingEnabled() ? m_vram_interlaced_fill_pixel_shader.Get() :
+                                                     m_vram_fill_pixel_shader.Get(),
+                    &uniforms, sizeof(uniforms));
 
   RestoreGraphicsAPIState();
 }

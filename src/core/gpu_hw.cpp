@@ -541,10 +541,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     m_batch_ubo_dirty = true;
   }
 
-  m_batch.interlacing = m_GPUSTAT.SkipDrawingToActiveField();
+  m_batch.interlacing = IsInterlacedRenderingEnabled();
   if (m_batch.interlacing)
   {
-    const u32 displayed_field = BoolToUInt32(m_GPUSTAT.displaying_odd_line);
+    const u32 displayed_field = GetInterlacedField();
     m_batch_ubo_dirty |= (m_batch_ubo_data.u_interlaced_displayed_field != displayed_field);
     m_batch_ubo_data.u_interlaced_displayed_field = displayed_field;
   }

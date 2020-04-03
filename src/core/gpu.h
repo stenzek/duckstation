@@ -330,7 +330,16 @@ protected:
   void Execute(TickCount ticks);
 
   /// Returns true if scanout should be interlaced.
-  bool IsDisplayInterlaced() const { return !m_force_progressive_scan && m_GPUSTAT.In480iMode(); }
+  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const { return (!m_force_progressive_scan) & m_GPUSTAT.In480iMode(); }
+
+  /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
+  ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
+  {
+    return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
+  }
+
+  /// Returns 0 if the currently-rendered field is even, otherwise 1.
+  ALWAYS_INLINE u32 GetInterlacedField() const { return BoolToUInt32(m_GPUSTAT.displaying_odd_line); }
 
   /// Sets/decodes GP0(E1h) (set draw mode).
   void SetDrawMode(u16 bits);

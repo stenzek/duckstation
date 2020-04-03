@@ -523,7 +523,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
   float oalpha;
 
   #if INTERLACING
-    if (((int(v_pos.y) / RESOLUTION_SCALE) & 1) == u_interlaced_displayed_field)
+    if (((fixYCoord(int(v_pos.y)) / RESOLUTION_SCALE) & 1) == u_interlaced_displayed_field)
       discard;
   #endif
 
@@ -732,6 +732,26 @@ std::string GPU_HW_ShaderGen::GenerateFillFragmentShader()
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"float4 u_fill_color", "int u_interlaced_displayed_field"});
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+
+  ss << R"(
+{
+  if (((fixYCoord(int(v_pos.y)) / RESOLUTION_SCALE) & 1) == u_interlaced_displayed_field)
+    discard;
+
+  o_col0 = u_fill_color;
+}
+)";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateCopyFragmentShader()
 {
   std::stringstream ss;
@@ -767,7 +787,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   int2 icoords = int2(v_pos.xy);
 
   #if INTERLACED
-    if (((icoords.y / RESOLUTION_SCALE) & 1) != u_field_offset)
+    if (((fixYCoord(icoords.y) / RESOLUTION_SCALE) & 1) != u_field_offset)
       discard;
   #endif
 
