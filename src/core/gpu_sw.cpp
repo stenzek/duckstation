@@ -303,12 +303,12 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
   if (IsClockwiseWinding(v0, v1, v2))
     std::swap(v1, v2);
 
-  const s32 px0 = v0->x + m_drawing_offset.x;
-  const s32 py0 = v0->y + m_drawing_offset.y;
-  const s32 px1 = v1->x + m_drawing_offset.x;
-  const s32 py1 = v1->y + m_drawing_offset.y;
-  const s32 px2 = v2->x + m_drawing_offset.x;
-  const s32 py2 = v2->y + m_drawing_offset.y;
+  const s32 px0 = VertexPositionToVRAMCoordinate(v0->x + m_drawing_offset.x);
+  const s32 py0 = VertexPositionToVRAMCoordinate(v0->y + m_drawing_offset.y);
+  const s32 px1 = VertexPositionToVRAMCoordinate(v1->x + m_drawing_offset.x);
+  const s32 py1 = VertexPositionToVRAMCoordinate(v1->y + m_drawing_offset.y);
+  const s32 px2 = VertexPositionToVRAMCoordinate(v2->x + m_drawing_offset.x);
+  const s32 py2 = VertexPositionToVRAMCoordinate(v2->y + m_drawing_offset.y);
 
   // Barycentric coordinates at minX/minY corner
   const s32 ws = orient2d(px0, py0, px1, py1, px2, py2);
@@ -425,7 +425,7 @@ void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8
 
   for (u32 offset_y = 0; offset_y < height; offset_y++)
   {
-    const s32 y = origin_y + static_cast<s32>(offset_y);
+    const s32 y = VertexPositionToVRAMCoordinate(origin_y + static_cast<s32>(offset_y));
     if (y < static_cast<s32>(m_drawing_area.top) || y > static_cast<s32>(m_drawing_area.bottom))
       continue;
 
@@ -433,7 +433,7 @@ void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8
 
     for (u32 offset_x = 0; offset_x < width; offset_x++)
     {
-      const s32 x = origin_x + static_cast<s32>(offset_x);
+      const s32 x = VertexPositionToVRAMCoordinate(origin_x + static_cast<s32>(offset_x));
       if (x < static_cast<s32>(m_drawing_area.left) || x > static_cast<s32>(m_drawing_area.right))
         continue;
 
@@ -649,8 +649,8 @@ void GPU_SW::DrawLine(const SWVertex* p0, const SWVertex* p1)
 
   for (s32 i = 0; i <= k; i++)
   {
-    const s32 x = m_drawing_offset.x + FixedToIntCoord(current_x);
-    const s32 y = m_drawing_offset.y + FixedToIntCoord(current_y);
+    const s32 x = VertexPositionToVRAMCoordinate(m_drawing_offset.x + FixedToIntCoord(current_x));
+    const s32 y = VertexPositionToVRAMCoordinate(m_drawing_offset.y + FixedToIntCoord(current_y));
 
     const u8 r = shading_enable ? FixedColorToInt(current_r) : p0->color_r;
     const u8 g = shading_enable ? FixedColorToInt(current_g) : p0->color_g;
