@@ -249,7 +249,7 @@ std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_sha
 
   Program prog;
   if (prog.CreateFromBinary(data.data(), static_cast<u32>(data.size()), iter->second.blob_format))
-    return prog;
+    return std::optional<Program>(std::move(prog));
 
   Log_WarningPrintf(
     "Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
@@ -276,7 +276,7 @@ std::optional<Program> ShaderCache::CompileProgram(const std::string_view& verte
   if (!prog.Link())
     return std::nullopt;
 
-  return prog;
+  return std::optional<Program>(std::move(prog));
 }
 
 std::optional<Program> ShaderCache::CompileAndAddProgram(const CacheIndexKey& key,
