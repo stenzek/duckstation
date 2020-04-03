@@ -240,7 +240,7 @@ u32 GPU::ReadRegister(u32 offset)
       // code can be dependent on the odd/even bit, so update the GPU state when reading.
       // we can mitigate this slightly by only updating when the raster is actually hitting a new line
       if (IsRasterScanlinePending())
-        m_tick_event->InvokeEarly(true);
+        Synchronize();
 
       return m_GPUSTAT.bits;
     }

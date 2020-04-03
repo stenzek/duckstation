@@ -400,6 +400,12 @@ protected:
       static constexpr u32 MASK = (1 << 19) | (1 << 22);
       return ((bits & MASK) == MASK);
     }
+    bool SkipDrawingToActiveField() const
+    {
+      static constexpr u32 MASK = (1 << 19) | (1 << 22) | (1 << 10);
+      static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
+      return ((bits & MASK) == ACTIVE);
+    }
 
     // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
     u16 GetMaskAND() const
