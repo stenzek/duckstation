@@ -627,12 +627,12 @@ void GPU::Execute(TickCount ticks)
   // alternating even line bit in 240-line mode
   if (m_GPUSTAT.In480iMode())
   {
-    m_GPUSTAT.drawing_even_line =
-      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(!m_GPUSTAT.interlaced_field)) & u32(1));
+    m_GPUSTAT.displaying_odd_line =
+      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_GPUSTAT.interlaced_field)) & u32(1));
   }
   else
   {
-    m_GPUSTAT.drawing_even_line =
+    m_GPUSTAT.displaying_odd_line =
       ConvertToBoolUnchecked((m_crtc_state.regs.Y + m_crtc_state.current_scanline) & u32(1));
   }
 
@@ -995,6 +995,9 @@ void GPU::SetDrawMode(u16 value)
 
   m_draw_mode.mode_reg.bits = new_mode_reg.bits;
 
+  if (m_GPUSTAT.draw_to_displayed_field != new_mode_reg.draw_to_displayed_field)
+    FlushRender();
+
   // Bits 0..10 are returned in the GPU status register.
   m_GPUSTAT.bits =
     (m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK)) | (ZeroExtend32(new_mode_reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
@@ -1124,7 +1127,7 @@ void GPU::DrawDebugStateWindow()
     ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
                 m_GPUSTAT.interlaced_field ? "odd" : "even");
     ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
-    ImGui::Text("Drawing Even Line: %s", m_GPUSTAT.drawing_even_line ? "Yes" : "No");
+    ImGui::Text("Displaying Odd Line/Field: %s", m_GPUSTAT.displaying_odd_line ? "Yes" : "No");
     ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
     ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
     ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,
@@ -1145,7 +1148,7 @@ void GPU::DrawDebugStateWindow()
   if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Dither: %s", m_GPUSTAT.dither_enable ? "Enabled" : "Disabled");
-    ImGui::Text("Draw To Display Area: %s", m_GPUSTAT.draw_to_display_area ? "Enabled" : "Disabled");
+    ImGui::Text("Draw To Displayed Field: %s", m_GPUSTAT.draw_to_displayed_field ? "Enabled" : "Disabled");
     ImGui::Text("Draw Set Mask Bit: %s", m_GPUSTAT.set_mask_while_drawing ? "Yes" : "No");
     ImGui::Text("Draw To Masked Pixels: %s", m_GPUSTAT.check_mask_before_draw ? "Yes" : "No");
     ImGui::Text("Reverse Flag: %s", m_GPUSTAT.reverse_flag ? "Yes" : "No");

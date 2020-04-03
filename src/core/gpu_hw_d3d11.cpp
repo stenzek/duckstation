@@ -349,13 +349,17 @@ bool GPU_HW_D3D11::CompileShaders()
     {
       for (u8 dithering = 0; dithering < 2; dithering++)
       {
-        const std::string ps = shadergen.GenerateBatchFragmentShader(static_cast<BatchRenderMode>(render_mode),
-                                                                     static_cast<TextureMode>(texture_mode),
-                                                                     ConvertToBoolUnchecked(dithering));
+        for (u8 interlacing = 0; interlacing < 2; interlacing++)
+        {
+          const std::string ps = shadergen.GenerateBatchFragmentShader(
+            static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
+            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
-        m_batch_pixel_shaders[render_mode][texture_mode][dithering] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
-        if (!m_batch_pixel_shaders[render_mode][texture_mode][dithering])
-          return false;
+          m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing] =
+            m_shader_cache.GetPixelShader(m_device.Get(), ps);
+          if (!m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing])
+            return false;
+        }
       }
     }
   }
@@ -388,12 +392,12 @@ bool GPU_HW_D3D11::CompileShaders()
 
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
-    for (u8 interlaced = 0; interlaced < 2; interlaced++)
+    for (u8 interlacing = 0; interlacing < 2; interlacing++)
     {
       const std::string ps = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
-                                                                     ConvertToBoolUnchecked(interlaced));
-      m_display_pixel_shaders[depth_24bit][interlaced] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
-      if (!m_display_pixel_shaders[depth_24bit][interlaced])
+                                                                     ConvertToBoolUnchecked(interlacing));
+      m_display_pixel_shaders[depth_24bit][interlacing] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
+      if (!m_display_pixel_shaders[depth_24bit][interlacing])
         return false;
     }
   }
@@ -486,7 +490,7 @@ void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
                          nullptr, 0);
 
   m_context->PSSetShader(m_batch_pixel_shaders[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
-                                              [BoolToUInt8(m_batch.dithering)]
+                                              [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)]
                                                 .Get(),
                          nullptr, 0);
 
@@ -555,8 +559,7 @@ void GPU_HW_D3D11::UpdateDisplay()
       m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
       m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
-      const u32 reinterpret_field_offset =
-        (m_crtc_state.regs.Y + BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field)) & 1u;
+      const u32 reinterpret_field_offset = BoolToUInt32(m_GPUSTAT.displaying_odd_line);
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
       const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};

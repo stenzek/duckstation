@@ -1,8 +1,8 @@
 #pragma once
 #include "common/gl/program.h"
+#include "common/gl/shader_cache.h"
 #include "common/gl/stream_buffer.h"
 #include "common/gl/texture.h"
-#include "common/gl/shader_cache.h"
 #include "glad.h"
 #include "gpu_hw.h"
 #include <array>
@@ -76,8 +76,9 @@ private:
   std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
   GLuint m_texture_buffer_r16ui_texture = 0;
 
-  std::array<std::array<std::array<GL::Program, 2>, 9>, 4> m_render_programs; // [render_mode][texture_mode][dithering]
-  std::array<std::array<GL::Program, 2>, 2> m_display_programs;               // [depth_24][interlaced]
+  std::array<std::array<std::array<std::array<GL::Program, 2>, 2>, 9>, 4>
+    m_render_programs;                                          // [render_mode][texture_mode][dithering][interlacing]
+  std::array<std::array<GL::Program, 2>, 2> m_display_programs; // [depth_24][interlaced]
   GL::Program m_vram_read_program;
   GL::Program m_vram_write_program;
 

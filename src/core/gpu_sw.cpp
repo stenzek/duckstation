@@ -574,8 +574,11 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
   if ((bg_color.bits & mask_and) != 0)
     return;
 
-  if (m_GPUSTAT.SkipDrawingToActiveField() && BoolToUInt32(m_GPUSTAT.drawing_even_line) != (static_cast<u32>(y) & 1u))
+  if (m_GPUSTAT.SkipDrawingToActiveField() &&
+      BoolToUInt32(m_GPUSTAT.displaying_odd_line) == (static_cast<u32>(y) & 1u))
+  {
     return;
+  }
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());
 }

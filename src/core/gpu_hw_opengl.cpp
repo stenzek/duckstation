@@ -302,35 +302,38 @@ bool GPU_HW_OpenGL::CompilePrograms()
     {
       for (u8 dithering = 0; dithering < 2; dithering++)
       {
-        const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
-        const std::string vs = shadergen.GenerateBatchVertexShader(textured);
-        const std::string fs = shadergen.GenerateBatchFragmentShader(static_cast<BatchRenderMode>(render_mode),
-                                                                     static_cast<TextureMode>(texture_mode),
-                                                                     ConvertToBoolUnchecked(dithering));
+        for (u8 interlacing = 0; interlacing < 2; interlacing++)
+        {
+          const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
+          const std::string vs = shadergen.GenerateBatchVertexShader(textured);
+          const std::string fs = shadergen.GenerateBatchFragmentShader(
+            static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
+            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
-        std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this, textured](GL::Program& prog) {
-          prog.BindAttribute(0, "a_pos");
-          prog.BindAttribute(1, "a_col0");
+          std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this, textured](GL::Program& prog) {
+            prog.BindAttribute(0, "a_pos");
+            prog.BindAttribute(1, "a_col0");
+            if (textured)
+            {
+              prog.BindAttribute(2, "a_texcoord");
+              prog.BindAttribute(3, "a_texpage");
+            }
+
+            if (!m_is_gles)
+              prog.BindFragData(0, "o_col0");
+          });
+          if (!prog)
+            return false;
+
+          prog->BindUniformBlock("UBOBlock", 1);
           if (textured)
           {
-            prog.BindAttribute(2, "a_texcoord");
-            prog.BindAttribute(3, "a_texpage");
+            prog->Bind();
+            prog->Uniform1i("samp0", 0);
           }
 
-          if (!m_is_gles)
-            prog.BindFragData(0, "o_col0");
-        });
-        if (!prog)
-          return false;
-
-        prog->BindUniformBlock("UBOBlock", 1);
-        if (textured)
-        {
-          prog->Bind();
-          prog->Uniform1i("samp0", 0);
+          m_render_programs[render_mode][texture_mode][dithering][interlacing] = std::move(*prog);
         }
-
-        m_render_programs[render_mode][texture_mode][dithering] = std::move(*prog);
       }
     }
   }
@@ -406,7 +409,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
 {
   const GL::Program& prog = m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
-                                             [BoolToUInt8(m_batch.dithering)];
+                                             [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
   prog.Bind();
 
   if (m_batch.texture_mode != TextureMode::Disabled)
@@ -513,8 +516,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       const u32 scaled_flipped_vram_offset_y =
         m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
 
-      const u32 reinterpret_field_offset =
-        (m_crtc_state.regs.Y + BoolToUInt8(interlaced && m_GPUSTAT.interlaced_field)) & 1u;
+      const u32 reinterpret_field_offset = BoolToUInt32(m_GPUSTAT.displaying_odd_line);
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
       const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};

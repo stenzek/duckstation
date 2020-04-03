@@ -345,7 +345,8 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_
 void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
   DeclareUniformBuffer(ss, {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
-                            "float u_dst_alpha_factor", "bool u_set_mask_while_drawing"});
+                            "float u_dst_alpha_factor", "bool u_set_mask_while_drawing",
+                            "int u_interlaced_displayed_field"});
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
@@ -394,7 +395,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency,
-                                                          GPU::TextureMode texture_mode, bool dithering)
+                                                          GPU::TextureMode texture_mode, bool dithering,
+                                                          bool interlacing)
 {
   const GPU::TextureMode actual_texture_mode = texture_mode & ~GPU::TextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPU::TextureMode::RawTextureBit) == GPU::TextureMode::RawTextureBit;
@@ -416,6 +418,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
+  DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filering);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
@@ -518,6 +521,11 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
   int3 icolor;
   float ialpha;
   float oalpha;
+
+  #if INTERLACING
+    if (((int(v_pos.y) / RESOLUTION_SCALE) & 1) == u_interlaced_displayed_field)
+      discard;
+  #endif
 
   #if TEXTURED
     #if TEXTURE_FILTERING

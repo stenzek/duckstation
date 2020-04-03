@@ -377,7 +377,7 @@ protected:
     BitField<u32, TransparencyMode, 5, 2> semi_transparency_mode;
     BitField<u32, TextureMode, 7, 2> texture_color_mode;
     BitField<u32, bool, 9, 1> dither_enable;
-    BitField<u32, bool, 10, 1> draw_to_display_area;
+    BitField<u32, bool, 10, 1> draw_to_displayed_field;
     BitField<u32, bool, 11, 1> set_mask_while_drawing;
     BitField<u32, bool, 12, 1> check_mask_before_draw;
     BitField<u32, bool, 13, 1> interlaced_field;
@@ -396,7 +396,7 @@ protected:
     BitField<u32, bool, 27, 1> ready_to_send_vram;
     BitField<u32, bool, 28, 1> ready_to_recieve_dma;
     BitField<u32, DMADirection, 29, 2> dma_direction;
-    BitField<u32, bool, 31, 1> drawing_even_line;
+    BitField<u32, bool, 31, 1> displaying_odd_line;
 
     bool IsMaskingEnabled() const
     {
@@ -452,7 +452,7 @@ protected:
       BitField<u16, TransparencyMode, 5, 2> transparency_mode;
       BitField<u16, TextureMode, 7, 2> texture_mode;
       BitField<u16, bool, 9, 1> dither_enable;
-      BitField<u16, bool, 10, 1> draw_to_display_area;
+      BitField<u16, bool, 10, 1> draw_to_displayed_field;
       BitField<u16, bool, 11, 1> texture_disable;
       BitField<u16, bool, 12, 1> texture_x_flip;
       BitField<u16, bool, 13, 1> texture_y_flip;

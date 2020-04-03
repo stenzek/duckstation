@@ -76,6 +76,7 @@ protected:
     TextureMode texture_mode;
     TransparencyMode transparency_mode;
     bool dithering;
+    bool interlacing;
     bool set_mask_while_drawing;
     bool check_mask_before_draw;
 
@@ -102,7 +103,7 @@ protected:
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
     u32 u_set_mask_while_drawing;
-    u32 padding[1];
+    u32 u_interlaced_displayed_field;
   };
 
   struct RendererStats
