@@ -53,6 +53,9 @@
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="wav_writer.h" />
+    <ClInclude Include="gl\shader_cache.h">
+      <Filter>gl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -102,6 +105,9 @@
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="wav_writer.cpp" />
+    <ClCompile Include="gl\shader_cache.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

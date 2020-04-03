@@ -149,6 +149,9 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
     m_index.emplace(key, data);
   }
 
+  // ensure we don't write before seeking
+  std::fseek(m_index_file, 0, SEEK_END);
+
   Log_InfoPrintf("Read %zu entries from '%s'", m_index.size(), index_filename.c_str());
   return true;
 }

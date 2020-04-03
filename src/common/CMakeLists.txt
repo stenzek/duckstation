@@ -24,6 +24,8 @@ add_library(common
   file_system.h
   gl/program.cpp
   gl/program.h
+  gl/shader_cache.cpp
+  gl/shader_cache.h
   gl/stream_buffer.cpp
   gl/stream_buffer.h
   gl/texture.cpp
