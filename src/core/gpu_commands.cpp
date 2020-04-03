@@ -136,7 +136,7 @@ bool GPU::HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size)
 bool GPU::HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_size)
 {
   const u32 param = *(command_ptr++) & 0x00FFFFFF;
-  m_draw_mode.SetTextureWindow(param);
+  SetTextureWindow(param);
   Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_draw_mode.texture_window_mask_x,
                   m_draw_mode.texture_window_mask_y, m_draw_mode.texture_window_offset_x,
                   m_draw_mode.texture_window_offset_y);

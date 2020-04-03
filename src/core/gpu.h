@@ -338,6 +338,9 @@ protected:
   /// Sets/decodes polygon/rectangle texture palette value.
   void SetTexturePalette(u16 bits);
 
+  /// Sets/decodes texture window bits.
+  void SetTextureWindow(u32 value);
+
   u32 ReadGPUREAD();
   void WriteGP0(u32 value);
   void WriteGP1(u32 value);
@@ -428,7 +431,7 @@ protected:
   struct DrawMode
   {
     static constexpr u16 PALETTE_MASK = UINT16_C(0b0111111111111111);
-    static constexpr u32 TEXTURE_WINDOW_MASK = UINT16_C(0b11111111111111111111);
+    static constexpr u32 TEXTURE_WINDOW_MASK = UINT32_C(0b11111111111111111111);
 
     // bits in GP0(E1h) or texpage part of polygon
     union Reg
@@ -511,9 +514,6 @@ protected:
     bool IsTextureWindowChanged() const { return texture_window_changed; }
     void SetTextureWindowChanged() { texture_window_changed = true; }
     void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
-
-    void SetTextureWindow(u32 value);
-
   } m_draw_mode = {};
 
   Common::Rectangle<u32> m_drawing_area;

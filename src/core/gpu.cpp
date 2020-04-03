@@ -50,6 +50,8 @@ void GPU::Reset()
 
 void GPU::SoftReset()
 {
+  FlushRender();
+
   m_GPUSTAT.bits = 0x14802000;
   m_GPUSTAT.pal_mode = m_system->IsPALRegion();
   m_drawing_area.Set(0, 0, 0, 0);
@@ -66,7 +68,7 @@ void GPU::SoftReset()
   m_GP0_buffer.clear();
   SetDrawMode(0);
   SetTexturePalette(0);
-  m_draw_mode.SetTextureWindow(0);
+  SetTextureWindow(0);
   UpdateDMARequest();
   UpdateCRTCConfig();
   UpdateSliceTicks();
@@ -1011,18 +1013,20 @@ void GPU::SetTexturePalette(u16 value)
   m_draw_mode.texture_page_changed = true;
 }
 
-void GPU::DrawMode::SetTextureWindow(u32 value)
+void GPU::SetTextureWindow(u32 value)
 {
-  value &= TEXTURE_WINDOW_MASK;
-  if (texture_window_value == value)
+  value &= DrawMode::TEXTURE_WINDOW_MASK;
+  if (m_draw_mode.texture_window_value == value)
     return;
 
-  texture_window_mask_x = value & UINT32_C(0x1F);
-  texture_window_mask_y = (value >> 5) & UINT32_C(0x1F);
-  texture_window_offset_x = (value >> 10) & UINT32_C(0x1F);
-  texture_window_offset_y = (value >> 15) & UINT32_C(0x1F);
-  texture_window_value = value;
-  texture_window_changed = true;
+  FlushRender();
+
+  m_draw_mode.texture_window_mask_x = value & UINT32_C(0x1F);
+  m_draw_mode.texture_window_mask_y = (value >> 5) & UINT32_C(0x1F);
+  m_draw_mode.texture_window_offset_x = (value >> 10) & UINT32_C(0x1F);
+  m_draw_mode.texture_window_offset_y = (value >> 15) & UINT32_C(0x1F);
+  m_draw_mode.texture_window_value = value;
+  m_draw_mode.texture_window_changed = true;
 }
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)

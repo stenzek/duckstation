@@ -490,7 +490,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
           (m_draw_mode.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
            (m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
       {
-        //Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
+        // Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())
           FlushRender();
 
@@ -517,14 +517,10 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     rc.transparency_enable ? m_draw_mode.GetTransparencyMode() : TransparencyMode::Disabled;
   const BatchPrimitive rc_primitive = GetPrimitiveForCommand(rc);
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
-  if (!IsFlushed())
+  if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
+      m_batch.primitive != rc_primitive || dithering_enable != m_batch.dithering)
   {
-    if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
-        m_batch.primitive != rc_primitive || dithering_enable != m_batch.dithering || m_drawing_area_changed ||
-        m_draw_mode.IsTextureWindowChanged())
-    {
-      FlushRender();
-    }
+    FlushRender();
   }
 
   // transparency mode change
