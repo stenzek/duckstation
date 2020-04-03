@@ -2,6 +2,7 @@
 #include "../file_system.h"
 #include "../log.h"
 #include "../md5_digest.h"
+#include "../string_util.h"
 Log_SetChannel(GL::ShaderCache);
 
 namespace GL {
@@ -46,6 +47,7 @@ bool ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 
 void ShaderCache::Open(bool is_gles, std::string_view base_path)
 {
+  m_base_path = base_path;
   m_program_binary_supported = is_gles || GLAD_GL_ARB_get_program_binary;
   if (m_program_binary_supported)
   {
@@ -63,9 +65,8 @@ void ShaderCache::Open(bool is_gles, std::string_view base_path)
     return;
   }
 
-  const std::string base_filename = GetCacheBaseFileName(base_path);
-  const std::string index_filename = base_filename + ".idx";
-  const std::string blob_filename = base_filename + ".bin";
+  const std::string index_filename = GetIndexFileName();
+  const std::string blob_filename = GetBlobFileName();
 
   if (!ReadExisting(index_filename, blob_filename))
     CreateNew(index_filename, blob_filename);
@@ -172,18 +173,21 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 
 void ShaderCache::Close()
 {
+  m_index.clear();
   if (m_index_file)
     std::fclose(m_index_file);
   if (m_blob_file)
     std::fclose(m_blob_file);
 }
 
-std::string ShaderCache::GetCacheBaseFileName(const std::string_view& base_path)
+bool ShaderCache::Recreate()
 {
-  std::string base_filename(base_path);
-  base_filename += FS_OSPATH_SEPERATOR_CHARACTER;
-  base_filename += "gl_programs";
-  return base_filename;
+  Close();
+
+  const std::string index_filename = GetIndexFileName();
+  const std::string blob_filename = GetBlobFileName();
+
+  return CreateNew(index_filename, blob_filename);
 }
 
 ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vertex_shader,
@@ -214,6 +218,16 @@ ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vert
                        fragment_hash.low, fragment_hash.high, static_cast<u32>(fragment_shader.length())};
 }
 
+std::string ShaderCache::GetIndexFileName() const
+{
+  return StringUtil::StdStringFromFormat("%s%cgl_programs.idx", m_base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER);
+}
+
+std::string ShaderCache::GetBlobFileName() const
+{
+  return StringUtil::StdStringFromFormat("%s%cgl_programs.bin", m_base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER);
+}
+
 std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_shader,
                                                const std::string_view fragment_shader, const PreLinkCallback& callback)
 {
@@ -237,7 +251,12 @@ std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_sha
   if (prog.CreateFromBinary(data.data(), static_cast<u32>(data.size()), iter->second.blob_format))
     return prog;
 
-  return CompileProgram(vertex_shader, fragment_shader, callback, false);
+  Log_WarningPrintf(
+    "Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
+  if (!Recreate())
+    return CompileProgram(vertex_shader, fragment_shader, callback, false);
+  else
+    return CompileAndAddProgram(key, vertex_shader, fragment_shader, callback);
 }
 
 std::optional<Program> ShaderCache::CompileProgram(const std::string_view& vertex_shader,

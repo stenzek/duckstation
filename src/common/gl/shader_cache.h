@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <functional>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -60,18 +61,22 @@ private:
 
   using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-  static std::string GetCacheBaseFileName(const std::string_view& base_path);
   static CacheIndexKey GetCacheKey(const std::string_view& vertex_shader, const std::string_view& fragment_shader);
+
+  std::string GetIndexFileName() const;
+  std::string GetBlobFileName() const;
 
   bool CreateNew(const std::string& index_filename, const std::string& blob_filename);
   bool ReadExisting(const std::string& index_filename, const std::string& blob_filename);
   void Close();
+  bool Recreate();
 
   std::optional<Program> CompileProgram(const std::string_view& vertex_shader, const std::string_view& fragment_shader,
                                         const PreLinkCallback& callback, bool set_retrievable);
   std::optional<Program> CompileAndAddProgram(const CacheIndexKey& key, const std::string_view& vertex_shader,
                                               const std::string_view& fragment_shader, const PreLinkCallback& callback);
 
+  std::string m_base_path;
   std::FILE* m_index_file = nullptr;
   std::FILE* m_blob_file = nullptr;
 
