@@ -94,15 +94,34 @@ void GPU_SW::UpdateDisplay()
       m_host_display->ClearDisplayTexture();
       return;
     }
-    else if (m_GPUSTAT.display_area_color_depth_24)
+    else if (IsInterlacedDisplayEnabled())
     {
-      CopyOut24Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
-                   m_display_texture_buffer.data(), display_width, display_width, display_height);
+      const u32 field = GetInterlacedField();
+      if (m_GPUSTAT.display_area_color_depth_24)
+      {
+        CopyOut24Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH * 2,
+                     m_display_texture_buffer.data() + field * display_width, display_width * 2, display_width,
+                     display_height / 2);
+      }
+      else
+      {
+        CopyOut15Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH * 2,
+                     m_display_texture_buffer.data() + field * display_width, display_width * 2, display_width,
+                     display_height / 2);
+      }
     }
     else
     {
-      CopyOut15Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
-                   m_display_texture_buffer.data(), display_width, display_width, display_height);
+      if (m_GPUSTAT.display_area_color_depth_24)
+      {
+        CopyOut24Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
+                     m_display_texture_buffer.data(), display_width, display_width, display_height);
+      }
+      else
+      {
+        CopyOut15Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
+                     m_display_texture_buffer.data(), display_width, display_width, display_height);
+      }
     }
 
     m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, display_width, display_height,
