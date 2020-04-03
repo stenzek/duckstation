@@ -21,6 +21,11 @@ public:
 
   bool Compile(const std::string_view vertex_shader, const std::string_view fragment_shader);
 
+  bool CreateFromBinary(const void* data, u32 data_length, u32 data_format);
+
+  bool GetBinary(std::vector<u8>* out_data, u32* out_data_format);
+  void SetBinaryRetrievableHint();
+
   void BindAttribute(GLuint index, const char* name);
   void BindDefaultAttributes();
 

@@ -100,6 +100,58 @@ bool Program::Compile(const std::string_view vertex_shader, const std::string_vi
   return true;
 }
 
+bool Program::CreateFromBinary(const void* data, u32 data_length, u32 data_format)
+{
+  GLuint prog = glCreateProgram();
+  glProgramBinary(prog, static_cast<GLenum>(data_format), data, data_length);
+
+  GLint link_status;
+  glGetProgramiv(prog, GL_LINK_STATUS, &link_status);
+  if (link_status != GL_TRUE)
+  {
+    Log_ErrorPrintf("Failed to create GL program from binary: status %d", link_status);
+    glDeleteProgram(prog);
+    return false;
+  }
+
+  m_program_id = prog;
+  return true;
+}
+
+bool Program::GetBinary(std::vector<u8>* out_data, u32* out_data_format)
+{
+  GLint binary_size = 0;
+  glGetProgramiv(m_program_id, GL_PROGRAM_BINARY_LENGTH, &binary_size);
+  if (binary_size == 0)
+  {
+    Log_WarningPrint("glGetProgramiv(GL_PROGRAM_BINARY_LENGTH) returned 0");
+    return false;
+  }
+
+  GLenum format = 0;
+  out_data->resize(static_cast<size_t>(binary_size));
+  glGetProgramBinary(m_program_id, binary_size, &binary_size, &format, out_data->data());
+  if (binary_size == 0)
+  {
+    Log_WarningPrint("glGetProgramBinary() failed");
+    return false;
+  }
+  else if (static_cast<size_t>(binary_size) != out_data->size())
+  {
+    Log_WarningPrintf("Size changed from %zu to %d after glGetProgramBinary()", out_data->data(), binary_size);
+    out_data->resize(static_cast<size_t>(binary_size));
+  }
+
+  *out_data_format = static_cast<u32>(format);
+  Log_InfoPrintf("Program binary retrieved, %zu bytes, format %u", out_data->size(), *out_data_format);
+  return true;
+}
+
+void Program::SetBinaryRetrievableHint()
+{
+  glProgramParameteri(m_program_id, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+}
+
 void Program::BindAttribute(GLuint index, const char* name)
 {
   glBindAttribLocation(m_program_id, index, name);
