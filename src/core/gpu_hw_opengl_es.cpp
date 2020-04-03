@@ -29,6 +29,8 @@ bool GPU_HW_OpenGL_ES::Initialize(HostDisplay* host_display, System* system, DMA
 
   SetCapabilities(host_display);
 
+  m_shader_cache.Open(true, system->GetHostInterface()->GetUserDirectoryRelativePath("cache"));
+
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
 
@@ -201,31 +203,29 @@ bool GPU_HW_OpenGL_ES::CompilePrograms()
                                                                      static_cast<TextureMode>(texture_mode),
                                                                      ConvertToBoolUnchecked(dithering));
 
-        GL::Program& prog = m_render_programs[render_mode][texture_mode][dithering];
-        if (!prog.Compile(vs, fs))
+        std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this, textured](GL::Program& prog) {
+          prog.BindAttribute(0, "a_pos");
+          prog.BindAttribute(1, "a_col0");
+          if (textured)
+          {
+            prog.BindAttribute(2, "a_texcoord");
+            prog.BindAttribute(3, "a_texpage");
+          }
+        });
+        if (!prog)
           return false;
 
-        prog.BindAttribute(0, "a_pos");
-        prog.BindAttribute(1, "a_col0");
-        if (textured)
-        {
-          prog.BindAttribute(2, "a_texcoord");
-          prog.BindAttribute(3, "a_texpage");
-        }
-
-        if (!prog.Link())
-          return false;
-
-        prog.Bind();
-
-        prog.RegisterUniform("u_texture_window_mask");
-        prog.RegisterUniform("u_texture_window_offset");
-        prog.RegisterUniform("u_src_alpha_factor");
-        prog.RegisterUniform("u_dst_alpha_factor");
-        prog.RegisterUniform("u_set_mask_while_drawing");
+        prog->Bind();
+        prog->RegisterUniform("u_texture_window_mask");
+        prog->RegisterUniform("u_texture_window_offset");
+        prog->RegisterUniform("u_src_alpha_factor");
+        prog->RegisterUniform("u_dst_alpha_factor");
+        prog->RegisterUniform("u_set_mask_while_drawing");
 
         if (textured)
-          prog.Uniform1i("samp0", 0);
+          prog->Uniform1i("samp0", 0);
+
+        m_render_programs[render_mode][texture_mode][dithering] = std::move(*prog);
       }
     }
   }
@@ -234,35 +234,31 @@ bool GPU_HW_OpenGL_ES::CompilePrograms()
   {
     for (u8 interlaced = 0; interlaced < 2; interlaced++)
     {
-      GL::Program& prog = m_display_programs[depth_24bit][interlaced];
       const std::string vs = shadergen.GenerateScreenQuadVertexShader();
       const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
                                                                      ConvertToBoolUnchecked(interlaced));
-      if (!prog.Compile(vs, fs))
+      std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs);
+      if (!prog)
         return false;
 
-      if (!prog.Link())
-        return false;
+      prog->Bind();
+      prog->RegisterUniform("u_base_coords");
+      prog->Uniform1i("samp0", 0);
 
-      prog.Bind();
-      prog.RegisterUniform("u_base_coords");
-      prog.Uniform1i("samp0", 0);
+      m_display_programs[depth_24bit][interlaced] = std::move(*prog);
     }
   }
 
-  if (!m_vram_read_program.Compile(shadergen.GenerateScreenQuadVertexShader(),
-                                   shadergen.GenerateVRAMReadFragmentShader()))
-  {
-    return false;
-  }
-
-  if (!m_vram_read_program.Link())
+  std::optional<GL::Program> prog =
+    m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), shadergen.GenerateVRAMReadFragmentShader());
+  if (!prog)
     return false;
 
-  m_vram_read_program.Bind();
-  m_vram_read_program.RegisterUniform("u_base_coords");
-  m_vram_read_program.RegisterUniform("u_size");
-  m_vram_read_program.Uniform1i("samp0", 0);
+  prog->Bind();
+  prog->RegisterUniform("u_base_coords");
+  prog->RegisterUniform("u_size");
+  prog->Uniform1i("samp0", 0);
+  m_vram_read_program = std::move(*prog);
   return true;
 }
 
