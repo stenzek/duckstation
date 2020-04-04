@@ -235,6 +235,7 @@ private:
   void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
+  void ResetCurrentXAFile();
   void LoadDataFIFO();
   void ClearSectorBuffers();
 
@@ -266,8 +267,11 @@ private:
   bool m_muted = false;
   bool m_adpcm_muted = false;
 
-  u8 m_filter_file_number = 0;
-  u8 m_filter_channel_number = 0;
+  u8 m_xa_filter_file_number = 0;
+  u8 m_xa_filter_channel_number = 0;
+  u8 m_xa_current_file_number = 0;
+  u8 m_xa_current_channel_number = 0;
+  u8 m_xa_current_set = false;
 
   CDImage::SectorHeader m_last_sector_header{};
   CDXA::XASubHeader m_last_sector_subheader{};

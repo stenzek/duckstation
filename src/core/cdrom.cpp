@@ -57,8 +57,11 @@ void CDROM::SoftReset()
   m_play_after_seek = false;
   m_muted = false;
   m_adpcm_muted = false;
-  m_filter_file_number = 0;
-  m_filter_channel_number = 0;
+  m_xa_filter_file_number = 0;
+  m_xa_filter_channel_number = 0;
+  m_xa_current_file_number = 0;
+  m_xa_current_channel_number = 0;
+  m_xa_current_set = false;
   std::memset(&m_last_sector_header, 0, sizeof(m_last_sector_header));
   std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
   m_last_sector_header_valid = false;
@@ -114,8 +117,11 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_play_after_seek);
   sw.Do(&m_muted);
   sw.Do(&m_adpcm_muted);
-  sw.Do(&m_filter_file_number);
-  sw.Do(&m_filter_channel_number);
+  sw.Do(&m_xa_filter_file_number);
+  sw.Do(&m_xa_filter_channel_number);
+  sw.Do(&m_xa_current_file_number);
+  sw.Do(&m_xa_current_channel_number);
+  sw.Do(&m_xa_current_set);
   sw.DoBytes(&m_last_sector_header, sizeof(m_last_sector_header));
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.Do(&m_last_sector_header_valid);
@@ -651,8 +657,8 @@ void CDROM::ExecuteCommand()
       const u8 file = m_param_fifo.Peek(0);
       const u8 channel = m_param_fifo.Peek(1);
       Log_DebugPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
-      m_filter_file_number = file;
-      m_filter_channel_number = channel;
+      m_xa_filter_file_number = file;
+      m_xa_filter_channel_number = channel;
       SendACKAndStat();
       EndCommand();
       return;
@@ -958,8 +964,8 @@ void CDROM::ExecuteCommand()
       m_response_fifo.Push(m_secondary_status.bits);
       m_response_fifo.Push(m_mode.bits);
       m_response_fifo.Push(0);
-      m_response_fifo.Push(m_filter_file_number);
-      m_response_fifo.Push(m_filter_channel_number);
+      m_response_fifo.Push(m_xa_filter_file_number);
+      m_response_fifo.Push(m_xa_filter_channel_number);
       SetInterrupt(Interrupt::ACK);
       EndCommand();
     }
@@ -1143,6 +1149,9 @@ void CDROM::BeginReading(TickCount ticks_late)
   m_drive_event->Schedule(ticks - ticks_late);
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
+  m_xa_current_file_number = 0;
+  m_xa_current_channel_number = 0;
+  m_xa_current_set = false;
 
   m_reader.QueueReadSector(m_last_requested_sector);
 }
@@ -1495,25 +1504,9 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
 
   if (m_mode.xa_enable && m_last_sector_header.sector_mode == 2)
   {
-    if (m_last_sector_subheader.submode.eof)
-    {
-      Log_WarningPrintf("End of CD-XA file");
-    }
-
     if (m_last_sector_subheader.submode.realtime && m_last_sector_subheader.submode.audio)
     {
-      // Check for automatic ADPCM filter.
-      if (m_mode.xa_filter && (m_last_sector_subheader.file_number != m_filter_file_number ||
-                               m_last_sector_subheader.channel_number != m_filter_channel_number))
-      {
-        Log_DebugPrintf("Skipping sector due to filter mismatch (expected %u/%u got %u/%u)", m_filter_file_number,
-                        m_filter_channel_number, m_last_sector_subheader.file_number,
-                        m_last_sector_subheader.channel_number);
-      }
-      else
-      {
-        ProcessXAADPCMSector(raw_sector, subq);
-      }
+      ProcessXAADPCMSector(raw_sector, subq);
 
       // Audio+realtime sectors aren't delivered to the CPU.
       return;
@@ -1646,8 +1639,46 @@ static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in, SPU* spu, s
   *sixstep_ptr = sixstep;
 }
 
+void CDROM::ResetCurrentXAFile()
+{
+  m_xa_current_channel_number = 0;
+  m_xa_current_file_number = 0;
+  m_xa_current_set = false;
+}
+
 void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
+  // Check for automatic ADPCM filter.
+  if (m_mode.xa_filter && (m_last_sector_subheader.file_number != m_xa_filter_file_number ||
+                           m_last_sector_subheader.channel_number != m_xa_filter_channel_number))
+  {
+    Log_DebugPrintf("Skipping sector due to filter mismatch (expected %u/%u got %u/%u)", m_xa_filter_file_number,
+                    m_xa_filter_channel_number, m_last_sector_subheader.file_number,
+                    m_last_sector_subheader.channel_number);
+    return;
+  }
+
+  // Track the current file being played. If this is not set by the filter, it'll be set by the first file/sector which
+  // is read. Fixes audio in Tomb Raider III menu.
+  if (!m_xa_current_set)
+  {
+    m_xa_current_file_number = m_last_sector_subheader.file_number;
+    m_xa_current_channel_number = m_last_sector_subheader.channel_number;
+    m_xa_current_set = true;
+  }
+  else if (m_last_sector_subheader.file_number != m_xa_current_file_number ||
+           m_last_sector_subheader.channel_number != m_xa_current_channel_number)
+  {
+    Log_DebugPrintf("Skipping sector due to current file mismatch (expected %u/%u got %u/%u)", m_xa_current_file_number,
+                    m_xa_current_channel_number, m_last_sector_subheader.file_number,
+                    m_last_sector_subheader.channel_number);
+    return;
+  }
+
+  // Reset current file on EOF, and play the file in the next sector.
+  if (m_last_sector_subheader.submode.eof)
+    ResetCurrentXAFile();
+
   std::array<s16, CDXA::XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
   CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), m_xa_last_samples.data());
 
@@ -1878,7 +1909,7 @@ void CDROM::DrawDebugWindow()
                        m_secondary_status.id_error ? "Yes" : "No");
     ImGui::NextColumn();
     ImGui::TextColored(m_mode.xa_filter ? active_color : inactive_color, "XA Filter: %s (File %u Channel %u)",
-                       m_mode.xa_filter ? "Yes" : "No", m_filter_file_number, m_filter_channel_number);
+                       m_mode.xa_filter ? "Yes" : "No", m_xa_filter_file_number, m_xa_filter_channel_number);
     ImGui::NextColumn();
 
     ImGui::TextColored(m_status.DRQSTS ? active_color : inactive_color, "DRQSTS: %s", m_status.DRQSTS ? "Yes" : "No");
@@ -1946,11 +1977,20 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    const bool playing_anything = (m_secondary_status.reading && m_mode.xa_enable) || m_secondary_status.playing_cdda;
-    ImGui::TextColored(playing_anything ? active_color : inactive_color, "Playing: %s",
-                       (m_secondary_status.reading && m_mode.xa_enable) ?
-                         "XA-ADPCM" :
-                         (m_secondary_status.playing_cdda ? "CDDA" : "Disabled"));
+    if (m_secondary_status.reading && m_mode.xa_enable)
+    {
+      ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u / Channel %u)", m_xa_current_channel_number,
+                         m_xa_current_file_number);
+    }
+    else if (m_secondary_status.playing_cdda)
+    {
+      ImGui::TextColored(active_color, "Playing: CDDA (Track %x)", m_last_subq.track_number_bcd);
+    }
+    else
+    {
+      ImGui::TextColored(inactive_color, "Playing: Inactive");
+    }
+
     ImGui::TextColored(m_muted ? inactive_color : active_color, "Muted: %s", m_muted ? "Yes" : "No");
     ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[0][0],
                 ZeroExtend32(m_cd_audio_volume_matrix[0][0]) * 100 / 0x80, m_cd_audio_volume_matrix[1][0],
