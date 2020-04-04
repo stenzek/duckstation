@@ -238,12 +238,12 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
   Log_DebugPrintf("controller %d axis %d %d %f", ev->caxis.which, ev->caxis.axis, ev->caxis.value, value);
 
-  if (DoEventHook(Hook::Type::Axis, ev->caxis.which, ev->caxis.axis, value))
-    return true;
-
   auto it = GetControllerDataForJoystickId(ev->caxis.which);
   if (it == m_controllers.end())
     return false;
+
+  if (DoEventHook(Hook::Type::Axis, it->player_id, ev->caxis.axis, value))
+    return true;
 
   const AxisCallback& cb = it->axis_mapping[ev->caxis.axis];
   if (cb)
@@ -280,13 +280,13 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
   Log_DebugPrintf("controller %d button %d %s", ev->cbutton.which, ev->cbutton.button,
                   ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
 
-  const bool pressed = (ev->cbutton.state == SDL_PRESSED);
-  if (DoEventHook(Hook::Type::Button, ev->cbutton.which, ev->cbutton.button, pressed ? 1.0f : 0.0f))
-    return true;
-
   auto it = GetControllerDataForJoystickId(ev->caxis.which);
   if (it == m_controllers.end())
     return false;
+
+  const bool pressed = (ev->cbutton.state == SDL_PRESSED);
+  if (DoEventHook(Hook::Type::Button, it->player_id, ev->cbutton.button, pressed ? 1.0f : 0.0f))
+    return true;
 
   const ButtonCallback& cb = it->button_mapping[ev->cbutton.button];
   if (!cb)
