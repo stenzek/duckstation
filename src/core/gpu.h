@@ -251,14 +251,9 @@ protected:
   {
     u32 bits;
 
-    BitField<u32, s32, 0, 11> x;
-    BitField<u32, s32, 16, 11> y;
+    BitField<u32, s32, 0, 12> x;
+    BitField<u32, s32, 16, 12> y;
   };
-
-  // Vertices have to be clamped to 11 bits before rendering. Normally this would happen as part of the scanline,
-  // but in the hardware renderers we'll do it at the vertex. FF8 is a good test case here, once you go too far left
-  // in the first scene of Galbadia Missile Base, the screen will flicker.
-  ALWAYS_INLINE static s32 VertexPositionToVRAMCoordinate(s32 x) { return SignExtendN<11, s32>(x); }
 
   union VRAMPixel
   {

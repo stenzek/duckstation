@@ -61,8 +61,8 @@ protected:
 
     ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 u_, u16 v_)
     {
-      x = VertexPositionToVRAMCoordinate(x_);
-      y = VertexPositionToVRAMCoordinate(y_);
+      x = x_;
+      y = y_;
       color = color_;
       texpage = texpage_;
       u = u_;
