@@ -1,9 +1,22 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
+**Discord Server:** https://discord.gg/Buktv3t
+
+**Latest Windows Builds:** https://ci.appveyor.com/project/stenzek/duckstation
+
+DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. Accuracy is not the main focus of the emulator, but the goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
+
+A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
+
+## Features
+
+DuckStation features a fully-featured frontend built using Qt (pictured), as well as a simplified frontend based on SDL and Dear ImGui. An Android version has been started, but is not currently usable.
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" />
 </p>
 
-## Features
+Other features include:
+
  - CPU Recompiler/JIT (x86-64 and AArch64)
  - Hardware (D3D11 and OpenGL) and software rendering
  - Upscaling and true colour (24-bit) in hardware renderers
