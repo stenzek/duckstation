@@ -1,5 +1,6 @@
 #include "android_gles_host_display.h"
-#include "YBaseLib/Log.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include <EGL/eglext.h>
 #include <array>
 #include <imgui.h>
@@ -20,7 +21,7 @@ public:
   GLuint GetGLID() const { return m_id; }
 
   static std::unique_ptr<AndroidGLESHostDisplayTexture> Create(u32 width, u32 height, const void* initial_data,
-                                                                u32 initial_data_stride)
+                                                               u32 initial_data_stride)
   {
     GLuint id;
     glGenTextures(1, &id);
@@ -102,13 +103,13 @@ void AndroidGLESHostDisplay::ChangeRenderWindow(void* new_window)
 }
 
 std::unique_ptr<HostDisplayTexture> AndroidGLESHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
-                                                                           u32 data_stride, bool dynamic)
+                                                                          u32 data_stride, bool dynamic)
 {
   return AndroidGLESHostDisplayTexture::Create(width, height, data, data_stride);
 }
 
 void AndroidGLESHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                            const void* data, u32 data_stride)
+                                           const void* data, u32 data_stride)
 {
   AndroidGLESHostDisplayTexture* tex = static_cast<AndroidGLESHostDisplayTexture*>(texture);
   Assert(data_stride == (width * sizeof(u32)));
@@ -122,28 +123,22 @@ void AndroidGLESHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
-void AndroidGLESHostDisplay::SetDisplayTexture(void* texture, s32 offset_x, s32 offset_y, s32 width, s32 height,
-                                                u32 texture_width, u32 texture_height, float aspect_ratio)
+bool AndroidGLESHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
+                                             void* out_data, u32 out_data_stride)
 {
-  m_display_texture_id = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));
-  m_display_offset_x = offset_x;
-  m_display_offset_y = offset_y;
-  m_display_width = width;
-  m_display_height = height;
-  m_display_texture_width = texture_width;
-  m_display_texture_height = texture_height;
-  m_display_aspect_ratio = aspect_ratio;
-  m_display_texture_changed = true;
-}
+  GLint old_alignment = 0, old_row_length = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
+  glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
+  glPixelStorei(GL_PACK_ALIGNMENT, sizeof(u32));
+  glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / sizeof(u32));
 
-void AndroidGLESHostDisplay::SetDisplayLinearFiltering(bool enabled)
-{
-  m_display_linear_filtering = enabled;
-}
+  const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
+  GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  height * out_data_stride, out_data);
 
-void AndroidGLESHostDisplay::SetDisplayTopMargin(int height)
-{
-  m_display_top_margin = height;
+  glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
+  return true;
 }
 
 void AndroidGLESHostDisplay::SetVSync(bool enabled)
@@ -151,13 +146,9 @@ void AndroidGLESHostDisplay::SetVSync(bool enabled)
   eglSwapInterval(m_egl_display, enabled ? 1 : 0);
 }
 
-std::tuple<u32, u32> AndroidGLESHostDisplay::GetWindowSize() const
+void AndroidGLESHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 {
-  return std::make_tuple(static_cast<u32>(m_window_width), static_cast<u32>(m_window_height));
-}
-
-void AndroidGLESHostDisplay::WindowResized()
-{
+  HostDisplay::WindowResized(new_window_width, new_window_height);
   m_window_width = ANativeWindow_getWidth(m_window);
   m_window_height = ANativeWindow_getHeight(m_window);
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
@@ -212,10 +203,10 @@ bool AndroidGLESHostDisplay::CreateGLContext()
   eglBindAPI(EGL_OPENGL_ES_API);
 
   // Try GLES 3, then fall back to GLES 2.
-  for (int major_version : {3, 2}) {
+  for (int major_version : {3, 2})
+  {
     std::array<int, 3> egl_context_attribs = {{EGL_CONTEXT_CLIENT_VERSION, major_version, EGL_NONE}};
-    m_egl_context = eglCreateContext(m_egl_display, m_egl_config, EGL_NO_CONTEXT,
-                                     egl_context_attribs.data());
+    m_egl_context = eglCreateContext(m_egl_display, m_egl_config, EGL_NO_CONTEXT, egl_context_attribs.data());
     if (m_egl_context)
       break;
   }
@@ -262,7 +253,7 @@ bool AndroidGLESHostDisplay::CreateSurface()
     return false;
   }
 
-  WindowResized();
+  WindowResized(m_window_width, m_window_height);
   return true;
 }
 
@@ -351,10 +342,12 @@ void AndroidGLESHostDisplay::Render()
 
   RenderDisplay();
 
+  ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   eglSwapBuffers(m_egl_display, m_egl_surface);
 
+  ImGui::NewFrame();
   ImGui_ImplOpenGL3_NewFrame();
 
   GL::Program::ResetLastProgram();
@@ -362,14 +355,13 @@ void AndroidGLESHostDisplay::Render()
 
 void AndroidGLESHostDisplay::RenderDisplay()
 {
-  if (!m_display_texture_id)
+  if (!m_display_texture_handle)
     return;
 
-  // - 20 for main menu padding
-  const auto [vp_left, vp_top, vp_width, vp_height] =
-    CalculateDrawRect(m_window_width, std::max(m_window_height - m_display_top_margin, 1), m_display_aspect_ratio);
+  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect();
 
-  glViewport(vp_left, m_window_height - (m_display_top_margin + vp_top) - vp_height, vp_width, vp_height);
+  glViewport(vp_left, m_window_height - vp_top - vp_height, vp_width, vp_height);
+
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
@@ -377,11 +369,14 @@ void AndroidGLESHostDisplay::RenderDisplay()
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
 
-  const float tex_left = static_cast<float>(m_display_offset_x) / static_cast<float>(m_display_texture_width);
-  const float tex_right = tex_left + static_cast<float>(m_display_width) / static_cast<float>(m_display_texture_width);
-  const float tex_top = static_cast<float>(m_display_offset_y) / static_cast<float>(m_display_texture_height);
+  const float tex_left =
+    (static_cast<float>(m_display_texture_view_x) + 0.25f) / static_cast<float>(m_display_texture_width);
+  const float tex_top =
+    (static_cast<float>(m_display_texture_view_y) - 0.25f) / static_cast<float>(m_display_texture_height);
+  const float tex_right =
+    (tex_left + static_cast<float>(m_display_texture_view_width) - 0.5f) / static_cast<float>(m_display_texture_width);
   const float tex_bottom =
-    tex_top + static_cast<float>(m_display_height) / static_cast<float>(m_display_texture_height);
+    (tex_top + static_cast<float>(m_display_texture_view_height) + 0.5f) / static_cast<float>(m_display_texture_height);
   const std::array<std::array<float, 4>, 4> vertices = {{
     {{-1.0f, -1.0f, tex_left, tex_bottom}}, // bottom-left
     {{1.0f, -1.0f, tex_right, tex_bottom}}, // bottom-right
@@ -395,7 +390,7 @@ void AndroidGLESHostDisplay::RenderDisplay()
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), &vertices[0][2]);
   glEnableVertexAttribArray(1);
 
-  glBindTexture(GL_TEXTURE_2D, m_display_texture_id);
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(m_display_texture_handle)));
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

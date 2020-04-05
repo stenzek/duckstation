@@ -1,6 +1,4 @@
 set(SRCS
-  android_audio_stream.cpp
-  android_audio_stream.h
   android_host_interface.cpp
   android_host_interface.h
   android_gles_host_display.cpp
@@ -9,4 +7,4 @@ set(SRCS
 )
 
 add_library(duckstation-native SHARED ${SRCS})
-target_link_libraries(duckstation-native PRIVATE android core common glad imgui EGL::EGL)
+target_link_libraries(duckstation-native PRIVATE android frontend-common core common glad imgui EGL::EGL)

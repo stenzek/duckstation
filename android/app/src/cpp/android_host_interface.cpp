@@ -1,14 +1,15 @@
 #include "android_host_interface.h"
-#include "YBaseLib/Assert.h"
-#include "YBaseLib/Log.h"
-#include "YBaseLib/String.h"
-#include "android_audio_stream.h"
 #include "android_gles_host_display.h"
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/string.h"
+#include "common/audio_stream.h"
 #include "core/controller.h"
-#include "core/gpu.h"
 #include "core/game_list.h"
+#include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
+#include "frontend-common/ini_settings_interface.h"
 #include <android/native_window_jni.h>
 #include <cmath>
 #include <imgui.h>
@@ -53,25 +54,30 @@ static std::string JStringToString(JNIEnv* env, jstring str)
   return ret;
 }
 
-AndroidHostInterface::AndroidHostInterface(jobject java_object) : m_java_object(java_object)
-{
-  m_settings.SetDefaults();
-  m_settings.bios_path = "/sdcard/PSX/BIOS/scph1001.bin";
-  m_settings.controller_types[0] = ControllerType::DigitalController;
-  m_settings.memory_card_paths[0] = "/sdcard/PSX/memory_card_1.mcd";
-  m_settings.cpu_execution_mode = CPUExecutionMode::Recompiler;
-  //m_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
-  //m_settings.gpu_renderer = GPURenderer::Software;
-  m_settings.speed_limiter_enabled = false;
-  m_settings.video_sync_enabled = false;
-  m_settings.audio_sync_enabled = false;
-  //m_settings.debugging.show_vram = true;
-}
+AndroidHostInterface::AndroidHostInterface(jobject java_object) : m_java_object(java_object) {}
 
 AndroidHostInterface::~AndroidHostInterface()
 {
   ImGui::DestroyContext();
   GetJNIEnv()->DeleteGlobalRef(m_java_object);
+}
+
+bool AndroidHostInterface::Initialize()
+{
+  if (!HostInterface::Initialize())
+    return false;
+
+  // check settings version, if invalid set defaults, then load settings
+  INISettingsInterface settings_interface(GetSettingsFileName());
+  CheckSettings(settings_interface);
+  UpdateSettings([this, &settings_interface]() { m_settings.Load(settings_interface); });
+
+  return true;
+}
+
+void AndroidHostInterface::Shutdown()
+{
+  HostInterface::Shutdown();
 }
 
 void AndroidHostInterface::ReportError(const char* message)
@@ -84,15 +90,20 @@ void AndroidHostInterface::ReportMessage(const char* message)
   HostInterface::ReportMessage(message);
 }
 
-bool AndroidHostInterface::StartEmulationThread(ANativeWindow* initial_surface, std::string initial_filename,
-                                                std::string initial_state_filename)
+void AndroidHostInterface::SetUserDirectory()
+{
+  // TODO: Should this be customizable or use an API-determined path?
+  m_user_directory = "/sdcard/duckstation";
+}
+
+bool AndroidHostInterface::StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params)
 {
   Assert(!IsEmulationThreadRunning());
 
   Log_DevPrintf("Starting emulation thread...");
   m_emulation_thread_stop_request.store(false);
   m_emulation_thread = std::thread(&AndroidHostInterface::EmulationThreadEntryPoint, this, initial_surface,
-                                   std::move(initial_filename), std::move(initial_state_filename));
+                                   std::move(boot_params));
   m_emulation_thread_started.Wait();
   if (!m_emulation_thread_start_result.load())
   {
@@ -140,43 +151,14 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
   m_callback_mutex.unlock();
 }
 
-void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surface, std::string initial_filename,
-                                                     std::string initial_state_filename)
+void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surface, SystemBootParameters boot_params)
 {
   CreateImGuiContext();
 
-  // Create display.
-  m_display = AndroidGLESHostDisplay::Create(initial_surface);
-  if (!m_display)
-  {
-    Log_ErrorPrint("Failed to create display on emulation thread.");
-    DestroyImGuiContext();
-    m_emulation_thread_start_result.store(false);
-    m_emulation_thread_started.Signal();
-    return;
-  }
-
-  // Create audio stream.
-  m_audio_stream = AndroidAudioStream::Create();
-  if (!m_audio_stream || !m_audio_stream->Reconfigure(44100, 2))
-  {
-    Log_ErrorPrint("Failed to create audio stream on emulation thread.");
-    m_audio_stream.reset();
-    m_display.reset();
-    DestroyImGuiContext();
-    m_emulation_thread_start_result.store(false);
-    m_emulation_thread_started.Signal();
-    return;
-  }
-
   // Boot system.
-  if (!CreateSystem() || !BootSystem(initial_filename.empty() ? nullptr : initial_filename.c_str(),
-                                     initial_state_filename.empty() ? nullptr : initial_state_filename.c_str()))
+  if (!BootSystem(boot_params))
   {
-    Log_ErrorPrintf("Failed to boot system on emulation thread (file:%s state:%s).", initial_filename.c_str(),
-                    initial_state_filename.c_str());
-    m_audio_stream.reset();
-    m_display.reset();
+    Log_ErrorPrintf("Failed to boot system on emulation thread (file:%s).", boot_params.filename.c_str());
     DestroyImGuiContext();
     m_emulation_thread_start_result.store(false);
     m_emulation_thread_started.Signal();
@@ -212,31 +194,86 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
 
     // rendering
     {
-      DrawImGui();
+      DrawImGuiWindows();
 
       if (m_system)
         m_system->GetGPU()->ResetGraphicsAPIState();
 
-      ImGui::Render();
       m_display->Render();
-
-      ImGui::NewFrame();
 
       if (m_system)
       {
         m_system->GetGPU()->RestoreGraphicsAPIState();
+        m_system->UpdatePerformanceCounters();
 
         if (m_speed_limiter_enabled)
-          Throttle();
+          m_system->Throttle();
       }
-
-      UpdatePerformanceCounters();
     }
   }
 
-  m_display.reset();
-  m_audio_stream.reset();
+  DestroySystem();
   DestroyImGuiContext();
+}
+
+bool AndroidHostInterface::AcquireHostDisplay()
+{
+  std::unique_ptr<HostDisplay> display = AndroidGLESHostDisplay::Create(m_surface);
+  if (!display)
+  {
+    Log_ErrorPrintf("Failed to create GLES host display");
+    return false;
+  }
+
+  m_display = display.release();
+  return true;
+}
+
+void AndroidHostInterface::ReleaseHostDisplay()
+{
+  delete m_display;
+  m_display = nullptr;
+}
+
+std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBackend backend)
+{
+  std::unique_ptr<AudioStream> stream;
+
+  switch (m_settings.audio_backend)
+  {
+    case AudioBackend::Cubeb:
+      stream = AudioStream::CreateCubebAudioStream();
+      break;
+
+    default:
+      stream = AudioStream::CreateNullAudioStream();
+      break;
+  }
+
+  if (!stream)
+  {
+    ReportFormattedError("Failed to create %s audio stream, falling back to null",
+                         Settings::GetAudioBackendName(m_settings.audio_backend));
+    stream = AudioStream::CreateNullAudioStream();
+  }
+
+  return stream;
+}
+
+void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, int width, int height)
+{
+  Log_InfoPrintf("SurfaceChanged %p %d %d %d", surface, format, width, height);
+  if (m_surface == surface)
+  {
+    if (m_display)
+      m_display->WindowResized(width, height);
+
+    return;
+  }
+
+  m_surface = surface;
+  if (m_display)
+    m_display->ChangeRenderWindow(surface);
 }
 
 void AndroidHostInterface::CreateImGuiContext()
@@ -253,88 +290,10 @@ void AndroidHostInterface::DestroyImGuiContext()
   ImGui::DestroyContext();
 }
 
-void AndroidHostInterface::DrawImGui()
-{
-  DrawFPSWindow();
-  DrawOSDMessages();
-
-  ImGui::Render();
-}
-
-void AndroidHostInterface::DrawFPSWindow()
-{
-  const bool show_fps = true;
-  const bool show_vps = true;
-  const bool show_speed = true;
-
-  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 175.0f, 0.0f), ImGuiCond_Always);
-  ImGui::SetNextWindowSize(ImVec2(175.0f, 16.0f));
-
-  if (!ImGui::Begin("FPSWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
-                                          ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize |
-                                          ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoBringToFrontOnFocus))
-  {
-    ImGui::End();
-    return;
-  }
-
-  bool first = true;
-  if (show_fps)
-  {
-    ImGui::Text("%.2f", m_fps);
-    first = false;
-  }
-  if (show_vps)
-  {
-    if (first) {
-      first = false;
-    }
-    else {
-      ImGui::SameLine();
-      ImGui::Text("/");
-      ImGui::SameLine();
-    }
-
-    ImGui::Text("%.2f", m_vps);
-  }
-  if (show_speed)
-  {
-    if (first) {
-      first = false;
-    }
-    else {
-      ImGui::SameLine();
-      ImGui::Text("/");
-      ImGui::SameLine();
-    }
-
-    const u32 rounded_speed = static_cast<u32>(std::round(m_speed));
-    if (m_speed < 90.0f)
-      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-    else if (m_speed < 110.0f)
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
-    else
-      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
-  }
-
-  ImGui::End();
-}
-
-void AndroidHostInterface::SurfaceChanged(ANativeWindow* window, int format, int width, int height)
-{
-  Log_InfoPrintf("SurfaceChanged %p %d %d %d", window, format, width, height);
-  if (m_display->GetRenderWindow() == window)
-  {
-    m_display->WindowResized();
-    return;
-  }
-
-  m_display->ChangeRenderWindow(window);
-}
-
 void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_name)
 {
-  ControllerType type = Settings::ParseControllerTypeName(std::string(type_name).c_str()).value_or(ControllerType::None);
+  ControllerType type =
+    Settings::ParseControllerTypeName(std::string(type_name).c_str()).value_or(ControllerType::None);
 
   if (!IsEmulationThreadRunning())
   {
@@ -342,11 +301,13 @@ void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_na
     return;
   }
 
-  RunOnEmulationThread([this, index, type]() {
-    Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
-    m_settings.controller_types[index] = type;
-    m_system->UpdateControllers();
-  }, false);
+  RunOnEmulationThread(
+    [this, index, type]() {
+      Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
+      m_settings.controller_types[index] = type;
+      m_system->UpdateControllers();
+    },
+    false);
 }
 
 void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, bool pressed)
@@ -354,18 +315,20 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
   if (!IsEmulationThreadRunning())
     return;
 
-  RunOnEmulationThread([this, index, button_code, pressed]() {
-    Controller* controller = m_system->GetController(index);
-    if (!controller)
-      return;
+  RunOnEmulationThread(
+    [this, index, button_code, pressed]() {
+      Controller* controller = m_system->GetController(index);
+      if (!controller)
+        return;
 
-    controller->SetButtonState(button_code, pressed);
-  }, false);
+      controller->SetButtonState(button_code, pressed);
+    },
+    false);
 }
 
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-  Log::GetInstance().SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
+  Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
   s_jvm = vm;
 
   JNIEnv* env = GetJNIEnv();
@@ -445,8 +408,12 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_startEmulationThread, jobj
     return false;
   }
 
-  return GetNativeClass(env, obj)->StartEmulationThread(native_surface, JStringToString(env, filename),
-                                                        JStringToString(env, state_filename));
+  std::string state_filename_str = JStringToString(env, state_filename);
+
+  SystemBootParameters boot_params;
+  boot_params.filename = JStringToString(env, filename);
+
+  return GetNativeClass(env, obj)->StartEmulationThread(native_surface, std::move(boot_params));
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_stopEmulationThread, jobject obj)
@@ -471,12 +438,14 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerType, jobject obj
   GetNativeClass(env, obj)->SetControllerType(index, JStringToString(env, controller_type));
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobject obj, jint index, jint button_code, jboolean pressed)
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobject obj, jint index, jint button_code,
+                       jboolean pressed)
 {
   GetNativeClass(env, obj)->SetControllerButtonState(index, button_code, pressed);
 }
 
-DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type, jstring button_name)
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type,
+                       jstring button_name)
 {
   std::optional<ControllerType> type = Settings::ParseControllerTypeName(JStringToString(env, controller_type).c_str());
   if (!type)
@@ -486,14 +455,16 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobje
   return code.value_or(-1);
 }
 
-DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path, jarray j_search_directories, jboolean search_recursively)
+DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path,
+                       jarray j_search_directories, jboolean search_recursively)
 {
-  const std::string cache_path = JStringToString(env, j_cache_path);
-  const std::string redump_dat_path = JStringToString(env, j_redump_dat_path);
+  //const std::string cache_path = JStringToString(env, j_cache_path);
+  std::string redump_dat_path = JStringToString(env, j_redump_dat_path);
 
+  // TODO: This should use the base HostInterface.
   GameList gl;
   if (!redump_dat_path.empty())
-    gl.ParseRedumpDatabase(redump_dat_path.c_str());
+    gl.SetDatabaseFilename(std::move(redump_dat_path));
 
   const jsize search_directories_size = env->GetArrayLength(j_search_directories);
   for (jsize i = 0; i < search_directories_size; i++)
@@ -507,19 +478,21 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
   jclass entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry");
   Assert(entry_class != nullptr);
 
-  jmethodID entry_constructor = env->GetMethodID(entry_class, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
+  jmethodID entry_constructor =
+    env->GetMethodID(entry_class, "<init>",
+                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
   Assert(entry_constructor != nullptr);
 
   jobjectArray entry_array = env->NewObjectArray(gl.GetEntryCount(), entry_class, nullptr);
   Assert(entry_array != nullptr);
 
   u32 counter = 0;
-  for (const GameList::GameListEntry& entry : gl.GetEntries())
+  for (const GameListEntry& entry : gl.GetEntries())
   {
     jstring path = env->NewStringUTF(entry.path.c_str());
     jstring code = env->NewStringUTF(entry.code.c_str());
     jstring title = env->NewStringUTF(entry.title.c_str());
-    jstring region = env->NewStringUTF(Settings::GetConsoleRegionName(entry.region));
+    jstring region = env->NewStringUTF(Settings::GetDiscRegionName(entry.region));
     jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
     jlong size = entry.total_size;
 
