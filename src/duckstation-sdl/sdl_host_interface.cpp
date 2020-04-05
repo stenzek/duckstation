@@ -265,7 +265,7 @@ void SDLHostInterface::RunLater(std::function<void()> callback)
 
 void SDLHostInterface::SaveSettings()
 {
-  INISettingsInterface si(GetSettingsFileName().c_str());
+  INISettingsInterface si(GetSettingsFileName());
   m_settings_copy.Save(si);
 }
 
@@ -295,7 +295,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
   std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
 
   // Settings need to be loaded prior to creating the window for OpenGL bits.
-  INISettingsInterface si(intf->GetSettingsFileName().c_str());
+  INISettingsInterface si(intf->GetSettingsFileName());
   intf->m_settings_copy.Load(si);
   intf->m_settings = intf->m_settings_copy;
   intf->m_fullscreen = intf->m_settings_copy.start_fullscreen;

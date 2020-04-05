@@ -3,11 +3,11 @@
 #include <algorithm>
 Log_SetChannel(INISettingsInterface);
 
-INISettingsInterface::INISettingsInterface(const char* filename) : m_filename(filename), m_ini(true, true)
+INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
 {
-  SI_Error err = m_ini.LoadFile(filename);
+  SI_Error err = m_ini.LoadFile(m_filename.c_str());
   if (err != SI_OK)
-    Log_WarningPrintf("Settings could not be loaded from '%s', defaults will be used.", filename);
+    Log_WarningPrintf("Settings could not be loaded from '%s', defaults will be used.", m_filename.c_str());
 }
 
 INISettingsInterface::~INISettingsInterface()

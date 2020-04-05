@@ -6,7 +6,7 @@
 class INISettingsInterface : public SettingsInterface
 {
 public:
-  INISettingsInterface(const char* filename);
+  INISettingsInterface(std::string filename);
   ~INISettingsInterface();
 
   void Clear() override;
