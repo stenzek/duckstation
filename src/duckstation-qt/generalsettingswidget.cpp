@@ -9,6 +9,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "Main/StartPaused");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, "Main/StartFullscreen");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.renderToMain, "Main/RenderToMainWindow");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.saveStateOnExit, "Main/SaveStateOnExit");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, "Main/ConfirmPowerOff");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display/ShowOSDMessages");
@@ -29,16 +30,19 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   onEnableSpeedLimiterStateChanged();
   onEmulationSpeedValueChanged(m_ui.emulationSpeed->value());
 
-  dialog->registerWidgetHelp(m_ui.pauseOnStart, "Pause On Start", "Unchecked",
-                             "Pauses the emulator when a game is started.");
-  dialog->registerWidgetHelp(m_ui.startFullscreen, "Start Fullscreen", "Unchecked",
-                             "Automatically switches to fullscreen mode when a game is started.");
-  dialog->registerWidgetHelp(m_ui.saveStateOnExit, "Save State On Exit", "Checked",
-                             "Automatically saves the emulator state when powering down or exiting. You can then "
-                             "resume directly from where you left off next time.");
   dialog->registerWidgetHelp(m_ui.confirmPowerOff, "Confirm Power Off", "Checked",
                              "Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
                              "when the hotkey is pressed.");
+  dialog->registerWidgetHelp(m_ui.saveStateOnExit, "Save State On Exit", "Checked",
+                             "Automatically saves the emulator state when powering down or exiting. You can then "
+                             "resume directly from where you left off next time.");
+  dialog->registerWidgetHelp(m_ui.startFullscreen, "Start Fullscreen", "Unchecked",
+                             "Automatically switches to fullscreen mode when a game is started.");
+  dialog->registerWidgetHelp(m_ui.renderToMain, "Render To Main Window", "Checked",
+                             "Renders the display of the simulated console to the main window of the application, over "
+                             "the game list. If unchecked, the display will render in a seperate window.");
+  dialog->registerWidgetHelp(m_ui.pauseOnStart, "Pause On Start", "Unchecked",
+                             "Pauses the emulator when a game is started.");
   dialog->registerWidgetHelp(m_ui.enableSpeedLimiter, "Enable Speed Limiter", "Checked",
                              "Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will "
                              "run as fast as possible, which may not be playable.");

@@ -60,18 +60,34 @@ bool MainWindow::confirmMessage(const QString& message)
   return (result == QMessageBox::Yes);
 }
 
-void MainWindow::createDisplayWindow(QThread* worker_thread, bool use_debug_device)
+void MainWindow::createDisplayWindow(QThread* worker_thread, bool use_debug_device, bool fullscreen,
+                                     bool render_to_main)
 {
   DebugAssert(!m_display_widget);
 
   m_display_widget = m_host_interface->createDisplayWidget();
+  m_display_widget->setWindowTitle(windowTitle());
+  m_display_widget->setWindowIcon(windowIcon());
   DebugAssert(m_display_widget);
 
   m_display_widget->setFocusPolicy(Qt::StrongFocus);
-  m_ui.mainContainer->insertWidget(1, m_display_widget);
+
+  if (fullscreen)
+  {
+    m_display_widget->showFullScreen();
+    m_display_widget->setCursor(Qt::BlankCursor);
+  }
+  else if (!render_to_main)
+  {
+    m_display_widget->showNormal();
+  }
+  else
+  {
+    m_ui.mainContainer->insertWidget(1, m_display_widget);
+    switchToEmulationView();
+  }
 
   // we need the surface visible.. this might be able to be replaced with something else
-  switchToEmulationView();
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
   m_display_widget->createDeviceContext(worker_thread, use_debug_device);
@@ -81,47 +97,66 @@ void MainWindow::destroyDisplayWindow()
 {
   DebugAssert(m_display_widget);
 
-  const bool was_fullscreen = m_display_widget->isFullScreen();
-  if (was_fullscreen)
-    toggleFullscreen();
+  if (m_display_widget->isFullScreen())
+    m_display_widget->showNormal();
 
-  switchToGameListView();
+  if (m_display_widget->parent())
+  {
+    m_ui.mainContainer->removeWidget(m_display_widget);
+    switchToGameListView();
+  }
 
   // recreate the display widget using the potentially-new renderer
-  m_ui.mainContainer->removeWidget(m_display_widget);
   delete m_display_widget;
   m_display_widget = nullptr;
 }
 
-void MainWindow::setFullscreen(bool fullscreen)
+void MainWindow::updateDisplayWindow(bool fullscreen, bool render_to_main)
 {
-  if (fullscreen == m_display_widget->isFullScreen())
+  const bool is_fullscreen = m_display_widget->isFullScreen();
+  const bool is_rendering_to_main = (!is_fullscreen && m_display_widget->parent());
+  if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
     return;
 
-  if (fullscreen)
+  if (fullscreen || !render_to_main)
   {
-    m_ui.mainContainer->setCurrentIndex(0);
-    m_ui.mainContainer->removeWidget(m_display_widget);
-    m_display_widget->setParent(nullptr);
-    m_display_widget->showFullScreen();
-    m_display_widget->setCursor(Qt::BlankCursor);
+    if (m_display_widget->parent())
+    {
+      m_ui.mainContainer->setCurrentIndex(0);
+      m_ui.mainContainer->removeWidget(m_display_widget);
+      m_display_widget->setParent(nullptr);
+      switchToGameListView();
+    }
+
+    if (fullscreen)
+    {
+      m_display_widget->showFullScreen();
+      m_display_widget->setCursor(Qt::BlankCursor);
+    }
+    else
+    {
+      // if we don't position it, it ends up in the top-left corner with the title bar obscured
+      m_display_widget->setCursor(QCursor());
+      m_display_widget->showNormal();
+      m_display_widget->move(pos());
+    }
   }
   else
   {
+    // render-to-main
+    if (!m_display_widget->parent())
+    {
+      m_ui.mainContainer->insertWidget(1, m_display_widget);
+      m_ui.mainContainer->setCurrentIndex(1);
+    }
+
     m_display_widget->setCursor(QCursor());
-    m_ui.mainContainer->insertWidget(1, m_display_widget);
-    m_ui.mainContainer->setCurrentIndex(1);
   }
 
   m_display_widget->setFocus();
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
-}
-
-void MainWindow::toggleFullscreen()
-{
-  setFullscreen(!m_display_widget->isFullScreen());
 }
 
 void MainWindow::focusDisplayWidget()
@@ -176,6 +211,9 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
     setWindowTitle(tr("DuckStation"));
   else
     setWindowTitle(game_title);
+
+  if (m_display_widget)
+    m_display_widget->setWindowTitle(windowTitle());
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -419,7 +457,8 @@ void MainWindow::switchToGameListView()
 
 void MainWindow::switchToEmulationView()
 {
-  m_ui.mainContainer->setCurrentIndex(1);
+  if (m_display_widget->parent())
+    m_ui.mainContainer->setCurrentIndex(1);
   m_display_widget->setFocus();
 }
 
@@ -445,7 +484,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
   connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
-  connect(m_ui.actionFullscreen, &QAction::triggered, this, &MainWindow::toggleFullscreen);
+  connect(m_ui.actionFullscreen, &QAction::triggered, m_host_interface, &QtHostInterface::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
   connect(m_ui.actionGeneralSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::GeneralSettings); });
@@ -472,8 +511,8 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::createDisplayWindowRequested, this, &MainWindow::createDisplayWindow,
           Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::destroyDisplayWindowRequested, this, &MainWindow::destroyDisplayWindow);
-  connect(m_host_interface, &QtHostInterface::setFullscreenRequested, this, &MainWindow::setFullscreen);
-  connect(m_host_interface, &QtHostInterface::toggleFullscreenRequested, this, &MainWindow::toggleFullscreen);
+  connect(m_host_interface, &QtHostInterface::updateDisplayWindowRequested, this, &MainWindow::updateDisplayWindow,
+          Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::focusDisplayWidgetRequested, this, &MainWindow::focusDisplayWidget);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);

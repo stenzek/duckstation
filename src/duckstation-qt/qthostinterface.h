@@ -75,10 +75,10 @@ Q_SIGNALS:
   void emulationPaused(bool paused);
   void stateSaved(const QString& game_code, bool global, qint32 slot);
   void gameListRefreshed();
-  void createDisplayWindowRequested(QThread* worker_thread, bool use_debug_device);
+  void createDisplayWindowRequested(QThread* worker_thread, bool use_debug_device, bool fullscreen,
+                                    bool render_to_main);
   void destroyDisplayWindowRequested();
-  void setFullscreenRequested(bool fullscreen);
-  void toggleFullscreenRequested();
+  void updateDisplayWindowRequested(bool fullscreen, bool render_to_main);
   void focusDisplayWidgetRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);
@@ -103,6 +103,7 @@ public Q_SLOTS:
   void stopDumpingAudio();
   void saveScreenshot();
   void redrawDisplayWindow();
+  void toggleFullscreen();
 
   /// Enables controller polling even without a system active. Must be matched by a call to
   /// disableBackgroundControllerPolling.
@@ -131,7 +132,8 @@ protected:
   void OnRunningGameChanged() override;
   void OnSystemStateSaved(bool global, s32 slot) override;
 
-  void UpdateInputMap() override;  
+  void SetDefaultSettings(SettingsInterface& si) override;
+  void UpdateInputMap() override;
 
 private:
   enum : u32
@@ -182,4 +184,7 @@ private:
 
   QTimer* m_background_controller_polling_timer = nullptr;
   u32 m_background_controller_polling_enable_count = 0;
+
+  bool m_is_rendering_to_main = false;
+  bool m_is_fullscreen = false;
 };

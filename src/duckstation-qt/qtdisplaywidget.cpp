@@ -145,6 +145,13 @@ bool QtDisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::Close:
+    {
+      m_host_interface->synchronousPowerOffSystem();
+      QWidget::event(event);
+      return true;
+    }
+
     case QEvent::WindowStateChange:
     {
       QWidget::event(event);

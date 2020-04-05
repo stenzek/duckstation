@@ -33,30 +33,37 @@
      </property>
      <layout class="QGridLayout" name="formLayout_4">
       <item row="0" column="0">
-       <widget class="QCheckBox" name="pauseOnStart">
+       <widget class="QCheckBox" name="confirmPowerOff">
         <property name="text">
-         <string>Pause On Start</string>
+         <string>Confirm Power Off</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="startFullscreen">
-        <property name="text">
-         <string>Start Fullscreen</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
        <widget class="QCheckBox" name="saveStateOnExit">
         <property name="text">
          <string>Save State On Exit</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="confirmPowerOff">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="startFullscreen">
         <property name="text">
-         <string>Confirm Power Off</string>
+         <string>Start Fullscreen</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="renderToMain">
+        <property name="text">
+         <string>Render To Main Window</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="pauseOnStart">
+        <property name="text">
+         <string>Pause On Start</string>
         </property>
        </widget>
       </item>

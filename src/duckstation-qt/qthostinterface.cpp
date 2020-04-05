@@ -67,11 +67,14 @@ void QtHostInterface::ReportError(const char* message)
 {
   HostInterface::ReportError(message);
 
-  emit setFullscreenRequested(false);
+  const bool was_fullscreen = m_is_fullscreen;
+  if (was_fullscreen)
+    SetFullscreen(false);
+
   emit errorReported(QString::fromLocal8Bit(message));
 
-  if (m_settings.start_fullscreen)
-    emit setFullscreenRequested(true);
+  if (was_fullscreen)
+    SetFullscreen(true);
 }
 
 void QtHostInterface::ReportMessage(const char* message)
@@ -83,12 +86,14 @@ void QtHostInterface::ReportMessage(const char* message)
 
 bool QtHostInterface::ConfirmMessage(const char* message)
 {
-  emit setFullscreenRequested(false);
+  const bool was_fullscreen = m_is_fullscreen;
+  if (was_fullscreen)
+    SetFullscreen(false);
 
   const bool result = messageConfirmed(QString::fromLocal8Bit(message));
 
-  if (m_settings.start_fullscreen)
-    emit setFullscreenRequested(true);
+  if (was_fullscreen)
+    SetFullscreen(true);
 
   return result;
 }
@@ -137,6 +142,14 @@ void QtHostInterface::applySettings()
   QtSettingsInterface si(m_qsettings);
   UpdateSettings([this, &si]() { m_settings.Load(si); });
   CommonHostInterface::UpdateInputMap(si);
+
+  // detect when render-to-main flag changes
+  const bool render_to_main = m_qsettings.value("Main/RenderToMainWindow", true).toBool();
+  if (m_system && m_display_widget && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
+  {
+    m_is_rendering_to_main = render_to_main;
+    emit updateDisplayWindowRequested(false, render_to_main);
+  }
 }
 
 void QtHostInterface::loadSettings()
@@ -257,11 +270,25 @@ void QtHostInterface::redrawDisplayWindow()
   renderDisplay();
 }
 
+void QtHostInterface::toggleFullscreen()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "toggleFullscreen", Qt::QueuedConnection);
+    return;
+  }
+
+  ToggleFullscreen();
+}
+
 bool QtHostInterface::AcquireHostDisplay()
 {
   DebugAssert(!m_display_widget);
 
-  emit createDisplayWindowRequested(m_worker_thread, m_settings.gpu_use_debug_device);
+  m_is_rendering_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
+  m_is_fullscreen = m_settings.start_fullscreen;
+  emit createDisplayWindowRequested(m_worker_thread, m_settings.gpu_use_debug_device, m_is_fullscreen,
+                                    m_is_rendering_to_main);
   if (!m_display_widget->hasDeviceContext())
   {
     m_display_widget = nullptr;
@@ -292,12 +319,17 @@ void QtHostInterface::ReleaseHostDisplay()
 
 void QtHostInterface::SetFullscreen(bool enabled)
 {
-  emit setFullscreenRequested(enabled);
+  if (m_is_fullscreen == enabled)
+    return;
+
+  m_is_fullscreen = enabled;
+  emit updateDisplayWindowRequested(m_is_fullscreen, m_is_rendering_to_main);
 }
 
 void QtHostInterface::ToggleFullscreen()
 {
-  emit toggleFullscreenRequested();
+  m_is_fullscreen = !m_is_fullscreen;
+  emit updateDisplayWindowRequested(m_is_fullscreen, m_is_rendering_to_main);
 }
 
 std::optional<CommonHostInterface::HostKeyCode> QtHostInterface::GetHostKeyCode(const std::string_view key_code) const
@@ -379,6 +411,13 @@ void QtHostInterface::OnRunningGameChanged()
 void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 {
   emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
+}
+
+void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
+{
+  CommonHostInterface::SetDefaultSettings(si);
+
+  si.SetBoolValue("Main", "RenderToMainWindow", true);
 }
 
 void QtHostInterface::UpdateInputMap()
@@ -746,7 +785,7 @@ void QtHostInterface::threadEntryPoint()
   }
 
   Shutdown();
-  
+
   delete m_worker_thread_event_loop;
   m_worker_thread_event_loop = nullptr;
 
