@@ -51,9 +51,15 @@ void CommonHostInterface::Shutdown()
   }
 }
 
-void CommonHostInterface::SetFullscreen(bool enabled) {}
+bool CommonHostInterface::IsFullscreen() const
+{
+  return false;
+}
 
-void CommonHostInterface::ToggleFullscreen() {}
+bool CommonHostInterface::SetFullscreen(bool enabled)
+{
+  return false;
+}
 
 std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend backend)
 {
@@ -88,19 +94,14 @@ std::unique_ptr<ControllerInterface> CommonHostInterface::CreateControllerInterf
 void CommonHostInterface::OnSystemCreated()
 {
   HostInterface::OnSystemCreated();
-
-  if (m_settings.start_fullscreen)
-    SetFullscreen(true);
 }
 
 void CommonHostInterface::OnSystemPaused(bool paused)
 {
   HostInterface::OnSystemPaused(paused);
 
-  if (paused)
+  if (paused && IsFullscreen())
     SetFullscreen(false);
-  else if (m_settings.start_fullscreen)
-    SetFullscreen(true);
 }
 
 void CommonHostInterface::OnControllerTypeChanged(u32 slot)
@@ -375,7 +376,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString("General"), StaticString("ToggleFullscreen"), StaticString("Toggle Fullscreen"),
                  [this](bool pressed) {
                    if (!pressed)
-                     ToggleFullscreen();
+                     SetFullscreen(!IsFullscreen());
                  });
 
   RegisterHotkey(StaticString("General"), StaticString("TogglePause"), StaticString("Toggle Pause"),

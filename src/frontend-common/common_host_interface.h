@@ -46,8 +46,8 @@ protected:
   CommonHostInterface();
   ~CommonHostInterface();
 
-  virtual void SetFullscreen(bool enabled);
-  virtual void ToggleFullscreen();
+  virtual bool IsFullscreen() const;
+  virtual bool SetFullscreen(bool enabled);
 
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
   virtual std::unique_ptr<ControllerInterface> CreateControllerInterface();

@@ -278,7 +278,7 @@ void QtHostInterface::toggleFullscreen()
     return;
   }
 
-  ToggleFullscreen();
+  SetFullscreen(!m_is_fullscreen);
 }
 
 bool QtHostInterface::AcquireHostDisplay()
@@ -317,19 +317,19 @@ void QtHostInterface::ReleaseHostDisplay()
   emit destroyDisplayWindowRequested();
 }
 
-void QtHostInterface::SetFullscreen(bool enabled)
+bool QtHostInterface::IsFullscreen() const
+{
+  return m_is_fullscreen;
+}
+
+bool QtHostInterface::SetFullscreen(bool enabled)
 {
   if (m_is_fullscreen == enabled)
-    return;
+    return true;
 
   m_is_fullscreen = enabled;
   emit updateDisplayWindowRequested(m_is_fullscreen, m_is_rendering_to_main);
-}
-
-void QtHostInterface::ToggleFullscreen()
-{
-  m_is_fullscreen = !m_is_fullscreen;
-  emit updateDisplayWindowRequested(m_is_fullscreen, m_is_rendering_to_main);
+  return true;
 }
 
 std::optional<CommonHostInterface::HostKeyCode> QtHostInterface::GetHostKeyCode(const std::string_view key_code) const

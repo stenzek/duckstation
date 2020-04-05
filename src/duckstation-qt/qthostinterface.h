@@ -120,8 +120,8 @@ private Q_SLOTS:
 protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
-  void SetFullscreen(bool enabled) override;
-  void ToggleFullscreen() override;
+  bool IsFullscreen() const override;
+  bool SetFullscreen(bool enabled) override;
 
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
 
