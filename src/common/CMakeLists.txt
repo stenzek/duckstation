@@ -19,6 +19,8 @@ add_library(common
   cpu_detect.h
   cubeb_audio_stream.cpp
   cubeb_audio_stream.h
+  event.cpp
+  event.h
   fifo_queue.h
   file_system.cpp
   file_system.h

@@ -48,6 +48,7 @@
     <ClInclude Include="d3d11\staging_texture.h" />
     <ClInclude Include="d3d11\stream_buffer.h" />
     <ClInclude Include="d3d11\texture.h" />
+    <ClInclude Include="event.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="file_system.h" />
     <ClInclude Include="gl\program.h" />
@@ -87,6 +88,7 @@
     <ClCompile Include="d3d11\staging_texture.cpp" />
     <ClCompile Include="d3d11\stream_buffer.cpp" />
     <ClCompile Include="d3d11\texture.cpp" />
+    <ClCompile Include="event.cpp" />
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="gl\program.cpp" />
     <ClCompile Include="gl\shader_cache.cpp" />
