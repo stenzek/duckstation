@@ -33,8 +33,8 @@ public:
 
   using HotkeyInfoList = std::vector<HotkeyInfo>;
 
-  virtual bool Initialize();
-  virtual void Shutdown();
+  virtual bool Initialize() override;
+  virtual void Shutdown() override;
 
   /// Returns a list of all available hotkeys.
   ALWAYS_INLINE const HotkeyInfoList& GetHotkeyInfoList() const { return m_hotkeys; }

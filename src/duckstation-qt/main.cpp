@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 #include <memory>
 
 static void InitLogging()
@@ -34,11 +35,22 @@ int main(int argc, char* argv[])
 #endif
 
   std::unique_ptr<QtHostInterface> host_interface = std::make_unique<QtHostInterface>();
+  if (!host_interface->Initialize())
+  {
+    host_interface->Shutdown();
+    QMessageBox::critical(nullptr, QObject::tr("DuckStation Error"),
+                          QObject::tr("Failed to initialize host interface. Cannot continue."), QMessageBox::Ok);
+    return -1;
+  }
 
   std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
   window->show();
 
   host_interface->refreshGameList();
 
-  return app.exec();
+  int result = app.exec();
+
+  window.reset();
+  host_interface->Shutdown();
+  return result;
 }

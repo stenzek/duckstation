@@ -1,6 +1,7 @@
 #pragma once
 #include "core/host_interface.h"
 #include "core/system.h"
+#include "common/event.h"
 #include "frontend-common/common_host_interface.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
@@ -151,24 +152,30 @@ private:
     Thread(QtHostInterface* parent);
     ~Thread();
 
+    void setInitResult(bool result);
+    bool waitForInit();
+
   protected:
     void run() override;
 
   private:
     QtHostInterface* m_parent;
+    std::atomic_bool m_init_result{ false };
+    Common::Event m_init_event;
   };
 
-  void loadSettings();
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
 
   void createThread();
   void stopThread();
   void threadEntryPoint();
+  bool initializeOnThread();
+  void shutdownOnThread();
   void renderDisplay();
   void wakeThread();
 
-  QSettings m_qsettings;
+  std::unique_ptr<QSettings> m_qsettings;
   std::recursive_mutex m_qsettings_mutex;
 
   MainWindow* m_main_window = nullptr;

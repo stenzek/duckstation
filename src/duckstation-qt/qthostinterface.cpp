@@ -29,36 +29,58 @@ Log_SetChannel(QtHostInterface);
 #include "d3d11displaywidget.h"
 #endif
 
-QtHostInterface::QtHostInterface(QObject* parent)
-  : QObject(parent), CommonHostInterface(),
-    m_qsettings(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat)
+QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
   qRegisterMetaType<SystemBootParameters>();
-
-  // TODO: This probably should wait until the thread finishes initializing.
-  loadSettings();
-  createThread();
 }
 
 QtHostInterface::~QtHostInterface()
 {
   Assert(!m_display_widget);
-  stopThread();
 }
 
 bool QtHostInterface::Initialize()
 {
+  createThread();
+  return m_worker_thread->waitForInit();
+}
+
+void QtHostInterface::Shutdown()
+{
+  stopThread();
+}
+
+bool QtHostInterface::initializeOnThread()
+{
   if (!CommonHostInterface::Initialize())
     return false;
 
+  // make sure the controllers have been detected
   if (m_controller_interface)
     m_controller_interface->PollEvents();
 
+  // no need to lock here because the main thread is waiting for us
+  m_qsettings = std::make_unique<QSettings>(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat);
+  QtSettingsInterface si(m_qsettings.get());
+
+  // check settings validity
+  const QSettings::Status settings_status = m_qsettings->status();
+  if (settings_status != QSettings::NoError)
+  {
+    m_qsettings->clear();
+    SetDefaultSettings(si);
+  }
+
+  // load in settings
+  CheckSettings(si);
+  m_settings.Load(si);
+
+  // bind buttons/axises
   updateInputMap();
   return true;
 }
 
-void QtHostInterface::Shutdown()
+void QtHostInterface::shutdownOnThread()
 {
   CommonHostInterface::Shutdown();
 }
@@ -101,19 +123,19 @@ bool QtHostInterface::ConfirmMessage(const char* message)
 QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  return m_qsettings.value(name, default_value);
+  return m_qsettings->value(name, default_value);
 }
 
 void QtHostInterface::putSettingValue(const QString& name, const QVariant& value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  m_qsettings.setValue(name, value);
+  m_qsettings->setValue(name, value);
 }
 
 void QtHostInterface::removeSettingValue(const QString& name)
 {
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  m_qsettings.remove(name);
+  m_qsettings->remove(name);
 }
 
 void QtHostInterface::setDefaultSettings()
@@ -125,7 +147,7 @@ void QtHostInterface::setDefaultSettings()
   }
 
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings);
+  QtSettingsInterface si(m_qsettings.get());
   UpdateSettings([this, &si]() { m_settings.Load(si); });
   CommonHostInterface::UpdateInputMap(si);
 }
@@ -139,12 +161,12 @@ void QtHostInterface::applySettings()
   }
 
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings);
+  QtSettingsInterface si(m_qsettings.get());
   UpdateSettings([this, &si]() { m_settings.Load(si); });
   CommonHostInterface::UpdateInputMap(si);
 
   // detect when render-to-main flag changes
-  const bool render_to_main = m_qsettings.value("Main/RenderToMainWindow", true).toBool();
+  const bool render_to_main = m_qsettings->value("Main/RenderToMainWindow", true).toBool();
   if (m_system && m_display_widget && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
   {
     m_is_rendering_to_main = render_to_main;
@@ -152,30 +174,12 @@ void QtHostInterface::applySettings()
   }
 }
 
-void QtHostInterface::loadSettings()
-{
-  // no need to lock here because the emu thread doesn't exist yet
-  QtSettingsInterface si(m_qsettings);
-
-  const QSettings::Status settings_status = m_qsettings.status();
-  if (settings_status != QSettings::NoError)
-  {
-    m_qsettings.clear();
-    SetDefaultSettings(si);
-  }
-
-  CheckSettings(si);
-  m_settings.Load(si);
-
-  // input map update is done on the emu thread
-}
-
 void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool invalidate_database /* = false */)
 {
   Assert(!isOnWorkerThread());
 
   std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings);
+  QtSettingsInterface si(m_qsettings.get());
   m_game_list->SetSearchDirectoriesFromSettings(si);
 
   QtProgressCallback progress(m_main_window);
@@ -434,7 +438,7 @@ void QtHostInterface::updateInputMap()
   }
 
   std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings);
+  QtSettingsInterface si(m_qsettings.get());
   CommonHostInterface::UpdateInputMap(si);
 }
 
@@ -757,8 +761,7 @@ void QtHostInterface::threadEntryPoint()
   m_worker_thread_event_loop = new QEventLoop();
 
   // set up controller interface and immediate poll to pick up the controller attached events
-  if (!Initialize())
-    Panic("Failed to initialize host interface");
+  m_worker_thread->setInitResult(initializeOnThread());
 
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
@@ -784,7 +787,7 @@ void QtHostInterface::threadEntryPoint()
       m_controller_interface->PollEvents();
   }
 
-  Shutdown();
+  shutdownOnThread();
 
   delete m_worker_thread_event_loop;
   m_worker_thread_event_loop = nullptr;
@@ -819,4 +822,16 @@ QtHostInterface::Thread::~Thread() = default;
 void QtHostInterface::Thread::run()
 {
   m_parent->threadEntryPoint();
+}
+
+void QtHostInterface::Thread::setInitResult(bool result)
+{
+  m_init_result.store(result);
+  m_init_event.Signal();
+}
+
+bool QtHostInterface::Thread::waitForInit()
+{
+  m_init_event.Wait();
+  return m_init_result.load();
 }

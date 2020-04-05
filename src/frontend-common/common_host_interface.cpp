@@ -1,6 +1,7 @@
 #include "common_host_interface.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "controller_interface.h"
@@ -21,6 +22,13 @@ CommonHostInterface::~CommonHostInterface() = default;
 
 bool CommonHostInterface::Initialize()
 {
+  if (!HostInterface::Initialize())
+    return false;
+
+  // Change to the user directory so that all default/relative paths in the config are after this.
+  if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
+    Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
+
   RegisterGeneralHotkeys();
   RegisterGraphicsHotkeys();
   RegisterSaveStateHotkeys();
@@ -41,8 +49,12 @@ bool CommonHostInterface::Initialize()
 
 void CommonHostInterface::Shutdown()
 {
+  HostInterface::Shutdown();
+
   m_system.reset();
   m_audio_stream.reset();
+  if (m_display)
+    ReleaseHostDisplay();
 
   if (m_controller_interface)
   {

@@ -44,6 +44,12 @@ public:
   /// Access to emulated system.
   ALWAYS_INLINE System* GetSystem() const { return m_system.get(); }
 
+  /// Initializes the emulator frontend.
+  virtual bool Initialize();
+
+  /// Shuts down the emulator frontend.
+  virtual void Shutdown();
+
   bool BootSystem(const SystemBootParameters& parameters);
   void PauseSystem(bool paused);
   void ResetSystem();
@@ -149,7 +155,8 @@ protected:
   virtual void OnControllerTypeChanged(u32 slot);
   virtual void DrawImGuiWindows();
 
-  void SetUserDirectory();
+  /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
+  virtual void SetUserDirectory();
 
   /// Ensures all subdirectories of the user directory are created.
   void CreateUserDirectorySubdirectories();
@@ -231,6 +238,7 @@ protected:
   std::mutex m_osd_messages_lock;
 
 private:
+  void InitializeUserDirectory();
   void CreateAudioStream();
   bool SaveState(const char* filename);
 };

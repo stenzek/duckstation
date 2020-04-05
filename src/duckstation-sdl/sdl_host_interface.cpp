@@ -1,6 +1,7 @@
 #include "sdl_host_interface.h"
 #include "common/assert.h"
 #include "common/byte_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/controller.h"
@@ -30,17 +31,7 @@ SDLHostInterface::SDLHostInterface()
   m_run_later_event_id = SDL_RegisterEvents(1);
 }
 
-SDLHostInterface::~SDLHostInterface()
-{
-  if (m_display)
-  {
-    DestroyDisplay();
-    ImGui::DestroyContext();
-  }
-
-  if (m_window)
-    DestroySDLWindow();
-}
+SDLHostInterface::~SDLHostInterface() = default;
 
 float SDLHostInterface::GetDPIScaleFactor(SDL_Window* window)
 {
@@ -292,30 +283,55 @@ void SDLHostInterface::SetFullscreen(bool enabled)
 
 std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
 {
-  std::unique_ptr<SDLHostInterface> intf = std::make_unique<SDLHostInterface>();
+  return std::make_unique<SDLHostInterface>();
+}
+
+bool SDLHostInterface::Initialize()
+{
+  if (!HostInterface::Initialize())
+    return false;
+
+  // Change to the user directory so that all default/relative paths in the config are after this.
+  if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
+    Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
 
   // Settings need to be loaded prior to creating the window for OpenGL bits.
-  INISettingsInterface si(intf->GetSettingsFileName());
-  intf->m_settings_copy.Load(si);
-  intf->m_settings = intf->m_settings_copy;
-  intf->m_fullscreen = intf->m_settings_copy.start_fullscreen;
+  INISettingsInterface si(GetSettingsFileName());
+  m_settings_copy.Load(si);
+  m_settings = m_settings_copy;
+  m_fullscreen = m_settings_copy.start_fullscreen;
 
-  if (!intf->CreateSDLWindow())
+  if (!CreateSDLWindow())
   {
     Log_ErrorPrintf("Failed to create SDL window");
-    return nullptr;
+    return false;
   }
 
-  intf->CreateImGuiContext();
-  if (!intf->CreateDisplay())
+  CreateImGuiContext();
+  if (!CreateDisplay())
   {
     Log_ErrorPrintf("Failed to create host display");
-    return nullptr;
+    return false;
   }
 
   ImGui::NewFrame();
+  return true;
+}
 
-  return intf;
+void SDLHostInterface::Shutdown()
+{
+  DestroySystem();
+
+  if (m_display)
+  {
+    DestroyDisplay();
+    ImGui::DestroyContext();
+  }
+
+  if (m_window)
+    DestroySDLWindow();
+
+  HostInterface::Shutdown();
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -356,7 +372,7 @@ bool SDLHostInterface::ConfirmMessage(const char* message)
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 {
   ImGui_ImplSDL2_ProcessEvent(event);
-  //g_sdl_controller_interface.ProcessSDLEvent(event);
+  // g_sdl_controller_interface.ProcessSDLEvent(event);
 
   switch (event->type)
   {
@@ -388,7 +404,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
     case SDL_CONTROLLERDEVICEADDED:
     case SDL_CONTROLLERDEVICEREMOVED:
-      //g_sdl_controller_interface.SetDefaultBindings();
+      // g_sdl_controller_interface.SetDefaultBindings();
       break;
 
     case SDL_CONTROLLERBUTTONDOWN:
@@ -1425,7 +1441,7 @@ void SDLHostInterface::Run()
       }
     }
 
-    //g_sdl_controller_interface.UpdateControllerRumble();
+    // g_sdl_controller_interface.UpdateControllerRumble();
 
     // rendering
     {

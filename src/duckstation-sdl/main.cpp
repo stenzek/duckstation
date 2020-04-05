@@ -37,9 +37,10 @@ static int Run(int argc, char* argv[])
 
   // create display and host interface
   std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create();
-  if (!host_interface)
+  if (!host_interface->Initialize())
   {
-    Panic("Failed to create host interface");
+    host_interface->Shutdown();
+    Panic("Failed to initialize host interface");
     SDL_Quit();
     return -1;
   }
@@ -61,6 +62,7 @@ static int Run(int argc, char* argv[])
   host_interface->Run();
 
   // done
+  host_interface->Shutdown();
   host_interface.reset();
   SDL_Quit();
   return 0;

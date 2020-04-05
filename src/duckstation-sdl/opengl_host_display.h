@@ -31,6 +31,8 @@ public:
 
   void SetVSync(bool enabled) override;
 
+  void Render() override;
+
 private:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
@@ -39,7 +41,6 @@ private:
   bool CreateImGuiContext();
   bool CreateGLResources();
 
-  void Render() override;
   void RenderDisplay();
 
   SDL_Window* m_window = nullptr;

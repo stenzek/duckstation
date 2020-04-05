@@ -6,7 +6,7 @@ class QSettings;
 class QtSettingsInterface : public SettingsInterface
 {
 public:
-  QtSettingsInterface(QSettings& settings);
+  QtSettingsInterface(QSettings* settings);
   ~QtSettingsInterface();
 
   void Clear() override;
@@ -29,5 +29,5 @@ public:
   void DeleteValue(const char* section, const char* key) override;
 
 private:
-  QSettings& m_settings;
+  QSettings* m_settings;
 };

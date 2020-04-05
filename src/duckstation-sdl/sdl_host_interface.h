@@ -29,6 +29,9 @@ public:
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
 
+  bool Initialize();
+  void Shutdown() override;
+
   void Run();
 
 protected:

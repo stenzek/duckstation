@@ -49,19 +49,27 @@ static std::string GetRelativePath(const std::string& path, const char* new_file
 
 #endif
 
-HostInterface::HostInterface()
-{
-  SetUserDirectory();
-  CreateUserDirectorySubdirectories();
-  m_game_list = std::make_unique<GameList>();
-  m_game_list->SetCacheFilename(GetGameListCacheFileName());
-  m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
-}
+HostInterface::HostInterface() = default;
 
 HostInterface::~HostInterface()
 {
   // system should be shut down prior to the destructor
   Assert(!m_system && !m_audio_stream && !m_display);
+}
+
+bool HostInterface::Initialize()
+{
+  SetUserDirectory();
+  InitializeUserDirectory();
+  m_game_list = std::make_unique<GameList>();
+  m_game_list->SetCacheFilename(GetGameListCacheFileName());
+  m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
+  return true;
+}
+
+void HostInterface::Shutdown()
+{
+
 }
 
 void HostInterface::CreateAudioStream()
@@ -660,7 +668,10 @@ void HostInterface::SetUserDirectory()
       m_user_directory = StringUtil::StdStringFromFormat("%s/Library/Application Support/DuckStation", home_path);
 #endif
   }
+}
 
+void HostInterface::InitializeUserDirectory()
+{
   Log_InfoPrintf("User directory: \"%s\"", m_user_directory.c_str());
 
   if (m_user_directory.empty())
@@ -673,13 +684,6 @@ void HostInterface::SetUserDirectory()
       Log_ErrorPrintf("Failed to create user directory \"%s\".", m_user_directory.c_str());
   }
 
-  // Change to the user directory so that all default/relative paths in the config are after this.
-  if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
-    Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
-}
-
-void HostInterface::CreateUserDirectorySubdirectories()
-{
   bool result = true;
 
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("bios").c_str(), false);
