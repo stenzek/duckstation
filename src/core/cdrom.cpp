@@ -1141,7 +1141,6 @@ void CDROM::BeginReading(TickCount ticks_late)
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
-  m_secondary_status.reading = true;
 
   const TickCount ticks = GetTicksForRead();
   m_drive_state = DriveState::Reading;
@@ -1185,7 +1184,6 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
-  m_secondary_status.playing_cdda = true;
   ClearSectorBuffers();
 
   const TickCount ticks = GetTicksForRead();
@@ -1502,6 +1500,9 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits),
                 m_current_write_sector_buffer);
 
+  // The reading bit shouldn't be set until the first sector is processed.
+  m_secondary_status.reading = true;
+
   if (m_mode.xa_enable && m_last_sector_header.sector_mode == 2)
   {
     if (m_last_sector_subheader.submode.realtime && m_last_sector_subheader.submode.audio)
@@ -1726,6 +1727,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
 {
   // For CDDA sectors, the whole sector contains the audio data.
   Log_DevPrintf("Read sector %u as CDDA", m_last_requested_sector);
+  m_secondary_status.playing_cdda = true;
 
   // Skip the pregap, and don't report on it.
   if (subq.index_number_bcd == 0)
@@ -1977,12 +1979,12 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    if (m_secondary_status.reading && m_mode.xa_enable)
+    if (m_drive_state == DriveState::Reading && m_mode.xa_enable)
     {
-      ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u / Channel %u)", m_xa_current_channel_number,
-                         m_xa_current_file_number);
+      ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u / Channel %u)", m_xa_current_file_number,
+                         m_xa_current_channel_number);
     }
-    else if (m_secondary_status.playing_cdda)
+    else if (m_drive_state == DriveState::Playing)
     {
       ImGui::TextColored(active_color, "Playing: CDDA (Track %x)", m_last_subq.track_number_bcd);
     }
