@@ -33,6 +33,11 @@ void CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_
 void CDROM::Reset()
 {
   SoftReset();
+
+  // this should be reading sector 0
+  m_reader.WaitForReadToComplete();
+  if (m_reader.GetSectorSubQ().IsCRCValid())
+    m_last_subq = m_reader.GetSectorSubQ();
 }
 
 void CDROM::SoftReset()
@@ -66,7 +71,6 @@ void CDROM::SoftReset()
   std::memset(&m_last_sector_subheader, 0, sizeof(m_last_sector_subheader));
   m_last_sector_header_valid = false;
   std::memset(&m_last_subq, 0, sizeof(m_last_subq));
-  m_last_subq_valid = false;
   m_last_cdda_report_frame_nibble = 0xFF;
   m_cdda_report_delay = 0;
 
@@ -126,7 +130,6 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&m_last_sector_subheader, sizeof(m_last_sector_subheader));
   sw.Do(&m_last_sector_header_valid);
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
-  sw.Do(&m_last_subq_valid);
   sw.Do(&m_last_cdda_report_frame_nibble);
   sw.Do(&m_cdda_report_delay);
   sw.Do(&m_play_track_number_bcd);
@@ -185,7 +188,9 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   m_secondary_status.motor_on = true;
 
   // reading TOC? interestingly this doesn't work for GetlocL though...
-  m_last_subq_valid = media->Seek(0) && media->ReadSubChannelQ(&m_last_subq);
+  CDImage::SubChannelQ subq;
+  if (media->Seek(0) && media->ReadSubChannelQ(&subq) && subq.IsCRCValid())
+    m_last_subq = subq;
 
   m_reader.SetMedia(std::move(media));
 }
@@ -199,7 +204,6 @@ void CDROM::RemoveMedia()
   m_reader.RemoveMedia();
 
   m_last_sector_header_valid = false;
-  m_last_subq_valid = false;
 
   m_secondary_status.motor_on = false;
   m_secondary_status.shell_open = true;
@@ -882,13 +886,19 @@ void CDROM::ExecuteCommand()
 
     case Command::GetlocP:
     {
-      Log_DebugPrintf("CDROM GetlocP command - %s", m_last_subq_valid ? "valid" : "invalid");
-      if (!m_last_subq_valid)
+      if (!HasMedia())
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        Log_DebugPrintf("CDROM GetlocP command - not ready");
+        SendErrorResponse(STAT_ERROR, ERROR_NOT_READY);
       }
       else
       {
+        Log_DebugPrintf("CDROM GetlocP command - T%02x I%02x R[%02x:%02x:%02x] A[%02x:%02x:%02x]",
+                        m_last_subq.track_number_bcd, m_last_subq.index_number_bcd, m_last_subq.relative_minute_bcd,
+                        m_last_subq.relative_second_bcd, m_last_subq.relative_frame_bcd,
+                        m_last_subq.absolute_minute_bcd, m_last_subq.absolute_second_bcd,
+                        m_last_subq.absolute_frame_bcd);
+
         m_response_fifo.Push(m_last_subq.track_number_bcd);
         m_response_fifo.Push(m_last_subq.index_number_bcd);
         m_response_fifo.Push(m_last_subq.relative_minute_bcd);
@@ -1260,28 +1270,31 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   bool seek_okay = m_reader.WaitForReadToComplete();
   if (seek_okay)
   {
-    m_last_subq = m_reader.GetSectorSubQ();
-
-    // seek and update sub-q for ReadP command
-    DebugAssert(m_last_requested_sector == m_reader.GetLastReadSector());
-    const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(m_last_requested_sector).ToBCD();
-    seek_okay = (m_last_subq.IsCRCValid() && m_last_subq.absolute_minute_bcd == seek_mm &&
-                 m_last_subq.absolute_second_bcd == seek_ss && m_last_subq.absolute_frame_bcd == seek_ff);
-    if (seek_okay)
+    const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
+    if (subq.IsCRCValid())
     {
-      if (m_last_subq.control.data)
+      // seek and update sub-q for ReadP command
+      m_last_subq = subq;
+      DebugAssert(m_last_requested_sector == m_reader.GetLastReadSector());
+      const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(m_last_requested_sector).ToBCD();
+      seek_okay = (subq.IsCRCValid() && subq.absolute_minute_bcd == seek_mm && subq.absolute_second_bcd == seek_ss &&
+                   subq.absolute_frame_bcd == seek_ff);
+      if (seek_okay)
       {
-        // ensure the location matches up (it should)
-        ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
-        seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
-                     m_last_sector_header.frame == seek_ff);
-      }
-      else
-      {
-        if (logical)
+        if (subq.control.data)
         {
-          Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]", seek_mm, seek_ss, seek_ff);
-          seek_okay = false;
+          // ensure the location matches up (it should)
+          ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
+          seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
+                       m_last_sector_header.frame == seek_ff);
+        }
+        else
+        {
+          if (logical)
+          {
+            Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]", seek_mm, seek_ss, seek_ff);
+            seek_okay = false;
+          }
         }
       }
     }
@@ -1312,7 +1325,6 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
                       pos.frame);
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     m_last_sector_header_valid = false;
-    m_last_subq_valid = false;
   }
 
   m_setloc_pending = false;
