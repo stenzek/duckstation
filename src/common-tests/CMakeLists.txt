@@ -1,4 +1,5 @@
 add_executable(common-tests
+  event_tests.cpp
   rectangle_tests.cpp
 )
 

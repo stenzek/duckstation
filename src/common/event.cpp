@@ -50,7 +50,7 @@ void Event::Reset()
   ResetEvent(reinterpret_cast<HANDLE>(m_event_handle));
 }
 
-void Event::WaitForMultipleEvents(Event** events, u32 num_events)
+void Event::WaitForMultiple(Event** events, u32 num_events)
 {
   DebugAssert(num_events > 0);
 
@@ -120,7 +120,7 @@ void Event::Reset()
     ;
 }
 
-void Event::WaitForMultipleEvents(Event** events, u32 num_events)
+void Event::WaitForMultiple(Event** events, u32 num_events)
 {
   DebugAssert(num_events > 0);
 
@@ -130,6 +130,9 @@ void Event::WaitForMultipleEvents(Event** events, u32 num_events)
   {
     pd.fd = events[i]->m_pipe_fds[0];
     poll(&pd, 1, -1);
+
+    if (events[i]->m_auto_reset)
+      events[i]->Reset();
   }
 }
 

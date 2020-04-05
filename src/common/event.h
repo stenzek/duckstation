@@ -14,7 +14,7 @@ public:
   void Wait();
   bool TryWait(u32 timeout_in_ms);
 
-  static void WaitForMultipleEvents(Event** events, u32 num_events);
+  static void WaitForMultiple(Event** events, u32 num_events);
 
 private:
 #ifdef WIN32

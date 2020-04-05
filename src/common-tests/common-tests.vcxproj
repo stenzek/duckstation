@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
+    <ClCompile Include="event_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
