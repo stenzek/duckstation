@@ -133,6 +133,7 @@ protected:
   void OnRunningGameChanged() override;
   void OnSystemStateSaved(bool global, s32 slot) override;
 
+  void LoadSettings() override;
   void SetDefaultSettings(SettingsInterface& si) override;
   void UpdateInputMap() override;
 

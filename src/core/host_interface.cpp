@@ -61,6 +61,7 @@ bool HostInterface::Initialize()
 {
   SetUserDirectory();
   InitializeUserDirectory();
+  LoadSettings();
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetGameListCacheFileName());
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());

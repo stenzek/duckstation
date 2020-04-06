@@ -158,8 +158,8 @@ protected:
   /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
   virtual void SetUserDirectory();
 
-  /// Ensures all subdirectories of the user directory are created.
-  void CreateUserDirectorySubdirectories();
+  /// Performs the initial load of settings. Should call CheckSettings() and m_settings.Load().
+  virtual void LoadSettings() = 0;
 
   /// Returns the path of the settings file.
   std::string GetSettingsFileName() const;

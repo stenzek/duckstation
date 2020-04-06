@@ -29,19 +29,21 @@ public:
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
 
-  bool Initialize();
+  bool Initialize() override;
   void Shutdown() override;
 
   void Run();
 
 protected:
+  void LoadSettings() override;
+
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
 
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
-  void OnSystemDestroyed();
+  void OnSystemDestroyed() override;
   void OnControllerTypeChanged(u32 slot) override;
 
 private:

@@ -295,12 +295,6 @@ bool SDLHostInterface::Initialize()
   if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
     Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
 
-  // Settings need to be loaded prior to creating the window for OpenGL bits.
-  INISettingsInterface si(GetSettingsFileName());
-  m_settings_copy.Load(si);
-  m_settings = m_settings_copy;
-  m_fullscreen = m_settings_copy.start_fullscreen;
-
   if (!CreateSDLWindow())
   {
     Log_ErrorPrintf("Failed to create SDL window");
@@ -332,6 +326,15 @@ void SDLHostInterface::Shutdown()
     DestroySDLWindow();
 
   HostInterface::Shutdown();
+}
+
+void SDLHostInterface::LoadSettings()
+{
+  // Settings need to be loaded prior to creating the window for OpenGL bits.
+  INISettingsInterface si(GetSettingsFileName());
+  m_settings_copy.Load(si);
+  m_settings = m_settings_copy;
+  m_fullscreen = m_settings_copy.start_fullscreen;
 }
 
 void SDLHostInterface::ReportError(const char* message)

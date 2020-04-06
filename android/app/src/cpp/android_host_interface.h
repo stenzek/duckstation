@@ -36,6 +36,7 @@ public:
 
 protected:
   void SetUserDirectory() override;
+  void LoadSettings() override;
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;

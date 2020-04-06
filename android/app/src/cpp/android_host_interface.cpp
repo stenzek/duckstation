@@ -1,9 +1,9 @@
 #include "android_host_interface.h"
 #include "android_gles_host_display.h"
 #include "common/assert.h"
+#include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/string.h"
-#include "common/audio_stream.h"
 #include "core/controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
@@ -67,11 +67,6 @@ bool AndroidHostInterface::Initialize()
   if (!HostInterface::Initialize())
     return false;
 
-  // check settings version, if invalid set defaults, then load settings
-  INISettingsInterface settings_interface(GetSettingsFileName());
-  CheckSettings(settings_interface);
-  UpdateSettings([this, &settings_interface]() { m_settings.Load(settings_interface); });
-
   return true;
 }
 
@@ -96,14 +91,22 @@ void AndroidHostInterface::SetUserDirectory()
   m_user_directory = "/sdcard/duckstation";
 }
 
+void AndroidHostInterface::LoadSettings()
+{
+  // check settings version, if invalid set defaults, then load settings
+  INISettingsInterface settings_interface(GetSettingsFileName());
+  CheckSettings(settings_interface);
+  UpdateSettings([this, &settings_interface]() { m_settings.Load(settings_interface); });
+}
+
 bool AndroidHostInterface::StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params)
 {
   Assert(!IsEmulationThreadRunning());
 
   Log_DevPrintf("Starting emulation thread...");
   m_emulation_thread_stop_request.store(false);
-  m_emulation_thread = std::thread(&AndroidHostInterface::EmulationThreadEntryPoint, this, initial_surface,
-                                   std::move(boot_params));
+  m_emulation_thread =
+    std::thread(&AndroidHostInterface::EmulationThreadEntryPoint, this, initial_surface, std::move(boot_params));
   m_emulation_thread_started.Wait();
   if (!m_emulation_thread_start_result.load())
   {
@@ -458,7 +461,7 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobje
 DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path,
                        jarray j_search_directories, jboolean search_recursively)
 {
-  //const std::string cache_path = JStringToString(env, j_cache_path);
+  // const std::string cache_path = JStringToString(env, j_cache_path);
   std::string redump_dat_path = JStringToString(env, j_redump_dat_path);
 
   // TODO: This should use the base HostInterface.

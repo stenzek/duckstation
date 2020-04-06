@@ -59,22 +59,6 @@ bool QtHostInterface::initializeOnThread()
   if (m_controller_interface)
     m_controller_interface->PollEvents();
 
-  // no need to lock here because the main thread is waiting for us
-  m_qsettings = std::make_unique<QSettings>(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat);
-  QtSettingsInterface si(m_qsettings.get());
-
-  // check settings validity
-  const QSettings::Status settings_status = m_qsettings->status();
-  if (settings_status != QSettings::NoError)
-  {
-    m_qsettings->clear();
-    SetDefaultSettings(si);
-  }
-
-  // load in settings
-  CheckSettings(si);
-  m_settings.Load(si);
-
   // bind buttons/axises
   updateInputMap();
   return true;
@@ -415,6 +399,25 @@ void QtHostInterface::OnRunningGameChanged()
 void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 {
   emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
+}
+
+void QtHostInterface::LoadSettings()
+{
+  // no need to lock here because the main thread is waiting for us
+  m_qsettings = std::make_unique<QSettings>(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat);
+  QtSettingsInterface si(m_qsettings.get());
+
+  // check settings validity
+  const QSettings::Status settings_status = m_qsettings->status();
+  if (settings_status != QSettings::NoError)
+  {
+    m_qsettings->clear();
+    SetDefaultSettings(si);
+  }
+
+  // load in settings
+  CheckSettings(si);
+  m_settings.Load(si);
 }
 
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
