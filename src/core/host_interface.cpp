@@ -68,10 +68,7 @@ bool HostInterface::Initialize()
   return true;
 }
 
-void HostInterface::Shutdown()
-{
-
-}
+void HostInterface::Shutdown() {}
 
 void HostInterface::CreateAudioStream()
 {
@@ -413,17 +410,23 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   {
     case ConsoleRegion::NTSC_J:
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1000.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-10j.bin"));
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5500.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30j.bin"));
       break;
 
     case ConsoleRegion::NTSC_U:
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1001.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-22a.bin"));
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5501.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30a.bin"));
       break;
 
     case ConsoleRegion::PAL:
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1002.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-21e.bin"));
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5502.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30e.bin"));
       break;
 
     default:
