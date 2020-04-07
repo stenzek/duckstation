@@ -46,6 +46,7 @@ private Q_SLOTS:
   void onChangeDiscFromGameListActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
+  void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);

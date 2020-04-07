@@ -102,6 +102,7 @@
     </property>
     <addaction name="actionGitHubRepository"/>
     <addaction name="actionIssueTracker"/>
+    <addaction name="actionDiscordServer"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
@@ -312,6 +313,11 @@
   <action name="actionIssueTracker">
    <property name="text">
     <string>&amp;Issue Tracker...</string>
+   </property>
+  </action>
+  <action name="actionDiscordServer">
+   <property name="text">
+    <string>&amp;Discord Server...</string>
    </property>
   </action>
   <action name="actionAbout">

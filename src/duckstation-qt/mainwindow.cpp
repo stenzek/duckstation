@@ -274,6 +274,11 @@ void MainWindow::onIssueTrackerActionTriggered()
   OpenURL(this, "https://github.com/stenzek/duckstation/issues");
 }
 
+void MainWindow::onDiscordServerActionTriggered()
+{
+  OpenURL(this, "https://discord.gg/Buktv3t");
+}
+
 void MainWindow::onAboutActionTriggered() {}
 
 void MainWindow::onGameListEntrySelected(const GameListEntry* entry)
@@ -501,6 +506,7 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
+  connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
