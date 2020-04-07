@@ -411,6 +411,8 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
     case ConsoleRegion::NTSC_J:
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1000.bin"));
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-10j.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph3000.bin"));
+      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-11j.bin"));
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5500.bin"));
       TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30j.bin"));
       break;

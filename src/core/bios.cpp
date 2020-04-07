@@ -1,6 +1,6 @@
 #include "bios.h"
-#include "common/log.h"
 #include "common/assert.h"
+#include "common/log.h"
 #include "common/md5_digest.h"
 #include "cpu_disasm.h"
 #include <cerrno>
@@ -38,6 +38,7 @@ std::string Hash::ToString() const
 static constexpr Hash SCPH_1000_HASH = MakeHashFromString("239665b1a3dade1b5a52c06338011044");
 static constexpr Hash SCPH_1001_HASH = MakeHashFromString("924e392ed05558ffdb115408c263dccf");
 static constexpr Hash SCPH_1002_HASH = MakeHashFromString("54847e693405ffeb0359c6287434cbef");
+static constexpr Hash SCPH_3000_HASH = MakeHashFromString("849515939161e62f6b866f6853006780");
 static constexpr Hash SCPH_5500_HASH = MakeHashFromString("8dd7d5296a650fac7319bce665a6a53c");
 static constexpr Hash SCPH_5501_HASH = MakeHashFromString("490f666e1afb15b7362b406ed1cea246");
 static constexpr Hash SCPH_5502_HASH = MakeHashFromString("32736f17079d0b2b7024407c39bd3050");
@@ -99,7 +100,7 @@ bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash)
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      return (hash == SCPH_1000_HASH || hash == SCPH_5500_HASH);
+      return (hash == SCPH_1000_HASH || hash == SCPH_3000_HASH || hash == SCPH_5500_HASH);
 
     case ConsoleRegion::NTSC_U:
       return (hash == SCPH_1001_HASH || hash == SCPH_5501_HASH);
@@ -133,8 +134,8 @@ void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFF
 
 bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
 {
-  if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_5500_HASH &&
-      hash != SCPH_5501_HASH && hash != SCPH_5502_HASH)
+  if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
+      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH)
   {
     Log_WarningPrintf("Incompatible version for TTY patch: %s", hash.ToString().c_str());
     return false;
@@ -148,8 +149,8 @@ bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
 
 bool PatchBIOSFastBoot(Image& image, const Hash& hash)
 {
-  if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_5500_HASH &&
-      hash != SCPH_5501_HASH && hash != SCPH_5502_HASH)
+  if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
+      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH)
   {
     Log_WarningPrintf("Incompatible version for fast-boot patch: %s", hash.ToString().c_str());
     return false;
