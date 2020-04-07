@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 if(NOT ANDROID)
   option(BUILD_SDL_FRONTEND "Build the SDL frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
+  option(USE_SDL2 "Link with SDL2 for controller support" ON)
 endif()
 
 
@@ -26,7 +27,7 @@ endif()
 
 # Required libraries.
 if(NOT ANDROID)
-  if(BUILD_SDL_FRONTEND)
+  if(BUILD_SDL_FRONTEND OR USE_SDL2)
     find_package(SDL2 REQUIRED)
   endif()
   if(BUILD_QT_FRONTEND)
