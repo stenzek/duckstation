@@ -51,7 +51,7 @@ void QtDisplayWidget::destroyDeviceContext()
   destroyDeviceResources();
 }
 
-qreal QtDisplayWidget::getDevicePixelRatioFromScreen() const
+qreal QtDisplayWidget::devicePixelRatioFromScreen() const
 {
   QScreen* screen_for_ratio;
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
@@ -65,14 +65,14 @@ qreal QtDisplayWidget::getDevicePixelRatioFromScreen() const
   return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
 }
 
-int QtDisplayWidget::getScaledWindowWidth() const
+int QtDisplayWidget::scaledWindowWidth() const
 {
-  return static_cast<int>(std::ceil(static_cast<qreal>(width()) * getDevicePixelRatioFromScreen()));
+  return static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioFromScreen()));
 }
 
-int QtDisplayWidget::getScaledWindowHeight() const
+int QtDisplayWidget::scaledWindowHeight() const
 {
-  return static_cast<int>(std::ceil(static_cast<qreal>(height()) * getDevicePixelRatioFromScreen()));
+  return static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen()));
 }
 
 bool QtDisplayWidget::createImGuiContext()
@@ -81,10 +81,10 @@ bool QtDisplayWidget::createImGuiContext()
 
   auto& io = ImGui::GetIO();
   io.IniFilename = nullptr;
-  io.DisplaySize.x = static_cast<float>(getScaledWindowWidth());
-  io.DisplaySize.y = static_cast<float>(getScaledWindowHeight());
+  io.DisplaySize.x = static_cast<float>(scaledWindowWidth());
+  io.DisplaySize.y = static_cast<float>(scaledWindowHeight());
 
-  const float framebuffer_scale = static_cast<float>(getDevicePixelRatioFromScreen());
+  const float framebuffer_scale = static_cast<float>(devicePixelRatioFromScreen());
   io.DisplayFramebufferScale.x = framebuffer_scale;
   io.DisplayFramebufferScale.y = framebuffer_scale;
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
@@ -141,7 +141,7 @@ bool QtDisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      emit windowResizedEvent(getScaledWindowWidth(), getScaledWindowHeight());
+      emit windowResizedEvent(scaledWindowWidth(), scaledWindowHeight());
       return true;
     }
 

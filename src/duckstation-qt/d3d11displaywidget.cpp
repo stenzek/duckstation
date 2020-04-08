@@ -231,7 +231,7 @@ bool D3D11DisplayWidget::createDeviceContext(QThread* worker_thread, bool debug_
       m_allow_tearing_supported = (allow_tearing_supported == TRUE);
   }
 
-  if (!createSwapChain(reinterpret_cast<HWND>(winId())))
+  if (!createSwapChain())
     return false;
 
   if (!QtDisplayWidget::createDeviceContext(worker_thread, debug_device))
@@ -263,9 +263,16 @@ void D3D11DisplayWidget::destroyDeviceContext()
   m_device.Reset();
 }
 
-bool D3D11DisplayWidget::createSwapChain(HWND hwnd)
+bool D3D11DisplayWidget::shouldUseFlipModelSwapChain() const
 {
-  HRESULT hr;
+  // For some reason DXGI gets stuck waiting for some kernel object when the Qt window has a parent (render-to-main) on
+  // some computers, unless the window is completely occluded. The legacy swap chain mode does not have this problem.
+  return parent() == nullptr;
+}
+
+bool D3D11DisplayWidget::createSwapChain()
+{
+  m_using_flip_model_swap_chain = shouldUseFlipModelSwapChain();
 
   DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
   swap_chain_desc.BufferDesc.Width = m_window_width;
@@ -274,20 +281,22 @@ bool D3D11DisplayWidget::createSwapChain(HWND hwnd)
   swap_chain_desc.SampleDesc.Count = 1;
   swap_chain_desc.BufferCount = 3;
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-  swap_chain_desc.OutputWindow = hwnd;
+  swap_chain_desc.OutputWindow = reinterpret_cast<HWND>(winId());
   swap_chain_desc.Windowed = TRUE;
-  swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+  swap_chain_desc.SwapEffect = m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
-  if (m_allow_tearing_supported)
+  m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain);
+  if (m_using_allow_tearing)
     swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-  hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
-  if (FAILED(hr))
+  HRESULT hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+  if (FAILED(hr) && m_using_flip_model_swap_chain)
   {
     Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
     swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     swap_chain_desc.Flags = 0;
-    m_allow_tearing_supported = false;
+    m_using_flip_model_swap_chain = false;
+    m_using_allow_tearing = false;
 
     hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
     if (FAILED(hr))
@@ -297,11 +306,20 @@ bool D3D11DisplayWidget::createSwapChain(HWND hwnd)
     }
   }
 
-  hr = m_dxgi_factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+  hr = m_dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
   if (FAILED(hr))
     Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
 
   return true;
+}
+
+void D3D11DisplayWidget::recreateSwapChain()
+{
+  m_swap_chain_rtv.Reset();
+  m_swap_chain.Reset();
+
+  if (!createSwapChain() || !createSwapChainRTV())
+    Panic("Failed to recreate swap chain");
 }
 
 void D3D11DisplayWidget::windowResized(s32 new_window_width, s32 new_window_height)
@@ -312,10 +330,16 @@ void D3D11DisplayWidget::windowResized(s32 new_window_width, s32 new_window_heig
   if (!m_swap_chain)
     return;
 
+  if (m_using_flip_model_swap_chain != shouldUseFlipModelSwapChain())
+  {
+    recreateSwapChain();
+    return;
+  }
+
   m_swap_chain_rtv.Reset();
 
   HRESULT hr = m_swap_chain->ResizeBuffers(0, new_window_width, new_window_height, DXGI_FORMAT_UNKNOWN,
-                                           m_allow_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+                                           m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr))
     Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
 
@@ -439,7 +463,7 @@ void D3D11DisplayWidget::Render()
   ImGui::Render();
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-  if (!m_vsync && m_allow_tearing_supported)
+  if (!m_vsync && m_using_allow_tearing)
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
     m_swap_chain->Present(BoolToUInt32(m_vsync), 0);

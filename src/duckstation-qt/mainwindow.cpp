@@ -153,6 +153,7 @@ void MainWindow::updateDisplayWindow(bool fullscreen, bool render_to_main)
     m_display_widget->setCursor(QCursor());
   }
 
+  m_display_widget->windowResizedEvent(m_display_widget->scaledWindowWidth(), m_display_widget->scaledWindowHeight());
   m_display_widget->setFocus();
 
   QSignalBlocker blocker(m_ui.actionFullscreen);

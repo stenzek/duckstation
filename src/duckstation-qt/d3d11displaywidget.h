@@ -55,8 +55,10 @@ private:
   bool createDeviceResources() override;
   void destroyDeviceResources() override;
 
-  bool createSwapChain(HWND hwnd);
+  bool shouldUseFlipModelSwapChain() const;
+  bool createSwapChain();
   bool createSwapChainRTV();
+  void recreateSwapChain();
 
   void renderDisplay();
 
@@ -80,5 +82,7 @@ private:
   D3D11::AutoStagingTexture m_readback_staging_texture;
 
   bool m_allow_tearing_supported = false;
+  bool m_using_flip_model_swap_chain = false;
+  bool m_using_allow_tearing = false;
   bool m_vsync = false;
 };

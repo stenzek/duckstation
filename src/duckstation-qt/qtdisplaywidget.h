@@ -29,14 +29,15 @@ public:
 
   virtual QPaintEngine* paintEngine() const override;
 
+  int scaledWindowWidth() const;
+  int scaledWindowHeight() const;
+
 Q_SIGNALS:
   void windowResizedEvent(int width, int height);
   void windowRestoredEvent();
 
 protected:
-  qreal getDevicePixelRatioFromScreen() const;
-  int getScaledWindowWidth() const;
-  int getScaledWindowHeight() const;
+  qreal devicePixelRatioFromScreen() const;
 
   virtual bool createImGuiContext();
   virtual void destroyImGuiContext();
