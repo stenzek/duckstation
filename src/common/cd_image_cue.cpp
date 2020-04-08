@@ -73,7 +73,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     const ::Track* track = cd_get_track(m_cd, track_num);
     if (!track || !track_get_filename(track))
     {
-      Log_ErrorPrint("Track/filename missing for track %d", track_num);
+      Log_ErrorPrintf("Track/filename missing for track %d", track_num);
       return false;
     }
 
