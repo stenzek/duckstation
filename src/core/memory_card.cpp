@@ -11,17 +11,28 @@ Log_SetChannel(MemoryCard);
 MemoryCard::MemoryCard(System* system) : m_system(system)
 {
   m_FLAG.no_write_yet = true;
+
+  m_save_event =
+    system->CreateTimingEvent("Memory Card Host Flush", SAVE_DELAY_IN_SYSCLK_TICKS, SAVE_DELAY_IN_SYSCLK_TICKS,
+                              std::bind(&MemoryCard::SaveIfChanged, this, true), false);
 }
 
-MemoryCard::~MemoryCard() = default;
+MemoryCard::~MemoryCard()
+{
+  SaveIfChanged(false);
+}
 
 void MemoryCard::Reset()
 {
   ResetTransferState();
+  SaveIfChanged(true);
 }
 
 bool MemoryCard::DoState(StateWrapper& sw)
 {
+  if (sw.IsReading())
+    SaveIfChanged(true);
+
   sw.Do(&m_state);
   sw.Do(&m_address);
   sw.Do(&m_sector_offset);
@@ -40,7 +51,6 @@ void MemoryCard::ResetTransferState()
   m_sector_offset = 0;
   m_checksum = 0;
   m_last_byte = 0;
-  m_changed = false;
 }
 
 bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
@@ -131,7 +141,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_sector_offset == 0)
       {
-        Log_DevPrintf("Writing memory card sector %u", ZeroExtend32(m_address));
+        Log_InfoPrintf("Writing memory card sector %u", ZeroExtend32(m_address));
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ data_in;
         m_FLAG.no_write_yet = false;
       }
@@ -141,9 +151,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       }
 
       const u32 offset = ZeroExtend32(m_address) * SECTOR_SIZE + m_sector_offset;
-      if (m_data[offset] != data_in)
-        m_changed = true;
-
+      m_changed |= (m_data[offset] != data_in);
       m_data[offset] = data_in;
 
       *data_out = m_last_byte;
@@ -155,10 +163,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         m_state = State::WriteChecksum;
         m_sector_offset = 0;
         if (m_changed)
-        {
-          m_changed = false;
-          SaveToFile();
-        }
+          QueueFileSave();
       }
     }
     break;
@@ -317,6 +322,8 @@ void MemoryCard::Format()
 
   // write test frame
   std::memcpy(GetSectorPtr(63), GetSectorPtr(0), SECTOR_SIZE);
+
+  m_changed = true;
 }
 
 u8* MemoryCard::GetSectorPtr(u32 sector)
@@ -342,8 +349,15 @@ bool MemoryCard::LoadFromFile()
   return true;
 }
 
-bool MemoryCard::SaveToFile()
+bool MemoryCard::SaveIfChanged(bool display_osd_message)
 {
+  m_save_event->Deactivate();
+
+  if (!m_changed)
+    return true;
+
+  m_changed = false;
+
   if (m_filename.empty())
     return false;
 
@@ -364,6 +378,19 @@ bool MemoryCard::SaveToFile()
   }
 
   Log_InfoPrintf("Saved memory card to '%s'", m_filename.c_str());
-  m_system->GetHostInterface()->AddOSDMessage(SmallString::FromFormat("Saved memory card to '%s'", m_filename.c_str()));
+  if (display_osd_message)
+    m_system->GetHostInterface()->AddOSDMessage(
+      SmallString::FromFormat("Saved memory card to '%s'", m_filename.c_str()));
+
   return true;
+}
+
+void MemoryCard::QueueFileSave()
+{
+  // skip if the event is already pending, or we don't have a backing file
+  if (m_save_event->IsActive() || m_filename.empty())
+    return;
+
+  // save in one second, that should be long enough for everything to finish writing
+  m_save_event->Schedule(SAVE_DELAY_IN_SYSCLK_TICKS);
 }

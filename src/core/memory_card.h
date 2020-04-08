@@ -7,6 +7,7 @@
 #include <string_view>
 
 class System;
+class TimingEvent;
 
 class MemoryCard final
 {
@@ -33,6 +34,13 @@ public:
   void Format();
 
 private:
+  enum : u32
+  {
+    // save in three seconds, that should be long enough for everything to finish writing
+    SAVE_DELAY_IN_SECONDS = 5,
+    SAVE_DELAY_IN_SYSCLK_TICKS = MASTER_CLOCK * SAVE_DELAY_IN_SECONDS,
+  };
+
   union FLAG
   {
     u8 bits;
@@ -76,9 +84,11 @@ private:
   u8* GetSectorPtr(u32 sector);
 
   bool LoadFromFile();
-  bool SaveToFile();
+  bool SaveIfChanged(bool display_osd_message);
+  void QueueFileSave();
 
   System* m_system;
+  std::unique_ptr<TimingEvent> m_save_event;
 
   State m_state = State::Idle;
   u16 m_address = 0;
