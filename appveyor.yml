@@ -5,7 +5,7 @@ branches:
 
 image:
 - Visual Studio 2019
-#- Ubuntu1804
+- Ubuntu1804
 - macOS
 
 clone_depth: 1
@@ -46,13 +46,27 @@ build_script:
 - sh: >-
     if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu1804" ]; then
 
-      mkdir -p build-debug
+      mkdir -p build-release
 
-      cd build-debug
+      cd build-release
 
-      cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SDL_FRONTEND=YES -DBUILD_QT_FRONTEND=YES ..
+      cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
 
       ninja
+
+      wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+
+      wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+
+      chmod +x linuxdeploy-x86_64.AppImage
+
+      chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+
+      ./linuxdeploy-x86_64.AppImage --appdir=./AppDir --executable=./src/duckstation-qt/duckstation-qt --create-desktop-file --icon-file=../appimage/duckstation-qt.png --plugin=qt --output=appimage
+
+      7za a -r duckstation-linux-x64-release.7z duckstation-qt*.AppImage
+
+      appveyor PushArtifact duckstation-linux-x64-release.7z
 
     elif [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
 
