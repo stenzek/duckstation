@@ -71,6 +71,12 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
   for (int track_num = 1; track_num <= num_tracks; track_num++)
   {
     const ::Track* track = cd_get_track(m_cd, track_num);
+    if (!track || !track_get_filename(track))
+    {
+      Log_ErrorPrint("Track/filename missing for track %d", track_num);
+      return false;
+    }
+
     const std::string track_filename = track_get_filename(track);
     long track_start = track_get_start(track);
     long track_length = track_get_length(track);
