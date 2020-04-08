@@ -99,13 +99,13 @@ void GPU_SW::UpdateDisplay()
       const u32 field = GetInterlacedField();
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH * 2,
+        CopyOut24Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH * 2,
                      m_display_texture_buffer.data() + field * display_width, display_width * 2, display_width,
                      display_height / 2);
       }
       else
       {
-        CopyOut15Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH * 2,
+        CopyOut15Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH * 2,
                      m_display_texture_buffer.data() + field * display_width, display_width * 2, display_width,
                      display_height / 2);
       }
@@ -114,19 +114,20 @@ void GPU_SW::UpdateDisplay()
     {
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
+        CopyOut24Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH,
                      m_display_texture_buffer.data(), display_width, display_width, display_height);
       }
       else
       {
-        CopyOut15Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + vram_offset_x, VRAM_WIDTH,
+        CopyOut15Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH,
                      m_display_texture_buffer.data(), display_width, display_width, display_height);
       }
     }
 
-    m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, display_width, display_height,
+    m_host_display->UpdateTexture(m_display_texture.get(), m_crtc_state.regs.X, 0, display_width, display_height,
                                   m_display_texture_buffer.data(), display_width * sizeof(u32));
-    m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT, 0, 0, display_width,
+    m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT,
+                                      m_crtc_state.display_vram_left - m_crtc_state.regs.X, 0, display_width,
                                       display_height);
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
