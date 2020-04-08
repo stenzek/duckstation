@@ -4,6 +4,7 @@
 #include "inputbindingwidgets.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include "settingwidgetbinder.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QMessageBox>
@@ -36,9 +37,11 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   ui->layout = new QVBoxLayout(ui->widget);
 
   QHBoxLayout* memory_card_layout = new QHBoxLayout();
-  ui->memory_card_path = new QLineEdit(
-    m_host_interface->getSettingValue(QStringLiteral("MemoryCards/Card%1Path").arg(index + 1)).toString(), ui->widget);
+  ui->memory_card_path = new QLineEdit(ui->widget);
+  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, ui->memory_card_path,
+                                                 QStringLiteral("MemoryCards/Card%1Path").arg(index + 1));
   memory_card_layout->addWidget(ui->memory_card_path);
+
   ui->memory_card_path_browse = new QPushButton(tr("Browse..."), ui->widget);
   memory_card_layout->addWidget(ui->memory_card_path_browse);
   ui->layout->addWidget(new QLabel(tr("Memory Card Path:"), ui->widget));
