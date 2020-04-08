@@ -136,7 +136,7 @@ struct SettingAccessor<QAction>
 /// Binds a widget's value to a setting, updating it when the value changes.
 
 template<typename WidgetType>
-void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
+void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
@@ -150,7 +150,7 @@ void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const char
 }
 
 template<typename WidgetType>
-void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
+void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
@@ -164,7 +164,7 @@ void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const char*
 }
 
 template<typename WidgetType>
-void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name, float range)
+void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name, float range)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
@@ -178,7 +178,7 @@ void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, cons
 }
 
 template<typename WidgetType>
-void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name)
+void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
@@ -192,7 +192,7 @@ void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const ch
 }
 
 template<typename WidgetType, typename DataType>
-void BindWidgetToEnumSetting(QtHostInterface* hi, WidgetType* widget, const char* setting_name,
+void BindWidgetToEnumSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name,
                              std::optional<DataType> (*from_string_function)(const char* str),
                              const char* (*to_string_function)(DataType value))
 {
