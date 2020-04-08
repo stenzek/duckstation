@@ -7,7 +7,10 @@
 #include "settingwidgetbinder.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
+
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] = "All Memory Card Types (*.mcd *.mc)";
 
 PortSettingsWidget::PortSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QWidget(parent), m_host_interface(host_interface)
@@ -43,6 +46,8 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   memory_card_layout->addWidget(ui->memory_card_path);
 
   ui->memory_card_path_browse = new QPushButton(tr("Browse..."), ui->widget);
+  connect(ui->memory_card_path_browse, &QPushButton::clicked,
+          [this, index]() { onBrowseMemoryCardPathClicked(index); });
   memory_card_layout->addWidget(ui->memory_card_path_browse);
   ui->layout->addWidget(new QLabel(tr("Memory Card Path:"), ui->widget));
   ui->layout->addLayout(memory_card_layout);
@@ -231,4 +236,14 @@ void PortSettingsWidget::onControllerTypeChanged(int index)
     QString::fromStdString(Settings::GetControllerTypeName(static_cast<ControllerType>(type_index))));
   m_host_interface->applySettings();
   createPortBindingSettingsUi(index, &m_port_ui[index], static_cast<ControllerType>(type_index));
+}
+
+void PortSettingsWidget::onBrowseMemoryCardPathClicked(int index)
+{
+  QString path =
+    QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(), tr(MEMORY_CARD_IMAGE_FILTER));
+  if (path.isEmpty())
+    return;
+
+  m_port_ui[index].memory_card_path->setText(path);
 }

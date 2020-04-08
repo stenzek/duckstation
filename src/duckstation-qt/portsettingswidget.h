@@ -42,6 +42,7 @@ private:
   void createPortSettingsUi(int index, PortSettingsUI* ui);
   void createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype);
   void onControllerTypeChanged(int index);
+  void onBrowseMemoryCardPathClicked(int index);
 
   std::array<PortSettingsUI, 2> m_port_ui = {};
 };
