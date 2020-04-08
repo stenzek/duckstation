@@ -195,9 +195,9 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   m_reader.SetMedia(std::move(media));
 }
 
-void CDROM::RemoveMedia()
+void CDROM::RemoveMedia(bool force /* = false */)
 {
-  if (!m_reader.HasMedia())
+  if (!m_reader.HasMedia() && !force)
     return;
 
   Log_InfoPrintf("Removing CD...");

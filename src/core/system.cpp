@@ -327,6 +327,7 @@ bool System::DoState(StateWrapper& sw)
   std::string media_filename = m_cdrom->GetMediaFileName();
   sw.Do(&media_filename);
 
+  bool media_is_bad = false;
   if (sw.IsReading())
   {
     std::unique_ptr<CDImage> media;
@@ -334,7 +335,10 @@ bool System::DoState(StateWrapper& sw)
     {
       media = CDImage::Open(media_filename.c_str());
       if (!media)
-        Log_ErrorPrintf("Failed to open CD image from save state: '%s'", media_filename.c_str());
+      {
+        Log_ErrorPrintf("Failed to open CD image from save state: '%s'. Disc will be removed.", media_filename.c_str());
+        media_is_bad = true;
+      }
     }
 
     UpdateRunningGame(media_filename.c_str(), media.get());
@@ -383,6 +387,9 @@ bool System::DoState(StateWrapper& sw)
 
   if (!sw.DoMarker("Events") || !DoEventsState(sw))
     return false;
+
+  if (media_is_bad)
+    m_cdrom->RemoveMedia(true);
 
   return !sw.HasError();
 }

@@ -31,7 +31,7 @@ public:
   bool HasMedia() const;
   std::string GetMediaFileName() const;
   void InsertMedia(std::unique_ptr<CDImage> media);
-  void RemoveMedia();
+  void RemoveMedia(bool force = false);
 
   // I/O
   u8 ReadRegister(u32 offset);
