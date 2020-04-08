@@ -34,7 +34,6 @@ private:
     QVBoxLayout* layout;
     QComboBox* controller_type;
     QLineEdit* memory_card_path;
-    QPushButton* memory_card_path_browse;
     QWidget* button_binding_container;
   };
 
@@ -43,6 +42,7 @@ private:
   void createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype);
   void onControllerTypeChanged(int index);
   void onBrowseMemoryCardPathClicked(int index);
+  void onEjectMemoryCardClicked(int index);
 
   std::array<PortSettingsUI, 2> m_port_ui = {};
 };

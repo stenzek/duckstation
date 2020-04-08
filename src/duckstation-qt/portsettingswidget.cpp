@@ -5,6 +5,7 @@
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
+#include <QtCore/QSignalBlocker>
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
@@ -45,10 +46,14 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
                                                  QStringLiteral("MemoryCards/Card%1Path").arg(index + 1));
   memory_card_layout->addWidget(ui->memory_card_path);
 
-  ui->memory_card_path_browse = new QPushButton(tr("Browse..."), ui->widget);
-  connect(ui->memory_card_path_browse, &QPushButton::clicked,
-          [this, index]() { onBrowseMemoryCardPathClicked(index); });
-  memory_card_layout->addWidget(ui->memory_card_path_browse);
+  QPushButton* memory_card_path_browse = new QPushButton(tr("Browse..."), ui->widget);
+  connect(memory_card_path_browse, &QPushButton::clicked, [this, index]() { onBrowseMemoryCardPathClicked(index); });
+  memory_card_layout->addWidget(memory_card_path_browse);
+
+  QPushButton* memory_card_remove = new QPushButton(tr("Remove"), ui->widget);
+  connect(memory_card_remove, &QPushButton::clicked, [this, index]() { onEjectMemoryCardClicked(index); });
+  memory_card_layout->addWidget(memory_card_remove);
+
   ui->layout->addWidget(new QLabel(tr("Memory Card Path:"), ui->widget));
   ui->layout->addLayout(memory_card_layout);
 
@@ -246,4 +251,12 @@ void PortSettingsWidget::onBrowseMemoryCardPathClicked(int index)
     return;
 
   m_port_ui[index].memory_card_path->setText(path);
+}
+
+void PortSettingsWidget::onEjectMemoryCardClicked(int index)
+{
+  QSignalBlocker blocker(m_port_ui[index].memory_card_path);
+  m_port_ui[index].memory_card_path->setText(QString());
+  m_host_interface->removeSettingValue(QStringLiteral("MemoryCards/Card%1Path").arg(index + 1));
+  m_host_interface->applySettings();
 }
