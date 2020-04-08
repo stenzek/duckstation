@@ -70,7 +70,7 @@ private:
   static constexpr u32 CD_AUDIO_SAMPLE_BUFFER_SIZE = 44100 * 2;
   static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
   static constexpr u32 MINIMUM_TICKS_BETWEEN_KEY_ON_OFF = 2;
-  static constexpr u32 NUM_REVERB_REGS = 16;
+  static constexpr u32 NUM_REVERB_REGS = 32;
   static constexpr u32 FIFO_SIZE_IN_HALFWORDS = 32;
   static constexpr TickCount TRANSFER_TICKS_PER_HALFWORD = 32;
 

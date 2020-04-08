@@ -105,6 +105,7 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&m_key_on_register);
   sw.Do(&m_key_off_register);
   sw.Do(&m_endx_register);
+  sw.Do(&m_pitch_modulation_enable_register);
   sw.Do(&m_noise_mode_register);
   sw.Do(&m_noise_count);
   sw.Do(&m_noise_level);
@@ -148,6 +149,9 @@ bool SPU::DoState(StateWrapper& sw)
     UpdateEventInterval();
     UpdateTransferEvent();
   }
+
+  //for (u32 i = 0; i < NUM_REVERB_REGS; i++)
+    //Log_WarningPrintf("Reverb[%u] = 0x%04X", i, m_reverb_registers.rev[i]);
 
   return !sw.HasError();
 }
