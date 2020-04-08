@@ -50,7 +50,7 @@ build_script:
 
       cd build-release
 
-      cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
+      cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
 
       ninja
 
@@ -62,9 +62,15 @@ build_script:
 
       chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
 
-      ./linuxdeploy-x86_64.AppImage --appdir=./AppDir --executable=./src/duckstation-qt/duckstation-qt --create-desktop-file --icon-file=../appimage/duckstation-qt.png --plugin=qt --output=appimage
+      cp ../appimage/duckstation-icon.png ../appimage/duckstation-qt.png
 
-      7za a -r duckstation-linux-x64-release.7z duckstation-qt*.AppImage
+      cp ../appimage/duckstation-icon.png ../appimage/duckstation-sdl.png
+
+      ./linuxdeploy-x86_64.AppImage --appdir=./AppDir-duckstation-qt --executable=./src/duckstation-qt/duckstation-qt --create-desktop-file --icon-file=../appimage/duckstation-qt.png --plugin=qt --output=appimage
+
+      ./linuxdeploy-x86_64.AppImage --appdir=./AppDir-duckstation-sdl --executable=./src/duckstation-sdl/duckstation-sdl --create-desktop-file --icon-file=../appimage/duckstation-sdl.png --output=appimage
+
+      7za a -r duckstation-linux-x64-release.7z duckstation-*.AppImage
 
       appveyor PushArtifact duckstation-linux-x64-release.7z
 
