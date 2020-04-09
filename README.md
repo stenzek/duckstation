@@ -49,6 +49,8 @@ To set up:
 2. If using the SDL frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
 2. Select a game from the list, or open a disc image file and enjoy.
 
+Prebuilt AppImage binaries for 64-bit Linux distros are also available via AppVeyor CI, but should not be considered fully supported at the moment. Linux users are encouraged to build from source when possible.
+
 PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
 This database can be manually downloaded and added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in the Qt Frontend,
 and clicking `Update Redump Database`.
@@ -135,7 +137,7 @@ in the same directory as the DuckStation executable.
 
 ## Bindings for Qt frontend
 Your keyboard and any SDL-compatible game controller can be used to simulate the PS Controller. To bind keys/controllers to buttons, go to
-Settings` -> `Port Settings`. Each of the buttons will be listed, along with the corresponding key it is bound to. To re-bind the button to a new key,
+`Settings -> Port Settings`. Each of the buttons will be listed, along with the corresponding key it is bound to. To re-bind the button to a new key,
 click the button next to button name, and press the key/button you want to use within 5 seconds.
 
 **Currently, it is only possible to bind one input to each controller button/axis. Multiple bindings per button are planned for the future.**
