@@ -83,18 +83,17 @@ void GPU_SW::UpdateDisplay()
 
   if (!m_system->GetSettings().debugging.show_vram)
   {
-    // TODO: Handle interlacing
-    const u32 vram_offset_x = m_crtc_state.display_vram_left;
-    const u32 vram_offset_y = m_crtc_state.display_vram_top;
-    const u32 display_width = m_crtc_state.display_vram_width;
-    const u32 display_height = m_crtc_state.display_vram_height;
-
     if (m_GPUSTAT.display_disable)
     {
       m_host_display->ClearDisplayTexture();
       return;
     }
-    else if (IsInterlacedDisplayEnabled())
+
+    const u32 vram_offset_x = m_crtc_state.display_vram_left;
+    const u32 vram_offset_y = m_crtc_state.display_vram_top;
+    const u32 display_width = m_crtc_state.display_vram_width;
+    const u32 display_height = m_crtc_state.display_vram_height;
+    if (IsInterlacedDisplayEnabled())
     {
       const u32 field = GetInterlacedField();
       if (m_GPUSTAT.display_area_color_depth_24)
@@ -124,11 +123,11 @@ void GPU_SW::UpdateDisplay()
       }
     }
 
-    m_host_display->UpdateTexture(m_display_texture.get(), m_crtc_state.regs.X, 0, display_width, display_height,
+    const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
+    m_host_display->UpdateTexture(m_display_texture.get(), texture_offset_x, 0, display_width, display_height,
                                   m_display_texture_buffer.data(), display_width * sizeof(u32));
-    m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT,
-                                      m_crtc_state.display_vram_left - m_crtc_state.regs.X, 0, display_width,
-                                      display_height);
+    m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT, texture_offset_x, 0,
+                                      display_width, display_height);
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
