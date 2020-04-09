@@ -571,8 +571,7 @@ void GPU_HW_D3D11::UpdateDisplay()
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Get();
 
-      SetViewportAndScissor(reinterpret_start_x, m_crtc_state.display_vram_top, reinterpret_width,
-                            scaled_display_height);
+      SetViewportAndScissor(reinterpret_start_x, scaled_vram_offset_y, reinterpret_width, scaled_display_height);
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
       m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
