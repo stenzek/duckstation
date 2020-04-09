@@ -700,6 +700,12 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
     return;
   }
 
+  // We can't CopySubresourceRegion to the same resource. So use the shadow texture if we can, but that may need to be
+  // updated first. Copying to the same resource seemed to work on Windows 10, but breaks on Windows 7. But, it's
+  // against the API spec, so better to be safe than sorry.
+  if (m_vram_dirty_rect.Intersects(Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)))
+    UpdateVRAMReadTexture();
+
   GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
 
   src_x *= m_resolution_scale;
@@ -710,7 +716,7 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
   height *= m_resolution_scale;
 
   const CD3D11_BOX src_box(src_x, src_y, 0, src_x + width, src_y + height, 1);
-  m_context->CopySubresourceRegion(m_vram_texture, 0, dst_x, dst_y, 0, m_vram_texture, 0, &src_box);
+  m_context->CopySubresourceRegion(m_vram_texture, 0, dst_x, dst_y, 0, m_vram_read_texture, 0, &src_box);
 }
 
 void GPU_HW_D3D11::UpdateVRAMReadTexture()
