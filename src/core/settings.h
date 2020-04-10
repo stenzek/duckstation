@@ -51,6 +51,7 @@ struct Settings
   bool gpu_scaled_dithering = false;
   bool gpu_texture_filtering = false;
   bool gpu_use_debug_device = false;
+  bool gpu_force_ntsc_timings = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   bool display_force_progressive_scan = false;
   bool display_linear_filtering = true;

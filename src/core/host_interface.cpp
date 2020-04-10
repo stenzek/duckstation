@@ -877,6 +877,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "ScaledDithering", false);
   si.SetBoolValue("GPU", "TextureFiltering", false);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
+  si.SetBoolValue("GPU", "ForceNTSCTimings", false);
 
   si.SetStringValue("Display", "CropMode", "Overscan");
   si.SetBoolValue("Display", "ForceProgressiveScan", true);
@@ -926,6 +927,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_gpu_true_color = m_settings.gpu_true_color;
   const bool old_gpu_scaled_dithering = m_settings.gpu_scaled_dithering;
   const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
+  const bool old_gpu_force_ntsc_timings = m_settings.gpu_force_ntsc_timings;
   const bool old_display_force_progressive_scan = m_settings.display_force_progressive_scan;
   const bool old_gpu_debug_device = m_settings.gpu_use_debug_device;
   const bool old_vsync_enabled = m_settings.video_sync_enabled;
@@ -979,6 +981,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
         m_settings.gpu_true_color != old_gpu_true_color ||
         m_settings.gpu_scaled_dithering != old_gpu_scaled_dithering ||
         m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
+        m_settings.gpu_force_ntsc_timings != old_gpu_force_ntsc_timings ||
         m_settings.display_force_progressive_scan != old_display_force_progressive_scan ||
         m_settings.display_crop_mode != old_display_crop_mode)
     {

@@ -95,6 +95,10 @@ public:
     DOT_TIMER_INDEX = 0,
     HBLANK_TIMER_INDEX = 1,
     MAX_RESOLUTION_SCALE = 16,
+  };
+
+  enum : u16
+  {
     NTSC_TICKS_PER_LINE = 3413,
     NTSC_TOTAL_LINES = 263,
     PAL_TICKS_PER_LINE = 3406,
@@ -531,6 +535,7 @@ protected:
   bool m_set_texture_disable_mask = false;
   bool m_drawing_area_changed = false;
   bool m_force_progressive_scan = false;
+  bool m_force_ntsc_timings = false;
 
   struct CRTCState
   {

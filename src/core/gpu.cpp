@@ -28,6 +28,7 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_interrupt_controller = interrupt_controller;
   m_timers = timers;
   m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
+  m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
   m_tick_event =
     m_system->CreateTimingEvent("GPU Tick", 1, 1, std::bind(&GPU::Execute, this, std::placeholders::_1), true);
   return true;
@@ -36,6 +37,12 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
 void GPU::UpdateSettings()
 {
   m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
+
+  if (m_force_ntsc_timings != m_system->GetSettings().gpu_force_ntsc_timings)
+  {
+    m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
+    UpdateCRTCConfig();
+  }
 
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
@@ -342,17 +349,36 @@ void GPU::UpdateCRTCConfig()
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
 
-  const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
-  const float vertical_frequency =
-    static_cast<float>(static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame));
-  m_system->SetThrottleFrequency(vertical_frequency);
-
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
   cs.horizontal_display_start = std::min<u16>(cs.regs.X1, cs.horizontal_total);
   cs.horizontal_display_end = std::min<u16>(cs.regs.X2, cs.horizontal_total);
   cs.vertical_display_start = std::min<u16>(cs.regs.Y1, cs.vertical_total);
   cs.vertical_display_end = std::min<u16>(cs.regs.Y2, cs.vertical_total);
+
+  if (m_GPUSTAT.pal_mode && m_force_ntsc_timings)
+  {
+    // scale to NTSC parameters
+    cs.horizontal_display_start =
+      static_cast<u16>((static_cast<u32>(cs.horizontal_display_start) * NTSC_TICKS_PER_LINE) / PAL_TICKS_PER_LINE);
+    cs.horizontal_display_end = static_cast<u16>(
+      ((static_cast<u32>(cs.horizontal_display_end) * NTSC_TICKS_PER_LINE) + (PAL_TICKS_PER_LINE - 1)) /
+      PAL_TICKS_PER_LINE);
+    cs.vertical_display_start =
+      static_cast<u16>((static_cast<u32>(cs.vertical_display_start) * NTSC_TOTAL_LINES) / PAL_TOTAL_LINES);
+    cs.vertical_display_end = static_cast<u16>(
+      ((static_cast<u32>(cs.vertical_display_end) * NTSC_TOTAL_LINES) + (PAL_TOTAL_LINES - 1)) / PAL_TOTAL_LINES);
+
+    cs.vertical_total = NTSC_TOTAL_LINES;
+    cs.current_scanline %= NTSC_TOTAL_LINES;
+    cs.horizontal_total = NTSC_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
+  }
+
+  const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
+  const float vertical_frequency =
+    static_cast<float>(static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame));
+  m_system->SetThrottleFrequency(vertical_frequency);
 
   UpdateCRTCDisplayParameters();
   UpdateSliceTicks();
@@ -363,33 +389,40 @@ void GPU::UpdateCRTCDisplayParameters()
   CRTCState& cs = m_crtc_state;
   const DisplayCropMode crop_mode = m_system->GetSettings().display_crop_mode;
 
-  u16 horizontal_display_start_tick, horizontal_display_end_tick;
-  u16 vertical_display_start_line, vertical_display_end_line;
+  const u16 horizontal_total = m_GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
+  const u16 vertical_total = m_GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
+  const u16 horizontal_display_start = std::min<u16>(cs.regs.X1, horizontal_total);
+  const u16 horizontal_display_end = std::min<u16>(cs.regs.X2, horizontal_total);
+  const u16 vertical_display_start = std::min<u16>(cs.regs.Y1, vertical_total);
+  const u16 vertical_display_end = std::min<u16>(cs.regs.Y2, vertical_total);
+
+  u16 horizontal_visible_start_tick, horizontal_visible_end_tick;
+  u16 vertical_visible_start_line, vertical_visible_end_line;
   if (m_GPUSTAT.pal_mode)
   {
     // TODO: Verify PAL numbers.
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        horizontal_display_start_tick = 487;
-        horizontal_display_end_tick = 3282;
-        vertical_display_start_line = 20;
-        vertical_display_end_line = 308;
+        horizontal_visible_start_tick = 487;
+        horizontal_visible_end_tick = 3282;
+        vertical_visible_start_line = 20;
+        vertical_visible_end_line = 308;
         break;
 
       case DisplayCropMode::Overscan:
-        horizontal_display_start_tick = 628;
-        horizontal_display_end_tick = 3188;
-        vertical_display_start_line = 30;
-        vertical_display_end_line = 298;
+        horizontal_visible_start_tick = 628;
+        horizontal_visible_end_tick = 3188;
+        vertical_visible_start_line = 30;
+        vertical_visible_end_line = 298;
         break;
 
       case DisplayCropMode::Borders:
       default:
-        horizontal_display_start_tick = m_crtc_state.horizontal_display_start;
-        horizontal_display_end_tick = m_crtc_state.horizontal_display_end;
-        vertical_display_start_line = m_crtc_state.vertical_display_start;
-        vertical_display_end_line = m_crtc_state.vertical_display_end;
+        horizontal_visible_start_tick = horizontal_display_start;
+        horizontal_visible_end_tick = horizontal_display_end;
+        vertical_visible_start_line = vertical_display_start;
+        vertical_visible_end_line = vertical_display_end;
         break;
     }
   }
@@ -398,25 +431,25 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        horizontal_display_start_tick = 488;
-        horizontal_display_end_tick = 3288;
-        vertical_display_start_line = 16;
-        vertical_display_end_line = 256;
+        horizontal_visible_start_tick = 488;
+        horizontal_visible_end_tick = 3288;
+        vertical_visible_start_line = 16;
+        vertical_visible_end_line = 256;
         break;
 
       case DisplayCropMode::Overscan:
-        horizontal_display_start_tick = 608;
-        horizontal_display_end_tick = 3168;
-        vertical_display_start_line = 24;
-        vertical_display_end_line = 248;
+        horizontal_visible_start_tick = 608;
+        horizontal_visible_end_tick = 3168;
+        vertical_visible_start_line = 24;
+        vertical_visible_end_line = 248;
         break;
 
       case DisplayCropMode::Borders:
       default:
-        horizontal_display_start_tick = m_crtc_state.horizontal_display_start;
-        horizontal_display_end_tick = m_crtc_state.horizontal_display_end;
-        vertical_display_start_line = m_crtc_state.vertical_display_start;
-        vertical_display_end_line = m_crtc_state.vertical_display_end;
+        horizontal_visible_start_tick = horizontal_display_start;
+        horizontal_visible_end_tick = horizontal_display_end;
+        vertical_visible_start_line = vertical_display_start;
+        vertical_visible_end_line = vertical_display_end;
         break;
     }
   }
@@ -425,69 +458,67 @@ void GPU::UpdateCRTCDisplayParameters()
 
   // Determine screen size.
   cs.display_width = std::max<u16>(
-    ((horizontal_display_end_tick - horizontal_display_start_tick) + (cs.dot_clock_divider - 1)) / cs.dot_clock_divider,
+    ((horizontal_visible_end_tick - horizontal_visible_start_tick) + (cs.dot_clock_divider - 1)) / cs.dot_clock_divider,
     1u);
-  cs.display_height = std::max<u16>((vertical_display_end_line - vertical_display_start_line) << height_shift, 1u);
+  cs.display_height = std::max<u16>((vertical_visible_end_line - vertical_visible_start_line) << height_shift, 1u);
 
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
   // padding.
-  if (cs.horizontal_display_start >= horizontal_display_start_tick)
+  if (horizontal_display_start >= horizontal_visible_start_tick)
   {
-    cs.display_origin_left = (cs.horizontal_display_start - horizontal_display_start_tick) / cs.dot_clock_divider;
+    cs.display_origin_left = (horizontal_display_start - horizontal_visible_start_tick) / cs.dot_clock_divider;
     cs.display_vram_left = m_crtc_state.regs.X;
   }
   else
   {
     cs.display_origin_left = 0;
     cs.display_vram_left = std::min<u16>(
-      m_crtc_state.regs.X + ((horizontal_display_start_tick - cs.horizontal_display_start) / cs.dot_clock_divider),
+      m_crtc_state.regs.X + ((horizontal_visible_start_tick - horizontal_display_start) / cs.dot_clock_divider),
       VRAM_WIDTH - 1);
   }
 
-  if (cs.horizontal_display_end <= horizontal_display_end_tick)
+  if (horizontal_display_end <= horizontal_visible_end_tick)
   {
     cs.display_vram_width = std::min<u16>(
-      std::max<u16>(
-        (((cs.horizontal_display_end - std::max(cs.horizontal_display_start, horizontal_display_start_tick)) +
-          (cs.dot_clock_divider - 1)) /
-         cs.dot_clock_divider),
-        1u),
+      std::max<u16>((((horizontal_display_end - std::max(horizontal_display_start, horizontal_visible_start_tick)) +
+                      (cs.dot_clock_divider - 1)) /
+                     cs.dot_clock_divider),
+                    1u),
       VRAM_WIDTH - cs.display_vram_left);
   }
   else
   {
     cs.display_vram_width = std::min<u16>(
       std::max<u16>(
-        (((horizontal_display_end_tick - std::max(cs.horizontal_display_start, horizontal_display_start_tick)) +
+        (((horizontal_visible_end_tick - std::max(horizontal_display_start, horizontal_visible_start_tick)) +
           (cs.dot_clock_divider - 1)) /
          cs.dot_clock_divider),
         1u),
       VRAM_WIDTH - cs.display_vram_left);
   }
 
-  if (cs.vertical_display_start >= vertical_display_start_line)
+  if (vertical_display_start >= vertical_visible_start_line)
   {
-    cs.display_origin_top = (cs.vertical_display_start - vertical_display_start_line) << height_shift;
+    cs.display_origin_top = (vertical_display_start - vertical_visible_start_line) << height_shift;
     cs.display_vram_top = m_crtc_state.regs.Y;
   }
   else
   {
     cs.display_origin_top = 0;
-    cs.display_vram_top =
-      std::min<u16>(m_crtc_state.regs.Y + ((vertical_display_start_line - cs.vertical_display_start) << height_shift),
-                    VRAM_HEIGHT - 1);
+    cs.display_vram_top = std::min<u16>(
+      m_crtc_state.regs.Y + ((vertical_visible_start_line - vertical_display_start) << height_shift), VRAM_HEIGHT - 1);
   }
 
-  if (cs.vertical_display_end <= vertical_display_end_line)
+  if (vertical_display_end <= vertical_visible_end_line)
   {
     cs.display_vram_height = std::min<u16>(
-      (cs.vertical_display_end - std::max(cs.vertical_display_start, vertical_display_start_line)) << height_shift,
+      (vertical_display_end - std::max(vertical_display_start, vertical_visible_start_line)) << height_shift,
       VRAM_HEIGHT - cs.display_vram_top);
   }
   else
   {
     cs.display_vram_height = std::min<u16>(
-      (vertical_display_end_line - std::max(cs.vertical_display_start, vertical_display_start_line)) << height_shift,
+      (vertical_visible_end_line - std::max(vertical_display_start, vertical_visible_start_line)) << height_shift,
       VRAM_HEIGHT - cs.display_vram_top);
   }
 

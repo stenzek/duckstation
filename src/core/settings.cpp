@@ -27,6 +27,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
+  gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
 
   display_crop_mode = ParseDisplayCropMode(
                         si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DisplayCropMode::None)).c_str())
@@ -89,6 +90,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
+  si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
 
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);

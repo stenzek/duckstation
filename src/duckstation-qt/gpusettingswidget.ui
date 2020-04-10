@@ -69,20 +69,13 @@
        <widget class="QComboBox" name="cropMode"/>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QCheckBox" name="forceProgressiveScan">
-        <property name="text">
-         <string>Force Progressive Scan</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="displayLinearFiltering">
         <property name="text">
          <string>Linear Upscaling</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="vsync">
         <property name="text">
          <string>VSync</string>
@@ -123,6 +116,20 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="forceProgressiveScan">
+        <property name="text">
+         <string>Force Progressive Scan</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="forceNTSCTimings">
+        <property name="text">
+         <string>Force NTSC Timings (60hz-on-PAL)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
        <widget class="QCheckBox" name="linearTextureFiltering">
         <property name="text">
          <string>Bilinear Texture Filtering</string>
