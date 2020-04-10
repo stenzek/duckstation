@@ -1487,30 +1487,30 @@ void CDROM::DoSectorRead()
   if (subq.IsCRCValid())
   {
     m_last_subq = subq;
-
-    if (is_data_sector && m_drive_state == DriveState::Reading)
-    {
-      ProcessDataSector(m_reader.GetSectorBuffer().data(), subq);
-    }
-    else if (!is_data_sector && m_drive_state == DriveState::Playing)
-    {
-      ProcessCDDASector(m_reader.GetSectorBuffer().data(), subq);
-    }
-    else if (m_drive_state != DriveState::Reading && m_drive_state != DriveState::Playing)
-    {
-      Panic("Not reading or playing");
-    }
-    else
-    {
-      Log_WarningPrintf("Skipping sector %u as it is a %s sector and we're not %s", m_reader.GetLastReadSector(),
-                        is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
-    }
   }
   else
   {
     const CDImage::Position pos(CDImage::Position::FromLBA(m_reader.GetLastReadSector()));
-    Log_DevPrintf("Skipping sector %u [%02u:%02u:%02u] due to invalid subchannel Q", m_reader.GetLastReadSector(),
-                  pos.minute, pos.second, pos.frame);
+    Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_reader.GetLastReadSector(), pos.minute,
+                  pos.second, pos.frame);
+  }
+
+  if (is_data_sector && m_drive_state == DriveState::Reading)
+  {
+    ProcessDataSector(m_reader.GetSectorBuffer().data(), subq);
+  }
+  else if (!is_data_sector && m_drive_state == DriveState::Playing)
+  {
+    ProcessCDDASector(m_reader.GetSectorBuffer().data(), subq);
+  }
+  else if (m_drive_state != DriveState::Reading && m_drive_state != DriveState::Playing)
+  {
+    Panic("Not reading or playing");
+  }
+  else
+  {
+    Log_WarningPrintf("Skipping sector %u as it is a %s sector and we're not %s", m_reader.GetLastReadSector(),
+                      is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
   }
 
   m_last_requested_sector++;
