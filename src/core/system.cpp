@@ -264,9 +264,7 @@ bool System::CreateGPU(GPURenderer renderer)
   switch (renderer)
   {
     case GPURenderer::HardwareOpenGL:
-      m_gpu = m_host_interface->GetDisplay()->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES ?
-                GPU::CreateHardwareOpenGLESRenderer() :
-                GPU::CreateHardwareOpenGLRenderer();
+      m_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
 #ifdef WIN32

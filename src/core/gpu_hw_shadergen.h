@@ -29,7 +29,6 @@ public:
   bool m_scaled_dithering;
   bool m_texture_filering;
   bool m_glsl;
-  bool m_glsl_es;
   bool m_supports_dual_source_blend;
 
   std::string m_glsl_version_string;
