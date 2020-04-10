@@ -50,6 +50,7 @@ void CDROM::SoftReset()
   m_secondary_status.bits = 0;
   m_secondary_status.motor_on = HasMedia();
   m_mode.bits = 0;
+  m_current_double_speed = false;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
   m_pending_async_interrupt = 0;
@@ -111,6 +112,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
   sw.Do(&m_mode.bits);
+  sw.Do(&m_current_double_speed);
   sw.Do(&m_interrupt_enable_register);
   sw.Do(&m_interrupt_flag_register);
   sw.Do(&m_pending_async_interrupt);
@@ -526,7 +528,7 @@ void CDROM::UpdateInterruptRequest()
   m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
-TickCount CDROM::GetAckDelayForCommand(Command command) const
+TickCount CDROM::GetAckDelayForCommand(Command command)
 {
   if (command == Command::Init)
   {
@@ -541,27 +543,36 @@ TickCount CDROM::GetAckDelayForCommand(Command command) const
   return HasMedia() ? default_ack_delay_with_disc : default_ack_delay_no_disc;
 }
 
-TickCount CDROM::GetTicksForRead() const
+TickCount CDROM::GetTicksForRead()
 {
   return m_mode.double_speed ? (MASTER_CLOCK / 150) : (MASTER_CLOCK / 75);
 }
 
-TickCount CDROM::GetTicksForSeek() const
+TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
 {
-  const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_reader.GetLastReadSector() : 0;
-  const CDImage::LBA new_lba = m_setloc_position.ToLBA();
+  const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_last_requested_sector : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
-
-  // const TickCount ticks = static_cast<TickCount>(20000 + lba_diff * 100);
 
   // Formula from Mednafen.
   TickCount ticks = std::max<TickCount>(20000, lba_diff * MASTER_CLOCK * 1000 / (72 * 60 * 75) / 1000);
   if (!m_secondary_status.motor_on)
     ticks += MASTER_CLOCK;
-  else if (m_drive_state == DriveState::Idle) // paused
-    ticks += 1237952 << (BoolToUInt8(!m_mode.double_speed));
   if (lba_diff >= 2550)
     ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
+  else if (m_drive_state == DriveState::Idle) // paused
+    ticks += 1237952 << (BoolToUInt8(!m_mode.double_speed));
+  else if (lba_diff >= 3 && lba_diff < 12)
+    ticks += MASTER_CLOCK / (75 << (BoolToUInt8(!m_mode.double_speed)) << 2);
+
+  if (m_mode.double_speed != m_current_double_speed)
+  {
+    Log_DevPrintf("Switched from %s to %s speed", m_current_double_speed ? "double" : "single",
+                  m_mode.double_speed ? "double" : "single");
+    m_current_double_speed = m_mode.double_speed;
+
+    // Approximate time for the motor to change speed?
+    ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 1.5);
+  }
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
@@ -631,7 +642,7 @@ void CDROM::ExecuteCommand()
       SendACKAndStat();
 
       m_drive_state = DriveState::ReadingID;
-      m_drive_event->Schedule(18000);
+      m_drive_event->Schedule(GetTicksForSeek(0) + GetTicksForRead());
 
       EndCommand();
       return;
@@ -818,7 +829,7 @@ void CDROM::ExecuteCommand()
       SendACKAndStat();
 
       m_drive_state = DriveState::Resetting;
-      m_drive_event->Schedule(80000);
+      m_drive_event->Schedule(400000);
 
       EndCommand();
       return;
@@ -837,7 +848,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::Resetting;
-        m_drive_event->Schedule(80000);
+        m_drive_event->Schedule(MASTER_CLOCK);
       }
 
       EndCommand();
@@ -1218,7 +1229,8 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   Log_DebugPrintf("Seeking to [%02u:%02u:%02u] (LBA %u) (%s)", m_setloc_position.minute, m_setloc_position.second,
                   m_setloc_position.frame, m_setloc_position.ToLBA(), logical ? "logical" : "physical");
 
-  const TickCount seek_time = GetTicksForSeek();
+  const CDImage::LBA seek_lba = m_setloc_position.ToLBA();
+  const TickCount seek_time = GetTicksForSeek(seek_lba);
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
@@ -1227,7 +1239,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   m_drive_event->SetIntervalAndSchedule(seek_time);
 
-  m_last_requested_sector = m_setloc_position.ToLBA();
+  m_last_requested_sector = seek_lba;
   m_reader.QueueReadSector(m_last_requested_sector);
 }
 
@@ -1394,12 +1406,19 @@ void CDROM::DoIDRead()
   {
     flags_byte |= (1 << 6); // Disc Missing
   }
-  else if (m_system->GetSettings().cdrom_region_check &&
-           (m_disc_region == DiscRegion::Other ||
-            m_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
+  else
   {
-    stat_byte |= STAT_ID_ERROR;
-    flags_byte |= (1 << 7); // Unlicensed
+    // this is where it would get read from the start of the disc?
+    m_last_requested_sector = 0;
+    m_reader.QueueReadSector(m_last_requested_sector);
+
+    if (m_system->GetSettings().cdrom_region_check &&
+        (m_disc_region == DiscRegion::Other ||
+         m_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
+    {
+      stat_byte |= STAT_ID_ERROR;
+      flags_byte |= (1 << 7); // Unlicensed
+    }
   }
 
   m_async_response_fifo.Clear();

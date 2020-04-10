@@ -210,9 +210,9 @@ private:
   void UpdateStatusRegister();
   void UpdateInterruptRequest();
 
-  TickCount GetAckDelayForCommand(Command command) const;
-  TickCount GetTicksForRead() const;
-  TickCount GetTicksForSeek() const;
+  TickCount GetAckDelayForCommand(Command command);
+  TickCount GetTicksForRead();
+  TickCount GetTicksForSeek(CDImage::LBA new_lba);
   void BeginCommand(Command command); // also update status register
   void EndCommand();                  // also updates status register
   void AbortCommand();
@@ -253,6 +253,7 @@ private:
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
   ModeRegister m_mode = {};
+  bool m_current_double_speed = false;
 
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;
