@@ -169,7 +169,7 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
     }
     else
     {
-      resize_height = m_display_texture_view_height;
+      resize_height = std::abs(m_display_texture_view_height);
       resize_width = static_cast<s32>(static_cast<float>(resize_height) * m_display_pixel_aspect_ratio);
     }
   }
@@ -183,7 +183,7 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   {
     const auto [left, top, right, bottom] = CalculateDrawRect();
     const float ratio =
-      static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_texture_view_height);
+      static_cast<float>(m_display_texture_view_width) / static_cast<float>(std::abs(m_display_texture_view_height));
     if (ratio > 1.0f)
     {
       resize_width = right - left;
