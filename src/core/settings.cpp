@@ -32,6 +32,10 @@ void Settings::Load(SettingsInterface& si)
   display_crop_mode = ParseDisplayCropMode(
                         si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DisplayCropMode::None)).c_str())
                         .value_or(DisplayCropMode::None);
+  display_aspect_ratio =
+    ParseDisplayAspectRatio(
+      si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DisplayAspectRatio::R4_3)).c_str())
+      .value_or(DisplayAspectRatio::R4_3);
   display_force_progressive_scan = si.GetBoolValue("Display", "ForceProgressiveScan", true);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
@@ -93,6 +97,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
 
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
+  si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
@@ -286,6 +291,33 @@ const char* Settings::GetDisplayCropModeName(DisplayCropMode crop_mode)
 const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 {
   return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
+}
+
+static std::array<const char*, 3> s_display_aspect_ratio_names = {{"4:3", "16:9", "1:1"}};
+static constexpr std::array<float, 3> s_display_aspect_ratio_values = {{4.0f / 3.0f, 16.0f / 9.0f, 1.0f}};
+
+std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_aspect_ratio_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayAspectRatio>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
+{
+  return s_display_aspect_ratio_names[static_cast<int>(ar)];
+}
+
+float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
+{
+  return s_display_aspect_ratio_values[static_cast<int>(ar)];
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};

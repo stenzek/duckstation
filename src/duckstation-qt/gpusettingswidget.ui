@@ -59,23 +59,33 @@
      </property>
      <layout class="QFormLayout" name="formLayout_4">
       <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Aspect Ratio:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="displayAspectRatio"/>
+      </item>
+      <item row="1" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Crop:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cropMode"/>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="displayCropMode"/>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="displayLinearFiltering">
         <property name="text">
          <string>Linear Upscaling</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <widget class="QCheckBox" name="vsync">
         <property name="text">
          <string>VSync</string>

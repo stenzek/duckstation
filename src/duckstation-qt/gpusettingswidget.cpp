@@ -12,7 +12,10 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, "GPU/Renderer",
                                                &Settings::ParseRendererName, &Settings::GetRendererName);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice, "GPU/UseDebugDevice");
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cropMode, "Display/CropMode",
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayAspectRatio, "Display/AspectRatio",
+                                               &Settings::ParseDisplayAspectRatio,
+                                               &Settings::GetDisplayAspectRatioName);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, "Display/CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceProgressiveScan,
                                                "Display/ForceProgressiveScan");
@@ -46,9 +49,15 @@ void GPUSettingsWidget::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
     m_ui.renderer->addItem(QString::fromLocal8Bit(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
 
+  for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
+  {
+    m_ui.displayAspectRatio->addItem(
+      QString::fromLocal8Bit(Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i))));
+  }
+
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
-    m_ui.cropMode->addItem(
+    m_ui.displayCropMode->addItem(
       QString::fromLocal8Bit(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 

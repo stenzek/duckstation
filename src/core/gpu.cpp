@@ -29,6 +29,8 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_timers = timers;
   m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
   m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
+  m_crtc_state.display_aspect_ratio =
+    Settings::GetDisplayAspectRatioValue(m_system->GetSettings().display_aspect_ratio);
   m_tick_event =
     m_system->CreateTimingEvent("GPU Tick", 1, 1, std::bind(&GPU::Execute, this, std::placeholders::_1), true);
   return true;
@@ -43,6 +45,9 @@ void GPU::UpdateSettings()
     m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
     UpdateCRTCConfig();
   }
+
+  m_crtc_state.display_aspect_ratio =
+    Settings::GetDisplayAspectRatioValue(m_system->GetSettings().display_aspect_ratio);
 
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
@@ -64,10 +69,14 @@ void GPU::SoftReset()
   m_drawing_area.Set(0, 0, 0, 0);
   m_drawing_area_changed = true;
   m_drawing_offset = {};
-  std::memset(&m_crtc_state, 0, sizeof(m_crtc_state));
-  m_crtc_state.regs.display_address_start = 0;
+  std::memset(&m_crtc_state.regs, 0, sizeof(m_crtc_state.regs));
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
+  m_crtc_state.fractional_ticks = 0;
+  m_crtc_state.current_tick_in_scanline = 0;
+  m_crtc_state.current_scanline = 0;
+  m_crtc_state.in_hblank = false;
+  m_crtc_state.in_vblank = false;
   m_state = State::Idle;
   m_blitter_ticks = 0;
   m_command_total_words = 0;
@@ -136,7 +145,6 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.fractional_ticks);
   sw.Do(&m_crtc_state.current_tick_in_scanline);
   sw.Do(&m_crtc_state.current_scanline);
-  sw.Do(&m_crtc_state.display_aspect_ratio);
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
 
@@ -521,9 +529,6 @@ void GPU::UpdateCRTCDisplayParameters()
       (vertical_visible_end_line - std::max(vertical_display_start, vertical_visible_start_line)) << height_shift,
       VRAM_HEIGHT - cs.display_vram_top);
   }
-
-  // Aspect ratio is always 4:3.
-  cs.display_aspect_ratio = 4.0f / 3.0f;
 }
 
 TickCount GPU::GetPendingGPUTicks() const

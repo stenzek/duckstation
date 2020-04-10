@@ -20,32 +20,6 @@ void HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 
 std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
 {
-#if 0
-  // convert display region to correct pixel aspect ratio
-  float display_width, display_height, active_left, active_top, active_width, active_height;
-  if (m_display_width >= m_display_height)
-  {
-    display_width = static_cast<float>(m_display_width);
-    display_height = static_cast<float>(m_display_width) / m_display_pixel_aspect_ratio;
-
-    const float scale = display_height / static_cast<float>(m_display_height);
-    active_left = static_cast<float>(m_display_active_left);
-    active_top = static_cast<float>(m_display_active_top) * scale;
-    active_width = static_cast<float>(m_display_active_width);
-    active_height = static_cast<float>(m_display_active_width) / m_display_pixel_aspect_ratio;
-  }
-  else
-  {
-    display_width = static_cast<float>(m_display_height) * m_display_pixel_aspect_ratio;
-    display_height = static_cast<float>(m_display_height);
-
-    const float scale = display_width / static_cast<float>(m_display_width);
-    active_left = static_cast<float>(m_display_active_left) * scale;
-    active_top = static_cast<float>(m_display_active_top);
-    active_width = static_cast<float>(m_display_active_height) * m_display_pixel_aspect_ratio;
-    active_height = static_cast<float>(m_display_active_height);
-  }
-#else
   const float y_scale =
     (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_pixel_aspect_ratio;
   const float display_width = static_cast<float>(m_display_width);
@@ -54,7 +28,6 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
   const float active_top = static_cast<float>(m_display_active_top) * y_scale;
   const float active_width = static_cast<float>(m_display_active_width);
   const float active_height = static_cast<float>(m_display_active_height) * y_scale;
-#endif
 
   // now fit it within the window
   const s32 window_width = m_window_width;

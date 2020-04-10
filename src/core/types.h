@@ -66,6 +66,14 @@ enum class DisplayCropMode : u8
   Count
 };
 
+enum class DisplayAspectRatio : u8
+{
+  R4_3,
+  R16_9,
+  R1_1,
+  Count
+};
+
 enum class AudioBackend : u8
 {
   Null,

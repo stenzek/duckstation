@@ -53,6 +53,7 @@ struct Settings
   bool gpu_use_debug_device = false;
   bool gpu_force_ntsc_timings = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
+  DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_force_progressive_scan = false;
   bool display_linear_filtering = true;
   bool display_show_osd_messages = false;
@@ -113,6 +114,10 @@ struct Settings
   static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
+
+  static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(const char* str);
+  static const char* GetDisplayAspectRatioName(DisplayAspectRatio ar);
+  static float GetDisplayAspectRatioValue(DisplayAspectRatio ar);
 
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);

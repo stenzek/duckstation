@@ -880,6 +880,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
 
   si.SetStringValue("Display", "CropMode", "Overscan");
+  si.SetStringValue("Display", "PixelAspectRatio", "4:3");
   si.SetBoolValue("Display", "ForceProgressiveScan", true);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
@@ -934,6 +935,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
   const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
   const DisplayCropMode old_display_crop_mode = m_settings.display_crop_mode;
+  const DisplayAspectRatio old_display_aspect_ratio = m_settings.display_aspect_ratio;
   const bool old_display_linear_filtering = m_settings.display_linear_filtering;
   const bool old_cdrom_read_thread = m_settings.cdrom_read_thread;
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
@@ -983,7 +985,8 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
         m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
         m_settings.gpu_force_ntsc_timings != old_gpu_force_ntsc_timings ||
         m_settings.display_force_progressive_scan != old_display_force_progressive_scan ||
-        m_settings.display_crop_mode != old_display_crop_mode)
+        m_settings.display_crop_mode != old_display_crop_mode ||
+        m_settings.display_aspect_ratio != old_display_aspect_ratio)
     {
       m_system->UpdateGPUSettings();
     }
