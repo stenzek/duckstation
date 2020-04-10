@@ -237,7 +237,7 @@ void HostInterface::DrawFPSWindow()
   if (!ImGui::Begin("FPSWindow", nullptr,
                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
                       ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMouseInputs |
-                      ImGuiWindowFlags_NoBringToFrontOnFocus))
+                      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNav))
   {
     ImGui::End();
     return;
