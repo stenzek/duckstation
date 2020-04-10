@@ -9,6 +9,8 @@ public:
   INISettingsInterface(std::string filename);
   ~INISettingsInterface();
 
+  void Save();
+
   void Clear() override;
 
   int GetIntValue(const char* section, const char* key, int default_value = 0) override;

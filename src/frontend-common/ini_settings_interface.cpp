@@ -13,11 +13,16 @@ INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(st
 INISettingsInterface::~INISettingsInterface()
 {
   if (m_dirty)
-  {
-    SI_Error err = m_ini.SaveFile(m_filename.c_str(), false);
-    if (err != SI_OK)
-      Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
-  }
+    Save();
+}
+
+void INISettingsInterface::Save()
+{
+  SI_Error err = m_ini.SaveFile(m_filename.c_str(), false);
+  if (err != SI_OK)
+    Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
+  else
+    m_dirty = false;
 }
 
 void INISettingsInterface::Clear()
