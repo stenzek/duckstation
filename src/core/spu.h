@@ -292,38 +292,38 @@ private:
     {
       struct
       {
-        u16 dAPF1;
-        u16 dAPF2;
-        s16 vIIR;
-        s16 vCOMB1;
-        s16 vCOMB2;
-        s16 vCOMB3;
-        s16 vCOMB4;
-        s16 vWALL;
-        s16 vAPF1;
-        s16 vAPF2;
-        u16 mLSAME;
-        u16 mRSAME;
-        u16 mLCOMB1;
-        u16 mRCOMB1;
-        u16 mLCOMB2;
-        u16 mRCOMB2;
-        u16 dLSAME;
-        u16 dRSAME;
-        u16 mLDIFF;
-        u16 mRDIFF;
-        u16 mLCOMB3;
-        u16 mRCOMB3;
-        u16 mLCOMB4;
-        u16 mRCOMB4;
-        u16 dLDIFF;
-        u16 dRDIFF;
-        u16 mLAPF1;
-        u16 mRAPF1;
-        u16 mLAPF2;
-        u16 mRAPF2;
-        s16 vLIN;
-        s16 vRIN;
+        u16 FB_SRC_A;
+        u16 FB_SRC_B;
+        s16 IIR_ALPHA;
+        s16 ACC_COEF_A;
+        s16 ACC_COEF_B;
+        s16 ACC_COEF_C;
+        s16 ACC_COEF_D;
+        s16 IIR_COEF;
+        s16 FB_ALPHA;
+        s16 FB_X;
+        u16 IIR_DEST_A0;
+        u16 IIR_DEST_A1;
+        u16 ACC_SRC_A0;
+        u16 ACC_SRC_A1;
+        u16 ACC_SRC_B0;
+        u16 ACC_SRC_B1;
+        u16 IIR_SRC_A0;
+        u16 IIR_SRC_A1;
+        u16 IIR_DEST_B0;
+        u16 IIR_DEST_B1;
+        u16 ACC_SRC_C0;
+        u16 ACC_SRC_C1;
+        u16 ACC_SRC_D0;
+        u16 ACC_SRC_D1;
+        u16 IIR_SRC_B1;
+        u16 IIR_SRC_B0;
+        u16 MIX_DEST_A0;
+        u16 MIX_DEST_A1;
+        u16 MIX_DEST_B0;
+        u16 MIX_DEST_B1;
+        s16 IN_COEF_L;
+        s16 IN_COEF_R;
       };
 
       u16 rev[NUM_REVERB_REGS];
@@ -366,7 +366,7 @@ private:
   void UpdateNoise();
 
   u32 ReverbMemoryAddress(u32 address) const;
-  s16 ReverbRead(u32 address);
+  s16 ReverbRead(u32 address, s32 offset = 0);
   void ReverbWrite(u32 address, s16 data);
   void DoReverb();
 
