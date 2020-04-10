@@ -200,17 +200,46 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
     return false;
   }
 
-  ComPtr<IDXGIFactory> dxgi_factory;
-  HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+  UINT create_flags = 0;
+  if (debug_device)
+    create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+
+  HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0,
+                                 D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to create DXGI factory: 0x%08X", hr);
+    Log_ErrorPrintf("Failed to create D3D device: 0x%08X", hr);
     return false;
+  }
+
+  // we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
+  ComPtr<IDXGIDevice> dxgi_device;
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  if (FAILED(m_device.As(&dxgi_device)) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))) ||
+      FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.GetAddressOf()))))
+  {
+    Log_WarningPrint("Failed to get parent adapter/device/factory");
+    return false;
+  }
+
+  DXGI_ADAPTER_DESC adapter_desc;
+  if (SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
+  {
+    char adapter_name_buffer[128];
+    const int name_length =
+      WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description, static_cast<int>(std::wcslen(adapter_desc.Description)),
+                          adapter_name_buffer, countof(adapter_name_buffer), 0, nullptr);
+    if (name_length >= 0)
+    {
+      adapter_name_buffer[name_length] = 0;
+      Log_InfoPrintf("D3D Adapter: %s", adapter_name_buffer);
+    }
   }
 
   m_allow_tearing_supported = false;
   ComPtr<IDXGIFactory5> dxgi_factory5;
-  hr = dxgi_factory.As(&dxgi_factory5);
+  hr = m_dxgi_factory.As(&dxgi_factory5);
   if (SUCCEEDED(hr))
   {
     BOOL allow_tearing_supported = false;
@@ -218,19 +247,6 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
                                             sizeof(allow_tearing_supported));
     if (SUCCEEDED(hr))
       m_allow_tearing_supported = (allow_tearing_supported == TRUE);
-  }
-
-  UINT create_flags = 0;
-  if (debug_device)
-    create_flags |= D3D11_CREATE_DEVICE_DEBUG;
-
-  hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0, D3D11_SDK_VERSION,
-                         m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
-
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Failed to create D3D device: 0x%08X", hr);
-    return false;
   }
 
   DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
@@ -247,7 +263,7 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
   if (m_allow_tearing_supported)
     swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-  hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+  hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
   if (FAILED(hr))
   {
     Log_WarningPrintf("Failed to create a flip-discard swap chain, trying discard.");
@@ -255,7 +271,7 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
     swap_chain_desc.Flags = 0;
     m_allow_tearing_supported = false;
 
-    hr = dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+    hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
     if (FAILED(hr))
     {
       Log_ErrorPrintf("CreateSwapChain failed: 0x%08X", hr);
@@ -263,7 +279,7 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
     }
   }
 
-  hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
+  hr = m_dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
   if (FAILED(hr))
     Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
 

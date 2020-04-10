@@ -49,7 +49,8 @@ private:
   void RenderDisplay();
 
   SDL_Window* m_window = nullptr;
-  SDL_GLContext m_gl_context = nullptr;
+
+  ComPtr<IDXGIFactory> m_dxgi_factory;
 
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
