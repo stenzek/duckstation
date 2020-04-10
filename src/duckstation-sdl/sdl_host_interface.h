@@ -3,7 +3,7 @@
 #include "common/gl/texture.h"
 #include "core/host_display.h"
 #include "core/host_interface.h"
-#include "frontend-common/sdl_controller_interface.h"
+#include "frontend-common/common_host_interface.h"
 #include <SDL.h>
 #include <array>
 #include <deque>
@@ -15,9 +15,9 @@
 class System;
 class AudioStream;
 
-class Controller;
+class INISettingsInterface;
 
-class SDLHostInterface final : public HostInterface
+class SDLHostInterface final : public CommonHostInterface
 {
 public:
   SDLHostInterface();
@@ -40,42 +40,17 @@ protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
+  std::unique_ptr<ControllerInterface> CreateControllerInterface() override;
 
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed() override;
-  void OnControllerTypeChanged(u32 slot) override;
+  void OnRunningGameChanged() override;
+
+  std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
+  void UpdateInputMap() override;
 
 private:
-  enum class KeyboardControllerAction
-  {
-    Up,
-    Down,
-    Left,
-    Right,
-    Triangle,
-    Cross,
-    Square,
-    Circle,
-    L1,
-    R1,
-    L2,
-    R2,
-    Start,
-    Select,
-    Count
-  };
-
-  using KeyboardControllerActionMap = std::array<s32, static_cast<int>(KeyboardControllerAction::Count)>;
-
-  struct ControllerData
-  {
-    SDL_GameController* controller;
-    SDL_Haptic* haptic;
-    u32 controller_index;
-    float last_rumble_strength;
-  };
-
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
 #ifdef WIN32
@@ -99,8 +74,8 @@ private:
   void SaveSettings();
   void UpdateSettings();
 
-  bool IsFullscreen() const { return m_fullscreen; }
-  void SetFullscreen(bool enabled);
+  bool IsFullscreen() const override;
+  bool SetFullscreen(bool enabled) override;
 
   // We only pass mouse input through if it's grabbed
   void DrawImGuiWindows() override;
@@ -109,10 +84,7 @@ private:
   void DoFrameStep();
 
   void HandleSDLEvent(const SDL_Event* event);
-  void HandleSDLKeyEvent(const SDL_Event* event);
-
-  void UpdateKeyboardControllerMapping();
-  bool HandleSDLKeyEventForController(const SDL_Event* event);
+  void ProcessEvents();
 
   void DrawMainMenuBar();
   void DrawQuickSettingsMenu();
@@ -125,15 +97,12 @@ private:
 
   SDL_Window* m_window = nullptr;
   std::unique_ptr<HostDisplayTexture> m_app_icon_texture;
-
-  KeyboardControllerActionMap m_keyboard_button_mapping;
-  
+  std::unique_ptr<INISettingsInterface> m_settings_interface;
   u32 m_run_later_event_id = 0;
 
   bool m_fullscreen = false;
   bool m_quit_request = false;
   bool m_frame_step_request = false;
-  bool m_focus_main_menu_bar = false;
   bool m_settings_window_open = false;
   bool m_about_window_open = false;
 

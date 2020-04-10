@@ -27,7 +27,6 @@ Other features include:
  - Direct booting of homebrew executables
  - Digital and analog controllers for input (rumble is forwarded to host)
  - Qt and SDL frontends for desktop
- - Qt frontend has graphical configuration, and controller binding
  - Automatic content scanning - game titles/regions are provided by redump.org
 
 ## System Requirements
@@ -142,26 +141,25 @@ click the button next to button name, and press the key/button you want to use w
 
 **Currently, it is only possible to bind one input to each controller button/axis. Multiple bindings per button are planned for the future.**
 
-## Default keyboard bindings for SDL frontend
-Keyboard bindings in the SDL frontend are currently not customizable. For reference:
- - **D-Pad:** W/A/S/D or Up/Left/Down/Right
- - **Triangle/Square/Circle/Cross:** I/J/L/K or Numpad8/Numpad4/Numpad6/Numpad2
+## Bindings for SDL frontend
+Keyboard bindings in the SDL frontend are currently not customizable in the frontend itself. You should use the Qt frontend to set up your key/controller bindings first.
+
+## Default bindings
+Controller 1:
+ - **D-Pad:** W/A/S/D
+ - **Triangle/Square/Circle/Cross:** Numpad8/Numpad4/Numpad6/Numpad2
  - **L1/R1:** Q/E
  - **L2/L2:** 1/3
  - **Start:** Enter
  - **Select:** Backspace
 
-Gamepads are automatically detected and supported. Tested with an Xbox One controller.
-To access the menus with the controller, press the right stick down and use the D-Pad to navigate, A to select.
-
-## Useful hotkeys for SDL frontend
- - **F1-F8:** Quick load/save (hold shift to save)
- - **F11:** Toggle fullscreen
+Hotkeys:
+ - **Escape:** Power off console
+ - **ALT+ENTER:** Toggle fullscreen
  - **Tab:** Temporarily disable speed limiter
  - **Pause/Break:** Pause/resume emulation
- - **Space:** Frame step
- - **End:** Toggle software renderer
  - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
+ - **End:** Toggle software renderer
 
 ## Tests
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests

@@ -6,6 +6,7 @@ add_executable(duckstation-sdl
   opengl_host_display.h
   sdl_host_interface.cpp
   sdl_host_interface.h
+  sdl_key_names.h
 )
 
 target_include_directories(duckstation-sdl PRIVATE ${SDL2_INCLUDE_DIRS})

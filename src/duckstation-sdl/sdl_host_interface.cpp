@@ -15,6 +15,7 @@
 #include "frontend-common/sdl_controller_interface.h"
 #include "imgui_impl_sdl.h"
 #include "opengl_host_display.h"
+#include "sdl_key_names.h"
 #include <cinttypes>
 #include <cmath>
 #include <imgui.h>
@@ -190,11 +191,18 @@ bool SDLHostInterface::AcquireHostDisplay()
   }
 #endif
 
+  // Switch to fullscreen if requested.
+  if (m_settings.start_fullscreen)
+    SetFullscreen(true);
+
   return true;
 }
 
 void SDLHostInterface::ReleaseHostDisplay()
 {
+  if (m_fullscreen)
+    SetFullscreen(false);
+
   // restore vsync, since we don't want to burn cycles at the menu
   m_display->SetVSync(true);
 }
@@ -217,17 +225,35 @@ std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend ba
   }
 }
 
+std::unique_ptr<ControllerInterface> SDLHostInterface::CreateControllerInterface()
+{
+  return std::make_unique<SDLControllerInterface>();
+}
+
+std::optional<CommonHostInterface::HostKeyCode> SDLHostInterface::GetHostKeyCode(const std::string_view key_code) const
+{
+  const std::optional<u32> code = SDLKeyNames::ParseKeyString(key_code);
+  if (!code)
+    return std::nullopt;
+
+  return static_cast<HostKeyCode>(*code);
+}
+
+void SDLHostInterface::UpdateInputMap()
+{
+  CommonHostInterface::UpdateInputMap(*m_settings_interface.get());
+}
+
 void SDLHostInterface::OnSystemCreated()
 {
-  HostInterface::OnSystemCreated();
+  CommonHostInterface::OnSystemCreated();
 
-  UpdateKeyboardControllerMapping();
   ClearImGuiFocus();
 }
 
 void SDLHostInterface::OnSystemPaused(bool paused)
 {
-  HostInterface::OnSystemPaused(paused);
+  CommonHostInterface::OnSystemPaused(paused);
 
   if (!paused)
     ClearImGuiFocus();
@@ -235,14 +261,17 @@ void SDLHostInterface::OnSystemPaused(bool paused)
 
 void SDLHostInterface::OnSystemDestroyed()
 {
-  HostInterface::OnSystemDestroyed();
+  CommonHostInterface::OnSystemDestroyed();
 }
 
-void SDLHostInterface::OnControllerTypeChanged(u32 slot)
+void SDLHostInterface::OnRunningGameChanged()
 {
-  HostInterface::OnControllerTypeChanged(slot);
+  CommonHostInterface::OnRunningGameChanged();
 
-  UpdateKeyboardControllerMapping();
+  if (m_system && !m_system->GetRunningTitle().empty())
+    SDL_SetWindowTitle(m_window, m_system->GetRunningTitle().c_str());
+  else
+    SDL_SetWindowTitle(m_window, "DuckStation");
 }
 
 void SDLHostInterface::RunLater(std::function<void()> callback)
@@ -256,29 +285,35 @@ void SDLHostInterface::RunLater(std::function<void()> callback)
 
 void SDLHostInterface::SaveSettings()
 {
-  INISettingsInterface si(GetSettingsFileName());
-  m_settings_copy.Save(si);
+  m_settings_copy.Save(*m_settings_interface.get());
+  m_settings_interface->Save();
 }
 
 void SDLHostInterface::UpdateSettings()
 {
-  HostInterface::UpdateSettings([this]() { m_settings = m_settings_copy; });
+  CommonHostInterface::UpdateSettings([this]() { m_settings = m_settings_copy; });
 }
 
-void SDLHostInterface::SetFullscreen(bool enabled)
+bool SDLHostInterface::IsFullscreen() const
+{
+  return m_fullscreen;
+}
+
+bool SDLHostInterface::SetFullscreen(bool enabled)
 {
   if (m_fullscreen == enabled)
-    return;
+    return true;
 
   SDL_SetWindowFullscreen(m_window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
-  // We set the margin only in windowed mode, the menu bar is drawn on top in fullscreen.
+  // We set the margin only in windowed mode, the menu bar is not drawn fullscreen.
   m_display->SetDisplayTopMargin(enabled ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
 
   int window_width, window_height;
   SDL_GetWindowSize(m_window, &window_width, &window_height);
   m_display->WindowResized(window_width, window_height);
   m_fullscreen = enabled;
+  return true;
 }
 
 std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
@@ -288,7 +323,7 @@ std::unique_ptr<SDLHostInterface> SDLHostInterface::Create()
 
 bool SDLHostInterface::Initialize()
 {
-  if (!HostInterface::Initialize())
+  if (!CommonHostInterface::Initialize())
     return false;
 
   // Change to the user directory so that all default/relative paths in the config are after this.
@@ -309,6 +344,10 @@ bool SDLHostInterface::Initialize()
   }
 
   ImGui::NewFrame();
+
+  // process events to pick up controllers before updating input map
+  ProcessEvents();
+  UpdateInputMap();
   return true;
 }
 
@@ -325,21 +364,27 @@ void SDLHostInterface::Shutdown()
   if (m_window)
     DestroySDLWindow();
 
-  HostInterface::Shutdown();
+  CommonHostInterface::Shutdown();
 }
 
 void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
-  INISettingsInterface si(GetSettingsFileName());
-  m_settings_copy.Load(si);
+  m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+  m_settings_copy.Load(*m_settings_interface.get());
   m_settings = m_settings_copy;
-  m_fullscreen = m_settings_copy.start_fullscreen;
 }
 
 void SDLHostInterface::ReportError(const char* message)
 {
+  const bool was_fullscreen = IsFullscreen();
+  if (was_fullscreen)
+    SetFullscreen(false);
+
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "DuckStation", message, m_window);
+
+  if (was_fullscreen)
+    SetFullscreen(true);
 }
 
 void SDLHostInterface::ReportMessage(const char* message)
@@ -349,6 +394,10 @@ void SDLHostInterface::ReportMessage(const char* message)
 
 bool SDLHostInterface::ConfirmMessage(const char* message)
 {
+  const bool was_fullscreen = IsFullscreen();
+  if (was_fullscreen)
+    SetFullscreen(false);
+
   SDL_MessageBoxData mbd = {};
   mbd.flags = SDL_MESSAGEBOX_INFORMATION;
   mbd.window = m_window;
@@ -369,13 +418,23 @@ bool SDLHostInterface::ConfirmMessage(const char* message)
 
   int button_id = 0;
   SDL_ShowMessageBox(&mbd, &button_id);
-  return (button_id == 0);
+  const bool result = (button_id == 0);
+
+  if (was_fullscreen)
+    SetFullscreen(true);
+
+  return result;
 }
 
 void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 {
   ImGui_ImplSDL2_ProcessEvent(event);
-  // g_sdl_controller_interface.ProcessSDLEvent(event);
+
+  if (m_controller_interface &&
+      static_cast<SDLControllerInterface*>(m_controller_interface.get())->ProcessSDLEvent(event))
+  {
+    return;
+  }
 
   switch (event->type)
   {
@@ -400,23 +459,12 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-      if (!ImGui::GetIO().WantCaptureKeyboard)
-        HandleSDLKeyEvent(event);
-    }
-    break;
-
-    case SDL_CONTROLLERDEVICEADDED:
-    case SDL_CONTROLLERDEVICEREMOVED:
-      // g_sdl_controller_interface.SetDefaultBindings();
-      break;
-
-    case SDL_CONTROLLERBUTTONDOWN:
-    case SDL_CONTROLLERBUTTONUP:
-    {
-      if (event->type == SDL_CONTROLLERBUTTONDOWN && event->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSTICK)
+      if (!ImGui::GetIO().WantCaptureKeyboard && event->key.repeat == 0)
       {
-        // focus the menu bar
-        m_focus_main_menu_bar = true;
+        const HostKeyCode code = static_cast<HostKeyCode>(static_cast<u32>(event->key.keysym.sym) |
+                                                          static_cast<u32>(event->key.keysym.mod) << 16);
+        const bool pressed = (event->type == SDL_KEYDOWN);
+        HandleHostKeyEvent(code, pressed);
       }
     }
     break;
@@ -435,208 +483,24 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
   }
 }
 
-void SDLHostInterface::HandleSDLKeyEvent(const SDL_Event* event)
+void SDLHostInterface::ProcessEvents()
 {
-  const bool repeat = event->key.repeat != 0;
-  if (!repeat && HandleSDLKeyEventForController(event))
-    return;
-
-  const bool pressed = (event->type == SDL_KEYDOWN);
-  switch (event->key.keysym.scancode)
+  for (;;)
   {
-    case SDL_SCANCODE_F1:
-    case SDL_SCANCODE_F2:
-    case SDL_SCANCODE_F3:
-    case SDL_SCANCODE_F4:
-    case SDL_SCANCODE_F5:
-    case SDL_SCANCODE_F6:
-    case SDL_SCANCODE_F7:
-    case SDL_SCANCODE_F8:
-    {
-      if (!pressed)
-      {
-        const u32 index = event->key.keysym.scancode - SDL_SCANCODE_F1 + 1;
-        if (event->key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
-          SaveState(true, index);
-        else
-          LoadState(true, index);
-      }
-    }
-    break;
-
-    case SDL_SCANCODE_RETURN:
-    case SDL_SCANCODE_KP_ENTER:
-    {
-      if ((event->key.keysym.mod & (KMOD_LALT | KMOD_RALT)) && !pressed)
-        SetFullscreen(!m_fullscreen);
-    }
-    break;
-
-    case SDL_SCANCODE_TAB:
-    {
-      if (!repeat)
-      {
-        m_speed_limiter_temp_disabled = pressed;
-        UpdateSpeedLimiterState();
-      }
-    }
-    break;
-
-    case SDL_SCANCODE_PAUSE:
-    {
-      if (pressed)
-        PauseSystem(!m_paused);
-    }
-    break;
-
-    case SDL_SCANCODE_SPACE:
-    {
-      if (pressed)
-        DoFrameStep();
-    }
-    break;
-
-    case SDL_SCANCODE_HOME:
-    {
-      if (pressed && !repeat && m_system)
-      {
-        m_settings.speed_limiter_enabled = !m_settings.speed_limiter_enabled;
-        m_settings_copy.speed_limiter_enabled = m_settings.speed_limiter_enabled;
-        UpdateSpeedLimiterState();
-        AddOSDMessage(m_settings.speed_limiter_enabled ? "Speed limiter enabled." : "Speed limiter disabled.");
-      }
-    }
-    break;
-
-    case SDL_SCANCODE_END:
-    {
-      if (pressed)
-        ToggleSoftwareRendering();
-    }
-    break;
-
-    case SDL_SCANCODE_PAGEUP:
-    case SDL_SCANCODE_PAGEDOWN:
-    {
-      if (pressed)
-        ModifyResolutionScale(event->key.keysym.scancode == SDL_SCANCODE_PAGEUP ? 1 : -1);
-    }
-    break;
-  }
-}
-
-void SDLHostInterface::UpdateKeyboardControllerMapping()
-{
-  m_keyboard_button_mapping.fill(-1);
-
-  const Controller* controller = m_system ? m_system->GetController(0) : nullptr;
-  if (controller)
-  {
-#define SET_BUTTON_MAP(action, name)                                                                                   \
-  m_keyboard_button_mapping[static_cast<int>(action)] = controller->GetButtonCodeByName(name).value_or(-1)
-
-    SET_BUTTON_MAP(KeyboardControllerAction::Up, "Up");
-    SET_BUTTON_MAP(KeyboardControllerAction::Down, "Down");
-    SET_BUTTON_MAP(KeyboardControllerAction::Left, "Left");
-    SET_BUTTON_MAP(KeyboardControllerAction::Right, "Right");
-    SET_BUTTON_MAP(KeyboardControllerAction::Triangle, "Triangle");
-    SET_BUTTON_MAP(KeyboardControllerAction::Cross, "Cross");
-    SET_BUTTON_MAP(KeyboardControllerAction::Square, "Square");
-    SET_BUTTON_MAP(KeyboardControllerAction::Circle, "Circle");
-    SET_BUTTON_MAP(KeyboardControllerAction::L1, "L1");
-    SET_BUTTON_MAP(KeyboardControllerAction::R1, "R1");
-    SET_BUTTON_MAP(KeyboardControllerAction::L2, "L2");
-    SET_BUTTON_MAP(KeyboardControllerAction::R2, "R2");
-    SET_BUTTON_MAP(KeyboardControllerAction::Start, "Start");
-    SET_BUTTON_MAP(KeyboardControllerAction::Select, "Select");
-
-#undef SET_BUTTON_MAP
-  }
-}
-
-bool SDLHostInterface::HandleSDLKeyEventForController(const SDL_Event* event)
-{
-  const bool pressed = (event->type == SDL_KEYDOWN);
-  Controller* controller;
-
-#define DO_ACTION(action)                                                                                              \
-  if ((controller = m_system ? m_system->GetController(0) : nullptr) != nullptr &&                                     \
-      m_keyboard_button_mapping[static_cast<int>(action)])                                                             \
-  {                                                                                                                    \
-    controller->SetButtonState(m_keyboard_button_mapping[static_cast<int>(action)], pressed);                          \
-  }
-
-  switch (event->key.keysym.scancode)
-  {
-    case SDL_SCANCODE_KP_8:
-    case SDL_SCANCODE_I:
-      DO_ACTION(KeyboardControllerAction::Triangle);
-      return true;
-    case SDL_SCANCODE_KP_2:
-    case SDL_SCANCODE_K:
-      DO_ACTION(KeyboardControllerAction::Cross);
-      return true;
-    case SDL_SCANCODE_KP_4:
-    case SDL_SCANCODE_J:
-      DO_ACTION(KeyboardControllerAction::Square);
-      return true;
-    case SDL_SCANCODE_KP_6:
-    case SDL_SCANCODE_L:
-      DO_ACTION(KeyboardControllerAction::Circle);
-      return true;
-
-    case SDL_SCANCODE_W:
-    case SDL_SCANCODE_UP:
-      DO_ACTION(KeyboardControllerAction::Up);
-      return true;
-    case SDL_SCANCODE_S:
-    case SDL_SCANCODE_DOWN:
-      DO_ACTION(KeyboardControllerAction::Down);
-      return true;
-    case SDL_SCANCODE_A:
-    case SDL_SCANCODE_LEFT:
-      DO_ACTION(KeyboardControllerAction::Left);
-      return true;
-    case SDL_SCANCODE_D:
-    case SDL_SCANCODE_RIGHT:
-      DO_ACTION(KeyboardControllerAction::Right);
-      return true;
-
-    case SDL_SCANCODE_Q:
-      DO_ACTION(KeyboardControllerAction::L1);
-      return true;
-    case SDL_SCANCODE_E:
-      DO_ACTION(KeyboardControllerAction::R1);
-      return true;
-
-    case SDL_SCANCODE_1:
-      DO_ACTION(KeyboardControllerAction::L2);
-      return true;
-    case SDL_SCANCODE_3:
-      DO_ACTION(KeyboardControllerAction::R2);
-      return true;
-
-    case SDL_SCANCODE_RETURN:
-      DO_ACTION(KeyboardControllerAction::Start);
-      return true;
-    case SDL_SCANCODE_BACKSPACE:
-      DO_ACTION(KeyboardControllerAction::Select);
-      return true;
-
-    default:
+    SDL_Event ev;
+    if (SDL_PollEvent(&ev))
+      HandleSDLEvent(&ev);
+    else
       break;
   }
-
-#undef DO_ACTION
-
-  return false;
 }
 
 void SDLHostInterface::DrawImGuiWindows()
 {
-  DrawMainMenuBar();
+  if (!m_fullscreen)
+    DrawMainMenuBar();
 
-  HostInterface::DrawImGuiWindows();
+  CommonHostInterface::DrawImGuiWindows();
 
   if (!m_system)
     DrawPoweredOffWindow();
@@ -652,25 +516,10 @@ void SDLHostInterface::DrawImGuiWindows()
 
 void SDLHostInterface::DrawMainMenuBar()
 {
-  // We skip drawing the menu bar if we're in fullscreen and the mouse pointer isn't in range.
-  const float SHOW_THRESHOLD = 20.0f;
-  if (m_fullscreen && !m_system &&
-      ImGui::GetIO().MousePos.y >= (SHOW_THRESHOLD * ImGui::GetIO().DisplayFramebufferScale.x) &&
-      !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
-  {
-    return;
-  }
-
   if (!ImGui::BeginMainMenuBar())
     return;
 
   const bool system_enabled = static_cast<bool>(m_system);
-
-  if (m_focus_main_menu_bar)
-  {
-    ImGui::OpenPopup("System");
-    m_focus_main_menu_bar = false;
-  }
 
   if (ImGui::BeginMenu("System"))
   {
@@ -1441,14 +1290,7 @@ void SDLHostInterface::Run()
 {
   while (!m_quit_request)
   {
-    for (;;)
-    {
-      SDL_Event ev;
-      if (SDL_PollEvent(&ev))
-        HandleSDLEvent(&ev);
-      else
-        break;
-    }
+    ProcessEvents();
 
     if (m_system && !m_paused)
     {
@@ -1459,8 +1301,6 @@ void SDLHostInterface::Run()
         m_paused = true;
       }
     }
-
-    // g_sdl_controller_interface.UpdateControllerRumble();
 
     // rendering
     {
