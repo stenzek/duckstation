@@ -150,8 +150,8 @@ bool SPU::DoState(StateWrapper& sw)
     UpdateTransferEvent();
   }
 
-  // for (u32 i = 0; i < NUM_REVERB_REGS; i++)
-  // Log_WarningPrintf("Reverb[%u] = 0x%04X", i, m_reverb_registers.rev[i]);
+  //for (u32 i = 0; i < NUM_REVERB_REGS; i++)
+    //Log_WarningPrintf("Reverb[%u] = 0x%04X", i, m_reverb_registers.rev[i]);
 
   return !sw.HasError();
 }
@@ -1525,9 +1525,9 @@ u32 SPU::ReverbMemoryAddress(u32 address) const
   return (mBASE + relative_address) & 0x7FFFEu;
 }
 
-s16 SPU::ReverbRead(u32 address, s32 offset)
+s16 SPU::ReverbRead(u32 address)
 {
-  const u32 real_address = ReverbMemoryAddress(m_reverb_current_address + address + static_cast<u32>(offset));
+  const u32 real_address = ReverbMemoryAddress(m_reverb_current_address + address);
 
   // TODO: Should this check interrupts?
   s16 data;
@@ -1537,107 +1537,123 @@ s16 SPU::ReverbRead(u32 address, s32 offset)
 
 void SPU::ReverbWrite(u32 address, s16 data)
 {
+  if (!m_SPUCNT.reverb_master_enable)
+    return;
+
   // TODO: Should this check interrupts?
   const u32 real_address = ReverbMemoryAddress(m_reverb_current_address + address);
   std::memcpy(&m_ram[real_address & RAM_MASK], &data, sizeof(data));
 }
 
-ALWAYS_INLINE static s16 ReverbSat(s32 val)
+// Implements saturated add, subtract and multiply for reverb computations.
+struct ReverbSample
 {
-  return static_cast<s16>(std::clamp<s32>(val, -0x8000, 0x7FFF));
-}
+  s16 value;
 
-ALWAYS_INLINE static s32 IIASM(const s16 IIR_ALPHA, const s16 insamp)
-{
-  if (IIR_ALPHA == -32768)
+  static ALWAYS_INLINE s16 OpAdd(s16 lhs, s16 rhs)
   {
-    if (insamp == -32768)
-      return 0;
-    else
-      return insamp * -65536;
+    s32 result = s32(lhs) + s32(rhs);
+    return s16((result < -32768) ? -32768 : ((result > 32767) ? 32767 : result));
   }
-  else
-    return insamp * (32768 - IIR_ALPHA);
-}
+
+  static ALWAYS_INLINE s16 OpSub(s16 lhs, s16 rhs)
+  {
+    s32 result = s32(lhs) - s32(rhs);
+    return s16((result < -32768) ? -32768 : ((result > 32767) ? 32767 : result));
+  }
+
+  static ALWAYS_INLINE s16 OpMul(s16 lhs, s16 rhs) { return s16((s32(lhs) * s32(rhs)) >> 15); }
+
+  ALWAYS_INLINE ReverbSample operator+(ReverbSample rhs) const { return ReverbSample{OpAdd(value, rhs.value)}; }
+
+  ALWAYS_INLINE ReverbSample operator-(ReverbSample rhs) const { return ReverbSample{OpSub(value, rhs.value)}; }
+
+  ALWAYS_INLINE ReverbSample operator*(ReverbSample rhs) const { return ReverbSample{OpMul(value, rhs.value)}; }
+
+  ALWAYS_INLINE ReverbSample& operator+=(ReverbSample rhs)
+  {
+    value = OpAdd(value, rhs.value);
+    return *this;
+  }
+
+  ALWAYS_INLINE ReverbSample& operator-=(ReverbSample rhs)
+  {
+    value = OpSub(value, rhs.value);
+    return *this;
+  }
+
+  ALWAYS_INLINE ReverbSample& operator*=(ReverbSample rhs)
+  {
+    value = OpMul(value, rhs.value);
+    return *this;
+  }
+};
 
 void SPU::DoReverb()
 {
-  if (m_SPUCNT.reverb_master_enable)
-  {
-    const s16 IIR_INPUT_A0 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_A0) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((m_reverb_left_input * m_reverb_registers.IN_COEF_L) >> 15));
-    const s16 IIR_INPUT_A1 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_A1) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((m_reverb_right_input * m_reverb_registers.IN_COEF_R) >> 15));
-    const s16 IIR_INPUT_B0 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_B0) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((m_reverb_left_input * m_reverb_registers.IN_COEF_L) >> 15));
-    const s16 IIR_INPUT_B1 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_B1) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((m_reverb_right_input * m_reverb_registers.IN_COEF_R) >> 15));
+  const ReverbSample Lin(ReverbSample{m_reverb_left_input} * ReverbSample{m_reverb_registers.vLIN});
+  const ReverbSample Rin(ReverbSample{m_reverb_right_input} * ReverbSample{m_reverb_registers.vRIN});
 
-    const s16 IIR_A0 =
-      ReverbSat((((IIR_INPUT_A0 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_A0, -1)) >> 14)) >>
-                1);
-    const s16 IIR_A1 =
-      ReverbSat((((IIR_INPUT_A1 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_A1, -1)) >> 14)) >>
-                1);
-    const s16 IIR_B0 =
-      ReverbSat((((IIR_INPUT_B0 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_B0, -1)) >> 14)) >>
-                1);
-    const s16 IIR_B1 =
-      ReverbSat((((IIR_INPUT_B1 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_B1, -1)) >> 14)) >>
-                1);
+#define R(name)                                                                                                        \
+  ReverbSample { m_reverb_registers.name }
+#define Rm(name) (u32(m_reverb_registers.name) * 8u)
+#define MR(addr)                                                                                                       \
+  ReverbSample { ReverbRead(addr) }
+#define MW(addr, value_) ReverbWrite((addr), (value_).value)
 
-    ReverbWrite(m_reverb_registers.IIR_DEST_A0, IIR_A0);
-    ReverbWrite(m_reverb_registers.IIR_DEST_A1, IIR_A1);
-    ReverbWrite(m_reverb_registers.IIR_DEST_B0, IIR_B0);
-    ReverbWrite(m_reverb_registers.IIR_DEST_B1, IIR_B1);
+  // [mLSAME] = (Lin + [dLSAME]*vWALL - [mLSAME-2])*vIIR + [mLSAME-2]  ;L-to-L
+  MW(Rm(mLSAME), ((Lin + (MR(Rm(dLSAME)) * R(vWALL)) - MR(Rm(mLSAME) - 2)) * R(vIIR)) + MR(Rm(mLSAME) - 2));
 
-    const s16 ACC0 = ReverbSat((((ReverbRead(m_reverb_registers.ACC_SRC_A0) * m_reverb_registers.ACC_COEF_A) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_B0) * m_reverb_registers.ACC_COEF_B) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_C0) * m_reverb_registers.ACC_COEF_C) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_D0) * m_reverb_registers.ACC_COEF_D) >> 14)) >>
-                               1);
+  // [mRSAME] = (Rin + [dRSAME]*vWALL - [mRSAME-2])*vIIR + [mRSAME-2]  ;R-to-R
+  MW(Rm(mLSAME), ((Rin + (MR(Rm(dRSAME)) * R(vWALL)) - MR(Rm(mRSAME) - 2)) * R(vIIR)) + MR(Rm(mRSAME) - 2));
 
-    const s16 ACC1 = ReverbSat((((ReverbRead(m_reverb_registers.ACC_SRC_A1) * m_reverb_registers.ACC_COEF_A) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_B1) * m_reverb_registers.ACC_COEF_B) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_C1) * m_reverb_registers.ACC_COEF_C) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_D1) * m_reverb_registers.ACC_COEF_D) >> 14)) >>
-                               1);
+  // [mLDIFF] = (Lin + [dRDIFF]*vWALL - [mLDIFF-2])*vIIR + [mLDIFF-2]  ;R-to-L
+  MW(Rm(mLDIFF), ((Lin + (MR(Rm(dRDIFF)) * R(vWALL)) - MR(Rm(mLDIFF) - 2)) * R(vIIR)) + MR(Rm(mLDIFF) - 2));
 
-    const s16 FB_A0 = ReverbRead(m_reverb_registers.MIX_DEST_A0 - m_reverb_registers.FB_SRC_A);
-    const s16 FB_A1 = ReverbRead(m_reverb_registers.MIX_DEST_A1 - m_reverb_registers.FB_SRC_A);
-    const s16 FB_B0 = ReverbRead(m_reverb_registers.MIX_DEST_B0 - m_reverb_registers.FB_SRC_B);
-    const s16 FB_B1 = ReverbRead(m_reverb_registers.MIX_DEST_B1 - m_reverb_registers.FB_SRC_B);
+  // [mRDIFF] = (Rin + [dLDIFF]*vWALL - [mRDIFF-2])*vIIR + [mRDIFF-2]  ;L-to-R
+  MW(Rm(mRDIFF), ((Rin + (MR(Rm(dLDIFF)) * R(vWALL)) - MR(Rm(mRDIFF) - 2)) * R(vIIR)) + MR(Rm(mRDIFF) - 2));
 
-    ReverbWrite(m_reverb_registers.MIX_DEST_A0, ReverbSat(ACC0 - ((FB_A0 * m_reverb_registers.FB_ALPHA) >> 15)));
-    ReverbWrite(m_reverb_registers.MIX_DEST_A1, ReverbSat(ACC1 - ((FB_A1 * m_reverb_registers.FB_ALPHA) >> 15)));
+  // Lout = vCOMB1 * [mLCOMB1] + vCOMB2 * [mLCOMB2] + vCOMB3 * [mLCOMB3] + vCOMB4 * [mLCOMB4]
+  ReverbSample Lout{(R(vCOMB1) * MR(Rm(mLCOMB1))) + (R(vCOMB2) * MR(Rm(mLCOMB2))) + (R(vCOMB3) * MR(Rm(mLCOMB3))) +
+                    (R(vCOMB4) * MR(Rm(mLCOMB4)))};
 
-    ReverbWrite(m_reverb_registers.MIX_DEST_B0,
-                ReverbSat(((m_reverb_registers.FB_ALPHA * ACC0) >> 15) -
-                          ((FB_A0 * (s16)(0x8000 ^ m_reverb_registers.FB_ALPHA)) >> 15) -
-                          ((FB_B0 * m_reverb_registers.FB_X) >> 15)));
-    ReverbWrite(m_reverb_registers.MIX_DEST_B1,
-                ReverbSat(((m_reverb_registers.FB_ALPHA * ACC1) >> 15) -
-                          ((FB_A1 * (s16)(0x8000 ^ m_reverb_registers.FB_ALPHA)) >> 15) -
-                          ((FB_B1 * m_reverb_registers.FB_X) >> 15)));
-  }
+  // Rout = vCOMB1 * [mRCOMB1] + vCOMB2 * [mRCOMB2] + vCOMB3 * [mRCOMB3] + vCOMB4 * [mRCOMB4]
+  ReverbSample Rout{(R(vCOMB1) * MR(Rm(mRCOMB1))) + (R(vCOMB2) * MR(Rm(mRCOMB2))) + (R(vCOMB3) * MR(Rm(mRCOMB3))) +
+                    (R(vCOMB4) * MR(Rm(mRCOMB4)))};
 
-  m_reverb_left_output = ReverbSat(
-    ApplyVolume((ReverbRead(m_reverb_registers.MIX_DEST_A0) + ReverbRead(m_reverb_registers.MIX_DEST_B0)) >> 1,
-                m_reverb_registers.vLOUT));
-  m_reverb_right_output = ReverbSat(
-    ApplyVolume((ReverbRead(m_reverb_registers.MIX_DEST_A1) + ReverbRead(m_reverb_registers.MIX_DEST_B1)) >> 1,
-                m_reverb_registers.vROUT));
+  // Lout = Lout - vAPF1 * [mLAPF1 - dAPF1], [mLAPF1] = Lout, Lout = Lout * vAPF1 + [mLAPF1 - dAPF1]
+  Lout = Lout - (R(vAPF1) * MR(Rm(mLAPF1) - Rm(dAPF1)));
+  MW(Rm(mLAPF1), Lout);
+  Lout = (Lout * R(vAPF1)) + MR(Rm(mLAPF1) - Rm(dAPF1));
+
+  // Rout = Rout - vAPF1 * [mRAPF1 - dAPF1], [mRAPF1] = Rout, Rout = Rout * vAPF1 + [mRAPF1 - dAPF1]
+  Rout = Rout - (R(vAPF1) * MR(Rm(mRAPF1) - Rm(dAPF1)));
+  MW(Rm(mRAPF1), Rout);
+  Rout = (Rout * R(vAPF1)) + MR(Rm(mRAPF1) - Rm(dAPF1));
+
+  // Lout = Lout - vAPF2 * [mLAPF2 - dAPF2], [mLAPF2] = Lout, Lout = Lout * vAPF2 + [mLAPF2 - dAPF2]
+  Lout = Lout - (R(vAPF2) * MR(Rm(mLAPF2) - Rm(dAPF2)));
+  MW(Rm(mLAPF2), Lout);
+  Lout = (Lout * R(vAPF2)) + MR(Rm(mLAPF2) - Rm(dAPF2));
+
+  // Rout = Rout - vAPF2 * [mRAPF2 - dAPF2], [mRAPF2] = Rout, Rout = Rout * vAPF2 + [mRAPF2 - dAPF2]
+  Rout = Rout - (R(vAPF2) * MR(Rm(mRAPF2) - Rm(dAPF2)));
+  MW(Rm(mRAPF2), Rout);
+  Rout = (Rout * R(vAPF2)) + MR(Rm(mRAPF2) - Rm(dAPF2));
+
+  // LeftOutput  = Lout*vLOUT
+  m_reverb_left_output = (Lout * R(vLOUT)).value;
+
+  // RightOutput = Rout*vROUT
+  m_reverb_right_output = (Rout * R(vROUT)).value;
 
   // BufferAddress = MAX(mBASE, (BufferAddress+2) AND 7FFFEh)
   m_reverb_current_address = ReverbMemoryAddress(m_reverb_current_address + 2);
+
+#undef MW
+#undef MR
+#undef Rm
+#undef R
 }
 
 void SPU::EnsureCDAudioSpace(u32 remaining_frames)
@@ -1815,19 +1831,6 @@ void SPU::DrawDebugStateWindow()
 
       const bool active = IsPitchModulationEnabled(i);
       ImGui::TextColored(active ? active_color : inactive_color, "%u", i);
-    }
-  }
-
-  if (ImGui::CollapsingHeader("Hacks", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    if (ImGui::Button("Key Off All Voices"))
-    {
-      for (u32 i = 0; i < NUM_VOICES; i++)
-      {
-        m_voices[i].KeyOff();
-        m_voices[i].adsr_envelope.counter = 0;
-        m_voices[i].regs.adsr_volume = 0;
-      }
     }
   }
 
