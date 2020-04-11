@@ -11,7 +11,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-static constexpr char MEMORY_CARD_IMAGE_FILTER[] = "All Memory Card Types (*.mcd *.mc)";
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] = "All Memory Card Types (*.mcd *.mcr *.mc)";
 
 PortSettingsWidget::PortSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QWidget(parent), m_host_interface(host_interface)
