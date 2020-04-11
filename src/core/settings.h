@@ -47,14 +47,14 @@ struct Settings
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
+  bool gpu_use_debug_device = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = false;
   bool gpu_texture_filtering = false;
-  bool gpu_use_debug_device = false;
+  bool gpu_disable_interlacing = false;
   bool gpu_force_ntsc_timings = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
-  bool display_force_progressive_scan = false;
   bool display_linear_filtering = true;
   bool display_show_osd_messages = false;
   bool display_show_fps = false;

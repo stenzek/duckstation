@@ -873,15 +873,15 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
+  si.SetBoolValue("GPU", "UseDebugDevice", false);
   si.SetBoolValue("GPU", "TrueColor", true);
   si.SetBoolValue("GPU", "ScaledDithering", false);
   si.SetBoolValue("GPU", "TextureFiltering", false);
-  si.SetBoolValue("GPU", "UseDebugDevice", false);
+  si.SetBoolValue("GPU", "DisableInterlacing", true);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
 
   si.SetStringValue("Display", "CropMode", "Overscan");
   si.SetStringValue("Display", "PixelAspectRatio", "4:3");
-  si.SetBoolValue("Display", "ForceProgressiveScan", true);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
   si.SetBoolValue("Display", "ShowFPS", false);
@@ -928,8 +928,8 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_gpu_true_color = m_settings.gpu_true_color;
   const bool old_gpu_scaled_dithering = m_settings.gpu_scaled_dithering;
   const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
+  const bool old_gpu_disable_interlacing = m_settings.gpu_disable_interlacing;
   const bool old_gpu_force_ntsc_timings = m_settings.gpu_force_ntsc_timings;
-  const bool old_display_force_progressive_scan = m_settings.display_force_progressive_scan;
   const bool old_gpu_debug_device = m_settings.gpu_use_debug_device;
   const bool old_vsync_enabled = m_settings.video_sync_enabled;
   const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
@@ -983,8 +983,8 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
         m_settings.gpu_true_color != old_gpu_true_color ||
         m_settings.gpu_scaled_dithering != old_gpu_scaled_dithering ||
         m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
+        m_settings.gpu_disable_interlacing != old_gpu_disable_interlacing ||
         m_settings.gpu_force_ntsc_timings != old_gpu_force_ntsc_timings ||
-        m_settings.display_force_progressive_scan != old_display_force_progressive_scan ||
         m_settings.display_crop_mode != old_display_crop_mode ||
         m_settings.display_aspect_ratio != old_display_aspect_ratio)
     {

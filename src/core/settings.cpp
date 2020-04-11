@@ -23,10 +23,11 @@ void Settings::Load(SettingsInterface& si)
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
+  gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
-  gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
+  gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
 
   display_crop_mode = ParseDisplayCropMode(
@@ -36,7 +37,6 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DisplayAspectRatio::R4_3)).c_str())
       .value_or(DisplayAspectRatio::R4_3);
-  display_force_progressive_scan = si.GetBoolValue("Display", "ForceProgressiveScan", true);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
@@ -90,15 +90,15 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
+  si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
-  si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
+  si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
 
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
-  si.SetBoolValue("Display", "ForceProgressiveScan", display_force_progressive_scan);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);

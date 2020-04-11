@@ -783,8 +783,6 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
       discard;
   #endif
 
-  //icoords.y = uint(fixYCoord(int(icoords.y)));
-
   #if DEPTH_24BIT
     // relative to start of scanout
     uint relative_x = (icoords.x - u_vram_offset.x) / uint(RESOLUTION_SCALE);

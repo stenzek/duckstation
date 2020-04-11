@@ -27,7 +27,7 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_timers = timers;
-  m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
+  m_force_progressive_scan = m_system->GetSettings().gpu_disable_interlacing;
   m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
   m_crtc_state.display_aspect_ratio =
     Settings::GetDisplayAspectRatioValue(m_system->GetSettings().display_aspect_ratio);
@@ -38,7 +38,7 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
 
 void GPU::UpdateSettings()
 {
-  m_force_progressive_scan = m_system->GetSettings().display_force_progressive_scan;
+  m_force_progressive_scan = m_system->GetSettings().gpu_disable_interlacing;
 
   if (m_force_ntsc_timings != m_system->GetSettings().gpu_force_ntsc_timings)
   {
