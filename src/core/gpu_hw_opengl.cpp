@@ -506,7 +506,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
     {
       m_host_display->ClearDisplayTexture();
     }
-    else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced)
+    else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced &&
+             (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
+             (scaled_vram_offset_y + scaled_vram_offset_y <= m_vram_texture.GetHeight()))
     {
       m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
                                         m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), scaled_vram_offset_x,
@@ -525,20 +527,19 @@ void GPU_HW_OpenGL::UpdateDisplay()
       const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - display_height;
       const u32 scaled_flipped_vram_offset_y =
         m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
-
       const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
-      const u32 uniforms[4] = {reinterpret_field_offset, reinterpret_start_x};
+      const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_field_offset};
       UploadUniformBlock(uniforms, sizeof(uniforms));
       m_batch_ubo_dirty = true;
 
-      glViewport(reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_width, scaled_display_height);
+      glViewport(0, reinterpret_field_offset, reinterpret_width, scaled_display_height);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
                                         m_display_texture.GetWidth(), m_display_texture.GetHeight(),
-                                        scaled_vram_offset_x, m_vram_texture.GetHeight() - scaled_vram_offset_y,
+                                        scaled_vram_offset_x - reinterpret_start_x, scaled_display_height,
                                         scaled_display_width, -static_cast<s32>(scaled_display_height));
 
       // restore state

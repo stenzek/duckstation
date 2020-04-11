@@ -41,38 +41,99 @@ void GPU_SW::Reset()
   m_vram.fill(0);
 }
 
-void GPU_SW::CopyOut15Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height)
+void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u32 width, u32 height, bool interlaced)
 {
-  for (u32 row = 0; row < height; row++)
-  {
-    const u16* src_row_ptr = src_ptr;
-    u32* dst_row_ptr = dst_ptr;
-    for (u32 col = 0; col < width; col++)
-      *(dst_row_ptr++) = RGBA5551ToRGBA8888(*(src_row_ptr++));
+  const u8 interlaced_shift = BoolToUInt8(interlaced);
 
-    src_ptr += src_stride;
-    dst_ptr += dst_stride;
+  // Fast path when not wrapping around.
+  if ((src_x + width) <= VRAM_WIDTH && (src_y + height) <= VRAM_HEIGHT)
+  {
+    dst_stride <<= interlaced_shift;
+    height >>= interlaced_shift;
+
+    const u16* src_ptr = &m_vram[src_y * VRAM_WIDTH + src_x];
+    const u32 src_stride = VRAM_WIDTH << interlaced_shift;
+    for (u32 row = 0; row < height; row++)
+    {
+      const u16* src_row_ptr = src_ptr;
+      u32* dst_row_ptr = dst_ptr;
+      for (u32 col = 0; col < width; col++)
+        *(dst_row_ptr++) = RGBA5551ToRGBA8888(*(src_row_ptr++));
+
+      src_ptr += src_stride;
+      dst_ptr += dst_stride;
+    }
+  }
+  else
+  {
+    dst_stride <<= interlaced_shift;
+    height >>= interlaced_shift;
+
+    const u32 end_x = src_x + width;
+    for (u32 row = 0; row < height; row++)
+    {
+      const u16* src_row_ptr = &m_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
+      u32* dst_row_ptr = dst_ptr;
+
+      for (u32 col = src_x; col < end_x; col++)
+        *(dst_row_ptr++) = RGBA5551ToRGBA8888(src_row_ptr[col % VRAM_WIDTH]);
+
+      src_y += (1 << interlaced_shift);
+      dst_ptr += dst_stride;
+    }
   }
 }
 
-void GPU_SW::CopyOut24Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height)
+void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u32 width, u32 height, bool interlaced)
 {
-  for (u32 row = 0; row < height; row++)
+  const u8 interlaced_shift = BoolToUInt8(interlaced);
+
+  if ((src_x + width) <= VRAM_WIDTH && (src_y + height) <= VRAM_HEIGHT)
   {
-    const u8* src_row_ptr = reinterpret_cast<const u8*>(src_ptr);
-    u32* dst_row_ptr = dst_ptr;
+    dst_stride <<= interlaced_shift;
+    height >>= interlaced_shift;
 
-    // Beware unaligned accesses.
-    for (u32 col = 0; col < width; col++)
+    const u8* src_ptr = reinterpret_cast<const u8*>(&m_vram[src_y * VRAM_WIDTH + src_x]);
+    const u32 src_stride = (VRAM_WIDTH << interlaced_shift) * sizeof(u16);
+    for (u32 row = 0; row < height; row++)
     {
-      // This will fill the alpha channel with junk, but that's okay since we don't use it
-      std::memcpy(dst_row_ptr, src_row_ptr, sizeof(u32));
-      src_row_ptr += 3;
-      dst_row_ptr++;
-    }
+      const u8* src_row_ptr = src_ptr;
+      u8* dst_row_ptr = reinterpret_cast<u8*>(dst_ptr);
+      for (u32 col = 0; col < width; col++)
+      {
+        *(dst_row_ptr++) = *(src_row_ptr++);
+        *(dst_row_ptr++) = *(src_row_ptr++);
+        *(dst_row_ptr++) = *(src_row_ptr++);
+        *(dst_row_ptr++) = 0xFF;
+      }
 
-    src_ptr += src_stride;
-    dst_ptr += dst_stride;
+      src_ptr += src_stride;
+      dst_ptr += dst_stride;
+    }
+  }
+  else
+  {
+    dst_stride <<= interlaced_shift;
+    height >>= interlaced_shift;
+
+    const u32 end_x = src_x + width;
+    for (u32 row = 0; row < height; row++)
+    {
+      const u16* src_row_ptr = &m_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
+      u32* dst_row_ptr = dst_ptr;
+
+      for (u32 col = 0; col < width; col++)
+      {
+        const u32 offset = (src_x + ((col * 3) / 2));
+        const u16 s0 = src_row_ptr[offset % VRAM_WIDTH];
+        const u16 s1 = src_row_ptr[(offset + 1) % VRAM_WIDTH];
+        const u8 shift = static_cast<u8>(col & 1u) * 8;
+        *(dst_row_ptr++) = (((ZeroExtend32(s1) << 16) | ZeroExtend32(s0)) >> shift) | 0xFF000000u;
+      }
+
+      src_y += (1 << interlaced_shift);
+      dst_ptr += dst_stride;
+    }
   }
 }
 
@@ -98,34 +159,32 @@ void GPU_SW::UpdateDisplay()
       const u32 field = GetInterlacedField();
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH * 2,
-                     m_display_texture_buffer.data() + field * display_width, display_width * 2, display_width,
-                     display_height / 2);
+        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
+                     VRAM_WIDTH, display_width, display_height, true);
       }
       else
       {
-        CopyOut15Bit(m_vram.data() + (vram_offset_y + field) * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH * 2,
-                     m_display_texture_buffer.data() + field * display_width, display_width * 2, display_width,
-                     display_height / 2);
+        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
+                     VRAM_WIDTH, display_width, display_height, true);
       }
     }
     else
     {
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH,
-                     m_display_texture_buffer.data(), display_width, display_width, display_height);
+        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y, m_display_texture_buffer.data(), VRAM_WIDTH, display_width,
+                     display_height, false);
       }
       else
       {
-        CopyOut15Bit(m_vram.data() + vram_offset_y * VRAM_WIDTH + m_crtc_state.regs.X, VRAM_WIDTH,
-                     m_display_texture_buffer.data(), display_width, display_width, display_height);
+        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y, m_display_texture_buffer.data(), VRAM_WIDTH, display_width,
+                     display_height, false);
       }
     }
 
     const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
     m_host_display->UpdateTexture(m_display_texture.get(), texture_offset_x, 0, display_width, display_height,
-                                  m_display_texture_buffer.data(), display_width * sizeof(u32));
+                                  m_display_texture_buffer.data(), VRAM_WIDTH * sizeof(u32));
     m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT, texture_offset_x, 0,
                                       display_width, display_height);
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
@@ -135,7 +194,7 @@ void GPU_SW::UpdateDisplay()
   }
   else
   {
-    CopyOut15Bit(m_vram.data(), VRAM_WIDTH, m_display_texture_buffer.data(), VRAM_WIDTH, VRAM_WIDTH, VRAM_HEIGHT);
+    CopyOut15Bit(0, 0, m_display_texture_buffer.data(), VRAM_WIDTH, VRAM_WIDTH, VRAM_HEIGHT, false);
     m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                   m_display_texture_buffer.data(), VRAM_WIDTH * sizeof(u32));
     m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH,

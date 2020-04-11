@@ -43,10 +43,8 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Scanout
   //////////////////////////////////////////////////////////////////////////
-  static void CopyOut15Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height);
-
-  static void CopyOut24Bit(const u16* src_ptr, u32 src_stride, u32* dst_ptr, u32 dst_stride, u32 width, u32 height);
-
+  void CopyOut15Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u32 width, u32 height, bool interlaced);
+  void CopyOut24Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u32 width, u32 height, bool interlaced);
   void UpdateDisplay() override;
 
   //////////////////////////////////////////////////////////////////////////

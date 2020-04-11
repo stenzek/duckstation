@@ -487,22 +487,19 @@ void GPU::UpdateCRTCDisplayParameters()
 
   if (horizontal_display_end <= horizontal_visible_end_tick)
   {
-    cs.display_vram_width = std::min<u16>(
+    cs.display_vram_width =
       std::max<u16>((((horizontal_display_end - std::max(horizontal_display_start, horizontal_visible_start_tick)) +
                       (cs.dot_clock_divider - 1)) /
                      cs.dot_clock_divider),
-                    1u),
-      VRAM_WIDTH - cs.display_vram_left);
+                    1u);
   }
   else
   {
-    cs.display_vram_width = std::min<u16>(
-      std::max<u16>(
-        (((horizontal_visible_end_tick - std::max(horizontal_display_start, horizontal_visible_start_tick)) +
-          (cs.dot_clock_divider - 1)) /
-         cs.dot_clock_divider),
-        1u),
-      VRAM_WIDTH - cs.display_vram_left);
+    cs.display_vram_width = std::max<u16>(
+      (((horizontal_visible_end_tick - std::max(horizontal_display_start, horizontal_visible_start_tick)) +
+        (cs.dot_clock_divider - 1)) /
+       cs.dot_clock_divider),
+      1u);
   }
 
   if (vertical_display_start >= vertical_visible_start_line)
@@ -513,21 +510,19 @@ void GPU::UpdateCRTCDisplayParameters()
   else
   {
     cs.display_origin_top = 0;
-    cs.display_vram_top = std::min<u16>(
-      m_crtc_state.regs.Y + ((vertical_visible_start_line - vertical_display_start) << height_shift), VRAM_HEIGHT - 1);
+    cs.display_vram_top =
+      m_crtc_state.regs.Y + ((vertical_visible_start_line - vertical_display_start) << height_shift);
   }
 
   if (vertical_display_end <= vertical_visible_end_line)
   {
-    cs.display_vram_height = std::min<u16>(
-      (vertical_display_end - std::max(vertical_display_start, vertical_visible_start_line)) << height_shift,
-      VRAM_HEIGHT - cs.display_vram_top);
+    cs.display_vram_height = (vertical_display_end - std::max(vertical_display_start, vertical_visible_start_line))
+                             << height_shift;
   }
   else
   {
-    cs.display_vram_height = std::min<u16>(
-      (vertical_visible_end_line - std::max(vertical_display_start, vertical_visible_start_line)) << height_shift,
-      VRAM_HEIGHT - cs.display_vram_top);
+    cs.display_vram_height = (vertical_visible_end_line - std::max(vertical_display_start, vertical_visible_start_line))
+                             << height_shift;
   }
 }
 
