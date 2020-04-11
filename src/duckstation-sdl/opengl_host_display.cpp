@@ -118,14 +118,21 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
                                       const void* data, u32 data_stride)
 {
   OpenGLDisplayWidgetTexture* tex = static_cast<OpenGLDisplayWidgetTexture*>(texture);
-  Assert(data_stride == (width * sizeof(u32)));
+  Assert((data_stride % sizeof(u32)) == 0);
 
-  GLint old_texture_binding = 0;
+  GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
+  glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
+  glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
 
   glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, data_stride / sizeof(u32));
+
   glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
+  glPixelStorei(GL_UNPACK_ALIGNMENT, old_alignment);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
