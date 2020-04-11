@@ -109,6 +109,23 @@ SDLControllerInterface::ControllerDataVector::iterator SDLControllerInterface::G
                       [id](const ControllerData& cd) { return cd.player_id == id; });
 }
 
+int SDLControllerInterface::GetFreePlayerId() const
+{
+  for (int player_id = 0;; player_id++)
+  {
+    size_t i;
+    for (i = 0; i < m_controllers.size(); i++)
+    {
+      if (m_controllers[i].player_id == player_id)
+        break;
+    }
+    if (i == m_controllers.size())
+      return player_id;
+  }
+
+  return 0;
+}
+
 bool SDLControllerInterface::OpenGameController(int index)
 {
   SDL_GameController* gcontroller = SDL_GameControllerOpen(index);
@@ -128,12 +145,13 @@ bool SDLControllerInterface::OpenGameController(int index)
 #else
   int player_id = -1;
 #endif
-  if (player_id < 0)
+  if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
   {
-    Log_WarningPrintf("Controller %d (joystick %d) returned player ID %d. Setting to zero, but this may cause issues "
-                      "if you try to use multiple controllers.",
-                      index, joystick_id, player_id);
-    player_id = 0;
+    const int free_player_id = GetFreePlayerId();
+    Log_WarningPrintf(
+      "Controller %d (joystick %d) returned player ID %d, which is invalid or in use. Using ID %d instead.", index,
+      joystick_id, player_id, free_player_id);
+    player_id = free_player_id;
   }
 
   Log_InfoPrintf("Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_id,

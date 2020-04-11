@@ -50,6 +50,7 @@ private:
   ControllerDataVector::iterator GetControllerDataForController(void* controller);
   ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
+  int GetFreePlayerId() const;
 
   bool OpenGameController(int index);
   bool CloseGameController(int joystick_index, bool notify);
