@@ -365,6 +365,14 @@ void BuildPathRelativeToFile(String& Destination, const char* CurrentFileName, c
     BuildOSPath(Destination, Destination.GetCharArray());
 }
 
+String BuildPathRelativeToFile(const char* CurrentFileName, const char* NewFileName, bool OSPath /*= true*/,
+                               bool Canonicalize /*= true*/)
+{
+  String ret;
+  BuildPathRelativeToFile(ret, CurrentFileName, NewFileName, OSPath, Canonicalize);
+  return ret;
+}
+
 std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags)
 {
   // has a path

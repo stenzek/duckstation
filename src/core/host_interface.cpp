@@ -25,30 +25,6 @@ Log_SetChannel(HostInterface);
 #include <mmsystem.h>
 #endif
 
-#if defined(ANDROID) || (defined(__GNUC__) && __GNUC__ < 8)
-
-static std::string GetRelativePath(const std::string& path, const char* new_filename)
-{
-  const char* last = std::strrchr(path.c_str(), '/');
-  if (!last)
-    return new_filename;
-
-  std::string new_path(path.c_str(), last - path.c_str() + 1);
-  new_path += new_filename;
-  return new_path;
-}
-
-#else
-
-#include <filesystem>
-
-static std::string GetRelativePath(const std::string& path, const char* new_filename)
-{
-  return std::filesystem::path(path).replace_filename(new_filename).string();
-}
-
-#endif
-
 HostInterface::HostInterface() = default;
 
 HostInterface::~HostInterface()
@@ -388,47 +364,48 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
 #define TRY_FILENAME(filename)                                                                                         \
   do                                                                                                                   \
   {                                                                                                                    \
-    std::string try_filename = filename;                                                                               \
-    std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(try_filename);                                    \
+    String try_filename = filename;                                                                                    \
+    std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(try_filename.GetCharArray());                     \
     if (found_image)                                                                                                   \
     {                                                                                                                  \
       BIOS::Hash found_hash = BIOS::GetHash(*found_image);                                                             \
-      Log_DevPrintf("Hash for BIOS '%s': %s", try_filename.c_str(), found_hash.ToString().c_str());                    \
+      Log_DevPrintf("Hash for BIOS '%s': %s", try_filename.GetCharArray(), found_hash.ToString().c_str());             \
       if (BIOS::IsValidHashForRegion(region, found_hash))                                                              \
       {                                                                                                                \
-        Log_InfoPrintf("Using BIOS from '%s'", try_filename.c_str());                                                  \
+        Log_InfoPrintf("Using BIOS from '%s' for region '%s'", try_filename.GetCharArray(),                            \
+                       Settings::GetConsoleRegionName(region));                                                        \
         return found_image;                                                                                            \
       }                                                                                                                \
     }                                                                                                                  \
   } while (0)
 
   // Try the configured image.
-  TRY_FILENAME(m_settings.bios_path);
+  TRY_FILENAME(m_settings.bios_path.c_str());
 
   // Try searching in the same folder for other region's images.
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1000.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-10j.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph3000.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-11j.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5500.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30j.bin"));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-10j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph3000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-11j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5500.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30j.bin", false, false));
       break;
 
     case ConsoleRegion::NTSC_U:
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1001.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-22a.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5501.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30a.bin"));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1001.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-22a.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5501.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30a.bin", false, false));
       break;
 
     case ConsoleRegion::PAL:
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph1002.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-21e.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "scph5502.bin"));
-      TRY_FILENAME(GetRelativePath(m_settings.bios_path, "ps-30e.bin"));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1002.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-21e.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5502.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30e.bin", false, false));
       break;
 
     default:

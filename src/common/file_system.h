@@ -128,6 +128,8 @@ void BuildPathRelativeToFile(char* Destination, u32 cbDestination, const char* C
                              bool OSPath = true, bool Canonicalize = true);
 void BuildPathRelativeToFile(String& Destination, const char* CurrentFileName, const char* NewFileName,
                              bool OSPath = true, bool Canonicalize = true);
+String BuildPathRelativeToFile(const char* CurrentFileName, const char* NewFileName, bool OSPath = true,
+                               bool Canonicalize = true);
 
 // sanitizes a filename for use in a filesystem.
 void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes = true);
