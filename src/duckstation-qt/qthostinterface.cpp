@@ -213,7 +213,7 @@ void QtHostInterface::bootSystem(const SystemBootParameters& params)
     return;
   }
 
-  HostInterface::BootSystem(params);
+  BootSystem(params);
 }
 
 void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_on_failure)
@@ -285,7 +285,6 @@ bool QtHostInterface::AcquireHostDisplay()
   DebugAssert(!m_display_widget);
 
   m_is_rendering_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
-  m_is_fullscreen = m_settings.start_fullscreen;
   emit createDisplayWindowRequested(m_worker_thread, m_settings.gpu_use_debug_device, m_is_fullscreen,
                                     m_is_rendering_to_main);
   if (!m_display_widget->hasDeviceContext())
