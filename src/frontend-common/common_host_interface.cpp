@@ -97,7 +97,7 @@ void CommonHostInterface::PowerOffSystem()
 
 static void PrintCommandLineVersion(const char* frontend_name)
 {
-  std::fprintf(stderr, "%s version <TODO>\n", frontend_name);
+  std::fprintf(stderr, "%s Version <TODO>\n", frontend_name);
   std::fprintf(stderr, "https://github.com/stenzek/duckstation\n");
   std::fprintf(stderr, "\n");
 }
@@ -109,9 +109,9 @@ static void PrintCommandLineHelp(const char* progname, const char* frontend_name
   std::fprintf(stderr, "\n");
   std::fprintf(stderr, "  -help: Displays this information and exits.\n");
   std::fprintf(stderr, "  -version: Displays version information and exits.\n");
-  std::fprintf(stderr, "  -batch: Enables batch mode (exits after powering off)\n");
-  std::fprintf(stderr, "  -fastboot: Force fast boot for provided filename\n");
-  std::fprintf(stderr, "  -slowboot: Force slow boot for provided filename\n");
+  std::fprintf(stderr, "  -batch: Enables batch mode (exits after powering off).\n");
+  std::fprintf(stderr, "  -fastboot: Force fast boot for provided filename.\n");
+  std::fprintf(stderr, "  -slowboot: Force slow boot for provided filename.\n");
   std::fprintf(stderr, "  -resume: Load resume save state. If a boot filename is provided,\n"
                        "    that game's resume state will be loaded, otherwise the most\n"
                        "    recent resume save state will be loaded.\n");
@@ -158,19 +158,19 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       }
       else if (CHECK_ARG("-batch"))
       {
-        Log_InfoPrintf("Enabling batch mode.\n");
+        Log_InfoPrintf("Enabling batch mode.");
         m_batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-fastboot"))
       {
-        Log_InfoPrintf("Forcing fast boot.\n");
+        Log_InfoPrintf("Forcing fast boot.");
         force_fast_boot = true;
         continue;
       }
       else if (CHECK_ARG("-slowboot"))
       {
-        Log_InfoPrintf("Forcing slow boot.\n");
+        Log_InfoPrintf("Forcing slow boot.");
         force_fast_boot = false;
         continue;
       }
@@ -191,19 +191,19 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       }
       else if (CHECK_ARG("-fullscreen"))
       {
-        Log_InfoPrintf("Going fullscreen after booting.\n");
+        Log_InfoPrintf("Going fullscreen after booting.");
         force_fullscreen = true;
         continue;
       }
       else if (CHECK_ARG("-nofullscreen"))
       {
-        Log_InfoPrintf("Preventing fullscreen after booting.\n");
+        Log_InfoPrintf("Preventing fullscreen after booting.");
         force_fullscreen = false;
         continue;
       }
       else if (CHECK_ARG("-portable"))
       {
-        Log_InfoPrintf("Using portable mode.\n");
+        Log_InfoPrintf("Using portable mode.");
         SetUserDirectoryToProgramDirectory();
         continue;
       }
