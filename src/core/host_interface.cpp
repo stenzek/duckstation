@@ -61,6 +61,14 @@ void HostInterface::CreateAudioStream()
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 {
+  if (parameters.filename.empty())
+    Log_InfoPrintf("Boot Filename: <BIOS/Shell>");
+  else
+    Log_InfoPrintf("Boot Filename: %s", parameters.filename.c_str());
+
+  if (!parameters.state_filename.empty())
+    Log_InfoPrintf("Save State Filename: %s", parameters.filename.c_str());
+
   if (!AcquireHostDisplay())
   {
     ReportFormattedError("Failed to acquire host display");
@@ -80,6 +88,9 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
     DestroySystem();
     return false;
   }
+
+  if (!parameters.state_filename.empty())
+    LoadState(parameters.state_filename.c_str());
 
   OnSystemCreated();
 
@@ -611,6 +622,9 @@ void HostInterface::OnControllerTypeChanged(u32 slot) {}
 
 void HostInterface::SetUserDirectory()
 {
+  if (!m_user_directory.empty())
+    return;
+
   const std::string program_path = FileSystem::GetProgramPath();
   const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
   Log_InfoPrintf("Program path: \"%s\" (directory \"%s\")", program_path.c_str(), program_directory.c_str());
@@ -651,6 +665,13 @@ void HostInterface::SetUserDirectory()
       m_user_directory = StringUtil::StdStringFromFormat("%s/Library/Application Support/DuckStation", home_path);
 #endif
   }
+}
+
+void HostInterface::SetUserDirectoryToProgramDirectory()
+{
+  const std::string program_path = FileSystem::GetProgramPath();
+  const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
+  m_user_directory = program_directory;
 }
 
 void HostInterface::InitializeUserDirectory()

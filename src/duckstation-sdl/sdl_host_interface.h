@@ -25,6 +25,8 @@ public:
 
   static std::unique_ptr<SDLHostInterface> Create();
 
+  const char* GetFrontendName() const override;
+
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
@@ -46,6 +48,8 @@ protected:
   void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed() override;
   void OnRunningGameChanged() override;
+
+  void RequestExit() override;
 
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
   void UpdateInputMap() override;

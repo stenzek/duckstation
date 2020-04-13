@@ -39,6 +39,11 @@ QtHostInterface::~QtHostInterface()
   Assert(!m_display_widget);
 }
 
+const char* QtHostInterface::GetFrontendName() const
+{
+  return "DuckStation Qt Frontend";
+}
+
 bool QtHostInterface::Initialize()
 {
   createThread();
@@ -102,6 +107,12 @@ bool QtHostInterface::ConfirmMessage(const char* message)
     SetFullscreen(true);
 
   return result;
+}
+
+bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
+                                                 std::unique_ptr<SystemBootParameters>* out_boot_params)
+{
+  return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
 QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
@@ -318,6 +329,11 @@ bool QtHostInterface::SetFullscreen(bool enabled)
   m_is_fullscreen = enabled;
   emit updateDisplayWindowRequested(m_is_fullscreen, m_is_rendering_to_main);
   return true;
+}
+
+void QtHostInterface::RequestExit()
+{
+  emit exitRequested();
 }
 
 std::optional<CommonHostInterface::HostKeyCode> QtHostInterface::GetHostKeyCode(const std::string_view key_code) const

@@ -34,6 +34,11 @@ SDLHostInterface::SDLHostInterface()
 
 SDLHostInterface::~SDLHostInterface() = default;
 
+const char* SDLHostInterface::GetFrontendName() const
+{
+  return "DuckStation SDL/ImGui Frontend";
+}
+
 float SDLHostInterface::GetDPIScaleFactor(SDL_Window* window)
 {
 #ifdef __APPLE__
@@ -191,10 +196,6 @@ bool SDLHostInterface::AcquireHostDisplay()
   }
 #endif
 
-  // Switch to fullscreen if requested.
-  if (m_settings.start_fullscreen)
-    SetFullscreen(true);
-
   return true;
 }
 
@@ -272,6 +273,11 @@ void SDLHostInterface::OnRunningGameChanged()
     SDL_SetWindowTitle(m_window, m_system->GetRunningTitle().c_str());
   else
     SDL_SetWindowTitle(m_window, "DuckStation");
+}
+
+void SDLHostInterface::RequestExit()
+{
+  m_quit_request = true;
 }
 
 void SDLHostInterface::RunLater(std::function<void()> callback)

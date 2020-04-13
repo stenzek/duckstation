@@ -5,70 +5,8 @@
 #include "sdl_host_interface.h"
 #include <SDL.h>
 #include <cstdio>
+#include <cstdlib>
 
-static int Run(int argc, char* argv[])
-{
-  // parameters
-  std::optional<s32> state_index;
-  bool state_is_global = false;
-  const char* boot_filename = nullptr;
-  for (int i = 1; i < argc; i++)
-  {
-#define CHECK_ARG(str) !std::strcmp(argv[i], str)
-#define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
-
-    if (CHECK_ARG_PARAM("-state") || CHECK_ARG_PARAM("-gstate"))
-    {
-      state_is_global = argv[i][1] == 'g';
-      state_index = std::atoi(argv[++i]);
-    }
-    else if (CHECK_ARG_PARAM("-resume"))
-    {
-      state_index = -1;
-    }
-    else
-    {
-      boot_filename = argv[i];
-    }
-
-#undef CHECK_ARG
-#undef CHECK_ARG_PARAM
-  }
-
-  // create display and host interface
-  std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create();
-  if (!host_interface->Initialize())
-  {
-    host_interface->Shutdown();
-    Panic("Failed to initialize host interface");
-    SDL_Quit();
-    return -1;
-  }
-
-  // boot/load state
-  if (boot_filename)
-  {
-    SystemBootParameters boot_params;
-    boot_params.filename = boot_filename;
-    if (host_interface->BootSystem(boot_params) && state_index.has_value())
-      host_interface->LoadState(state_is_global, state_index.value());
-  }
-  else if (state_index.has_value())
-  {
-    host_interface->LoadState(true, state_index.value());
-  }
-
-  // run
-  host_interface->Run();
-
-  // done
-  host_interface->Shutdown();
-  host_interface.reset();
-  SDL_Quit();
-  return 0;
-}
-
-// SDL requires the entry point declared without c++ decoration
 #undef main
 int main(int argc, char* argv[])
 {
@@ -91,6 +29,38 @@ int main(int argc, char* argv[])
 
   FrontendCommon::EnsureSDLInitialized();
 
-  // return NoGUITest();
-  return Run(argc, argv);
+  std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create();
+  std::unique_ptr<SystemBootParameters> boot_params;
+  if (!host_interface->ParseCommandLineParameters(argc, argv, &boot_params))
+  {
+    SDL_Quit();
+    return EXIT_FAILURE;
+  }
+
+  if (!host_interface->Initialize())
+  {
+    host_interface->Shutdown();
+    SDL_Quit();
+    return EXIT_FAILURE;
+  }
+
+  if (boot_params)
+  {
+    if (!host_interface->BootSystem(*boot_params) && host_interface->InBatchMode())
+    {
+      host_interface->Shutdown();
+      host_interface.reset();
+      SDL_Quit();
+      return EXIT_FAILURE;
+    }
+
+    boot_params.reset();
+  }
+
+  host_interface->Run();
+  host_interface->Shutdown();
+  host_interface.reset();
+
+  SDL_Quit();
+  return EXIT_SUCCESS;
 }

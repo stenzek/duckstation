@@ -1,7 +1,7 @@
 #pragma once
+#include "common/event.h"
 #include "core/host_interface.h"
 #include "core/system.h"
-#include "common/event.h"
 #include "frontend-common/common_host_interface.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
@@ -37,12 +37,16 @@ public:
   explicit QtHostInterface(QObject* parent = nullptr);
   ~QtHostInterface();
 
+  const char* GetFrontendName() const override;
+
   bool Initialize() override;
   void Shutdown() override;
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
+
+  bool parseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
   /// Thread-safe QSettings access.
   QVariant getSettingValue(const QString& name, const QVariant& default_value = QVariant());
@@ -55,6 +59,7 @@ public:
 
   ALWAYS_INLINE const HotkeyInfoList& getHotkeyInfoList() const { return GetHotkeyInfoList(); }
   ALWAYS_INLINE ControllerInterface* getControllerInterface() const { return GetControllerInterface(); }
+  ALWAYS_INLINE bool inBatchMode() const { return InBatchMode(); }
 
   ALWAYS_INLINE bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
@@ -84,6 +89,7 @@ Q_SIGNALS:
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
+  void exitRequested();
 
 public Q_SLOTS:
   void setDefaultSettings();
@@ -124,6 +130,7 @@ protected:
   bool IsFullscreen() const override;
   bool SetFullscreen(bool enabled) override;
 
+  void RequestExit() override;
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
 
   void OnSystemCreated() override;
@@ -161,7 +168,7 @@ private:
 
   private:
     QtHostInterface* m_parent;
-    std::atomic_bool m_init_result{ false };
+    std::atomic_bool m_init_result{false};
     Common::Event m_init_event;
   };
 

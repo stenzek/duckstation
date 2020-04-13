@@ -35,7 +35,9 @@ struct SystemBootParameters
   ~SystemBootParameters();
 
   std::string filename;
+  std::string state_filename;
   std::optional<bool> override_fast_boot;
+  std::optional<bool> override_fullscreen;
 };
 
 class System

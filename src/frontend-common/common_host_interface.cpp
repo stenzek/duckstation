@@ -13,6 +13,7 @@
 #include "sdl_audio_stream.h"
 #include "sdl_controller_interface.h"
 #endif
+#include <cstdio>
 #include <cstring>
 Log_SetChannel(CommonHostInterface);
 
@@ -61,6 +62,228 @@ void CommonHostInterface::Shutdown()
     m_controller_interface->Shutdown();
     m_controller_interface.reset();
   }
+}
+
+bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
+{
+  if (!HostInterface::BootSystem(parameters))
+  {
+    // if in batch mode, exit immediately if booting failed
+    if (m_batch_mode)
+      RequestExit();
+
+    return false;
+  }
+
+  // enter fullscreen if requested in the parameters
+  if ((parameters.override_fullscreen.has_value() && *parameters.override_fullscreen) ||
+      (!parameters.override_fullscreen.has_value() && m_settings.start_fullscreen))
+  {
+    SetFullscreen(true);
+  }
+
+  return true;
+}
+
+void CommonHostInterface::PowerOffSystem()
+{
+  HostInterface::PowerOffSystem();
+
+  // TODO: Do we want to move the resume state saving here?
+
+  if (m_batch_mode)
+    RequestExit();
+}
+
+static void PrintCommandLineVersion(const char* frontend_name)
+{
+  std::fprintf(stderr, "%s version <TODO>\n", frontend_name);
+  std::fprintf(stderr, "https://github.com/stenzek/duckstation\n");
+  std::fprintf(stderr, "\n");
+}
+
+static void PrintCommandLineHelp(const char* progname, const char* frontend_name)
+{
+  PrintCommandLineVersion(frontend_name);
+  std::fprintf(stderr, "Usage: %s [parameters] [--] [boot filename]\n", progname);
+  std::fprintf(stderr, "\n");
+  std::fprintf(stderr, "  -help: Displays this information and exits.\n");
+  std::fprintf(stderr, "  -version: Displays version information and exits.\n");
+  std::fprintf(stderr, "  -batch: Enables batch mode (exits after powering off)\n");
+  std::fprintf(stderr, "  -fastboot: Force fast boot for provided filename\n");
+  std::fprintf(stderr, "  -slowboot: Force slow boot for provided filename\n");
+  std::fprintf(stderr, "  -resume: Load resume save state. If a boot filename is provided,\n"
+                       "    that game's resume state will be loaded, otherwise the most\n"
+                       "    recent resume save state will be loaded.\n");
+  std::fprintf(stderr, "  -state <index>: Loads specified save state by index. If a boot\n"
+                       "    filename is provided, a per-game state will be loaded, otherwise\n"
+                       "    a global state will be loaded.\n");
+  std::fprintf(stderr, "  -statefile <filename>: Loads state from the specified filename.\n"
+                       "    No boot filename is required with this option.\n");
+  std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
+  std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
+  std::fprintf(stderr, "  -portable: Forces \"portable mode\", data in same directory.\n");
+  std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
+                       "    parameters make up the filename. Use when the filename contains\n"
+                       "    spaces or starts with a dash.\n");
+  std::fprintf(stderr, "\n");
+}
+
+bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
+                                                     std::unique_ptr<SystemBootParameters>* out_boot_params)
+{
+  std::optional<bool> force_fast_boot;
+  std::optional<bool> force_fullscreen;
+  std::optional<s32> state_index;
+  std::string state_filename;
+  std::string boot_filename;
+  bool no_more_args = false;
+
+  for (int i = 1; i < argc; i++)
+  {
+    if (!no_more_args)
+    {
+#define CHECK_ARG(str) !std::strcmp(argv[i], str)
+#define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
+
+      if (CHECK_ARG("-help"))
+      {
+        PrintCommandLineHelp(argv[0], GetFrontendName());
+        return false;
+      }
+      else if (CHECK_ARG("-version"))
+      {
+        PrintCommandLineVersion(GetFrontendName());
+        return false;
+      }
+      else if (CHECK_ARG("-batch"))
+      {
+        Log_InfoPrintf("Enabling batch mode.\n");
+        m_batch_mode = true;
+        continue;
+      }
+      else if (CHECK_ARG("-fastboot"))
+      {
+        Log_InfoPrintf("Forcing fast boot.\n");
+        force_fast_boot = true;
+        continue;
+      }
+      else if (CHECK_ARG("-slowboot"))
+      {
+        Log_InfoPrintf("Forcing slow boot.\n");
+        force_fast_boot = false;
+        continue;
+      }
+      else if (CHECK_ARG("-resume"))
+      {
+        state_index = -1;
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-state"))
+      {
+        state_index = std::atoi(argv[++i]);
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-statefile"))
+      {
+        state_filename = argv[++i];
+        continue;
+      }
+      else if (CHECK_ARG("-fullscreen"))
+      {
+        Log_InfoPrintf("Going fullscreen after booting.\n");
+        force_fullscreen = true;
+        continue;
+      }
+      else if (CHECK_ARG("-nofullscreen"))
+      {
+        Log_InfoPrintf("Preventing fullscreen after booting.\n");
+        force_fullscreen = false;
+        continue;
+      }
+      else if (CHECK_ARG("-portable"))
+      {
+        Log_InfoPrintf("Using portable mode.\n");
+        SetUserDirectoryToProgramDirectory();
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-resume"))
+      {
+        state_index = -1;
+        continue;
+      }
+      else if (CHECK_ARG("--"))
+      {
+        no_more_args = true;
+        continue;
+      }
+      else if (argv[i][0] == '-')
+      {
+        Log_ErrorPrintf("Unknown parameter: '%s'", argv[i]);
+        return false;
+      }
+
+#undef CHECK_ARG
+#undef CHECK_ARG_PARAM
+    }
+
+    if (!boot_filename.empty())
+      boot_filename += ' ';
+    boot_filename += argv[i];
+  }
+
+  if (state_index.has_value() || !boot_filename.empty() || !state_filename.empty())
+  {
+    // init user directory early since we need it for save states
+    SetUserDirectory();
+
+    if (state_index.has_value() && !state_filename.empty())
+    {
+      // if a save state is provided, whether a boot filename was provided determines per-game/local
+      if (boot_filename.empty())
+      {
+        // loading a global state. if this is -1, we're loading the most recent resume state
+        if (*state_index < 0)
+          state_filename = GetMostRecentResumeSaveStatePath();
+        else
+          state_filename = GetGlobalSaveStateFileName(*state_index);
+
+        if (state_filename.empty() || !FileSystem::FileExists(state_filename.c_str()))
+        {
+          Log_ErrorPrintf("Could not find file for global save state %d", *state_index);
+          return false;
+        }
+      }
+      else
+      {
+        // find the game id, and get its save state path
+        std::string game_code = m_game_list->GetGameCodeForPath(boot_filename.c_str());
+        if (game_code.empty())
+        {
+          Log_WarningPrintf("Could not identify game code for '%s', cannot load save state %d.", boot_filename.c_str(),
+                            *state_index);
+        }
+        else
+        {
+          state_filename = GetGameSaveStateFileName(game_code.c_str(), *state_index);
+          if (state_filename.empty() || !FileSystem::FileExists(state_filename.c_str()))
+          {
+            Log_ErrorPrintf("Could not find file for game '%s' save state %d", game_code.c_str(), *state_index);
+            return false;
+          }
+        }
+      }
+    }
+
+    std::unique_ptr<SystemBootParameters> boot_params = std::make_unique<SystemBootParameters>();
+    boot_params->filename = std::move(boot_filename);
+    boot_params->state_filename = std::move(state_filename);
+    boot_params->override_fast_boot = std::move(force_fast_boot);
+    boot_params->override_fullscreen = std::move(force_fullscreen);
+    *out_boot_params = std::move(boot_params);
+  }
+
+  return true;
 }
 
 bool CommonHostInterface::IsFullscreen() const
@@ -401,7 +624,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  [this](bool pressed) {
                    if (!pressed && m_system)
                    {
-                     if (m_settings.confim_power_off)
+                     if (m_settings.confim_power_off && !m_batch_mode)
                      {
                        SmallString confirmation_message("Are you sure you want to stop emulation?");
                        if (m_settings.save_state_on_exit)

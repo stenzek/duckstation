@@ -33,8 +33,14 @@ public:
 
   using HotkeyInfoList = std::vector<HotkeyInfo>;
 
+  /// Returns the name of the frontend.
+  virtual const char* GetFrontendName() const = 0;
+
   virtual bool Initialize() override;
   virtual void Shutdown() override;
+
+  virtual bool BootSystem(const SystemBootParameters& parameters) override;
+  virtual void PowerOffSystem() override;
 
   /// Returns a list of all available hotkeys.
   ALWAYS_INLINE const HotkeyInfoList& GetHotkeyInfoList() const { return m_hotkeys; }
@@ -42,9 +48,18 @@ public:
   /// Access to current controller interface.
   ALWAYS_INLINE ControllerInterface* GetControllerInterface() const { return m_controller_interface.get(); }
 
+  /// Returns true if running in batch mode, i.e. exit after emulation.
+  ALWAYS_INLINE bool InBatchMode() const { return m_batch_mode; }
+
+  /// Parses command line parameters for all frontends.
+  bool ParseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
+
 protected:
   CommonHostInterface();
   ~CommonHostInterface();
+
+  /// Request the frontend to exit.
+  virtual void RequestExit() = 0;
 
   virtual bool IsFullscreen() const;
   virtual bool SetFullscreen(bool enabled);
@@ -85,4 +100,7 @@ private:
 
   // input key maps
   std::map<HostKeyCode, InputButtonHandler> m_keyboard_input_handlers;
+
+  // running in batch mode? i.e. exit after stopping emulation
+  bool m_batch_mode = false;
 };

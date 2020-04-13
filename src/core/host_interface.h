@@ -50,10 +50,11 @@ public:
   /// Shuts down the emulator frontend.
   virtual void Shutdown();
 
-  bool BootSystem(const SystemBootParameters& parameters);
+  virtual bool BootSystem(const SystemBootParameters& parameters);
+  virtual void PowerOffSystem();
+
   void PauseSystem(bool paused);
   void ResetSystem();
-  void PowerOffSystem();
   void DestroySystem();
 
   /// Loads state from the specified filename.
@@ -158,6 +159,9 @@ protected:
   /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
   virtual void SetUserDirectory();
 
+  /// Sets the user directory to the program directory, i.e. "portable mode".
+  void SetUserDirectoryToProgramDirectory();
+
   /// Performs the initial load of settings. Should call CheckSettings() and m_settings.Load().
   virtual void LoadSettings() = 0;
 
@@ -229,13 +233,13 @@ protected:
   Settings m_settings;
   std::string m_user_directory;
 
+  std::deque<OSDMessage> m_osd_messages;
+  std::mutex m_osd_messages_lock;
+
   bool m_paused = false;
   bool m_speed_limiter_temp_disabled = false;
   bool m_speed_limiter_enabled = false;
   bool m_timer_resolution_increased = false;
-
-  std::deque<OSDMessage> m_osd_messages;
-  std::mutex m_osd_messages_lock;
 
 private:
   void InitializeUserDirectory();

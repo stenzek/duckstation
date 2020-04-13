@@ -3,12 +3,13 @@
 #include "qthostinterface.h"
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <cstdlib>
 #include <memory>
 
 static void InitLogging()
 {
   // set log flags
-#ifdef Y_BUILD_CONFIG_DEBUG
+#ifdef _DEBUG
   Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
   Log::SetFilterLevel(LOGLEVEL_DEBUG);
 #else
@@ -35,18 +36,30 @@ int main(int argc, char* argv[])
 #endif
 
   std::unique_ptr<QtHostInterface> host_interface = std::make_unique<QtHostInterface>();
+  std::unique_ptr<SystemBootParameters> boot_params;
+  if (!host_interface->parseCommandLineParameters(argc, argv, &boot_params))
+    return EXIT_FAILURE;
+
   if (!host_interface->Initialize())
   {
     host_interface->Shutdown();
     QMessageBox::critical(nullptr, QObject::tr("DuckStation Error"),
                           QObject::tr("Failed to initialize host interface. Cannot continue."), QMessageBox::Ok);
-    return -1;
+    return EXIT_FAILURE;
   }
 
   std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
   window->show();
 
-  host_interface->refreshGameList();
+  // if we're in batch mode, don't bother refreshing the game list as it won't be used
+  if (!host_interface->inBatchMode())
+    host_interface->refreshGameList();
+
+  if (boot_params)
+  {
+    host_interface->bootSystem(*boot_params);
+    boot_params.reset();
+  }
 
   int result = app.exec();
 
