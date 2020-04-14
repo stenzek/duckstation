@@ -13,6 +13,7 @@
 #include "sdl_audio_stream.h"
 #include "sdl_controller_interface.h"
 #endif
+#include "ini_settings_interface.h"
 #include <cstdio>
 #include <cstring>
 Log_SetChannel(CommonHostInterface);
@@ -793,4 +794,154 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                      });
     }
   }
+}
+
+std::vector<std::pair<std::string, std::string>> CommonHostInterface::GetInputProfileList() const
+{
+  FileSystem::FindResultsArray results;
+  FileSystem::FindFiles(GetUserDirectoryRelativePath("inputprofiles").c_str(), "*.ini",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+
+  std::vector<std::pair<std::string, std::string>> profile_names;
+  profile_names.reserve(results.size());
+  for (auto& it : results)
+  {
+    if (it.FileName.size() < 4)
+      continue;
+
+    std::string profile_name = it.FileName.substr(0, it.FileName.length() - 4);
+    std::string full_filename = GetUserDirectoryRelativePath("inputprofiles/%s", it.FileName.c_str());
+    profile_names.emplace_back(std::move(profile_name), std::move(full_filename));
+  }
+
+  return profile_names;
+}
+
+void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
+{
+  for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
+  {
+    const ControllerType ctype = m_settings.controller_types[controller_index - 1];
+    if (ctype == ControllerType::None)
+      continue;
+
+    const auto section_name = TinyString::FromFormat("Controller%u", controller_index);
+
+    si.DeleteValue(section_name, "Type");
+
+    for (const auto& button : Controller::GetButtonNames(ctype))
+      si.DeleteValue(section_name, button.first.c_str());
+
+    for (const auto& axis : Controller::GetAxisNames(ctype))
+      si.DeleteValue(section_name, axis.first.c_str());
+
+    if (Controller::GetVibrationMotorCount(ctype) > 0)
+      si.DeleteValue(section_name, "Rumble");
+  }
+}
+
+void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsInterface& si)
+{
+  // clear bindings for all controllers
+  ClearAllControllerBindings(si);
+
+  INISettingsInterface profile(profile_path);
+
+  for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
+  {
+    const auto section_name = TinyString::FromFormat("Controller%u", controller_index);
+    const std::string ctype_str = profile.GetStringValue(section_name, "Type");
+    if (ctype_str.empty())
+      continue;
+
+    std::optional<ControllerType> ctype = Settings::ParseControllerTypeName(ctype_str.c_str());
+    if (!ctype)
+    {
+      Log_ErrorPrintf("Invalid controller type in profile: '%s'", ctype_str.c_str());
+      return;
+    }
+
+    m_settings.controller_types[controller_index - 1] = *ctype;
+    HostInterface::OnControllerTypeChanged(controller_index - 1);
+
+    si.SetStringValue(section_name, "Type", Settings::GetControllerTypeName(*ctype));
+
+    for (const auto& button : Controller::GetButtonNames(*ctype))
+    {
+      const auto key_name = TinyString::FromFormat("Button%s", button.first.c_str());
+      si.DeleteValue(section_name, key_name);
+      const std::vector<std::string> bindings = profile.GetStringList(section_name, key_name);
+      for (const std::string& binding : bindings)
+        si.AddToStringList(section_name, key_name, binding.c_str());
+    }
+
+    for (const auto& axis : Controller::GetAxisNames(*ctype))
+    {
+      const auto key_name = TinyString::FromFormat("Axis%s", axis.first.c_str());
+      si.DeleteValue(section_name, axis.first.c_str());
+      const std::vector<std::string> bindings = profile.GetStringList(section_name, key_name);
+      for (const std::string& binding : bindings)
+        si.AddToStringList(section_name, key_name, binding.c_str());
+    }
+
+    si.DeleteValue(section_name, "Rumble");
+    const std::string rumble_value = profile.GetStringValue(section_name, "Rumble");
+    if (!rumble_value.empty())
+      si.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+  }
+
+  UpdateInputMap(si);
+
+  if (m_system)
+    m_system->UpdateControllers();
+
+  ReportFormattedMessage("Loaded input profile from '%s'", profile_path);
+}
+
+bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInterface& si)
+{
+  if (FileSystem::FileExists(profile_path))
+  {
+    if (!FileSystem::DeleteFile(profile_path))
+    {
+      Log_ErrorPrintf("Failed to delete existing input profile '%s' when saving", profile_path);
+      return false;
+    }
+  }
+
+  INISettingsInterface profile(profile_path);
+
+  for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
+  {
+    const ControllerType ctype = m_settings.controller_types[controller_index - 1];
+    if (ctype == ControllerType::None)
+      continue;
+
+    const auto section_name = TinyString::FromFormat("Controller%u", controller_index);
+
+    profile.SetStringValue(section_name, "Type", Settings::GetControllerTypeName(ctype));
+
+    for (const auto& button : Controller::GetButtonNames(ctype))
+    {
+      const auto key_name = TinyString::FromFormat("Button%s", button.first.c_str());
+      const std::vector<std::string> bindings = si.GetStringList(section_name, key_name);
+      for (const std::string& binding : bindings)
+        profile.AddToStringList(section_name, key_name, binding.c_str());
+    }
+
+    for (const auto& axis : Controller::GetAxisNames(ctype))
+    {
+      const auto key_name = TinyString::FromFormat("Axis%s", axis.first.c_str());
+      const std::vector<std::string> bindings = si.GetStringList(section_name, key_name);
+      for (const std::string& binding : bindings)
+        profile.AddToStringList(section_name, key_name, binding.c_str());
+    }
+
+    const std::string rumble_value = si.GetStringValue(section_name, "Rumble");
+    if (!rumble_value.empty())
+      profile.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+  }
+
+  profile.Save();
+  return true;
 }

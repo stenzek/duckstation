@@ -694,6 +694,7 @@ void HostInterface::InitializeUserDirectory()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("inputprofiles").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);

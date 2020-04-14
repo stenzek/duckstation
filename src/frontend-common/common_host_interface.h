@@ -86,6 +86,15 @@ protected:
   /// Reloads the input map from config. Callable from controller interface.
   virtual void UpdateInputMap() = 0;
 
+  /// Returns a list of all input profiles. first - name, second - path
+  std::vector<std::pair<std::string, std::string>> GetInputProfileList() const;
+
+  /// Applies the specified input profile.
+  void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
+
+  /// Saves the current input configuration to the specified profile name.
+  bool SaveInputProfile(const char* profile_path, SettingsInterface& si);
+
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
   void UpdateInputMap(SettingsInterface& si);
@@ -102,6 +111,7 @@ private:
   void RegisterSaveStateHotkeys();
   void UpdateControllerInputMap(SettingsInterface& si);
   void UpdateHotkeyInputMap(SettingsInterface& si);
+  void ClearAllControllerBindings(SettingsInterface& si);
 
   HotkeyInfoList m_hotkeys;
 
