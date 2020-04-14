@@ -22,6 +22,7 @@ public:
 
   using InputButtonHandler = std::function<void(bool)>;
   using InputAxisHandler = std::function<void(float)>;
+  using ControllerRumbleCallback = std::function<void(const float*, u32)>;
 
   struct HotkeyInfo
   {
@@ -69,6 +70,7 @@ protected:
 
   virtual void OnSystemCreated() override;
   virtual void OnSystemPaused(bool paused) override;
+  virtual void OnSystemDestroyed() override;
   virtual void OnControllerTypeChanged(u32 slot) override;
 
   virtual void SetDefaultSettings(SettingsInterface& si) override;
@@ -79,6 +81,7 @@ protected:
                                    const std::string_view& button, InputButtonHandler handler);
   virtual bool AddAxisToInputMap(const std::string& binding, const std::string_view& device,
                                  const std::string_view& axis, InputAxisHandler handler);
+  virtual bool AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors);
 
   /// Reloads the input map from config. Callable from controller interface.
   virtual void UpdateInputMap() = 0;
@@ -86,6 +89,10 @@ protected:
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
   void UpdateInputMap(SettingsInterface& si);
+
+  void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
+  void UpdateControllerRumble();
+  void StopControllerRumble();
 
   std::unique_ptr<ControllerInterface> m_controller_interface;
 
@@ -100,6 +107,21 @@ private:
 
   // input key maps
   std::map<HostKeyCode, InputButtonHandler> m_keyboard_input_handlers;
+
+  // controller vibration motors/rumble
+  struct ControllerRumbleState
+  {
+    enum : u32
+    {
+      MAX_MOTORS = 2
+    };
+
+    u32 controller_index;
+    u32 num_motors;
+    std::array<float, MAX_MOTORS> last_strength;
+    ControllerRumbleCallback update_callback;
+  };
+  std::vector<ControllerRumbleState> m_controller_vibration_motors;
 
   // running in batch mode? i.e. exit after stopping emulation
   bool m_batch_mode = false;

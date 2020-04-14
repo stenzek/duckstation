@@ -61,4 +61,7 @@ public:
 
   /// Returns a list of buttons for the specified controller type.
   static ButtonList GetButtonNames(ControllerType type);
+
+  /// Returns the number of vibration motors.
+  static u32 GetVibrationMotorCount(ControllerType type);
 };

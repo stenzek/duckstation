@@ -436,3 +436,8 @@ Controller::ButtonList AnalogController::StaticGetButtonNames()
           B(Square), B(L1),   B(L2),    B(R1),     B(R2),    B(L3),       B(R3)};
 #undef B
 }
+
+u32 AnalogController::StaticGetVibrationMotorCount()
+{
+  return NUM_MOTORS;
+}

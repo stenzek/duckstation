@@ -163,6 +163,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
 
   m_supports_texture_buffer = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+  m_supports_texture_buffer = false;
   if (m_supports_texture_buffer)
   {
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
@@ -766,7 +767,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   src_y = m_vram_texture.GetHeight() - src_y - height;
   dst_y = m_vram_texture.GetHeight() - dst_y - height;
 
-  if (GLAD_GL_VERSION_4_3)
+  /*if (GLAD_GL_VERSION_4_3)
   {
     glCopyImageSubData(m_vram_texture.GetGLId(), GL_TEXTURE_2D, 0, src_x, src_y, 0, m_vram_texture.GetGLId(),
                        GL_TEXTURE_2D, 0, dst_x, dst_y, 0, width, height, 1);
@@ -776,7 +777,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     glCopyImageSubDataEXT(m_vram_texture.GetGLId(), GL_TEXTURE_2D, 0, src_x, src_y, 0, m_vram_texture.GetGLId(),
                           GL_TEXTURE_2D, 0, dst_x, dst_y, 0, width, height, 1);
   }
-  else
+  else*/
   {
     glDisable(GL_SCISSOR_TEST);
     m_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
@@ -794,7 +795,7 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
   const u32 x = scaled_rect.left;
   const u32 y = m_vram_texture.GetHeight() - scaled_rect.top - height;
 
-  if (GLAD_GL_VERSION_4_3)
+  /*if (GLAD_GL_VERSION_4_3)
   {
     glCopyImageSubData(m_vram_texture.GetGLId(), GL_TEXTURE_2D, 0, x, y, 0, m_vram_read_texture.GetGLId(),
                        GL_TEXTURE_2D, 0, x, y, 0, width, height, 1);
@@ -804,7 +805,7 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
     glCopyImageSubDataEXT(m_vram_texture.GetGLId(), GL_TEXTURE_2D, 0, x, y, 0, m_vram_read_texture.GetGLId(),
                           GL_TEXTURE_2D, 0, x, y, 0, width, height, 1);
   }
-  else
+  else*/
   {
     m_vram_read_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
     m_vram_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);

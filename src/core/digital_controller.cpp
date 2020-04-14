@@ -147,3 +147,8 @@ Controller::ButtonList DigitalController::StaticGetButtonNames()
           B(Cross), B(Circle), B(Square), B(L1),    B(L2),     B(R1),    B(R2)};
 #undef B
 }
+
+u32 DigitalController::StaticGetVibrationMotorCount()
+{
+  return 0;
+}

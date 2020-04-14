@@ -792,6 +792,7 @@ void QtHostInterface::threadEntryPoint()
     }
 
     m_system->RunFrame();
+    UpdateControllerRumble();
 
     renderDisplay();
 

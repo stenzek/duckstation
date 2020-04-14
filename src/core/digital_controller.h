@@ -36,6 +36,7 @@ public:
   static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
   static AxisList StaticGetAxisNames();
   static ButtonList StaticGetButtonNames();
+  static u32 StaticGetVibrationMotorCount();
 
   ControllerType GetType() const override;
   std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const override;

@@ -36,9 +36,12 @@ public:
   virtual bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) = 0;
   virtual bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                           ButtonCallback callback) = 0;
-  
+
   virtual void PollEvents() = 0;
-  virtual void UpdateControllerRumble() = 0;
+
+  // Changing rumble strength.
+  virtual u32 GetControllerRumbleMotorCount(int controller_index) = 0;
+  virtual void SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors) = 0;
 
   // Input monitoring for external access.
   struct Hook

@@ -335,8 +335,20 @@ void CommonHostInterface::OnSystemPaused(bool paused)
 {
   HostInterface::OnSystemPaused(paused);
 
-  if (paused && IsFullscreen())
-    SetFullscreen(false);
+  if (paused)
+  {
+    if (IsFullscreen())
+      SetFullscreen(false);
+
+    StopControllerRumble();
+  }
+}
+
+void CommonHostInterface::OnSystemDestroyed()
+{
+  HostInterface::OnSystemDestroyed();
+
+  StopControllerRumble();
 }
 
 void CommonHostInterface::OnControllerTypeChanged(u32 slot)
@@ -405,6 +417,55 @@ void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
   UpdateHotkeyInputMap(si);
 }
 
+void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback)
+{
+  ControllerRumbleState rumble;
+  rumble.controller_index = 0;
+  rumble.num_motors = std::min<u32>(num_motors, ControllerRumbleState::MAX_MOTORS);
+  rumble.last_strength.fill(0.0f);
+  rumble.update_callback = std::move(callback);
+  m_controller_vibration_motors.push_back(std::move(rumble));
+}
+
+void CommonHostInterface::UpdateControllerRumble()
+{
+  DebugAssert(m_system);
+
+  for (ControllerRumbleState& rumble : m_controller_vibration_motors)
+  {
+    Controller* controller = m_system->GetController(rumble.controller_index);
+    if (!controller)
+      continue;
+
+    bool changed = false;
+    for (u32 i = 0; i < rumble.num_motors; i++)
+    {
+      const float strength = controller->GetVibrationMotorStrength(i);
+      changed |= (strength != rumble.last_strength[i]);
+      rumble.last_strength[i] = strength;
+    }
+
+    if (changed)
+      rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
+  }
+}
+
+void CommonHostInterface::StopControllerRumble()
+{
+  for (ControllerRumbleState& rumble : m_controller_vibration_motors)
+  {
+    bool changed = true;
+    for (u32 i = 0; i < rumble.num_motors; i++)
+    {
+      changed |= (rumble.last_strength[i] != 0.0f);
+      rumble.last_strength[i] = 0.0f;
+    }
+
+    if (changed)
+      rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
+  }
+}
+
 static bool SplitBinding(const std::string& binding, std::string_view* device, std::string_view* sub_binding)
 {
   const std::string::size_type slash_pos = binding.find('/');
@@ -421,6 +482,9 @@ static bool SplitBinding(const std::string& binding, std::string_view* device, s
 
 void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
 {
+  StopControllerRumble();
+  m_controller_vibration_motors.clear();
+
   for (u32 controller_index = 0; controller_index < 2; controller_index++)
   {
     const ControllerType ctype = m_settings.controller_types[controller_index];
@@ -476,6 +540,14 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
             controller->SetAxisState(axis_code, value);
         });
       }
+    }
+
+    const u32 num_motors = Controller::GetVibrationMotorCount(ctype);
+    if (num_motors > 0)
+    {
+      const std::vector<std::string> bindings = si.GetStringList(category, TinyString::FromFormat("Rumble"));
+      for (const std::string& binding : bindings)
+        AddRumbleToInputMap(binding, controller_index, num_motors);
     }
   }
 }
@@ -597,6 +669,34 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
   }
 
   Log_WarningPrintf("Unknown input device in axis binding '%s'", binding.c_str());
+  return false;
+}
+
+bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors)
+{
+  if (StringUtil::StartsWith(binding, "Controller"))
+  {
+    if (!m_controller_interface)
+    {
+      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
+      return false;
+    }
+
+    const std::optional<int> host_controller_index = StringUtil::FromChars<int>(binding.substr(10));
+    if (!host_controller_index || *host_controller_index < 0)
+    {
+      Log_WarningPrintf("Invalid controller index in rumble binding '%s'", binding.c_str());
+      return false;
+    }
+
+    AddControllerRumble(controller_index, num_motors,
+                        std::bind(&ControllerInterface::SetControllerRumbleStrength, m_controller_interface.get(),
+                                  host_controller_index.value(), std::placeholders::_1, std::placeholders::_2));
+
+    return true;
+  }
+
+  Log_WarningPrintf("Unknown input device in rumble binding '%s'", binding.c_str());
   return false;
 }
 

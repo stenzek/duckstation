@@ -94,6 +94,22 @@ Controller::ButtonList Controller::GetButtonNames(ControllerType type)
   }
 }
 
+u32 Controller::GetVibrationMotorCount(ControllerType type)
+{
+  switch (type)
+  {
+    case ControllerType::DigitalController:
+      return DigitalController::StaticGetVibrationMotorCount();
+
+    case ControllerType::AnalogController:
+      return AnalogController::StaticGetVibrationMotorCount();
+
+    case ControllerType::None:
+    default:
+      return 0;
+  }
+}
+
 std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::string_view axis_name)
 {
   switch (type)

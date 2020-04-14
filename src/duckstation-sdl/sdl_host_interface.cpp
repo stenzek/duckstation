@@ -1301,10 +1301,11 @@ void SDLHostInterface::Run()
     if (m_system && !m_paused)
     {
       m_system->RunFrame();
+      UpdateControllerRumble();
       if (m_frame_step_request)
       {
         m_frame_step_request = false;
-        m_paused = true;
+        PauseSystem(true);
       }
     }
 

@@ -90,4 +90,3 @@ bool ControllerInterface::BindControllerAxisToButton(int controller_index, int a
   return false;
 }
 
-void ControllerInterface::UpdateControllerRumble() {}

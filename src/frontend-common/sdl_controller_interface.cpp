@@ -161,12 +161,35 @@ bool SDLControllerInterface::OpenGameController(int index)
   cd.controller = gcontroller;
   cd.player_id = player_id;
   cd.joystick_id = joystick_id;
+  cd.haptic_left_right_effect = -1;
 
   SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
-  if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) == 0)
-    cd.haptic = haptic;
-  else if (haptic)
-    SDL_HapticClose(haptic);
+  if (haptic)
+  {
+    SDL_HapticEffect ef = {};
+    ef.leftright.type = SDL_HAPTIC_LEFTRIGHT;
+    ef.leftright.length = 1000;
+
+    int ef_id = SDL_HapticNewEffect(haptic, &ef);
+    if (ef_id >= 0)
+    {
+      cd.haptic = haptic;
+      cd.haptic_left_right_effect = ef_id;
+    }
+    else
+    {
+      Log_ErrorPrintf("Failed to create haptic left/right effect: %s", SDL_GetError());
+      if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
+      {
+        cd.haptic = haptic;
+      }
+      else
+      {
+        Log_ErrorPrintf("No haptic rumble supported: %s", SDL_GetError());
+        SDL_HapticClose(haptic);
+      }
+    }
+  }
 
   if (cd.haptic)
     Log_InfoPrintf("Rumble is supported on '%s'", SDL_GameControllerName(gcontroller));
@@ -314,31 +337,52 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
   return true;
 }
 
-void SDLControllerInterface::UpdateControllerRumble()
+u32 SDLControllerInterface::GetControllerRumbleMotorCount(int controller_index)
 {
-  for (auto& cd : m_controllers)
+  auto it = GetControllerDataForPlayerId(controller_index);
+  if (it == m_controllers.end())
+    return 0;
+
+  return (it->haptic_left_right_effect >= 0) ? 2 : (it->haptic ? 1 : 0);
+}
+
+void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors)
+{
+  auto it = GetControllerDataForPlayerId(controller_index);
+  if (it == m_controllers.end())
+    return;
+
+  // we'll update before this duration is elapsed
+  static constexpr float MIN_STRENGTH = 0.01f;
+  static constexpr u32 DURATION = 100000;
+
+  SDL_Haptic* haptic = static_cast<SDL_Haptic*>(it->haptic);
+  if (it->haptic_left_right_effect >= 0 && num_motors > 1)
   {
-    // TODO: FIXME proper binding
-    if (!cd.haptic || cd.player_id < 0 || cd.player_id >= 2)
-      continue;
-
-    float new_strength = 0.0f;
-    Controller* controller = GetController(cd.player_id);
-    if (controller)
+    if (strengths[0] >= MIN_STRENGTH || strengths[1] >= MIN_STRENGTH)
     {
-      const u32 motor_count = controller->GetVibrationMotorCount();
-      for (u32 i = 0; i < motor_count; i++)
-        new_strength = std::max(new_strength, controller->GetVibrationMotorStrength(i));
+      SDL_HapticEffect ef;
+      ef.type = SDL_HAPTIC_LEFTRIGHT;
+      ef.leftright.large_magnitude = static_cast<u32>(strengths[0] * 65535.0f);
+      ef.leftright.small_magnitude = static_cast<u32>(strengths[1] * 65535.0f);
+      ef.leftright.length = DURATION;
+      SDL_HapticUpdateEffect(haptic, it->haptic_left_right_effect, &ef);
+      SDL_HapticRunEffect(haptic, it->haptic_left_right_effect, SDL_HAPTIC_INFINITY);
     }
-
-    if (cd.last_rumble_strength == new_strength)
-      continue;
-
-    if (new_strength > 0.01f)
-      SDL_HapticRumblePlay(static_cast<SDL_Haptic*>(cd.haptic), new_strength, 100000);
     else
-      SDL_HapticRumbleStop(static_cast<SDL_Haptic*>(cd.haptic));
+    {
+      SDL_HapticStopEffect(haptic, it->haptic_left_right_effect);
+    }
+  }
+  else
+  {
+    float max_strength = 0.0f;
+    for (u32 i = 0; i < num_motors; i++)
+      max_strength = std::max(max_strength, strengths[i]);
 
-    cd.last_rumble_strength = new_strength;
+    if (max_strength >= MIN_STRENGTH)
+      SDL_HapticRumblePlay(haptic, max_strength, DURATION);
+    else
+      SDL_HapticRumbleStop(haptic);
   }
 }

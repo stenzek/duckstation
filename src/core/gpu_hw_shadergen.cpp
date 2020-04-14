@@ -547,7 +547,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
       semitransparent = (texcol.a != 0.0);
     #else
-      float4 texcol = SampleFromVRAM(v_texpage, int2(v_tex0));
+      float4 texcol = SampleFromVRAM(v_texpage, int2(floor(v_tex0)));
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 

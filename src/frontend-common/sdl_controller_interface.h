@@ -25,20 +25,22 @@ public:
   bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
   bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction, ButtonCallback callback) override;
 
+  // Changing rumble strength.
+  u32 GetControllerRumbleMotorCount(int controller_index) override;
+  void SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors) override;
+
   void PollEvents() override;
 
   bool ProcessSDLEvent(const SDL_Event* event);
-
-  void UpdateControllerRumble() override;
 
 private:
   struct ControllerData
   {
     void* controller;
     void* haptic;
+    int haptic_left_right_effect;
     int joystick_id;
     int player_id;
-    float last_rumble_strength;
 
     std::array<AxisCallback, MAX_NUM_AXISES> axis_mapping;
     std::array<ButtonCallback, MAX_NUM_BUTTONS> button_mapping;
