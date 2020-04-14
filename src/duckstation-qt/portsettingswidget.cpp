@@ -171,6 +171,28 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
     start_row += num_rows;
   }
 
+
+  const u32 num_motors = Controller::GetVibrationMotorCount(ctype);
+  if (num_motors > 0)
+  {
+    layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
+
+    const QString setting_name = QStringLiteral("Controller%1/Rumble").arg(index + 1);
+    QLabel* label = new QLabel(tr("Rumble"), container);
+    InputRumbleBindingWidget* button = new InputRumbleBindingWidget(m_host_interface, setting_name, container);
+
+    layout->addWidget(label, start_row, 0);
+    layout->addWidget(button, start_row, 1);
+
+    if (!first_button)
+      first_button = button;
+    if (last_button)
+      last_button->setNextWidget(button);
+    last_button = button;
+
+    start_row++;
+  }
+
   layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
 
   if (first_button)
@@ -212,7 +234,7 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
 
     hbox->addWidget(clear_all_button);
     hbox->addWidget(rebind_all_button);
-    layout->addLayout(hbox, start_row++, 0, 1, 4, Qt::AlignRight);
+    layout->addLayout(hbox, start_row, 2, 1, 2, Qt::AlignRight);
   }
 
   if (ui->button_binding_container)

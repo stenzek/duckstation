@@ -4,8 +4,8 @@
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QTimer>
-#include <QtGui/QMouseEvent>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QMouseEvent>
 #include <cmath>
 
 InputBindingWidget::InputBindingWidget(QtHostInterface* host_interface, QString setting_name, QWidget* parent)
@@ -13,6 +13,8 @@ InputBindingWidget::InputBindingWidget(QtHostInterface* host_interface, QString 
 {
   m_current_binding_value = m_host_interface->getSettingValue(m_setting_name).toString();
   setText(m_current_binding_value);
+  setMinimumWidth(150);
+  setMaximumWidth(150);
 
   connect(this, &QPushButton::pressed, this, &InputBindingWidget::onPressed);
 }
@@ -286,6 +288,65 @@ void InputAxisBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 }
 
 void InputAxisBindingWidget::stopListeningForInput()
+{
+  unhookControllerInput();
+  InputBindingWidget::stopListeningForInput();
+}
+
+InputRumbleBindingWidget::InputRumbleBindingWidget(QtHostInterface* host_interface, QString setting_name,
+                                                   QWidget* parent)
+  : InputBindingWidget(host_interface, setting_name, parent)
+{
+}
+
+InputRumbleBindingWidget::~InputRumbleBindingWidget()
+{
+  if (isListeningForInput())
+    InputRumbleBindingWidget::stopListeningForInput();
+}
+
+void InputRumbleBindingWidget::hookControllerInput()
+{
+  ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
+  if (!controller_interface)
+    return;
+
+  m_host_interface->enableBackgroundControllerPolling();
+  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
+    if (ei.type == ControllerInterface::Hook::Type::Button && ei.value > 0.0f)
+    {
+      QMetaObject::invokeMethod(this, "bindToControllerRumble", Q_ARG(int, ei.controller_index));
+      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
+    }
+
+    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
+  });
+}
+
+void InputRumbleBindingWidget::unhookControllerInput()
+{
+  ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
+  if (!controller_interface)
+    return;
+
+  controller_interface->ClearHook();
+  m_host_interface->disableBackgroundControllerPolling();
+}
+
+void InputRumbleBindingWidget::bindToControllerRumble(int controller_index)
+{
+  m_new_binding_value = QStringLiteral("Controller%1").arg(controller_index);
+  setNewBinding();
+  stopListeningForInput();
+}
+
+void InputRumbleBindingWidget::startListeningForInput(u32 timeout_in_seconds)
+{
+  InputBindingWidget::startListeningForInput(timeout_in_seconds);
+  hookControllerInput();
+}
+
+void InputRumbleBindingWidget::stopListeningForInput()
 {
   unhookControllerInput();
   InputBindingWidget::stopListeningForInput();

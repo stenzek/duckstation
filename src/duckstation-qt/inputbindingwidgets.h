@@ -91,3 +91,21 @@ protected:
   void hookControllerInput();
   void unhookControllerInput();
 };
+
+class InputRumbleBindingWidget : public InputBindingWidget
+{
+  Q_OBJECT
+
+public:
+  InputRumbleBindingWidget(QtHostInterface* host_interface, QString setting_name, QWidget* parent);
+  ~InputRumbleBindingWidget();
+
+private Q_SLOTS:
+  void bindToControllerRumble(int controller_index);
+
+protected:
+  void startListeningForInput(u32 timeout_in_seconds) override;
+  void stopListeningForInput() override;
+  void hookControllerInput();
+  void unhookControllerInput();
+};
