@@ -5,6 +5,7 @@
 /bin/
 /Build/
 /build/
+/build-*/
 
 # vs stuff
 .vs
