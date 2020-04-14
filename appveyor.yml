@@ -38,6 +38,8 @@ build_script:
 
       rm -f bin/x64/common-tests*
 
+      cp -a data/* bin/x64
+
       "C:\Program Files\7-Zip\7z.exe" a -r duckstation-win64-release.7z ./bin/x64/*
 
       appveyor PushArtifact duckstation-win64-release.7z
