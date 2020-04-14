@@ -72,6 +72,12 @@ public:
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu);
 
+  ALWAYS_INLINE std::vector<std::pair<std::string, std::string>> getInputProfileList() const
+  {
+    return GetInputProfileList();
+  }
+  void saveInputProfile(const QString& profile_path);
+
 Q_SIGNALS:
   void errorReported(const QString& message);
   void messageReported(const QString& message);
@@ -90,11 +96,13 @@ Q_SIGNALS:
                                         float worst_frame_time);
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void exitRequested();
+  void inputProfileLoaded();
 
 public Q_SLOTS:
   void setDefaultSettings();
   void applySettings();
   void updateInputMap();
+  void applyInputProfile(const QString& profile_path);
   void handleKeyEvent(int key, bool pressed);
   void bootSystem(const SystemBootParameters& params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);

@@ -20,6 +20,7 @@ public:
 public Q_SLOTS:
   void beginRebindAll();
   void clearBinding();
+  void reloadBinding();
 
 protected Q_SLOTS:
   void onPressed();

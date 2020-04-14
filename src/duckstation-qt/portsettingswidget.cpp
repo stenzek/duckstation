@@ -7,16 +7,21 @@
 #include "settingwidgetbinder.h"
 #include <QtCore/QSignalBlocker>
 #include <QtCore/QTimer>
+#include <QtGui/QCursor>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] = "All Memory Card Types (*.mcd *.mcr *.mc)";
+static constexpr char INPUT_PROFILE_FILTER[] = "Input Profiles (*.ini)";
 
 PortSettingsWidget::PortSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QWidget(parent), m_host_interface(host_interface)
 {
   createUi();
+
+  connect(host_interface, &QtHostInterface::inputProfileLoaded, this, &PortSettingsWidget::onProfileLoaded);
 }
 
 PortSettingsWidget::~PortSettingsWidget() = default;
@@ -33,6 +38,38 @@ void PortSettingsWidget::createUi()
   layout->addWidget(m_tab_widget, 0, 0, 1, 1);
 
   setLayout(layout);
+}
+
+void PortSettingsWidget::onProfileLoaded()
+{
+  for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
+  {
+    ControllerType ctype = Settings::ParseControllerTypeName(
+                             m_host_interface->getSettingValue(QStringLiteral("Controller%1/Type").arg(i + 1))
+                               .toString()
+                               .toStdString()
+                               .c_str())
+                             .value_or(ControllerType::None);
+
+    {
+      QSignalBlocker blocker(m_port_ui[i].controller_type);
+      m_port_ui[i].controller_type->setCurrentIndex(static_cast<int>(ctype));
+    }
+    createPortBindingSettingsUi(i, &m_port_ui[i], ctype);
+  }
+}
+
+void PortSettingsWidget::reloadBindingButtons()
+{
+  for (PortSettingsUI& ui : m_port_ui)
+  {
+    InputBindingWidget* widget = ui.first_button;
+    while (widget)
+    {
+      widget->reloadBinding();
+      widget = widget->getNextWidget();
+    }
+  }
 }
 
 void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
@@ -171,7 +208,6 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
     start_row += num_rows;
   }
 
-
   const u32 num_motors = Controller::GetVibrationMotorCount(ctype);
   if (num_motors > 0)
   {
@@ -195,12 +231,23 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
 
   layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
 
+  QHBoxLayout* left_hbox = new QHBoxLayout();
+  QPushButton* load_profile_button = new QPushButton(tr("Load Profile"), ui->widget);
+  connect(load_profile_button, &QPushButton::clicked, this, &PortSettingsWidget::onLoadProfileClicked);
+  left_hbox->addWidget(load_profile_button);
+
+  QPushButton* save_profile_button = new QPushButton(tr("Save Profile"), ui->widget);
+  connect(save_profile_button, &QPushButton::clicked, this, &PortSettingsWidget::onSaveProfileClicked);
+  left_hbox->addWidget(save_profile_button);
+
+  layout->addLayout(left_hbox, start_row, 0, 1, 2, Qt::AlignLeft);
+
   if (first_button)
   {
-    QHBoxLayout* hbox = new QHBoxLayout();
+    QHBoxLayout* right_hbox = new QHBoxLayout();
 
     QPushButton* clear_all_button = new QPushButton(tr("Clear All"), ui->widget);
-    clear_all_button->connect(clear_all_button, &QPushButton::pressed, [this, first_button]() {
+    clear_all_button->connect(clear_all_button, &QPushButton::clicked, [this, first_button]() {
       if (QMessageBox::question(this, tr("Clear Bindings"),
                                 tr("Are you sure you want to clear all bound controls? This cannot be reversed.")) !=
           QMessageBox::Yes)
@@ -217,7 +264,7 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
     });
 
     QPushButton* rebind_all_button = new QPushButton(tr("Rebind All"), ui->widget);
-    rebind_all_button->connect(rebind_all_button, &QPushButton::pressed, [this, first_button]() {
+    rebind_all_button->connect(rebind_all_button, &QPushButton::clicked, [this, first_button]() {
       if (QMessageBox::question(this, tr("Clear Bindings"), tr("Do you want to clear all currently-bound controls?")) ==
           QMessageBox::Yes)
       {
@@ -232,9 +279,9 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
       first_button->beginRebindAll();
     });
 
-    hbox->addWidget(clear_all_button);
-    hbox->addWidget(rebind_all_button);
-    layout->addLayout(hbox, start_row, 2, 1, 2, Qt::AlignRight);
+    right_hbox->addWidget(clear_all_button);
+    right_hbox->addWidget(rebind_all_button);
+    layout->addLayout(right_hbox, start_row, 2, 1, 2, Qt::AlignRight);
   }
 
   if (ui->button_binding_container)
@@ -243,13 +290,14 @@ void PortSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* 
     Q_ASSERT(old_item != nullptr);
 
     delete old_item;
-    delete ui->button_binding_container;
+    ui->button_binding_container->deleteLater();
   }
   else
   {
     ui->layout->addWidget(container);
   }
   ui->button_binding_container = container;
+  ui->first_button = first_button;
 }
 
 void PortSettingsWidget::onControllerTypeChanged(int index)
@@ -281,4 +329,56 @@ void PortSettingsWidget::onEjectMemoryCardClicked(int index)
   m_port_ui[index].memory_card_path->setText(QString());
   m_host_interface->removeSettingValue(QStringLiteral("MemoryCards/Card%1Path").arg(index + 1));
   m_host_interface->applySettings();
+}
+
+void PortSettingsWidget::onLoadProfileClicked()
+{
+  const auto profile_names = m_host_interface->getInputProfileList();
+
+  QMenu menu;
+  for (const auto& [name, path] : profile_names)
+  {
+    QAction* action = menu.addAction(QString::fromStdString(name));
+    QString path_qstr = QString::fromStdString(path);
+    connect(action, &QAction::triggered, [this, path_qstr]() { m_host_interface->applyInputProfile(path_qstr); });
+  }
+
+  if (!profile_names.empty())
+    menu.addSeparator();
+
+  QAction* browse = menu.addAction(tr("Browse..."));
+  connect(browse, &QAction::triggered, [this]() {
+    QString path =
+      QFileDialog::getOpenFileName(this, tr("Select path to input profile ini"), QString(), tr(INPUT_PROFILE_FILTER));
+    if (!path.isEmpty())
+      m_host_interface->applyInputProfile(path);
+  });
+
+  menu.exec(QCursor::pos());
+}
+
+void PortSettingsWidget::onSaveProfileClicked()
+{
+  const auto profile_names = m_host_interface->getInputProfileList();
+
+  QMenu menu;
+  for (const auto& [name, path] : profile_names)
+  {
+    QAction* action = menu.addAction(QString::fromStdString(name));
+    QString path_qstr = QString::fromStdString(path);
+    connect(action, &QAction::triggered, [this, path_qstr]() { m_host_interface->saveInputProfile(path_qstr); });
+  }
+
+  if (!profile_names.empty())
+    menu.addSeparator();
+
+  QAction* browse = menu.addAction(tr("Browse..."));
+  connect(browse, &QAction::triggered, [this]() {
+    QString path =
+      QFileDialog::getSaveFileName(this, tr("Select path to input profile ini"), QString(), tr(INPUT_PROFILE_FILTER));
+    if (!path.isEmpty())
+      m_host_interface->saveInputProfile(path);
+  });
+
+  menu.exec(QCursor::pos());
 }

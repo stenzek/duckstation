@@ -460,6 +460,27 @@ void QtHostInterface::updateInputMap()
   CommonHostInterface::UpdateInputMap(si);
 }
 
+void QtHostInterface::applyInputProfile(const QString& profile_path)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "applyInputProfile", Qt::QueuedConnection, Q_ARG(const QString&, profile_path));
+    return;
+  }
+
+  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
+  QtSettingsInterface si(m_qsettings.get());
+  ApplyInputProfile(profile_path.toUtf8().data(), si);
+  emit inputProfileLoaded();
+}
+
+void QtHostInterface::saveInputProfile(const QString& profile_name)
+{
+  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
+  QtSettingsInterface si(m_qsettings.get());
+  SaveInputProfile(profile_name.toUtf8().data(), si);
+}
+
 void QtHostInterface::powerOffSystem()
 {
   if (!isOnWorkerThread())

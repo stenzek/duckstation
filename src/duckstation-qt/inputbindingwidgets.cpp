@@ -77,6 +77,12 @@ void InputBindingWidget::clearBinding()
   setText(m_current_binding_value);
 }
 
+void InputBindingWidget::reloadBinding()
+{
+  m_current_binding_value = m_host_interface->getSettingValue(m_setting_name).toString();
+  setText(m_current_binding_value);
+}
+
 void InputBindingWidget::onPressed()
 {
   if (isListeningForInput())

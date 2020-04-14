@@ -13,7 +13,7 @@
 class QTimer;
 
 class QtHostInterface;
-class InputButtonBindingWidget;
+class InputBindingWidget;
 
 class PortSettingsWidget : public QWidget
 {
@@ -22,6 +22,9 @@ class PortSettingsWidget : public QWidget
 public:
   PortSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~PortSettingsWidget();
+
+private Q_SLOTS:
+  void onProfileLoaded();
 
 private:
   QtHostInterface* m_host_interface;
@@ -35,14 +38,18 @@ private:
     QComboBox* controller_type;
     QLineEdit* memory_card_path;
     QWidget* button_binding_container;
+    InputBindingWidget* first_button;
   };
 
   void createUi();
+  void reloadBindingButtons();
   void createPortSettingsUi(int index, PortSettingsUI* ui);
   void createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype);
   void onControllerTypeChanged(int index);
   void onBrowseMemoryCardPathClicked(int index);
   void onEjectMemoryCardClicked(int index);
+  void onLoadProfileClicked();
+  void onSaveProfileClicked();
 
   std::array<PortSettingsUI, 2> m_port_ui = {};
 };
