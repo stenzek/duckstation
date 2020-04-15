@@ -152,6 +152,15 @@ struct Rectangle
     bottom = std::max(bottom, rhs.bottom);
   }
 
+  /// Expands the bounds of the rectangle to contain another rectangle.
+  constexpr void Include(T other_left, T other_right, T other_top, T other_bottom)
+  {
+    left = std::min(left, other_left);
+    right = std::max(right, other_right);
+    top = std::min(top, other_top);
+    bottom = std::max(bottom, other_bottom);
+  }
+
   /// Clamps the rectangle to the specified coordinates.
   constexpr void Clamp(T x1, T y1, T x2, T y2)
   {

@@ -176,11 +176,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 {
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
 
-  s32 min_x = std::numeric_limits<s32>::max();
-  s32 max_x = std::numeric_limits<s32>::min();
-  s32 min_y = std::numeric_limits<s32>::max();
-  s32 max_y = std::numeric_limits<s32>::min();
-
   // TODO: Move this to the GPU..
   switch (rc.primitive)
   {
@@ -208,22 +203,29 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
       // Cull polygons which are too large.
-      if (std::abs(vertices[2].x - vertices[0].x) >= MAX_PRIMITIVE_WIDTH ||
-          std::abs(vertices[2].x - vertices[1].x) >= MAX_PRIMITIVE_WIDTH ||
-          std::abs(vertices[1].x - vertices[0].x) >= MAX_PRIMITIVE_WIDTH ||
-          std::abs(vertices[2].y - vertices[0].y) >= MAX_PRIMITIVE_HEIGHT ||
-          std::abs(vertices[2].y - vertices[1].y) >= MAX_PRIMITIVE_HEIGHT ||
-          std::abs(vertices[1].y - vertices[0].y) >= MAX_PRIMITIVE_HEIGHT)
+      const s32 min_x_12 = std::min(vertices[1].x, vertices[2].x);
+      const s32 max_x_12 = std::max(vertices[2].x, vertices[2].x);
+      const s32 min_y_12 = std::min(vertices[1].y, vertices[2].y);
+      const s32 max_y_12 = std::max(vertices[1].y, vertices[2].y);
+      const s32 min_x = std::min(min_x_12, vertices[2].x);
+      const s32 max_x = std::max(max_x_12, vertices[2].x);
+      const s32 min_y = std::min(min_y_12, vertices[2].y);
+      const s32 max_y = std::max(max_y_12, vertices[2].y);
+
+      if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
       {
         Log_DebugPrintf("Culling too-large polygon: %d,%d %d,%d %d,%d", vertices[0].x, vertices[0].y, vertices[1].x,
                         vertices[1].y, vertices[2].x, vertices[2].y);
       }
       else
       {
-        min_x = std::min(std::min(vertices[0].x, vertices[1].x), vertices[2].x);
-        max_x = std::max(std::max(vertices[0].x, vertices[1].x), vertices[2].x);
-        min_y = std::min(std::min(vertices[0].y, vertices[1].y), vertices[2].y);
-        max_y = std::max(std::max(vertices[0].y, vertices[1].y), vertices[2].y);
+        const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
+        const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
+        const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
+        const u32 clip_bottom =
+          static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+        m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
 
         std::memcpy(m_batch_current_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 3);
         m_batch_current_vertex_ptr += 3;
@@ -232,23 +234,27 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
       // quads
       if (rc.quad_polygon)
       {
+        const s32 min_x_123 = std::min(min_x_12, vertices[3].x);
+        const s32 max_x_123 = std::max(min_x_12, vertices[3].x);
+        const s32 min_y_123 = std::min(min_y_12, vertices[3].y);
+        const s32 max_y_123 = std::max(min_y_12, vertices[3].y);
+
         // Cull polygons which are too large.
-        if (std::abs(vertices[3].x - vertices[2].x) >= MAX_PRIMITIVE_WIDTH ||
-            std::abs(vertices[3].x - vertices[1].x) >= MAX_PRIMITIVE_WIDTH ||
-            std::abs(vertices[1].x - vertices[2].x) >= MAX_PRIMITIVE_WIDTH ||
-            std::abs(vertices[3].y - vertices[2].y) >= MAX_PRIMITIVE_HEIGHT ||
-            std::abs(vertices[3].y - vertices[1].y) >= MAX_PRIMITIVE_HEIGHT ||
-            std::abs(vertices[1].y - vertices[2].y) >= MAX_PRIMITIVE_HEIGHT)
+        if ((max_x_123 - min_x_123) >= MAX_PRIMITIVE_WIDTH || (max_y_123 - min_y_123) >= MAX_PRIMITIVE_HEIGHT)
         {
           Log_DebugPrintf("Culling too-large polygon (quad second half): %d,%d %d,%d %d,%d", vertices[2].x,
                           vertices[2].y, vertices[1].x, vertices[1].y, vertices[0].x, vertices[0].y);
         }
         else
         {
-          min_x = std::min(min_x, vertices[3].x);
-          max_x = std::max(max_x, vertices[3].x);
-          min_y = std::min(min_y, vertices[3].y);
-          max_y = std::max(max_y, vertices[3].y);
+          const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x_123, m_drawing_area.left, m_drawing_area.right));
+          const u32 clip_right =
+            static_cast<u32>(std::clamp<s32>(max_x_123, m_drawing_area.left, m_drawing_area.right)) + 1u;
+          const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y_123, m_drawing_area.top, m_drawing_area.bottom));
+          const u32 clip_bottom =
+            static_cast<u32>(std::clamp<s32>(max_y_123, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+          m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
 
           AddVertex(vertices[2]);
           AddVertex(vertices[1]);
@@ -303,11 +309,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
                                     ((rectangle_height + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT);
       EnsureVertexBufferSpace(required_vertices);
 
-      min_x = pos_x;
-      min_y = pos_y;
-      max_x = pos_x + rectangle_width;
-      max_y = pos_y + rectangle_height;
-
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
       u16 tex_top = orig_tex_top;
       for (s32 y_offset = 0; y_offset < rectangle_height;)
@@ -340,6 +341,15 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         y_offset += quad_height;
         tex_top = 0;
       }
+
+      const u32 clip_left = static_cast<u32>(std::clamp<s32>(pos_x, m_drawing_area.left, m_drawing_area.right));
+      const u32 clip_right =
+        static_cast<u32>(std::clamp<s32>(pos_x + rectangle_width, m_drawing_area.left, m_drawing_area.right)) + 1u;
+      const u32 clip_top = static_cast<u32>(std::clamp<s32>(pos_y, m_drawing_area.top, m_drawing_area.bottom));
+      const u32 clip_bottom =
+        static_cast<u32>(std::clamp<s32>(pos_y + rectangle_height, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+      m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
     }
     break;
 
@@ -362,8 +372,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
         if (i > 0)
         {
-          if (std::abs(last_vertex.x - vertex.x) >= MAX_PRIMITIVE_WIDTH ||
-              std::abs(last_vertex.y - vertex.y) >= MAX_PRIMITIVE_HEIGHT)
+          const s32 min_x = std::min(last_vertex.x, vertex.x);
+          const s32 max_x = std::max(last_vertex.x, vertex.x);
+          const s32 min_y = std::min(last_vertex.y, vertex.y);
+          const s32 max_y = std::max(last_vertex.y, vertex.y);
+
+          if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
           {
             Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_vertex.x, last_vertex.y, vertex.x, vertex.y);
           }
@@ -372,10 +386,14 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
             AddVertex(last_vertex);
             AddVertex(vertex);
 
-            min_x = std::min(min_x, std::min(last_vertex.x, vertex.x));
-            max_x = std::max(max_x, std::max(last_vertex.x, vertex.x));
-            min_y = std::min(min_y, std::min(last_vertex.y, vertex.y));
-            max_y = std::max(max_y, std::max(last_vertex.y, vertex.y));
+            const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
+            const u32 clip_right =
+              static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
+            const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
+            const u32 clip_bottom =
+              static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+            m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
           }
         }
 
@@ -387,16 +405,6 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
     default:
       UnreachableCode();
       break;
-  }
-
-  if (min_x <= max_x)
-  {
-    const Common::Rectangle<u32> area_covered(
-      std::clamp(min_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right)),
-      std::clamp(min_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom)),
-      std::clamp(max_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right)) + 1,
-      std::clamp(max_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom)) + 1);
-    m_vram_dirty_rect.Include(area_covered);
   }
 }
 
