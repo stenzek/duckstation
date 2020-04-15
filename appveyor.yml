@@ -56,25 +56,23 @@ build_script:
 
       ninja
 
-      wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+      ../appimage/generate-appimages.sh $(pwd)
 
-      wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+      if [ $? -eq 0 ]; then
 
-      chmod +x linuxdeploy-x86_64.AppImage
+        mv duckstation-qt-x64.AppImage duckstation-qt-x64-release.AppImage
 
-      chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+        mv duckstation-sdl-x64.AppImage duckstation-sdl-x64-release.AppImage
 
-      cp ../appimage/duckstation-icon.png ../appimage/duckstation-qt.png
+        7za a -r duckstation-linux-x64-release.7z duckstation-*.AppImage
 
-      cp ../appimage/duckstation-icon.png ../appimage/duckstation-sdl.png
+        appveyor PushArtifact duckstation-linux-x64-release.7z
 
-      ./linuxdeploy-x86_64.AppImage --appdir=./AppDir-duckstation-qt --executable=./src/duckstation-qt/duckstation-qt --create-desktop-file --icon-file=../appimage/duckstation-qt.png --plugin=qt --output=appimage
+      else
 
-      ./linuxdeploy-x86_64.AppImage --appdir=./AppDir-duckstation-sdl --executable=./src/duckstation-sdl/duckstation-sdl --create-desktop-file --icon-file=../appimage/duckstation-sdl.png --output=appimage
+        echo "Failed to create AppImages, no AppImage artifact will be pushed"
 
-      7za a -r duckstation-linux-x64-release.7z duckstation-*.AppImage
-
-      appveyor PushArtifact duckstation-linux-x64-release.7z
+      fi
 
     elif [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
 
