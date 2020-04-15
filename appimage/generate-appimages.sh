@@ -1,12 +1,5 @@
 #!/bin/bash
 
-function get_tools_and_plugins() {
-  wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-  chmod a+x linuxdeploy-x86_64.AppImage
-  wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
-  chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
-}
-
 # NOTE: Keep this script in the same directory as resources for AppImage creation
 APPIMAGE_RESOURCES_DIR=$(dirname $(readlink -f $0))
 echo "APPIMAGE_RESOURCES_DIR set to ${APPIMAGE_RESOURCES_DIR}"
@@ -21,7 +14,10 @@ else
 fi
 
 # Acquire linuxdeploy and linuxdeploy-plugin-qt
-get_tools_and_plugins
+wget -N https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+chmod a+x linuxdeploy-x86_64.AppImage
+wget -N https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
 
 # Copy icons into the <resolution>/<app_name>.<ext> directory structure that linuxdeploy nominally expects,
 # e.g. 16x16/duckstation-qt.png, 32x32/duckstation-qt.png, etc.
