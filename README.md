@@ -1,7 +1,7 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows Builds:** https://ci.appveyor.com/project/stenzek/duckstation
+**Latest Windows and Linux (AppImage) Builds:** https://ci.appveyor.com/project/stenzek/duckstation
 
 DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. Accuracy is not the main focus of the emulator, but the goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
 
