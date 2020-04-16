@@ -311,7 +311,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
             static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
-          std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this, textured](GL::Program& prog) {
+          std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, {}, fs, [this, textured](GL::Program& prog) {
             prog.BindAttribute(0, "a_pos");
             prog.BindAttribute(1, "a_col0");
             if (textured)
@@ -347,7 +347,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
       const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
                                                                      ConvertToBoolUnchecked(interlaced));
 
-      std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, fs, [this](GL::Program& prog) {
+      std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, {}, fs, [this](GL::Program& prog) {
         if (!m_is_gles)
         {
           if (m_supports_dual_source_blend)
@@ -373,7 +373,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   }
 
   std::optional<GL::Program> prog =
-    m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+    m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                               shadergen.GenerateInterlacedFillFragmentShader(), [this](GL::Program& prog) {
                                 if (!m_is_gles)
                                   prog.BindFragData(0, "o_col0");
@@ -385,7 +385,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog->Bind();
   m_vram_interlaced_fill_program = std::move(*prog);
 
-  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMReadFragmentShader(), [this](GL::Program& prog) {
                                      if (!m_is_gles)
                                        prog.BindFragData(0, "o_col0");
@@ -400,7 +400,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
   if (m_supports_texture_buffer)
   {
-    prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(),
+    prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                      shadergen.GenerateVRAMWriteFragmentShader(), [this](GL::Program& prog) {
                                        if (!m_is_gles)
                                          prog.BindFragData(0, "o_col0");

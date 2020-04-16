@@ -13,6 +13,9 @@ struct CacheIndexEntry
   u64 vertex_source_hash_low;
   u64 vertex_source_hash_high;
   u32 vertex_source_length;
+  u64 geometry_source_hash_low;
+  u64 geometry_source_hash_high;
+  u32 geometry_source_length;
   u64 fragment_source_hash_low;
   u64 fragment_source_hash_high;
   u32 fragment_source_length;
@@ -33,7 +36,9 @@ bool ShaderCache::CacheIndexKey::operator==(const CacheIndexKey& key) const
 {
   return (
     vertex_source_hash_low == key.vertex_source_hash_low && vertex_source_hash_high == key.vertex_source_hash_high &&
-    vertex_source_length == key.vertex_source_length && fragment_source_hash_low == key.fragment_source_hash_low &&
+    vertex_source_length == key.vertex_source_length && geometry_source_hash_low == key.geometry_source_hash_low &&
+    geometry_source_hash_high == key.geometry_source_hash_high &&
+    geometry_source_length == key.geometry_source_length && fragment_source_hash_low == key.fragment_source_hash_low &&
     fragment_source_hash_high == key.fragment_source_hash_high && fragment_source_length == key.fragment_source_length);
 }
 
@@ -41,7 +46,9 @@ bool ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 {
   return (
     vertex_source_hash_low != key.vertex_source_hash_low || vertex_source_hash_high != key.vertex_source_hash_high ||
-    vertex_source_length != key.vertex_source_length || fragment_source_hash_low != key.fragment_source_hash_low ||
+    vertex_source_length != key.vertex_source_length || geometry_source_hash_low != key.geometry_source_hash_low ||
+    geometry_source_hash_high != key.geometry_source_hash_high ||
+    geometry_source_length != key.geometry_source_length || fragment_source_hash_low != key.fragment_source_hash_low ||
     fragment_source_hash_high != key.fragment_source_hash_high || fragment_source_length != key.fragment_source_length);
 }
 
@@ -160,9 +167,10 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
       return false;
     }
 
-    const CacheIndexKey key{entry.vertex_source_hash_low,    entry.vertex_source_hash_high,
-                            entry.vertex_source_length,      entry.fragment_source_hash_low,
-                            entry.fragment_source_hash_high, entry.fragment_source_length};
+    const CacheIndexKey key{
+      entry.vertex_source_hash_low,   entry.vertex_source_hash_high,   entry.vertex_source_length,
+      entry.geometry_source_hash_low, entry.geometry_source_hash_high, entry.geometry_source_length,
+      entry.fragment_source_hash_low, entry.fragment_source_hash_high, entry.fragment_source_length};
     const CacheIndexData data{entry.file_offset, entry.blob_size, entry.blob_format};
     m_index.emplace(key, data);
   }
@@ -191,6 +199,7 @@ bool ShaderCache::Recreate()
 }
 
 ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vertex_shader,
+                                                    const std::string_view& geometry_shader,
                                                     const std::string_view& fragment_shader)
 {
   union ShaderHash
@@ -203,18 +212,33 @@ ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vert
     u8 bytes[16];
   };
 
-  ShaderHash vertex_hash;
-  ShaderHash fragment_hash;
+  ShaderHash vertex_hash = {};
+  ShaderHash geometry_hash = {};
+  ShaderHash fragment_hash = {};
 
   MD5Digest digest;
-  digest.Update(vertex_shader.data(), static_cast<u32>(vertex_shader.length()));
-  digest.Final(vertex_hash.bytes);
+  if (!vertex_shader.empty())
+  {
+    digest.Update(vertex_shader.data(), static_cast<u32>(vertex_shader.length()));
+    digest.Final(vertex_hash.bytes);
+  }
 
-  digest.Reset();
-  digest.Update(fragment_shader.data(), static_cast<u32>(fragment_shader.length()));
-  digest.Final(fragment_hash.bytes);
+  if (!geometry_shader.empty())
+  {
+    digest.Reset();
+    digest.Update(geometry_shader.data(), static_cast<u32>(geometry_shader.length()));
+    digest.Final(geometry_hash.bytes);
+  }
+
+  if (!fragment_shader.empty())
+  {
+    digest.Reset();
+    digest.Update(fragment_shader.data(), static_cast<u32>(fragment_shader.length()));
+    digest.Final(fragment_hash.bytes);
+  }
 
   return CacheIndexKey{vertex_hash.low,   vertex_hash.high,   static_cast<u32>(vertex_shader.length()),
+                       geometry_hash.low, geometry_hash.high, static_cast<u32>(geometry_shader.length()),
                        fragment_hash.low, fragment_hash.high, static_cast<u32>(fragment_shader.length())};
 }
 
@@ -229,15 +253,16 @@ std::string ShaderCache::GetBlobFileName() const
 }
 
 std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_shader,
+                                               const std::string_view geometry_shader,
                                                const std::string_view fragment_shader, const PreLinkCallback& callback)
 {
   if (!m_program_binary_supported)
-    return CompileProgram(vertex_shader, fragment_shader, callback, false);
+    return CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
 
-  const auto key = GetCacheKey(vertex_shader, fragment_shader);
+  const auto key = GetCacheKey(vertex_shader, geometry_shader, fragment_shader);
   auto iter = m_index.find(key);
   if (iter == m_index.end())
-    return CompileAndAddProgram(key, vertex_shader, fragment_shader, callback);
+    return CompileAndAddProgram(key, vertex_shader, geometry_shader, fragment_shader, callback);
 
   std::vector<u8> data(iter->second.blob_size);
   if (std::fseek(m_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
@@ -254,17 +279,18 @@ std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_sha
   Log_WarningPrintf(
     "Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
   if (!Recreate())
-    return CompileProgram(vertex_shader, fragment_shader, callback, false);
+    return CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
   else
-    return CompileAndAddProgram(key, vertex_shader, fragment_shader, callback);
+    return CompileAndAddProgram(key, vertex_shader, geometry_shader, fragment_shader, callback);
 }
 
 std::optional<Program> ShaderCache::CompileProgram(const std::string_view& vertex_shader,
+                                                   const std::string_view& geometry_shader,
                                                    const std::string_view& fragment_shader,
                                                    const PreLinkCallback& callback, bool set_retrievable)
 {
   Program prog;
-  if (!prog.Compile(vertex_shader, fragment_shader))
+  if (!prog.Compile(vertex_shader, geometry_shader, fragment_shader))
     return std::nullopt;
 
   if (callback)
@@ -281,10 +307,11 @@ std::optional<Program> ShaderCache::CompileProgram(const std::string_view& verte
 
 std::optional<Program> ShaderCache::CompileAndAddProgram(const CacheIndexKey& key,
                                                          const std::string_view& vertex_shader,
+                                                         const std::string_view& geometry_shader,
                                                          const std::string_view& fragment_shader,
                                                          const PreLinkCallback& callback)
 {
-  std::optional<Program> prog = CompileProgram(vertex_shader, fragment_shader, callback, true);
+  std::optional<Program> prog = CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, true);
   if (!prog)
     return std::nullopt;
 
@@ -305,6 +332,9 @@ std::optional<Program> ShaderCache::CompileAndAddProgram(const CacheIndexKey& ke
   entry.vertex_source_hash_low = key.vertex_source_hash_low;
   entry.vertex_source_hash_high = key.vertex_source_hash_high;
   entry.vertex_source_length = key.vertex_source_length;
+  entry.geometry_source_hash_low = key.geometry_source_hash_low;
+  entry.geometry_source_hash_high = key.geometry_source_hash_high;
+  entry.geometry_source_length = key.geometry_source_length;
   entry.fragment_source_hash_low = key.fragment_source_hash_low;
   entry.fragment_source_hash_high = key.fragment_source_hash_high;
   entry.fragment_source_length = key.fragment_source_length;

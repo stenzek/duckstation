@@ -419,7 +419,7 @@ void main()
 }
 )";
 
-  if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader,
+  if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
                                  GetGLSLVersionHeader() + display_fragment_shader))
   {
     Log_ErrorPrintf("Failed to compile display shaders");
