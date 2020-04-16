@@ -9,10 +9,15 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolu
                                    bool scaled_dithering, bool texture_filtering, bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
     m_scaled_dithering(scaled_dithering), m_texture_filering(texture_filtering),
-    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_supports_dual_source_blend(supports_dual_source_blend)
+    m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_supports_dual_source_blend(supports_dual_source_blend),
+    m_use_glsl_interface_blocks(false)
 {
   if (m_glsl)
+  {
     SetGLSLVersionString();
+
+    m_use_glsl_interface_blocks = (GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+  }
 }
 
 GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
@@ -216,25 +221,40 @@ void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* n
   }
 }
 
-void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
-                                               const std::initializer_list<const char*>& attributes,
-                                               u32 num_color_outputs, u32 num_texcoord_outputs,
-                                               const std::initializer_list<const char*>& additional_outputs,
-                                               bool declare_vertex_id)
+void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
+  std::stringstream& ss, const std::initializer_list<const char*>& attributes, u32 num_color_outputs,
+  u32 num_texcoord_outputs, const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
+  bool declare_vertex_id)
 {
   if (m_glsl)
   {
     for (const char* attribute : attributes)
       ss << "in " << attribute << ";\n";
 
-    for (u32 i = 0; i < num_color_outputs; i++)
-      ss << "out float4 v_col" << i << ";\n";
+    if (m_use_glsl_interface_blocks)
+    {
+      ss << "out VertexData {\n";
+      for (u32 i = 0; i < num_color_outputs; i++)
+        ss << "  float4 v_col" << i << ";\n";
 
-    for (u32 i = 0; i < num_texcoord_outputs; i++)
-      ss << "out float2 v_tex" << i << ";\n";
+      for (u32 i = 0; i < num_texcoord_outputs; i++)
+        ss << "  float2 v_tex" << i << ";\n";
 
-    for (const char* output : additional_outputs)
-      ss << output << ";\n";
+      for (const auto [qualifiers, name] : additional_outputs)
+        ss << "  " << qualifiers << " " << name << ";\n";
+      ss << "};\n";
+    }
+    else
+    {
+      for (u32 i = 0; i < num_color_outputs; i++)
+        ss << "out float4 v_col" << i << ";\n";
+
+      for (u32 i = 0; i < num_texcoord_outputs; i++)
+        ss << "out float2 v_tex" << i << ";\n";
+
+      for (const auto [qualifiers, name] : additional_outputs)
+        ss << qualifiers << " out " << name << ";\n";
+    }
 
     ss << "#define v_pos gl_Position\n\n";
     if (declare_vertex_id)
@@ -264,9 +284,9 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
       ss << "  out float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
 
     u32 additional_counter = num_texcoord_outputs;
-    for (const char* output : additional_outputs)
+    for (const auto [qualifiers, name] : additional_outputs)
     {
-      ss << "  " << output << " : TEXCOORD" << additional_counter << ",\n";
+      ss << "  " << qualifiers << " out " << name << " : TEXCOORD" << additional_counter << ",\n";
       additional_counter++;
     }
 
@@ -274,20 +294,37 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(std::stringstream& ss,
   }
 }
 
-void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
-                                                 const std::initializer_list<const char*>& additional_inputs,
-                                                 bool declare_fragcoord, bool dual_color_output)
+void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
+  std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
+  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
+  bool declare_fragcoord /* = false */, bool dual_color_output /* = false */)
 {
   if (m_glsl)
   {
-    for (u32 i = 0; i < num_color_inputs; i++)
-      ss << "in float4 v_col" << i << ";\n";
+    if (m_use_glsl_interface_blocks)
+    {
+      ss << "in VertexData {\n";
+      for (u32 i = 0; i < num_color_inputs; i++)
+        ss << "  float4 v_col" << i << ";\n";
 
-    for (u32 i = 0; i < num_texcoord_inputs; i++)
-      ss << "in float2 v_tex" << i << ";\n";
+      for (u32 i = 0; i < num_texcoord_inputs; i++)
+        ss << "  float2 v_tex" << i << ";\n";
 
-    for (const char* input : additional_inputs)
-      ss << input << ";\n";
+      for (const auto [qualifiers, name] : additional_inputs)
+        ss << "  " << qualifiers << " " << name << ";\n";
+      ss << "};\n";
+    }
+    else
+    {
+      for (u32 i = 0; i < num_color_inputs; i++)
+        ss << "in float4 v_col" << i << ";\n";
+
+      for (u32 i = 0; i < num_texcoord_inputs; i++)
+        ss << "in float2 v_tex" << i << ";\n";
+
+      for (const auto [qualifiers, name] : additional_inputs)
+        ss << qualifiers << " in " << name << ";\n";
+    }
 
     if (declare_fragcoord)
       ss << "#define v_pos gl_FragCoord\n";
@@ -312,9 +349,9 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_
         ss << "  in float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
 
       u32 additional_counter = num_texcoord_inputs;
-      for (const char* output : additional_inputs)
+      for (const auto [qualifiers, name] : additional_inputs)
       {
-        ss << "  " << output << " : TEXCOORD" << additional_counter << ",\n";
+        ss << "  " << qualifiers << " in " << name << " : TEXCOORD" << additional_counter << ",\n";
         additional_counter++;
       }
 
@@ -353,7 +390,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   if (textured)
   {
     DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "int a_texcoord", "int a_texpage"}, 1, 1,
-                            {"nointerpolation out int4 v_texpage"});
+                            {{"nointerpolation", "int4 v_texpage"}});
   }
   else
   {
@@ -498,7 +535,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {"nointerpolation in int4 v_texpage"}, true, use_dual_source);
+    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "int4 v_texpage"}}, true, use_dual_source);
   }
   else
   {
@@ -638,15 +675,57 @@ std::string GPU_HW_ShaderGen::GenerateBatchLineExpandGeometryShader()
   WriteHeader(ss);
   WriteCommonFunctions(ss);
 
+  ss << R"(
+CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+)";
+
   // GS is a pain, too different between HLSL and GLSL...
   if (m_glsl)
   {
+    ss << R"(
+in VertexData {
+  float4 v_col0;
+} in_data[];
+
+out VertexData {
+  float4 v_col0;
+} out_data;
+
+layout(lines) in;
+layout(triangle_strip, max_vertices = 4) out;
+
+void main() {
+  float2 dir = normalize(gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy);
+  float2 normal = cross(float3(dir, 0.0), float3(0.0, 0.0, 1.0)).xy * WIDTH;
+  float4 offset = float4(normal, 0.0, 0.0);
+
+  // top-left
+  out_data.v_col0 = in_data[0].v_col0;
+  gl_Position = gl_in[0].gl_Position - offset;
+  EmitVertex();
+
+  // top-right
+  out_data.v_col0 = in_data[0].v_col0;
+  gl_Position = gl_in[0].gl_Position + offset;
+  EmitVertex();
+
+  // bottom-left
+  out_data.v_col0 = in_data[1].v_col0;
+  gl_Position = gl_in[1].gl_Position - offset;
+  EmitVertex();
+
+  // bottom-right
+  out_data.v_col0 = in_data[1].v_col0;
+  gl_Position = gl_in[1].gl_Position + offset;
+  EmitVertex();
+
+  EndPrimitive();
+}
+)";
   }
   else
   {
     ss << R"(
-CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-
 struct Vertex
 {
   float4 col0 : COLOR0;

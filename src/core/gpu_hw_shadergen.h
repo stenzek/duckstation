@@ -8,7 +8,7 @@ class GPU_HW_ShaderGen
 {
 public:
   GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color, bool scaled_dithering,
-                   bool texture_filtering, bool supports_dual_source_belnd);
+                   bool texture_filtering, bool supports_dual_source_blend);
   ~GPU_HW_ShaderGen();
 
   std::string GenerateBatchVertexShader(bool textured);
@@ -30,6 +30,7 @@ public:
   bool m_texture_filering;
   bool m_glsl;
   bool m_supports_dual_source_blend;
+  bool m_use_glsl_interface_blocks;
 
   std::string m_glsl_version_string;
 
@@ -41,10 +42,10 @@ private:
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int, bool is_unsigned);
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,
                                u32 num_color_outputs, u32 num_texcoord_outputs,
-                               const std::initializer_list<const char*>& additional_outputs,
+                               const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
                                bool declare_vertex_id = false);
   void DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
-                                 const std::initializer_list<const char*>& additional_inputs,
+                                 const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
                                  bool declare_fragcoord = false, bool dual_color_output = false);
 
   void WriteCommonFunctions(std::stringstream& ss);

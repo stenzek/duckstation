@@ -91,7 +91,8 @@ void GPU_HW_OpenGL::ResetGraphicsAPIState()
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_BLEND);
   glDepthMask(GL_TRUE);
-  glLineWidth(1.0f);
+  if (m_resolution_scale > 1 && !m_supports_geometry_shaders)
+    glLineWidth(1.0f);
   glBindVertexArray(0);
 }
 
@@ -104,7 +105,8 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
-  glLineWidth(static_cast<float>(m_resolution_scale));
+  if (m_resolution_scale > 1 && !m_supports_geometry_shaders)
+    glLineWidth(static_cast<float>(m_resolution_scale));
   glBindVertexArray(m_vao_id);
 
   SetScissorFromDrawingArea();
@@ -148,13 +150,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   GLint max_texture_size = VRAM_WIDTH;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   Log_InfoPrintf("Max texture size: %dx%d", max_texture_size, max_texture_size);
-  const int max_texture_scale = max_texture_size / VRAM_WIDTH;
-
-  std::array<int, 2> line_width_range = {{1, 1}};
-  glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range.data());
-  Log_InfoPrintf("Max line width: %d", line_width_range[1]);
-
-  m_max_resolution_scale = std::min(max_texture_scale, line_width_range[1]);
+  m_max_resolution_scale = static_cast<u32>(max_texture_size / VRAM_WIDTH);
 
   glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
   Log_InfoPrintf("Uniform buffer offset alignment: %u", m_uniform_buffer_alignment);
@@ -180,6 +176,19 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   m_supports_dual_source_blend = (max_dual_source_draw_buffers > 0);
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
+
+  m_supports_geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_ES_VERSION_3_2;
+  if (!m_supports_geometry_shaders)
+  {
+    Log_WarningPrintf("Geometry shaders are not supported, line rendering at higher resolutions may be incorrect. We "
+                      "will try to use glLineWidth() to emulate this, but the accuracy depends on your driver.");
+
+    std::array<int, 2> line_width_range = {{1, 1}};
+    glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range.data());
+    Log_InfoPrintf("Max line width: %d", line_width_range[1]);
+
+    m_max_resolution_scale = std::min<int>(m_max_resolution_scale, line_width_range[1]);
+  }
 }
 
 bool GPU_HW_OpenGL::CreateFramebuffer()
@@ -305,12 +314,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
-          const std::string vs = shadergen.GenerateBatchVertexShader(textured);
+          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured);
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
-          std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, {}, fs, [this, textured](GL::Program& prog) {
+          const auto link_callback = [this, textured](GL::Program& prog) {
             prog.BindAttribute(0, "a_pos");
             prog.BindAttribute(1, "a_col0");
             if (textured)
@@ -321,7 +330,9 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
             if (!m_is_gles)
               prog.BindFragData(0, "o_col0");
-          });
+          };
+
+          std::optional<GL::Program> prog = m_shader_cache.GetProgram(batch_vs, {}, fs, link_callback);
           if (!prog)
             return false;
 
@@ -333,6 +344,18 @@ bool GPU_HW_OpenGL::CompilePrograms()
           }
 
           m_render_programs[render_mode][texture_mode][dithering][interlacing] = std::move(*prog);
+
+          if (!textured && m_supports_geometry_shaders)
+          {
+            const std::string line_expand_gs = shadergen.GenerateBatchLineExpandGeometryShader();
+
+            prog = m_shader_cache.GetProgram(batch_vs, line_expand_gs, fs, link_callback);
+            if (!prog)
+              return false;
+
+            prog->BindUniformBlock("UBOBlock", 1);
+            m_line_render_programs[render_mode][dithering][interlacing] = std::move(*prog);
+          }
         }
       }
     }
@@ -418,8 +441,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
 void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
 {
-  const GL::Program& prog = m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
-                                             [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
+  const GL::Program& prog =
+    ((m_batch.primitive < BatchPrimitive::Triangles && m_supports_geometry_shaders && m_resolution_scale > 1) ?
+       m_line_render_programs[static_cast<u8>(render_mode)][BoolToUInt8(m_batch.dithering)]
+                             [BoolToUInt8(m_batch.interlacing)] :
+       m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
+                        [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)]);
   prog.Bind();
 
   if (m_batch.texture_mode != TextureMode::Disabled)

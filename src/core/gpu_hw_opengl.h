@@ -77,7 +77,9 @@ private:
   GLuint m_texture_buffer_r16ui_texture = 0;
 
   std::array<std::array<std::array<std::array<GL::Program, 2>, 2>, 9>, 4>
-    m_render_programs;                                          // [render_mode][texture_mode][dithering][interlacing]
+    m_render_programs; // [render_mode][texture_mode][dithering][interlacing]
+  std::array<std::array<std::array<GL::Program, 2>, 2>, 4>
+    m_line_render_programs;                                     // [render_mode][dithering][interlacing]
   std::array<std::array<GL::Program, 2>, 2> m_display_programs; // [depth_24][interlaced]
   GL::Program m_vram_interlaced_fill_program;
   GL::Program m_vram_read_program;
@@ -88,4 +90,5 @@ private:
 
   bool m_is_gles = false;
   bool m_supports_texture_buffer = false;
+  bool m_supports_geometry_shaders = false;
 };
