@@ -50,6 +50,9 @@ public:
   /// Returns true if the filename is a PlayStation executable we can inject.
   static bool IsExeFileName(const char* path);
 
+  /// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
+  static bool IsPsfFileName(const char* path);
+
   static std::string GetGameCodeForImage(CDImage* cdi);
   static std::string GetGameCodeForPath(const char* image_path);
   static DiscRegion GetRegionForCode(std::string_view code);

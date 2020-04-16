@@ -201,6 +201,12 @@ bool GameList::IsExeFileName(const char* path)
           (StringUtil::Strcasecmp(extension, ".exe") == 0 || StringUtil::Strcasecmp(extension, ".psexe") == 0));
 }
 
+bool GameList::IsPsfFileName(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  return (extension && StringUtil::Strcasecmp(extension, ".psf") == 0);
+}
+
 static std::string_view GetFileNameFromPath(const char* path)
 {
   const char* filename_end = path + std::strlen(path);

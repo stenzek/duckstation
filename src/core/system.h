@@ -120,6 +120,8 @@ public:
   void ResetPerformanceCounters();
 
   bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
+  bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image);
+  bool LoadPSF(const char* filename, std::vector<u8>& bios_image);
   bool SetExpansionROM(const char* filename);
 
   // Adds ticks to the global tick counter, simulating the CPU being stalled.

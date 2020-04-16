@@ -54,6 +54,8 @@ add_library(core
     memory_card.h
     pad.cpp
     pad.h
+    psf_loader.cpp
+    psf_loader.h
     save_state_version.h
     settings.cpp
     settings.h
@@ -83,7 +85,7 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common imgui tinyxml2)
+target_link_libraries(core PUBLIC Threads::Threads common imgui tinyxml2 zlib)
 target_link_libraries(core PRIVATE glad stb)
 
 if(WIN32)

@@ -17,6 +17,7 @@
 #include "mdec.h"
 #include "memory_card.h"
 #include "pad.h"
+#include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
 #include "spu.h"
@@ -131,11 +132,14 @@ bool System::Boot(const SystemBootParameters& params)
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> media;
   bool exe_boot = false;
+  bool psf_boot = false;
   if (!params.filename.empty())
   {
     exe_boot = GameList::IsExeFileName(params.filename.c_str());
-    if (exe_boot)
+    psf_boot = (!exe_boot && GameList::IsPsfFileName(params.filename.c_str()));
+    if (exe_boot || psf_boot)
     {
+      // TODO: Pull region from PSF
       if (m_region == ConsoleRegion::Auto)
       {
         Log_InfoPrintf("Defaulting to NTSC-U region for executable.");
@@ -199,6 +203,11 @@ bool System::Boot(const SystemBootParameters& params)
 
   // Load EXE late after BIOS.
   if (exe_boot && !LoadEXE(params.filename.c_str(), *bios_image))
+  {
+    m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
+    return false;
+  }
+  else if (psf_boot && !LoadPSF(params.filename.c_str(), *bios_image))
   {
     m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
     return false;
@@ -602,6 +611,69 @@ bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
   const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
   const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
   return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
+}
+
+bool System::LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image)
+{
+  const u8* buffer_ptr = static_cast<const u8*>(buffer);
+  const u8* buffer_end = static_cast<const u8*>(buffer) + buffer_size;
+
+  BIOS::PSEXEHeader header;
+  if (buffer_size < sizeof(header))
+    return false;
+
+  std::memcpy(&header, buffer_ptr, sizeof(header));
+  buffer_ptr += sizeof(header);
+
+  if (!BIOS::IsValidPSExeHeader(header, static_cast<u32>(buffer_end - buffer_ptr)))
+    return false;
+
+  if (header.memfill_size > 0)
+  {
+    const u32 words_to_write = header.memfill_size / 4;
+    u32 address = header.memfill_start & ~UINT32_C(3);
+    for (u32 i = 0; i < words_to_write; i++)
+    {
+      m_cpu->SafeWriteMemoryWord(address, 0);
+      address += sizeof(u32);
+    }
+  }
+
+  if (header.file_size >= 4)
+  {
+    std::vector<u32> data_words((header.file_size + 3) / 4);
+    if ((buffer_end - buffer_ptr) < header.file_size)
+      return false;
+
+    std::memcpy(data_words.data(), buffer_ptr, header.file_size);
+
+    const u32 num_words = header.file_size / 4;
+    u32 address = header.load_address;
+    for (u32 i = 0; i < num_words; i++)
+    {
+      m_cpu->SafeWriteMemoryWord(address, data_words[i]);
+      address += sizeof(u32);
+    }
+  }
+
+  // patch the BIOS to jump to the executable directly
+  const u32 r_pc = header.initial_pc;
+  const u32 r_gp = header.initial_gp;
+  const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
+  const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
+  return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
+}
+
+bool System::LoadPSF(const char* filename, std::vector<u8>& bios_image)
+{
+  Log_InfoPrintf("Loading PSF file from '%s'", filename);
+
+  PSFLoader::File psf;
+  if (!psf.Load(filename))
+    return false;
+
+  const std::vector<u8>& exe_data = psf.GetProgramData();
+  return LoadEXEFromBuffer(exe_data.data(), static_cast<u32>(exe_data.size()), bios_image);
 }
 
 bool System::SetExpansionROM(const char* filename)
