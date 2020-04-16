@@ -142,9 +142,9 @@ DiscRegion GameList::GetRegionForCode(std::string_view code)
 
   if (prefix == "sces" || prefix == "sced" || prefix == "sles" || prefix == "sled")
     return DiscRegion::PAL;
-  else if (prefix == "scps" || prefix == "slps" || prefix == "slpm")
+  else if (prefix == "scps" || prefix == "slps" || prefix == "slpm" || prefix == "sczs" || prefix == "papx")
     return DiscRegion::NTSC_J;
-  else if (prefix == "scus" || prefix == "slus" || prefix == "papx")
+  else if (prefix == "scus" || prefix == "slus")
     return DiscRegion::NTSC_U;
   else
     return DiscRegion::Other;
