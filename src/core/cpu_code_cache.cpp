@@ -142,6 +142,8 @@ void CodeCache::Flush()
   for (auto& it : m_ram_block_map)
     it.clear();
 
+  for (const auto& it : m_blocks)
+    delete it.second;
   m_blocks.clear();
 #ifdef WITH_RECOMPILER
   m_code_buffer->Reset();
