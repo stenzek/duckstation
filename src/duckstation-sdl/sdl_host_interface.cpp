@@ -16,6 +16,7 @@
 #include "imgui_impl_sdl.h"
 #include "opengl_host_display.h"
 #include "sdl_key_names.h"
+#include "scmversion/scmversion.h"
 #include <cinttypes>
 #include <cmath>
 #include <imgui.h>
@@ -37,6 +38,11 @@ SDLHostInterface::~SDLHostInterface() = default;
 const char* SDLHostInterface::GetFrontendName() const
 {
   return "DuckStation SDL/ImGui Frontend";
+}
+
+ALWAYS_INLINE static TinyString GetWindowTitle()
+{
+  return TinyString::FromFormat("DuckStation %s (%s)", g_scm_tag_str, g_scm_branch_str);
 }
 
 float SDLHostInterface::GetDPIScaleFactor(SDL_Window* window)
@@ -91,7 +97,7 @@ bool SDLHostInterface::CreateSDLWindow()
   }
 #endif
 
-  m_window = SDL_CreateWindow("DuckStation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width,
+  m_window = SDL_CreateWindow(GetWindowTitle(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width,
                               window_height, window_flags);
   if (!m_window)
     return false;
@@ -272,7 +278,7 @@ void SDLHostInterface::OnRunningGameChanged()
   if (m_system && !m_system->GetRunningTitle().empty())
     SDL_SetWindowTitle(m_window, m_system->GetRunningTitle().c_str());
   else
-    SDL_SetWindowTitle(m_window, "DuckStation");
+    SDL_SetWindowTitle(m_window, GetWindowTitle());
 }
 
 void SDLHostInterface::RequestExit()

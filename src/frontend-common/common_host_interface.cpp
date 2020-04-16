@@ -9,6 +9,7 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "scmversion/scmversion.h"
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
 #include "sdl_controller_interface.h"
@@ -98,7 +99,7 @@ void CommonHostInterface::PowerOffSystem()
 
 static void PrintCommandLineVersion(const char* frontend_name)
 {
-  std::fprintf(stderr, "%s Version <TODO>\n", frontend_name);
+  std::fprintf(stderr, "%s Version %s (%s)\n", frontend_name, g_scm_tag_str, g_scm_branch_str);
   std::fprintf(stderr, "https://github.com/stenzek/duckstation\n");
   std::fprintf(stderr, "\n");
 }

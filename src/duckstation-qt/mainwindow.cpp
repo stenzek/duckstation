@@ -8,6 +8,7 @@
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
 #include "qtsettingsinterface.h"
+#include "scmversion/scmversion.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include <QtCore/QDebug>
@@ -23,6 +24,11 @@
 static constexpr char DISC_IMAGE_FILTER[] =
   "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
   "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf)";
+
+ALWAYS_INLINE static QString getWindowTitle()
+{
+  return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+}
 
 MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), m_host_interface(host_interface)
 {
@@ -209,7 +215,7 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
 {
   m_host_interface->populateSaveStateMenus(game_code.toStdString().c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
   if (game_title.isEmpty())
-    setWindowTitle(tr("DuckStation"));
+    setWindowTitle(getWindowTitle());
   else
     setWindowTitle(game_title);
 
@@ -368,6 +374,8 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 
 void MainWindow::setupAdditionalUi()
 {
+  setWindowTitle(getWindowTitle());
+
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_host_interface);
   m_ui.mainContainer->insertWidget(0, m_game_list_widget);
