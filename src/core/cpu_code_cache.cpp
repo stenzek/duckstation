@@ -19,7 +19,10 @@ static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 
 CodeCache::CodeCache() = default;
 
-CodeCache::~CodeCache() = default;
+CodeCache::~CodeCache()
+{
+  Flush();
+}
 
 void CodeCache::Initialize(System* system, Core* core, Bus* bus, bool use_recompiler)
 {

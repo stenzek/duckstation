@@ -254,8 +254,8 @@ void System::DestroyComponents()
   m_gpu.reset();
   m_interrupt_controller.reset();
   m_dma.reset();
-  m_bus.reset();
   m_cpu_code_cache.reset();
+  m_bus.reset();
   m_cpu.reset();
 }
 
