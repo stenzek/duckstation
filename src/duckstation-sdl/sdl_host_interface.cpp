@@ -1257,7 +1257,7 @@ void SDLHostInterface::DoStartDisc()
   Assert(!m_system);
 
   nfdchar_t* path = nullptr;
-  if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe", nullptr, &path) || !path || std::strlen(path) == 0)
+  if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe,psf", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
   AddFormattedOSDMessage(2.0f, "Starting disc from '%s'...", path);
@@ -1272,7 +1272,7 @@ void SDLHostInterface::DoChangeDisc()
   Assert(m_system);
 
   nfdchar_t* path = nullptr;
-  if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe", nullptr, &path) || !path || std::strlen(path) == 0)
+  if (!NFD_OpenDialog("bin,img,cue,chd", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
   if (m_system->InsertMedia(path))
