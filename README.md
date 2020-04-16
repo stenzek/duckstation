@@ -25,6 +25,7 @@ Other features include:
  - Windows, Linux, **highly experimental** macOS support
  - Supports bin/cue images, raw bin/img files, and MAME CHD formats.
  - Direct booting of homebrew executables
+ - Direct loading of Portable Sound Format (psf) files
  - Digital and analog controllers for input (rumble is forwarded to host)
  - Qt and SDL frontends for desktop
  - Automatic content scanning - game titles/regions are provided by redump.org
