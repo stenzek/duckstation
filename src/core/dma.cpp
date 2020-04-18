@@ -259,14 +259,6 @@ void DMA::TransferChannel(Channel channel)
           if (word_count > 0)
             TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
 
-          // Self-referencing DMA loops.. not sure how these are happening?
-          if (current_address == next_address)
-          {
-            Log_ErrorPrintf("HACK: Aborting self-referencing DMA loop @ 0x%08X. Something went wrong to generate this.",
-                            current_address);
-            break;
-          }
-
           current_address = next_address;
           if (current_address & UINT32_C(0x800000))
             break;

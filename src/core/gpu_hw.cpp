@@ -172,8 +172,9 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   }
 }
 
-void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
+void GPU_HW::LoadVertices()
 {
+  const RenderCommand rc{m_render_command.bits};
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
 
   // TODO: Move this to the GPU..
@@ -181,20 +182,19 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
   {
     case Primitive::Polygon:
     {
-      DebugAssert(num_vertices == 3 || num_vertices == 4);
       EnsureVertexBufferSpace(rc.quad_polygon ? 6 : 3);
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
-      u32 buffer_pos = 1;
+      const u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<BatchVertex, 4> vertices;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-        const VertexPosition vp{command_ptr[buffer_pos++]};
-        const u16 packed_texcoord = textured ? Truncate16(command_ptr[buffer_pos++]) : 0;
+        const u32 color = (shaded && i > 0) ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color;
+        const VertexPosition vp{m_fifo.Pop()};
+        const u16 packed_texcoord = textured ? Truncate16(m_fifo.Pop()) : 0;
 
         vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
       }
@@ -226,6 +226,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
           static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
         m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+        AddDrawTriangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable, rc.shading_enable);
 
         std::memcpy(m_batch_current_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 3);
         m_batch_current_vertex_ptr += 3;
@@ -255,6 +256,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
             static_cast<u32>(std::clamp<s32>(max_y_123, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
           m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+          AddDrawTriangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable, rc.shading_enable);
 
           AddVertex(vertices[2]);
           AddVertex(vertices[1]);
@@ -266,14 +268,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
 
     case Primitive::Rectangle:
     {
-      u32 buffer_pos = 1;
       const u32 color = rc.color_for_first_vertex;
-      const VertexPosition vp{command_ptr[buffer_pos++]};
+      const VertexPosition vp{m_fifo.Pop()};
       const s32 pos_x = m_drawing_offset.x + vp.x;
       const s32 pos_y = m_drawing_offset.y + vp.y;
 
-      const auto [texcoord_x, texcoord_y] =
-        UnpackTexcoord(rc.texture_enable ? Truncate16(command_ptr[buffer_pos++]) : 0);
+      const auto [texcoord_x, texcoord_y] = UnpackTexcoord(rc.texture_enable ? Truncate16(m_fifo.Pop()) : 0);
       u16 orig_tex_left = ZeroExtend16(texcoord_x);
       u16 orig_tex_top = ZeroExtend16(texcoord_y);
       s32 rectangle_width;
@@ -293,9 +293,12 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
           rectangle_height = 16;
           break;
         default:
-          rectangle_width = static_cast<s32>(command_ptr[buffer_pos] & 0xFFFF);
-          rectangle_height = static_cast<s32>(command_ptr[buffer_pos] >> 16);
-          break;
+        {
+          const u32 width_and_height = m_fifo.Pop();
+          rectangle_width = static_cast<s32>(width_and_height & 0xFFFF);
+          rectangle_height = static_cast<s32>(width_and_height >> 16);
+        }
+        break;
       }
 
       if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
@@ -350,22 +353,35 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
         static_cast<u32>(std::clamp<s32>(pos_y + rectangle_height, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
       m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+      AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable);
     }
     break;
 
     case Primitive::Line:
     {
-      EnsureVertexBufferSpace(num_vertices * 2);
+      const u32 num_vertices = rc.polyline ? GetPolyLineVertexCount() : 2;
+      EnsureVertexBufferSpace(num_vertices);
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
 
-      u32 buffer_pos = 1;
       BatchVertex last_vertex;
+      u32 buffer_pos = 0;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        const u32 color = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-        const VertexPosition vp{command_ptr[buffer_pos++]};
+        u32 color;
+        VertexPosition vp;
+
+        if (rc.polyline)
+        {
+          color = (shaded && i > 0) ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+          vp.bits = m_blit_buffer[buffer_pos++];
+        }
+        else
+        {
+          color = (shaded && i > 0) ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color;
+          vp.bits = m_fifo.Pop();
+        }
 
         BatchVertex vertex;
         vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, 0, 0);
@@ -394,6 +410,7 @@ void GPU_HW::LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command
               static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
             m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+            AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
           }
         }
 
@@ -485,8 +502,10 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
-void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
+void GPU_HW::DispatchRenderCommand()
 {
+  const RenderCommand rc{m_render_command.bits};
+
   TextureMode texture_mode;
   if (rc.IsTexturingEnabled())
   {
@@ -574,7 +593,7 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
     m_batch_ubo_dirty = true;
   }
 
-  LoadVertices(rc, num_vertices, command_ptr);
+  LoadVertices();
 }
 
 void GPU_HW::FlushRender()

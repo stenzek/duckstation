@@ -204,8 +204,9 @@ void GPU_SW::UpdateDisplay()
   }
 }
 
-void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr)
+void GPU_SW::DispatchRenderCommand()
 {
+  const RenderCommand rc{m_render_command.bits};
   const bool dithering_enable = rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable;
 
   switch (rc.primitive)
@@ -216,24 +217,23 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
 
+      const u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<SWVertex, 4> vertices;
-
-      u32 buffer_pos = 1;
       for (u32 i = 0; i < num_vertices; i++)
       {
         SWVertex& vert = vertices[i];
-        const u32 color_rgb = (shaded && i > 0) ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+        const u32 color_rgb = (shaded && i > 0) ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color;
         vert.color_r = Truncate8(color_rgb);
         vert.color_g = Truncate8(color_rgb >> 8);
         vert.color_b = Truncate8(color_rgb >> 16);
 
-        const VertexPosition vp{command_ptr[buffer_pos++]};
+        const VertexPosition vp{m_fifo.Pop()};
         vert.x = vp.x;
         vert.y = vp.y;
 
         if (textured)
         {
-          std::tie(vert.texcoord_x, vert.texcoord_y) = UnpackTexcoord(Truncate16(command_ptr[buffer_pos++]));
+          std::tie(vert.texcoord_x, vert.texcoord_y) = UnpackTexcoord(Truncate16(m_fifo.Pop()));
         }
         else
         {
@@ -253,10 +253,9 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
 
     case Primitive::Rectangle:
     {
-      u32 buffer_pos = 1;
       const auto [r, g, b] = UnpackColorRGB24(rc.color_for_first_vertex);
-      const VertexPosition vp{command_ptr[buffer_pos++]};
-      const u32 texcoord_and_palette = rc.texture_enable ? command_ptr[buffer_pos++] : 0;
+      const VertexPosition vp{m_fifo.Pop()};
+      const u32 texcoord_and_palette = rc.texture_enable ? m_fifo.Pop() : 0;
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(texcoord_and_palette));
 
       s32 width;
@@ -276,9 +275,12 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
           height = 16;
           break;
         default:
-          width = static_cast<s32>(command_ptr[buffer_pos] & UINT32_C(0xFFFF));
-          height = static_cast<s32>(command_ptr[buffer_pos] >> 16);
-          break;
+        {
+          const u32 width_and_height = m_fifo.Pop();
+          width = static_cast<s32>(width_and_height & UINT32_C(0xFFFF));
+          height = static_cast<s32>(width_and_height >> 16);
+        }
+        break;
       }
 
       const DrawRectangleFunction DrawFunction =
@@ -296,19 +298,28 @@ void GPU_SW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
       const DrawLineFunction DrawFunction = GetDrawLineFunction(shaded, rc.transparency_enable, dithering_enable);
 
       std::array<SWVertex, 2> vertices = {};
-      u32 buffer_pos = 1;
+      u32 buffer_pos = 0;
 
       // first vertex
       SWVertex* p0 = &vertices[0];
       SWVertex* p1 = &vertices[1];
-      p0->SetPosition(VertexPosition{command_ptr[buffer_pos++]});
+      p0->SetPosition(VertexPosition{rc.polyline ? m_blit_buffer[buffer_pos++] : m_fifo.Pop()});
       p0->SetColorRGB24(first_color);
 
       // remaining vertices in line strip
+      const u32 num_vertices = rc.polyline ? GetPolyLineVertexCount() : 2;
       for (u32 i = 1; i < num_vertices; i++)
       {
-        p1->SetColorRGB24(shaded ? (command_ptr[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color);
-        p1->SetPosition(VertexPosition{command_ptr[buffer_pos++]});
+        if (rc.polyline)
+        {
+          p1->SetColorRGB24(shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color);
+          p1->SetPosition(VertexPosition{m_blit_buffer[buffer_pos++]});
+        }
+        else
+        {
+          p1->SetColorRGB24(shaded ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color);
+          p1->SetPosition(VertexPosition{m_fifo.Pop()});
+        }
 
         (this->*DrawFunction)(p0, p1);
 
@@ -408,6 +419,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
   max_x = std::clamp(max_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right));
   min_y = std::clamp(min_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom));
   max_y = std::clamp(max_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom));
+  AddDrawTriangleTicks(max_x - min_x + 1, max_y - min_y + 1, texture_enable, shading_enable);
 
   // compute per-pixel increments
   const s32 a01 = py0 - py1, b01 = px1 - px0;
@@ -500,6 +512,18 @@ void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8
 {
   origin_x += m_drawing_offset.x;
   origin_y += m_drawing_offset.y;
+
+  {
+    const u32 clip_left = static_cast<u32>(std::clamp<s32>(origin_x, m_drawing_area.left, m_drawing_area.right));
+    const u32 clip_right =
+      static_cast<u32>(std::clamp<s32>(origin_x + static_cast<s32>(width), m_drawing_area.left, m_drawing_area.right)) +
+      1u;
+    const u32 clip_top = static_cast<u32>(std::clamp<s32>(origin_y, m_drawing_area.top, m_drawing_area.bottom));
+    const u32 clip_bottom = static_cast<u32>(std::clamp<s32>(origin_y + static_cast<s32>(height), m_drawing_area.top,
+                                                             m_drawing_area.bottom)) +
+                            1u;
+    AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, texture_enable);
+  }
 
   for (u32 offset_y = 0; offset_y < height; offset_y++)
   {
@@ -689,6 +713,21 @@ void GPU_SW::DrawLine(const SWVertex* p0, const SWVertex* p1)
   const s32 dx = p1->x - p0->x;
   const s32 dy = p1->y - p0->y;
   const s32 k = std::max(std::abs(dx), std::abs(dy));
+
+  {
+    // TODO: Move to base class
+    const s32 min_x = std::min(p0->x, p1->x);
+    const s32 max_x = std::max(p0->x, p1->x);
+    const s32 min_y = std::min(p0->y, p1->y);
+    const s32 max_y = std::max(p0->y, p1->y);
+
+    const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
+    const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
+    const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
+    const u32 clip_bottom = static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+    AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, shading_enable);
+  }
 
   FixedPointCoord step_x, step_y;
   FixedPointColor step_r, step_g, step_b;

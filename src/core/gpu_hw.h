@@ -145,7 +145,7 @@ protected:
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
-  void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
+  void DispatchRenderCommand() override;
   void FlushRender() override;
   void DrawRendererStats(bool is_idle_frame) override;
 
@@ -198,7 +198,7 @@ private:
 
   static BatchPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
-  void LoadVertices(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
+  void LoadVertices();
 
   ALWAYS_INLINE void AddVertex(const BatchVertex& v)
   {

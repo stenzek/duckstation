@@ -51,7 +51,7 @@ protected:
   // Rasterization
   //////////////////////////////////////////////////////////////////////////
 
-  void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
+  void DispatchRenderCommand() override;
 
   static bool IsClockwiseWinding(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
 

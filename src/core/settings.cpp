@@ -23,6 +23,8 @@ void Settings::Load(SettingsInterface& si)
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
+  gpu_fifo_size = static_cast<u32>(si.GetIntValue("GPU", "FIFOSize", 128));
+  gpu_max_run_ahead = static_cast<u32>(si.GetIntValue("GPU", "MaxRunAhead", 128));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);

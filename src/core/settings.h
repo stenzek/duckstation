@@ -47,6 +47,8 @@ struct Settings
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
+  u32 gpu_fifo_size = 128;
+  u32 gpu_max_run_ahead = 128;
   bool gpu_use_debug_device = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = false;

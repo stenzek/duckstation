@@ -1,5 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
+#include "common/fifo_queue.h"
 #include "common/rectangle.h"
 #include "timers.h"
 #include "types.h"
@@ -23,13 +24,12 @@ class Timers;
 class GPU
 {
 public:
-  enum class State : u8
+  enum class BlitterState : u8
   {
     Idle,
-    WaitingForParameters,
-    ExecutingCommand,
     ReadingVRAM,
-    WritingVRAM
+    WritingVRAM,
+    DrawingPolyLine
   };
 
   enum class DMADirection : u32
@@ -88,13 +88,14 @@ public:
     VRAM_WIDTH = 1024,
     VRAM_HEIGHT = 512,
     VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16),
+    MAX_FIFO_SIZE = 4096,
     TEXTURE_PAGE_WIDTH = 256,
     TEXTURE_PAGE_HEIGHT = 256,
     MAX_PRIMITIVE_WIDTH = 1024,
     MAX_PRIMITIVE_HEIGHT = 512,
     DOT_TIMER_INDEX = 0,
     HBLANK_TIMER_INDEX = 1,
-    MAX_RESOLUTION_SCALE = 16,
+    MAX_RESOLUTION_SCALE = 16
   };
 
   enum : u16
@@ -142,6 +143,9 @@ public:
 
   /// Returns true if enough ticks have passed for the raster to be on the next line.
   bool IsRasterScanlinePending() const;
+
+  /// Returns true if a raster scanline or command execution is pending.
+  bool IsRasterScanlineOrCommandPending() const;
 
   // Synchronizes the CRTC, updating the hblank timer.
   void Synchronize();
@@ -347,10 +351,20 @@ protected:
   void SetTextureWindow(u32 value);
 
   u32 ReadGPUREAD();
-  void WriteGP0(u32 value);
+  void FinishVRAMWrite();
+
+  /// Returns the number of vertices in the buffered poly-line.
+  ALWAYS_INLINE u32 GetPolyLineVertexCount() const
+  {
+    return (static_cast<u32>(m_blit_buffer.size()) + BoolToUInt32(m_render_command.shading_enable)) >>
+           BoolToUInt8(m_render_command.shading_enable);
+  }
+
+  void AddCommandTicks(TickCount ticks);
+
   void WriteGP1(u32 value);
-  void ExecuteCommands();
   void EndCommand();
+  void ExecuteCommands();
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering in the backend
@@ -358,10 +372,29 @@ protected:
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
-  virtual void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr);
+  virtual void DispatchRenderCommand();
   virtual void FlushRender();
   virtual void UpdateDisplay();
   virtual void DrawRendererStats(bool is_idle_frame);
+
+  // These are **very** approximate.
+  ALWAYS_INLINE void AddDrawTriangleTicks(u32 width, u32 height, bool textured, bool shaded)
+  {
+#if 0
+    const u32 draw_ticks = static_cast<u32>((std::abs(x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) + 1u) / 2u);
+#else
+    const u32 draw_ticks = (width * height) / 2;
+#endif
+    AddCommandTicks(draw_ticks << BoolToUInt8(textured | shaded));
+  }
+  ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured)
+  {
+    AddCommandTicks((width * height) << BoolToUInt8(textured));
+  }
+  ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded)
+  {
+    AddCommandTicks(std::max(width, height));
+  }
 
   HostDisplay* m_host_display = nullptr;
   System* m_system = nullptr;
@@ -397,7 +430,7 @@ protected:
     BitField<u32, bool, 23, 1> display_disable;
     BitField<u32, bool, 24, 1> interrupt_request;
     BitField<u32, bool, 25, 1> dma_data_request;
-    BitField<u32, bool, 26, 1> ready_to_recieve_cmd;
+    BitField<u32, bool, 26, 1> gpu_idle;
     BitField<u32, bool, 27, 1> ready_to_send_vram;
     BitField<u32, bool, 28, 1> ready_to_recieve_dma;
     BitField<u32, DMADirection, 29, 2> dma_direction;
@@ -595,12 +628,16 @@ protected:
     bool in_vblank;
   } m_crtc_state = {};
 
-  State m_state = State::Idle;
-  TickCount m_blitter_ticks = 0;
+  BlitterState m_blitter_state = BlitterState::Idle;
+  TickCount m_command_ticks = 0;
   u32 m_command_total_words = 0;
 
   /// GPUREAD value for non-VRAM-reads.
   u32 m_GPUREAD_latch = 0;
+
+  /// True if currently executing/syncing.
+  bool m_syncing = false;
+  bool m_fifo_pushed = false;
 
   struct VRAMTransfer
   {
@@ -612,7 +649,13 @@ protected:
     u16 row;
   } m_vram_transfer = {};
 
-  std::vector<u32> m_GP0_buffer;
+  HeapFIFOQueue<u32, MAX_FIFO_SIZE> m_fifo;
+  std::vector<u32> m_blit_buffer;
+  u32 m_blit_remaining_words;
+  RenderCommand m_render_command{};
+
+  TickCount m_max_run_ahead = 128;
+  u32 m_fifo_size = 128;
 
   struct Stats
   {
@@ -627,26 +670,29 @@ protected:
   Stats m_last_stats = {};
 
 private:
-  using GP0CommandHandler = bool (GPU::*)(const u32*&, u32);
+  using GP0CommandHandler = bool (GPU::*)();
   using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;
   static GP0CommandHandlerTable GenerateGP0CommandHandlerTable();
 
   // Rendering commands, returns false if not enough data is provided
-  bool HandleUnknownGP0Command(const u32*& command_ptr, u32 command_size);
-  bool HandleNOPCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleClearCacheCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleInterruptRequestCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleSetDrawModeCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleSetTextureWindowCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleSetDrawingAreaTopLeftCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleSetDrawingAreaBottomRightCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleSetDrawingOffsetCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleSetMaskBitCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleRenderCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleFillRectangleCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleCopyRectangleCPUToVRAMCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleCopyRectangleVRAMToCPUCommand(const u32*& command_ptr, u32 command_size);
-  bool HandleCopyRectangleVRAMToVRAMCommand(const u32*& command_ptr, u32 command_size);
+  bool HandleUnknownGP0Command();
+  bool HandleNOPCommand();
+  bool HandleClearCacheCommand();
+  bool HandleInterruptRequestCommand();
+  bool HandleSetDrawModeCommand();
+  bool HandleSetTextureWindowCommand();
+  bool HandleSetDrawingAreaTopLeftCommand();
+  bool HandleSetDrawingAreaBottomRightCommand();
+  bool HandleSetDrawingOffsetCommand();
+  bool HandleSetMaskBitCommand();
+  bool HandleRenderPolygonCommand();
+  bool HandleRenderRectangleCommand();
+  bool HandleRenderLineCommand();
+  bool HandleRenderPolyLineCommand();
+  bool HandleFillRectangleCommand();
+  bool HandleCopyRectangleCPUToVRAMCommand();
+  bool HandleCopyRectangleVRAMToCPUCommand();
+  bool HandleCopyRectangleVRAMToVRAMCommand();
 
   static const GP0CommandHandlerTable s_GP0_command_handler_table;
 };
