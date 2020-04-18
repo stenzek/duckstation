@@ -131,7 +131,7 @@ void GPU_HW_D3D11::UpdateSettings()
 
 void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
 {
-  Assert(!m_batch_start_vertex_ptr);
+  DebugAssert(!m_batch_start_vertex_ptr);
 
   const D3D11::StreamBuffer::MappingResult res =
     m_vertex_stream_buffer.Map(m_context.Get(), sizeof(BatchVertex), required_vertices * sizeof(BatchVertex));
@@ -140,6 +140,15 @@ void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
   m_batch_end_vertex_ptr = m_batch_start_vertex_ptr + res.space_aligned;
   m_batch_base_vertex = res.index_aligned;
+}
+
+void GPU_HW_D3D11::UnmapBatchVertexPointer(u32 used_vertices)
+{
+  DebugAssert(m_batch_start_vertex_ptr);
+  m_vertex_stream_buffer.Unmap(m_context.Get(), used_vertices * sizeof(BatchVertex));
+  m_batch_start_vertex_ptr = nullptr;
+  m_batch_end_vertex_ptr = nullptr;
+  m_batch_current_vertex_ptr = nullptr;
 }
 
 void GPU_HW_D3D11::SetCapabilities()
@@ -410,7 +419,7 @@ bool GPU_HW_D3D11::CompileShaders()
   return true;
 }
 
-void GPU_HW_D3D11::UploadUniformBlock(const void* data, u32 data_size)
+void GPU_HW_D3D11::UploadUniformBuffer(const void* data, u32 data_size)
 {
   Assert(data_size <= MAX_UNIFORM_BUFFER_SIZE);
 
@@ -465,7 +474,7 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
 {
   if (uniforms)
   {
-    UploadUniformBlock(uniforms, uniforms_size);
+    UploadUniformBuffer(uniforms, uniforms_size);
     m_batch_ubo_dirty = true;
   }
 
@@ -478,7 +487,7 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
   m_context->Draw(3, 0);
 }
 
-void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
+void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
 {
   const bool textured = (m_batch.texture_mode != TextureMode::Disabled);
 
@@ -503,18 +512,7 @@ void GPU_HW_D3D11::SetDrawState(BatchRenderMode render_mode)
     (render_mode == BatchRenderMode::OnlyOpaque) ? TransparencyMode::Disabled : m_batch.transparency_mode;
   m_context->OMSetBlendState(m_batch_blend_states[static_cast<u8>(transparency_mode)].Get(), nullptr, 0xFFFFFFFFu);
 
-  if (m_drawing_area_changed)
-  {
-    m_drawing_area_changed = false;
-    m_vram_dirty_rect.Include(m_drawing_area);
-    SetScissorFromDrawingArea();
-  }
-
-  if (m_batch_ubo_dirty)
-  {
-    UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
-    m_batch_ubo_dirty = false;
-  }
+  m_context->Draw(num_vertices, base_vertex);
 }
 
 void GPU_HW_D3D11::SetScissorFromDrawingArea()
@@ -727,36 +725,6 @@ void GPU_HW_D3D11::UpdateVRAMReadTexture()
   const CD3D11_BOX src_box(scaled_rect.left, scaled_rect.top, 0, scaled_rect.right, scaled_rect.bottom, 1);
   m_context->CopySubresourceRegion(m_vram_read_texture, 0, scaled_rect.left, scaled_rect.top, 0, m_vram_texture, 0,
                                    &src_box);
-}
-
-void GPU_HW_D3D11::FlushRender()
-{
-  if (!m_batch_current_vertex_ptr)
-    return;
-
-  const u32 vertex_count = GetBatchVertexCount();
-  m_vertex_stream_buffer.Unmap(m_context.Get(), vertex_count * sizeof(BatchVertex));
-  m_batch_start_vertex_ptr = nullptr;
-  m_batch_end_vertex_ptr = nullptr;
-  m_batch_current_vertex_ptr = nullptr;
-
-  if (vertex_count == 0)
-    return;
-
-  m_renderer_stats.num_batches++;
-
-  if (m_batch.NeedsTwoPassRendering())
-  {
-    SetDrawState(BatchRenderMode::OnlyTransparent);
-    m_context->Draw(vertex_count, m_batch_base_vertex);
-    SetDrawState(BatchRenderMode::OnlyOpaque);
-    m_context->Draw(vertex_count, m_batch_base_vertex);
-  }
-  else
-  {
-    SetDrawState(m_batch.GetRenderMode());
-    m_context->Draw(vertex_count, m_batch_base_vertex);
-  }
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer()

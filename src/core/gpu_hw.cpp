@@ -577,6 +577,42 @@ void GPU_HW::DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32
   LoadVertices(rc, num_vertices, command_ptr);
 }
 
+void GPU_HW::FlushRender()
+{
+  if (!m_batch_current_vertex_ptr)
+    return;
+
+  const u32 vertex_count = GetBatchVertexCount();
+  UnmapBatchVertexPointer(vertex_count);
+
+  if (vertex_count == 0)
+    return;
+
+  if (m_drawing_area_changed)
+  {
+    m_drawing_area_changed = false;
+    SetScissorFromDrawingArea();
+  }
+
+  if (m_batch_ubo_dirty)
+  {
+    UploadUniformBuffer(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
+    m_batch_ubo_dirty = false;
+  }
+
+  if (m_batch.NeedsTwoPassRendering())
+  {
+    m_renderer_stats.num_batches += 2;
+    DrawBatchVertices(BatchRenderMode::OnlyTransparent, m_batch_base_vertex, vertex_count);
+    DrawBatchVertices(BatchRenderMode::OnlyOpaque, m_batch_base_vertex, vertex_count);
+  }
+  else
+  {
+    m_renderer_stats.num_batches++;
+    DrawBatchVertices(m_batch.GetRenderMode(), m_batch_base_vertex, vertex_count);
+  }
+}
+
 void GPU_HW::DrawRendererStats(bool is_idle_frame)
 {
   if (!is_idle_frame)

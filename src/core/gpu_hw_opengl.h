@@ -29,9 +29,12 @@ protected:
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
-  void FlushRender() override;
-  void MapBatchVertexPointer(u32 required_vertices) override;
   void UpdateVRAMReadTexture() override;
+  void SetScissorFromDrawingArea() override;
+  void MapBatchVertexPointer(u32 required_vertices) override;
+  void UnmapBatchVertexPointer(u32 used_vertices) override;
+  void UploadUniformBuffer(const void* data, u32 data_size) override;
+  void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) override;
 
 private:
   struct GLStats
@@ -55,9 +58,6 @@ private:
   bool CreateTextureBuffer();
 
   bool CompilePrograms();
-  void SetDrawState(BatchRenderMode render_mode);
-  void SetScissorFromDrawingArea();
-  void UploadUniformBlock(const void* data, u32 data_size);
 
   GL::ShaderCache m_shader_cache;
 

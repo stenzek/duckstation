@@ -124,7 +124,7 @@ void GPU_HW_OpenGL::UpdateSettings()
 
 void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
 {
-  Assert(!m_batch_start_vertex_ptr);
+  DebugAssert(!m_batch_start_vertex_ptr);
 
   const GL::StreamBuffer::MappingResult res =
     m_vertex_stream_buffer->Map(sizeof(BatchVertex), required_vertices * sizeof(BatchVertex));
@@ -133,6 +133,17 @@ void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
   m_batch_end_vertex_ptr = m_batch_start_vertex_ptr + res.space_aligned;
   m_batch_base_vertex = res.index_aligned;
+}
+
+void GPU_HW_OpenGL::UnmapBatchVertexPointer(u32 used_vertices)
+{
+  DebugAssert(m_batch_start_vertex_ptr);
+
+  m_vertex_stream_buffer->Unmap(used_vertices * sizeof(BatchVertex));
+  m_vertex_stream_buffer->Bind();
+  m_batch_start_vertex_ptr = nullptr;
+  m_batch_end_vertex_ptr = nullptr;
+  m_batch_current_vertex_ptr = nullptr;
 }
 
 std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y)
@@ -439,7 +450,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   return true;
 }
 
-void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
+void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
 {
   const GL::Program& prog =
     ((m_batch.primitive < BatchPrimitive::Triangles && m_supports_geometry_shaders && m_resolution_scale > 1) ?
@@ -465,18 +476,8 @@ void GPU_HW_OpenGL::SetDrawState(BatchRenderMode render_mode)
     glBlendFuncSeparate(GL_ONE, m_supports_dual_source_blend ? GL_SRC1_ALPHA : GL_SRC_ALPHA, GL_ONE, GL_ZERO);
   }
 
-  if (m_drawing_area_changed)
-  {
-    m_drawing_area_changed = false;
-    m_vram_dirty_rect.Include(m_drawing_area);
-    SetScissorFromDrawingArea();
-  }
-
-  if (m_batch_ubo_dirty)
-  {
-    UploadUniformBlock(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
-    m_batch_ubo_dirty = false;
-  }
+  static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
+  glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, num_vertices);
 }
 
 void GPU_HW_OpenGL::SetScissorFromDrawingArea()
@@ -493,7 +494,7 @@ void GPU_HW_OpenGL::SetScissorFromDrawingArea()
   glScissor(x, y, width, height);
 }
 
-void GPU_HW_OpenGL::UploadUniformBlock(const void* data, u32 data_size)
+void GPU_HW_OpenGL::UploadUniformBuffer(const void* data, u32 data_size)
 {
   const GL::StreamBuffer::MappingResult res = m_uniform_stream_buffer->Map(m_uniform_buffer_alignment, data_size);
   std::memcpy(res.pointer, data, data_size);
@@ -558,7 +559,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
       const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_field_offset};
-      UploadUniformBlock(uniforms, sizeof(uniforms));
+      UploadUniformBuffer(uniforms, sizeof(uniforms));
       m_batch_ubo_dirty = true;
 
       glViewport(0, reinterpret_field_offset, reinterpret_width, scaled_display_height);
@@ -595,7 +596,7 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   m_vram_encoding_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   m_vram_texture.Bind();
   m_vram_read_program.Bind();
-  UploadUniformBlock(uniforms, sizeof(uniforms));
+  UploadUniformBuffer(uniforms, sizeof(uniforms));
   glDisable(GL_BLEND);
   glDisable(GL_SCISSOR_TEST);
   glViewport(0, 0, encoded_width, encoded_height);
@@ -659,7 +660,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     uniforms.u_interlaced_displayed_field = GetInterlacedField();
 
     m_vram_interlaced_fill_program.Bind();
-    UploadUniformBlock(&uniforms, sizeof(uniforms));
+    UploadUniformBuffer(&uniforms, sizeof(uniforms));
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     RestoreGraphicsAPIState();
@@ -703,7 +704,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
 
     const u32 uniforms[5] = {x, flipped_y, width, height, map_result.index_aligned};
-    UploadUniformBlock(uniforms, sizeof(uniforms));
+    UploadUniformBuffer(uniforms, sizeof(uniforms));
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -839,38 +840,6 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
     glBlitFramebuffer(x, y, x + width, y + height, x, y, x + width, y + height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
     m_vram_texture.BindFramebuffer(GL_FRAMEBUFFER);
-  }
-}
-
-void GPU_HW_OpenGL::FlushRender()
-{
-  static constexpr std::array<GLenum, 4> gl_primitives = {{GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP}};
-
-  if (!m_batch_current_vertex_ptr)
-    return;
-
-  const u32 vertex_count = GetBatchVertexCount();
-  m_vertex_stream_buffer->Unmap(vertex_count * sizeof(BatchVertex));
-  m_batch_start_vertex_ptr = nullptr;
-  m_batch_end_vertex_ptr = nullptr;
-  m_batch_current_vertex_ptr = nullptr;
-  if (vertex_count == 0)
-    return;
-
-  m_vertex_stream_buffer->Bind();
-  m_renderer_stats.num_batches++;
-
-  if (m_batch.NeedsTwoPassRendering())
-  {
-    SetDrawState(BatchRenderMode::OnlyTransparent);
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, vertex_count);
-    SetDrawState(BatchRenderMode::OnlyOpaque);
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, vertex_count);
-  }
-  else
-  {
-    SetDrawState(m_batch.GetRenderMode());
-    glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, vertex_count);
   }
 }
 

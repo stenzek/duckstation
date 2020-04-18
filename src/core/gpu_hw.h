@@ -121,8 +121,12 @@ protected:
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
-  virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
   virtual void UpdateVRAMReadTexture() = 0;
+  virtual void SetScissorFromDrawingArea() = 0;
+  virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
+  virtual void UnmapBatchVertexPointer(u32 used_vertices) = 0;
+  virtual void UploadUniformBuffer(const void* uniforms, u32 uniforms_size) = 0;
+  virtual void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) = 0;
 
   void SetFullVRAMDirtyRectangle()
   {
@@ -142,6 +146,7 @@ protected:
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void DispatchRenderCommand(RenderCommand rc, u32 num_vertices, const u32* command_ptr) override;
+  void FlushRender() override;
   void DrawRendererStats(bool is_idle_frame) override;
 
   void CalcScissorRect(int* left, int* top, int* right, int* bottom);
