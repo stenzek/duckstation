@@ -62,7 +62,7 @@ public:
   template<class Y = T, std::enable_if_t<std::is_pod_v<Y>, int> = 0>
   void PushRange(const T* data, u32 size)
   {
-    Assert((m_size + size) <= CAPACITY);
+    DebugAssert((m_size + size) <= CAPACITY);
     const u32 space_before_end = CAPACITY - m_tail;
     const u32 size_before_end = (size > space_before_end) ? space_before_end : size;
     const u32 size_after_end = size - size_before_end;
@@ -82,7 +82,7 @@ public:
   template<class Y = T, std::enable_if_t<!std::is_pod_v<Y>, int> = 0>
   void PushRange(const T* data, u32 size)
   {
-    Assert((m_size + size) <= CAPACITY);
+    DebugAssert((m_size + size) <= CAPACITY);
     while (size > 0)
     {
       T& ref = PushAndGetReference();
@@ -97,7 +97,7 @@ public:
 
   void Remove(u32 count)
   {
-    Assert(m_size >= count);
+    DebugAssert(m_size >= count);
     for (u32 i = 0; i < count; i++)
     {
       m_ptr[m_head].~T();
@@ -108,7 +108,7 @@ public:
 
   void RemoveOne()
   {
-    Assert(m_size > 0);
+    DebugAssert(m_size > 0);
     m_ptr[m_head].~T();
     m_head = (m_head + 1) % CAPACITY;
     m_size--;
@@ -117,7 +117,7 @@ public:
   // removes and returns moved value
   T Pop()
   {
-    Assert(m_size > 0);
+    DebugAssert(m_size > 0);
     T val = std::move(m_ptr[m_head]);
     m_ptr[m_head].~T();
     m_head = (m_head + 1) % CAPACITY;
@@ -127,7 +127,7 @@ public:
 
   void PopRange(T* out_data, u32 count)
   {
-    Assert(m_size >= count);
+    DebugAssert(m_size >= count);
 
     for (u32 i = 0; i < count; i++)
     {
@@ -153,7 +153,7 @@ protected:
 
   T& PushAndGetReference()
   {
-    Assert(m_size < CAPACITY);
+    DebugAssert(m_size < CAPACITY);
     T& ref = m_ptr[m_tail];
     m_tail = (m_tail + 1) % CAPACITY;
     m_size++;
