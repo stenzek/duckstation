@@ -1182,6 +1182,29 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Force NTSC Timings", &m_settings_copy.gpu_force_ntsc_timings);
       }
 
+      if (DrawSettingsSectionHeader("Advanced"))
+      {
+        ImGui::Text("FIFO Size:");
+        ImGui::SameLine(indent);
+
+        int fifo_size = static_cast<int>(m_settings_copy.gpu_fifo_size);
+        if (ImGui::SliderInt("##fifo_size", &fifo_size, 16, GPU::MAX_FIFO_SIZE))
+        {
+          m_settings_copy.gpu_fifo_size = fifo_size;
+          settings_changed = true;
+        }
+
+        ImGui::Text("Max Run-Ahead:");
+        ImGui::SameLine(indent);
+
+        int max_run_ahead = static_cast<int>(m_settings_copy.gpu_max_run_ahead);
+        if (ImGui::SliderInt("##max_run_ahead", &max_run_ahead, 0, 1000))
+        {
+          m_settings_copy.gpu_max_run_ahead = max_run_ahead;
+          settings_changed = true;
+        }
+      }
+
       ImGui::EndTabItem();
     }
 
