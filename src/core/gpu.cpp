@@ -1041,21 +1041,73 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 
 void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  // Break up oversized copies. This behavior has not been verified on console.
+  if ((src_x + width) > VRAM_WIDTH || (dst_x + width) > VRAM_WIDTH)
+  {
+    u32 remaining_rows = height;
+    u32 current_src_y = src_y;
+    u32 current_dst_y = dst_y;
+    while (remaining_rows > 0)
+    {
+      const u32 rows_to_copy =
+        std::min<u32>(remaining_rows, std::min<u32>(VRAM_HEIGHT - current_src_y, VRAM_HEIGHT - current_dst_y));
+
+      u32 remaining_columns = width;
+      u32 current_src_x = src_x;
+      u32 current_dst_x = dst_x;
+      while (remaining_columns > 0)
+      {
+        const u32 columns_to_copy =
+          std::min<u32>(remaining_columns, std::min<u32>(VRAM_WIDTH - current_src_x, VRAM_WIDTH - current_dst_x));
+        CopyVRAM(current_src_x, current_src_y, current_dst_x, current_dst_y, columns_to_copy, rows_to_copy);
+        current_src_x = (current_src_x + columns_to_copy) % VRAM_WIDTH;
+        current_dst_x = (current_dst_x + columns_to_copy) % VRAM_WIDTH;
+        remaining_columns -= columns_to_copy;
+      }
+
+      current_src_y = (current_src_y + rows_to_copy) % VRAM_HEIGHT;
+      current_dst_y = (current_dst_y + rows_to_copy) % VRAM_HEIGHT;
+      remaining_rows -= rows_to_copy;
+    }
+
+    return;
+  }
+
   // This doesn't have a fast path, but do we really need one? It's not common.
   const u16 mask_and = m_GPUSTAT.GetMaskAND();
   const u16 mask_or = m_GPUSTAT.GetMaskOR();
 
-  for (u32 row = 0; row < height; row++)
+  // Copy in reverse when src_x < dst_x, this is verified on console.
+  if (src_x < dst_x || ((src_x + width - 1) % VRAM_WIDTH) < ((dst_x + width - 1) % VRAM_WIDTH))
   {
-    const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-    u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-
-    for (u32 col = 0; col < width; col++)
+    for (u32 row = 0; row < height; row++)
     {
-      const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
-      u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];
-      if ((*dst_pixel_ptr & mask_and) == 0)
-        *dst_pixel_ptr = src_pixel | mask_or;
+      const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+
+      for (s32 col = static_cast<s32>(width - 1); col >= 0; col--)
+      {
+        const u16 src_pixel = src_row_ptr[(src_x + static_cast<u32>(col)) % VRAM_WIDTH];
+        u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + static_cast<u32>(col)) % VRAM_WIDTH];
+        if ((*dst_pixel_ptr & mask_and) == 0)
+          *dst_pixel_ptr = src_pixel | mask_or;
+      }
+    }
+  }
+  else
+  {
+    for (u32 row = 0; row < height; row++)
+    {
+      const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+
+      for (u32 col = 0; col < width; col++)
+      {
+        const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
+        u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];
+        if ((*dst_pixel_ptr & mask_and) == 0)
+          *dst_pixel_ptr = src_pixel | mask_or;
+      }
     }
   }
 }
