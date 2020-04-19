@@ -387,10 +387,7 @@ protected:
 #endif
     AddCommandTicks(draw_ticks << (BoolToUInt8(textured)));
   }
-  ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured)
-  {
-    AddCommandTicks((width * height) << (BoolToUInt8(textured)));
-  }
+  ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured) { AddCommandTicks(width * height); }
   ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded) { AddCommandTicks(std::max(width, height)); }
 
   HostDisplay* m_host_display = nullptr;
