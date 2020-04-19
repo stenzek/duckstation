@@ -319,10 +319,17 @@ bool GPU::HandleRenderPolygonCommand()
   if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
     Synchronize();
 
-  Log_TracePrintf(
-    "Render %s %s %s %s polygon (%u verts, %u words per vert)", rc.quad_polygon ? "four-point" : "three-point",
-    rc.transparency_enable ? "semi-transparent" : "opaque", rc.texture_enable ? "textured" : "non-textured",
-    rc.shading_enable ? "shaded" : "monochrome", ZeroExtend32(num_vertices), ZeroExtend32(words_per_vertex));
+  // setup time
+  static constexpr u16 s_setup_time[2][2][2] = {{{46, 226}, {334, 496}}, {{82, 262}, {370, 532}}};
+  const TickCount setup_ticks = static_cast<TickCount>(ZeroExtend32(
+    s_setup_time[BoolToUInt8(rc.quad_polygon)][BoolToUInt8(rc.shading_enable)][BoolToUInt8(rc.texture_enable)]));
+  AddCommandTicks(setup_ticks);
+
+  Log_TracePrintf("Render %s %s %s %s polygon (%u verts, %u words per vert), %d setup ticks",
+                  rc.quad_polygon ? "four-point" : "three-point",
+                  rc.transparency_enable ? "semi-transparent" : "opaque",
+                  rc.texture_enable ? "textured" : "non-textured", rc.shading_enable ? "shaded" : "monochrome",
+                  ZeroExtend32(num_vertices), ZeroExtend32(words_per_vertex), setup_ticks);
 
   // set draw state up
   if (rc.texture_enable)
@@ -357,9 +364,13 @@ bool GPU::HandleRenderRectangleCommand()
   if (rc.texture_enable)
     SetTexturePalette(Truncate16(m_fifo.Peek(2) >> 16));
 
-  Log_TracePrintf("Render %s %s %s rectangle (%u words)", rc.transparency_enable ? "semi-transparent" : "opaque",
+  const TickCount setup_ticks = 16;
+  AddCommandTicks(setup_ticks);
+
+  Log_TracePrintf("Render %s %s %s rectangle (%u words), %d setup ticks",
+                  rc.transparency_enable ? "semi-transparent" : "opaque",
                   rc.texture_enable ? "textured" : "non-textured", rc.shading_enable ? "shaded" : "monochrome",
-                  total_words);
+                  total_words, setup_ticks);
 
   m_stats.num_vertices++;
   m_stats.num_polygons++;
@@ -403,8 +414,11 @@ bool GPU::HandleRenderPolyLineCommand()
   if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
     Synchronize();
 
-  Log_TracePrintf("Render %s %s poly-line", rc.transparency_enable ? "semi-transparent" : "opaque",
-                  rc.shading_enable ? "shaded" : "monochrome");
+  const TickCount setup_ticks = 16;
+  AddCommandTicks(setup_ticks);
+
+  Log_TracePrintf("Render %s %s poly-line, %d setup ticks", rc.transparency_enable ? "semi-transparent" : "opaque",
+                  rc.shading_enable ? "shaded" : "monochrome", setup_ticks);
 
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
