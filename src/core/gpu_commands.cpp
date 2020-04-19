@@ -94,6 +94,7 @@ void GPU::ExecuteCommands()
             DispatchRenderCommand();
             m_blit_buffer.clear();
             EndCommand();
+            continue;
           }
         }
         break;
