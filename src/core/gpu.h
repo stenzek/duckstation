@@ -383,18 +383,15 @@ protected:
 #if 0
     const u32 draw_ticks = static_cast<u32>((std::abs(x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) + 1u) / 2u);
 #else
-    const u32 draw_ticks = (width * height) / 2;
+    const u32 draw_ticks = ((width + 1) / 2) * height;
 #endif
-    AddCommandTicks(draw_ticks << BoolToUInt8(textured | shaded));
+    AddCommandTicks(draw_ticks << (BoolToUInt8(textured)));
   }
   ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured)
   {
-    AddCommandTicks((width * height) << BoolToUInt8(textured));
+    AddCommandTicks((width * height) << (BoolToUInt8(textured)));
   }
-  ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded)
-  {
-    AddCommandTicks(std::max(width, height));
-  }
+  ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded) { AddCommandTicks(std::max(width, height)); }
 
   HostDisplay* m_host_display = nullptr;
   System* m_system = nullptr;
