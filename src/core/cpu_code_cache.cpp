@@ -21,7 +21,8 @@ CodeCache::CodeCache() = default;
 
 CodeCache::~CodeCache()
 {
-  Flush();
+  if (m_system)
+    Flush();
 }
 
 void CodeCache::Initialize(System* system, Core* core, Bus* bus, bool use_recompiler)
