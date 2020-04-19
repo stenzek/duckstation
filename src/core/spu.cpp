@@ -150,9 +150,6 @@ bool SPU::DoState(StateWrapper& sw)
     UpdateTransferEvent();
   }
 
-  //for (u32 i = 0; i < NUM_REVERB_REGS; i++)
-    //Log_WarningPrintf("Reverb[%u] = 0x%04X", i, m_reverb_registers.rev[i]);
-
   return !sw.HasError();
 }
 
@@ -529,12 +526,10 @@ u16 SPU::ReadVoiceRegister(u32 offset)
   const u32 voice_index = (offset / 0x10);   //((offset >> 4) & 0x1F);
   Assert(voice_index < 24);
 
+  // ADSR volume needs to be updated when reading. A voice might be off as well, but key on is pending.
   const Voice& voice = m_voices[voice_index];
-  if (reg_index >= 6 && voice.IsOn())
-  {
-    // adsr volume needs to be updated when reading
+  if (reg_index >= 6 && (voice.IsOn() || m_key_on_register & (1u << voice_index)))
     m_tick_event->InvokeEarly();
-  }
 
   Log_TracePrintf("Read voice %u register %u -> 0x%02X", voice_index, reg_index, voice.regs.index[reg_index]);
   return voice.regs.index[reg_index];
