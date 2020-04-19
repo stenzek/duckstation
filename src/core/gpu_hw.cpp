@@ -308,8 +308,8 @@ void GPU_HW::LoadVertices()
       }
 
       // we can split the rectangle up into potentially 8 quads
-      const u32 required_vertices = 6 * ((rectangle_width + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) *
-                                    ((rectangle_height + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT);
+      const u32 required_vertices = 6 * (((rectangle_width + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
+                                    (((rectangle_height + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u);
       EnsureVertexBufferSpace(required_vertices);
 
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
