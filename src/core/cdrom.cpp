@@ -1554,7 +1554,9 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
                   (m_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
   }
 
-  Assert(!m_mode.ignore_bit);
+  if (m_mode.ignore_bit)
+    Log_WarningPrintf("SetMode.4 bit set on read of sector %u", m_last_requested_sector);
+
   if (m_mode.read_raw_sector)
   {
     std::memcpy(sb->data.data(), raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_OUTPUT_SIZE);
