@@ -431,6 +431,19 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog->Uniform1i("samp0", 0);
   m_vram_read_program = std::move(*prog);
 
+  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
+                                   shadergen.GenerateVRAMCopyFragmentShader(), [this](GL::Program& prog) {
+                                     if (!m_is_gles)
+                                       prog.BindFragData(0, "o_col0");
+                                   });
+  if (!prog)
+    return false;
+
+  prog->BindUniformBlock("UBOBlock", 1);
+  prog->Bind();
+  prog->Uniform1i("samp0", 0);
+  m_vram_copy_program = std::move(*prog);
+
   if (m_supports_texture_buffer)
   {
     prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
@@ -770,14 +783,39 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  if ((src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT || (dst_x + width) > VRAM_WIDTH ||
-      (dst_y + height) > VRAM_HEIGHT)
+  if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height))
   {
-    Log_WarningPrintf("Oversized VRAM copy (%u,%u, %u,%u, %u,%u), CPU round trip", src_x, src_y, dst_x, dst_y, width,
-                      height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
+    const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+    if (m_vram_dirty_rect.Intersects(src_bounds))
+      UpdateVRAMReadTexture();
+    IncludeVRAMDityRectangle(dst_bounds);
+
+    VRAMCopyUBOData uniforms = {
+      src_x * m_resolution_scale,
+      src_y * m_resolution_scale,
+      dst_x * m_resolution_scale,
+      dst_y * m_resolution_scale,
+      width * m_resolution_scale,
+      height * m_resolution_scale,
+      m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
+    };
+    uniforms.u_src_y = m_vram_texture.GetHeight() - uniforms.u_src_y - uniforms.u_height;
+    uniforms.u_dst_y = m_vram_texture.GetHeight() - uniforms.u_dst_y - uniforms.u_height;
+    UploadUniformBuffer(&uniforms, sizeof(uniforms));
+
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_BLEND);
+
+    const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
+    glViewport(dst_bounds_scaled.left,
+               m_vram_texture.GetHeight() - dst_bounds_scaled.top - dst_bounds_scaled.GetHeight(),
+               dst_bounds_scaled.GetWidth(), dst_bounds_scaled.GetHeight());
+    m_vram_read_texture.Bind();
+    m_vram_copy_program.Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    RestoreGraphicsAPIState();
     return;
   }
 

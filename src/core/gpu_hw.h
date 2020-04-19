@@ -106,6 +106,17 @@ protected:
     u32 u_interlaced_displayed_field;
   };
 
+  struct VRAMCopyUBOData
+  {
+    u32 u_src_x;
+    u32 u_src_y;
+    u32 u_dst_x;
+    u32 u_dst_y;
+    u32 u_width;
+    u32 u_height;
+    u32 u_set_mask_bit;
+  };
+
   struct RendererStats
   {
     u32 num_batches;
@@ -157,7 +168,10 @@ protected:
   }
 
   /// Computes the area affected by a VRAM transfer, including wrap-around of X.
-  Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height);
+  Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height) const;
+
+  /// Returns true if the VRAM copy shader should be used (oversized copies, masking).
+  bool UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
   /// Handles quads with flipped texture coordinate directions.
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);

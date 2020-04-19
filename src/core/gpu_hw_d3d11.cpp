@@ -404,6 +404,10 @@ bool GPU_HW_D3D11::CompileShaders()
   if (!m_vram_write_pixel_shader)
     return false;
 
+  m_vram_copy_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMCopyFragmentShader());
+  if (!m_vram_copy_pixel_shader)
+    return false;
+
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
     for (u8 interlacing = 0; interlacing < 2; interlacing++)
@@ -689,14 +693,30 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
 void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  if ((src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT || (dst_x + width) > VRAM_WIDTH ||
-      (dst_y + height) > VRAM_HEIGHT)
+  if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height))
   {
-    Log_WarningPrintf("Oversized VRAM copy (%u,%u, %u,%u, %u,%u), CPU round trip", src_x, src_y, dst_x, dst_y, width,
-                      height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
+    const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+    if (m_vram_dirty_rect.Intersects(src_bounds))
+      UpdateVRAMReadTexture();
+    IncludeVRAMDityRectangle(dst_bounds);
+
+    const VRAMCopyUBOData uniforms = {
+      src_x * m_resolution_scale,
+      src_y * m_resolution_scale,
+      dst_x * m_resolution_scale,
+      dst_y * m_resolution_scale,
+      width * m_resolution_scale,
+      height * m_resolution_scale,
+      m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
+    };
+
+    const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
+    SetViewportAndScissor(dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),
+                          dst_bounds_scaled.GetHeight());
+    m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
+    DrawUtilityShader(m_vram_copy_pixel_shader.Get(), &uniforms, sizeof(uniforms));
+    RestoreGraphicsAPIState();
     return;
   }
 

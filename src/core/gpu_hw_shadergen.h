@@ -22,6 +22,7 @@ public:
   std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
   std::string GenerateVRAMReadFragmentShader();
   std::string GenerateVRAMWriteFragmentShader();
+  std::string GenerateVRAMCopyFragmentShader();
 
   HostDisplay::RenderAPI m_render_api;
   u32 m_resolution_scale;

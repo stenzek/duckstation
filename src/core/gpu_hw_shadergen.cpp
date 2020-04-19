@@ -967,3 +967,32 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
 
   return ss.str();
 }
+
+std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_size", "bool u_set_mask_bit"});
+
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  ss << R"(
+{
+  uint2 dst_coords = uint2(v_pos.xy);
+
+  // find offset from the start of the row/column
+  uint2 offset;
+  offset.x = (dst_coords.x < u_dst_coords.x) ? (uint(VRAM_SIZE.x - 1) - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
+  offset.y = (dst_coords.y < u_dst_coords.y) ? (uint(VRAM_SIZE.y - 1) - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
+
+  // find the source coordinates to copy from
+  uint2 src_coords = (u_src_coords + offset) % uint2(VRAM_SIZE);
+
+  // sample and apply mask bit
+  float4 color = LOAD_TEXTURE(samp0, int2(src_coords), 0);
+  o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
+})";
+
+  return ss.str();
+}

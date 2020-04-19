@@ -433,7 +433,7 @@ void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
   *bottom = std::max<u32>((m_drawing_area.bottom + 1) * m_resolution_scale, *top + 1);
 }
 
-Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height)
+Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height) const
 {
   Common::Rectangle<u32> out_rc = Common::Rectangle<u32>::FromExtents(x, y, width, height);
   if (out_rc.right > VRAM_WIDTH)
@@ -447,6 +447,15 @@ Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u3
     out_rc.bottom = VRAM_HEIGHT;
   }
   return out_rc;
+}
+
+bool GPU_HW::UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const
+{
+  // masking enabled, oversized, or overlapping
+  return (m_GPUSTAT.IsMaskingEnabled() || (src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT ||
+          (dst_x + width) > VRAM_WIDTH || (dst_y + height) > VRAM_HEIGHT ||
+          Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)
+            .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height)));
 }
 
 GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)

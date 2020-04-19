@@ -113,5 +113,6 @@ private:
   ComPtr<ID3D11PixelShader> m_vram_interlaced_fill_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_read_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_write_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_vram_copy_pixel_shader;
   std::array<std::array<ComPtr<ID3D11PixelShader>, 2>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
 };

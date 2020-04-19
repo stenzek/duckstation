@@ -84,6 +84,7 @@ private:
   GL::Program m_vram_interlaced_fill_program;
   GL::Program m_vram_read_program;
   GL::Program m_vram_write_program;
+  GL::Program m_vram_copy_program;
 
   u32 m_uniform_buffer_alignment = 1;
   u32 m_max_texture_buffer_size = 0;
