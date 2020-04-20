@@ -9,6 +9,7 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "save_state_selector_ui.h"
 #include "scmversion/scmversion.h"
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
@@ -31,6 +32,8 @@ bool CommonHostInterface::Initialize()
   // Change to the user directory so that all default/relative paths in the config are after this.
   if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
     Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
+
+  m_save_state_selector_ui = std::make_unique<FrontendCommon::SaveStateSelectorUI>(this);
 
   RegisterGeneralHotkeys();
   RegisterGraphicsHotkeys();
@@ -358,6 +361,14 @@ void CommonHostInterface::OnControllerTypeChanged(u32 slot)
   HostInterface::OnControllerTypeChanged(slot);
 
   UpdateInputMap();
+}
+
+void CommonHostInterface::DrawImGuiWindows()
+{
+  HostInterface::DrawImGuiWindows();
+
+  if (m_save_state_selector_ui->IsOpen())
+    m_save_state_selector_ui->Draw();
 }
 
 void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -773,6 +784,27 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 
 void CommonHostInterface::RegisterSaveStateHotkeys()
 {
+  RegisterHotkey(StaticString("Save States"), StaticString("LoadSelectedSaveState"),
+                 StaticString("Load From Selected Slot"), [this](bool pressed) {
+                   if (!pressed)
+                     m_save_state_selector_ui->LoadCurrentSlot();
+                 });
+  RegisterHotkey(StaticString("Save States"), StaticString("SaveSelectedSaveState"),
+                 StaticString("Save To Selected Slot"), [this](bool pressed) {
+                   if (!pressed)
+                     m_save_state_selector_ui->SaveCurrentSlot();
+                 });
+  RegisterHotkey(StaticString("Save States"), StaticString("SelectPreviousSaveStateSlot"),
+                 StaticString("Select Previous Save Slot"), [this](bool pressed) {
+                   if (!pressed)
+                     m_save_state_selector_ui->SelectPreviousSlot();
+                 });
+  RegisterHotkey(StaticString("Save States"), StaticString("SelectNextSaveStateSlot"),
+                 StaticString("Select Next Save Slot"), [this](bool pressed) {
+                   if (!pressed)
+                     m_save_state_selector_ui->SelectNextSlot();
+                 });
+
   for (u32 global_i = 0; global_i < 2; global_i++)
   {
     const bool global = ConvertToBoolUnchecked(global_i);

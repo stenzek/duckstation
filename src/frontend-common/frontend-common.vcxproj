@@ -60,6 +60,7 @@
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
+    <ClCompile Include="save_state_selector_ui.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_controller_interface.cpp" />
     <ClCompile Include="sdl_initializer.cpp" />
@@ -70,6 +71,7 @@
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="ini_settings_interface.h" />
+    <ClInclude Include="save_state_selector_ui.h" />
     <ClInclude Include="sdl_audio_stream.h" />
     <ClInclude Include="sdl_controller_interface.h" />
     <ClInclude Include="sdl_initializer.h" />

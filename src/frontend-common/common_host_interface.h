@@ -13,6 +13,10 @@
 
 class ControllerInterface;
 
+namespace FrontendCommon {
+class SaveStateSelectorUI;
+}
+
 class CommonHostInterface : public HostInterface
 {
 public:
@@ -72,6 +76,7 @@ protected:
   virtual void OnSystemPaused(bool paused) override;
   virtual void OnSystemDestroyed() override;
   virtual void OnControllerTypeChanged(u32 slot) override;
+  virtual void DrawImGuiWindows() override;
 
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
@@ -114,6 +119,8 @@ private:
   void ClearAllControllerBindings(SettingsInterface& si);
 
   HotkeyInfoList m_hotkeys;
+
+  std::unique_ptr<FrontendCommon::SaveStateSelectorUI> m_save_state_selector_ui;
 
   // input key maps
   std::map<HostKeyCode, InputButtonHandler> m_keyboard_input_handlers;

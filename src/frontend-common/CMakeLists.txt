@@ -9,6 +9,8 @@ add_library(frontend-common
   imgui_styles.h
   ini_settings_interface.cpp
   ini_settings_interface.h
+  save_state_selector_ui.cpp
+  save_state_selector_ui.h
 )
 
 if(SDL2_FOUND)

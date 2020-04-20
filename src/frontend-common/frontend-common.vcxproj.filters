@@ -9,6 +9,7 @@
     <ClCompile Include="common_host_interface.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="controller_interface.cpp" />
+    <ClCompile Include="save_state_selector_ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -19,6 +20,7 @@
     <ClInclude Include="common_host_interface.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="controller_interface.h" />
+    <ClInclude Include="save_state_selector_ui.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />
