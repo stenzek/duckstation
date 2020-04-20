@@ -385,7 +385,7 @@ protected:
 #else
     const u32 draw_ticks = ((width + 1) / 2) * height;
 #endif
-    AddCommandTicks(draw_ticks << (BoolToUInt8(textured)));
+    AddCommandTicks(draw_ticks);
   }
   ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured) { AddCommandTicks(width * height); }
   ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded) { AddCommandTicks(std::max(width, height)); }
