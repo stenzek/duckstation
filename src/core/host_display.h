@@ -3,6 +3,7 @@
 #include "types.h"
 #include <memory>
 #include <tuple>
+#include <vector>
 
 // An abstracted RGBA8 texture.
 class HostDisplayTexture
@@ -97,7 +98,7 @@ public:
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
 
   /// Helper function for computing the draw rectangle in a larger window.
-  std::tuple<s32, s32, s32, s32> CalculateDrawRect() const;
+  std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const;
 
   /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
   bool WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, const char* filename,
@@ -105,6 +106,10 @@ public:
 
   /// Helper function to save current display texture to PNG.
   bool WriteDisplayTextureToFile(const char* filename, bool full_resolution = true, bool apply_aspect_ratio = true);
+
+  /// Helper function to save current display texture to a buffer.
+  bool WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width = 0, u32 resize_height = 0,
+                                   bool clear_alpha = true);
 
 protected:
   s32 m_window_width = 0;

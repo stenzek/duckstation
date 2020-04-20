@@ -26,6 +26,35 @@ class HostInterface
   friend System;
 
 public:
+  enum : s32
+  {
+    PER_GAME_SAVE_STATE_SLOTS = 10,
+    GLOBAL_SAVE_STATE_SLOTS = 10
+  };
+
+  struct SaveStateInfo
+  {
+    std::string path;
+    u64 timestamp;
+    s32 slot;
+    bool global;
+  };
+
+  struct ExtendedSaveStateInfo
+  {
+    std::string path;
+    u64 timestamp;
+    s32 slot;
+    bool global;
+
+    std::string title;
+    std::string game_code;
+
+    u32 screenshot_width;
+    u32 screenshot_height;
+    std::vector<u32> screenshot_data;
+  };
+
   HostInterface();
   virtual ~HostInterface();
 
@@ -113,6 +142,15 @@ public:
   /// such as compiling shaders when starting up.
   void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
 
+  /// Returns a list of save states for the specified game code.
+  std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code) const;
+
+  /// Returns save state info if present. If game_code is null or empty, assumes global state.
+  std::optional<SaveStateInfo> GetSaveStateInfo(const char* game_code, s32 slot);
+
+  /// Returns save state info if present. If game_code is null or empty, assumes global state.
+  std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* game_code, s32 slot);
+
   /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
   void DeleteSaveStates(const char* game_code, bool resume);
 
@@ -123,9 +161,7 @@ protected:
     AUDIO_SAMPLE_RATE = 44100,
     AUDIO_CHANNELS = 2,
     AUDIO_BUFFER_SIZE = 2048,
-    AUDIO_BUFFERS = 2,
-    PER_GAME_SAVE_STATE_SLOTS = 10,
-    GLOBAL_SAVE_STATE_SLOTS = 10,
+    AUDIO_BUFFERS = 2
   };
 
   struct OSDMessage
@@ -133,14 +169,6 @@ protected:
     std::string text;
     Common::Timer time;
     float duration;
-  };
-
-  struct SaveStateInfo
-  {
-    std::string path;
-    u64 timestamp;
-    s32 slot;
-    bool global;
   };
 
   virtual bool AcquireHostDisplay() = 0;
@@ -185,12 +213,6 @@ protected:
 
   /// Returns the default path to a memory card for a specific game.
   std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const;
-
-  /// Returns a list of save states for the specified game code.
-  std::vector<SaveStateInfo> GetAvailableSaveStates(const char* game_code) const;
-
-  /// Returns save state info if present. If game_code is null or empty, assumes global state.
-  std::optional<SaveStateInfo> GetSaveStateInfo(const char* game_code, s32 slot);
 
   /// Returns the most recent resume save state.
   std::string GetMostRecentResumeSaveStatePath() const;

@@ -401,7 +401,7 @@ void OpenGLHostDisplay::RenderDisplay()
   if (!m_display_texture_handle)
     return;
 
-  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect();
+  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
 
   glViewport(vp_left, m_window_height - vp_top - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);

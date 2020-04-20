@@ -419,7 +419,7 @@ void D3D11HostDisplay::RenderDisplay()
   if (!m_display_texture_handle)
     return;
 
-  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect();
+  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
 
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);

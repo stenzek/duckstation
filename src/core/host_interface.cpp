@@ -11,6 +11,7 @@
 #include "gpu.h"
 #include "host_display.h"
 #include "mdec.h"
+#include "save_state_version.h"
 #include "spu.h"
 #include "system.h"
 #include "timers.h"
@@ -807,6 +808,61 @@ std::optional<HostInterface::SaveStateInfo> HostInterface::GetSaveStateInfo(cons
     return std::nullopt;
 
   return SaveStateInfo{std::move(path), sd.ModificationTime.AsUnixTimestamp(), slot, global};
+}
+
+std::optional<HostInterface::ExtendedSaveStateInfo> HostInterface::GetExtendedSaveStateInfo(const char* game_code,
+                                                                                            s32 slot)
+{
+  const bool global = (!game_code || game_code[0] == 0);
+  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
+
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(path.c_str(), &sd))
+    return std::nullopt;
+
+  std::unique_ptr<ByteStream> stream =
+    FileSystem::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
+  if (!stream)
+    return std::nullopt;
+
+  SAVE_STATE_HEADER header;
+  if (!stream->Read(&header, sizeof(header)) || header.magic != SAVE_STATE_MAGIC)
+    return std::nullopt;
+
+  ExtendedSaveStateInfo ssi;
+  ssi.path = std::move(path);
+  ssi.timestamp = sd.ModificationTime.AsUnixTimestamp();
+  ssi.slot = slot;
+  ssi.global = global;
+
+  if (header.version != SAVE_STATE_VERSION)
+  {
+    ssi.title = StringUtil::StdStringFromFormat("Invalid version %u (expected %u)", header.version, header.magic,
+                                                SAVE_STATE_VERSION);
+    return ssi;
+  }
+
+  header.title[sizeof(header.title) - 1] = 0;
+  ssi.title = header.title;
+  header.game_code[sizeof(header.game_code) - 1] = 0;
+  ssi.game_code = header.game_code;
+
+  if (header.screenshot_width > 0 && header.screenshot_height > 0 && header.screenshot_size > 0 &&
+      (static_cast<u64>(header.offset_to_screenshot) + static_cast<u64>(header.screenshot_size)) <= stream->GetSize())
+  {
+    ssi.screenshot_data.resize((header.screenshot_size + 3u) / 4u);
+    if (stream->Read2(ssi.screenshot_data.data(), header.screenshot_size))
+    {
+      ssi.screenshot_width = header.screenshot_width;
+      ssi.screenshot_height = header.screenshot_height;
+    }
+    else
+    {
+      decltype(ssi.screenshot_data)().swap(ssi.screenshot_data);
+    }
+  }
+
+  return ssi;
 }
 
 void HostInterface::DeleteSaveStates(const char* game_code, bool resume)

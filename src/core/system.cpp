@@ -5,6 +5,7 @@
 #include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/string_util.h"
 #include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -309,20 +310,6 @@ bool System::CreateGPU(GPURenderer renderer)
 
 bool System::DoState(StateWrapper& sw)
 {
-  u32 magic = SAVE_STATE_MAGIC;
-  u32 version = SAVE_STATE_VERSION;
-  sw.Do(&magic);
-  if (magic != SAVE_STATE_MAGIC)
-    return false;
-
-  sw.Do(&version);
-  if (version != SAVE_STATE_VERSION)
-  {
-    m_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
-                                           SAVE_STATE_VERSION, version);
-    return false;
-  }
-
   if (!sw.DoMarker("System"))
     return false;
 
@@ -424,14 +411,87 @@ void System::Reset()
 
 bool System::LoadState(ByteStream* state)
 {
+  SAVE_STATE_HEADER header;
+  if (!state->Read2(&header, sizeof(header)))
+    return false;
+
+  if (header.magic != SAVE_STATE_MAGIC)
+    return false;
+
+  if (header.version != SAVE_STATE_VERSION)
+  {
+    m_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
+                                           SAVE_STATE_VERSION, header.version);
+    return false;
+  }
+
+  if (header.data_compression_type != 0)
+  {
+    m_host_interface->ReportFormattedError("Unknown save state compression type %u", header.data_compression_type);
+    return false;
+  }
+
+  if (!state->SeekAbsolute(header.offset_to_data))
+    return false;
+
   StateWrapper sw(state, StateWrapper::Mode::Read);
   return DoState(sw);
 }
 
 bool System::SaveState(ByteStream* state)
 {
-  StateWrapper sw(state, StateWrapper::Mode::Write);
-  return DoState(sw);
+  SAVE_STATE_HEADER header = {};
+
+  const u64 header_position = state->GetPosition();
+  if (!state->Write2(&header, sizeof(header)))
+    return false;
+
+  // fill in header
+  header.magic = SAVE_STATE_MAGIC;
+  header.version = SAVE_STATE_VERSION;
+  StringUtil::Strlcpy(header.title, m_running_game_title.c_str(), sizeof(header.title));
+  StringUtil::Strlcpy(header.game_code, m_running_game_code.c_str(), sizeof(header.game_code));
+
+  // save screenshot
+  {
+    const u32 screenshot_width = 128;
+    const u32 screenshot_height = 128;
+
+    std::vector<u32> screenshot_buffer;
+    if (m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_width,
+                                                                    screenshot_height) &&
+        !screenshot_buffer.empty())
+    {
+      header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
+      header.screenshot_width = screenshot_width;
+      header.screenshot_height = screenshot_height;
+      header.screenshot_size = static_cast<u32>(screenshot_buffer.size() * sizeof(u32));
+      if (!state->Write2(screenshot_buffer.data(), header.screenshot_size))
+        return false;
+    }
+  }
+
+  // write data
+  {
+    header.offset_to_data = static_cast<u32>(state->GetPosition());
+
+    StateWrapper sw(state, StateWrapper::Mode::Write);
+    if (!DoState(sw))
+      return false;
+
+    header.data_compression_type = 0;
+    header.data_uncompressed_size = static_cast<u32>(state->GetPosition() - header.offset_to_data);
+  }
+
+  // re-write header
+  const u64 end_position = state->GetPosition();
+  if (!state->SeekAbsolute(header_position) || !state->Write2(&header, sizeof(header)) ||
+      !state->SeekAbsolute(end_position))
+  {
+    return false;
+  }
+
+  return true;
 }
 
 void System::RunFrame()

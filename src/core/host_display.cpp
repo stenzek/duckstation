@@ -18,7 +18,7 @@ void HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
   m_window_height = new_window_height;
 }
 
-std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
+std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const
 {
   const float y_scale =
     (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_pixel_aspect_ratio;
@@ -30,8 +30,6 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
   const float active_height = static_cast<float>(m_display_active_height) * y_scale;
 
   // now fit it within the window
-  const s32 window_width = m_window_width;
-  const s32 window_height = m_window_height - m_display_top_margin;
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
 
   float scale;
@@ -41,12 +39,12 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
   {
     // align in middle vertically
     scale = static_cast<float>(window_width) / display_width;
-    top_padding = (window_height - static_cast<s32>(display_height * scale)) / 2;
+    top_padding = (window_height - top_margin - static_cast<s32>(display_height * scale)) / 2;
   }
   else
   {
     // align in middle horizontally
-    scale = static_cast<float>(window_height) / display_height;
+    scale = static_cast<float>(window_height - top_margin) / display_height;
     left_padding = (window_width - static_cast<s32>(display_width * scale)) / 2;
   }
 
@@ -60,7 +58,7 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect() const
   top += std::max(top_padding, 0);
 
   // add in margin
-  top += m_display_top_margin;
+  top += top_margin;
   return std::tie(left, top, width, height);
 }
 
@@ -175,13 +173,13 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   }
   else if (apply_aspect_ratio)
   {
-    const auto [left, top, right, bottom] = CalculateDrawRect();
+    const auto [left, top, right, bottom] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
     resize_width = right - left;
     resize_height = bottom - top;
   }
   else if (!full_resolution)
   {
-    const auto [left, top, right, bottom] = CalculateDrawRect();
+    const auto [left, top, right, bottom] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
     const float ratio =
       static_cast<float>(m_display_texture_view_width) / static_cast<float>(std::abs(m_display_texture_view_height));
     if (ratio > 1.0f)
@@ -213,4 +211,76 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   return WriteTextureToFile(m_display_texture_handle, m_display_texture_view_x, read_y, m_display_texture_view_width,
                             read_height, filename, true, flip_y, static_cast<u32>(resize_width),
                             static_cast<u32>(resize_height));
+}
+
+bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width /* = 0 */,
+                                              u32 resize_height /* = 0 */, bool clear_alpha /* = true */)
+{
+  if (!m_display_texture_handle)
+    return false;
+
+  const bool flip_y = (m_display_texture_view_height < 0);
+  s32 read_width = m_display_texture_view_width;
+  s32 read_height = m_display_texture_view_height;
+  s32 read_x = m_display_texture_view_x;
+  s32 read_y = m_display_texture_view_y;
+  if (flip_y)
+  {
+    read_height = -m_display_texture_view_height;
+    read_y = (m_display_texture_height - read_height) - (m_display_texture_height - m_display_texture_view_y);
+  }
+
+  u32 width = static_cast<u32>(read_width);
+  u32 height = static_cast<u32>(read_height);
+  std::vector<u32> texture_data(width * height);
+  u32 texture_data_stride = sizeof(u32) * width;
+  if (!DownloadTexture(m_display_texture_handle, read_x, read_y, width, height, texture_data.data(),
+                       texture_data_stride))
+  {
+    Log_ErrorPrintf("Failed to download texture from GPU.");
+    return false;
+  }
+
+  if (clear_alpha)
+  {
+    for (u32& pixel : texture_data)
+      pixel |= 0xFF000000;
+  }
+
+  if (flip_y)
+  {
+    std::vector<u32> temp(width);
+    for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
+    {
+      u32* top_ptr = &texture_data[flip_row * width];
+      u32* bottom_ptr = &texture_data[((height - 1) - flip_row) * width];
+      std::memcpy(temp.data(), top_ptr, texture_data_stride);
+      std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
+      std::memcpy(bottom_ptr, temp.data(), texture_data_stride);
+    }
+  }
+
+  if (resize_width > 0 && resize_height > 0 && (resize_width != width || resize_height != height))
+  {
+    std::vector<u32> resized_texture_data(resize_width * resize_height);
+    u32 resized_texture_stride = sizeof(u32) * resize_width;
+    if (!stbir_resize_uint8(reinterpret_cast<u8*>(texture_data.data()), width, height, texture_data_stride,
+                            reinterpret_cast<u8*>(resized_texture_data.data()), resize_width, resize_height,
+                            resized_texture_stride, 4))
+    {
+      Log_ErrorPrintf("Failed to resize texture data from %ux%u to %ux%u", width, height, resize_width, resize_height);
+      return false;
+    }
+
+    width = resize_width;
+    height = resize_height;
+    *buffer = std::move(resized_texture_data);
+    texture_data_stride = resized_texture_stride;
+  }
+  else
+  {
+    *buffer = texture_data;
+  }
+
+  return true;
 }
