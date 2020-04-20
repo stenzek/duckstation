@@ -133,9 +133,9 @@ private:
   void InterpretCachedBlock(const CodeBlock& block);
   void InterpretUncachedBlock();
 
-  System* m_system;
-  Core* m_core;
-  Bus* m_bus;
+  System* m_system = nullptr;
+  Core* m_core = nullptr;
+  Bus* m_bus = nullptr;
 
 #ifdef WITH_RECOMPILER
   std::unique_ptr<JitCodeBuffer> m_code_buffer;
