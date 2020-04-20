@@ -359,7 +359,8 @@ void GPU_HW::LoadVertices()
 
     case Primitive::Line:
     {
-      const u32 num_vertices = rc.polyline ? GetPolyLineVertexCount() : 2;
+      // Multiply by two because we don't use line strips.
+      const u32 num_vertices = rc.polyline ? (GetPolyLineVertexCount() * 2u) : 2u;
       EnsureVertexBufferSpace(num_vertices);
 
       const u32 first_color = rc.color_for_first_vertex;
