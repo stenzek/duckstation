@@ -199,7 +199,7 @@ void GPU_HW::LoadVertices()
         vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
       }
 
-      if (rc.quad_polygon)
+      if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
       // Cull polygons which are too large.

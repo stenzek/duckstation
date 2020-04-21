@@ -400,8 +400,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   ss << R"(
 {
   // 0..+1023 -> -1..1
-  float pos_x = (float(a_pos.x) / 512.0) - 1.0;
-  float pos_y = (float(a_pos.y) / -256.0) + 1.0;
+  float pos_x = ((float(a_pos.x) + 0.5) / 1024.0);
+  float pos_y = ((float(a_pos.y) + 0.5) / 512.0);
+  pos_x = (pos_x * 2.0) - 1.0;
+  pos_y = ((1.0 - pos_y) * 2.0) - 1.0;
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
   v_col0 = a_col0;
