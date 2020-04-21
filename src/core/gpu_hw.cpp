@@ -359,63 +359,103 @@ void GPU_HW::LoadVertices()
 
     case Primitive::Line:
     {
-      // Multiply by two because we don't use line strips.
-      const u32 num_vertices = rc.polyline ? (GetPolyLineVertexCount() * 2u) : 2u;
-      EnsureVertexBufferSpace(num_vertices);
-
-      const u32 first_color = rc.color_for_first_vertex;
-      const bool shaded = rc.shading_enable;
-
-      BatchVertex last_vertex;
-      u32 buffer_pos = 0;
-      for (u32 i = 0; i < num_vertices; i++)
+      if (!rc.polyline)
       {
-        u32 color;
-        VertexPosition vp;
+        EnsureVertexBufferSpace(2);
 
-        if (rc.polyline)
+        u32 color0, color1;
+        VertexPosition pos0, pos1;
+        if (rc.shading_enable)
         {
-          color = (shaded && i > 0) ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
-          vp.bits = m_blit_buffer[buffer_pos++];
+          color0 = rc.color_for_first_vertex;
+          pos0.bits = m_fifo.Pop();
+          color1 = m_fifo.Pop() & UINT32_C(0x00FFFFFF);
+          pos1.bits = m_fifo.Pop();
         }
         else
         {
-          color = (shaded && i > 0) ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color;
-          vp.bits = m_fifo.Pop();
+          color0 = color1 = rc.color_for_first_vertex;
+          pos0.bits = m_fifo.Pop();
+          pos1.bits = m_fifo.Pop();
         }
 
-        BatchVertex vertex;
-        vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, 0, 0);
+        BatchVertex start, end;
+        start.Set(m_drawing_offset.x + pos0.x, m_drawing_offset.y + pos0.y, color0, 0, 0);
+        end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos0.y, color0, 0, 0);
 
-        if (i > 0)
+        const s32 min_x = std::min(start.x, end.x);
+        const s32 max_x = std::max(start.x, end.x);
+        const s32 min_y = std::min(start.y, end.y);
+        const s32 max_y = std::max(start.y, end.y);
+
+        if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
         {
-          const s32 min_x = std::min(last_vertex.x, vertex.x);
-          const s32 max_x = std::max(last_vertex.x, vertex.x);
-          const s32 min_y = std::min(last_vertex.y, vertex.y);
-          const s32 max_y = std::max(last_vertex.y, vertex.y);
-
-          if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
-          {
-            Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_vertex.x, last_vertex.y, vertex.x, vertex.y);
-          }
-          else
-          {
-            AddVertex(last_vertex);
-            AddVertex(vertex);
-
-            const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
-            const u32 clip_right =
-              static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-            const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-            const u32 clip_bottom =
-              static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-            m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
-            AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
-          }
+          Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start.x, start.y, end.x, end.y);
+          return;
         }
 
-        std::memcpy(&last_vertex, &vertex, sizeof(BatchVertex));
+        AddVertex(start);
+        AddVertex(end);
+
+        const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
+        const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
+        const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
+        const u32 clip_bottom =
+          static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+        m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+        AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
+      }
+      else
+      {
+        // Multiply by two because we don't use line strips.
+        const u32 num_vertices = GetPolyLineVertexCount();
+        EnsureVertexBufferSpace(num_vertices * 2);
+
+        const u32 first_color = rc.color_for_first_vertex;
+        const bool shaded = rc.shading_enable;
+
+        BatchVertex last_vertex;
+        u32 buffer_pos = 0;
+        for (u32 i = 0; i < num_vertices; i++)
+        {
+          const u32 color = (shaded && i > 0) ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+          const VertexPosition vp{m_blit_buffer[buffer_pos++]};
+
+          BatchVertex vertex;
+          vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, 0, 0);
+
+          if (i > 0)
+          {
+            const s32 min_x = std::min(last_vertex.x, vertex.x);
+            const s32 max_x = std::max(last_vertex.x, vertex.x);
+            const s32 min_y = std::min(last_vertex.y, vertex.y);
+            const s32 max_y = std::max(last_vertex.y, vertex.y);
+
+            if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+            {
+              Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_vertex.x, last_vertex.y, vertex.x,
+                              vertex.y);
+            }
+            else
+            {
+              AddVertex(last_vertex);
+              AddVertex(vertex);
+
+              const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
+              const u32 clip_right =
+                static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
+              const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
+              const u32 clip_bottom =
+                static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+
+              m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+              AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
+            }
+          }
+
+          std::memcpy(&last_vertex, &vertex, sizeof(BatchVertex));
+        }
       }
     }
     break;
