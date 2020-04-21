@@ -381,7 +381,7 @@ void GPU_HW::LoadVertices()
 
         BatchVertex start, end;
         start.Set(m_drawing_offset.x + pos0.x, m_drawing_offset.y + pos0.y, color0, 0, 0);
-        end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos0.y, color0, 0, 0);
+        end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos1.y, color1, 0, 0);
 
         const s32 min_x = std::min(start.x, end.x);
         const s32 max_x = std::max(start.x, end.x);
