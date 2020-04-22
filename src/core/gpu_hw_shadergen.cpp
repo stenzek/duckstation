@@ -400,18 +400,26 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   ss << R"(
 {
   // 0..+1023 -> -1..1
-  float pos_x = ((float(a_pos.x) + 0.5) / 1024.0);
-  float pos_y = ((float(a_pos.y) + 0.5) / 512.0);
-  pos_x = (pos_x * 2.0) - 1.0;
-  pos_y = ((1.0 - pos_y) * 2.0) - 1.0;
+  float pos_x = ((float(a_pos.x) + 0.5) / 512.0) - 1.0;
+  float pos_y = ((float(a_pos.y) + 0.5) / -256.0) + 1.0;
+
+  // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin.
+#if API_OPENGL || API_OPENGL_ES
+  pos_y += (1.0 / 512.0);
+#endif
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
   v_col0 = a_col0;
   #if TEXTURED
     // Fudge the texture coordinates by half a pixel in screen-space.
     // This fixes the rounding/interpolation error on NVIDIA GPUs with shared edges between triangles.
+#if API_OPENGL || API_OPENGL_ES
+    v_tex0 = float2(float(a_texcoord & 0xFFFF) + (RCP_VRAM_SIZE.x * 0.5),
+                    float(a_texcoord >> 16) - (RCP_VRAM_SIZE.y * 0.5));
+#else
     v_tex0 = float2(float(a_texcoord & 0xFFFF) + (RCP_VRAM_SIZE.x * 0.5),
                     float(a_texcoord >> 16) + (RCP_VRAM_SIZE.y * 0.5));
+#endif
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
