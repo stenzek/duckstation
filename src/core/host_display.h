@@ -33,10 +33,6 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
   virtual void* GetRenderDevice() const = 0;
   virtual void* GetRenderContext() const = 0;
-  virtual void* GetRenderWindow() const = 0;
-
-  /// Switches the render window, recreating the surface.
-  virtual void ChangeRenderWindow(void* new_window) = 0;
 
   /// Call when the window size changes externally to recreate any resources.
   virtual void WindowResized(s32 new_window_width, s32 new_window_height);

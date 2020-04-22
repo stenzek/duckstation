@@ -90,16 +90,6 @@ void* OpenGLHostDisplay::GetRenderContext() const
   return m_gl_context;
 }
 
-void* OpenGLHostDisplay::GetRenderWindow() const
-{
-  return m_window;
-}
-
-void OpenGLHostDisplay::ChangeRenderWindow(void* new_window)
-{
-  Panic("Not implemented");
-}
-
 void OpenGLHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 {
   HostDisplay::WindowResized(new_window_width, new_window_height);

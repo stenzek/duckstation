@@ -29,8 +29,6 @@ public:
   virtual bool createSurface();
   virtual void destroySurface();
 
-  virtual void* GetRenderWindow() const override;
-  virtual void ChangeRenderWindow(void* new_window) override;
   virtual void WindowResized(s32 new_window_width, s32 new_window_height) override;
 
   void updateImGuiDisplaySize();

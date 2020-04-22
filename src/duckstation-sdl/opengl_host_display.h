@@ -17,9 +17,6 @@ public:
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
   void* GetRenderContext() const override;
-  void* GetRenderWindow() const override;
-
-  void ChangeRenderWindow(void* new_window) override;
   void WindowResized(s32 new_window_width, s32 new_window_height) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,

@@ -70,16 +70,6 @@ bool QtHostDisplay::createSurface()
 
 void QtHostDisplay::destroySurface() {}
 
-void* QtHostDisplay::GetRenderWindow() const
-{
-  return m_widget;
-}
-
-void QtHostDisplay::ChangeRenderWindow(void* new_window)
-{
-  Panic("Not implemented");
-}
-
 bool QtHostDisplay::createImGuiContext()
 {
   ImGui::CreateContext();

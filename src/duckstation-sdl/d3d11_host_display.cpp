@@ -92,16 +92,6 @@ void* D3D11HostDisplay::GetRenderContext() const
   return m_context.Get();
 }
 
-void* D3D11HostDisplay::GetRenderWindow() const
-{
-  return m_window;
-}
-
-void D3D11HostDisplay::ChangeRenderWindow(void* new_window)
-{
-  Panic("Not supported");
-}
-
 void D3D11HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 {
   HostDisplay::WindowResized(new_window_width, new_window_height);
