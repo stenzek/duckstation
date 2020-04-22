@@ -12,33 +12,32 @@
 #include "common/gl/texture.h"
 #include "core/host_display.h"
 #include "qtdisplaywidget.h"
+#include "qthostdisplay.h"
 #include <QtGui/QOpenGLContext>
 #include <memory>
 
 class QtHostInterface;
 
-class OpenGLDisplayWidget final : public QtDisplayWidget, public HostDisplay
+class OpenGLHostDisplay final : public QtHostDisplay
 {
-  Q_OBJECT
-
 public:
-  OpenGLDisplayWidget(QtHostInterface* host_interface, QWidget* parent);
-  ~OpenGLDisplayWidget();
+  OpenGLHostDisplay(QtHostInterface* host_interface);
+  ~OpenGLHostDisplay();
 
-  HostDisplay* getHostDisplayInterface() override;
+  QtDisplayWidget* createWidget(QWidget* parent) override;
 
   bool hasDeviceContext() const override;
-  bool createDeviceContext(QThread* worker_thread, bool debug_device) override;
+  bool createDeviceContext(bool debug_device) override;
   bool initializeDeviceContext(bool debug_device) override;
+  bool makeDeviceContextCurrent() override;
+  void moveContextToThread(QThread* new_thread) override;
   void destroyDeviceContext() override;
+  bool createSurface() override;
+  void destroySurface();
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
   void* GetRenderContext() const override;
-  void* GetRenderWindow() const override;
-
-  void ChangeRenderWindow(void* new_window) override;
-  void windowResized(s32 new_window_width, s32 new_window_height) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
                                                     u32 initial_data_stride, bool dynamic) override;

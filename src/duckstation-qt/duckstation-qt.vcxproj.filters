@@ -27,8 +27,6 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
-    <ClCompile Include="opengldisplaywidget.cpp" />
-    <ClCompile Include="d3d11displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_d3d11displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_opengldisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
@@ -37,11 +35,15 @@
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="generalsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
+    <ClCompile Include="qthostdisplay.cpp" />
+    <ClCompile Include="openglhostdisplay.cpp" />
+    <ClCompile Include="d3d11hostdisplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
+    <ClInclude Include="qthostdisplay.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -63,11 +65,11 @@
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="audiosettingswidget.h" />
-    <QtMoc Include="opengldisplaywidget.h" />
-    <QtMoc Include="d3d11displaywidget.h" />
     <QtMoc Include="qtdisplaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
+    <QtMoc Include="openglhostdisplay.h" />
+    <QtMoc Include="d3d11hostdisplay.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

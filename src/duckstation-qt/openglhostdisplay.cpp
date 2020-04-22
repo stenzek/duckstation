@@ -1,14 +1,15 @@
-#include "opengldisplaywidget.h"
+#include "openglhostdisplay.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "imgui.h"
+#include "qtdisplaywidget.h"
 #include "qthostinterface.h"
 #include <QtGui/QKeyEvent>
 #include <QtGui/QWindow>
 #include <array>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
-Log_SetChannel(OpenGLDisplayWidget);
+Log_SetChannel(OpenGLHostDisplay);
 
 static thread_local QOpenGLContext* s_thread_gl_context;
 
@@ -27,7 +28,7 @@ static void* GetProcAddressCallback(const char* name)
 
 /// Changes the swap interval on a window. Since Qt doesn't expose this functionality, we need to change it manually
 /// ourselves it by calling system-specific functions. Assumes the context is current.
-static void SetSwapInterval(QWindow* window, QOpenGLContext* context, int interval)
+static void SetSwapInterval(QOpenGLContext* context, int interval)
 {
   static QOpenGLContext* last_context = nullptr;
 
@@ -97,60 +98,44 @@ private:
   u32 m_height;
 };
 
-OpenGLDisplayWidget::OpenGLDisplayWidget(QtHostInterface* host_interface, QWidget* parent)
-  : QtDisplayWidget(host_interface, parent)
+OpenGLHostDisplay::OpenGLHostDisplay(QtHostInterface* host_interface) : QtHostDisplay(host_interface) {}
+
+OpenGLHostDisplay::~OpenGLHostDisplay() = default;
+
+QtDisplayWidget* OpenGLHostDisplay::createWidget(QWidget* parent)
 {
-  QWindow* native_window = windowHandle();
+  QtDisplayWidget* widget = QtHostDisplay::createWidget(parent);
+
+  QWindow* native_window = widget->windowHandle();
   Assert(native_window);
   native_window->setSurfaceType(QWindow::OpenGLSurface);
+
+  return widget;
 }
 
-OpenGLDisplayWidget::~OpenGLDisplayWidget() = default;
-
-HostDisplay* OpenGLDisplayWidget::getHostDisplayInterface()
-{
-  return this;
-}
-
-HostDisplay::RenderAPI OpenGLDisplayWidget::GetRenderAPI() const
+HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
   return m_gl_context->isOpenGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
-void* OpenGLDisplayWidget::GetRenderDevice() const
+void* OpenGLHostDisplay::GetRenderDevice() const
 {
   return nullptr;
 }
 
-void* OpenGLDisplayWidget::GetRenderContext() const
+void* OpenGLHostDisplay::GetRenderContext() const
 {
   return m_gl_context.get();
 }
 
-void* OpenGLDisplayWidget::GetRenderWindow() const
-{
-  return const_cast<QWidget*>(static_cast<const QWidget*>(this));
-}
-
-void OpenGLDisplayWidget::ChangeRenderWindow(void* new_window)
-{
-  Panic("Not implemented");
-}
-
-void OpenGLDisplayWidget::windowResized(s32 new_window_width, s32 new_window_height)
-{
-  QtDisplayWidget::windowResized(new_window_width, new_window_height);
-  HostDisplay::WindowResized(new_window_width, new_window_height);
-}
-
-std::unique_ptr<HostDisplayTexture> OpenGLDisplayWidget::CreateTexture(u32 width, u32 height, const void* initial_data,
-                                                                       u32 initial_data_stride, bool dynamic)
+std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* initial_data,
+                                                                     u32 initial_data_stride, bool dynamic)
 {
   return OpenGLDisplayWidgetTexture::Create(width, height, initial_data, initial_data_stride);
 }
 
-void OpenGLDisplayWidget::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                        const void* texture_data, u32 texture_data_stride)
+void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+                                      const void* texture_data, u32 texture_data_stride)
 {
   OpenGLDisplayWidgetTexture* tex = static_cast<OpenGLDisplayWidgetTexture*>(texture);
   Assert((texture_data_stride % sizeof(u32)) == 0);
@@ -171,8 +156,8 @@ void OpenGLDisplayWidget::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
-bool OpenGLDisplayWidget::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
-                                          void* out_data, u32 out_data_stride)
+bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                                        u32 out_data_stride)
 {
   GLint old_alignment = 0, old_row_length = 0;
   glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
@@ -189,17 +174,17 @@ bool OpenGLDisplayWidget::DownloadTexture(const void* texture_handle, u32 x, u32
   return true;
 }
 
-void OpenGLDisplayWidget::SetVSync(bool enabled)
+void OpenGLHostDisplay::SetVSync(bool enabled)
 {
   // Window framebuffer has to be bound to call SetSwapInterval.
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  SetSwapInterval(windowHandle(), m_gl_context.get(), enabled ? 1 : 0);
+  SetSwapInterval(m_gl_context.get(), enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
-const char* OpenGLDisplayWidget::GetGLSLVersionString() const
+const char* OpenGLHostDisplay::GetGLSLVersionString() const
 {
   if (m_gl_context->isOpenGLES())
   {
@@ -217,7 +202,7 @@ const char* OpenGLDisplayWidget::GetGLSLVersionString() const
   }
 }
 
-std::string OpenGLDisplayWidget::GetGLSLVersionHeader() const
+std::string OpenGLHostDisplay::GetGLSLVersionHeader() const
 {
   std::string header = GetGLSLVersionString();
   header += "\n\n";
@@ -250,12 +235,12 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLDisplayWidget::hasDeviceContext() const
+bool OpenGLHostDisplay::hasDeviceContext() const
 {
   return static_cast<bool>(m_gl_context);
 }
 
-bool OpenGLDisplayWidget::createDeviceContext(QThread* worker_thread, bool debug_device)
+bool OpenGLHostDisplay::createDeviceContext(bool debug_device)
 {
   m_gl_context = std::make_unique<QOpenGLContext>();
 
@@ -308,28 +293,12 @@ bool OpenGLDisplayWidget::createDeviceContext(QThread* worker_thread, bool debug
   Log_InfoPrintf("Got a %s %d.%d context", (m_gl_context->isOpenGLES() ? "OpenGL ES" : "desktop OpenGL"),
                  surface_format.majorVersion(), surface_format.minorVersion());
 
-  if (!m_gl_context->makeCurrent(windowHandle()))
-  {
-    Log_ErrorPrintf("Failed to make GL context current on UI thread");
-    m_gl_context.reset();
-    return false;
-  }
-
-  if (!QtDisplayWidget::createDeviceContext(worker_thread, debug_device))
-  {
-    m_gl_context->doneCurrent();
-    m_gl_context.reset();
-    return false;
-  }
-
-  m_gl_context->doneCurrent();
-  m_gl_context->moveToThread(worker_thread);
   return true;
 }
 
-bool OpenGLDisplayWidget::initializeDeviceContext(bool debug_device)
+bool OpenGLHostDisplay::initializeDeviceContext(bool debug_device)
 {
-  if (!m_gl_context->makeCurrent(windowHandle()))
+  if (!m_gl_context->makeCurrent(m_widget->windowHandle()))
     return false;
 
   s_thread_gl_context = m_gl_context.get();
@@ -352,7 +321,7 @@ bool OpenGLDisplayWidget::initializeDeviceContext(bool debug_device)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  if (!QtDisplayWidget::initializeDeviceContext(debug_device))
+  if (!QtHostDisplay::initializeDeviceContext(debug_device))
   {
     s_thread_gl_context = nullptr;
     m_gl_context->doneCurrent();
@@ -362,20 +331,47 @@ bool OpenGLDisplayWidget::initializeDeviceContext(bool debug_device)
   return true;
 }
 
-void OpenGLDisplayWidget::destroyDeviceContext()
+bool OpenGLHostDisplay::makeDeviceContextCurrent()
+{
+  if (!m_gl_context->makeCurrent(m_widget->windowHandle()))
+  {
+    Log_ErrorPrintf("Failed to make GL context current");
+    return false;
+  }
+
+  return true;
+}
+
+void OpenGLHostDisplay::moveContextToThread(QThread* new_thread)
+{
+  m_gl_context->doneCurrent();
+  m_gl_context->moveToThread(new_thread);
+}
+
+void OpenGLHostDisplay::destroyDeviceContext()
 {
   Assert(m_gl_context && s_thread_gl_context == m_gl_context.get());
 
-  QtDisplayWidget::destroyDeviceContext();
+  QtHostDisplay::destroyDeviceContext();
 
   s_thread_gl_context = nullptr;
   m_gl_context->doneCurrent();
   m_gl_context.reset();
 }
 
-bool OpenGLDisplayWidget::createImGuiContext()
+bool OpenGLHostDisplay::createSurface()
 {
-  if (!QtDisplayWidget::createImGuiContext())
+  m_window_width = m_widget->scaledWindowWidth();
+  m_window_height = m_widget->scaledWindowHeight();
+  emit m_widget->windowResizedEvent(m_window_width, m_window_height);
+  return true;
+}
+
+void OpenGLHostDisplay::destroySurface() {}
+
+bool OpenGLHostDisplay::createImGuiContext()
+{
+  if (!QtHostDisplay::createImGuiContext())
     return false;
 
   if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
@@ -386,14 +382,14 @@ bool OpenGLDisplayWidget::createImGuiContext()
   return true;
 }
 
-void OpenGLDisplayWidget::destroyImGuiContext()
+void OpenGLHostDisplay::destroyImGuiContext()
 {
   ImGui_ImplOpenGL3_Shutdown();
 
-  QtDisplayWidget::destroyImGuiContext();
+  QtHostDisplay::destroyImGuiContext();
 }
 
-bool OpenGLDisplayWidget::createDeviceResources()
+bool OpenGLHostDisplay::createDeviceResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 uniform vec4 u_src_rect;
@@ -453,9 +449,9 @@ void main()
   return true;
 }
 
-void OpenGLDisplayWidget::destroyDeviceResources()
+void OpenGLHostDisplay::destroyDeviceResources()
 {
-  QtDisplayWidget::destroyDeviceResources();
+  QtHostDisplay::destroyDeviceResources();
 
   if (m_display_vao != 0)
     glDeleteVertexArrays(1, &m_display_vao);
@@ -467,7 +463,7 @@ void OpenGLDisplayWidget::destroyDeviceResources()
   m_display_program.Destroy();
 }
 
-void OpenGLDisplayWidget::Render()
+void OpenGLHostDisplay::Render()
 {
   glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -479,7 +475,7 @@ void OpenGLDisplayWidget::Render()
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-  QWindow* window_handle = windowHandle();
+  QWindow* window_handle = m_widget->windowHandle();
   m_gl_context->makeCurrent(window_handle);
   m_gl_context->swapBuffers(window_handle);
 
@@ -489,12 +485,13 @@ void OpenGLDisplayWidget::Render()
   GL::Program::ResetLastProgram();
 }
 
-void OpenGLDisplayWidget::renderDisplay()
+void OpenGLHostDisplay::renderDisplay()
 {
   if (!m_display_texture_handle)
     return;
 
-  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
+  const auto [vp_left, vp_top, vp_width, vp_height] =
+    CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
 
   glViewport(vp_left, m_window_height - (m_display_top_margin + vp_top) - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);

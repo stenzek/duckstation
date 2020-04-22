@@ -4,37 +4,31 @@
 #include "common/d3d11/texture.h"
 #include "common/windows_headers.h"
 #include "core/host_display.h"
-#include "qtdisplaywidget.h"
+#include "qthostdisplay.h"
 #include <d3d11.h>
 #include <dxgi.h>
 #include <memory>
 #include <wrl/client.h>
 
-class D3D11DisplayWidget final : public QtDisplayWidget, private HostDisplay
+class D3D11HostDisplay final : public QtHostDisplay
 {
-  Q_OBJECT
-
 public:
   template<typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  D3D11DisplayWidget(QtHostInterface* host_interface, QWidget* parent);
-  ~D3D11DisplayWidget();
-
-  HostDisplay* getHostDisplayInterface() override;
+  D3D11HostDisplay(QtHostInterface* host_interface);
+  ~D3D11HostDisplay();
 
   bool hasDeviceContext() const override;
-  bool createDeviceContext(QThread* worker_thread, bool debug_device) override;
-  bool initializeDeviceContext(bool debug_device) override;
+  bool createDeviceContext(bool debug_device) override;
   void destroyDeviceContext() override;
+  bool createSurface() override;
+  void destroySurface() override;
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
   void* GetRenderContext() const override;
-  void* GetRenderWindow() const override;
-
-  void ChangeRenderWindow(void* new_window) override;
-  void windowResized(s32 new_window_width, s32 new_window_height) override;
+  void WindowResized(s32 new_window_width, s32 new_window_height) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
                                                     u32 initial_data_stride, bool dynamic) override;
@@ -56,9 +50,7 @@ private:
   void destroyDeviceResources() override;
 
   bool shouldUseFlipModelSwapChain() const;
-  bool createSwapChain();
   bool createSwapChainRTV();
-  void recreateSwapChain();
 
   void renderDisplay();
 

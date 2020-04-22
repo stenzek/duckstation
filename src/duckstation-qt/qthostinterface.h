@@ -25,7 +25,8 @@ class QTimer;
 class GameList;
 
 class MainWindow;
-class QtDisplayWidget;
+
+class QtHostDisplay;
 
 Q_DECLARE_METATYPE(SystemBootParameters);
 
@@ -65,7 +66,7 @@ public:
 
   ALWAYS_INLINE MainWindow* getMainWindow() const { return m_main_window; }
   void setMainWindow(MainWindow* window);
-  QtDisplayWidget* createDisplayWidget();
+  QtHostDisplay* createHostDisplay();
 
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
@@ -87,11 +88,10 @@ Q_SIGNALS:
   void emulationPaused(bool paused);
   void stateSaved(const QString& game_code, bool global, qint32 slot);
   void gameListRefreshed();
-  void createDisplayWindowRequested(QThread* worker_thread, bool use_debug_device, bool fullscreen,
-                                    bool render_to_main);
-  void destroyDisplayWindowRequested();
-  void updateDisplayWindowRequested(bool fullscreen, bool render_to_main);
+  void createDisplayRequested(QThread* worker_thread, bool use_debug_device, bool fullscreen, bool render_to_main);
+  void updateDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
   void focusDisplayWidgetRequested();
+  void destroyDisplayRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
                                         float worst_frame_time);
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
@@ -103,7 +103,7 @@ public Q_SLOTS:
   void applySettings();
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
-  void handleKeyEvent(int key, bool pressed);
+  void onDisplayWindowKeyEvent(int key, bool pressed);
   void bootSystem(const SystemBootParameters& params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void powerOffSystem();
@@ -129,7 +129,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void doStopThread();
-  void onDisplayWidgetResized(int width, int height);
+  void onHostDisplayWindowResized(int width, int height);
   void doBackgroundControllerPoll();
 
 protected:
@@ -180,6 +180,8 @@ private:
     Common::Event m_init_event;
   };
 
+  QtHostDisplay* getHostDisplay();
+
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
 
@@ -189,13 +191,15 @@ private:
   bool initializeOnThread();
   void shutdownOnThread();
   void renderDisplay();
+  void connectDisplaySignals();
+  void disconnectDisplaySignals();
+  void updateDisplayState();
   void wakeThread();
 
   std::unique_ptr<QSettings> m_qsettings;
   std::recursive_mutex m_qsettings_mutex;
 
   MainWindow* m_main_window = nullptr;
-  QtDisplayWidget* m_display_widget = nullptr;
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
   QEventLoop* m_worker_thread_event_loop = nullptr;

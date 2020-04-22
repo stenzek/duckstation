@@ -37,7 +37,7 @@
   <ItemGroup>
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
-    <ClCompile Include="d3d11displaywidget.cpp" />
+    <ClCompile Include="d3d11hostdisplay.cpp" />
     <ClCompile Include="generalsettingswidget.cpp" />
     <ClCompile Include="gpusettingswidget.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
@@ -47,8 +47,9 @@
     <ClCompile Include="gamelistwidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
-    <ClCompile Include="opengldisplaywidget.cpp" />
+    <ClCompile Include="openglhostdisplay.cpp" />
     <ClCompile Include="portsettingswidget.cpp" />
+    <ClCompile Include="qthostdisplay.cpp" />
     <ClCompile Include="qthostinterface.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtsettingsinterface.cpp" />
@@ -63,14 +64,15 @@
     <QtMoc Include="gpusettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
-    <QtMoc Include="d3d11displaywidget.h" />
+    <ClInclude Include="d3d11hostdisplay.h" />
     <QtMoc Include="qtprogresscallback.h" />
+    <ClInclude Include="qthostdisplay.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
     <QtMoc Include="gamelistwidget.h" />
     <QtMoc Include="mainwindow.h" />
-    <QtMoc Include="opengldisplaywidget.h" />
+    <ClInclude Include="openglhostdisplay.h" />
     <QtMoc Include="qthostinterface.h" />
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
@@ -127,7 +129,6 @@
   <ItemGroup>
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_d3d11displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
@@ -135,7 +136,6 @@
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_opengldisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />

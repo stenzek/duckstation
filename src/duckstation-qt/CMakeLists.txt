@@ -29,10 +29,12 @@ add_executable(duckstation-qt
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
-  opengldisplaywidget.cpp
-  opengldisplaywidget.h
+  openglhostdisplay.cpp
+  openglhostdisplay.h
   portsettingswidget.cpp
   portsettingswidget.h
+  qthostdisplay.cpp
+  qthostdisplay.h
   qtdisplaywidget.cpp
   qtdisplaywidget.h
   qthostinterface.cpp
@@ -52,8 +54,8 @@ target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui g
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE
-    d3d11displaywidget.cpp
-    d3d11displaywidget.h
+    d3d11hostdisplay.cpp
+    d3d11hostdisplay.h
   )
   target_link_libraries(duckstation PRIVATE d3d11.lib dxgi.lib)
 endif()

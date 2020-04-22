@@ -9,7 +9,7 @@
 static void InitLogging()
 {
   // set log flags
-#ifdef _DEBUG
+#ifdef _DEBUGA
   Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
   Log::SetFilterLevel(LOGLEVEL_DEBUG);
 #else
