@@ -132,8 +132,8 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 
 void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
 {
-  ss << "CONSTANT int RESOLUTION_SCALE = " << m_resolution_scale << ";\n";
-  ss << "CONSTANT int2 VRAM_SIZE = int2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << ";\n";
+  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0, 1.0) / float2(VRAM_SIZE);\n";
   ss << R"(
 
@@ -146,10 +146,10 @@ float fixYCoord(float y)
 #endif
 }
 
-int fixYCoord(int y)
+uint fixYCoord(uint y)
 {
 #if API_OPENGL || API_OPENGL_ES
-  return VRAM_SIZE.y - y - 1;
+  return VRAM_SIZE.y - y - 1u;
 #else
   return y;
 #endif
@@ -375,7 +375,7 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
   DeclareUniformBuffer(ss, {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
                             "float u_dst_alpha_factor", "bool u_set_mask_while_drawing",
-                            "int u_interlaced_displayed_field"});
+                            "uint u_interlaced_displayed_field"});
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
@@ -389,8 +389,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   if (textured)
   {
-    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "int a_texcoord", "int a_texpage"}, 1, 1,
-                            {{"nointerpolation", "int4 v_texpage"}});
+    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
+                            {{"nointerpolation", "uint4 v_texpage"}});
   }
   else
   {
@@ -402,7 +402,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   // Offset the vertex position by 0.5 to ensure correct interpolation of texture coordinates
   // at 1x resolution scale. This doesn't work at >1x, we adjust the texture coordinates before
   // uploading there instead.
-  float vertex_offset = (RESOLUTION_SCALE == 1) ? 0.5 : 0.0;
+  float vertex_offset = (RESOLUTION_SCALE == 1u) ? 0.5 : 0.0;
 
   // 0..+1023 -> -1..1
   float pos_x = ((float(a_pos.x) + vertex_offset) / 512.0) - 1.0;
@@ -419,18 +419,18 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
     // Fudge the texture coordinates by half a pixel in screen-space.
     // This fixes the rounding/interpolation error on NVIDIA GPUs with shared edges between triangles.
 #if API_OPENGL || API_OPENGL_ES
-    v_tex0 = float2(float(a_texcoord & 0xFFFF) + (RCP_VRAM_SIZE.x * 0.5),
+    v_tex0 = float2(float(a_texcoord & 0xFFFFu) + (RCP_VRAM_SIZE.x * 0.5),
                     float(a_texcoord >> 16) - (RCP_VRAM_SIZE.y * 0.5));
 #else
-    v_tex0 = float2(float(a_texcoord & 0xFFFF) + (RCP_VRAM_SIZE.x * 0.5),
+    v_tex0 = float2(float(a_texcoord & 0xFFFFu) + (RCP_VRAM_SIZE.x * 0.5),
                     float(a_texcoord >> 16) + (RCP_VRAM_SIZE.y * 0.5));
 #endif
 
     // base_x,base_y,palette_x,palette_y
-    v_texpage.x = (a_texpage & 15) * 64 * RESOLUTION_SCALE;
-    v_texpage.y = ((a_texpage >> 4) & 1) * 256 * RESOLUTION_SCALE;
-    v_texpage.z = ((a_texpage >> 16) & 63) * 16 * RESOLUTION_SCALE;
-    v_texpage.w = ((a_texpage >> 22) & 511) * RESOLUTION_SCALE;
+    v_texpage.x = (a_texpage & 15u) * 64u * RESOLUTION_SCALE;
+    v_texpage.y = ((a_texpage >> 4) & 1u) * 256u * RESOLUTION_SCALE;
+    v_texpage.z = ((a_texpage >> 16) & 63u) * 16u * RESOLUTION_SCALE;
+    v_texpage.w = ((a_texpage >> 22) & 511u) * RESOLUTION_SCALE;
   #endif
 }
 )";
@@ -487,10 +487,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
     ss << "};\n";
 
   ss << R"(
-int3 ApplyDithering(int2 coord, int3 icol)
+int3 ApplyDithering(uint2 coord, int3 icol)
 {
-  int2 fc = coord & int2(3, 3);
-  int offset = s_dither_values[fc.y * 4 + fc.x];
+  uint2 fc = coord & uint2(3u, 3u);
+  int offset = s_dither_values[fc.y * 4u + fc.x];
   return icol + int3(offset, offset, offset);
 }
 
@@ -503,44 +503,44 @@ int3 TruncateTo15Bit(int3 icol)
 #if TEXTURED
 CONSTANT float4 TRANSPARENT_PIXEL_COLOR = float4(0.0, 0.0, 0.0, 0.0);
 
-int2 ApplyTextureWindow(int2 coords)
+uint2 ApplyTextureWindow(uint2 coords)
 {
   uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u);
   uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u);
-  return int2(int(x), int(y));
+  return uint2(x, y);
 }  
 
-float4 SampleFromVRAM(int4 texpage, int2 icoord)
+float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
 {
   icoord = ApplyTextureWindow(icoord);
 
   // adjust for tightly packed palette formats
-  int2 index_coord = icoord;
+  uint2 index_coord = icoord;
   #if PALETTE_4_BIT
-    index_coord.x /= 4;
+    index_coord.x /= 4u;
   #elif PALETTE_8_BIT
-    index_coord.x /= 2;
+    index_coord.x /= 2u;
   #endif
 
   // fixup coords
-  int2 vicoord = int2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
+  uint2 vicoord = uint2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
 
   // load colour/palette
-  float4 color = LOAD_TEXTURE(samp0, vicoord, 0);
+  float4 color = LOAD_TEXTURE(samp0, int2(vicoord), 0);
 
   // apply palette
   #if PALETTE
     #if PALETTE_4_BIT
-      int subpixel = int(icoord.x) & 3;
+      uint subpixel = icoord.x & 3u;
       uint vram_value = RGBA8ToRGBA5551(color);
-      int palette_index = int((vram_value >> (subpixel * 4)) & 0x0Fu);
+      uint palette_index = (vram_value >> (subpixel * 4u)) & 0x0Fu;
     #elif PALETTE_8_BIT
-      int subpixel = int(icoord.x) & 1;
+      uint subpixel = icoord.x & 1u;
       uint vram_value = RGBA8ToRGBA5551(color);
-      int palette_index = int((vram_value >> (subpixel * 8)) & 0xFFu);
+      uint palette_index = (vram_value >> (subpixel * 8u)) & 0xFFu;
     #endif
-    int2 palette_icoord = int2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
-    color = LOAD_TEXTURE(samp0, palette_icoord, 0);
+    uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
+    color = LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
   #endif
 
   return color;
@@ -550,7 +550,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "int4 v_texpage"}}, true, use_dual_source);
+    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source);
   }
   else
   {
@@ -567,7 +567,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
   float oalpha;
 
   #if INTERLACING
-    if (((fixYCoord(int(v_pos.y)) / RESOLUTION_SCALE) & 1) == u_interlaced_displayed_field)
+    if (((fixYCoord(uint(v_pos.y)) / RESOLUTION_SCALE) & 1u) == u_interlaced_displayed_field)
       discard;
   #endif
 
@@ -577,13 +577,14 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
       // TODO: Find some way to clamp this to the triangle texture coordinates?
       float2 texel_top_left = frac(v_tex0) - float2(0.5, 0.5);
       float2 texel_offset = sign(texel_top_left);
-      float4 fcoords = v_tex0.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y);
+      float4 fcoords = max(v_tex0.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
+                           float4(0.0, 0.0, 0.0, 0.0));
 
       // Load four texels.
-      float4 s00 = SampleFromVRAM(v_texpage, int2(fcoords.xy));
-      float4 s10 = SampleFromVRAM(v_texpage, int2(fcoords.zy));
-      float4 s01 = SampleFromVRAM(v_texpage, int2(fcoords.xw));
-      float4 s11 = SampleFromVRAM(v_texpage, int2(fcoords.zw));
+      float4 s00 = SampleFromVRAM(v_texpage, uint2(fcoords.xy));
+      float4 s10 = SampleFromVRAM(v_texpage, uint2(fcoords.zy));
+      float4 s01 = SampleFromVRAM(v_texpage, uint2(fcoords.xw));
+      float4 s11 = SampleFromVRAM(v_texpage, uint2(fcoords.zw));
 
       // Compute alpha from how many texels aren't pixel color 0000h.
       float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
@@ -601,7 +602,7 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
       semitransparent = (texcol.a != 0.0);
     #else
-      float4 texcol = SampleFromVRAM(v_texpage, int2(floor(v_tex0)));
+      float4 texcol = SampleFromVRAM(v_texpage, uint2(floor(v_tex0)));
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 
@@ -630,9 +631,9 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
   // Apply dithering
   #if DITHERING
     #if DITHERING_SCALED
-      icolor = ApplyDithering(int2(v_pos.xy), icolor);
+      icolor = ApplyDithering(uint2(v_pos.xy), icolor);
     #else
-      icolor = ApplyDithering(int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE), icolor);
+      icolor = ApplyDithering(uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE), icolor);
     #endif
   #endif
 
@@ -825,12 +826,12 @@ std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"float4 u_fill_color", "int u_interlaced_displayed_field"});
+  DeclareUniformBuffer(ss, {"float4 u_fill_color", "uint u_interlaced_displayed_field"});
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
 
   ss << R"(
 {
-  if (((fixYCoord(int(v_pos.y)) / RESOLUTION_SCALE) & 1) == u_interlaced_displayed_field)
+  if (((fixYCoord(uint(v_pos.y)) / RESOLUTION_SCALE) & 1u) == u_interlaced_displayed_field)
     discard;
 
   o_col0 = u_fill_color;
@@ -875,18 +876,18 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   uint2 icoords = uint2(v_pos.xy) + u_vram_offset;
 
   #if INTERLACED
-    if (((icoords.y / uint(RESOLUTION_SCALE)) & 1u) != u_field_offset)
+    if (((icoords.y / RESOLUTION_SCALE) & 1u) != u_field_offset)
       discard;
   #endif
 
   #if DEPTH_24BIT
     // relative to start of scanout
-    uint relative_x = (icoords.x - u_vram_offset.x) / uint(RESOLUTION_SCALE);
-    icoords.x = u_vram_offset.x + ((relative_x * 3u) / 2u) * uint(RESOLUTION_SCALE);
+    uint relative_x = (icoords.x - u_vram_offset.x) / RESOLUTION_SCALE;
+    icoords.x = u_vram_offset.x + ((relative_x * 3u) / 2u) * RESOLUTION_SCALE;
 
     // load adjacent 16-bit texels
-    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(icoords % uint2(VRAM_SIZE)), 0));
-    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2((icoords + uint2(uint(RESOLUTION_SCALE), 0)) % uint2(VRAM_SIZE)), 0));
+    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(icoords % VRAM_SIZE), 0));
+    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2((icoords + uint2(RESOLUTION_SCALE, 0)) % VRAM_SIZE), 0));
     
     // select which part of the combined 16-bit texels we are currently shading
     uint s1s0 = ((s1 << 16) | s0) >> ((relative_x & 1u) * 8u);
@@ -896,7 +897,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
                     float((s1s0 >> 16u) & 0xFFu) / 255.0, 1.0);
   #else
     // load and return
-    o_col0 = LOAD_TEXTURE(samp0, int2(icoords % uint2(VRAM_SIZE)), 0);
+    o_col0 = LOAD_TEXTURE(samp0, int2(icoords % VRAM_SIZE), 0);
   #endif
 }
 )";
@@ -909,23 +910,23 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"int2 u_base_coords", "int2 u_size"});
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"});
 
   DeclareTexture(ss, "samp0", 0);
 
   ss << R"(
-uint SampleVRAM(int2 coords)
+uint SampleVRAM(uint2 coords)
 {
-  if (RESOLUTION_SCALE == 1)
-    return RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, coords, 0));
+  if (RESOLUTION_SCALE == 1u)
+    return RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(coords), 0));
 
   // Box filter for downsampling.
   float4 value = float4(0.0, 0.0, 0.0, 0.0);
-  int2 base_coords = coords * int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  for (int offset_x = 0; offset_x < RESOLUTION_SCALE; offset_x++)
+  uint2 base_coords = coords * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  for (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
   {
-    for (int offset_y = 0; offset_y < RESOLUTION_SCALE; offset_y++)
-      value += LOAD_TEXTURE(samp0, base_coords + int2(offset_x, offset_y), 0);
+    for (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
+      value += LOAD_TEXTURE(samp0, int2(base_coords + uint2(offset_x, offset_y)), 0);
   }
   value /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
   return RGBA8ToRGBA5551(value);
@@ -935,19 +936,19 @@ uint SampleVRAM(int2 coords)
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
   ss << R"(
 {
-  int2 sample_coords = int2(int(v_pos.x) * 2, int(v_pos.y));
+  uint2 sample_coords = uint2(uint(v_pos.x) * 2u, uint(v_pos.y));
 
   #if API_OPENGL || API_OPENGL_ES
     // Lower-left origin flip for OpenGL.
     // We want to write the image out upside-down so we can read it top-to-bottom.
-    sample_coords.y = u_size.y - sample_coords.y - 1;
+    sample_coords.y = u_size.y - sample_coords.y - 1u;
   #endif
 
   sample_coords += u_base_coords;
 
   // We're encoding as 32-bit, so the output width is halved and we pack two 16-bit pixels in one 32-bit pixel.
   uint left = SampleVRAM(sample_coords);
-  uint right = SampleVRAM(int2(sample_coords.x + 1, sample_coords.y));
+  uint right = SampleVRAM(uint2(sample_coords.x + 1u, sample_coords.y));
 
   o_col0 = float4(float(left & 0xFFu), float((left >> 8) & 0xFFu),
                   float(right & 0xFFu), float((right >> 8) & 0xFFu))
@@ -962,22 +963,22 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"int2 u_base_coords", "int2 u_size", "int u_buffer_base_offset"});
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset"});
 
   DeclareTextureBuffer(ss, "samp0", 0, true, true);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
   ss << R"(
 {
-  int2 coords = int2(v_pos.xy) / int2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  int2 offset = coords - u_base_coords;
+  uint2 coords = uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  uint2 offset = coords - u_base_coords;
 
   #if API_OPENGL || API_OPENGL_ES
     // Lower-left origin flip for OpenGL
-    offset.y = u_size.y - offset.y - 1;
+    offset.y = u_size.y - offset.y - 1u;
   #endif
 
-  int buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
-  uint value = LOAD_TEXTURE_BUFFER(samp0, buffer_offset).r;
+  uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
+  uint value = LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r;
   
   o_col0 = RGBA5551ToRGBA8(value);
 })";
@@ -1000,11 +1001,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
 
   // find offset from the start of the row/column
   uint2 offset;
-  offset.x = (dst_coords.x < u_dst_coords.x) ? (uint(VRAM_SIZE.x - 1) - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
-  offset.y = (dst_coords.y < u_dst_coords.y) ? (uint(VRAM_SIZE.y - 1) - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
+  offset.x = (dst_coords.x < u_dst_coords.x) ? ((VRAM_SIZE.x - 1u) - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
+  offset.y = (dst_coords.y < u_dst_coords.y) ? ((VRAM_SIZE.y - 1u) - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
 
   // find the source coordinates to copy from
-  uint2 src_coords = (u_src_coords + offset) % uint2(VRAM_SIZE);
+  uint2 src_coords = (u_src_coords + offset) % VRAM_SIZE;
 
   // sample and apply mask bit
   float4 color = LOAD_TEXTURE(samp0, int2(src_coords), 0);
