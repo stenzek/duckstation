@@ -4,8 +4,10 @@
 #include "imgui.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
+#include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QWindow>
+#include <QtCore/QDebug>
 #include <array>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
@@ -22,8 +24,10 @@ static void* GetProcAddressCallback(const char* name)
   return (void*)ctx->getProcAddress(name);
 }
 
-#ifdef WIN32
+#if defined(WIN32)
 #include "common/windows_headers.h"
+#elif defined(HAS_GLX)
+#include <GL/glx.h>
 #endif
 
 /// Changes the swap interval on a window. Since Qt doesn't expose this functionality, we need to change it manually
@@ -55,6 +59,35 @@ static void SetSwapInterval(QOpenGLContext* context, int interval)
 
   if (wgl_swap_interval_ext)
     wgl_swap_interval_ext(interval);
+#elif __linux__
+  const QString platform_name(QGuiApplication::platformName());
+  if (platform_name == QStringLiteral("xcb"))
+  {
+    static void(*glx_swap_interval_ext)(Display*, GLXDrawable, int) = nullptr;
+
+    if (last_context != context)
+    {
+      glx_swap_interval_ext = nullptr;
+      last_context = context;
+
+      glx_swap_interval_ext = reinterpret_cast<decltype(glx_swap_interval_ext)>(
+          glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
+      if (!glx_swap_interval_ext)
+        return;
+    }
+
+    if (!glx_swap_interval_ext)
+      return;
+
+    Display* dpy = glXGetCurrentDisplay();
+    GLXDrawable drawable = glXGetCurrentDrawable();
+    if (dpy && drawable != GLX_NONE)
+      glx_swap_interval_ext(dpy, drawable, interval);
+  }
+  else
+  {
+    qCritical() << "Unknown platform: " << platform_name;
+  }
 #endif
 }
 

@@ -39,6 +39,8 @@ endif()
 
 if(ANDROID)
   find_package(EGL REQUIRED)
+else()
+  find_package(OpenGL COMPONENTS EGL GLX OpenGL)
 endif()
 
 
