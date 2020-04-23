@@ -132,7 +132,7 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 
 void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
 {
-  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << ";\n";
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
   ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0, 1.0) / float2(VRAM_SIZE);\n";
   ss << R"(
