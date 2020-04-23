@@ -573,27 +573,29 @@ float4 SampleFromVRAM(int4 texpage, int2 icoord)
 
   #if TEXTURED
     #if TEXTURE_FILTERING
-      int2 icoord = int2(v_tex0);
-      float2 pcoord = frac(v_tex0) - float2(0.5, 0.5);
-      float2 poffs = sign(pcoord);
-      pcoord = abs(pcoord);
+      // Compute the coordinates of the four texels we will be interpolating between.
+      // TODO: Find some way to clamp this to the triangle texture coordinates?
+      float2 texel_top_left = frac(v_tex0) - float2(0.5, 0.5);
+      float2 texel_offset = sign(texel_top_left);
+      float4 fcoords = v_tex0.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y);
 
-      // TODO: Clamp to page
-      float4 tl = SampleFromVRAM(v_texpage, int2(v_tex0));
-      float4 tr = SampleFromVRAM(v_texpage, int2(min(v_tex0.x + poffs.x, 255.0), v_tex0.y));
-      float4 bl = SampleFromVRAM(v_texpage, int2(v_tex0.x, min(v_tex0.y + poffs.y, 255.0)));
-      float4 br = SampleFromVRAM(v_texpage, int2(min(v_tex0.x + poffs.x, 255.0), min(v_tex0.y + poffs.y, 255.0)));
+      // Load four texels.
+      float4 s00 = SampleFromVRAM(v_texpage, int2(fcoords.xy));
+      float4 s10 = SampleFromVRAM(v_texpage, int2(fcoords.zy));
+      float4 s01 = SampleFromVRAM(v_texpage, int2(fcoords.xw));
+      float4 s11 = SampleFromVRAM(v_texpage, int2(fcoords.zw));
 
       // Compute alpha from how many texels aren't pixel color 0000h.
-      float tl_a = float(VECTOR_NEQ(tl, TRANSPARENT_PIXEL_COLOR));
-      float tr_a = float(VECTOR_NEQ(tr, TRANSPARENT_PIXEL_COLOR));
-      float bl_a = float(VECTOR_NEQ(bl, TRANSPARENT_PIXEL_COLOR));
-      float br_a = float(VECTOR_NEQ(br, TRANSPARENT_PIXEL_COLOR));
+      float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
+      float a10 = float(VECTOR_NEQ(s10, TRANSPARENT_PIXEL_COLOR));
+      float a01 = float(VECTOR_NEQ(s01, TRANSPARENT_PIXEL_COLOR));
+      float a11 = float(VECTOR_NEQ(s11, TRANSPARENT_PIXEL_COLOR));
 
       // Bilinearly interpolate.
-      float4 texcol = lerp(lerp(tl, tr, pcoord.x), lerp(bl, br, pcoord.x), pcoord.y);
-      ialpha = lerp(lerp(tl_a, tr_a, pcoord.x), lerp(bl_a, br_a, pcoord.x), pcoord.y);
-      if (ialpha == 0.0)
+      float2 weights = abs(texel_top_left);
+      float4 texcol = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
+      ialpha = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
+      if (ialpha < 0.5)
         discard;
 
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
