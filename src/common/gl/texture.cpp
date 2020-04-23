@@ -21,14 +21,15 @@ Texture::~Texture()
   Destroy();
 }
 
-bool Texture::Create(u32 width, u32 height, GLenum format, GLenum type, const void* data, bool linear_filter)
+bool Texture::Create(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data,
+                     bool linear_filter)
 {
   glGetError();
 
   GLuint id;
   glGenTextures(1, &id);
   glBindTexture(GL_TEXTURE_2D, id);
-  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, type, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);

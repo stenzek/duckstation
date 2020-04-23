@@ -10,7 +10,7 @@ public:
   Texture(Texture&& moved);
   ~Texture();
 
-  bool Create(u32 width, u32 height, GLenum format, GLenum type, const void* data = nullptr,
+  bool Create(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data = nullptr,
               bool linear_filter = false);
   bool CreateFramebuffer();
 
