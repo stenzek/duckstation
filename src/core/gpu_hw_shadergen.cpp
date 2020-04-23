@@ -399,9 +399,14 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   ss << R"(
 {
+  // Offset the vertex position by 0.5 to ensure correct interpolation of texture coordinates
+  // at 1x resolution scale. This doesn't work at >1x, we adjust the texture coordinates before
+  // uploading there instead.
+  float vertex_offset = (RESOLUTION_SCALE == 1) ? 0.5 : 0.0;
+
   // 0..+1023 -> -1..1
-  float pos_x = ((float(a_pos.x) + 0.5) / 512.0) - 1.0;
-  float pos_y = ((float(a_pos.y) + 0.5) / -256.0) + 1.0;
+  float pos_x = ((float(a_pos.x) + vertex_offset) / 512.0) - 1.0;
+  float pos_y = ((float(a_pos.y) + vertex_offset) / -256.0) + 1.0;
 
   // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin.
 #if API_OPENGL || API_OPENGL_ES
