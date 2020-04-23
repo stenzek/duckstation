@@ -637,13 +637,22 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
     #endif
   #endif
 
-  // Clip to 15-bit range
-  #if !TRUE_COLOR
-    icolor = TruncateTo15Bit(icolor);
+  // Premultiply alpha so we don't need to use a colour output for it.
+  float premultiply_alpha = ialpha;
+  #if TRANSPARENCY
+    premultiply_alpha = ialpha * (semitransparent ? u_src_alpha_factor : 1.0);
   #endif
 
-  // Normalize
-  float3 color = float3(icolor) / float3(255.0, 255.0, 255.0);
+  float3 color;
+  #if !TRUE_COLOR
+    // We want to apply the alpha before the truncation to 16-bit, otherwise we'll be passing a 32-bit precision color
+    // into the blend unit, which can cause a small amount of error to accumulate.
+    icolor = int3(((float3(icolor) / float3(255.0, 255.0, 255.0)) * premultiply_alpha) * float3(255.0, 255.0, 255.0));
+    color = (float3(icolor >> 3) / float3(31.0, 31.0, 31.0));
+  #else
+    // True color is actually simpler here since we want to preserve the precision.
+    color = (float3(icolor) / float3(255.0, 255.0, 255.0)) * premultiply_alpha;
+  #endif
 
   #if TRANSPARENCY
     // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
@@ -654,10 +663,10 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       #endif
 
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color * (u_src_alpha_factor * ialpha), oalpha);
+        o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
       #else
-        o_col0 = float4(color * (u_src_alpha_factor * ialpha), u_dst_alpha_factor / ialpha);
+        o_col0 = float4(color, u_dst_alpha_factor / ialpha);
       #endif
     }
     else
@@ -667,15 +676,15 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       #endif
 
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color * ialpha, oalpha);
+        o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, 0.0);
       #else
-        o_col0 = float4(color * ialpha, 1.0 - ialpha);
+        o_col0 = float4(color, 1.0 - ialpha);
       #endif
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
-    o_col0 = float4(color * ialpha, oalpha);
+    o_col0 = float4(color, oalpha);
 
     #if USE_DUAL_SOURCE
       o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
