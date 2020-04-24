@@ -239,7 +239,7 @@ protected:
       switch (primitive)
       {
         case Primitive::Polygon:
-          return shading_enable || !raw_texture_enable;
+          return shading_enable || (texture_enable && !raw_texture_enable);
 
         case Primitive::Line:
           return true;
