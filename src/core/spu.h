@@ -292,38 +292,38 @@ private:
     {
       struct
       {
-        u16 dAPF1;
-        u16 dAPF2;
-        s16 vIIR;
-        s16 vCOMB1;
-        s16 vCOMB2;
-        s16 vCOMB3;
-        s16 vCOMB4;
-        s16 vWALL;
-        s16 vAPF1;
-        s16 vAPF2;
-        u16 mLSAME;
-        u16 mRSAME;
-        u16 mLCOMB1;
-        u16 mRCOMB1;
-        u16 mLCOMB2;
-        u16 mRCOMB2;
-        u16 dLSAME;
-        u16 dRSAME;
-        u16 mLDIFF;
-        u16 mRDIFF;
-        u16 mLCOMB3;
-        u16 mRCOMB3;
-        u16 mLCOMB4;
-        u16 mRCOMB4;
-        u16 dLDIFF;
-        u16 dRDIFF;
-        u16 mLAPF1;
-        u16 mRAPF1;
-        u16 mLAPF2;
-        u16 mRAPF2;
-        s16 vLIN;
-        s16 vRIN;
+        u16 FB_SRC_A;
+        u16 FB_SRC_B;
+        s16 IIR_ALPHA;
+        s16 ACC_COEF_A;
+        s16 ACC_COEF_B;
+        s16 ACC_COEF_C;
+        s16 ACC_COEF_D;
+        s16 IIR_COEF;
+        s16 FB_ALPHA;
+        s16 FB_X;
+        u16 IIR_DEST_A0;
+        u16 IIR_DEST_A1;
+        u16 ACC_SRC_A0;
+        u16 ACC_SRC_A1;
+        u16 ACC_SRC_B0;
+        u16 ACC_SRC_B1;
+        u16 IIR_SRC_A0;
+        u16 IIR_SRC_A1;
+        u16 IIR_DEST_B0;
+        u16 IIR_DEST_B1;
+        u16 ACC_SRC_C0;
+        u16 ACC_SRC_C1;
+        u16 ACC_SRC_D0;
+        u16 ACC_SRC_D1;
+        u16 IIR_SRC_B1;
+        u16 IIR_SRC_B0;
+        u16 MIX_DEST_A0;
+        u16 MIX_DEST_A1;
+        u16 MIX_DEST_B0;
+        u16 MIX_DEST_B1;
+        s16 IN_COEF_L;
+        s16 IN_COEF_R;
       };
 
       u16 rev[NUM_REVERB_REGS];
@@ -366,9 +366,10 @@ private:
   void UpdateNoise();
 
   u32 ReverbMemoryAddress(u32 address) const;
-  s16 ReverbRead(u32 address);
+  s16 ReverbRead(u32 address, s32 offset = 0);
   void ReverbWrite(u32 address, s16 data);
-  void DoReverb();
+  void ComputeReverb();
+  void ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out);
 
   void Execute(TickCount ticks);
   void UpdateEventInterval();
@@ -384,7 +385,6 @@ private:
   std::unique_ptr<TimingEvent> m_tick_event;
   std::unique_ptr<TimingEvent> m_transfer_event;
   std::unique_ptr<Common::WAVWriter> m_dump_writer;
-  u32 m_tick_counter = 0;
   TickCount m_ticks_carry = 0;
 
   SPUCNT m_SPUCNT = {};
@@ -418,12 +418,12 @@ private:
   u32 m_noise_level = 0;
 
   u32 m_reverb_on_register = 0;
+  u32 m_reverb_base_address = 0;
   u32 m_reverb_current_address = 0;
   ReverbRegisters m_reverb_registers{};
-  s16 m_reverb_left_input = 0;
-  s16 m_reverb_right_input = 0;
-  s16 m_reverb_left_output = 0;
-  s16 m_reverb_right_output = 0;
+  std::array<std::array<s16, 128>, 2> m_reverb_downsample_buffer;
+  std::array<std::array<s16, 64>, 2> m_reverb_upsample_buffer;
+  s32 m_reverb_resample_buffer_position = 0;
 
   std::array<Voice, NUM_VOICES> m_voices{};
 
