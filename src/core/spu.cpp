@@ -1443,8 +1443,9 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   u16 step = voice.regs.adpcm_sample_rate;
   if (IsPitchModulationEnabled(voice_index))
   {
-    const u32 factor = u32(std::clamp<s32>(m_voices[voice_index - 1].last_volume, -0x8000, 0x7FFF) + 0x8000);
-    step = Truncate16(step * factor) >> 15;
+    const s32 factor = std::clamp<s32>(m_voices[voice_index - 1].last_volume, -0x8000, 0x7FFF) + 0x8000;
+    const u16 old_step = step;
+    step = Truncate16(static_cast<u32>((SignExtend32(step) * factor) >> 15));
   }
   step = std::min<u16>(step, 0x4000);
 
