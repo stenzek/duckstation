@@ -173,7 +173,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       FIXED_REPLY_STATE(State::WriteChecksum, m_checksum, true, State::WriteACK1);
       FIXED_REPLY_STATE(State::WriteACK1, 0x5C, true, State::WriteACK2);
       FIXED_REPLY_STATE(State::WriteACK2, 0x5D, true, State::WriteEnd);
-      FIXED_REPLY_STATE(State::WriteEnd, 0x47, true, State::Idle);
+      FIXED_REPLY_STATE(State::WriteEnd, 0x47, false, State::Idle);
 
       // new command
     case State::Idle:
