@@ -571,7 +571,8 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
       const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
+      const u32 reinterpret_width =
+        scaled_display_width + ((m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale);
       const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_field_offset};
       UploadUniformBuffer(uniforms, sizeof(uniforms));
       m_batch_ubo_dirty = true;

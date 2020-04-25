@@ -570,7 +570,8 @@ void GPU_HW_D3D11::UpdateDisplay()
 
       const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_width = scaled_display_width + (m_crtc_state.display_vram_left - m_crtc_state.regs.X);
+      const u32 reinterpret_width =
+        scaled_display_width + ((m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale);
       const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Get();
