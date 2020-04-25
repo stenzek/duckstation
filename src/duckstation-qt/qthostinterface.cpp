@@ -343,6 +343,7 @@ void QtHostInterface::ReleaseHostDisplay()
   getHostDisplay()->destroyDeviceContext();
   emit destroyDisplayRequested();
   m_display = nullptr;
+  m_is_fullscreen = false;
 }
 
 bool QtHostInterface::IsFullscreen() const
