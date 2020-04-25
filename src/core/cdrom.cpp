@@ -571,7 +571,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     m_current_double_speed = m_mode.double_speed;
 
     // Approximate time for the motor to change speed?
-    ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 1.5);
+    ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 0.1);
   }
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
