@@ -49,8 +49,6 @@ private:
     BitField<u8, bool, 2, 1> write_error;
   };
 
-  FLAG m_FLAG = {};
-
   enum class State : u8
   {
     Idle,
@@ -91,6 +89,7 @@ private:
   std::unique_ptr<TimingEvent> m_save_event;
 
   State m_state = State::Idle;
+  FLAG m_FLAG = {};
   u16 m_address = 0;
   u8 m_sector_offset = 0;
   u8 m_checksum = 0;

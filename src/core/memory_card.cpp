@@ -26,6 +26,7 @@ void MemoryCard::Reset()
 {
   ResetTransferState();
   SaveIfChanged(true);
+  m_FLAG.no_write_yet = true;
 }
 
 bool MemoryCard::DoState(StateWrapper& sw)
@@ -34,6 +35,7 @@ bool MemoryCard::DoState(StateWrapper& sw)
     SaveIfChanged(true);
 
   sw.Do(&m_state);
+  sw.Do(&m_FLAG.bits);
   sw.Do(&m_address);
   sw.Do(&m_sector_offset);
   sw.Do(&m_checksum);
