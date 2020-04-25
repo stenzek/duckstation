@@ -107,6 +107,7 @@ private:
   bool LoadEntriesFromCache(ByteStream* stream);
   bool OpenCacheForWriting();
   bool WriteEntryToCache(const GameListEntry* entry, ByteStream* stream);
+  void FlushCacheFileStream();
   void CloseCacheFileStream();
   void DeleteCacheFile();
 
