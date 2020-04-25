@@ -1,5 +1,6 @@
 #include "digital_controller.h"
 #include "common/assert.h"
+#include "common/state_wrapper.h"
 
 DigitalController::DigitalController() = default;
 
@@ -18,6 +19,21 @@ std::optional<s32> DigitalController::GetAxisCodeByName(std::string_view axis_na
 std::optional<s32> DigitalController::GetButtonCodeByName(std::string_view button_name) const
 {
   return StaticGetButtonCodeByName(button_name);
+}
+
+void DigitalController::Reset()
+{
+  m_transfer_state = TransferState::Idle;
+}
+
+bool DigitalController::DoState(StateWrapper& sw)
+{
+  if (!Controller::DoState(sw))
+    return false;
+
+  sw.Do(&m_button_state);
+  sw.Do(&m_transfer_state);
+  return true;
 }
 
 void DigitalController::SetAxisState(s32 axis_code, float value) {}
