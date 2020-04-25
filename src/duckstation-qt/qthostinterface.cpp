@@ -333,6 +333,7 @@ void QtHostInterface::updateDisplayState()
 
   getHostDisplay()->updateImGuiDisplaySize();
   connectDisplaySignals();
+  redrawDisplayWindow();
   UpdateSpeedLimiterState();
 }
 
