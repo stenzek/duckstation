@@ -1149,7 +1149,7 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
   }
 }
 
-void CDROM::BeginReading(TickCount ticks_late)
+void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
   Log_DebugPrintf("Starting reading @ LBA %u", m_last_requested_sector);
   ClearSectorBuffers();
@@ -1164,9 +1164,10 @@ void CDROM::BeginReading(TickCount ticks_late)
   m_secondary_status.motor_on = true;
 
   const TickCount ticks = GetTicksForRead();
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_last_requested_sector)) - ticks_late;
   m_drive_state = DriveState::Reading;
   m_drive_event->SetInterval(ticks);
-  m_drive_event->Schedule(ticks - ticks_late);
+  m_drive_event->Schedule(first_sector_ticks);
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
   m_xa_current_file_number = 0;
@@ -1176,7 +1177,7 @@ void CDROM::BeginReading(TickCount ticks_late)
   m_reader.QueueReadSector(m_last_requested_sector);
 }
 
-void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
+void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
   Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
   m_last_cdda_report_frame_nibble = 0xFF;
@@ -1208,9 +1209,10 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late)
   ClearSectorBuffers();
 
   const TickCount ticks = GetTicksForRead();
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_last_requested_sector)) - ticks_late;
   m_drive_state = DriveState::Playing;
   m_drive_event->SetInterval(ticks);
-  m_drive_event->Schedule(ticks - ticks_late);
+  m_drive_event->Schedule(first_sector_ticks);
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
 
@@ -1318,11 +1320,11 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     // INT2 is not sent on play/read
     if (m_read_after_seek)
     {
-      BeginReading(ticks_late);
+      BeginReading(ticks_late, true);
     }
     else if (m_play_after_seek)
     {
-      BeginPlaying(0, ticks_late);
+      BeginPlaying(0, ticks_late, true);
     }
     else
     {

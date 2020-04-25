@@ -220,8 +220,8 @@ private:
   void ExecuteTestCommand(u8 subcommand);
   void UpdateCommandEvent();
   void ExecuteDrive(TickCount ticks_late);
-  void BeginReading(TickCount ticks_late = 0);
-  void BeginPlaying(u8 track_bcd, TickCount ticks_late = 0);
+  void BeginReading(TickCount ticks_late = 0, bool after_seek = false);
+  void BeginPlaying(u8 track_bcd, TickCount ticks_late = 0, bool after_seek = false);
   void DoResetComplete(TickCount ticks_late);
   void DoSeekComplete(TickCount ticks_late);
   void DoPauseComplete();
