@@ -401,7 +401,6 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
   si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
   si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
-
 }
 
 std::optional<CommonHostInterface::HostKeyCode>
@@ -720,10 +719,21 @@ bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 co
 
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
-  RegisterHotkey(StaticString("General"), StaticString("FastForward"), StaticString("Toggle Fast Forward"),
+  RegisterHotkey(StaticString("General"), StaticString("FastForward"), StaticString("Fast Forward"),
                  [this](bool pressed) {
                    m_speed_limiter_temp_disabled = pressed;
                    HostInterface::UpdateSpeedLimiterState();
+                 });
+
+  RegisterHotkey(StaticString("General"), StaticString("ToggleFastForward"), StaticString("Toggle Fast Forward"),
+                 [this](bool pressed) {
+                   if (!pressed)
+                   {
+                     m_speed_limiter_temp_disabled = !m_speed_limiter_temp_disabled;
+                     HostInterface::UpdateSpeedLimiterState();
+                     AddFormattedOSDMessage(1.0f, "Speed limiter %s.",
+                                            m_speed_limiter_enabled ? "enabled" : "disabled");
+                   }
                  });
 
   RegisterHotkey(StaticString("General"), StaticString("ToggleFullscreen"), StaticString("Toggle Fullscreen"),
