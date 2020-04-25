@@ -560,7 +560,6 @@ void System::Throttle()
 #endif
     m_last_throttle_time = 0;
     m_throttle_timer.Reset();
-    m_host_interface->GetAudioStream()->EmptyBuffers();
   }
   else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
   {
