@@ -25,6 +25,7 @@ void Timers::Reset()
   for (CounterState& cs : m_states)
   {
     cs.mode.bits = 0;
+    cs.mode.interrupt_request_n = true;
     cs.counter = 0;
     cs.target = 0;
     cs.gate = false;
@@ -231,13 +232,13 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
     case 0x04:
     {
+      static constexpr u32 WRITE_MASK = 0b1110001111111111;
+
       Log_DebugPrintf("Timer %u write mode register 0x%04X", timer_index, value);
-      cs.mode.bits = value & u32(0x1FFF);
+      cs.mode.bits = (value & WRITE_MASK) | (cs.mode.bits & ~WRITE_MASK);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
       cs.irq_done = false;
-      if (cs.mode.irq_pulse_n)
-        cs.mode.interrupt_request_n = true;
 
       UpdateCountingEnabled(cs);
       UpdateIRQ(timer_index);
