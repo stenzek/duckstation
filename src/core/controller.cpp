@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "analog_controller.h"
 #include "common/state_wrapper.h"
+#include "namco_guncon.h"
 #include "digital_controller.h"
 
 Controller::Controller() = default;
@@ -36,7 +37,7 @@ float Controller::GetVibrationMotorStrength(u32 motor)
   return 0.0f;
 }
 
-std::unique_ptr<Controller> Controller::Create(ControllerType type)
+std::unique_ptr<Controller> Controller::Create(System* system, ControllerType type)
 {
   switch (type)
   {
@@ -45,6 +46,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type)
 
     case ControllerType::AnalogController:
       return AnalogController::Create();
+
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::Create(system);
 
     case ControllerType::None:
     default:
@@ -72,6 +76,9 @@ Controller::AxisList Controller::GetAxisNames(ControllerType type)
     case ControllerType::AnalogController:
       return AnalogController::StaticGetAxisNames();
 
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::StaticGetAxisNames();
+
     case ControllerType::None:
     default:
       return {};
@@ -87,6 +94,9 @@ Controller::ButtonList Controller::GetButtonNames(ControllerType type)
 
     case ControllerType::AnalogController:
       return AnalogController::StaticGetButtonNames();
+
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::StaticGetButtonNames();
 
     case ControllerType::None:
     default:
@@ -104,6 +114,9 @@ u32 Controller::GetVibrationMotorCount(ControllerType type)
     case ControllerType::AnalogController:
       return AnalogController::StaticGetVibrationMotorCount();
 
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::StaticGetVibrationMotorCount();
+
     case ControllerType::None:
     default:
       return 0;
@@ -120,6 +133,9 @@ std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::strin
     case ControllerType::AnalogController:
       return AnalogController::StaticGetAxisCodeByName(axis_name);
 
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::StaticGetAxisCodeByName(axis_name);
+
     case ControllerType::None:
     default:
       return std::nullopt;
@@ -135,6 +151,9 @@ std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::str
 
     case ControllerType::AnalogController:
       return AnalogController::StaticGetButtonCodeByName(button_name);
+
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::StaticGetButtonCodeByName(button_name);
 
     case ControllerType::None:
     default:

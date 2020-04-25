@@ -50,7 +50,7 @@ bool Pad::DoState(StateWrapper& sw)
 
       m_controllers[i].reset();
       if (state_controller_type != ControllerType::None)
-        m_controllers[i] = Controller::Create(state_controller_type);
+        m_controllers[i] = Controller::Create(m_system, state_controller_type);
     }
 
     if (m_controllers[i])

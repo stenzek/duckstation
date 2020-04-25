@@ -52,6 +52,8 @@ add_library(core
     mdec.h
     memory_card.cpp
     memory_card.h
+    namco_guncon.cpp
+    namco_guncon.h
     pad.cpp
     pad.h
     psf_loader.cpp

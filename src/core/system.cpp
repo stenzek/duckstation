@@ -785,7 +785,7 @@ void System::UpdateControllers()
     const ControllerType type = settings.controller_types[i];
     if (type != ControllerType::None)
     {
-      std::unique_ptr<Controller> controller = Controller::Create(type);
+      std::unique_ptr<Controller> controller = Controller::Create(this, type);
       if (controller)
         m_pad->SetController(i, std::move(controller));
     }

@@ -87,6 +87,7 @@ enum class ControllerType
   None,
   DigitalController,
   AnalogController,
+  NamcoGunCon,
   Count
 };
 

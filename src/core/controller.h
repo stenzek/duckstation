@@ -7,6 +7,7 @@
 #include <vector>
 
 class StateWrapper;
+class System;
 
 class Controller
 {
@@ -48,7 +49,7 @@ public:
   virtual float GetVibrationMotorStrength(u32 motor);
 
   /// Creates a new controller of the specified type.
-  static std::unique_ptr<Controller> Create(ControllerType type);
+  static std::unique_ptr<Controller> Create(System* system, ControllerType type);
 
   /// Gets the integer code for an axis in the specified controller type.
   static std::optional<s32> GetAxisCodeByName(ControllerType type, std::string_view axis_name);

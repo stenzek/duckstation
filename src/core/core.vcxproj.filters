@@ -41,6 +41,7 @@
     <ClCompile Include="timing_event.cpp" />
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="psf_loader.cpp" />
+    <ClCompile Include="namco_guncon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -83,6 +84,7 @@
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="psf_loader.h" />
+    <ClInclude Include="namco_guncon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />
