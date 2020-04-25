@@ -49,6 +49,8 @@ To set up:
 2. If using the SDL frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
 2. Select a game from the list, or open a disc image file and enjoy.
 
+**If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/16/release/vc_redist.x64.exe.
+
 Prebuilt AppImage binaries for 64-bit Linux distros are also available via AppVeyor CI, but should not be considered fully supported at the moment. Linux users are encouraged to build from source when possible.
 
 PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
