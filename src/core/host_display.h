@@ -30,6 +30,9 @@ public:
 
   virtual ~HostDisplay();
 
+  ALWAYS_INLINE s32 GetWindowWidth() const { return m_window_width; }
+  ALWAYS_INLINE s32 GetWindowHeight() const { return m_window_height; }
+
   virtual RenderAPI GetRenderAPI() const = 0;
   virtual void* GetRenderDevice() const = 0;
   virtual void* GetRenderContext() const = 0;
@@ -96,6 +99,10 @@ public:
   /// Helper function for computing the draw rectangle in a larger window.
   std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const;
 
+  /// Helper function for converting window coordinates to display coordinates.
+  std::tuple<s32, s32> ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y, s32 window_width,
+                                                                    s32 window_height, s32 top_margin) const;
+
   /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
   bool WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, const char* filename,
                           bool clear_alpha = true, bool flip_y = false, u32 resize_width = 0, u32 resize_height = 0);
@@ -108,6 +115,10 @@ public:
                                    bool clear_alpha = true);
 
 protected:
+  void CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
+                         s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,
+                         float* out_y_scale) const;
+
   s32 m_window_width = 0;
   s32 m_window_height = 0;
 

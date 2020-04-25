@@ -162,6 +162,9 @@ public:
   // gpu_sw.cpp
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
+  // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
+  bool ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, u32* out_tick, u32* out_line) const;
+
 protected:
   static TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
   {
@@ -607,9 +610,13 @@ protected:
     u16 display_vram_height;
 
     u16 horizontal_total;
+    u16 horizontal_active_start;
+    u16 horizontal_active_end;
     u16 horizontal_display_start;
     u16 horizontal_display_end;
     u16 vertical_total;
+    u16 vertical_active_start;
+    u16 vertical_active_end;
     u16 vertical_display_start;
     u16 vertical_display_end;
 

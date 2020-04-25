@@ -18,7 +18,9 @@ void HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
   m_window_height = new_window_height;
 }
 
-std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const
+void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
+                                    s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,
+                                    float* out_y_scale) const
 {
   const float y_scale =
     (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_pixel_aspect_ratio;
@@ -28,38 +30,66 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, 
   const float active_top = static_cast<float>(m_display_active_top) * y_scale;
   const float active_width = static_cast<float>(m_display_active_width);
   const float active_height = static_cast<float>(m_display_active_height) * y_scale;
+  if (out_y_scale)
+    *out_y_scale = y_scale;
 
   // now fit it within the window
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
 
   float scale;
-  int top_padding = 0, left_padding = 0;
-
   if ((display_width / display_height) >= window_ratio)
   {
     // align in middle vertically
     scale = static_cast<float>(window_width) / display_width;
-    top_padding = (window_height - top_margin - static_cast<s32>(display_height * scale)) / 2;
+    if (out_left_padding)
+      *out_left_padding = 0;
+    if (out_top_padding)
+      *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
   }
   else
   {
     // align in middle horizontally
-    scale = static_cast<float>(window_height - top_margin) / display_height;
-    left_padding = (window_width - static_cast<s32>(display_width * scale)) / 2;
+    scale = static_cast<float>(window_height) / display_height;
+    if (out_left_padding)
+      *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+    if (out_top_padding)
+      *out_top_padding = 0;
   }
 
-  int left, top, width, height;
-  width = static_cast<s32>(active_width * scale);
-  height = static_cast<s32>(active_height * scale);
-  left = static_cast<s32>(active_left * scale);
-  top = static_cast<s32>(active_top * scale);
+  *out_width = static_cast<s32>(active_width * scale);
+  *out_height = static_cast<s32>(active_height * scale);
+  *out_left = static_cast<s32>(active_left * scale);
+  *out_top = static_cast<s32>(active_top * scale);
+  if (out_scale)
+    *out_scale = scale;
+}
 
-  left += std::max(left_padding, 0);
-  top += std::max(top_padding, 0);
+std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const
+{
+  s32 left, top, width, height, left_padding, top_padding;
+  CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
+                    nullptr, nullptr);
+  return std::make_tuple(left + left_padding, top + top_padding + top_margin, width, height);
+}
 
-  // add in margin
-  top += top_margin;
-  return std::tie(left, top, width, height);
+std::tuple<s32, s32> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y,
+                                                                               s32 window_width, s32 window_height,
+                                                                               s32 top_margin) const
+{
+  s32 left, top, width, height, left_padding, top_padding;
+  float scale, y_scale;
+  CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
+                    &scale, &y_scale);
+
+  // convert coordinates to active display region, then to full display region
+  const float scaled_display_x = static_cast<float>(window_x - (left_padding));
+  const float scaled_display_y = static_cast<float>(window_y - (top_padding + top_margin));
+
+  // scale back to internal resolution
+  const float display_x = scaled_display_x / scale;
+  const float display_y = scaled_display_y / scale / y_scale;
+
+  return std::make_tuple(static_cast<s32>(display_x), static_cast<s32>(display_y));
 }
 
 bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
