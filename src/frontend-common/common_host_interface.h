@@ -23,6 +23,7 @@ public:
   friend ControllerInterface;
 
   using HostKeyCode = s32;
+  using HostMouseButton = s32;
 
   using InputButtonHandler = std::function<void(bool)>;
   using InputAxisHandler = std::function<void(float)>;
@@ -102,6 +103,7 @@ protected:
 
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
+  bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
   void UpdateInputMap(SettingsInterface& si);
 
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
@@ -124,6 +126,7 @@ private:
 
   // input key maps
   std::map<HostKeyCode, InputButtonHandler> m_keyboard_input_handlers;
+  std::map<HostMouseButton, InputButtonHandler> m_mouse_input_handlers;
 
   // controller vibration motors/rumble
   struct ControllerRumbleState

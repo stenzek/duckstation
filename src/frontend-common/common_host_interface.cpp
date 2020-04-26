@@ -424,9 +424,20 @@ bool CommonHostInterface::HandleHostKeyEvent(HostKeyCode key, bool pressed)
   return true;
 }
 
+bool CommonHostInterface::HandleHostMouseEvent(HostMouseButton button, bool pressed)
+{
+  const auto iter = m_mouse_input_handlers.find(button);
+  if (iter == m_mouse_input_handlers.end())
+    return false;
+
+  iter->second(pressed);
+  return true;
+}
+
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
   m_keyboard_input_handlers.clear();
+  m_mouse_input_handlers.clear();
   if (m_controller_interface)
     m_controller_interface->ClearBindings();
 
@@ -599,6 +610,25 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
 
     m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
     return true;
+  }
+
+  if (device == "Mouse")
+  {
+    if (StringUtil::StartsWith(button, "Button"))
+    {
+      const std::optional<s32> button_index = StringUtil::FromChars<s32>(button.substr(6));
+      if (!button_index.has_value())
+      {
+        Log_WarningPrintf("Invalid button in mouse binding '%s'", binding.c_str());
+        return false;
+      }
+
+      m_mouse_input_handlers.emplace(static_cast<HostMouseButton>(button_index.value()), std::move(handler));
+      return true;
+    }
+
+    Log_WarningPrintf("Malformed mouse binding '%s'", binding.c_str());
+    return false;
   }
 
   if (StringUtil::StartsWith(device, "Controller"))
