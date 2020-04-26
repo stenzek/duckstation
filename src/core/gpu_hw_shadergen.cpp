@@ -118,6 +118,7 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
   else
   {
     ss << "#define HLSL 1\n";
+    ss << "#define roundEven round\n";
     ss << "#define CONSTANT static const\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
@@ -602,7 +603,9 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
       semitransparent = (texcol.a != 0.0);
     #else
-      float4 texcol = SampleFromVRAM(v_texpage, uint2(floor(v_tex0)));
+      // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
+      // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
+      float4 texcol = SampleFromVRAM(v_texpage, uint2((RESOLUTION_SCALE == 1u) ? roundEven(v_tex0) : floor(v_tex0)));
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 

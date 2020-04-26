@@ -374,11 +374,11 @@ static constexpr bool IsTopLeftEdge(s32 ex, s32 ey)
   return (ey < 0 || (ey == 0 && ex < 0));
 }
 
-static constexpr u8 Interpolate(u8 v0, u8 v1, u8 v2, s32 w0, s32 w1, s32 w2, s32 ws)
+static constexpr u8 Interpolate(u8 v0, u8 v1, u8 v2, s32 w0, s32 w1, s32 w2, s32 ws, s32 half_ws)
 {
   const s32 v = w0 * static_cast<s32>(static_cast<u32>(v0)) + w1 * static_cast<s32>(static_cast<u32>(v1)) +
                 w2 * static_cast<s32>(static_cast<u32>(v2));
-  const s32 vd = v / ws;
+  const s32 vd = (v + half_ws) / ws;
   return (vd < 0) ? 0 : ((vd > 0xFF) ? 0xFF : static_cast<u8>(vd));
 }
 
@@ -401,6 +401,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
 
   // Barycentric coordinates at minX/minY corner
   const s32 ws = orient2d(px0, py0, px1, py1, px2, py2);
+  const s32 half_ws = std::max<s32>((ws / 2) - 1, 0);
   if (ws == 0)
     return;
 
@@ -451,12 +452,15 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
         const s32 b1 = row_w1;
         const s32 b2 = row_w2;
 
-        const u8 r = shading_enable ? Interpolate(v0->color_r, v1->color_r, v2->color_r, b0, b1, b2, ws) : v0->color_r;
-        const u8 g = shading_enable ? Interpolate(v0->color_g, v1->color_g, v2->color_g, b0, b1, b2, ws) : v0->color_g;
-        const u8 b = shading_enable ? Interpolate(v0->color_b, v1->color_b, v2->color_b, b0, b1, b2, ws) : v0->color_b;
+        const u8 r =
+          shading_enable ? Interpolate(v0->color_r, v1->color_r, v2->color_r, b0, b1, b2, ws, half_ws) : v0->color_r;
+        const u8 g =
+          shading_enable ? Interpolate(v0->color_g, v1->color_g, v2->color_g, b0, b1, b2, ws, half_ws) : v0->color_g;
+        const u8 b =
+          shading_enable ? Interpolate(v0->color_b, v1->color_b, v2->color_b, b0, b1, b2, ws, half_ws) : v0->color_b;
 
-        const u8 texcoord_x = Interpolate(v0->texcoord_x, v1->texcoord_x, v2->texcoord_x, b0, b1, b2, ws);
-        const u8 texcoord_y = Interpolate(v0->texcoord_y, v1->texcoord_y, v2->texcoord_y, b0, b1, b2, ws);
+        const u8 texcoord_x = Interpolate(v0->texcoord_x, v1->texcoord_x, v2->texcoord_x, b0, b1, b2, ws, half_ws);
+        const u8 texcoord_y = Interpolate(v0->texcoord_y, v1->texcoord_y, v2->texcoord_y, b0, b1, b2, ws, half_ws);
 
         ShadePixel<texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
           static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y);
