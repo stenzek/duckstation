@@ -73,6 +73,10 @@ public:
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu);
 
+  ALWAYS_INLINE QString getPathForInputProfile(const QString& name) const
+  {
+    return QString::fromStdString(GetPathForInputProfile(name.toUtf8().constData()));
+  }
   ALWAYS_INLINE std::vector<std::pair<std::string, std::string>> getInputProfileList() const
   {
     return GetInputProfileList();

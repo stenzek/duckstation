@@ -874,6 +874,11 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
   }
 }
 
+std::string CommonHostInterface::GetPathForInputProfile(const char* name) const
+{
+  return GetUserDirectoryRelativePath("inputprofiles/%s.ini", name);
+}
+
 std::vector<std::pair<std::string, std::string>> CommonHostInterface::GetInputProfileList() const
 {
   FileSystem::FindResultsArray results;

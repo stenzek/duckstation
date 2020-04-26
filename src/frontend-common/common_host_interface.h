@@ -92,6 +92,9 @@ protected:
   /// Reloads the input map from config. Callable from controller interface.
   virtual void UpdateInputMap() = 0;
 
+  /// Returns a path where an input profile with the specified name would be saved.
+  std::string GetPathForInputProfile(const char* name) const;
+
   /// Returns a list of all input profiles. first - name, second - path
   std::vector<std::pair<std::string, std::string>> GetInputProfileList() const;
 

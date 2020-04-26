@@ -10,6 +10,7 @@
 #include <QtGui/QCursor>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 
@@ -336,15 +337,6 @@ void PortSettingsWidget::onLoadProfileClicked()
   const auto profile_names = m_host_interface->getInputProfileList();
 
   QMenu menu;
-  for (const auto& [name, path] : profile_names)
-  {
-    QAction* action = menu.addAction(QString::fromStdString(name));
-    QString path_qstr = QString::fromStdString(path);
-    connect(action, &QAction::triggered, [this, path_qstr]() { m_host_interface->applyInputProfile(path_qstr); });
-  }
-
-  if (!profile_names.empty())
-    menu.addSeparator();
 
   QAction* browse = menu.addAction(tr("Browse..."));
   connect(browse, &QAction::triggered, [this]() {
@@ -354,6 +346,16 @@ void PortSettingsWidget::onLoadProfileClicked()
       m_host_interface->applyInputProfile(path);
   });
 
+  if (!profile_names.empty())
+    menu.addSeparator();
+
+  for (const auto& [name, path] : profile_names)
+  {
+    QAction* action = menu.addAction(QString::fromStdString(name));
+    QString path_qstr = QString::fromStdString(path);
+    connect(action, &QAction::triggered, [this, path_qstr]() { m_host_interface->applyInputProfile(path_qstr); });
+  }
+
   menu.exec(QCursor::pos());
 }
 
@@ -362,23 +364,44 @@ void PortSettingsWidget::onSaveProfileClicked()
   const auto profile_names = m_host_interface->getInputProfileList();
 
   QMenu menu;
+
+  QAction* new_action = menu.addAction(tr("New..."));
+  connect(new_action, &QAction::triggered, [this]() {
+    QString name = QInputDialog::getText(QtUtils::GetRootWidget(this), tr("Enter Input Profile Name"),
+                                         tr("Enter Input Profile Name"));
+    if (name.isEmpty())
+    {
+      QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"),
+                            tr("No name entered, input profile was not saved."));
+      return;
+    }
+
+    m_host_interface->saveInputProfile(m_host_interface->getPathForInputProfile(name));
+  });
+
+  QAction* browse = menu.addAction(tr("Browse..."));
+  connect(browse, &QAction::triggered, [this]() {
+    QString path = QFileDialog::getSaveFileName(QtUtils::GetRootWidget(this), tr("Select path to input profile ini"),
+                                                QString(), tr(INPUT_PROFILE_FILTER));
+    if (path.isEmpty())
+    {
+      QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"),
+                            tr("No path selected, input profile was not saved."));
+      return;
+    }
+
+    m_host_interface->saveInputProfile(path);
+  });
+
+  if (!profile_names.empty())
+    menu.addSeparator();
+
   for (const auto& [name, path] : profile_names)
   {
     QAction* action = menu.addAction(QString::fromStdString(name));
     QString path_qstr = QString::fromStdString(path);
     connect(action, &QAction::triggered, [this, path_qstr]() { m_host_interface->saveInputProfile(path_qstr); });
   }
-
-  if (!profile_names.empty())
-    menu.addSeparator();
-
-  QAction* browse = menu.addAction(tr("Browse..."));
-  connect(browse, &QAction::triggered, [this]() {
-    QString path =
-      QFileDialog::getSaveFileName(this, tr("Select path to input profile ini"), QString(), tr(INPUT_PROFILE_FILTER));
-    if (!path.isEmpty())
-      m_host_interface->saveInputProfile(path);
-  });
 
   menu.exec(QCursor::pos());
 }
