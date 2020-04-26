@@ -57,6 +57,7 @@
       <Filter>gl</Filter>
     </ClInclude>
     <ClInclude Include="event.h" />
+    <ClInclude Include="bitutils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

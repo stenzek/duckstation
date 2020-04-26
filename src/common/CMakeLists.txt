@@ -5,6 +5,7 @@ add_library(common
   audio_stream.cpp
   audio_stream.h
   bitfield.h
+  bitutils.h
   byte_stream.cpp
   byte_stream.h
   cd_image.cpp

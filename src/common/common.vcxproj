@@ -39,6 +39,7 @@
     <ClInclude Include="assert.h" />
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="bitfield.h" />
+    <ClInclude Include="bitutils.h" />
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cpu_detect.h" />
