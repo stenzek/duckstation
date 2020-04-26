@@ -204,7 +204,7 @@ void GPU_HW::LoadVertices()
 
       // Cull polygons which are too large.
       const s32 min_x_12 = std::min(vertices[1].x, vertices[2].x);
-      const s32 max_x_12 = std::max(vertices[2].x, vertices[2].x);
+      const s32 max_x_12 = std::max(vertices[1].x, vertices[2].x);
       const s32 min_y_12 = std::min(vertices[1].y, vertices[2].y);
       const s32 max_y_12 = std::max(vertices[1].y, vertices[2].y);
       const s32 min_x = std::min(min_x_12, vertices[2].x);
@@ -236,9 +236,9 @@ void GPU_HW::LoadVertices()
       if (rc.quad_polygon)
       {
         const s32 min_x_123 = std::min(min_x_12, vertices[3].x);
-        const s32 max_x_123 = std::max(min_x_12, vertices[3].x);
+        const s32 max_x_123 = std::max(max_x_12, vertices[3].x);
         const s32 min_y_123 = std::min(min_y_12, vertices[3].y);
-        const s32 max_y_123 = std::max(min_y_12, vertices[3].y);
+        const s32 max_y_123 = std::max(max_y_12, vertices[3].y);
 
         // Cull polygons which are too large.
         if ((max_x_123 - min_x_123) >= MAX_PRIMITIVE_WIDTH || (max_y_123 - min_y_123) >= MAX_PRIMITIVE_HEIGHT)
