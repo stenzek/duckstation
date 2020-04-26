@@ -220,7 +220,13 @@ void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
   HandleHostKeyEvent(key, pressed);
 }
 
-void QtHostInterface::onDisplayWindowMouseEvent(int button, bool pressed)
+void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)
+{
+  DebugAssert(isOnWorkerThread());
+  m_display->SetMousePosition(x, y);
+}
+
+void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 {
   DebugAssert(isOnWorkerThread());
   HandleHostMouseEvent(button, pressed);
@@ -322,7 +328,8 @@ void QtHostInterface::connectDisplaySignals()
   connect(widget, &QtDisplayWidget::windowClosedEvent, this, &QtHostInterface::powerOffSystem,
           Qt::BlockingQueuedConnection);
   connect(widget, &QtDisplayWidget::windowKeyEvent, this, &QtHostInterface::onDisplayWindowKeyEvent);
-  connect(widget, &QtDisplayWidget::windowMouseEvent, this, &QtHostInterface::onDisplayWindowMouseEvent);
+  connect(widget, &QtDisplayWidget::windowMouseMoveEvent, this, &QtHostInterface::onDisplayWindowMouseMoveEvent);
+  connect(widget, &QtDisplayWidget::windowMouseButtonEvent, this, &QtHostInterface::onDisplayWindowMouseButtonEvent);
 }
 
 void QtHostInterface::disconnectDisplaySignals()

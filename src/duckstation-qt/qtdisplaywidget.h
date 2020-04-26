@@ -21,7 +21,8 @@ Q_SIGNALS:
   void windowRestoredEvent();
   void windowClosedEvent();
   void windowKeyEvent(int key_code, bool pressed);
-  void windowMouseEvent(int button, bool pressed);
+  void windowMouseMoveEvent(int x, int y);
+  void windowMouseButtonEvent(int button, bool pressed);
 
 protected:
   bool event(QEvent* event) override;

@@ -33,6 +33,15 @@ public:
   ALWAYS_INLINE s32 GetWindowWidth() const { return m_window_width; }
   ALWAYS_INLINE s32 GetWindowHeight() const { return m_window_height; }
 
+  // Position is relative to the top-left corner of the window.
+  ALWAYS_INLINE s32 GetMousePositionX() const { return m_mouse_position_x; }
+  ALWAYS_INLINE s32 GetMousePositionY() const { return m_mouse_position_y; }
+  ALWAYS_INLINE void SetMousePosition(s32 x, s32 y)
+  {
+    m_mouse_position_x = x;
+    m_mouse_position_y = y;
+  }
+
   virtual RenderAPI GetRenderAPI() const = 0;
   virtual void* GetRenderDevice() const = 0;
   virtual void* GetRenderContext() const = 0;
@@ -121,6 +130,9 @@ protected:
 
   s32 m_window_width = 0;
   s32 m_window_height = 0;
+
+  s32 m_mouse_position_x = 0;
+  s32 m_mouse_position_y = 0;
 
   s32 m_display_width = 0;
   s32 m_display_height = 0;

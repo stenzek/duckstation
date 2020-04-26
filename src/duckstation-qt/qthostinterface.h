@@ -104,7 +104,8 @@ public Q_SLOTS:
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
   void onDisplayWindowKeyEvent(int key, bool pressed);
-  void onDisplayWindowMouseEvent(int button, bool pressed);
+  void onDisplayWindowMouseMoveEvent(int x, int y);
+  void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void bootSystem(const SystemBootParameters& params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void powerOffSystem();

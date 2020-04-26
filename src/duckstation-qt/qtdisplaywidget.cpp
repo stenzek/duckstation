@@ -18,6 +18,7 @@ QtDisplayWidget::QtDisplayWidget(QWidget* parent) : QWidget(parent)
   setAttribute(Qt::WA_NoSystemBackground, true);
   setAttribute(Qt::WA_PaintOnScreen, true);
   setFocusPolicy(Qt::StrongFocus);
+  setMouseTracking(true);
 }
 
 QtDisplayWidget::~QtDisplayWidget() = default;
@@ -58,10 +59,19 @@ bool QtDisplayWidget::event(QEvent* event)
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
     {
-      QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+      const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
       if (!key_event->isAutoRepeat())
         emit windowKeyEvent(QtUtils::KeyEventToInt(key_event), event->type() == QEvent::KeyPress);
 
+      return true;
+    }
+
+    case QEvent::MouseMove:
+    {
+      const qreal dpr = devicePixelRatioFromScreen();
+      const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+      emit windowMouseMoveEvent(static_cast<int>(static_cast<double>(mouse_event->x()) * dpr),
+                                static_cast<int>(static_cast<double>(mouse_event->y()) * dpr));
       return true;
     }
 
@@ -69,7 +79,7 @@ bool QtDisplayWidget::event(QEvent* event)
     case QEvent::MouseButtonRelease:
     {
       const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-      emit windowMouseEvent(static_cast<int>(button_index + 1u), event->type() == QEvent::MouseButtonPress);
+      emit windowMouseButtonEvent(static_cast<int>(button_index + 1u), event->type() == QEvent::MouseButtonPress);
       return true;
     }
 

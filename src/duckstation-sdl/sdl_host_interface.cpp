@@ -15,8 +15,8 @@
 #include "frontend-common/sdl_controller_interface.h"
 #include "imgui_impl_sdl.h"
 #include "opengl_host_display.h"
-#include "sdl_key_names.h"
 #include "scmversion/scmversion.h"
+#include "sdl_key_names.h"
 #include <cinttypes>
 #include <cmath>
 #include <imgui.h>
@@ -478,6 +478,12 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
         const bool pressed = (event->type == SDL_KEYDOWN);
         HandleHostKeyEvent(code, pressed);
       }
+    }
+    break;
+
+    case SDL_MOUSEMOTION:
+    {
+      m_display->SetMousePosition(event->motion.x, event->motion.y);
     }
     break;
 
