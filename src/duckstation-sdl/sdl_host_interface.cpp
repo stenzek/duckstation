@@ -481,6 +481,18 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     }
     break;
 
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+    {
+      if (!ImGui::GetIO().WantCaptureMouse)
+      {
+        const s32 button = static_cast<s32>(ZeroExtend32(event->button.button));
+        const bool pressed = (event->type == SDL_MOUSEBUTTONDOWN);
+        HandleHostMouseEvent(button, pressed);
+      }
+    }
+    break;
+
     case SDL_USEREVENT:
     {
       if (static_cast<u32>(event->user.code) == m_run_later_event_id)
