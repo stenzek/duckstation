@@ -4,5 +4,6 @@
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
     <ClCompile Include="rectangle_tests.cpp" />
     <ClCompile Include="event_tests.cpp" />
+    <ClCompile Include="bitutils_tests.cpp" />
   </ItemGroup>
 </Project>
