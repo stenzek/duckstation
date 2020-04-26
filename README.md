@@ -27,6 +27,7 @@ Other features include:
  - Direct booting of homebrew executables
  - Direct loading of Portable Sound Format (psf) files
  - Digital and analog controllers for input (rumble is forwarded to host)
+ - Namco GunCon lightgun support (simulated with mouse)
  - Qt and SDL frontends for desktop
  - Automatic content scanning - game titles/regions are provided by redump.org
 

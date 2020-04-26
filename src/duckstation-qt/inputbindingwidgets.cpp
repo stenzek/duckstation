@@ -168,7 +168,8 @@ bool InputButtonBindingWidget::eventFilter(QObject* watched, QEvent* event)
   }
   else if (event_type == QEvent::MouseButtonRelease)
   {
-    const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
+    const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button());
+    const u32 button_index = (button_mask == 0u) ? 0 : CountTrailingZeros(button_mask);
     m_new_binding_value = QStringLiteral("Mouse/Button%1").arg(button_index + 1);
     setNewBinding();
     stopListeningForInput();
