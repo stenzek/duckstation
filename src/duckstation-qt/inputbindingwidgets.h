@@ -23,7 +23,7 @@ public Q_SLOTS:
   void reloadBinding();
 
 protected Q_SLOTS:
-  void onPressed();
+  void onClicked();
   void onInputListenTimerTimeout();
 
 protected:

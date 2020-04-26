@@ -1,4 +1,5 @@
 #include "inputbindingwidgets.h"
+#include "common/bitutils.h"
 #include "core/settings.h"
 #include "frontend-common/controller_interface.h"
 #include "qthostinterface.h"
@@ -163,6 +164,14 @@ bool InputButtonBindingWidget::eventFilter(QObject* watched, QEvent* event)
     if (!binding.isEmpty())
       m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding);
 
+    return true;
+  }
+  else if (event_type == QEvent::MouseButtonRelease)
+  {
+    const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
+    m_new_binding_value = QStringLiteral("Mouse/Button%1").arg(button_index + 1);
+    setNewBinding();
+    stopListeningForInput();
     return true;
   }
 

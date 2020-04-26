@@ -220,6 +220,12 @@ void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
   HandleHostKeyEvent(key, pressed);
 }
 
+void QtHostInterface::onDisplayWindowMouseEvent(int button, bool pressed)
+{
+  DebugAssert(isOnWorkerThread());
+  HandleHostMouseEvent(button, pressed);
+}
+
 void QtHostInterface::onHostDisplayWindowResized(int width, int height)
 {
   // this can be null if it was destroyed and the main thread is late catching up
@@ -316,6 +322,7 @@ void QtHostInterface::connectDisplaySignals()
   connect(widget, &QtDisplayWidget::windowClosedEvent, this, &QtHostInterface::powerOffSystem,
           Qt::BlockingQueuedConnection);
   connect(widget, &QtDisplayWidget::windowKeyEvent, this, &QtHostInterface::onDisplayWindowKeyEvent);
+  connect(widget, &QtDisplayWidget::windowMouseEvent, this, &QtHostInterface::onDisplayWindowMouseEvent);
 }
 
 void QtHostInterface::disconnectDisplaySignals()

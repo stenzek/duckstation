@@ -1,4 +1,5 @@
 #include "qtdisplaywidget.h"
+#include "common/bitutils.h"
 #include "qthostdisplay.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -61,6 +62,14 @@ bool QtDisplayWidget::event(QEvent* event)
       if (!key_event->isAutoRepeat())
         emit windowKeyEvent(QtUtils::KeyEventToInt(key_event), event->type() == QEvent::KeyPress);
 
+      return true;
+    }
+
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    {
+      const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
+      emit windowMouseEvent(static_cast<int>(button_index + 1u), event->type() == QEvent::MouseButtonPress);
       return true;
     }
 

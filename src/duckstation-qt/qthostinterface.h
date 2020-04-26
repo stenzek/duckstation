@@ -104,6 +104,7 @@ public Q_SLOTS:
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
   void onDisplayWindowKeyEvent(int key, bool pressed);
+  void onDisplayWindowMouseEvent(int button, bool pressed);
   void bootSystem(const SystemBootParameters& params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void powerOffSystem();
@@ -205,9 +206,6 @@ private:
   QEventLoop* m_worker_thread_event_loop = nullptr;
 
   std::atomic_bool m_shutdown_flag{false};
-
-  // input key maps, todo hotkeys
-  std::map<int, InputButtonHandler> m_keyboard_input_handlers;
 
   QTimer* m_background_controller_polling_timer = nullptr;
   u32 m_background_controller_polling_enable_count = 0;
