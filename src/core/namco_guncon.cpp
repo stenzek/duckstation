@@ -3,7 +3,8 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "gpu.h"
-#include "imgui.h"
+#include "host_display.h"
+#include "host_interface.h"
 #include "system.h"
 #include <array>
 Log_SetChannel(NamcoGunCon);
@@ -150,9 +151,10 @@ bool NamcoGunCon::Transfer(const u8 data_in, u8* data_out)
 
 void NamcoGunCon::UpdatePosition()
 {
-  // get screen coordinates. TODO better way
-  const s32 mouse_x = static_cast<s32>(ImGui::GetIO().MousePos.x);
-  const s32 mouse_y = static_cast<s32>(ImGui::GetIO().MousePos.y);
+  // get screen coordinates
+  const HostDisplay* display = m_system->GetHostInterface()->GetDisplay();
+  const s32 mouse_x = display->GetMousePositionX();
+  const s32 mouse_y = display->GetMousePositionY();
 
   // are we within the active display area?
   u32 tick, line;
@@ -168,7 +170,8 @@ void NamcoGunCon::UpdatePosition()
   // 8MHz units for X = 44100*768*11/7 = 53222400 / 8000000 = 6.6528
   m_position_x = static_cast<u16>(static_cast<float>(tick) * (1.0f / 6.6528f));
   m_position_y = static_cast<u16>(line);
-  Log_DebugPrintf("Lightgun window coordinates %d,%d -> tick %u line %u 8mhz ticks %u", tick, line, m_position_x);
+  Log_DebugPrintf("Lightgun window coordinates %d,%d -> tick %u line %u 8mhz ticks %u", mouse_x, mouse_y, tick, line,
+                  m_position_x);
 }
 
 std::unique_ptr<NamcoGunCon> NamcoGunCon::Create(System* system)
