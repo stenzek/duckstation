@@ -16,7 +16,7 @@ InputBindingWidget::InputBindingWidget(QtHostInterface* host_interface, QString 
   setMinimumWidth(150);
   setMaximumWidth(150);
 
-  connect(this, &QPushButton::pressed, this, &InputBindingWidget::onPressed);
+  connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 }
 
 InputBindingWidget::~InputBindingWidget()
@@ -83,7 +83,7 @@ void InputBindingWidget::reloadBinding()
   setText(m_current_binding_value);
 }
 
-void InputBindingWidget::onPressed()
+void InputBindingWidget::onClicked()
 {
   if (isListeningForInput())
     stopListeningForInput();
