@@ -273,7 +273,7 @@ bool D3D11HostDisplay::CreateD3DDevice(bool debug_device)
   if (FAILED(hr))
     Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-  if (debug_device)
+  if (debug_device && IsDebuggerPresent())
   {
     ComPtr<ID3D11InfoQueue> info;
     hr = m_device.As(&info);
