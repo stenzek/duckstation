@@ -119,8 +119,8 @@ struct BitField
     }
     else if constexpr (std::is_signed_v<DataType>)
     {
-      constexpr int shift = 8 * sizeof(DataType) - BitCount;
-      return (static_cast<DataType>((data & GetMask()) >> BitIndex) << shift) >> shift;
+      constexpr int shift = 8 * sizeof(DataType) - BitCount + 1;
+      return (static_cast<DataType>(data >> BitIndex) << shift) >> shift;
     }
     else
     {
