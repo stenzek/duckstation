@@ -446,8 +446,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   const GPU::TextureMode actual_texture_mode = texture_mode & ~GPU::TextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPU::TextureMode::RawTextureBit) == GPU::TextureMode::RawTextureBit;
   const bool textured = (texture_mode != GPU::TextureMode::Disabled);
-  const bool use_dual_source = m_supports_dual_source_blend &&
-                               (transparency != GPU_HW::BatchRenderMode::TransparencyDisabled || m_texture_filering);
+  const bool use_dual_source =
+    m_supports_dual_source_blend && ((transparency != GPU_HW::BatchRenderMode::TransparencyDisabled &&
+                                      transparency != GPU_HW::BatchRenderMode::OnlyOpaque) ||
+                                     m_texture_filering);
 
   std::stringstream ss;
   WriteHeader(ss);
@@ -678,9 +680,12 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
         discard;
       #endif
 
-      #if USE_DUAL_SOURCE
+      #if TRANSPARENCY_ONLY_OPAQUE
+        // We don't output the second color here because it's not used.
         o_col0 = float4(color, oalpha);
-        o_col1 = float4(0.0, 0.0, 0.0, 0.0);
+      #elif USE_DUAL_SOURCE
+        o_col0 = float4(color, oalpha);
+        o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
       #else
         o_col0 = float4(color, 1.0 - ialpha);
       #endif
