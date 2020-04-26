@@ -1,41 +1,15 @@
 #include "gte.h"
+#include "common/bitutils.h"
 #include <algorithm>
 #include <array>
 
-// TODO: Optimize, intrinsics?
-static inline constexpr u32 CountLeadingZeros(u16 value)
+ALWAYS_INLINE u32 CountLeadingBits(u32 value)
 {
-  u32 count = 0;
-  for (u32 i = 0; i < 16 && (value & UINT16_C(0x8000)) == 0; i++)
-  {
-    count++;
-    value <<= 1;
-  }
+  // if top-most bit is set, we want to count ones not zeros
+  if (value & UINT32_C(0x80000000))
+    value ^= UINT32_C(0xFFFFFFFF);
 
-  return count;
-}
-
-static inline constexpr u32 CountLeadingBits(u32 value)
-{
-  u32 count = 0;
-  if ((value & UINT32_C(0x80000000)) != 0)
-  {
-    for (u32 i = 0; i < 32 && ((value & UINT32_C(0x80000000)) != 0); i++)
-    {
-      count++;
-      value <<= 1;
-    }
-  }
-  else
-  {
-    for (u32 i = 0; i < 32 && (value & UINT32_C(0x80000000)) == 0; i++)
-    {
-      count++;
-      value <<= 1;
-    }
-  }
-
-  return count;
+  return (value == 0u) ? 32 : CountLeadingZeros(value);
 }
 
 namespace GTE {
@@ -365,7 +339,7 @@ u32 Core::UNRDivide(u32 lhs, u32 rhs)
     return 0x1FFFF;
   }
 
-  const u32 shift = CountLeadingZeros(static_cast<u16>(rhs));
+  const u32 shift = (rhs == 0) ? 16 : CountLeadingZeros(static_cast<u16>(rhs));
   lhs <<= shift;
   rhs <<= shift;
 
