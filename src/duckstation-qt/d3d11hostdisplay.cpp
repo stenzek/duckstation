@@ -167,7 +167,7 @@ bool D3D11HostDisplay::createDeviceContext(bool debug_device)
     return false;
   }
 
-  if (debug_device)
+  if (debug_device && IsDebuggerPresent())
   {
     ComPtr<ID3D11InfoQueue> info;
     hr = m_device.As(&info);
