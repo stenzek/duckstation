@@ -207,10 +207,10 @@ void GPU_HW::LoadVertices()
       const s32 max_x_12 = std::max(vertices[1].x, vertices[2].x);
       const s32 min_y_12 = std::min(vertices[1].y, vertices[2].y);
       const s32 max_y_12 = std::max(vertices[1].y, vertices[2].y);
-      const s32 min_x = std::min(min_x_12, vertices[2].x);
-      const s32 max_x = std::max(max_x_12, vertices[2].x);
-      const s32 min_y = std::min(min_y_12, vertices[2].y);
-      const s32 max_y = std::max(max_y_12, vertices[2].y);
+      const s32 min_x = std::min(min_x_12, vertices[0].x);
+      const s32 max_x = std::max(max_x_12, vertices[0].x);
+      const s32 min_y = std::min(min_y_12, vertices[0].y);
+      const s32 max_y = std::max(max_y_12, vertices[0].y);
 
       if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
       {
