@@ -126,6 +126,7 @@ void GPU_HW_D3D11::UpdateSettings()
   CreateFramebuffer();
   CreateStateObjects();
   CompileShaders();
+  RestoreGraphicsAPIState();
   UpdateDisplay();
 }
 
