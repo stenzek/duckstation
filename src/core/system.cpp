@@ -191,6 +191,9 @@ bool System::Boot(const SystemBootParameters& params)
     return false;
   }
 
+  // Notify change of disc.
+  UpdateRunningGame(params.filename.c_str(), media.get());
+
   // Component setup.
   InitializeComponents();
   UpdateControllers();
@@ -213,9 +216,6 @@ bool System::Boot(const SystemBootParameters& params)
     m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
     return false;
   }
-
-  // Notify change of disc.
-  UpdateRunningGame(params.filename.c_str(), media.get());
 
   // Insert CD, and apply fastboot patch if enabled.
   if (media)
@@ -798,10 +798,47 @@ void System::UpdateMemoryCards()
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     m_pad->SetMemoryCard(i, nullptr);
-    if (settings.memory_card_paths[i].empty())
-      continue;
 
-    std::unique_ptr<MemoryCard> card = MemoryCard::Open(this, settings.memory_card_paths[i]);
+    const MemoryCardType type = settings.memory_card_types[i];
+    std::unique_ptr<MemoryCard> card;
+    switch (settings.memory_card_types[i])
+    {
+      case MemoryCardType::None:
+        continue;
+
+      case MemoryCardType::PerGame:
+      {
+        if (m_running_game_code.empty())
+        {
+          m_host_interface->AddFormattedOSDMessage(5.0f,
+                                                   "Per-game memory card cannot be used for slot %u as the running "
+                                                   "game has no code. Using shared card instead.",
+                                                   i + 1u);
+          card = MemoryCard::Open(this, m_host_interface->GetSharedMemoryCardPath(i));
+        }
+        else
+        {
+          card = MemoryCard::Open(this, m_host_interface->GetGameMemoryCardPath(m_running_game_code.c_str(), i));
+        }
+      }
+      break;
+
+      case MemoryCardType::Shared:
+      {
+        if (settings.memory_card_paths[i].empty())
+        {
+          m_host_interface->AddFormattedOSDMessage(2.0f, "Memory card path for slot %u is missing, using default.",
+                                                   i + 1u);
+          card = MemoryCard::Open(this, m_host_interface->GetSharedMemoryCardPath(i));
+        }
+        else
+        {
+          card = MemoryCard::Open(this, settings.memory_card_paths[i]);
+        }
+      }
+      break;
+    }
+
     if (card)
       m_pad->SetMemoryCard(i, std::move(card));
   }
@@ -820,6 +857,13 @@ bool System::InsertMedia(const char* path)
 
   UpdateRunningGame(path, image.get());
   m_cdrom->InsertMedia(std::move(image));
+
+  if (GetSettings().HasAnyPerGameMemoryCards())
+  {
+    m_host_interface->AddOSDMessage("Game changed, reloading memory cards.", 2.0f);
+    UpdateMemoryCards();
+  }
+
   return true;
 }
 

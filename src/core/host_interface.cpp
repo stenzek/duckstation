@@ -769,7 +769,7 @@ std::string HostInterface::GetSharedMemoryCardPath(u32 slot) const
 
 std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
-  return GetUserDirectoryRelativePath("memcards/game_card_%s_%d.mcd", game_code, slot + 1);
+  return GetUserDirectoryRelativePath("memcards/%s_%d.mcd", game_code, slot + 1);
 }
 
 std::vector<HostInterface::SaveStateInfo> HostInterface::GetAvailableSaveStates(const char* game_code) const
@@ -959,8 +959,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
   si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(ControllerType::None));
 
+  si.SetStringValue("MemoryCards", "Card1Type", "PerGame");
   si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
-  si.SetStringValue("MemoryCards", "Card2Path", "");
+  si.SetStringValue("MemoryCards", "Card2Type", "None");
+  si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
 
   si.SetBoolValue("Debug", "ShowVRAM", false);
   si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", false);
@@ -996,6 +998,9 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_display_linear_filtering = m_settings.display_linear_filtering;
   const bool old_cdrom_read_thread = m_settings.cdrom_read_thread;
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
+  std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_types = m_settings.memory_card_types;
+  std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_paths =
+    std::move(m_settings.memory_card_paths);
 
   apply_callback();
 
@@ -1050,6 +1055,9 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
     if (m_settings.cdrom_read_thread != old_cdrom_read_thread)
       m_system->GetCDROM()->SetUseReadThread(m_settings.cdrom_read_thread);
+
+    if (m_settings.memory_card_types != old_memory_card_types || m_settings.memory_card_paths != old_memory_card_paths)
+      m_system->UpdateMemoryCards();
   }
 
   bool controllers_updated = false;

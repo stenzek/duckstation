@@ -63,8 +63,18 @@ void Settings::Load(SettingsInterface& si)
   controller_types[1] =
     ParseControllerTypeName(si.GetStringValue("Controller2", "Type", "None").c_str()).value_or(ControllerType::None);
 
+  // NOTE: The default value here if not present in the config is shared, but SetDefaultSettings() makes per-game.
+  // This is so we don't break older builds which had the shared card by default.
+  memory_card_types[0] =
+    ParseMemoryCardTypeName(
+      si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(MemoryCardType::Shared)).c_str())
+      .value_or(MemoryCardType::Shared);
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
-  memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
+  memory_card_types[1] =
+    ParseMemoryCardTypeName(
+      si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(MemoryCardType::None)).c_str())
+      .value_or(MemoryCardType::None);
+  memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
 
   debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
   debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
@@ -129,15 +139,10 @@ void Settings::Save(SettingsInterface& si) const
   else
     si.DeleteValue("Controller2", "Type");
 
-  if (!memory_card_paths[0].empty())
-    si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
-  else
-    si.DeleteValue("MemoryCards", "Card1Path");
-
-  if (!memory_card_paths[1].empty())
-    si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
-  else
-    si.DeleteValue("MemoryCards", "Card2Path");
+  si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
+  si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
+  si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));
+  si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
 
   si.SetBoolValue("Debug", "ShowVRAM", debugging.show_vram);
   si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", debugging.dump_cpu_to_vram_copies);
@@ -376,4 +381,32 @@ const char* Settings::GetControllerTypeName(ControllerType type)
 const char* Settings::GetControllerTypeDisplayName(ControllerType type)
 {
   return s_controller_display_names[static_cast<int>(type)];
+}
+
+static std::array<const char*, 3> s_memory_card_type_names = {{"None", "Shared", "PerGame"}};
+static std::array<const char*, 3> s_memory_card_type_display_names = {
+  {"No Memory Card", "Shared Between All Games", "Separate Card Per Game"}};
+
+std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_memory_card_type_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<MemoryCardType>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetMemoryCardTypeName(MemoryCardType type)
+{
+  return s_memory_card_type_names[static_cast<int>(type)];
+}
+
+const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
+{
+  return s_memory_card_type_display_names[static_cast<int>(type)];
 }

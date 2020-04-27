@@ -91,6 +91,14 @@ enum class ControllerType
   Count
 };
 
+enum class MemoryCardType
+{
+  None,
+  Shared,
+  PerGame,
+  Count
+};
+
 enum : u32
 {
   NUM_CONTROLLER_AND_CARD_PORTS = 2

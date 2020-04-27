@@ -92,7 +92,13 @@ struct Settings
   bool bios_patch_fast_boot = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
+  std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
+
+  ALWAYS_INLINE bool HasAnyPerGameMemoryCards() const
+  {
+    return (memory_card_types[0] == MemoryCardType::PerGame || memory_card_types[1] == MemoryCardType::PerGame);
+  }
 
   void Load(SettingsInterface& si);
   void Save(SettingsInterface& si) const;
@@ -128,6 +134,10 @@ struct Settings
   static std::optional<ControllerType> ParseControllerTypeName(const char* str);
   static const char* GetControllerTypeName(ControllerType type);
   static const char* GetControllerTypeDisplayName(ControllerType type);
+
+  static std::optional<MemoryCardType> ParseMemoryCardTypeName(const char* str);
+  static const char* GetMemoryCardTypeName(MemoryCardType type);
+  static const char* GetMemoryCardTypeDisplayName(MemoryCardType type);
 
   // Default to D3D11 on Windows as it's more performant and at this point, less buggy.
 #ifdef WIN32
