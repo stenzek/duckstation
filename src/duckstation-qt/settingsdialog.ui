@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>500</height>
+    <width>780</width>
+    <height>820</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
       <widget class="QListWidget" name="settingsCategory">
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>230</width>
          <height>16777215</height>
         </size>
        </property>
@@ -122,7 +122,13 @@
        <property name="minimumSize">
         <size>
          <width>16777215</width>
-         <height>110</height>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
         </size>
        </property>
       </widget>

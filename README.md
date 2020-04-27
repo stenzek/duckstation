@@ -30,6 +30,7 @@ Other features include:
  - Namco GunCon lightgun support (simulated with mouse)
  - Qt and SDL frontends for desktop
  - Automatic content scanning - game titles/regions are provided by redump.org
+ - Optional automatic switching of memory cards for each game
 
 ## System Requirements
  - A CPU faster than a potato.

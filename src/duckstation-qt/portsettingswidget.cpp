@@ -78,6 +78,18 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   ui->widget = new QWidget(m_tab_widget);
   ui->layout = new QVBoxLayout(ui->widget);
 
+  ui->memory_card_type = new QComboBox(ui->widget);
+  for (int i = 0; i < static_cast<int>(MemoryCardType::Count); i++)
+  {
+    ui->memory_card_type->addItem(
+      QString::fromUtf8(Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
+  }
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, ui->memory_card_type,
+                                               QStringLiteral("MemoryCards/Card%1Type").arg(index + 1),
+                                               &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName);
+  ui->layout->addWidget(new QLabel(tr("Memory Card Type:"), ui->widget));
+  ui->layout->addWidget(ui->memory_card_type);
+
   QHBoxLayout* memory_card_layout = new QHBoxLayout();
   ui->memory_card_path = new QLineEdit(ui->widget);
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, ui->memory_card_path,
@@ -92,7 +104,7 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   connect(memory_card_remove, &QPushButton::clicked, [this, index]() { onEjectMemoryCardClicked(index); });
   memory_card_layout->addWidget(memory_card_remove);
 
-  ui->layout->addWidget(new QLabel(tr("Memory Card Path:"), ui->widget));
+  ui->layout->addWidget(new QLabel(tr("Shared Memory Card Path:"), ui->widget));
   ui->layout->addLayout(memory_card_layout);
 
   ui->layout->addWidget(new QLabel(tr("Controller Type:"), ui->widget));
@@ -101,7 +113,7 @@ void PortSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
   for (int i = 0; i < static_cast<int>(ControllerType::Count); i++)
   {
     ui->controller_type->addItem(
-      QString::fromLocal8Bit(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
+      QString::fromUtf8(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
   ControllerType ctype = Settings::ParseControllerTypeName(
                            m_host_interface->getSettingValue(QStringLiteral("Controller%1/Type").arg(index + 1))
@@ -327,8 +339,10 @@ void PortSettingsWidget::onBrowseMemoryCardPathClicked(int index)
 void PortSettingsWidget::onEjectMemoryCardClicked(int index)
 {
   QSignalBlocker blocker(m_port_ui[index].memory_card_path);
+  m_port_ui[index].memory_card_type->setCurrentIndex(0);
   m_port_ui[index].memory_card_path->setText(QString());
-  m_host_interface->removeSettingValue(QStringLiteral("MemoryCards/Card%1Path").arg(index + 1));
+  m_host_interface->putSettingValue(QStringLiteral("MemoryCards/Card%1Type").arg(index + 1), QStringLiteral("None"));
+  m_host_interface->putSettingValue(QStringLiteral("MemoryCards/Card%1Path").arg(index + 1), QString());
   m_host_interface->applySettings();
 }
 

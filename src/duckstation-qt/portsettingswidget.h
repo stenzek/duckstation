@@ -36,6 +36,7 @@ private:
     QWidget* widget;
     QVBoxLayout* layout;
     QComboBox* controller_type;
+    QComboBox* memory_card_type;
     QLineEdit* memory_card_path;
     QWidget* button_binding_container;
     InputBindingWidget* first_button;
