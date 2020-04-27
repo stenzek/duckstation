@@ -204,7 +204,6 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       }
       else if (m_configuration_mode && data_in == 0x4D)
       {
-        m_analog_mode = true;
         m_rumble_unlocked = true;
         *data_out = Truncate8(GetID());
         m_state = State::UnlockRumbleIDMSB;
@@ -269,7 +268,11 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     case State::SetAnalogModeVal:
     {
       Log_DebugPrintf("analog mode val 0x%02x", data_in);
-      m_command_param = data_in;
+      if (data_in == 0x00)
+        SetAnalogMode(false);
+      else if (data_in == 0x01)
+        SetAnalogMode(true);
+
       *data_out = 0x00;
       m_state = State::SetAnalogModeSel;
       ack = true;
@@ -278,10 +281,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::SetAnalogModeSel:
     {
-      Log_DebugPrintf("analog mode sel 0x%02x", data_in);
-      if (data_in != 0x00)
-        SetAnalogMode(m_command_param == 0x01);
-
+      Log_WarningPrintf("analog mode sel 0x%02x", data_in);
       *data_out = 0x00;
       m_state = State::Pad4Bytes;
       ack = true;
@@ -326,8 +326,8 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::Command4CMode:
     {
-      SetAnalogMode(data_in != 0x00);
-      Log_DebugPrintf("analog mode %s by 0x4c", m_analog_mode ? "enabled" : "disabled");
+      // SetAnalogMode(data_in != 0x00);
+      // Log_WarningPrintf("analog mode %s by 0x4c", m_analog_mode ? "enabled" : "disabled");
       *data_out = 0x00;
       m_state = State::Command4C1;
       ack = true;
@@ -432,8 +432,8 @@ Controller::ButtonList AnalogController::StaticGetButtonNames()
   {                                                                                                                    \
 #n, static_cast < s32>(Button::n)                                                                                  \
   }
-  return {B(Up),    B(Down),   B(Left), B(Right), B(Select), B(Start), B(Triangle), B(Cross), B(Circle),
-          B(Square), B(L1),   B(L2),    B(R1),     B(R2),    B(L3),       B(R3)};
+  return {B(Up),     B(Down),   B(Left), B(Right), B(Select), B(Start), B(Triangle), B(Cross),
+          B(Circle), B(Square), B(L1),   B(L2),    B(R1),     B(R2),    B(L3),       B(R3)};
 #undef B
 }
 
