@@ -4,6 +4,7 @@
 #include <cstdarg>
 #include <cstring>
 #include <limits>
+#include <string_view>
 
 //
 // String
@@ -221,6 +222,10 @@ public:
   // m_pStringData->pBuffer[i]; }
   operator const char*() const { return GetCharArray(); }
   operator char*() { return GetWriteableCharArray(); }
+  operator std::string_view() const
+  {
+    return IsEmpty() ? std::string_view() : std::string_view(GetCharArray(), GetLength());
+  }
 
   // Will use the string data provided.
   String& operator=(const String& copyString)
