@@ -823,6 +823,23 @@ void System::UpdateMemoryCards()
       }
       break;
 
+      case MemoryCardType::PerGameTitle:
+      {
+        if (m_running_game_title.empty())
+        {
+          m_host_interface->AddFormattedOSDMessage(5.0f,
+                                                   "Per-game memory card cannot be used for slot %u as the running "
+                                                   "game has no title. Using shared card instead.",
+                                                   i + 1u);
+          card = MemoryCard::Open(this, m_host_interface->GetSharedMemoryCardPath(i));
+        }
+        else
+        {
+          card = MemoryCard::Open(this, m_host_interface->GetGameMemoryCardPath(m_running_game_title.c_str(), i));
+        }
+      }
+      break;
+
       case MemoryCardType::Shared:
       {
         if (settings.memory_card_paths[i].empty())
