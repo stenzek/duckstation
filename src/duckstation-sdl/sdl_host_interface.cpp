@@ -1057,19 +1057,29 @@ void SDLHostInterface::DrawSettingsWindow()
             m_settings_copy.controller_types[i] = static_cast<ControllerType>(controller_type);
             settings_changed = true;
           }
-        }
 
-        ImGui::Text("Memory Card Path:");
-        ImGui::SameLine(indent);
+          ImGui::Text("Memory Card Type:");
+          ImGui::SameLine(indent);
 
-        std::string* path_ptr = &m_settings_copy.memory_card_paths[i];
-        std::snprintf(buf, sizeof(buf), "##memcard_%c_path", 'a' + i);
-        settings_changed |= DrawFileChooser(buf, path_ptr);
+          int memory_card_type = static_cast<int>(m_settings_copy.memory_card_types[i]);
+          if (ImGui::Combo(
+                "##memory_card_type", &memory_card_type,
+                [](void*, int index, const char** out_text) {
+                  *out_text = Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(index));
+                  return true;
+                },
+                nullptr, static_cast<int>(MemoryCardType::Count)))
+          {
+            m_settings_copy.memory_card_types[i] = static_cast<MemoryCardType>(memory_card_type);
+            settings_changed = true;
+          }
 
-        if (ImGui::Button("Eject Memory Card"))
-        {
-          path_ptr->clear();
-          settings_changed = true;
+          ImGui::Text("Shared Card Path:");
+          ImGui::SameLine(indent);
+
+          std::string* path_ptr = &m_settings_copy.memory_card_paths[i];
+          std::snprintf(buf, sizeof(buf), "##memcard_%c_path", 'a' + i);
+          settings_changed |= DrawFileChooser(buf, path_ptr);
         }
 
         ImGui::NewLine();
