@@ -514,24 +514,24 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b, u8 origin_texcoord_x,
                            u8 origin_texcoord_y)
 {
-  origin_x += m_drawing_offset.x;
-  origin_y += m_drawing_offset.y;
+  const s32 start_x = TruncateVertexPosition(m_drawing_offset.x + origin_x);
+  const s32 start_y = TruncateVertexPosition(m_drawing_offset.y + origin_y);
 
   {
-    const u32 clip_left = static_cast<u32>(std::clamp<s32>(origin_x, m_drawing_area.left, m_drawing_area.right));
+    const u32 clip_left = static_cast<u32>(std::clamp<s32>(start_x, m_drawing_area.left, m_drawing_area.right));
     const u32 clip_right =
-      static_cast<u32>(std::clamp<s32>(origin_x + static_cast<s32>(width), m_drawing_area.left, m_drawing_area.right)) +
+      static_cast<u32>(std::clamp<s32>(start_x + static_cast<s32>(width), m_drawing_area.left, m_drawing_area.right)) +
       1u;
-    const u32 clip_top = static_cast<u32>(std::clamp<s32>(origin_y, m_drawing_area.top, m_drawing_area.bottom));
-    const u32 clip_bottom = static_cast<u32>(std::clamp<s32>(origin_y + static_cast<s32>(height), m_drawing_area.top,
-                                                             m_drawing_area.bottom)) +
-                            1u;
+    const u32 clip_top = static_cast<u32>(std::clamp<s32>(start_y, m_drawing_area.top, m_drawing_area.bottom));
+    const u32 clip_bottom =
+      static_cast<u32>(std::clamp<s32>(start_y + static_cast<s32>(height), m_drawing_area.top, m_drawing_area.bottom)) +
+      1u;
     AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, texture_enable);
   }
 
   for (u32 offset_y = 0; offset_y < height; offset_y++)
   {
-    const s32 y = origin_y + static_cast<s32>(offset_y);
+    const s32 y = start_y + static_cast<s32>(offset_y);
     if (y < static_cast<s32>(m_drawing_area.top) || y > static_cast<s32>(m_drawing_area.bottom))
       continue;
 
@@ -539,7 +539,7 @@ void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8
 
     for (u32 offset_x = 0; offset_x < width; offset_x++)
     {
-      const s32 x = origin_x + static_cast<s32>(offset_x);
+      const s32 x = start_x + static_cast<s32>(offset_x);
       if (x < static_cast<s32>(m_drawing_area.left) || x > static_cast<s32>(m_drawing_area.right))
         continue;
 

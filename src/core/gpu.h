@@ -166,7 +166,7 @@ public:
   bool ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, u32* out_tick, u32* out_line) const;
 
 protected:
-  static TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
+  static constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
   {
     // convert to master clock, rounding up as we want to overshoot not undershoot
     return static_cast<TickCount>((static_cast<u32>(gpu_ticks) * 7u + 10u) / 11u);
@@ -254,7 +254,6 @@ protected:
     }
   };
 
-  // TODO: Use BitField to do sign extending instead
   union VertexPosition
   {
     u32 bits;
@@ -262,6 +261,9 @@ protected:
     BitField<u32, s32, 0, 12> x;
     BitField<u32, s32, 16, 12> y;
   };
+
+  // Sprites/rectangles should be clipped to 12 bits before drawing.
+  static constexpr s32 TruncateVertexPosition(s32 x) { return SignExtendN<11, s32>(x); }
 
   union VRAMPixel
   {

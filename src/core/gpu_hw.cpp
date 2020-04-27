@@ -270,8 +270,8 @@ void GPU_HW::LoadVertices()
     {
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{m_fifo.Pop()};
-      const s32 pos_x = m_drawing_offset.x + vp.x;
-      const s32 pos_y = m_drawing_offset.y + vp.y;
+      const s32 pos_x = TruncateVertexPosition(m_drawing_offset.x + vp.x);
+      const s32 pos_y = TruncateVertexPosition(m_drawing_offset.y + vp.y);
 
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(rc.texture_enable ? Truncate16(m_fifo.Pop()) : 0);
       u16 orig_tex_left = ZeroExtend16(texcoord_x);
