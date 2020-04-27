@@ -270,6 +270,7 @@ private:
 
     void KeyOn();
     void KeyOff();
+    void ForceOff();
 
     void DecodeBlock(const ADPCMBlock& block);
     s16 SampleBlock(s32 index) const;

@@ -439,6 +439,14 @@ void SPU::WriteRegister(u32 offset, u16 value)
         m_transfer_fifo.Clear();
       }
 
+      if (!new_value.enable && m_SPUCNT.enable)
+      {
+        // Mute all voices.
+        // Interestingly, hardware tests found this seems to happen immediately, not on the next 44100hz cycle.
+        for (u32 i = 0; i < NUM_VOICES; i++)
+          m_voices[i].ForceOff();
+      }
+
       m_SPUCNT.bits = new_value.bits;
       m_SPUSTAT.mode = m_SPUCNT.mode.GetValue();
 
@@ -1047,6 +1055,15 @@ void SPU::Voice::KeyOff()
   SetADSRPhase(ADSRPhase::Release);
 }
 
+void SPU::Voice::ForceOff()
+{
+  if (adsr_phase == ADSRPhase::Off)
+    return;
+
+  regs.adsr_volume = 0;
+  SetADSRPhase(ADSRPhase::Off);
+}
+
 SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
 {
   switch (phase)
@@ -1461,8 +1478,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       {
         Log_TracePrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
         m_endx_register |= (u32(1) << voice_index);
-        voice.regs.adsr_volume = 0;
-        voice.SetADSRPhase(ADSRPhase::Off);
+        voice.ForceOff();
       }
       else
       {
