@@ -334,6 +334,12 @@ protected:
   // Ticks for hblank/vblank.
   void Execute(TickCount ticks);
 
+  /// Returns false if the DAC is loading any data from VRAM.
+  ALWAYS_INLINE bool IsDisplayDisabled() const
+  {
+    return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
+  }
+
   /// Returns true if scanout should be interlaced.
   ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const { return (!m_force_progressive_scan) & m_GPUSTAT.In480iMode(); }
 

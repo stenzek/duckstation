@@ -144,7 +144,7 @@ void GPU_SW::UpdateDisplay()
 
   if (!m_system->GetSettings().debugging.show_vram)
   {
-    if (m_GPUSTAT.display_disable)
+    if (IsDisplayDisabled())
     {
       m_host_display->ClearDisplayTexture();
       return;

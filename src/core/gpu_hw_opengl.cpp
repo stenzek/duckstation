@@ -544,7 +544,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
     const u32 scaled_display_height = display_height * m_resolution_scale;
     const bool interlaced = IsInterlacedDisplayEnabled();
 
-    if (m_GPUSTAT.display_disable)
+    if (IsDisplayDisabled())
     {
       m_host_display->ClearDisplayTexture();
     }

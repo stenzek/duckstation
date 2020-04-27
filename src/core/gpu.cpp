@@ -517,19 +517,21 @@ void GPU::UpdateCRTCDisplayParameters()
 
   if (horizontal_display_end <= cs.horizontal_active_end)
   {
-    cs.display_vram_width =
-      std::max<u16>((((horizontal_display_end - std::max(horizontal_display_start, cs.horizontal_active_start)) +
-                      (cs.dot_clock_divider - 1)) /
-                     cs.dot_clock_divider),
-                    1u);
+    cs.display_vram_width = std::max<u16>(
+      (((horizontal_display_end -
+         std::min(horizontal_display_end, std::max(horizontal_display_start, cs.horizontal_active_start))) +
+        (cs.dot_clock_divider - 1)) /
+       cs.dot_clock_divider),
+      1u);
   }
   else
   {
-    cs.display_vram_width =
-      std::max<u16>((((cs.horizontal_active_end - std::max(horizontal_display_start, cs.horizontal_active_start)) +
-                      (cs.dot_clock_divider - 1)) /
-                     cs.dot_clock_divider),
-                    1u);
+    cs.display_vram_width = std::max<u16>(
+      (((cs.horizontal_active_end -
+         std::min(cs.horizontal_active_end, std::max(horizontal_display_start, cs.horizontal_active_start))) +
+        (cs.dot_clock_divider - 1)) /
+       cs.dot_clock_divider),
+      1u);
   }
 
   if (vertical_display_start >= cs.vertical_active_start)
@@ -545,13 +547,16 @@ void GPU::UpdateCRTCDisplayParameters()
 
   if (vertical_display_end <= cs.vertical_active_end)
   {
-    cs.display_vram_height = (vertical_display_end - std::max(vertical_display_start, cs.vertical_active_start))
+    cs.display_vram_height = (vertical_display_end - std::min(vertical_display_end, std::max(vertical_display_start,
+                                                                                             cs.vertical_active_start)))
                              << height_shift;
   }
   else
   {
-    cs.display_vram_height = (cs.vertical_active_end - std::max(vertical_display_start, cs.vertical_active_start))
-                             << height_shift;
+    cs.display_vram_height =
+      (cs.vertical_active_end -
+       std::min(vertical_display_end, std::max(vertical_display_start, cs.vertical_active_start)))
+      << height_shift;
   }
 }
 
