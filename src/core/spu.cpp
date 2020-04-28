@@ -1269,7 +1269,7 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
   const u8 filter_index = block.GetFilter();
   const s32 filter_pos = filter_table_pos[filter_index];
   const s32 filter_neg = filter_table_neg[filter_index];
-  s32 last_samples[2] = {adpcm_last_samples[0], adpcm_last_samples[1]};
+  s16 last_samples[2] = {adpcm_last_samples[0], adpcm_last_samples[1]};
 
   // samples
   for (u32 i = 0; i < NUM_SAMPLES_PER_ADPCM_BLOCK; i++)
@@ -1279,9 +1279,8 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
     sample += (last_samples[0] * filter_pos) >> 6;
     sample += (last_samples[1] * filter_neg) >> 6;
 
-    current_block_samples[i] = Clamp16(sample);
     last_samples[1] = last_samples[0];
-    last_samples[0] = sample;
+    current_block_samples[i] = last_samples[0] = Clamp16(sample);
   }
 
   std::copy(last_samples, last_samples + countof(last_samples), adpcm_last_samples.begin());
@@ -1299,9 +1298,9 @@ s16 SPU::Voice::SampleBlock(s32 index) const
   return current_block_samples[index];
 }
 
-s16 SPU::Voice::Interpolate() const
+s32 SPU::Voice::Interpolate() const
 {
-  static constexpr std::array<s32, 0x200> gauss = {{
+  static constexpr std::array<s16, 0x200> gauss = {{
     -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, //
     -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, //
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001, //
@@ -1371,11 +1370,11 @@ s16 SPU::Voice::Interpolate() const
   const u8 i = counter.interpolation_index;
   const s32 s = static_cast<s32>(ZeroExtend32(counter.sample_index.GetValue()));
 
-  s16 out = s16(gauss[0x0FF - i] * s32(SampleBlock(s - 3)) >> 15);
-  out += s16(gauss[0x1FF - i] * s32(SampleBlock(s - 2)) >> 15);
-  out += s16(gauss[0x100 + i] * s32(SampleBlock(s - 1)) >> 15);
-  out += s16(gauss[0x000 + i] * s32(SampleBlock(s - 0)) >> 15);
-  return out;
+  s32 out = s32(gauss[0x0FF - i]) * s32(SampleBlock(s - 3));
+  out += s32(gauss[0x1FF - i]) * s32(SampleBlock(s - 2));
+  out += s32(gauss[0x100 + i]) * s32(SampleBlock(s - 1));
+  out += s32(gauss[0x000 + i]) * s32(SampleBlock(s - 0));
+  return out >> 15;
 }
 
 void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
@@ -1430,7 +1429,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   if (voice.regs.adsr_volume != 0)
   {
     // interpolate/sample and apply ADSR volume
-    s16 sample;
+    s32 sample;
     if (IsVoiceNoiseEnabled(voice_index))
       sample = GetVoiceNoiseLevel();
     else
@@ -1456,7 +1455,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     const u16 old_step = step;
     step = Truncate16(static_cast<u32>((SignExtend32(step) * factor) >> 15));
   }
-  step = std::min<u16>(step, 0x4000);
+  step = std::min<u16>(step, 0x3FFF);
 
   // Shouldn't ever overflow because if sample_index == 27, step == 0x4000 there won't be a carry out from the
   // interpolation index. If there is a carry out, bit 12 will never be 1, so it'll never add more than 4 to

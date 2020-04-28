@@ -254,7 +254,7 @@ private:
     ADPCMFlags current_block_flags;
     std::array<s16, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<s16, 3> previous_block_last_samples;
-    std::array<s32, 2> adpcm_last_samples;
+    std::array<s16, 2> adpcm_last_samples;
     s32 last_volume;
 
     VolumeSweep left_volume;
@@ -274,7 +274,7 @@ private:
 
     void DecodeBlock(const ADPCMBlock& block);
     s16 SampleBlock(s32 index) const;
-    s16 Interpolate() const;
+    s32 Interpolate() const;
 
     // Switches to the specified phase, filling in target.
     void SetADSRPhase(ADSRPhase phase);

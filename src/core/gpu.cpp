@@ -814,7 +814,7 @@ void GPU::WriteGP1(u32 value)
 
     case 0x04: // DMA Direction
     {
-      Log_DebugPrintf("DMA direction <- 0x%02X", static_cast<u32>(m_GPUSTAT.dma_direction.GetValue()));
+      Log_DebugPrintf("DMA direction <- 0x%02X", static_cast<u32>(param));
       if (m_GPUSTAT.dma_direction != static_cast<DMADirection>(param))
       {
         m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
