@@ -697,7 +697,10 @@ void SPU::Execute(TickCount ticks)
         key_off_register >>= 1;
 
         if (key_on_register & 1u)
+        {
+          m_endx_register &= ~(1u << voice);
           m_voices[voice].KeyOn();
+        }
         key_on_register >>= 1;
       }
 
