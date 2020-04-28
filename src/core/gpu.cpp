@@ -568,20 +568,26 @@ TickCount GPU::GetPendingGPUTicks() const
 
 void GPU::UpdateSliceTicks()
 {
-  // figure out how many GPU ticks until the next vblank
+  // figure out how many GPU ticks until the next vblank or event
   const TickCount lines_until_vblank =
     (m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end ?
        (m_crtc_state.vertical_total - m_crtc_state.current_scanline + m_crtc_state.vertical_display_end) :
        (m_crtc_state.vertical_display_end - m_crtc_state.current_scanline));
-  const TickCount ticks_until_vblank =
-    lines_until_vblank * m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline;
+  const TickCount lines_until_event = m_timers->IsExternalIRQEnabled(HBLANK_TIMER_INDEX) ?
+                                        std::min(m_timers->GetTicksUntilIRQ(HBLANK_TIMER_INDEX), lines_until_vblank) :
+                                        lines_until_vblank;
+  const TickCount ticks_until_event =
+    lines_until_event * m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline;
+
+#if 0
   const TickCount ticks_until_hblank =
     (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end) ?
-      (m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline + m_crtc_state.horizontal_display_end) :
-      (m_crtc_state.horizontal_display_end - m_crtc_state.current_tick_in_scanline);
+    (m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline + m_crtc_state.horizontal_display_end) :
+    (m_crtc_state.horizontal_display_end - m_crtc_state.current_tick_in_scanline);
+#endif
 
   m_tick_event->Schedule(
-    GPUTicksToSystemTicks((m_command_ticks > 0) ? std::min(m_command_ticks, ticks_until_vblank) : ticks_until_vblank));
+    GPUTicksToSystemTicks((m_command_ticks > 0) ? std::min(m_command_ticks, ticks_until_event) : ticks_until_event));
 }
 
 bool GPU::IsRasterScanlinePending() const

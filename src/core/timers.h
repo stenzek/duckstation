@@ -27,6 +27,16 @@ public:
 
   // dot clock/hblank/sysclk div 8
   bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
+
+  // queries for GPU
+  bool IsExternalIRQEnabled(u32 timer) const
+  {
+    const CounterState& cs = m_states[timer];
+    return (cs.external_counting_enabled && (cs.mode.bits & ((1u << 4) | (1u << 5))) != 0);
+  }
+
+  TickCount GetTicksUntilIRQ(u32 timer) const;
+
   void AddTicks(u32 timer, TickCount ticks);
 
   u32 ReadRegister(u32 offset);
@@ -89,5 +99,5 @@ private:
   std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};
-  u32 m_sysclk_div_8_carry = 0;   // partial ticks for timer 3 with sysclk/8
+  u32 m_sysclk_div_8_carry = 0; // partial ticks for timer 3 with sysclk/8
 };

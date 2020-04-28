@@ -89,6 +89,21 @@ void Timers::SetGate(u32 timer, bool state)
   }
 }
 
+TickCount Timers::GetTicksUntilIRQ(u32 timer) const
+{
+  const CounterState& cs = m_states[timer];
+  if (!cs.counting_enabled)
+    return std::numeric_limits<TickCount>::max();
+
+  TickCount ticks_until_irq = std::numeric_limits<TickCount>::max();
+  if (cs.mode.irq_at_target)
+    ticks_until_irq = static_cast<TickCount>(cs.target - cs.counter);
+  if (cs.mode.irq_on_overflow)
+    ticks_until_irq = std::min(ticks_until_irq, static_cast<TickCount>(0xFFFFu - cs.counter));
+
+  return ticks_until_irq;
+}
+
 void Timers::AddTicks(u32 timer, TickCount count)
 {
   CounterState& cs = m_states[timer];
