@@ -154,9 +154,14 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
 void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 {
   m_is_gles = (host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES);
+  Log_InfoPrintf("Context Type: %s", m_is_gles ? "OpenGL" : "OpenGL ES");
 
-  Log_InfoPrintf("GL_VERSION: %s", glGetString(GL_VERSION));
-  Log_InfoPrintf("GL_RENDERER: %s", glGetString(GL_VERSION));
+  const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+  const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  Log_InfoPrintf("GL_VENDOR: %s", gl_vendor);
+  Log_InfoPrintf("GL_RENDERER: %s", gl_renderer);
+  Log_InfoPrintf("GL_VERSION: %s", gl_version);
 
   GLint max_texture_size = VRAM_WIDTH;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
@@ -185,6 +190,15 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   int max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
   m_supports_dual_source_blend = (max_dual_source_draw_buffers > 0);
+
+  // Dual-source blend currently has issues on Mesa for at least Gen7/Gen7.5. This needs more investigation, but just
+  // disable it for now.
+  if (std::strstr(gl_renderer, "Mesa DRI Intel(R) Haswell") || std::strstr(gl_renderer, "Mesa DRI Intel(R) Ivybridge"))
+  {
+    Log_WarningPrintf("Detected Mesa DRI broken dual-source blend, disabling.");
+    m_supports_dual_source_blend = false;
+  }
+
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
