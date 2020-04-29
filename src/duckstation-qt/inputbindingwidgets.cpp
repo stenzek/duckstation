@@ -185,7 +185,6 @@ void InputButtonBindingWidget::hookControllerInput()
   if (!controller_interface)
     return;
 
-  m_host_interface->enableBackgroundControllerPolling();
   controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
     if (ei.type == ControllerInterface::Hook::Type::Axis)
     {
@@ -216,7 +215,6 @@ void InputButtonBindingWidget::unhookControllerInput()
     return;
 
   controller_interface->ClearHook();
-  m_host_interface->disableBackgroundControllerPolling();
 }
 
 void InputButtonBindingWidget::bindToControllerAxis(int controller_index, int axis_index, bool positive)
@@ -263,7 +261,6 @@ void InputAxisBindingWidget::hookControllerInput()
   if (!controller_interface)
     return;
 
-  m_host_interface->enableBackgroundControllerPolling();
   controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
     if (ei.type == ControllerInterface::Hook::Type::Axis)
     {
@@ -287,7 +284,6 @@ void InputAxisBindingWidget::unhookControllerInput()
     return;
 
   controller_interface->ClearHook();
-  m_host_interface->disableBackgroundControllerPolling();
 }
 
 void InputAxisBindingWidget::bindToControllerAxis(int controller_index, int axis_index)
@@ -327,7 +323,6 @@ void InputRumbleBindingWidget::hookControllerInput()
   if (!controller_interface)
     return;
 
-  m_host_interface->enableBackgroundControllerPolling();
   controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
     if (ei.type == ControllerInterface::Hook::Type::Button && ei.value > 0.0f)
     {
@@ -346,7 +341,6 @@ void InputRumbleBindingWidget::unhookControllerInput()
     return;
 
   controller_interface->ClearHook();
-  m_host_interface->disableBackgroundControllerPolling();
 }
 
 void InputRumbleBindingWidget::bindToControllerRumble(int controller_index)

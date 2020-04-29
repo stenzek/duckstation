@@ -126,13 +126,6 @@ public Q_SLOTS:
   void redrawDisplayWindow();
   void toggleFullscreen();
 
-  /// Enables controller polling even without a system active. Must be matched by a call to
-  /// disableBackgroundControllerPolling.
-  void enableBackgroundControllerPolling();
-
-  /// Disables background controller polling.
-  void disableBackgroundControllerPolling();
-
 private Q_SLOTS:
   void doStopThread();
   void onHostDisplayWindowResized(int width, int height);
@@ -190,6 +183,8 @@ private:
 
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
+  void startBackgroundControllerPollTimer();
+  void stopBackgroundControllerPollTimer();
 
   void createThread();
   void stopThread();
@@ -213,7 +208,6 @@ private:
   std::atomic_bool m_shutdown_flag{false};
 
   QTimer* m_background_controller_polling_timer = nullptr;
-  u32 m_background_controller_polling_enable_count = 0;
 
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;

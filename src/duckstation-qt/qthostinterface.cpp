@@ -65,12 +65,15 @@ bool QtHostInterface::initializeOnThread()
     m_controller_interface->PollEvents();
 
   // bind buttons/axises
+  createBackgroundControllerPollTimer();
+  startBackgroundControllerPollTimer();
   updateInputMap();
   return true;
 }
 
 void QtHostInterface::shutdownOnThread()
 {
+  destroyBackgroundControllerPollTimer();
   CommonHostInterface::Shutdown();
 }
 
@@ -396,7 +399,7 @@ void QtHostInterface::OnSystemCreated()
   CommonHostInterface::OnSystemCreated();
 
   wakeThread();
-  destroyBackgroundControllerPollTimer();
+  stopBackgroundControllerPollTimer();
 
   emit emulationStarted();
 }
@@ -407,18 +410,15 @@ void QtHostInterface::OnSystemPaused(bool paused)
 
   emit emulationPaused(paused);
 
-  if (m_background_controller_polling_enable_count > 0)
-  {
-    if (paused)
-      createBackgroundControllerPollTimer();
-    else
-      destroyBackgroundControllerPollTimer();
-  }
-
   if (!paused)
   {
     wakeThread();
+    stopBackgroundControllerPollTimer();
     emit focusDisplayWidgetRequested();
+  }
+  else
+  {
+    startBackgroundControllerPollTimer();
   }
 }
 
@@ -426,9 +426,7 @@ void QtHostInterface::OnSystemDestroyed()
 {
   HostInterface::OnSystemDestroyed();
 
-  if (m_background_controller_polling_enable_count > 0)
-    createBackgroundControllerPollTimer();
-
+  startBackgroundControllerPollTimer();
   emit emulationStopped();
 }
 
@@ -762,42 +760,6 @@ void QtHostInterface::saveScreenshot()
   SaveScreenshot(nullptr, true, true);
 }
 
-void QtHostInterface::enableBackgroundControllerPolling()
-{
-  if (!isOnWorkerThread())
-  {
-    QMetaObject::invokeMethod(this, "enableBackgroundControllerPolling", Qt::BlockingQueuedConnection);
-    return;
-  }
-
-  if (!m_controller_interface || m_background_controller_polling_enable_count++ > 0)
-    return;
-
-  if (!m_system || m_paused)
-  {
-    createBackgroundControllerPollTimer();
-
-    // drain the event queue so we don't get events late
-    m_controller_interface->PollEvents();
-  }
-}
-
-void QtHostInterface::disableBackgroundControllerPolling()
-{
-  if (!isOnWorkerThread())
-  {
-    QMetaObject::invokeMethod(this, "disableBackgroundControllerPolling");
-    return;
-  }
-
-  Assert(m_background_controller_polling_enable_count > 0);
-  if (!m_controller_interface || --m_background_controller_polling_enable_count > 0)
-    return;
-
-  if (!m_system || m_paused)
-    destroyBackgroundControllerPollTimer();
-}
-
 void QtHostInterface::doBackgroundControllerPoll()
 {
   m_controller_interface->PollEvents();
@@ -810,13 +772,28 @@ void QtHostInterface::createBackgroundControllerPollTimer()
   m_background_controller_polling_timer->setSingleShot(false);
   m_background_controller_polling_timer->setTimerType(Qt::VeryCoarseTimer);
   connect(m_background_controller_polling_timer, &QTimer::timeout, this, &QtHostInterface::doBackgroundControllerPoll);
-  m_background_controller_polling_timer->start(BACKGROUND_CONTROLLER_POLLING_INTERVAL);
 }
 
 void QtHostInterface::destroyBackgroundControllerPollTimer()
 {
   delete m_background_controller_polling_timer;
   m_background_controller_polling_timer = nullptr;
+}
+
+void QtHostInterface::startBackgroundControllerPollTimer()
+{
+  if (m_background_controller_polling_timer->isActive() || !m_controller_interface)
+    return;
+
+  m_background_controller_polling_timer->start(BACKGROUND_CONTROLLER_POLLING_INTERVAL);
+}
+
+void QtHostInterface::stopBackgroundControllerPollTimer()
+{
+  if (!m_background_controller_polling_timer->isActive() || !m_controller_interface)
+    return;
+
+  m_background_controller_polling_timer->stop();
 }
 
 void QtHostInterface::createThread()
