@@ -959,7 +959,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
   si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(ControllerType::None));
 
-  si.SetStringValue("MemoryCards", "Card1Type", "PerGame");
+  si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::PerGameTitle));
   si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", "None");
   si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
