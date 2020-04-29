@@ -26,6 +26,8 @@ class System;
 
 class Bus
 {
+  friend DMA;
+
 public:
   Bus();
   ~Bus();
@@ -242,6 +244,31 @@ private:
   void DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
   void DoInvalidateCodeCache(u32 page_index);
+
+  /// Direct access to RAM - used by DMA.
+  ALWAYS_INLINE u8* GetRAM() { return m_ram.data(); }
+
+  /// Returns the number of cycles stolen by DMA RAM access.
+  ALWAYS_INLINE static TickCount GetDMARAMTickCount(u32 word_count)
+  {
+    // DMA is using DRAM Hyper Page mode, allowing it to access DRAM rows at 1 clock cycle per word (effectively around
+    // 17 clks per 16 words, due to required row address loading, probably plus some further minimal overload due to
+    // refresh cycles). This is making DMA much faster than CPU memory accesses (CPU DRAM access takes 1 opcode cycle
+    // plus 6 waitstates, ie. 7 cycles in total).
+    return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
+  }
+
+  /// Invalidates any code pages which overlap the specified range.
+  ALWAYS_INLINE void InvalidateCodePages(PhysicalMemoryAddress address, u32 word_count)
+  {
+    const u32 start_page = address / CPU_CODE_CACHE_PAGE_SIZE;
+    const u32 end_page = (address + word_count * sizeof(u32)) / CPU_CODE_CACHE_PAGE_SIZE;
+    for (u32 page = start_page; page <= end_page; page++)
+    {
+      if (m_ram_code_bits[page])
+        DoInvalidateCodeCache(page);
+    }
+  }
 
   CPU::Core* m_cpu = nullptr;
   CPU::CodeCache* m_cpu_code_cache = nullptr;

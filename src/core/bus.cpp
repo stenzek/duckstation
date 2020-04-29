@@ -138,12 +138,8 @@ TickCount Bus::ReadWords(PhysicalMemoryAddress address, u32* words, u32 word_cou
     return total_ticks;
   }
 
-  // DMA is using DRAM Hyper Page mode, allowing it to access DRAM rows at 1 clock cycle per word (effectively around 17
-  // clks per 16 words, due to required row address loading, probably plus some further minimal overload due to refresh
-  // cycles). This is making DMA much faster than CPU memory accesses (CPU DRAM access takes 1 opcode cycle plus 6
-  // waitstates, ie. 7 cycles in total).
   std::memcpy(words, &m_ram[address], sizeof(u32) * word_count);
-  return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
+  return GetDMARAMTickCount(word_count);
 }
 
 TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 word_count)
@@ -166,16 +162,9 @@ TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 w
     return total_ticks;
   }
 
-  const u32 start_page = address / CPU_CODE_CACHE_PAGE_SIZE;
-  const u32 end_page = (address + word_count * sizeof(u32)) / CPU_CODE_CACHE_PAGE_SIZE;
-  for (u32 page = start_page; page <= end_page; page++)
-  {
-    if (m_ram_code_bits[page])
-      DoInvalidateCodeCache(page);
-  }
-
   std::memcpy(&m_ram[address], words, sizeof(u32) * word_count);
-  return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
+  InvalidateCodePages(address, word_count);
+  return GetDMARAMTickCount(word_count);
 }
 
 void Bus::SetExpansionROM(std::vector<u8> data)
