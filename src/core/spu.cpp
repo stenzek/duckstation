@@ -198,6 +198,12 @@ u16 SPU::ReadRegister(u32 offset)
     case 0x1F801D9A - SPU_BASE:
       return Truncate16(m_reverb_on_register >> 16);
 
+    case 0x1F801D9C - SPU_BASE:
+      return Truncate16(m_endx_register);
+
+    case 0x1F801D9E - SPU_BASE:
+      return Truncate16(m_endx_register >> 16);
+
     case 0x1F801DA2 - SPU_BASE:
       return m_reverb_registers.mBASE;
 
@@ -384,7 +390,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801D9A - SPU_BASE:
     {
-      Log_DebugPrintf("SPU reverb off register <- 0x%04X", ZeroExtend32(value));
+      Log_DebugPrintf("SPU reverb on register <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
       m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
