@@ -388,6 +388,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
 
+  ss << "CONSTANT float EPSILON = 0.00001;\n";
+
   if (textured)
   {
     DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
@@ -409,9 +411,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   float pos_x = ((float(a_pos.x) + vertex_offset) / 512.0) - 1.0;
   float pos_y = ((float(a_pos.y) + vertex_offset) / -256.0) + 1.0;
 
-  // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin.
+  // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
+  // Intel and NVIDIA drivers. AMD is fine...
 #if API_OPENGL || API_OPENGL_ES
-  pos_y += (1.0 / 512.0);
+  pos_y += EPSILON;
 #endif
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
@@ -419,13 +422,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   #if TEXTURED
     // Fudge the texture coordinates by half a pixel in screen-space.
     // This fixes the rounding/interpolation error on NVIDIA GPUs with shared edges between triangles.
-#if API_OPENGL || API_OPENGL_ES
-    v_tex0 = float2(float(a_texcoord & 0xFFFFu) + (RCP_VRAM_SIZE.x * 0.5),
-                    float(a_texcoord >> 16) - (RCP_VRAM_SIZE.y * 0.5));
-#else
-    v_tex0 = float2(float(a_texcoord & 0xFFFFu) + (RCP_VRAM_SIZE.x * 0.5),
-                    float(a_texcoord >> 16) + (RCP_VRAM_SIZE.y * 0.5));
-#endif
+    v_tex0 = float2(float(a_texcoord & 0xFFFFu) + EPSILON, float(a_texcoord >> 16) + EPSILON);
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15u) * 64u * RESOLUTION_SCALE;
