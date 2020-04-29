@@ -766,8 +766,10 @@ bool System::SetExpansionROM(const char* filename)
 void System::StallCPU(TickCount ticks)
 {
   m_cpu->AddPendingTicks(ticks);
+#if 0
   if (m_cpu->GetPendingTicks() >= m_cpu->GetDowncount() && !m_running_events)
     RunEvents();
+#endif
 }
 
 Controller* System::GetController(u32 slot) const

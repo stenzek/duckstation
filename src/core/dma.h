@@ -66,15 +66,19 @@ private:
 
   // is everything enabled for a channel to operate?
   bool CanTransferChannel(Channel channel) const;
+  bool IsTransferHalted() const;
   void UpdateIRQ();
 
-  void TransferChannel(Channel channel);
+  // returns false if the DMA should now be halted
+  bool TransferChannel(Channel channel);
+  void HaltTransfer(TickCount duration);
+  void UnhaltTransfer(TickCount ticks);
 
   // from device -> memory
-  void TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
+  TickCount TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
 
   // from memory -> device
-  void TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
+  TickCount TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
 
   System* m_system = nullptr;
   Bus* m_bus = nullptr;
@@ -84,7 +88,13 @@ private:
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
 
+  // configuration
+  TickCount m_max_slice_ticks = 1000;
+  TickCount m_halt_ticks = 100;
+
   std::vector<u32> m_transfer_buffer;
+  std::unique_ptr<TimingEvent> m_unhalt_event;
+  TickCount m_halt_ticks_remaining = 0;
 
   struct ChannelState
   {

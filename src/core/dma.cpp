@@ -26,12 +26,12 @@ void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
   m_spu = spu;
   m_mdec = mdec;
   m_transfer_buffer.resize(32);
+  m_unhalt_event = system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
+                                             std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
 }
 
 void DMA::Reset()
 {
-  m_DPCR.bits = 0x07654321;
-  m_DICR.bits = 0;
   for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
     ChannelState& cs = m_state[i];
@@ -40,10 +40,18 @@ void DMA::Reset()
     cs.channel_control.bits = 0;
     cs.request = false;
   }
+
+  m_DPCR.bits = 0x07654321;
+  m_DICR.bits = 0;
+
+  m_halt_ticks_remaining = 0;
+  m_unhalt_event->Deactivate();
 }
 
 bool DMA::DoState(StateWrapper& sw)
 {
+  sw.Do(&m_halt_ticks_remaining);
+
   for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
     ChannelState& cs = m_state[i];
@@ -55,6 +63,14 @@ bool DMA::DoState(StateWrapper& sw)
 
   sw.Do(&m_DPCR.bits);
   sw.Do(&m_DICR.bits);
+
+  if (sw.IsReading())
+  {
+    if (m_halt_ticks_remaining > 0)
+      m_unhalt_event->SetIntervalAndSchedule(m_halt_ticks_remaining);
+    else
+      m_unhalt_event->Deactivate();
+  }
 
   return !sw.HasError();
 }
@@ -121,8 +137,6 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DMA channel %u block control <- 0x%08X", channel_index, value);
         state.block_control.bits = value;
-        if (CanTransferChannel(static_cast<Channel>(channel_index)))
-          TransferChannel(static_cast<Channel>(channel_index));
         return;
       }
 
@@ -136,7 +150,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         if (static_cast<Channel>(channel_index) == Channel::OTC)
           SetRequest(static_cast<Channel>(channel_index), state.channel_control.start_trigger);
 
-        if (CanTransferChannel(static_cast<Channel>(channel_index)))
+        if (!IsTransferHalted() && CanTransferChannel(static_cast<Channel>(channel_index)))
           TransferChannel(static_cast<Channel>(channel_index));
         return;
       }
@@ -153,10 +167,16 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DPCR <- 0x%08X", value);
         m_DPCR.bits = value;
-        for (u32 i = 0; i < NUM_CHANNELS; i++)
+        if (!IsTransferHalted())
         {
-          if (CanTransferChannel(static_cast<Channel>(i)))
-            TransferChannel(static_cast<Channel>(i));
+          for (u32 i = 0; i < NUM_CHANNELS; i++)
+          {
+            if (CanTransferChannel(static_cast<Channel>(i)))
+            {
+              if (!TransferChannel(static_cast<Channel>(i)))
+                break;
+            }
+          }
         }
         return;
       }
@@ -185,7 +205,7 @@ void DMA::SetRequest(Channel channel, bool request)
     return;
 
   cs.request = request;
-  if (CanTransferChannel(channel))
+  if (!IsTransferHalted() && CanTransferChannel(channel))
     TransferChannel(channel);
 }
 
@@ -201,6 +221,11 @@ bool DMA::CanTransferChannel(Channel channel) const
   return cs.request;
 }
 
+bool DMA::IsTransferHalted() const
+{
+  return m_unhalt_event->IsActive();
+}
+
 void DMA::UpdateIRQ()
 {
   m_DICR.UpdateMasterFlag();
@@ -211,7 +236,7 @@ void DMA::UpdateIRQ()
   }
 }
 
-void DMA::TransferChannel(Channel channel)
+bool DMA::TransferChannel(Channel channel)
 {
   ChannelState& cs = m_state[static_cast<u32>(channel)];
 
@@ -229,15 +254,20 @@ void DMA::TransferChannel(Channel channel)
       const u32 word_count = cs.block_control.manual.GetWordCount();
       Log_DebugPrintf("DMA%u: Copying %u words %s 0x%08X", static_cast<u32>(channel), word_count,
                       copy_to_device ? "from" : "to", current_address & ADDRESS_MASK);
+
+      TickCount used_ticks;
       if (copy_to_device)
-        TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, word_count);
+        used_ticks = TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, word_count);
       else
-        TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, word_count);
+        used_ticks = TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, word_count);
+
+      m_system->StallCPU(used_ticks);
     }
     break;
 
     case SyncMode::LinkedList:
     {
+      TickCount used_ticks = 0;
       if (!copy_to_device)
       {
         Panic("Linked list not implemented for DMA reads");
@@ -248,17 +278,21 @@ void DMA::TransferChannel(Channel channel)
                         current_address & ADDRESS_MASK);
 
         u8* ram_pointer = m_bus->GetRAM();
-        while (cs.request)
+        while (cs.request && used_ticks < m_max_slice_ticks)
         {
           u32 header;
           std::memcpy(&header, &ram_pointer[current_address & ADDRESS_MASK], sizeof(header));
+          used_ticks++;
 
           const u32 word_count = header >> 24;
           const u32 next_address = header & UINT32_C(0x00FFFFFF);
           Log_TracePrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X",
                           current_address & ADDRESS_MASK, word_count * UINT32_C(4), word_count, next_address);
           if (word_count > 0)
-            TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
+          {
+            used_ticks +=
+              TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
+          }
 
           current_address = next_address;
           if (current_address & UINT32_C(0x800000))
@@ -267,11 +301,20 @@ void DMA::TransferChannel(Channel channel)
       }
 
       cs.base_address = current_address;
+      m_system->StallCPU(used_ticks);
+
+      if (used_ticks >= m_max_slice_ticks)
+      {
+        // stall the transfer for a bit if we ran for too long
+        //Log_WarningPrintf("breaking dma chain at 0x%08X", current_address);
+        HaltTransfer(m_halt_ticks);
+        return false;
+      }
 
       if ((current_address & UINT32_C(0x800000)) == 0)
       {
         // linked list not yet complete
-        return;
+        return true;
       }
     }
     break;
@@ -285,13 +328,14 @@ void DMA::TransferChannel(Channel channel)
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
+      TickCount used_ticks = 0;
 
       if (copy_to_device)
       {
         do
         {
           blocks_remaining--;
-          TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, block_size);
+          used_ticks += TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, block_size);
           current_address = (current_address + (increment * block_size));
         } while (cs.request && blocks_remaining > 0);
       }
@@ -300,17 +344,18 @@ void DMA::TransferChannel(Channel channel)
         do
         {
           blocks_remaining--;
-          TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, block_size);
+          used_ticks += TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, block_size);
           current_address = (current_address + (increment * block_size));
         } while (cs.request && blocks_remaining > 0);
       }
 
       cs.base_address = current_address & BASE_ADDRESS_MASK;
       cs.block_control.request.block_count = blocks_remaining;
+      m_system->StallCPU(used_ticks);
 
       // finish transfer later if the request was cleared
       if (blocks_remaining > 0)
-        return;
+        return true;
     }
     break;
 
@@ -327,9 +372,41 @@ void DMA::TransferChannel(Channel channel)
     m_DICR.SetIRQFlag(channel);
     UpdateIRQ();
   }
+
+  return true;
 }
 
-void DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count)
+void DMA::HaltTransfer(TickCount duration)
+{
+  m_halt_ticks_remaining += duration;
+  Log_DebugPrintf("Halting DMA for %d ticks", m_halt_ticks_remaining);
+
+  DebugAssert(!m_unhalt_event->IsActive());
+  m_unhalt_event->SetIntervalAndSchedule(m_halt_ticks_remaining);
+}
+
+void DMA::UnhaltTransfer(TickCount ticks)
+{
+  Log_DebugPrintf("Resuming DMA after %d ticks, %d ticks late", ticks, -(m_halt_ticks_remaining - ticks));
+  m_halt_ticks_remaining -= ticks;
+  m_unhalt_event->Deactivate();
+
+  // TODO: Use channel priority. But doing it in ascending order is probably good enough.
+  // Main thing is that OTC happens after GPU, because otherwise it'll wipe out the LL.
+  for (u32 i = 0; i < NUM_CHANNELS; i++)
+  {
+    if (CanTransferChannel(static_cast<Channel>(i)))
+    {
+      if (!TransferChannel(static_cast<Channel>(i)))
+        return;
+    }
+  }
+
+  // We didn't run too long, so reset timer.
+  m_halt_ticks_remaining = 0;
+}
+
+TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count)
 {
   const u32* src_pointer = reinterpret_cast<u32*>(m_bus->GetRAM() + address);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & ADDRESS_MASK) <= address)
@@ -362,9 +439,11 @@ void DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u3
       Panic("Unhandled DMA channel for device write");
       break;
   }
+
+  return m_bus->GetDMARAMTickCount(word_count);
 }
 
-void DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count)
+TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count)
 {
   if (channel == Channel::OTC)
   {
@@ -381,7 +460,7 @@ void DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u3
     const u32 terminator = UINT32_C(0xFFFFFFF);
     std::memcpy(&ram_pointer[address], &terminator, sizeof(terminator));
     m_bus->InvalidateCodePages(address, word_count);
-    return;
+    return m_bus->GetDMARAMTickCount(word_count);
   }
 
   u32* dest_pointer = reinterpret_cast<u32*>(&m_bus->m_ram[address]);
@@ -429,4 +508,5 @@ void DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u3
   }
 
   m_bus->InvalidateCodePages(address, word_count);
+  return m_bus->GetDMARAMTickCount(word_count);
 }

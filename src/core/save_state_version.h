@@ -2,7 +2,7 @@
 #include "types.h"
 
 static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-static constexpr u32 SAVE_STATE_VERSION = 28;
+static constexpr u32 SAVE_STATE_VERSION = 29;
 
 #pragma pack(push, 4)
 struct SAVE_STATE_HEADER
