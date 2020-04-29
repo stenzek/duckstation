@@ -56,6 +56,8 @@ add_library(core
     namco_guncon.h
     pad.cpp
     pad.h
+    playstation_mouse.cpp
+    playstation_mouse.h
     psf_loader.cpp
     psf_loader.h
     save_state_version.h

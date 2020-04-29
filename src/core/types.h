@@ -88,6 +88,7 @@ enum class ControllerType
   DigitalController,
   AnalogController,
   NamcoGunCon,
+  PlayStationMouse,
   Count
 };
 

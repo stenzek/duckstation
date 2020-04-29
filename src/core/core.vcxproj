@@ -78,6 +78,7 @@
     <ClCompile Include="namco_guncon.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
+    <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="sio.cpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="namco_guncon.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
+    <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="psf_loader.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="settings.h" />
