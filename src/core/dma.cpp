@@ -25,6 +25,10 @@ void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
   m_cdrom = cdrom;
   m_spu = spu;
   m_mdec = mdec;
+
+  m_max_slice_ticks = system->GetSettings().dma_max_slice_ticks;
+  m_halt_ticks = system->GetSettings().dma_halt_ticks;
+
   m_transfer_buffer.resize(32);
   m_unhalt_event = system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
                                              std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
@@ -306,7 +310,7 @@ bool DMA::TransferChannel(Channel channel)
       if (used_ticks >= m_max_slice_ticks)
       {
         // stall the transfer for a bit if we ran for too long
-        //Log_WarningPrintf("breaking dma chain at 0x%08X", current_address);
+        // Log_WarningPrintf("breaking dma chain at 0x%08X", current_address);
         HaltTransfer(m_halt_ticks);
         return false;
       }

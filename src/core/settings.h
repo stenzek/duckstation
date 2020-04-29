@@ -47,8 +47,6 @@ struct Settings
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;
-  u32 gpu_fifo_size = 128;
-  u32 gpu_max_run_ahead = 128;
   bool gpu_use_debug_device = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = false;
@@ -70,6 +68,12 @@ struct Settings
   AudioBackend audio_backend = AudioBackend::Cubeb;
   bool audio_sync_enabled = true;
   bool audio_dump_on_boot = true;
+
+  // timing hacks section
+  TickCount dma_max_slice_ticks = 1000;
+  TickCount dma_halt_ticks = 100;
+  u32 gpu_fifo_size = 128;
+  TickCount gpu_max_run_ahead = 128;
 
   struct DebugSettings
   {

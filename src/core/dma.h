@@ -50,6 +50,8 @@ public:
 
   // changing interfaces
   void SetGPU(GPU* gpu) { m_gpu = gpu; }
+  void SetMaxSliceTicks(TickCount ticks) { m_max_slice_ticks = ticks; }
+  void SetHaltTicks(TickCount ticks) { m_halt_ticks = ticks; }
 
 private:
   static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);

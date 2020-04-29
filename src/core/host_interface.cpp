@@ -983,7 +983,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
   const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
   const u32 old_gpu_fifo_size = m_settings.gpu_fifo_size;
-  const u32 old_gpu_max_run_ahead = m_settings.gpu_max_run_ahead;
+  const TickCount old_gpu_max_run_ahead = m_settings.gpu_max_run_ahead;
   const bool old_gpu_true_color = m_settings.gpu_true_color;
   const bool old_gpu_scaled_dithering = m_settings.gpu_scaled_dithering;
   const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
@@ -1058,6 +1058,9 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
     if (m_settings.memory_card_types != old_memory_card_types || m_settings.memory_card_paths != old_memory_card_paths)
       m_system->UpdateMemoryCards();
+
+    m_system->GetDMA()->SetMaxSliceTicks(m_settings.dma_max_slice_ticks);
+    m_system->GetDMA()->SetHaltTicks(m_settings.dma_halt_ticks);
   }
 
   bool controllers_updated = false;

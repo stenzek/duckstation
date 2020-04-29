@@ -23,8 +23,6 @@ void Settings::Load(SettingsInterface& si)
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
-  gpu_fifo_size = static_cast<u32>(si.GetIntValue("GPU", "FIFOSize", 128));
-  gpu_max_run_ahead = static_cast<u32>(si.GetIntValue("GPU", "MaxRunAhead", 128));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
@@ -53,6 +51,11 @@ void Settings::Load(SettingsInterface& si)
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
+
+  dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", 1000);
+  dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", 100);
+  gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", 128));
+  gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", 128);
 
   bios_path = si.GetStringValue("BIOS", "Path", "bios/scph1001.bin");
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", true);

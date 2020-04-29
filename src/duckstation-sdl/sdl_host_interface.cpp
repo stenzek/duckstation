@@ -1210,30 +1210,55 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Force NTSC Timings", &m_settings_copy.gpu_force_ntsc_timings);
       }
 
-      if (DrawSettingsSectionHeader("Advanced"))
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("Advanced"))
+    {
+      ImGui::Text("These options are tweakable to improve performance/game compatibility.");
+      ImGui::Text("They will not be automatically saved to the settings INI file.");
+      ImGui::Text("Use at your own risk, modified values will not be supported.");
+      ImGui::NewLine();
+
+      ImGui::Text("DMA Max Slice Ticks:");
+      ImGui::SameLine(indent);
+
+      int dma_max_slice_ticks = static_cast<int>(m_settings_copy.dma_max_slice_ticks);
+      if (ImGui::SliderInt("##dma_max_slice_ticks", &dma_max_slice_ticks, 100, 10000))
       {
-        ImGui::Text("FIFO Size:");
-        ImGui::SameLine(indent);
-
-        int fifo_size = static_cast<int>(m_settings_copy.gpu_fifo_size);
-        if (ImGui::SliderInt("##fifo_size", &fifo_size, 16, GPU::MAX_FIFO_SIZE))
-        {
-          m_settings_copy.gpu_fifo_size = fifo_size;
-          settings_changed = true;
-        }
-
-        ImGui::Text("Max Run-Ahead:");
-        ImGui::SameLine(indent);
-
-        int max_run_ahead = static_cast<int>(m_settings_copy.gpu_max_run_ahead);
-        if (ImGui::SliderInt("##max_run_ahead", &max_run_ahead, 0, 1000))
-        {
-          m_settings_copy.gpu_max_run_ahead = max_run_ahead;
-          settings_changed = true;
-        }
+        m_settings_copy.dma_max_slice_ticks = dma_max_slice_ticks;
+        settings_changed = true;
       }
 
-      ImGui::EndTabItem();
+      ImGui::Text("DMA Halt Ticks:");
+      ImGui::SameLine(indent);
+
+      int dma_halt_ticks = static_cast<int>(m_settings_copy.dma_halt_ticks);
+      if (ImGui::SliderInt("##dma_halt_ticks", &dma_halt_ticks, 100, 10000))
+      {
+        m_settings_copy.dma_halt_ticks = dma_halt_ticks;
+        settings_changed = true;
+      }
+
+      ImGui::Text("FIFO Size:");
+      ImGui::SameLine(indent);
+
+      int gpu_fifo_size = static_cast<int>(m_settings_copy.gpu_fifo_size);
+      if (ImGui::SliderInt("##gpu_fifo_size", &gpu_fifo_size, 16, GPU::MAX_FIFO_SIZE))
+      {
+        m_settings_copy.gpu_fifo_size = gpu_fifo_size;
+        settings_changed = true;
+      }
+
+      ImGui::Text("Max Run-Ahead:");
+      ImGui::SameLine(indent);
+
+      int gpu_max_run_ahead = static_cast<int>(m_settings_copy.gpu_max_run_ahead);
+      if (ImGui::SliderInt("##gpu_max_run_ahead", &gpu_max_run_ahead, 0, 1000))
+      {
+        m_settings_copy.gpu_max_run_ahead = gpu_max_run_ahead;
+        settings_changed = true;
+      }
     }
 
     ImGui::EndTabBar();
