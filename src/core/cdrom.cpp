@@ -538,8 +538,8 @@ TickCount CDROM::GetAckDelayForCommand(Command command)
 
   // Tests show that the average time to acknowledge a command is significantly higher when a disc is in the drive,
   // presumably because the controller is busy doing discy-things.
-  constexpr u32 default_ack_delay_no_disc = 5000;
-  constexpr u32 default_ack_delay_with_disc = 15000;
+  constexpr u32 default_ack_delay_no_disc = 15000;
+  constexpr u32 default_ack_delay_with_disc = 25000;
   return HasMedia() ? default_ack_delay_with_disc : default_ack_delay_no_disc;
 }
 
