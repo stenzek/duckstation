@@ -225,8 +225,10 @@ void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
 
 void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)
 {
+  // display might be null here if the event happened after shutdown
   DebugAssert(isOnWorkerThread());
-  m_display->SetMousePosition(x, y);
+  if (m_display)
+    m_display->SetMousePosition(x, y);
 }
 
 void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
