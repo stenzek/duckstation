@@ -35,6 +35,10 @@ void SetConsoleOutputParams(bool enabled, const char* channelFilter = nullptr, L
 // adds a debug console output [win32/android only]
 void SetDebugOutputParams(bool enabled, const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
 
+// adds a file output
+void SetFileOutputParams(bool enabled, const char* filename, bool timestamps = true,
+                         const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
+
 // Sets global filtering level, messages below this level won't be sent to any of the logging sinks.
 void SetFilterLevel(LOGLEVEL level);
 

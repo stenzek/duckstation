@@ -1,7 +1,9 @@
 #include "log.h"
 #include "assert.h"
+#include "file_system.h"
 #include "string.h"
 #include "timer.h"
+#include <cstdio>
 #include <mutex>
 #include <vector>
 
@@ -14,6 +16,8 @@
 #endif
 
 namespace Log {
+
+static const char s_log_level_characters[LOGLEVEL_COUNT] = { 'X', 'E', 'W', 'P', 'S', 'I', 'D', 'R', 'B', 'T' };
 
 struct RegisteredCallback
 {
@@ -35,6 +39,12 @@ static LOGLEVEL s_consoleOutputLevelFilter = LOGLEVEL_TRACE;
 static bool s_debugOutputEnabled = false;
 static String s_debugOutputChannelFilter;
 static LOGLEVEL s_debugOutputLevelFilter = LOGLEVEL_TRACE;
+
+static bool s_fileOutputEnabled = false;
+static bool s_fileOutputTimestamp = false;
+static String s_fileOutputChannelFilter;
+static LOGLEVEL s_fileOutputLevelFilter = LOGLEVEL_TRACE;
+std::unique_ptr<std::FILE, void (*)(std::FILE*)> s_fileOutputHandle(nullptr, [](std::FILE* fp) { if (fp) { std::fclose(fp); } });
 
 void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
 {
@@ -69,28 +79,36 @@ static void ExecuteCallbacks(const char* channelName, const char* functionName, 
 
 static void FormatLogMessageForDisplay(const char* channelName, const char* functionName, LOGLEVEL level,
                                        const char* message, void (*printCallback)(const char*, void*),
-                                       void* pCallbackUserData)
+                                       void* pCallbackUserData, bool timestamp = true)
 {
-  static const char levelCharacters[LOGLEVEL_COUNT] = {'X', 'E', 'W', 'P', 'S', 'I', 'D', 'R', 'B', 'T'};
+  if (timestamp)
+  {
+    // find time since start of process
+    float messageTime =
+      static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetValue() - s_startTimeStamp));
 
-  // find time since start of process
-  float messageTime =
-    static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetValue() - s_startTimeStamp));
+    // write prefix
+    char prefix[256];
+    if (level <= LOGLEVEL_PERF)
+      std::snprintf(prefix, countof(prefix), "[%10.4f] %c(%s): ", messageTime, s_log_level_characters[level],
+                    functionName);
+    else
+      std::snprintf(prefix, countof(prefix), "[%10.4f] %c/%s: ", messageTime, s_log_level_characters[level],
+                    channelName);
 
-  // write prefix
-#ifndef Y_BUILD_CONFIG_SHIPPING
-  char prefix[256];
-  if (level <= LOGLEVEL_PERF)
-    std::snprintf(prefix, countof(prefix), "[%10.4f] %c(%s): ", messageTime, levelCharacters[level], functionName);
+    printCallback(prefix, pCallbackUserData);
+  }
   else
-    std::snprintf(prefix, countof(prefix), "[%10.4f] %c/%s: ", messageTime, levelCharacters[level], channelName);
+  {
+    // write prefix
+    char prefix[256];
+    if (level <= LOGLEVEL_PERF)
+      std::snprintf(prefix, countof(prefix), "%c(%s): ", s_log_level_characters[level], functionName);
+    else
+      std::snprintf(prefix, countof(prefix), "%c/%s: ", s_log_level_characters[level], channelName);
 
-  printCallback(prefix, pCallbackUserData);
-#else
-  char prefix[256];
-  std::snprintf(prefix, countof(prefix), "[%10.4f] %c/%s: ", messageTime, levelCharacters[level], channelName);
-  printCallback(prefix, pCallbackUserData);
-#endif
+    printCallback(prefix, pCallbackUserData);
+  }
 
   // write message
   printCallback(message, pCallbackUserData);
@@ -152,8 +170,8 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
   if (!s_debugOutputEnabled || level > s_debugOutputLevelFilter || s_debugOutputChannelFilter.Find(channelName) >= 0)
     return;
 
-  FormatLogMessageForDisplay(channelName, functionName, level, message,
-                             [](const char* text, void*) { OutputDebugStringA(text); }, nullptr);
+  FormatLogMessageForDisplay(
+    channelName, functionName, level, message, [](const char* text, void*) { OutputDebugStringA(text); }, nullptr);
 
   OutputDebugStringA("\n");
 }
@@ -285,6 +303,73 @@ void SetDebugOutputParams(bool enabled, const char* channelFilter /* = nullptr *
 
   s_debugOutputChannelFilter = (channelFilter != nullptr) ? channelFilter : "";
   s_debugOutputLevelFilter = levelFilter;
+}
+
+static void FileOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
+                                  const char* message)
+{
+  if (level > s_fileOutputLevelFilter || s_fileOutputChannelFilter.Find(channelName) >= 0)
+    return;
+
+  if (s_fileOutputTimestamp)
+  {
+    // find time since start of process
+    float messageTime =
+      static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetValue() - s_startTimeStamp));
+
+    // write prefix
+    if (level <= LOGLEVEL_PERF)
+    {
+      std::fprintf(s_fileOutputHandle.get(), "[%10.4f] %c(%s): %s\n", messageTime, s_log_level_characters[level],
+                   functionName, message);
+    }
+    else
+    {
+      std::fprintf(s_fileOutputHandle.get(), "[%10.4f] %c/%s: %s\n", messageTime, s_log_level_characters[level],
+                   channelName, message);
+    }
+  }
+  else
+  {
+    if (level <= LOGLEVEL_PERF)
+    {
+      std::fprintf(s_fileOutputHandle.get(), "%c(%s): %s\n", s_log_level_characters[level], functionName, message);
+    }
+    else
+    {
+      std::fprintf(s_fileOutputHandle.get(), "%c/%s: %s\n", s_log_level_characters[level], channelName, message);
+    }
+  }
+}
+
+void SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* = true */,
+                         const char* channelFilter /* = nullptr */, LOGLEVEL levelFilter /* = LOGLEVEL_TRACE */)
+{
+  if (s_fileOutputEnabled != enabled)
+  {
+    if (enabled)
+    {
+      s_fileOutputHandle.reset(FileSystem::OpenCFile(filename, "wb"));
+      if (!s_fileOutputHandle)
+      {
+        Log::Writef("Log", __FUNCTION__, LOGLEVEL_ERROR, "Failed to open log file '%s'", filename);
+        return;
+      }
+
+      RegisterCallback(FileOutputLogCallback, nullptr);
+    }
+    else
+    {
+      UnregisterCallback(FileOutputLogCallback, nullptr);
+      s_fileOutputHandle.reset();
+    }
+
+    s_fileOutputEnabled = enabled;
+  }
+
+  std::lock_guard<std::mutex> guard(s_callback_mutex);
+  s_fileOutputChannelFilter = (channelFilter != nullptr) ? channelFilter : "";;
+  s_fileOutputLevelFilter = levelFilter;
 }
 
 void SetFilterLevel(LOGLEVEL level)
