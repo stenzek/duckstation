@@ -7,26 +7,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-#undef main
 int main(int argc, char* argv[])
 {
-  // set log flags
-#ifndef _DEBUG
-  const LOGLEVEL level = LOGLEVEL_INFO;
-  // const LOGLEVEL level = LOGLEVEL_DEV;
-  // const LOGLEVEL level = LOGLEVEL_PROFILE;
-  Log::SetConsoleOutputParams(true, nullptr, level);
-  Log::SetFilterLevel(level);
-#else
-  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
-  Log::SetConsoleOutputParams(true, "Pad DigitalController MemoryCard SPU", LOGLEVEL_DEBUG);
-  // Log::SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL SPU Pad DigitalController", LOGLEVEL_DEBUG);
-  // Log::SetConsoleOutputParams(true, "GPU GPU_HW_OpenGL Pad DigitalController MemoryCard InterruptController SPU
-  // MDEC", LOGLEVEL_DEBUG); g_pLog->SetFilterLevel(LOGLEVEL_TRACE);
-  Log::SetFilterLevel(LOGLEVEL_DEBUG);
-  // Log::SetFilterLevel(LOGLEVEL_DEV);
-#endif
-
   FrontendCommon::EnsureSDLInitialized();
 
   std::unique_ptr<SDLHostInterface> host_interface = SDLHostInterface::Create();
