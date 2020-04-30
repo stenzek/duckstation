@@ -772,7 +772,7 @@ void QtHostInterface::createBackgroundControllerPollTimer()
   DebugAssert(!m_background_controller_polling_timer);
   m_background_controller_polling_timer = new QTimer(this);
   m_background_controller_polling_timer->setSingleShot(false);
-  m_background_controller_polling_timer->setTimerType(Qt::VeryCoarseTimer);
+  m_background_controller_polling_timer->setTimerType(Qt::CoarseTimer);
   connect(m_background_controller_polling_timer, &QTimer::timeout, this, &QtHostInterface::doBackgroundControllerPoll);
 }
 
@@ -834,6 +834,7 @@ void QtHostInterface::threadEntryPoint()
     {
       // wait until we have a system before running
       m_worker_thread_event_loop->exec();
+      Log_WarningPrintf("Event loop executed");
       continue;
     }
 
