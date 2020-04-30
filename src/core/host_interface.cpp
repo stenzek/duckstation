@@ -1003,7 +1003,17 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Debug", "ShowMDECState", false);
 }
 
-void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
+void HostInterface::ApplySettings(SettingsInterface& si)
+{
+  m_settings.Load(si);
+}
+
+void HostInterface::ExportSettings(SettingsInterface& si)
+{
+  m_settings.Save(si);
+}
+
+void HostInterface::UpdateSettings(SettingsInterface& si)
 {
   const bool old_increase_timer_resolution = m_settings.increase_timer_resolution;
   const float old_emulation_speed = m_settings.emulation_speed;
@@ -1038,7 +1048,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const bool old_log_to_window = m_settings.log_to_window;
   const bool old_log_to_file = m_settings.log_to_file;
 
-  apply_callback();
+  ApplySettings(si);
 
   if (m_system)
   {

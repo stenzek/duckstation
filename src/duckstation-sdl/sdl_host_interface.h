@@ -50,6 +50,7 @@ protected:
   void OnRunningGameChanged() override;
 
   void RequestExit() override;
+  void PollAndUpdate() override;
 
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
   void UpdateInputMap() override;
@@ -75,8 +76,7 @@ private:
   /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
   void RunLater(std::function<void()> callback);
 
-  void SaveSettings();
-  void UpdateSettings();
+  void SaveAndUpdateSettings();
 
   bool IsFullscreen() const override;
   bool SetFullscreen(bool enabled) override;

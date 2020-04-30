@@ -144,9 +144,12 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings.get());
-  UpdateSettings([this, &si]() { m_settings.Load(si); });
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
+    SetDefaultSettings(si);
+  }
+  UpdateSettings(si);
   CommonHostInterface::UpdateInputMap(si);
 }
 
@@ -160,7 +163,7 @@ void QtHostInterface::applySettings()
 
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
   QtSettingsInterface si(m_qsettings.get());
-  UpdateSettings([this, &si]() { m_settings.Load(si); });
+  UpdateSettings(si);
   CommonHostInterface::UpdateInputMap(si);
 
   // detect when render-to-main flag changes
@@ -388,6 +391,14 @@ bool QtHostInterface::SetFullscreen(bool enabled)
   return true;
 }
 
+void QtHostInterface::PollAndUpdate()
+{
+  CommonHostInterface::PollAndUpdate();
+
+  if (m_controller_interface)
+    m_controller_interface->PollEvents();
+}
+
 void QtHostInterface::RequestExit()
 {
   emit exitRequested();
@@ -450,7 +461,7 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 
 void QtHostInterface::OnRunningGameChanged()
 {
-  HostInterface::OnRunningGameChanged();
+  CommonHostInterface::OnRunningGameChanged();
 
   if (m_system)
   {
@@ -485,7 +496,7 @@ void QtHostInterface::LoadSettings()
 
   // load in settings
   CheckSettings(si);
-  m_settings.Load(si);
+  ApplySettings(si);
 }
 
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -493,6 +504,12 @@ void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
   CommonHostInterface::SetDefaultSettings(si);
 
   si.SetBoolValue("Main", "RenderToMainWindow", true);
+}
+
+void QtHostInterface::ApplySettings(SettingsInterface& si)
+{
+  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
+  CommonHostInterface::ApplySettings(si);
 }
 
 void QtHostInterface::UpdateInputMap()
@@ -771,7 +788,7 @@ void QtHostInterface::saveScreenshot()
 
 void QtHostInterface::doBackgroundControllerPoll()
 {
-  m_controller_interface->PollEvents();
+  PollAndUpdate();
 }
 
 void QtHostInterface::createBackgroundControllerPollTimer()
@@ -855,8 +872,7 @@ void QtHostInterface::threadEntryPoint()
       m_system->Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
-    if (m_controller_interface)
-      m_controller_interface->PollEvents();
+    PollAndUpdate();
   }
 
   shutdownOnThread();

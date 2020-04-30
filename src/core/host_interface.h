@@ -192,7 +192,7 @@ protected:
   /// Sets the user directory to the program directory, i.e. "portable mode".
   void SetUserDirectoryToProgramDirectory();
 
-  /// Performs the initial load of settings. Should call CheckSettings() and m_settings.Load().
+  /// Performs the initial load of settings. Should call CheckSettings() and ApplySettings().
   virtual void LoadSettings() = 0;
 
   /// Updates logging settings.
@@ -232,9 +232,14 @@ protected:
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);
 
-  /// Applies new settings, updating internal state as needed. apply_callback should call m_settings.Load() after
-  /// locking any required mutexes.
-  void UpdateSettings(const std::function<void()>& apply_callback);
+  /// Loads settings to m_settings and any frontend-specific parameters.
+  virtual void ApplySettings(SettingsInterface& si);
+
+  /// Saves current settings variables to ini.
+  virtual void ExportSettings(SettingsInterface& si);
+
+  /// Applies new settings, updating internal state as needed.
+  virtual void UpdateSettings(SettingsInterface& si);
 
   /// Quick switch between software and hardware rendering.
   void ToggleSoftwareRendering();

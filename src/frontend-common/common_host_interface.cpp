@@ -291,6 +291,10 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
   return true;
 }
 
+void CommonHostInterface::PollAndUpdate()
+{
+}
+
 bool CommonHostInterface::IsFullscreen() const
 {
   return false;
@@ -356,6 +360,11 @@ void CommonHostInterface::OnSystemDestroyed()
   StopControllerRumble();
 }
 
+void CommonHostInterface::OnRunningGameChanged()
+{
+  HostInterface::OnRunningGameChanged();
+}
+
 void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 {
   HostInterface::OnControllerTypeChanged(slot);
@@ -401,6 +410,11 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
   si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
   si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
+}
+
+void CommonHostInterface::ApplySettings(SettingsInterface& si)
+{
+  HostInterface::ApplySettings(si);
 }
 
 std::optional<CommonHostInterface::HostKeyCode>

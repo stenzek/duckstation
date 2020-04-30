@@ -136,6 +136,7 @@ protected:
   void ReleaseHostDisplay() override;
   bool IsFullscreen() const override;
   bool SetFullscreen(bool enabled) override;
+  void PollAndUpdate() override;
 
   void RequestExit() override;
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
@@ -149,6 +150,7 @@ protected:
 
   void LoadSettings() override;
   void SetDefaultSettings(SettingsInterface& si) override;
+  void ApplySettings(SettingsInterface& si) override;
   void UpdateInputMap() override;
 
 private:

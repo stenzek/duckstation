@@ -67,6 +67,9 @@ protected:
   /// Request the frontend to exit.
   virtual void RequestExit() = 0;
 
+  /// Executes per-frame tasks such as controller polling.
+  virtual void PollAndUpdate();
+
   virtual bool IsFullscreen() const;
   virtual bool SetFullscreen(bool enabled);
 
@@ -76,10 +79,12 @@ protected:
   virtual void OnSystemCreated() override;
   virtual void OnSystemPaused(bool paused) override;
   virtual void OnSystemDestroyed() override;
+  virtual void OnRunningGameChanged() override;
   virtual void OnControllerTypeChanged(u32 slot) override;
   virtual void DrawImGuiWindows() override;
 
   virtual void SetDefaultSettings(SettingsInterface& si) override;
+  virtual void ApplySettings(SettingsInterface& si) override;
 
   virtual std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const;
 

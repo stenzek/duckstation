@@ -295,15 +295,11 @@ void SDLHostInterface::RunLater(std::function<void()> callback)
   SDL_PushEvent(&ev);
 }
 
-void SDLHostInterface::SaveSettings()
+void SDLHostInterface::SaveAndUpdateSettings()
 {
   m_settings_copy.Save(*m_settings_interface.get());
+  UpdateSettings(*m_settings_interface.get());
   m_settings_interface->Save();
-}
-
-void SDLHostInterface::UpdateSettings()
-{
-  CommonHostInterface::UpdateSettings([this]() { m_settings = m_settings_copy; });
 }
 
 bool SDLHostInterface::IsFullscreen() const
@@ -383,8 +379,8 @@ void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
-  m_settings_copy.Load(*m_settings_interface.get());
-  m_settings = m_settings_copy;
+  ApplySettings(*m_settings_interface.get());
+  m_settings_copy = m_settings;
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -511,6 +507,12 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     }
     break;
   }
+}
+
+void SDLHostInterface::PollAndUpdate()
+{
+  CommonHostInterface::PollAndUpdate();
+  ProcessEvents();
 }
 
 void SDLHostInterface::ProcessEvents()
@@ -794,12 +796,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     RunLater([this]() { SaveScreenshot(); });
 
   if (settings_changed)
-  {
-    RunLater([this]() {
-      SaveSettings();
-      UpdateSettings();
-    });
-  }
+    RunLater([this]() { SaveAndUpdateSettings(); });
 }
 
 void SDLHostInterface::DrawDebugMenu()
@@ -831,7 +828,7 @@ void SDLHostInterface::DrawDebugMenu()
     debug_settings_copy.show_spu_state = debug_settings.show_spu_state;
     debug_settings_copy.show_timers_state = debug_settings.show_timers_state;
     debug_settings_copy.show_mdec_state = debug_settings.show_mdec_state;
-    SaveSettings();
+    SaveAndUpdateSettings();
   }
 }
 
@@ -1269,12 +1266,7 @@ void SDLHostInterface::DrawSettingsWindow()
   ImGui::End();
 
   if (settings_changed)
-  {
-    RunLater([this]() {
-      SaveSettings();
-      UpdateSettings();
-    });
-  }
+    RunLater([this]() { SaveAndUpdateSettings(); });
 }
 
 void SDLHostInterface::DrawAboutWindow()
@@ -1380,7 +1372,7 @@ void SDLHostInterface::Run()
 {
   while (!m_quit_request)
   {
-    ProcessEvents();
+    PollAndUpdate();
 
     if (m_system && !m_paused)
     {
