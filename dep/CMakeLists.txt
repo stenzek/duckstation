@@ -12,6 +12,11 @@ add_subdirectory(lzma)
 add_subdirectory(libFLAC)
 add_subdirectory(libchdr)
 add_subdirectory(xxhash)
+add_subdirectory(rapidjson)
+
+if(ENABLE_DISCORD_PRESENCE)
+  add_subdirectory(discord-rpc)
+endif()
 
 if(BUILD_SDL_FRONTEND)
   add_subdirectory(nativefiledialog)
