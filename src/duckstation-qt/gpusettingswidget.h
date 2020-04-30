@@ -5,13 +5,14 @@
 #include "ui_gpusettingswidget.h"
 
 class QtHostInterface;
+class SettingsDialog;
 
 class GPUSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  GPUSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  GPUSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
   ~GPUSettingsWidget();
 
 private Q_SLOTS:

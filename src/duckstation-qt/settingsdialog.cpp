@@ -47,7 +47,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
   m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
   m_port_settings = new PortSettingsWidget(host_interface, m_ui.settingsContainer);
-  m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer);
   m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
 
