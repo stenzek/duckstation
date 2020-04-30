@@ -103,6 +103,15 @@
           <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Advanced Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="0" column="1">

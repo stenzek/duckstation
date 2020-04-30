@@ -4,6 +4,9 @@ set(CMAKE_AUTOUIC ON)
 
 add_executable(duckstation-qt
   resources/icons.qrc
+  advancedsettingswidget.cpp
+  advancedsettingswidget.h
+  advancedsettingswidget.ui
   audiosettingswidget.cpp
   audiosettingswidget.h
   audiosettingswidget.ui

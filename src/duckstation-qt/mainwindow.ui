@@ -92,6 +92,7 @@
     <addaction name="actionPortSettings"/>
     <addaction name="actionGPUSettings"/>
     <addaction name="actionAudioSettings"/>
+    <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
     <addaction name="separator"/>
@@ -359,6 +360,15 @@
    </property>
    <property name="text">
     <string>General Settings...</string>
+   </property>
+  </action>
+  <action name="actionAdvancedSettings">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
+   </property>
+   <property name="text">
+    <string>Advanced Settings...</string>
    </property>
   </action>
   <action name="actionAddGameDirectory">

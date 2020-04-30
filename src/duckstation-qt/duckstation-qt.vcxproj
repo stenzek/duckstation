@@ -35,6 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="d3d11hostdisplay.cpp" />
@@ -64,6 +65,7 @@
     <QtMoc Include="gpusettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
+    <QtMoc Include="advancedsettingswidget.h" />
     <ClInclude Include="d3d11hostdisplay.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <ClInclude Include="qthostdisplay.h" />
@@ -120,6 +122,12 @@
     <QtUi Include="settingsdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="gpusettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="advancedsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\icons.qrc">
@@ -128,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
@@ -145,11 +154,6 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtUi Include="gpusettingswidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28F14272-0EC4-41BB-849F-182ADB81AF70}</ProjectGuid>

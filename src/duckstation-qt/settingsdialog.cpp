@@ -1,4 +1,5 @@
 #include "settingsdialog.h"
+#include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
 #include "consolesettingswidget.h"
 #include "gamelistsettingswidget.h"
@@ -30,7 +31,9 @@ static constexpr std::array<const char*, static_cast<int>(SettingsDialog::Catego
    "<strong>GPU Settings</strong><hr>These options control the simulation of the GPU in the console. Various "
    "enhancements are available, mouse over each for additional information.",
    "<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for "
-   "additional information."}};
+   "additional information.",
+   "<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the emulator. Mouse "
+   "over an option for additional information."}};
 
 SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QDialog(parent), m_host_interface(host_interface)
@@ -46,6 +49,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_port_settings = new PortSettingsWidget(host_interface, m_ui.settingsContainer);
   m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer);
   m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GeneralSettings), m_general_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ConsoleSettings), m_console_settings);
@@ -54,6 +58,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::PortSettings), m_port_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GPUSettings), m_gpu_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AudioSettings), m_audio_settings);
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AdvancedSettings), m_advanced_settings);
 
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);

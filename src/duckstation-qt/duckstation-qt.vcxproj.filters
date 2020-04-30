@@ -36,6 +36,7 @@
     <ClCompile Include="openglhostdisplay.cpp" />
     <ClCompile Include="d3d11hostdisplay.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
+    <ClCompile Include="advancedsettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
@@ -44,6 +45,7 @@
     <ClInclude Include="qthostdisplay.h" />
     <ClInclude Include="d3d11hostdisplay.h" />
     <ClInclude Include="openglhostdisplay.h" />
+    <ClInclude Include="advancedsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -80,5 +82,8 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="advancedsettingswidget.ui" />
   </ItemGroup>
 </Project>

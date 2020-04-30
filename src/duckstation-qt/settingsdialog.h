@@ -13,6 +13,7 @@ class ConsoleSettingsWidget;
 class PortSettingsWidget;
 class GPUSettingsWidget;
 class AudioSettingsWidget;
+class AdvancedSettingsWidget;
 
 class SettingsDialog final : public QDialog
 {
@@ -28,6 +29,7 @@ public:
     PortSettings,
     GPUSettings,
     AudioSettings,
+    AdvancedSettings,
     Count
   };
 
@@ -41,6 +43,7 @@ public:
   PortSettingsWidget* getPortSettingsWidget() const { return m_port_settings; }
   GPUSettingsWidget* getGPUSettingsWidget() const { return m_gpu_settings; }
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
+  AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
 
   void registerWidgetHelp(QObject* object, const char* title, const char* recommended_value, const char* text);
   bool eventFilter(QObject* object, QEvent* event) override;
@@ -63,6 +66,7 @@ private:
   PortSettingsWidget* m_port_settings = nullptr;
   GPUSettingsWidget* m_gpu_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
+  AdvancedSettingsWidget* m_advanced_settings = nullptr;
 
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
