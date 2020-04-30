@@ -17,7 +17,7 @@
 
 namespace Log {
 
-static const char s_log_level_characters[LOGLEVEL_COUNT] = { 'X', 'E', 'W', 'P', 'S', 'I', 'D', 'R', 'B', 'T' };
+static const char s_log_level_characters[LOGLEVEL_COUNT] = {'X', 'E', 'W', 'P', 'S', 'I', 'D', 'R', 'B', 'T'};
 
 struct RegisteredCallback
 {
@@ -44,7 +44,12 @@ static bool s_fileOutputEnabled = false;
 static bool s_fileOutputTimestamp = false;
 static String s_fileOutputChannelFilter;
 static LOGLEVEL s_fileOutputLevelFilter = LOGLEVEL_TRACE;
-std::unique_ptr<std::FILE, void (*)(std::FILE*)> s_fileOutputHandle(nullptr, [](std::FILE* fp) { if (fp) { std::fclose(fp); } });
+std::unique_ptr<std::FILE, void (*)(std::FILE*)> s_fileOutputHandle(nullptr, [](std::FILE* fp) {
+  if (fp)
+  {
+    std::fclose(fp);
+  }
+});
 
 void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
 {
@@ -259,13 +264,16 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
 
 #if defined(WIN32)
     // On windows, no console is allocated by default on a windows based application
-    static bool consoleWasAllocated = false;
+    static bool console_was_allocated = false;
+    static std::FILE* stdin_fp = nullptr;
+    static std::FILE* stdout_fp = nullptr;
+    static std::FILE* stderr_fp = nullptr;
     if (Enabled)
     {
       if (GetConsoleWindow() == NULL)
       {
-        DebugAssert(!consoleWasAllocated);
-        consoleWasAllocated = true;
+        DebugAssert(!console_was_allocated);
+        console_was_allocated = true;
         AllocConsole();
 
         std::FILE* fp;
@@ -276,10 +284,14 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
     }
     else
     {
-      if (consoleWasAllocated)
+      if (console_was_allocated)
       {
+        std::FILE* fp;
+        freopen_s(&fp, "NUL:", "w", stderr);
+        freopen_s(&fp, "NUL:", "w", stdout);
+        freopen_s(&fp, "NUL:", "w", stdin);
         FreeConsole();
-        consoleWasAllocated = false;
+        console_was_allocated = false;
       }
     }
 #endif
@@ -368,7 +380,8 @@ void SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* 
   }
 
   std::lock_guard<std::mutex> guard(s_callback_mutex);
-  s_fileOutputChannelFilter = (channelFilter != nullptr) ? channelFilter : "";;
+  s_fileOutputChannelFilter = (channelFilter != nullptr) ? channelFilter : "";
+  ;
   s_fileOutputLevelFilter = levelFilter;
 }
 
