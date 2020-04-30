@@ -63,6 +63,18 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(
     m_ui.showSpeed, "Show Speed", "Unchecked",
     "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.");
+
+  // Since this one is compile-time selected, we don't put it in the .ui file.
+#ifdef WITH_DISCORD_PRESENCE
+  {
+    QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Discord Presence"), m_ui.groupBox_4);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence,
+                                                 QStringLiteral("Main/EnableDiscordPresence"));
+    m_ui.formLayout_4->addWidget(enableDiscordPresence, m_ui.formLayout_4->rowCount(), 0);
+    dialog->registerWidgetHelp(enableDiscordPresence, "Enable Discord Presence", "Unchecked",
+                               "Shows the game you are currently playing as part of your profile in Discord.");
+  }
+#endif
 }
 
 GeneralSettingsWidget::~GeneralSettingsWidget() = default;

@@ -13,6 +13,8 @@ add_library(frontend-common
   save_state_selector_ui.h
 )
 
+target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion)
+
 if(SDL2_FOUND)
   target_sources(frontend-common PRIVATE 
     sdl_audio_stream.cpp
@@ -27,5 +29,7 @@ if(SDL2_FOUND)
   target_link_libraries(frontend-common PRIVATE ${SDL2_LIBRARIES})
 endif()
 
-target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion)
-
+if(ENABLE_DISCORD_PRESENCE)
+  target_compile_definitions(frontend-common PUBLIC -DWITH_DISCORD_PRESENCE=1)
+  target_link_libraries(frontend-common PRIVATE discord-rpc)
+endif()

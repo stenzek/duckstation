@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 if(NOT ANDROID)
   option(BUILD_SDL_FRONTEND "Build the SDL frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
+  option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
   option(USE_SDL2 "Link with SDL2 for controller support" ON)
 endif()
 

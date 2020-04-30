@@ -128,6 +128,14 @@ private:
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings(SettingsInterface& si);
 
+#ifdef WITH_DISCORD_PRESENCE
+  void SetDiscordPresenceEnabled(bool enabled);
+  void InitializeDiscordPresence();
+  void ShutdownDiscordPresence();
+  void UpdateDiscordPresence();
+  void PollDiscordPresence();
+#endif
+
   HotkeyInfoList m_hotkeys;
 
   std::unique_ptr<FrontendCommon::SaveStateSelectorUI> m_save_state_selector_ui;
@@ -153,4 +161,10 @@ private:
 
   // running in batch mode? i.e. exit after stopping emulation
   bool m_batch_mode = false;
+
+#ifdef WITH_DISCORD_PRESENCE
+  // discord rich presence
+  bool m_discord_presence_enabled = false;
+  bool m_discord_presence_active = false;
+#endif
 };

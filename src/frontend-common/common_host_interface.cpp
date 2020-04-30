@@ -15,9 +15,11 @@
 #include "sdl_audio_stream.h"
 #include "sdl_controller_interface.h"
 #endif
+#include "discord_rpc.h"
 #include "ini_settings_interface.h"
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 Log_SetChannel(CommonHostInterface);
 
 CommonHostInterface::CommonHostInterface() = default;
@@ -56,6 +58,10 @@ bool CommonHostInterface::Initialize()
 void CommonHostInterface::Shutdown()
 {
   HostInterface::Shutdown();
+
+#ifdef WITH_DISCORD_PRESENCE
+  ShutdownDiscordPresence();
+#endif
 
   m_system.reset();
   m_audio_stream.reset();
@@ -293,6 +299,9 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
 
 void CommonHostInterface::PollAndUpdate()
 {
+#ifdef WITH_DISCORD_PRESENCE
+  PollDiscordPresence();
+#endif
 }
 
 bool CommonHostInterface::IsFullscreen() const
@@ -363,6 +372,10 @@ void CommonHostInterface::OnSystemDestroyed()
 void CommonHostInterface::OnRunningGameChanged()
 {
   HostInterface::OnRunningGameChanged();
+
+#ifdef WITH_DISCORD_PRESENCE
+  UpdateDiscordPresence();
+#endif
 }
 
 void CommonHostInterface::OnControllerTypeChanged(u32 slot)
@@ -410,11 +423,19 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
   si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
   si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
+
+#ifdef WITH_DISCORD_PRESENCE
+  si.SetBoolValue("Main", "EnableDiscordPresence", false);
+#endif
 }
 
 void CommonHostInterface::ApplySettings(SettingsInterface& si)
 {
   HostInterface::ApplySettings(si);
+
+#ifdef WITH_DISCORD_PRESENCE
+  SetDiscordPresenceEnabled(si.GetBoolValue("Main", "EnableDiscordPresence", false));
+#endif
 }
 
 std::optional<CommonHostInterface::HostKeyCode>
@@ -1042,3 +1063,75 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
   profile.Save();
   return true;
 }
+
+#ifdef WITH_DISCORD_PRESENCE
+
+void CommonHostInterface::SetDiscordPresenceEnabled(bool enabled)
+{
+  if (m_discord_presence_enabled == enabled)
+    return;
+
+  m_discord_presence_enabled = enabled;
+  if (enabled)
+    InitializeDiscordPresence();
+  else
+    ShutdownDiscordPresence();
+}
+
+void CommonHostInterface::InitializeDiscordPresence()
+{
+  if (m_discord_presence_active)
+    return;
+
+  DiscordEventHandlers handlers = {};
+  Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
+  m_discord_presence_active = true;
+
+  UpdateDiscordPresence();
+}
+
+void CommonHostInterface::ShutdownDiscordPresence()
+{
+  if (!m_discord_presence_active)
+    return;
+
+  Discord_ClearPresence();
+  Discord_Shutdown();
+  m_discord_presence_active = false;
+}
+
+void CommonHostInterface::UpdateDiscordPresence()
+{
+  if (!m_discord_presence_active)
+    return;
+
+  DiscordRichPresence rp = {};
+  rp.smallImageKey = "duckstation_logo";
+  rp.smallImageText = "DuckStation PS1/PSX Emulator";
+  rp.startTimestamp = std::time(nullptr);
+
+  SmallString details_string;
+  if (m_system)
+  {
+    details_string.AppendFormattedString("%s (%s)", m_system->GetRunningTitle().c_str(),
+                                         m_system->GetRunningCode().c_str());
+  }
+  else
+  {
+    details_string.AppendString("No Game Running");
+  }
+
+  rp.details = details_string;
+
+  Discord_UpdatePresence(&rp);
+}
+
+void CommonHostInterface::PollDiscordPresence()
+{
+  if (!m_discord_presence_active)
+    return;
+
+  Discord_RunCallbacks();
+}
+
+#endif

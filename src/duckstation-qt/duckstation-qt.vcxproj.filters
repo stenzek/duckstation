@@ -37,6 +37,7 @@
     <ClCompile Include="d3d11hostdisplay.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
@@ -45,7 +46,6 @@
     <ClInclude Include="qthostdisplay.h" />
     <ClInclude Include="d3d11hostdisplay.h" />
     <ClInclude Include="openglhostdisplay.h" />
-    <ClInclude Include="advancedsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -70,6 +70,7 @@
     <QtMoc Include="qtdisplaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
+    <QtMoc Include="advancedsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -79,11 +80,9 @@
     <QtUi Include="gpusettingswidget.ui" />
     <QtUi Include="audiosettingswidget.ui" />
     <QtUi Include="generalsettingswidget.ui" />
+    <QtUi Include="advancedsettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="advancedsettingswidget.ui" />
   </ItemGroup>
 </Project>
