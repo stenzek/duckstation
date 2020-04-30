@@ -6,22 +6,8 @@
 #include <cstdlib>
 #include <memory>
 
-static void InitLogging()
-{
-  // set log flags
-#ifdef _DEBUGA
-  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_DEBUG);
-  Log::SetFilterLevel(LOGLEVEL_DEBUG);
-#else
-  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_INFO);
-  Log::SetFilterLevel(LOGLEVEL_INFO);
-#endif
-}
-
 int main(int argc, char* argv[])
 {
-  InitLogging();
-
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);

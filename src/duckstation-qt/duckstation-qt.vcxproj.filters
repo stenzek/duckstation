@@ -16,7 +16,6 @@
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
-    <ClCompile Include="$(IntDir)qrc_icons.cpp" />
     <ClCompile Include="portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
     <ClCompile Include="gpusettingswidget.cpp" />
@@ -27,8 +26,6 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_d3d11displaywidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_opengldisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
     <ClCompile Include="qtdisplaywidget.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
@@ -38,12 +35,15 @@
     <ClCompile Include="qthostdisplay.cpp" />
     <ClCompile Include="openglhostdisplay.cpp" />
     <ClCompile Include="d3d11hostdisplay.cpp" />
+    <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="qthostdisplay.h" />
+    <ClInclude Include="d3d11hostdisplay.h" />
+    <ClInclude Include="openglhostdisplay.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -51,7 +51,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtResource Include="resources\icons.qrc" />
+    <QtResource Include="resources\resources.qrc" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="consolesettingswidget.h" />
@@ -68,8 +68,6 @@
     <QtMoc Include="qtdisplaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
-    <QtMoc Include="openglhostdisplay.h" />
-    <QtMoc Include="d3d11hostdisplay.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
