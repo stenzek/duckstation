@@ -778,6 +778,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   settings_changed |= ImGui::MenuItem("Scaled Dithering", nullptr, &m_settings_copy.gpu_scaled_dithering);
   settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings_copy.gpu_texture_filtering);
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
+  settings_changed |= ImGui::MenuItem("Display Integer Scaling", nullptr, &m_settings_copy.display_integer_scaling);
 
   ImGui::Separator();
 
@@ -1167,6 +1168,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         settings_changed |= ImGui::Checkbox("Use Debug Device", &m_settings_copy.gpu_use_debug_device);
         settings_changed |= ImGui::Checkbox("Linear Filtering", &m_settings_copy.display_linear_filtering);
+        settings_changed |= ImGui::Checkbox("Integer Scaling", &m_settings_copy.display_integer_scaling);
         settings_changed |= ImGui::Checkbox("VSync", &m_settings_copy.video_sync_enabled);
       }
 
