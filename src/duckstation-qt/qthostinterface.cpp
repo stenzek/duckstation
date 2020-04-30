@@ -834,7 +834,6 @@ void QtHostInterface::threadEntryPoint()
     {
       // wait until we have a system before running
       m_worker_thread_event_loop->exec();
-      Log_WarningPrintf("Event loop executed");
       continue;
     }
 
