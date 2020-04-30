@@ -307,16 +307,16 @@ bool DMA::TransferChannel(Channel channel)
       cs.base_address = current_address;
       m_system->StallCPU(used_ticks);
 
-      if (used_ticks >= m_max_slice_ticks)
-      {
-        // stall the transfer for a bit if we ran for too long
-        // Log_WarningPrintf("breaking dma chain at 0x%08X", current_address);
-        HaltTransfer(m_halt_ticks);
-        return false;
-      }
-
       if ((current_address & UINT32_C(0x800000)) == 0)
       {
+        if (used_ticks >= m_max_slice_ticks && cs.request)
+        {
+          // stall the transfer for a bit if we ran for too long
+          // Log_WarningPrintf("breaking dma chain at 0x%08X", current_address);
+          HaltTransfer(m_halt_ticks);
+          return false;
+        }
+
         // linked list not yet complete
         return true;
       }
