@@ -41,8 +41,16 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
   {
     // align in middle vertically
     scale = static_cast<float>(window_width) / display_width;
+    if (m_display_integer_scaling)
+      scale = std::max(std::floor(scale), 1.0f);
+
     if (out_left_padding)
-      *out_left_padding = 0;
+    {
+      if (m_display_integer_scaling)
+        *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+      else
+        *out_left_padding = 0;
+    }
     if (out_top_padding)
       *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
   }
@@ -50,10 +58,18 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
   {
     // align in middle horizontally
     scale = static_cast<float>(window_height) / display_height;
+    if (m_display_integer_scaling)
+      scale = std::max(std::floor(scale), 1.0f);
+
     if (out_left_padding)
       *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
     if (out_top_padding)
-      *out_top_padding = 0;
+    {
+      if (m_display_integer_scaling)
+        *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+      else
+        *out_top_padding = 0;
+    }
   }
 
   *out_width = static_cast<s32>(active_width * scale);

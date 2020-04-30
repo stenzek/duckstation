@@ -81,6 +81,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
   // set host display settings
   m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+  m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
 
   // create the audio stream. this will never fail, since we'll just fall back to null
   CreateAudioStream();
@@ -958,6 +959,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Display", "CropMode", "Overscan");
   si.SetStringValue("Display", "PixelAspectRatio", "4:3");
   si.SetBoolValue("Display", "LinearFiltering", true);
+  si.SetBoolValue("Display", "IntegerScaling", false);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
   si.SetBoolValue("Display", "ShowFPS", false);
   si.SetBoolValue("Display", "ShowVPS", false);
@@ -1023,6 +1025,7 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   const DisplayCropMode old_display_crop_mode = m_settings.display_crop_mode;
   const DisplayAspectRatio old_display_aspect_ratio = m_settings.display_aspect_ratio;
   const bool old_display_linear_filtering = m_settings.display_linear_filtering;
+  const bool old_display_integer_scaling = m_settings.display_integer_scaling;
   const bool old_cdrom_read_thread = m_settings.cdrom_read_thread;
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_types = m_settings.memory_card_types;
@@ -1113,6 +1116,9 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   if (m_display && m_settings.display_linear_filtering != old_display_linear_filtering)
     m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+
+  if (m_display && m_settings.display_integer_scaling != old_display_integer_scaling)
+    m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
 
   if (m_settings.log_level != old_log_level || m_settings.log_filter != old_log_filter ||
       m_settings.log_to_console != old_log_to_console || m_settings.log_to_window != old_log_to_window ||

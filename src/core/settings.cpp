@@ -38,6 +38,7 @@ void Settings::Load(SettingsInterface& si)
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DisplayAspectRatio::R4_3)).c_str())
       .value_or(DisplayAspectRatio::R4_3);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
+  display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
@@ -123,6 +124,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
+  si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);

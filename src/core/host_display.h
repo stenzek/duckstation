@@ -104,6 +104,7 @@ public:
 
   void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
+  void SetDisplayIntegerScaling(bool enabled) { m_display_integer_scaling = enabled; }
 
   /// Helper function for computing the draw rectangle in a larger window.
   std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const;
@@ -154,4 +155,5 @@ protected:
 
   bool m_display_linear_filtering = false;
   bool m_display_changed = false;
+  bool m_display_integer_scaling = false;
 };

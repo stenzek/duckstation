@@ -57,6 +57,7 @@ struct Settings
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_linear_filtering = true;
+  bool display_integer_scaling = false;
   bool display_show_osd_messages = false;
   bool display_show_fps = false;
   bool display_show_vps = false;
