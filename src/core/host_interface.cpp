@@ -39,6 +39,9 @@ bool HostInterface::Initialize()
   SetUserDirectory();
   InitializeUserDirectory();
   LoadSettings();
+  UpdateLogSettings(m_settings.log_level, m_settings.log_filter.empty() ? nullptr : m_settings.log_filter.c_str(),
+                    m_settings.log_to_console, m_settings.log_to_debug, m_settings.log_to_window,
+                    m_settings.log_to_file);
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetGameListCacheFileName());
   m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
@@ -621,6 +624,24 @@ void HostInterface::OnRunningGameChanged() {}
 
 void HostInterface::OnControllerTypeChanged(u32 slot) {}
 
+void HostInterface::UpdateLogSettings(LOGLEVEL level, const char* filter, bool log_to_console, bool log_to_debug,
+                                      bool log_to_window, bool log_to_file)
+{
+  Log::SetFilterLevel(level);
+  Log::SetConsoleOutputParams(m_settings.log_to_console, filter, level);
+  Log::SetDebugOutputParams(m_settings.log_to_debug, filter, level);
+
+  if (log_to_file)
+  {
+    Log::SetFileOutputParams(m_settings.log_to_file, GetUserDirectoryRelativePath("duckstation.log").c_str(), true,
+                             filter, level);
+  }
+  else
+  {
+    Log::SetFileOutputParams(false, nullptr);
+  }
+}
+
 void HostInterface::SetUserDirectory()
 {
   if (!m_user_directory.empty())
@@ -628,13 +649,13 @@ void HostInterface::SetUserDirectory()
 
   const std::string program_path = FileSystem::GetProgramPath();
   const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
-  Log_InfoPrintf("Program path: \"%s\" (directory \"%s\")", program_path.c_str(), program_directory.c_str());
+  std::fprintf(stdout, "Program path: \"%s\" (directory \"%s\")\n", program_path.c_str(), program_directory.c_str());
 
   if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", program_directory.c_str(),
                                                              FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
                                .c_str()))
   {
-    Log_InfoPrintf("portable.txt found, using program directory as user directory.");
+    std::fprintf(stdout, "portable.txt found, using program directory as user directory.\n");
     m_user_directory = program_directory;
   }
   else
@@ -677,16 +698,16 @@ void HostInterface::SetUserDirectoryToProgramDirectory()
 
 void HostInterface::InitializeUserDirectory()
 {
-  Log_InfoPrintf("User directory: \"%s\"", m_user_directory.c_str());
+  std::fprintf(stdout, "User directory: \"%s\"\n", m_user_directory.c_str());
 
   if (m_user_directory.empty())
     Panic("Cannot continue without user directory set.");
 
   if (!FileSystem::DirectoryExists(m_user_directory.c_str()))
   {
-    Log_WarningPrintf("User directory \"%s\" does not exist, creating.", m_user_directory.c_str());
+    std::fprintf(stderr, "User directory \"%s\" does not exist, creating.\n", m_user_directory.c_str());
     if (!FileSystem::CreateDirectory(m_user_directory.c_str(), true))
-      Log_ErrorPrintf("Failed to create user directory \"%s\".", m_user_directory.c_str());
+      std::fprintf(stderr, "Failed to create user directory \"%s\".\n", m_user_directory.c_str());
   }
 
   bool result = true;
@@ -905,9 +926,8 @@ void HostInterface::CheckSettings(SettingsInterface& si)
   if (settings_version == SETTINGS_VERSION)
     return;
 
-  // TODO: we probably should delete all the sections in the ini...
-  Log_WarningPrintf("Settings version %d does not match expected version %d, resetting", settings_version,
-                    SETTINGS_VERSION);
+  ReportFormattedError("Settings version %d does not match expected version %d, resetting", settings_version,
+                       SETTINGS_VERSION);
   si.Clear();
   si.SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
   SetDefaultSettings(si);
@@ -964,6 +984,13 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("MemoryCards", "Card2Type", "None");
   si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
 
+  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_INFO));
+  si.SetStringValue("Logging", "LogFilter", "");
+  si.SetBoolValue("Logging", "LogToConsole", false);
+  si.SetBoolValue("Logging", "LogToDebug", false);
+  si.SetBoolValue("Logging", "LogToWindow", false);
+  si.SetBoolValue("Logging", "LogToFile", false);
+
   si.SetBoolValue("Debug", "ShowVRAM", false);
   si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", false);
   si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", false);
@@ -1001,6 +1028,12 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_types = m_settings.memory_card_types;
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_paths =
     std::move(m_settings.memory_card_paths);
+
+  const LOGLEVEL old_log_level = m_settings.log_level;
+  const std::string old_log_filter(std::move(m_settings.log_filter));
+  const bool old_log_to_console = m_settings.log_to_console;
+  const bool old_log_to_window = m_settings.log_to_window;
+  const bool old_log_to_file = m_settings.log_to_file;
 
   apply_callback();
 
@@ -1080,6 +1113,15 @@ void HostInterface::UpdateSettings(const std::function<void()>& apply_callback)
 
   if (m_display && m_settings.display_linear_filtering != old_display_linear_filtering)
     m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+
+  if (m_settings.log_level != old_log_level || m_settings.log_filter != old_log_filter ||
+      m_settings.log_to_console != old_log_to_console || m_settings.log_to_window != old_log_to_window ||
+      m_settings.log_to_file != old_log_to_file)
+  {
+    UpdateLogSettings(m_settings.log_level, m_settings.log_filter.empty() ? nullptr : m_settings.log_filter.c_str(),
+                      m_settings.log_to_console, m_settings.log_to_debug, m_settings.log_to_window,
+                      m_settings.log_to_file);
+  }
 }
 
 void HostInterface::ToggleSoftwareRendering()

@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+enum LOGLEVEL;
+
 class AudioStream;
 class ByteStream;
 class CDImage;
@@ -192,6 +194,10 @@ protected:
 
   /// Performs the initial load of settings. Should call CheckSettings() and m_settings.Load().
   virtual void LoadSettings() = 0;
+
+  /// Updates logging settings.
+  virtual void UpdateLogSettings(LOGLEVEL level, const char* filter, bool log_to_console, bool log_to_debug,
+                                 bool log_to_window, bool log_to_file);
 
   /// Returns the path of the settings file.
   std::string GetSettingsFileName() const;

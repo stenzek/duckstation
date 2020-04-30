@@ -79,6 +79,14 @@ void Settings::Load(SettingsInterface& si)
       .value_or(MemoryCardType::None);
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
 
+  log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(LOGLEVEL_INFO)).c_str())
+                .value_or(LOGLEVEL_INFO);
+  log_filter = si.GetStringValue("Logging", "LogFilter", "");
+  log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
+  log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
+  log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
+  log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
+
   debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
   debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
   debugging.dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
@@ -147,6 +155,13 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));
   si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
 
+  si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
+  si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
+  si.SetBoolValue("Logging", "LogToConsole", log_to_console);
+  si.SetBoolValue("Logging", "LogToDebug", log_to_debug);
+  si.SetBoolValue("Logging", "LogToWindow", log_to_window);
+  si.SetBoolValue("Logging", "LogToFile", log_to_file);
+
   si.SetBoolValue("Debug", "ShowVRAM", debugging.show_vram);
   si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", debugging.dump_cpu_to_vram_copies);
   si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", debugging.dump_vram_to_cpu_copies);
@@ -155,6 +170,35 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Debug", "ShowSPUState", debugging.show_spu_state);
   si.SetBoolValue("Debug", "ShowTimersState", debugging.show_timers_state);
   si.SetBoolValue("Debug", "ShowMDECState", debugging.show_mdec_state);
+}
+
+static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
+  {"None", "Error", "Warning", "Perf", "Success", "Info", "Dev", "Profile", "Debug", "Trace"}};
+static std::array<const char*, LOGLEVEL_COUNT> s_log_level_display_names = {
+  {"None", "Error", "Warning", "Performance", "Success", "Information", "Developer", "Profile", "Debug", "Trace"}};
+
+std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_log_level_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<LOGLEVEL>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetLogLevelName(LOGLEVEL level)
+{
+  return s_log_level_names[static_cast<int>(level)];
+}
+
+const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
+{
+  return s_log_level_display_names[static_cast<int>(level)];
 }
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};

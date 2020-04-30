@@ -1,4 +1,5 @@
 #pragma once
+#include "common/log.h"
 #include "types.h"
 #include <array>
 #include <optional>
@@ -99,6 +100,13 @@ struct Settings
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
 
+  LOGLEVEL log_level = LOGLEVEL_INFO;
+  std::string log_filter;
+  bool log_to_console = false;
+  bool log_to_debug = false;
+  bool log_to_window = false;
+  bool log_to_file = false;
+
   ALWAYS_INLINE bool HasAnyPerGameMemoryCards() const
   {
     return (memory_card_types[0] == MemoryCardType::PerGame || memory_card_types[1] == MemoryCardType::PerGame);
@@ -106,6 +114,10 @@ struct Settings
 
   void Load(SettingsInterface& si);
   void Save(SettingsInterface& si) const;
+
+  static std::optional<LOGLEVEL> ParseLogLevelName(const char* str);
+  static const char* GetLogLevelName(LOGLEVEL level);
+  static const char* GetLogLevelDisplayName(LOGLEVEL level);
 
   static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
   static const char* GetConsoleRegionName(ConsoleRegion region);
