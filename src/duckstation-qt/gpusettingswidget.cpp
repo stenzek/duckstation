@@ -10,23 +10,32 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, "GPU/Renderer",
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, QStringLiteral("GPU/Renderer"),
                                                &Settings::ParseRendererName, &Settings::GetRendererName);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice, "GPU/UseDebugDevice");
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayAspectRatio, "Display/AspectRatio",
-                                               &Settings::ParseDisplayAspectRatio,
-                                               &Settings::GetDisplayAspectRatioName);
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, "Display/CropMode",
-                                               &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice,
+                                               QStringLiteral("GPU/UseDebugDevice"));
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    m_host_interface, m_ui.displayAspectRatio, QStringLiteral("Display/AspectRatio"),
+    &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode,
+                                               QStringLiteral("Display/CropMode"), &Settings::ParseDisplayCropMode,
+                                               &Settings::GetDisplayCropModeName);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering,
-                                               "Display/LinearFiltering");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display/VSync");
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU/ResolutionScale");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU/TrueColor");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU/ScaledDithering");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU/DisableInterlacing");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU/ForceNTSCTimings");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, "GPU/TextureFiltering");
+                                               QStringLiteral("Display/LinearFiltering"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling,
+                                               QStringLiteral("Display/IntegerScaling"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, QStringLiteral("Display/VSync"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale,
+                                              QStringLiteral("GPU/ResolutionScale"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, QStringLiteral("GPU/TrueColor"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering,
+                                               QStringLiteral("GPU/ScaledDithering"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing,
+                                               QStringLiteral("GPU/DisableInterlacing"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings,
+                                               QStringLiteral("GPU/ForceNTSCTimings"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering,
+                                               QStringLiteral("GPU/TextureFiltering"));
 
   connect(m_ui.resolutionScale, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
@@ -58,6 +67,10 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     "Uses bilinear texture filtering when displaying the console's framebuffer to the screen. Disabling filtering will "
     "producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less "
     "noticable the higher the resolution scale.");
+  dialog->registerWidgetHelp(
+    m_ui.displayIntegerScaling, "Integer Upscaling", "Unchecked",
+    "Adds padding to the display area to ensure that the ratio between pixels on the host to "
+    "pixels in the console is an integer number. May result in a sharper image in some 2D games.");
   dialog->registerWidgetHelp(m_ui.vsync, "VSync", "Checked",
                              "Enables synchronization with the host display when possible. Enabling this option will "
                              "provide better frame pacing and smoother motion with fewer duplicated frames. VSync is "

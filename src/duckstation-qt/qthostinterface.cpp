@@ -164,11 +164,18 @@ void QtHostInterface::applySettings()
   CommonHostInterface::UpdateInputMap(si);
 
   // detect when render-to-main flag changes
-  const bool render_to_main = m_qsettings->value("Main/RenderToMainWindow", true).toBool();
-  if (m_system && getHostDisplay() && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
+  if (m_system)
   {
-    m_is_rendering_to_main = render_to_main;
-    updateDisplayState();
+    const bool render_to_main = m_qsettings->value("Main/RenderToMainWindow", true).toBool();
+    if (getHostDisplay() && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
+    {
+      m_is_rendering_to_main = render_to_main;
+      updateDisplayState();
+    }
+    else
+    {
+      renderDisplay();
+    }
   }
 }
 
