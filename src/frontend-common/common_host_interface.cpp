@@ -517,7 +517,7 @@ void CommonHostInterface::StopControllerRumble()
 {
   for (ControllerRumbleState& rumble : m_controller_vibration_motors)
   {
-    bool changed = true;
+    bool changed = false;
     for (u32 i = 0; i < rumble.num_motors; i++)
     {
       changed |= (rumble.last_strength[i] != 0.0f);

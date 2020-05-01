@@ -444,7 +444,7 @@ void QtHostInterface::OnSystemPaused(bool paused)
 
 void QtHostInterface::OnSystemDestroyed()
 {
-  HostInterface::OnSystemDestroyed();
+  CommonHostInterface::OnSystemDestroyed();
 
   startBackgroundControllerPollTimer();
   emit emulationStopped();
