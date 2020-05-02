@@ -317,6 +317,7 @@ bool GPU_HW_OpenGL::CreateTextureBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
+  const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_supports_dual_source_blend);
 
@@ -336,25 +337,28 @@ bool GPU_HW_OpenGL::CompilePrograms()
             static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
-          const auto link_callback = [this, textured](GL::Program& prog) {
-            prog.BindAttribute(0, "a_pos");
-            prog.BindAttribute(1, "a_col0");
-            if (textured)
+          const auto link_callback = [this, textured, use_binding_layout](GL::Program& prog) {
+            if (!use_binding_layout)
             {
-              prog.BindAttribute(2, "a_texcoord");
-              prog.BindAttribute(3, "a_texpage");
-            }
-
-            if (!m_is_gles)
-            {
-              if (m_supports_dual_source_blend)
+              prog.BindAttribute(0, "a_pos");
+              prog.BindAttribute(1, "a_col0");
+              if (textured)
               {
-                prog.BindFragDataIndexed(0, "o_col0");
-                prog.BindFragDataIndexed(1, "o_col1");
+                prog.BindAttribute(2, "a_texcoord");
+                prog.BindAttribute(3, "a_texpage");
               }
-              else
+
+              if (!m_is_gles || m_supports_dual_source_blend)
               {
-                prog.BindFragData(0, "o_col0");
+                if (m_supports_dual_source_blend)
+                {
+                  prog.BindFragDataIndexed(0, "o_col0");
+                  prog.BindFragDataIndexed(1, "o_col1");
+                }
+                else
+                {
+                  prog.BindFragData(0, "o_col0");
+                }
               }
             }
           };
@@ -363,11 +367,14 @@ bool GPU_HW_OpenGL::CompilePrograms()
           if (!prog)
             return false;
 
-          prog->BindUniformBlock("UBOBlock", 1);
-          if (textured)
+          if (!use_binding_layout)
           {
-            prog->Bind();
-            prog->Uniform1i("samp0", 0);
+            prog->BindUniformBlock("UBOBlock", 1);
+            if (textured)
+            {
+              prog->Bind();
+              prog->Uniform1i("samp0", 0);
+            }
           }
 
           m_render_programs[render_mode][texture_mode][dithering][interlacing] = std::move(*prog);
@@ -380,7 +387,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
             if (!prog)
               return false;
 
-            prog->BindUniformBlock("UBOBlock", 1);
+            if (!use_binding_layout)
+              prog->BindUniformBlock("UBOBlock", 1);
             m_line_render_programs[render_mode][dithering][interlacing] = std::move(*prog);
           }
         }
@@ -396,73 +404,89 @@ bool GPU_HW_OpenGL::CompilePrograms()
       const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
                                                                      ConvertToBoolUnchecked(interlaced));
 
-      std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, {}, fs, [this](GL::Program& prog) {
-        if (!m_is_gles)
-          prog.BindFragData(0, "o_col0");
-      });
+      std::optional<GL::Program> prog =
+        m_shader_cache.GetProgram(vs, {}, fs, [this, use_binding_layout](GL::Program& prog) {
+          if (!m_is_gles && !use_binding_layout)
+            prog.BindFragData(0, "o_col0");
+        });
       if (!prog)
         return false;
 
-      prog->BindUniformBlock("UBOBlock", 1);
-
-      prog->Bind();
-      prog->Uniform1i("samp0", 0);
+      if (!use_binding_layout)
+      {
+        prog->BindUniformBlock("UBOBlock", 1);
+        prog->Bind();
+        prog->Uniform1i("samp0", 0);
+      }
       m_display_programs[depth_24bit][interlaced] = std::move(*prog);
     }
   }
 
-  std::optional<GL::Program> prog =
-    m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                              shadergen.GenerateInterlacedFillFragmentShader(), [this](GL::Program& prog) {
-                                if (!m_is_gles)
-                                  prog.BindFragData(0, "o_col0");
-                              });
+  std::optional<GL::Program> prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
+                                                              shadergen.GenerateInterlacedFillFragmentShader(),
+                                                              [this, use_binding_layout](GL::Program& prog) {
+                                                                if (!m_is_gles && !use_binding_layout)
+                                                                  prog.BindFragData(0, "o_col0");
+                                                              });
   if (!prog)
     return false;
 
-  prog->BindUniformBlock("UBOBlock", 1);
-  prog->Bind();
+  if (!use_binding_layout)
+    prog->BindUniformBlock("UBOBlock", 1);
+
   m_vram_interlaced_fill_program = std::move(*prog);
 
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                   shadergen.GenerateVRAMReadFragmentShader(), [this](GL::Program& prog) {
-                                     if (!m_is_gles)
+                                   shadergen.GenerateVRAMReadFragmentShader(),
+                                   [this, use_binding_layout](GL::Program& prog) {
+                                     if (!m_is_gles && !use_binding_layout)
                                        prog.BindFragData(0, "o_col0");
                                    });
   if (!prog)
     return false;
 
-  prog->BindUniformBlock("UBOBlock", 1);
-  prog->Bind();
-  prog->Uniform1i("samp0", 0);
+  if (!use_binding_layout)
+  {
+    prog->BindUniformBlock("UBOBlock", 1);
+    prog->Bind();
+    prog->Uniform1i("samp0", 0);
+  }
   m_vram_read_program = std::move(*prog);
 
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                   shadergen.GenerateVRAMCopyFragmentShader(), [this](GL::Program& prog) {
-                                     if (!m_is_gles)
+                                   shadergen.GenerateVRAMCopyFragmentShader(),
+                                   [this, use_binding_layout](GL::Program& prog) {
+                                     if (!m_is_gles && !use_binding_layout)
                                        prog.BindFragData(0, "o_col0");
                                    });
   if (!prog)
     return false;
 
-  prog->BindUniformBlock("UBOBlock", 1);
-  prog->Bind();
-  prog->Uniform1i("samp0", 0);
+  if (!use_binding_layout)
+  {
+    prog->BindUniformBlock("UBOBlock", 1);
+    prog->Bind();
+    prog->Uniform1i("samp0", 0);
+  }
   m_vram_copy_program = std::move(*prog);
 
   if (m_supports_texture_buffer)
   {
     prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                     shadergen.GenerateVRAMWriteFragmentShader(), [this](GL::Program& prog) {
-                                       if (!m_is_gles)
+                                     shadergen.GenerateVRAMWriteFragmentShader(),
+                                     [this, use_binding_layout](GL::Program& prog) {
+                                       if (!m_is_gles && !use_binding_layout)
                                          prog.BindFragData(0, "o_col0");
                                      });
     if (!prog)
       return false;
 
-    prog->BindUniformBlock("UBOBlock", 1);
-    prog->Bind();
-    prog->Uniform1i("samp0", 0);
+    if (!use_binding_layout)
+    {
+      prog->BindUniformBlock("UBOBlock", 1);
+      prog->Bind();
+      prog->Uniform1i("samp0", 0);
+    }
     m_vram_write_program = std::move(*prog);
   }
 

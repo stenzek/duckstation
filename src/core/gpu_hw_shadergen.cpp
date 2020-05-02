@@ -17,10 +17,18 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolu
     SetGLSLVersionString();
 
     m_use_glsl_interface_blocks = (GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+    m_use_glsl_binding_layout = UseGLSLBindingLayout();
   }
 }
 
 GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
+
+bool GPU_HW_ShaderGen::UseGLSLBindingLayout()
+{
+  return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_2 ||
+          (GLAD_GL_ARB_explicit_attrib_location && GLAD_GL_ARB_explicit_uniform_location &&
+           GLAD_GL_ARB_shading_language_420pack));
+}
 
 static void DefineMacro(std::stringstream& ss, const char* name, bool enabled)
 {
@@ -41,13 +49,13 @@ void GPU_HW_ShaderGen::SetGLSLVersionString()
   int major_version = 0, minor_version = 0;
   if (std::sscanf(glsl_version_start, "%d.%d", &major_version, &minor_version) == 2)
   {
-    // Cap at GLSL 3.3, we're not using anything newer for now.
-    if (!glsl_es && major_version >= 4)
+    // Cap at GLSL 4.3, we're not using anything newer for now.
+    if (!glsl_es && (major_version > 4 || (major_version == 4 && minor_version > 3)))
     {
-      major_version = 3;
+      major_version = 4;
       minor_version = 30;
     }
-    else if (glsl_es && (major_version > 3 || minor_version > 20))
+    else if (glsl_es && (major_version > 3 || (major_version == 3 && minor_version > 20)))
     {
       major_version = 3;
       minor_version = 20;
@@ -74,6 +82,24 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 {
   if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
     ss << m_glsl_version_string << "\n\n";
+
+  // Extension enabling for OpenGL.
+  if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
+  {
+    // Enable EXT_blend_func_extended for dual-source blend on OpenGL ES.
+    if (GLAD_GL_EXT_blend_func_extended)
+      ss << "#extension GL_EXT_blend_func_extended : require\n";
+  }
+  else if (m_render_api == HostDisplay::RenderAPI::OpenGL)
+  {
+    // Need extensions for binding layout if GL<4.3.
+    if (m_use_glsl_binding_layout && !GLAD_GL_VERSION_4_3)
+    {
+      ss << "#extension GL_ARB_explicit_attrib_location : require\n";
+      ss << "#extension GL_ARB_explicit_uniform_location : require\n";
+      ss << "#extension GL_ARB_shading_language_420pack : require\n";
+    }
+  }
 
   DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
   DefineMacro(ss, "API_OPENGL_ES", m_render_api == HostDisplay::RenderAPI::OpenGLES);
@@ -185,9 +211,16 @@ float4 RGBA5551ToRGBA8(uint v)
 void GPU_HW_ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members)
 {
   if (m_glsl)
-    ss << "layout(std140) uniform UBOBlock\n";
+  {
+    if (m_use_glsl_binding_layout)
+      ss << "layout(std140, binding = 1) uniform UBOBlock\n";
+    else
+      ss << "layout(std140) uniform UBOBlock\n";
+  }
   else
+  {
     ss << "cbuffer UBOBlock : register(b0)\n";
+  }
 
   ss << "{\n";
   for (const char* member : members)
@@ -199,6 +232,9 @@ void GPU_HW_ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u
 {
   if (m_glsl)
   {
+    if (m_use_glsl_binding_layout)
+      ss << "layout(binding = " << index << ") ";
+
     ss << "uniform sampler2D " << name << ";\n";
   }
   else
@@ -213,6 +249,9 @@ void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* n
 {
   if (m_glsl)
   {
+    if (m_use_glsl_binding_layout)
+      ss << "layout(binding = " << index << ") ";
+
     ss << "uniform " << (is_int ? (is_unsigned ? "u" : "i") : "") << "samplerBuffer " << name << ";\n";
   }
   else
@@ -229,8 +268,20 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
 {
   if (m_glsl)
   {
-    for (const char* attribute : attributes)
-      ss << "in " << attribute << ";\n";
+    if (m_use_glsl_binding_layout && 0)
+    {
+      u32 attribute_counter = 0;
+      for (const char* attribute : attributes)
+      {
+        ss << "layout(location = " << attribute_counter << ") " << attribute << ";\n";
+        attribute_counter++;
+      }
+    }
+    else
+    {
+      for (const char* attribute : attributes)
+        ss << "in " << attribute << ";\n";
+    }
 
     if (m_use_glsl_interface_blocks)
     {
@@ -330,9 +381,24 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
     if (declare_fragcoord)
       ss << "#define v_pos gl_FragCoord\n";
 
-    ss << "out float4 o_col0;\n";
-    if (dual_color_output)
-      ss << "out float4 o_col1;\n";
+    if (m_use_glsl_binding_layout)
+    {
+      if (dual_color_output)
+      {
+        ss << "layout(location = 0, index = 0) out float4 o_col0;\n";
+        ss << "layout(location = 0, index = 1) out float4 o_col1;\n";
+      }
+      else
+      {
+        ss << "layout(location = 0) out float4 o_col0;\n";
+      }
+    }
+    else
+    {
+      ss << "out float4 o_col0;\n";
+      if (dual_color_output)
+        ss << "out float4 o_col1;\n";
+    }
 
     ss << "\n";
 

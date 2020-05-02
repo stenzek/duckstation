@@ -11,6 +11,8 @@ public:
                    bool texture_filtering, bool supports_dual_source_blend);
   ~GPU_HW_ShaderGen();
 
+  static bool UseGLSLBindingLayout();
+
   std::string GenerateBatchVertexShader(bool textured);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPU::TextureMode texture_mode,
                                           bool dithering, bool interlacing);
@@ -23,17 +25,6 @@ public:
   std::string GenerateVRAMReadFragmentShader();
   std::string GenerateVRAMWriteFragmentShader();
   std::string GenerateVRAMCopyFragmentShader();
-
-  HostDisplay::RenderAPI m_render_api;
-  u32 m_resolution_scale;
-  bool m_true_color;
-  bool m_scaled_dithering;
-  bool m_texture_filering;
-  bool m_glsl;
-  bool m_supports_dual_source_blend;
-  bool m_use_glsl_interface_blocks;
-
-  std::string m_glsl_version_string;
 
 private:
   void SetGLSLVersionString();
@@ -51,4 +42,16 @@ private:
 
   void WriteCommonFunctions(std::stringstream& ss);
   void WriteBatchUniformBuffer(std::stringstream& ss);
+
+  HostDisplay::RenderAPI m_render_api;
+  u32 m_resolution_scale;
+  bool m_true_color;
+  bool m_scaled_dithering;
+  bool m_texture_filering;
+  bool m_glsl;
+  bool m_supports_dual_source_blend;
+  bool m_use_glsl_interface_blocks;
+  bool m_use_glsl_binding_layout;
+
+  std::string m_glsl_version_string;
 };
