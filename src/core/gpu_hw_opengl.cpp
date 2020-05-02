@@ -190,15 +190,6 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   int max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
   m_supports_dual_source_blend = (max_dual_source_draw_buffers > 0);
-
-  // Dual-source blend currently has issues on Mesa for at least Gen7/Gen7.5. This needs more investigation, but just
-  // disable it for now.
-  if (std::strstr(gl_renderer, "Mesa DRI Intel(R) Haswell") || std::strstr(gl_renderer, "Mesa DRI Intel(R) Ivybridge"))
-  {
-    Log_WarningPrintf("Detected Mesa DRI broken dual-source blend, disabling.");
-    m_supports_dual_source_blend = false;
-  }
-
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
@@ -355,7 +346,17 @@ bool GPU_HW_OpenGL::CompilePrograms()
             }
 
             if (!m_is_gles)
-              prog.BindFragData(0, "o_col0");
+            {
+              if (m_supports_dual_source_blend)
+              {
+                prog.BindFragDataIndexed(0, "o_col0");
+                prog.BindFragDataIndexed(1, "o_col1");
+              }
+              else
+              {
+                prog.BindFragData(0, "o_col0");
+              }
+            }
           };
 
           std::optional<GL::Program> prog = m_shader_cache.GetProgram(batch_vs, {}, fs, link_callback);
@@ -397,17 +398,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
       std::optional<GL::Program> prog = m_shader_cache.GetProgram(vs, {}, fs, [this](GL::Program& prog) {
         if (!m_is_gles)
-        {
-          if (m_supports_dual_source_blend)
-          {
-            prog.BindFragDataIndexed(0, "o_col0");
-            prog.BindFragDataIndexed(1, "o_col1");
-          }
-          else
-          {
-            prog.BindFragData(0, "o_col0");
-          }
-        }
+          prog.BindFragData(0, "o_col0");
       });
       if (!prog)
         return false;
