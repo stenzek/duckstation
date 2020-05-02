@@ -268,12 +268,12 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
 {
   if (m_glsl)
   {
-    if (m_use_glsl_binding_layout && 0)
+    if (m_use_glsl_binding_layout)
     {
       u32 attribute_counter = 0;
       for (const char* attribute : attributes)
       {
-        ss << "layout(location = " << attribute_counter << ") " << attribute << ";\n";
+        ss << "layout(location = " << attribute_counter << ") in " << attribute << ";\n";
         attribute_counter++;
       }
     }
