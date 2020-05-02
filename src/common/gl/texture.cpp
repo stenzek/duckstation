@@ -136,7 +136,7 @@ void Texture::GetTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLi
                                  GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
                                  GLsizei bufSize, void* pixels)
 {
-  if (GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image)
+  if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image)
   {
     glGetTextureSubImage(texture, level, xoffset, yoffset, zoffset, width, height, depth, format, type, bufSize,
                          pixels);
