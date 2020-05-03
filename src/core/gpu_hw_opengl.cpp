@@ -864,6 +864,8 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
                                 src_y * m_resolution_scale,
                                 dst_x * m_resolution_scale,
                                 dst_y * m_resolution_scale,
+                                ((dst_x + width) % VRAM_WIDTH) * m_resolution_scale,
+                                ((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale,
                                 width * m_resolution_scale,
                                 height * m_resolution_scale,
                                 m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,

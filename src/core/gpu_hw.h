@@ -127,6 +127,8 @@ protected:
     u32 u_src_y;
     u32 u_dst_x;
     u32 u_dst_y;
+    u32 u_end_x;
+    u32 u_end_y;
     u32 u_width;
     u32 u_height;
     u32 u_set_mask_bit;

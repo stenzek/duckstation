@@ -136,6 +136,10 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT const\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
+    ss << "#define VECTOR_LT(a, b) ((a) < (b))\n";
+    ss << "#define VECTOR_LE(a, b) ((a) <= (b))\n";
+    ss << "#define VECTOR_GT(a, b) ((a) > (b))\n";
+    ss << "#define VECTOR_GE(a, b) ((a) >= (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -148,6 +152,10 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT static const\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
+    ss << "#define VECTOR_LT(a, b) (any((a) < (b)))\n";
+    ss << "#define VECTOR_LE(a, b) (any((a) <= (b)))\n";
+    ss << "#define VECTOR_GT(a, b) (any((a) > (b)))\n";
+    ss << "#define VECTOR_GE(a, b) (any((a) >= (b)))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
@@ -1104,14 +1112,18 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(
-    ss, {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_size", "bool u_set_mask_bit", "float u_depth_value"});
+  DeclareUniformBuffer(ss, {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_end_coords", "uint2 u_size",
+                            "bool u_set_mask_bit", "float u_depth_value"});
 
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
   uint2 dst_coords = uint2(v_pos.xy);
+
+  // make sure it's not oversized and out of range
+  if (VECTOR_LT(dst_coords, u_dst_coords) && VECTOR_GE(dst_coords, u_end_coords))
+    discard;
 
   // find offset from the start of the row/column
   uint2 offset;
