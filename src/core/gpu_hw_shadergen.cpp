@@ -136,10 +136,10 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT const\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
-    ss << "#define VECTOR_LT(a, b) ((a) < (b))\n";
-    ss << "#define VECTOR_LE(a, b) ((a) <= (b))\n";
-    ss << "#define VECTOR_GT(a, b) ((a) > (b))\n";
-    ss << "#define VECTOR_GE(a, b) ((a) >= (b))\n";
+    ss << "#define VECTOR_LT(a, b) (any(lessThan((a), (b))))\n";
+    ss << "#define VECTOR_LE(a, b) (any(lessThanEqual((a), (b))))\n";
+    ss << "#define VECTOR_GT(a, b) (any(greaterThan((a), (b))))\n";
+    ss << "#define VECTOR_GE(a, b) (any(greaterThanEqual((a), (b))))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
