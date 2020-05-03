@@ -394,8 +394,17 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
 
     if (m_use_glsl_binding_layout)
     {
-      for (u32 i = 0; i < num_color_outputs; i++)
-        ss << "layout(location = 0, index = " << i << ") out float4 o_col" << i << ";\n";
+      if (m_supports_dual_source_blend)
+      {
+        for (u32 i = 0; i < num_color_outputs; i++)
+          ss << "layout(location = 0, index = " << i << ") out float4 o_col" << i << ";\n";
+      }
+      else
+      {
+        Assert(num_color_outputs <= 1);
+        for (u32 i = 0; i < num_color_outputs; i++)
+          ss << "layout(location = 0" << i << ") out float4 o_col" << i << ";\n";
+      }
     }
     else
     {

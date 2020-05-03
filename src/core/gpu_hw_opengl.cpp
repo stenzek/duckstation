@@ -39,7 +39,7 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* d
 
   SetCapabilities(host_display);
 
-  m_shader_cache.Open(m_is_gles, system->GetHostInterface()->GetUserDirectoryRelativePath("cache"));
+  m_shader_cache.Open(IsGLES(), system->GetHostInterface()->GetUserDirectoryRelativePath("cache"));
 
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;
@@ -155,8 +155,7 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
 
 void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 {
-  m_is_gles = (host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES);
-  Log_InfoPrintf("Context Type: %s", m_is_gles ? "OpenGL ES" : "OpenGL");
+  Log_InfoPrintf("Context Type: %s", IsGLES() ? "OpenGL ES" : "OpenGL");
 
   const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
   const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
@@ -266,7 +265,7 @@ void GPU_HW_OpenGL::ClearFramebuffer()
 {
   glDisable(GL_SCISSOR_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClearDepth(0.0f);
+  IsGLES() ? glClearDepthf(0.0f) : glClearDepth(0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_SCISSOR_TEST);
   SetFullVRAMDirtyRectangle();
@@ -358,7 +357,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
                 prog.BindAttribute(3, "a_texpage");
               }
 
-              if (!m_is_gles || m_supports_dual_source_blend)
+              if (!IsGLES() || m_supports_dual_source_blend)
               {
                 if (m_supports_dual_source_blend)
                 {
@@ -416,7 +415,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
       std::optional<GL::Program> prog =
         m_shader_cache.GetProgram(vs, {}, fs, [this, use_binding_layout](GL::Program& prog) {
-          if (!m_is_gles && !use_binding_layout)
+          if (!IsGLES() && !use_binding_layout)
             prog.BindFragData(0, "o_col0");
         });
       if (!prog)
@@ -435,7 +434,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   std::optional<GL::Program> prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                                               shadergen.GenerateInterlacedFillFragmentShader(),
                                                               [this, use_binding_layout](GL::Program& prog) {
-                                                                if (!m_is_gles && !use_binding_layout)
+                                                                if (!IsGLES() && !use_binding_layout)
                                                                   prog.BindFragData(0, "o_col0");
                                                               });
   if (!prog)
@@ -449,7 +448,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMReadFragmentShader(),
                                    [this, use_binding_layout](GL::Program& prog) {
-                                     if (!m_is_gles && !use_binding_layout)
+                                     if (!IsGLES() && !use_binding_layout)
                                        prog.BindFragData(0, "o_col0");
                                    });
   if (!prog)
@@ -466,7 +465,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMCopyFragmentShader(),
                                    [this, use_binding_layout](GL::Program& prog) {
-                                     if (!m_is_gles && !use_binding_layout)
+                                     if (!IsGLES() && !use_binding_layout)
                                        prog.BindFragData(0, "o_col0");
                                    });
   if (!prog)
@@ -494,7 +493,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                      shadergen.GenerateVRAMWriteFragmentShader(),
                                      [this, use_binding_layout](GL::Program& prog) {
-                                       if (!m_is_gles && !use_binding_layout)
+                                       if (!IsGLES() && !use_binding_layout)
                                          prog.BindFragData(0, "o_col0");
                                      });
     if (!prog)
@@ -714,7 +713,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   {
     const auto [r, g, b, a] = RGBA8ToFloat(color);
     glClearColor(r, g, b, a);
-    glClearDepth(a);
+    IsGLES() ? glClearDepthf(a) : glClearDepth(a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SetScissorFromDrawingArea();
   }

@@ -48,6 +48,8 @@ private:
     u32 num_uniform_buffer_updates;
   };
 
+  ALWAYS_INLINE bool IsGLES() const { return (m_render_api == HostDisplay::RenderAPI::OpenGLES); }
+
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
   void SetCapabilities(HostDisplay* host_display);
@@ -93,7 +95,6 @@ private:
   u32 m_uniform_buffer_alignment = 1;
   u32 m_max_texture_buffer_size = 0;
 
-  bool m_is_gles = false;
   bool m_supports_texture_buffer = false;
   bool m_supports_geometry_shaders = false;
 };
