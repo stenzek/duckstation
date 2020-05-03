@@ -34,6 +34,7 @@ protected:
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void UpdateVRAMReadTexture() override;
+  void UpdateDepthBufferFromMaskBit() override;
   void SetScissorFromDrawingArea() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
   void UnmapBatchVertexPointer(u32 used_vertices) override;
@@ -77,6 +78,8 @@ private:
 
   // downsample texture - used for readbacks at >1xIR.
   D3D11::Texture m_vram_texture;
+  D3D11::Texture m_vram_depth_texture;
+  ComPtr<ID3D11DepthStencilView> m_vram_depth_view;
   D3D11::Texture m_vram_read_texture;
   D3D11::Texture m_vram_encoding_texture;
   D3D11::Texture m_display_texture;
@@ -94,8 +97,11 @@ private:
   ComPtr<ID3D11RasterizerState> m_cull_none_rasterizer_state;
 
   ComPtr<ID3D11DepthStencilState> m_depth_disabled_state;
+  ComPtr<ID3D11DepthStencilState> m_depth_test_always_state;
+  ComPtr<ID3D11DepthStencilState> m_depth_test_less_state;
 
   ComPtr<ID3D11BlendState> m_blend_disabled_state;
+  ComPtr<ID3D11BlendState> m_blend_no_color_writes_state;
 
   ComPtr<ID3D11SamplerState> m_point_sampler_state;
   ComPtr<ID3D11SamplerState> m_linear_sampler_state;
@@ -114,5 +120,6 @@ private:
   ComPtr<ID3D11PixelShader> m_vram_read_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_write_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_copy_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_vram_update_depth_pixel_shader;
   std::array<std::array<ComPtr<ID3D11PixelShader>, 2>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
 };

@@ -30,6 +30,7 @@ protected:
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void UpdateVRAMReadTexture() override;
+  void UpdateDepthBufferFromMaskBit() override;
   void SetScissorFromDrawingArea() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
   void UnmapBatchVertexPointer(u32 used_vertices) override;
@@ -63,11 +64,13 @@ private:
 
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
+  GL::Texture m_vram_depth_texture;
   GL::Texture m_vram_read_texture;
   GL::Texture m_vram_encoding_texture;
   GL::Texture m_display_texture;
 
   std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
+  GLuint m_vram_fbo_id = 0;
   GLuint m_vao_id = 0;
   GLuint m_attributeless_vao_id = 0;
 
@@ -85,6 +88,7 @@ private:
   GL::Program m_vram_read_program;
   GL::Program m_vram_write_program;
   GL::Program m_vram_copy_program;
+  GL::Program m_vram_update_depth_program;
 
   u32 m_uniform_buffer_alignment = 1;
   u32 m_max_texture_buffer_size = 0;

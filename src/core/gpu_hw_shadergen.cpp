@@ -319,15 +319,15 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
   {
     ss << "void main(\n";
 
+    if (declare_vertex_id)
+      ss << "  in uint v_id : SV_VertexID,\n";
+
     u32 attribute_counter = 0;
     for (const char* attribute : attributes)
     {
       ss << "  in " << attribute << " : ATTR" << attribute_counter << ",\n";
       attribute_counter++;
     }
-
-    if (declare_vertex_id)
-      ss << "  in uint v_id : SV_VertexID,\n";
 
     for (u32 i = 0; i < num_color_outputs; i++)
       ss << "  out float4 v_col" << i << " : COLOR" << i << ",\n";
@@ -349,7 +349,7 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
 void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
   std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
   const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
-  bool declare_fragcoord /* = false */, bool dual_color_output /* = false */)
+  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool depth_output /* = false */)
 {
   if (m_glsl)
   {
@@ -381,23 +381,18 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
     if (declare_fragcoord)
       ss << "#define v_pos gl_FragCoord\n";
 
+    if (depth_output)
+      ss << "#define o_depth gl_FragDepth\n";
+
     if (m_use_glsl_binding_layout)
     {
-      if (dual_color_output)
-      {
-        ss << "layout(location = 0, index = 0) out float4 o_col0;\n";
-        ss << "layout(location = 0, index = 1) out float4 o_col1;\n";
-      }
-      else
-      {
-        ss << "layout(location = 0) out float4 o_col0;\n";
-      }
+      for (u32 i = 0; i < num_color_outputs; i++)
+        ss << "layout(location = 0, index = " << i << ") out float4 o_col" << i << ";\n";
     }
     else
     {
-      ss << "out float4 o_col0;\n";
-      if (dual_color_output)
-        ss << "out float4 o_col1;\n";
+      for (u32 i = 0; i < num_color_outputs; i++)
+        ss << "out float4 o_col" << i << ";\n";
     }
 
     ss << "\n";
@@ -425,14 +420,23 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
       if (declare_fragcoord)
         ss << "  in float4 v_pos : SV_Position,\n";
 
-      if (dual_color_output)
+      if (depth_output)
       {
-        ss << "  out float4 o_col0 : SV_Target0,\n";
-        ss << "  out float4 o_col1 : SV_Target1)\n";
+        ss << "  out float o_depth : SV_Depth";
+        if (num_color_outputs > 0)
+          ss << ",\n";
+        else
+          ss << ")\n";
       }
-      else
+
+      for (u32 i = 0; i < num_color_outputs; i++)
       {
-        ss << "  out float4 o_col0 : SV_Target)";
+        ss << "  out float4 o_col" << i << " : SV_Target" << i;
+
+        if (i == (num_color_outputs - 1))
+          ss << ")\n";
+        else
+          ss << ",\n";
       }
     }
   }
@@ -440,9 +444,10 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
 
 void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
-  DeclareUniformBuffer(ss, {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
-                            "float u_dst_alpha_factor", "bool u_set_mask_while_drawing",
-                            "uint u_interlaced_displayed_field"});
+  DeclareUniformBuffer(ss,
+                       {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
+                        "float u_dst_alpha_factor", "uint u_interlaced_displayed_field", "uint u_base_vertex_depth_id",
+                        "bool u_check_mask_before_draw", "bool u_set_mask_while_drawing"});
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
@@ -459,11 +464,11 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   if (textured)
   {
     DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                            {{"nointerpolation", "uint4 v_texpage"}});
+                            {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float v_depth"}}, true);
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0"}, 1, 0, {});
+    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0"}, 1, 0, {{"nointerpolation", "float v_depth"}}, true);
   }
 
   ss << R"(
@@ -483,6 +488,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   pos_y += EPSILON;
 #endif
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
+
+#if API_D3D11
+  v_depth = 1.0 - (float(u_base_vertex_depth_id + (u_check_mask_before_draw ? 0u : v_id)) / 65535.0);
+#else
+  v_depth = 1.0 - (float(v_id - u_base_vertex_depth_id) / 65535.0);
+#endif
 
   v_col0 = a_col0;
   #if TEXTURED
@@ -616,11 +627,12 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source);
+    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float v_depth"}},
+                              true, use_dual_source ? 2 : 1, true);
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source);
+    DeclareFragmentEntryPoint(ss, 1, 0, {{"nointerpolation", "float v_depth"}}, true, use_dual_source ? 2 : 1, true);
   }
 
   ss << R"(
@@ -736,6 +748,8 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       #else
         o_col0 = float4(color, u_dst_alpha_factor / ialpha);
       #endif
+
+      o_depth = oalpha * v_depth;
     }
     else
     {
@@ -752,6 +766,8 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       #else
         o_col0 = float4(color, 1.0 - ialpha);
       #endif
+
+      o_depth = oalpha * v_depth;
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
@@ -760,6 +776,8 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
     #if USE_DUAL_SOURCE
       o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
     #endif
+
+    o_depth = oalpha * v_depth;
   #endif
 }
 )";
@@ -783,10 +801,12 @@ CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RES
     ss << R"(
 in VertexData {
   float4 v_col0;
+  nointerpolation float v_depth;
 } in_data[];
 
 out VertexData {
   float4 v_col0;
+  nointerpolation float v_depth;
 } out_data;
 
 layout(lines) in;
@@ -799,21 +819,25 @@ void main() {
 
   // top-left
   out_data.v_col0 = in_data[0].v_col0;
+  out_data.v_depth = in_data[0].v_depth;
   gl_Position = gl_in[0].gl_Position - offset;
   EmitVertex();
 
   // top-right
   out_data.v_col0 = in_data[0].v_col0;
+  out_data.v_depth = in_data[0].v_depth;
   gl_Position = gl_in[0].gl_Position + offset;
   EmitVertex();
 
   // bottom-left
   out_data.v_col0 = in_data[1].v_col0;
+  out_data.v_depth = in_data[1].v_depth;
   gl_Position = gl_in[1].gl_Position - offset;
   EmitVertex();
 
   // bottom-right
   out_data.v_col0 = in_data[1].v_col0;
+  out_data.v_depth = in_data[1].v_depth;
   gl_Position = gl_in[1].gl_Position + offset;
   EmitVertex();
 
@@ -827,6 +851,7 @@ void main() {
 struct Vertex
 {
   float4 col0 : COLOR0;
+  float depth : TEXCOORD0;
   float4 pos : SV_Position;
 };
 
@@ -841,21 +866,25 @@ void main(line Vertex input[2], inout TriangleStream<Vertex> output)
 
   // top-left
   v.col0 = input[0].col0;
+  v.depth = input[0].depth;
   v.pos = input[0].pos - offset;
   output.Append(v);
 
   // top-right
   v.col0 = input[0].col0;
+  v.depth = input[0].depth;
   v.pos = input[0].pos + offset;
   output.Append(v);
 
   // bottom-left
   v.col0 = input[1].col0;
+  v.depth = input[1].depth;
   v.pos = input[1].pos - offset;
   output.Append(v);
 
   // bottom-right
   v.col0 = input[1].col0;
+  v.depth = input[1].depth;
   v.pos = input[1].pos + offset;
   output.Append(v);
 
@@ -890,11 +919,12 @@ std::string GPU_HW_ShaderGen::GenerateFillFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   DeclareUniformBuffer(ss, {"float4 u_fill_color"});
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, true);
 
   ss << R"(
 {
   o_col0 = u_fill_color;
+  o_depth = u_fill_color.a;
 }
 )";
 
@@ -907,7 +937,7 @@ std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
   WriteHeader(ss);
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"float4 u_fill_color", "uint u_interlaced_displayed_field"});
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
 
   ss << R"(
 {
@@ -915,6 +945,7 @@ std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
     discard;
 
   o_col0 = u_fill_color;
+  o_depth = u_fill_color.a;
 }
 )";
 
@@ -927,12 +958,12 @@ std::string GPU_HW_ShaderGen::GenerateCopyFragmentShader()
   WriteHeader(ss);
   DeclareUniformBuffer(ss, {"float4 u_src_rect"});
   DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
 
   ss << R"(
 {
-    float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
-    o_col0 = SAMPLE_TEXTURE(samp0, coords);
+  float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
+  o_col0 = SAMPLE_TEXTURE(samp0, coords);
 }
 )";
 
@@ -950,7 +981,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_field_offset"});
   DeclareTexture(ss, "samp0", 0);
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
   ss << R"(
 {
   uint2 icoords = uint2(v_pos.xy) + u_vram_offset;
@@ -1013,7 +1044,7 @@ uint SampleVRAM(uint2 coords)
 }
 )";
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
   ss << R"(
 {
   uint2 sample_coords = uint2(uint(v_pos.x) * 2u, uint(v_pos.y));
@@ -1043,10 +1074,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset"});
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits",
+                            "float u_depth_value"});
 
   DeclareTextureBuffer(ss, "samp0", 0, true, true);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
   uint2 coords = uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
@@ -1058,9 +1090,10 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   #endif
 
   uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
-  uint value = LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r;
+  uint value = LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r | u_mask_or_bits;
   
   o_col0 = RGBA5551ToRGBA8(value);
+  o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
 })";
 
   return ss.str();
@@ -1071,10 +1104,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_size", "bool u_set_mask_bit"});
+  DeclareUniformBuffer(
+    ss, {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_size", "bool u_set_mask_bit", "float u_depth_value"});
 
   DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
   uint2 dst_coords = uint2(v_pos.xy);
@@ -1090,7 +1124,24 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   // sample and apply mask bit
   float4 color = LOAD_TEXTURE(samp0, int2(src_coords), 0);
   o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
+  o_depth = (u_set_mask_bit ? 1.0f : ((o_col0.a == 1.0) ? u_depth_value : 0.0));
 })";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, true);
+
+  ss << R"(
+{
+  o_depth = LOAD_TEXTURE(samp0, int2(v_pos.xy), 0).a;
+}
+)";
 
   return ss.str();
 }

@@ -25,6 +25,7 @@ public:
   std::string GenerateVRAMReadFragmentShader();
   std::string GenerateVRAMWriteFragmentShader();
   std::string GenerateVRAMCopyFragmentShader();
+  std::string GenerateVRAMUpdateDepthFragmentShader();
 
 private:
   void SetGLSLVersionString();
@@ -38,7 +39,7 @@ private:
                                bool declare_vertex_id = false);
   void DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
                                  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
-                                 bool declare_fragcoord = false, bool dual_color_output = false);
+                                 bool declare_fragcoord = false, u32 num_color_outputs = 1, bool depth_output = false);
 
   void WriteCommonFunctions(std::stringstream& ss);
   void WriteBatchUniformBuffer(std::stringstream& ss);

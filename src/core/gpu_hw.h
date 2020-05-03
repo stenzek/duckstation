@@ -1,6 +1,7 @@
 #pragma once
 #include "common/heap_array.h"
 #include "gpu.h"
+#include "host_display.h"
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -42,7 +43,10 @@ protected:
   {
     VRAM_UPDATE_TEXTURE_BUFFER_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32),
     VERTEX_BUFFER_SIZE = 1 * 1024 * 1024,
-    UNIFORM_BUFFER_SIZE = 512 * 1024
+    UNIFORM_BUFFER_SIZE = 512 * 1024,
+    MAX_BATCH_VERTEX_COUNTER_IDS = 65536 - 2,
+    MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
+                                 (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u)
   };
 
   struct BatchVertex
@@ -102,8 +106,19 @@ protected:
     u32 u_texture_window_offset[2];
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
-    u32 u_set_mask_while_drawing;
     u32 u_interlaced_displayed_field;
+    u32 u_vertex_depth_id;
+    u32 u_check_mask_before_draw;
+    u32 u_set_mask_while_drawing;
+  };
+
+  struct VRAMWriteUBOData
+  {
+    u32 u_base_coords[2];
+    u32 u_size[2];
+    u32 u_buffer_base_offset;
+    u32 u_mask_or_bits;
+    float u_depth_value;
   };
 
   struct VRAMCopyUBOData
@@ -115,6 +130,7 @@ protected:
     u32 u_width;
     u32 u_height;
     u32 u_set_mask_bit;
+    float u_depth_value;
   };
 
   struct RendererStats
@@ -133,6 +149,7 @@ protected:
   }
 
   virtual void UpdateVRAMReadTexture() = 0;
+  virtual void UpdateDepthBufferFromMaskBit() = 0;
   virtual void SetScissorFromDrawingArea() = 0;
   virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
   virtual void UnmapBatchVertexPointer(u32 used_vertices) = 0;
@@ -147,11 +164,28 @@ protected:
   void ClearVRAMDirtyRectangle() { m_vram_dirty_rect.SetInvalid(); }
   void IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect);
 
+  bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
+
   u32 GetBatchVertexSpace() const { return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr); }
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
   void EnsureVertexBufferSpace(u32 required_vertices);
+  void EnsureVertexBufferSpaceForCurrentCommand();
+  void ResetBatchVertexDepthID();
+  void IncrementBatchVertexID(u32 count);
+  void SetBatchUBOVertexDepthID(u32 value);
 
-  bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
+  /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
+  ALWAYS_INLINE float GetCurrentNormalizedBatchVertexDepthID() const
+  {
+    return 1.0f - (static_cast<float>(m_batch_next_vertex_depth_id) / 65535.0f);
+  }
+
+  /// Returns true if the batch vertex depth ID needs to be updated.
+  ALWAYS_INLINE bool BatchVertexDepthIDNeedsUpdate() const
+  {
+    // because GL uses base vertex we're incrementing the depth id every draw whether we like it or not
+    return m_batch.check_mask_before_draw || m_render_api != HostDisplay::RenderAPI::D3D11;
+  }
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
@@ -182,9 +216,12 @@ protected:
   BatchVertex* m_batch_end_vertex_ptr = nullptr;
   BatchVertex* m_batch_current_vertex_ptr = nullptr;
   u32 m_batch_base_vertex = 0;
+  u32 m_batch_current_vertex_depth_id = 0;
+  u32 m_batch_next_vertex_depth_id = 0;
 
   u32 m_resolution_scale = 1;
   u32 m_max_resolution_scale = 1;
+  HostDisplay::RenderAPI m_render_api = HostDisplay::RenderAPI::None;
   bool m_true_color = true;
   bool m_scaled_dithering = false;
   bool m_texture_filtering = false;

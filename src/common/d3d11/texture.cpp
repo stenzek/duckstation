@@ -27,14 +27,10 @@ D3D11_TEXTURE2D_DESC Texture::GetDesc() const
   return desc;
 }
 
-bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT format, bool shader_resource,
-                     bool render_target, const void* initial_data, u32 initial_data_stride)
+bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT format, u32 bind_flags,
+                     const void* initial_data, u32 initial_data_stride)
 {
-  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, 0, D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
-  if (shader_resource)
-    desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
-  if (render_target)
-    desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, bind_flags, D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
 
   D3D11_SUBRESOURCE_DATA srd;
   srd.pSysMem = initial_data;
@@ -50,7 +46,7 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT fo
   }
 
   ComPtr<ID3D11ShaderResourceView> srv;
-  if (shader_resource)
+  if (bind_flags & D3D11_BIND_SHADER_RESOURCE)
   {
     const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_TEXTURE2D, desc.Format, 0, desc.MipLevels, 0,
                                                     desc.ArraySize);
@@ -63,7 +59,7 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT fo
   }
 
   ComPtr<ID3D11RenderTargetView> rtv;
-  if (render_target)
+  if (bind_flags & D3D11_BIND_RENDER_TARGET)
   {
     const CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, desc.Format, 0, 0, desc.ArraySize);
     const HRESULT hr = device->CreateRenderTargetView(texture.Get(), &rtv_desc, rtv.GetAddressOf());

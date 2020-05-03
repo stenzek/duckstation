@@ -28,6 +28,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Int
 
   const Settings& settings = m_system->GetSettings();
   m_resolution_scale = settings.gpu_resolution_scale;
+  m_render_api = host_display->GetRenderAPI();
   m_true_color = settings.gpu_true_color;
   m_scaled_dithering = settings.gpu_scaled_dithering;
   m_texture_filtering = settings.gpu_texture_filtering;
@@ -46,10 +47,15 @@ void GPU_HW::Reset()
 {
   GPU::Reset();
 
+  m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
+
   m_vram_shadow.fill(0);
 
   m_batch = {};
   m_batch_ubo_data = {};
+  m_batch_current_vertex_depth_id = 1;
+  m_batch_next_vertex_depth_id = 2;
+  SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
   m_batch_ubo_dirty = true;
 
   SetFullVRAMDirtyRectangle();
@@ -62,7 +68,11 @@ bool GPU_HW::DoState(StateWrapper& sw)
 
   // invalidate the whole VRAM read texture when loading state
   if (sw.IsReading())
+  {
+    m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
     SetFullVRAMDirtyRectangle();
+    ResetBatchVertexDepthID();
+  }
 
   return true;
 }
@@ -177,12 +187,11 @@ void GPU_HW::LoadVertices()
   const RenderCommand rc{m_render_command.bits};
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
 
-  // TODO: Move this to the GPU..
   switch (rc.primitive)
   {
     case Primitive::Polygon:
     {
-      EnsureVertexBufferSpace(rc.quad_polygon ? 6 : 3);
+      DebugAssert(GetBatchVertexSpace() >= (rc.quad_polygon ? 6u : 3u));
 
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
@@ -308,9 +317,7 @@ void GPU_HW::LoadVertices()
       }
 
       // we can split the rectangle up into potentially 8 quads
-      const u32 required_vertices = 6 * (((rectangle_width + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
-                                    (((rectangle_height + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u);
-      EnsureVertexBufferSpace(required_vertices);
+      DebugAssert(GetBatchVertexSpace() >= MAX_VERTICES_FOR_RECTANGLE);
 
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
       u16 tex_top = orig_tex_top;
@@ -361,7 +368,7 @@ void GPU_HW::LoadVertices()
     {
       if (!rc.polyline)
       {
-        EnsureVertexBufferSpace(2);
+        DebugAssert(GetBatchVertexSpace() >= 2);
 
         u32 color0, color1;
         VertexPosition pos0, pos1;
@@ -410,7 +417,7 @@ void GPU_HW::LoadVertices()
       {
         // Multiply by two because we don't use line strips.
         const u32 num_vertices = GetPolyLineVertexCount();
-        EnsureVertexBufferSpace(num_vertices * 2);
+        DebugAssert(GetBatchVertexSpace() >= (num_vertices * 2));
 
         const u32 first_color = rc.color_for_first_vertex;
         const bool shaded = rc.shading_enable;
@@ -534,6 +541,73 @@ void GPU_HW::EnsureVertexBufferSpace(u32 required_vertices)
   MapBatchVertexPointer(required_vertices);
 }
 
+void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
+{
+  u32 required_vertices;
+  switch (m_render_command.primitive)
+  {
+    case Primitive::Polygon:
+      required_vertices = m_render_command.quad_polygon ? 6 : 3;
+      break;
+    case Primitive::Rectangle:
+      required_vertices = MAX_VERTICES_FOR_RECTANGLE;
+      break;
+    case Primitive::Line:
+    default:
+      required_vertices = m_render_command.polyline ? (GetPolyLineVertexCount() * 2u) : 2u;
+      break;
+  }
+
+  // can we fit these vertices in the current depth buffer range?
+  if (BatchVertexDepthIDNeedsUpdate() &&
+      (m_batch_next_vertex_depth_id + GetBatchVertexCount() + required_vertices) > MAX_BATCH_VERTEX_COUNTER_IDS)
+  {
+    // implies FlushRender()
+    ResetBatchVertexDepthID();
+  }
+  else if (m_batch_current_vertex_ptr)
+  {
+    if (GetBatchVertexSpace() >= required_vertices)
+      return;
+
+    FlushRender();
+  }
+
+  MapBatchVertexPointer(required_vertices);
+}
+
+void GPU_HW::ResetBatchVertexDepthID()
+{
+  Log_PerfPrint("Resetting batch vertex depth ID");
+  FlushRender();
+  UpdateDepthBufferFromMaskBit();
+
+  m_batch_current_vertex_depth_id = 1;
+  m_batch_next_vertex_depth_id = 2;
+  SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
+}
+
+void GPU_HW::IncrementBatchVertexID(u32 count)
+{
+  DebugAssert((m_batch_next_vertex_depth_id + count) <= MAX_BATCH_VERTEX_COUNTER_IDS);
+  m_batch_next_vertex_depth_id += count;
+}
+
+void GPU_HW::SetBatchUBOVertexDepthID(u32 value)
+{
+  u32 ubo_value;
+
+  // In OpenGL, gl_VertexID is inclusive of the base vertex, whereas SV_VertexID in D3D isn't.
+  // We rely on unsigned overflow to compute the correct value based on the base vertex.
+  if (m_render_api != HostDisplay::RenderAPI::D3D11)
+    ubo_value = m_batch_base_vertex - value;
+  else
+    ubo_value = value;
+
+  m_batch_ubo_dirty |= (m_batch_ubo_data.u_vertex_depth_id != ubo_value);
+  m_batch_ubo_data.u_vertex_depth_id = ubo_value;
+}
+
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   IncludeVRAMDityRectangle(
@@ -544,12 +618,26 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
   DebugAssert((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT);
   IncludeVRAMDityRectangle(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+
+  if (m_GPUSTAT.check_mask_before_draw)
+  {
+    // set new vertex counter since we want this to take into consideration previous masked pixels
+    m_batch_current_vertex_depth_id = m_batch_next_vertex_depth_id++;
+    SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
+  }
 }
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
   IncludeVRAMDityRectangle(
     Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+
+  if (m_GPUSTAT.check_mask_before_draw)
+  {
+    // set new vertex counter since we want this to take into consideration previous masked pixels
+    m_batch_current_vertex_depth_id = m_batch_next_vertex_depth_id++;
+    SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
+  }
 }
 
 void GPU_HW::DispatchRenderCommand()
@@ -600,6 +688,8 @@ void GPU_HW::DispatchRenderCommand()
     FlushRender();
   }
 
+  EnsureVertexBufferSpaceForCurrentCommand();
+
   // transparency mode change
   if (m_batch.transparency_mode != transparency_mode && transparency_mode != TransparencyMode::Disabled)
   {
@@ -614,7 +704,8 @@ void GPU_HW::DispatchRenderCommand()
   {
     m_batch.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
     m_batch.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
-    m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(m_GPUSTAT.set_mask_while_drawing);
+    m_batch_ubo_data.u_check_mask_before_draw = BoolToUInt32(m_batch.check_mask_before_draw);
+    m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(m_batch.set_mask_while_drawing);
     m_batch_ubo_dirty = true;
   }
 
@@ -657,6 +748,10 @@ void GPU_HW::FlushRender()
   if (vertex_count == 0)
     return;
 
+  const bool update_depth_id = BatchVertexDepthIDNeedsUpdate();
+  if (update_depth_id)
+    SetBatchUBOVertexDepthID(m_batch_next_vertex_depth_id);
+
   if (m_drawing_area_changed)
   {
     m_drawing_area_changed = false;
@@ -680,6 +775,9 @@ void GPU_HW::FlushRender()
     m_renderer_stats.num_batches++;
     DrawBatchVertices(m_batch.GetRenderMode(), m_batch_base_vertex, vertex_count);
   }
+
+  if (update_depth_id)
+    IncrementBatchVertexID(vertex_count);
 }
 
 void GPU_HW::DrawRendererStats(bool is_idle_frame)
