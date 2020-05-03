@@ -156,7 +156,7 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
 void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 {
   m_is_gles = (host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES);
-  Log_InfoPrintf("Context Type: %s", m_is_gles ? "OpenGL" : "OpenGL ES");
+  Log_InfoPrintf("Context Type: %s", m_is_gles ? "OpenGL ES" : "OpenGL");
 
   const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
   const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
