@@ -1305,7 +1305,7 @@ bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, con
 {
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
-  ImGui::SetNextItemWidth((ImGui::CalcItemWidth() - 50.0f) * framebuffer_scale);
+  ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - (50.0f * framebuffer_scale));
   bool result = ImGui::InputText(label, path);
   ImGui::SameLine();
 
@@ -1313,7 +1313,13 @@ bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, con
   if (ImGui::Button("..."))
   {
     nfdchar_t* out_path = nullptr;
-    if (NFD_OpenDialog(filter, path->c_str(), &out_path) == NFD_OKAY)
+    nfdresult_t nfd_result = NFD_OpenDialog(filter, path->c_str(), &out_path);
+    if (nfd_result == NFD_ERROR)
+    {
+      // try without the path - it might not be valid
+      nfd_result = NFD_OpenDialog(filter, nullptr, &out_path);
+    }
+    if (nfd_result == NFD_OKAY)
     {
       path->assign(out_path);
       result = true;
