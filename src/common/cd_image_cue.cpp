@@ -4,6 +4,7 @@
 #include "file_system.h"
 #include "log.h"
 #include <algorithm>
+#include <cerrno>
 #include <libcue/libcue.h>
 #include <map>
 Log_SetChannel(CDImageCueSheet);
@@ -48,7 +49,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
   std::FILE* cue_fp = FileSystem::OpenCFile(filename, "rb");
   if (!cue_fp)
   {
-    Log_ErrorPrintf("Failed to open cuesheet '%s'", filename);
+    Log_ErrorPrintf("Failed to open cuesheet '%s': errno %d", filename, errno);
     return false;
   }
 
@@ -94,8 +95,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb");
       if (!track_fp)
       {
-        Log_ErrorPrintf("Failed to open track filename '%s' (from '%s' and '%s')", track_full_filename.c_str(),
-                        track_filename.c_str(), filename);
+        Log_ErrorPrintf("Failed to open track filename '%s' (from '%s' and '%s'): errno %d",
+                        track_full_filename.c_str(), track_filename.c_str(), filename, errno);
         return false;
       }
 

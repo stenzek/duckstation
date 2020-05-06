@@ -2,6 +2,7 @@
 #include "cd_subchannel_replacement.h"
 #include "file_system.h"
 #include "log.h"
+#include <cerrno>
 Log_SetChannel(CDImageBin);
 
 class CDImageBin : public CDImage
@@ -49,7 +50,7 @@ bool CDImageBin::Open(const char* filename)
   m_fp = FileSystem::OpenCFile(filename, "rb");
   if (!m_fp)
   {
-    Log_ErrorPrintf("Failed to open binfile '%s'", filename);
+    Log_ErrorPrintf("Failed to open binfile '%s': errno %d", filename, errno);
     return false;
   }
 
