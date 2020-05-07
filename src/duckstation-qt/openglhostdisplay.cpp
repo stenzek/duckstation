@@ -10,86 +10,11 @@
 #include <QtGui/QWindow>
 #include <array>
 #include <imgui_impl_opengl3.h>
+#if !defined(WIN32) && !defined(APPLE)
+#include <qpa/qplatformnativeinterface.h>
+#endif
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
-
-static thread_local QOpenGLContext* s_thread_gl_context;
-
-static void* GetProcAddressCallback(const char* name)
-{
-  QOpenGLContext* ctx = s_thread_gl_context;
-  if (!ctx)
-    return nullptr;
-
-  return (void*)ctx->getProcAddress(name);
-}
-
-#if defined(WIN32)
-#include "common/windows_headers.h"
-#elif defined(HAS_GLX)
-#include <GL/glx.h>
-#endif
-
-/// Changes the swap interval on a window. Since Qt doesn't expose this functionality, we need to change it manually
-/// ourselves it by calling system-specific functions. Assumes the context is current.
-static void SetSwapInterval(QOpenGLContext* context, int interval)
-{
-  static QOpenGLContext* last_context = nullptr;
-
-#ifdef WIN32
-  static void(WINAPI * wgl_swap_interval_ext)(int) = nullptr;
-
-  if (last_context != context)
-  {
-    wgl_swap_interval_ext = nullptr;
-    last_context = context;
-
-    HMODULE gl_module = GetModuleHandleA("opengl32.dll");
-    if (!gl_module)
-      return;
-
-    const auto wgl_get_proc_address =
-      reinterpret_cast<PROC(WINAPI*)(LPCSTR)>(GetProcAddress(gl_module, "wglGetProcAddress"));
-    if (!wgl_get_proc_address)
-      return;
-
-    wgl_swap_interval_ext =
-      reinterpret_cast<decltype(wgl_swap_interval_ext)>(wgl_get_proc_address("wglSwapIntervalEXT"));
-  }
-
-  if (wgl_swap_interval_ext)
-    wgl_swap_interval_ext(interval);
-#elif __linux__
-  const QString platform_name(QGuiApplication::platformName());
-  if (platform_name == QStringLiteral("xcb"))
-  {
-    static void (*glx_swap_interval_ext)(Display*, GLXDrawable, int) = nullptr;
-
-    if (last_context != context)
-    {
-      glx_swap_interval_ext = nullptr;
-      last_context = context;
-
-      glx_swap_interval_ext = reinterpret_cast<decltype(glx_swap_interval_ext)>(
-        glXGetProcAddress(reinterpret_cast<const GLubyte*>("glXSwapIntervalEXT")));
-      if (!glx_swap_interval_ext)
-        return;
-    }
-
-    if (!glx_swap_interval_ext)
-      return;
-
-    Display* dpy = glXGetCurrentDisplay();
-    GLXDrawable drawable = glXGetCurrentDrawable();
-    if (dpy && drawable != GLX_NONE)
-      glx_swap_interval_ext(dpy, drawable, interval);
-  }
-  else
-  {
-    qCritical() << "Unknown platform: " << platform_name;
-  }
-#endif
-}
 
 class OpenGLDisplayWidgetTexture : public HostDisplayTexture
 {
@@ -148,7 +73,7 @@ QtDisplayWidget* OpenGLHostDisplay::createWidget(QWidget* parent)
 
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
-  return m_gl_context->isOpenGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
+  return m_gl_context->IsGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
 void* OpenGLHostDisplay::GetRenderDevice() const
@@ -159,6 +84,12 @@ void* OpenGLHostDisplay::GetRenderDevice() const
 void* OpenGLHostDisplay::GetRenderContext() const
 {
   return m_gl_context.get();
+}
+
+void OpenGLHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
+{
+  QtHostDisplay::WindowResized(new_window_width, new_window_height);
+  m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
 }
 
 std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* initial_data,
@@ -213,13 +144,13 @@ void OpenGLHostDisplay::SetVSync(bool enabled)
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  SetSwapInterval(m_gl_context.get(), enabled ? 1 : 0);
+  m_gl_context->SetSwapInterval(enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 const char* OpenGLHostDisplay::GetGLSLVersionString() const
 {
-  if (m_gl_context->isOpenGLES())
+  if (m_gl_context->IsGLES())
   {
     if (GLAD_GL_ES_VERSION_3_0)
       return "#version 300 es";
@@ -239,7 +170,7 @@ std::string OpenGLHostDisplay::GetGLSLVersionHeader() const
 {
   std::string header = GetGLSLVersionString();
   header += "\n\n";
-  if (m_gl_context->isOpenGLES())
+  if (m_gl_context->IsGLES())
   {
     header += "precision highp float;\n";
     header += "precision highp int;\n\n";
@@ -273,80 +204,60 @@ bool OpenGLHostDisplay::hasDeviceContext() const
   return static_cast<bool>(m_gl_context);
 }
 
+WindowInfo OpenGLHostDisplay::getWindowInfo() const
+{
+  WindowInfo wi;
+
+  // Windows and Apple are easy here since there's no display connection.
+#if defined(WIN32)
+  wi.type = WindowInfo::Type::Win32;
+  wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
+#elif defined(__APPLE__)
+  wi.type = WindowInfo::Type::MacOS;
+  wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
+#else
+  QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
+  const QString platform_name = QGuiApplication::platformName();
+  if (platform_name == QStringLiteral("xcb"))
+  {
+    wi.type = WindowInfo::Type::X11;
+    wi.display_connection = pni->nativeResourceForWindow("display", m_widget->windowHandle());
+    wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
+  }
+  else if (platform_name == QStringLiteral("wayland"))
+  {
+    wi.type = WindowInfo::Type::Wayland;
+    wi.display_connection = pni->nativeResourceForWindow("display", m_widget->windowHandle());
+    wi.window_handle = pni->nativeResourceForWindow("surface", m_widget->windowHandle());
+  }
+  else
+  {
+    qCritical() << "Unknown PNI platform " << platform_name;
+    return wi;
+  }
+#endif
+
+  wi.surface_width = m_widget->width();
+  wi.surface_height = m_widget->height();
+  wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
+
+  return wi;
+}
+
 bool OpenGLHostDisplay::createDeviceContext(bool debug_device)
 {
-  m_gl_context = std::make_unique<QOpenGLContext>();
-
-  // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
-  static constexpr std::array<std::tuple<int, int>, 11> desktop_versions_to_try = {
-    {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}, {3, 1}, {3, 0}}};
-  static constexpr std::array<std::tuple<int, int>, 4> es_versions_to_try = {{{3, 2}, {3, 1}, {3, 0}}};
-
-  QSurfaceFormat surface_format; // = requestedFormat();
-  surface_format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-  surface_format.setSwapInterval(0);
-  surface_format.setRenderableType(QSurfaceFormat::OpenGL);
-  surface_format.setProfile(QSurfaceFormat::CoreProfile);
-  if (debug_device)
-    surface_format.setOption(QSurfaceFormat::DebugContext);
-
-  for (const auto [major, minor] : desktop_versions_to_try)
-  {
-    surface_format.setVersion(major, minor);
-    m_gl_context->setFormat(surface_format);
-    if (m_gl_context->create())
-      break;
-  }
-
-  if (!m_gl_context->isValid())
-  {
-    // try forcing ES
-    surface_format.setRenderableType(QSurfaceFormat::OpenGLES);
-    surface_format.setProfile(QSurfaceFormat::NoProfile);
-    if (debug_device)
-      surface_format.setOption(QSurfaceFormat::DebugContext, false);
-
-    for (const auto [major, minor] : es_versions_to_try)
-    {
-      surface_format.setVersion(major, minor);
-      m_gl_context->setFormat(surface_format);
-      if (m_gl_context->create())
-        break;
-    }
-  }
-
-  if (!m_gl_context->isValid())
+  m_gl_context = GL::Context::Create(getWindowInfo());
+  if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create any GL context");
-    m_gl_context.reset();
     return false;
   }
-
-  surface_format = m_gl_context->format();
-  Log_InfoPrintf("Got a %s %d.%d context", (m_gl_context->isOpenGLES() ? "OpenGL ES" : "desktop OpenGL"),
-                 surface_format.majorVersion(), surface_format.minorVersion());
 
   return true;
 }
 
 bool OpenGLHostDisplay::initializeDeviceContext(bool debug_device)
 {
-  if (!m_gl_context->makeCurrent(m_widget->windowHandle()))
-    return false;
-
-  s_thread_gl_context = m_gl_context.get();
-
-  // Load GLAD.
-  const auto load_result =
-    m_gl_context->isOpenGLES() ? gladLoadGLES2Loader(GetProcAddressCallback) : gladLoadGLLoader(GetProcAddressCallback);
-  if (!load_result)
-  {
-    Log_ErrorPrintf("Failed to load GL functions");
-    s_thread_gl_context = nullptr;
-    m_gl_context->doneCurrent();
-    return false;
-  }
-
   if (debug_device && GLAD_GL_KHR_debug)
   {
     glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
@@ -356,17 +267,16 @@ bool OpenGLHostDisplay::initializeDeviceContext(bool debug_device)
 
   if (!QtHostDisplay::initializeDeviceContext(debug_device))
   {
-    s_thread_gl_context = nullptr;
-    m_gl_context->doneCurrent();
+    m_gl_context->DoneCurrent();
     return false;
   }
 
   return true;
 }
 
-bool OpenGLHostDisplay::makeDeviceContextCurrent()
+bool OpenGLHostDisplay::activateDeviceContext()
 {
-  if (!m_gl_context->makeCurrent(m_widget->windowHandle()))
+  if (!m_gl_context->MakeCurrent())
   {
     Log_ErrorPrintf("Failed to make GL context current");
     return false;
@@ -375,20 +285,15 @@ bool OpenGLHostDisplay::makeDeviceContextCurrent()
   return true;
 }
 
-void OpenGLHostDisplay::moveContextToThread(QThread* new_thread)
+void OpenGLHostDisplay::deactivateDeviceContext()
 {
-  m_gl_context->doneCurrent();
-  m_gl_context->moveToThread(new_thread);
+  m_gl_context->DoneCurrent();
 }
 
 void OpenGLHostDisplay::destroyDeviceContext()
 {
-  Assert(m_gl_context && s_thread_gl_context == m_gl_context.get());
-
   QtHostDisplay::destroyDeviceContext();
-
-  s_thread_gl_context = nullptr;
-  m_gl_context->doneCurrent();
+  m_gl_context->DoneCurrent();
   m_gl_context.reset();
 }
 
@@ -397,6 +302,10 @@ bool OpenGLHostDisplay::createSurface()
   m_window_width = m_widget->scaledWindowWidth();
   m_window_height = m_widget->scaledWindowHeight();
   emit m_widget->windowResizedEvent(m_window_width, m_window_height);
+
+  if (m_gl_context)
+    m_gl_context->ChangeSurface(getWindowInfo());
+
   return true;
 }
 
@@ -455,7 +364,7 @@ void main()
     return false;
   }
 
-  if (!m_gl_context->isOpenGLES())
+  if (!m_gl_context->IsGLES())
     m_display_program.BindFragData(0, "o_col0");
 
   if (!m_display_program.Link())
@@ -508,9 +417,7 @@ void OpenGLHostDisplay::Render()
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-  QWindow* window_handle = m_widget->windowHandle();
-  m_gl_context->makeCurrent(window_handle);
-  m_gl_context->swapBuffers(window_handle);
+  m_gl_context->SwapBuffers();
 
   ImGui::NewFrame();
   ImGui_ImplOpenGL3_NewFrame();

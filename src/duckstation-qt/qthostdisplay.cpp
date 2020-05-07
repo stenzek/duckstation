@@ -50,12 +50,12 @@ bool QtHostDisplay::initializeDeviceContext(bool debug_device)
   return true;
 }
 
-bool QtHostDisplay::makeDeviceContextCurrent()
+bool QtHostDisplay::activateDeviceContext()
 {
   return true;
 }
 
-void QtHostDisplay::moveContextToThread(QThread* new_thread) {}
+void QtHostDisplay::deactivateDeviceContext() {}
 
 void QtHostDisplay::destroyDeviceContext()
 {

@@ -23,8 +23,8 @@ public:
   virtual bool hasDeviceContext() const;
   virtual bool createDeviceContext(bool debug_device);
   virtual bool initializeDeviceContext(bool debug_device);
-  virtual bool makeDeviceContextCurrent();
-  virtual void moveContextToThread(QThread* new_thread);
+  virtual bool activateDeviceContext();
+  virtual void deactivateDeviceContext();
   virtual void destroyDeviceContext();
   virtual bool createSurface();
   virtual void destroySurface();

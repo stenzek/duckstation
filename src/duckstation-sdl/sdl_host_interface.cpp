@@ -81,8 +81,7 @@ bool SDLHostInterface::CreateSDLWindow()
   static constexpr u32 DEFAULT_WINDOW_HEIGHT = 700;
 
   // Create window.
-  const u32 window_flags =
-    SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (UseOpenGLRenderer() ? SDL_WINDOW_OPENGL : 0);
+  const u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
   u32 window_width = DEFAULT_WINDOW_WIDTH;
   u32 window_height = DEFAULT_WINDOW_HEIGHT;
@@ -116,6 +115,8 @@ bool SDLHostInterface::CreateSDLWindow()
   if (m_fullscreen)
     SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
+  // Process events so that we have everything sorted out before creating a child window for the GL context (X11).
+  SDL_PumpEvents();
   return true;
 }
 
@@ -818,7 +819,7 @@ void SDLHostInterface::DrawDebugMenu()
     for (u32 i = LOGLEVEL_NONE; i < LOGLEVEL_COUNT; i++)
     {
       if (ImGui::MenuItem(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i)), nullptr,
-        m_settings.log_level == static_cast<LOGLEVEL>(i)))
+                          m_settings.log_level == static_cast<LOGLEVEL>(i)))
       {
         m_settings_copy.log_level = static_cast<LOGLEVEL>(i);
         settings_changed = true;

@@ -317,7 +317,7 @@ bool QtHostInterface::AcquireHostDisplay()
     return false;
   }
 
-  if (!getHostDisplay()->makeDeviceContextCurrent() ||
+  if (!getHostDisplay()->activateDeviceContext() ||
       !getHostDisplay()->initializeDeviceContext(m_settings.gpu_use_debug_device))
   {
     getHostDisplay()->destroyDeviceContext();
@@ -366,9 +366,9 @@ void QtHostInterface::disconnectDisplaySignals()
 void QtHostInterface::updateDisplayState()
 {
   // this expects the context to get moved back to us afterwards
-  getHostDisplay()->moveContextToThread(m_original_thread);
+  getHostDisplay()->deactivateDeviceContext();
   emit updateDisplayRequested(m_worker_thread, m_is_fullscreen, m_is_rendering_to_main);
-  if (!getHostDisplay()->makeDeviceContextCurrent())
+  if (!getHostDisplay()->activateDeviceContext())
     Panic("Failed to make device context current after updating");
 
   getHostDisplay()->updateImGuiDisplaySize();

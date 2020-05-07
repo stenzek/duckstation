@@ -102,14 +102,14 @@ void MainWindow::createDisplay(QThread* worker_thread, bool use_debug_device, bo
     return;
   }
 
-  if (!m_host_display->createSurface() || !m_host_display->makeDeviceContextCurrent())
+  if (!m_host_display->createSurface())
   {
     reportError(tr("Failed to create host display surface."));
     m_host_display->destroyDeviceContext();
     return;
   }
 
-  m_host_display->moveContextToThread(worker_thread);
+  m_host_display->deactivateDeviceContext();
 }
 
 void MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main)
@@ -117,10 +117,7 @@ void MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool ren
   const bool is_fullscreen = m_display_widget->isFullScreen();
   const bool is_rendering_to_main = (!is_fullscreen && m_display_widget->parent());
   if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
-  {
-    m_host_display->moveContextToThread(worker_thread);
     return;
-  }
 
   m_host_display->destroySurface();
 
@@ -160,8 +157,6 @@ void MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool ren
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
-
-  m_host_display->moveContextToThread(worker_thread);
 }
 
 void MainWindow::destroyDisplay()
