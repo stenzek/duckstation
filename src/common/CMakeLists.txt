@@ -25,6 +25,8 @@ add_library(common
   fifo_queue.h
   file_system.cpp
   file_system.h
+  gl/context.cpp
+  gl/context.h
   gl/program.cpp
   gl/program.h
   gl/shader_cache.cpp
@@ -69,6 +71,8 @@ target_link_libraries(common PRIVATE glad libcue Threads::Threads cubeb libchdr)
 
 if(WIN32)
   target_sources(common PRIVATE
+    gl/context_wgl.cpp
+    gl/context_wgl.h
     d3d11/shader_cache.cpp
     d3d11/shader_cache.h
     d3d11/shader_compiler.cpp
@@ -86,4 +90,50 @@ endif()
 
 if(ANDROID)
   target_link_libraries(common PRIVATE log)
+endif()
+
+if(USE_X11)
+  target_sources(common PRIVATE
+    gl/x11_window.cpp
+    gl/x11_window.h
+  )
+  target_compile_definitions(common PRIVATE "-DUSE_X11=1")
+  target_include_directories(common PRIVATE "${X11_INCLUDE_DIR}")
+  target_link_libraries(common PRIVATE "${X11_LIBRARIES}")
+endif()
+
+if(USE_EGL)
+  target_sources(common PRIVATE
+    gl/context_egl.cpp
+    gl/context_egl.h
+  )
+  target_compile_definitions(common PRIVATE "-DUSE_EGL=1")
+
+  if(SUPPORTS_X11)
+    target_sources(common PRIVATE
+      gl/context_egl_x11.cpp
+      gl/context_egl_x11.h
+    )
+  endif()
+  if(ANDROID)
+    target_sources(common PRIVATE
+      gl/context_egl_android.cpp
+      gl/context_egl_android.h
+    )
+  endif()
+endif()
+
+if(SUPPORTS_X11)
+  target_sources(common PRIVATE
+    gl/context_glx.cpp
+    gl/context_glx.h
+  )
+  target_compile_definitions(common PRIVATE "-DUSE_GLX=1")
+endif()
+
+if(APPLE)
+  target_sources(common PRIVATE
+    gl/context_agl.mm
+    gl/context_agl.h
+  )
 endif()

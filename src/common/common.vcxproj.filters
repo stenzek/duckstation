@@ -58,6 +58,13 @@
     </ClInclude>
     <ClInclude Include="event.h" />
     <ClInclude Include="bitutils.h" />
+    <ClInclude Include="gl\context.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="gl\context_wgl.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="window_info.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -111,6 +118,12 @@
       <Filter>gl</Filter>
     </ClCompile>
     <ClCompile Include="event.cpp" />
+    <ClCompile Include="gl\context_wgl.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="gl\context.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

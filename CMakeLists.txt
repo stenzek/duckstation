@@ -4,11 +4,28 @@ project(duckstation C CXX)
 # Pull in modules.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
+# Platform detection.
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  set(LINUX TRUE)
+  set(SUPPORTS_X11 TRUE)
+endif()
+
+
+# Global options.
 if(NOT ANDROID)
   option(BUILD_SDL_FRONTEND "Build the SDL frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
   option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
   option(USE_SDL2 "Link with SDL2 for controller support" ON)
+endif()
+
+
+# OpenGL context creation methods.
+if(SUPPORTS_X11)
+  option(USE_X11 "Support X11 window system" ON)
+endif()
+if(LINUX OR ANDROID)
+  option(USE_EGL "Support EGL OpenGL context creation" ON)
 endif()
 
 
@@ -40,12 +57,12 @@ if(NOT ANDROID)
   endif()
 endif()
 
-if(ANDROID)
+if(USE_EGL)
   find_package(EGL REQUIRED)
-else()
-  find_package(OpenGL COMPONENTS EGL GLX OpenGL)
 endif()
-
+if(USE_X11)
+  find_package(X11 REQUIRED)
+endif()
 
 # Set _DEBUG macro for Debug builds.
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
