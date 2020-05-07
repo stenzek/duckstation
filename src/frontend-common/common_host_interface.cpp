@@ -248,7 +248,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
     // init user directory early since we need it for save states
     SetUserDirectory();
 
-    if (state_index.has_value() && !state_filename.empty())
+    if (state_index.has_value() && state_filename.empty())
     {
       // if a save state is provided, whether a boot filename was provided determines per-game/local
       if (boot_filename.empty())
