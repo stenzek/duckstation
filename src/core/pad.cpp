@@ -65,13 +65,13 @@ bool Pad::DoState(StateWrapper& sw)
     if (card_present && !m_memory_cards[i])
     {
       m_system->GetHostInterface()->AddFormattedOSDMessage(
-        2.0f, "Memory card %c present in save state but not in system. Creating temporary card.", 'A' + i);
+        2.0f, "Memory card %c present in save state but not in system. Creating temporary card.", i + 1);
       m_memory_cards[i] = MemoryCard::Create(m_system);
     }
     else if (!card_present && m_memory_cards[i])
     {
       m_system->GetHostInterface()->AddFormattedOSDMessage(
-        2.0f, "Memory card %u present system but not save state. Removing card.", 'A' + i);
+        2.0f, "Memory card %u present in system but not in save state. Removing card.", i + 1);
       m_memory_cards[i].reset();
     }
 
