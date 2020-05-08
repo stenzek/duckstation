@@ -38,7 +38,7 @@ float Controller::GetVibrationMotorStrength(u32 motor)
   return 0.0f;
 }
 
-std::unique_ptr<Controller> Controller::Create(System* system, ControllerType type)
+std::unique_ptr<Controller> Controller::Create(System* system, ControllerType type, u32 index)
 {
   switch (type)
   {
@@ -46,7 +46,7 @@ std::unique_ptr<Controller> Controller::Create(System* system, ControllerType ty
       return DigitalController::Create();
 
     case ControllerType::AnalogController:
-      return AnalogController::Create(system);
+      return AnalogController::Create(system, index);
 
     case ControllerType::NamcoGunCon:
       return NamcoGunCon::Create(system);
