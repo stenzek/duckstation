@@ -233,7 +233,6 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
     return false;
 
   const u32 index_offset = index->start_lba_on_disc - lba;
-  ;
   GenerateSubChannelQ(subq, index, index_offset);
   return true;
 }
@@ -241,7 +240,7 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
 void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 index_offset)
 {
   subq->control.bits = index->control.bits;
-  subq->track_number_bcd = BinaryToBCD(index->track_number);
+  subq->track_number_bcd = (index->track_number <= m_tracks.size() ? BinaryToBCD(index->track_number) : index->track_number);
   subq->index_number_bcd = BinaryToBCD(index->index_number);
 
   const Position relative_position =
@@ -256,13 +255,15 @@ void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 ind
 
 void CDImage::AddLeadOutIndex()
 {
+  Assert(!m_indices.empty());
+  const Index& last_index = m_indices.back();
+
   Index index = {};
-  index.start_lba_on_disc = m_lba_count;
+  index.start_lba_on_disc = last_index.start_lba_on_disc + last_index.length;
   index.length = LEAD_OUT_SECTOR_COUNT;
   index.track_number = LEAD_OUT_TRACK_NUMBER;
   index.index_number = 0;
-  if (!m_indices.empty())
-    index.control.bits = m_indices.back().control.bits;
+  index.control.bits = last_index.control.bits;
   m_indices.push_back(index);
 }
 
