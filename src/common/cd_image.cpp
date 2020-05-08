@@ -259,8 +259,10 @@ void CDImage::AddLeadOutIndex()
   Index index = {};
   index.start_lba_on_disc = m_lba_count;
   index.length = LEAD_OUT_SECTOR_COUNT;
-  index.track_number = 0xAA;
+  index.track_number = LEAD_OUT_TRACK_NUMBER;
   index.index_number = 0;
+  if (!m_indices.empty())
+    index.control.bits = m_indices.back().control.bits;
   m_indices.push_back(index);
 }
 
