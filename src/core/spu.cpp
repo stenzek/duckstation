@@ -1049,7 +1049,7 @@ bool SPU::StopDumpingAudio()
 
 void SPU::Voice::KeyOn()
 {
-  current_address = regs.adpcm_start_address;
+  current_address = regs.adpcm_start_address & ~u16(1);
   regs.adsr_volume = 0;
   has_samples = false;
   ignore_loop_address = false;
@@ -1491,7 +1491,7 @@ std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       else
       {
         Log_TracePrintf("Voice %u loop end+repeat @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
-        voice.current_address = voice.regs.adpcm_repeat_address;
+        voice.current_address = voice.regs.adpcm_repeat_address & ~u16(1);
       }
     }
   }
