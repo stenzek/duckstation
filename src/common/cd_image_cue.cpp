@@ -210,6 +210,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
   }
 
   m_lba_count = disc_lba;
+  AddLeadOutIndex();
 
   m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
 

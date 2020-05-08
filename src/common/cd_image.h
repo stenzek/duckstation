@@ -23,7 +23,13 @@ public:
     FRAMES_PER_SECOND = 75, // "sectors", or "timecode frames" (not "channel frames")
     SECONDS_PER_MINUTE = 60,
     FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
-    SUBCHANNEL_BYTES_PER_FRAME = 12
+    SUBCHANNEL_BYTES_PER_FRAME = 12,
+    LEAD_OUT_SECTOR_COUNT = 6750
+  };
+
+  enum : u8
+  {
+    LEAD_OUT_TRACK_NUMBER = 0xAA
   };
 
   enum class ReadMode : u32
@@ -234,6 +240,9 @@ protected:
 
   /// Generates sub-channel Q from the given index and index-offset.
   void GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 index_offset);
+
+  /// Synthesis of lead-out data.
+  void AddLeadOutIndex();
 
   std::string m_filename;
   u32 m_lba_count = 0;

@@ -1448,6 +1448,17 @@ void CDROM::DoTOCRead()
   SetAsyncInterrupt(Interrupt::Complete);
 }
 
+void CDROM::StopReadingWithDataEnd()
+{
+  ClearAsyncInterrupt();
+  m_async_response_fifo.Push(m_secondary_status.bits);
+  SetAsyncInterrupt(Interrupt::DataEnd);
+
+  m_secondary_status.ClearActiveBits();
+  m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
+}
+
 void CDROM::DoSectorRead()
 {
   if (!m_reader.WaitForReadToComplete())
@@ -1456,6 +1467,13 @@ void CDROM::DoSectorRead()
   // TODO: Error handling
   // TODO: Check SubQ checksum.
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
+  if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
+  {
+    Log_DevPrintf("Read reached lead-out area of disc at LBA %u, pausing", m_reader.GetLastReadSector());
+    StopReadingWithDataEnd();
+    return;
+  }
+
   const bool is_data_sector = subq.control.data;
   if (!is_data_sector)
   {
@@ -1471,13 +1489,7 @@ void CDROM::DoSectorRead()
       Log_DevPrintf("Auto pause at the end of track %u (LBA %u)", m_play_track_number_bcd,
                     m_reader.GetLastReadSector());
 
-      ClearAsyncInterrupt();
-      m_async_response_fifo.Push(m_secondary_status.bits);
-      SetAsyncInterrupt(Interrupt::DataEnd);
-
-      m_secondary_status.ClearActiveBits();
-      m_drive_state = DriveState::Idle;
-      m_drive_event->Deactivate();
+      StopReadingWithDataEnd();
       return;
     }
   }

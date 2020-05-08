@@ -168,8 +168,16 @@ bool CDImage::ReadRawSector(void* buffer)
   }
   else
   {
-    // This in an implicit pregap. Return silence.
-    std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
+    if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
+    {
+      // Lead-out area.
+      std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
+    }
+    else
+    {
+      // This in an implicit pregap. Return silence.
+      std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
+    }
   }
 
   m_position_on_disc++;
@@ -244,6 +252,16 @@ void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 ind
   const Position absolute_position = Position::FromLBA(index->start_lba_on_disc + index_offset);
   std::tie(subq->absolute_minute_bcd, subq->absolute_second_bcd, subq->absolute_frame_bcd) = absolute_position.ToBCD();
   subq->crc = SubChannelQ::ComputeCRC(subq->data);
+}
+
+void CDImage::AddLeadOutIndex()
+{
+  Index index = {};
+  index.start_lba_on_disc = m_lba_count;
+  index.length = LEAD_OUT_SECTOR_COUNT;
+  index.track_number = 0xAA;
+  index.index_number = 0;
+  m_indices.push_back(index);
 }
 
 u16 CDImage::SubChannelQ::ComputeCRC(const u8* data)

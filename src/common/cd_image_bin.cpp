@@ -99,6 +99,8 @@ bool CDImageBin::Open(const char* filename)
   m_tracks.push_back(
     Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count, mode, control});
 
+  AddLeadOutIndex();
+
   m_sbi.LoadSBI(ReplaceExtension(filename, "sbi").c_str());
 
   return Seek(1, Position{0, 0, 0});

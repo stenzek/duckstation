@@ -234,6 +234,7 @@ private:
   void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
+  void StopReadingWithDataEnd();
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void ResetCurrentXAFile();
   void LoadDataFIFO();
