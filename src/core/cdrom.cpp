@@ -1310,6 +1310,12 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
             seek_okay = false;
           }
         }
+
+        if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
+        {
+          Log_WarningPrintf("Invalid seek to lead-out area (LBA %u)", m_reader.GetLastReadSector());
+          seek_okay = false;
+        }
       }
     }
   }
