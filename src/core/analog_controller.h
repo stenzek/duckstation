@@ -35,15 +35,16 @@ public:
     Circle = 13,
     Cross = 14,
     Square = 15,
+    Analog = 16,
     Count
   };
 
   static constexpr u8 NUM_MOTORS = 2;
 
-  AnalogController();
+  AnalogController(System* system);
   ~AnalogController() override;
 
-  static std::unique_ptr<AnalogController> Create();
+  static std::unique_ptr<AnalogController> Create(System* system);
   static std::optional<s32> StaticGetAxisCodeByName(std::string_view axis_name);
   static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
   static AxisList StaticGetAxisNames();
@@ -128,7 +129,10 @@ private:
   void SetAnalogMode(bool enabled);
   void SetMotorState(u8 motor, u8 value);
 
+  System* m_system;
+
   bool m_analog_mode = false;
+  bool m_analog_locked = false;
   bool m_rumble_unlocked = false;
   bool m_configuration_mode = false;
   u8 m_command_param = 0;

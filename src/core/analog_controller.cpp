@@ -1,9 +1,11 @@
 #include "analog_controller.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "host_interface.h"
+#include "system.h"
 Log_SetChannel(AnalogController);
 
-AnalogController::AnalogController()
+AnalogController::AnalogController(System* system) : m_system(system)
 {
   m_axis_state.fill(0x80);
 }
@@ -28,6 +30,8 @@ bool AnalogController::DoState(StateWrapper& sw)
   if (!Controller::DoState(sw))
     return false;
 
+  const bool old_analog_mode = m_analog_mode;
+
   sw.Do(&m_analog_mode);
   sw.Do(&m_rumble_unlocked);
   sw.Do(&m_configuration_mode);
@@ -41,6 +45,12 @@ bool AnalogController::DoState(StateWrapper& sw)
   {
     for (u8 i = 0; i < NUM_MOTORS; i++)
       SetMotorState(i, motor_state[i]);
+
+    if (old_analog_mode != m_analog_mode)
+    {
+      m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller switched to %s mode.",
+                                                           m_analog_mode ? "analog" : "digital");
+    }
   }
   return true;
 }
@@ -73,6 +83,25 @@ void AnalogController::SetAxisState(Axis axis, u8 value)
 
 void AnalogController::SetButtonState(Button button, bool pressed)
 {
+  if (button == Button::Analog)
+  {
+    // analog toggle
+    if (pressed)
+    {
+      if (m_analog_locked)
+      {
+        m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller is locked to %s mode by the game.",
+                                                             m_analog_mode ? "analog" : "digital");
+      }
+      else
+      {
+        SetAnalogMode(!m_analog_mode);
+      }
+    }
+
+    return;
+  }
+
   if (pressed)
     m_button_state &= ~(u16(1) << static_cast<u8>(button));
   else
@@ -120,7 +149,9 @@ void AnalogController::SetAnalogMode(bool enabled)
   if (m_analog_mode == enabled)
     return;
 
-  Log_InfoPrintf("Controller switched to %s mode", enabled ? "analog" : "digital");
+  Log_InfoPrintf("Controller switched to %s mode.", enabled ? "analog" : "digital");
+  m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller switched to %s mode.",
+                                                       enabled ? "analog" : "digital");
   m_analog_mode = enabled;
 }
 
@@ -267,11 +298,9 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::SetAnalogModeVal:
     {
-      Log_DebugPrintf("analog mode val 0x%02x", data_in);
-      if (data_in == 0x00)
-        SetAnalogMode(false);
-      else if (data_in == 0x01)
-        SetAnalogMode(true);
+      Log_DevPrintf("analog mode val 0x%02x", data_in);
+      if (data_in == 0x00 || data_in == 0x01)
+        SetAnalogMode((data_in == 0x01));
 
       *data_out = 0x00;
       m_state = State::SetAnalogModeSel;
@@ -281,7 +310,10 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::SetAnalogModeSel:
     {
-      Log_WarningPrintf("analog mode sel 0x%02x", data_in);
+      Log_DevPrintf("analog mode lock 0x%02x", data_in);
+      if (data_in == 0x02 || data_in == 0x03)
+        m_analog_locked = (data_in == 0x03);
+
       *data_out = 0x00;
       m_state = State::Pad4Bytes;
       ack = true;
@@ -361,9 +393,9 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
-std::unique_ptr<AnalogController> AnalogController::Create()
+std::unique_ptr<AnalogController> AnalogController::Create(System* system)
 {
-  return std::make_unique<AnalogController>();
+  return std::make_unique<AnalogController>(system);
 }
 
 std::optional<s32> AnalogController::StaticGetAxisCodeByName(std::string_view axis_name)
@@ -408,6 +440,7 @@ std::optional<s32> AnalogController::StaticGetButtonCodeByName(std::string_view 
   BUTTON(Circle);
   BUTTON(Cross);
   BUTTON(Square);
+  BUTTON(Analog);
 
   return std::nullopt;
 
@@ -432,8 +465,8 @@ Controller::ButtonList AnalogController::StaticGetButtonNames()
   {                                                                                                                    \
 #n, static_cast < s32>(Button::n)                                                                                  \
   }
-  return {B(Up),     B(Down),   B(Left), B(Right), B(Select), B(Start), B(Triangle), B(Cross),
-          B(Circle), B(Square), B(L1),   B(L2),    B(R1),     B(R2),    B(L3),       B(R3)};
+  return {B(Up),     B(Down), B(Left), B(Right), B(Select), B(Start), B(Triangle), B(Cross), B(Circle),
+          B(Square), B(L1),   B(L2),   B(R1),    B(R2),     B(L3),    B(R3),       B(Analog)};
 #undef B
 }
 

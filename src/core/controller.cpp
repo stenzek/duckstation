@@ -46,7 +46,7 @@ std::unique_ptr<Controller> Controller::Create(System* system, ControllerType ty
       return DigitalController::Create();
 
     case ControllerType::AnalogController:
-      return AnalogController::Create();
+      return AnalogController::Create(system);
 
     case ControllerType::NamcoGunCon:
       return NamcoGunCon::Create(system);
