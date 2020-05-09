@@ -731,7 +731,7 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
                                      width,
                                      height,
                                      map_result.index_aligned,
-                                     m_GPUSTAT.set_mask_while_drawing ? 0xFFu : 0x00,
+                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
                                      GetCurrentNormalizedBatchVertexDepthID()};
   m_context->OMSetDepthStencilState(
     m_GPUSTAT.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);

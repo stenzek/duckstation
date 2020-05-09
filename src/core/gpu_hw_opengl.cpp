@@ -782,7 +782,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                                        width,
                                        height,
                                        map_result.index_aligned,
-                                       m_GPUSTAT.set_mask_while_drawing ? 0xFFu : 0x00,
+                                       m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
                                        GetCurrentNormalizedBatchVertexDepthID()};
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
 
