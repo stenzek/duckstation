@@ -14,6 +14,10 @@ public:
   explicit AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~AudioSettingsWidget();
 
+private Q_SLOTS:
+  void updateBufferingLabel();
+  void updateVolumeLabel();
+
 private:
   Ui::AudioSettingsWidget m_ui;
 
