@@ -52,15 +52,24 @@ void HostInterface::Shutdown() {}
 
 void HostInterface::CreateAudioStream()
 {
+  Log_InfoPrintf("Creating '%s' audio stream, sample rate = %u, channels = %u, buffer size = %u, buffer count = %u",
+                 Settings::GetAudioBackendName(m_settings.audio_backend), AUDIO_SAMPLE_RATE, AUDIO_CHANNELS,
+                 m_settings.audio_buffer_size, m_settings.audio_buffer_count);
+
   m_audio_stream = CreateAudioStream(m_settings.audio_backend);
 
-  if (m_audio_stream && m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4))
+  if (m_audio_stream && m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
+                                                    m_settings.audio_buffer_count))
+  {
+    m_audio_stream->SetOutputVolume(m_settings.audio_output_volume);
     return;
+  }
 
   ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
   m_audio_stream.reset();
   m_audio_stream = AudioStream::CreateNullAudioStream();
-  m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_BUFFER_SIZE, 4);
+  m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
+                              m_settings.audio_buffer_count);
 }
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
@@ -971,6 +980,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("CDROM", "RegionCheck", true);
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Cubeb));
+  si.SetIntValue("Audio", "OutputVolume", 100);
+  si.SetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
+  si.SetIntValue("Audio", "BufferCount", DEFAULT_AUDIO_BUFFER_COUNT);
+  si.SetIntValue("Audio", "OutputMuted", false);
   si.SetBoolValue("Audio", "Sync", true);
   si.SetBoolValue("Audio", "DumpOnBoot", false);
 
@@ -1015,53 +1028,26 @@ void HostInterface::ExportSettings(SettingsInterface& si)
 
 void HostInterface::UpdateSettings(SettingsInterface& si)
 {
-  const bool old_increase_timer_resolution = m_settings.increase_timer_resolution;
-  const float old_emulation_speed = m_settings.emulation_speed;
-  const CPUExecutionMode old_cpu_execution_mode = m_settings.cpu_execution_mode;
-  const AudioBackend old_audio_backend = m_settings.audio_backend;
-  const GPURenderer old_gpu_renderer = m_settings.gpu_renderer;
-  const u32 old_gpu_resolution_scale = m_settings.gpu_resolution_scale;
-  const u32 old_gpu_fifo_size = m_settings.gpu_fifo_size;
-  const TickCount old_gpu_max_run_ahead = m_settings.gpu_max_run_ahead;
-  const bool old_gpu_true_color = m_settings.gpu_true_color;
-  const bool old_gpu_scaled_dithering = m_settings.gpu_scaled_dithering;
-  const bool old_gpu_texture_filtering = m_settings.gpu_texture_filtering;
-  const bool old_gpu_disable_interlacing = m_settings.gpu_disable_interlacing;
-  const bool old_gpu_force_ntsc_timings = m_settings.gpu_force_ntsc_timings;
-  const bool old_gpu_debug_device = m_settings.gpu_use_debug_device;
-  const bool old_vsync_enabled = m_settings.video_sync_enabled;
-  const bool old_audio_sync_enabled = m_settings.audio_sync_enabled;
-  const bool old_speed_limiter_enabled = m_settings.speed_limiter_enabled;
-  const DisplayCropMode old_display_crop_mode = m_settings.display_crop_mode;
-  const DisplayAspectRatio old_display_aspect_ratio = m_settings.display_aspect_ratio;
-  const bool old_display_linear_filtering = m_settings.display_linear_filtering;
-  const bool old_display_integer_scaling = m_settings.display_integer_scaling;
-  const bool old_cdrom_read_thread = m_settings.cdrom_read_thread;
-  std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> old_controller_types = m_settings.controller_types;
-  std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_types = m_settings.memory_card_types;
-  std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> old_memory_card_paths =
-    std::move(m_settings.memory_card_paths);
-
-  const LOGLEVEL old_log_level = m_settings.log_level;
-  const std::string old_log_filter(std::move(m_settings.log_filter));
-  const bool old_log_to_console = m_settings.log_to_console;
-  const bool old_log_to_window = m_settings.log_to_window;
-  const bool old_log_to_file = m_settings.log_to_file;
-
+  Settings old_settings(std::move(m_settings));
   ApplySettings(si);
 
   if (m_system)
   {
-    if (m_settings.gpu_renderer != old_gpu_renderer || m_settings.gpu_use_debug_device != old_gpu_debug_device)
+    if (m_settings.gpu_renderer != old_settings.gpu_renderer ||
+        m_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
     {
       ReportFormattedMessage("Switching to %s%s GPU renderer.", Settings::GetRendererName(m_settings.gpu_renderer),
                              m_settings.gpu_use_debug_device ? " (debug)" : "");
       RecreateSystem();
     }
 
-    if (m_settings.audio_backend != old_audio_backend)
+    if (m_settings.audio_backend != old_settings.audio_backend ||
+        m_settings.audio_buffer_size != old_settings.audio_buffer_size ||
+        m_settings.audio_buffer_count != old_settings.audio_buffer_count)
     {
-      ReportFormattedMessage("Switching to %s audio backend.", Settings::GetAudioBackendName(m_settings.audio_backend));
+      if (m_settings.audio_backend != old_settings.audio_backend)
+        ReportFormattedMessage("Switching to %s audio backend.",
+                               Settings::GetAudioBackendName(m_settings.audio_backend));
       DebugAssert(m_audio_stream);
       m_audio_stream.reset();
       CreateAudioStream();
@@ -1069,43 +1055,51 @@ void HostInterface::UpdateSettings(SettingsInterface& si)
       UpdateSpeedLimiterState();
     }
 
-    if (m_settings.video_sync_enabled != old_vsync_enabled || m_settings.audio_sync_enabled != old_audio_sync_enabled ||
-        m_settings.speed_limiter_enabled != old_speed_limiter_enabled ||
-        m_settings.increase_timer_resolution != old_increase_timer_resolution)
+    if (m_settings.video_sync_enabled != old_settings.video_sync_enabled ||
+        m_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
+        m_settings.speed_limiter_enabled != old_settings.speed_limiter_enabled ||
+        m_settings.increase_timer_resolution != old_settings.increase_timer_resolution)
     {
       UpdateSpeedLimiterState();
     }
 
-    if (m_settings.emulation_speed != old_emulation_speed)
+    if (m_settings.emulation_speed != old_settings.emulation_speed)
     {
       m_system->UpdateThrottlePeriod();
       UpdateSpeedLimiterState();
     }
 
-    if (m_settings.cpu_execution_mode != old_cpu_execution_mode)
+    if (m_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
       ReportFormattedMessage("Switching to %s CPU execution mode.",
                              Settings::GetCPUExecutionModeName(m_settings.cpu_execution_mode));
       m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
     }
 
-    if (m_settings.gpu_resolution_scale != old_gpu_resolution_scale || m_settings.gpu_fifo_size != old_gpu_fifo_size ||
-        m_settings.gpu_max_run_ahead != old_gpu_max_run_ahead || m_settings.gpu_true_color != old_gpu_true_color ||
-        m_settings.gpu_scaled_dithering != old_gpu_scaled_dithering ||
-        m_settings.gpu_texture_filtering != old_gpu_texture_filtering ||
-        m_settings.gpu_disable_interlacing != old_gpu_disable_interlacing ||
-        m_settings.gpu_force_ntsc_timings != old_gpu_force_ntsc_timings ||
-        m_settings.display_crop_mode != old_display_crop_mode ||
-        m_settings.display_aspect_ratio != old_display_aspect_ratio)
+    m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
+
+    if (m_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
+        m_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
+        m_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
+        m_settings.gpu_true_color != old_settings.gpu_true_color ||
+        m_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
+        m_settings.gpu_texture_filtering != old_settings.gpu_texture_filtering ||
+        m_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
+        m_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
+        m_settings.display_crop_mode != old_settings.display_crop_mode ||
+        m_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     {
       m_system->UpdateGPUSettings();
     }
 
-    if (m_settings.cdrom_read_thread != old_cdrom_read_thread)
+    if (m_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
       m_system->GetCDROM()->SetUseReadThread(m_settings.cdrom_read_thread);
 
-    if (m_settings.memory_card_types != old_memory_card_types || m_settings.memory_card_paths != old_memory_card_paths)
+    if (m_settings.memory_card_types != old_settings.memory_card_types ||
+        m_settings.memory_card_paths != old_settings.memory_card_paths)
+    {
       m_system->UpdateMemoryCards();
+    }
 
     m_system->GetDMA()->SetMaxSliceTicks(m_settings.dma_max_slice_ticks);
     m_system->GetDMA()->SetHaltTicks(m_settings.dma_halt_ticks);
@@ -1114,7 +1108,7 @@ void HostInterface::UpdateSettings(SettingsInterface& si)
   bool controllers_updated = false;
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if (m_settings.controller_types[i] != old_controller_types[i])
+    if (m_settings.controller_types[i] != old_settings.controller_types[i])
     {
       if (m_system && !controllers_updated)
       {
@@ -1126,15 +1120,15 @@ void HostInterface::UpdateSettings(SettingsInterface& si)
     }
   }
 
-  if (m_display && m_settings.display_linear_filtering != old_display_linear_filtering)
+  if (m_display && m_settings.display_linear_filtering != old_settings.display_linear_filtering)
     m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
 
-  if (m_display && m_settings.display_integer_scaling != old_display_integer_scaling)
+  if (m_display && m_settings.display_integer_scaling != old_settings.display_integer_scaling)
     m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
 
-  if (m_settings.log_level != old_log_level || m_settings.log_filter != old_log_filter ||
-      m_settings.log_to_console != old_log_to_console || m_settings.log_to_window != old_log_to_window ||
-      m_settings.log_to_file != old_log_to_file)
+  if (m_settings.log_level != old_settings.log_level || m_settings.log_filter != old_settings.log_filter ||
+      m_settings.log_to_console != old_settings.log_to_console ||
+      m_settings.log_to_window != old_settings.log_to_window || m_settings.log_to_file != old_settings.log_to_file)
   {
     UpdateLogSettings(m_settings.log_level, m_settings.log_filter.empty() ? nullptr : m_settings.log_filter.c_str(),
                       m_settings.log_to_console, m_settings.log_to_debug, m_settings.log_to_window,

@@ -34,6 +34,14 @@ public:
     GLOBAL_SAVE_STATE_SLOTS = 10
   };
 
+  enum : u32
+  {
+    AUDIO_SAMPLE_RATE = 44100,
+    AUDIO_CHANNELS = 2,
+    DEFAULT_AUDIO_BUFFER_SIZE = 2048,
+    DEFAULT_AUDIO_BUFFER_COUNT = 4
+  };
+
   struct SaveStateInfo
   {
     std::string path;
@@ -159,11 +167,7 @@ public:
 protected:
   enum : u32
   {
-    SETTINGS_VERSION = 2,
-    AUDIO_SAMPLE_RATE = 44100,
-    AUDIO_CHANNELS = 2,
-    AUDIO_BUFFER_SIZE = 2048,
-    AUDIO_BUFFERS = 2
+    SETTINGS_VERSION = 2
   };
 
   struct OSDMessage

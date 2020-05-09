@@ -68,6 +68,10 @@ struct Settings
   bool cdrom_region_check = true;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
+  s32 audio_output_volume = 100;
+  u32 audio_buffer_size = 2048;
+  u32 audio_buffer_count = 4;
+  bool audio_output_muted = false;
   bool audio_sync_enabled = true;
   bool audio_dump_on_boot = true;
 
