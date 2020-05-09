@@ -26,11 +26,13 @@ public:
   u32 GetChannels() const { return m_channels; }
   u32 GetBufferSize() const { return m_buffer_size; }
   u32 GetBufferCount() const { return static_cast<u32>(m_buffers.size()); }
+  s32 GetOutputVolume() const { return m_output_volume; }
   bool IsSyncing() const { return m_sync; }
 
   bool Reconfigure(u32 output_sample_rate = DefaultOutputSampleRate, u32 channels = 1,
                    u32 buffer_size = DefaultBufferSize, u32 buffer_count = DefaultBufferCount);
   void SetSync(bool enable) { m_sync = enable; }
+  void SetOutputVolume(s32 volume);
 
   void PauseOutput(bool paused);
   void EmptyBuffers();
@@ -45,11 +47,20 @@ public:
 
   static std::unique_ptr<AudioStream> CreateCubebAudioStream();
 
+  // Latency computation - returns values in seconds
+  static float GetMinLatency(u32 sample_rate, u32 buffer_size, u32 buffer_count);
+  static float GetMaxLatency(u32 sample_rate, u32 buffer_size, u32 buffer_count);
+
 protected:
   virtual bool OpenDevice() = 0;
   virtual void PauseDevice(bool paused) = 0;
   virtual void CloseDevice() = 0;
   virtual void BufferAvailable() = 0;
+
+  ALWAYS_INLINE static SampleType ApplyVolume(SampleType sample, s32 volume)
+  {
+    return s16((s32(sample) * volume) / 100);
+  }
 
   bool IsDeviceOpen() const { return (m_output_sample_rate > 0); }
 
@@ -86,6 +97,9 @@ private:
 
   // TODO: Switch to semaphore
   std::condition_variable m_buffer_available_cv;
+
+  // volume, 0-100
+  s32 m_output_volume = 100;
 
   bool m_output_paused = true;
   bool m_sync = true;

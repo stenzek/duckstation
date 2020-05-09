@@ -32,6 +32,12 @@ bool AudioStream::Reconfigure(u32 output_sample_rate /*= DefaultOutputSampleRate
   return true;
 }
 
+void AudioStream::SetOutputVolume(s32 volume)
+{
+  std::unique_lock<std::mutex> lock(m_buffer_mutex);
+  m_output_volume = volume;
+}
+
 void AudioStream::PauseOutput(bool paused)
 {
   if (m_output_paused == paused)
@@ -123,6 +129,16 @@ void AudioStream::EndWrite(u32 num_frames)
   m_buffer_mutex.unlock();
 }
 
+float AudioStream::GetMinLatency(u32 sample_rate, u32 buffer_size, u32 buffer_count)
+{
+  return (static_cast<float>(buffer_size) / static_cast<float>(sample_rate));
+}
+
+float AudioStream::GetMaxLatency(u32 sample_rate, u32 buffer_size, u32 buffer_count)
+{
+  return (static_cast<float>(buffer_size * (buffer_count - 1)) / static_cast<float>(sample_rate));
+}
+
 u32 AudioStream::GetSamplesAvailable() const
 {
   // TODO: Use atomic loads
@@ -146,8 +162,9 @@ u32 AudioStream::ReadSamples(SampleType* samples, u32 num_samples)
     const u32 from_this_buffer = std::min(m_buffer_size - buffer.read_position, remaining_samples);
 
     const u32 copy_count = from_this_buffer * m_channels;
-    std::memcpy(samples, &buffer.data[buffer.read_position * m_channels], copy_count * sizeof(SampleType));
-    samples += copy_count;
+    const SampleType* read_pointer = &buffer.data[buffer.read_position * m_channels];
+    for (u32 i = 0; i < copy_count; i++)
+      *(samples++) = ApplyVolume(*(read_pointer++), m_output_volume);
 
     remaining_samples -= from_this_buffer;
     buffer.read_position += from_this_buffer;
