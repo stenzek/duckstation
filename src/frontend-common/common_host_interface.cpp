@@ -40,6 +40,7 @@ bool CommonHostInterface::Initialize()
   RegisterGeneralHotkeys();
   RegisterGraphicsHotkeys();
   RegisterSaveStateHotkeys();
+  RegisterAudioHotkeys();
 
   m_controller_interface = CreateControllerInterface();
   if (m_controller_interface && !m_controller_interface->Initialize(this))
@@ -907,6 +908,40 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                      });
     }
   }
+}
+
+void CommonHostInterface::RegisterAudioHotkeys()
+{
+  RegisterHotkey(StaticString("Audio"), StaticString("AudioMute"), StaticString("Toggle Mute"), [this](bool pressed) {
+    if (m_system && !pressed)
+    {
+      m_settings.audio_output_muted = !m_settings.audio_output_muted;
+      m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
+      if (m_settings.audio_output_muted)
+        AddOSDMessage("Volume: Muted", 2.0f);
+      else
+        AddFormattedOSDMessage(2.0f, "Volume: %d%%", m_settings.audio_output_volume);
+    }
+  });
+  RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeUp"), StaticString("Volume Up"), [this](bool pressed) {
+    if (m_system && pressed)
+    {
+      m_settings.audio_output_volume = std::min<s32>(m_settings.audio_output_volume + 10, 100);
+      m_settings.audio_output_muted = false;
+      m_audio_stream->SetOutputVolume(m_settings.audio_output_volume);
+      AddFormattedOSDMessage(2.0f, "Volume: %d%%", m_settings.audio_output_volume);
+    }
+  });
+  RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeDown"), StaticString("Volume Down"),
+                 [this](bool pressed) {
+                   if (m_system && pressed)
+                   {
+                     m_settings.audio_output_volume = std::max<s32>(m_settings.audio_output_volume - 10, 0);
+                     m_settings.audio_output_muted = false;
+                     m_audio_stream->SetOutputVolume(m_settings.audio_output_volume);
+                     AddFormattedOSDMessage(2.0f, "Volume: %d%%", m_settings.audio_output_volume);
+                   }
+                 });
 }
 
 std::string CommonHostInterface::GetPathForInputProfile(const char* name) const

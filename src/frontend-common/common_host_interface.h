@@ -124,6 +124,7 @@ private:
   void RegisterGeneralHotkeys();
   void RegisterGraphicsHotkeys();
   void RegisterSaveStateHotkeys();
+  void RegisterAudioHotkeys();
   void UpdateControllerInputMap(SettingsInterface& si);
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings(SettingsInterface& si);
