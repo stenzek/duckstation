@@ -74,6 +74,7 @@ private:
 
   // 3x3 matrix * 3x1 vector with translation, updates MAC[1-3] and IR[1-3]
   void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
+  void MulMatVecBuggy(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 
   // Interpolate colour, or as in nocash "MAC+(FC-MAC)*IR0".
   void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm);

@@ -405,6 +405,26 @@ void Core::MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 
 #undef dot3
 }
 
+void Core::MulMatVecBuggy(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift,
+                          bool lm)
+{
+#define dot3(i)                                                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    TruncateAndSetIR<i + 1>(                                                                                           \
+      SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx)))) >> shift,   \
+      false);                                                                                                          \
+    TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][1]) * s64(Vy))) + (s64(M[i][2]) * s64(Vz)),     \
+                                  shift, lm);                                                                          \
+  } while (0)
+
+  dot3(0);
+  dot3(1);
+  dot3(2);
+
+#undef dot3
+}
+
 void Core::Execute_MVMVA(Instruction inst)
 {
   m_regs.FLAG.Clear();
@@ -463,24 +483,22 @@ void Core::Execute_MVMVA(Instruction inst)
       break;
   }
 
-  s32 T[3];
+  static const s32 zero_T[3] = {};
   switch (inst.mvmva_translation_vector)
   {
     case 0:
-      std::memcpy(T, m_regs.TR, sizeof(T));
+      MulMatVec(M, m_regs.TR, Vx, Vy, Vz, inst.GetShift(), inst.lm);
       break;
     case 1:
-      std::memcpy(T, m_regs.BK, sizeof(T));
+      MulMatVec(M, m_regs.BK, Vx, Vy, Vz, inst.GetShift(), inst.lm);
       break;
     case 2:
-      std::memcpy(T, m_regs.FC, sizeof(T));
+      MulMatVecBuggy(M, m_regs.FC, Vx, Vy, Vz, inst.GetShift(), inst.lm);
       break;
     default:
-      std::fill_n(T, countof(T), s32(0));
+      MulMatVec(M, zero_T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
       break;
   }
-
-  MulMatVec(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
 
   m_regs.FLAG.UpdateError();
 }
