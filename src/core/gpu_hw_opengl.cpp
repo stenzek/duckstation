@@ -599,7 +599,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced &&
              (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
-             (scaled_vram_offset_y + scaled_vram_offset_y <= m_vram_texture.GetHeight()))
+             (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
       m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
                                         m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), scaled_vram_offset_x,
@@ -621,13 +621,13 @@ void GPU_HW_OpenGL::UpdateDisplay()
         m_vram_texture.GetHeight() - scaled_vram_offset_y - scaled_display_height;
       const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_width =
-        scaled_display_width + ((m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale);
-      const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_field_offset};
+      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
+      const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_crop_left,
+                               reinterpret_field_offset};
       UploadUniformBuffer(uniforms, sizeof(uniforms));
       m_batch_ubo_dirty = true;
 
-      glViewport(0, reinterpret_field_offset, reinterpret_width, scaled_display_height);
+      glViewport(0, reinterpret_field_offset, scaled_display_width, scaled_display_height);
       glBindVertexArray(m_attributeless_vao_id);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 

@@ -995,13 +995,13 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   DefineMacro(ss, "INTERLACED", interlaced);
 
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_field_offset"});
+  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_crop_left", "uint u_field_offset"});
   DeclareTexture(ss, "samp0", 0);
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
   ss << R"(
 {
-  uint2 icoords = uint2(v_pos.xy) + u_vram_offset;
+  uint2 icoords = uint2(v_pos.xy);
 
   #if INTERLACED
     if (((icoords.y / RESOLUTION_SCALE) & 1u) != u_field_offset)
@@ -1010,12 +1010,12 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
 
   #if DEPTH_24BIT
     // relative to start of scanout
-    uint relative_x = (icoords.x - u_vram_offset.x) / RESOLUTION_SCALE;
-    icoords.x = u_vram_offset.x + ((relative_x * 3u) / 2u) * RESOLUTION_SCALE;
+    uint relative_x = (icoords.x + u_crop_left) / RESOLUTION_SCALE;
+    uint2 vram_coords = u_vram_offset + uint2(((relative_x * 3u) / 2u) * RESOLUTION_SCALE, icoords.y);
 
     // load adjacent 16-bit texels
-    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(icoords % VRAM_SIZE), 0));
-    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2((icoords + uint2(RESOLUTION_SCALE, 0)) % VRAM_SIZE), 0));
+    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(vram_coords % VRAM_SIZE), 0));
+    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2((vram_coords + uint2(RESOLUTION_SCALE, 0)) % VRAM_SIZE), 0));
     
     // select which part of the combined 16-bit texels we are currently shading
     uint s1s0 = ((s1 << 16) | s0) >> ((relative_x & 1u) * 8u);
@@ -1025,7 +1025,8 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
                     float((s1s0 >> 16u) & 0xFFu) / 255.0, 1.0);
   #else
     // load and return
-    o_col0 = LOAD_TEXTURE(samp0, int2(icoords % VRAM_SIZE), 0);
+    uint2 vram_coords = u_vram_offset + uint2(icoords.x + u_crop_left, icoords.y);
+    o_col0 = LOAD_TEXTURE(samp0, int2(vram_coords % VRAM_SIZE), 0);
   #endif
 }
 )";

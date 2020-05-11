@@ -598,7 +598,7 @@ void GPU_HW_D3D11::UpdateDisplay()
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced &&
              (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
-             (scaled_vram_offset_y + scaled_vram_offset_y <= m_vram_texture.GetHeight()))
+             (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
       m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
@@ -612,13 +612,13 @@ void GPU_HW_D3D11::UpdateDisplay()
 
       const u32 reinterpret_field_offset = GetInterlacedField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_width =
-        scaled_display_width + ((m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale);
-      const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, reinterpret_field_offset};
+      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
+      const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, reinterpret_crop_left,
+                               reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Get();
 
-      SetViewportAndScissor(0, reinterpret_field_offset, reinterpret_width, scaled_display_height);
+      SetViewportAndScissor(0, reinterpret_field_offset, scaled_display_width, scaled_display_height);
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
       m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),

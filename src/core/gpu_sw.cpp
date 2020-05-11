@@ -154,36 +154,36 @@ void GPU_SW::UpdateDisplay()
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
+    const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
     if (IsInterlacedDisplayEnabled())
     {
       const u32 field = GetInterlacedField();
       if (m_GPUSTAT.display_area_color_depth_24)
       {
         CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
-                     VRAM_WIDTH, display_width, display_height, true);
+                     VRAM_WIDTH, display_width + texture_offset_x, display_height, true);
       }
       else
       {
         CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
-                     VRAM_WIDTH, display_width, display_height, true);
+                     VRAM_WIDTH, display_width + texture_offset_x, display_height, true);
       }
     }
     else
     {
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y, m_display_texture_buffer.data(), VRAM_WIDTH, display_width,
-                     display_height, false);
+        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y, m_display_texture_buffer.data(), VRAM_WIDTH,
+                     display_width + texture_offset_x, display_height, false);
       }
       else
       {
-        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y, m_display_texture_buffer.data(), VRAM_WIDTH, display_width,
-                     display_height, false);
+        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y, m_display_texture_buffer.data(), VRAM_WIDTH,
+                     display_width + texture_offset_x, display_height, false);
       }
     }
 
-    const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
-    m_host_display->UpdateTexture(m_display_texture.get(), texture_offset_x, 0, display_width, display_height,
+    m_host_display->UpdateTexture(m_display_texture.get(), 0, 0, display_width, display_height,
                                   m_display_texture_buffer.data(), VRAM_WIDTH * sizeof(u32));
     m_host_display->SetDisplayTexture(m_display_texture->GetHandle(), VRAM_WIDTH, VRAM_HEIGHT, texture_offset_x, 0,
                                       display_width, display_height);
