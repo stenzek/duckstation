@@ -749,23 +749,24 @@ void SPU::Execute(TickCount ticks)
 
       // Compute reverb.
       s32 reverb_out_left, reverb_out_right;
-      ProcessReverb(Clamp16(reverb_in_left), Clamp16(reverb_in_right), &reverb_out_left, &reverb_out_right);
+      ProcessReverb(static_cast<s16>(Clamp16(reverb_in_left)), static_cast<s16>(Clamp16(reverb_in_right)),
+                    &reverb_out_left, &reverb_out_right);
 
       // Mix in reverb.
       left_sum += reverb_out_left;
       right_sum += reverb_out_right;
 
-      // Apply main volume before clamping.
-      *(output_frame++) = Clamp16(ApplyVolume(left_sum, m_main_volume_left.current_level));
-      *(output_frame++) = Clamp16(ApplyVolume(right_sum, m_main_volume_right.current_level));
+      // Apply main volume after clamping. A maximum volume should not overflow here because both are 16-bit values.
+      *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(left_sum), m_main_volume_left.current_level));
+      *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(right_sum), m_main_volume_right.current_level));
       m_main_volume_left.Tick();
       m_main_volume_right.Tick();
 
       // Write to capture buffers.
       WriteToCaptureBuffer(0, cd_audio_left);
       WriteToCaptureBuffer(1, cd_audio_right);
-      WriteToCaptureBuffer(2, Clamp16(m_voices[1].last_volume));
-      WriteToCaptureBuffer(3, Clamp16(m_voices[3].last_volume));
+      WriteToCaptureBuffer(2, static_cast<s16>(Clamp16(m_voices[1].last_volume)));
+      WriteToCaptureBuffer(3, static_cast<s16>(Clamp16(m_voices[3].last_volume)));
       IncrementCaptureBufferPosition();
     }
 

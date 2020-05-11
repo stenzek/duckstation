@@ -331,9 +331,9 @@ private:
     };
   };
 
-  static constexpr s16 Clamp16(s32 value)
+  static constexpr s32 Clamp16(s32 value)
   {
-    return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : static_cast<s16>(value);
+    return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : value;
   }
 
   static constexpr s32 ApplyVolume(s32 sample, s16 volume) { return (sample * s32(volume)) >> 15; }
