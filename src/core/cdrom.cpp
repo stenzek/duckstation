@@ -477,7 +477,7 @@ void CDROM::ClearAsyncInterrupt()
 void CDROM::DeliverAsyncInterrupt()
 {
   Assert(m_pending_async_interrupt != 0 && !HasPendingInterrupt());
-  Log_DevPrintf("Delivering async interrupt %u", m_pending_async_interrupt);
+  Log_DebugPrintf("Delivering async interrupt %u", m_pending_async_interrupt);
 
   m_response_fifo.Clear();
   m_response_fifo.PushFromQueue(&m_async_response_fifo);
@@ -760,7 +760,18 @@ void CDROM::ExecuteCommand()
       else
       {
         SendACKAndStat();
-        BeginReading();
+
+        if (!m_setloc_pending &&
+            (m_drive_state == DriveState::Reading ||
+             ((m_drive_state == DriveState::SeekingPhysical || m_drive_state == DriveState::SeekingLogical) &&
+              m_read_after_seek)))
+        {
+          Log_DevPrintf("Ignoring read command with no setloc, already reading/reading after seek");
+        }
+        else
+        {
+          BeginReading();
+        }
       }
 
       EndCommand();
@@ -779,7 +790,18 @@ void CDROM::ExecuteCommand()
       else
       {
         SendACKAndStat();
-        BeginPlaying(track);
+
+        if (!m_setloc_pending && track == 0 &&
+            (m_drive_state == DriveState::Playing ||
+             ((m_drive_state == DriveState::SeekingPhysical || m_drive_state == DriveState::SeekingLogical) &&
+              m_play_after_seek)))
+        {
+          Log_DevPrintf("Ignoring play command with no setloc/track, already playing/playing after seek");
+        }
+        else
+        {
+          BeginPlaying(track);
+        }
       }
 
       EndCommand();
@@ -1867,7 +1889,7 @@ void CDROM::LoadDataFIFO()
     sb.size = 0;
   }
 
-  Log_DevPrintf("Loaded %u bytes to data FIFO from buffer %u", m_data_fifo.GetSize(), m_current_read_sector_buffer);
+  Log_DebugPrintf("Loaded %u bytes to data FIFO from buffer %u", m_data_fifo.GetSize(), m_current_read_sector_buffer);
   m_current_read_sector_buffer = m_current_write_sector_buffer;
 }
 
