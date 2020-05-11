@@ -632,9 +632,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
-                                        m_display_texture.GetWidth(), m_display_texture.GetHeight(),
-                                        scaled_vram_offset_x - reinterpret_start_x, scaled_display_height,
-                                        scaled_display_width, -static_cast<s32>(scaled_display_height));
+                                        m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
+                                        scaled_display_height, scaled_display_width,
+                                        -static_cast<s32>(scaled_display_height));
 
       // restore state
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo_id);

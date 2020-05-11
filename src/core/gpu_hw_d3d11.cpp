@@ -622,8 +622,8 @@ void GPU_HW_D3D11::UpdateDisplay()
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
       m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
-                                        m_display_texture.GetHeight(), scaled_vram_offset_x - reinterpret_start_x, 0,
-                                        scaled_display_width, scaled_display_height);
+                                        m_display_texture.GetHeight(), 0, 0, scaled_display_width,
+                                        scaled_display_height);
 
       RestoreGraphicsAPIState();
     }
