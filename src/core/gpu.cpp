@@ -704,8 +704,8 @@ void GPU::Execute(TickCount ticks)
   // alternating even line bit in 240-line mode
   if (m_GPUSTAT.In480iMode())
   {
-    m_GPUSTAT.displaying_odd_line =
-      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_GPUSTAT.interlaced_field)) & u32(1));
+    m_GPUSTAT.displaying_odd_line = ConvertToBoolUnchecked(
+      (m_crtc_state.regs.Y + BoolToUInt32(m_GPUSTAT.interlaced_field && !m_crtc_state.in_vblank)) & u32(1));
   }
   else
   {
