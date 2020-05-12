@@ -670,6 +670,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
       m_xa_filter_file_number = file;
       m_xa_filter_channel_number = channel;
+      m_xa_current_set = false;
       SendACKAndStat();
       EndCommand();
       return;
