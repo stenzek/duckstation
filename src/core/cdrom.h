@@ -262,7 +262,7 @@ private:
   u8 m_pending_async_interrupt = 0;
 
   CDImage::Position m_setloc_position = {};
-  CDImage::LBA m_last_requested_sector{};
+  CDImage::LBA m_last_sector_lba{};
   bool m_setloc_pending = false;
   bool m_read_after_seek = false;
   bool m_play_after_seek = false;
