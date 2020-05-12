@@ -237,6 +237,7 @@ private:
   void StopReadingWithDataEnd();
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void ResetCurrentXAFile();
+  void ResetXAResampler();
   void LoadDataFIFO();
   void ClearSectorBuffers();
 

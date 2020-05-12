@@ -80,14 +80,7 @@ void CDROM::SoftReset()
   m_next_cd_audio_volume_matrix[1][0] = 0x00;
   m_next_cd_audio_volume_matrix[1][1] = 0x80;
   m_cd_audio_volume_matrix = m_next_cd_audio_volume_matrix;
-
-  m_xa_last_samples.fill(0);
-  for (u32 i = 0; i < 2; i++)
-  {
-    m_xa_resample_ring_buffer[i].fill(0);
-    m_xa_resample_p = 0;
-    m_xa_resample_sixstep = 6;
-  }
+  ResetXAResampler();
 
   m_param_fifo.Clear();
   m_response_fifo.Clear();
@@ -1192,9 +1185,8 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   m_drive_event->Schedule(first_sector_ticks);
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
-  m_xa_current_file_number = 0;
-  m_xa_current_channel_number = 0;
-  m_xa_current_set = false;
+  ResetCurrentXAFile();
+  ResetXAResampler();
 
   m_reader.QueueReadSector(m_last_requested_sector);
 }
@@ -1720,6 +1712,17 @@ void CDROM::ResetCurrentXAFile()
   m_xa_current_channel_number = 0;
   m_xa_current_file_number = 0;
   m_xa_current_set = false;
+}
+
+void CDROM::ResetXAResampler()
+{
+  m_xa_last_samples.fill(0);
+  for (u32 i = 0; i < 2; i++)
+  {
+    m_xa_resample_ring_buffer[i].fill(0);
+    m_xa_resample_p = 0;
+    m_xa_resample_sixstep = 6;
+  }
 }
 
 void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
