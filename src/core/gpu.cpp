@@ -793,6 +793,7 @@ void GPU::WriteGP1(u32 value)
     case 0x01: // Clear FIFO
     {
       Log_DebugPrintf("GP1 clear FIFO");
+      Synchronize();
       m_blitter_state = BlitterState::Idle;
       m_command_total_words = 0;
       m_vram_transfer = {};
