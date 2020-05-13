@@ -258,12 +258,12 @@ u16 SPU::ReadRegister(u32 offset)
       if (offset < (0x1F801D80 - SPU_BASE))
         return ReadVoiceRegister(offset);
 
-      if (offset >= (0x1F801DC0 - SPU_BASE) && offset <= (0x1F801DFE - SPU_BASE))
+      if (offset >= (0x1F801DC0 - SPU_BASE) && offset < (0x1F801E00 - SPU_BASE))
         return m_reverb_registers.rev[(offset - (0x1F801DC0 - SPU_BASE)) / 2];
 
-      if (offset >= (0x1F801E00 - SPU_BASE) && offset <= (0x1F801E60 - SPU_BASE))
+      if (offset >= (0x1F801E00 - SPU_BASE) && offset < (0x1F801E60 - SPU_BASE))
       {
-        const u32 voice_index = offset - (0x1F801E00 - SPU_BASE);
+        const u32 voice_index = (offset - (0x1F801E00 - SPU_BASE)) / 4;
         m_tick_event->InvokeEarly();
         if (offset & 0x02)
           return m_voices[voice_index].left_volume.current_level;
@@ -518,7 +518,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
         return;
       }
 
-      if (offset >= (0x1F801DC0 - SPU_BASE) && offset <= (0x1F801DFE - SPU_BASE))
+      if (offset >= (0x1F801DC0 - SPU_BASE) && offset < (0x1F801DE0 - SPU_BASE))
       {
         const u32 reg = (offset - (0x1F801DC0 - SPU_BASE)) / 2;
         Log_DebugPrintf("SPU reverb register %u <- 0x%04X", reg, value);
@@ -1290,7 +1290,7 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
     sample += (last_samples[1] * filter_neg) >> 6;
 
     last_samples[1] = last_samples[0];
-    current_block_samples[i] = last_samples[0] = Clamp16(sample);
+    current_block_samples[i] = last_samples[0] = static_cast<s16>(Clamp16(sample));
   }
 
   std::copy(last_samples, last_samples + countof(last_samples), adpcm_last_samples.begin());
