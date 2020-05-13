@@ -557,7 +557,7 @@ void GPU::UpdateCRTCDisplayParameters()
   {
     cs.display_vram_height =
       (cs.vertical_active_end -
-       std::min(vertical_display_end, std::max(vertical_display_start, cs.vertical_active_start)))
+       std::min(cs.vertical_active_end, std::max(vertical_display_start, cs.vertical_active_start)))
       << height_shift;
   }
 }
