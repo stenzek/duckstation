@@ -58,18 +58,17 @@ void HostInterface::CreateAudioStream()
 
   m_audio_stream = CreateAudioStream(m_settings.audio_backend);
 
-  if (m_audio_stream && m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
-                                                    m_settings.audio_buffer_count))
+  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
+                                                      m_settings.audio_buffer_count))
   {
-    m_audio_stream->SetOutputVolume(m_settings.audio_output_volume);
-    return;
+    ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
+    m_audio_stream.reset();
+    m_audio_stream = AudioStream::CreateNullAudioStream();
+    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
+                                m_settings.audio_buffer_count);
   }
 
-  ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
-  m_audio_stream.reset();
-  m_audio_stream = AudioStream::CreateNullAudioStream();
-  m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
-                              m_settings.audio_buffer_count);
+  m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
 }
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
