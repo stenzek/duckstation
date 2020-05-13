@@ -33,6 +33,8 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
     Settings::GetDisplayAspectRatioValue(m_system->GetSettings().display_aspect_ratio);
   m_tick_event =
     m_system->CreateTimingEvent("GPU Tick", 1, 1, std::bind(&GPU::Execute, this, std::placeholders::_1), true);
+  m_fifo_size = system->GetSettings().gpu_fifo_size;
+  m_max_run_ahead = system->GetSettings().gpu_max_run_ahead;
   return true;
 }
 
