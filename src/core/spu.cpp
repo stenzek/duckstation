@@ -518,7 +518,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
         return;
       }
 
-      if (offset >= (0x1F801DC0 - SPU_BASE) && offset < (0x1F801DE0 - SPU_BASE))
+      if (offset >= (0x1F801DC0 - SPU_BASE) && offset < (0x1F801E00 - SPU_BASE))
       {
         const u32 reg = (offset - (0x1F801DC0 - SPU_BASE)) / 2;
         Log_DebugPrintf("SPU reverb register %u <- 0x%04X", reg, value);
