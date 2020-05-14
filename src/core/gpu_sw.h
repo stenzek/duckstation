@@ -23,6 +23,11 @@ public:
   u16* GetPixelPtr(u32 x, u32 y) { return &m_vram[VRAM_WIDTH * y + x]; }
   void SetPixel(u32 x, u32 y, u16 value) { m_vram[VRAM_WIDTH * y + x] = value; }
 
+  // this is actually (31 * 255) >> 4) == 494, but to simplify addressing we use the next power of two (512)
+  static constexpr u32 DITHER_LUT_SIZE = 512;
+  using DitherLUT = std::array<std::array<std::array<u8, 512>, DITHER_MATRIX_SIZE>, DITHER_MATRIX_SIZE>;
+  static constexpr DitherLUT ComputeDitherLUT();
+
 protected:
   struct SWVertex
   {

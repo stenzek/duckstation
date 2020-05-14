@@ -581,17 +581,20 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
     ss << "};\n";
 
   ss << R"(
-int3 ApplyDithering(uint2 coord, int3 icol)
+uint3 ApplyDithering(uint2 coord, uint3 icol)
 {
-  uint2 fc = coord & uint2(3u, 3u);
+  #if DITHERING_SCALED
+    uint2 fc = coord & uint2(3u, 3u);
+  #else
+    uint2 fc = (coord / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE)) & uint2(3u, 3u);
+  #endif
   int offset = s_dither_values[fc.y * 4u + fc.x];
-  return icol + int3(offset, offset, offset);
-}
 
-int3 TruncateTo15Bit(int3 icol)
-{
-  icol = clamp(icol, int3(0, 0, 0), int3(255, 255, 255));
-  return (icol & int3(~7, ~7, ~7)) | ((icol >> 3) & int3(7, 7, 7));
+  #if !TRUE_COLOR
+    return uint3(clamp((int3(icol) + int3(offset, offset, offset)) >> 3, 0, 31));
+  #else
+    return uint3(clamp(int3(icol) + int3(offset, offset, offset), 0, 255));
+  #endif
 }
 
 #if TEXTURED
@@ -654,10 +657,10 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
 
   ss << R"(
 {
-  int3 vertcol = int3(v_col0.rgb * float3(255.0, 255.0, 255.0));
+  uint3 vertcol = uint3(v_col0.rgb * float3(255.0, 255.0, 255.0));
 
   bool semitransparent;
-  int3 icolor;
+  uint3 icolor;
   float ialpha;
   float oalpha;
 
@@ -707,10 +710,27 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       ialpha = 1.0;
     #endif
 
-    #if RAW_TEXTURE
-      icolor = int3(texcol.rgb * float3(255.0, 255.0, 255.0));
+    // If not using true color, truncate the framebuffer colors to 5-bit.
+    #if !TRUE_COLOR
+      icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0)) >> 3;
+      #if !RAW_TEXTURE
+        icolor = (icolor * vertcol) >> 4;
+        #if DITHERING
+          icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+        #else
+          icolor = min(icolor >> 3, uint3(31u, 31u, 31u));
+        #endif
+      #endif
     #else
-      icolor = (vertcol * int3(texcol.rgb * float3(255.0, 255.0, 255.0))) >> 7;
+      icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0));
+      #if !RAW_TEXTURE
+        icolor = (icolor * vertcol) >> 7;
+        #if DITHERING
+          icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+        #else
+          icolor = min(icolor, uint3(255u, 255u, 255u));
+        #endif
+      #endif
     #endif
 
     // Compute output alpha (mask bit)
@@ -721,17 +741,16 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
     icolor = vertcol;
     ialpha = 1.0;
 
-    // However, the mask bit is cleared if set mask bit is false.
-    oalpha = float(u_set_mask_while_drawing);
-  #endif
-
-  // Apply dithering
-  #if DITHERING
-    #if DITHERING_SCALED
+    #if DITHERING
       icolor = ApplyDithering(uint2(v_pos.xy), icolor);
     #else
-      icolor = ApplyDithering(uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE), icolor);
+      #if !TRUE_COLOR
+        icolor >>= 3;
+      #endif
     #endif
+
+    // However, the mask bit is cleared if set mask bit is false.
+    oalpha = float(u_set_mask_while_drawing);
   #endif
 
   // Premultiply alpha so we don't need to use a colour output for it.
@@ -744,11 +763,10 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
   #if !TRUE_COLOR
     // We want to apply the alpha before the truncation to 16-bit, otherwise we'll be passing a 32-bit precision color
     // into the blend unit, which can cause a small amount of error to accumulate.
-    icolor = int3(((float3(icolor) / float3(255.0, 255.0, 255.0)) * premultiply_alpha) * float3(255.0, 255.0, 255.0));
-    color = (float3(icolor >> 3) / float3(31.0, 31.0, 31.0));
+    color = floor(float3(icolor) * premultiply_alpha) / float3(31.0, 31.0, 31.0);
   #else
     // True color is actually simpler here since we want to preserve the precision.
-    color = (float3(icolor) / float3(255.0, 255.0, 255.0)) * premultiply_alpha;
+    color = (float3(icolor) * premultiply_alpha) / float3(255.0, 255.0, 255.0);
   #endif
 
   #if TRANSPARENCY

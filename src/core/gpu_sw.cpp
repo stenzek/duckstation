@@ -551,6 +551,25 @@ void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8
   }
 }
 
+constexpr GPU_SW::DitherLUT GPU_SW::ComputeDitherLUT()
+{
+  DitherLUT lut = {};
+  for (u32 i = 0; i < DITHER_MATRIX_SIZE; i++)
+  {
+    for (u32 j = 0; j < DITHER_MATRIX_SIZE; j++)
+    {
+      for (s32 value = 0; value < DITHER_LUT_SIZE; value++)
+      {
+        const s32 dithered_value = (value + DITHER_MATRIX[i][j]) >> 3;
+        lut[i][j][value] = static_cast<u8>((dithered_value < 0) ? 0 : ((dithered_value > 31) ? 31 : dithered_value));
+      }
+    }
+  }
+  return lut;
+}
+
+static constexpr GPU_SW::DitherLUT s_dither_lut = GPU_SW::ComputeDitherLUT();
+
 template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
 void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y)
 {
@@ -612,23 +631,25 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
     }
     else
     {
-      const u8 r = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetR8()) * ZeroExtend16(color_r)) >> 7, 0xFF));
-      const u8 g = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetG8()) * ZeroExtend16(color_g)) >> 7, 0xFF));
-      const u8 b = Truncate8(std::min<u16>((ZeroExtend16(texture_color.GetB8()) * ZeroExtend16(color_b)) >> 7, 0xFF));
-      if constexpr (dithering_enable)
-        color.SetRGB24Dithered(x, y, r, g, b, texture_color.c);
-      else
-        color.SetRGB24(r, g, b, texture_color.c);
+      const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
+      const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
+
+      color.bits = (ZeroExtend16(s_dither_lut[dither_y][dither_x][(u16(texture_color.r) * u16(color_r)) >> 4]) << 0) |
+                   (ZeroExtend16(s_dither_lut[dither_y][dither_x][(u16(texture_color.g) * u16(color_g)) >> 4]) << 5) |
+                   (ZeroExtend16(s_dither_lut[dither_y][dither_x][(u16(texture_color.b) * u16(color_b)) >> 4]) << 10) |
+                   (texture_color.bits & 0x8000u);
     }
   }
   else
   {
     transparent = true;
 
-    if constexpr (dithering_enable)
-      color.SetRGB24Dithered(x, y, color_r, color_g, color_b);
-    else
-      color.SetRGB24(color_r, color_g, color_b);
+    const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
+    const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
+
+    color.bits = (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_r]) << 0) |
+                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_g]) << 5) |
+                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10);
   }
 
   const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};

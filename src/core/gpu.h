@@ -95,7 +95,8 @@ public:
     MAX_PRIMITIVE_HEIGHT = 512,
     DOT_TIMER_INDEX = 0,
     HBLANK_TIMER_INDEX = 1,
-    MAX_RESOLUTION_SCALE = 16
+    MAX_RESOLUTION_SCALE = 16,
+    DITHER_MATRIX_SIZE = 4
   };
 
   enum : u16
@@ -107,10 +108,10 @@ public:
   };
 
   // 4x4 dither matrix.
-  static constexpr s32 DITHER_MATRIX[4][4] = {{-4, +0, -3, +1},  // row 0
-                                              {+2, -2, +3, -1},  // row 1
-                                              {-3, +1, -4, +0},  // row 2
-                                              {+4, -1, +2, -2}}; // row 3
+  static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-4, +0, -3, +1},  // row 0
+                                                                                {+2, -2, +3, -1},  // row 1
+                                                                                {-3, +1, -4, +0},  // row 2
+                                                                                {+4, -1, +2, -2}}; // row 3
 
   // Base class constructor.
   GPU();
