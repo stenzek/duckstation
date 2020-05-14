@@ -80,11 +80,12 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
                              "to the hardware backends. This option is usually safe, with most games looking fine at "
                              "higher resolutions. Higher resolutions require a more powerful GPU.");
   dialog->registerWidgetHelp(
-    m_ui.trueColor, "True Color Rendering (24-bit, disables dithering)", "Checked",
+    m_ui.trueColor, "True Color Rendering (24-bit, disables dithering)", "Unchecked",
     "Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
     "channel. This produces nicer looking gradients at the cost of making some colours look slightly different. "
     "Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a "
-    "pattern around those pixels. Usually safe to leave enabled, and only applies to the hardware renderers.");
+    "pattern around those pixels. Most games are compatible with this option, but there is a number which aren't and "
+    "will have broken effects with it enabled. Only applies to the hardware renderers.");
   dialog->registerWidgetHelp(
     m_ui.scaledDithering, "Scaled Dithering (scale dither pattern to resolution)", "Checked",
     "Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "

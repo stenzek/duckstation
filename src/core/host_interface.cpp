@@ -958,8 +958,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
-  si.SetBoolValue("GPU", "TrueColor", true);
-  si.SetBoolValue("GPU", "ScaledDithering", false);
+  si.SetBoolValue("GPU", "TrueColor", false);
+  si.SetBoolValue("GPU", "ScaledDithering", true);
   si.SetBoolValue("GPU", "TextureFiltering", false);
   si.SetBoolValue("GPU", "DisableInterlacing", true);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
