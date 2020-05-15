@@ -73,7 +73,6 @@ void CDROM::SoftReset()
   m_last_sector_header_valid = false;
   std::memset(&m_last_subq, 0, sizeof(m_last_subq));
   m_last_cdda_report_frame_nibble = 0xFF;
-  m_cdda_report_delay = 0;
 
   m_next_cd_audio_volume_matrix[0][0] = 0x80;
   m_next_cd_audio_volume_matrix[0][1] = 0x00;
@@ -126,7 +125,6 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_last_sector_header_valid);
   sw.DoBytes(&m_last_subq, sizeof(m_last_subq));
   sw.Do(&m_last_cdda_report_frame_nibble);
-  sw.Do(&m_cdda_report_delay);
   sw.Do(&m_play_track_number_bcd);
   sw.Do(&m_async_command_parameter);
   sw.Do(&m_cd_audio_volume_matrix);
@@ -1199,7 +1197,6 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool afte
 {
   Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
   m_last_cdda_report_frame_nibble = 0xFF;
-  m_cdda_report_delay = CDImage::FRAMES_PER_SECOND;
   m_play_track_number_bcd = track_bcd;
 
   // if track zero, start from current position
@@ -1819,7 +1816,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   if (m_mode.report_audio)
   {
     const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
-    if (m_last_cdda_report_frame_nibble != frame_nibble && (m_cdda_report_delay == 0 || --m_cdda_report_delay == 0))
+    if (m_last_cdda_report_frame_nibble != frame_nibble)
     {
       m_last_cdda_report_frame_nibble = frame_nibble;
 
