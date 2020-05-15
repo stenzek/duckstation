@@ -473,6 +473,9 @@ void CDROM::DeliverAsyncInterrupt()
   Assert(m_pending_async_interrupt != 0 && !HasPendingInterrupt());
   Log_DebugPrintf("Delivering async interrupt %u", m_pending_async_interrupt);
 
+  if (m_pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
+    m_current_read_sector_buffer = m_current_write_sector_buffer;
+
   m_response_fifo.Clear();
   m_response_fifo.PushFromQueue(&m_async_response_fifo);
   m_interrupt_flag_register = m_pending_async_interrupt;
@@ -1582,8 +1585,8 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // TODO: How does XA relate to this buffering?
-  SectorBuffer* sb = &m_sector_buffers[m_current_write_sector_buffer];
   m_current_write_sector_buffer = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
+  SectorBuffer* sb = &m_sector_buffers[m_current_write_sector_buffer];
   if (sb->size > 0)
   {
     Log_DevPrintf("Sector buffer %u was not read, previous sector dropped",
