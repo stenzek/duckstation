@@ -558,8 +558,6 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
   else if (m_drive_state == DriveState::Idle) // paused
     ticks += 1237952 << (BoolToUInt8(!m_mode.double_speed));
-  else if (lba_diff >= 3 && lba_diff < 12)
-    ticks += MASTER_CLOCK / (75 << (BoolToUInt8(!m_mode.double_speed)) << 2);
 
   if (m_mode.double_speed != m_current_double_speed)
   {
@@ -570,6 +568,9 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     // Approximate time for the motor to change speed?
     ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 0.1);
   }
+
+  // time to read the sector
+  ticks += GetTicksForRead();
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
