@@ -288,7 +288,7 @@ void Core::RaiseException(Exception excode)
 
 void Core::RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
 {
-#ifdef Y_BUILD_CONFIG_DEBUG
+#ifdef _DEBUG
   if (excode != Exception::INT && excode != Exception::Syscall && excode != Exception::BP)
   {
     Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
