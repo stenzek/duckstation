@@ -43,8 +43,9 @@ bool HostInterface::Initialize()
                     m_settings.log_to_console, m_settings.log_to_debug, m_settings.log_to_window,
                     m_settings.log_to_file);
   m_game_list = std::make_unique<GameList>();
-  m_game_list->SetCacheFilename(GetGameListCacheFileName());
-  m_game_list->SetDatabaseFilename(GetGameListDatabaseFileName());
+  m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
+  m_game_list->SetDatabaseFilename(GetUserDirectoryRelativePath("cache/redump.dat"));
+  m_game_list->SetCompatibilityFilename(GetUserDirectoryRelativePath("database/compatibility.xml"));
   return true;
 }
 
@@ -764,16 +765,6 @@ TinyString HostInterface::GetTimestampStringForFileName()
 std::string HostInterface::GetSettingsFileName() const
 {
   return GetUserDirectoryRelativePath("settings.ini");
-}
-
-std::string HostInterface::GetGameListCacheFileName() const
-{
-  return GetUserDirectoryRelativePath("cache/gamelist.cache");
-}
-
-std::string HostInterface::GetGameListDatabaseFileName() const
-{
-  return GetUserDirectoryRelativePath("cache/redump.dat");
 }
 
 std::string HostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot) const

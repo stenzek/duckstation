@@ -206,12 +206,6 @@ protected:
   /// Returns the path of the settings file.
   std::string GetSettingsFileName() const;
 
-  /// Returns the path of the game list cache file.
-  std::string GetGameListCacheFileName() const;
-
-  /// Returns the path of the game database cache file.
-  std::string GetGameListDatabaseFileName() const;
-
   /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
   std::string GetGameSaveStateFileName(const char* game_code, s32 slot) const;
 

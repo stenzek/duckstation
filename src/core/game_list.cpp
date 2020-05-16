@@ -207,6 +207,15 @@ bool GameList::IsPsfFileName(const char* path)
   return (extension && StringUtil::Strcasecmp(extension, ".psf") == 0);
 }
 
+const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibilityRating rating)
+{
+  static constexpr std::array<const char*, static_cast<size_t>(GameListCompatibilityRating::Count)> names = {
+    {"Unknown", "Doesn't Boot", "Crashes In Intro", "Crashes In-Game", "Graphical/Audio Issues", "No Issues"}};
+  return (rating >= GameListCompatibilityRating::Unknown && rating < GameListCompatibilityRating::Count) ?
+           names[static_cast<int>(rating)] :
+           "";
+}
+
 static std::string_view GetFileNameFromPath(const char* path)
 {
   const char* filename_end = path + std::strlen(path);
@@ -303,6 +312,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   {
     // no game code, so use the filename title
     entry->title = GetTitleForPath(path.c_str());
+    entry->compatibility_rating = GameListCompatibilityRating::Unknown;
   }
   else
   {
@@ -318,6 +328,16 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
     {
       Log_WarningPrintf("'%s' not found in database", entry->code.c_str());
       entry->title = GetTitleForPath(path.c_str());
+    }
+
+    const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
+    if (compatibility_entry)
+    {
+      entry->compatibility_rating = compatibility_entry->compatibility_rating;
+    }
+    else
+    {
+      Log_WarningPrintf("'%s' (%s) not found in compatibility list", entry->code.c_str(), entry->title.c_str());
     }
   }
 
@@ -428,11 +448,13 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     u64 last_modified_time;
     u8 region;
     u8 type;
+    u8 compatibility_rating;
 
     if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
         !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
         region >= static_cast<u8>(DiscRegion::Count) || !ReadU8(stream, &type) ||
-        type > static_cast<u8>(GameListEntryType::PSExe))
+        type > static_cast<u8>(GameListEntryType::PSExe) || !ReadU8(stream, &compatibility_rating) ||
+        compatibility_rating >= static_cast<u8>(GameListCompatibilityRating::Count))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
       return false;
@@ -446,6 +468,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     ge.last_modified_time = last_modified_time;
     ge.region = static_cast<DiscRegion>(region);
     ge.type = static_cast<GameListEntryType>(type);
+    ge.compatibility_rating = static_cast<GameListCompatibilityRating>(compatibility_rating);
 
     auto iter = m_cache_map.find(ge.path);
     if (iter != m_cache_map.end())
@@ -494,6 +517,7 @@ bool GameList::WriteEntryToCache(const GameListEntry* entry, ByteStream* stream)
   result &= WriteU64(stream, entry->last_modified_time);
   result &= WriteU8(stream, static_cast<u8>(entry->region));
   result &= WriteU8(stream, static_cast<u8>(entry->type));
+  result &= WriteU8(stream, static_cast<u8>(entry->compatibility_rating));
   return result;
 }
 
@@ -512,6 +536,23 @@ void GameList::CloseCacheFileStream()
 
   m_cache_write_stream->Commit();
   m_cache_write_stream.reset();
+}
+
+void GameList::RewriteCacheFile()
+{
+  CloseCacheFileStream();
+  DeleteCacheFile();
+  if (OpenCacheForWriting())
+  {
+    for (const auto& it : m_entries)
+    {
+      if (!WriteEntryToCache(&it, m_cache_write_stream.get()))
+      {
+        Log_ErrorPrintf("Failed to write '%s' to new cache file", it.title.c_str());
+        break;
+      }
+    }
+  }
 }
 
 void GameList::DeleteCacheFile()
@@ -714,6 +755,15 @@ const GameListDatabaseEntry* GameList::GetDatabaseEntryForCode(const std::string
   return (iter != m_database.end()) ? &iter->second : nullptr;
 }
 
+const GameListCompatibilityEntry* GameList::GetCompatibilityEntryForCode(const std::string& code) const
+{
+  if (!m_compatibility_list_load_tried)
+    const_cast<GameList*>(this)->LoadCompatibilityList();
+
+  auto iter = m_compatibility_list.find(code);
+  return (iter != m_compatibility_list.end()) ? &iter->second : nullptr;
+}
+
 void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
 {
   m_search_directories.clear();
@@ -764,6 +814,31 @@ void GameList::Refresh(bool invalidate_cache, bool invalidate_database, Progress
   m_cache_map.clear();
 }
 
+void GameList::UpdateCompatibilityEntry(GameListCompatibilityEntry new_entry, bool save_to_list /*= true*/)
+{
+  auto iter = m_compatibility_list.find(new_entry.code.c_str());
+  if (iter != m_compatibility_list.end())
+  {
+    iter->second = std::move(new_entry);
+  }
+  else
+  {
+    std::string key(new_entry.code);
+    iter = m_compatibility_list.emplace(std::move(key), std::move(new_entry)).first;
+  }
+
+  auto game_list_it = std::find_if(m_entries.begin(), m_entries.end(),
+                                   [&iter](const GameListEntry& ge) { return (ge.code == iter->second.code); });
+  if (game_list_it != m_entries.end() && game_list_it->compatibility_rating != iter->second.compatibility_rating)
+  {
+    game_list_it->compatibility_rating = iter->second.compatibility_rating;
+    RewriteCacheFile();
+  }
+
+  if (save_to_list)
+    SaveCompatibilityDatabaseForEntry(&iter->second);
+}
+
 void GameList::LoadDatabase()
 {
   if (m_database_load_tried)
@@ -798,4 +873,279 @@ void GameList::ClearDatabase()
 {
   m_database.clear();
   m_database_load_tried = false;
+}
+
+class GameList::CompatibilityListVisitor final : public tinyxml2::XMLVisitor
+{
+public:
+  CompatibilityListVisitor(CompatibilityMap& database) : m_database(database) {}
+
+  static std::string FixupSerial(const std::string_view str)
+  {
+    std::string ret;
+    ret.reserve(str.length());
+    for (size_t i = 0; i < str.length(); i++)
+    {
+      if (str[i] == '.' || str[i] == '#')
+        continue;
+      else if (str[i] == ',')
+        break;
+      else if (str[i] == '_' || str[i] == ' ')
+        ret.push_back('-');
+      else
+        ret.push_back(static_cast<char>(std::toupper(str[i])));
+    }
+
+    return ret;
+  }
+
+  bool VisitEnter(const tinyxml2::XMLElement& element, const tinyxml2::XMLAttribute* firstAttribute) override
+  {
+    // recurse into gamelist
+    if (StringUtil::Strcasecmp(element.Name(), "compatibility-list") == 0)
+      return true;
+
+    if (StringUtil::Strcasecmp(element.Name(), "entry") != 0)
+      return false;
+
+    const char* attr = element.Attribute("code");
+    std::string code(attr ? attr : "");
+    attr = element.Attribute("title");
+    std::string title(attr ? attr : "");
+    attr = element.Attribute("region");
+    std::optional<DiscRegion> region = Settings::ParseDiscRegionName(attr ? attr : "");
+    const int compatibility = element.IntAttribute("compatibility");
+
+    const tinyxml2::XMLElement* upscaling_elem = element.FirstChildElement("upscaling-issues");
+    const tinyxml2::XMLElement* version_tested_elm = element.FirstChildElement("version-tested");
+    const tinyxml2::XMLElement* comments_elem = element.FirstChildElement("comments");
+    const char* upscaling = upscaling_elem ? upscaling_elem->GetText() : nullptr;
+    const char* version_tested = version_tested_elm ? version_tested_elm->GetText() : nullptr;
+    const char* comments = comments_elem ? comments_elem->GetText() : nullptr;
+    if (code.empty() || !region.has_value() || compatibility < 0 ||
+        compatibility >= static_cast<int>(GameListCompatibilityRating::Count))
+    {
+      Log_ErrorPrintf("Missing child node at line %d", element.GetLineNum());
+      return false;
+    }
+
+    auto iter = m_database.find(code);
+    if (iter != m_database.end())
+    {
+      Log_ErrorPrintf("Duplicate game code in compatibility list: '%s'", code.c_str());
+      return false;
+    }
+
+    GameListCompatibilityEntry entry;
+    entry.code = code;
+    entry.title = title;
+    entry.region = region.value();
+    entry.compatibility_rating = static_cast<GameListCompatibilityRating>(compatibility);
+
+    if (upscaling)
+      entry.upscaling_issues = upscaling;
+    if (version_tested)
+      entry.version_tested = version_tested;
+    if (comments)
+      entry.comments = comments;
+
+    m_database.emplace(std::move(code), std::move(entry));
+    return false;
+  }
+
+private:
+  CompatibilityMap& m_database;
+};
+
+void GameList::LoadCompatibilityList()
+{
+  if (m_compatibility_list_load_tried)
+    return;
+
+  m_compatibility_list_load_tried = true;
+  if (m_compatibility_list_filename.empty())
+    return;
+
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError error = doc.LoadFile(m_compatibility_list_filename.c_str());
+  if (error != tinyxml2::XML_SUCCESS)
+  {
+    Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
+                    tinyxml2::XMLDocument::ErrorIDToName(error));
+    return;
+  }
+
+  const tinyxml2::XMLElement* datafile_elem = doc.FirstChildElement("compatibility-list");
+  if (!datafile_elem)
+  {
+    Log_ErrorPrintf("Failed to get compatibility-list element in '%s'", m_compatibility_list_filename.c_str());
+    return;
+  }
+
+  CompatibilityListVisitor visitor(m_compatibility_list);
+  datafile_elem->Accept(&visitor);
+  Log_InfoPrintf("Loaded %zu entries from compatibility list '%s'", m_compatibility_list.size(),
+                 m_compatibility_list_filename.c_str());
+}
+
+static void InitElementForCompatibilityEntry(tinyxml2::XMLDocument* doc, tinyxml2::XMLElement* entry_elem,
+                                             const GameListCompatibilityEntry* entry)
+{
+  entry_elem->SetAttribute("code", entry->code.c_str());
+  entry_elem->SetAttribute("title", entry->title.c_str());
+  entry_elem->SetAttribute("region", Settings::GetDiscRegionName(entry->region));
+  entry_elem->SetAttribute("compatibility", static_cast<int>(entry->compatibility_rating));
+
+  tinyxml2::XMLElement* elem = entry_elem->FirstChildElement("compatibility");
+  if (!elem)
+  {
+    elem = doc->NewElement("compatibility");
+    entry_elem->InsertEndChild(elem);
+  }
+  elem->SetText(GameList::GetGameListCompatibilityRatingString(entry->compatibility_rating));
+
+  if (!entry->upscaling_issues.empty())
+  {
+    elem = entry_elem->FirstChildElement("upscaling-issues");
+    if (!entry->upscaling_issues.empty())
+    {
+      if (!elem)
+      {
+        elem = doc->NewElement("upscaling-issues");
+        entry_elem->InsertEndChild(elem);
+      }
+      elem->SetText(entry->upscaling_issues.c_str());
+    }
+    else
+    {
+      if (elem)
+        entry_elem->DeleteChild(elem);
+    }
+  }
+
+  if (!entry->version_tested.empty())
+  {
+    elem = entry_elem->FirstChildElement("version-tested");
+    if (!entry->version_tested.empty())
+    {
+      if (!elem)
+      {
+        elem = doc->NewElement("version-tested");
+        entry_elem->InsertEndChild(elem);
+      }
+      elem->SetText(entry->version_tested.c_str());
+    }
+    else
+    {
+      if (elem)
+        entry_elem->DeleteChild(elem);
+    }
+  }
+
+  if (!entry->comments.empty())
+  {
+    elem = entry_elem->FirstChildElement("comments");
+    if (!entry->comments.empty())
+    {
+      if (!elem)
+      {
+        elem = doc->NewElement("comments");
+        entry_elem->InsertEndChild(elem);
+      }
+      elem->SetText(entry->comments.c_str());
+    }
+    else
+    {
+      if (elem)
+        entry_elem->DeleteChild(elem);
+    }
+  }
+}
+
+bool GameList::SaveCompatibilityDatabase()
+{
+  if (m_compatibility_list_filename.empty())
+    return false;
+
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLElement* root_elem = doc.NewElement("compatibility-list");
+  doc.InsertEndChild(root_elem);
+
+  for (const auto& it : m_compatibility_list)
+  {
+    const GameListCompatibilityEntry* entry = &it.second;
+    tinyxml2::XMLElement* entry_elem = doc.NewElement("entry");
+    root_elem->InsertEndChild(entry_elem);
+    InitElementForCompatibilityEntry(&doc, entry_elem, entry);
+  }
+
+  tinyxml2::XMLError error = doc.SaveFile(m_compatibility_list_filename.c_str());
+  if (error != tinyxml2::XML_SUCCESS)
+  {
+    Log_ErrorPrintf("Failed to save compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
+                    tinyxml2::XMLDocument::ErrorIDToName(error));
+    return false;
+  }
+
+  Log_InfoPrintf("Saved %zu entries to compatibility list '%s'", m_compatibility_list.size(),
+                 m_compatibility_list_filename.c_str());
+  return true;
+}
+
+bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntry* entry)
+{
+  if (m_compatibility_list_filename.empty())
+    return false;
+
+  if (!FileSystem::FileExists(m_compatibility_list_filename.c_str()))
+    return SaveCompatibilityDatabase();
+
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError error = doc.LoadFile(m_compatibility_list_filename.c_str());
+  if (error != tinyxml2::XML_SUCCESS)
+  {
+    Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
+                    tinyxml2::XMLDocument::ErrorIDToName(error));
+    return false;
+  }
+
+  tinyxml2::XMLElement* root_elem = doc.FirstChildElement("compatibility-list");
+  if (!root_elem)
+  {
+    Log_ErrorPrintf("Failed to get compatibility-list element in '%s'", m_compatibility_list_filename.c_str());
+    return false;
+  }
+
+  tinyxml2::XMLElement* current_entry_elem = root_elem->FirstChildElement();
+  while (current_entry_elem)
+  {
+    const char* existing_code = current_entry_elem->Attribute("code");
+    if (existing_code && StringUtil::Strcasecmp(entry->code.c_str(), existing_code) == 0)
+    {
+      // update the existing element
+      InitElementForCompatibilityEntry(&doc, current_entry_elem, entry);
+      break;
+    }
+
+    current_entry_elem = current_entry_elem->NextSiblingElement();
+  }
+
+  if (!current_entry_elem)
+  {
+    // not found, insert
+    tinyxml2::XMLElement* entry_elem = doc.NewElement("entry");
+    root_elem->InsertEndChild(entry_elem);
+    InitElementForCompatibilityEntry(&doc, entry_elem, entry);
+  }
+
+  error = doc.SaveFile(m_compatibility_list_filename.c_str());
+  if (error != tinyxml2::XML_SUCCESS)
+  {
+    Log_ErrorPrintf("Failed to update compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
+                    tinyxml2::XMLDocument::ErrorIDToName(error));
+    return false;
+  }
+
+  Log_InfoPrintf("Updated compatibility list '%s'", m_compatibility_list_filename.c_str());
+  return true;
 }

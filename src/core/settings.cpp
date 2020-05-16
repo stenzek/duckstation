@@ -247,7 +247,7 @@ static std::array<const char*, 4> s_disc_region_display_names = {
 std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
 {
   int index = 0;
-  for (const char* name : s_console_region_names)
+  for (const char* name : s_disc_region_names)
   {
     if (StringUtil::Strcasecmp(name, str) == 0)
       return static_cast<DiscRegion>(index);
