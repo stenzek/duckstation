@@ -18,14 +18,15 @@ public:
     Column_Code,
     Column_Title,
     Column_FileTitle,
-    Column_Region,
     Column_Size,
+    Column_Region,
+    Column_Compatibility,
 
     Column_Count
   };
 
   static inline constexpr std::array<const char*, Column_Count> s_column_names = {
-    {"Type", "Code", "Title", "File Title", "Region", "Size"}};
+    {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility"}};
 
   static std::optional<Column> getColumnIdForName(std::string_view name)
   {
@@ -119,6 +120,9 @@ public:
           case Column_Region:
             return static_cast<int>(ge.region);
 
+          case Column_Compatibility:
+            return static_cast<int>(ge.compatibility_rating);
+
           case Column_Size:
             return static_cast<qulonglong>(ge.total_size);
 
@@ -155,6 +159,13 @@ public:
               default:
                 return m_region_eu_pixmap;
             }
+          }
+
+          case Column_Compatibility:
+          {
+            return m_compatibiliy_pixmaps[static_cast<int>(
+              (ge.compatibility_rating >= GameListCompatibilityRating::Count) ? GameListCompatibilityRating::Unknown :
+                                                                                ge.compatibility_rating)];
           }
 
           default:
@@ -204,6 +215,9 @@ private:
     m_region_jp_pixmap.load(QStringLiteral(":/icons/flag-jp.png"));
     m_region_us_pixmap.load(QStringLiteral(":/icons/flag-us.png"));
     m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
+
+    for (int i = 0; i < static_cast<int>(GameListCompatibilityRating::Count); i++)
+      m_compatibiliy_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i));
   }
 
   GameList* m_game_list;
@@ -214,6 +228,8 @@ private:
   QPixmap m_region_jp_pixmap;
   QPixmap m_region_eu_pixmap;
   QPixmap m_region_us_pixmap;
+
+  std::array<QPixmap, static_cast<int>(GameListCompatibilityRating::Count)> m_compatibiliy_pixmaps;
 };
 
 class GameListSortModel final : public QSortFilterProxyModel
@@ -359,7 +375,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 
 void GameListWidget::resizeTableViewColumnsToFit()
 {
-  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 60, 100});
+  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 100, 60, 100});
 }
 
 static QString getColumnVisibilitySettingsKeyName(int column)
