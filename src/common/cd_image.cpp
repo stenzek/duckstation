@@ -54,6 +54,24 @@ CDImage::Position CDImage::GetTrackStartMSFPosition(u8 track) const
   return Position::FromLBA(m_tracks[track - 1].start_lba);
 }
 
+CDImage::LBA CDImage::GetTrackLength(u8 track) const
+{
+  Assert(track > 0 && track <= m_tracks.size());
+  return m_tracks[track - 1].length;
+}
+
+CDImage::Position CDImage::GetTrackMSFLength(u8 track) const
+{
+  Assert(track > 0 && track <= m_tracks.size());
+  return Position::FromLBA(m_tracks[track - 1].length);
+}
+
+CDImage::TrackMode CDImage::GetTrackMode(u8 track) const
+{
+  Assert(track > 0 && track <= m_tracks.size());
+  return m_tracks[track - 1].mode;
+}
+
 bool CDImage::Seek(LBA lba)
 {
   const Index* new_index;
@@ -240,7 +258,8 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
 void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 index_offset)
 {
   subq->control.bits = index->control.bits;
-  subq->track_number_bcd = (index->track_number <= m_tracks.size() ? BinaryToBCD(index->track_number) : index->track_number);
+  subq->track_number_bcd =
+    (index->track_number <= m_tracks.size() ? BinaryToBCD(index->track_number) : index->track_number);
   subq->index_number_bcd = BinaryToBCD(index->index_number);
 
   const Position relative_position =

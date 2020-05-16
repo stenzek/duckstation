@@ -179,6 +179,9 @@ public:
   u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
   LBA GetTrackStartPosition(u8 track) const;
   Position GetTrackStartMSFPosition(u8 track) const;
+  LBA GetTrackLength(u8 track) const;
+  Position GetTrackMSFLength(u8 track) const;
+  TrackMode GetTrackMode(u8 track) const;
   u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
   u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
 
