@@ -17,12 +17,15 @@
 #include "timers.h"
 #include <cmath>
 #include <cstring>
+#include <cwchar>
 #include <imgui.h>
 #include <stdlib.h>
 Log_SetChannel(HostInterface);
 
 #ifdef WIN32
 #include "common/windows_headers.h"
+#include <KnownFolders.h>
+#include <ShlObj.h>
 #include <mmsystem.h>
 #endif
 
@@ -666,16 +669,40 @@ void HostInterface::SetUserDirectory()
 
   if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
                                                              FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
+                               .c_str()) ||
+      FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
+                                                             FS_OSPATH_SEPERATOR_CHARACTER, "settings.ini")
                                .c_str()))
   {
-    std::fprintf(stdout, "portable.txt found, using program directory as user directory.\n");
+    std::fprintf(stdout, "portable.txt or old settings.ini found, using program directory as user directory.\n");
     m_user_directory = m_program_directory;
   }
   else
   {
 #ifdef WIN32
-    // On Windows, use the path to the program. We might want to use My Documents in the future.
-    m_user_directory = m_program_directory;
+    // On Windows, use My Documents\DuckStation.
+    PWSTR documents_directory;
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
+    {
+      const size_t documents_directory_len = std::wcslen(documents_directory);
+      int documents_directory_u8len = WideCharToMultiByte(
+        CP_UTF8, 0, documents_directory, static_cast<int>(documents_directory_len), nullptr, 0, nullptr, nullptr);
+      if (documents_directory_u8len > 0)
+      {
+        std::string documents_directory_str;
+        documents_directory_str.resize(documents_directory_u8len);
+        documents_directory_u8len = WideCharToMultiByte(
+          CP_UTF8, 0, documents_directory, static_cast<int>(documents_directory_len), documents_directory_str.data(),
+          static_cast<int>(documents_directory_str.size()), 0, nullptr);
+        if (documents_directory_u8len > 0)
+        {
+          documents_directory_str.resize(documents_directory_u8len);
+          m_user_directory = StringUtil::StdStringFromFormat("%s%c%s", documents_directory_str.c_str(),
+                                                             FS_OSPATH_SEPERATOR_CHARACTER, "DuckStation");
+        }
+      }
+      CoTaskMemFree(documents_directory);
+    }
 #elif __linux__
     // On Linux, use .local/share/duckstation as a user directory by default.
     const char* xdg_data_home = getenv("XDG_DATA_HOME");
@@ -686,19 +713,21 @@ void HostInterface::SetUserDirectory()
     else
     {
       const char* home_path = getenv("HOME");
-      if (!home_path)
-        m_user_directory = m_program_directory;
-      else
+      if (home_path)
         m_user_directory = StringUtil::StdStringFromFormat("%s/.local/share/duckstation", home_path);
     }
 #elif __APPLE__
     // On macOS, default to ~/Library/Application Support/DuckStation.
     const char* home_path = getenv("HOME");
-    if (!home_path)
-      m_user_directory = m_program_directory;
-    else
+    if (home_path)
       m_user_directory = StringUtil::StdStringFromFormat("%s/Library/Application Support/DuckStation", home_path);
 #endif
+
+    if (m_user_directory.empty())
+    {
+      std::fprintf(stderr, "User directory path could not be determined, falling back to program directory.");
+      m_user_directory = m_program_directory;
+    }
   }
 }
 

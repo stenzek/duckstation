@@ -49,7 +49,7 @@ Prebuilt binaries of DuckStation for 64-bit Windows are available via AppVeyor C
 
 Once downloaded and extracted, you can launch the Qt frontend from `duckstation-qt-x64-ReleaseLTCG.exe`, or the SDL frontend from `duckstation-sdl-x64-ReleaseLTCG.exe`.
 To set up:
-1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory.
+1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory. On Windows, by default this will be located in `C:\Users\YOUR_USERNAME\Documents\DuckStation\bios`.
 2. If using the SDL frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
 2. Select a game from the list, or open a disc image file and enjoy.
 
@@ -131,7 +131,7 @@ The "User Directory" is where you should place your BIOS images, where settings 
 
 This is located in the following places depending on the platform you're using:
 
-- Windows: Directory containing DuckStation executable.
+- Windows: My Documents\DuckStation
 - Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
 - macOS: `~/Library/Application Support/DuckStation`.
 
