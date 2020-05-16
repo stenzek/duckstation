@@ -4,6 +4,7 @@
 #include <QtWidgets/QDialog>
 
 struct GameListEntry;
+struct GameListCompatibilityEntry;
 
 class QtHostInterface;
 
@@ -40,6 +41,7 @@ private:
   void connectUi();
   void populateCompatibilityInfo(const std::string& game_code);
   void populateTracksInfo(const char* image_path);
+  void fillEntryFromUi(GameListCompatibilityEntry* entry);
   void onResize();
 
   Ui::GamePropertiesDialog m_ui;

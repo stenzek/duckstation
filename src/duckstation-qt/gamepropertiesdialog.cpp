@@ -5,6 +5,9 @@
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
+#include <QtGui/QClipboard>
+#include <QtGui/QGuiApplication>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 
 GamePropertiesDialog::GamePropertiesDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
@@ -57,6 +60,7 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
     m_ui.compatibility->setDisabled(true);
     m_ui.upscalingIssues->setDisabled(true);
     m_ui.versionTested->setDisabled(true);
+    m_ui.exportCompatibilityInfo->setDisabled(true);
   }
   else
   {
@@ -177,19 +181,24 @@ void GamePropertiesDialog::connectUi()
   connect(m_ui.close, &QPushButton::clicked, this, &QDialog::close);
 }
 
+void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)
+{
+  entry->code = m_ui.gameCode->text().toStdString();
+  entry->title = m_ui.title->text().toStdString();
+  entry->version_tested = m_ui.versionTested->text().toStdString();
+  entry->upscaling_issues = m_ui.upscalingIssues->text().toStdString();
+  entry->comments = m_ui.comments->text().toStdString();
+  entry->compatibility_rating = static_cast<GameListCompatibilityRating>(m_ui.compatibility->currentIndex());
+  entry->region = static_cast<DiscRegion>(m_ui.region->currentIndex());
+}
+
 void GamePropertiesDialog::saveCompatibilityInfo()
 {
-  GameListCompatibilityEntry new_entry;
-  new_entry.code = m_ui.gameCode->text().toStdString();
-  new_entry.title = m_ui.title->text().toStdString();
-  new_entry.version_tested = m_ui.versionTested->text().toStdString();
-  new_entry.upscaling_issues = m_ui.upscalingIssues->text().toStdString();
-  new_entry.comments = m_ui.comments->text().toStdString();
-  new_entry.compatibility_rating = static_cast<GameListCompatibilityRating>(m_ui.compatibility->currentIndex());
-  new_entry.region = static_cast<DiscRegion>(m_ui.region->currentIndex());
-
-  if (new_entry.code.empty())
+  if (m_ui.gameCode->text().isEmpty())
     return;
+
+  GameListCompatibilityEntry new_entry;
+  fillEntryFromUi(&new_entry);
 
   m_host_interface->getGameList()->UpdateCompatibilityEntry(std::move(new_entry), true);
   emit m_host_interface->gameListRefreshed();
@@ -227,5 +236,17 @@ void GamePropertiesDialog::onVerifyDumpClicked()
 
 void GamePropertiesDialog::onExportCompatibilityInfoClicked()
 {
-  QMessageBox::critical(this, tr("Not yet implemented"), tr("Not yet implemented"));
+  if (m_ui.gameCode->text().isEmpty())
+    return;
+
+  GameListCompatibilityEntry new_entry;
+  fillEntryFromUi(&new_entry);
+
+  QString xml(QString::fromStdString(GameList::ExportCompatibilityEntry(&new_entry)));
+
+  bool copy_to_clipboard = false;
+  xml = QInputDialog::getMultiLineText(this, tr("Compatibility Info Export"), tr("Press OK to copy to clipboard."), xml,
+                                       &copy_to_clipboard);
+  if (copy_to_clipboard)
+    QGuiApplication::clipboard()->setText(xml);
 }
