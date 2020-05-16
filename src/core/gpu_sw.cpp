@@ -157,7 +157,7 @@ void GPU_SW::UpdateDisplay()
     const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
     if (IsInterlacedDisplayEnabled())
     {
-      const u32 field = GetInterlacedField();
+      const u32 field = GetInterlacedDisplayLineOffset();
       if (m_GPUSTAT.display_area_color_depth_24)
       {
         CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
@@ -701,7 +701,7 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
   if ((bg_color.bits & mask_and) != 0)
     return;
 
-  if (IsInterlacedRenderingEnabled() && GetInterlacedField() == (static_cast<u32>(y) & 1u))
+  if (IsInterlacedRenderingEnabled() && GetInterlacedDisplayLineOffset() == (static_cast<u32>(y) & 1u))
     return;
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());

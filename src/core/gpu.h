@@ -350,8 +350,8 @@ protected:
     return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
   }
 
-  /// Returns 0 if the currently-rendered field is even, otherwise 1.
-  ALWAYS_INLINE u32 GetInterlacedField() const { return BoolToUInt32(m_GPUSTAT.displaying_odd_line); }
+  /// Returns 0 if the currently-displayed field is on an even line, otherwise 1.
+  ALWAYS_INLINE u32 GetInterlacedDisplayLineOffset() const { return BoolToUInt32(m_crtc_state.displaying_odd_lines); }
 
   /// Sets/decodes GP0(E1h) (set draw mode).
   void SetDrawMode(u16 bits);
@@ -636,6 +636,9 @@ protected:
     float display_aspect_ratio;
     bool in_hblank;
     bool in_vblank;
+
+    bool displaying_odd_field;
+    bool displaying_odd_lines;
   } m_crtc_state = {};
 
   BlitterState m_blitter_state = BlitterState::Idle;
