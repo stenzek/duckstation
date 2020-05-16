@@ -39,6 +39,15 @@ for res in ${ICON_PNG_RESOLUTIONS[@]}; do
   done
 done
 
+# Add data files into the AppDir
+DATA_DIR=$(dirname $(realpath "${BASH_SOURCE[0]}"))/../data
+echo "Data directory is: ${DATA_DIR}"
+for frontend in ${FRONTENDS[@]}; do
+  CURRENT_APPDIR=${BUILD_DIR}/AppDir-duckstation-${frontend}
+  mkdir -p ${CURRENT_APPDIR}/usr/bin
+  cp -av ${DATA_DIR}/* ${CURRENT_APPDIR}/usr/bin
+done
+
 # Outputted file from linuxdeploy is named based on the .desktop file Name key;
 # We rename it to something generic that buildbot or CI scripts can modify
 # as they wish outside of this script, e.g. to distinguish between Release or
