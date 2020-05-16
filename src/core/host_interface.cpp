@@ -419,10 +419,10 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-10j.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph3000.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-11j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-10j.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5500.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30j.bin", false, false));
       break;
