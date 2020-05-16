@@ -57,9 +57,13 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
   if (ge->code.empty())
   {
     // can't fill in info without a code
+    m_ui.gameCode->setDisabled(true);
     m_ui.compatibility->setDisabled(true);
     m_ui.upscalingIssues->setDisabled(true);
+    m_ui.comments->setDisabled(true);
     m_ui.versionTested->setDisabled(true);
+    m_ui.setToCurrent->setDisabled(true);
+    m_ui.verifyDump->setDisabled(true);
     m_ui.exportCompatibilityInfo->setDisabled(true);
   }
   else
