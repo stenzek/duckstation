@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<compatibility-list>
+  <entry code="SLPS-00208" title="Advanced V.G." region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01318" title="Advanced V.G. 2" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00559" title="Airgrave" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-87228" title="Arcade Hits - Shienryuu" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00849" title="Asuka 120% Excellent - Burning Fest. Excellent" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-02074" title="Asuka 120% Final: Burning Fest. Final" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00231" title="Asuka 120% Special: Burning Fest. Special" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCUS-94199" title="Bloody Roar" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCPS-45374" title="Bloody Roar 2 - Bringer of the New Age" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01842" title="Bloody Roar 2 - Bringer of the New Age" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLED-01928" title="Bloody Roar 2 - Bringer of the New Age" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-01722" title="Bloody Roar 2 - Bringer of the New Age" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-03002" title="Bomberman Land" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01347" title="Bomberman Wars" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <comments>Unofficial translation works too</comments>
+  </entry>
+  <entry code="SLPM-87053" title="Capcom VS SNK - Millenium Fight 2000 Pro" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SCES-00344" title="Crash Bandicoot" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCPS-10031" title="Crash Bandicoot" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCUS-94900" title="Crash Bandicoot" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCPS-10047" title="Crash Bandicoot 2: Corted no Gyakushuu!" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCES-00967" title="Crash Bandicoot 2: Cortex Strikes Back" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCUS-94154" title="Crash Bandicoot 2: Cortex Strikes Back" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCPS-10073" title="Crash Bandicoot 3: Buttobi! Sekai Isshuu" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCES-01420" title="Crash Bandicoot 3: Warped" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCUS-94244" title="Crash Bandicoot 3: Warped" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00335" title="Dezaemon Plus" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86500" title="Dragon Quest VII - Eden no Senshitachi" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>Background gradient is rendered incorrectly with scaled dithering or true color.</upscaling-issues>
+    <version-tested>0.1-814-g8139230</version-tested>
+  </entry>
+  <entry code="SCUS-94163" title="Final Fantasy VII" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-841-g777809b</version-tested>
+  </entry>
+  <entry code="SLPS-00700" title="Final Fantasy VII" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-841-g777809b</version-tested>
+  </entry>
+  <entry code="SLPM-80205" title="G Darius" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86155" title="Ganbare Goemon - Kuru nara Koi! Ayashige Ikka no Kuroi Kage" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86774" title="Ganbare Goemon - Ooedo Daikaiten" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86030" title="Ganbare Goemon - Uchuu Kaizoku Akogingu" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00624" title="GaiaSeed: Project Seed Trap" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00644" title="Gegege no Kitarou" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-87286" title="Gegege no Kitarou - Gyakushuu! Youma Daikessen" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86042" title="Gradius Gaiden" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01357" title="Guilty Gear" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01010" title="Kaze no Klonoa - Door to Phantomile" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SCES-00942" title="Klonoa - Door to Phantomile" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLUS-00585" title="Klonoa - Door to Phantomile" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLPS-00214" title="Kyuiin" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86008" title="Jikkyou Oshaberi Parodius - Forever with Me" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01013" title="Legend of Mana" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00793" title="Marvel Super Heroes VS Street Fighter" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-00766" title="Mega Man - Battle &amp; Chase" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of game is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLES-01064" title="Mega Man 8" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLUS-00603" title="Mega Man Legends" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-01485" title="Mega Man Legends" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-00503" title="Mega Man X3" region="PAL" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLUS-80765" title="Monkey Hero" region="NTSC-U" compatibility="4">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Works, except dynamic lighting on character is broken.</comments>
+  </entry>
+  <entry code="SLUS-00329" title="NBA Hangtime" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00060" title="NBA Live 96" region="NTSC-U" compatibility="1">
+    <compatibility>Doesn't Boot</compatibility>
+    <comments>Issue 419</comments>
+  </entry>
+  <entry code="SLPM-00899" title="Panzer Bandit" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLPM-86146" title="Pop'n Tanks!" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLUS-00102" title="Powerslave" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>2D elements on title screen</upscaling-issues>
+  </entry>
+  <entry code="SLUS-00797" title="R4: Ridge Racer Type 4" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01688" title="R-Type Delta" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCUS-94402" title="Raiden Project" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00764" title="Rockman - Battle &amp; Chase" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Notice bottom the line of game is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLPS-00630" title="Rockman 8 - Metal Heroes" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Noticed bottom the line of FMV is a little odd but works fine.</comments>
+  </entry>
+  <entry code="SLPS-01141" title="Rockman Dash - Hagane no Boukenshin" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00283" title="Rockman X3" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+    <comments>Noticed bottom the line of FMV is a little odd but works fine.</comments>
+  </entry>
+  <entry code="SLPS-00154" title="Snatcher" region="NTSC-J" compatibility="1">
+    <compatibility>Doesn't Boot</compatibility>
+    <comments>Crashes in Cached/Recompiler; seems to work in Intrepeter</comments>
+  </entry>
+  <entry code="SLUS-00889" title="Team Buddies" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-841-g777809b</version-tested>
+  </entry>
+  <entry code="SLPS-00300" title="Tekken 2" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>9d1eb32</version-tested>
+  </entry>
+  <entry code="SLUS-00402" title="Tekken 3" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLUS-00939" title="Tenchu 2 - Birth of the Stealth Assassins" region="NTSC-U" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86084" title="The King of Fighters '97" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86201" title="The King of Fighters '98 - Dream Match Never Ends" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86462" title="The King of Fighters '99" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86033" title="Tobal 2" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00643" title="Umihara Kawase Shun" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-02549" title="Umihara Kawase Shun Second Edition" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCES-02845" title="Wip3out Special Edition" region="PAL" compatibility="4">
+    <compatibility>Graphical/Audio Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01915" title="X-Men VS Street Fighter - EX Edition" region="NTSC-J" compatibility="5">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>Sprite glitches</upscaling-issues>
+  </entry>
+  <entry code="SLUS-00141" title="X-COM - UFO Defense" region="NTSC-U" compatibility="1">
+    <compatibility>Doesn't Boot</compatibility>
+  </entry>
+</compatibility-list>
