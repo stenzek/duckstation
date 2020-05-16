@@ -145,6 +145,9 @@ public:
   /// Returns a path relative to the user directory.
   std::string GetUserDirectoryRelativePath(const char* format, ...) const;
 
+  /// Returns a path relative to the application directory (for system files).
+  std::string GetProgramDirectoryRelativePath(const char* format, ...) const;
+
   /// Returns a string which can be used as part of a filename, based on the current date/time.
   static TinyString GetTimestampStringForFileName();
 
@@ -262,6 +265,7 @@ protected:
   std::unique_ptr<System> m_system;
   std::unique_ptr<GameList> m_game_list;
   Settings m_settings;
+  std::string m_program_directory;
   std::string m_user_directory;
 
   std::deque<OSDMessage> m_osd_messages;

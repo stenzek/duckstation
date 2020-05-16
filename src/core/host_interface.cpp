@@ -26,7 +26,12 @@ Log_SetChannel(HostInterface);
 #include <mmsystem.h>
 #endif
 
-HostInterface::HostInterface() = default;
+HostInterface::HostInterface()
+{
+  // we can get the program directory at construction time
+  const std::string program_path = FileSystem::GetProgramPath();
+  m_program_directory = FileSystem::GetPathDirectory(program_path.c_str());
+}
 
 HostInterface::~HostInterface()
 {
@@ -45,7 +50,7 @@ bool HostInterface::Initialize()
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
   m_game_list->SetDatabaseFilename(GetUserDirectoryRelativePath("cache/redump.dat"));
-  m_game_list->SetCompatibilityFilename(GetUserDirectoryRelativePath("database/compatibility.xml"));
+  m_game_list->SetCompatibilityFilename(GetProgramDirectoryRelativePath("database/compatibility.xml"));
   return true;
 }
 
@@ -657,22 +662,20 @@ void HostInterface::SetUserDirectory()
   if (!m_user_directory.empty())
     return;
 
-  const std::string program_path = FileSystem::GetProgramPath();
-  const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
-  std::fprintf(stdout, "Program path: \"%s\" (directory \"%s\")\n", program_path.c_str(), program_directory.c_str());
+  std::fprintf(stdout, "Program directory \"%s\"\n", m_program_directory.c_str());
 
-  if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", program_directory.c_str(),
+  if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
                                                              FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
                                .c_str()))
   {
     std::fprintf(stdout, "portable.txt found, using program directory as user directory.\n");
-    m_user_directory = program_directory;
+    m_user_directory = m_program_directory;
   }
   else
   {
 #ifdef WIN32
     // On Windows, use the path to the program. We might want to use My Documents in the future.
-    m_user_directory = program_directory;
+    m_user_directory = m_program_directory;
 #elif __linux__
     // On Linux, use .local/share/duckstation as a user directory by default.
     const char* xdg_data_home = getenv("XDG_DATA_HOME");
@@ -684,7 +687,7 @@ void HostInterface::SetUserDirectory()
     {
       const char* home_path = getenv("HOME");
       if (!home_path)
-        m_user_directory = program_directory;
+        m_user_directory = m_program_directory;
       else
         m_user_directory = StringUtil::StdStringFromFormat("%s/.local/share/duckstation", home_path);
     }
@@ -692,7 +695,7 @@ void HostInterface::SetUserDirectory()
     // On macOS, default to ~/Library/Application Support/DuckStation.
     const char* home_path = getenv("HOME");
     if (!home_path)
-      m_user_directory = program_directory;
+      m_user_directory = m_program_directory;
     else
       m_user_directory = StringUtil::StdStringFromFormat("%s/Library/Application Support/DuckStation", home_path);
 #endif
@@ -749,6 +752,24 @@ std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
   else
   {
     return StringUtil::StdStringFromFormat("%s%c%s", m_user_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER,
+                                           formatted_path.c_str());
+  }
+}
+
+std::string HostInterface::GetProgramDirectoryRelativePath(const char* format, ...) const
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string formatted_path = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  if (m_program_directory.empty())
+  {
+    return formatted_path;
+  }
+  else
+  {
+    return StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER,
                                            formatted_path.c_str());
   }
 }
