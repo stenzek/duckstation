@@ -96,7 +96,7 @@ Requirements (Debian/Ubuntu package names):
 2. Create a build directory, either in-tree or elsewhere.
 3. Run cmake to configure the build system. Assuming a build subdirectory of `build-release`, `cd build-release && cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..`.
 4. Compile the source code. For the example above, run `ninja`.
-5. Run the binary, located in the build directory under `src/duckstation-sdl/duckstation-sdl`, or `src/duckstation-qt/duckstation-qt`.
+5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/duckstation-qt`.
 
 ### macOS
 **NOTE:** macOS is highly experimental and not tested by the developer. Use at your own risk, things may be horribly broken.
@@ -110,7 +110,7 @@ Requirements:
 2. Create a build directory, either in-tree or elsewhere, e.g. `mkdir build-release`, `cd build-release`.
 3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
 4. Compile the source code: `make`. Use `make -jN` where `N` is the number of CPU cores in your system for a faster build.
-5. Run the binary, located in the build directory under `src/duckstation-sdl/duckstation-sdl`, or `src/duckstation-qt/duckstation-qt`.
+5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/duckstation-qt`.
 
 Application bundles/.apps are currently not created, so you can't launch it via Finder yet. This is planned for the future.
 
