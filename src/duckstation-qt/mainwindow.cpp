@@ -5,6 +5,7 @@
 #include "core/system.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
+#include "gamepropertiesdialog.h"
 #include "qtdisplaywidget.h"
 #include "qthostdisplay.h"
 #include "qthostinterface.h"
@@ -347,7 +348,8 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   // Hopefully this pointer doesn't disappear... it shouldn't.
   if (entry)
   {
-    connect(menu.addAction(tr("Properties...")), &QAction::triggered, [this]() { reportError(tr("TODO")); });
+    connect(menu.addAction(tr("Properties...")), &QAction::triggered,
+            [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
       const QFileInfo fi(QString::fromStdString(entry->path));

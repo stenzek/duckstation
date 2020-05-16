@@ -18,6 +18,9 @@ add_executable(duckstation-qt
   gamelistsettingswidget.ui
   gamelistwidget.cpp
   gamelistwidget.h
+  gamepropertiesdialog.cpp
+  gamepropertiesdialog.h
+  gamepropertiesdialog.ui
   generalsettingswidget.cpp
   generalsettingswidget.h
   generalsettingswidget.ui
