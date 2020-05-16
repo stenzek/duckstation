@@ -101,49 +101,25 @@
      </property>
     </widget>
    </item>
-   <item row="10" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item row="6" column="1">
+    <widget class="QLineEdit" name="comments"/>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>Version Tested:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      <widget class="QLineEdit" name="versionTested"/>
      </item>
      <item>
-      <widget class="QPushButton" name="computeHashes">
+      <widget class="QPushButton" name="setToCurrent">
        <property name="text">
-        <string>Compute Hashes</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="verifyDump">
-       <property name="text">
-        <string>Verify Dump</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="exportCompatibilityInfo">
-       <property name="text">
-        <string>Export Compatibility Info</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="close">
-       <property name="text">
-        <string>Close</string>
-       </property>
-       <property name="default">
-        <bool>true</bool>
+        <string>Set to Current</string>
        </property>
       </widget>
      </item>
@@ -194,25 +170,49 @@
      </column>
     </widget>
    </item>
-   <item row="6" column="1">
-    <widget class="QLineEdit" name="comments"/>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="label_9">
-     <property name="text">
-      <string>Version Tested:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <item row="10" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLineEdit" name="versionTested"/>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="setToCurrent">
+      <widget class="QPushButton" name="computeHashes">
        <property name="text">
-        <string>Set to Current</string>
+        <string>Compute Hashes</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="verifyDump">
+       <property name="text">
+        <string>Verify Dump</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="exportCompatibilityInfo">
+       <property name="text">
+        <string>Export Compatibility Info</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="close">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
