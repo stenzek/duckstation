@@ -72,6 +72,7 @@ private:
   void DestroyDisplay();
   void CreateImGuiContext();
   void UpdateFramebufferScale();
+  void RegisterHotkeys();
 
   /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
   void RunLater(std::function<void()> callback);

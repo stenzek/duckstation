@@ -351,6 +351,8 @@ bool SDLHostInterface::Initialize()
     return false;
   }
 
+  RegisterHotkeys();
+
   ImGui::NewFrame();
 
   // process events to pick up controllers before updating input map
@@ -1332,6 +1334,16 @@ bool SDLHostInterface::DrawFileChooser(const char* label, std::string* path, con
 void SDLHostInterface::ClearImGuiFocus()
 {
   ImGui::SetWindowFocus(nullptr);
+}
+
+void SDLHostInterface::RegisterHotkeys()
+{
+  RegisterHotkey(StaticString("General"), StaticString("FrameStep"), StaticString("Frame Step"), [this](bool pressed) {
+    if (!pressed)
+    {
+      DoFrameStep();
+    }
+  });
 }
 
 void SDLHostInterface::DoStartDisc()
