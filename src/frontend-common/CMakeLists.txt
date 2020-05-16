@@ -27,9 +27,20 @@ if(SDL2_FOUND)
   target_compile_definitions(frontend-common PRIVATE "WITH_SDL2=1")
   target_include_directories(frontend-common PRIVATE ${SDL2_INCLUDE_DIRS})
   target_link_libraries(frontend-common PRIVATE ${SDL2_LIBRARIES})
+
+  # Copy bundled SDL2 to output on Windows.
+  if(WIN32)
+    add_custom_command(TARGET frontend-common POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DLL_PATH}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/SDL2.dll")
+  endif()
 endif()
 
 if(ENABLE_DISCORD_PRESENCE)
   target_compile_definitions(frontend-common PUBLIC -DWITH_DISCORD_PRESENCE=1)
   target_link_libraries(frontend-common PRIVATE discord-rpc)
 endif()
+
+# Copy the provided data directory to the output directory.
+add_custom_command(TARGET frontend-common POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+)

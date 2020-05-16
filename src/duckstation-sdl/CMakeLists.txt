@@ -19,5 +19,10 @@ if(WIN32)
     duckstation-sdl.manifest
   )
   target_link_libraries(duckstation-sdl PRIVATE d3d11.lib dxgi.lib ${SDL2MAIN_LIBRARIES})
+
+  # We want a Windows subsystem application not console.
+  set_target_properties(duckstation-sdl PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    DEBUG_POSTFIX "-debug")
 endif()
 

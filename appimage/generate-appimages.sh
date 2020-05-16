@@ -46,7 +46,7 @@ done
 
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/AppDir-duckstation-qt \
-  --executable=${BUILD_DIR}/src/duckstation-qt/duckstation-qt \
+  --executable=${BUILD_DIR}/bin/duckstation-qt \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-qt.desktop \
   ${ICONS_QT[@]/#/--icon-file=} \
   --plugin=qt \
@@ -55,7 +55,7 @@ ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
 
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/AppDir-duckstation-sdl \
-  --executable=${BUILD_DIR}/src/duckstation-sdl/duckstation-sdl \
+  --executable=${BUILD_DIR}/bin/duckstation-sdl \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-sdl.desktop \
   ${ICONS_SDL[@]/#/--icon-file=} \
   --output=appimage \

@@ -61,6 +61,29 @@ if(WIN32)
     d3d11hostdisplay.h
   )
   target_link_libraries(duckstation-qt PRIVATE d3d11.lib dxgi.lib)
+
+  # We want a Windows subsystem application not console.
+  set_target_properties(duckstation-qt PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    DEBUG_POSTFIX "-debug")
+
+  # Copy in Qt DLLs. Borrowed from Dolphin.
+  get_target_property(MOC_EXECUTABLE_LOCATION Qt5::moc IMPORTED_LOCATION)
+  get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
+  find_program(WINDEPLOYQT_EXE windeployqt HINTS "${QT_BINARY_DIRECTORY}")
+  add_custom_command(TARGET duckstation-qt POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E env PATH="${QT_BINARY_DIRECTORY}"
+            "${WINDEPLOYQT_EXE}" --libdir="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+                                 --plugindir="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/QtPlugins"
+                                 $<IF:$<CONFIG:Debug>,--debug,--release>
+                                 --no-translations
+                                 --no-compiler-runtime
+                                 --no-angle
+                                 "$<TARGET_FILE:duckstation-qt>"
+  )
+  add_custom_command(TARGET duckstation-qt POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/qt.conf.win" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
+  )
 else()
   if(OpenGL_GLX_FOUND)
     target_compile_definitions(duckstation-qt PRIVATE "HAS_GLX")
