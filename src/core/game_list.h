@@ -110,6 +110,8 @@ public:
 
   void UpdateCompatibilityEntry(GameListCompatibilityEntry new_entry, bool save_to_list = true);
 
+  static std::string ExportCompatibilityEntry(const GameListCompatibilityEntry* entry);
+
 private:
   enum : u32
   {

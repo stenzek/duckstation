@@ -1149,3 +1149,19 @@ bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntr
   Log_InfoPrintf("Updated compatibility list '%s'", m_compatibility_list_filename.c_str());
   return true;
 }
+
+std::string GameList::ExportCompatibilityEntry(const GameListCompatibilityEntry* entry)
+{
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLElement* root_elem = doc.NewElement("compatibility-list");
+  doc.InsertEndChild(root_elem);
+
+  tinyxml2::XMLElement* entry_elem = doc.NewElement("entry");
+  root_elem->InsertEndChild(entry_elem);
+  InitElementForCompatibilityEntry(&doc, entry_elem, entry);
+
+  tinyxml2::XMLPrinter printer;
+  //doc.Print(&printer);
+  entry_elem->Accept(&printer);
+  return std::string(printer.CStr(), printer.CStrSize());
+}
