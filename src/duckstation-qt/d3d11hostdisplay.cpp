@@ -455,8 +455,8 @@ void D3D11HostDisplay::renderDisplay()
     0, 1, m_display_linear_filtering ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 
   const float uniforms[4] = {
-    (static_cast<float>(m_display_texture_view_x) + 0.25f) / static_cast<float>(m_display_texture_width),
-    (static_cast<float>(m_display_texture_view_y) + 0.25f) / static_cast<float>(m_display_texture_height),
+    static_cast<float>(m_display_texture_view_x) / static_cast<float>(m_display_texture_width),
+    static_cast<float>(m_display_texture_view_y) / static_cast<float>(m_display_texture_height),
     (static_cast<float>(m_display_texture_view_width) - 0.5f) / static_cast<float>(m_display_texture_width),
     (static_cast<float>(m_display_texture_view_height) - 0.5f) / static_cast<float>(m_display_texture_height)};
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));

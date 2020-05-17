@@ -391,7 +391,8 @@ void OpenGLHostDisplay::RenderDisplay()
   if (!m_display_texture_handle)
     return;
 
-  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
+  const auto [vp_left, vp_top, vp_width, vp_height] =
+    CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
 
   glViewport(vp_left, m_window_height - vp_top - vp_height, vp_width, vp_height);
   glDisable(GL_BLEND);
@@ -401,8 +402,8 @@ void OpenGLHostDisplay::RenderDisplay()
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
   m_display_program.Uniform4f(
-    0, (static_cast<float>(m_display_texture_view_x) + 0.25f) / static_cast<float>(m_display_texture_width),
-    (static_cast<float>(m_display_texture_view_y) - 0.25f) / static_cast<float>(m_display_texture_height),
+    0, static_cast<float>(m_display_texture_view_x) / static_cast<float>(m_display_texture_width),
+    static_cast<float>(m_display_texture_view_y) / static_cast<float>(m_display_texture_height),
     (static_cast<float>(m_display_texture_view_width) - 0.5f) / static_cast<float>(m_display_texture_width),
     (static_cast<float>(m_display_texture_view_height) + 0.5f) / static_cast<float>(m_display_texture_height));
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(m_display_texture_handle)));

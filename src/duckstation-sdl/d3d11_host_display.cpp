@@ -409,7 +409,8 @@ void D3D11HostDisplay::RenderDisplay()
   if (!m_display_texture_handle)
     return;
 
-  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
+  const auto [vp_left, vp_top, vp_width, vp_height] =
+    CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
 
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
@@ -419,8 +420,8 @@ void D3D11HostDisplay::RenderDisplay()
     0, 1, m_display_linear_filtering ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 
   const float uniforms[4] = {
-    (static_cast<float>(m_display_texture_view_x) + 0.25f) / static_cast<float>(m_display_texture_width),
-    (static_cast<float>(m_display_texture_view_y) + 0.25f) / static_cast<float>(m_display_texture_height),
+    static_cast<float>(m_display_texture_view_x) / static_cast<float>(m_display_texture_width),
+    static_cast<float>(m_display_texture_view_y) / static_cast<float>(m_display_texture_height),
     (static_cast<float>(m_display_texture_view_width) - 0.5f) / static_cast<float>(m_display_texture_width),
     (static_cast<float>(m_display_texture_view_height) - 0.5f) / static_cast<float>(m_display_texture_height)};
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
