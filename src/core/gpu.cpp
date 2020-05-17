@@ -619,7 +619,11 @@ void GPU::Execute(TickCount ticks)
     if (m_command_ticks > 0)
     {
       m_command_ticks -= gpu_ticks;
-      ExecuteCommands();
+
+      // we can be syncing if this came from a DMA write. recursively executing commands would be bad.
+      if (!m_syncing)
+        ExecuteCommands();
+
       if (m_command_ticks < 0)
         m_command_ticks = 0;
     }
