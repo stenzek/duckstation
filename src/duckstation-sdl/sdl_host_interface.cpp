@@ -656,7 +656,7 @@ void SDLHostInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (ImGui::BeginMenu("Debug", system_enabled))
+  if (ImGui::BeginMenu("Debug"))
   {
     DrawDebugMenu();
     ImGui::EndMenu();
@@ -805,6 +805,27 @@ void SDLHostInterface::DrawDebugMenu()
 {
   Settings::DebugSettings& debug_settings = m_settings.debugging;
   bool settings_changed = false;
+
+  if (ImGui::BeginMenu("Log Level"))
+  {
+    for (u32 i = LOGLEVEL_NONE; i < LOGLEVEL_COUNT; i++)
+    {
+      if (ImGui::MenuItem(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i)), nullptr,
+        m_settings.log_level == static_cast<LOGLEVEL>(i)))
+      {
+        m_settings_copy.log_level = static_cast<LOGLEVEL>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  settings_changed |= ImGui::MenuItem("Log To Console", nullptr, &m_settings_copy.log_to_console);
+  settings_changed |= ImGui::MenuItem("Log To Debug", nullptr, &m_settings_copy.log_to_debug);
+  settings_changed |= ImGui::MenuItem("Log To File", nullptr, &m_settings_copy.log_to_file);
+
+  ImGui::Separator();
 
   settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
