@@ -1052,6 +1052,7 @@ void SPU::Voice::KeyOn()
 {
   current_address = regs.adpcm_start_address & ~u16(1);
   regs.adsr_volume = 0;
+  adpcm_last_samples.fill(0);
   has_samples = false;
   ignore_loop_address = false;
   SetADSRPhase(ADSRPhase::Attack);
