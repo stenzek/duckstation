@@ -505,35 +505,39 @@ void GPU::UpdateCRTCDisplayParameters()
 
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
   // padding.
+  u16 horizontal_skip_pixels;
   if (horizontal_display_start >= cs.horizontal_active_start)
   {
     cs.display_origin_left = (horizontal_display_start - cs.horizontal_active_start) / cs.dot_clock_divider;
-    cs.display_vram_left = m_crtc_state.regs.X;
+    cs.display_vram_left = std::min<u16>(m_crtc_state.regs.X, VRAM_WIDTH - 1);
+    horizontal_skip_pixels = 0;
   }
   else
   {
+    horizontal_skip_pixels = (cs.horizontal_active_start - horizontal_display_start) / cs.dot_clock_divider;
     cs.display_origin_left = 0;
-    cs.display_vram_left = std::min<u16>(
-      m_crtc_state.regs.X + ((cs.horizontal_active_start - horizontal_display_start) / cs.dot_clock_divider),
-      VRAM_WIDTH - 1);
+    cs.display_vram_left = std::min<u16>(m_crtc_state.regs.X + horizontal_skip_pixels, VRAM_WIDTH - 1);
   }
 
+  u16 horizontal_active_ticks;
   if (horizontal_display_end <= cs.horizontal_active_end)
   {
-    const u16 active_ticks =
+    horizontal_active_ticks =
       horizontal_display_end -
       std::min(horizontal_display_end, std::max(horizontal_display_start, cs.horizontal_active_start));
-
-    cs.display_vram_width = ((active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
   }
   else
   {
-    const u16 active_ticks =
+    horizontal_active_ticks =
       cs.horizontal_active_end -
       std::min(cs.horizontal_active_end, std::max(horizontal_display_start, cs.horizontal_active_start));
-
-    cs.display_vram_width = ((active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
   }
+
+  // align to 4-pixel boundary
+  cs.display_vram_width = ((horizontal_active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
+
+  // apply the crop from the start (usually overscan)
+  cs.display_vram_width -= std::min(cs.display_vram_width, horizontal_skip_pixels);
 
   if (vertical_display_start >= cs.vertical_active_start)
   {
