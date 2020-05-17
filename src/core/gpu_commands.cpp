@@ -446,6 +446,9 @@ bool GPU::HandleFillRectangleCommand()
 {
   CHECK_COMMAND_SIZE(3);
 
+  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
+    Synchronize();
+
   FlushRender();
 
   const u32 color = m_fifo.Pop() & 0x00FFFFFF;
@@ -499,7 +502,11 @@ void GPU::FinishVRAMWrite()
                    m_blit_buffer.data(), true);
   }
 
+  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
+    Synchronize();
+
   FlushRender();
+
   UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height, m_blit_buffer.data());
   m_blit_buffer.clear();
   m_vram_transfer = {};
