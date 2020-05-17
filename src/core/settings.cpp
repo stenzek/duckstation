@@ -58,10 +58,10 @@ void Settings::Load(SettingsInterface& si)
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
 
-  dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", 1000);
-  dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", 100);
-  gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", 128));
-  gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", 128);
+  dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
+  dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
+  gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE));
+  gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
   bios_path = si.GetStringValue("BIOS", "Path", "bios/scph1001.bin");
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", true);
@@ -146,6 +146,11 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
   si.SetBoolValue("Audio", "Sync", audio_sync_enabled);
   si.SetBoolValue("Audio", "DumpOnBoot", audio_dump_on_boot);
+
+  si.SetIntValue("Hacks", "DMAMaxSliceTicks", dma_max_slice_ticks);
+  si.SetIntValue("Hacks", "DMAHaltTicks", dma_halt_ticks);
+  si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
+  si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
 
   si.SetStringValue("BIOS", "Path", bios_path.c_str());
   si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);

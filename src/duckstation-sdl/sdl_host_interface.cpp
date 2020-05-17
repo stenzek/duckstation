@@ -1260,6 +1260,17 @@ void SDLHostInterface::DrawSettingsWindow()
         m_settings_copy.gpu_max_run_ahead = gpu_max_run_ahead;
         settings_changed = true;
       }
+
+      if (ImGui::Button("Reset"))
+      {
+        m_settings_copy.dma_max_slice_ticks = static_cast<TickCount>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
+        m_settings_copy.dma_halt_ticks = static_cast<TickCount>(Settings::DEFAULT_DMA_HALT_TICKS);
+        m_settings_copy.gpu_fifo_size = Settings::DEFAULT_GPU_FIFO_SIZE;
+        m_settings_copy.gpu_max_run_ahead = static_cast<TickCount>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD);
+        settings_changed = true;
+      }
+
+      ImGui::EndTabItem();
     }
 
     ImGui::EndTabBar();

@@ -117,6 +117,14 @@ struct Settings
     return (memory_card_types[0] == MemoryCardType::PerGame || memory_card_types[1] == MemoryCardType::PerGame);
   }
 
+  enum : u32
+  {
+    DEFAULT_DMA_MAX_SLICE_TICKS = 1000,
+    DEFAULT_DMA_HALT_TICKS = 100,
+    DEFAULT_GPU_FIFO_SIZE = 128,
+    DEFAULT_GPU_MAX_RUN_AHEAD = 128
+  };
+
   void Load(SettingsInterface& si);
   void Save(SettingsInterface& si) const;
 
