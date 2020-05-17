@@ -461,7 +461,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
       address = (address - 4) & ADDRESS_MASK;
     }
 
-    const u32 terminator = UINT32_C(0xFFFFFFF);
+    const u32 terminator = UINT32_C(0xFFFFFF);
     std::memcpy(&ram_pointer[address], &terminator, sizeof(terminator));
     m_bus->InvalidateCodePages(address, word_count);
     return m_bus->GetDMARAMTickCount(word_count);
