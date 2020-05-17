@@ -1,0 +1,105 @@
+name: Create rolling release
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  windows-build:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Compile release build
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
+
+    - name: Remove extra bloat before archiving
+      shell: cmd
+      run: |
+        del /Q bin\x64\*.pdb
+        del /Q bin\x64\*.exp
+        del /Q bin\x64\*.lib
+        del /Q bin\x64\*.iobj
+        del /Q bin\x64\*.ipdb
+        del /Q bin\x64\common-tests*
+    
+    - name: Create release archive
+      shell: cmd
+      run: |
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.7z ./bin/x64/*
+
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: "windows-x64"
+        path: "duckstation-windows-x64-release.7z"
+
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk2.0-dev qtbase5-dev qtbase5-dev-tools qt5-default
+
+    - name: Compile build
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
+        ninja
+        ../appimage/generate-appimages.sh $(pwd)
+        
+    - name: Upload SDL AppImage
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-sdl"
+        path: "build/duckstation-sdl-x64.AppImage"
+
+    - name: Upload Qt AppImage
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-qt"
+        path: "build/duckstation-qt-x64.AppImage"
+
+  create-release:
+    needs: [windows-build, linux-build]
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Download Windows x64 Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "windows-x64"
+
+      - name: Download SDL AppImage Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-sdl"
+
+      - name: Download Qt AppImage Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-qt"
+
+      - name: Create release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Latest Development Build"
+          files: |
+            windows-x64/duckstation-windows-x64-release.7z
+            linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
+            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
+            
