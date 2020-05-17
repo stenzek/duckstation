@@ -500,9 +500,8 @@ void GPU::UpdateCRTCDisplayParameters()
   const u8 height_shift = BoolToUInt8(m_GPUSTAT.In480iMode());
 
   // Determine screen size.
-  cs.display_width = std::max<u16>(
-    ((cs.horizontal_active_end - cs.horizontal_active_start) + (cs.dot_clock_divider - 1)) / cs.dot_clock_divider, 1u);
-  cs.display_height = std::max<u16>((cs.vertical_active_end - cs.vertical_active_start) << height_shift, 1u);
+  cs.display_width = (((cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider) + 2u) & ~3u;
+  cs.display_height = (cs.vertical_active_end - cs.vertical_active_start) << height_shift;
 
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
   // padding.
@@ -521,21 +520,19 @@ void GPU::UpdateCRTCDisplayParameters()
 
   if (horizontal_display_end <= cs.horizontal_active_end)
   {
-    cs.display_vram_width = std::max<u16>(
-      (((horizontal_display_end -
-         std::min(horizontal_display_end, std::max(horizontal_display_start, cs.horizontal_active_start))) +
-        (cs.dot_clock_divider - 1)) /
-       cs.dot_clock_divider),
-      1u);
+    const u16 active_ticks =
+      horizontal_display_end -
+      std::min(horizontal_display_end, std::max(horizontal_display_start, cs.horizontal_active_start));
+
+    cs.display_vram_width = ((active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
   }
   else
   {
-    cs.display_vram_width = std::max<u16>(
-      (((cs.horizontal_active_end -
-         std::min(cs.horizontal_active_end, std::max(horizontal_display_start, cs.horizontal_active_start))) +
-        (cs.dot_clock_divider - 1)) /
-       cs.dot_clock_divider),
-      1u);
+    const u16 active_ticks =
+      cs.horizontal_active_end -
+      std::min(cs.horizontal_active_end, std::max(horizontal_display_start, cs.horizontal_active_start));
+
+    cs.display_vram_width = ((active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
   }
 
   if (vertical_display_start >= cs.vertical_active_start)
