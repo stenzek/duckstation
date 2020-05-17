@@ -766,11 +766,9 @@ u32 GPU::ReadGPUREAD()
         Log_DebugPrintf("End of VRAM->CPU transfer");
         m_vram_transfer = {};
         m_blitter_state = BlitterState::Idle;
-        UpdateDMARequest();
 
         // end of transfer, catch up on any commands which were written (unlikely)
         ExecuteCommands();
-        UpdateDMARequest();
         break;
       }
     }

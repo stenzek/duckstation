@@ -37,7 +37,7 @@ void GPU::ExecuteCommands()
           if ((this->*s_GP0_command_handler_table[command])())
             continue;
           else
-            break;
+            goto batch_done;
         }
 
         case BlitterState::WritingVRAM:
@@ -59,7 +59,7 @@ void GPU::ExecuteCommands()
 
         case BlitterState::ReadingVRAM:
         {
-          Panic("shouldn't be here");
+          goto batch_done;
         }
         break;
 
@@ -101,6 +101,7 @@ void GPU::ExecuteCommands()
       }
     }
 
+  batch_done:
     m_fifo_pushed = false;
     UpdateDMARequest();
     if (!m_fifo_pushed)
@@ -168,8 +169,15 @@ GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
 
 bool GPU::HandleUnknownGP0Command()
 {
-  const u32 command = m_fifo.Pop() >> 24;
+  const u32 command = m_fifo.Peek() >> 24;
   Log_ErrorPrintf("Unimplemented GP0 command 0x%02X", command);
+
+  SmallString dump;
+  for (u32 i = 0; i < m_fifo.GetSize(); i++)
+    dump.AppendFormattedString("%s0x%08X", (i > 0) ? " " : "", m_fifo.Peek(i));
+  Log_ErrorPrintf("FIFO: %s", dump.GetCharArray());
+
+  m_fifo.RemoveOne();
   EndCommand();
   return true;
 }
