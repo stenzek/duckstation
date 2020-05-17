@@ -557,7 +557,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   Assert(voice_index < 24);
 
   Voice& voice = m_voices[voice_index];
-  if (voice.IsOn())
+  if (voice.IsOn() || m_key_on_register & (1u << voice_index))
     m_tick_event->InvokeEarly();
 
   switch (reg_index)
