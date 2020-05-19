@@ -2,7 +2,7 @@
 
 VERSION_FILE="scmversion.cpp"
 BRANCH=$(git rev-parse --abbrev-ref HEAD | tr -d '\r\n')
-TAG=$(git describe --tags --dirty | tr -d '\r\n')
+TAG=$(git describe --tags --dirty --exclude latest | tr -d '\r\n')
 
 SIGNATURE_LINE="// ${BRANCH} ${TAG}"
 
