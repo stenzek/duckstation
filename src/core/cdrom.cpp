@@ -764,12 +764,12 @@ void CDROM::ExecuteCommand()
       {
         SendACKAndStat();
 
-        if (!m_setloc_pending &&
+        if ((!m_setloc_pending || m_setloc_position.ToLBA() == m_current_lba) &&
             (m_drive_state == DriveState::Reading ||
              ((m_drive_state == DriveState::SeekingPhysical || m_drive_state == DriveState::SeekingLogical) &&
               m_read_after_seek)))
         {
-          Log_DevPrintf("Ignoring read command with no setloc, already reading/reading after seek");
+          Log_DevPrintf("Ignoring read command with no/same setloc, already reading/reading after seek");
         }
         else
         {
@@ -794,12 +794,12 @@ void CDROM::ExecuteCommand()
       {
         SendACKAndStat();
 
-        if (!m_setloc_pending && track == 0 &&
+        if (track == 0 && (!m_setloc_pending || m_setloc_position.ToLBA() == m_current_lba) &&
             (m_drive_state == DriveState::Playing ||
              ((m_drive_state == DriveState::SeekingPhysical || m_drive_state == DriveState::SeekingLogical) &&
               m_play_after_seek)))
         {
-          Log_DevPrintf("Ignoring play command with no setloc/track, already playing/playing after seek");
+          Log_DevPrintf("Ignoring play command with no/same setloc, already playing/playing after seek");
         }
         else
         {
