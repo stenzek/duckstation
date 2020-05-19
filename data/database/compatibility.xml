@@ -1,16 +1,95 @@
 <?xml version="1.0" ?>
 <compatibility-list>
+  <entry code="SLPS-01995" compatibility="5" region="NTSC-J" title="70's Robot Anime - Geppy-X - The Super Boosted Armor (Japan) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-01996" compatibility="5" region="NTSC-J" title="70's Robot Anime - Geppy-X - The Super Boosted Armor (Japan) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-01997" compatibility="5" region="NTSC-J" title="70's Robot Anime - Geppy-X - The Super Boosted Armor (Japan) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-01998" compatibility="5" region="NTSC-J" title="70's Robot Anime - Geppy-X - The Super Boosted Armor (Japan) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-02020" compatibility="5" region="NTSC-J" title="Ace Combat 3 - Electrosphere (Japan, Asia) (Disc 1) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+    <comments>Works only on Interpreter Mode</comments>
+  </entry>
+  <entry code="SLPS-02021" compatibility="5" region="NTSC-J" title="Ace Combat 3 - Electrosphere (Japan, Asia) (Disc 2) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <comments>Works only on Interpreter Mode</comments>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
   <entry code="SLPS-00208" compatibility="5" region="NTSC-J" title="Advanced V.G.">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-0208" compatibility="5" region="NTSC-J" title="Advanced V.G. (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLPS-01318" compatibility="5" region="NTSC-J" title="Advanced V.G. 2">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLPS-00559" compatibility="5" region="NTSC-J" title="Airgrave">
+  <entry code="SCUS-94906" compatibility="5" region="NTSC-U" title="Adventures of Lomax, The (USA)">
     <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SIPS-60005" compatibility="5" region="NTSC-J" title="AirAssault - The Red Mercury Missions (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-00559" compatibility="5" region="NTSC-J" title="AirGrave (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-86023" compatibility="5" region="NTSC-J" title="Akumajou Dracula X - Gekka no Yasoukyoku (Japan) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-01135" compatibility="5" region="PAL" title="Alundra (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-01198" compatibility="5" region="PAL" title="Alundra (France)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-01256" compatibility="5" region="PAL" title="Alundra (Germany)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-01257" compatibility="5" region="PAL" title="Alundra (Italy)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SCPS-10035" compatibility="5" region="NTSC-J" title="Alundra (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-01258" compatibility="5" region="PAL" title="Alundra (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-00553" compatibility="5" region="NTSC-U" title="Alundra (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLPM-87228" compatibility="5" region="NTSC-J" title="Arcade Hits - Shienryuu">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-87255" compatibility="5" region="NTSC-J" title="Arcade Hits - Soukyuu Gurentai (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-87270" compatibility="5" region="NTSC-J" title="Arcade Hits - Wolf Fang - Kuuga 2001 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLPS-00849" compatibility="5" region="NTSC-J" title="Asuka 120% Excellent - Burning Fest. Excellent">
     <compatibility>No Issues</compatibility>
@@ -20,6 +99,11 @@
   </entry>
   <entry code="SLPS-00231" compatibility="5" region="NTSC-J" title="Asuka 120% Special: Burning Fest. Special">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCES-01224" compatibility="4" region="PAL" title="Blasto (Europe) (En,Fr,De,Es,It)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <comments>Small error on the intro FMV.</comments>
   </entry>
   <entry code="SCUS-94199" compatibility="5" region="NTSC-U" title="Bloody Roar">
     <compatibility>No Issues</compatibility>
@@ -36,6 +120,11 @@
   <entry code="SLES-01722" compatibility="5" region="PAL" title="Bloody Roar 2 - Bringer of the New Age">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLUS-01198" compatibility="3" region="NTSC-U" title="Blue's Clues - Blue's Big Musical (USA)">
+    <compatibility>Crashes In-Game</compatibility>
+    <comments>No sound on FMVs</comments>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
   <entry code="SLPS-03002" compatibility="5" region="NTSC-J" title="Bomberman Land">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -43,9 +132,19 @@
     <compatibility>No Issues</compatibility>
     <comments>Unofficial translation works too</comments>
   </entry>
+  <entry code="SLUS-00208" compatibility="4" region="NTSC-U" title="Buster Bros. Collection (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <comments>No music, only SFX.</comments>
+  </entry>
   <entry code="SLPM-87053" compatibility="5" region="NTSC-J" title="Capcom VS SNK - Millenium Fight 2000 Pro">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLPS-01567" compatibility="4" region="NTSC-J" title="Captain Commando (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+    <upscaling-issues>First boss sprite is corrupted.</upscaling-issues>
   </entry>
   <entry code="SCES-00344" compatibility="5" region="PAL" title="Crash Bandicoot">
     <compatibility>No Issues</compatibility>
@@ -77,10 +176,10 @@
   <entry code="SLPS-00335" compatibility="5" region="NTSC-J" title="Dezaemon Plus">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLPM-86500" compatibility="5" region="NTSC-J" title="Dragon Quest VII - Eden no Senshitachi">
+  <entry code="SLPM-86500" compatibility="5" region="NTSC-J" title="Dragon Quest VII - Eden no Senshi-tachi (Japan) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Background gradient is rendered incorrectly with scaled dithering or true color.</upscaling-issues>
-    <version-tested>0.1-814-g8139230</version-tested>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SCUS-94163" compatibility="5" region="NTSC-U" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
@@ -89,6 +188,10 @@
   <entry code="SLPS-00700" compatibility="5" region="NTSC-J" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
+  </entry>
+  <entry code="SLUS-00870" compatibility="2" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
+    <compatibility>Crashes In Intro</compatibility>
+    <comments>Can't boot after the initial Loadoing screen.</comments>
   </entry>
   <entry code="SLPM-80205" compatibility="5" region="NTSC-J" title="G Darius">
     <compatibility>No Issues</compatibility>
@@ -111,11 +214,42 @@
   <entry code="SLPM-87286" compatibility="5" region="NTSC-J" title="Gegege no Kitarou - Gyakushuu! Youma Daikessen">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLPS-00303" compatibility="4" region="NTSC-J" title="Gradius Deluxe Pack (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+    <comments>Gradius II is unplayable - scrambled graphics and very slow speed. (Issue ##293)</comments>
+  </entry>
   <entry code="SLPM-86042" compatibility="5" region="NTSC-J" title="Gradius Gaiden">
     <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLPS-01357" compatibility="5" region="NTSC-J" title="Guilty Gear">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00157" compatibility="5" region="NTSC-J" title="Gunbird (Japan)">
+    <compatibility>No Issues</compatibility>
+    <comments>Flickering scrambled line on the right side of screen. (Issue #453)</comments>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-00498" compatibility="4" region="NTSC-J" title="Harmful Park (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Audio/Video desync during the intro. (Issue #454)</comments>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-00342" compatibility="5" region="PAL" title="In the Hunt (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLUS-00172" compatibility="5" region="NTSC-U" title="In the Hunt (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-02933" compatibility="5" region="PAL" title="Incredible Crisis (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLUS-01225" compatibility="5" region="NTSC-U" title="Incredible Crisis (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
   <entry code="SLPM-86008" compatibility="5" region="NTSC-J" title="Jikkyou Oshaberi Parodius - Forever with Me">
     <compatibility>No Issues</compatibility>
@@ -138,8 +272,29 @@
   <entry code="SLPS-00214" compatibility="5" region="NTSC-J" title="Kyuiin">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-02024" compatibility="5" region="PAL" title="Legacy of Kain - Soul Reaver (France)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
   <entry code="SLUS-01013" compatibility="5" region="NTSC-U" title="Legend of Mana">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86051" compatibility="1" region="NTSC-J" title="Magical Drop III - Yokubari Tokudai-gou! (Japan)">
+    <compatibility>Doesn't Boot</compatibility>
+    <comments>Stays on the Loading screen. (Issue #448)</comments>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-01918" compatibility="5" region="NTSC-J" title="Magical Drop Plus 1! (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-00737" compatibility="5" region="NTSC-J" title="Magical Hoppers (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-01786" compatibility="5" region="NTSC-J" title="Magical Tetris Challenge featuring Mickey (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLUS-00793" compatibility="5" region="NTSC-U" title="Marvel Super Heroes VS Street Fighter">
     <compatibility>No Issues</compatibility>
@@ -169,6 +324,19 @@
     <compatibility>Graphical/Audio Issues</compatibility>
     <comments>Works, except dynamic lighting on character is broken.</comments>
   </entry>
+  <entry code="SLPS-02600" compatibility="5" region="NTSC-J" title="Mr. Driller (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-03336" compatibility="4" region="NTSC-J" title="Mr. Driller G (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+    <comments>Flickering results panel and sprites after a Game Over screen.</comments>
+  </entry>
+  <entry code="SLUS-01571" compatibility="4" region="NTSC-U" title="NASCAR Thunder 2004 (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Screen transitions are corrupted.</comments>
+  </entry>
   <entry code="SLUS-00329" compatibility="5" region="NTSC-U" title="NBA Hangtime">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -176,9 +344,30 @@
     <compatibility>Doesn't Boot</compatibility>
     <comments>Issue 419</comments>
   </entry>
+  <entry code="SLPM-87048" compatibility="5" region="NTSC-J" title="Night Raid (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-02459" compatibility="1" region="NTSC-J" title="Otona no Asobi (Japan)">
+    <compatibility>Doesn't Boot</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SCPS-10096" compatibility="1" region="NTSC-J" title="Panekit - Infinitive Crafting Toy Case (Japan)">
+    <compatibility>Doesn't Boot</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <comments>Loops on the BIOS screen.</comments>
+  </entry>
   <entry code="SLPM-00899" compatibility="5" region="NTSC-J" title="Panzer Bandit">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLPM-86016" compatibility="5" region="NTSC-J" title="Paro Wars (Japan)">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01360" compatibility="5" region="NTSC-J" title="Pocket Fighter (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+    <comments>The game by itself and the options menus are working fine. The 'Justice Gakuen' option is broken.</comments>
   </entry>
   <entry code="SLPM-86146" compatibility="5" region="NTSC-J" title="Pop'n Tanks!">
     <compatibility>No Issues</compatibility>
@@ -188,14 +377,38 @@
     <compatibility>No Issues</compatibility>
     <upscaling-issues>2D elements on title screen</upscaling-issues>
   </entry>
+  <entry code="SLPS-01435" compatibility="5" region="NTSC-J" title="Puchi Carat (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-00284" compatibility="5" region="NTSC-J" title="Puzzle Bobble 2 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-01065" compatibility="5" region="NTSC-J" title="Puzzle Bobble 3DX (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
   <entry code="SLPS-01688" compatibility="5" region="NTSC-U" title="R-Type Delta">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01236" compatibility="5" region="NTSC-J" title="R-Types (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLUS-00797" compatibility="5" region="NTSC-U" title="R4: Ridge Racer Type 4">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLPS-00728" compatibility="5" region="NTSC-J" title="Raiden DX (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
   <entry code="SCUS-94402" compatibility="5" region="NTSC-U" title="Raiden Project">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPM-86450" compatibility="5" region="NTSC-J" title="RayCrisis (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLPS-00764" compatibility="5" region="NTSC-J" title="Rockman - Battle &amp; Chase">
     <compatibility>No Issues</compatibility>
@@ -215,9 +428,114 @@
     <version-tested>0.1-826-g712168c</version-tested>
     <comments>Noticed bottom the line of FMV is a little odd but works fine.</comments>
   </entry>
+  <entry code="SLPS-00901" compatibility="5" region="NTSC-J" title="Rockman X4 (Japan) (Special Limited Pack)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-86666" compatibility="5" region="NTSC-J" title="Rockman X5 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-86959" compatibility="5" region="NTSC-J" title="Rockman X6 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-86009" compatibility="5" region="NTSC-J" title="Sexy Parodius (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-86192" compatibility="5" region="NTSC-J" title="Silent Hill (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed219</version-tested>
+  </entry>
+  <entry code="SLPS-03444" compatibility="5" region="NTSC-J" title="Simple Character 2000 Series Vol. 08 - Kagaku Ninjatai Gatchaman - The Shooting (Japan)">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-02789" compatibility="5" region="NTSC-J" title="Slap Happy Rhythm Busters (Japan)">
+    <compatibility>No Issues</compatibility>
+    <comments>Better to use a Progressive Mode instead of leaving the Interlaced one.</comments>
+    <version-tested>0.1-884-g096ed219</version-tested>
+  </entry>
   <entry code="SLPS-00154" compatibility="1" region="NTSC-J" title="Snatcher">
     <compatibility>Doesn't Boot</compatibility>
     <comments>Crashes in Cached/Recompiler; seems to work in Intrepeter</comments>
+  </entry>
+  <entry code="SLPS-00307" compatibility="5" region="NTSC-J" title="Sonic Wings Special (Japan)">
+    <compatibility>No Issues</compatibility>
+    <comments>Don't use any crop options.</comments>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-00162" compatibility="5" region="NTSC-J" title="Stahlfeder - Tekkou Hikuudan (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed219</version-tested>
+  </entry>
+  <entry code="SLES-00527" compatibility="5" region="PAL" title="Suikoden (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLUS-00292" compatibility="5" region="NTSC-U" title="Suikoden (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPS-01305" compatibility="5" region="NTSC-J" title="Suikoden - Tendou Hyaku Hachi-sei (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPS-00521" compatibility="5" region="NTSC-J" title="Suikoden - Tenmei no Chikai (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-02442" compatibility="5" region="PAL" title="Suikoden II (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-02443" compatibility="5" region="PAL" title="Suikoden II (France)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-02444" compatibility="5" region="PAL" title="Suikoden II (Germany)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-02446" compatibility="5" region="PAL" title="Suikoden II (Italy)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-02445" compatibility="5" region="PAL" title="Suikoden II (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLUS-00958" compatibility="5" region="NTSC-U" title="Suikoden II (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPS-02542" compatibility="5" region="NTSC-J" title="Summon Night (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPS-03237" compatibility="5" region="NTSC-J" title="Summon Night 2 (Japan) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPS-03238" compatibility="5" region="NTSC-J" title="Summon Night 2 (Japan) (Disc 2) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPM-87135" compatibility="1" region="NTSC-J" title="Super Gals! Kotobuki Ran Special - Ikemen Get You Gals Party (Japan)">
+    <compatibility>Doesn't Boot</compatibility>
+  </entry>
+  <entry code="SLUS-00418" compatibility="4" region="NTSC-U" title="Super Puzzle Fighter II Turbo (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <comments>Needs to use the crop option 'OverScan Area Only'.</comments>
+  </entry>
+  <entry code="SLPM-86461" compatibility="5" region="NTSC-J" title="SuperLite 1500 Series - Fantastic Night Dreams - Cotton Original (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPM-87211" compatibility="5" region="NTSC-J" title="SuperLite 1500 Series - Maerchen Adventure - Cotton 100% (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
   <entry code="SLUS-00889" compatibility="5" region="NTSC-U" title="Team Buddies">
     <compatibility>No Issues</compatibility>
@@ -243,7 +561,18 @@
   <entry code="SLPM-86462" compatibility="5" region="NTSC-J" title="The King of Fighters '99">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLPS-01406" compatibility="5" region="NTSC-J" title="Thunder Force V - Perfect System (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed219</version-tested>
+  </entry>
+  <entry code="SLPS-03133" compatibility="5" region="NTSC-J" title="Time Bokan Series - Bokan GoGoGo (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed219</version-tested>
+  </entry>
   <entry code="SLPM-86033" compatibility="5" region="NTSC-J" title="Tobal 2">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00131" compatibility="5" region="NTSC-J" title="Two-Ten Kaku (Japan)">
     <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLPS-00643" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun">
@@ -252,8 +581,48 @@
   <entry code="SLPS-02549" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun Second Edition">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SCES-02845" compatibility="4" region="PAL" title="Wip3out Special Edition">
+  <entry code="SCES-00010" compatibility="4" region="PAL" title="WipEout (Europe)">
     <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <comments>Choosing anything other than random will turn off music altogether. (Issue #459)</comments>
+  </entry>
+  <entry code="SIPS-60003" compatibility="4" region="NTSC-J" title="WipEout (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Choosing anything other than random will turn off music altogether. (Issue #459)</comments>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SCUS-94301" compatibility="4" region="NTSC-U" title="WipEout (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Choosing anything other than random will turn off music altogether. (Issue #459)</comments>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLES-00327" compatibility="5" region="PAL" title="WipEout 2097 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SCPS-10098" compatibility="5" region="NTSC-J" title="WipEout 3 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>The position counter is incorrectly rendered.</upscaling-issues>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLUS-00865" compatibility="5" region="NTSC-U" title="WipEout 3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <upscaling-issues>The position counter is incorrectly rendered.</upscaling-issues>
+  </entry>
+  <entry code="SCES-02845" compatibility="5" region="PAL" title="WipEout 3 - Special Edition (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <upscaling-issues>The position counter is incorrectly rendered.</upscaling-issues>
+    <comments>Game screen is slightly off-centered.</comments>
+  </entry>
+  <entry code="SIPS-60010" compatibility="5" region="NTSC-J" title="Wipeout XL (Japan, Asia)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SCUS-94351" compatibility="5" region="NTSC-U" title="Wipeout XL (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
   <entry code="SLUS-00141" compatibility="1" region="NTSC-U" title="X-COM - UFO Defense">
     <compatibility>Doesn't Boot</compatibility>
@@ -261,5 +630,13 @@
   <entry code="SLPS-01915" compatibility="5" region="NTSC-J" title="X-Men VS Street Fighter - EX Edition">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Sprite glitches</upscaling-issues>
+  </entry>
+  <entry code="SLPS-000534" compatibility="5" region="NTSC-J" title="Zoop (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-00078" compatibility="5" region="NTSC-U" title="Zoop - America's Largest Killer of Time! (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
 </compatibility-list>
