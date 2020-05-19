@@ -28,8 +28,9 @@ public:
   void Reset();
   bool DoState(StateWrapper& sw);
 
-  bool HasMedia() const;
-  std::string GetMediaFileName() const;
+  bool HasMedia() const { return m_reader.HasMedia(); }
+  std::string GetMediaFileName() const { return m_reader.GetMediaFileName(); }
+
   void InsertMedia(std::unique_ptr<CDImage> media);
   void RemoveMedia(bool force = false);
 
@@ -112,6 +113,7 @@ private:
   enum class DriveState : u8
   {
     Idle,
+    ShellOpening,
     Resetting,
     SeekingPhysical,
     SeekingLogical,
@@ -200,6 +202,7 @@ private:
   {
     return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical);
   }
+  bool CanReadMedia() const { return (m_drive_state != DriveState::ShellOpening && m_reader.HasMedia()); }
   bool HasPendingCommand() const { return m_command != Command::None; }
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
@@ -216,6 +219,7 @@ private:
   TickCount GetAckDelayForCommand(Command command);
   TickCount GetTicksForRead();
   TickCount GetTicksForSeek(CDImage::LBA new_lba);
+  TickCount GetTicksForStop(bool motor_was_on);
   void BeginCommand(Command command); // also update status register
   void EndCommand();                  // also updates status register
   void AbortCommand();
@@ -225,6 +229,7 @@ private:
   void ExecuteDrive(TickCount ticks_late);
   void BeginReading(TickCount ticks_late = 0, bool after_seek = false);
   void BeginPlaying(u8 track_bcd, TickCount ticks_late = 0, bool after_seek = false);
+  void DoShellOpenComplete(TickCount ticks_late);
   void DoResetComplete(TickCount ticks_late);
   void DoSeekComplete(TickCount ticks_late);
   void DoPauseComplete();

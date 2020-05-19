@@ -48,7 +48,7 @@ void CDROM::SoftReset()
   m_drive_event->Deactivate();
   m_status.bits = 0;
   m_secondary_status.bits = 0;
-  m_secondary_status.motor_on = HasMedia();
+  m_secondary_status.motor_on = CanReadMedia();
   m_mode.bits = 0;
   m_current_double_speed = false;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
@@ -164,19 +164,9 @@ bool CDROM::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-bool CDROM::HasMedia() const
-{
-  return m_reader.HasMedia();
-}
-
-std::string CDROM::GetMediaFileName() const
-{
-  return m_reader.GetMediaFileName();
-}
-
 void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 {
-  if (HasMedia())
+  if (CanReadMedia())
     RemoveMedia();
 
   // set the region from the system area of the disc
@@ -185,7 +175,8 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
                  Settings::GetConsoleRegionName(m_system->GetRegion()));
 
   // motor automatically spins up
-  m_secondary_status.motor_on = true;
+  if (m_drive_state != DriveState::ShellOpening)
+    m_secondary_status.motor_on = true;
 
   // reading TOC? interestingly this doesn't work for GetlocL though...
   CDImage::SubChannelQ subq;
@@ -197,8 +188,10 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 
 void CDROM::RemoveMedia(bool force /* = false */)
 {
-  if (!m_reader.HasMedia() && !force)
+  if (!HasMedia() && !force)
     return;
+
+  const TickCount stop_ticks = GetTicksForStop(true);
 
   Log_InfoPrintf("Removing CD...");
   m_reader.RemoveMedia();
@@ -218,6 +211,13 @@ void CDROM::RemoveMedia(bool force /* = false */)
 
   // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
   SendAsyncErrorResponse(STAT_ERROR, 0x08);
+
+  // Begin spin-down timer, we can't swap the new disc in immediately for some games (e.g. Metal Gear Solid).
+  if (!force)
+  {
+    m_drive_state = DriveState::ShellOpening;
+    m_drive_event->SetIntervalAndSchedule(stop_ticks);
+  }
 }
 
 void CDROM::SetUseReadThread(bool enabled)
@@ -541,7 +541,7 @@ TickCount CDROM::GetAckDelayForCommand(Command command)
   // presumably because the controller is busy doing discy-things.
   constexpr u32 default_ack_delay_no_disc = 15000;
   constexpr u32 default_ack_delay_with_disc = 25000;
-  return HasMedia() ? default_ack_delay_with_disc : default_ack_delay_no_disc;
+  return CanReadMedia() ? default_ack_delay_with_disc : default_ack_delay_no_disc;
 }
 
 TickCount CDROM::GetTicksForRead()
@@ -578,6 +578,11 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
+}
+
+TickCount CDROM::GetTicksForStop(bool motor_was_on)
+{
+  return motor_was_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000;
 }
 
 void CDROM::BeginCommand(Command command)
@@ -624,7 +629,7 @@ void CDROM::ExecuteCommand()
       SendACKAndStat();
 
       // shell open bit is cleared after sending the status
-      if (HasMedia())
+      if (CanReadMedia())
         m_secondary_status.shell_open = false;
 
       EndCommand();
@@ -653,7 +658,7 @@ void CDROM::ExecuteCommand()
     case Command::ReadTOC:
     {
       Log_DebugPrintf("CDROM ReadTOC command");
-      if (!HasMedia())
+      if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -712,7 +717,7 @@ void CDROM::ExecuteCommand()
     {
       const bool logical = (m_command == Command::SeekL);
       Log_DebugPrintf("CDROM %s command", logical ? "SeekL" : "SeekP");
-      if (!HasMedia())
+      if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -731,7 +736,7 @@ void CDROM::ExecuteCommand()
       const u8 session = m_param_fifo.IsEmpty() ? 0 : m_param_fifo.Peek(0);
       Log_DebugPrintf("CDROM SetSession command, session=%u", session);
 
-      if (!HasMedia() || m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing)
+      if (!CanReadMedia() || m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing)
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -756,7 +761,7 @@ void CDROM::ExecuteCommand()
     case Command::ReadS:
     {
       Log_DebugPrintf("CDROM read command");
-      if (!HasMedia())
+      if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -786,7 +791,7 @@ void CDROM::ExecuteCommand()
       u8 track = m_param_fifo.IsEmpty() ? 0 : m_param_fifo.Peek(0);
       Log_DebugPrintf("CDROM play command, track=%u", track);
 
-      if (!HasMedia())
+      if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -836,8 +841,7 @@ void CDROM::ExecuteCommand()
 
     case Command::Stop:
     {
-      const bool was_motor_on = m_secondary_status.motor_on;
-      const TickCount stop_time = was_motor_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000;
+      const TickCount stop_time = GetTicksForStop(m_secondary_status.motor_on);
       Log_DebugPrintf("CDROM stop command");
       SendACKAndStat();
 
@@ -922,7 +926,7 @@ void CDROM::ExecuteCommand()
 
     case Command::GetlocP:
     {
-      if (!HasMedia())
+      if (!CanReadMedia())
       {
         Log_DebugPrintf("CDROM GetlocP command - not ready");
         SendErrorResponse(STAT_ERROR, ERROR_NOT_READY);
@@ -956,7 +960,7 @@ void CDROM::ExecuteCommand()
     case Command::GetTN:
     {
       Log_DebugPrintf("CDROM GetTN command");
-      if (HasMedia())
+      if (CanReadMedia())
       {
         m_reader.WaitForReadToComplete();
 
@@ -980,7 +984,7 @@ void CDROM::ExecuteCommand()
       Assert(m_param_fifo.GetSize() >= 1);
       const u8 track = PackedBCDToBinary(m_param_fifo.Peek());
 
-      if (!HasMedia())
+      if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
@@ -1139,6 +1143,10 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
   {
     case DriveState::Resetting:
       DoResetComplete(ticks_late);
+      break;
+
+    case DriveState::ShellOpening:
+      DoShellOpenComplete(ticks_late);
       break;
 
     case DriveState::SeekingPhysical:
@@ -1303,17 +1311,27 @@ void CDROM::UpdatePositionWhileSeeking()
   }
 }
 
+void CDROM::DoShellOpenComplete(TickCount ticks_late)
+{
+  // media is now readable (if any)
+  m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
+
+  if (m_reader.HasMedia())
+    m_secondary_status.motor_on = true;
+}
+
 void CDROM::DoResetComplete(TickCount ticks_late)
 {
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
 
   m_secondary_status.bits = 0;
-  m_secondary_status.motor_on = HasMedia();
+  m_secondary_status.motor_on = CanReadMedia();
   m_mode.bits = 0;
   m_mode.read_raw_sector = true;
 
-  if (!HasMedia())
+  if (!CanReadMedia())
   {
     Log_DevPrintf("CDROM reset - no disc");
     m_secondary_status.shell_open = true;
@@ -1325,7 +1343,7 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   m_async_response_fifo.Push(m_secondary_status.bits);
   SetAsyncInterrupt(Interrupt::Complete);
 
-  if (!HasMedia())
+  if (!CanReadMedia())
   {
     m_secondary_status.motor_on = false;
     m_secondary_status.shell_open = true;
@@ -1464,12 +1482,12 @@ void CDROM::DoIDRead()
   m_drive_state = DriveState::Idle;
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
-  m_secondary_status.motor_on = HasMedia();
+  m_secondary_status.motor_on = CanReadMedia();
 
   // TODO: Audio CD.
   u8 stat_byte = m_secondary_status.bits;
   u8 flags_byte = 0;
-  if (!HasMedia())
+  if (!CanReadMedia())
   {
     flags_byte |= (1 << 6); // Disc Missing
   }
@@ -1964,7 +1982,7 @@ void CDROM::DrawDebugWindow()
   // draw voice states
   if (ImGui::CollapsingHeader("Media", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    if (HasMedia())
+    if (m_reader.HasMedia())
     {
       const CDImage* media = m_reader.GetMedia();
       const auto [disc_minute, disc_second, disc_frame] = media->GetMSFPositionOnDisc();
@@ -1986,9 +2004,9 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 11> drive_state_names = {
-      {"Idle", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC", "Reading",
-       "Playing", "Pausing", "Stopping", "Changing Session"}};
+    static constexpr std::array<const char*, 12> drive_state_names = {
+      {"Idle", "Opening Shell", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC",
+       "Reading", "Playing", "Pausing", "Stopping", "Changing Session"}};
 
     ImGui::Columns(3);
 
