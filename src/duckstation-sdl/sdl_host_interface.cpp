@@ -599,6 +599,12 @@ void SDLHostInterface::DrawMainMenuBar()
       ClearImGuiFocus();
     }
 
+    if (ImGui::MenuItem("Remove Disc", nullptr, false, system_enabled))
+    {
+      RunLater([this]() { m_system->RemoveMedia(); });
+      ClearImGuiFocus();
+    }
+
     if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
     {
       RunLater([this]() { DoFrameStep(); });
