@@ -272,6 +272,11 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
   switchToGameListView();
 }
 
+void MainWindow::onRemoveDiscActionTriggered()
+{
+  m_host_interface->changeDisc(QString());
+}
+
 static void OpenURL(QWidget* parent, const QUrl& qurl)
 {
   if (!QDesktopServices::openUrl(qurl))
@@ -503,6 +508,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
+  connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);

@@ -45,6 +45,7 @@ private Q_SLOTS:
   void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
+  void onRemoveDiscActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();

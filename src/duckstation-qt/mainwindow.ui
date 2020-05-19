@@ -47,6 +47,7 @@
      </property>
      <addaction name="actionChangeDiscFromFile"/>
      <addaction name="actionChangeDiscFromGameList"/>
+     <addaction name="actionRemoveDisc"/>
     </widget>
     <widget class="QMenu" name="menuLoadState">
      <property name="title">
@@ -397,6 +398,11 @@
   <action name="actionChangeDiscFromGameList">
    <property name="text">
     <string>From Game List...</string>
+   </property>
+  </action>
+  <action name="actionRemoveDisc">
+   <property name="text">
+    <string>Remove Disc</string>
    </property>
   </action>
   <action name="actionResume_State">

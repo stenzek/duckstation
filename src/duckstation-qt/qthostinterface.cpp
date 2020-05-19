@@ -615,7 +615,10 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
   if (!m_system)
     return;
 
-  m_system->InsertMedia(new_disc_filename.toStdString().c_str());
+  if (!new_disc_filename.isEmpty())
+    m_system->InsertMedia(new_disc_filename.toStdString().c_str());
+  else
+    m_system->RemoveMedia();
 }
 
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
