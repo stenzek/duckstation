@@ -78,6 +78,25 @@ void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
   m_do_read_cv.notify_one();
 }
 
+bool CDROMAsyncReader::ReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ* subq, SectorBuffer* data)
+{
+  WaitForReadToComplete();
+
+  if (m_media->GetPositionOnDisc() != lba && !m_media->Seek(lba))
+  {
+    Log_WarningPrintf("Seek to LBA %u failed", lba);
+    return false;
+  }
+
+  if ((subq && !m_media->ReadSubChannelQ(subq)) || (data && !m_media->ReadRawSector(data->data())))
+  {
+    Log_WarningPrintf("Read of LBA %u failed", lba);
+    return false;
+  }
+
+  return true;
+}
+
 void CDROMAsyncReader::QueueReadNextSector()
 {
   if (!IsUsingThread())

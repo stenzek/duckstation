@@ -156,7 +156,6 @@ private:
     ERROR_NOT_READY = 0x80
   };
 
-
   union SecondaryStatusRegister
   {
     u8 bits;
@@ -197,6 +196,10 @@ private:
   void SoftReset();
 
   bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
+  bool IsSeeking() const
+  {
+    return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical);
+  }
   bool HasPendingCommand() const { return m_command != Command::None; }
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
   bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
@@ -236,6 +239,7 @@ private:
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void StopReadingWithDataEnd();
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
+  void UpdatePositionWhileSeeking();
   void ResetCurrentXAFile();
   void ResetXAResampler();
   void LoadDataFIFO();
@@ -262,7 +266,9 @@ private:
   u8 m_pending_async_interrupt = 0;
 
   CDImage::Position m_setloc_position = {};
-  CDImage::LBA m_last_sector_lba{};
+  CDImage::LBA m_current_lba{};
+  CDImage::LBA m_seek_start_lba{};
+  CDImage::LBA m_seek_end_lba{};
   bool m_setloc_pending = false;
   bool m_read_after_seek = false;
   bool m_play_after_seek = false;

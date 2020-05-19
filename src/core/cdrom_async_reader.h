@@ -33,6 +33,9 @@ public:
 
   bool WaitForReadToComplete();
 
+  /// Bypasses the sector cache and reads directly from the image.
+  bool ReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ* subq, SectorBuffer* data);
+
 private:
   void DoSectorRead();
   void WorkerThreadEntryPoint();
