@@ -2,11 +2,12 @@
 #include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
 #include "consolesettingswidget.h"
+#include "controllersettingswidget.h"
 #include "gamelistsettingswidget.h"
 #include "generalsettingswidget.h"
 #include "gpusettingswidget.h"
 #include "hotkeysettingswidget.h"
-#include "portsettingswidget.h"
+#include "memorycardsettingswidget.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QTextEdit>
 
@@ -24,10 +25,12 @@ static constexpr std::array<const char*, static_cast<int>(SettingsDialog::Catego
    "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting, powering "
    "off, taking screenshots or saving/loading states at the press of a key/controller button. Hotkey titles are "
    "self-explanatory.",
-   "<strong>Port Settings</strong><hr>This page lets you choose the type of controller you wish to simulate for the "
-   "console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a "
+   "<strong>Controller Settings</strong><hr>This page lets you choose the type of controller you wish to simulate for "
+   "the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a "
    "count-down, in which case you should press the key or controller button/axis you wish to bind. If no button is "
    "pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button.",
+   "<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
+   "function in, and where the images for these cards will be stored on disk.",
    "<strong>GPU Settings</strong><hr>These options control the simulation of the GPU in the console. Various "
    "enhancements are available, mouse over each for additional information.",
    "<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for "
@@ -46,7 +49,8 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
   m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
-  m_port_settings = new PortSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_controller_settings = new ControllerSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_memory_card_settings = new MemoryCardSettingsWidget(host_interface, m_ui.settingsContainer);
   m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer);
   m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
@@ -55,7 +59,8 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ConsoleSettings), m_console_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GameListSettings), m_game_list_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::HotkeySettings), m_hotkey_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::PortSettings), m_port_settings);
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ControllerSettings), m_controller_settings);
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::MemoryCardSettings), m_memory_card_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GPUSettings), m_gpu_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AudioSettings), m_audio_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AdvancedSettings), m_advanced_settings);

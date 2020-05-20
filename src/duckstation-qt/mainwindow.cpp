@@ -516,8 +516,10 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::GameListSettings); });
   connect(m_ui.actionHotkeySettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::HotkeySettings); });
-  connect(m_ui.actionPortSettings, &QAction::triggered,
-          [this]() { doSettings(SettingsDialog::Category::PortSettings); });
+  connect(m_ui.actionControllerSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::ControllerSettings); });
+  connect(m_ui.actionMemoryCardSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::MemoryCardSettings); });
   connect(m_ui.actionGPUSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::GPUSettings); });
   connect(m_ui.actionAudioSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });

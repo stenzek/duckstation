@@ -5,6 +5,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QScrollArea>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QWidget>
 #include <array>
@@ -15,13 +16,13 @@ class QTimer;
 class QtHostInterface;
 class InputBindingWidget;
 
-class PortSettingsWidget : public QWidget
+class ControllerSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  PortSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
-  ~PortSettingsWidget();
+  ControllerSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  ~ControllerSettingsWidget();
 
 private Q_SLOTS:
   void onProfileLoaded();
@@ -36,9 +37,8 @@ private:
     QWidget* widget;
     QVBoxLayout* layout;
     QComboBox* controller_type;
-    QComboBox* memory_card_type;
-    QLineEdit* memory_card_path;
-    QWidget* button_binding_container;
+    QScrollArea* bindings_scroll_area;
+    QWidget* bindings_container;
     InputBindingWidget* first_button;
   };
 
@@ -47,8 +47,6 @@ private:
   void createPortSettingsUi(int index, PortSettingsUI* ui);
   void createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype);
   void onControllerTypeChanged(int index);
-  void onBrowseMemoryCardPathClicked(int index);
-  void onEjectMemoryCardClicked(int index);
   void onLoadProfileClicked();
   void onSaveProfileClicked();
 

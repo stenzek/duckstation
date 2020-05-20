@@ -13,6 +13,8 @@ add_executable(duckstation-qt
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui
+  controllersettingswidget.cpp
+  controllersettingswidget.h
   gamelistsettingswidget.cpp
   gamelistsettingswidget.h
   gamelistsettingswidget.ui
@@ -35,10 +37,10 @@ add_executable(duckstation-qt
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
+  memorycardsettingswidget.cpp
+  memorycardsettingswidget.h
   openglhostdisplay.cpp
   openglhostdisplay.h
-  portsettingswidget.cpp
-  portsettingswidget.h
   qthostdisplay.cpp
   qthostdisplay.h
   qtdisplaywidget.cpp

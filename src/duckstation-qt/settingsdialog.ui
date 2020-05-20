@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>780</width>
-    <height>820</height>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,11 +78,20 @@
        </item>
        <item>
         <property name="text">
-         <string>Port Settings</string>
+         <string>Controller Settings</string>
         </property>
         <property name="icon">
          <iconset resource="icons.qrc">
           <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
+        </property>
+       </item> 
+       <item>
+        <property name="text">
+         <string>Memory Card Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/media-flash.png</normaloff>:/icons/media-flash.png</iconset>
         </property>
        </item> 
        <item>

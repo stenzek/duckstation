@@ -50,7 +50,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="openglhostdisplay.cpp" />
-    <ClCompile Include="portsettingswidget.cpp" />
+    <ClCompile Include="controllersettingswidget.cpp" />
+    <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="qthostdisplay.cpp" />
     <ClCompile Include="qthostinterface.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
@@ -60,7 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="audiosettingswidget.h" />
-    <QtMoc Include="portsettingswidget.h" />
+    <QtMoc Include="controllersettingswidget.h" />
+    <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="qtdisplaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="gpusettingswidget.h" />
@@ -143,6 +145,7 @@
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
@@ -151,7 +154,7 @@
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
@@ -166,16 +169,9 @@
       <InProject>false</InProject>
     </CommonDataFiles>
   </ItemGroup>
-  <Target Name="CopyCommonDataFiles"
-    AfterTargets="Build"
-    Inputs="@(CommonDataFiles)"
-    Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
+  <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying common data files" Importance="High" />
-    <Copy
-      SourceFiles="@(CommonDataFiles)"
-      DestinationFolder="$(BinaryOutputDir)\%(RecursiveDir)"
-      SkipUnchangedFiles="true"
-    />
+    <Copy SourceFiles="@(CommonDataFiles)" DestinationFolder="$(BinaryOutputDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28F14272-0EC4-41BB-849F-182ADB81AF70}</ProjectGuid>

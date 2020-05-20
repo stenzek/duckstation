@@ -10,7 +10,8 @@ class GeneralSettingsWidget;
 class GameListSettingsWidget;
 class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
-class PortSettingsWidget;
+class ControllerSettingsWidget;
+class MemoryCardSettingsWidget;
 class GPUSettingsWidget;
 class AudioSettingsWidget;
 class AdvancedSettingsWidget;
@@ -26,7 +27,8 @@ public:
     ConsoleSettings,
     GameListSettings,
     HotkeySettings,
-    PortSettings,
+    ControllerSettings,
+    MemoryCardSettings,
     GPUSettings,
     AudioSettings,
     AdvancedSettings,
@@ -40,7 +42,8 @@ public:
   ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
   GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
   HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
-  PortSettingsWidget* getPortSettingsWidget() const { return m_port_settings; }
+  ControllerSettingsWidget* getControllerSettingsWidget() const { return m_controller_settings; }
+  MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
   GPUSettingsWidget* getGPUSettingsWidget() const { return m_gpu_settings; }
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
   AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
@@ -63,7 +66,8 @@ private:
   ConsoleSettingsWidget* m_console_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
-  PortSettingsWidget* m_port_settings = nullptr;
+  ControllerSettingsWidget* m_controller_settings = nullptr;
+  MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
   GPUSettingsWidget* m_gpu_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AdvancedSettingsWidget* m_advanced_settings = nullptr;

@@ -90,7 +90,8 @@
     <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionHotkeySettings"/>
-    <addaction name="actionPortSettings"/>
+    <addaction name="actionControllerSettings"/>
+    <addaction name="actionMemoryCardSettings"/>
     <addaction name="actionGPUSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAdvancedSettings"/>
@@ -263,16 +264,16 @@
      <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Console Settings...</string>
+    <string>C&amp;onsole Settings...</string>
    </property>
   </action>
-  <action name="actionPortSettings">
+  <action name="actionControllerSettings">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Port Settings...</string>
+    <string>&amp;Controller Settings...</string>
    </property>
   </action>
   <action name="actionHotkeySettings">
@@ -494,6 +495,15 @@
    </property>
    <property name="text">
     <string>&amp;Screenshot</string>
+   </property>
+  </action>
+  <action name="actionMemoryCardSettings">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/media-flash-24.png</normaloff>:/icons/media-flash-24.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Memory Card Settings...</string>
    </property>
   </action>
  </widget>

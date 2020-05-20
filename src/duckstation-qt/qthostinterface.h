@@ -83,6 +83,12 @@ public:
   }
   void saveInputProfile(const QString& profile_path);
 
+  /// Returns a path relative to the user directory.
+  QString getUserDirectoryRelativePath(const QString& arg) const;
+
+  /// Returns a path relative to the application directory (for system files).
+  QString getProgramDirectoryRelativePath(const QString& arg) const;
+
 Q_SIGNALS:
   void errorReported(const QString& message);
   void messageReported(const QString& message);

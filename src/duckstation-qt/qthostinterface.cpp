@@ -551,6 +551,22 @@ void QtHostInterface::saveInputProfile(const QString& profile_name)
   SaveInputProfile(profile_name.toUtf8().data(), si);
 }
 
+QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const
+{
+  QString result = QString::fromStdString(m_user_directory);
+  result += '/';
+  result += arg;
+  return result;
+}
+
+QString QtHostInterface::getProgramDirectoryRelativePath(const QString& arg) const
+{
+  QString result = QString::fromStdString(m_program_directory);
+  result += '/';
+  result += arg;
+  return result;
+}
+
 void QtHostInterface::powerOffSystem()
 {
   if (!isOnWorkerThread())

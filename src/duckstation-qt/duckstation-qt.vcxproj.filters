@@ -16,7 +16,6 @@
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
-    <ClCompile Include="portsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_portsettingswidget.cpp" />
     <ClCompile Include="gpusettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
@@ -35,9 +34,12 @@
     <ClCompile Include="qthostdisplay.cpp" />
     <ClCompile Include="openglhostdisplay.cpp" />
     <ClCompile Include="d3d11hostdisplay.cpp" />
-    <ClCompile Include="$(IntDir)qrc_resources.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
+    <ClCompile Include="gamepropertiesdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
+    <ClCompile Include="$(IntDir)qrc_icons.cpp" />
+    <ClCompile Include="controllersettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
@@ -53,7 +55,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtResource Include="resources\resources.qrc" />
+    <QtResource Include="resources\icons.qrc" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="consolesettingswidget.h" />
@@ -62,7 +64,6 @@
     <QtMoc Include="mainwindow.h" />
     <QtMoc Include="qthostinterface.h" />
     <QtMoc Include="settingsdialog.h" />
-    <QtMoc Include="portsettingswidget.h" />
     <QtMoc Include="gpusettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
@@ -71,6 +72,8 @@
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="advancedsettingswidget.h" />
+    <QtMoc Include="gamepropertiesdialog.h" />
+    <QtMoc Include="controllersettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -81,6 +84,7 @@
     <QtUi Include="audiosettingswidget.ui" />
     <QtUi Include="generalsettingswidget.ui" />
     <QtUi Include="advancedsettingswidget.ui" />
+    <QtUi Include="gamepropertiesdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
