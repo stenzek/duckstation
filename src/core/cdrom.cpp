@@ -1370,7 +1370,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
                    subq.absolute_frame_bcd == seek_ff);
       if (seek_okay)
       {
-        if (subq.control.data)
+        if (subq.control.data && logical)
         {
           // ensure the location matches up (it should)
           ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
