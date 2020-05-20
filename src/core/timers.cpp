@@ -96,7 +96,7 @@ TickCount Timers::GetTicksUntilIRQ(u32 timer) const
     return std::numeric_limits<TickCount>::max();
 
   TickCount ticks_until_irq = std::numeric_limits<TickCount>::max();
-  if (cs.mode.irq_at_target)
+  if (cs.mode.irq_at_target && cs.counter < cs.target)
     ticks_until_irq = static_cast<TickCount>(cs.target - cs.counter);
   if (cs.mode.irq_on_overflow)
     ticks_until_irq = std::min(ticks_until_irq, static_cast<TickCount>(0xFFFFu - cs.counter));
