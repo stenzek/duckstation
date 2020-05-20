@@ -13,11 +13,11 @@
 #include "scmversion/scmversion.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include "qtutils.h"
 #include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
-#include <QtGui/QDesktopServices>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
@@ -277,33 +277,19 @@ void MainWindow::onRemoveDiscActionTriggered()
   m_host_interface->changeDisc(QString());
 }
 
-static void OpenURL(QWidget* parent, const QUrl& qurl)
-{
-  if (!QDesktopServices::openUrl(qurl))
-  {
-    QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
-                          QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
-  }
-}
-
-static void OpenURL(QWidget* parent, const char* url)
-{
-  return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
-}
-
 void MainWindow::onGitHubRepositoryActionTriggered()
 {
-  OpenURL(this, "https://github.com/stenzek/duckstation/");
+  QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/");
 }
 
 void MainWindow::onIssueTrackerActionTriggered()
 {
-  OpenURL(this, "https://github.com/stenzek/duckstation/issues");
+  QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/issues");
 }
 
 void MainWindow::onDiscordServerActionTriggered()
 {
-  OpenURL(this, "https://discord.gg/Buktv3t");
+  QtUtils::OpenURL(this, "https://discord.gg/Buktv3t");
 }
 
 void MainWindow::onAboutActionTriggered() {}
@@ -358,7 +344,7 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
       const QFileInfo fi(QString::fromStdString(entry->path));
-      OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
+      QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
     });
 
     menu.addSeparator();

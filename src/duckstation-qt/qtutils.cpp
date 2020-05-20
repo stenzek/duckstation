@@ -1,9 +1,11 @@
 #include "qtutils.h"
 #include "common/byte_stream.h"
 #include <QtCore/QMetaObject>
+#include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
@@ -613,6 +615,20 @@ QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind /*= false*/)
 bool WriteQByteArrayToStream(QByteArray& arr, ByteStream* stream)
 {
   return arr.isEmpty() || stream->Write2(arr.data(), static_cast<u32>(arr.size()));
+}
+
+void OpenURL(QWidget* parent, const QUrl& qurl)
+{
+  if (!QDesktopServices::openUrl(qurl))
+  {
+    QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
+                          QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
+  }
+}
+
+void OpenURL(QWidget* parent, const char* url)
+{
+  return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
 }
 
 } // namespace QtUtils

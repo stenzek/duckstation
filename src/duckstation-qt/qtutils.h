@@ -1,6 +1,6 @@
 #pragma once
-#include <QtCore/QString>
 #include <QtCore/QByteArray>
+#include <QtCore/QString>
 #include <initializer_list>
 #include <optional>
 
@@ -10,6 +10,7 @@ class QFrame;
 class QKeyEvent;
 class QTableView;
 class QWidget;
+class QUrl;
 
 namespace QtUtils {
 
@@ -43,5 +44,11 @@ QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind = false);
 
 /// Creates a stream from a Qt byte array.
 bool WriteQByteArrayToStream(QByteArray& arr, ByteStream* stream);
+
+/// Opens a URL with the default handler.
+void OpenURL(QWidget* parent, const QUrl& qurl);
+
+/// Opens a URL string with the default handler.
+void OpenURL(QWidget* parent, const char* url);
 
 } // namespace QtUtils
