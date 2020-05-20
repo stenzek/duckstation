@@ -19,7 +19,10 @@
 Log_SetChannel(Bus);
 
 #define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
-#define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8))
+#define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8u))
+#define FIXUP_HALFWORD_READ_OFFSET(offset) ((offset) & ~u32(1))
+#define FIXUP_HALFWORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(1)) * 8u))
+#define FIXUP_HALFWORD_WRITE_VALUE(offset, value) ((value) << (((offset)&u32(1)) * 8u))
 
 // Offset and value remapping for (w32) registers from nocash docs.
 void FixupUnalignedWordAccessW32(u32& offset, u32& value)
@@ -487,16 +490,27 @@ void Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadSPU(MemoryAccessSize size, u32 offset)
 {
-  // 32-bit reads are read as two 16-bit accesses.
-  if (size == MemoryAccessSize::Word)
+  switch (size)
   {
-    const u16 lsb = m_spu->ReadRegister(offset);
-    const u16 msb = m_spu->ReadRegister(offset + 2);
-    return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
-  }
-  else
-  {
-    return ZeroExtend32(m_spu->ReadRegister(offset));
+    case MemoryAccessSize::Word:
+    {
+      // 32-bit reads are read as two 16-bit accesses.
+      const u16 lsb = m_spu->ReadRegister(offset);
+      const u16 msb = m_spu->ReadRegister(offset + 2);
+      return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
+    }
+
+    case MemoryAccessSize::HalfWord:
+    {
+      return ZeroExtend32(m_spu->ReadRegister(offset));
+    }
+
+    case MemoryAccessSize::Byte:
+    default:
+    {
+      u16 value = m_spu->ReadRegister(FIXUP_HALFWORD_READ_OFFSET(offset));
+      return FIXUP_HALFWORD_READ_VALUE(offset, value);
+    }
   }
 }
 
@@ -504,16 +518,29 @@ void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
 {
   // 32-bit writes are written as two 16-bit writes.
   // TODO: Ignore if address is not aligned.
-  if (size == MemoryAccessSize::Word)
+  switch (size)
   {
-    Assert(Common::IsAlignedPow2(offset, 2));
-    m_spu->WriteRegister(offset, Truncate16(value));
-    m_spu->WriteRegister(offset + 2, Truncate16(value >> 16));
-    return;
-  }
+    case MemoryAccessSize::Word:
+    {
+      DebugAssert(Common::IsAlignedPow2(offset, 2));
+      m_spu->WriteRegister(offset, Truncate16(value));
+      m_spu->WriteRegister(offset + 2, Truncate16(value >> 16));
+      return;
+    }
 
-  Assert(Common::IsAlignedPow2(offset, 2));
-  m_spu->WriteRegister(offset, Truncate16(value));
+    case MemoryAccessSize::HalfWord:
+    {
+      DebugAssert(Common::IsAlignedPow2(offset, 2));
+      m_spu->WriteRegister(offset, Truncate16(value));
+      return;
+    }
+
+    case MemoryAccessSize::Byte:
+    {
+      m_spu->WriteRegister(FIXUP_HALFWORD_READ_OFFSET(offset), Truncate16(FIXUP_HALFWORD_READ_VALUE(offset, value)));
+      return;
+    }
+  }
 }
 
 void Bus::DoInvalidateCodeCache(u32 page_index)
