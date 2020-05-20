@@ -126,7 +126,7 @@ private:
     MDEC_SIZE = 0x10,
     MDEC_MASK = MDEC_SIZE - 1,
     SPU_BASE = 0x1F801C00,
-    SPU_SIZE = 0x300,
+    SPU_SIZE = 0x400,
     SPU_MASK = 0x3FF,
     EXP2_BASE = 0x1F802000,
     EXP2_SIZE = 0x2000,
