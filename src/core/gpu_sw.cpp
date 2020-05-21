@@ -1,8 +1,10 @@
 #include "gpu_sw.h"
 #include "common/assert.h"
+#include "common/log.h"
 #include "host_display.h"
 #include "system.h"
 #include <algorithm>
+Log_SetChannel(GPU_SW);
 
 GPU_SW::GPU_SW()
 {
@@ -277,8 +279,15 @@ void GPU_SW::DispatchRenderCommand()
         default:
         {
           const u32 width_and_height = m_fifo.Pop();
-          width = static_cast<s32>(width_and_height & UINT32_C(0xFFFF));
-          height = static_cast<s32>(width_and_height >> 16);
+          width = static_cast<s32>(width_and_height & VRAM_WIDTH_MASK);
+          height = static_cast<s32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
+
+          if (width >= MAX_PRIMITIVE_WIDTH || height >= MAX_PRIMITIVE_HEIGHT)
+          {
+            Log_DebugPrintf("Culling too-large rectangle: %d,%d %dx%d", vp.x.GetValue(), vp.y.GetValue(), width,
+                            height);
+            return;
+          }
         }
         break;
       }

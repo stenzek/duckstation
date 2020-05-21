@@ -304,16 +304,17 @@ void GPU_HW::LoadVertices()
         default:
         {
           const u32 width_and_height = m_fifo.Pop();
-          rectangle_width = static_cast<s32>(width_and_height & 0xFFFF);
-          rectangle_height = static_cast<s32>(width_and_height >> 16);
+          rectangle_width = static_cast<s32>(width_and_height & VRAM_WIDTH_MASK);
+          rectangle_height = static_cast<s32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
+
+          if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
+          {
+            Log_DebugPrintf("Culling too-large rectangle: %d,%d %dx%d", pos_x, pos_y, rectangle_width,
+                            rectangle_height);
+            return;
+          }
         }
         break;
-      }
-
-      if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
-      {
-        Log_DebugPrintf("Culling too-large rectangle: %d,%d %dx%d", pos_x, pos_y, rectangle_width, rectangle_height);
-        return;
       }
 
       // we can split the rectangle up into potentially 8 quads
