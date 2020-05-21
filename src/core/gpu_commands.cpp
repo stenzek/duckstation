@@ -239,8 +239,8 @@ bool GPU::HandleSetTextureWindowCommand()
 bool GPU::HandleSetDrawingAreaTopLeftCommand()
 {
   const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
-  const u32 left = param & 0x3FF;
-  const u32 top = (param >> 10) & 0x1FF;
+  const u32 left = param & VRAM_WIDTH_MASK;
+  const u32 top = (param >> 10) & VRAM_HEIGHT_MASK;
   Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
   if (m_drawing_area.left != left || m_drawing_area.top != top)
   {
@@ -260,8 +260,8 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand()
 {
   const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
 
-  const u32 right = param & 0x3FFu;
-  const u32 bottom = (param >> 10) & 0x1FFu;
+  const u32 right = param & VRAM_WIDTH_MASK;
+  const u32 bottom = (param >> 10) & VRAM_HEIGHT_MASK;
   Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
   if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
   {
@@ -453,9 +453,9 @@ bool GPU::HandleFillRectangleCommand()
 
   const u32 color = m_fifo.Pop() & 0x00FFFFFF;
   const u32 dst_x = m_fifo.Peek() & 0x3F0;
-  const u32 dst_y = (m_fifo.Pop() >> 16) & 0x3FF;
-  const u32 width = ((m_fifo.Peek() & 0x3FF) + 0xF) & ~0xF;
-  const u32 height = (m_fifo.Pop() >> 16) & 0x1FF;
+  const u32 dst_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
+  const u32 width = ((m_fifo.Peek() & VRAM_WIDTH_MASK) + 0xF) & ~0xF;
+  const u32 height = (m_fifo.Pop() >> 16) & VRAM_HEIGHT_MASK;
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
@@ -471,10 +471,10 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
   CHECK_COMMAND_SIZE(3);
   m_fifo.RemoveOne();
 
-  const u32 dst_x = m_fifo.Peek() & 0x3FF;
-  const u32 dst_y = (m_fifo.Pop() >> 16) & 0x3FF;
-  const u32 copy_width = ReplaceZero(m_fifo.Peek() & 0x3FF, 0x400);
-  const u32 copy_height = ReplaceZero((m_fifo.Pop() >> 16) & 0x1FF, 0x200);
+  const u32 dst_x = m_fifo.Peek() & VRAM_COORD_MASK;
+  const u32 dst_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
+  const u32 copy_width = ReplaceZero(m_fifo.Peek() & VRAM_WIDTH_MASK, 0x400);
+  const u32 copy_height = ReplaceZero((m_fifo.Pop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
   const u32 num_pixels = copy_width * copy_height;
   const u32 num_words = ((num_pixels + 1) / 2);
 
@@ -519,10 +519,10 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   CHECK_COMMAND_SIZE(3);
   m_fifo.RemoveOne();
 
-  m_vram_transfer.x = Truncate16(m_fifo.Peek() & 0x3FF);
-  m_vram_transfer.y = Truncate16((m_fifo.Pop() >> 16) & 0x3FF);
-  m_vram_transfer.width = ((Truncate16(m_fifo.Peek()) - 1) & 0x3FF) + 1;
-  m_vram_transfer.height = ((Truncate16(m_fifo.Pop() >> 16) - 1) & 0x1FF) + 1;
+  m_vram_transfer.x = Truncate16(m_fifo.Peek() & VRAM_COORD_MASK);
+  m_vram_transfer.y = Truncate16((m_fifo.Pop() >> 16) & VRAM_COORD_MASK);
+  m_vram_transfer.width = ((Truncate16(m_fifo.Peek()) - 1) & VRAM_WIDTH_MASK) + 1;
+  m_vram_transfer.height = ((Truncate16(m_fifo.Pop() >> 16) - 1) & VRAM_HEIGHT_MASK) + 1;
 
   Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", m_vram_transfer.x, m_vram_transfer.y,
                   m_vram_transfer.width, m_vram_transfer.height);
@@ -553,12 +553,12 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
   CHECK_COMMAND_SIZE(4);
   m_fifo.RemoveOne();
 
-  const u32 src_x = m_fifo.Peek() & 0x3FF;
-  const u32 src_y = (m_fifo.Pop() >> 16) & 0x3FF;
-  const u32 dst_x = m_fifo.Peek() & 0x3FF;
-  const u32 dst_y = (m_fifo.Pop() >> 16) & 0x3FF;
-  const u32 width = ReplaceZero(m_fifo.Peek() & 0x3FF, 0x400);
-  const u32 height = ReplaceZero((m_fifo.Pop() >> 16) & 0x1FF, 0x200);
+  const u32 src_x = m_fifo.Peek() & VRAM_COORD_MASK;
+  const u32 src_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
+  const u32 dst_x = m_fifo.Peek() & VRAM_COORD_MASK;
+  const u32 dst_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
+  const u32 width = ReplaceZero(m_fifo.Peek() & VRAM_WIDTH_MASK, 0x400);
+  const u32 height = ReplaceZero((m_fifo.Pop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
 
   Log_DebugPrintf("Copy rectangle from VRAM to VRAM src=(%u,%u), dst=(%u,%u), size=(%u,%u)", src_x, src_y, dst_x, dst_y,
                   width, height);
