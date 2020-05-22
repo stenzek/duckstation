@@ -422,6 +422,7 @@ void QtHostInterface::OnSystemCreated()
   stopBackgroundControllerPollTimer();
 
   emit emulationStarted();
+  emit emulationPaused(false);
 }
 
 void QtHostInterface::OnSystemPaused(bool paused)
