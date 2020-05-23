@@ -10,8 +10,8 @@ def prettify(elem):
     """
     rough_string = ET.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_string)
-    dom_string = reparsed.toprettyxml(indent="  ")
-    return '\n'.join([s for s in dom_string.splitlines() if s.strip()])
+    dom_string = reparsed.toprettyxml(encoding="utf-8",indent="  ")
+    return b'\n'.join([s for s in dom_string.splitlines() if s.strip()])
 
 
 # https://stackoverflow.com/questions/25338817/sorting-xml-in-python-etree/25339725#25339725
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     sortchildrenby(new_tree.getroot(), "title")
 
-    output_file = open(args.output_list, "w")
+    output_file = open(args.output_list, "wb")
     output_file.write(prettify(new_tree.getroot()))
     output_file.close()
 
