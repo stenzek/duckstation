@@ -468,6 +468,23 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
     m_status_frame_time_widget->hide();
   }
 
+  if (starting || running)
+  {
+    if (!m_ui.toolBar->actions().contains(m_ui.actionPowerOff))
+    {
+      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionPowerOff);
+      m_ui.toolBar->removeAction(m_ui.actionResumeLastState);
+    }
+  }
+  else
+  {
+    if (!m_ui.toolBar->actions().contains(m_ui.actionResumeLastState))
+    {
+      m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
+      m_ui.toolBar->removeAction(m_ui.actionPowerOff);
+    }
+  }
+
   m_ui.statusBar->clearMessage();
 }
 

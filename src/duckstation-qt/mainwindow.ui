@@ -165,9 +165,8 @@
    </attribute>
    <addaction name="actionStartDisc"/>
    <addaction name="actionStartBios"/>
-   <addaction name="actionResumeLastState"/>
    <addaction name="separator"/>
-   <addaction name="actionPowerOff"/>
+   <addaction name="actionResumeLastState"/>
    <addaction name="actionReset"/>
    <addaction name="actionPause"/>
    <addaction name="actionChangeDisc"/>
