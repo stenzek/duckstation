@@ -48,27 +48,27 @@ for frontend in ${FRONTENDS[@]}; do
   cp -av ${DATA_DIR}/* ${CURRENT_APPDIR}/usr/bin
 done
 
-# Outputted file from linuxdeploy is named based on the .desktop file Name key;
-# We rename it to something generic that buildbot or CI scripts can modify
-# as they wish outside of this script, e.g. to distinguish between Release or
-# Debug builds, since we don't have awareness of that inside this script
+# Pass UPDATE_INFORMATION and OUTPUT variables (used by linuxdeploy-plugin-appimage)
+# to the environment of the linuxdeploy commands
 
+UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
+OUTPUT="duckstation-qt-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/AppDir-duckstation-qt \
   --executable=${BUILD_DIR}/bin/duckstation-qt \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-qt.desktop \
   ${ICONS_QT[@]/#/--icon-file=} \
   --plugin=qt \
-  --output=appimage \
-  && mv DuckStation_Qt*.AppImage ${BUILD_DIR}/duckstation-qt-x64.AppImage
+  --output=appimage
 
+UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-sdl-x64.AppImage.zsync" \
+OUTPUT="duckstation-sdl-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/AppDir-duckstation-sdl \
   --executable=${BUILD_DIR}/bin/duckstation-sdl \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-sdl.desktop \
   ${ICONS_SDL[@]/#/--icon-file=} \
-  --output=appimage \
-  && mv DuckStation_SDL*.AppImage ${BUILD_DIR}/duckstation-sdl-x64.AppImage
+  --output=appimage
 
-# Resulting AppImages will be created in the directory this script is called from;
+# Resulting AppImages and zsync files will be created in the directory this script is called from;
 # move them into the user's specified build directory

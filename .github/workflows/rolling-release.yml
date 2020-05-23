@@ -67,11 +67,23 @@ jobs:
         name: "linux-x64-appimage-sdl"
         path: "build/duckstation-sdl-x64.AppImage"
 
+    - name: Upload SDL AppImage zsync
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-sdl-zsync"
+        path: "build/duckstation-sdl-x64.AppImage.zsync"
+
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v1
       with:
         name: "linux-x64-appimage-qt"
         path: "build/duckstation-qt-x64.AppImage"
+
+    - name: Upload Qt AppImage zsync
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-qt-zsync"
+        path: "build/duckstation-qt-x64.AppImage.zsync"
 
   create-release:
     needs: [windows-build, linux-build]
@@ -87,10 +99,20 @@ jobs:
         with:
           name: "linux-x64-appimage-sdl"
 
+      - name: Download SDL AppImage zsync Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-sdl-zsync"
+
       - name: Download Qt AppImage Artifact
         uses: actions/download-artifact@v1
         with:
           name: "linux-x64-appimage-qt"
+
+      - name: Download Qt AppImage zsync Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-qt-zsync"
 
       - name: Create release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -101,5 +123,6 @@ jobs:
           files: |
             windows-x64/duckstation-windows-x64-release.7z
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
+            linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
-            
+            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
