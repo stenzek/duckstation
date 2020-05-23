@@ -435,7 +435,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 {
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
-  m_ui.actionPowerOff->setDisabled(starting || running);
+  m_ui.actionResumeLastState->setDisabled(starting || running);
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
   m_ui.actionReset->setDisabled(starting || !running);
@@ -490,6 +490,7 @@ void MainWindow::connectSignals()
 
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
+  connect(m_ui.actionResumeLastState, &QAction::triggered, m_host_interface, &QtHostInterface::resumeSystemFromMostRecentState);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,

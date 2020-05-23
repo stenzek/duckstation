@@ -69,6 +69,7 @@
     </widget>
     <addaction name="actionStartDisc"/>
     <addaction name="actionStartBios"/>
+    <addaction name="actionResumeLastState"/>
     <addaction name="separator"/>
     <addaction name="actionPowerOff"/>
     <addaction name="actionReset"/>
@@ -97,6 +98,7 @@
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
+    <addaction name="actionRefreshGameList"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -163,7 +165,7 @@
    </attribute>
    <addaction name="actionStartDisc"/>
    <addaction name="actionStartBios"/>
-   <addaction name="actionRefreshGameList"/>
+   <addaction name="actionResumeLastState"/>
    <addaction name="separator"/>
    <addaction name="actionPowerOff"/>
    <addaction name="actionReset"/>
@@ -202,7 +204,7 @@
      <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
    </property>
    <property name="text">
-    <string>Refresh</string>
+    <string>&amp;Refresh Game List</string>
    </property>
   </action>
   <action name="actionPowerOff">
@@ -504,6 +506,18 @@
    </property>
    <property name="text">
     <string>&amp;Memory Card Settings...</string>
+   </property>
+  </action>
+  <action name="actionResumeLastState">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
+   </property>
+   <property name="text">
+    <string>Resume</string>
+   </property>
+   <property name="toolTip">
+    <string>Resumes the last save state created.</string>
    </property>
   </action>
  </widget>

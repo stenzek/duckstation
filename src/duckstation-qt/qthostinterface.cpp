@@ -227,6 +227,17 @@ void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_o
     HostInterface::ResumeSystemFromState(filename.toStdString().c_str(), boot_on_failure);
 }
 
+void QtHostInterface::resumeSystemFromMostRecentState()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "resumeSystemFromMostRecentState");
+    return;
+  }
+
+  HostInterface::ResumeSystemFromMostRecentState();
+}
+
 void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
 {
   DebugAssert(isOnWorkerThread());

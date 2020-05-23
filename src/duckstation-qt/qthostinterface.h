@@ -118,6 +118,7 @@ public Q_SLOTS:
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void bootSystem(const SystemBootParameters& params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
+  void resumeSystemFromMostRecentState();
   void powerOffSystem();
   void synchronousPowerOffSystem();
   void resetSystem();
