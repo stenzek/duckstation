@@ -1,7 +1,7 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows and Linux (AppImage) Builds:** https://ci.appveyor.com/project/stenzek/duckstation
+**Latest Windows and Linux (AppImage) Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
 
@@ -40,11 +40,9 @@ Other features include:
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Downloading and running
-Prebuilt binaries of DuckStation for 64-bit Windows are available via AppVeyor CI. To download:
- - Go to https://ci.appveyor.com/project/stenzek/duckstation
- - Select "Image: Visual Studio 2019" from the Job list.
- - Click on the "Artifacts" Tab.
- - Download the "duckstation-win64-release.7z" artifact. This is a 7-Zip archive containing the prebuilt binary.
+Binaries of DuckStation for 64-bit Windows are available via GitHub Releases and are automatically build with every commit/push. To download:
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a 7-Zip archive containing the prebuilt binary.
+ - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.7z
  - Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
 
 Once downloaded and extracted, you can launch the Qt frontend from `duckstation-qt-x64-ReleaseLTCG.exe`, or the SDL frontend from `duckstation-sdl-x64-ReleaseLTCG.exe`.
@@ -55,7 +53,7 @@ To set up:
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/16/release/vc_redist.x64.exe.
 
-Prebuilt AppImage binaries for 64-bit Linux distros are also available via AppVeyor CI, but should not be considered fully supported at the moment. Linux users are encouraged to build from source when possible.
+Prebuilt AppImage binaries for 64-bit Linux distros are also available via GitHub Releases, but should not be considered fully supported at the moment. Linux users are encouraged to build from source when possible.
 
 PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
 This database can be manually downloaded and added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in the Qt Frontend,
