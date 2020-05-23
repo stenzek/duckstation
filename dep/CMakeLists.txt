@@ -22,6 +22,10 @@ if(BUILD_SDL_FRONTEND)
   add_subdirectory(nativefiledialog)
 endif()
 
+if(BUILD_LIBRETRO_CORE)
+  add_subdirectory(libretro-common)
+endif()
+
 if(${CPU_ARCH} STREQUAL "aarch64")
   add_subdirectory(vixl)
 endif()
