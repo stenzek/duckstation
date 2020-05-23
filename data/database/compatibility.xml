@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <compatibility-list>
   <entry code="SLPS-01995" compatibility="5" region="NTSC-J" title="70's Robot Anime - Geppy-X - The Super Boosted Armor (Japan) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -100,6 +100,11 @@
   <entry code="SLPS-00231" compatibility="5" region="NTSC-J" title="Asuka 120% Special: Burning Fest. Special">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLUS-01215" compatibility="5" region="NTSC-U" title="Blade [U] [SLUS-01215]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Just Little Audio Video Desync Ingame Server Level (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
   <entry code="SCES-01224" compatibility="4" region="PAL" title="Blasto (Europe) (En,Fr,De,Es,It)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
@@ -137,6 +142,11 @@
     <version-tested>0.1-887-g1eecd50</version-tested>
     <comments>No music, only SFX.</comments>
   </entry>
+  <entry code="SCUS-94666" compatibility="5" region="NTSC-U" title="C-12 - The Final Resistance [U] [SCUS-94666]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
   <entry code="SLPM-87053" compatibility="5" region="NTSC-J" title="Capcom VS SNK - Millenium Fight 2000 Pro">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
@@ -145,6 +155,21 @@
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
     <upscaling-issues>First boss sprite is corrupted.</upscaling-issues>
+  </entry>
+  <entry code="SLES-01960" compatibility="0" region="PAL" title="Carmageddon [E] [SLES-01960]">
+    <compatibility>Unknown</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Good, But Sometime FPS Limiter Wont Work (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
+  <entry code="SLES-03107" compatibility="0" region="PAL" title="Chaos Break [E] [SLES-03107]">
+    <compatibility>Unknown</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Main Intro Video Slowly Works, Ingame Not Have Bug (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
+  <entry code="SLUS-00792" compatibility="5" region="NTSC-U" title="Civilization II [U] [SLUS-00792]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
   <entry code="SCES-00344" compatibility="5" region="PAL" title="Crash Bandicoot">
     <compatibility>No Issues</compatibility>
@@ -175,6 +200,21 @@
   </entry>
   <entry code="SLPS-00335" compatibility="5" region="NTSC-J" title="Dezaemon Plus">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01279" compatibility="5" region="NTSC-U" title="Dino Crisis 2 [U] [SLUS-01279]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
+  <entry code="SLUS-00922" compatibility="5" region="NTSC-U" title="Dino Crisis [U] [SLUS-00922]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
+  <entry code="SLUS-00077" compatibility="4" region="NTSC-U" title="Doom [U] [SLUS-00077]">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Graphic Change Line In 5x Upscaling, if Drop Graphic 1x Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
   <entry code="SLPM-86500" compatibility="5" region="NTSC-J" title="Dragon Quest VII - Eden no Senshi-tachi (Japan) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -299,6 +339,11 @@
   <entry code="SLUS-00793" compatibility="5" region="NTSC-U" title="Marvel Super Heroes VS Street Fighter">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SCUS-94564" compatibility="5" region="NTSC-U" title="MediEvil II [U] [SCUS-94564]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+  </entry>
   <entry code="SLES-00766" compatibility="5" region="PAL" title="Mega Man - Battle &amp; Chase">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
@@ -319,6 +364,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
     <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
+  </entry>
+  <entry code="SLUS-01212" compatibility="5" region="NTSC-U" title="Metal Slug X [U] [SLUS-01212]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
   <entry code="SLUS-80765" compatibility="4" region="NTSC-U" title="Monkey Hero">
     <compatibility>Graphical/Audio Issues</compatibility>
@@ -360,6 +410,11 @@
   <entry code="SLPM-00899" compatibility="5" region="NTSC-J" title="Panzer Bandit">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLUS-01042" compatibility="5" region="NTSC-U" title="Parasite Eve II [CD1] [U] [SLUS-01042]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
   <entry code="SLPM-86016" compatibility="5" region="NTSC-J" title="Paro Wars (Japan)">
     <compatibility>No Issues</compatibility>
@@ -580,6 +635,11 @@
   </entry>
   <entry code="SLPS-02549" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun Second Edition">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01138" compatibility="0" region="NTSC-U" title="Vampire Hunter D [U] [SLUS-01138]">
+    <compatibility>Unknown</compatibility>
+    <version-tested>0.1-908-g9f22684</version-tested>
+    <comments>Intro Video Works But, Blackscreen issue In Main Menu, need Fixed Main Screen, Not Playable Yet :( (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
   <entry code="SCES-00010" compatibility="4" region="PAL" title="WipEout (Europe)">
     <compatibility>Graphical/Audio Issues</compatibility>
