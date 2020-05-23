@@ -156,13 +156,13 @@
     <version-tested>0.1-884-g096ed21</version-tested>
     <upscaling-issues>First boss sprite is corrupted.</upscaling-issues>
   </entry>
-  <entry code="SLES-01960" compatibility="0" region="PAL" title="Carmageddon [E] [SLES-01960]">
-    <compatibility>Unknown</compatibility>
+  <entry code="SLES-01960" compatibility="5" region="PAL" title="Carmageddon [E] [SLES-01960]">
+    <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Works Good, But Sometime FPS Limiter Wont Work (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
-  <entry code="SLES-03107" compatibility="0" region="PAL" title="Chaos Break [E] [SLES-03107]">
-    <compatibility>Unknown</compatibility>
+  <entry code="SLES-03107" compatibility="4" region="PAL" title="Chaos Break [E] [SLES-03107]">
+    <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Main Intro Video Slowly Works, Ingame Not Have Bug (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
@@ -370,6 +370,14 @@
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
+  <entry code="SLES-02795" compatibility="5" region="PAL" title="Misadventures of Tron Bonne, The">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLUS-00896" compatibility="5" region="NTSC-U" title="Misadventures of Tron Bonne, The">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
   <entry code="SLUS-80765" compatibility="4" region="NTSC-U" title="Monkey Hero">
     <compatibility>Graphical/Audio Issues</compatibility>
     <comments>Works, except dynamic lighting on character is broken.</comments>
@@ -470,6 +478,30 @@
     <version-tested>0.1-826-g712168c</version-tested>
     <comments>Notice bottom the line of game is a little odd but work fine.</comments>
   </entry>
+  <entry code="SLPS-02220" compatibility="5" region="NTSC-J" title="Rockman 1 Complete Works">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS -02255" compatibility="5" region="NTSC-J" title="Rockman 2 Complete Works">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS-02262" compatibility="5" region="NTSC-J" title="Rockman 3 Complete Works">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS-02324" compatibility="5" region="NTSC-J" title="Rockman 4 Complete Works">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS-02338" compatibility="5" region="NTSC-J" title="Rockman 5 Complete Works">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS-02379" compatibility="5" region="NTSC-J" title="Rockman 6 Complete Works">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
   <entry code="SLPS-00630" compatibility="5" region="NTSC-J" title="Rockman 8 - Metal Heroes">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
@@ -478,10 +510,18 @@
   <entry code="SLPS-01141" compatibility="5" region="NTSC-J" title="Rockman Dash - Hagane no Boukenshin">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLPS-02711" compatibility="5" region="NTSC-J" title="Rockman Dash 2 - Episode 2 - Ooinaru Isan">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
   <entry code="SLPS-00283" compatibility="5" region="NTSC-J" title="Rockman X3">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
     <comments>Noticed bottom the line of FMV is a little odd but works fine.</comments>
+  </entry>
+  <entry code="SLP-00283" compatibility="5" region="NTSC-J" title="Rockman X3">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
   </entry>
   <entry code="SLPS-00901" compatibility="5" region="NTSC-J" title="Rockman X4 (Japan) (Special Limited Pack)">
     <compatibility>No Issues</compatibility>
@@ -576,6 +616,18 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
+  <entry code="SLPS-01051" compatibility="5" region="NTSC-J" title="Super Adventure Rockman - Episode 1 Tsuki no Shinden (CD1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS-01052" compatibility="5" region="NTSC-J" title="Super Adventure Rockman - Episode 2 Tsuki no Shinden (CD2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLPS-01053" compatibility="5" region="NTSC-J" title="Super Adventure Rockman - Episode 3 Tsuki no Shinden (CD3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
   <entry code="SLPM-87135" compatibility="1" region="NTSC-J" title="Super Gals! Kotobuki Ran Special - Ikemen Get You Gals Party (Japan)">
     <compatibility>Doesn't Boot</compatibility>
   </entry>
@@ -627,6 +679,10 @@
   <entry code="SLPM-86033" compatibility="5" region="NTSC-J" title="Tobal 2">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLP-02108-9" compatibility="5" region="NTSC-J" title="Tron ni Kobun">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
   <entry code="SLPS-00131" compatibility="5" region="NTSC-J" title="Two-Ten Kaku (Japan)">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -636,8 +692,8 @@
   <entry code="SLPS-02549" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun Second Edition">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLUS-01138" compatibility="0" region="NTSC-U" title="Vampire Hunter D [U] [SLUS-01138]">
-    <compatibility>Unknown</compatibility>
+  <entry code="SLUS-01138" compatibility="2" region="NTSC-U" title="Vampire Hunter D [U] [SLUS-01138]">
+    <compatibility>Crashes in Intro</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Intro Video Works But, Blackscreen issue In Main Menu, need Fixed Main Screen, Not Playable Yet :( (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
