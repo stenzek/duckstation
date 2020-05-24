@@ -771,9 +771,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         if ((!m_setloc_pending || m_setloc_position.ToLBA() == m_current_lba) &&
-            (m_drive_state == DriveState::Reading ||
-             ((m_drive_state == DriveState::SeekingPhysical || m_drive_state == DriveState::SeekingLogical) &&
-              m_read_after_seek)))
+            (m_drive_state == DriveState::Reading || (IsSeeking() && m_read_after_seek)))
         {
           Log_DevPrintf("Ignoring read command with no/same setloc, already reading/reading after seek");
         }
@@ -801,9 +799,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         if (track == 0 && (!m_setloc_pending || m_setloc_position.ToLBA() == m_current_lba) &&
-            (m_drive_state == DriveState::Playing ||
-             ((m_drive_state == DriveState::SeekingPhysical || m_drive_state == DriveState::SeekingLogical) &&
-              m_play_after_seek)))
+            (m_drive_state == DriveState::Playing || (IsSeeking() && m_play_after_seek)))
         {
           Log_DevPrintf("Ignoring play command with no/same setloc, already playing/playing after seek");
         }
@@ -1613,7 +1609,8 @@ void CDROM::DoSectorRead()
                       is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
   }
 
-  m_reader.QueueReadSector(m_current_lba + 1u);
+  m_current_lba++;
+  m_reader.QueueReadSector(m_current_lba);
 }
 
 void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
