@@ -139,8 +139,8 @@
   </entry>
   <entry code="SLUS-00208" compatibility="4" region="NTSC-U" title="Buster Bros. Collection (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-887-g1eecd50</version-tested>
-    <comments>No music, only SFX.</comments>
+    <version-tested>0.1-896-gc8a00c5</version-tested>
+    <comments>Overcropping problem with Overscan Area only; artifacts on the right side when no cropping.</comments>
   </entry>
   <entry code="SCUS-94666" compatibility="5" region="NTSC-U" title="C-12 - The Final Resistance [U] [SCUS-94666]">
     <compatibility>No Issues</compatibility>
@@ -221,6 +221,14 @@
     <upscaling-issues>Background gradient is rendered incorrectly with scaled dithering or true color.</upscaling-issues>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLES-00343" compatibility="5" region="PAL" title="Earthworm Jim 2 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-896-gc8a00c5</version-tested>
+  </entry>
+  <entry code="SCUS-94243" compatibility="5" region="NTSC-U" title="Einhaender (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-896-gc8a00c5</version-tested>
+  </entry>
   <entry code="SCUS-94163" compatibility="5" region="NTSC-U" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
@@ -231,7 +239,7 @@
   </entry>
   <entry code="SLUS-00870" compatibility="2" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
     <compatibility>Crashes In Intro</compatibility>
-    <comments>Can't boot after the initial Loadoing screen.</comments>
+    <comments>Can't boot after the initial Loading screen.</comments>
   </entry>
   <entry code="SLPM-80205" compatibility="5" region="NTSC-J" title="G Darius">
     <compatibility>No Issues</compatibility>
@@ -365,10 +373,81 @@
     <version-tested>0.1-826-g712168c</version-tested>
     <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
   </entry>
-  <entry code="SLUS-01212" compatibility="5" region="NTSC-U" title="Metal Slug X [U] [SLUS-01212]">
+  <entry code="SLES-01370" compatibility="5" region="PAL" title="Metal Gear Solid (Europe) (Disc 1)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-908-g9f22684</version-tested>
-    <comments>Works Perfect (Tested By Dark Frost And Game Verified By Redump.org)</comments>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-11370" compatibility="5" region="PAL" title="Metal Gear Solid (Europe) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-01506" compatibility="5" region="PAL" title="Metal Gear Solid (France) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-11506" compatibility="5" region="PAL" title="Metal Gear Solid (France) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-01507" compatibility="5" region="PAL" title="Metal Gear Solid (Germany) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-11507" compatibility="5" region="PAL" title="Metal Gear Solid (Germany) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-01508" compatibility="5" region="PAL" title="Metal Gear Solid (Italy) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-11508" compatibility="5" region="PAL" title="Metal Gear Solid (Italy) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLPM-86111" compatibility="5" region="NTSC-J" title="Metal Gear Solid (Japan) (En,Ja) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLPM-86112" compatibility="5" region="NTSC-J" title="Metal Gear Solid (Japan) (En,Ja) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-01734" compatibility="5" region="PAL" title="Metal Gear Solid (Spain) (Disc 1) (v1.1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-11734" compatibility="5" region="PAL" title="Metal Gear Solid (Spain) (Disc 2) (v1.1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLUS-00594" compatibility="5" region="NTSC-U" title="Metal Gear Solid (USA) (Disc 1) (v1.1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLUS-00776" compatibility="5" region="NTSC-U" title="Metal Gear Solid (USA) (Disc 2) (v1.1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="PAPX-90044" compatibility="5" region="NTSC-J" title="Metal Gear Solid Pilot Disc (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLPS-00950" compatibility="5" region="NTSC-J" title="Metal Slug - Super Vehicle-001 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLES-03575" compatibility="5" region="PAL" title="Metal Slug X (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLUS-01212" compatibility="5" region="NTSC-U" title="Metal Slug X (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLPM-86456" compatibility="5" region="NTSC-J" title="Metal Slug X - Super Vehicle-001 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
   </entry>
   <entry code="SLES-02795" compatibility="5" region="PAL" title="Misadventures of Tron Bonne, The">
     <compatibility>No Issues</compatibility>
@@ -410,10 +489,9 @@
     <compatibility>Doesn't Boot</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SCPS-10096" compatibility="1" region="NTSC-J" title="Panekit - Infinitive Crafting Toy Case (Japan)">
-    <compatibility>Doesn't Boot</compatibility>
-    <version-tested>0.1-887-g1eecd50</version-tested>
-    <comments>Loops on the BIOS screen.</comments>
+  <entry code="SCPS-10096" compatibility="5" region="NTSC-J" title="Panekit - Infinitive Crafting Toy Case (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-903-g35a8c5b</version-tested>
   </entry>
   <entry code="SLPM-00899" compatibility="5" region="NTSC-J" title="Panzer Bandit">
     <compatibility>No Issues</compatibility>
@@ -443,6 +521,10 @@
   <entry code="SLPS-01435" compatibility="5" region="NTSC-J" title="Puchi Carat (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-00579" compatibility="5" region="NTSC-U" title="Punky Skunk (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
   </entry>
   <entry code="SLPS-00284" compatibility="5" region="NTSC-J" title="Puzzle Bobble 2 (Japan)">
     <compatibility>No Issues</compatibility>
@@ -539,6 +621,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLES-02895" compatibility="4" region="PAL" title="Sheep, Dog 'n' Wolf (Europe) (En,Fr,De,Es,It,Nl)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+    <upscaling-issues>Video is desynched from the audio during the intro.</upscaling-issues>
+  </entry>
   <entry code="SLPM-86192" compatibility="5" region="NTSC-J" title="Silent Hill (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed219</version-tested>
@@ -559,6 +646,10 @@
     <compatibility>No Issues</compatibility>
     <comments>Don't use any crop options.</comments>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-01308" compatibility="5" region="NTSC-U" title="Space Shot (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
   </entry>
   <entry code="SLPS-00162" compatibility="5" region="NTSC-J" title="Stahlfeder - Tekkou Hikuudan (Japan)">
     <compatibility>No Issues</compatibility>
@@ -676,6 +767,14 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed219</version-tested>
   </entry>
+  <entry code="SLPS-01211" compatibility="5" region="NTSC-J" title="Time Bokan Series - Bokan desu yo (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
+  <entry code="SLPS-00609" compatibility="5" region="NTSC-J" title="Time Bokan Series - Bokan to Ippatsu! Doronboo (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
+  </entry>
   <entry code="SLPM-86033" compatibility="5" region="NTSC-J" title="Tobal 2">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -697,19 +796,25 @@
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Intro Video Works But, Blackscreen issue In Main Menu, need Fixed Main Screen, Not Playable Yet :( (Tested By Dark Frost And Game Verified By Redump.org)</comments>
   </entry>
-  <entry code="SCES-00010" compatibility="4" region="PAL" title="WipEout (Europe)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-887-g1eecd50</version-tested>
-    <comments>Choosing anything other than random will turn off music altogether. (Issue #459)</comments>
+  <entry code="SLPS-01157" compatibility="5" region="NTSC-J" title="Waku Waku Derby (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-905-g237f469</version-tested>
   </entry>
-  <entry code="SIPS-60003" compatibility="4" region="NTSC-J" title="WipEout (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <comments>Choosing anything other than random will turn off music altogether. (Issue #459)</comments>
+  <entry code="SCES-01909" compatibility="5" region="PAL" title="Wip3out (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
-  <entry code="SCUS-94301" compatibility="4" region="NTSC-U" title="WipEout (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <comments>Choosing anything other than random will turn off music altogether. (Issue #459)</comments>
+  <entry code="SCES-00010" compatibility="5" region="PAL" title="WipEout (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+    <comments/>
+  </entry>
+  <entry code="SIPS-60003" compatibility="5" region="NTSC-J" title="WipEout (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SCUS-94301" compatibility="5" region="NTSC-U" title="WipEout (USA)">
+    <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
   <entry code="SLES-00327" compatibility="5" region="PAL" title="WipEout 2097 (Europe)">
