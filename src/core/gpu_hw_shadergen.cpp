@@ -50,7 +50,7 @@ void GPU_HW_ShaderGen::SetGLSLVersionString()
   if (std::sscanf(glsl_version_start, "%d.%d", &major_version, &minor_version) == 2)
   {
     // Cap at GLSL 4.3, we're not using anything newer for now.
-    if (!glsl_es && (major_version > 4 || (major_version == 4 && minor_version > 3)))
+    if (!glsl_es && (major_version > 4 || (major_version == 4 && minor_version > 30)))
     {
       major_version = 4;
       minor_version = 30;
