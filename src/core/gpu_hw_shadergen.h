@@ -21,7 +21,7 @@ public:
   std::string GenerateFillFragmentShader();
   std::string GenerateInterlacedFillFragmentShader();
   std::string GenerateCopyFragmentShader();
-  std::string GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced);
+  std::string GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode);
   std::string GenerateVRAMReadFragmentShader();
   std::string GenerateVRAMWriteFragmentShader();
   std::string GenerateVRAMCopyFragmentShader();

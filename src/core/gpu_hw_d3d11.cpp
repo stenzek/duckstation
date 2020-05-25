@@ -448,10 +448,10 @@ bool GPU_HW_D3D11::CompileShaders()
 
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
-    for (u8 interlacing = 0; interlacing < 2; interlacing++)
+    for (u8 interlacing = 0; interlacing < 3; interlacing++)
     {
       const std::string ps = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
-                                                                     ConvertToBoolUnchecked(interlacing));
+                                                                     static_cast<InterlacedRenderMode>(interlacing));
       m_display_pixel_shaders[depth_24bit][interlacing] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
       if (!m_display_pixel_shaders[depth_24bit][interlacing])
         return false;
@@ -590,13 +590,13 @@ void GPU_HW_D3D11::UpdateDisplay()
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
-    const bool interlaced = IsInterlacedDisplayEnabled();
+    const InterlacedRenderMode interlaced = GetInterlacedRenderMode();
 
     if (IsDisplayDisabled())
     {
       m_host_display->ClearDisplayTexture();
     }
-    else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced &&
+    else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == InterlacedRenderMode::None &&
              (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
@@ -616,9 +616,9 @@ void GPU_HW_D3D11::UpdateDisplay()
       const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, reinterpret_crop_left,
                                reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =
-        m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Get();
+        m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][static_cast<u8>(interlaced)].Get();
 
-      SetViewportAndScissor(0, reinterpret_field_offset, scaled_display_width, scaled_display_height);
+      SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
       m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),

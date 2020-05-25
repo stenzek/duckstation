@@ -497,7 +497,7 @@ void GPU::UpdateCRTCDisplayParameters()
     }
   }
 
-  const u8 height_shift = BoolToUInt8(m_GPUSTAT.In480iMode());
+  const u8 height_shift = BoolToUInt8(m_GPUSTAT.vertical_interlace);
 
   // Determine screen size.
   cs.display_width = (((cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider) + 2u) & ~3u;
@@ -711,16 +711,16 @@ void GPU::Execute(TickCount ticks)
   }
 
   // alternating even line bit in 240-line mode
-  if (m_GPUSTAT.In480iMode())
+  if (m_GPUSTAT.vertical_interlace)
   {
     m_crtc_state.displaying_odd_lines =
       ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.displaying_odd_field)) & u32(1));
-    m_GPUSTAT.displaying_odd_line = m_crtc_state.displaying_odd_lines && !m_crtc_state.in_vblank;
+    m_GPUSTAT.drawing_odd_lines = !m_crtc_state.displaying_odd_lines && !m_crtc_state.in_vblank;
   }
   else
   {
     m_crtc_state.displaying_odd_lines = false;
-    m_GPUSTAT.displaying_odd_line =
+    m_GPUSTAT.drawing_odd_lines =
       ConvertToBoolUnchecked((m_crtc_state.regs.Y + m_crtc_state.current_scanline) & u32(1));
   }
 
@@ -743,7 +743,8 @@ bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y
     return false;
   }
 
-  *out_line = (static_cast<u32>(display_y) >> BoolToUInt8(m_GPUSTAT.In480iMode())) + m_crtc_state.vertical_active_start;
+  *out_line =
+    (static_cast<u32>(display_y) >> BoolToUInt8(m_GPUSTAT.vertical_interlace)) + m_crtc_state.vertical_active_start;
   *out_tick = (static_cast<u32>(display_x) * m_crtc_state.dot_clock_divider) + m_crtc_state.horizontal_active_start;
   return true;
 }

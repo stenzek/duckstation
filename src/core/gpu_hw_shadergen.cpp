@@ -1008,12 +1008,13 @@ std::string GPU_HW_ShaderGen::GenerateCopyFragmentShader()
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bool interlaced)
+std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "DEPTH_24BIT", depth_24bit);
-  DefineMacro(ss, "INTERLACED", interlaced);
+  DefineMacro(ss, "INTERLACED", interlace_mode != GPU_HW::InterlacedRenderMode::None);
+  DefineMacro(ss, "INTERLEAVED", interlace_mode == GPU_HW::InterlacedRenderMode::InterleavedFields);
 
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_crop_left", "uint u_field_offset"});
@@ -1027,6 +1028,10 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, bo
   #if INTERLACED
     if (((icoords.y / RESOLUTION_SCALE) & 1u) != u_field_offset)
       discard;
+
+    #if !INTERLEAVED
+      icoords.y /= 2u;
+    #endif
   #endif
 
   #if DEPTH_24BIT

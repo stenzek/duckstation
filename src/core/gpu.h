@@ -345,7 +345,10 @@ protected:
   }
 
   /// Returns true if scanout should be interlaced.
-  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const { return (!m_force_progressive_scan) & m_GPUSTAT.In480iMode(); }
+  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
+  {
+    return (!m_force_progressive_scan) & m_GPUSTAT.vertical_interlace;
+  }
 
   /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
   ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
@@ -443,17 +446,12 @@ protected:
     BitField<u32, bool, 27, 1> ready_to_send_vram;
     BitField<u32, bool, 28, 1> ready_to_recieve_dma;
     BitField<u32, DMADirection, 29, 2> dma_direction;
-    BitField<u32, bool, 31, 1> displaying_odd_line;
+    BitField<u32, bool, 31, 1> drawing_odd_lines;
 
     bool IsMaskingEnabled() const
     {
       static constexpr u32 MASK = ((1 << 11) | (1 << 12));
       return ((bits & MASK) != 0);
-    }
-    bool In480iMode() const
-    {
-      static constexpr u32 MASK = (1 << 19) | (1 << 22);
-      return ((bits & MASK) == MASK);
     }
     bool SkipDrawingToActiveField() const
     {

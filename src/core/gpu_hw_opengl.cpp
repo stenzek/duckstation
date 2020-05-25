@@ -403,11 +403,11 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
-    for (u8 interlaced = 0; interlaced < 2; interlaced++)
+    for (u8 interlaced = 0; interlaced < 3; interlaced++)
     {
       const std::string vs = shadergen.GenerateScreenQuadVertexShader();
       const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
-                                                                     ConvertToBoolUnchecked(interlaced));
+                                                                     static_cast<InterlacedRenderMode>(interlaced));
 
       std::optional<GL::Program> prog =
         m_shader_cache.GetProgram(vs, {}, fs, [this, use_binding_layout](GL::Program& prog) {
@@ -587,13 +587,13 @@ void GPU_HW_OpenGL::UpdateDisplay()
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 scaled_display_width = display_width * m_resolution_scale;
     const u32 scaled_display_height = display_height * m_resolution_scale;
-    const bool interlaced = IsInterlacedDisplayEnabled();
+    const InterlacedRenderMode interlaced = GetInterlacedRenderMode();
 
     if (IsDisplayDisabled())
     {
       m_host_display->ClearDisplayTexture();
     }
-    else if (!m_GPUSTAT.display_area_color_depth_24 && !interlaced &&
+    else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == GPU_HW::InterlacedRenderMode::None &&
              (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
@@ -608,7 +608,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       glDisable(GL_SCISSOR_TEST);
       glDisable(GL_DEPTH_TEST);
 
-      m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][BoolToUInt8(interlaced)].Bind();
+      m_display_programs[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][static_cast<u8>(interlaced)].Bind();
       m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
       m_vram_texture.Bind();
 

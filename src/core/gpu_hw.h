@@ -27,6 +27,13 @@ public:
     OnlyTransparent
   };
 
+  enum class InterlacedRenderMode : u8
+  {
+    None,
+    InterleavedFields,
+    SeparateFields
+  };
+
   GPU_HW();
   virtual ~GPU_HW();
 
@@ -187,6 +194,20 @@ protected:
   {
     // because GL uses base vertex we're incrementing the depth id every draw whether we like it or not
     return m_batch.check_mask_before_draw || m_render_api != HostDisplay::RenderAPI::D3D11;
+  }
+
+  /// Returns the interlaced mode to use when scanning out/displaying.
+  ALWAYS_INLINE InterlacedRenderMode GetInterlacedRenderMode() const
+  {
+    if (IsInterlacedDisplayEnabled())
+    {
+      return m_GPUSTAT.vertical_resolution ? InterlacedRenderMode::InterleavedFields :
+                                             InterlacedRenderMode::SeparateFields;
+    }
+    else
+    {
+      return InterlacedRenderMode::None;
+    }
   }
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
