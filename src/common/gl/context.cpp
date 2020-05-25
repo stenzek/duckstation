@@ -119,9 +119,11 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
   const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  const char* gl_shading_language_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
   Log_InfoPrintf("GL_VENDOR: %s", gl_vendor);
   Log_InfoPrintf("GL_RENDERER: %s", gl_renderer);
   Log_InfoPrintf("GL_VERSION: %s", gl_version);
+  Log_InfoPrintf("GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
 
   return context;
 }
