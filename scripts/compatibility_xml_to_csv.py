@@ -13,9 +13,15 @@ def convert_list(filename, separator=','):
             print("!!! Skipping invalid tag '%s'" % child.tag)
             continue
 
-        game_code = child.get("code") or ""
+        game_code = child.get("code")
+        if game_code is None:
+            game_code = ""
         game_title = child.get("title") or ""
-        region = child.get("region") or ""
+        if game_title is None:
+            game_title = ""
+        region = child.get("region")
+        if region is None:
+            region = ""
 
         node = child.find("compatibility")
         compatibility = node.text if node is not None else ""
@@ -28,11 +34,11 @@ def convert_list(filename, separator=','):
 
         fix = None
         if separator == '\t':
-            fix = lambda x: x.replace('\t', '  ')
+            fix = lambda x: "" if x is None else x.replace('\t', '  ')
         elif separator == ',':
-            fix = lambda x: x if x.find(',') < 0 else ("\"%s\"" % x)
+            fix = lambda x: "" if x is None else x if x.find(',') < 0 else ("\"%s\"" % x)
         else:
-            fix = lambda x: x
+            fix = lambda x: "" if x is None else x
 
         entry_fields = [fix(game_code), fix(game_title), fix(region), fix(compatibility), fix(upscaling_issues), fix(version_tested), fix(comments)]
         output += separator.join(entry_fields) + "\n"
