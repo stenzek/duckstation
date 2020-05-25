@@ -166,7 +166,12 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image)
     Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
 
+#ifndef __APPLE__
+  // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
+  m_supports_texture_buffer = false;
+#else
   m_supports_texture_buffer = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+#endif
   if (m_supports_texture_buffer)
   {
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
