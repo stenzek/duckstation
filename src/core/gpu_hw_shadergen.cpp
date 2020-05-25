@@ -99,6 +99,9 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "#extension GL_ARB_explicit_uniform_location : require\n";
       ss << "#extension GL_ARB_shading_language_420pack : require\n";
     }
+
+    if (!GLAD_GL_VERSION_3_2)
+      ss << "#extension GL_ARB_uniform_buffer_object : require\n";
   }
 
   DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
