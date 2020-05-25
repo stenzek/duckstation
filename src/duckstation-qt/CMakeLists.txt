@@ -58,6 +58,7 @@ add_executable(duckstation-qt
   settingsdialog.ui
 )
 
+target_include_directories(duckstation-qt PRIVATE "${Qt5Gui_PRIVATE_INCLUDE_DIRS}")
 target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
 
 if(WIN32)
@@ -89,9 +90,4 @@ if(WIN32)
   add_custom_command(TARGET duckstation-qt POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/qt.conf.win" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
   )
-else()
-  if(OpenGL_GLX_FOUND)
-    target_compile_definitions(duckstation-qt PRIVATE "HAS_GLX")
-    target_link_libraries(duckstation-qt PRIVATE OpenGL::GLX)
-  endif()
 endif()

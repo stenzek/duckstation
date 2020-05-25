@@ -2,11 +2,23 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "imgui_impl_sdl.h"
+#include <SDL_syswm.h>
 #include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
+
+#ifdef __APPLE__
+#include <objc/message.h>
+struct NSView;
+
+static NSView* GetContentViewFromWindow(NSWindow* window)
+{
+  // window.contentView
+  return reinterpret_cast<NSView* (*)(id, SEL)>(objc_msgSend)(reinterpret_cast<id>(window), sel_getUid("contentView"));
+}
+#endif
 
 class OpenGLDisplayWidgetTexture : public HostDisplayTexture
 {
@@ -67,8 +79,7 @@ OpenGLHostDisplay::~OpenGLHostDisplay()
     m_display_program.Destroy();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
-    SDL_GL_MakeCurrent(nullptr, nullptr);
-    SDL_GL_DeleteContext(m_gl_context);
+    m_gl_context.reset();
   }
 
   if (m_window)
@@ -77,7 +88,7 @@ OpenGLHostDisplay::~OpenGLHostDisplay()
 
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
-  return m_is_gles ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
+  return m_gl_context->IsGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
 }
 
 void* OpenGLHostDisplay::GetRenderDevice() const
@@ -87,13 +98,15 @@ void* OpenGLHostDisplay::GetRenderDevice() const
 
 void* OpenGLHostDisplay::GetRenderContext() const
 {
-  return m_gl_context;
+  return m_gl_context.get();
 }
 
 void OpenGLHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 {
   HostDisplay::WindowResized(new_window_width, new_window_height);
-  SDL_GL_GetDrawableSize(m_window, &m_window_width, &m_window_height);
+  m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
+  m_window_width = static_cast<s32>(m_gl_context->GetSurfaceWidth());
+  m_window_height = static_cast<s32>(m_gl_context->GetSurfaceHeight());
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
 }
@@ -150,13 +163,13 @@ void OpenGLHostDisplay::SetVSync(bool enabled)
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  SDL_GL_SetSwapInterval(enabled ? 1 : 0);
+  m_gl_context->SetSwapInterval(enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 const char* OpenGLHostDisplay::GetGLSLVersionString() const
 {
-  if (m_is_gles)
+  if (m_gl_context->IsGLES())
   {
     if (GLAD_GL_ES_VERSION_3_0)
       return "#version 300 es";
@@ -176,7 +189,7 @@ std::string OpenGLHostDisplay::GetGLSLVersionHeader() const
 {
   std::string header = GetGLSLVersionString();
   header += "\n\n";
-  if (m_is_gles)
+  if (m_gl_context->IsGLES())
   {
     header += "precision highp float;\n";
     header += "precision highp int;\n\n";
@@ -207,64 +220,55 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
 
 bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
 {
-  // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
-  static constexpr std::array<std::tuple<int, int>, 11> desktop_versions_to_try = {
-    {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}, {3, 1}, {3, 0}}};
-  static constexpr std::array<std::tuple<int, int>, 4> es_versions_to_try = {{{3, 2}, {3, 1}, {3, 0}}};
-
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  if (debug_device)
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-
-  for (const auto [major, minor] : desktop_versions_to_try)
+  SDL_SysWMinfo syswm = {};
+  SDL_VERSION(&syswm.version);
+  if (!SDL_GetWindowWMInfo(m_window, &syswm))
   {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
-
-    Log_InfoPrintf("Trying a Desktop OpenGL %d.%d context", major, minor);
-    m_gl_context = SDL_GL_CreateContext(m_window);
-    if (m_gl_context)
-    {
-      Log_InfoPrintf("Got a desktop OpenGL %d.%d context", major, minor);
-      break;
-    }
-  }
-
-  if (!m_gl_context)
-  {
-    // try es
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-
-    for (const auto [major, minor] : es_versions_to_try)
-    {
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
-
-      Log_InfoPrintf("Trying a OpenGL ES %d.%d context", major, minor);
-      m_gl_context = SDL_GL_CreateContext(m_window);
-      if (m_gl_context)
-      {
-        Log_InfoPrintf("Got a OpenGL ES %d.%d context", major, minor);
-        m_is_gles = true;
-        break;
-      }
-    }
-  }
-
-  if (!m_gl_context || SDL_GL_MakeCurrent(m_window, m_gl_context) != 0)
-  {
-    Log_ErrorPrintf("Failed to create any GL context");
+    Log_ErrorPrintf("SDL_GetWindowWMInfo failed");
     return false;
   }
 
-  // Load GLAD.
-  const auto load_result =
-    m_is_gles ? gladLoadGLES2Loader(SDL_GL_GetProcAddress) : gladLoadGLLoader(SDL_GL_GetProcAddress);
-  if (!load_result)
+  int window_width, window_height;
+  SDL_GetWindowSize(m_window, &window_width, &window_height);
+
+  WindowInfo wi;
+  wi.surface_width = static_cast<u32>(window_width);
+  wi.surface_height = static_cast<u32>(window_height);
+  wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
+
+  switch (syswm.subsystem)
   {
-    Log_ErrorPrintf("Failed to load GL functions");
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
+    case SDL_SYSWM_WINDOWS:
+      wi.type = WindowInfo::Type::Win32;
+      wi.window_handle = syswm.info.win.window;
+      break;
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_COCOA
+    case SDL_SYSWM_COCOA:
+      wi.type = WindowInfo::Type::MacOS;
+      wi.window_handle = GetContentViewFromWindow(syswm.info.cocoa.window);
+      break;
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11
+    case SDL_SYSWM_X11:
+      wi.type = WindowInfo::Type::X11;
+      wi.window_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(syswm.info.x11.window));
+      wi.display_connection = syswm.info.x11.display;
+      break;
+#endif
+
+    default:
+      Log_ErrorPrintf("Unhandled syswm subsystem %u", static_cast<u32>(syswm.subsystem));
+      return false;
+  }
+
+  m_gl_context = GL::Context::Create(wi);
+  if (!m_gl_context)
+  {
+    Log_ErrorPrintf("Failed to create a GL context of any kind.");
     return false;
   }
 
@@ -276,10 +280,11 @@ bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
   }
 
   // this can change due to retina scaling on macos?
-  SDL_GL_GetDrawableSize(m_window, &m_window_width, &m_window_height);
+  m_window_width = static_cast<s32>(m_gl_context->GetSurfaceWidth());
+  m_window_height = static_cast<s32>(m_gl_context->GetSurfaceHeight());
 
   // start with vsync on
-  SDL_GL_SetSwapInterval(1);
+  m_gl_context->SetSwapInterval(1);
   return true;
 }
 
@@ -288,7 +293,7 @@ bool OpenGLHostDisplay::CreateImGuiContext()
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_height);
 
-  if (!ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context) || !ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
+  if (!ImGui_ImplSDL2_InitForOpenGL(m_window, nullptr) || !ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
     return false;
 
   ImGui_ImplOpenGL3_NewFrame();
@@ -329,7 +334,7 @@ void main()
     return false;
   }
 
-  if (!m_is_gles)
+  if (!m_gl_context->IsGLES())
     m_display_program.BindFragData(0, "o_col0");
 
   if (!m_display_program.Link())
@@ -377,7 +382,7 @@ void OpenGLHostDisplay::Render()
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-  SDL_GL_SwapWindow(m_window);
+  m_gl_context->SwapBuffers();
 
   ImGui::NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window);

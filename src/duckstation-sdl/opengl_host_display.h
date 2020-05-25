@@ -1,4 +1,5 @@
 #pragma once
+#include "common/gl/context.h"
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
 #include "core/host_display.h"
@@ -41,12 +42,10 @@ private:
   void RenderDisplay();
 
   SDL_Window* m_window = nullptr;
-  SDL_GLContext m_gl_context = nullptr;
+  std::unique_ptr<GL::Context> m_gl_context;
 
   GL::Program m_display_program;
   GLuint m_display_vao = 0;
   GLuint m_display_nearest_sampler = 0;
   GLuint m_display_linear_sampler = 0;
-
-  bool m_is_gles = false;
 };

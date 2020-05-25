@@ -8,12 +8,13 @@
 #define __glext_h_
 #endif
 
+#include "common/gl/context.h"
 #include "common/gl/program.h"
 #include "common/gl/texture.h"
+#include "common/window_info.h"
 #include "core/host_display.h"
 #include "qtdisplaywidget.h"
 #include "qthostdisplay.h"
-#include <QtGui/QOpenGLContext>
 #include <memory>
 
 class QtHostInterface;
@@ -29,8 +30,8 @@ public:
   bool hasDeviceContext() const override;
   bool createDeviceContext(bool debug_device) override;
   bool initializeDeviceContext(bool debug_device) override;
-  bool makeDeviceContextCurrent() override;
-  void moveContextToThread(QThread* new_thread) override;
+  bool activateDeviceContext() override;
+  void deactivateDeviceContext() override;
   void destroyDeviceContext() override;
   bool createSurface() override;
   void destroySurface();
@@ -38,6 +39,7 @@ public:
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
   void* GetRenderContext() const override;
+  void WindowResized(s32 new_window_width, s32 new_window_height) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
                                                     u32 initial_data_stride, bool dynamic) override;
@@ -54,6 +56,8 @@ private:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
 
+  WindowInfo getWindowInfo() const;
+
   bool createImGuiContext() override;
   void destroyImGuiContext() override;
   bool createDeviceResources() override;
@@ -61,7 +65,7 @@ private:
 
   void renderDisplay();
 
-  std::unique_ptr<QOpenGLContext> m_gl_context = nullptr;
+  std::unique_ptr<GL::Context> m_gl_context = nullptr;
 
   GL::Program m_display_program;
   GLuint m_display_vao = 0;

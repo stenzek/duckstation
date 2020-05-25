@@ -155,15 +155,6 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
 
 void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 {
-  Log_InfoPrintf("Context Type: %s", IsGLES() ? "OpenGL ES" : "OpenGL");
-
-  const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-  const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
-  const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-  Log_InfoPrintf("GL_VENDOR: %s", gl_vendor);
-  Log_InfoPrintf("GL_RENDERER: %s", gl_renderer);
-  Log_InfoPrintf("GL_VERSION: %s", gl_version);
-
   GLint max_texture_size = VRAM_WIDTH;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   Log_InfoPrintf("Max texture size: %dx%d", max_texture_size, max_texture_size);
