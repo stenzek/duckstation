@@ -612,10 +612,10 @@ void GPU_HW_OpenGL::UpdateDisplay()
       m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
       m_vram_texture.Bind();
 
-      const u8 interleaved_shift = BoolToUInt8(!m_GPUSTAT.vertical_resolution);
-      const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - (display_height >> interleaved_shift);
+      const u8 height_div2 = BoolToUInt8(interlaced == GPU_HW::InterlacedRenderMode::SeparateFields);
+      const u32 flipped_vram_offset_y = VRAM_HEIGHT - vram_offset_y - (display_height >> height_div2);
       const u32 scaled_flipped_vram_offset_y =
-        m_vram_texture.GetHeight() - scaled_vram_offset_y - (scaled_display_height >> interleaved_shift);
+        m_vram_texture.GetHeight() - scaled_vram_offset_y - (scaled_display_height >> height_div2);
       const u32 reinterpret_field_offset = GetInterlacedDisplayLineOffset();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
