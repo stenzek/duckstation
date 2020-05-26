@@ -336,6 +336,9 @@ bool System::DoState(StateWrapper& sw)
     }
 
     UpdateRunningGame(media_filename.c_str(), media.get());
+    if (GetSettings().HasAnyPerGameMemoryCards())
+      UpdateMemoryCards();
+
     m_cdrom->Reset();
     if (media)
       m_cdrom->InsertMedia(std::move(media));
