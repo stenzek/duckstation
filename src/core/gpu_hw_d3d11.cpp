@@ -583,7 +583,7 @@ void GPU_HW_D3D11::UpdateDisplay()
   else
   {
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
-    const u32 vram_offset_y = m_crtc_state.display_vram_top;
+    const u32 vram_offset_y = m_crtc_state.display_vram_top + GetActiveLineLSB();
     const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
     const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
     const u32 display_width = m_crtc_state.display_vram_width;
@@ -610,7 +610,7 @@ void GPU_HW_D3D11::UpdateDisplay()
       m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
       m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
-      const u32 reinterpret_field_offset = GetInterlacedDisplayLineOffset();
+      const u32 reinterpret_field_offset = GetInterlacedDisplayField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
       const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, reinterpret_crop_left,
@@ -694,7 +694,7 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   Uniforms uniforms;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
     RGBA8ToFloat(color);
-  uniforms.u_interlaced_displayed_field = GetInterlacedDisplayLineOffset();
+  uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
 
   m_context->OMSetDepthStencilState(m_depth_test_always_state.Get(), 0);
 

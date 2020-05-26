@@ -1031,6 +1031,8 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, GP
 
     #if !INTERLEAVED
       icoords.y /= 2u;
+    #else
+      icoords.y &= ~1u;
     #endif
   #endif
 

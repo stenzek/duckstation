@@ -157,22 +157,22 @@ void GPU_SW::UpdateDisplay()
     }
 
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
-    const u32 vram_offset_y = m_crtc_state.display_vram_top;
+    const u32 vram_offset_y = m_crtc_state.display_vram_top + GetActiveLineLSB();
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
     if (IsInterlacedDisplayEnabled())
     {
-      const u32 field = GetInterlacedDisplayLineOffset();
+      const u32 field = GetInterlacedDisplayField();
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y + (m_GPUSTAT.vertical_resolution ? field : 0u),
+        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y,
                      m_display_texture_buffer.data() + field * VRAM_WIDTH, VRAM_WIDTH, display_width + texture_offset_x,
                      display_height, true, m_GPUSTAT.vertical_resolution);
       }
       else
       {
-        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y + (m_GPUSTAT.vertical_resolution ? field : 0u),
+        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y,
                      m_display_texture_buffer.data() + field * VRAM_WIDTH, VRAM_WIDTH, display_width + texture_offset_x,
                      display_height, true, m_GPUSTAT.vertical_resolution);
       }
@@ -716,7 +716,7 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
   if ((bg_color.bits & mask_and) != 0)
     return;
 
-  if (IsInterlacedRenderingEnabled() && GetInterlacedDisplayLineOffset() == (static_cast<u32>(y) & 1u))
+  if (IsInterlacedRenderingEnabled() && GetActiveLineLSB() == (static_cast<u32>(y) & 1u))
     return;
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | m_GPUSTAT.GetMaskOR());

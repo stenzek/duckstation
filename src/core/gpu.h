@@ -356,8 +356,11 @@ protected:
     return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
   }
 
-  /// Returns 0 if the currently-displayed field is on an even line, otherwise 1.
-  ALWAYS_INLINE u32 GetInterlacedDisplayLineOffset() const { return BoolToUInt32(m_crtc_state.displaying_odd_lines); }
+  /// Returns 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...).
+  ALWAYS_INLINE u32 GetInterlacedDisplayField() const { return ZeroExtend32(m_crtc_state.interlaced_field); }
+
+  /// Returns 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
+  ALWAYS_INLINE u32 GetActiveLineLSB() const { return ZeroExtend32(m_crtc_state.active_line_lsb); }
 
   /// Sets/decodes GP0(E1h) (set draw mode).
   void SetDrawMode(u16 bits);
@@ -446,7 +449,7 @@ protected:
     BitField<u32, bool, 27, 1> ready_to_send_vram;
     BitField<u32, bool, 28, 1> ready_to_recieve_dma;
     BitField<u32, DMADirection, 29, 2> dma_direction;
-    BitField<u32, bool, 31, 1> drawing_odd_lines;
+    BitField<u32, bool, 31, 1> display_line_lsb;
 
     bool IsMaskingEnabled() const
     {
@@ -638,8 +641,8 @@ protected:
     bool in_hblank;
     bool in_vblank;
 
-    bool displaying_odd_field;
-    bool displaying_odd_lines;
+    u8 interlaced_field; // 0 = odd, 1 = even
+    u8 active_line_lsb;
   } m_crtc_state = {};
 
   BlitterState m_blitter_state = BlitterState::Idle;

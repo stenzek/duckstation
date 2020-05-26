@@ -158,8 +158,8 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.current_scanline);
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
-  sw.Do(&m_crtc_state.displaying_odd_field);
-  sw.Do(&m_crtc_state.displaying_odd_lines);
+  sw.Do(&m_crtc_state.interlaced_field);
+  sw.Do(&m_crtc_state.active_line_lsb);
 
   sw.Do(&m_blitter_state);
   sw.Do(&m_command_ticks);
@@ -693,9 +693,9 @@ void GPU::Execute(TickCount ticks)
 
         // switch fields early. this is needed so we draw to the correct one.
         if (m_GPUSTAT.vertical_interlace)
-          m_crtc_state.displaying_odd_field ^= true;
+          m_crtc_state.interlaced_field ^= 1u;
         else
-          m_crtc_state.displaying_odd_field = false;
+          m_crtc_state.interlaced_field = 0;
       }
 
       m_timers->SetGate(HBLANK_TIMER_INDEX, new_vblank);
@@ -713,15 +713,14 @@ void GPU::Execute(TickCount ticks)
   // alternating even line bit in 240-line mode
   if (m_GPUSTAT.vertical_interlace)
   {
-    m_crtc_state.displaying_odd_lines =
-      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.displaying_odd_field)) & u32(1));
-    m_GPUSTAT.drawing_odd_lines = !m_crtc_state.displaying_odd_lines && !m_crtc_state.in_vblank;
+    m_crtc_state.active_line_lsb =
+      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.interlaced_field)) & u32(1));
+    m_GPUSTAT.display_line_lsb = m_crtc_state.active_line_lsb && !m_crtc_state.in_vblank;
   }
   else
   {
-    m_crtc_state.displaying_odd_lines = false;
-    m_GPUSTAT.drawing_odd_lines =
-      ConvertToBoolUnchecked((m_crtc_state.regs.Y + m_crtc_state.current_scanline) & u32(1));
+    m_crtc_state.active_line_lsb = 0;
+    m_GPUSTAT.display_line_lsb = ConvertToBoolUnchecked((m_crtc_state.regs.Y + m_crtc_state.current_scanline) & u32(1));
   }
 
   UpdateSliceTicks();
@@ -1018,7 +1017,7 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     if (IsRasterScanlinePending())
       Synchronize();
 
-    const u32 active_field = GetInterlacedDisplayLineOffset();
+    const u32 active_field = GetActiveLineLSB();
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
@@ -1326,9 +1325,9 @@ void GPU::DrawDebugStateWindow()
     const auto& cs = m_crtc_state;
     ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
     ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
-                m_crtc_state.displaying_odd_field ? "odd" : "even");
+                m_crtc_state.interlaced_field ? "odd" : "even");
     ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
-    ImGui::Text("Displaying Odd Lines: %s", m_crtc_state.displaying_odd_lines ? "Yes" : "No");
+    ImGui::Text("Displaying Odd Lines: %s", m_crtc_state.active_line_lsb ? "Yes" : "No");
     ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
     ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
     ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,
