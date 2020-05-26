@@ -157,7 +157,7 @@ void GPU_SW::UpdateDisplay()
     }
 
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
-    const u32 vram_offset_y = m_crtc_state.display_vram_top + GetActiveLineLSB();
+    const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
     const u32 texture_offset_x = m_crtc_state.display_vram_left - m_crtc_state.regs.X;
@@ -166,15 +166,13 @@ void GPU_SW::UpdateDisplay()
       const u32 field = GetInterlacedDisplayField();
       if (m_GPUSTAT.display_area_color_depth_24)
       {
-        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y,
-                     m_display_texture_buffer.data() + field * VRAM_WIDTH, VRAM_WIDTH, display_width + texture_offset_x,
-                     display_height, true, m_GPUSTAT.vertical_resolution);
+        CopyOut24Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
+                     VRAM_WIDTH, display_width + texture_offset_x, display_height, true, m_GPUSTAT.vertical_resolution);
       }
       else
       {
-        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y,
-                     m_display_texture_buffer.data() + field * VRAM_WIDTH, VRAM_WIDTH, display_width + texture_offset_x,
-                     display_height, true, m_GPUSTAT.vertical_resolution);
+        CopyOut15Bit(m_crtc_state.regs.X, vram_offset_y + field, m_display_texture_buffer.data() + field * VRAM_WIDTH,
+                     VRAM_WIDTH, display_width + texture_offset_x, display_height, true, m_GPUSTAT.vertical_resolution);
       }
     }
     else

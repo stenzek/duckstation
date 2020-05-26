@@ -583,7 +583,7 @@ void GPU_HW_D3D11::UpdateDisplay()
   else
   {
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
-    const u32 vram_offset_y = m_crtc_state.display_vram_top + GetActiveLineLSB();
+    const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
     const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
     const u32 display_width = m_crtc_state.display_vram_width;
@@ -613,8 +613,8 @@ void GPU_HW_D3D11::UpdateDisplay()
       const u32 reinterpret_field_offset = GetInterlacedDisplayField();
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
       const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
-      const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, reinterpret_crop_left,
-                               reinterpret_field_offset};
+      const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y + reinterpret_field_offset,
+                               reinterpret_crop_left, reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][static_cast<u8>(interlaced)].Get();
 
