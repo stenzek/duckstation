@@ -12,6 +12,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.renderToMain, "Main/RenderToMainWindow");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.saveStateOnExit, "Main/SaveStateOnExit");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, "Main/ConfirmPowerOff");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.loadMemoryCardsFromSaveStates,
+                                               "MemoryCards/LoadFromSaveStates");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display/ShowOSDMessages");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display/ShowFPS");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showVPS, "Display/ShowVPS");
@@ -43,6 +45,10 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                              "the game list. If unchecked, the display will render in a seperate window.");
   dialog->registerWidgetHelp(m_ui.pauseOnStart, "Pause On Start", "Unchecked",
                              "Pauses the emulator when a game is started.");
+  dialog->registerWidgetHelp(
+    m_ui.loadMemoryCardsFromSaveStates, "Load Memory Cards From Save States", "Unchecked",
+    "When enabled, memory cards will be overwritten when save states are loaded. This can "
+    "result in lost saves. For deterministic save states, enable this option, otherwise leave disabled.");
   dialog->registerWidgetHelp(m_ui.enableSpeedLimiter, "Enable Speed Limiter", "Checked",
                              "Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will "
                              "run as fast as possible, which may not be playable.");

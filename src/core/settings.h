@@ -45,6 +45,7 @@ struct Settings
   bool start_fullscreen = false;
   bool save_state_on_exit = true;
   bool confim_power_off = true;
+  bool load_memory_cards_from_save_states = false;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   u32 gpu_resolution_scale = 1;

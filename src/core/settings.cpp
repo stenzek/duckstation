@@ -74,6 +74,7 @@ void Settings::Load(SettingsInterface& si)
 
   // NOTE: The default value here if not present in the config is shared, but SetDefaultSettings() makes per-game.
   // This is so we don't break older builds which had the shared card by default.
+  load_memory_cards_from_save_states = si.GetBoolValue("MemoryCards", "LoadFromSaveStates", false);
   memory_card_types[0] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(MemoryCardType::Shared)).c_str())
@@ -166,6 +167,7 @@ void Settings::Save(SettingsInterface& si) const
   else
     si.DeleteValue("Controller2", "Type");
 
+  si.SetBoolValue("MemoryCards", "LoadFromSaveStates", load_memory_cards_from_save_states);
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
   si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));

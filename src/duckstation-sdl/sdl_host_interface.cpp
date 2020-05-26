@@ -1026,6 +1026,8 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
         settings_changed |= ImGui::Checkbox("Start Fullscreen", &m_settings_copy.start_fullscreen);
         settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings_copy.save_state_on_exit);
+        settings_changed |=
+          ImGui::Checkbox("Load Memory Cards From Save States", &m_settings_copy.load_memory_cards_from_save_states);
       }
 
       ImGui::NewLine();

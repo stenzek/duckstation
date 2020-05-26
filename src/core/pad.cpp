@@ -62,16 +62,31 @@ bool Pad::DoState(StateWrapper& sw)
     bool card_present = static_cast<bool>(m_memory_cards[i]);
     sw.Do(&card_present);
 
+    if (sw.IsReading() && card_present && !m_system->GetSettings().load_memory_cards_from_save_states)
+    {
+      Log_WarningPrintf("Skipping loading memory card %u from save state.", i + 1u);
+
+      MemoryCard dummy_card(m_system);
+      if (!sw.DoMarker("MemoryCard") || !dummy_card.DoState(sw))
+        return false;
+
+      // we do need to reset the existing card though, in case it was in the middle of a write
+      if (m_memory_cards[i])
+        m_memory_cards[i]->Reset();
+
+      continue;
+    }
+
     if (card_present && !m_memory_cards[i])
     {
       m_system->GetHostInterface()->AddFormattedOSDMessage(
-        2.0f, "Memory card %c present in save state but not in system. Creating temporary card.", i + 1);
+        2.0f, "Memory card %u present in save state but not in system. Creating temporary card.", i + 1u);
       m_memory_cards[i] = MemoryCard::Create(m_system);
     }
     else if (!card_present && m_memory_cards[i])
     {
       m_system->GetHostInterface()->AddFormattedOSDMessage(
-        2.0f, "Memory card %u present in system but not in save state. Removing card.", i + 1);
+        2.0f, "Memory card %u present in system but not in save state. Removing card.", i + 1u);
       m_memory_cards[i].reset();
     }
 
