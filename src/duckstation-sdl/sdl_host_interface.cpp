@@ -472,8 +472,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     {
       if (!ImGui::GetIO().WantCaptureKeyboard && event->key.repeat == 0)
       {
-        const HostKeyCode code = static_cast<HostKeyCode>(static_cast<u32>(event->key.keysym.sym) |
-                                                          static_cast<u32>(event->key.keysym.mod) << 16);
+        const HostKeyCode code = static_cast<HostKeyCode>(SDLKeyNames::KeyEventToInt(event));
         const bool pressed = (event->type == SDL_KEYDOWN);
         HandleHostKeyEvent(code, pressed);
       }
