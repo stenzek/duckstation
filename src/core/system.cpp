@@ -37,6 +37,13 @@ SystemBootParameters::SystemBootParameters() = default;
 
 SystemBootParameters::SystemBootParameters(std::string filename_) : filename(filename_) {}
 
+SystemBootParameters::SystemBootParameters(const SystemBootParameters& copy)
+  : filename(copy.filename), override_fast_boot(copy.override_fast_boot), override_fullscreen(copy.override_fullscreen)
+{
+  // only exists for qt, we can't copy the state stream
+  Assert(!copy.state_stream);
+}
+
 SystemBootParameters::~SystemBootParameters() = default;
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
@@ -130,6 +137,9 @@ void System::SetCPUExecutionMode(CPUExecutionMode mode)
 
 bool System::Boot(const SystemBootParameters& params)
 {
+  if (params.state_stream)
+    return DoLoadState(params.state_stream.get(), true);
+
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> media;
   bool exe_boot = false;
@@ -318,34 +328,6 @@ bool System::DoState(StateWrapper& sw)
   sw.Do(&m_internal_frame_number);
   sw.Do(&m_global_tick_counter);
 
-  std::string media_filename = m_cdrom->GetMediaFileName();
-  sw.Do(&media_filename);
-
-  bool media_is_bad = false;
-  if (sw.IsReading())
-  {
-    std::unique_ptr<CDImage> media;
-    if (!media_filename.empty())
-    {
-      media = CDImage::Open(media_filename.c_str());
-      if (!media)
-      {
-        Log_ErrorPrintf("Failed to open CD image from save state: '%s'. Disc will be removed.", media_filename.c_str());
-        media_is_bad = true;
-      }
-    }
-
-    UpdateRunningGame(media_filename.c_str(), media.get());
-    if (GetSettings().HasAnyPerGameMemoryCards())
-      UpdateMemoryCards();
-
-    m_cdrom->Reset();
-    if (media)
-      m_cdrom->InsertMedia(std::move(media));
-    else
-      m_cdrom->RemoveMedia();
-  }
-
   if (!sw.DoMarker("CPU") || !m_cpu->DoState(sw))
     return false;
 
@@ -385,9 +367,6 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("Events") || !DoEventsState(sw))
     return false;
 
-  if (media_is_bad)
-    m_cdrom->RemoveMedia(true);
-
   return !sw.HasError();
 }
 
@@ -414,6 +393,11 @@ void System::Reset()
 
 bool System::LoadState(ByteStream* state)
 {
+  return DoLoadState(state, false);
+}
+
+bool System::DoLoadState(ByteStream* state, bool init_components)
+{
   SAVE_STATE_HEADER header;
   if (!state->Read2(&header, sizeof(header)))
     return false;
@@ -426,6 +410,49 @@ bool System::LoadState(ByteStream* state)
     m_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
                                            SAVE_STATE_VERSION, header.version);
     return false;
+  }
+
+  std::string media_filename;
+  std::unique_ptr<CDImage> media;
+  if (header.media_filename_length > 0)
+  {
+    media_filename.resize(header.media_filename_length);
+    if (!state->SeekAbsolute(header.offset_to_media_filename) ||
+        !state->Read2(media_filename.data(), header.media_filename_length))
+    {
+      return false;
+    }
+
+    media = CDImage::Open(media_filename.c_str());
+    if (!media)
+    {
+      m_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.", media_filename.c_str());
+      return false;
+    }
+  }
+
+  UpdateRunningGame(media_filename.c_str(), media.get());
+
+  if (init_components)
+  {
+    InitializeComponents();
+    UpdateControllers();
+    UpdateMemoryCards();
+
+    if (media)
+      m_cdrom->InsertMedia(std::move(media));
+  }
+  else
+  {
+    m_cdrom->Reset();
+    if (media)
+      m_cdrom->InsertMedia(std::move(media));
+    else
+      m_cdrom->RemoveMedia();
+
+    // ensure the correct card is loaded
+    if (GetSettings().HasAnyPerGameMemoryCards())
+      UpdateMemoryCards();
   }
 
   if (header.data_compression_type != 0)
@@ -454,6 +481,12 @@ bool System::SaveState(ByteStream* state)
   header.version = SAVE_STATE_VERSION;
   StringUtil::Strlcpy(header.title, m_running_game_title.c_str(), sizeof(header.title));
   StringUtil::Strlcpy(header.game_code, m_running_game_code.c_str(), sizeof(header.game_code));
+
+  std::string media_filename = m_cdrom->GetMediaFileName();
+  header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
+  header.media_filename_length = static_cast<u32>(media_filename.length());
+  if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
+    return false;
 
   // save screenshot
   {

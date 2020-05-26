@@ -32,12 +32,13 @@ struct SystemBootParameters
 {
   SystemBootParameters();
   SystemBootParameters(std::string filename_);
+  SystemBootParameters(const SystemBootParameters& copy);
   ~SystemBootParameters();
 
   std::string filename;
-  std::string state_filename;
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
+  std::unique_ptr<ByteStream> state_stream;
 };
 
 class System
@@ -143,6 +144,7 @@ public:
 private:
   System(HostInterface* host_interface);
 
+  bool DoLoadState(ByteStream* stream, bool init_components);
   bool DoState(StateWrapper& sw);
   bool CreateGPU(GPURenderer renderer);
 

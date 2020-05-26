@@ -1,6 +1,7 @@
 #include "common_host_interface.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
+#include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -289,9 +290,22 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
 
     std::unique_ptr<SystemBootParameters> boot_params = std::make_unique<SystemBootParameters>();
     boot_params->filename = std::move(boot_filename);
-    boot_params->state_filename = std::move(state_filename);
     boot_params->override_fast_boot = std::move(force_fast_boot);
     boot_params->override_fullscreen = std::move(force_fullscreen);
+
+    if (!state_filename.empty())
+    {
+      std::unique_ptr<ByteStream> state_stream =
+        FileSystem::OpenFile(state_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+      if (!state_stream)
+      {
+        Log_ErrorPrintf("Failed to open save state file '%s'", state_filename.c_str());
+        return false;
+      }
+
+      boot_params->state_stream = std::move(state_stream);
+    }
+
     *out_boot_params = std::move(boot_params);
   }
 

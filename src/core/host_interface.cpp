@@ -82,13 +82,13 @@ void HostInterface::CreateAudioStream()
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 {
-  if (parameters.filename.empty())
-    Log_InfoPrintf("Boot Filename: <BIOS/Shell>");
-  else
-    Log_InfoPrintf("Boot Filename: %s", parameters.filename.c_str());
-
-  if (!parameters.state_filename.empty())
-    Log_InfoPrintf("Save State Filename: %s", parameters.filename.c_str());
+  if (!parameters.state_stream)
+  {
+    if (parameters.filename.empty())
+      Log_InfoPrintf("Boot Filename: <BIOS/Shell>");
+    else
+      Log_InfoPrintf("Boot Filename: %s", parameters.filename.c_str());
+  }
 
   if (!AcquireHostDisplay())
   {
@@ -110,9 +110,6 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
     DestroySystem();
     return false;
   }
-
-  if (!parameters.state_filename.empty())
-    LoadState(parameters.state_filename.c_str());
 
   OnSystemCreated();
 
@@ -475,18 +472,9 @@ bool HostInterface::LoadState(const char* filename)
   else
   {
     SystemBootParameters boot_params;
+    boot_params.state_stream = std::move(stream);
     if (!BootSystem(boot_params))
-    {
-      ReportFormattedError("Failed to boot system to load state from '%s'.", filename);
       return false;
-    }
-
-    if (!m_system->LoadState(stream.get()))
-    {
-      ReportFormattedError("Failed to load state. The log may contain more information. Shutting down system.");
-      DestroySystem();
-      return false;
-    }
   }
 
   m_system->ResetPerformanceCounters();
@@ -1219,16 +1207,10 @@ void HostInterface::RecreateSystem()
   DestroySystem();
 
   SystemBootParameters boot_params;
+  boot_params.state_stream = std::move(stream);
   if (!BootSystem(boot_params))
   {
     ReportError("Failed to boot system after recreation.");
-    return;
-  }
-
-  if (!m_system->LoadState(stream.get()))
-  {
-    ReportError("Failed to load state after system recreation. Shutting down.");
-    DestroySystem();
     return;
   }
 
