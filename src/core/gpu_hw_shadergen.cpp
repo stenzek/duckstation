@@ -1026,7 +1026,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, GP
   uint2 icoords = uint2(v_pos.xy);
 
   #if INTERLACED
-    if (((icoords.y / RESOLUTION_SCALE) & 1u) != u_field_offset)
+    if (((fixYCoord(icoords.y) / RESOLUTION_SCALE) & 1u) != u_field_offset)
       discard;
 
     #if !INTERLEAVED
