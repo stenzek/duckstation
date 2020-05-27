@@ -777,6 +777,9 @@ void CDROM::ExecuteCommand()
         }
         else
         {
+          if (IsSeeking())
+            UpdatePositionWhileSeeking();
+
           BeginReading();
         }
       }
@@ -805,6 +808,9 @@ void CDROM::ExecuteCommand()
         }
         else
         {
+          if (IsSeeking())
+            UpdatePositionWhileSeeking();
+
           BeginPlaying(track);
         }
       }
