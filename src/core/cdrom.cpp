@@ -1875,10 +1875,6 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   Log_DevPrintf("Read sector %u as CDDA", m_current_lba);
   m_secondary_status.playing_cdda = true;
 
-  // Skip the pregap, and don't report on it.
-  if (subq.index_number_bcd == 0)
-    return;
-
   if (m_mode.report_audio)
   {
     const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
