@@ -325,10 +325,15 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 2:
     {
-      // TODO: sector buffer is not the data fifo
       Log_DebugPrintf("Request register <- 0x%02X", value);
       const RequestRegister rr{value};
-      Assert(!rr.SMEN);
+
+      // Sound map is not currently implemented, haven't found anything which uses it.
+      if (rr.SMEN)
+        Log_ErrorPrintf("Sound map enable set");
+      if (rr.BFWR)
+        Log_ErrorPrintf("Buffer write enable set");
+
       if (rr.BFRD)
       {
         LoadDataFIFO();
