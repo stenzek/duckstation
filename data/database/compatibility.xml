@@ -155,6 +155,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SCUS-94426" compatibility="5" region="NTSC-U" title="CTR - Crash Team Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
+  </entry>
   <entry code="SLPM-87053" compatibility="5" region="NTSC-J" title="Capcom VS SNK - Millenium Fight 2000 Pro">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
@@ -169,14 +173,14 @@
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Works Good, But Sometime FPS Limiter Wont Work</comments>
   </entry>
-  <entry code="SLPM-86363" compatibility="5" region="NTSC-J" title="Chaos Break (Japan)">
-    <compatibility>No Issues</compatibility>
-    <version-tested>0.1-930-gcb66889</version-tested>
-  </entry>
   <entry code="SLES-03107" compatibility="5" region="PAL" title="Chaos Break (Europe)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Intro video slow in hardware renderers</comments>
+  </entry>
+  <entry code="SLPM-86363" compatibility="5" region="NTSC-J" title="Chaos Break (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-930-gcb66889</version-tested>
   </entry>
   <entry code="SLUS-00792" compatibility="5" region="NTSC-U" title="Civilization II (USA)">
     <compatibility>No Issues</compatibility>
@@ -216,11 +220,11 @@
   <entry code="SLPS-00335" compatibility="5" region="NTSC-J" title="Dezaemon Plus">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLUS-01279" compatibility="5" region="NTSC-U" title="Dino Crisis 2 (USA)">
+  <entry code="SLUS-00922" compatibility="5" region="NTSC-U" title="Dino Crisis (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
-  <entry code="SLUS-00922" compatibility="5" region="NTSC-U" title="Dino Crisis (USA)">
+  <entry code="SLUS-01279" compatibility="5" region="NTSC-U" title="Dino Crisis 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
@@ -245,6 +249,10 @@
   <entry code="SCUS-94243" compatibility="5" region="NTSC-U" title="Einhaender (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-896-gc8a00c5</version-tested>
+  </entry>
+  <entry code="SLUS-01585" compatibility="5" region="NTSC-U" title="FIFA Soccer 2005 (USA) (En,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
   </entry>
   <entry code="SCUS-94163" compatibility="5" region="NTSC-U" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
@@ -316,6 +324,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
+  <entry code="SLUS-00684" compatibility="5" region="NTSC-U" title="Jackie Chan Stuntmaster (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
+    <comments>Broken in cached interpreter/recompiler (Issue #58)</comments>
+  </entry>
   <entry code="SLPM-86008" compatibility="5" region="NTSC-J" title="Jikkyou Oshaberi Parodius - Forever with Me">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -367,6 +380,10 @@
   </entry>
   <entry code="SLUS-00793" compatibility="5" region="NTSC-U" title="Marvel Super Heroes VS Street Fighter">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00974" compatibility="5" region="NTSC-U" title="Medal of Honor (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
   </entry>
   <entry code="SCUS-94564" compatibility="5" region="NTSC-U" title="MediEvil II (USA)">
     <compatibility>No Issues</compatibility>
@@ -513,11 +530,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLUS-01112" compatibility="4" region="NTSC-U" title="Nightmare Creatures II (USA)">
+  <entry code="SLUS-00582" compatibility="4" region="NTSC-U" title="Nightmare Creatures (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
-  <entry code="SLUS-00582" compatibility="4" region="NTSC-U" title="Nightmare Creatures (USA)">
+  <entry code="SLUS-01112" compatibility="4" region="NTSC-U" title="Nightmare Creatures II (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
@@ -539,6 +556,10 @@
   </entry>
   <entry code="SLPM-86016" compatibility="5" region="NTSC-J" title="Paro Wars (Japan)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01762" compatibility="5" region="NTSC-J" title="Pepsiman (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
   </entry>
   <entry code="SLUS-01158" compatibility="5" region="NTSC-U" title="Persona 2 - Eternal Punishment (USA)">
     <compatibility>No Issues</compatibility>
@@ -594,11 +615,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLUS-00923" compatibility="5" region="NTSC-U" title="Resident Evil 3 - Nemesis (USA)">
+  <entry code="SLUS-00170" compatibility="5" region="NTSC-U" title="Resident Evil (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
-  <entry code="SLUS-00170" compatibility="5" region="NTSC-U" title="Resident Evil (USA)">
+  <entry code="SLUS-00923" compatibility="5" region="NTSC-U" title="Resident Evil 3 - Nemesis (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
@@ -918,6 +939,10 @@
   <entry code="SLPS-01915" compatibility="5" region="NTSC-J" title="X-Men VS Street Fighter - EX Edition">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Sprite glitches</upscaling-issues>
+  </entry>
+  <entry code="SLUS-01411" compatibility="5" region="NTSC-U" title="Yu-Gi-Oh! Forbidden Memories">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
   </entry>
   <entry code="SLPS-000534" compatibility="5" region="NTSC-J" title="Zoop (Japan)">
     <compatibility>No Issues</compatibility>
