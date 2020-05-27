@@ -1077,7 +1077,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
           int controller_type = static_cast<int>(m_settings_copy.controller_types[i]);
           if (ImGui::Combo(
-                "##controller_type", &controller_type,
+                TinyString::FromFormat("##controller_type%d", i), &controller_type,
                 [](void*, int index, const char** out_text) {
                   *out_text = Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(index));
                   return true;
@@ -1093,7 +1093,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
           int memory_card_type = static_cast<int>(m_settings_copy.memory_card_types[i]);
           if (ImGui::Combo(
-                "##memory_card_type", &memory_card_type,
+                TinyString::FromFormat("##memory_card_type%d", i), &memory_card_type,
                 [](void*, int index, const char** out_text) {
                   *out_text = Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(index));
                   return true;
