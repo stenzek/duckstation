@@ -1068,15 +1068,12 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
 bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInterface& si)
 {
   if (FileSystem::FileExists(profile_path))
-  {
-    if (!FileSystem::DeleteFile(profile_path))
-    {
-      Log_ErrorPrintf("Failed to delete existing input profile '%s' when saving", profile_path);
-      return false;
-    }
-  }
+    Log_WarningPrintf("Existing input profile at '%s' will be overwritten", profile_path);
+  else
+    Log_WarningPrintf("Input profile at '%s' does not exist, new input profile will be created", profile_path);
 
   INISettingsInterface profile(profile_path);
+  profile.Clear();
 
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
@@ -1109,7 +1106,13 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
       profile.SetStringValue(section_name, "Rumble", rumble_value.c_str());
   }
 
-  profile.Save();
+  if(!profile.Save())
+  {
+    Log_ErrorPrintf("Failed to save input profile to '%s'", profile_path);
+    return false;
+  }
+
+  Log_SuccessPrintf("Input profile saved to '%s'", profile_path);
   return true;
 }
 

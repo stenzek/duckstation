@@ -16,13 +16,17 @@ INISettingsInterface::~INISettingsInterface()
     Save();
 }
 
-void INISettingsInterface::Save()
+bool INISettingsInterface::Save()
 {
   SI_Error err = m_ini.SaveFile(m_filename.c_str(), false);
   if (err != SI_OK)
+  {
     Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
-  else
-    m_dirty = false;
+    return false;
+  }
+
+  m_dirty = false;
+  return true;
 }
 
 void INISettingsInterface::Clear()

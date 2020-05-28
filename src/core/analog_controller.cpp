@@ -67,7 +67,7 @@ std::optional<s32> AnalogController::GetButtonCodeByName(std::string_view button
 
 void AnalogController::SetAxisState(s32 axis_code, float value)
 {
-  if (axis_code < 0 || axis_code >= static_cast<s32>(Button::Count))
+  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
     return;
 
   // -1..1 -> 0..255
