@@ -690,6 +690,12 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (!m_paused)
     {
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (420.0f * framebuffer_scale));
+      ImGui::Text("Average: %.2fms", m_system->GetAverageFrameTime());
+
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (310.0f * framebuffer_scale));
+      ImGui::Text("Worst: %.2fms", m_system->GetWorstFrameTime());
+
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
 
       const float speed = m_system->GetEmulationSpeed();
