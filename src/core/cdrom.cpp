@@ -580,7 +580,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
 
   // it's unlikely that the drive would seek to exactly the correct position, so simulate this by adding the time
   // required to read a few sectors
-  ticks += GetTicksForRead() * 3u;
+  ticks += GetTicksForRead() * 4u;
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
