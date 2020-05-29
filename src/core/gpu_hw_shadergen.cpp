@@ -519,7 +519,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   #if TEXTURED
     // Fudge the texture coordinates by half a pixel in screen-space.
     // This fixes the rounding/interpolation error on NVIDIA GPUs with shared edges between triangles.
-    v_tex0 = float2(float(a_texcoord & 0xFFFFu) + EPSILON, float(a_texcoord >> 16) + EPSILON);
+    v_tex0 = float2(float((a_texcoord & 0xFFFFu) * RESOLUTION_SCALE) + EPSILON,
+                    float((a_texcoord >> 16) * RESOLUTION_SCALE) + EPSILON);
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15u) * 64u * RESOLUTION_SCALE;
@@ -608,42 +609,64 @@ uint2 ApplyTextureWindow(uint2 coords)
   uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u);
   uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u);
   return uint2(x, y);
-}  
+}
 
-float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
+uint2 ApplyUpscaledTextureWindow(uint2 coords)
 {
-  icoord = ApplyTextureWindow(icoord);
+  uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u * RESOLUTION_SCALE)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u * RESOLUTION_SCALE);
+  uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u * RESOLUTION_SCALE)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u * RESOLUTION_SCALE);
+  return uint2(x, y);
+}
 
-  // adjust for tightly packed palette formats
-  uint2 index_coord = icoord;
-  #if PALETTE_4_BIT
-    index_coord.x /= 4u;
-  #elif PALETTE_8_BIT
-    index_coord.x /= 2u;
-  #endif
+uint2 FloatToIntegerCoords(float2 coords)
+{
+  // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
+  // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
+  return uint2((RESOLUTION_SCALE == 1u) ? roundEven(coords) : floor(coords));
+}
 
-  // fixup coords
-  uint2 vicoord = uint2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
-
-  // load colour/palette
-  float4 color = LOAD_TEXTURE(samp0, int2(vicoord), 0);
-
-  // apply palette
+float4 SampleFromVRAM(uint4 texpage, float2 coords)
+{
   #if PALETTE
+    // We can't currently use upscaled coordinate for palettes because of how they're packed.
+    // Not that it would be any benefit anyway, render-to-texture effects don't use palettes.
+    #if !TEXTURE_FILTERING
+      coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+    #endif
+    uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+
+    uint2 index_coord = icoord;
+    #if PALETTE_4_BIT
+      index_coord.x /= 4u;
+    #elif PALETTE_8_BIT
+      index_coord.x /= 2u;
+    #endif
+
+    // fixup coords
+    uint2 vicoord = uint2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
+
+    // load colour/palette
+    float4 texel = LOAD_TEXTURE(samp0, int2(vicoord), 0);
+    uint vram_value = RGBA8ToRGBA5551(texel);
+
+    // apply palette
     #if PALETTE_4_BIT
       uint subpixel = icoord.x & 3u;
-      uint vram_value = RGBA8ToRGBA5551(color);
       uint palette_index = (vram_value >> (subpixel * 4u)) & 0x0Fu;
     #elif PALETTE_8_BIT
       uint subpixel = icoord.x & 1u;
-      uint vram_value = RGBA8ToRGBA5551(color);
       uint palette_index = (vram_value >> (subpixel * 8u)) & 0xFFu;
     #endif
-    uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
-    color = LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
-  #endif
 
-  return color;
+    // sample palette
+    uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
+    return LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
+  #else
+    // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
+    uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));    
+    uint2 direct_icoord = uint2(texpage.x + icoord.x, fixYCoord(texpage.y + icoord.y));
+    return LOAD_TEXTURE(samp0, int2(direct_icoord), 0);
+  #endif
 }
 #endif
 )";
@@ -676,16 +699,20 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
     #if TEXTURE_FILTERING
       // Compute the coordinates of the four texels we will be interpolating between.
       // TODO: Find some way to clamp this to the triangle texture coordinates?
-      float2 texel_top_left = frac(v_tex0) - float2(0.5, 0.5);
+      float2 downscaled_coords = v_tex0;
+      #if PALETTE
+        downscaled_coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+      #endif
+      float2 texel_top_left = frac(downscaled_coords) - float2(0.5, 0.5);
       float2 texel_offset = sign(texel_top_left);
-      float4 fcoords = max(v_tex0.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
+      float4 fcoords = max(downscaled_coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
                            float4(0.0, 0.0, 0.0, 0.0));
 
       // Load four texels.
-      float4 s00 = SampleFromVRAM(v_texpage, uint2(fcoords.xy));
-      float4 s10 = SampleFromVRAM(v_texpage, uint2(fcoords.zy));
-      float4 s01 = SampleFromVRAM(v_texpage, uint2(fcoords.xw));
-      float4 s11 = SampleFromVRAM(v_texpage, uint2(fcoords.zw));
+      float4 s00 = SampleFromVRAM(v_texpage, fcoords.xy);
+      float4 s10 = SampleFromVRAM(v_texpage, fcoords.zy);
+      float4 s01 = SampleFromVRAM(v_texpage, fcoords.xw);
+      float4 s11 = SampleFromVRAM(v_texpage, fcoords.zw);
 
       // Compute alpha from how many texels aren't pixel color 0000h.
       float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
@@ -703,9 +730,7 @@ float4 SampleFromVRAM(uint4 texpage, uint2 icoord)
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
       semitransparent = (texcol.a != 0.0);
     #else
-      // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
-      // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
-      float4 texcol = SampleFromVRAM(v_texpage, uint2((RESOLUTION_SCALE == 1u) ? roundEven(v_tex0) : floor(v_tex0)));
+      float4 texcol = SampleFromVRAM(v_texpage, v_tex0);
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 
@@ -1008,7 +1033,8 @@ std::string GPU_HW_ShaderGen::GenerateCopyFragmentShader()
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode)
+std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
+                                                            GPU_HW::InterlacedRenderMode interlace_mode)
 {
   std::stringstream ss;
   WriteHeader(ss);
