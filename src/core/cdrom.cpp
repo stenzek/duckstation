@@ -563,7 +563,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
   {
     case 0:
     {
-      Log_WarningPrintf("CDROM command register <- 0x%02X (%s)", value, s_command_info[value].name);
+      Log_DebugPrintf("CDROM command register <- 0x%02X (%s)", value, s_command_info[value].name);
       BeginCommand(static_cast<Command>(value));
       return;
     }
