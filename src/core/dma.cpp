@@ -154,7 +154,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         if (static_cast<Channel>(channel_index) == Channel::OTC)
           SetRequest(static_cast<Channel>(channel_index), state.channel_control.start_trigger);
 
-        if (!IsTransferHalted() && CanTransferChannel(static_cast<Channel>(channel_index)))
+        if (CanTransferChannel(static_cast<Channel>(channel_index)))
           TransferChannel(static_cast<Channel>(channel_index));
         return;
       }
@@ -171,17 +171,16 @@ void DMA::WriteRegister(u32 offset, u32 value)
       {
         Log_TracePrintf("DPCR <- 0x%08X", value);
         m_DPCR.bits = value;
-        if (!IsTransferHalted())
+
+        for (u32 i = 0; i < NUM_CHANNELS; i++)
         {
-          for (u32 i = 0; i < NUM_CHANNELS; i++)
+          if (CanTransferChannel(static_cast<Channel>(i)))
           {
-            if (CanTransferChannel(static_cast<Channel>(i)))
-            {
-              if (!TransferChannel(static_cast<Channel>(i)))
-                break;
-            }
+            if (!TransferChannel(static_cast<Channel>(i)))
+              break;
           }
         }
+
         return;
       }
 
@@ -209,7 +208,7 @@ void DMA::SetRequest(Channel channel, bool request)
     return;
 
   cs.request = request;
-  if (!IsTransferHalted() && CanTransferChannel(channel))
+  if (CanTransferChannel(channel))
     TransferChannel(channel);
 }
 
@@ -220,6 +219,9 @@ bool DMA::CanTransferChannel(Channel channel) const
 
   const ChannelState& cs = m_state[static_cast<u32>(channel)];
   if (!cs.channel_control.enable_busy)
+    return false;
+
+  if (cs.channel_control.sync_mode != SyncMode::Manual && IsTransferHalted())
     return false;
 
   return cs.request;
@@ -275,48 +277,61 @@ bool DMA::TransferChannel(Channel channel)
       if (!copy_to_device)
       {
         Panic("Linked list not implemented for DMA reads");
+        return true;
       }
-      else
+
+      Log_DebugPrintf("DMA%u: Copying linked list starting at 0x%08X to device", static_cast<u32>(channel),
+                      current_address & ADDRESS_MASK);
+
+      u8* ram_pointer = m_bus->GetRAM();
+      bool halt_transfer = false;
+      while (cs.request)
       {
-        Log_DebugPrintf("DMA%u: Copying linked list starting at 0x%08X to device", static_cast<u32>(channel),
-                        current_address & ADDRESS_MASK);
+        u32 header;
+        std::memcpy(&header, &ram_pointer[current_address & ADDRESS_MASK], sizeof(header));
+        used_ticks++;
 
-        u8* ram_pointer = m_bus->GetRAM();
-        while (cs.request && used_ticks < m_max_slice_ticks)
+        const u32 word_count = header >> 24;
+        const u32 next_address = header & UINT32_C(0x00FFFFFF);
+        Log_TracePrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X", current_address & ADDRESS_MASK,
+                        word_count * UINT32_C(4), word_count, next_address);
+        if (word_count > 0)
         {
-          u32 header;
-          std::memcpy(&header, &ram_pointer[current_address & ADDRESS_MASK], sizeof(header));
-          used_ticks++;
-
-          const u32 word_count = header >> 24;
-          const u32 next_address = header & UINT32_C(0x00FFFFFF);
-          Log_TracePrintf(" .. linked list entry at 0x%08X size=%u(%u words) next=0x%08X",
-                          current_address & ADDRESS_MASK, word_count * UINT32_C(4), word_count, next_address);
-          if (word_count > 0)
-          {
-            used_ticks +=
-              TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
-          }
-
+          used_ticks +=
+            TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
+        }
+        else if ((current_address & ADDRESS_MASK) == (next_address & ADDRESS_MASK))
+        {
           current_address = next_address;
-          if (current_address & UINT32_C(0x800000))
-            break;
+          halt_transfer = true;
+          break;
+        }
+
+        current_address = next_address;
+        if (current_address & UINT32_C(0x800000))
+          break;
+
+        if (used_ticks >= m_max_slice_ticks)
+        {
+          halt_transfer = true;
+          break;
         }
       }
 
       cs.base_address = current_address;
       m_system->StallCPU(used_ticks);
 
-      if ((current_address & UINT32_C(0x800000)) == 0)
-      {
-        if (used_ticks >= m_max_slice_ticks && cs.request)
-        {
-          // stall the transfer for a bit if we ran for too long
-          // Log_WarningPrintf("breaking dma chain at 0x%08X", current_address);
-          HaltTransfer(m_halt_ticks);
-          return false;
-        }
+      if (current_address & UINT32_C(0x800000))
+        break;
 
+      if (halt_transfer)
+      {
+        // stall the transfer for a bit if we ran for too long
+        HaltTransfer(m_halt_ticks);
+        return false;
+      }
+      else
+      {
         // linked list not yet complete
         return true;
       }
