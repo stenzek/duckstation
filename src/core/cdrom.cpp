@@ -563,13 +563,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
   {
     case 0:
     {
-      Log_DebugPrintf("CDROM command register <- 0x%02X", value);
-      if (HasPendingCommand())
-      {
-        Log_WarningPrintf("Cancelling pending command 0x%02X", static_cast<u8>(m_command));
-        AbortCommand();
-      }
-
+      Log_WarningPrintf("CDROM command register <- 0x%02X (%s)", value, s_command_info[value].name);
       BeginCommand(static_cast<Command>(value));
       return;
     }
@@ -857,8 +851,40 @@ TickCount CDROM::GetTicksForStop(bool motor_was_on)
 
 void CDROM::BeginCommand(Command command)
 {
+  TickCount ack_delay = GetAckDelayForCommand(command);
+
+  if (HasPendingCommand())
+  {
+    // The behavior here is kinda.. interesting. Some commands seem to take precedence over others, for example
+    // sending a Nop command followed by a GetlocP will return the GetlocP response, and the same for the inverse.
+    // However, other combinations result in strange behavior, for example sending a Setloc followed by a ReadN will
+    // fail with ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS. This particular example happens in Voice Idol
+    // Collection - Pool Bar Story, and the loading time is lengthened as well as audio slowing down if this
+    // behavior is not correct. So, let's use a heuristic; if the number of parameters of the "old" command is
+    // greater than the "new" command, empty the FIFO, which will return the error when the command executes.
+    // Otherwise, override the command with the new one.
+    if (s_command_info[static_cast<u8>(m_command)].expected_parameters >
+        s_command_info[static_cast<u8>(command)].expected_parameters)
+    {
+      Log_WarningPrintf("Ignoring command 0x%02X (%s) and emptying FIFO as 0x%02x (%s) is still pending",
+                        static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name,
+                        static_cast<u8>(m_command), s_command_info[static_cast<u8>(m_command)].name);
+      m_param_fifo.Clear();
+      return;
+    }
+
+    Log_WarningPrintf("Cancelling pending command 0x%02X (%s) for new command 0x%02X (%s)", static_cast<u8>(m_command),
+                      s_command_info[static_cast<u8>(m_command)].name, static_cast<u8>(command),
+                      s_command_info[static_cast<u8>(command)].name);
+
+    // subtract the currently-elapsed ack ticks from the new command
+    const TickCount elapsed_ticks = m_command_event->GetInterval() - m_command_event->GetTicksUntilNextExecution();
+    ack_delay = std::max(ack_delay - elapsed_ticks, 1);
+    m_command_event->Deactivate();
+  }
+
   m_command = command;
-  m_command_event->Schedule(GetAckDelayForCommand(command));
+  m_command_event->SetIntervalAndSchedule(ack_delay);
   UpdateCommandEvent();
   UpdateStatusRegister();
 }
