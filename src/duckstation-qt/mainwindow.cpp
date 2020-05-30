@@ -199,6 +199,7 @@ void MainWindow::onEmulationStopped()
 
 void MainWindow::onEmulationPaused(bool paused)
 {
+  QSignalBlocker blocker(m_ui.actionPause);
   m_ui.actionPause->setChecked(paused);
 }
 
