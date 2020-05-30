@@ -11,6 +11,270 @@
 #include "system.h"
 Log_SetChannel(CDROM);
 
+struct CommandInfo
+{
+  const char* name;
+  u8 expected_parameters;
+};
+
+static std::array<CommandInfo, 255> s_command_info = {{
+  {"Sync", 0},
+  {"Getstat", 0},
+  {"Setloc", 3},
+  {"Play", 0},
+  {"Forward", 0},
+  {"Backward", 0},
+  {"ReadN", 0},
+  {"MotorOn", 0},
+  {"Stop", 0},
+  {"Pause", 0},
+  {"Reset", 0},
+  {"Mute", 0},
+  {"Demute", 0},
+  {"Setfilter", 2},
+  {"Setmode", 1},
+  {"Getparam", 0},
+  {"GetlocL", 0},
+  {"GetlocP", 0},
+  {"SetSession", 1},
+  {"GetTN", 0},
+  {"GetTD", 1},
+  {"SeekL", 0},
+  {"SeekP", 0},
+  {"SetClock", 0},
+  {"GetClock", 0},
+  {"Test", 1},
+  {"GetID", 0},
+  {"ReadS", 0},
+  {"Init", 0},
+  {"GetQ", 2},
+  {"ReadTOC", 0},
+  {"VideoCD", 6},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  {"Unknown", 0},
+  0 // Unknown
+}};
+
 CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
@@ -617,7 +881,16 @@ void CDROM::AbortCommand()
 
 void CDROM::ExecuteCommand()
 {
-  Log_DevPrintf("CDROM executing command 0x%02X", ZeroExtend32(static_cast<u8>(m_command)));
+  const CommandInfo& ci = s_command_info[static_cast<u8>(m_command)];
+  Log_DevPrintf("CDROM executing command 0x%02X (%s)", static_cast<u8>(m_command), ci.name);
+  if (m_param_fifo.GetSize() < ci.expected_parameters)
+  {
+    Log_WarningPrintf("Too few parameters for command 0x%02X (%s), expecting %u got %u", static_cast<u8>(m_command),
+                      ci.name, ci.expected_parameters, m_param_fifo.GetSize());
+    SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
+    EndCommand();
+    return;
+  }
 
   if (!m_response_fifo.IsEmpty())
   {
@@ -706,7 +979,6 @@ void CDROM::ExecuteCommand()
 
     case Command::Setloc:
     {
-      // TODO: Verify parameter count
       m_setloc_position.minute = PackedBCDToBinary(m_param_fifo.Peek(0));
       m_setloc_position.second = PackedBCDToBinary(m_param_fifo.Peek(1));
       m_setloc_position.frame = PackedBCDToBinary(m_param_fifo.Peek(2));
@@ -739,7 +1011,7 @@ void CDROM::ExecuteCommand()
 
     case Command::SetSession:
     {
-      const u8 session = m_param_fifo.IsEmpty() ? 0 : m_param_fifo.Peek(0);
+      const u8 session = m_param_fifo.Peek(0);
       Log_DebugPrintf("CDROM SetSession command, session=%u", session);
 
       if (!CanReadMedia() || m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing)
@@ -829,7 +1101,7 @@ void CDROM::ExecuteCommand()
       if (m_secondary_status.seeking)
       {
         Log_WarningPrintf("CDROM Pause command while seeking - sending error response");
-        SendErrorResponse(STAT_ERROR, ERROR_NOT_READY);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
         EndCommand();
         return;
       }
@@ -937,7 +1209,7 @@ void CDROM::ExecuteCommand()
       if (!CanReadMedia())
       {
         Log_DebugPrintf("CDROM GetlocP command - not ready");
-        SendErrorResponse(STAT_ERROR, ERROR_NOT_READY);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
