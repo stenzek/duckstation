@@ -89,6 +89,7 @@ enum class ControllerType
   AnalogController,
   NamcoGunCon,
   PlayStationMouse,
+  NeGcon,
   Count
 };
 
