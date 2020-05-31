@@ -283,6 +283,7 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   entry->total_size = ZeroExtend64(file_size);
   entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = GameListEntryType::PSExe;
+  entry->compatibility_rating = GameListCompatibilityRating::Unknown;
 
   return true;
 }
@@ -306,6 +307,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   entry->region = region;
   entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   entry->type = GameListEntryType::Disc;
+  entry->compatibility_rating = GameListCompatibilityRating::Unknown;
   cdi.reset();
 
   if (entry->code.empty())
@@ -332,13 +334,9 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 
     const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
     if (compatibility_entry)
-    {
       entry->compatibility_rating = compatibility_entry->compatibility_rating;
-    }
     else
-    {
       Log_WarningPrintf("'%s' (%s) not found in compatibility list", entry->code.c_str(), entry->title.c_str());
-    }
   }
 
   FILESYSTEM_STAT_DATA ffd;
@@ -1161,7 +1159,7 @@ std::string GameList::ExportCompatibilityEntry(const GameListCompatibilityEntry*
   InitElementForCompatibilityEntry(&doc, entry_elem, entry);
 
   tinyxml2::XMLPrinter printer;
-  //doc.Print(&printer);
+  // doc.Print(&printer);
   entry_elem->Accept(&printer);
   return std::string(printer.CStr(), printer.CStrSize());
 }
