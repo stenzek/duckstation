@@ -76,6 +76,7 @@
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="namco_guncon.cpp" />
+    <ClCompile Include="negcon.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="namco_guncon.h" />
+    <ClInclude Include="negcon.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="playstation_mouse.h" />
