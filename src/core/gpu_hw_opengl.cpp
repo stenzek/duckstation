@@ -613,7 +613,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       m_vram_texture.Bind();
 
       const u8 height_div2 = BoolToUInt8(interlaced == GPU_HW::InterlacedRenderMode::SeparateFields);
-      const u32 reinterpret_field_offset = GetInterlacedDisplayField();
+      const u32 reinterpret_field_offset = (interlaced != InterlacedRenderMode::None) ? GetInterlacedDisplayField() : 0;
       const u32 scaled_flipped_vram_offset_y = m_vram_texture.GetHeight() - scaled_vram_offset_y -
                                                reinterpret_field_offset - (scaled_display_height >> height_div2);
       const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
