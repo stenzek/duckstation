@@ -4,6 +4,7 @@
 #include "digital_controller.h"
 #include "namco_guncon.h"
 #include "playstation_mouse.h"
+#include "negcon.h"
 
 Controller::Controller() = default;
 
@@ -54,6 +55,9 @@ std::unique_ptr<Controller> Controller::Create(System* system, ControllerType ty
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::Create(system);
 
+    case ControllerType::NeGcon:
+      return NeGcon::Create();
+
     case ControllerType::None:
     default:
       return {};
@@ -86,6 +90,9 @@ Controller::AxisList Controller::GetAxisNames(ControllerType type)
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::StaticGetAxisNames();
 
+    case ControllerType::NeGcon:
+      return NeGcon::StaticGetAxisNames();
+
     case ControllerType::None:
     default:
       return {};
@@ -107,6 +114,9 @@ Controller::ButtonList Controller::GetButtonNames(ControllerType type)
 
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::StaticGetButtonNames();
+
+    case ControllerType::NeGcon:
+      return NeGcon::StaticGetButtonNames();
 
     case ControllerType::None:
     default:
@@ -130,6 +140,9 @@ u32 Controller::GetVibrationMotorCount(ControllerType type)
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::StaticGetVibrationMotorCount();
 
+    case ControllerType::NeGcon:
+      return NeGcon::StaticGetVibrationMotorCount();
+
     case ControllerType::None:
     default:
       return 0;
@@ -152,6 +165,9 @@ std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::strin
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::StaticGetAxisCodeByName(axis_name);
 
+    case ControllerType::NeGcon:
+      return NeGcon::StaticGetAxisCodeByName(axis_name);
+
     case ControllerType::None:
     default:
       return std::nullopt;
@@ -173,6 +189,9 @@ std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::str
 
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::StaticGetButtonCodeByName(button_name);
+
+    case ControllerType::NeGcon:
+      return NeGcon::StaticGetButtonCodeByName(button_name);
 
     case ControllerType::None:
     default:

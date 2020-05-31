@@ -54,6 +54,8 @@ add_library(core
     memory_card.h
     namco_guncon.cpp
     namco_guncon.h
+    negcon.cpp
+    negcon.h
     pad.cpp
     pad.h
     playstation_mouse.cpp
