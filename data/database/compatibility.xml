@@ -186,6 +186,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SLUS-01151" compatibility="5" region="NTSC-U" title="Covert Ops - Nuclear Dawn (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
+  </entry>
   <entry code="SCES-00344" compatibility="5" region="PAL" title="Crash Bandicoot">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -219,6 +223,10 @@
   </entry>
   <entry code="SLPS-00335" compatibility="5" region="NTSC-J" title="Dezaemon Plus">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01032" compatibility="5" region="NTSC-U" title="Digimon World (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-952-g13c3426</version-tested>
   </entry>
   <entry code="SLUS-00922" compatibility="5" region="NTSC-U" title="Dino Crisis (USA)">
     <compatibility>No Issues</compatibility>
@@ -558,6 +566,10 @@
     <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLPS-01762" compatibility="5" region="NTSC-J" title="Pepsiman (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-941-g2e64f77</version-tested>
+  </entry>
+  <entry code="SLUS-00339" compatibility="5" region="NTSC-U" title="Persona (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-941-g2e64f77</version-tested>
   </entry>
