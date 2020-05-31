@@ -1496,7 +1496,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   Log_DebugPrintf("Starting reading @ LBA %u", m_current_lba);
   ClearSectorBuffers();
 
-  if (m_setloc_pending)
+  if (!after_seek && m_setloc_pending)
   {
     BeginSeeking(true, true, false);
     return;
