@@ -25,7 +25,7 @@ Log_SetChannel(Bus);
 #define FIXUP_HALFWORD_WRITE_VALUE(offset, value) ((value) << (((offset)&u32(1)) * 8u))
 
 // Offset and value remapping for (w32) registers from nocash docs.
-void FixupUnalignedWordAccessW32(u32& offset, u32& value)
+ALWAYS_INLINE static void FixupUnalignedWordAccessW32(u32& offset, u32& value)
 {
   const u32 byte_offset = offset & u32(3);
   offset &= ~u32(3);
@@ -426,39 +426,79 @@ void Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadCDROM(MemoryAccessSize size, u32 offset)
 {
-  // TODO: Splitting of half/word reads.
-  Assert(size == MemoryAccessSize::Byte);
-  return ZeroExtend32(m_cdrom->ReadRegister(offset));
+  switch (size)
+  {
+    case MemoryAccessSize::Word:
+    {
+      const u32 b0 = ZeroExtend32(m_cdrom->ReadRegister(offset));
+      const u32 b1 = ZeroExtend32(m_cdrom->ReadRegister(offset + 1u));
+      const u32 b2 = ZeroExtend32(m_cdrom->ReadRegister(offset + 2u));
+      const u32 b3 = ZeroExtend32(m_cdrom->ReadRegister(offset + 3u));
+      return b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+    }
+
+    case MemoryAccessSize::HalfWord:
+    {
+      const u32 lsb = ZeroExtend32(m_cdrom->ReadRegister(offset));
+      const u32 msb = ZeroExtend32(m_cdrom->ReadRegister(offset + 1u));
+      return lsb | (msb << 8);
+    }
+
+    case MemoryAccessSize::Byte:
+    default:
+      return ZeroExtend32(m_cdrom->ReadRegister(offset));
+  }
 }
 
 void Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
 {
-  // TODO: Splitting of half/word reads.
-  Assert(size == MemoryAccessSize::Byte);
-  m_cdrom->WriteRegister(offset, Truncate8(value));
+  switch (size)
+  {
+    case MemoryAccessSize::Word:
+    {
+      m_cdrom->WriteRegister(offset, Truncate8(value & 0xFFu));
+      m_cdrom->WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+      m_cdrom->WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
+      m_cdrom->WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
+    }
+    break;
+
+    case MemoryAccessSize::HalfWord:
+    {
+      m_cdrom->WriteRegister(offset, Truncate8(value & 0xFFu));
+      m_cdrom->WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+    }
+    break;
+
+    case MemoryAccessSize::Byte:
+    default:
+      return m_cdrom->WriteRegister(offset, Truncate8(value));
+  }
 }
 
 u32 Bus::DoReadGPU(MemoryAccessSize size, u32 offset)
 {
-  Assert(size == MemoryAccessSize::Word);
-  return m_gpu->ReadRegister(offset);
+  u32 value = m_gpu->ReadRegister(offset);
+  FixupUnalignedWordAccessW32(offset, value);
+  return value;
 }
 
 void Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
 {
-  Assert(size == MemoryAccessSize::Word);
+  FixupUnalignedWordAccessW32(offset, value);
   m_gpu->WriteRegister(offset, value);
 }
 
 u32 Bus::DoReadMDEC(MemoryAccessSize size, u32 offset)
 {
-  Assert(size == MemoryAccessSize::Word);
-  return m_mdec->ReadRegister(offset);
+  u32 value = m_mdec->ReadRegister(offset);
+  FixupUnalignedWordAccessW32(offset, value);
+  return value;
 }
 
 void Bus::DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value)
 {
-  Assert(size == MemoryAccessSize::Word);
+  FixupUnalignedWordAccessW32(offset, value);
   m_mdec->WriteRegister(offset, value);
 }
 

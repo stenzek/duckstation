@@ -44,7 +44,7 @@ TickCount Bus::DoRAMAccess(u32 offset, u32& value)
     }
   }
 
-  return (type == MemoryAccessType::Read) ? 3 : 0;
+  return (type == MemoryAccessType::Read) ? 4 : 0;
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -110,7 +110,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadMemoryControl(size, address & PAD_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -123,7 +123,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadPad(size, address & PAD_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -136,7 +136,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadSIO(size, address & SIO_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -149,7 +149,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadMemoryControl2(size, address & PAD_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -162,7 +162,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadInterruptController(size, address & INTERRUPT_CONTROLLER_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -175,7 +175,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadDMA(size, address & DMA_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -188,7 +188,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadTimers(size, address & TIMERS_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -218,7 +218,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadGPU(size, address & GPU_MASK);
-      return 1;
+      return 2;
     }
     else
     {
@@ -231,7 +231,7 @@ TickCount Bus::DispatchAccess(PhysicalMemoryAddress address, u32& value)
     if constexpr (type == MemoryAccessType::Read)
     {
       value = DoReadMDEC(size, address & MDEC_MASK);
-      return 1;
+      return 2;
     }
     else
     {
