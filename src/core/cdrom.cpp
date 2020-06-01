@@ -1211,15 +1211,16 @@ void CDROM::ExecuteCommand()
 
     case Command::GetlocL:
     {
-      Log_DebugPrintf("CDROM GetlocL command - header %s [%02X:%02X:%02X]",
-                      m_last_sector_header_valid ? "valid" : "invalid", m_last_sector_header.minute,
-                      m_last_sector_header.second, m_last_sector_header.frame);
       if (!m_last_sector_header_valid)
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        Log_DevPrintf("CDROM GetlocL command - header invalid, status 0x%02X", m_secondary_status.bits);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
+        Log_DebugPrintf("CDROM GetlocL command - [%02X:%02X:%02X]", m_last_sector_header.minute,
+                        m_last_sector_header.second, m_last_sector_header.frame);
+
         m_response_fifo.PushRange(reinterpret_cast<const u8*>(&m_last_sector_header), sizeof(m_last_sector_header));
         m_response_fifo.PushRange(reinterpret_cast<const u8*>(&m_last_sector_subheader),
                                   sizeof(m_last_sector_subheader));
@@ -1577,6 +1578,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = true;
+  m_last_sector_header_valid = false;
 
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   m_drive_event->SetIntervalAndSchedule(seek_time);
