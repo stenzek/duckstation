@@ -818,13 +818,21 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Formula from Mednafen.
-  TickCount ticks = std::max<TickCount>(20000, lba_diff * MASTER_CLOCK * 1000 / (72 * 60 * 75) / 1000);
+  TickCount ticks = std::max<TickCount>(
+    20000, static_cast<u32>(
+             ((static_cast<u64>(lba_diff) * static_cast<u64>(MASTER_CLOCK) * static_cast<u64>(1000)) / (72 * 60 * 75)) /
+             1000));
   if (!m_secondary_status.motor_on)
     ticks += MASTER_CLOCK;
   if (lba_diff >= 2550)
     ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
   else if (m_drive_state == DriveState::Idle) // paused
-    ticks += 1237952 << (BoolToUInt8(!m_mode.double_speed));
+  {
+    // When paused, the CDC seems to keep reading the disc until it hits the position it's set to, then skip 10-15
+    // sectors back (depending on how far into the disc it is). We'll be generous and use 4 sectors, since on average
+    // it's probably closer.
+    ticks += GetTicksForRead() * 4u;
+  }
 
   if (m_mode.double_speed != m_current_double_speed)
   {
@@ -835,10 +843,6 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     // Approximate time for the motor to change speed?
     ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 0.1);
   }
-
-  // it's unlikely that the drive would seek to exactly the correct position, so simulate this by adding the time
-  // required to read a few sectors
-  ticks += GetTicksForRead() * 4u;
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
