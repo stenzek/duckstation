@@ -71,8 +71,11 @@ void SPU::Reset()
     v.current_block_samples.fill(s16(0));
     v.previous_block_last_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
-    v.SetADSRPhase(ADSRPhase::Off);
+    v.adsr_envelope.Reset(0, false, false);
+    v.adsr_phase = ADSRPhase::Off;
+    v.adsr_target = 0;
     v.has_samples = false;
+    v.ignore_loop_address = false;
   }
 
   m_transfer_fifo.Clear();
@@ -594,21 +597,25 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
     case 0x08: // adsr low
     {
-      Log_DebugPrintf("SPU voice %u ADSR low <- 0x%04X", voice_index, value);
+      Log_DebugPrintf("SPU voice %u ADSR low <- 0x%04X (was 0x%04X)", voice_index, value, voice.regs.adsr.bits_low);
       voice.regs.adsr.bits_low = value;
+      if (voice.IsOn())
+        voice.UpdateADSREnvelope();
     }
     break;
 
     case 0x0A: // adsr high
     {
-      Log_DebugPrintf("SPU voice %u ADSR high <- 0x%04X", voice_index, value);
+      Log_DebugPrintf("SPU voice %u ADSR high <- 0x%04X (was 0x%04X)", voice_index, value, voice.regs.adsr.bits_low);
       voice.regs.adsr.bits_high = value;
+      if (voice.IsOn())
+        voice.UpdateADSREnvelope();
     }
     break;
 
     case 0x0C: // adsr volume
     {
-      Log_DebugPrintf("SPU voice %u ADSR volume <- 0x%04X", voice_index, value);
+      Log_DebugPrintf("SPU voice %u ADSR volume <- 0x%04X (was 0x%04X)", voice_index, value, voice.regs.adsr_volume);
       voice.regs.adsr_volume = value;
     }
     break;
@@ -1055,7 +1062,8 @@ void SPU::Voice::KeyOn()
   adpcm_last_samples.fill(0);
   has_samples = false;
   ignore_loop_address = false;
-  SetADSRPhase(ADSRPhase::Attack);
+  adsr_phase = ADSRPhase::Attack;
+  UpdateADSREnvelope();
 }
 
 void SPU::Voice::KeyOff()
@@ -1063,7 +1071,8 @@ void SPU::Voice::KeyOff()
   if (adsr_phase == ADSRPhase::Off || adsr_phase == ADSRPhase::Release)
     return;
 
-  SetADSRPhase(ADSRPhase::Release);
+  adsr_phase = ADSRPhase::Release;
+  UpdateADSREnvelope();
 }
 
 void SPU::Voice::ForceOff()
@@ -1072,7 +1081,7 @@ void SPU::Voice::ForceOff()
     return;
 
   regs.adsr_volume = 0;
-  SetADSRPhase(ADSRPhase::Off);
+  adsr_phase = ADSRPhase::Off;
 }
 
 SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
@@ -1216,10 +1225,9 @@ void SPU::VolumeSweep::Tick()
     (envelope.decreasing ? (current_level > ENVELOPE_MIN_VOLUME) : (current_level < ENVELOPE_MAX_VOLUME));
 }
 
-void SPU::Voice::SetADSRPhase(ADSRPhase phase)
+void SPU::Voice::UpdateADSREnvelope()
 {
-  adsr_phase = phase;
-  switch (phase)
+  switch (adsr_phase)
   {
     case ADSRPhase::Off:
       adsr_target = 0;
@@ -1261,7 +1269,10 @@ void SPU::Voice::TickADSR()
     const bool reached_target =
       adsr_envelope.decreasing ? (regs.adsr_volume <= adsr_target) : (regs.adsr_volume >= adsr_target);
     if (reached_target)
-      SetADSRPhase(GetNextADSRPhase(adsr_phase));
+    {
+      adsr_phase = GetNextADSRPhase(adsr_phase);
+      UpdateADSREnvelope();
+    }
   }
 }
 

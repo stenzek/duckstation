@@ -277,7 +277,7 @@ private:
     s32 Interpolate() const;
 
     // Switches to the specified phase, filling in target.
-    void SetADSRPhase(ADSRPhase phase);
+    void UpdateADSREnvelope();
 
     // Updates the ADSR volume/phase.
     void TickADSR();
