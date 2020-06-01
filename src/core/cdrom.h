@@ -202,6 +202,10 @@ private:
   {
     return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical);
   }
+  bool IsReadingOrPlaying() const
+  {
+    return (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
+  }
   bool CanReadMedia() const { return (m_drive_state != DriveState::ShellOpening && m_reader.HasMedia()); }
   bool HasPendingCommand() const { return m_command != Command::None; }
   bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
@@ -220,6 +224,7 @@ private:
   TickCount GetTicksForRead();
   TickCount GetTicksForSeek(CDImage::LBA new_lba);
   TickCount GetTicksForStop(bool motor_was_on);
+  CDImage::LBA GetNextSectorToBeRead();
   void BeginCommand(Command command); // also update status register
   void EndCommand();                  // also updates status register
   void AbortCommand();
