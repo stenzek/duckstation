@@ -91,10 +91,9 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLUS-01435" compatibility="1" region="NTSC-U" title="Army Men - World War - Team Assault (USA)">
-    <compatibility>Doesn't Boot</compatibility>
-    <version-tested>0.1-908-g9f22684</version-tested>
-    <comments>Stuck at loading screen (Issue ##366)</comments>
+  <entry code="SLUS-01435" compatibility="5" region="NTSC-U" title="Army Men - World War - Team Assault (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-967-gf856a8a</version-tested>
   </entry>
   <entry code="SLUS-00491" compatibility="5" region="NTSC-U" title="Army Men 3D (USA)">
     <compatibility>No Issues</compatibility>
@@ -582,6 +581,10 @@
     <version-tested>0.1-884-g096ed21</version-tested>
     <comments>The game by itself and the options menus are working fine. The 'Justice Gakuen' option is broken.</comments>
   </entry>
+  <entry code="SLUS-00653" compatibility="5" region="NTSC-U" title="Pocket Fighter (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-973-g8eb3ac6</version-tested>
+  </entry>
   <entry code="SLPM-86146" compatibility="5" region="NTSC-J" title="Pop'n Tanks!">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
@@ -630,6 +633,10 @@
   <entry code="SLUS-00170" compatibility="5" region="NTSC-U" title="Resident Evil (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SLUS-01087" compatibility="5" region="NTSC-U" title="Resident Evil - Survivor (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-967-gf856a8a</version-tested>
   </entry>
   <entry code="SLUS-00923" compatibility="5" region="NTSC-U" title="Resident Evil 3 - Nemesis (USA)">
     <compatibility>No Issues</compatibility>
@@ -874,6 +881,10 @@
   </entry>
   <entry code="SLPM-86033" compatibility="5" region="NTSC-J" title="Tobal 2">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01311" compatibility="5" region="NTSC-U" title="Tomb Raider Chronicles (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-967-gf856a8a</version-tested>
   </entry>
   <entry code="SLP-02108-9" compatibility="5" region="NTSC-J" title="Tron ni Kobun">
     <compatibility>No Issues</compatibility>
