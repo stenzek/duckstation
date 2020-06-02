@@ -510,7 +510,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
 #if API_D3D11
-  v_depth = 1.0 - (float(u_base_vertex_depth_id + (u_check_mask_before_draw ? 0u : v_id)) / 65535.0);
+  v_depth = 1.0 - (float(u_base_vertex_depth_id + (u_check_mask_before_draw ? v_id : 0u)) / 65535.0);
 #else
   v_depth = 1.0 - (float(v_id - u_base_vertex_depth_id) / 65535.0);
 #endif
