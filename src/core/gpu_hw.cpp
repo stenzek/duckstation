@@ -99,6 +99,12 @@ void GPU_HW::PrintSettingsToLog()
   Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
 }
 
+void GPU_HW::UpdateVRAMReadTexture()
+{
+  m_renderer_stats.num_vram_read_texture_updates++;
+  ClearVRAMDirtyRectangle();
+}
+
 void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
 {
   // Taken from beetle-psx gpu_polygon.cpp
@@ -661,8 +667,6 @@ void GPU_HW::DispatchRenderCommand()
           FlushRender();
 
         UpdateVRAMReadTexture();
-        m_renderer_stats.num_vram_read_texture_updates++;
-        ClearVRAMDirtyRectangle();
       }
     }
 

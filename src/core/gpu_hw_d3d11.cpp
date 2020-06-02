@@ -805,6 +805,8 @@ void GPU_HW_D3D11::UpdateVRAMReadTexture()
   const CD3D11_BOX src_box(scaled_rect.left, scaled_rect.top, 0, scaled_rect.right, scaled_rect.bottom, 1);
   m_context->CopySubresourceRegion(m_vram_read_texture, 0, scaled_rect.left, scaled_rect.top, 0, m_vram_texture, 0,
                                    &src_box);
+
+  GPU_HW::UpdateVRAMReadTexture();
 }
 
 void GPU_HW_D3D11::UpdateDepthBufferFromMaskBit()

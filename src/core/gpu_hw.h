@@ -157,7 +157,7 @@ protected:
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
-  virtual void UpdateVRAMReadTexture() = 0;
+  virtual void UpdateVRAMReadTexture();
   virtual void UpdateDepthBufferFromMaskBit() = 0;
   virtual void SetScissorFromDrawingArea() = 0;
   virtual void MapBatchVertexPointer(u32 required_vertices) = 0;

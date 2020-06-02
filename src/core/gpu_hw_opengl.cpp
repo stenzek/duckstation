@@ -945,6 +945,8 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
     glEnable(GL_SCISSOR_TEST);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo_id);
   }
+
+  GPU_HW::UpdateVRAMReadTexture();
 }
 
 void GPU_HW_OpenGL::UpdateDepthBufferFromMaskBit()
