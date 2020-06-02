@@ -497,7 +497,10 @@ void GPU::UpdateCRTCDisplayParameters()
     }
   }
 
-  const u8 height_shift = BoolToUInt8(m_GPUSTAT.vertical_interlace);
+  // If force-progressive is enabled, we only double the height in 480i mode. This way non-interleaved 480i framebuffers
+  // won't be broken when displayed.
+  const u8 y_shift = BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution);
+  const u8 height_shift = m_force_progressive_scan ? y_shift : BoolToUInt8(m_GPUSTAT.vertical_interlace);
 
   // Determine screen size.
   cs.display_width = (((cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider) + 2u) & ~3u;
@@ -541,13 +544,13 @@ void GPU::UpdateCRTCDisplayParameters()
 
   if (vertical_display_start >= cs.vertical_active_start)
   {
-    cs.display_origin_top = (vertical_display_start - cs.vertical_active_start) << height_shift;
+    cs.display_origin_top = (vertical_display_start - cs.vertical_active_start) << y_shift;
     cs.display_vram_top = m_crtc_state.regs.Y;
   }
   else
   {
     cs.display_origin_top = 0;
-    cs.display_vram_top = m_crtc_state.regs.Y + ((cs.vertical_active_start - vertical_display_start) << height_shift);
+    cs.display_vram_top = m_crtc_state.regs.Y + ((cs.vertical_active_start - vertical_display_start) << y_shift);
   }
 
   if (vertical_display_end <= cs.vertical_active_end)
