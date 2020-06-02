@@ -88,6 +88,7 @@ jobs:
   create-release:
     needs: [windows-build, linux-build]
     runs-on: "ubuntu-latest"
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Download Windows x64 Artifact
         uses: actions/download-artifact@v1
