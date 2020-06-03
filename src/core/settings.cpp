@@ -2,8 +2,16 @@
 #include "common/string_util.h"
 #include "host_interface.h"
 #include <array>
+#include <algorithm>
 
 Settings::Settings() = default;
+
+bool Settings::HasAnyPerGameMemoryCards() const
+{
+  return std::any_of(memory_card_types.begin(), memory_card_types.end(), [](MemoryCardType t) {
+    return (t == MemoryCardType::PerGame || t == MemoryCardType::PerGameTitle);
+  });
+}
 
 void Settings::Load(SettingsInterface& si)
 {

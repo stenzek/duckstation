@@ -113,10 +113,7 @@ struct Settings
   bool log_to_window = false;
   bool log_to_file = false;
 
-  ALWAYS_INLINE bool HasAnyPerGameMemoryCards() const
-  {
-    return (memory_card_types[0] == MemoryCardType::PerGame || memory_card_types[1] == MemoryCardType::PerGame);
-  }
+  bool HasAnyPerGameMemoryCards() const;
 
   enum : u32
   {
