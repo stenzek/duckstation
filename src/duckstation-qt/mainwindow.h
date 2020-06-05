@@ -33,6 +33,8 @@ private Q_SLOTS:
   void updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main);
   void destroyDisplay();
   void focusDisplayWidget();
+
+  void onEmulationStarting();
   void onEmulationStarted();
   void onEmulationStopped();
   void onEmulationPaused(bool paused);

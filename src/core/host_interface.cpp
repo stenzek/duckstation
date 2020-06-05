@@ -93,6 +93,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   if (!AcquireHostDisplay())
   {
     ReportFormattedError("Failed to acquire host display");
+    OnSystemDestroyed();
     return false;
   }
 

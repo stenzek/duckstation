@@ -209,6 +209,7 @@ void QtHostInterface::bootSystem(const SystemBootParameters& params)
     return;
   }
 
+  emit emulationStarting();
   BootSystem(params);
 }
 
@@ -221,6 +222,7 @@ void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_o
     return;
   }
 
+  emit emulationStarting();
   if (filename.isEmpty())
     HostInterface::ResumeSystemFromMostRecentState();
   else
@@ -235,6 +237,7 @@ void QtHostInterface::resumeSystemFromMostRecentState()
     return;
   }
 
+  emit emulationStarting();
   HostInterface::ResumeSystemFromMostRecentState();
 }
 

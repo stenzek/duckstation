@@ -184,9 +184,17 @@ void MainWindow::focusDisplayWidget()
   m_display_widget->setFocus();
 }
 
-void MainWindow::onEmulationStarted()
+void MainWindow::onEmulationStarting()
 {
   m_emulation_running = true;
+  updateEmulationActions(true, false);
+
+  // ensure it gets updated, since the boot can take a while
+  QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+}
+
+void MainWindow::onEmulationStarted()
+{
   updateEmulationActions(false, true);
 }
 
@@ -503,7 +511,8 @@ void MainWindow::connectSignals()
 
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
-  connect(m_ui.actionResumeLastState, &QAction::triggered, m_host_interface, &QtHostInterface::resumeSystemFromMostRecentState);
+  connect(m_ui.actionResumeLastState, &QAction::triggered, m_host_interface,
+          &QtHostInterface::resumeSystemFromMostRecentState);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
@@ -555,6 +564,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::updateDisplayRequested, this, &MainWindow::updateDisplay,
           Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::focusDisplayWidgetRequested, this, &MainWindow::focusDisplayWidget);
+  connect(m_host_interface, &QtHostInterface::emulationStarting, this, &MainWindow::onEmulationStarting);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);

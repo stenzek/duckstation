@@ -93,6 +93,7 @@ Q_SIGNALS:
   void errorReported(const QString& message);
   void messageReported(const QString& message);
   bool messageConfirmed(const QString& message);
+  void emulationStarting();
   void emulationStarted();
   void emulationStopped();
   void emulationPaused(bool paused);
