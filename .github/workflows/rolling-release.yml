@@ -42,7 +42,7 @@ jobs:
         path: "duckstation-windows-x64-release.7z"
 
   linux-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
 
