@@ -39,7 +39,14 @@ bool SDLAudioStream::OpenDevice()
   spec.userdata = static_cast<void*>(this);
 
   SDL_AudioSpec obtained_spec = {};
-  m_device_id = SDL_OpenAudioDevice(nullptr, 0, &spec, &obtained_spec, SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+
+#ifdef SDL_AUDIO_ALLOW_SAMPLES_CHANGE
+  const u32 allowed_change_flags = SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
+#else
+  const u32 allowed_change_flags = 0;
+#endif
+
+  m_device_id = SDL_OpenAudioDevice(nullptr, 0, &spec, &obtained_spec, allowed_change_flags);
   if (m_device_id == 0)
   {
     Log_ErrorPrintf("SDL_OpenAudioDevice() failed: %s", SDL_GetError());
