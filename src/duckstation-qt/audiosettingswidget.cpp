@@ -1,8 +1,9 @@
 #include "audiosettingswidget.h"
 #include "common/audio_stream.h"
+#include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
+AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
   m_ui.setupUi(this);
@@ -23,6 +24,26 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
 
   updateBufferingLabel();
   updateVolumeLabel();
+
+  dialog->registerWidgetHelp(
+    m_ui.audioBackend, "Audio Backend", "Cubeb",
+    "The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the "
+    "lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.");
+  dialog->registerWidgetHelp(m_ui.bufferSize, "Buffer Size", "2048",
+                             "The buffer size determines the size of the chunks of audio which will be pulled by the "
+                             "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
+                             "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
+                             "this value, so using a low value here may not significantly change latency.");
+  dialog->registerWidgetHelp(m_ui.syncToOutput, "Sync To Output", "Checked",
+                             "Throttles the emulation speed based on the audio backend pulling audio frames. Sync will "
+                             "automatically be disabled if not running at 100% speed.");
+  dialog->registerWidgetHelp(
+    m_ui.startDumpingOnBoot, "Start Dumping On Boot", "Unchecked",
+    "Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option.");
+  dialog->registerWidgetHelp(m_ui.volume, "Volume", "100",
+                             "Controls the volume of the audio played on the host. Values are in percentage.");
+  dialog->registerWidgetHelp(m_ui.muted, "Mute", "Unchecked",
+                             "Prevents the emulator from producing any audible sound.");
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;

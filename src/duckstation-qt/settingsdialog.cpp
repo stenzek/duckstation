@@ -52,7 +52,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_controller_settings = new ControllerSettingsWidget(host_interface, m_ui.settingsContainer);
   m_memory_card_settings = new MemoryCardSettingsWidget(host_interface, m_ui.settingsContainer);
   m_gpu_settings = new GPUSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GeneralSettings), m_general_settings);
