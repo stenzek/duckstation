@@ -61,20 +61,18 @@ void HostInterface::Shutdown() {}
 
 void HostInterface::CreateAudioStream()
 {
-  Log_InfoPrintf("Creating '%s' audio stream, sample rate = %u, channels = %u, buffer size = %u, buffer count = %u",
+  Log_InfoPrintf("Creating '%s' audio stream, sample rate = %u, channels = %u, buffer size = %u",
                  Settings::GetAudioBackendName(m_settings.audio_backend), AUDIO_SAMPLE_RATE, AUDIO_CHANNELS,
-                 m_settings.audio_buffer_size, m_settings.audio_buffer_count);
+                 m_settings.audio_buffer_size);
 
   m_audio_stream = CreateAudioStream(m_settings.audio_backend);
 
-  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
-                                                      m_settings.audio_buffer_count))
+  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size))
   {
     ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
     m_audio_stream.reset();
     m_audio_stream = AudioStream::CreateNullAudioStream();
-    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size,
-                                m_settings.audio_buffer_count);
+    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size);
   }
 
   m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
@@ -1011,7 +1009,6 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Cubeb));
   si.SetIntValue("Audio", "OutputVolume", 100);
   si.SetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
-  si.SetIntValue("Audio", "BufferCount", DEFAULT_AUDIO_BUFFER_COUNT);
   si.SetIntValue("Audio", "OutputMuted", false);
   si.SetBoolValue("Audio", "Sync", true);
   si.SetBoolValue("Audio", "DumpOnBoot", false);
@@ -1072,8 +1069,7 @@ void HostInterface::UpdateSettings(SettingsInterface& si)
     }
 
     if (m_settings.audio_backend != old_settings.audio_backend ||
-        m_settings.audio_buffer_size != old_settings.audio_buffer_size ||
-        m_settings.audio_buffer_count != old_settings.audio_buffer_count)
+        m_settings.audio_buffer_size != old_settings.audio_buffer_size)
     {
       if (m_settings.audio_backend != old_settings.audio_backend)
         ReportFormattedMessage("Switching to %s audio backend.",

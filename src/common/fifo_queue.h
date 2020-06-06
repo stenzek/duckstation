@@ -17,9 +17,10 @@ class FIFOQueue
 public:
   const T* GetDataPointer() const { return m_ptr; }
   T* GetDataPointer() { return m_ptr; }
-  const T* GetFrontPointer() const { return &m_ptr[m_head]; }
-  T* GetFrontPointer() { return &m_ptr[m_head]; }
+  const T* GetReadPointer() const { return &m_ptr[m_head]; }
+  T* GetReadPointer() { return &m_ptr[m_head]; }
   constexpr u32 GetCapacity() const { return CAPACITY; }
+  T* GetWritePointer() { return &m_ptr[m_tail]; }
   u32 GetSize() const { return m_size; }
   u32 GetSpace() const { return CAPACITY - m_size; }
   u32 GetContiguousSpace() const { return (m_tail >= m_head) ? (CAPACITY - m_tail) : (m_head - m_tail); }
@@ -146,6 +147,14 @@ public:
       T& dest = PushAndGetReference();
       dest = std::move(other_queue->Pop());
     }
+  }
+
+  void AdvanceTail(u32 count)
+  {
+    DebugAssert((m_size + count) < CAPACITY);
+    DebugAssert((m_tail + count) <= CAPACITY);
+    m_tail = (m_tail + count) % CAPACITY;
+    m_size += count;
   }
 
 protected:

@@ -56,9 +56,21 @@ bool CubebAudioStream::OpenDevice()
 
   Log_InfoPrintf("Minimum latency in frames: %u", latency_frames);
   if (latency_frames > m_buffer_size)
-    Log_WarningPrintf("Minimum latency is above buffer size: %u vs %u", latency_frames, m_buffer_size);
+  {
+    Log_WarningPrintf("Minimum latency is above buffer size: %u vs %u, adjusting to compensate.", latency_frames,
+                      m_buffer_size);
+
+    if (!SetBufferSize(latency_frames))
+    {
+      Log_ErrorPrintf("Failed to set new buffer size of %u frames", latency_frames);
+      DestroyContext();
+      return false;
+    }
+  }
   else
+  {
     latency_frames = m_buffer_size;
+  }
 
   char stream_name[32];
   std::snprintf(stream_name, sizeof(stream_name), "AudioStream_%p", this);
@@ -72,6 +84,7 @@ bool CubebAudioStream::OpenDevice()
     return false;
   }
 
+  cubeb_stream_set_volume(m_cubeb_stream, static_cast<float>(m_output_volume) / 100.0f);
   return true;
 }
 
@@ -106,15 +119,13 @@ long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const voi
 {
   CubebAudioStream* const this_ptr = static_cast<CubebAudioStream*>(user_ptr);
 
-  const u32 read_frames =
-    this_ptr->ReadSamples(reinterpret_cast<SampleType*>(output_buffer), static_cast<u32>(nframes));
-  const u32 silence_frames = static_cast<u32>(nframes) - read_frames;
-  if (silence_frames > 0)
+  if (this_ptr->m_output_volume_changed.load())
   {
-    std::memset(reinterpret_cast<SampleType*>(output_buffer) + (read_frames * this_ptr->m_channels), 0,
-                silence_frames * this_ptr->m_channels * sizeof(SampleType));
+    this_ptr->m_output_volume_changed.store(false);
+    cubeb_stream_set_volume(this_ptr->m_cubeb_stream, static_cast<float>(this_ptr->m_output_volume) / 100.0f);
   }
 
+  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(output_buffer), static_cast<u32>(nframes), false);
   return nframes;
 }
 
@@ -125,7 +136,7 @@ void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb
   this_ptr->m_paused = (state != CUBEB_STATE_STARTED);
 }
 
-void CubebAudioStream::BufferAvailable() {}
+void CubebAudioStream::FramesAvailable() {}
 
 void CubebAudioStream::DestroyContext()
 {
@@ -136,6 +147,12 @@ void CubebAudioStream::DestroyContext()
   if (m_com_initialized_by_us)
     CoUninitialize();
 #endif
+}
+
+void CubebAudioStream::SetOutputVolume(u32 volume)
+{
+  AudioStream::SetOutputVolume(volume);
+  m_output_volume_changed.store(true);
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream()

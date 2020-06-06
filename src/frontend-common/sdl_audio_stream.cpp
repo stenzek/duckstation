@@ -1,7 +1,7 @@
 #include "sdl_audio_stream.h"
-#include "sdl_initializer.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "sdl_initializer.h"
 #include <SDL.h>
 Log_SetChannel(SDLAudioStream);
 
@@ -9,7 +9,7 @@ SDLAudioStream::SDLAudioStream() = default;
 
 SDLAudioStream::~SDLAudioStream()
 {
-  if (m_is_open)
+  if (IsOpen())
     SDLAudioStream::CloseDevice();
 }
 
@@ -20,7 +20,7 @@ std::unique_ptr<SDLAudioStream> SDLAudioStream::Create()
 
 bool SDLAudioStream::OpenDevice()
 {
-  DebugAssert(!m_is_open);
+  DebugAssert(!IsOpen());
 
   FrontendCommon::EnsureSDLInitialized();
 
@@ -38,41 +38,49 @@ bool SDLAudioStream::OpenDevice()
   spec.callback = AudioCallback;
   spec.userdata = static_cast<void*>(this);
 
-  if (SDL_OpenAudio(&spec, nullptr) < 0)
+  SDL_AudioSpec obtained_spec = {};
+  m_device_id = SDL_OpenAudioDevice(nullptr, 0, &spec, &obtained_spec, SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+  if (m_device_id == 0)
   {
-    Log_ErrorPrintf("SDL_OpenAudio failed");
+    Log_ErrorPrintf("SDL_OpenAudioDevice() failed: %s", SDL_GetError());
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     return false;
   }
 
-  m_is_open = true;
+  if (obtained_spec.samples > spec.samples)
+  {
+    Log_WarningPrintf("Requested buffer size %u, got buffer size %u. Adjusting to compensate.", spec.samples,
+                      obtained_spec.samples);
+
+    if (!SetBufferSize(obtained_spec.samples))
+    {
+      Log_ErrorPrintf("Failed to set new buffer size of %u", obtained_spec.samples);
+      CloseDevice();
+      return false;
+    }
+  }
+
   return true;
 }
 
 void SDLAudioStream::PauseDevice(bool paused)
 {
-  SDL_PauseAudio(paused ? 1 : 0);
+  SDL_PauseAudioDevice(m_device_id, paused ? 1 : 0);
 }
 
 void SDLAudioStream::CloseDevice()
 {
-  DebugAssert(m_is_open);
-  SDL_CloseAudio();
+  SDL_CloseAudioDevice(m_device_id);
   SDL_QuitSubSystem(SDL_INIT_AUDIO);
-  m_is_open = false;
+  m_device_id = 0;
 }
 
 void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
 {
   SDLAudioStream* const this_ptr = static_cast<SDLAudioStream*>(userdata);
-  const u32 num_samples = len / sizeof(SampleType) / this_ptr->m_channels;
-  const u32 read_samples = this_ptr->ReadSamples(reinterpret_cast<SampleType*>(stream), num_samples);
-  const u32 silence_samples = num_samples - read_samples;
-  if (silence_samples > 0)
-  {
-    std::memset(reinterpret_cast<SampleType*>(stream) + (read_samples * this_ptr->m_channels), 0,
-                silence_samples * this_ptr->m_channels * sizeof(SampleType));
-  }
+  const u32 num_frames = len / sizeof(SampleType) / this_ptr->m_channels;
+
+  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames, false);
 }
 
-void SDLAudioStream::BufferAvailable() {}
+void SDLAudioStream::FramesAvailable() {}

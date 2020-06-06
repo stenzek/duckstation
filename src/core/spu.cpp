@@ -674,7 +674,7 @@ void SPU::Execute(TickCount ticks)
   {
     AudioStream* const output_stream = m_system->GetHostInterface()->GetAudioStream();
     s16* output_frame_start;
-    u32 output_frame_space;
+    u32 output_frame_space = remaining_frames;
     output_stream->BeginWrite(&output_frame_start, &output_frame_space);
 
     s16* output_frame = output_frame_start;

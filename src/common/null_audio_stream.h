@@ -11,5 +11,5 @@ protected:
   bool OpenDevice() override;
   void PauseDevice(bool paused) override;
   void CloseDevice() override;
-  void BufferAvailable() override;
+  void FramesAvailable() override;
 };

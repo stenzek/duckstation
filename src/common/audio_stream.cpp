@@ -1,14 +1,16 @@
 #include "audio_stream.h"
 #include "assert.h"
+#include "log.h"
 #include <algorithm>
 #include <cstring>
+Log_SetChannel(AudioStream);
 
 AudioStream::AudioStream() = default;
 
 AudioStream::~AudioStream() = default;
 
 bool AudioStream::Reconfigure(u32 output_sample_rate /*= DefaultOutputSampleRate*/, u32 channels /*= 1*/,
-                              u32 buffer_size /*= DefaultBufferSize*/, u32 buffer_count /*= DefaultBufferCount*/)
+                              u32 buffer_size /*= DefaultBufferSize*/)
 {
   if (IsDeviceOpen())
     CloseDevice();
@@ -16,13 +18,14 @@ bool AudioStream::Reconfigure(u32 output_sample_rate /*= DefaultOutputSampleRate
   m_output_sample_rate = output_sample_rate;
   m_channels = channels;
   m_buffer_size = buffer_size;
-  AllocateBuffers(buffer_count);
   m_output_paused = true;
+
+  if (!SetBufferSize(buffer_size))
+    return false;
 
   if (!OpenDevice())
   {
     EmptyBuffers();
-    m_buffers.clear();
     m_buffer_size = 0;
     m_output_sample_rate = 0;
     m_channels = 0;
@@ -32,7 +35,7 @@ bool AudioStream::Reconfigure(u32 output_sample_rate /*= DefaultOutputSampleRate
   return true;
 }
 
-void AudioStream::SetOutputVolume(s32 volume)
+void AudioStream::SetOutputVolume(u32 volume)
 {
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
   m_output_volume = volume;
@@ -58,7 +61,6 @@ void AudioStream::Shutdown()
 
   CloseDevice();
   EmptyBuffers();
-  m_buffers.clear();
   m_buffer_size = 0;
   m_output_sample_rate = 0;
   m_channels = 0;
@@ -69,182 +71,149 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 {
   m_buffer_mutex.lock();
 
-  EnsureBuffer();
+  EnsureBuffer(*num_frames * m_channels);
 
-  Buffer& buffer = m_buffers[m_first_free_buffer];
-  *buffer_ptr = buffer.data.data() + (buffer.write_position * m_channels);
-  *num_frames = m_buffer_size - buffer.write_position;
+  *buffer_ptr = m_buffer.GetWritePointer();
+  *num_frames = m_buffer.GetContiguousSpace() / m_channels;
 }
 
 void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
 {
-  u32 remaining_frames = num_frames;
+  const u32 num_samples = num_frames * m_channels;
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
 
-  while (remaining_frames > 0)
-  {
-    EnsureBuffer();
-
-    Buffer& buffer = m_buffers[m_first_free_buffer];
-    const u32 to_this_buffer = std::min(m_buffer_size - buffer.write_position, remaining_frames);
-
-    const u32 copy_count = to_this_buffer * m_channels;
-    std::memcpy(&buffer.data[buffer.write_position * m_channels], frames, copy_count * sizeof(SampleType));
-    frames += copy_count;
-
-    remaining_frames -= to_this_buffer;
-    buffer.write_position += to_this_buffer;
-
-    // End of the buffer?
-    if (buffer.write_position == m_buffer_size)
-    {
-      // Reset it back to the start, and enqueue it.
-      buffer.write_position = 0;
-      m_num_free_buffers--;
-      m_first_free_buffer = (m_first_free_buffer + 1) % m_buffers.size();
-      m_num_available_buffers++;
-      BufferAvailable();
-    }
-  }
+  EnsureBuffer(num_samples);
+  m_buffer.PushRange(frames, num_samples);
+  FramesAvailable();
 }
 
 void AudioStream::EndWrite(u32 num_frames)
 {
-  Buffer& buffer = m_buffers[m_first_free_buffer];
-  DebugAssert((buffer.write_position + num_frames) <= m_buffer_size);
-  buffer.write_position += num_frames;
-
-  // End of the buffer?
-  if (buffer.write_position == m_buffer_size)
-  {
-    // Reset it back to the start, and enqueue it.
-    // Log_DevPrintf("Enqueue buffer %u", m_first_free_buffer);
-    buffer.write_position = 0;
-    m_num_free_buffers--;
-    m_first_free_buffer = (m_first_free_buffer + 1) % m_buffers.size();
-    m_num_available_buffers++;
-    BufferAvailable();
-  }
+  m_buffer.AdvanceTail(num_frames * m_channels);
+  FramesAvailable();
 
   m_buffer_mutex.unlock();
 }
 
-float AudioStream::GetMinLatency(u32 sample_rate, u32 buffer_size, u32 buffer_count)
+float AudioStream::GetMaxLatency(u32 sample_rate, u32 buffer_size)
 {
   return (static_cast<float>(buffer_size) / static_cast<float>(sample_rate));
 }
 
-float AudioStream::GetMaxLatency(u32 sample_rate, u32 buffer_size, u32 buffer_count)
+bool AudioStream::SetBufferSize(u32 buffer_size)
 {
-  return (static_cast<float>(buffer_size * (buffer_count - 1)) / static_cast<float>(sample_rate));
+  const u32 buffer_size_in_samples = buffer_size * m_channels;
+  const u32 max_samples = buffer_size_in_samples * 2u;
+  if (max_samples > m_buffer.GetCapacity())
+    return false;
+
+  m_buffer_size = buffer_size;
+  m_max_samples = max_samples;
+  return true;
 }
 
 u32 AudioStream::GetSamplesAvailable() const
 {
   // TODO: Use atomic loads
-  u32 available_buffers;
+  u32 available_samples;
   {
     std::unique_lock<std::mutex> lock(m_buffer_mutex);
-    available_buffers = m_num_available_buffers;
+    available_samples = m_buffer.GetSize();
   }
 
-  return available_buffers * m_buffer_size;
+  return available_samples / m_channels;
 }
 
-u32 AudioStream::ReadSamples(SampleType* samples, u32 num_samples)
+u32 AudioStream::GetSamplesAvailableLocked() const
 {
-  u32 remaining_samples = num_samples;
-  std::unique_lock<std::mutex> lock(m_buffer_mutex);
+  return m_buffer.GetSize() / m_channels;
+}
 
-  while (remaining_samples > 0 && m_num_available_buffers > 0)
+void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_volume)
+{
+  const u32 total_samples = num_frames * m_channels;
+  u32 samples_copied = 0;
   {
-    Buffer& buffer = m_buffers[m_first_available_buffer];
-    const u32 from_this_buffer = std::min(m_buffer_size - buffer.read_position, remaining_samples);
+    std::unique_lock<std::mutex> lock(m_buffer_mutex);
+    samples_copied = std::min(m_buffer.GetSize(), total_samples);
+    if (samples_copied > 0)
+      m_buffer.PopRange(samples, samples_copied);
 
-    const u32 copy_count = from_this_buffer * m_channels;
-    const SampleType* read_pointer = &buffer.data[buffer.read_position * m_channels];
-    for (u32 i = 0; i < copy_count; i++)
-      *(samples++) = ApplyVolume(*(read_pointer++), m_output_volume);
+    m_buffer_draining_cv.notify_one();
+  }
 
-    remaining_samples -= from_this_buffer;
-    buffer.read_position += from_this_buffer;
-
-    if (buffer.read_position == m_buffer_size)
+  if (samples_copied < total_samples)
+  {
+    if (samples_copied > 0)
     {
-      // Log_DevPrintf("Finish dequeing buffer %u", m_first_available_buffer);
-      // End of this buffer.
-      buffer.read_position = 0;
-      m_num_available_buffers--;
-      m_first_available_buffer = (m_first_available_buffer + 1) % m_buffers.size();
-      m_num_free_buffers++;
-      m_buffer_available_cv.notify_one();
+      m_resample_buffer.resize(samples_copied);
+      std::memcpy(m_resample_buffer.data(), samples, sizeof(SampleType) * samples_copied);
+
+      // super basic resampler - spread the input samples evenly across the output samples. will sound like ass and have
+      // aliasing, but better than popping by inserting silence.
+      const u32 increment =
+        static_cast<u32>(65536.0f * (static_cast<float>(samples_copied / m_channels) / static_cast<float>(num_frames)));
+
+      SampleType* out_ptr = samples;
+      const SampleType* resample_ptr = m_resample_buffer.data();
+      const u32 copy_stride = sizeof(SampleType) * m_channels;
+      u32 resample_subpos = 0;
+      for (u32 i = 0; i < num_frames; i++)
+      {
+        std::memcpy(out_ptr, resample_ptr, copy_stride);
+        out_ptr += m_channels;
+
+        resample_subpos += increment;
+        resample_ptr += (resample_subpos >> 16) * m_channels;
+        resample_subpos %= 65536u;
+      }
+
+      Log_DevPrintf("Audio buffer underflow, resampled %u frames to %u", samples_copied / m_channels, num_frames);
+    }
+    else
+    {
+      // read nothing, so zero-fill
+      std::memset(samples, 0, sizeof(SampleType) * total_samples);
+      Log_DevPrintf("Audio buffer underflow with no samples, added %u frames silence", num_frames);
     }
   }
 
-  return num_samples - remaining_samples;
-}
-
-void AudioStream::AllocateBuffers(u32 buffer_count)
-{
-  m_buffers.resize(buffer_count);
-  for (u32 i = 0; i < buffer_count; i++)
+  if (apply_volume && m_output_volume != FullVolume)
   {
-    Buffer& buffer = m_buffers[i];
-    buffer.data.resize(m_buffer_size * m_channels);
-    buffer.read_position = 0;
-    buffer.write_position = 0;
+    SampleType* current_ptr = samples;
+    const SampleType* end_ptr = samples + (num_frames * m_channels);
+    while (current_ptr != end_ptr)
+    {
+      *current_ptr = ApplyVolume(*current_ptr, m_output_volume);
+      current_ptr++;
+    }
   }
-
-  m_first_available_buffer = 0;
-  m_num_available_buffers = 0;
-  m_first_free_buffer = 0;
-  m_num_free_buffers = buffer_count;
 }
 
-void AudioStream::EnsureBuffer()
+void AudioStream::EnsureBuffer(u32 size)
 {
-  if (m_num_free_buffers > 0)
+  if (GetBufferSpace() >= size)
     return;
 
   if (m_sync)
   {
     std::unique_lock<std::mutex> lock(m_buffer_mutex, std::adopt_lock);
-    m_buffer_available_cv.wait(lock, [this]() { return m_num_free_buffers > 0; });
+    m_buffer_draining_cv.wait(lock, [this, size]() { return GetBufferSpace() >= size; });
     lock.release();
   }
   else
   {
-    DropBuffer();
+    m_buffer.Remove(size);
   }
 }
 
-void AudioStream::DropBuffer()
+void AudioStream::DropFrames(u32 count)
 {
-  DebugAssert(m_num_available_buffers > 0);
-  // Log_DevPrintf("Dropping buffer %u", m_first_free_buffer);
-
-  // Out of space. We'll overwrite the oldest buffer with the new data.
-  // At the same time, we shift the available buffer forward one.
-  m_first_available_buffer = (m_first_available_buffer + 1) % m_buffers.size();
-  m_num_available_buffers--;
-
-  m_buffers[m_first_free_buffer].read_position = 0;
-  m_buffers[m_first_free_buffer].write_position = 0;
-  m_num_free_buffers++;
+  m_buffer.Remove(count);
 }
 
 void AudioStream::EmptyBuffers()
 {
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
-
-  for (Buffer& buffer : m_buffers)
-  {
-    buffer.read_position = 0;
-    buffer.write_position = 0;
-  }
-
-  m_first_free_buffer = 0;
-  m_num_free_buffers = static_cast<u32>(m_buffers.size());
-  m_first_available_buffer = 0;
-  m_num_available_buffers = 0;
+  m_buffer.Clear();
 }
