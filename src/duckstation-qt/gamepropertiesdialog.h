@@ -1,6 +1,5 @@
 #pragma once
 #include "ui_gamepropertiesdialog.h"
-#include <QtCore/QMap>
 #include <QtWidgets/QDialog>
 
 struct GameListEntry;
@@ -40,13 +39,17 @@ private:
   void setupAdditionalUi();
   void connectUi();
   void populateCompatibilityInfo(const std::string& game_code);
-  void populateTracksInfo(const char* image_path);
+  void populateTracksInfo(const std::string& image_path);
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
+  void computeTrackHashes();
   void onResize();
 
   Ui::GamePropertiesDialog m_ui;
 
   QtHostInterface* m_host_interface;
 
+  std::string m_image_path;
+
   bool m_compatibility_info_changed = false;
+  bool m_tracks_hashed = false;
 };

@@ -1,8 +1,10 @@
 #include "gamepropertiesdialog.h"
 #include "common/cd_image.h"
+#include "common/cd_image_hasher.h"
 #include "core/game_list.h"
 #include "core/settings.h"
 #include "qthostinterface.h"
+#include "qtprogresscallback.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
 #include <QtGui/QClipboard>
@@ -71,7 +73,7 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
     populateCompatibilityInfo(ge->code);
   }
 
-  populateTracksInfo(ge->path.c_str());
+  populateTracksInfo(ge->path);
 }
 
 void GamePropertiesDialog::populateCompatibilityInfo(const std::string& game_code)
@@ -125,14 +127,15 @@ static QString MSFTotString(const CDImage::Position& position)
     .arg(static_cast<ulong>(position.ToLBA()));
 }
 
-void GamePropertiesDialog::populateTracksInfo(const char* image_path)
+void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
 {
   static constexpr std::array<const char*, 8> track_mode_strings = {
     {"Audio", "Mode 1", "Mode 1/Raw", "Mode 2", "Mode 2/Form 1", "Mode 2/Form 2", "Mode 2/Mix", "Mode 2/Raw"}};
 
   m_ui.tracks->clearContents();
+  m_image_path = image_path;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(image_path);
+  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str());
   if (!image)
     return;
 
@@ -230,7 +233,10 @@ void GamePropertiesDialog::onSetVersionTestedToCurrentClicked()
 
 void GamePropertiesDialog::onComputeHashClicked()
 {
-  QMessageBox::critical(this, tr("Not yet implemented"), tr("Not yet implemented"));
+  if (m_tracks_hashed)
+    return;
+
+  computeTrackHashes();
 }
 
 void GamePropertiesDialog::onVerifyDumpClicked()
@@ -253,4 +259,37 @@ void GamePropertiesDialog::onExportCompatibilityInfoClicked()
                                        &copy_to_clipboard);
   if (copy_to_clipboard)
     QGuiApplication::clipboard()->setText(xml);
+}
+
+void GamePropertiesDialog::computeTrackHashes()
+{
+  if (m_image_path.empty())
+    return;
+
+  std::unique_ptr<CDImage> image = CDImage::Open(m_image_path.c_str());
+  if (!image)
+    return;
+
+  QtProgressCallback progress_callback(this);
+  progress_callback.SetProgressRange(image->GetTrackCount());
+
+  for (u8 track = 1; track <= image->GetTrackCount(); track++)
+  {
+    progress_callback.SetProgressValue(track - 1);
+    progress_callback.PushState();
+
+    CDImageHasher::Hash hash;
+    if (!CDImageHasher::GetTrackHash(image.get(), track, &hash, &progress_callback))
+    {
+      progress_callback.PopState();
+      break;
+    }
+
+    QString hash_string(QString::fromStdString(CDImageHasher::HashToString(hash)));
+
+    QTableWidgetItem* item = m_ui.tracks->item(track - 1, 4);
+    item->setText(hash_string);
+
+    progress_callback.PopState();
+  }
 }

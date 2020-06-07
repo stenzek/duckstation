@@ -22,6 +22,9 @@ bool QtProgressCallback::IsCancelled() const
 
 void QtProgressCallback::SetCancellable(bool cancellable)
 {
+  if (m_cancellable == cancellable)
+    return;
+
   BaseProgressCallback::SetCancellable(cancellable);
   m_dialog.setCancelButtonText(cancellable ? tr("Cancel") : QString());
 }
@@ -35,17 +38,17 @@ void QtProgressCallback::SetStatusText(const char* text)
 void QtProgressCallback::SetProgressRange(u32 range)
 {
   BaseProgressCallback::SetProgressRange(range);
-  m_dialog.setRange(0, static_cast<int>(range));
+  m_dialog.setRange(0, m_progress_range);
 }
 
 void QtProgressCallback::SetProgressValue(u32 value)
 {
   BaseProgressCallback::SetProgressValue(value);
 
-  if (m_dialog.value() == static_cast<int>(value))
+  if (m_dialog.value() == m_progress_range)
     return;
 
-  m_dialog.setValue(value);
+  m_dialog.setValue(m_progress_value);
   QCoreApplication::processEvents();
 }
 
