@@ -260,6 +260,7 @@ void System::InitializeComponents()
   m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
   m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
+  m_gpu->UpdateSettings();
 
   UpdateThrottlePeriod();
 }

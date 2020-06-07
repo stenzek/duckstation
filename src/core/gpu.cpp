@@ -35,6 +35,8 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
     m_system->CreateTimingEvent("GPU Tick", 1, 1, std::bind(&GPU::Execute, this, std::placeholders::_1), true);
   m_fifo_size = system->GetSettings().gpu_fifo_size;
   m_max_run_ahead = system->GetSettings().gpu_max_run_ahead;
+  m_console_is_pal = system->IsPALRegion();
+  UpdateCRTCConfig();
   return true;
 }
 
@@ -46,9 +48,10 @@ void GPU::UpdateSettings()
   m_fifo_size = settings.gpu_fifo_size;
   m_max_run_ahead = settings.gpu_max_run_ahead;
 
-  if (m_force_ntsc_timings != settings.gpu_force_ntsc_timings)
+  if (m_force_ntsc_timings != settings.gpu_force_ntsc_timings || m_console_is_pal != m_system->IsPALRegion())
   {
     m_force_ntsc_timings = settings.gpu_force_ntsc_timings;
+    m_console_is_pal = m_system->IsPALRegion();
     UpdateCRTCConfig();
   }
 
@@ -129,6 +132,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_drawing_offset.y);
   sw.Do(&m_drawing_offset.x);
 
+  sw.Do(&m_console_is_pal);
   sw.Do(&m_set_texture_disable_mask);
 
   sw.Do(&m_crtc_state.regs.display_address_start);
@@ -353,6 +357,42 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
   }
 }
 
+/**
+ * NTSC GPU clock 53.693175 MHz
+ * PAL GPU clock 53.203425 MHz
+ * courtesy of @ggrtk
+ *
+ * NTSC - sysclk * 715909 / 451584
+ * PAL - sysclk * 709379 / 451584
+ */
+
+TickCount GPU::GPUTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_ticks) const
+{
+  // convert to master clock, rounding up as we want to overshoot not undershoot
+  if (!m_console_is_pal)
+    return static_cast<TickCount>((u64(gpu_ticks) * u64(451584) + fractional_ticks + u64(715908)) / u64(715909));
+  else
+    return static_cast<TickCount>((u64(gpu_ticks) * u64(451584) + fractional_ticks + u64(709378)) / u64(709379));
+}
+
+TickCount GPU::SystemTicksToGPUTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const
+{
+  if (!m_console_is_pal)
+  {
+    const u64 mul = u64(sysclk_ticks) * u64(715909) + u64(*fractional_ticks);
+    const TickCount ticks = static_cast<TickCount>(mul / u64(451584));
+    *fractional_ticks = static_cast<TickCount>(mul % u64(451584));
+    return ticks;
+  }
+  else
+  {
+    const u64 mul = u64(sysclk_ticks) * u64(709379) + u64(*fractional_ticks);
+    const TickCount ticks = static_cast<TickCount>(mul / u64(451584));
+    *fractional_ticks = static_cast<TickCount>(mul % u64(451584));
+    return ticks;
+  }
+}
+
 void GPU::AddCommandTicks(TickCount ticks)
 {
   if (m_command_ticks != 0)
@@ -364,7 +404,7 @@ void GPU::AddCommandTicks(TickCount ticks)
   m_command_ticks = GetPendingGPUTicks() + ticks;
 
   // reschedule GPU tick event if it would execute later than this command finishes
-  const TickCount sysclk_ticks = GPUTicksToSystemTicks(ticks);
+  const TickCount sysclk_ticks = GPUTicksToSystemTicks(ticks, 0);
   if (m_tick_event->GetTicksUntilNextExecution() > sysclk_ticks)
     m_tick_event->Schedule(sysclk_ticks);
 }
@@ -372,6 +412,23 @@ void GPU::AddCommandTicks(TickCount ticks)
 void GPU::Synchronize()
 {
   m_tick_event->InvokeEarly();
+}
+
+float GPU::ComputeHorizontalFrequency() const
+{
+  const CRTCState& cs = m_crtc_state;
+  TickCount fractional_ticks = 0;
+  return static_cast<float>(static_cast<double>(SystemTicksToGPUTicks(MASTER_CLOCK, &fractional_ticks)) /
+                            static_cast<double>(cs.horizontal_total));
+}
+
+float GPU::ComputeVerticalFrequency() const
+{
+  const CRTCState& cs = m_crtc_state;
+  const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
+  TickCount fractional_ticks = 0;
+  return static_cast<float>(static_cast<double>(SystemTicksToGPUTicks(MASTER_CLOCK, &fractional_ticks)) /
+                            static_cast<double>(ticks_per_frame));
 }
 
 void GPU::UpdateCRTCConfig()
@@ -420,10 +477,7 @@ void GPU::UpdateCRTCConfig()
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
 
-  const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
-  const float vertical_frequency =
-    static_cast<float>(static_cast<double>((u64(MASTER_CLOCK) * 11) / 7) / static_cast<double>(ticks_per_frame));
-  m_system->SetThrottleFrequency(vertical_frequency);
+  m_system->SetThrottleFrequency(ComputeVerticalFrequency());
 
   UpdateCRTCDisplayParameters();
   UpdateSliceTicks();
@@ -571,7 +625,8 @@ void GPU::UpdateCRTCDisplayParameters()
 TickCount GPU::GetPendingGPUTicks() const
 {
   const TickCount pending_sysclk_ticks = m_tick_event->GetTicksSinceLastExecution();
-  return ((pending_sysclk_ticks * 11) + m_crtc_state.fractional_ticks) / 7;
+  TickCount fractional_ticks = m_crtc_state.fractional_ticks;
+  return SystemTicksToGPUTicks(pending_sysclk_ticks, &fractional_ticks);
 }
 
 void GPU::UpdateSliceTicks()
@@ -595,7 +650,8 @@ void GPU::UpdateSliceTicks()
 #endif
 
   m_tick_event->Schedule(
-    GPUTicksToSystemTicks((m_command_ticks > 0) ? std::min(m_command_ticks, ticks_until_event) : ticks_until_event));
+    GPUTicksToSystemTicks((m_command_ticks > 0) ? std::min(m_command_ticks, ticks_until_event) : ticks_until_event,
+                          m_crtc_state.fractional_ticks));
 }
 
 bool GPU::IsRasterScanlinePending() const
@@ -614,9 +670,7 @@ void GPU::Execute(TickCount ticks)
 {
   // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
   {
-    const TickCount ticks_mul_11 = (ticks * 11) + m_crtc_state.fractional_ticks;
-    const TickCount gpu_ticks = ticks_mul_11 / 7;
-    m_crtc_state.fractional_ticks = ticks_mul_11 % 7;
+    const TickCount gpu_ticks = SystemTicksToGPUTicks(ticks, &m_crtc_state.fractional_ticks);
     m_crtc_state.current_tick_in_scanline += gpu_ticks;
 
     // handle blits
@@ -1326,6 +1380,10 @@ void GPU::DrawDebugStateWindow()
   if (ImGui::CollapsingHeader("CRTC", ImGuiTreeNodeFlags_DefaultOpen))
   {
     const auto& cs = m_crtc_state;
+    ImGui::Text("Clock: %s", (m_console_is_pal ? (m_GPUSTAT.pal_mode ? "PAL-on-PAL" : "NTSC-on-PAL") :
+                                                 (m_GPUSTAT.pal_mode ? "PAL-on-NTSC" : "NTSC-on-NTSC")));
+    ImGui::Text("Horizontal Frequency: %.3f KHz", ComputeHorizontalFrequency() / 1000.0f);
+    ImGui::Text("Vertical Frequency: %.3f Hz", ComputeVerticalFrequency());
     ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
     ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
                 m_crtc_state.interlaced_field ? "odd" : "even");
