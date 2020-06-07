@@ -31,6 +31,7 @@ public:
 
   ID3D11Texture2D* GetD3DTexture() const { return m_texture.Get(); }
   ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.Get(); }
+  ID3D11ShaderResourceView* const* GetD3DSRVArray() const { return m_srv.GetAddressOf(); }
   bool IsDynamic() const { return m_dynamic; }
 
   static std::unique_ptr<D3D11HostDisplayTexture> Create(ID3D11Device* device, u32 width, u32 height, const void* data,
@@ -344,6 +345,18 @@ bool D3D11HostDisplay::CreateD3DResources()
   if (FAILED(hr))
     return false;
 
+  blend_desc.RenderTarget[0].BlendEnable = TRUE;
+  blend_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+  blend_desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+  blend_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+  blend_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+  blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+  blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+  blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+  hr = m_device->CreateBlendState(&blend_desc, m_software_cursor_blend_state.GetAddressOf());
+  if (FAILED(hr))
+    return false;
+
   CD3D11_SAMPLER_DESC sampler_desc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
   sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
   hr = m_device->CreateSamplerState(&sampler_desc, m_point_sampler.GetAddressOf());
@@ -394,6 +407,9 @@ void D3D11HostDisplay::Render()
   ImGui::Render();
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+  if (HasSoftwareCursor())
+    RenderSoftwareCursor();
+
   if (!m_vsync && m_allow_tearing_supported)
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
@@ -435,6 +451,32 @@ void D3D11HostDisplay::RenderDisplay()
   m_context->RSSetState(m_display_rasterizer_state.Get());
   m_context->OMSetDepthStencilState(m_display_depth_stencil_state.Get(), 0);
   m_context->OMSetBlendState(m_display_blend_state.Get(), nullptr, 0xFFFFFFFFu);
+
+  m_context->Draw(3, 0);
+}
+
+void D3D11HostDisplay::RenderSoftwareCursor()
+{
+  m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+  m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
+  m_context->PSSetShader(m_display_pixel_shader.Get(), nullptr, 0);
+  m_context->PSSetShaderResources(0, 1,
+                                  static_cast<D3D11HostDisplayTexture*>(m_cursor_texture.get())->GetD3DSRVArray());
+  m_context->PSSetSamplers(0, 1, m_linear_sampler.GetAddressOf());
+
+  const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+  const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
+  std::memcpy(map.pointer, uniforms, sizeof(uniforms));
+  m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));
+  m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
+
+  const auto [vp_left, vp_top, vp_width, vp_height] = CalculateSoftwareCursorDrawRect();
+  const CD3D11_VIEWPORT vp(static_cast<float>(vp_left), static_cast<float>(vp_top), static_cast<float>(vp_width),
+                           static_cast<float>(vp_height));
+  m_context->RSSetViewports(1, &vp);
+  m_context->RSSetState(m_display_rasterizer_state.Get());
+  m_context->OMSetDepthStencilState(m_display_depth_stencil_state.Get(), 0);
+  m_context->OMSetBlendState(m_software_cursor_blend_state.Get(), nullptr, 0xFFFFFFFFu);
 
   m_context->Draw(3, 0);
 }

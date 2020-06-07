@@ -44,6 +44,7 @@ private:
 
   void Render() override;
   void RenderDisplay();
+  void RenderSoftwareCursor();
 
   SDL_Window* m_window = nullptr;
 
@@ -57,6 +58,7 @@ private:
   ComPtr<ID3D11RasterizerState> m_display_rasterizer_state;
   ComPtr<ID3D11DepthStencilState> m_display_depth_stencil_state;
   ComPtr<ID3D11BlendState> m_display_blend_state;
+  ComPtr<ID3D11BlendState> m_software_cursor_blend_state;
   ComPtr<ID3D11VertexShader> m_display_vertex_shader;
   ComPtr<ID3D11PixelShader> m_display_pixel_shader;
   ComPtr<ID3D11SamplerState> m_point_sampler;
