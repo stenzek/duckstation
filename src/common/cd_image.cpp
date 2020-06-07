@@ -72,6 +72,28 @@ CDImage::TrackMode CDImage::GetTrackMode(u8 track) const
   return m_tracks[track - 1].mode;
 }
 
+CDImage::LBA CDImage::GetTrackIndexPosition(u8 track, u8 index) const
+{
+  for (const Index& current_index : m_indices)
+  {
+    if (current_index.track_number == track && current_index.index_number == index)
+      return current_index.start_lba_on_disc;
+  }
+
+  return m_lba_count;
+}
+
+CDImage::LBA CDImage::GetTrackIndexLength(u8 track, u8 index) const
+{
+  for (const Index& current_index : m_indices)
+  {
+    if (current_index.track_number == track && current_index.index_number == index)
+      return current_index.length;
+  }
+
+  return 0;
+}
+
 bool CDImage::Seek(LBA lba)
 {
   const Index* new_index;

@@ -182,6 +182,8 @@ public:
   LBA GetTrackLength(u8 track) const;
   Position GetTrackMSFLength(u8 track) const;
   TrackMode GetTrackMode(u8 track) const;
+  LBA GetTrackIndexPosition(u8 track, u8 index) const;
+  LBA GetTrackIndexLength(u8 track, u8 index) const;
   u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
   u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
 

@@ -65,6 +65,7 @@
       <Filter>gl</Filter>
     </ClInclude>
     <ClInclude Include="window_info.h" />
+    <ClInclude Include="cd_image_hasher.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="gl\context.cpp">
       <Filter>gl</Filter>
     </ClCompile>
+    <ClCompile Include="cd_image_hasher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
