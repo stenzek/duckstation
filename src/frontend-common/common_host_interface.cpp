@@ -1030,6 +1030,9 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
       for (const std::string& binding : bindings)
         AddRumbleToInputMap(binding, controller_index, num_motors);
     }
+
+    const float axis_scale = si.GetFloatValue(category, "AxisScale", 1.00f);
+    m_controller_interface->SetControllerAxisScale(controller_index, axis_scale);
   }
 }
 

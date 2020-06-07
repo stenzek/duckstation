@@ -43,6 +43,9 @@ public:
   virtual u32 GetControllerRumbleMotorCount(int controller_index) = 0;
   virtual void SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors) = 0;
 
+  // Set scaling that will be applied on axis-to-axis mappings
+  virtual bool SetControllerAxisScale(int controller_index, float scale) = 0;
+
   // Input monitoring for external access.
   struct Hook
   {
