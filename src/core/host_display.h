@@ -106,6 +106,18 @@ public:
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
   void SetDisplayIntegerScaling(bool enabled) { m_display_integer_scaling = enabled; }
 
+  /// Sets the software cursor to the specified texture. Ownership of the texture is transferred.
+  void SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale = 1.0f);
+
+  /// Sets the software cursor to the specified image.
+  bool SetSoftwareCursor(const void* pixels, u32 width, u32 height, u32 stride, float scale = 1.0f);
+
+  /// Sets the software cursor to the specified path (png image).
+  bool SetSoftwareCursor(const char* path, float scale = 1.0f);
+
+  /// Disables the software cursor.
+  void ClearSoftwareCursor();
+
   /// Helper function for computing the draw rectangle in a larger window.
   std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin) const;
 
@@ -125,9 +137,13 @@ public:
                                    bool clear_alpha = true);
 
 protected:
+  ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }
+
   void CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
                          s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,
                          float* out_y_scale) const;
+
+  std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect() const;
 
   s32 m_window_width = 0;
   s32 m_window_height = 0;
@@ -152,6 +168,9 @@ protected:
   s32 m_display_texture_view_height = 0;
 
   s32 m_display_top_margin = 0;
+
+  std::unique_ptr<HostDisplayTexture> m_cursor_texture;
+  float m_cursor_texture_scale = 1.0f;
 
   bool m_display_linear_filtering = false;
   bool m_display_changed = false;

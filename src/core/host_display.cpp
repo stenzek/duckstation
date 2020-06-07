@@ -1,6 +1,7 @@
 #include "host_display.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
 #include <cmath>
@@ -16,6 +17,50 @@ void HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 {
   m_window_width = new_window_width;
   m_window_height = new_window_height;
+}
+
+void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
+{
+  m_cursor_texture = std::move(texture);
+  m_cursor_texture_scale = scale;
+}
+
+bool HostDisplay::SetSoftwareCursor(const void* pixels, u32 width, u32 height, u32 stride, float scale /*= 1.0f*/)
+{
+  std::unique_ptr<HostDisplayTexture> tex = CreateTexture(width, height, pixels, stride, false);
+  if (!tex)
+    return false;
+
+  SetSoftwareCursor(std::move(tex), scale);
+  return true;
+}
+
+bool HostDisplay::SetSoftwareCursor(const char* path, float scale /*= 1.0f*/)
+{
+  int width, height, file_channels;
+  u8* pixel_data = stbi_load(path, &width, &height, &file_channels, 4);
+  if (!pixel_data)
+  {
+    const char* error_reason = stbi_failure_reason();
+    Log_ErrorPrintf("Failed to load image from '%s': %s", path, error_reason ? error_reason : "unknown error");
+    return false;
+  }
+
+  std::unique_ptr<HostDisplayTexture> tex = CreateTexture(static_cast<u32>(width), static_cast<u32>(height), pixel_data,
+                                                          sizeof(u32) * static_cast<u32>(width), false);
+  stbi_image_free(pixel_data);
+  if (!tex)
+    return false;
+
+  Log_InfoPrintf("Loaded %dx%d image from '%s' for software cursor", width, height, path);
+  SetSoftwareCursor(std::move(tex), scale);
+  return true;
+}
+
+void HostDisplay::ClearSoftwareCursor()
+{
+  m_cursor_texture.reset();
+  m_cursor_texture_scale = 1.0f;
 }
 
 void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
@@ -86,6 +131,21 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, 
   CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
                     nullptr, nullptr);
   return std::make_tuple(left + left_padding, top + top_padding + top_margin, width, height);
+}
+
+std::tuple<s32, s32, s32, s32> HostDisplay::CalculateSoftwareCursorDrawRect() const
+{
+  const u32 cursor_extents_x =
+    static_cast<u32>(static_cast<float>(m_cursor_texture->GetWidth()) * m_cursor_texture_scale * 0.5f);
+  const u32 cursor_extents_y =
+    static_cast<u32>(static_cast<float>(m_cursor_texture->GetHeight()) * m_cursor_texture_scale * 0.5f);
+
+  const s32 out_left = m_mouse_position_x - cursor_extents_x;
+  const s32 out_top = m_mouse_position_y - cursor_extents_y;
+  const s32 out_width = cursor_extents_x * 2u;
+  const s32 out_height = cursor_extents_y * 2u;
+
+  return std::tie(out_left, out_top, out_width, out_height);
 }
 
 std::tuple<s32, s32> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y,
