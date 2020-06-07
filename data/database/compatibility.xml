@@ -26,6 +26,10 @@
     <version-tested>0.1-884-g096ed21</version-tested>
     <comments>Works only on Interpreter Mode</comments>
   </entry>
+  <entry code="SLUS-00777" compatibility="5" region="NTSC-U" title="Activision Classics (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-00208" compatibility="5" region="NTSC-J" title="Advanced V.G.">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -48,9 +52,18 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLUS-00715" compatibility="4" region="NTSC-U" title="Akuji the Heartless (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>Framerate issues in some levels (issue #521)</comments>
+  </entry>
   <entry code="SLPM-86023" compatibility="5" region="NTSC-J" title="Akumajou Dracula X - Gekka no Yasoukyoku (Japan) (Rev 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLPS-00636" compatibility="5" region="NTSC-J" title="Alice in Cyberland (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLES-01135" compatibility="5" region="PAL" title="Alundra (Europe)">
     <compatibility>No Issues</compatibility>
@@ -80,6 +93,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SCUS-94423" compatibility="5" region="NTSC-U" title="Ape Escape (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPM-87228" compatibility="5" region="NTSC-J" title="Arcade Hits - Shienryuu">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -90,6 +107,14 @@
   <entry code="SLPM-87270" compatibility="5" region="NTSC-J" title="Arcade Hits - Wolf Fang - Kuuga 2001 (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-00164" compatibility="5" region="NTSC-U" title="Area 51 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00914" compatibility="5" region="NTSC-U" title="Army Men - Sarge's Heroes (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01435" compatibility="5" region="NTSC-U" title="Army Men - World War - Team Assault (USA)">
     <compatibility>No Issues</compatibility>
@@ -107,6 +132,10 @@
   </entry>
   <entry code="SLPS-00231" compatibility="5" region="NTSC-J" title="Asuka 120% Special: Burning Fest. Special">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-00334" compatibility="5" region="PAL" title="Bedlam (Europe) (En,Fr,De,Es,It,Nl)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01215" compatibility="4" region="NTSC-U" title="Blade (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
@@ -154,6 +183,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SCES-02105" compatibility="5" region="PAL" title="CTR - Crash Team Racing (Europe) (En,Fr,De,Es,It,Nl)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SCUS-94426" compatibility="5" region="NTSC-U" title="CTR - Crash Team Racing (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-941-g2e64f77</version-tested>
@@ -172,6 +205,14 @@
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Works Good, But Sometime FPS Limiter Wont Work</comments>
   </entry>
+  <entry code="SLUS-00162" compatibility="5" region="NTSC-U" title="Casper (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01230" compatibility="5" region="NTSC-U" title="Championship Motocross 2001 featuring Ricky Carmichael (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLES-03107" compatibility="5" region="PAL" title="Chaos Break (Europe)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
@@ -181,13 +222,30 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-930-gcb66889</version-tested>
   </entry>
+  <entry code="SLUS-01304" compatibility="5" region="NTSC-U" title="Chicken Run (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>a</comments>
+  </entry>
+  <entry code="SLUS-00844" compatibility="5" region="NTSC-U" title="Chocobo Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLPS-01951" compatibility="5" region="NTSC-J" title="Chocobo Racing - Genkai e no Road (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00792" compatibility="5" region="NTSC-U" title="Civilization II (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
   <entry code="SLUS-01151" compatibility="5" region="NTSC-U" title="Covert Ops - Nuclear Dawn (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-941-g2e64f77</version-tested>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01157" compatibility="5" region="NTSC-U" title="Covert Ops - Nuclear Dawn (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SCES-00344" compatibility="5" region="PAL" title="Crash Bandicoot">
     <compatibility>No Issues</compatibility>
@@ -215,6 +273,43 @@
   </entry>
   <entry code="SCUS-94244" compatibility="5" region="NTSC-U" title="Crash Bandicoot 3: Warped">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCES-02834" compatibility="5" region="PAL" title="Crash Bash (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94570" compatibility="5" region="NTSC-U" title="Crash Bash (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-02793" compatibility="5" region="PAL" title="Crisis Beat (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLPS-01430" compatibility="5" region="NTSC-J" title="Crisis Beat (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00530" compatibility="5" region="NTSC-U" title="Croc - Legend of the Gobbos (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00634" compatibility="5" region="NTSC-U" title="Croc 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLPM-86310" compatibility="5" region="NTSC-J" title="Croc Adventure (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00268" compatibility="4" region="NTSC-U" title="Crusader - No Remorse (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>Minor glitches in loading screen (issue #171)</comments>
+  </entry>
+  <entry code="SLUS-00606" compatibility="5" region="NTSC-U" title="Dead or Alive (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01429" compatibility="5" region="NTSC-U" title="Delta Force - Urban Warfare (USA)">
     <compatibility>No Issues</compatibility>
@@ -245,9 +340,21 @@
     <upscaling-issues>Background gradient is rendered incorrectly with scaled dithering or true color.</upscaling-issues>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLUS-01002" compatibility="5" region="NTSC-U" title="Duke Nukem - Land of the Babes (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00583" compatibility="5" region="NTSC-U" title="Duke Nukem - Time to Kill (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SLUS-00355" compatibility="5" region="NTSC-U" title="Duke Nukem - Total Meltdown (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00859" compatibility="5" region="NTSC-U" title="Dukes of Hazzard, The - Racing for Home (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLES-00343" compatibility="5" region="PAL" title="Earthworm Jim 2 (Europe)">
     <compatibility>No Issues</compatibility>
@@ -257,9 +364,19 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-896-gc8a00c5</version-tested>
   </entry>
+  <entry code="SLUS-01072" compatibility="3" region="NTSC-U" title="Evil Dead - Hail to the King (USA) (Disc 1)">
+    <compatibility>Crashes In-Game</compatibility>
+    <comments>Softlocks after starting game.</comments>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-01585" compatibility="5" region="NTSC-U" title="FIFA Soccer 2005 (USA) (En,Es)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-941-g2e64f77</version-tested>
+  </entry>
+  <entry code="SLUS-00331" compatibility="5" region="NTSC-U" title="Final Doom (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <upscaling-issues>Rendering is broken with any upscaling.</upscaling-issues>
   </entry>
   <entry code="SCUS-94163" compatibility="5" region="NTSC-U" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
@@ -269,9 +386,62 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
   </entry>
+  <entry code="SCUS-94164" compatibility="5" region="NTSC-U" title="Final Fantasy VII (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94165" compatibility="5" region="NTSC-U" title="Final Fantasy VII (USA) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-02080" compatibility="5" region="PAL" title="Final Fantasy VIII (Europe, Australia) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-12080" compatibility="5" region="PAL" title="Final Fantasy VIII (Europe, Australia) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-22080" compatibility="5" region="PAL" title="Final Fantasy VIII (Europe, Australia) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-32080" compatibility="5" region="PAL" title="Final Fantasy VIII (Europe, Australia) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00892" compatibility="5" region="NTSC-U" title="Final Fantasy VIII (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00908" compatibility="5" region="NTSC-U" title="Final Fantasy VIII (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00909" compatibility="5" region="NTSC-U" title="Final Fantasy VIII (USA) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00910" compatibility="5" region="NTSC-U" title="Final Fantasy VIII (USA) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00870" compatibility="2" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
     <compatibility>Crashes In Intro</compatibility>
     <comments>Can't boot after the initial Loading screen.</comments>
+  </entry>
+  <entry code="SLUS-01129" compatibility="5" region="NTSC-U" title="FoxKids.com - Micro Maniacs Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00506" compatibility="5" region="NTSC-U" title="Frogger (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01172" compatibility="5" region="NTSC-U" title="Frogger 2 - Swampy's Revenge (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>a</comments>
   </entry>
   <entry code="SLPM-80205" compatibility="5" region="NTSC-J" title="G Darius">
     <compatibility>No Issues</compatibility>
@@ -294,13 +464,29 @@
   <entry code="SLPM-87286" compatibility="5" region="NTSC-J" title="Gegege no Kitarou - Gyakushuu! Youma Daikessen">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLPS-00303" compatibility="4" region="NTSC-J" title="Gradius Deluxe Pack (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-884-g096ed21</version-tested>
+  <entry code="SLUS-00552" compatibility="5" region="NTSC-U" title="Ghost in the Shell (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLPS-00303" compatibility="5" region="NTSC-J" title="Gradius Deluxe Pack (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-987-g003203e7</version-tested>
     <comments>Gradius II is unplayable - scrambled graphics and very slow speed. (Issue ##293)</comments>
   </entry>
   <entry code="SLPM-86042" compatibility="5" region="NTSC-J" title="Gradius Gaiden">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SCES-00984" compatibility="5" region="PAL" title="Gran Turismo (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94455" compatibility="5" region="NTSC-U" title="Gran Turismo 2 (USA) (Arcade Mode)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94488" compatibility="5" region="NTSC-U" title="Gran Turismo 2 (USA) (Simulation Mode)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-01357" compatibility="5" region="NTSC-J" title="Guilty Gear">
     <compatibility>No Issues</compatibility>
@@ -314,6 +500,10 @@
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
     <comments>Audio/Video desync during the intro. (Issue #454)</comments>
+  </entry>
+  <entry code="SLUS-00964" compatibility="5" region="NTSC-U" title="Hot Wheels - Turbo Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLES-00342" compatibility="5" region="PAL" title="In the Hunt (Europe)">
     <compatibility>No Issues</compatibility>
@@ -330,6 +520,10 @@
   <entry code="SLUS-01225" compatibility="5" region="NTSC-U" title="Incredible Crisis (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPS-01793" compatibility="5" region="NTSC-J" title="Initial D (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-00684" compatibility="5" region="NTSC-U" title="Jackie Chan Stuntmaster (USA)">
     <compatibility>No Issues</compatibility>
@@ -357,6 +551,14 @@
   <entry code="SLPS-00214" compatibility="5" region="NTSC-J" title="Kyuiin">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-01207" compatibility="5" region="PAL" title="LEGO Racers (Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00581" compatibility="5" region="NTSC-U" title="LEGO Racers (USA) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLES-02024" compatibility="5" region="PAL" title="Legacy of Kain - Soul Reaver (France)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
@@ -364,13 +566,17 @@
   <entry code="SLUS-01013" compatibility="5" region="NTSC-U" title="Legend of Mana">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-00613" compatibility="5" region="PAL" title="Lifeforce Tenka (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00719" compatibility="5" region="NTSC-U" title="Lucky Luke (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
-  <entry code="SLPM-86051" compatibility="1" region="NTSC-J" title="Magical Drop III - Yokubari Tokudai-gou! (Japan)">
-    <compatibility>Doesn't Boot</compatibility>
-    <version-tested>0.1-884-g096ed21</version-tested>
+  <entry code="SLPM-86051" compatibility="5" region="NTSC-J" title="Magical Drop III - Yokubari Tokudai-gou! (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
     <comments>Stays on the Loading screen. (Issue #448)</comments>
   </entry>
   <entry code="SLPS-01918" compatibility="5" region="NTSC-J" title="Magical Drop Plus 1! (Japan)">
@@ -505,6 +711,11 @@
     <compatibility>Graphical/Audio Issues</compatibility>
     <comments>Works, except dynamic lighting on character is broken.</comments>
   </entry>
+  <entry code="SLUS-00765" compatibility="4" region="NTSC-U" title="Monkey Hero (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>Dynamic lighting on character does not work (issue #412)</comments>
+  </entry>
   <entry code="SLUS-00605" compatibility="5" region="NTSC-U" title="Mortal Kombat 4 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
@@ -525,29 +736,51 @@
   <entry code="SLUS-00329" compatibility="5" region="NTSC-U" title="NBA Hangtime">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLUS-00060" compatibility="1" region="NTSC-U" title="NBA Live 96">
-    <compatibility>Doesn't Boot</compatibility>
+  <entry code="SLUS-00060" compatibility="5" region="NTSC-U" title="NBA Live 96 (USA)">
+    <compatibility>No Issues</compatibility>
     <comments>Issue 419</comments>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00826" compatibility="5" region="NTSC-U" title="Need for Speed - High Stakes (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01104" compatibility="5" region="NTSC-U" title="Need for Speed - Porsche Unleashed (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SLUS-00276" compatibility="5" region="NTSC-U" title="Need for Speed II (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00620" compatibility="5" region="NTSC-U" title="Need for Speed III - Hot Pursuit (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPM-87048" compatibility="5" region="NTSC-J" title="Night Raid (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLUS-00582" compatibility="4" region="NTSC-U" title="Nightmare Creatures (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-908-g9f22684</version-tested>
+  <entry code="SLUS-00582" compatibility="5" region="NTSC-U" title="Nightmare Creatures (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01112" compatibility="4" region="NTSC-U" title="Nightmare Creatures II (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
-  <entry code="SLPS-02459" compatibility="1" region="NTSC-J" title="Otona no Asobi (Japan)">
-    <compatibility>Doesn't Boot</compatibility>
-    <version-tested>0.1-884-g096ed21</version-tested>
+  <entry code="SLPS-02459" compatibility="5" region="NTSC-J" title="Otona no Asobi (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>Does not boot with analog controller.</comments>
+  </entry>
+  <entry code="SCUS-94183" compatibility="5" region="NTSC-U" title="PaRappa the Rapper (USA) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCES-00743" compatibility="5" region="PAL" title="PaRappa the Rapper - The Hip Hop Hero (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SCPS-10096" compatibility="5" region="NTSC-J" title="Panekit - Infinitive Crafting Toy Case (Japan)">
     <compatibility>No Issues</compatibility>
@@ -556,6 +789,14 @@
   <entry code="SLPM-00899" compatibility="5" region="NTSC-J" title="Panzer Bandit">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLUS-00662" compatibility="5" region="NTSC-U" title="Parasite Eve (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00668" compatibility="5" region="NTSC-U" title="Parasite Eve (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01042" compatibility="5" region="NTSC-U" title="Parasite Eve II (USA)">
     <compatibility>No Issues</compatibility>
@@ -585,6 +826,18 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-973-g8eb3ac6</version-tested>
   </entry>
+  <entry code="SLUS-00481" compatibility="5" region="NTSC-U" title="Point Blank (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00796" compatibility="5" region="NTSC-U" title="Point Blank 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01354" compatibility="5" region="NTSC-U" title="Point Blank 3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPM-86146" compatibility="5" region="NTSC-J" title="Pop'n Tanks!">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
@@ -592,6 +845,13 @@
   <entry code="SLUS-00102" compatibility="5" region="NTSC-U" title="Powerslave">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>2D elements on title screen</upscaling-issues>
+  </entry>
+  <entry code="SLUS-01260" compatibility="5" region="NTSC-U" title="Pro Pinball - Big Race USA (USA)">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01261" compatibility="5" region="NTSC-U" title="Pro Pinball - Fantastic Journey (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-01435" compatibility="5" region="NTSC-J" title="Puchi Carat (Japan)">
     <compatibility>No Issues</compatibility>
@@ -601,6 +861,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-905-g237f469</version-tested>
   </entry>
+  <entry code="SLPS-00149" compatibility="5" region="NTSC-J" title="Puppet Zoo Pilomy (Japan) (En,Ja)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-00284" compatibility="5" region="NTSC-J" title="Puzzle Bobble 2 (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
@@ -609,8 +873,16 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLUS-00757" compatibility="5" region="NTSC-U" title="Quake II (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-01688" compatibility="5" region="NTSC-U" title="R-Type Delta">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00877" compatibility="5" region="NTSC-U" title="R-Type Delta (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-01236" compatibility="5" region="NTSC-J" title="R-Types (Japan)">
     <compatibility>No Issues</compatibility>
@@ -630,6 +902,18 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLUS-00005" compatibility="5" region="NTSC-U" title="Rayman (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01235" compatibility="5" region="NTSC-U" title="Rayman 2 - The Great Escape (USA) (En,Fr,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00851" compatibility="5" region="NTSC-U" title="Re-Volt (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00170" compatibility="5" region="NTSC-U" title="Resident Evil (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
@@ -638,9 +922,29 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-967-gf856a8a</version-tested>
   </entry>
+  <entry code="SLUS-00421" compatibility="5" region="NTSC-U" title="Resident Evil 2 (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00592" compatibility="5" region="NTSC-U" title="Resident Evil 2 (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00923" compatibility="5" region="NTSC-U" title="Resident Evil 3 - Nemesis (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SCUS-94300" compatibility="5" region="NTSC-U" title="Ridge Racer (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00214" compatibility="5" region="NTSC-U" title="Ridge Racer Revolution (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCPS-10103" compatibility="5" region="NTSC-J" title="Robbit mon Dieu (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-00764" compatibility="5" region="NTSC-J" title="Rockman - Battle &amp; Chase">
     <compatibility>No Issues</compatibility>
@@ -704,6 +1008,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SCUS-94230" compatibility="5" region="NTSC-U" title="SaGa Frontier (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>Black screen if fast boot is used.</comments>
+  </entry>
   <entry code="SLPM-86009" compatibility="5" region="NTSC-J" title="Sexy Parodius (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
@@ -713,6 +1022,10 @@
     <upscaling-issues>Video is desynched from the audio during the intro.</upscaling-issues>
     <version-tested>0.1-905-g237f469</version-tested>
   </entry>
+  <entry code="SLUS-01463" compatibility="5" region="NTSC-U" title="Shrek Treasure Hunt (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPM-86192" compatibility="5" region="NTSC-J" title="Silent Hill (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed219</version-tested>
@@ -721,6 +1034,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-930-gcb66889</version-tested>
     <comments>Working Perfect</comments>
+  </entry>
+  <entry code="SLPS-02474" compatibility="5" region="NTSC-J" title="Simple 1500 Series Vol. 24 - The Gun Shooting (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-03444" compatibility="5" region="NTSC-J" title="Simple Character 2000 Series Vol. 08 - Kagaku Ninjatai Gatchaman - The Shooting (Japan)">
     <compatibility>No Issues</compatibility>
@@ -747,13 +1064,42 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SCUS-94467" compatibility="5" region="NTSC-U" title="Spyro - Year of the Dragon (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94425" compatibility="5" region="NTSC-U" title="Spyro 2 - Ripto's Rage! (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCPS-10085" compatibility="5" region="NTSC-J" title="Spyro the Dragon (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94228" compatibility="5" region="NTSC-U" title="Spyro the Dragon (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-00162" compatibility="5" region="NTSC-J" title="Stahlfeder - Tekkou Hikuudan (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed219</version-tested>
   </entry>
+  <entry code="SLUS-00297" compatibility="5" region="NTSC-U" title="Star Wars - Dark Forces (USA)">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>Rendering is broken when upscaling is used.</upscaling-issues>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-01105" compatibility="5" region="NTSC-U" title="Street Fighter EX2 Plus (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SLUS-00818" compatibility="5" region="NTSC-U" title="Street Sk8er (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01083" compatibility="5" region="NTSC-U" title="Street Sk8er 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLES-00527" compatibility="5" region="PAL" title="Suikoden (Europe)">
     <compatibility>No Issues</compatibility>
@@ -835,13 +1181,37 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SCUS-94240" compatibility="5" region="NTSC-U" title="Syphon Filter (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94451" compatibility="5" region="NTSC-U" title="Syphon Filter 2 (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94492" compatibility="5" region="NTSC-U" title="Syphon Filter 2 (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94640" compatibility="5" region="NTSC-U" title="Syphon Filter 3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-00889" compatibility="5" region="NTSC-U" title="Team Buddies">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
   </entry>
+  <entry code="SLUS-00006" compatibility="5" region="NTSC-U" title="Tekken (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-00300" compatibility="5" region="NTSC-J" title="Tekken 2">
     <compatibility>No Issues</compatibility>
     <version-tested>9d1eb32</version-tested>
+  </entry>
+  <entry code="SLUS-00213" compatibility="5" region="NTSC-U" title="Tekken 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-00402" compatibility="5" region="NTSC-U" title="Tekken 3">
     <compatibility>No Issues</compatibility>
@@ -882,16 +1252,57 @@
   <entry code="SLPM-86033" compatibility="5" region="NTSC-J" title="Tobal 2">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLUS-00152" compatibility="5" region="NTSC-U" title="Tomb Raider (USA) (Rev 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-01311" compatibility="5" region="NTSC-U" title="Tomb Raider Chronicles (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-967-gf856a8a</version-tested>
+  </entry>
+  <entry code="SLUS-00437" compatibility="5" region="NTSC-U" title="Tomb Raider II - Starring Lara Croft (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94236" compatibility="5" region="NTSC-U" title="Tomba! (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00860" compatibility="5" region="NTSC-U" title="Tony Hawk's Pro Skater (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01066" compatibility="5" region="NTSC-U" title="Tony Hawk's Pro Skater 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01419" compatibility="5" region="NTSC-U" title="Tony Hawk's Pro Skater 3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01485" compatibility="5" region="NTSC-U" title="Tony Hawk's Pro Skater 4 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLP-02108-9" compatibility="5" region="NTSC-J" title="Tron ni Kobun">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
   </entry>
+  <entry code="SLUS-00337" compatibility="5" region="NTSC-U" title="True Pinball (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <upscaling-issues>Rendering breaks when upscaling is used.</upscaling-issues>
+  </entry>
+  <entry code="SLPM-86077" compatibility="5" region="NTSC-J" title="TwinBee RPG (Japan, Asia)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-00131" compatibility="5" region="NTSC-J" title="Two-Ten Kaku (Japan)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-01248" compatibility="5" region="NTSC-J" title="Ultraman - Fighting Evolution (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-00643" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun">
     <compatibility>No Issues</compatibility>
@@ -903,10 +1314,51 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SLUS-01228" compatibility="5" region="NTSC-U" title="V.I.P. (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01040" compatibility="5" region="NTSC-U" title="Vagrant Story (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01156" compatibility="5" region="NTSC-U" title="Valkyrie Profile (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01179" compatibility="5" region="NTSC-U" title="Valkyrie Profile (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLUS-01138" compatibility="2" region="NTSC-U" title="Vampire Hunter D (USA)">
     <compatibility>Crashes in Intro</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Main menu is broken (Issue ##121)</comments>
+  </entry>
+  <entry code="SCES-02873" compatibility="5" region="PAL" title="Vib-Ribbon (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCPS-18012" compatibility="5" region="NTSC-J" title="Vib-Ribbon (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00033" compatibility="5" region="NTSC-U" title="Viewpoint (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-00510" compatibility="4" region="NTSC-U" title="Vigilante 8 (USA) (Rev 1)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+    <comments>Minor graphical issues (issue #72).</comments>
+  </entry>
+  <entry code="SLUS-00868" compatibility="5" region="NTSC-U" title="Vigilante 8 - 2nd Offense (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLPS-00775" compatibility="5" region="NTSC-J" title="Voice Idol Collection - Pool Bar Story (Japan) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-01157" compatibility="5" region="NTSC-J" title="Waku Waku Derby (Japan)">
     <compatibility>No Issues</compatibility>
@@ -959,9 +1411,17 @@
   <entry code="SLUS-00141" compatibility="5" region="NTSC-U" title="X-COM - UFO Defense">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLUS-00774" compatibility="5" region="NTSC-U" title="X-Men - Mutant Academy (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
   <entry code="SLPS-01915" compatibility="5" region="NTSC-J" title="X-Men VS Street Fighter - EX Edition">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Sprite glitches</upscaling-issues>
+  </entry>
+  <entry code="SLUS-00977" compatibility="5" region="NTSC-U" title="Xena - Warrior Princess (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLUS-01411" compatibility="5" region="NTSC-U" title="Yu-Gi-Oh! Forbidden Memories">
     <compatibility>No Issues</compatibility>
