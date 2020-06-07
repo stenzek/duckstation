@@ -35,10 +35,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\stb_image.c" />
     <ClCompile Include="src\stb_image_resize.c" />
     <ClCompile Include="src\stb_image_write.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\stb_image_resize.h" />
     <ClInclude Include="include\stb_image_write.h" />
   </ItemGroup>

@@ -1,6 +1,8 @@
 set(SRCS
+  include/stb_image.h
   include/stb_image_resize.h
   include/stb_image_write.h
+  src/stb_image.c
   src/stb_image_resize.c
   src/stb_image_write.c
 )
