@@ -63,7 +63,7 @@ std::string GameList::GetGameCodeForImage(CDImage* cdi)
         reading_value = false;
       }
     }
-    else if (ch == ' ')
+    else if (ch == ' ' || (ch >= 0x09 && ch <= 0x0D))
     {
       continue;
     }
