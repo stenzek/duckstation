@@ -9,9 +9,15 @@
 #include <array>
 Log_SetChannel(NamcoGunCon);
 
-NamcoGunCon::NamcoGunCon(System* system) : m_system(system) {}
+NamcoGunCon::NamcoGunCon(System* system) : m_system(system)
+{
+  m_system->GetHostInterface()->EnableSoftwareCursor();
+}
 
-NamcoGunCon::~NamcoGunCon() = default;
+NamcoGunCon::~NamcoGunCon()
+{
+  m_system->GetHostInterface()->DisableSoftwareCursor();
+}
 
 ControllerType NamcoGunCon::GetType() const
 {

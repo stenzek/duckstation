@@ -166,6 +166,12 @@ public:
   /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
   void DeleteSaveStates(const char* game_code, bool resume);
 
+  /// Enables the software cursor. Can be called multiple times, but must be matched by a call to DisableSoftwareCursor().
+  void EnableSoftwareCursor();
+
+  /// Disables the software cursor, preventing it from being renderered.
+  void DisableSoftwareCursor();
+
 protected:
   enum : u32
   {
@@ -269,6 +275,8 @@ protected:
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
+
+  u32 m_software_cursor_use_count = 0;
 
   bool m_paused = false;
   bool m_speed_limiter_temp_disabled = false;

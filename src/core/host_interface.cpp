@@ -1002,6 +1002,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
+  si.SetStringValue("Display", "SoftwareCursorPath", "");
+  si.SetFloatValue("Display", "SoftwareCursorScale", 1.0f);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", true);
@@ -1151,6 +1153,21 @@ void HostInterface::UpdateSettings(SettingsInterface& si)
 
   if (m_display && m_settings.display_integer_scaling != old_settings.display_integer_scaling)
     m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
+
+  if (m_software_cursor_use_count > 0 && m_display &&
+      (m_settings.display_software_cursor_path != old_settings.display_software_cursor_path ||
+       m_settings.display_software_cursor_scale != old_settings.display_software_cursor_scale))
+  {
+    if (m_settings.display_software_cursor_path.empty())
+    {
+      m_display->ClearSoftwareCursor();
+    }
+    else
+    {
+      m_display->SetSoftwareCursor(m_settings.display_software_cursor_path.c_str(),
+                                   m_settings.display_software_cursor_scale);
+    }
+  }
 
   if (m_settings.log_level != old_settings.log_level || m_settings.log_filter != old_settings.log_filter ||
       m_settings.log_to_console != old_settings.log_to_console ||
@@ -1360,4 +1377,22 @@ bool HostInterface::SaveScreenshot(const char* filename /* = nullptr */, bool fu
 
   AddFormattedOSDMessage(5.0f, "Screenshot saved to '%s'.", filename);
   return true;
+}
+
+void HostInterface::EnableSoftwareCursor()
+{
+  if (m_software_cursor_use_count++ > 0 || m_settings.display_software_cursor_path.empty())
+    return;
+
+  m_display->SetSoftwareCursor(m_settings.display_software_cursor_path.c_str(),
+                               m_settings.display_software_cursor_scale);
+}
+
+void HostInterface::DisableSoftwareCursor()
+{
+  DebugAssert(m_software_cursor_use_count > 0);
+  if (--m_software_cursor_use_count > 0)
+    return;
+
+  m_display->ClearSoftwareCursor();
 }
