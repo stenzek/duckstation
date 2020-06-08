@@ -118,14 +118,7 @@ long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const voi
                                     long nframes)
 {
   CubebAudioStream* const this_ptr = static_cast<CubebAudioStream*>(user_ptr);
-
-  if (this_ptr->m_output_volume_changed.load())
-  {
-    this_ptr->m_output_volume_changed.store(false);
-    cubeb_stream_set_volume(this_ptr->m_cubeb_stream, static_cast<float>(this_ptr->m_output_volume) / 100.0f);
-  }
-
-  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(output_buffer), static_cast<u32>(nframes), false);
+  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(output_buffer), static_cast<u32>(nframes), true);
   return nframes;
 }
 
@@ -147,12 +140,6 @@ void CubebAudioStream::DestroyContext()
   if (m_com_initialized_by_us)
     CoUninitialize();
 #endif
-}
-
-void CubebAudioStream::SetOutputVolume(u32 volume)
-{
-  AudioStream::SetOutputVolume(volume);
-  m_output_volume_changed.store(true);
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream()

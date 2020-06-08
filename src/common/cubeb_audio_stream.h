@@ -1,7 +1,6 @@
 #pragma once
 #include "common/audio_stream.h"
 #include "cubeb/cubeb.h"
-#include <atomic>
 #include <cstdint>
 
 class CubebAudioStream final : public AudioStream
@@ -9,8 +8,6 @@ class CubebAudioStream final : public AudioStream
 public:
   CubebAudioStream();
   ~CubebAudioStream();
-
-  void SetOutputVolume(u32 volume) override;
 
 protected:
   bool IsOpen() const { return m_cubeb_stream != nullptr; }
@@ -29,7 +26,6 @@ protected:
   cubeb* m_cubeb_context = nullptr;
   cubeb_stream* m_cubeb_stream = nullptr;
   bool m_paused = true;
-  std::atomic_bool m_output_volume_changed{ false };
 
 #ifdef WIN32
   bool m_com_initialized_by_us = false;
