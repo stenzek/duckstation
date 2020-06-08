@@ -386,7 +386,7 @@ static QString getColumnVisibilitySettingsKeyName(int column)
 void GameListWidget::loadTableViewColumnVisibilitySettings()
 {
   static constexpr std::array<bool, GameListModel::Column_Count> DEFAULT_VISIBILITY = {
-    {true, true, true, false, true, true}};
+    {true, true, true, false, true, true, true}};
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {
