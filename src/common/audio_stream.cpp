@@ -80,19 +80,20 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
 {
   const u32 num_samples = num_frames * m_channels;
-  std::unique_lock<std::mutex> lock(m_buffer_mutex);
+  {
+    std::unique_lock<std::mutex> lock(m_buffer_mutex);
+    EnsureBuffer(num_samples);
+    m_buffer.PushRange(frames, num_samples);
+  }
 
-  EnsureBuffer(num_samples);
-  m_buffer.PushRange(frames, num_samples);
   FramesAvailable();
 }
 
 void AudioStream::EndWrite(u32 num_frames)
 {
   m_buffer.AdvanceTail(num_frames * m_channels);
-  FramesAvailable();
-
   m_buffer_mutex.unlock();
+  FramesAvailable();
 }
 
 float AudioStream::GetMaxLatency(u32 sample_rate, u32 buffer_size)
@@ -209,6 +210,7 @@ void AudioStream::EnsureBuffer(u32 size)
 
 void AudioStream::DropFrames(u32 count)
 {
+  std::unique_lock<std::mutex> lock(m_buffer_mutex);
   m_buffer.Remove(count);
 }
 

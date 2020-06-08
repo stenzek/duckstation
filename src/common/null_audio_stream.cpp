@@ -16,7 +16,7 @@ void NullAudioStream::CloseDevice() {}
 void NullAudioStream::FramesAvailable()
 {
   // drop any buffer as soon as they're available
-  DropFrames(GetSamplesAvailableLocked());
+  DropFrames(GetSamplesAvailable());
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateNullAudioStream()
