@@ -144,13 +144,15 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  QtSettingsInterface si(m_qsettings.get());
+  Settings old_settings(std::move(m_settings));
   {
+    QtSettingsInterface si(m_qsettings.get());
     std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
     SetDefaultSettings(si);
+    CommonHostInterface::LoadSettings(si);
   }
-  UpdateSettings(si);
-  CommonHostInterface::UpdateInputMap(si);
+
+  CheckForSettingsChanges(old_settings);
 }
 
 void QtHostInterface::applySettings()
@@ -161,15 +163,19 @@ void QtHostInterface::applySettings()
     return;
   }
 
-  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings.get());
-  UpdateSettings(si);
-  CommonHostInterface::UpdateInputMap(si);
+  Settings old_settings(std::move(m_settings));
+  {
+    QtSettingsInterface si(m_qsettings.get());
+    std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
+    CommonHostInterface::LoadSettings(si);
+  }
+
+  CheckForSettingsChanges(old_settings);
 
   // detect when render-to-main flag changes
   if (m_system)
   {
-    const bool render_to_main = m_qsettings->value("Main/RenderToMainWindow", true).toBool();
+    const bool render_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
     if (getHostDisplay() && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
     {
       m_is_rendering_to_main = render_to_main;
@@ -224,9 +230,9 @@ void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_o
 
   emit emulationStarting();
   if (filename.isEmpty())
-    HostInterface::ResumeSystemFromMostRecentState();
+    ResumeSystemFromMostRecentState();
   else
-    HostInterface::ResumeSystemFromState(filename.toStdString().c_str(), boot_on_failure);
+    ResumeSystemFromState(filename.toStdString().c_str(), boot_on_failure);
 }
 
 void QtHostInterface::resumeSystemFromMostRecentState()
@@ -238,7 +244,7 @@ void QtHostInterface::resumeSystemFromMostRecentState()
   }
 
   emit emulationStarting();
-  HostInterface::ResumeSystemFromMostRecentState();
+  ResumeSystemFromMostRecentState();
 }
 
 void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
@@ -510,8 +516,8 @@ void QtHostInterface::LoadSettings()
   }
 
   // load in settings
-  CheckSettings(si);
-  ApplySettings(si);
+  CommonHostInterface::CheckSettings(si);
+  CommonHostInterface::LoadSettings(si);
 }
 
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -519,12 +525,6 @@ void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
   CommonHostInterface::SetDefaultSettings(si);
 
   si.SetBoolValue("Main", "RenderToMainWindow", true);
-}
-
-void QtHostInterface::ApplySettings(SettingsInterface& si)
-{
-  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  CommonHostInterface::ApplySettings(si);
 }
 
 void QtHostInterface::UpdateInputMap()

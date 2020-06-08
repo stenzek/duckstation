@@ -45,9 +45,9 @@ void SaveStateSelectorUI::RefreshList()
   const System* system = m_host_interface->GetSystem();
   if (system && !system->GetRunningCode().empty())
   {
-    for (s32 i = 1; i <= HostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
+    for (s32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
     {
-      std::optional<HostInterface::ExtendedSaveStateInfo> ssi =
+      std::optional<CommonHostInterface::ExtendedSaveStateInfo> ssi =
         m_host_interface->GetExtendedSaveStateInfo(system->GetRunningCode().c_str(), i);
 
       ListEntry li;
@@ -60,9 +60,10 @@ void SaveStateSelectorUI::RefreshList()
     }
   }
 
-  for (s32 i = 1; i <= HostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
+  for (s32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
   {
-    std::optional<HostInterface::ExtendedSaveStateInfo> ssi = m_host_interface->GetExtendedSaveStateInfo(nullptr, i);
+    std::optional<CommonHostInterface::ExtendedSaveStateInfo> ssi =
+      m_host_interface->GetExtendedSaveStateInfo(nullptr, i);
 
     ListEntry li;
     if (ssi)
@@ -118,7 +119,7 @@ void SaveStateSelectorUI::SelectPreviousSlot()
     (m_current_selection == 0) ? (static_cast<u32>(m_slots.size()) - 1u) : (m_current_selection - 1);
 }
 
-void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, HostInterface::ExtendedSaveStateInfo* ssi)
+void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, CommonHostInterface::ExtendedSaveStateInfo* ssi)
 {
   li->title = std::move(ssi->title);
   li->game_code = std::move(ssi->game_code);

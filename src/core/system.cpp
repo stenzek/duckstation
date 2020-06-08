@@ -1133,26 +1133,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image)
   if (path && std::strlen(path) > 0)
   {
     m_running_game_path = path;
-
-    const GameListEntry* list_entry = m_host_interface->GetGameList()->GetEntryForPath(path);
-    if (list_entry)
-    {
-      m_running_game_code = list_entry->code;
-      m_running_game_title = list_entry->title;
-    }
-    else
-    {
-      if (image)
-        m_running_game_code = GameList::GetGameCodeForImage(image);
-
-      const GameListDatabaseEntry* db_entry =
-        (!m_running_game_code.empty()) ? m_host_interface->GetGameList()->GetDatabaseEntryForCode(m_running_game_code) :
-                                         nullptr;
-      if (db_entry)
-        m_running_game_title = db_entry->title;
-      else
-        m_running_game_title = GameList::GetTitleForPath(path);
-    }
+    m_host_interface->GetGameInfo(path, image, &m_running_game_code, &m_running_game_title);
   }
 
   m_host_interface->OnRunningGameChanged();

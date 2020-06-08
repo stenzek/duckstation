@@ -299,7 +299,11 @@ void SDLHostInterface::RunLater(std::function<void()> callback)
 void SDLHostInterface::SaveAndUpdateSettings()
 {
   m_settings_copy.Save(*m_settings_interface.get());
-  UpdateSettings(*m_settings_interface.get());
+
+  Settings old_settings(std::move(m_settings));
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CheckForSettingsChanges(old_settings);
+
   m_settings_interface->Save();
 }
 
@@ -382,7 +386,7 @@ void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
-  ApplySettings(*m_settings_interface.get());
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
   m_settings_copy = m_settings;
 }
 

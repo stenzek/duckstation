@@ -90,6 +90,7 @@ public:
   float GetEmulationSpeed() const { return m_speed; }
   float GetAverageFrameTime() const { return m_average_frame_time; }
   float GetWorstFrameTime() const { return m_worst_frame_time; }
+  float GetThrottleFrequency() const { return m_throttle_frequency; }
 
   bool Boot(const SystemBootParameters& params);
   void Reset();

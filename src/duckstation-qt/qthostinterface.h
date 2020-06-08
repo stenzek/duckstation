@@ -158,7 +158,6 @@ protected:
 
   void LoadSettings() override;
   void SetDefaultSettings(SettingsInterface& si) override;
-  void ApplySettings(SettingsInterface& si) override;
   void UpdateInputMap() override;
 
 private:
