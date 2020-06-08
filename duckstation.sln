@@ -51,6 +51,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scmversion", "src\scmversio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "discord-rpc", "dep\discord-rpc\discord-rpc.vcxproj", "{4266505B-DBAF-484B-AB31-B53B9C8235B3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duckstation-libretro", "src\duckstation-libretro\duckstation-libretro.vcxproj", "{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -431,6 +433,22 @@ Global
 		{4266505B-DBAF-484B-AB31-B53B9C8235B3}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
 		{4266505B-DBAF-484B-AB31-B53B9C8235B3}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
 		{4266505B-DBAF-484B-AB31-B53B9C8235B3}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Debug|x64.ActiveCfg = Debug|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Debug|x64.Build.0 = Debug|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Debug|x86.ActiveCfg = Debug|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Debug|x86.Build.0 = Debug|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.DebugFast|x64.ActiveCfg = DebugFast|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.DebugFast|x64.Build.0 = DebugFast|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.DebugFast|x86.ActiveCfg = DebugFast|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.DebugFast|x86.Build.0 = DebugFast|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Release|x64.ActiveCfg = Release|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Release|x64.Build.0 = Release|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Release|x86.ActiveCfg = Release|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.Release|x86.Build.0 = Release|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x64.ActiveCfg = ReleaseLTCG|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
+		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
