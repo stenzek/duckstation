@@ -115,11 +115,20 @@ void Timers::AddTicks(u32 timer, TickCount count)
   {
     interrupt_request |= cs.mode.irq_at_target;
     cs.mode.reached_target = true;
+
+    if (cs.mode.reset_at_target)
+    {
+      if (cs.target > 0)
+        cs.counter %= cs.target;
+      else
+        cs.counter = 0;
+    }
   }
   if (cs.counter >= 0xFFFF)
   {
     interrupt_request |= cs.mode.irq_on_overflow;
     cs.mode.reached_overflow = true;
+    cs.counter %= 0xFFFFu;
   }
 
   if (interrupt_request)
@@ -136,18 +145,6 @@ void Timers::AddTicks(u32 timer, TickCount count)
       cs.mode.interrupt_request_n ^= true;
       UpdateIRQ(timer);
     }
-  }
-
-  if (cs.mode.reset_at_target)
-  {
-    if (cs.target > 0)
-      cs.counter %= cs.target;
-    else
-      cs.counter = 0;
-  }
-  else
-  {
-    cs.counter %= 0xFFFF;
   }
 }
 
@@ -242,6 +239,8 @@ void Timers::WriteRegister(u32 offset, u32 value)
     {
       Log_DebugPrintf("Timer %u write counter %u", timer_index, value);
       cs.counter = value & u32(0xFFFF);
+      if (timer_index == 2 || !cs.external_counting_enabled)
+        UpdateSysClkEvent();
     }
     break;
 
@@ -265,6 +264,8 @@ void Timers::WriteRegister(u32 offset, u32 value)
     {
       Log_DebugPrintf("Timer %u write target 0x%04X", timer_index, ZeroExtend32(Truncate16(value)));
       cs.target = value & u32(0xFFFF);
+      if (timer_index == 2 || !cs.external_counting_enabled)
+        UpdateSysClkEvent();
     }
     break;
 
