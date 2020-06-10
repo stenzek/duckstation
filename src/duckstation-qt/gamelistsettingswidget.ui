@@ -82,9 +82,23 @@
         </spacer>
        </item>
        <item>
-        <widget class="QToolButton" name="refreshGameListButton">
+        <widget class="QToolButton" name="scanForNewGames">
          <property name="text">
-          <string>Refresh</string>
+          <string>Scan New</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/icons.qrc">
+           <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="rescanAllGames">
+         <property name="text">
+          <string>Rescan All</string>
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">

@@ -23,7 +23,8 @@ private Q_SLOTS:
   void onDirectoryListItemClicked(const QModelIndex& index);
   void onAddSearchDirectoryButtonPressed();
   void onRemoveSearchDirectoryButtonPressed();
-  void onRefreshGameListButtonPressed();
+  void onScanForNewGamesPressed();
+  void onRescanAllGamesPressed();
   void onUpdateRedumpDatabaseButtonPressed();
 
 protected:

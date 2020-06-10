@@ -218,8 +218,8 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
           &GameListSettingsWidget::onAddSearchDirectoryButtonPressed);
   connect(m_ui.removeSearchDirectoryButton, &QToolButton::pressed, this,
           &GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed);
-  connect(m_ui.refreshGameListButton, &QToolButton::pressed, this,
-          &GameListSettingsWidget::onRefreshGameListButtonPressed);
+  connect(m_ui.rescanAllGames, &QToolButton::pressed, this, &GameListSettingsWidget::onRescanAllGamesPressed);
+  connect(m_ui.scanForNewGames, &QToolButton::pressed, this, &GameListSettingsWidget::onScanForNewGamesPressed);
   connect(m_ui.updateRedumpDatabase, &QToolButton::pressed, this,
           &GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed);
 }
@@ -280,9 +280,14 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed()
   m_search_directories_model->removeEntry(row);
 }
 
-void GameListSettingsWidget::onRefreshGameListButtonPressed()
+void GameListSettingsWidget::onRescanAllGamesPressed()
 {
-  m_host_interface->refreshGameList(true);
+  m_host_interface->refreshGameList(true, false);
+}
+
+void GameListSettingsWidget::onScanForNewGamesPressed()
+{
+  m_host_interface->refreshGameList(false, false);
 }
 
 void GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed()

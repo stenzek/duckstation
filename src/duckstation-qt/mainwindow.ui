@@ -98,7 +98,8 @@
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
-    <addaction name="actionRefreshGameList"/>
+    <addaction name="actionScanForNewGames"/>
+    <addaction name="actionRescanAllGames"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -197,13 +198,22 @@
     <string>Start &amp;BIOS</string>
    </property>
   </action>
-  <action name="actionRefreshGameList">
+  <action name="actionScanForNewGames">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Refresh Game List</string>
+    <string>&amp;Scan For New Games</string>
+   </property>
+  </action>
+  <action name="actionRescanAllGames">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Rescan All Games</string>
    </property>
   </action>
   <action name="actionPowerOff">
