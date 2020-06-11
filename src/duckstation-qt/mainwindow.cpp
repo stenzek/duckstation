@@ -3,6 +3,7 @@
 #include "core/game_list.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "aboutdialog.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
@@ -296,7 +297,11 @@ void MainWindow::onDiscordServerActionTriggered()
   QtUtils::OpenURL(this, "https://discord.gg/Buktv3t");
 }
 
-void MainWindow::onAboutActionTriggered() {}
+void MainWindow::onAboutActionTriggered()
+{
+  AboutDialog about(this);
+  about.exec();
+}
 
 void MainWindow::onGameListEntrySelected(const GameListEntry* entry)
 {
