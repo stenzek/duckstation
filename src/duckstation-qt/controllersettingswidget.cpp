@@ -335,7 +335,7 @@ void ControllerSettingsWidget::onSaveProfileClicked()
       return;
     }
 
-    m_host_interface->saveInputProfile(m_host_interface->getPathForInputProfile(name));
+    m_host_interface->saveInputProfile(m_host_interface->getSavePathForInputProfile(name));
   });
 
   QAction* browse = menu.addAction(tr("Browse..."));

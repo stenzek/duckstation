@@ -162,6 +162,13 @@ protected:
     float duration;
   };
 
+  struct InputProfileEntry
+  {
+    std::string name;
+    std::string path;
+  };
+  using InputProfileList = std::vector<InputProfileEntry>;
+
   CommonHostInterface();
   ~CommonHostInterface();
 
@@ -195,10 +202,10 @@ protected:
   virtual void UpdateInputMap() = 0;
 
   /// Returns a path where an input profile with the specified name would be saved.
-  std::string GetPathForInputProfile(const char* name) const;
+  std::string GetSavePathForInputProfile(const char* name) const;
 
   /// Returns a list of all input profiles. first - name, second - path
-  std::vector<std::pair<std::string, std::string>> GetInputProfileList() const;
+  InputProfileList GetInputProfileList() const;
 
   /// Applies the specified input profile.
   void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
@@ -283,6 +290,7 @@ private:
   void RegisterGraphicsHotkeys();
   void RegisterSaveStateHotkeys();
   void RegisterAudioHotkeys();
+  void FindInputProfiles(const std::string& base_path, InputProfileList* out_list) const;
   void UpdateControllerInputMap(SettingsInterface& si);
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings(SettingsInterface& si);

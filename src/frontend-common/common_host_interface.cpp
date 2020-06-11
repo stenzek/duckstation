@@ -1358,30 +1358,49 @@ void CommonHostInterface::RegisterAudioHotkeys()
                  });
 }
 
-std::string CommonHostInterface::GetPathForInputProfile(const char* name) const
+std::string CommonHostInterface::GetSavePathForInputProfile(const char* name) const
 {
   return GetUserDirectoryRelativePath("inputprofiles/%s.ini", name);
 }
 
-std::vector<std::pair<std::string, std::string>> CommonHostInterface::GetInputProfileList() const
+CommonHostInterface::InputProfileList CommonHostInterface::GetInputProfileList() const
+{
+  InputProfileList profiles;
+
+  const std::string user_dir(GetUserDirectoryRelativePath("inputprofiles"));
+  const std::string program_dir(GetProgramDirectoryRelativePath("inputprofiles"));
+
+  FindInputProfiles(user_dir, &profiles);
+  if (user_dir != program_dir)
+    FindInputProfiles(program_dir, &profiles);
+
+  return profiles;
+}
+
+void CommonHostInterface::FindInputProfiles(const std::string& base_path, InputProfileList* out_list) const
 {
   FileSystem::FindResultsArray results;
-  FileSystem::FindFiles(GetUserDirectoryRelativePath("inputprofiles").c_str(), "*.ini",
-                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+  FileSystem::FindFiles(base_path.c_str(), "*.ini", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
 
-  std::vector<std::pair<std::string, std::string>> profile_names;
-  profile_names.reserve(results.size());
+  out_list->reserve(out_list->size() + results.size());
   for (auto& it : results)
   {
     if (it.FileName.size() < 4)
       continue;
 
-    std::string profile_name = it.FileName.substr(0, it.FileName.length() - 4);
-    std::string full_filename = GetUserDirectoryRelativePath("inputprofiles/%s", it.FileName.c_str());
-    profile_names.emplace_back(std::move(profile_name), std::move(full_filename));
-  }
+    std::string name(it.FileName.substr(0, it.FileName.length() - 4));
 
-  return profile_names;
+    // skip duplicates, we prefer the user directory
+    if (std::any_of(out_list->begin(), out_list->end(),
+                    [&name](const InputProfileEntry& e) { return (e.name == name); }))
+    {
+      continue;
+    }
+
+    std::string filename(
+      StringUtil::StdStringFromFormat("%s%c%s", base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, it.FileName.c_str()));
+    out_list->push_back(InputProfileEntry{std::move(name), std::move(filename)});
+  }
 }
 
 void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
