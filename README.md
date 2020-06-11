@@ -35,12 +35,18 @@ Other features include:
  - Optional automatic switching of memory cards for each game
 
 ## System Requirements
- - A CPU faster than a potato.
+ - A CPU faster than a potato. But it needs to be 64-bit otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
  - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 and above. So, basically anything made in the last 10 years or so.
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Downloading and running
-Binaries of DuckStation for 64-bit Windows are available via GitHub Releases and are automatically build with every commit/push. To download:
+Binaries of DuckStation for 64-bit Windows are available via GitHub Releases and are automatically built with every commit/push.
+
+**Windows 10 is the only supported operating system.** Windows 7/8 may work, but is not supported by the developer. I am aware some users are still using Windows 7, but
+it is no longer supported by Microsoft and too much effort to get running on modern hardware. Game bugs are unlikely to be affected by the operating system, however
+performance issues should be verified on Windows 10 before reporting.
+
+To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a 7-Zip archive containing the prebuilt binary.
  - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.7z
  - Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
