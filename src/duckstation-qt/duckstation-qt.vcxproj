@@ -35,6 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
@@ -60,6 +61,7 @@
     <ClCompile Include="settingsdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="controllersettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
@@ -108,6 +110,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="aboutdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="audiosettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -142,6 +147,7 @@
     </QtResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(IntDir)moc_aboutdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
