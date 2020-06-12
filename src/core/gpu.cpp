@@ -31,8 +31,10 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
   m_crtc_state.display_aspect_ratio =
     Settings::GetDisplayAspectRatioValue(m_system->GetSettings().display_aspect_ratio);
-  m_tick_event =
-    m_system->CreateTimingEvent("GPU Tick", 1, 1, std::bind(&GPU::Execute, this, std::placeholders::_1), true);
+  m_crtc_tick_event = m_system->CreateTimingEvent("GPU CRTC Tick", 1, 1,
+                                                  std::bind(&GPU::CRTCTickEvent, this, std::placeholders::_1), true);
+  m_command_tick_event = m_system->CreateTimingEvent(
+    "GPU Command Tick", 1, 1, std::bind(&GPU::CommandTickEvent, this, std::placeholders::_1), true);
   m_fifo_size = system->GetSettings().gpu_fifo_size;
   m_max_run_ahead = system->GetSettings().gpu_max_run_ahead;
   m_console_is_pal = system->IsPALRegion();
@@ -92,7 +94,7 @@ void GPU::SoftReset()
   m_crtc_state.in_hblank = false;
   m_crtc_state.in_vblank = false;
   m_blitter_state = BlitterState::Idle;
-  m_command_ticks = 0;
+  m_pending_command_ticks = 0;
   m_command_total_words = 0;
   m_vram_transfer = {};
   m_fifo.Clear();
@@ -103,7 +105,8 @@ void GPU::SoftReset()
   SetTextureWindow(0);
   UpdateDMARequest();
   UpdateCRTCConfig();
-  UpdateSliceTicks();
+  UpdateCRTCTickEvent();
+  UpdateCommandTickEvent();
 }
 
 bool GPU::DoState(StateWrapper& sw)
@@ -172,7 +175,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.active_line_lsb);
 
   sw.Do(&m_blitter_state);
-  sw.Do(&m_command_ticks);
+  sw.Do(&m_pending_command_ticks);
   sw.Do(&m_command_total_words);
   sw.Do(&m_GPUREAD_latch);
 
@@ -219,7 +222,8 @@ bool GPU::DoState(StateWrapper& sw)
 
     UpdateCRTCConfig();
     UpdateDisplay();
-    UpdateSliceTicks();
+    UpdateCRTCTickEvent();
+    UpdateCommandTickEvent();
   }
   else
   {
@@ -239,19 +243,16 @@ void GPU::UpdateDMARequest()
   switch (m_blitter_state)
   {
     case BlitterState::Idle:
-      m_GPUSTAT.gpu_idle = (m_command_ticks <= 0);
       m_GPUSTAT.ready_to_send_vram = false;
       m_GPUSTAT.ready_to_recieve_dma = (m_fifo.GetSize() < m_fifo_size);
       break;
 
     case BlitterState::WritingVRAM:
-      m_GPUSTAT.gpu_idle = false;
       m_GPUSTAT.ready_to_send_vram = false;
       m_GPUSTAT.ready_to_recieve_dma = (m_fifo.GetSize() < m_fifo_size);
       break;
 
     case BlitterState::ReadingVRAM:
-      m_GPUSTAT.gpu_idle = false;
       m_GPUSTAT.ready_to_send_vram = true;
       m_GPUSTAT.ready_to_recieve_dma = false;
       break;
@@ -284,6 +285,24 @@ void GPU::UpdateDMARequest()
   m_dma->SetRequest(DMA::Channel::GPU, dma_request);
 }
 
+void GPU::UpdateGPUIdle()
+{
+  switch (m_blitter_state)
+  {
+    case BlitterState::Idle:
+      m_GPUSTAT.gpu_idle = (m_pending_command_ticks <= 0);
+      break;
+
+    case BlitterState::WritingVRAM:
+      m_GPUSTAT.gpu_idle = false;
+      break;
+
+    case BlitterState::ReadingVRAM:
+      m_GPUSTAT.gpu_idle = false;
+      break;
+  }
+}
+
 u32 GPU::ReadRegister(u32 offset)
 {
   switch (offset)
@@ -295,8 +314,10 @@ u32 GPU::ReadRegister(u32 offset)
     {
       // code can be dependent on the odd/even bit, so update the GPU state when reading.
       // we can mitigate this slightly by only updating when the raster is actually hitting a new line
-      if (IsRasterScanlineOrCommandPending())
-        Synchronize();
+      if (IsCRTCScanlinePending())
+        SynchronizeCRTC();
+      if (IsCommandCompletionPending())
+        m_command_tick_event->InvokeEarly();
 
       return m_GPUSTAT.bits;
     }
@@ -314,6 +335,7 @@ void GPU::WriteRegister(u32 offset, u32 value)
     case 0x00:
       m_fifo.Push(value);
       ExecuteCommands();
+      UpdateCommandTickEvent();
       return;
 
     case 0x04:
@@ -348,9 +370,14 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
       m_fifo.PushRange(words, word_count);
       m_fifo_pushed = true;
       if (!m_syncing)
+      {
         ExecuteCommands();
+        UpdateCommandTickEvent();
+      }
       else
+      {
         UpdateDMARequest();
+      }
     }
     break;
 
@@ -372,7 +399,7 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
  * PAL - sysclk * 709379 / 451584
  */
 
-TickCount GPU::GPUTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_ticks) const
+TickCount GPU::CRTCTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_ticks) const
 {
   // convert to master clock, rounding up as we want to overshoot not undershoot
   if (!m_console_is_pal)
@@ -381,7 +408,7 @@ TickCount GPU::GPUTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_t
     return static_cast<TickCount>((u64(gpu_ticks) * u64(451584) + fractional_ticks + u64(709378)) / u64(709379));
 }
 
-TickCount GPU::SystemTicksToGPUTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const
+TickCount GPU::SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const
 {
   if (!m_console_is_pal)
   {
@@ -401,30 +428,19 @@ TickCount GPU::SystemTicksToGPUTicks(TickCount sysclk_ticks, TickCount* fraction
 
 void GPU::AddCommandTicks(TickCount ticks)
 {
-  if (m_command_ticks != 0)
-  {
-    m_command_ticks += ticks;
-    return;
-  }
-
-  m_command_ticks = GetPendingGPUTicks() + ticks;
-
-  // reschedule GPU tick event if it would execute later than this command finishes
-  const TickCount sysclk_ticks = GPUTicksToSystemTicks(ticks, 0);
-  if (m_tick_event->GetTicksUntilNextExecution() > sysclk_ticks)
-    m_tick_event->Schedule(sysclk_ticks);
+  m_pending_command_ticks += ticks;
 }
 
-void GPU::Synchronize()
+void GPU::SynchronizeCRTC()
 {
-  m_tick_event->InvokeEarly();
+  m_crtc_tick_event->InvokeEarly();
 }
 
 float GPU::ComputeHorizontalFrequency() const
 {
   const CRTCState& cs = m_crtc_state;
   TickCount fractional_ticks = 0;
-  return static_cast<float>(static_cast<double>(SystemTicksToGPUTicks(MASTER_CLOCK, &fractional_ticks)) /
+  return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
                             static_cast<double>(cs.horizontal_total));
 }
 
@@ -433,7 +449,7 @@ float GPU::ComputeVerticalFrequency() const
   const CRTCState& cs = m_crtc_state;
   const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
   TickCount fractional_ticks = 0;
-  return static_cast<float>(static_cast<double>(SystemTicksToGPUTicks(MASTER_CLOCK, &fractional_ticks)) /
+  return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
                             static_cast<double>(ticks_per_frame));
 }
 
@@ -486,7 +502,7 @@ void GPU::UpdateCRTCConfig()
   m_system->SetThrottleFrequency(ComputeVerticalFrequency());
 
   UpdateCRTCDisplayParameters();
-  UpdateSliceTicks();
+  UpdateCRTCTickEvent();
 }
 
 void GPU::UpdateCRTCDisplayParameters()
@@ -628,14 +644,22 @@ void GPU::UpdateCRTCDisplayParameters()
   }
 }
 
-TickCount GPU::GetPendingGPUTicks() const
+TickCount GPU::GetPendingCRTCTicks() const
 {
-  const TickCount pending_sysclk_ticks = m_tick_event->GetTicksSinceLastExecution();
+  const TickCount pending_sysclk_ticks = m_crtc_tick_event->GetTicksSinceLastExecution();
   TickCount fractional_ticks = m_crtc_state.fractional_ticks;
-  return SystemTicksToGPUTicks(pending_sysclk_ticks, &fractional_ticks);
+  return SystemTicksToCRTCTicks(pending_sysclk_ticks, &fractional_ticks);
 }
 
-void GPU::UpdateSliceTicks()
+TickCount GPU::GetPendingCommandTicks() const
+{
+  if (!m_command_tick_event->IsActive())
+    return 0;
+
+  return SystemTicksToGPUTicks(m_command_tick_event->GetTicksSinceLastExecution());
+}
+
+void GPU::UpdateCRTCTickEvent()
 {
   // figure out how many GPU ticks until the next vblank or event
   const TickCount lines_until_vblank =
@@ -655,42 +679,25 @@ void GPU::UpdateSliceTicks()
     (m_crtc_state.horizontal_display_end - m_crtc_state.current_tick_in_scanline);
 #endif
 
-  m_tick_event->Schedule(
-    GPUTicksToSystemTicks((m_command_ticks > 0) ? std::min(m_command_ticks, ticks_until_event) : ticks_until_event,
-                          m_crtc_state.fractional_ticks));
+  m_crtc_tick_event->Schedule(CRTCTicksToSystemTicks(ticks_until_event, m_crtc_state.fractional_ticks));
 }
 
-bool GPU::IsRasterScanlinePending() const
+bool GPU::IsCRTCScanlinePending() const
 {
-  return (GetPendingGPUTicks() + m_crtc_state.current_tick_in_scanline) >= m_crtc_state.horizontal_total;
+  return (GetPendingCRTCTicks() + m_crtc_state.current_tick_in_scanline) >= m_crtc_state.horizontal_total;
 }
 
-bool GPU::IsRasterScanlineOrCommandPending() const
+bool GPU::IsCommandCompletionPending() const
 {
-  const TickCount pending_ticks = GetPendingGPUTicks();
-  return ((pending_ticks + m_crtc_state.current_tick_in_scanline) >= m_crtc_state.horizontal_total) ||
-         (m_command_ticks > 0 && pending_ticks > m_command_ticks);
+  return (m_pending_command_ticks > 0 && GetPendingCommandTicks() >= m_pending_command_ticks);
 }
 
-void GPU::Execute(TickCount ticks)
+void GPU::CRTCTickEvent(TickCount ticks)
 {
   // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
   {
-    const TickCount gpu_ticks = SystemTicksToGPUTicks(ticks, &m_crtc_state.fractional_ticks);
+    const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &m_crtc_state.fractional_ticks);
     m_crtc_state.current_tick_in_scanline += gpu_ticks;
-
-    // handle blits
-    if (m_command_ticks > 0)
-    {
-      m_command_ticks -= gpu_ticks;
-
-      // we can be syncing if this came from a DMA write. recursively executing commands would be bad.
-      if (!m_syncing)
-        ExecuteCommands();
-
-      if (m_command_ticks < 0)
-        m_command_ticks = 0;
-    }
   }
 
   if (m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_total)
@@ -702,7 +709,7 @@ void GPU::Execute(TickCount ticks)
     if (!old_hblank && new_hblank && m_timers->IsUsingExternalClock(HBLANK_TIMER_INDEX))
       m_timers->AddTicks(HBLANK_TIMER_INDEX, 1);
 
-    UpdateSliceTicks();
+    UpdateCRTCTickEvent();
     return;
   }
 
@@ -786,7 +793,36 @@ void GPU::Execute(TickCount ticks)
     m_GPUSTAT.display_line_lsb = ConvertToBoolUnchecked((m_crtc_state.regs.Y + m_crtc_state.current_scanline) & u32(1));
   }
 
-  UpdateSliceTicks();
+  UpdateCRTCTickEvent();
+}
+
+void GPU::CommandTickEvent(TickCount ticks)
+{
+  m_pending_command_ticks -= SystemTicksToGPUTicks(ticks);
+
+  // we can be syncing if this came from a DMA write. recursively executing commands would be bad.
+  if (!m_syncing)
+    ExecuteCommands();
+
+  UpdateGPUIdle();
+
+  if (m_pending_command_ticks <= 0)
+  {
+    m_pending_command_ticks = 0;
+    m_command_tick_event->Deactivate();
+  }
+  else
+  {
+    m_command_tick_event->SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
+  }
+}
+
+void GPU::UpdateCommandTickEvent()
+{
+  if (m_pending_command_ticks <= 0)
+    m_command_tick_event->Deactivate();
+  else if (!m_command_tick_event->IsActive())
+    m_command_tick_event->SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
 }
 
 bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, u32* out_tick, u32* out_line) const
@@ -837,6 +873,7 @@ u32 GPU::ReadGPUREAD()
 
         // end of transfer, catch up on any commands which were written (unlikely)
         ExecuteCommands();
+        UpdateCommandTickEvent();
         break;
       }
     }
@@ -855,7 +892,7 @@ void GPU::WriteGP1(u32 value)
     case 0x00: // Reset GPU
     {
       Log_DebugPrintf("GP1 reset GPU");
-      Synchronize();
+      SynchronizeCRTC();
       SoftReset();
     }
     break;
@@ -863,15 +900,17 @@ void GPU::WriteGP1(u32 value)
     case 0x01: // Clear FIFO
     {
       Log_DebugPrintf("GP1 clear FIFO");
-      Synchronize();
+      SynchronizeCRTC();
       m_blitter_state = BlitterState::Idle;
       m_command_total_words = 0;
       m_vram_transfer = {};
       m_fifo.Clear();
       m_blit_buffer.clear();
       m_blit_remaining_words = 0;
-      m_command_ticks = 0;
+      m_pending_command_ticks = 0;
+      m_command_tick_event->Deactivate();
       UpdateDMARequest();
+      UpdateGPUIdle();
     }
     break;
 
@@ -886,7 +925,7 @@ void GPU::WriteGP1(u32 value)
     {
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
       Log_DebugPrintf("Display %s", disable ? "disabled" : "enabled");
-      Synchronize();
+      SynchronizeCRTC();
       m_GPUSTAT.display_disable = disable;
     }
     break;
@@ -918,7 +957,7 @@ void GPU::WriteGP1(u32 value)
 
       if (m_crtc_state.regs.horizontal_display_range != new_value)
       {
-        Synchronize();
+        SynchronizeCRTC();
         m_crtc_state.regs.horizontal_display_range = new_value;
         UpdateCRTCConfig();
       }
@@ -932,7 +971,7 @@ void GPU::WriteGP1(u32 value)
 
       if (m_crtc_state.regs.vertical_display_range != new_value)
       {
-        Synchronize();
+        SynchronizeCRTC();
         m_crtc_state.regs.vertical_display_range = new_value;
         UpdateCRTCConfig();
       }
@@ -969,7 +1008,7 @@ void GPU::WriteGP1(u32 value)
       {
         // Have to be careful when setting this because Synchronize() can modify GPUSTAT.
         static constexpr u32 SET_MASK = UINT32_C(0b00000000011111110100000000000000);
-        Synchronize();
+        SynchronizeCRTC();
         m_GPUSTAT.bits = (m_GPUSTAT.bits & ~SET_MASK) | (new_GPUSTAT.bits & SET_MASK);
         UpdateCRTCConfig();
       }
@@ -1077,8 +1116,8 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   else if (IsInterlacedRenderingEnabled())
   {
     // Hardware tests show that fills seem to break on the first two lines when the offset matches the displayed field.
-    if (IsRasterScanlinePending())
-      Synchronize();
+    if (IsCRTCScanlinePending())
+      SynchronizeCRTC();
 
     const u32 active_field = GetActiveLineLSB();
     for (u32 yoffs = 0; yoffs < height; yoffs++)

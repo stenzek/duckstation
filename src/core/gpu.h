@@ -143,16 +143,17 @@ public:
   void DMAWrite(const u32* words, u32 word_count);
 
   /// Returns the number of pending GPU ticks.
-  TickCount GetPendingGPUTicks() const;
+  TickCount GetPendingCRTCTicks() const;
+  TickCount GetPendingCommandTicks() const;
 
   /// Returns true if enough ticks have passed for the raster to be on the next line.
-  bool IsRasterScanlinePending() const;
+  bool IsCRTCScanlinePending() const;
 
   /// Returns true if a raster scanline or command execution is pending.
-  bool IsRasterScanlineOrCommandPending() const;
+  bool IsCommandCompletionPending() const;
 
   // Synchronizes the CRTC, updating the hblank timer.
-  void Synchronize();
+  void SynchronizeCRTC();
 
   // Recompile shaders/recreate framebuffers when needed.
   virtual void UpdateSettings();
@@ -173,8 +174,15 @@ public:
   void UpdateHardwareType();
 
 protected:
-  TickCount GPUTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_ticks) const;
-  TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const;
+  TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
+  TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const;
+
+  // The GPU internally appears to run at 2x the system clock.
+  ALWAYS_INLINE static constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
+  {
+    return std::max<TickCount>(gpu_ticks >> 1, 1);
+  }
+  ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
 
   // Helper/format conversion functions.
   static constexpr u8 Convert5To8(u8 x5) { return (x5 << 3) | (x5 & 7); }
@@ -332,13 +340,16 @@ protected:
   void UpdateCRTCDisplayParameters();
 
   // Update ticks for this execution slice
-  void UpdateSliceTicks();
+  void UpdateCRTCTickEvent();
+  void UpdateCommandTickEvent();
 
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
   void UpdateDMARequest();
+  void UpdateGPUIdle();
 
   // Ticks for hblank/vblank.
-  void Execute(TickCount ticks);
+  void CRTCTickEvent(TickCount ticks);
+  void CommandTickEvent(TickCount ticks);
 
   /// Returns false if the DAC is loading any data from VRAM.
   ALWAYS_INLINE bool IsDisplayDisabled() const
@@ -419,7 +430,8 @@ protected:
   InterruptController* m_interrupt_controller = nullptr;
   Timers* m_timers = nullptr;
 
-  std::unique_ptr<TimingEvent> m_tick_event;
+  std::unique_ptr<TimingEvent> m_crtc_tick_event;
+  std::unique_ptr<TimingEvent> m_command_tick_event;
 
   // Pointer to VRAM, used for reads/writes. In the hardware backends, this is the shadow buffer.
   u16* m_vram_ptr = nullptr;
@@ -649,8 +661,8 @@ protected:
   } m_crtc_state = {};
 
   BlitterState m_blitter_state = BlitterState::Idle;
-  TickCount m_command_ticks = 0;
   u32 m_command_total_words = 0;
+  TickCount m_pending_command_ticks = 0;
 
   /// GPUREAD value for non-VRAM-reads.
   u32 m_GPUREAD_latch = 0;

@@ -27,7 +27,7 @@ void GPU::ExecuteCommands()
 
   for (;;)
   {
-    if (m_command_ticks <= m_max_run_ahead && !m_fifo.IsEmpty())
+    if (m_pending_command_ticks <= m_max_run_ahead && !m_fifo.IsEmpty())
     {
       switch (m_blitter_state)
       {
@@ -108,6 +108,7 @@ void GPU::ExecuteCommands()
       break;
   }
 
+  UpdateGPUIdle();
   m_syncing = false;
 }
 
@@ -325,8 +326,8 @@ bool GPU::HandleRenderPolygonCommand()
   const u32 total_words = words_per_vertex * num_vertices + BoolToUInt32(!rc.shading_enable);
   CHECK_COMMAND_SIZE(total_words);
 
-  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
-    Synchronize();
+  if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
+    SynchronizeCRTC();
 
   // setup time
   static constexpr u16 s_setup_time[2][2][2] = {{{46, 226}, {334, 496}}, {{82, 262}, {370, 532}}};
@@ -367,8 +368,8 @@ bool GPU::HandleRenderRectangleCommand()
 
   CHECK_COMMAND_SIZE(total_words);
 
-  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
-    Synchronize();
+  if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
+    SynchronizeCRTC();
 
   if (rc.texture_enable)
     SetTexturePalette(Truncate16(m_fifo.Peek(2) >> 16));
@@ -397,8 +398,8 @@ bool GPU::HandleRenderLineCommand()
   const u32 total_words = rc.shading_enable ? 4 : 3;
   CHECK_COMMAND_SIZE(total_words);
 
-  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
-    Synchronize();
+  if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
+    SynchronizeCRTC();
 
   Log_TracePrintf("Render %s %s line (%u total words)", rc.transparency_enable ? "semi-transparent" : "opaque",
                   rc.shading_enable ? "shaded" : "monochrome", total_words);
@@ -420,8 +421,8 @@ bool GPU::HandleRenderPolyLineCommand()
   const u32 min_words = rc.shading_enable ? 3 : 4;
   CHECK_COMMAND_SIZE(min_words);
 
-  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
-    Synchronize();
+  if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
+    SynchronizeCRTC();
 
   const TickCount setup_ticks = 16;
   AddCommandTicks(setup_ticks);
@@ -446,8 +447,8 @@ bool GPU::HandleFillRectangleCommand()
 {
   CHECK_COMMAND_SIZE(3);
 
-  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
-    Synchronize();
+  if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
+    SynchronizeCRTC();
 
   FlushRender();
 
@@ -502,8 +503,8 @@ void GPU::FinishVRAMWrite()
                    m_blit_buffer.data(), true);
   }
 
-  if (IsInterlacedRenderingEnabled() && IsRasterScanlinePending())
-    Synchronize();
+  if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
+    SynchronizeCRTC();
 
   FlushRender();
 
