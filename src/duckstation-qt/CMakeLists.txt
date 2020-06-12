@@ -4,6 +4,8 @@ set(CMAKE_AUTOUIC ON)
 
 add_executable(duckstation-qt
   resources/icons.qrc
+  aboutdialog.cpp
+  aboutdialog.h
   advancedsettingswidget.cpp
   advancedsettingswidget.h
   advancedsettingswidget.ui
