@@ -412,16 +412,27 @@ protected:
   virtual void DrawRendererStats(bool is_idle_frame);
 
   // These are **very** approximate.
-  ALWAYS_INLINE void AddDrawTriangleTicks(u32 width, u32 height, bool textured, bool shaded)
+  ALWAYS_INLINE void AddDrawTriangleTicks(u32 width, u32 height, bool shaded, bool textured, bool semitransparent)
   {
-#if 0
-    const u32 draw_ticks = static_cast<u32>((std::abs(x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) + 1u) / 2u);
-#else
-    const u32 draw_ticks = ((width + 2) / 3) * height;
-#endif
-    AddCommandTicks(draw_ticks);
+    const u32 average_width = ((width + 2) / 3);
+    u32 ticks_per_row = average_width;
+    if (textured)
+      ticks_per_row += average_width;
+    if (semitransparent || m_GPUSTAT.check_mask_before_draw)
+      ticks_per_row += (average_width + 1u) / 2u;
+
+    AddCommandTicks(ticks_per_row * height);
   }
-  ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured) { AddCommandTicks(width * height); }
+  ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured, bool semitransparent)
+  {
+    u32 ticks_per_row = width;
+    if (textured)
+      ticks_per_row += width;
+    if (semitransparent || m_GPUSTAT.check_mask_before_draw)
+      ticks_per_row += (width + 1u) / 2u;
+
+    AddCommandTicks(ticks_per_row * height);
+  }
   ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded) { AddCommandTicks(std::max(width, height)); }
 
   HostDisplay* m_host_display = nullptr;

@@ -433,7 +433,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
   max_x = std::clamp(max_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right));
   min_y = std::clamp(min_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom));
   max_y = std::clamp(max_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom));
-  AddDrawTriangleTicks(max_x - min_x + 1, max_y - min_y + 1, texture_enable, shading_enable);
+  AddDrawTriangleTicks(max_x - min_x + 1, max_y - min_y + 1, shading_enable, texture_enable, transparency_enable);
 
   // compute per-pixel increments
   const s32 a01 = py0 - py1, b01 = px1 - px0;
@@ -539,7 +539,7 @@ void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8
     const u32 clip_bottom =
       static_cast<u32>(std::clamp<s32>(start_y + static_cast<s32>(height), m_drawing_area.top, m_drawing_area.bottom)) +
       1u;
-    AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, texture_enable);
+    AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, texture_enable, transparency_enable);
   }
 
   for (u32 offset_y = 0; offset_y < height; offset_y++)
