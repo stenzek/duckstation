@@ -394,6 +394,9 @@ protected:
            BoolToUInt8(m_render_command.shading_enable);
   }
 
+  /// Returns true if the drawing area is valid (i.e. left <= right, top <= bottom).
+  ALWAYS_INLINE bool IsDrawingAreaIsValid() const { return m_drawing_area.Valid(); }
+
   void AddCommandTicks(TickCount ticks);
 
   void WriteGP1(u32 value);

@@ -217,6 +217,9 @@ void GPU_HW::LoadVertices()
       if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
+      if (!IsDrawingAreaIsValid())
+        return;
+
       // Cull polygons which are too large.
       const s32 min_x_12 = std::min(vertices[1].x, vertices[2].x);
       const s32 max_x_12 = std::max(vertices[1].x, vertices[2].x);
@@ -328,6 +331,9 @@ void GPU_HW::LoadVertices()
       // we can split the rectangle up into potentially 8 quads
       DebugAssert(GetBatchVertexSpace() >= MAX_VERTICES_FOR_RECTANGLE);
 
+      if (!IsDrawingAreaIsValid())
+        return;
+
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
       u16 tex_top = orig_tex_top;
       for (s32 y_offset = 0; y_offset < rectangle_height;)
@@ -395,6 +401,9 @@ void GPU_HW::LoadVertices()
           pos1.bits = m_fifo.Pop();
         }
 
+        if (!IsDrawingAreaIsValid())
+          return;
+
         BatchVertex start, end;
         start.Set(m_drawing_offset.x + pos0.x, m_drawing_offset.y + pos0.y, color0, 0, 0);
         end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos1.y, color1, 0, 0);
@@ -427,6 +436,9 @@ void GPU_HW::LoadVertices()
         // Multiply by two because we don't use line strips.
         const u32 num_vertices = GetPolyLineVertexCount();
         DebugAssert(GetBatchVertexSpace() >= (num_vertices * 2));
+
+        if (!IsDrawingAreaIsValid())
+          return;
 
         const u32 first_color = rc.color_for_first_vertex;
         const bool shaded = rc.shading_enable;

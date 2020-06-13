@@ -248,6 +248,9 @@ void GPU_SW::DispatchRenderCommand()
         }
       }
 
+      if (!IsDrawingAreaIsValid())
+        return;
+
       const DrawTriangleFunction DrawFunction = GetDrawTriangleFunction(
         rc.shading_enable, rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable, dithering_enable);
 
@@ -296,6 +299,9 @@ void GPU_SW::DispatchRenderCommand()
         break;
       }
 
+      if (!IsDrawingAreaIsValid())
+        return;
+
       const DrawRectangleFunction DrawFunction =
         GetDrawRectangleFunction(rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable);
 
@@ -334,7 +340,9 @@ void GPU_SW::DispatchRenderCommand()
           p1->SetPosition(VertexPosition{m_fifo.Pop()});
         }
 
-        (this->*DrawFunction)(p0, p1);
+        // down here because of the FIFO pops
+        if (IsDrawingAreaIsValid())
+          (this->*DrawFunction)(p0, p1);
 
         // swap p0/p1 so that the last vertex is used as the first for the next line
         std::swap(p0, p1);
