@@ -13,8 +13,15 @@
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="imgui_impl_sdl.h" />
     <ClInclude Include="sdl_key_names.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-sdl.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="duckstation-sdl.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="duckstation-sdl.rc" />
   </ItemGroup>
 </Project>

@@ -65,11 +65,18 @@
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="imgui_impl_sdl.h" />
     <ClInclude Include="opengl_host_display.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="sdl_host_interface.h" />
     <ClInclude Include="sdl_key_names.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-sdl.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="duckstation-sdl.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="duckstation-sdl.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DAA8F93D-9C17-4DE2-BD0B-57891E0FF0D9}</ProjectGuid>
