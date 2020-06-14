@@ -38,7 +38,6 @@
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="gamepropertiesdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
-    <ClCompile Include="$(IntDir)qrc_icons.cpp" />
     <ClCompile Include="controllersettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +47,7 @@
     <ClInclude Include="qthostdisplay.h" />
     <ClInclude Include="d3d11hostdisplay.h" />
     <ClInclude Include="openglhostdisplay.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -88,5 +88,11 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="duckstation-qt.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="duckstation-qt.ico" />
   </ItemGroup>
 </Project>

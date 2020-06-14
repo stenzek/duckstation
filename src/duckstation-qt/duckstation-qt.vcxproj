@@ -74,6 +74,7 @@
     <ClInclude Include="d3d11hostdisplay.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <ClInclude Include="qthostdisplay.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
@@ -174,6 +175,12 @@
     <CommonDataFiles Include="$(SolutionDir)data\**\*.*">
       <InProject>false</InProject>
     </CommonDataFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="duckstation-qt.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="duckstation-qt.ico" />
   </ItemGroup>
   <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying common data files" Importance="High" />
