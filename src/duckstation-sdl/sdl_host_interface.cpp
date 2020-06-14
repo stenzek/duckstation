@@ -1257,7 +1257,6 @@ void SDLHostInterface::DrawSettingsWindow()
     if (ImGui::BeginTabItem("Advanced"))
     {
       ImGui::Text("These options are tweakable to improve performance/game compatibility.");
-      ImGui::Text("They will not be automatically saved to the settings INI file.");
       ImGui::Text("Use at your own risk, modified values will not be supported.");
       ImGui::NewLine();
 
