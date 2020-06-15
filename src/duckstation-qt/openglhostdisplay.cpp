@@ -60,17 +60,6 @@ OpenGLHostDisplay::OpenGLHostDisplay(QtHostInterface* host_interface) : QtHostDi
 
 OpenGLHostDisplay::~OpenGLHostDisplay() = default;
 
-QtDisplayWidget* OpenGLHostDisplay::createWidget(QWidget* parent)
-{
-  QtDisplayWidget* widget = QtHostDisplay::createWidget(parent);
-
-  QWindow* native_window = widget->windowHandle();
-  Assert(native_window);
-  native_window->setSurfaceType(QWindow::OpenGLSurface);
-
-  return widget;
-}
-
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
   return m_gl_context->IsGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;

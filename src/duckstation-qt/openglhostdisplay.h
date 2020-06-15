@@ -25,8 +25,6 @@ public:
   OpenGLHostDisplay(QtHostInterface* host_interface);
   ~OpenGLHostDisplay();
 
-  QtDisplayWidget* createWidget(QWidget* parent) override;
-
   bool hasDeviceContext() const override;
   bool createDeviceContext(bool debug_device) override;
   bool initializeDeviceContext(bool debug_device) override;
