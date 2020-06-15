@@ -124,7 +124,7 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
   QPushButton* clear_all_button = new QPushButton(tr("Clear All"), ui->widget);
   clear_all_button->connect(clear_all_button, &QPushButton::clicked, [this, index]() {
     if (QMessageBox::question(this, tr("Clear Bindings"),
-                              tr("Are you sure you want to clear all bound controls? This cannot be reversed.")) !=
+                              tr("Are you sure you want to clear all bound controls? This can not be reversed.")) !=
         QMessageBox::Yes)
     {
       return;
@@ -140,15 +140,19 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
 
   QPushButton* rebind_all_button = new QPushButton(tr("Rebind All"), ui->widget);
   rebind_all_button->connect(rebind_all_button, &QPushButton::clicked, [this, index]() {
-    if (QMessageBox::question(this, tr("Clear Bindings"), tr("Do you want to clear all currently-bound controls?")) ==
+    if (QMessageBox::question(this, tr("Rebind All"),
+                              tr("Are you sure you want to rebind all controls? All currently-bound controls will be "
+                                 "irreversibly cleared. Rebinding will begin after confirmation.")) !=
         QMessageBox::Yes)
     {
-      InputBindingWidget* widget = m_port_ui[index].first_button;
-      while (widget)
-      {
-        widget->clearBinding();
-        widget = widget->getNextWidget();
-      }
+      return;
+    }
+
+    InputBindingWidget* widget = m_port_ui[index].first_button;
+    while (widget)
+    {
+      widget->clearBinding();
+      widget = widget->getNextWidget();
     }
 
     if (m_port_ui[index].first_button)
