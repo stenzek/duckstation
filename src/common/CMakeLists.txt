@@ -53,6 +53,7 @@ add_library(common
   rectangle.h
   progress_callback.cpp
   progress_callback.h
+  scope_guard.h
   state_wrapper.cpp
   state_wrapper.h
   string.cpp

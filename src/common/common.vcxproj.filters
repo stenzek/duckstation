@@ -67,6 +67,7 @@
     <ClInclude Include="window_info.h" />
     <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="dimensional_array.h" />
+    <ClInclude Include="scope_guard.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

@@ -70,6 +70,7 @@
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
+    <ClInclude Include="scope_guard.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="string_util.h" />
