@@ -10,6 +10,7 @@
     <ClInclude Include="src\imstb_textedit.h" />
     <ClInclude Include="src\imstb_truetype.h" />
     <ClInclude Include="include\imgui_stdlib.h" />
+    <ClInclude Include="include\imgui_impl_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\imgui_impl_opengl3.cpp" />
@@ -18,5 +19,6 @@
     <ClCompile Include="src\imgui_draw.cpp" />
     <ClCompile Include="src\imgui_impl_dx11.cpp" />
     <ClCompile Include="src\imgui_stdlib.cpp" />
+    <ClCompile Include="src\imgui_impl_vulkan.cpp" />
   </ItemGroup>
 </Project>
