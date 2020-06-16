@@ -14,6 +14,8 @@ add_subdirectory(libchdr)
 add_subdirectory(xxhash)
 add_subdirectory(rapidjson)
 
+add_subdirectory(vulkan-loader)
+
 if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)
 endif()

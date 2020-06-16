@@ -53,6 +53,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "discord-rpc", "dep\discord-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duckstation-libretro", "src\duckstation-libretro\duckstation-libretro.vcxproj", "{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vulkan-loader", "dep\vulkan-loader\vulkan-loader.vcxproj", "{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -449,6 +451,22 @@ Global
 		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
 		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
 		{9D206548-DE8F-4D9D-A561-C7E5CD7A20DF}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Debug|x64.ActiveCfg = Debug|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Debug|x64.Build.0 = Debug|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Debug|x86.ActiveCfg = Debug|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Debug|x86.Build.0 = Debug|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.DebugFast|x64.ActiveCfg = DebugFast|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.DebugFast|x64.Build.0 = DebugFast|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.DebugFast|x86.ActiveCfg = DebugFast|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.DebugFast|x86.Build.0 = DebugFast|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Release|x64.ActiveCfg = Release|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Release|x64.Build.0 = Release|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Release|x86.ActiveCfg = Release|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.Release|x86.Build.0 = Release|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.ReleaseLTCG|x64.ActiveCfg = ReleaseLTCG|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.ReleaseLTCG|x64.Build.0 = ReleaseLTCG|x64
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.ReleaseLTCG|x86.ActiveCfg = ReleaseLTCG|Win32
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035}.ReleaseLTCG|x86.Build.0 = ReleaseLTCG|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -470,6 +488,7 @@ Global
 		{09553C96-9F39-49BF-8AE6-7ACBD07C410C} = {BA490C0E-497D-4634-A21E-E65012006385}
 		{49953E1B-2EF7-46A4-B88B-1BF9E099093B} = {BA490C0E-497D-4634-A21E-E65012006385}
 		{4266505B-DBAF-484B-AB31-B53B9C8235B3} = {BA490C0E-497D-4634-A21E-E65012006385}
+		{9C8DDEB0-2B8F-4F5F-BA86-127CDF27F035} = {BA490C0E-497D-4634-A21E-E65012006385}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {26E40B32-7C1D-48D0-95F4-1A500E054028}
