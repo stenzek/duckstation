@@ -18,6 +18,25 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToWindow,
                                                QStringLiteral("Logging/LogToWindow"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToFile, QStringLiteral("Logging/LogToFile"));
+
+  // Tweaks/Hacks section
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaMaxSliceTicks,
+                                              QStringLiteral("Hacks/DMAHaltTicks"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks,
+                                              QStringLiteral("Hacks/DMAMaxSliceTicks"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuFIFOSize, QStringLiteral("Hacks/GPUFIFOSize"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead,
+                                              QStringLiteral("Hacks/GPUMaxRunAhead"));
+
+  connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
+
+void AdvancedSettingsWidget::onResetToDefaultClicked()
+{
+  m_ui.dmaMaxSliceTicks->setValue(static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
+  m_ui.dmaHaltTicks->setValue(static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
+  m_ui.gpuFIFOSize->setValue(static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
+  m_ui.gpuMaxRunAhead->setValue(static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
+}

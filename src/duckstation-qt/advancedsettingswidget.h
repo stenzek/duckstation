@@ -18,5 +18,7 @@ public:
 private:
   Ui::AdvancedSettingsWidget m_ui;
 
+  void onResetToDefaultClicked();
+
   QtHostInterface* m_host_interface;
 };

@@ -110,12 +110,22 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>DMA Max Slice Size:</string>
+         <string>DMA Max Slice Ticks:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QSpinBox" name="dmaMaxSliceSize"/>
+       <widget class="QSpinBox" name="dmaMaxSliceTicks">
+        <property name="minimum">
+         <number>100</number>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="value">
+         <number>1000</number>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_5">
@@ -125,10 +135,30 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QSpinBox" name="dmaHaltTicks"/>
+       <widget class="QSpinBox" name="dmaHaltTicks">
+        <property name="minimum">
+         <number>100</number>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QSpinBox" name="gpuFIFOSize"/>
+       <widget class="QSpinBox" name="gpuFIFOSize">
+        <property name="minimum">
+         <number>16</number>
+        </property>
+        <property name="maximum">
+         <number>4096</number>
+        </property>
+        <property name="value">
+         <number>16</number>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_6">
@@ -145,10 +175,17 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QSpinBox" name="gpuMaxRunAhead"/>
+       <widget class="QSpinBox" name="gpuMaxRunAhead">
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>128</number>
+        </property>
+       </widget>
       </item>
       <item row="5" column="0" colspan="2">
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="resetToDefaultButton">
         <property name="text">
          <string>Reset To Default</string>
         </property>

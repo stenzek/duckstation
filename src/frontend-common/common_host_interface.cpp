@@ -1154,7 +1154,7 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
       if (!axis_index ||
           !m_controller_interface->BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
       {
-        Log_WarningPrintf("Failed to bind controller axis '%s' to axi", binding.c_str());
+        Log_WarningPrintf("Failed to bind controller axis '%s' to axis", binding.c_str());
         return false;
       }
 

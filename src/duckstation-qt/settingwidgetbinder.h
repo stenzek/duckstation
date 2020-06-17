@@ -10,6 +10,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QSlider>
+#include <QtWidgets/QSpinBox>
 
 namespace SettingWidgetBinder {
 
@@ -108,6 +109,25 @@ struct SettingAccessor<QSlider>
   static void connectValueChanged(QSlider* widget, F func)
   {
     widget->connect(widget, &QSlider::valueChanged, func);
+  }
+};
+
+template<>
+struct SettingAccessor<QSpinBox>
+{
+  static bool getBoolValue(const QSpinBox* widget) { return widget->value() > 0; }
+  static void setBoolValue(QSpinBox* widget, bool value) { widget->setValue(value ? 1 : 0); }
+
+  static int getIntValue(const QSpinBox* widget) { return widget->value(); }
+  static void setIntValue(QSpinBox* widget, int value) { widget->setValue(value); }
+
+  static QString getStringValue(const QSpinBox* widget) { return QStringLiteral("%1").arg(widget->value()); }
+  static void setStringValue(QSpinBox* widget, const QString& value) { widget->setValue(value.toInt()); }
+
+  template<typename F>
+  static void connectValueChanged(QSpinBox* widget, F func)
+  {
+    widget->connect(widget, QOverload<int>::of(&QSpinBox::valueChanged), func);
   }
 };
 
