@@ -111,12 +111,7 @@ bool LoadVulkanLibrary()
   if (libvulkan_env)
     vulkan_module = dlopen(libvulkan_env, RTLD_NOW);
   if (!vulkan_module)
-  {
-    // Use the libvulkan.dylib from the application bundle.
-    std::string executable_path = FileSystem::GetProgramPath();
-    std::string path = FileSystem::GetPathDirectory(executable_path.c_str()) + "/libvulkan.dylib";
-    vulkan_module = dlopen(path.c_str(), RTLD_NOW);
-  }
+    vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
 #else
   // Names of libraries to search. Desktop should use libvulkan.so.1 or libvulkan.so.
   static const char* search_lib_names[] = {"libvulkan.so.1", "libvulkan.so"};

@@ -4,6 +4,7 @@
 #include "shader_compiler.h"
 #include "vulkan_loader.h"
 #include <cstdio>
+#include <memory>
 #include <optional>
 #include <string_view>
 #include <unordered_map>

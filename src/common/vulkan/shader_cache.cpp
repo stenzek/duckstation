@@ -400,7 +400,7 @@ std::string ShaderCache::GetPipelineCacheBaseFileName(const std::string_view& ba
 
 ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(ShaderCompiler::Type type, const std::string_view& shader_code)
 {
-  union
+  union HashParts
   {
     struct
     {
@@ -409,12 +409,13 @@ ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(ShaderCompiler::Type type, c
     };
     u8 hash[16];
   };
+  HashParts h;
 
   MD5Digest digest;
   digest.Update(shader_code.data(), static_cast<u32>(shader_code.length()));
-  digest.Final(hash);
+  digest.Final(h.hash);
 
-  return CacheIndexKey{hash_low, hash_high, static_cast<u32>(shader_code.length()), type};
+  return CacheIndexKey{h.hash_low, h.hash_high, static_cast<u32>(shader_code.length()), type};
 }
 
 std::optional<ShaderCompiler::SPIRVCodeVector> ShaderCache::GetShaderSPV(ShaderCompiler::Type type,
