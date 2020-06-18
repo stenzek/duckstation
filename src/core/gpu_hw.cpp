@@ -527,6 +527,36 @@ bool GPU_HW::UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 w
             .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height)));
 }
 
+GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 height, u32 color) const
+{
+  // drop precision unless true colour is enabled
+  if (!m_true_color)
+    color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
+
+  VRAMFillUBOData uniforms;
+  std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
+    RGBA8ToFloat(color);
+  uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
+  return uniforms;
+}
+
+GPU_HW::VRAMCopyUBOData GPU_HW::GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width,
+                                                   u32 height) const
+{
+  const VRAMCopyUBOData uniforms = {src_x * m_resolution_scale,
+                                    src_y * m_resolution_scale,
+                                    dst_x * m_resolution_scale,
+                                    dst_y * m_resolution_scale,
+                                    ((dst_x + width) % VRAM_WIDTH) * m_resolution_scale,
+                                    ((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale,
+                                    width * m_resolution_scale,
+                                    height * m_resolution_scale,
+                                    m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
+                                    GetCurrentNormalizedBatchVertexDepthID()};
+
+  return uniforms;
+}
+
 GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
 {
   if (rc.primitive == Primitive::Line)

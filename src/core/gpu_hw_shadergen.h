@@ -28,9 +28,12 @@ public:
   std::string GenerateVRAMUpdateDepthFragmentShader();
 
 private:
+  ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == HostDisplay::RenderAPI::Vulkan); }
+
   void SetGLSLVersionString();
   void WriteHeader(std::stringstream& ss);
-  void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members);
+  void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
+                            bool push_constant_on_vulkan);
   void DeclareTexture(std::stringstream& ss, const char* name, u32 index);
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int, bool is_unsigned);
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,

@@ -288,6 +288,10 @@ bool System::CreateGPU(GPURenderer renderer)
       m_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
+    case GPURenderer::HardwareVulkan:
+      m_gpu = GPU::CreateHardwareVulkanRenderer();
+      break;
+
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
       m_gpu = GPU::CreateHardwareD3D11Renderer();

@@ -14,9 +14,7 @@ public:
   enum class BatchPrimitive : u8
   {
     Lines = 0,
-    LineStrip = 1,
-    Triangles = 2,
-    TriangleStrip = 3
+    Triangles = 1
   };
 
   enum class BatchRenderMode : u8
@@ -117,6 +115,12 @@ protected:
     u32 u_vertex_depth_id;
     u32 u_check_mask_before_draw;
     u32 u_set_mask_while_drawing;
+  };
+
+  struct VRAMFillUBOData
+  {
+    float u_fill_color[4];
+    u32 u_interlaced_displayed_field;
   };
 
   struct VRAMWriteUBOData
@@ -229,6 +233,9 @@ protected:
 
   /// Returns true if the VRAM copy shader should be used (oversized copies, masking).
   bool UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
+
+  VRAMFillUBOData GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 height, u32 color) const;
+  VRAMCopyUBOData GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
   /// Handles quads with flipped texture coordinate directions.
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
