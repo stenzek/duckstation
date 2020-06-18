@@ -225,7 +225,6 @@
   <entry code="SLUS-01304" compatibility="5" region="NTSC-U" title="Chicken Run (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
-    <comments>a</comments>
   </entry>
   <entry code="SLUS-00844" compatibility="5" region="NTSC-U" title="Chocobo Racing (USA)">
     <compatibility>No Issues</compatibility>
@@ -378,6 +377,10 @@
     <version-tested>0.1-986-gfc911de1</version-tested>
     <upscaling-issues>Rendering is broken with any upscaling.</upscaling-issues>
   </entry>
+  <entry code="SCUS-94221" compatibility="5" region="NTSC-U" title="Final Fantasy Tactics (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1031-g47138aa</version-tested>
+  </entry>
   <entry code="SCUS-94163" compatibility="5" region="NTSC-U" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
@@ -496,10 +499,13 @@
     <version-tested>0.1-884-g096ed21</version-tested>
     <comments>Flickering scrambled line on the right side of screen. (Issue #453)</comments>
   </entry>
-  <entry code="SLPS-00498" compatibility="4" region="NTSC-J" title="Harmful Park (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-884-g096ed21</version-tested>
-    <comments>Audio/Video desync during the intro. (Issue #454)</comments>
+  <entry code="SLPS-00498" compatibility="5" region="NTSC-J" title="Harmful Park (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1031-g47138aa</version-tested>
+  </entry>
+  <entry code="SLUS-00348" compatibility="5" region="NTSC-U" title="Hexen (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1031-g47138aa</version-tested>
   </entry>
   <entry code="SLUS-00964" compatibility="5" region="NTSC-U" title="Hot Wheels - Turbo Racing (USA)">
     <compatibility>No Issues</compatibility>
@@ -724,9 +730,8 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLPS-03336" compatibility="4" region="NTSC-J" title="Mr. Driller G (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-884-g096ed21</version-tested>
+  <entry code="SLPS-03336" compatibility="5" region="NTSC-J" title="Mr. Driller G (Japan)">
+    <compatibility>No Issues</compatibility>
     <comments>Flickering results panel and sprites after a Game Over screen.</comments>
   </entry>
   <entry code="SLUS-01571" compatibility="4" region="NTSC-U" title="NASCAR Thunder 2004 (USA)">
@@ -1017,10 +1022,9 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLES-02895" compatibility="4" region="PAL" title="Sheep, Dog 'n' Wolf (Europe) (En,Fr,De,Es,It,Nl)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <upscaling-issues>Video is desynched from the audio during the intro.</upscaling-issues>
-    <version-tested>0.1-905-g237f469</version-tested>
+  <entry code="SLES-02895" compatibility="5" region="PAL" title="Sheep, Dog 'n' Wolf (Europe) (En,Fr,De,Es,It,Nl)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1031-g47138aa</version-tested>
   </entry>
   <entry code="SLUS-01463" compatibility="5" region="NTSC-U" title="Shrek Treasure Hunt (USA)">
     <compatibility>No Issues</compatibility>
