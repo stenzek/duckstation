@@ -11,9 +11,11 @@ add_library(frontend-common
   ini_settings_interface.h
   save_state_selector_ui.cpp
   save_state_selector_ui.h
+  vulkan_host_display.cpp
+  vulkan_host_display.h
 )
 
-target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion)
+target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion vulkan-loader)
 
 if(SDL2_FOUND)
   target_sources(frontend-common PRIVATE 

@@ -10,6 +10,7 @@
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="controller_interface.cpp" />
     <ClCompile Include="save_state_selector_ui.cpp" />
+    <ClCompile Include="vulkan_host_display.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -21,6 +22,7 @@
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="controller_interface.h" />
     <ClInclude Include="save_state_selector_ui.h" />
+    <ClInclude Include="vulkan_host_display.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />
