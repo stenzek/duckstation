@@ -95,6 +95,9 @@ void CommonHostInterface::Shutdown()
 {
   HostInterface::Shutdown();
 
+  // this has gpu objects so it has to come first
+  m_save_state_selector_ui.reset();
+
 #ifdef WITH_DISCORD_PRESENCE
   ShutdownDiscordPresence();
 #endif
