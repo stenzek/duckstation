@@ -1,4 +1,5 @@
 #pragma once
+#include "types.h"
 
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo

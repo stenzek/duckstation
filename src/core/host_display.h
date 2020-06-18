@@ -24,6 +24,7 @@ public:
   {
     None,
     D3D11,
+    Vulkan,
     OpenGL,
     OpenGLES
   };
