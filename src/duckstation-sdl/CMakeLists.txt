@@ -7,10 +7,14 @@ add_executable(duckstation-sdl
   sdl_host_interface.cpp
   sdl_host_interface.h
   sdl_key_names.h
+  sdl_util.cpp
+  sdl_util.h
+  sdl_vulkan_host_display.cpp
+  sdl_vulkan_host_display.h
 )
 
 target_include_directories(duckstation-sdl PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad frontend-common scmversion ${SDL2_LIBRARIES})
+target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog glad frontend-common scmversion vulkan-loader ${SDL2_LIBRARIES})
 
 if(WIN32)
   target_sources(duckstation-sdl PRIVATE
