@@ -401,6 +401,37 @@ std::FILE* OpenCFile(const char* filename, const char* mode)
 #endif
 }
 
+std::optional<std::vector<u8>> ReadBinaryFile(const char* filename)
+{
+  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
+  if (!fp)
+    return std::nullopt;
+
+  std::fseek(fp.get(), 0, SEEK_END);
+  long size = std::ftell(fp.get());
+  std::fseek(fp.get(), 0, SEEK_SET);
+  if (size < 0)
+    return std::nullopt;
+
+  std::vector<u8> res(static_cast<size_t>(size));
+  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp.get()) != static_cast<size_t>(size))
+    return std::nullopt;
+
+  return res;
+}
+
+bool WriteBinaryFile(const char* filename, const void* data, size_t data_length)
+{
+  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
+  if (!fp)
+    return false;
+
+  if (data_length > 0 && std::fwrite(data, 1u, data_length, fp.get()) != data_length)
+    return false;
+
+  return true;
+}
+
 void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)
 {
   u32 i;
