@@ -60,6 +60,8 @@
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="sdl_host_interface.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sdl_util.cpp" />
+    <ClCompile Include="sdl_vulkan_host_display.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d11_host_display.h" />
@@ -68,6 +70,8 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="sdl_host_interface.h" />
     <ClInclude Include="sdl_key_names.h" />
+    <ClInclude Include="sdl_util.h" />
+    <ClInclude Include="sdl_vulkan_host_display.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-sdl.manifest" />
@@ -227,7 +231,7 @@
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -248,7 +252,7 @@
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -269,7 +273,7 @@
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -293,7 +297,7 @@
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -316,7 +320,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -339,7 +343,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -363,7 +367,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -386,7 +390,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>

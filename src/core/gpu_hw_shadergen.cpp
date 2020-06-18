@@ -14,10 +14,11 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolu
 {
   if (m_glsl)
   {
-    SetGLSLVersionString();
+    if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
+      SetGLSLVersionString();
 
-    m_use_glsl_interface_blocks = (GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
-    m_use_glsl_binding_layout = UseGLSLBindingLayout();
+    m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+    m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
   }
 }
 
@@ -82,6 +83,8 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 {
   if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
     ss << m_glsl_version_string << "\n\n";
+  else if (m_render_api == HostDisplay::RenderAPI::Vulkan)
+    ss << "#version 450 core\n\n";
 
   // Extension enabling for OpenGL.
   if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
@@ -107,6 +110,7 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
   DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
   DefineMacro(ss, "API_OPENGL_ES", m_render_api == HostDisplay::RenderAPI::OpenGLES);
   DefineMacro(ss, "API_D3D11", m_render_api == HostDisplay::RenderAPI::D3D11);
+  DefineMacro(ss, "API_VULKAN", m_render_api == HostDisplay::RenderAPI::Vulkan);
 
   if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
   {
@@ -219,9 +223,17 @@ float4 RGBA5551ToRGBA8(uint v)
 )";
 }
 
-void GPU_HW_ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members)
+void GPU_HW_ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
+                                            bool push_constant_on_vulkan)
 {
-  if (m_glsl)
+  if (IsVulkan())
+  {
+    if (push_constant_on_vulkan)
+      ss << "layout(push_constant) uniform PushConstants\n";
+    else
+      ss << "layout(std140, set = 0, binding = 0) uniform UBOBlock\n";
+  }
+  else if (m_glsl)
   {
     if (m_use_glsl_binding_layout)
       ss << "layout(std140, binding = 1) uniform UBOBlock\n";
@@ -243,7 +255,9 @@ void GPU_HW_ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u
 {
   if (m_glsl)
   {
-    if (m_use_glsl_binding_layout)
+    if (IsVulkan())
+      ss << "layout(set = 0, binding = " << (index + 1u) << ") ";
+    else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 
     ss << "uniform sampler2D " << name << ";\n";
@@ -260,7 +274,9 @@ void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* n
 {
   if (m_glsl)
   {
-    if (m_use_glsl_binding_layout)
+    if (IsVulkan())
+      ss << "layout(set = 0, binding = " << index << ") ";
+    else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 
     ss << "uniform " << (is_int ? (is_unsigned ? "u" : "i") : "") << "samplerBuffer " << name << ";\n";
@@ -296,6 +312,9 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
 
     if (m_use_glsl_interface_blocks)
     {
+      if (IsVulkan())
+        ss << "layout(location = 0) ";
+
       ss << "out VertexData {\n";
       for (u32 i = 0; i < num_color_outputs; i++)
         ss << "  float4 v_col" << i << ";\n";
@@ -321,7 +340,12 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
 
     ss << "#define v_pos gl_Position\n\n";
     if (declare_vertex_id)
-      ss << "#define v_id uint(gl_VertexID)\n";
+    {
+      if (IsVulkan())
+        ss << "#define v_id uint(gl_VertexIndex)\n";
+      else
+        ss << "#define v_id uint(gl_VertexID)\n";
+    }
 
     ss << "\n";
     ss << "void main()\n";
@@ -366,6 +390,9 @@ void GPU_HW_ShaderGen::DeclareFragmentEntryPoint(
   {
     if (m_use_glsl_interface_blocks)
     {
+      if (IsVulkan())
+        ss << "layout(location = 0) ";
+
       ss << "in VertexData {\n";
       for (u32 i = 0; i < num_color_inputs; i++)
         ss << "  float4 v_col" << i << ";\n";
@@ -467,7 +494,8 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
   DeclareUniformBuffer(ss,
                        {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
                         "float u_dst_alpha_factor", "uint u_interlaced_displayed_field", "uint u_base_vertex_depth_id",
-                        "bool u_check_mask_before_draw", "bool u_set_mask_while_drawing"});
+                        "bool u_check_mask_before_draw", "bool u_set_mask_while_drawing"},
+                       false);
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
@@ -507,6 +535,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 #if API_OPENGL || API_OPENGL_ES
   pos_y += EPSILON;
 #endif
+
+  // NDC space Y flip in Vulkan.
+#if API_VULKAN
+  pos_y = -pos_y;
+#endif
+
   v_pos = float4(pos_x, pos_y, 0.0, 1.0);
 
 #if API_D3D11
@@ -861,13 +895,18 @@ CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RES
   // GS is a pain, too different between HLSL and GLSL...
   if (m_glsl)
   {
-    ss << R"(
-in VertexData {
+    if (IsVulkan())
+      ss << "layout(location = 0) ";
+
+    ss << R"(in VertexData {
   float4 v_col0;
   nointerpolation float v_depth;
-} in_data[];
+} in_data[];)";
 
-out VertexData {
+    if (IsVulkan())
+      ss << "layout(location = 0) ";
+
+    ss << R"(out VertexData {
   float4 v_col0;
   nointerpolation float v_depth;
 } out_data;
@@ -968,8 +1007,8 @@ std::string GPU_HW_ShaderGen::GenerateScreenQuadVertexShader()
 {
   v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
   v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-  #if API_OPENGL || API_OPENGL_ES
-    v_pos.y = -gl_Position.y;
+  #if API_OPENGL || API_OPENGL_ES || API_VULKAN
+    v_pos.y = -v_pos.y;
   #endif
 }
 )";
@@ -981,7 +1020,7 @@ std::string GPU_HW_ShaderGen::GenerateFillFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4 u_fill_color"});
+  DeclareUniformBuffer(ss, {"float4 u_fill_color"}, true);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, true);
 
   ss << R"(
@@ -999,7 +1038,7 @@ std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"float4 u_fill_color", "uint u_interlaced_displayed_field"});
+  DeclareUniformBuffer(ss, {"float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
 
   ss << R"(
@@ -1019,7 +1058,7 @@ std::string GPU_HW_ShaderGen::GenerateCopyFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4 u_src_rect"});
+  DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
 
@@ -1043,7 +1082,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
   DefineMacro(ss, "INTERLEAVED", interlace_mode == GPU_HW::InterlacedRenderMode::InterleavedFields);
 
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_crop_left", "uint u_field_offset"});
+  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_crop_left", "uint u_field_offset"}, true);
   DeclareTexture(ss, "samp0", 0);
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
@@ -1093,7 +1132,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"});
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"}, true);
 
   DeclareTexture(ss, "samp0", 0);
 
@@ -1146,8 +1185,10 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits",
-                            "float u_depth_value"});
+  DeclareUniformBuffer(
+    ss,
+    {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
+    true);
 
   DeclareTextureBuffer(ss, "samp0", 0, true, true);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
@@ -1176,8 +1217,10 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_end_coords", "uint2 u_size",
-                            "bool u_set_mask_bit", "float u_depth_value"});
+  DeclareUniformBuffer(ss,
+                       {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_end_coords", "uint2 u_size",
+                        "bool u_set_mask_bit", "float u_depth_value"},
+                       true);
 
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);

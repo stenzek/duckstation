@@ -4,7 +4,12 @@
 #include "imgui.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
+#include <QtGui/QGuiApplication>
+#include <QtCore/QDebug>
 #include <cmath>
+#if !defined(WIN32) && !defined(APPLE)
+#include <qpa/qplatformnativeinterface.h>
+#endif
 
 QtHostDisplay::QtHostDisplay(QtHostInterface* host_interface) : m_host_interface(host_interface) {}
 
@@ -42,7 +47,7 @@ bool QtHostDisplay::createDeviceContext(bool debug_device)
   return false;
 }
 
-bool QtHostDisplay::initializeDeviceContext(bool debug_device)
+bool QtHostDisplay::initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device)
 {
   if (!createImGuiContext() || !createDeviceResources())
     return false;
@@ -63,7 +68,7 @@ void QtHostDisplay::destroyDeviceContext()
   destroyDeviceResources();
 }
 
-bool QtHostDisplay::createSurface()
+bool QtHostDisplay::recreateSurface()
 {
   return false;
 }
@@ -117,4 +122,44 @@ void QtHostDisplay::updateImGuiDisplaySize()
   auto& io = ImGui::GetIO();
   io.DisplaySize.x = static_cast<float>(m_window_width);
   io.DisplaySize.y = static_cast<float>(m_window_height);
+}
+
+std::optional<WindowInfo> QtHostDisplay::getWindowInfo() const
+{
+  WindowInfo wi;
+
+  // Windows and Apple are easy here since there's no display connection.
+#if defined(WIN32)
+  wi.type = WindowInfo::Type::Win32;
+  wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
+#elif defined(__APPLE__)
+  wi.type = WindowInfo::Type::MacOS;
+  wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
+#else
+  QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
+  const QString platform_name = QGuiApplication::platformName();
+  if (platform_name == QStringLiteral("xcb"))
+  {
+    wi.type = WindowInfo::Type::X11;
+    wi.display_connection = pni->nativeResourceForWindow("display", m_widget->windowHandle());
+    wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
+  }
+  else if (platform_name == QStringLiteral("wayland"))
+  {
+    wi.type = WindowInfo::Type::Wayland;
+    wi.display_connection = pni->nativeResourceForWindow("display", m_widget->windowHandle());
+    wi.window_handle = pni->nativeResourceForWindow("surface", m_widget->windowHandle());
+  }
+  else
+  {
+    qCritical() << "Unknown PNI platform " << platform_name;
+    return std::nullopt;
+  }
+#endif
+
+  wi.surface_width = m_widget->width();
+  wi.surface_height = m_widget->height();
+  wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
+
+  return wi;
 }

@@ -381,6 +381,7 @@ bool D3D11HostDisplay::CreateImGuiContext()
 
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui::NewFrame();
   return true;
 }
 

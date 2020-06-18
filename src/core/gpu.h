@@ -164,6 +164,9 @@ public:
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 
+  // gpu_hw_vulkan.cpp
+  static std::unique_ptr<GPU> CreateHardwareVulkanRenderer();
+
   // gpu_sw.cpp
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
@@ -602,7 +605,7 @@ protected:
     void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
   } m_draw_mode = {};
 
-  Common::Rectangle<u32> m_drawing_area;
+  Common::Rectangle<u32> m_drawing_area{0, 0, VRAM_WIDTH, VRAM_HEIGHT};
 
   struct DrawingOffset
   {

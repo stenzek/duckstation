@@ -36,6 +36,8 @@ add_library(core
     gpu_hw_opengl.h
     gpu_hw_shadergen.cpp
     gpu_hw_shadergen.h
+    gpu_hw_vulkan.cpp
+    gpu_hw_vulkan.h
     gpu_sw.cpp
     gpu_sw.h
     gte.cpp
@@ -91,7 +93,7 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common imgui tinyxml2 zlib)
+target_link_libraries(core PUBLIC Threads::Threads common imgui tinyxml2 zlib vulkan-loader)
 target_link_libraries(core PRIVATE glad stb)
 
 if(WIN32)

@@ -24,6 +24,7 @@ public:
   {
     None,
     D3D11,
+    Vulkan,
     OpenGL,
     OpenGLES
   };
@@ -138,6 +139,7 @@ public:
 
 protected:
   ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }
+  ALWAYS_INLINE bool HasDisplayTexture() const { return (m_display_texture_handle != nullptr); }
 
   void CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
                          s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,

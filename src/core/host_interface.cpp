@@ -314,6 +314,11 @@ void HostInterface::OnRunningGameChanged() {}
 
 void HostInterface::OnControllerTypeChanged(u32 slot) {}
 
+std::string HostInterface::GetShaderCacheDirectory()
+{
+  return GetUserDirectoryRelativePath("cache");
+}
+
 void HostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(ConsoleRegion::Auto));

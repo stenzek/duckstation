@@ -2,23 +2,13 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "imgui_impl_sdl.h"
+#include "sdl_util.h"
 #include <SDL_syswm.h>
 #include <array>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
-
-#ifdef __APPLE__
-#include <objc/message.h>
-struct NSView;
-
-static NSView* GetContentViewFromWindow(NSWindow* window)
-{
-  // window.contentView
-  return reinterpret_cast<NSView* (*)(id, SEL)>(objc_msgSend)(reinterpret_cast<id>(window), sel_getUid("contentView"));
-}
-#endif
 
 class OpenGLDisplayWidgetTexture : public HostDisplayTexture
 {
@@ -220,52 +210,11 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
 
 bool OpenGLHostDisplay::CreateGLContext(bool debug_device)
 {
-  SDL_SysWMinfo syswm = {};
-  SDL_VERSION(&syswm.version);
-  if (!SDL_GetWindowWMInfo(m_window, &syswm))
-  {
-    Log_ErrorPrintf("SDL_GetWindowWMInfo failed");
+  std::optional<WindowInfo> wi = SDLUtil::GetWindowInfoForSDLWindow(m_window);
+  if (!wi)
     return false;
-  }
 
-  int window_width, window_height;
-  SDL_GetWindowSize(m_window, &window_width, &window_height);
-
-  WindowInfo wi;
-  wi.surface_width = static_cast<u32>(window_width);
-  wi.surface_height = static_cast<u32>(window_height);
-  wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
-
-  switch (syswm.subsystem)
-  {
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
-    case SDL_SYSWM_WINDOWS:
-      wi.type = WindowInfo::Type::Win32;
-      wi.window_handle = syswm.info.win.window;
-      break;
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_COCOA
-    case SDL_SYSWM_COCOA:
-      wi.type = WindowInfo::Type::MacOS;
-      wi.window_handle = GetContentViewFromWindow(syswm.info.cocoa.window);
-      break;
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11
-    case SDL_SYSWM_X11:
-      wi.type = WindowInfo::Type::X11;
-      wi.window_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(syswm.info.x11.window));
-      wi.display_connection = syswm.info.x11.display;
-      break;
-#endif
-
-    default:
-      Log_ErrorPrintf("Unhandled syswm subsystem %u", static_cast<u32>(syswm.subsystem));
-      return false;
-  }
-
-  m_gl_context = GL::Context::Create(wi);
+  m_gl_context = GL::Context::Create(wi.value());
   if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create a GL context of any kind.");
@@ -298,6 +247,7 @@ bool OpenGLHostDisplay::CreateImGuiContext()
 
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window);
+  ImGui::NewFrame();
   return true;
 }
 

@@ -214,7 +214,7 @@ bool D3D11HostDisplay::createDeviceContext(bool debug_device)
       m_allow_tearing_supported = (allow_tearing_supported == TRUE);
   }
 
-  return true;
+  return createSwapChain();
 }
 
 void D3D11HostDisplay::destroyDeviceContext()
@@ -232,7 +232,7 @@ bool D3D11HostDisplay::shouldUseFlipModelSwapChain() const
   return m_widget->parent() == nullptr;
 }
 
-bool D3D11HostDisplay::createSurface()
+bool D3D11HostDisplay::createSwapChain()
 {
   m_using_flip_model_swap_chain = shouldUseFlipModelSwapChain();
 
@@ -282,11 +282,7 @@ bool D3D11HostDisplay::createSurface()
   if (FAILED(hr))
     Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-  if (!createSwapChainRTV())
-    return false;
-
-  emit m_widget->windowResizedEvent(m_window_width, m_window_height);
-  return true;
+  return createSwapChainRTV();
 }
 
 bool D3D11HostDisplay::createSwapChainRTV()
@@ -312,6 +308,11 @@ bool D3D11HostDisplay::createSwapChainRTV()
   }
 
   return true;
+}
+
+bool D3D11HostDisplay::recreateSurface()
+{
+  return createSwapChain();
 }
 
 void D3D11HostDisplay::destroySurface()

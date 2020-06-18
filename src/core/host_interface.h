@@ -114,6 +114,9 @@ protected:
   virtual void OnRunningGameChanged();
   virtual void OnControllerTypeChanged(u32 slot);
 
+  /// Returns the path to the shader cache directory.
+  virtual std::string GetShaderCacheDirectory();
+
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);
 

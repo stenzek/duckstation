@@ -27,11 +27,11 @@ public:
 
   bool hasDeviceContext() const override;
   bool createDeviceContext(bool debug_device) override;
-  bool initializeDeviceContext(bool debug_device) override;
+  bool initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device) override;
   bool activateDeviceContext() override;
   void deactivateDeviceContext() override;
   void destroyDeviceContext() override;
-  bool createSurface() override;
+  bool recreateSurface() override;
   void destroySurface();
 
   RenderAPI GetRenderAPI() const override;
@@ -53,8 +53,6 @@ public:
 private:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
-
-  WindowInfo getWindowInfo() const;
 
   bool createImGuiContext() override;
   void destroyImGuiContext() override;

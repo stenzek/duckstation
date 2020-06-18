@@ -17,6 +17,7 @@
 #include "opengl_host_display.h"
 #include "scmversion/scmversion.h"
 #include "sdl_key_names.h"
+#include "sdl_vulkan_host_display.h"
 #include <cinttypes>
 #include <cmath>
 #include <imgui.h>
@@ -129,13 +130,29 @@ void SDLHostInterface::DestroySDLWindow()
 bool SDLHostInterface::CreateDisplay()
 {
   const bool debug_device = m_settings.gpu_use_debug_device;
+  const std::string shader_cache_directory(GetShaderCacheDirectory());
   std::unique_ptr<HostDisplay> display;
-#ifdef WIN32
-  display = UseOpenGLRenderer() ? OpenGLHostDisplay::Create(m_window, debug_device) :
-                                  D3D11HostDisplay::Create(m_window, debug_device);
-#else
-  display = OpenGLHostDisplay::Create(m_window, debug_device);
+
+  switch (m_settings.gpu_renderer)
+  {
+    case GPURenderer::HardwareVulkan:
+      display = SDLVulkanHostDisplay::Create(m_window, shader_cache_directory, debug_device);
+      break;
+
+    case GPURenderer::HardwareOpenGL:
+#ifndef WIN32
+    default:
 #endif
+      display = OpenGLHostDisplay::Create(m_window, debug_device);
+      break;
+
+#ifdef WIN32
+    case GPURenderer::HardwareD3D11:
+    default:
+      display = D3D11HostDisplay::Create(m_window, debug_device);
+      break;
+#endif
+  }
 
   if (!display)
     return false;
@@ -181,13 +198,32 @@ void SDLHostInterface::UpdateFramebufferScale()
 
 bool SDLHostInterface::AcquireHostDisplay()
 {
-  // Handle renderer switch if required on Windows.
-#ifdef WIN32
+  // Handle renderer switch if required.
   const HostDisplay::RenderAPI render_api = m_display->GetRenderAPI();
-  const bool render_api_is_gl =
-    render_api == HostDisplay::RenderAPI::OpenGL || render_api == HostDisplay::RenderAPI::OpenGLES;
-  const bool render_api_wants_gl = UseOpenGLRenderer();
-  if (render_api_is_gl != render_api_wants_gl)
+  bool needs_switch = false;
+  switch (m_settings.gpu_renderer)
+  {
+#ifdef WIN32
+    case GPURenderer::HardwareD3D11:
+      needs_switch = (render_api != HostDisplay::RenderAPI::D3D11);
+      break;
+#endif
+
+    case GPURenderer::HardwareVulkan:
+      needs_switch = (render_api != HostDisplay::RenderAPI::Vulkan);
+      break;
+
+    case GPURenderer::HardwareOpenGL:
+      needs_switch = (render_api != HostDisplay::RenderAPI::OpenGL && render_api != HostDisplay::RenderAPI::OpenGLES);
+      break;
+
+    case GPURenderer::Software:
+    default:
+      needs_switch = false;
+      break;
+  }
+
+  if (needs_switch)
   {
     ImGui::EndFrame();
     DestroyDisplay();
@@ -198,10 +234,7 @@ bool SDLHostInterface::AcquireHostDisplay()
 
     if (!CreateDisplay())
       Panic("Failed to recreate display on GPU renderer switch");
-
-    ImGui::NewFrame();
   }
-#endif
 
   return true;
 }
@@ -357,8 +390,6 @@ bool SDLHostInterface::Initialize()
   }
 
   RegisterHotkeys();
-
-  ImGui::NewFrame();
 
   // process events to pick up controllers before updating input map
   ProcessEvents();

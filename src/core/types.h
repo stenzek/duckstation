@@ -53,6 +53,7 @@ enum class GPURenderer : u8
 #ifdef WIN32
   HardwareD3D11,
 #endif
+  HardwareVulkan,
   HardwareOpenGL,
   Software,
   Count

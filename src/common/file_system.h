@@ -3,6 +3,7 @@
 #include "types.h"
 #include <cstdio>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -167,6 +168,9 @@ std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags);
 using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
 ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
+
+std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
+bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
 
 // creates a directory in the local filesystem
 // if the directory already exists, the return value will be true.

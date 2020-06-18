@@ -66,7 +66,38 @@
     </ClInclude>
     <ClInclude Include="window_info.h" />
     <ClInclude Include="cd_image_hasher.h" />
+    <ClInclude Include="vulkan\texture.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\staging_buffer.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\stream_buffer.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\shader_compiler.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\util.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\swap_chain.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\staging_texture.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="dimensional_array.h" />
+    <ClInclude Include="scope_guard.h" />
+    <ClInclude Include="vulkan\context.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\builders.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\shader_cache.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -127,6 +158,36 @@
       <Filter>gl</Filter>
     </ClCompile>
     <ClCompile Include="cd_image_hasher.cpp" />
+    <ClCompile Include="vulkan\texture.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\context.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\staging_buffer.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\stream_buffer.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\util.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\shader_compiler.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\swap_chain.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\staging_texture.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\builders.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan\shader_cache.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -137,6 +198,9 @@
     </Filter>
     <Filter Include="d3d11">
       <UniqueIdentifier>{30251086-81f3-44f5-add4-7ff9a24098ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vulkan">
+      <UniqueIdentifier>{642ff5eb-af39-4aab-a42f-6eb8188a11d7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

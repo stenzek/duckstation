@@ -313,16 +313,16 @@ const char* Settings::GetCPUExecutionModeDisplayName(CPUExecutionMode mode)
   return s_cpu_execution_mode_display_names[static_cast<u8>(mode)];
 }
 
-static std::array<const char*, 3> s_gpu_renderer_names = {{
+static std::array<const char*, 4> s_gpu_renderer_names = {{
 #ifdef WIN32
   "D3D11",
 #endif
-  "OpenGL", "Software"}};
-static std::array<const char*, 3> s_gpu_renderer_display_names = {{
+  "Vulkan", "OpenGL", "Software"}};
+static std::array<const char*, 4> s_gpu_renderer_display_names = {{
 #ifdef WIN32
   "Hardware (D3D11)",
 #endif
-  "Hardware (OpenGL)", "Software"}};
+  "Hardware (Vulkan)", "Hardware (OpenGL)", "Software"}};
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {

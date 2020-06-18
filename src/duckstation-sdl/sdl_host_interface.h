@@ -58,12 +58,6 @@ protected:
 private:
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
-#ifdef WIN32
-  bool UseOpenGLRenderer() const { return m_settings.gpu_renderer == GPURenderer::HardwareOpenGL; }
-#else
-  bool UseOpenGLRenderer() const { return true; }
-#endif
-
   static float GetDPIScaleFactor(SDL_Window* window);
 
   bool CreateSDLWindow();

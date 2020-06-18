@@ -15,6 +15,7 @@
 #include "qtprogresscallback.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
+#include "vulkanhostdisplay.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
@@ -327,7 +328,7 @@ bool QtHostInterface::AcquireHostDisplay()
   }
 
   if (!getHostDisplay()->activateDeviceContext() ||
-      !getHostDisplay()->initializeDeviceContext(m_settings.gpu_use_debug_device))
+      !getHostDisplay()->initializeDeviceContext(GetShaderCacheDirectory(), m_settings.gpu_use_debug_device))
   {
     getHostDisplay()->destroyDeviceContext();
     emit destroyDisplayRequested();
@@ -343,14 +344,26 @@ QtHostDisplay* QtHostInterface::createHostDisplay()
 {
   Assert(!getHostDisplay());
 
-#ifdef WIN32
-  if (m_settings.gpu_renderer == GPURenderer::HardwareOpenGL)
-    m_display = new OpenGLHostDisplay(this);
-  else
-    m_display = new D3D11HostDisplay(this);
-#else
-  m_display = new OpenGLHostDisplay(this);
+  switch (m_settings.gpu_renderer)
+  {
+    case GPURenderer::HardwareVulkan:
+      m_display = new VulkanHostDisplay(this);
+      break;
+
+    case GPURenderer::HardwareOpenGL:
+#ifndef WIN32
+    default:
 #endif
+      m_display = new OpenGLHostDisplay(this);
+      break;
+
+#ifdef WIN32
+    case GPURenderer::HardwareD3D11:
+    default:
+      m_display = new D3D11HostDisplay(this);
+      break;
+#endif
+  }
 
   return getHostDisplay();
 }

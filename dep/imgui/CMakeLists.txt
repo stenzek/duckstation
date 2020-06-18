@@ -24,6 +24,12 @@ target_sources(imgui PRIVATE
 )
 target_link_libraries(imgui PRIVATE glad)
 
+target_sources(imgui PRIVATE
+  include/imgui_impl_vulkan.h
+  src/imgui_impl_vulkan.cpp
+)
+target_link_libraries(imgui PRIVATE vulkan-loader)
+
 if(WIN32)
   target_sources(imgui PRIVATE include/imgui_impl_dx11.h src/imgui_impl_dx11.cpp)
 endif()

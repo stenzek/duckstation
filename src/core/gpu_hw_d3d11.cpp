@@ -534,9 +534,8 @@ void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_verte
 {
   const bool textured = (m_batch.texture_mode != TextureMode::Disabled);
 
-  static constexpr std::array<D3D11_PRIMITIVE_TOPOLOGY, 4> d3d_primitives = {
-    {D3D11_PRIMITIVE_TOPOLOGY_LINELIST, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-     D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP}};
+  static constexpr std::array<D3D11_PRIMITIVE_TOPOLOGY, 2> d3d_primitives = {
+    {D3D11_PRIMITIVE_TOPOLOGY_LINELIST, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST}};
   m_context->IASetPrimitiveTopology(d3d_primitives[static_cast<u8>(m_batch.primitive)]);
 
   m_context->VSSetShader(m_batch_vertex_shaders[BoolToUInt8(textured)].Get(), nullptr, 0);

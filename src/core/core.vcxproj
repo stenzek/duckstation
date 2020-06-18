@@ -64,6 +64,7 @@
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
+    <ClCompile Include="gpu_hw_vulkan.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
@@ -105,6 +106,7 @@
     <ClInclude Include="game_list.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
+    <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
@@ -296,7 +298,7 @@
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -321,7 +323,7 @@
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -346,7 +348,7 @@
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -374,7 +376,7 @@
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -401,7 +403,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -427,7 +429,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -454,7 +456,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -480,7 +482,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WITH_RECOMPILER=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xbyak\xbyak;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
