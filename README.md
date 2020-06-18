@@ -20,7 +20,7 @@ DuckStation features a fully-featured frontend built using Qt (pictured), as wel
 Other features include:
 
  - CPU Recompiler/JIT (x86-64 and AArch64)
- - Hardware (D3D11 and OpenGL) and software rendering
+ - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling and true colour (24-bit) in hardware renderers
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
@@ -36,7 +36,7 @@ Other features include:
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be 64-bit otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
- - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 and above. So, basically anything made in the last 10 years or so.
+ - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Downloading and running
