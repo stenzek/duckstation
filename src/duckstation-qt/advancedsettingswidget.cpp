@@ -21,9 +21,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
 
   // Tweaks/Hacks section
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaMaxSliceTicks,
-                                              QStringLiteral("Hacks/DMAHaltTicks"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks,
                                               QStringLiteral("Hacks/DMAMaxSliceTicks"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks,
+                                              QStringLiteral("Hacks/DMAHaltTicks"));
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuFIFOSize, QStringLiteral("Hacks/GPUFIFOSize"));
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead,
                                               QStringLiteral("Hacks/GPUMaxRunAhead"));
