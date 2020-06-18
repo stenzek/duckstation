@@ -103,13 +103,6 @@ void MainWindow::createDisplay(QThread* worker_thread, bool use_debug_device, bo
     return;
   }
 
-  if (!m_host_display->createSurface())
-  {
-    reportError(tr("Failed to create host display surface."));
-    m_host_display->destroyDeviceContext();
-    return;
-  }
-
   m_host_display->deactivateDeviceContext();
 }
 
@@ -151,7 +144,7 @@ void MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool ren
   // we need the surface visible.. this might be able to be replaced with something else
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  if (!m_host_display->createSurface())
+  if (!m_host_display->recreateSurface())
     Panic("Failed to recreate surface on new widget.");
 
   m_display_widget->setFocus();

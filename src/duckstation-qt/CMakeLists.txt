@@ -58,10 +58,12 @@ add_executable(duckstation-qt
   settingsdialog.cpp
   settingsdialog.h
   settingsdialog.ui
+  vulkanhostdisplay.cpp
+  vulkanhostdisplay.h
 )
 
 target_include_directories(duckstation-qt PRIVATE "${Qt5Gui_PRIVATE_INCLUDE_DIRS}")
-target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
+target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE

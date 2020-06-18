@@ -1,6 +1,9 @@
 #pragma once
 #include "common/types.h"
+#include "common/window_info.h"
 #include "core/host_display.h"
+#include <optional>
+#include <string_view>
 
 class QThread;
 class QWidget;
@@ -22,11 +25,11 @@ public:
 
   virtual bool hasDeviceContext() const;
   virtual bool createDeviceContext(bool debug_device);
-  virtual bool initializeDeviceContext(bool debug_device);
+  virtual bool initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device);
   virtual bool activateDeviceContext();
   virtual void deactivateDeviceContext();
   virtual void destroyDeviceContext();
-  virtual bool createSurface();
+  virtual bool recreateSurface();
   virtual void destroySurface();
 
   virtual void WindowResized(s32 new_window_width, s32 new_window_height) override;
@@ -38,6 +41,8 @@ protected:
   virtual void destroyImGuiContext();
   virtual bool createDeviceResources();
   virtual void destroyDeviceResources();
+
+  std::optional<WindowInfo> getWindowInfo() const;
 
   QtHostInterface* m_host_interface;
   QtDisplayWidget* m_widget = nullptr;

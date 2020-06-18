@@ -1,29 +1,18 @@
 #pragma once
-
-// GLAD has to come first so that Qt doesn't pull in the system GL headers, which are incompatible with glad.
-#include <glad.h>
-
-// Hack to prevent Apple's glext.h headers from getting included via qopengl.h, since we still want to use glad.
-#ifdef __APPLE__
-#define __glext_h_
-#endif
-
-#include "common/gl/context.h"
-#include "common/gl/program.h"
-#include "common/gl/texture.h"
 #include "common/window_info.h"
 #include "core/host_display.h"
 #include "qtdisplaywidget.h"
 #include "qthostdisplay.h"
+#include "frontend-common/vulkan_host_display.h"
 #include <memory>
 
 class QtHostInterface;
 
-class OpenGLHostDisplay final : public QtHostDisplay
+class VulkanHostDisplay final : public QtHostDisplay
 {
 public:
-  OpenGLHostDisplay(QtHostInterface* host_interface);
-  ~OpenGLHostDisplay();
+  VulkanHostDisplay(QtHostInterface* host_interface);
+  ~VulkanHostDisplay();
 
   bool hasDeviceContext() const override;
   bool createDeviceContext(bool debug_device) override;
@@ -51,20 +40,10 @@ public:
   void Render() override;
 
 private:
-  const char* GetGLSLVersionString() const;
-  std::string GetGLSLVersionHeader() const;
-
   bool createImGuiContext() override;
   void destroyImGuiContext() override;
   bool createDeviceResources() override;
   void destroyDeviceResources() override;
 
-  void renderDisplay();
-
-  std::unique_ptr<GL::Context> m_gl_context = nullptr;
-
-  GL::Program m_display_program;
-  GLuint m_display_vao = 0;
-  GLuint m_display_nearest_sampler = 0;
-  GLuint m_display_linear_sampler = 0;
+  FrontendCommon::VulkanHostDisplay m_vulkan_display;
 };

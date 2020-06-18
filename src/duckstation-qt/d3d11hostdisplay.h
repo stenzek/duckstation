@@ -22,7 +22,7 @@ public:
   bool hasDeviceContext() const override;
   bool createDeviceContext(bool debug_device) override;
   void destroyDeviceContext() override;
-  bool createSurface() override;
+  bool recreateSurface() override;
   void destroySurface() override;
 
   RenderAPI GetRenderAPI() const override;
@@ -50,6 +50,7 @@ private:
   void destroyDeviceResources() override;
 
   bool shouldUseFlipModelSwapChain() const;
+  bool createSwapChain();
   bool createSwapChainRTV();
 
   void renderDisplay();

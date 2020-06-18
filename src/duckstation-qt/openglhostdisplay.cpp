@@ -4,15 +4,10 @@
 #include "imgui.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
-#include <QtCore/QDebug>
-#include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QWindow>
 #include <array>
 #include <imgui_impl_opengl3.h>
-#if !defined(WIN32) && !defined(APPLE)
-#include <qpa/qplatformnativeinterface.h>
-#endif
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
 
@@ -193,49 +188,16 @@ bool OpenGLHostDisplay::hasDeviceContext() const
   return static_cast<bool>(m_gl_context);
 }
 
-WindowInfo OpenGLHostDisplay::getWindowInfo() const
-{
-  WindowInfo wi;
-
-  // Windows and Apple are easy here since there's no display connection.
-#if defined(WIN32)
-  wi.type = WindowInfo::Type::Win32;
-  wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
-#elif defined(__APPLE__)
-  wi.type = WindowInfo::Type::MacOS;
-  wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
-#else
-  QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
-  const QString platform_name = QGuiApplication::platformName();
-  if (platform_name == QStringLiteral("xcb"))
-  {
-    wi.type = WindowInfo::Type::X11;
-    wi.display_connection = pni->nativeResourceForWindow("display", m_widget->windowHandle());
-    wi.window_handle = reinterpret_cast<void*>(m_widget->winId());
-  }
-  else if (platform_name == QStringLiteral("wayland"))
-  {
-    wi.type = WindowInfo::Type::Wayland;
-    wi.display_connection = pni->nativeResourceForWindow("display", m_widget->windowHandle());
-    wi.window_handle = pni->nativeResourceForWindow("surface", m_widget->windowHandle());
-  }
-  else
-  {
-    qCritical() << "Unknown PNI platform " << platform_name;
-    return wi;
-  }
-#endif
-
-  wi.surface_width = m_widget->width();
-  wi.surface_height = m_widget->height();
-  wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
-
-  return wi;
-}
-
 bool OpenGLHostDisplay::createDeviceContext(bool debug_device)
 {
-  m_gl_context = GL::Context::Create(getWindowInfo());
+  m_window_width = m_widget->scaledWindowWidth();
+  m_window_height = m_widget->scaledWindowHeight();
+
+  std::optional<WindowInfo> wi = getWindowInfo();
+  if (!wi.has_value())
+    return false;
+
+  m_gl_context = GL::Context::Create(wi.value());
   if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create any GL context");
@@ -245,7 +207,7 @@ bool OpenGLHostDisplay::createDeviceContext(bool debug_device)
   return true;
 }
 
-bool OpenGLHostDisplay::initializeDeviceContext(bool debug_device)
+bool OpenGLHostDisplay::initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device)
 {
   if (debug_device && GLAD_GL_KHR_debug)
   {
@@ -254,7 +216,7 @@ bool OpenGLHostDisplay::initializeDeviceContext(bool debug_device)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  if (!QtHostDisplay::initializeDeviceContext(debug_device))
+  if (!QtHostDisplay::initializeDeviceContext(shader_cache_directory, debug_device))
   {
     m_gl_context->DoneCurrent();
     return false;
@@ -286,14 +248,17 @@ void OpenGLHostDisplay::destroyDeviceContext()
   m_gl_context.reset();
 }
 
-bool OpenGLHostDisplay::createSurface()
+bool OpenGLHostDisplay::recreateSurface()
 {
   m_window_width = m_widget->scaledWindowWidth();
   m_window_height = m_widget->scaledWindowHeight();
-  emit m_widget->windowResizedEvent(m_window_width, m_window_height);
 
   if (m_gl_context)
-    m_gl_context->ChangeSurface(getWindowInfo());
+  {
+    std::optional<WindowInfo> wi = getWindowInfo();
+    if (!wi.has_value() || !m_gl_context->ChangeSurface(wi.value()))
+      return false;
+  }
 
   return true;
 }
