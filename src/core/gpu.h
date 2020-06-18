@@ -423,6 +423,8 @@ protected:
       ticks_per_row += average_width;
     if (semitransparent || m_GPUSTAT.check_mask_before_draw)
       ticks_per_row += (average_width + 1u) / 2u;
+    if (IsInterlacedRenderingEnabled())
+      height = std::max<u32>(height / 2, 1u);
 
     AddCommandTicks(ticks_per_row * height);
   }
@@ -433,10 +435,18 @@ protected:
       ticks_per_row += width;
     if (semitransparent || m_GPUSTAT.check_mask_before_draw)
       ticks_per_row += (width + 1u) / 2u;
+    if (IsInterlacedRenderingEnabled())
+      height = std::max<u32>(height / 2, 1u);
 
     AddCommandTicks(ticks_per_row * height);
   }
-  ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded) { AddCommandTicks(std::max(width, height)); }
+  ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded)
+  {
+    if (IsInterlacedRenderingEnabled())
+      height = std::max<u32>(height / 2, 1u);
+
+    AddCommandTicks(std::max(width, height));
+  }
 
   HostDisplay* m_host_display = nullptr;
   System* m_system = nullptr;
