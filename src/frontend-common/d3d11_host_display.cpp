@@ -294,6 +294,11 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   return true;
 }
 
+bool D3D11HostDisplay::RecreateSwapChain(const WindowInfo& new_wi, bool use_flip_model)
+{
+  return CreateSwapChain(new_wi, use_flip_model);
+}
+
 void D3D11HostDisplay::DestroySwapChain()
 {
   m_swap_chain_rtv.Reset();

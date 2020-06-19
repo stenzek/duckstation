@@ -26,7 +26,7 @@
 Log_SetChannel(SDLHostInterface);
 
 #ifdef WIN32
-#include "d3d11_host_display.h"
+#include "sdl_d3d11_host_display.h"
 #endif
 
 SDLHostInterface::SDLHostInterface()
@@ -149,7 +149,7 @@ bool SDLHostInterface::CreateDisplay()
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
     default:
-      display = D3D11HostDisplay::Create(m_window, debug_device);
+      display = SDLD3D11HostDisplay::Create(m_window, debug_device);
       break;
 #endif
   }

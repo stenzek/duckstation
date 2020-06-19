@@ -55,8 +55,10 @@ void* SDLVulkanHostDisplay::GetRenderContext() const
 void SDLVulkanHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
 {
   m_display.ResizeSwapChain(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
-  m_window_width = static_cast<s32>(m_display.GetSwapChainWidth());
-  m_window_height = static_cast<s32>(m_display.GetSwapChainHeight());
+  HostDisplay::WindowResized(static_cast<s32>(m_display.GetSwapChainWidth()),
+                             static_cast<s32>(m_display.GetSwapChainHeight()));
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_display.GetSwapChainWidth());
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_display.GetSwapChainHeight());
 }
 
 std::unique_ptr<HostDisplayTexture> SDLVulkanHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
