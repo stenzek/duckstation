@@ -162,6 +162,10 @@
   <entry code="SLES-01722" compatibility="5" region="PAL" title="Bloody Roar 2 - Bringer of the New Age">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SCUS-94424" compatibility="5" region="NTSC-U" title="Bloody Roar II">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1047-g8ae04f6</version-tested>
+  </entry>
   <entry code="SLUS-01198" compatibility="3" region="NTSC-U" title="Blue's Clues - Blue's Big Musical (USA)">
     <compatibility>Crashes In-Game</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
@@ -947,6 +951,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLUS-00681" compatibility="5" region="NTSC-U" title="Rival Schools - United by Fate (Disc 1) (Arcade Disc)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1047-g8ae04f6</version-tested>
+  </entry>
   <entry code="SCPS-10103" compatibility="5" region="NTSC-J" title="Robbit mon Dieu (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -1300,6 +1308,10 @@
   <entry code="SLPM-86077" compatibility="5" region="NTSC-J" title="TwinBee RPG (Japan, Asia)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94306" compatibility="5" region="NTSC-U" title="Twisted Metal 2">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1047-g8ae04f6</version-tested>
   </entry>
   <entry code="SLPS-00131" compatibility="5" region="NTSC-J" title="Two-Ten Kaku (Japan)">
     <compatibility>No Issues</compatibility>
