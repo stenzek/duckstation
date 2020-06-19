@@ -63,6 +63,7 @@
   <ItemGroup>
     <ClCompile Include="common_host_interface.cpp" />
     <ClCompile Include="controller_interface.cpp" />
+    <ClCompile Include="d3d11_host_display.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
@@ -75,6 +76,7 @@
   <ItemGroup>
     <ClInclude Include="common_host_interface.h" />
     <ClInclude Include="controller_interface.h" />
+    <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="ini_settings_interface.h" />

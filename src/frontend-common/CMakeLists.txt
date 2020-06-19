@@ -17,6 +17,14 @@ add_library(frontend-common
 
 target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion vulkan-loader)
 
+if(WIN32)
+  target_sources(frontend-common PRIVATE
+    d3d11_host_display.cpp
+    d3d11_host_display.h
+  )
+  target_link_libraries(frontend-common PRIVATE d3d11.lib dxgi.lib)
+endif()
+
 if(SDL2_FOUND)
   target_sources(frontend-common PRIVATE 
     sdl_audio_stream.cpp
