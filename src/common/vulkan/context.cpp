@@ -271,7 +271,7 @@ Context::GPUNameList Context::EnumerateGPUNames(VkInstance instance)
   return gpu_names;
 }
 
-bool Context::Create(u32 gpu_index, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
+bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
                      bool enable_debug_reports, bool enable_validation_layer)
 {
   AssertMsg(!g_vulkan_context, "Has no current context");
@@ -306,14 +306,27 @@ bool Context::Create(u32 gpu_index, const WindowInfo* wi, std::unique_ptr<SwapCh
     return false;
   }
 
+  u32 gpu_index = 0;
   GPUNameList gpu_names = EnumerateGPUNames(instance);
-  for (u32 i = 0; i < gpu_names.size(); i++)
-    Log_InfoPrintf("GPU %u: %s", static_cast<u32>(i), gpu_names[i].c_str());
-
-  if (gpu_index >= gpus.size())
+  if (!gpu_name.empty())
   {
-    Log_WarningPrintf("GPU index (%u) out of range (%u), using first", gpu_index, static_cast<u32>(gpus.size()));
-    gpu_index = 0;
+    for (; gpu_index < static_cast<u32>(gpu_names.size()); gpu_index++)
+    {
+      Log_InfoPrintf("GPU %u: %s", static_cast<u32>(gpu_index), gpu_names[gpu_index].c_str());
+      if (gpu_names[gpu_index] == gpu_name)
+        break;
+    }
+
+    if (gpu_index == static_cast<u32>(gpu_names.size()))
+    {
+      Log_WarningPrintf("Requested GPU '%s' not found, using first (%s)", std::string(gpu_name).c_str(),
+                        gpu_names[0].c_str());
+      gpu_index = 0;
+    }
+  }
+  else
+  {
+    Log_InfoPrintf("No GPU requested, using first (%s)", gpu_names[0].c_str());
   }
 
   VkSurfaceKHR surface = VK_NULL_HANDLE;

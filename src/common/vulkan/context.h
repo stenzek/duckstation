@@ -43,7 +43,7 @@ public:
   static GPUNameList EnumerateGPUNames(VkInstance instance);
 
   // Creates a new context and sets it up as global.
-  static bool Create(u32 gpu_index, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
+  static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
                      bool enable_debug_reports, bool enable_validation_layer);
 
   // Destroys context.

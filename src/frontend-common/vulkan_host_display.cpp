@@ -194,7 +194,7 @@ void VulkanHostDisplay::SetVSync(bool enabled)
 
 bool VulkanHostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, bool debug_device)
 {
-  if (!Vulkan::Context::Create(0u, &wi, &m_swap_chain, debug_device, false))
+  if (!Vulkan::Context::Create({}, &wi, &m_swap_chain, debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     return false;
