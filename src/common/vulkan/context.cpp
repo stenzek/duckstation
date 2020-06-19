@@ -6,6 +6,7 @@
 #include "context.h"
 #include "../assert.h"
 #include "../log.h"
+#include "../string_util.h"
 #include "../window_info.h"
 #include "swap_chain.h"
 #include "util.h"
@@ -246,7 +247,25 @@ Context::GPUNameList Context::EnumerateGPUNames(VkInstance instance)
   {
     VkPhysicalDeviceProperties props = {};
     vkGetPhysicalDeviceProperties(gpus[i], &props);
-    gpu_names.emplace_back(props.deviceName);
+
+    std::string gpu_name(props.deviceName);
+
+    // handle duplicate adapter names
+    if (std::any_of(gpu_names.begin(), gpu_names.end(),
+                    [&gpu_name](const std::string& other) { return (gpu_name == other); }))
+    {
+      std::string original_adapter_name = std::move(gpu_name);
+
+      u32 current_extra = 2;
+      do
+      {
+        gpu_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
+        current_extra++;
+      } while (std::any_of(gpu_names.begin(), gpu_names.end(),
+                           [&gpu_name](const std::string& other) { return (gpu_name == other); }));
+    }
+
+    gpu_names.push_back(std::move(gpu_name));
   }
 
   return gpu_names;
