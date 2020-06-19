@@ -70,7 +70,6 @@ if(WIN32)
     d3d11hostdisplay.cpp
     d3d11hostdisplay.h
   )
-  target_link_libraries(duckstation-qt PRIVATE d3d11.lib dxgi.lib)
 
   # We want a Windows subsystem application not console.
   set_target_properties(duckstation-qt PROPERTIES
