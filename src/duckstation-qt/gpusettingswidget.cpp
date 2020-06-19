@@ -4,6 +4,12 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
+// For enumerating adapters.
+#include "frontend-common/vulkan_host_display.h"
+#ifdef WIN32
+#include "frontend-common/d3d11_host_display.h"
+#endif
+
 GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
@@ -12,6 +18,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, QStringLiteral("GPU/Renderer"),
                                                &Settings::ParseRendererName, &Settings::GetRendererName);
+  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.adapter, QStringLiteral("GPU/Adapter"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice,
                                                QStringLiteral("GPU/UseDebugDevice"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
@@ -37,10 +44,14 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering,
                                                QStringLiteral("GPU/TextureFiltering"));
 
-  connect(m_ui.resolutionScale, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
   connect(m_ui.trueColor, &QCheckBox::stateChanged, this, &GPUSettingsWidget::updateScaledDitheringEnabled);
   updateScaledDitheringEnabled();
+
+  connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GPUSettingsWidget::populateGPUAdapters);
+  populateGPUAdapters();
 
   dialog->registerWidgetHelp(
     m_ui.renderer, "Renderer", Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER),
@@ -115,21 +126,66 @@ void GPUSettingsWidget::updateScaledDitheringEnabled()
 void GPUSettingsWidget::setupAdditionalUi()
 {
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
-    m_ui.renderer->addItem(QString::fromLocal8Bit(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
+    m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
 
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
   {
     m_ui.displayAspectRatio->addItem(
-      QString::fromLocal8Bit(Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i))));
+      QString::fromUtf8(Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
     m_ui.displayCropMode->addItem(
-      QString::fromLocal8Bit(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
   m_ui.resolutionScale->addItem(tr("Automatic based on window size"));
   for (u32 i = 1; i <= GPU::MAX_RESOLUTION_SCALE; i++)
     m_ui.resolutionScale->addItem(tr("%1x (%2x%3)").arg(i).arg(GPU::VRAM_WIDTH * i).arg(GPU::VRAM_HEIGHT * i));
+}
+
+void GPUSettingsWidget::populateGPUAdapters()
+{
+  QString current_value = m_host_interface->getSettingValue(QStringLiteral("GPU/Adapter")).toString();
+  QSignalBlocker blocker(m_ui.adapter);
+  m_ui.adapter->clear();
+
+  std::vector<std::string> adapter_names;
+  switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
+  {
+#ifdef WIN32
+    case GPURenderer::HardwareD3D11:
+      adapter_names = FrontendCommon::D3D11HostDisplay::EnumerateAdapterNames();
+      break;
+#endif
+
+    case GPURenderer::HardwareVulkan:
+      adapter_names = FrontendCommon::VulkanHostDisplay::EnumerateAdapterNames();
+      break;
+
+    default:
+      break;
+  }
+
+  if (adapter_names.empty())
+  {
+    // no options, disable it
+    m_ui.adapter->addItem(tr("(Default)"));
+    m_ui.adapter->setCurrentIndex(0);
+    m_ui.adapter->setEnabled(false);
+    return;
+  }
+
+  m_ui.adapter->setEnabled(true);
+  int found_index = -1;
+  for (const std::string& adapter_name : adapter_names)
+  {
+    QString qadapter_name(QString::fromStdString(adapter_name));
+    if (qadapter_name == current_value)
+      found_index = m_ui.adapter->count();
+
+    m_ui.adapter->addItem(qadapter_name);
+  }
+  m_ui.adapter->setCurrentIndex(found_index);
 }

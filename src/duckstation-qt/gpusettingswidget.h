@@ -17,6 +17,7 @@ public:
 
 private Q_SLOTS:
   void updateScaledDitheringEnabled();
+  void populateGPUAdapters();
 
 private:
   void setupAdditionalUi();
