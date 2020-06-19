@@ -62,6 +62,8 @@ public:
   void ResizeSwapChain(u32 new_width, u32 new_height);
   void DestroySwapChain();
 
+  static std::vector<std::string> EnumerateAdapterNames();
+
 private:
   struct PushConstants
   {

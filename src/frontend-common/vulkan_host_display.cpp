@@ -1,6 +1,7 @@
 #include "vulkan_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/scope_guard.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
 #include "common/vulkan/shader_cache.h"
@@ -487,6 +488,29 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
   vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout, 0, 1, &ds, 0, nullptr);
   Vulkan::Util::SetViewportAndScissor(cmdbuffer, left, top, width, height);
   vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
+}
+
+std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
+{
+  if (Vulkan::LoadVulkanLibrary())
+  {
+    Common::ScopeGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
+
+    VkInstance instance = Vulkan::Context::CreateVulkanInstance(false, false, false);
+    if (instance != VK_NULL_HANDLE)
+    {
+      Common::ScopeGuard instance_guard([&instance]() { vkDestroyInstance(instance, nullptr); });
+
+      if (Vulkan::LoadVulkanInstanceFunctions(instance))
+      {
+        Vulkan::Context::GPUNameList gpus = Vulkan::Context::EnumerateGPUNames(instance);
+        if (!gpus.empty())
+          return gpus;
+      }
+    }
+  }
+
+  return {"(Default)"};
 }
 
 } // namespace FrontendCommon

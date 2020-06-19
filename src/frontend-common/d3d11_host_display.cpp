@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
+#include "common/string_util.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
 #include <array>
@@ -475,6 +476,60 @@ void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 he
   m_context->OMSetBlendState(m_software_cursor_blend_state.Get(), nullptr, 0xFFFFFFFFu);
 
   m_context->Draw(3, 0);
+}
+
+std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames()
+{
+  ComPtr<IDXGIFactory> dxgi_factory;
+  HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+  if (SUCCEEDED(hr))
+  {
+    std::vector<std::string> adapter_names;
+    ComPtr<IDXGIAdapter> current_adapter;
+    while (SUCCEEDED(
+      dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_names.size()), current_adapter.ReleaseAndGetAddressOf())))
+    {
+      DXGI_ADAPTER_DESC adapter_desc;
+      std::string adapter_name;
+      if (SUCCEEDED(current_adapter->GetDesc(&adapter_desc)))
+      {
+        char adapter_name_buffer[128];
+        const int name_length = WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description,
+                                                    static_cast<int>(std::wcslen(adapter_desc.Description)),
+                                                    adapter_name_buffer, countof(adapter_name_buffer), 0, nullptr);
+        if (name_length >= 0)
+          adapter_name.assign(adapter_name_buffer, static_cast<size_t>(name_length));
+        else
+          adapter_name.assign("(Unknown)");
+      }
+      else
+      {
+        adapter_name.assign("(Unknown)");
+      }
+
+      // handle duplicate adapter names
+      if (std::any_of(adapter_names.begin(), adapter_names.end(),
+                      [&adapter_name](const std::string& other) { return (adapter_name == other); }))
+      {
+        std::string original_adapter_name = std::move(adapter_name);
+
+        u32 current_extra = 2;
+        do
+        {
+          adapter_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
+          current_extra++;
+        } while (std::any_of(adapter_names.begin(), adapter_names.end(),
+                             [&adapter_name](const std::string& other) { return (adapter_name == other); }));
+      }
+
+      adapter_names.push_back(std::move(adapter_name));
+    }
+
+    if (!adapter_names.empty())
+      return adapter_names;
+  }
+
+  return {"(Default)"};
 }
 
 } // namespace FrontendCommon

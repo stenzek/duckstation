@@ -9,6 +9,8 @@
 #include <dxgi.h>
 #include <memory>
 #include <wrl/client.h>
+#include <vector>
+#include <string>
 
 namespace FrontendCommon {
 
@@ -59,6 +61,8 @@ public:
   void RenderImGui();
   void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
   void EndRenderAndPresent();
+
+  static std::vector<std::string> EnumerateAdapterNames();
 
 private:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
