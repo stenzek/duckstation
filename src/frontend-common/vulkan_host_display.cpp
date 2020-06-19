@@ -192,9 +192,9 @@ void VulkanHostDisplay::SetVSync(bool enabled)
   m_swap_chain->SetVSync(enabled);
 }
 
-bool VulkanHostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, bool debug_device)
+bool VulkanHostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, std::string_view gpu_name, bool debug_device)
 {
-  if (!Vulkan::Context::Create({}, &wi, &m_swap_chain, debug_device, false))
+  if (!Vulkan::Context::Create(gpu_name, &wi, &m_swap_chain, debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     return false;

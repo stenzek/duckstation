@@ -18,10 +18,10 @@ SDLD3D11HostDisplay::~SDLD3D11HostDisplay()
     SDL_DestroyWindow(m_window);
 }
 
-std::unique_ptr<HostDisplay> SDLD3D11HostDisplay::Create(SDL_Window* window, bool debug_device)
+std::unique_ptr<HostDisplay> SDLD3D11HostDisplay::Create(SDL_Window* window, std::string_view adapter_name, bool debug_device)
 {
   std::unique_ptr<SDLD3D11HostDisplay> display = std::make_unique<SDLD3D11HostDisplay>(window);
-  if (!display->Initialize(debug_device))
+  if (!display->Initialize(adapter_name, debug_device))
     return {};
 
   return display;
@@ -74,13 +74,13 @@ void SDLD3D11HostDisplay::SetVSync(bool enabled)
   m_interface.SetVSync(enabled);
 }
 
-bool SDLD3D11HostDisplay::Initialize(bool debug_device)
+bool SDLD3D11HostDisplay::Initialize(std::string_view adapter_name, bool debug_device)
 {
   std::optional<WindowInfo> wi = SDLUtil::GetWindowInfoForSDLWindow(m_window);
   if (!wi.has_value())
     return false;
 
-  if (!m_interface.CreateContextAndSwapChain(wi.value(), true, debug_device))
+  if (!m_interface.CreateContextAndSwapChain(wi.value(), adapter_name, true, debug_device))
     return false;
 
   if (!m_interface.CreateResources())

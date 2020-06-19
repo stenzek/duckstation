@@ -10,8 +10,8 @@ public:
   SDLVulkanHostDisplay(SDL_Window* window);
   ~SDLVulkanHostDisplay();
 
-  static std::unique_ptr<HostDisplay> Create(SDL_Window* window, std::string_view shader_cache_directory,
-                                             bool debug_device);
+  static std::unique_ptr<HostDisplay> Create(SDL_Window* window, std::string_view adapter_name,
+                                             std::string_view shader_cache_directory, bool debug_device);
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
@@ -33,7 +33,7 @@ public:
   void Render() override;
 
 private:
-  bool Initialize(std::string_view shader_cache_directory, bool debug_device);
+  bool Initialize(std::string_view adapter_name, std::string_view shader_cache_directory, bool debug_device);
 
   SDL_Window* m_window = nullptr;
   FrontendCommon::VulkanHostDisplay m_display;

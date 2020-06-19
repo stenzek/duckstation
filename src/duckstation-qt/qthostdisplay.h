@@ -5,6 +5,7 @@
 #include <optional>
 #include <string_view>
 
+class QString;
 class QThread;
 class QWidget;
 
@@ -24,7 +25,7 @@ public:
   virtual void destroyWidget();
 
   virtual bool hasDeviceContext() const;
-  virtual bool createDeviceContext(bool debug_device);
+  virtual bool createDeviceContext(const QString& adapter_name, bool debug_device);
   virtual bool initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device);
   virtual bool activateDeviceContext();
   virtual void deactivateDeviceContext();

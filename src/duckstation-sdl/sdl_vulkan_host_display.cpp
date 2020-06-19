@@ -27,11 +27,11 @@ SDLVulkanHostDisplay::~SDLVulkanHostDisplay()
     SDL_DestroyWindow(m_window);
 }
 
-std::unique_ptr<HostDisplay> SDLVulkanHostDisplay::Create(SDL_Window* window, std::string_view shader_cache_directory,
-                                                          bool debug_device)
+std::unique_ptr<HostDisplay> SDLVulkanHostDisplay::Create(SDL_Window* window, std::string_view adapter_name,
+                                                          std::string_view shader_cache_directory, bool debug_device)
 {
   std::unique_ptr<SDLVulkanHostDisplay> display = std::make_unique<SDLVulkanHostDisplay>(window);
-  if (!display->Initialize(shader_cache_directory, debug_device))
+  if (!display->Initialize(adapter_name, shader_cache_directory, debug_device))
     return nullptr;
 
   return display;
@@ -84,7 +84,8 @@ void SDLVulkanHostDisplay::SetVSync(bool enabled)
   m_display.SetVSync(enabled);
 }
 
-bool SDLVulkanHostDisplay::Initialize(std::string_view shader_cache_directory, bool debug_device)
+bool SDLVulkanHostDisplay::Initialize(std::string_view adapter_name, std::string_view shader_cache_directory,
+                                      bool debug_device)
 {
   std::optional<WindowInfo> wi = SDLUtil::GetWindowInfoForSDLWindow(m_window);
   if (!wi.has_value())
@@ -93,7 +94,7 @@ bool SDLVulkanHostDisplay::Initialize(std::string_view shader_cache_directory, b
     return false;
   }
 
-  if (!m_display.CreateContextAndSwapChain(wi.value(), debug_device))
+  if (!m_display.CreateContextAndSwapChain(wi.value(), adapter_name, debug_device))
     return false;
 
   m_display.CreateShaderCache(shader_cache_directory, debug_device);

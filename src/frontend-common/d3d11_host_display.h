@@ -8,9 +8,10 @@
 #include <d3d11.h>
 #include <dxgi.h>
 #include <memory>
-#include <wrl/client.h>
-#include <vector>
 #include <string>
+#include <string_view>
+#include <vector>
+#include <wrl/client.h>
 
 namespace FrontendCommon {
 
@@ -27,7 +28,8 @@ public:
   ALWAYS_INLINE void* GetRenderDevice() const { return m_device.Get(); }
   ALWAYS_INLINE void* GetRenderContext() const { return m_context.Get(); }
 
-  bool CreateContextAndSwapChain(const WindowInfo& wi, bool use_flip_model, bool debug_device);
+  bool CreateContextAndSwapChain(const WindowInfo& wi, std::string_view adapter_name, bool use_flip_model,
+                                 bool debug_device);
   bool HasContext() const;
   void DestroyContext();
 
@@ -66,6 +68,8 @@ public:
 
 private:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
+
+  static std::vector<std::string> EnumerateAdapterNames(IDXGIFactory* dxgi_factory);
 
   bool CreateSwapChain(const WindowInfo& new_wi, bool use_flip_model);
   bool CreateSwapChainRTV();

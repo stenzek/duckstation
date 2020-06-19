@@ -59,11 +59,14 @@ bool D3D11HostDisplay::hasDeviceContext() const
   return m_interface.HasContext();
 }
 
-bool D3D11HostDisplay::createDeviceContext(bool debug_device)
+bool D3D11HostDisplay::createDeviceContext(const QString& adapter_name, bool debug_device)
 {
   std::optional<WindowInfo> wi = getWindowInfo();
-  if (!wi || !m_interface.CreateContextAndSwapChain(wi.value(), shouldUseFlipModelSwapChain(), debug_device))
+  if (!wi || !m_interface.CreateContextAndSwapChain(wi.value(), adapter_name.toStdString(),
+                                                    shouldUseFlipModelSwapChain(), debug_device))
+  {
     return false;
+  }
 
   m_window_width = static_cast<s32>(m_interface.GetSwapChainWidth());
   m_window_height = static_cast<s32>(m_interface.GetSwapChainHeight());

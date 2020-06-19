@@ -52,10 +52,10 @@ bool VulkanHostDisplay::hasDeviceContext() const
   return m_vulkan_display.HasContext();
 }
 
-bool VulkanHostDisplay::createDeviceContext(bool debug_device)
+bool VulkanHostDisplay::createDeviceContext(const QString& adapter_name, bool debug_device)
 {
   std::optional<WindowInfo> wi = getWindowInfo();
-  if (!wi || !m_vulkan_display.CreateContextAndSwapChain(wi.value(), debug_device))
+  if (!wi || !m_vulkan_display.CreateContextAndSwapChain(wi.value(), adapter_name.toStdString(), debug_device))
     return false;
 
   m_window_width = static_cast<s32>(m_vulkan_display.GetSwapChainWidth());

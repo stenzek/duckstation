@@ -26,7 +26,7 @@ public:
   ~OpenGLHostDisplay();
 
   bool hasDeviceContext() const override;
-  bool createDeviceContext(bool debug_device) override;
+  bool createDeviceContext(const QString& adapter_name, bool debug_device) override;
   bool initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device) override;
   bool activateDeviceContext() override;
   void deactivateDeviceContext() override;

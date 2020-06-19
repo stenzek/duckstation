@@ -140,14 +140,55 @@ bool D3D11HostDisplay::HasContext() const
   return static_cast<bool>(m_device);
 }
 
-bool D3D11HostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, bool use_flip_model, bool debug_device)
+bool D3D11HostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, std::string_view adapter_name,
+                                                 bool use_flip_model, bool debug_device)
 {
   UINT create_flags = 0;
   if (debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
-  HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, nullptr, 0,
-                                 D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+  ComPtr<IDXGIFactory> temp_dxgi_factory;
+  HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.GetAddressOf()));
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to create DXGI factory: 0x%08X", hr);
+    return false;
+  }
+
+  u32 adapter_index;
+  if (!adapter_name.empty())
+  {
+    std::vector<std::string> adapter_names = EnumerateAdapterNames(temp_dxgi_factory.Get());
+    for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_names.size()); adapter_index++)
+    {
+      if (adapter_name == adapter_names[adapter_index])
+        break;
+    }
+    if (adapter_index == static_cast<u32>(adapter_names.size()))
+    {
+      Log_WarningPrintf("Could not find adapter '%s', using first (%s)", std::string(adapter_name).c_str(),
+                        adapter_names[0].c_str());
+      adapter_index = 0;
+    }
+  }
+  else
+  {
+    Log_InfoPrintf("No adapter selected, using first.");
+    adapter_index = 0;
+  }
+
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  hr = temp_dxgi_factory->EnumAdapters(adapter_index, dxgi_adapter.GetAddressOf());
+  if (FAILED(hr))
+    Log_WarningPrintf("Failed to enumerate adapter %u, using default", adapter_index);
+
+  hr = D3D11CreateDevice(dxgi_adapter.Get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
+                         create_flags, nullptr, 0, D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr,
+                         m_context.GetAddressOf());
+
+  // we re-grab these later, see below
+  dxgi_adapter.Reset();
+  temp_dxgi_factory.Reset();
 
   if (FAILED(hr))
   {
@@ -168,7 +209,6 @@ bool D3D11HostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, bool use_
 
   // we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
   ComPtr<IDXGIDevice> dxgi_device;
-  ComPtr<IDXGIAdapter> dxgi_adapter;
   if (FAILED(m_device.As(&dxgi_device)) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))) ||
       FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.GetAddressOf()))))
   {
@@ -482,54 +522,56 @@ std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames()
 {
   ComPtr<IDXGIFactory> dxgi_factory;
   HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
-  if (SUCCEEDED(hr))
+  if (FAILED(hr))
+    return {};
+
+  return EnumerateAdapterNames(dxgi_factory.Get());
+}
+
+std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames(IDXGIFactory* dxgi_factory)
+{
+  std::vector<std::string> adapter_names;
+  ComPtr<IDXGIAdapter> current_adapter;
+  while (SUCCEEDED(
+    dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_names.size()), current_adapter.ReleaseAndGetAddressOf())))
   {
-    std::vector<std::string> adapter_names;
-    ComPtr<IDXGIAdapter> current_adapter;
-    while (SUCCEEDED(
-      dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_names.size()), current_adapter.ReleaseAndGetAddressOf())))
+    DXGI_ADAPTER_DESC adapter_desc;
+    std::string adapter_name;
+    if (SUCCEEDED(current_adapter->GetDesc(&adapter_desc)))
     {
-      DXGI_ADAPTER_DESC adapter_desc;
-      std::string adapter_name;
-      if (SUCCEEDED(current_adapter->GetDesc(&adapter_desc)))
-      {
-        char adapter_name_buffer[128];
-        const int name_length = WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description,
-                                                    static_cast<int>(std::wcslen(adapter_desc.Description)),
-                                                    adapter_name_buffer, countof(adapter_name_buffer), 0, nullptr);
-        if (name_length >= 0)
-          adapter_name.assign(adapter_name_buffer, static_cast<size_t>(name_length));
-        else
-          adapter_name.assign("(Unknown)");
-      }
+      char adapter_name_buffer[128];
+      const int name_length = WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description,
+                                                  static_cast<int>(std::wcslen(adapter_desc.Description)),
+                                                  adapter_name_buffer, countof(adapter_name_buffer), 0, nullptr);
+      if (name_length >= 0)
+        adapter_name.assign(adapter_name_buffer, static_cast<size_t>(name_length));
       else
-      {
         adapter_name.assign("(Unknown)");
-      }
-
-      // handle duplicate adapter names
-      if (std::any_of(adapter_names.begin(), adapter_names.end(),
-                      [&adapter_name](const std::string& other) { return (adapter_name == other); }))
-      {
-        std::string original_adapter_name = std::move(adapter_name);
-
-        u32 current_extra = 2;
-        do
-        {
-          adapter_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
-          current_extra++;
-        } while (std::any_of(adapter_names.begin(), adapter_names.end(),
-                             [&adapter_name](const std::string& other) { return (adapter_name == other); }));
-      }
-
-      adapter_names.push_back(std::move(adapter_name));
+    }
+    else
+    {
+      adapter_name.assign("(Unknown)");
     }
 
-    if (!adapter_names.empty())
-      return adapter_names;
+    // handle duplicate adapter names
+    if (std::any_of(adapter_names.begin(), adapter_names.end(),
+                    [&adapter_name](const std::string& other) { return (adapter_name == other); }))
+    {
+      std::string original_adapter_name = std::move(adapter_name);
+
+      u32 current_extra = 2;
+      do
+      {
+        adapter_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
+        current_extra++;
+      } while (std::any_of(adapter_names.begin(), adapter_names.end(),
+                           [&adapter_name](const std::string& other) { return (adapter_name == other); }));
+    }
+
+    adapter_names.push_back(std::move(adapter_name));
   }
 
-  return {"(Default)"};
+  return adapter_names;
 }
 
 } // namespace FrontendCommon

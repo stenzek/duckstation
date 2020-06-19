@@ -1,9 +1,9 @@
 #include "mainwindow.h"
+#include "aboutdialog.h"
 #include "common/assert.h"
 #include "core/game_list.h"
 #include "core/settings.h"
 #include "core/system.h"
-#include "aboutdialog.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
@@ -69,7 +69,8 @@ bool MainWindow::confirmMessage(const QString& message)
   return (result == QMessageBox::Yes);
 }
 
-void MainWindow::createDisplay(QThread* worker_thread, bool use_debug_device, bool fullscreen, bool render_to_main)
+void MainWindow::createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
+                               bool fullscreen, bool render_to_main)
 {
   Assert(!m_host_display && !m_display_widget);
   Assert(!fullscreen || !render_to_main);
@@ -97,7 +98,7 @@ void MainWindow::createDisplay(QThread* worker_thread, bool use_debug_device, bo
   // we need the surface visible.. this might be able to be replaced with something else
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  if (!m_host_display->createDeviceContext(use_debug_device))
+  if (!m_host_display->createDeviceContext(adapter_name, use_debug_device))
   {
     reportError(tr("Failed to create host display device context."));
     return;

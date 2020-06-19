@@ -31,6 +31,7 @@ void Settings::Load(SettingsInterface& si)
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
+  gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
@@ -128,6 +129,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
+  si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);

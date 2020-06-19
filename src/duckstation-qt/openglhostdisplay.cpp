@@ -188,7 +188,7 @@ bool OpenGLHostDisplay::hasDeviceContext() const
   return static_cast<bool>(m_gl_context);
 }
 
-bool OpenGLHostDisplay::createDeviceContext(bool debug_device)
+bool OpenGLHostDisplay::createDeviceContext(const QString& adapter_name, bool debug_device)
 {
   m_window_width = m_widget->scaledWindowWidth();
   m_window_height = m_widget->scaledWindowHeight();

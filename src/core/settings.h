@@ -48,6 +48,7 @@ struct Settings
   bool load_memory_cards_from_save_states = false;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
+  std::string gpu_adapter;
   u32 gpu_resolution_scale = 1;
   bool gpu_use_debug_device = false;
   bool gpu_true_color = true;

@@ -12,7 +12,7 @@ public:
   SDLD3D11HostDisplay(SDL_Window* window);
   ~SDLD3D11HostDisplay();
 
-  static std::unique_ptr<HostDisplay> Create(SDL_Window* window, bool debug_device);
+  static std::unique_ptr<HostDisplay> Create(SDL_Window* window, std::string_view adapter_name, bool debug_device);
 
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
@@ -35,5 +35,5 @@ private:
 
   FrontendCommon::D3D11HostDisplay m_interface;
 
-  bool Initialize(bool debug_device);
+  bool Initialize(std::string_view adapter_name, bool debug_device);
 };

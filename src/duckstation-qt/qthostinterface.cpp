@@ -316,8 +316,8 @@ bool QtHostInterface::AcquireHostDisplay()
   Assert(!m_display);
 
   m_is_rendering_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
-  emit createDisplayRequested(m_worker_thread, m_settings.gpu_use_debug_device, m_is_fullscreen,
-                              m_is_rendering_to_main);
+  emit createDisplayRequested(m_worker_thread, QString::fromStdString(m_settings.gpu_adapter),
+                              m_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
   Assert(m_display);
 
   if (!getHostDisplay()->hasDeviceContext())

@@ -41,7 +41,7 @@ public:
   void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
   void EndRenderAndPresent();
 
-  bool CreateContextAndSwapChain(const WindowInfo& wi, bool debug_device);
+  bool CreateContextAndSwapChain(const WindowInfo& wi, std::string_view gpu_name, bool debug_device);
   bool HasContext() const;
   void DestroyContext();
 

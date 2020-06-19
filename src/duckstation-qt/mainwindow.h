@@ -29,7 +29,8 @@ private Q_SLOTS:
   void reportError(const QString& message);
   void reportMessage(const QString& message);
   bool confirmMessage(const QString& message);
-  void createDisplay(QThread* worker_thread, bool use_debug_device, bool fullscreen, bool render_to_main);
+  void createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device, bool fullscreen,
+                     bool render_to_main);
   void updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main);
   void destroyDisplay();
   void focusDisplayWidget();

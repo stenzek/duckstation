@@ -42,7 +42,7 @@ bool QtHostDisplay::hasDeviceContext() const
   return false;
 }
 
-bool QtHostDisplay::createDeviceContext(bool debug_device)
+bool QtHostDisplay::createDeviceContext(const QString& adapter_name, bool debug_device)
 {
   return false;
 }

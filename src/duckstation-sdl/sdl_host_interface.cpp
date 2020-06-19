@@ -129,27 +129,27 @@ void SDLHostInterface::DestroySDLWindow()
 
 bool SDLHostInterface::CreateDisplay()
 {
-  const bool debug_device = m_settings.gpu_use_debug_device;
   const std::string shader_cache_directory(GetShaderCacheDirectory());
   std::unique_ptr<HostDisplay> display;
 
   switch (m_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
-      display = SDLVulkanHostDisplay::Create(m_window, shader_cache_directory, debug_device);
+      display = SDLVulkanHostDisplay::Create(m_window, m_settings.gpu_adapter, shader_cache_directory,
+                                             m_settings.gpu_use_debug_device);
       break;
 
     case GPURenderer::HardwareOpenGL:
 #ifndef WIN32
     default:
 #endif
-      display = OpenGLHostDisplay::Create(m_window, debug_device);
+      display = OpenGLHostDisplay::Create(m_window, m_settings.gpu_use_debug_device);
       break;
 
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
     default:
-      display = SDLD3D11HostDisplay::Create(m_window, debug_device);
+      display = SDLD3D11HostDisplay::Create(m_window, m_settings.gpu_adapter, m_settings.gpu_use_debug_device);
       break;
 #endif
   }
