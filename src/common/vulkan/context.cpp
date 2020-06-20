@@ -189,7 +189,14 @@ bool Context::SelectInstanceExtensions(ExtensionList* extension_list, bool enabl
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
   if (enable_surface && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
     return false;
+#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+  if (enable_surface && !SupportsExtension(VK_MVK_MACOS_SURFACE_EXTENSION_NAME, true))
+    return false;
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+  if (enable_surface && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
+    return false;
 #endif
+
 
   // VK_EXT_debug_report
   if (enable_debug_report && !SupportsExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false))
