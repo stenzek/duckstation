@@ -636,7 +636,10 @@ bool GPU_HW_Vulkan::CompilePipelines()
                                         (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
 
                 gpbuilder.SetNoBlendingState();
-                if (static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled ||
+
+                if ((static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled &&
+                     (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
+                      static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
                     m_texture_filtering)
                 {
                   // TODO: Check dual-source blend support here.
