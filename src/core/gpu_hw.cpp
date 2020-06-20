@@ -53,10 +53,8 @@ void GPU_HW::Reset()
 
   m_batch = {};
   m_batch_ubo_data = {};
-  m_batch_current_vertex_depth_id = 1;
-  m_batch_next_vertex_depth_id = 2;
-  SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
   m_batch_ubo_dirty = true;
+  m_current_depth = 1;
 
   SetFullVRAMDirtyRectangle();
 }
@@ -71,7 +69,7 @@ bool GPU_HW::DoState(StateWrapper& sw)
   {
     m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
     SetFullVRAMDirtyRectangle();
-    ResetBatchVertexDepthID();
+    ResetBatchVertexDepth();
   }
 
   return true;
@@ -193,6 +191,9 @@ void GPU_HW::LoadVertices()
   const RenderCommand rc{m_render_command.bits};
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
 
+  if (m_GPUSTAT.check_mask_before_draw)
+    m_current_depth++;
+
   switch (rc.primitive)
   {
     case Primitive::Polygon:
@@ -211,7 +212,8 @@ void GPU_HW::LoadVertices()
         const VertexPosition vp{m_fifo.Pop()};
         const u16 packed_texcoord = textured ? Truncate16(m_fifo.Pop()) : 0;
 
-        vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, texpage, packed_texcoord);
+        vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, m_current_depth, color, texpage,
+                        packed_texcoord);
       }
 
       if (rc.quad_polygon && m_resolution_scale > 1)
@@ -351,13 +353,13 @@ void GPU_HW::LoadVertices()
           const s32 quad_end_x = quad_start_x + quad_width;
           const u16 tex_right = tex_left + static_cast<u16>(quad_width);
 
-          AddNewVertex(quad_start_x, quad_start_y, color, texpage, tex_left, tex_top);
-          AddNewVertex(quad_end_x, quad_start_y, color, texpage, tex_right, tex_top);
-          AddNewVertex(quad_start_x, quad_end_y, color, texpage, tex_left, tex_bottom);
+          AddNewVertex(quad_start_x, quad_start_y, m_current_depth, color, texpage, tex_left, tex_top);
+          AddNewVertex(quad_end_x, quad_start_y, m_current_depth, color, texpage, tex_right, tex_top);
+          AddNewVertex(quad_start_x, quad_end_y, m_current_depth, color, texpage, tex_left, tex_bottom);
 
-          AddNewVertex(quad_start_x, quad_end_y, color, texpage, tex_left, tex_bottom);
-          AddNewVertex(quad_end_x, quad_start_y, color, texpage, tex_right, tex_top);
-          AddNewVertex(quad_end_x, quad_end_y, color, texpage, tex_right, tex_bottom);
+          AddNewVertex(quad_start_x, quad_end_y, m_current_depth, color, texpage, tex_left, tex_bottom);
+          AddNewVertex(quad_end_x, quad_start_y, m_current_depth, color, texpage, tex_right, tex_top);
+          AddNewVertex(quad_end_x, quad_end_y, m_current_depth, color, texpage, tex_right, tex_bottom);
 
           x_offset += quad_width;
           tex_left = 0;
@@ -405,8 +407,8 @@ void GPU_HW::LoadVertices()
           return;
 
         BatchVertex start, end;
-        start.Set(m_drawing_offset.x + pos0.x, m_drawing_offset.y + pos0.y, color0, 0, 0);
-        end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos1.y, color1, 0, 0);
+        start.Set(m_drawing_offset.x + pos0.x, m_drawing_offset.y + pos0.y, m_current_depth, color0, 0, 0);
+        end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos1.y, m_current_depth, color1, 0, 0);
 
         const s32 min_x = std::min(start.x, end.x);
         const s32 max_x = std::max(start.x, end.x);
@@ -451,7 +453,7 @@ void GPU_HW::LoadVertices()
           const VertexPosition vp{m_blit_buffer[buffer_pos++]};
 
           BatchVertex vertex;
-          vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, color, 0, 0);
+          vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, m_current_depth, color, 0, 0);
 
           if (i > 0)
           {
@@ -552,7 +554,7 @@ GPU_HW::VRAMCopyUBOData GPU_HW::GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst
                                     width * m_resolution_scale,
                                     height * m_resolution_scale,
                                     m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
-                                    GetCurrentNormalizedBatchVertexDepthID()};
+                                    GetCurrentNormalizedVertexDepth()};
 
   return uniforms;
 }
@@ -610,11 +612,10 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
   }
 
   // can we fit these vertices in the current depth buffer range?
-  if (BatchVertexDepthIDNeedsUpdate() &&
-      (m_batch_next_vertex_depth_id + GetBatchVertexCount() + required_vertices) > MAX_BATCH_VERTEX_COUNTER_IDS)
+  if ((m_current_depth + required_vertices) > MAX_BATCH_VERTEX_COUNTER_IDS)
   {
     // implies FlushRender()
-    ResetBatchVertexDepthID();
+    ResetBatchVertexDepth();
   }
   else if (m_batch_current_vertex_ptr)
   {
@@ -627,36 +628,13 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
   MapBatchVertexPointer(required_vertices);
 }
 
-void GPU_HW::ResetBatchVertexDepthID()
+void GPU_HW::ResetBatchVertexDepth()
 {
-  Log_PerfPrint("Resetting batch vertex depth ID");
+  Log_PerfPrint("Resetting batch vertex depth");
   FlushRender();
   UpdateDepthBufferFromMaskBit();
 
-  m_batch_current_vertex_depth_id = 1;
-  m_batch_next_vertex_depth_id = 2;
-  SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
-}
-
-void GPU_HW::IncrementBatchVertexID(u32 count)
-{
-  DebugAssert((m_batch_next_vertex_depth_id + count) <= MAX_BATCH_VERTEX_COUNTER_IDS);
-  m_batch_next_vertex_depth_id += count;
-}
-
-void GPU_HW::SetBatchUBOVertexDepthID(u32 value)
-{
-  u32 ubo_value;
-
-  // In OpenGL, gl_VertexID is inclusive of the base vertex, whereas SV_VertexID in D3D isn't.
-  // We rely on unsigned overflow to compute the correct value based on the base vertex.
-  if (m_render_api != HostDisplay::RenderAPI::D3D11)
-    ubo_value = m_batch_base_vertex - value;
-  else
-    ubo_value = value;
-
-  m_batch_ubo_dirty |= (m_batch_ubo_data.u_vertex_depth_id != ubo_value);
-  m_batch_ubo_data.u_vertex_depth_id = ubo_value;
+  m_current_depth = 1;
 }
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
@@ -673,8 +651,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
   if (m_GPUSTAT.check_mask_before_draw)
   {
     // set new vertex counter since we want this to take into consideration previous masked pixels
-    m_batch_current_vertex_depth_id = m_batch_next_vertex_depth_id++;
-    SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
+    m_current_depth++;
   }
 }
 
@@ -686,8 +663,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   if (m_GPUSTAT.check_mask_before_draw)
   {
     // set new vertex counter since we want this to take into consideration previous masked pixels
-    m_batch_current_vertex_depth_id = m_batch_next_vertex_depth_id++;
-    SetBatchUBOVertexDepthID(m_batch_current_vertex_depth_id);
+    m_current_depth++;
   }
 }
 
@@ -753,7 +729,6 @@ void GPU_HW::DispatchRenderCommand()
   {
     m_batch.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
     m_batch.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
-    m_batch_ubo_data.u_check_mask_before_draw = BoolToUInt32(m_batch.check_mask_before_draw);
     m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(m_batch.set_mask_while_drawing);
     m_batch_ubo_dirty = true;
   }
@@ -797,10 +772,6 @@ void GPU_HW::FlushRender()
   if (vertex_count == 0)
     return;
 
-  const bool update_depth_id = BatchVertexDepthIDNeedsUpdate();
-  if (update_depth_id)
-    SetBatchUBOVertexDepthID(m_batch_next_vertex_depth_id);
-
   if (m_drawing_area_changed)
   {
     m_drawing_area_changed = false;
@@ -824,9 +795,6 @@ void GPU_HW::FlushRender()
     m_renderer_stats.num_batches++;
     DrawBatchVertices(m_batch.GetRenderMode(), m_batch_base_vertex, vertex_count);
   }
-
-  if (update_depth_id)
-    IncrementBatchVertexID(vertex_count);
 }
 
 void GPU_HW::DrawRendererStats(bool is_idle_frame)

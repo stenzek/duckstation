@@ -58,20 +58,22 @@ protected:
   {
     s32 x;
     s32 y;
+    s32 z;
     u32 color;
     u32 texpage;
     u16 u; // 16-bit texcoords are needed for 256 extent rectangles
     u16 v;
 
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 packed_texcoord)
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, s32 z_, u32 color_, u32 texpage_, u16 packed_texcoord)
     {
-      Set(x_, y_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
+      Set(x_, y_, z_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
     }
 
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u32 texpage_, u16 u_, u16 v_)
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, s32 z_, u32 color_, u32 texpage_, u16 u_, u16 v_)
     {
       x = x_;
       y = y_;
+      z = z_;
       color = color_;
       texpage = texpage_;
       u = u_;
@@ -112,8 +114,6 @@ protected:
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
     u32 u_interlaced_displayed_field;
-    u32 u_vertex_depth_id;
-    u32 u_check_mask_before_draw;
     u32 u_set_mask_while_drawing;
   };
 
@@ -183,21 +183,12 @@ protected:
   u32 GetBatchVertexCount() const { return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr); }
   void EnsureVertexBufferSpace(u32 required_vertices);
   void EnsureVertexBufferSpaceForCurrentCommand();
-  void ResetBatchVertexDepthID();
-  void IncrementBatchVertexID(u32 count);
-  void SetBatchUBOVertexDepthID(u32 value);
+  void ResetBatchVertexDepth();
 
   /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
-  ALWAYS_INLINE float GetCurrentNormalizedBatchVertexDepthID() const
+  ALWAYS_INLINE float GetCurrentNormalizedVertexDepth() const
   {
-    return 1.0f - (static_cast<float>(m_batch_next_vertex_depth_id) / 65535.0f);
-  }
-
-  /// Returns true if the batch vertex depth ID needs to be updated.
-  ALWAYS_INLINE bool BatchVertexDepthIDNeedsUpdate() const
-  {
-    // because GL uses base vertex we're incrementing the depth id every draw whether we like it or not
-    return m_batch.check_mask_before_draw || m_render_api != HostDisplay::RenderAPI::D3D11;
+    return (static_cast<float>(m_current_depth) / 65535.0f);
   }
 
   /// Returns the interlaced mode to use when scanning out/displaying.
@@ -246,8 +237,7 @@ protected:
   BatchVertex* m_batch_end_vertex_ptr = nullptr;
   BatchVertex* m_batch_current_vertex_ptr = nullptr;
   u32 m_batch_base_vertex = 0;
-  u32 m_batch_current_vertex_depth_id = 0;
-  u32 m_batch_next_vertex_depth_id = 0;
+  s32 m_current_depth = 0;
 
   u32 m_resolution_scale = 1;
   u32 m_max_resolution_scale = 1;

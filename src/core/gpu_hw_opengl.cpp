@@ -281,7 +281,7 @@ bool GPU_HW_OpenGL::CreateVertexBuffer()
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
-  glVertexAttribIPointer(0, 2, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
+  glVertexAttribIPointer(0, 3, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
                         reinterpret_cast<void*>(offsetof(BatchVertex, color)));
   glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, u)));
@@ -779,7 +779,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                                        height,
                                        map_result.index_aligned,
                                        m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                       GetCurrentNormalizedBatchVertexDepthID()};
+                                       GetCurrentNormalizedVertexDepth()};
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
 
     glBindVertexArray(m_attributeless_vao_id);
@@ -864,7 +864,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
                                 width * m_resolution_scale,
                                 height * m_resolution_scale,
                                 m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
-                                GetCurrentNormalizedBatchVertexDepthID()};
+                                GetCurrentNormalizedVertexDepth()};
     uniforms.u_src_y = m_vram_texture.GetHeight() - uniforms.u_src_y - uniforms.u_height;
     uniforms.u_dst_y = m_vram_texture.GetHeight() - uniforms.u_dst_y - uniforms.u_height;
     UploadUniformBuffer(&uniforms, sizeof(uniforms));

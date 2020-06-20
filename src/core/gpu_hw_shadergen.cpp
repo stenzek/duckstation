@@ -493,8 +493,8 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
   DeclareUniformBuffer(ss,
                        {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
-                        "float u_dst_alpha_factor", "uint u_interlaced_displayed_field", "uint u_base_vertex_depth_id",
-                        "bool u_check_mask_before_draw", "bool u_set_mask_while_drawing"},
+                        "float u_dst_alpha_factor", "uint u_interlaced_displayed_field",
+                        "bool u_set_mask_while_drawing"},
                        false);
 }
 
@@ -511,12 +511,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   if (textured)
   {
-    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                            {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float v_depth"}}, true);
+    DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
+                            {{"nointerpolation", "uint4 v_texpage"}}, false);
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"int2 a_pos", "float4 a_col0"}, 1, 0, {{"nointerpolation", "float v_depth"}}, true);
+    DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0"}, 1, 0, {}, false);
   }
 
   ss << R"(
@@ -529,11 +529,15 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   // 0..+1023 -> -1..1
   float pos_x = ((float(a_pos.x) + vertex_offset) / 512.0) - 1.0;
   float pos_y = ((float(a_pos.y) + vertex_offset) / -256.0) + 1.0;
+  float pos_z = 1.0 - (float(a_pos.z) / 65535.0);
 
+#if API_OPENGL || API_OPENGL_ES
   // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
   // Intel and NVIDIA drivers. AMD is fine...
-#if API_OPENGL || API_OPENGL_ES
   pos_y += EPSILON;
+
+  // 0..1 to -1..1 depth range.
+  pos_z = (pos_z * 2.0) - 1.0;
 #endif
 
   // NDC space Y flip in Vulkan.
@@ -541,13 +545,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   pos_y = -pos_y;
 #endif
 
-  v_pos = float4(pos_x, pos_y, 0.0, 1.0);
-
-#if API_D3D11
-  v_depth = 1.0 - (float(u_base_vertex_depth_id + (u_check_mask_before_draw ? v_id : 0u)) / 65535.0);
-#else
-  v_depth = 1.0 - (float(v_id - u_base_vertex_depth_id) / 65535.0);
-#endif
+  v_pos = float4(pos_x, pos_y, pos_z, 1.0);
 
   v_col0 = a_col0;
   #if TEXTURED
@@ -707,12 +705,12 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float v_depth"}},
+    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}},
                               true, use_dual_source ? 2 : 1, true);
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {{"nointerpolation", "float v_depth"}}, true, use_dual_source ? 2 : 1, true);
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, true);
   }
 
   ss << R"(
@@ -846,7 +844,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         o_col0 = float4(color, u_dst_alpha_factor / ialpha);
       #endif
 
-      o_depth = oalpha * v_depth;
+      o_depth = oalpha * v_pos.z;
     }
     else
     {
@@ -864,7 +862,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         o_col0 = float4(color, 1.0 - ialpha);
       #endif
 
-      o_depth = oalpha * v_depth;
+      o_depth = oalpha * v_pos.z;
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
@@ -874,7 +872,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
     #endif
 
-    o_depth = oalpha * v_depth;
+    o_depth = oalpha * v_pos.z;
   #endif
 }
 )";
@@ -900,7 +898,6 @@ CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RES
 
     ss << R"(in VertexData {
   float4 v_col0;
-  nointerpolation float v_depth;
 } in_data[];)";
 
     if (IsVulkan())
@@ -908,7 +905,6 @@ CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RES
 
     ss << R"(out VertexData {
   float4 v_col0;
-  nointerpolation float v_depth;
 } out_data;
 
 layout(lines) in;
@@ -921,25 +917,21 @@ void main() {
 
   // top-left
   out_data.v_col0 = in_data[0].v_col0;
-  out_data.v_depth = in_data[0].v_depth;
   gl_Position = gl_in[0].gl_Position - offset;
   EmitVertex();
 
   // top-right
   out_data.v_col0 = in_data[0].v_col0;
-  out_data.v_depth = in_data[0].v_depth;
   gl_Position = gl_in[0].gl_Position + offset;
   EmitVertex();
 
   // bottom-left
   out_data.v_col0 = in_data[1].v_col0;
-  out_data.v_depth = in_data[1].v_depth;
   gl_Position = gl_in[1].gl_Position - offset;
   EmitVertex();
 
   // bottom-right
   out_data.v_col0 = in_data[1].v_col0;
-  out_data.v_depth = in_data[1].v_depth;
   gl_Position = gl_in[1].gl_Position + offset;
   EmitVertex();
 
@@ -968,25 +960,21 @@ void main(line Vertex input[2], inout TriangleStream<Vertex> output)
 
   // top-left
   v.col0 = input[0].col0;
-  v.depth = input[0].depth;
   v.pos = input[0].pos - offset;
   output.Append(v);
 
   // top-right
   v.col0 = input[0].col0;
-  v.depth = input[0].depth;
   v.pos = input[0].pos + offset;
   output.Append(v);
 
   // bottom-left
   v.col0 = input[1].col0;
-  v.depth = input[1].depth;
   v.pos = input[1].pos - offset;
   output.Append(v);
 
   // bottom-right
   v.col0 = input[1].col0;
-  v.depth = input[1].depth;
   v.pos = input[1].pos + offset;
   output.Append(v);
 

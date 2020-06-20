@@ -264,7 +264,7 @@ bool GPU_HW_D3D11::CreateTextureBuffer()
 bool GPU_HW_D3D11::CreateBatchInputLayout()
 {
   static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 4> attributes = {
-    {{"ATTR", 0, DXGI_FORMAT_R32G32_SINT, 0, offsetof(BatchVertex, x), D3D11_INPUT_PER_VERTEX_DATA, 0},
+    {{"ATTR", 0, DXGI_FORMAT_R32G32B32_SINT, 0, offsetof(BatchVertex, x), D3D11_INPUT_PER_VERTEX_DATA, 0},
      {"ATTR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, color), D3D11_INPUT_PER_VERTEX_DATA, 0},
      {"ATTR", 2, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, u), D3D11_INPUT_PER_VERTEX_DATA, 0},
      {"ATTR", 3, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
@@ -731,7 +731,7 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
                                      height,
                                      map_result.index_aligned,
                                      m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedBatchVertexDepthID()};
+                                     GetCurrentNormalizedVertexDepth()};
   m_context->OMSetDepthStencilState(
     m_GPUSTAT.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
   m_context->PSSetShaderResources(0, 1, m_texture_stream_buffer_srv_r16ui.GetAddressOf());
@@ -763,7 +763,7 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
                                       width * m_resolution_scale,
                                       height * m_resolution_scale,
                                       m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
-                                      GetCurrentNormalizedBatchVertexDepthID()};
+                                      GetCurrentNormalizedVertexDepth()};
 
     const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
     SetViewportAndScissor(dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),

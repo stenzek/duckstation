@@ -619,7 +619,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetRenderPass(m_vram_render_pass, 0);
 
                 gpbuilder.AddVertexBuffer(0, sizeof(BatchVertex), VK_VERTEX_INPUT_RATE_VERTEX);
-                gpbuilder.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SINT, offsetof(BatchVertex, x));
+                gpbuilder.AddVertexAttribute(0, 0, VK_FORMAT_R32G32B32_SINT, offsetof(BatchVertex, x));
                 gpbuilder.AddVertexAttribute(1, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(BatchVertex, color));
                 if (textured)
                 {
@@ -632,7 +632,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetFragmentShader(batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing]);
                 gpbuilder.SetRasterizationState(polygon_mode_mapping[primitive], VK_CULL_MODE_NONE,
                                                 VK_FRONT_FACE_CLOCKWISE);
-                gpbuilder.SetDepthState(depth_test != 0, true,
+                gpbuilder.SetDepthState(true, true,
                                         (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
 
                 gpbuilder.SetNoBlendingState();
@@ -1066,7 +1066,7 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                                      height,
                                      start_index,
                                      m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedBatchVertexDepthID()};
+                                     GetCurrentNormalizedVertexDepth()};
   vkCmdPushConstants(cmdbuf, m_vram_write_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(uniforms),
                      &uniforms);
   vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
