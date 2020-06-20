@@ -198,7 +198,7 @@ void GPU_HW_Vulkan::SetCapabilities()
   Log_InfoPrintf("Max texture size: %ux%u", max_texture_size, max_texture_size);
 
   m_max_resolution_scale = max_texture_scale;
-  m_supports_dual_source_blend = true;
+  m_supports_dual_source_blend = g_vulkan_context->GetDeviceFeatures().dualSrcBlend;
 }
 
 void GPU_HW_Vulkan::DestroyResources()
@@ -656,9 +656,9 @@ bool GPU_HW_Vulkan::CompilePipelines()
                       static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
                     m_texture_filtering)
                 {
-                  // TODO: Check dual-source blend support here.
                   gpbuilder.SetBlendAttachment(
-                    0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_SRC1_ALPHA,
+                    0, true, VK_BLEND_FACTOR_ONE,
+                    m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC_ALPHA : VK_BLEND_FACTOR_SRC1_ALPHA,
                     (static_cast<TransparencyMode>(transparency_mode) == TransparencyMode::BackgroundMinusForeground) ?
                       VK_BLEND_OP_REVERSE_SUBTRACT :
                       VK_BLEND_OP_ADD,
