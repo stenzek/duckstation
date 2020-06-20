@@ -82,6 +82,7 @@ bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, System* system, DMA* d
     return false;
   }
 
+  UpdateDepthBufferFromMaskBit();
   RestoreGraphicsAPIState();
   return true;
 }
@@ -90,9 +91,7 @@ void GPU_HW_Vulkan::Reset()
 {
   GPU_HW::Reset();
 
-  if (InRenderPass())
-    EndRenderPass();
-
+  EndRenderPass();
   ClearFramebuffer();
 }
 
@@ -100,8 +99,7 @@ void GPU_HW_Vulkan::ResetGraphicsAPIState()
 {
   GPU_HW::ResetGraphicsAPIState();
 
-  if (InRenderPass())
-    EndRenderPass();
+  EndRenderPass();
 
   // vram texture is probably going to be displayed now
   if (!IsDisplayDisabled())
@@ -134,8 +132,9 @@ void GPU_HW_Vulkan::UpdateSettings()
   CreateFramebuffer();
   DestroyPipelines();
   CompilePipelines();
-  RestoreGraphicsAPIState();
+  UpdateDepthBufferFromMaskBit();
   UpdateDisplay();
+  RestoreGraphicsAPIState();
 }
 
 void GPU_HW_Vulkan::MapBatchVertexPointer(u32 required_vertices)
@@ -449,14 +448,11 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
 
     m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-    UpdateDepthBufferFromMaskBit();
-
     // Can't immediately destroy because we're blitting in the current command buffer.
     old_vram_texture.Destroy(true);
   }
 
   SetFullVRAMDirtyRectangle();
-  RestoreGraphicsAPIState();
   return true;
 }
 
