@@ -178,6 +178,15 @@ void SafeDestroyFramebuffer(VkFramebuffer& fb)
   }
 }
 
+void SafeDestroyShaderModule(VkShaderModule& sm)
+{
+  if (sm != VK_NULL_HANDLE)
+  {
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), sm, nullptr);
+    sm = VK_NULL_HANDLE;
+  }
+}
+
 void SafeDestroyPipeline(VkPipeline& p)
 {
   if (p != VK_NULL_HANDLE)

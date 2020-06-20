@@ -544,20 +544,13 @@ bool GPU_HW_Vulkan::CompilePipelines()
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
   DimensionalArray<VkShaderModule, 2> batch_vertex_shaders{};
   DimensionalArray<VkShaderModule, 2, 2, 9, 4> batch_fragment_shaders{};
-  Common::ScopeGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
-    batch_vertex_shaders.enumerate([](VkShaderModule& s) {
-      if (s != VK_NULL_HANDLE)
-      {
-        vkDestroyShaderModule(g_vulkan_context->GetDevice(), s, nullptr);
-      }
+  VkShaderModule batch_line_geometry_shader = VK_NULL_HANDLE;
+  Common::ScopeGuard batch_shader_guard(
+    [&batch_vertex_shaders, &batch_fragment_shaders, &batch_line_geometry_shader]() {
+      batch_vertex_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
+      batch_fragment_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
+      Vulkan::Util::SafeDestroyShaderModule(batch_line_geometry_shader);
     });
-    batch_fragment_shaders.enumerate([](VkShaderModule& s) {
-      if (s != VK_NULL_HANDLE)
-      {
-        vkDestroyShaderModule(g_vulkan_context->GetDevice(), s, nullptr);
-      }
-    });
-  });
 
   for (u8 textured = 0; textured < 2; textured++)
   {
@@ -591,6 +584,21 @@ bool GPU_HW_Vulkan::CompilePipelines()
     }
   }
 
+  if (m_resolution_scale > 1)
+  {
+    if (g_vulkan_context->GetDeviceFeatures().geometryShader)
+    {
+      const std::string gs = shadergen.GenerateBatchLineExpandGeometryShader();
+      batch_line_geometry_shader = g_vulkan_shader_cache->GetGeometryShader(gs);
+      if (batch_line_geometry_shader == VK_NULL_HANDLE)
+        return false;
+    }
+    else
+    {
+      Log_WarningPrintf("Upscaling requested but geometry shaders are unsupported, line rendering will be incorrect.");
+    }
+  }
+
   Vulkan::GraphicsPipelineBuilder gpbuilder;
 
   // [primitive][depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
@@ -608,7 +616,6 @@ bool GPU_HW_Vulkan::CompilePipelines()
             {
               for (u8 interlacing = 0; interlacing < 2; interlacing++)
               {
-                // TODO: GS
                 const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
 
                 gpbuilder.SetPipelineLayout(m_batch_pipeline_layout);
@@ -626,8 +633,19 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetPrimitiveTopology(primitive_mapping[primitive]);
                 gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)]);
                 gpbuilder.SetFragmentShader(batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing]);
-                gpbuilder.SetRasterizationState(polygon_mode_mapping[primitive], VK_CULL_MODE_NONE,
-                                                VK_FRONT_FACE_CLOCKWISE);
+                if (static_cast<BatchPrimitive>(primitive) == BatchPrimitive::Lines &&
+                    batch_line_geometry_shader != VK_NULL_HANDLE)
+                {
+                  gpbuilder.SetGeometryShader(batch_line_geometry_shader);
+                  gpbuilder.SetRasterizationState(polygon_mode_mapping[static_cast<u8>(BatchPrimitive::Triangles)],
+                                                  VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+                }
+                else
+                {
+                  gpbuilder.SetRasterizationState(polygon_mode_mapping[primitive], VK_CULL_MODE_NONE,
+                                                  VK_FRONT_FACE_CLOCKWISE);
+                }
+
                 gpbuilder.SetDepthState(true, true,
                                         (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
 

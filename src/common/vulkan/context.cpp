@@ -197,7 +197,6 @@ bool Context::SelectInstanceExtensions(ExtensionList* extension_list, bool enabl
     return false;
 #endif
 
-
   // VK_EXT_debug_report
   if (enable_debug_report && !SupportsExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false))
     Log_WarningPrintf("Vulkan: Debug report requested, but extension is not available.");
@@ -422,11 +421,14 @@ bool Context::SelectDeviceExtensions(ExtensionList* extension_list, bool enable_
 
 bool Context::SelectDeviceFeatures()
 {
-  VkPhysicalDeviceProperties properties;
-  vkGetPhysicalDeviceProperties(m_physical_device, &properties);
-
   VkPhysicalDeviceFeatures available_features;
   vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
+
+  if (!available_features.fillModeNonSolid)
+  {
+    Log_ErrorPrintf("fillModeNonSolid feature is required for line drawing.");
+    return false;
+  }
 
   // Enable the features we use.
   m_device_features.dualSrcBlend = available_features.dualSrcBlend;

@@ -35,6 +35,7 @@ VkBlendFactor GetAlphaBlendFactor(VkBlendFactor factor);
 
 // Safe destroy helpers
 void SafeDestroyFramebuffer(VkFramebuffer& fb);
+void SafeDestroyShaderModule(VkShaderModule& sm);
 void SafeDestroyPipeline(VkPipeline& p);
 void SafeDestroyPipelineLayout(VkPipelineLayout& pl);
 void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl);
@@ -43,7 +44,7 @@ void SafeDestroySampler(VkSampler& samp);
 void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds);
 
 void SetViewport(VkCommandBuffer command_buffer, int x, int y, int width, int height, float min_depth = 0.0f,
-                           float max_depth = 1.0f);
+                 float max_depth = 1.0f);
 void SetScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height);
 
 // Combines viewport and scissor updates
