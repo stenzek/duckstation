@@ -496,6 +496,9 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
 
 std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
 {
+  if (g_vulkan_context)
+    return Vulkan::Context::EnumerateGPUNames(g_vulkan_context->GetVulkanInstance());
+
   if (Vulkan::LoadVulkanLibrary())
   {
     Common::ScopeGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
@@ -506,15 +509,11 @@ std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
       Common::ScopeGuard instance_guard([&instance]() { vkDestroyInstance(instance, nullptr); });
 
       if (Vulkan::LoadVulkanInstanceFunctions(instance))
-      {
-        Vulkan::Context::GPUNameList gpus = Vulkan::Context::EnumerateGPUNames(instance);
-        if (!gpus.empty())
-          return gpus;
-      }
+        return Vulkan::Context::EnumerateGPUNames(instance);
     }
   }
 
-  return {"(Default)"};
+  return {};
 }
 
 } // namespace FrontendCommon
