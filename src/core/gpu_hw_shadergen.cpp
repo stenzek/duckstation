@@ -945,7 +945,6 @@ void main() {
 struct Vertex
 {
   float4 col0 : COLOR0;
-  float depth : TEXCOORD0;
   float4 pos : SV_Position;
 };
 
