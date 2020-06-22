@@ -18,7 +18,6 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, QStringLiteral("GPU/Renderer"),
                                                &Settings::ParseRendererName, &Settings::GetRendererName);
-  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.adapter, QStringLiteral("GPU/Adapter"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice,
                                                QStringLiteral("GPU/UseDebugDevice"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
@@ -51,6 +50,8 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
 
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::populateGPUAdapters);
+  connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GPUSettingsWidget::onGPUAdapterIndexChanged);
   populateGPUAdapters();
 
   dialog->registerWidgetHelp(
@@ -147,10 +148,6 @@ void GPUSettingsWidget::setupAdditionalUi()
 
 void GPUSettingsWidget::populateGPUAdapters()
 {
-  QString current_value = m_host_interface->getSettingValue(QStringLiteral("GPU/Adapter")).toString();
-  QSignalBlocker blocker(m_ui.adapter);
-  m_ui.adapter->clear();
-
   std::vector<std::string> adapter_names;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
@@ -168,24 +165,35 @@ void GPUSettingsWidget::populateGPUAdapters()
       break;
   }
 
-  if (adapter_names.empty())
-  {
-    // no options, disable it
-    m_ui.adapter->addItem(tr("(Default)"));
-    m_ui.adapter->setCurrentIndex(0);
-    m_ui.adapter->setEnabled(false);
-    return;
-  }
+  QString current_value = m_host_interface->getSettingValue(QStringLiteral("GPU/Adapter")).toString();
+  QSignalBlocker blocker(m_ui.adapter);
 
-  m_ui.adapter->setEnabled(true);
-  int found_index = -1;
+  // add the default entry - we'll fall back to this if the GPU no longer exists, or there's no options
+  m_ui.adapter->clear();
+  m_ui.adapter->addItem(tr("(Default)"));
+
+  // add the other adapters
   for (const std::string& adapter_name : adapter_names)
   {
     QString qadapter_name(QString::fromStdString(adapter_name));
-    if (qadapter_name == current_value)
-      found_index = m_ui.adapter->count();
-
     m_ui.adapter->addItem(qadapter_name);
+
+    if (qadapter_name == current_value)
+      m_ui.adapter->setCurrentIndex(m_ui.adapter->count() - 1);
   }
-  m_ui.adapter->setCurrentIndex(found_index);
+
+  // disable it if we don't have a choice
+  m_ui.adapter->setEnabled(!adapter_names.empty());
+}
+
+void GPUSettingsWidget::onGPUAdapterIndexChanged()
+{
+  if (m_ui.adapter->currentIndex() == 0)
+  {
+    // default
+    m_host_interface->removeSettingValue(QStringLiteral("GPU/Adapter"));
+    return;
+  }
+
+  m_host_interface->putSettingValue(QStringLiteral("GPU/Adapter"), m_ui.adapter->currentText());
 }
