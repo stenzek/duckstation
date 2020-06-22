@@ -16,6 +16,63 @@ Log_SetChannel(Vulkan::SwapChain);
 #include <X11/Xlib.h>
 #endif
 
+#if defined(__APPLE__)
+#include <objc/message.h>
+
+static bool CreateMetalLayer(WindowInfo& wi)
+{
+  id view = reinterpret_cast<id>(wi.window_handle);
+
+  Class clsCAMetalLayer = objc_getClass("CAMetalLayer");
+  if (!clsCAMetalLayer)
+  {
+    Log_ErrorPrint("Failed to get CAMetalLayer class.");
+    return false;
+  }
+
+  // [CAMetalLayer layer]
+  id layer = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("CAMetalLayer"), sel_getUid("layer"));
+  if (!layer)
+  {
+    Log_ErrorPrint("Failed to create Metal layer.");
+    return false;
+  }
+
+  // [view setWantsLayer:YES]
+  reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(view, sel_getUid("setWantsLayer:"), YES);
+
+  // [view setLayer:layer]
+  reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(view, sel_getUid("setLayer:"), layer);
+
+  // NSScreen* screen = [NSScreen mainScreen]
+  id screen = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("NSScreen"), sel_getUid("mainScreen"));
+
+  // CGFloat factor = [screen backingScaleFactor]
+  double factor = reinterpret_cast<double (*)(id, SEL)>(objc_msgSend)(screen, sel_getUid("backingScaleFactor"));
+
+  // layer.contentsScale = factor
+  reinterpret_cast<void (*)(id, SEL, double)>(objc_msgSend)(layer, sel_getUid("setContentsScale:"), factor);
+
+  // Store the layer pointer, that way MoltenVK doesn't call [NSView layer] outside the main thread.
+  wi.surface_handle = layer;
+  return true;
+}
+
+static void DestroyMetalLayer(WindowInfo& wi)
+{
+  id view = reinterpret_cast<id>(wi.window_handle);
+  id layer = reinterpret_cast<id>(wi.surface_handle);
+  if (layer == nil)
+    return;
+
+  reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(view, sel_getUid("setLayer:"), nil);
+  reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(view, sel_getUid("setWantsLayer:"), NO);
+  reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(layer, sel_getUid("release"));
+  wi.surface_handle = nullptr;
+}
+
+#endif
+
 namespace Vulkan {
 SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)
   : m_wi(wi), m_surface(surface), m_vsync_enabled(vsync)
@@ -30,7 +87,7 @@ SwapChain::~SwapChain()
   DestroySurface();
 }
 
-VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, const WindowInfo& wi)
+VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, WindowInfo& wi)
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
   if (wi.type == WindowInfo::Type::Win32)
@@ -103,9 +160,11 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, const WindowInf
 #if defined(VK_USE_PLATFORM_METAL_EXT)
   if (wi.type == WindowInfo::Type::MacOS)
   {
-    // TODO: Create Metal layer
+    if (!wi.surface_handle && !CreateMetalLayer(wi))
+      return VK_NULL_HANDLE;
+
     VkMetalSurfaceCreateInfoEXT surface_create_info = {VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT, nullptr, 0,
-                                                       static_cast<const CAMetalLayer*>(wi.window_handle)};
+                                                       static_cast<const CAMetalLayer*>(wi.surface_handle)};
 
     VkSurfaceKHR surface;
     VkResult res = vkCreateMetalSurfaceEXT(instance, &surface_create_info, nullptr, &surface);
@@ -136,6 +195,16 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, const WindowInf
 #endif
 
   return VK_NULL_HANDLE;
+}
+
+void SwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurfaceKHR surface)
+{
+  vkDestroySurfaceKHR(g_vulkan_context->GetVulkanInstance(), surface, nullptr);
+
+#if defined(__APPLE__)
+  if (wi.type == WindowInfo::Type::MacOS && wi.surface_handle)
+    DestroyMetalLayer(wi);
+#endif
 }
 
 std::unique_ptr<SwapChain> SwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)
@@ -495,7 +564,7 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
 
 void SwapChain::DestroySurface()
 {
-  vkDestroySurfaceKHR(g_vulkan_context->GetVulkanInstance(), m_surface, nullptr);
+  DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), m_wi, m_surface);
   m_surface = VK_NULL_HANDLE;
 }
 

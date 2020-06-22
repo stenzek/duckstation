@@ -100,14 +100,15 @@ bool VulkanHostDisplay::RecreateSwapChain(const WindowInfo& new_wi)
 {
   Assert(!m_swap_chain);
 
-  VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), new_wi);
+  WindowInfo wi_copy(new_wi);
+  VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), wi_copy);
   if (surface == VK_NULL_HANDLE)
   {
     Log_ErrorPrintf("Failed to create new surface for swap chain");
     return false;
   }
 
-  m_swap_chain = Vulkan::SwapChain::Create(new_wi, surface, false);
+  m_swap_chain = Vulkan::SwapChain::Create(wi_copy, surface, false);
   if (!m_swap_chain)
   {
     Log_ErrorPrintf("Failed to create swap chain");

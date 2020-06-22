@@ -21,7 +21,10 @@ public:
   ~SwapChain();
 
   // Creates a vulkan-renderable surface for the specified window handle.
-  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, const WindowInfo& wi);
+  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, WindowInfo& wi);
+
+  // Destroys a previously-created surface.
+  static void DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurfaceKHR surface);
 
   // Create a new swap chain from a pre-existing surface.
   static std::unique_ptr<SwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync);

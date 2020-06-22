@@ -336,7 +336,8 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   }
 
   VkSurfaceKHR surface = VK_NULL_HANDLE;
-  if (enable_surface && (surface = SwapChain::CreateVulkanSurface(instance, *wi)) == VK_NULL_HANDLE)
+  WindowInfo wi_copy(*wi);
+  if (enable_surface && (surface = SwapChain::CreateVulkanSurface(instance, wi_copy)) == VK_NULL_HANDLE)
   {
     vkDestroyInstance(instance, nullptr);
     Vulkan::UnloadVulkanLibrary();
@@ -352,7 +353,7 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   // Attempt to create the device.
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer) ||
       !g_vulkan_context->CreateGlobalDescriptorPool() || !g_vulkan_context->CreateCommandBuffers() ||
-      (enable_surface && (*out_swap_chain = SwapChain::Create(*wi, surface, true)) == nullptr))
+      (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, true)) == nullptr))
   {
     // Since we are destroying the instance, we're also responsible for destroying the surface.
     if (surface != VK_NULL_HANDLE)

@@ -29,4 +29,9 @@ struct WindowInfo
   u32 surface_width = 0;
   u32 surface_height = 0;
   SurfaceFormat surface_format = SurfaceFormat::RGB8;
+
+  // Needed for macOS.
+#ifdef __APPLE__
+  void* surface_handle = nullptr;
+#endif
 };
