@@ -380,9 +380,13 @@ bool VulkanHostDisplay::BeginRender()
       res = m_swap_chain->AcquireNextImage();
     }
 
-    if (res != VK_SUCCESS)
+    // This can happen when multiple resize events happen in quick succession.
+    // In this case, just wait until the next frame to try again.
+    if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
     {
-      Panic("Failed to acquire swap chain image");
+      // Still submit the command buffer, otherwise we'll end up with several frames waiting.
+      LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
+      g_vulkan_context->ExecuteCommandBuffer(false);
       return false;
     }
   }

@@ -411,12 +411,8 @@ void SwapChain::DestroySwapChain()
 
 VkResult SwapChain::AcquireNextImage()
 {
-  VkResult res = vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX,
-                                       m_image_available_semaphore, VK_NULL_HANDLE, &m_current_image);
-  if (res != VK_SUCCESS && res != VK_ERROR_OUT_OF_DATE_KHR && res != VK_SUBOPTIMAL_KHR)
-    LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR failed: ");
-
-  return res;
+  return vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX, m_image_available_semaphore,
+                               VK_NULL_HANDLE, &m_current_image);
 }
 
 bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 */)
