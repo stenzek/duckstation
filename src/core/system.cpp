@@ -473,7 +473,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components)
   return DoState(sw);
 }
 
-bool System::SaveState(ByteStream* state)
+bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
 {
   SAVE_STATE_HEADER header = {};
 
@@ -494,20 +494,18 @@ bool System::SaveState(ByteStream* state)
     return false;
 
   // save screenshot
+  if (screenshot_size > 0)
   {
-    const u32 screenshot_width = 128;
-    const u32 screenshot_height = 128;
-
     std::vector<u32> screenshot_buffer;
     m_gpu->ResetGraphicsAPIState();
     const bool screenshot_saved =
-      m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_width, screenshot_height);
+      m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size, screenshot_size);
     m_gpu->RestoreGraphicsAPIState();
     if (screenshot_saved && !screenshot_buffer.empty())
     {
       header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
-      header.screenshot_width = screenshot_width;
-      header.screenshot_height = screenshot_height;
+      header.screenshot_width = screenshot_size;
+      header.screenshot_height = screenshot_size;
       header.screenshot_size = static_cast<u32>(screenshot_buffer.size() * sizeof(u32));
       if (!state->Write2(screenshot_buffer.data(), header.screenshot_size))
         return false;
