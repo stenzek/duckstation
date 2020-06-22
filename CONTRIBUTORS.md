@@ -9,6 +9,7 @@ The following people have contributed to the project in some way, and are credit
  - @Zet-sensei
  - @DarkFrost89
  - @macattack222
+ - @HeroponRikiBestest
 
 ## Special Thanks
 The following people did not directly contribute to the emulator, but it would not be in the state if not for them.

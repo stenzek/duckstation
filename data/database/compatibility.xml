@@ -171,6 +171,10 @@
     <version-tested>0.1-887-g1eecd50</version-tested>
     <comments>No sound on FMVs</comments>
   </entry>
+  <entry code="SLPS-01525" compatibility="5" region="NTSC-J" title="Bomberman Fantasy Race (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1064-g73cdd676</version-tested>
+  </entry>
   <entry code="SLPS-03002" compatibility="5" region="NTSC-J" title="Bomberman Land">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -305,11 +309,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
-  <entry code="SLUS-00268" compatibility="4" region="NTSC-U" title="Crusader - No Remorse (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-986-gfc911de1</version-tested>
-    <comments>Minor glitches in loading screen (issue #171)</comments>
+  <entry code="SLUS-00268" compatibility="5" region="NTSC-U" title="Crusader - No Remorse (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1064-g73cdd676</version-tested>
   </entry>
+Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00606" compatibility="5" region="NTSC-U" title="Dead or Alive (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -778,6 +782,11 @@
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SCUS-94449" compatibility="4" region="NTSC-U" title="Omega Boost (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1047-g8ae04f6</version-tested>
+    <comments>Plays perfectly but has some issues with pre mission menu's</comments>
+  </entry>
   <entry code="SLPS-02459" compatibility="5" region="NTSC-J" title="Otona no Asobi (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -1047,6 +1056,11 @@
     <version-tested>0.1-930-gcb66889</version-tested>
     <comments>Working Perfect</comments>
   </entry>
+  <entry code="SLUS-00728" compatibility="2" region="NTSC-U" title="Silhouette Mirage [U] [SLUS-00728]">
+    <compatibility>Crashes In Intro</compatibility>
+    <version-tested>0.1-1047-g8ae04f6</version-tested>
+    <comments>Publisher Title and Opening FMV plays. Once you hot start controller becomes unresponsive and title screen is black with a flashing black &quot;press start.&quot;</comments>
+  </entry>
   <entry code="SLPS-02474" compatibility="5" region="NTSC-J" title="Simple 1500 Series Vol. 24 - The Gun Shooting (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -1067,6 +1081,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
     <comments>Don't use any crop options.</comments>
+  </entry>
+  <entry code="SLUS-00240" compatibility="4" region="NTSC-U" title="Soul Blade">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1047-g8ae04f6</version-tested>
+    <comments>Games plays perfectly, but backgrounds are slightly messed up. </comments>
   </entry>
   <entry code="SLUS-01308" compatibility="5" region="NTSC-U" title="Space Shot (USA)">
     <compatibility>No Issues</compatibility>
@@ -1235,6 +1254,14 @@
   <entry code="SLUS-00839" compatibility="5" region="NTSC-U" title="Test Drive 6 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SLUS-00338" compatibility="5" region="NTSC-U" title="Tetris Plus (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1064-g73cdd676</version-tested>
+  </entry>
+  <entry code="SLPS-2886" compatibility="5" region="NTSC-J" title="Tetris with Card Captor Sakura (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1057-g7192b8d8</version-tested>
   </entry>
   <entry code="SLPM-86084" compatibility="5" region="NTSC-J" title="The King of Fighters '97">
     <compatibility>No Issues</compatibility>
