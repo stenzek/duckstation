@@ -344,9 +344,8 @@ bool ShaderCache::FlushPipelineCache()
   data.resize(data_size);
 
   // Save disk writes if it hasn't changed, think of the poor SSDs.
-  std::optional<std::vector<u8>> existing_data = FileSystem::ReadBinaryFile(m_pipeline_cache_filename.c_str());
-  if (!existing_data.has_value() || existing_data->size() != data_size ||
-      std::memcmp(existing_data->data(), data.data(), data_size) != 0)
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(m_pipeline_cache_filename.c_str(), &sd) || sd.Size != static_cast<u64>(data_size))
   {
     Log_InfoPrintf("Writing %zu bytes to '%s'", data_size, m_pipeline_cache_filename.c_str());
     if (!FileSystem::WriteBinaryFile(m_pipeline_cache_filename.c_str(), data.data(), data.size()))
@@ -357,7 +356,7 @@ bool ShaderCache::FlushPipelineCache()
   }
   else
   {
-    Log_WarningPrintf("Skipping updating pipeline cache '%s' due to no changes.", m_pipeline_cache_filename.c_str());
+    Log_InfoPrintf("Skipping updating pipeline cache '%s' due to no changes.", m_pipeline_cache_filename.c_str());
   }
 
   m_pipeline_cache_dirty = false;
