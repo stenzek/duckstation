@@ -273,9 +273,6 @@ bool SDLControllerInterface::BindControllerAxisToButton(int controller_index, in
 
 bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
 {
-  // TODO: Make deadzone customizable.
-  static constexpr float deadzone = 8192.0f / 32768.0f;
-
   const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
   Log_DebugPrintf("controller %d axis %d %d %f", ev->caxis.which, ev->caxis.axis, ev->caxis.value, value);
 
@@ -295,7 +292,7 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   }
 
   // set the other direction to false so large movements don't leave the opposite on
-  const bool outside_deadzone = (std::abs(value) >= deadzone);
+  const bool outside_deadzone = (std::abs(value) >= it->deadzone);
   const bool positive = (value >= 0.0f);
   const ButtonCallback& other_button_cb = it->axis_button_mapping[ev->caxis.axis][BoolToUInt8(!positive)];
   const ButtonCallback& button_cb = it->axis_button_mapping[ev->caxis.axis][BoolToUInt8(positive)];
@@ -396,5 +393,16 @@ bool SDLControllerInterface::SetControllerAxisScale(int controller_index, float 
 
   it->axis_scale = std::clamp(std::abs(scale), 0.01f, 1.50f);
   Log_InfoPrintf("Controller %d axis scale set to %f", controller_index, it->axis_scale);
+  return true;
+}
+
+bool SDLControllerInterface::SetControllerDeadzone(int controller_index, float size /* = 0.25f */)
+{
+  auto it = GetControllerDataForPlayerId(controller_index);
+  if (it == m_controllers.end())
+    return false;
+
+  it->deadzone = std::clamp(std::abs(size), 0.01f, 0.99f);
+  Log_InfoPrintf("Controller %d deadzone size set to %f", controller_index, it->deadzone);
   return true;
 }

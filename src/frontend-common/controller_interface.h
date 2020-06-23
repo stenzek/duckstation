@@ -46,6 +46,9 @@ public:
   // Set scaling that will be applied on axis-to-axis mappings
   virtual bool SetControllerAxisScale(int controller_index, float scale) = 0;
 
+  // Set deadzone that will be applied on axis-to-button mappings
+  virtual bool SetControllerDeadzone(int controller_index, float size) = 0;
+
   // Input monitoring for external access.
   struct Hook
   {
