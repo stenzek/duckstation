@@ -216,11 +216,7 @@ bool Timestamp::operator==(const Timestamp& other) const
 
 bool Timestamp::operator!=(const Timestamp& other) const
 {
-#if defined(WIN32)
-  return std::memcmp(&m_value, &other.m_value, sizeof(m_value)) != 0;
-#else
-  return std::memcmp(&m_value, &other.m_value, sizeof(m_value)) != 0;
-#endif
+  return !operator==(other);
 }
 
 bool Timestamp::operator<(const Timestamp& other) const
@@ -252,14 +248,14 @@ bool Timestamp::operator<(const Timestamp& other) const
   else if (m_value.wMinute < other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour > other.m_value.wHour)
-    return false;
-  else if (m_value.wHour < other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond > other.m_value.wSecond)
     return false;
   else if (m_value.wSecond < other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds > other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds < other.m_value.wMilliseconds)
     return true;
 
   return false;
@@ -310,14 +306,14 @@ bool Timestamp::operator<=(const Timestamp& other) const
   else if (m_value.wMinute < other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour > other.m_value.wHour)
-    return false;
-  else if (m_value.wHour < other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond > other.m_value.wSecond)
     return false;
   else if (m_value.wSecond <= other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds > other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds < other.m_value.wMilliseconds)
     return true;
 
   return false;
@@ -368,14 +364,14 @@ bool Timestamp::operator>(const Timestamp& other) const
   else if (m_value.wMinute > other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour < other.m_value.wHour)
-    return false;
-  else if (m_value.wHour > other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond < other.m_value.wSecond)
     return false;
   else if (m_value.wSecond > other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds < other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds > other.m_value.wMilliseconds)
     return true;
 
   return false;
@@ -426,14 +422,14 @@ bool Timestamp::operator>=(const Timestamp& other) const
   else if (m_value.wMinute > other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour < other.m_value.wHour)
-    return false;
-  else if (m_value.wHour > other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond < other.m_value.wSecond)
     return false;
   else if (m_value.wSecond >= other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds < other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds > other.m_value.wMilliseconds)
     return true;
 
   return false;
