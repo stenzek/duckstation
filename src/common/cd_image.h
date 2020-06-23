@@ -1,6 +1,7 @@
 #pragma once
 #include "bitfield.h"
 #include "types.h"
+#include <array>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -118,6 +119,8 @@ public:
 
   union SubChannelQ
   {
+    using Data = std::array<u8, SUBCHANNEL_BYTES_PER_FRAME>;
+
     union Control
     {
       u8 bits;
@@ -144,15 +147,15 @@ public:
       u16 crc;
     };
 
-    u8 data[SUBCHANNEL_BYTES_PER_FRAME];
+    Data data;
 
-    static u16 ComputeCRC(const u8* data);
+    static u16 ComputeCRC(const Data& data);
 
     bool IsCRCValid() const;
 
     SubChannelQ& operator=(const SubChannelQ& q)
     {
-      std::copy(q.data, q.data + SUBCHANNEL_BYTES_PER_FRAME, data);
+      data = q.data;
       return *this;
     }
   };

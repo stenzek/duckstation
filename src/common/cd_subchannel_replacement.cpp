@@ -72,7 +72,7 @@ bool CDSubChannelReplacement::LoadSBI(const char* path)
     std::copy_n(entry.data, countof(entry.data), subq_data.data());
 
     // generate an invalid crc by flipping all bits from the valid crc (will never collide)
-    const u16 crc = CDImage::SubChannelQ::ComputeCRC(subq_data.data()) ^ 0xFFFF;
+    const u16 crc = CDImage::SubChannelQ::ComputeCRC(subq_data) ^ 0xFFFF;
     subq_data[10] = Truncate8(crc);
     subq_data[11] = Truncate8(crc >> 8);
 
@@ -83,17 +83,18 @@ bool CDSubChannelReplacement::LoadSBI(const char* path)
   return true;
 }
 
-bool CDSubChannelReplacement::GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd, u8* subq_data) const
+bool CDSubChannelReplacement::GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd,
+                                                        ReplacementData& subq_data) const
 {
   return GetReplacementSubChannelQ(MSFToLBA(minute_bcd, second_bcd, frame_bcd), subq_data);
 }
 
-bool CDSubChannelReplacement::GetReplacementSubChannelQ(u32 lba, u8* subq_data) const
+bool CDSubChannelReplacement::GetReplacementSubChannelQ(u32 lba, ReplacementData& subq_data) const
 {
-  ReplacementMap::const_iterator iter = m_replacement_subq.find(lba);
-  if (iter == m_replacement_subq.end())
+  const auto iter = m_replacement_subq.find(lba);
+  if (iter == m_replacement_subq.cend())
     return false;
 
-  std::copy(iter->second.begin(), iter->second.end(), subq_data);
+  subq_data = iter->second;
   return true;
 }

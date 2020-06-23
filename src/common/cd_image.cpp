@@ -308,7 +308,7 @@ void CDImage::AddLeadOutIndex()
   m_indices.push_back(index);
 }
 
-u16 CDImage::SubChannelQ::ComputeCRC(const u8* data)
+u16 CDImage::SubChannelQ::ComputeCRC(const Data& data)
 {
   static constexpr std::array<u16, 256> crc16_table = {
     {0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD,
