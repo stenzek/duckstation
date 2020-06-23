@@ -11,7 +11,7 @@ Log_SetChannel(PlayStationMouse);
 
 PlayStationMouse::PlayStationMouse(System* system) : m_system(system)
 {
-  m_last_host_position_y = system->GetHostInterface()->GetDisplay()->GetMousePositionX();
+  m_last_host_position_x = system->GetHostInterface()->GetDisplay()->GetMousePositionX();
   m_last_host_position_y = system->GetHostInterface()->GetDisplay()->GetMousePositionY();
 }
 
