@@ -248,14 +248,14 @@ bool Timestamp::operator<(const Timestamp& other) const
   else if (m_value.wMinute < other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour > other.m_value.wHour)
-    return false;
-  else if (m_value.wHour < other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond > other.m_value.wSecond)
     return false;
   else if (m_value.wSecond < other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds > other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds < other.m_value.wMilliseconds)
     return true;
 
   return false;
@@ -306,14 +306,14 @@ bool Timestamp::operator<=(const Timestamp& other) const
   else if (m_value.wMinute < other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour > other.m_value.wHour)
-    return false;
-  else if (m_value.wHour < other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond > other.m_value.wSecond)
     return false;
   else if (m_value.wSecond <= other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds > other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds < other.m_value.wMilliseconds)
     return true;
 
   return false;
@@ -364,14 +364,14 @@ bool Timestamp::operator>(const Timestamp& other) const
   else if (m_value.wMinute > other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour < other.m_value.wHour)
-    return false;
-  else if (m_value.wHour > other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond < other.m_value.wSecond)
     return false;
   else if (m_value.wSecond > other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds < other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds > other.m_value.wMilliseconds)
     return true;
 
   return false;
@@ -422,14 +422,14 @@ bool Timestamp::operator>=(const Timestamp& other) const
   else if (m_value.wMinute > other.m_value.wMinute)
     return true;
 
-  if (m_value.wHour < other.m_value.wHour)
-    return false;
-  else if (m_value.wHour > other.m_value.wHour)
-    return true;
-
   if (m_value.wSecond < other.m_value.wSecond)
     return false;
   else if (m_value.wSecond >= other.m_value.wSecond)
+    return true;
+
+  if (m_value.wMilliseconds < other.m_value.wMilliseconds)
+    return false;
+  else if (m_value.wMilliseconds > other.m_value.wMilliseconds)
     return true;
 
   return false;
