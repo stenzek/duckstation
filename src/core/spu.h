@@ -350,7 +350,7 @@ private:
   }
   ALWAYS_INLINE bool IsPitchModulationEnabled(u32 i) const
   {
-    return ((i > 0) & ConvertToBoolUnchecked((m_pitch_modulation_enable_register >> i) & u32(1)));
+    return ((i > 0) && ConvertToBoolUnchecked((m_pitch_modulation_enable_register >> i) & u32(1)));
   }
   ALWAYS_INLINE s16 GetVoiceNoiseLevel() const { return static_cast<s16>(static_cast<u16>(m_noise_level)); }
 
