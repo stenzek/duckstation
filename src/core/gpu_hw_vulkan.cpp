@@ -199,6 +199,19 @@ void GPU_HW_Vulkan::SetCapabilities()
 
   m_max_resolution_scale = max_texture_scale;
   m_supports_dual_source_blend = g_vulkan_context->GetDeviceFeatures().dualSrcBlend;
+
+#ifdef __APPLE__
+  // Partial texture buffer uploads appear to be broken in macOS/MoltenVK.
+  m_use_ssbos_for_vram_writes = true;
+#else
+  const u32 max_texel_buffer_elements = g_vulkan_context->GetDeviceLimits().maxTexelBufferElements;
+  Log_InfoPrintf("Max texel buffer elements: %u", max_texel_buffer_elements);
+  if (max_texel_buffer_elements < (VRAM_WIDTH * VRAM_HEIGHT))
+  {
+    Log_WarningPrintf("Texel buffer elements insufficient, using shader storage buffers instead.");
+    m_use_ssbos_for_vram_writes = true;
+  }
+#endif
 }
 
 void GPU_HW_Vulkan::DestroyResources()
@@ -280,7 +293,10 @@ bool GPU_HW_Vulkan::CreatePipelineLayouts()
   if (m_single_sampler_descriptor_set_layout == VK_NULL_HANDLE)
     return false;
 
-  dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  if (m_use_ssbos_for_vram_writes)
+    dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  else
+    dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
   m_vram_write_descriptor_set_layout = dslbuilder.Create(device);
   if (m_vram_write_descriptor_set_layout == VK_NULL_HANDLE)
     return false;
@@ -508,23 +524,43 @@ bool GPU_HW_Vulkan::CreateUniformBuffer()
 
 bool GPU_HW_Vulkan::CreateTextureBuffer()
 {
-  if (!m_texture_stream_buffer.Create(VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VRAM_UPDATE_TEXTURE_BUFFER_SIZE))
-    return false;
+  if (m_use_ssbos_for_vram_writes)
+  {
+    if (!m_texture_stream_buffer.Create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VRAM_UPDATE_TEXTURE_BUFFER_SIZE))
+      return false;
 
-  Vulkan::BufferViewBuilder bvbuilder;
-  bvbuilder.Set(m_texture_stream_buffer.GetBuffer(), VK_FORMAT_R16_UINT, 0, m_texture_stream_buffer.GetCurrentSize());
-  m_texture_stream_buffer_view = bvbuilder.Create(g_vulkan_context->GetDevice());
-  if (m_texture_stream_buffer_view == VK_NULL_HANDLE)
-    return false;
+    m_vram_write_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_vram_write_descriptor_set_layout);
+    if (m_vram_write_descriptor_set == VK_NULL_HANDLE)
+      return false;
 
-  m_vram_write_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_vram_write_descriptor_set_layout);
-  if (m_vram_write_descriptor_set == VK_NULL_HANDLE)
-    return false;
+    Vulkan::DescriptorSetUpdateBuilder dsubuilder;
+    dsubuilder.AddBufferDescriptorWrite(m_vram_write_descriptor_set, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                        m_texture_stream_buffer.GetBuffer(), 0,
+                                        m_texture_stream_buffer.GetCurrentSize());
+    dsubuilder.Update(g_vulkan_context->GetDevice());
+    return true;
+  }
+  else
+  {
+    if (!m_texture_stream_buffer.Create(VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VRAM_UPDATE_TEXTURE_BUFFER_SIZE))
+      return false;
 
-  Vulkan::DescriptorSetUpdateBuilder dsubuilder;
-  dsubuilder.AddBufferViewDescriptorWrite(m_vram_write_descriptor_set, 0, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,
-                                          m_texture_stream_buffer_view);
-  dsubuilder.Update(g_vulkan_context->GetDevice());
+    Vulkan::BufferViewBuilder bvbuilder;
+    bvbuilder.Set(m_texture_stream_buffer.GetBuffer(), VK_FORMAT_R16_UINT, 0, m_texture_stream_buffer.GetCurrentSize());
+    m_texture_stream_buffer_view = bvbuilder.Create(g_vulkan_context->GetDevice());
+    if (m_texture_stream_buffer_view == VK_NULL_HANDLE)
+      return false;
+
+    m_vram_write_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_vram_write_descriptor_set_layout);
+    if (m_vram_write_descriptor_set == VK_NULL_HANDLE)
+      return false;
+
+    Vulkan::DescriptorSetUpdateBuilder dsubuilder;
+    dsubuilder.AddBufferViewDescriptorWrite(m_vram_write_descriptor_set, 0, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,
+                                            m_texture_stream_buffer_view);
+    dsubuilder.Update(g_vulkan_context->GetDevice());
+  }
+
   return true;
 }
 
@@ -747,7 +783,8 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   // VRAM write
   {
-    VkShaderModule fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateVRAMWriteFragmentShader(false));
+    VkShaderModule fs =
+      g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateVRAMWriteFragmentShader(m_use_ssbos_for_vram_writes));
     if (fs == VK_NULL_HANDLE)
       return false;
 

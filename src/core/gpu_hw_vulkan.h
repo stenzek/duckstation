@@ -121,4 +121,6 @@ private:
 
   // [depth_24][interlace_mode]
   DimensionalArray<VkPipeline, 3, 2> m_display_pipelines{};
+
+  bool m_use_ssbos_for_vram_writes = false;
 };
