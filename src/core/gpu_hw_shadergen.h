@@ -23,7 +23,7 @@ public:
   std::string GenerateCopyFragmentShader();
   std::string GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode);
   std::string GenerateVRAMReadFragmentShader();
-  std::string GenerateVRAMWriteFragmentShader();
+  std::string GenerateVRAMWriteFragmentShader(bool use_ssbo);
   std::string GenerateVRAMCopyFragmentShader();
   std::string GenerateVRAMUpdateDepthFragmentShader();
 

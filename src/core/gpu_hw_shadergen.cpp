@@ -705,8 +705,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}},
-                              true, use_dual_source ? 2 : 1, true);
+    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1, true);
   }
   else
   {
@@ -1167,7 +1166,7 @@ uint SampleVRAM(uint2 coords)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
+std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -1177,7 +1176,26 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
     {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
     true);
 
-  DeclareTextureBuffer(ss, "samp0", 0, true, true);
+  if (use_ssbo && m_glsl)
+  {
+    ss << "layout(std430";
+    if (IsVulkan())
+      ss << ", set = 0, binding = 0";
+    else if (m_use_glsl_binding_layout)
+      ss << ", binding = 0";
+
+    ss << ") buffer SSBO {\n";
+    ss << "  uint ssbo_data[];\n";
+    ss << "};\n\n";
+
+    ss << "#define GET_VALUE(buffer_offset) (ssbo_data[(buffer_offset) / 2u] >> (((buffer_offset) % 2u) * 16u))\n\n";
+  }
+  else
+  {
+    DeclareTextureBuffer(ss, "samp0", 0, true, true);
+    ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r)\n\n";
+  }
+
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
@@ -1190,7 +1208,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader()
   #endif
 
   uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
-  uint value = LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r | u_mask_or_bits;
+  uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
   
   o_col0 = RGBA5551ToRGBA8(value);
   o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;

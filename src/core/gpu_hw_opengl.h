@@ -97,4 +97,5 @@ private:
 
   bool m_supports_texture_buffer = false;
   bool m_supports_geometry_shaders = false;
+  bool m_use_ssbo_for_vram_writes = false;
 };

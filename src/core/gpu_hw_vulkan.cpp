@@ -747,7 +747,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   // VRAM write
   {
-    VkShaderModule fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateVRAMWriteFragmentShader());
+    VkShaderModule fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateVRAMWriteFragmentShader(false));
     if (fs == VK_NULL_HANDLE)
       return false;
 

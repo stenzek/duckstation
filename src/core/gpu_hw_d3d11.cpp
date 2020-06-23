@@ -433,7 +433,7 @@ bool GPU_HW_D3D11::CompileShaders()
     return false;
 
   m_vram_write_pixel_shader =
-    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader());
+    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader(false));
   if (!m_vram_write_pixel_shader)
     return false;
 

@@ -181,7 +181,16 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   }
   else
   {
-    Log_WarningPrintf("Texture buffers are not supported, VRAM writes will be slower.");
+    // Try SSBOs.
+    GLint64 max_ssbo_size = 0;
+    if (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_1 || GLAD_GL_ARB_shader_storage_buffer_object)
+      glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
+
+    m_use_ssbo_for_vram_writes = (max_ssbo_size >= (VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16)));
+    if (m_use_ssbo_for_vram_writes)
+      Log_InfoPrintf("Using shader storage buffers for VRAM writes.");
+    else
+      Log_WarningPrintf("Texture buffers are not supported, VRAM writes will be slower.");
   }
 
   int max_dual_source_draw_buffers = 0;
@@ -484,10 +493,10 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog->Uniform1i("samp0", 0);
   m_vram_update_depth_program = std::move(*prog);
 
-  if (m_supports_texture_buffer)
+  if (m_supports_texture_buffer || m_use_ssbo_for_vram_writes)
   {
     prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                     shadergen.GenerateVRAMWriteFragmentShader(),
+                                     shadergen.GenerateVRAMWriteFragmentShader(m_use_ssbo_for_vram_writes),
                                      [this, use_binding_layout](GL::Program& prog) {
                                        if (!IsGLES() && !use_binding_layout)
                                          prog.BindFragData(0, "o_col0");
@@ -751,7 +760,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   GPU_HW::UpdateVRAM(x, y, width, height, data);
 
   const u32 num_pixels = width * height;
-  if (num_pixels < m_max_texture_buffer_size)
+  if (num_pixels < m_max_texture_buffer_size || m_use_ssbo_for_vram_writes)
   {
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
     std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
@@ -771,7 +780,10 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     glDepthFunc(m_GPUSTAT.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
 
     m_vram_write_program.Bind();
-    glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
+    if (m_use_ssbo_for_vram_writes)
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_texture_stream_buffer->GetGLBufferId());
+    else
+      glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
 
     const VRAMWriteUBOData uniforms = {x,
                                        flipped_y,
