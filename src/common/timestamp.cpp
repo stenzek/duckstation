@@ -216,11 +216,7 @@ bool Timestamp::operator==(const Timestamp& other) const
 
 bool Timestamp::operator!=(const Timestamp& other) const
 {
-#if defined(WIN32)
-  return std::memcmp(&m_value, &other.m_value, sizeof(m_value)) != 0;
-#else
-  return std::memcmp(&m_value, &other.m_value, sizeof(m_value)) != 0;
-#endif
+  return !operator==(other);
 }
 
 bool Timestamp::operator<(const Timestamp& other) const
