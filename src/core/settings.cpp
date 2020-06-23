@@ -377,8 +377,8 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
   return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
 }
 
-static std::array<const char*, 3> s_display_aspect_ratio_names = {{"4:3", "16:9", "1:1"}};
-static constexpr std::array<float, 3> s_display_aspect_ratio_values = {{4.0f / 3.0f, 16.0f / 9.0f, 1.0f}};
+static std::array<const char*, 4> s_display_aspect_ratio_names = {{"4:3", "16:9", "2:1 (VRAM 1:1)", "1:1"}};
+static constexpr std::array<float, 4> s_display_aspect_ratio_values = {{4.0f / 3.0f, 16.0f / 9.0f, 2.0f / 1.0f, 1.0f}};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {
