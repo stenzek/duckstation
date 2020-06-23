@@ -41,7 +41,7 @@ struct Rectangle
   {
     left = x;
     top = y;
-    left = x + width;
+    right = x + width;
     bottom = y + height;
   }
 
