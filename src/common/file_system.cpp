@@ -1027,13 +1027,19 @@ bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
     {
       // recurse into that
       if (!DeleteDirectory(fileName, true))
+      {
+        FindClose(hFind);
         return false;
+      }
     }
     else
     {
       // found a file, so delete it
       if (!DeleteFileA(fileName))
+      {
+        FindClose(hFind);
         return false;
+      }
     }
   } while (FindNextFileA(hFind, &findData));
   FindClose(hFind);
