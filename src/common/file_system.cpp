@@ -953,7 +953,7 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
     }
 
     // re-create the end if it's not a separator, check / as well because windows can interpret them
-    if (Path[pathLength - 1] != '\\' && Path[pathLength - 1] != '\\')
+    if (Path[pathLength - 1] != '\\' && Path[pathLength - 1] != '/')
     {
       if (!CreateDirectoryA(Path, nullptr))
       {
