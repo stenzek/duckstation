@@ -223,7 +223,7 @@ bool System::Boot(const SystemBootParameters& params)
   }
   else if (psf_boot && !LoadPSF(params.filename.c_str(), *bios_image))
   {
-    m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
+    m_host_interface->ReportFormattedError("Failed to load PSF file '%s'", params.filename.c_str());
     return false;
   }
 
