@@ -21,97 +21,97 @@ struct BitField
     return ((static_cast<BackingDataType>(~0)) >> (8 * sizeof(BackingDataType) - BitCount)) << BitIndex;
   }
 
-  ALWAYS_INLINE operator DataType() const { return GetValue(); }
+  ALWAYS_INLINE constexpr operator DataType() const { return GetValue(); }
 
-  ALWAYS_INLINE BitField& operator=(DataType value)
+  ALWAYS_INLINE constexpr BitField& operator=(DataType value)
   {
     SetValue(value);
     return *this;
   }
 
-  ALWAYS_INLINE DataType operator++()
+  ALWAYS_INLINE constexpr DataType operator++()
   {
     DataType value = GetValue() + 1;
     SetValue(value);
     return GetValue();
   }
 
-  ALWAYS_INLINE DataType operator++(int)
+  ALWAYS_INLINE constexpr DataType operator++(int)
   {
     DataType value = GetValue();
     SetValue(value + 1);
     return value;
   }
 
-  ALWAYS_INLINE DataType operator--()
+  ALWAYS_INLINE constexpr DataType operator--()
   {
     DataType value = GetValue() - 1;
     SetValue(value);
     return GetValue();
   }
 
-  ALWAYS_INLINE DataType operator--(int)
+  ALWAYS_INLINE constexpr DataType operator--(int)
   {
     DataType value = GetValue();
     SetValue(value - 1);
     return value;
   }
 
-  ALWAYS_INLINE BitField& operator+=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator+=(DataType rhs)
   {
     SetValue(GetValue() + rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator-=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator-=(DataType rhs)
   {
     SetValue(GetValue() - rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator*=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator*=(DataType rhs)
   {
     SetValue(GetValue() * rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator/=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator/=(DataType rhs)
   {
     SetValue(GetValue() / rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator&=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator&=(DataType rhs)
   {
     SetValue(GetValue() & rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator|=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator|=(DataType rhs)
   {
     SetValue(GetValue() | rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator^=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator^=(DataType rhs)
   {
     SetValue(GetValue() ^ rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator<<=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator<<=(DataType rhs)
   {
     SetValue(GetValue() << rhs);
     return *this;
   }
 
-  ALWAYS_INLINE BitField& operator>>=(DataType rhs)
+  ALWAYS_INLINE constexpr BitField& operator>>=(DataType rhs)
   {
     SetValue(GetValue() >> rhs);
     return *this;
   }
 
-  ALWAYS_INLINE DataType GetValue() const
+  ALWAYS_INLINE constexpr DataType GetValue() const
   {
     if constexpr (std::is_same_v<DataType, bool>)
     {
@@ -128,7 +128,7 @@ struct BitField
     }
   }
 
-  ALWAYS_INLINE void SetValue(DataType value)
+  ALWAYS_INLINE constexpr void SetValue(DataType value)
   {
     data = (data & ~GetMask()) | ((static_cast<BackingDataType>(value) << BitIndex) & GetMask());
   }
