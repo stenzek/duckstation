@@ -13,6 +13,8 @@ public:
     SUBCHANNEL_Q_SIZE = 12,
   };
 
+  using ReplacementData = std::array<u8, SUBCHANNEL_Q_SIZE>;
+
   CDSubChannelReplacement();
   ~CDSubChannelReplacement();
 
@@ -21,14 +23,13 @@ public:
   bool LoadSBI(const char* path);
 
   /// Returns the replacement subchannel data for the specified position (in BCD).
-  bool GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd, u8* subq_data) const;
+  bool GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd, ReplacementData& subq_data) const;
 
   /// Returns the replacement subchannel data for the specified sector.
-  bool GetReplacementSubChannelQ(u32 lba, u8* subq_data) const;
+  bool GetReplacementSubChannelQ(u32 lba, ReplacementData& subq_data) const;
 
 private:
-  using ReplacementData = std::array<u8, SUBCHANNEL_Q_SIZE>;
   using ReplacementMap = std::unordered_map<u32, ReplacementData>;
 
-  std::unordered_map<u32, ReplacementData> m_replacement_subq;
+  ReplacementMap m_replacement_subq;
 };
