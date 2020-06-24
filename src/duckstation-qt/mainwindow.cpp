@@ -672,6 +672,12 @@ void MainWindow::updateTheme()
   }
   else
   {
+    qApp->setPalette(QApplication::style()->standardPalette());
+
+    QStringList available_styles = QStyleFactory::keys();
+    if (!available_styles.empty())
+      qApp->setStyle(QStyleFactory::create(available_styles.first()));
+
     qApp->setStyleSheet(QString());
   }
 
