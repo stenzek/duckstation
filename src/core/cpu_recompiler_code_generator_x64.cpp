@@ -1991,26 +1991,54 @@ void CodeGenerator::EmitConditionalBranch(Condition condition, bool invert, Labe
 
 void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label)
 {
-  switch (size)
+  if (bit < 8)
   {
-    case RegSize_8:
-      m_emit->bt(GetHostReg8(reg), bit);
-      m_emit->jnc(*label);
-      break;
+    // same size, probably faster
+    switch (size)
+    {
+      case RegSize_8:
+        m_emit->test(GetHostReg8(reg), (1u << bit));
+        m_emit->jz(*label);
+        break;
 
-    case RegSize_16:
-      m_emit->bt(GetHostReg16(reg), bit);
-      m_emit->jnc(*label);
-      break;
+      case RegSize_16:
+        m_emit->test(GetHostReg16(reg), (1u << bit));
+        m_emit->jz(*label);
+        break;
 
-    case RegSize_32:
-      m_emit->bt(GetHostReg32(reg), bit);
-      m_emit->jnc(*label);
-      break;
+      case RegSize_32:
+        m_emit->test(GetHostReg32(reg), (1u << bit));
+        m_emit->jz(*label);
+        break;
 
-    default:
-      UnreachableCode();
-      break;
+      default:
+        UnreachableCode();
+        break;
+    }
+  }
+  else
+  {
+    switch (size)
+    {
+      case RegSize_8:
+        m_emit->bt(GetHostReg8(reg), bit);
+        m_emit->jnc(*label);
+        break;
+
+      case RegSize_16:
+        m_emit->bt(GetHostReg16(reg), bit);
+        m_emit->jnc(*label);
+        break;
+
+      case RegSize_32:
+        m_emit->bt(GetHostReg32(reg), bit);
+        m_emit->jnc(*label);
+        break;
+
+      default:
+        UnreachableCode();
+        break;
+    }
   }
 }
 
