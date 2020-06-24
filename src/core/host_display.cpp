@@ -137,20 +137,20 @@ void HostDisplay::ClearSoftwareCursor()
 
 void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
                                     s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,
-                                    float* out_y_scale, bool apply_aspect_ratio) const
+                                    float* out_x_scale, bool apply_aspect_ratio /* = true */) const
 {
-  const float y_scale =
+  const float x_scale =
     apply_aspect_ratio ?
-      ((static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_aspect_ratio) :
+      (m_display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
       1.0f;
-  const float display_width = static_cast<float>(m_display_width);
-  const float display_height = static_cast<float>(m_display_height) * y_scale;
-  const float active_left = static_cast<float>(m_display_active_left);
-  const float active_top = static_cast<float>(m_display_active_top) * y_scale;
-  const float active_width = static_cast<float>(m_display_active_width);
-  const float active_height = static_cast<float>(m_display_active_height) * y_scale;
-  if (out_y_scale)
-    *out_y_scale = y_scale;
+  const float display_width = static_cast<float>(m_display_width) * x_scale;
+  const float display_height = static_cast<float>(m_display_height);
+  const float active_left = static_cast<float>(m_display_active_left) * x_scale;
+  const float active_top = static_cast<float>(m_display_active_top);
+  const float active_width = static_cast<float>(m_display_active_width) * x_scale;
+  const float active_height = static_cast<float>(m_display_active_height);
+  if (out_x_scale)
+    *out_x_scale = x_scale;
 
   // now fit it within the window
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
@@ -263,17 +263,17 @@ std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinat
                                                                                    s32 top_margin) const
 {
   s32 left, top, width, height, left_padding, top_padding;
-  float scale, y_scale;
+  float scale, x_scale;
   CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
-                    &scale, &y_scale);
+                    &scale, &x_scale);
 
   // convert coordinates to active display region, then to full display region
   const float scaled_display_x = static_cast<float>(window_x - (left_padding));
   const float scaled_display_y = static_cast<float>(window_y - (top_padding + top_margin));
 
   // scale back to internal resolution
-  const float display_x = scaled_display_x / scale;
-  const float display_y = scaled_display_y / scale / y_scale;
+  const float display_x = scaled_display_x / scale / x_scale;
+  const float display_y = scaled_display_y / scale;
 
   return std::make_tuple(display_x, display_y);
 }
