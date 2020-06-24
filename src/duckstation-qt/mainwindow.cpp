@@ -22,6 +22,7 @@
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QMessageBox>
 #include <cmath>
 
@@ -607,7 +608,8 @@ void MainWindow::connectSignals()
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, "Debug/ShowMDECState");
 
   addThemeToMenu(tr("Default"), QStringLiteral("default"));
-  addThemeToMenu(tr("Dark"), QStringLiteral("qdarkstyle"));
+  addThemeToMenu(tr("DarkFusion"), QStringLiteral("darkfusion"));
+  addThemeToMenu(tr("QDarkStyle"), QStringLiteral("qdarkstyle"));
 }
 
 void MainWindow::addThemeToMenu(const QString& name, const QString& key)
@@ -632,6 +634,41 @@ void MainWindow::updateTheme()
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
       qApp->setStyleSheet(f.readAll());
+  }
+  else if (theme == QStringLiteral("darkfusion"))
+  {
+    // adapted from https://gist.github.com/QuantumCD/6245215
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    const QColor lighterGray(75, 75, 75);
+    const QColor darkGray(53, 53, 53);
+    const QColor gray(128, 128, 128);
+    const QColor black(25, 25, 25);
+    const QColor blue(198, 238, 255);
+
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, darkGray);
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, black);
+    darkPalette.setColor(QPalette::AlternateBase, darkGray);
+    darkPalette.setColor(QPalette::ToolTipBase, darkGray);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, darkGray);
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::Link, blue);
+    darkPalette.setColor(QPalette::Highlight, lighterGray);
+    darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+    darkPalette.setColor(QPalette::Active, QPalette::Button, gray.darker());
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+
+    qApp->setPalette(darkPalette);
+
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
   else
   {
