@@ -35,6 +35,9 @@ private Q_SLOTS:
   void destroyDisplay();
   void focusDisplayWidget();
 
+  void setTheme(const QString& theme);
+  void updateTheme();
+
   void onEmulationStarting();
   void onEmulationStarted();
   void onEmulationStopped();
@@ -65,6 +68,7 @@ protected:
 private:
   void setupAdditionalUi();
   void connectSignals();
+  void addThemeToMenu(const QString& name, const QString& key);
   void updateEmulationActions(bool starting, bool running);
   void switchToGameListView();
   void switchToEmulationView();

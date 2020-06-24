@@ -16,6 +16,7 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include <QtCore/QDebug>
+#include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
@@ -40,6 +41,7 @@ MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), 
   m_ui.setupUi(this);
   setupAdditionalUi();
   connectSignals();
+  updateTheme();
 
   resize(800, 700);
 }
@@ -603,6 +605,52 @@ void MainWindow::connectSignals()
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowTimersState,
                                                "Debug/ShowTimersState");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, "Debug/ShowMDECState");
+
+  addThemeToMenu(tr("Default"), QStringLiteral("default"));
+  addThemeToMenu(tr("Dark"), QStringLiteral("qdarkstyle"));
+}
+
+void MainWindow::addThemeToMenu(const QString& name, const QString& key)
+{
+  QAction* action = m_ui.menuSettingsTheme->addAction(name);
+  action->setCheckable(true);
+  action->setData(key);
+  connect(action, &QAction::toggled, [this, key](bool) { setTheme(key); });
+}
+
+void MainWindow::setTheme(const QString& theme)
+{
+  m_host_interface->putSettingValue(QStringLiteral("UI/Theme"), theme);
+  updateTheme();
+}
+
+void MainWindow::updateTheme()
+{
+  QString theme = m_host_interface->getSettingValue(QStringLiteral("UI/Theme"), QStringLiteral("default")).toString();
+  if (theme == QStringLiteral("qdarkstyle"))
+  {
+    QFile f(QStringLiteral(":qdarkstyle/style.qss"));
+    if (f.open(QFile::ReadOnly | QFile::Text))
+      qApp->setStyleSheet(f.readAll());
+  }
+  else
+  {
+    qApp->setStyleSheet(QString());
+  }
+
+  for (QObject* obj : m_ui.menuSettingsTheme->children())
+  {
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+    {
+      QVariant action_data(action->data());
+      if (action_data.isValid())
+      {
+        QSignalBlocker blocker(action);
+        action->setChecked(action_data == theme);
+      }
+    }
+  }
 }
 
 SettingsDialog* MainWindow::getSettingsDialog()

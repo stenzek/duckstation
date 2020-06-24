@@ -85,6 +85,11 @@
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
+    <widget class="QMenu" name="menuSettingsTheme">
+     <property name="title">
+      <string>Theme</string>
+     </property>
+    </widget>
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionGeneralSettings"/>
@@ -101,6 +106,7 @@
     <addaction name="actionScanForNewGames"/>
     <addaction name="actionRescanAllGames"/>
     <addaction name="separator"/>
+    <addaction name="menuSettingsTheme"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
