@@ -342,7 +342,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
 
   si.SetStringValue("Display", "CropMode", "Overscan");
-  si.SetStringValue("Display", "PixelAspectRatio", "4:3");
+  si.SetStringValue("Display", "AspectRatio", "4:3");
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
   si.SetBoolValue("Display", "ShowOSDMessages", true);

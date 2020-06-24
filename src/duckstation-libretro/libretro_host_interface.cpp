@@ -29,7 +29,6 @@ Log_SetChannel(LibretroHostInterface);
 //  - Expose the rest of the options
 //  - Memory card and controller settings
 //  - Better paths for memory cards/BIOS
-//  - Fix up aspect ratio
 //////////////////////////////////////////////////////////////////////////
 
 LibretroHostInterface g_libretro_host_interface;
@@ -81,7 +80,7 @@ void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info
 
   std::memset(info, 0, sizeof(*info));
 
-  info->geometry.aspect_ratio = 4.0f / 3.0f;
+  info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(m_settings.display_aspect_ratio);
 
   if (!m_system->IsPALRegion())
   {
@@ -232,9 +231,9 @@ static std::array<retro_core_option_definition, 14> s_option_definitions = {{
    "hidden.",
    {{"None", "None"}, {"Overscan", "Only Overscan Area"}, {"Borders", "All Borders"}},
    "Overscan"},
-  {"Display.PixelAspectRatio",
-   "Pixel Aspect Ratio",
-   "Determines how the pixels in VRAM area are displayed on the screen.",
+  {"Display.AspectRatio",
+   "Aspect Ratio",
+   "Sets the core-provided aspect ratio.",
    {{"4:3", "4:3"}, {"16:9", "16:9"}, {"1:1", "1:1"}},
    "4:3"},
   {},
