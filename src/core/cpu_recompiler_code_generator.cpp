@@ -1545,7 +1545,9 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
       {
         u32 offset;
         u32 write_mask = UINT32_C(0xFFFFFFFF);
-        switch (static_cast<Cop0Reg>(cbi.instruction.r.rd.GetValue()))
+
+        const Cop0Reg reg = static_cast<Cop0Reg>(cbi.instruction.r.rd.GetValue());
+        switch (reg)
         {
           case Cop0Reg::BPC:
             offset = offsetof(Core, m_cop0_regs.BPC);
@@ -1625,6 +1627,37 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
 
             EmitStoreCPUStructField(offset, value);
           }
+        }
+
+        if (cbi.instruction.cop.CommonOp() == CopCommonInstruction::mtcn &&
+            (reg == Cop0Reg::CAUSE || reg == Cop0Reg::SR))
+        {
+          // Emit an interrupt check on load of CAUSE/SR.
+          Value sr_value = m_register_cache.AllocateScratch(RegSize_32);
+          Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
+
+          // m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0)
+          LabelType no_interrupt;
+          EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(Core, m_cop0_regs.sr.bits));
+          EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(Core, m_cop0_regs.cause.bits));
+          EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
+          EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
+          EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
+          sr_value.ReleaseAndClear();
+          cause_value.ReleaseAndClear();
+          EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+
+          EmitBranch(GetCurrentFarCodePointer());
+          SwitchToFarCode();
+
+          // we want to flush pc here
+          m_register_cache.PushState();
+          m_register_cache.FlushAllGuestRegisters(false, true);
+          EmitExceptionExit();
+          m_register_cache.PopState();
+
+          SwitchToNearCode();
+          EmitBindLabel(&no_interrupt);
         }
 
         InstructionEpilogue(cbi);
