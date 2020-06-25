@@ -886,7 +886,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchLineExpandGeometryShader()
   WriteCommonFunctions(ss);
 
   ss << R"(
-CONSTANT float2 WIDTH = (1.0 / float2(VRAM_SIZE)) * float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+CONSTANT float2 WIDTH = (float(RESOLUTION_SCALE * 2u) / float2(VRAM_SIZE));
 )";
 
   // GS is a pain, too different between HLSL and GLSL...
@@ -916,7 +916,7 @@ void main() {
 
   // top-left
   out_data.v_col0 = in_data[0].v_col0;
-  gl_Position = gl_in[0].gl_Position - offset;
+  gl_Position = gl_in[0].gl_Position;
   EmitVertex();
 
   // top-right
@@ -926,7 +926,7 @@ void main() {
 
   // bottom-left
   out_data.v_col0 = in_data[1].v_col0;
-  gl_Position = gl_in[1].gl_Position - offset;
+  gl_Position = gl_in[1].gl_Position;
   EmitVertex();
 
   // bottom-right
@@ -958,7 +958,7 @@ void main(line Vertex input[2], inout TriangleStream<Vertex> output)
 
   // top-left
   v.col0 = input[0].col0;
-  v.pos = input[0].pos - offset;
+  v.pos = input[0].pos;
   output.Append(v);
 
   // top-right
@@ -968,7 +968,7 @@ void main(line Vertex input[2], inout TriangleStream<Vertex> output)
 
   // bottom-left
   v.col0 = input[1].col0;
-  v.pos = input[1].pos - offset;
+  v.pos = input[1].pos;
   output.Append(v);
 
   // bottom-right
