@@ -131,9 +131,7 @@ bool CDROMAsyncReader::WaitForReadToComplete()
 
 void CDROMAsyncReader::DoSectorRead()
 {
-#ifdef _DEBUG
   Common::Timer timer;
-#endif
 
   if (m_next_position_set.load())
   {
@@ -156,10 +154,9 @@ void CDROMAsyncReader::DoSectorRead()
   m_last_read_sector = pos;
   m_sector_read_result.store(true);
 
-#ifdef _DEBUG
-  if (timer.GetTimeMilliseconds() > 1.0f)
-    Log_WarningPrintf("Read LBA %u took %.2f msec", pos, timer.GetTimeMilliseconds());
-#endif
+  const double read_time = timer.GetTimeMilliseconds();
+  if (read_time > 1.0f)
+    Log_WarningPrintf("Read LBA %u took %.2f msec", pos, read_time);
 }
 
 void CDROMAsyncReader::WorkerThreadEntryPoint()
