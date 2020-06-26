@@ -773,6 +773,10 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
     m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
     DrawUtilityShader(m_vram_copy_pixel_shader.Get(), &uniforms, sizeof(uniforms));
     RestoreGraphicsAPIState();
+
+    if (m_GPUSTAT.check_mask_before_draw)
+      m_current_depth++;
+
     return;
   }
 
@@ -781,9 +785,6 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
   // against the API spec, so better to be safe than sorry.
   if (m_vram_dirty_rect.Intersects(Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)))
     UpdateVRAMReadTexture();
-
-  if (m_GPUSTAT.IsMaskingEnabled())
-    Log_WarningPrintf("Masking enabled on VRAM copy - not implemented");
 
   GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
 

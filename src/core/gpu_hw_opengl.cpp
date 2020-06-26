@@ -895,6 +895,10 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     RestoreGraphicsAPIState();
+
+    if (m_GPUSTAT.check_mask_before_draw)
+      m_current_depth++;
+
     return;
   }
 

@@ -1156,15 +1156,18 @@ void GPU_HW_Vulkan::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
                       m_vram_copy_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw)]);
     vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_single_sampler_pipeline_layout, 0, 1,
                             &m_vram_copy_descriptor_set, 0, nullptr);
+    vkCmdPushConstants(cmdbuf, m_single_sampler_pipeline_layout, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                       sizeof(uniforms), &uniforms);
     Vulkan::Util::SetViewportAndScissor(cmdbuf, dst_bounds_scaled.left, dst_bounds_scaled.top,
                                         dst_bounds_scaled.GetWidth(), dst_bounds_scaled.GetHeight());
     vkCmdDraw(cmdbuf, 3, 1, 0, 0);
     RestoreGraphicsAPIState();
+
+    if (m_GPUSTAT.check_mask_before_draw)
+      m_current_depth++;
+
     return;
   }
-
-  if (m_GPUSTAT.IsMaskingEnabled())
-    Log_WarningPrintf("Masking enabled on VRAM copy - not implemented");
 
   GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
 
