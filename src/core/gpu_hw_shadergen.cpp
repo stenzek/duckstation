@@ -105,6 +105,10 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
 
     if (!GLAD_GL_VERSION_3_2)
       ss << "#extension GL_ARB_uniform_buffer_object : require\n";
+
+    // Enable SSBOs if it's not required by the version.
+    if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_ES_VERSION_3_1 && GLAD_GL_ARB_shader_storage_buffer_object)
+      ss << "#extension GL_ARB_shader_storage_buffer_object : require\n";
   }
 
   DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
