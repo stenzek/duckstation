@@ -203,9 +203,9 @@ uint fixYCoord(uint y)
 
 uint RGBA8ToRGBA5551(float4 v)
 {
-  uint r = uint(v.r * 255.0) >> 3;
-  uint g = uint(v.g * 255.0) >> 3;
-  uint b = uint(v.b * 255.0) >> 3;
+  uint r = uint(roundEven(v.r * 255.0)) >> 3;
+  uint g = uint(roundEven(v.g * 255.0)) >> 3;
+  uint b = uint(roundEven(v.b * 255.0)) >> 3;
   uint a = (v.a != 0.0) ? 1u : 0u;
   return (r) | (g << 5) | (b << 10) | (a << 15);
 }
