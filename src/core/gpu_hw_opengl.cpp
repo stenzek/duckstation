@@ -166,7 +166,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image)
     Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
 
-#ifndef __APPLE__
+#ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
   m_supports_texture_buffer = false;
 #else
@@ -186,6 +186,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     if (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_1 || GLAD_GL_ARB_shader_storage_buffer_object)
       glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
 
+    Log_InfoPrintf("Max shader storage buffer size: %u", max_ssbo_size);
     m_use_ssbo_for_vram_writes = (max_ssbo_size >= (VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16)));
     if (m_use_ssbo_for_vram_writes)
       Log_InfoPrintf("Using shader storage buffers for VRAM writes.");
