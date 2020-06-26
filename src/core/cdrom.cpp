@@ -1507,7 +1507,6 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
 
 void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
-  Log_DebugPrintf("Starting reading @ LBA %u", m_current_lba);
   ClearSectorBuffers();
 
   if (!after_seek && m_setloc_pending)
@@ -1516,6 +1515,18 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
     return;
   }
 
+  // If we were seeking, we want to start reading from the seek target, not the current sector
+  // Fixes crash in Disney's The Lion King - Simba's Mighty Adventure.
+  if (IsSeeking())
+  {
+    Log_DevPrintf("Read command while seeking, scheduling read after seek %u -> %u finishes in %d ticks",
+                  m_seek_start_lba, m_seek_end_lba, m_drive_event->GetTicksUntilNextExecution());
+    m_read_after_seek = true;
+    m_play_after_seek = false;
+    return;
+  }
+
+  Log_DebugPrintf("Starting reading @ LBA %u", m_current_lba);
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
 
