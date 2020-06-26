@@ -499,9 +499,11 @@ bool System::SaveState(ByteStream* state)
     const u32 screenshot_height = 128;
 
     std::vector<u32> screenshot_buffer;
-    if (m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_width,
-                                                                    screenshot_height) &&
-        !screenshot_buffer.empty())
+    m_gpu->ResetGraphicsAPIState();
+    const bool screenshot_saved =
+      m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_width, screenshot_height);
+    m_gpu->RestoreGraphicsAPIState();
+    if (screenshot_saved && !screenshot_buffer.empty())
     {
       header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
       header.screenshot_width = screenshot_width;
