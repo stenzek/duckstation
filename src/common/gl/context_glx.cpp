@@ -1,6 +1,7 @@
 #include "context_glx.h"
 #include "../assert.h"
 #include "../log.h"
+#include <dlfcn.h>
 Log_SetChannel(GL::ContextGLX);
 
 namespace GL {
@@ -13,6 +14,9 @@ ContextGLX::~ContextGLX()
 
   if (m_context)
     glXDestroyContext(GetDisplay(), m_context);
+
+  if (m_libGL_handle)
+    dlclose(m_libGL_handle);
 }
 
 std::unique_ptr<Context> ContextGLX::Create(const WindowInfo& wi, const Version* versions_to_try,
@@ -27,6 +31,18 @@ std::unique_ptr<Context> ContextGLX::Create(const WindowInfo& wi, const Version*
 
 bool ContextGLX::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
 {
+  // We need libGL loaded, because GLAD loads its own, then releases it.
+  m_libGL_handle = dlopen("libGL.so.1", RTLD_NOW | RTLD_GLOBAL);
+  if (!m_libGL_handle)
+  {
+    m_libGL_handle = dlopen("libGL.so", RTLD_NOW | RTLD_GLOBAL);
+    if (!m_libGL_handle)
+    {
+      Log_ErrorPrintf("Failed to load libGL.so: %s", dlerror());
+      return false;
+    }
+  }
+
   const int screen = DefaultScreen(GetDisplay());
   if (!gladLoadGLX(GetDisplay(), screen))
   {

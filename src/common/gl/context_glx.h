@@ -36,6 +36,9 @@ private:
   GLXFBConfig m_fb_config = {};
   XVisualInfo* m_vi = nullptr;
   X11Window m_window;
+
+  // GLAD releases its reference to libGL.so, so we need to maintain our own.
+  void* m_libGL_handle = nullptr;
 };
 
 } // namespace GL
