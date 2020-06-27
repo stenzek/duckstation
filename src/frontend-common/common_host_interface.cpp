@@ -2002,9 +2002,10 @@ void CommonHostInterface::UpdateDiscordPresence()
   if (!m_discord_presence_active)
     return;
 
+  // https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
   DiscordRichPresence rp = {};
-  rp.smallImageKey = "duckstation_logo";
-  rp.smallImageText = "DuckStation PS1/PSX Emulator";
+  rp.largeImageKey = "duckstation_logo";
+  rp.largeImageText = "DuckStation PS1/PSX Emulator";
   rp.startTimestamp = std::time(nullptr);
 
   SmallString details_string;
