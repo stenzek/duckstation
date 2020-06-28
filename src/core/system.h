@@ -39,6 +39,7 @@ struct SystemBootParameters
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
   std::unique_ptr<ByteStream> state_stream;
+  bool force_software_renderer = false;
 };
 
 class System
@@ -145,11 +146,11 @@ public:
 private:
   System(HostInterface* host_interface);
 
-  bool DoLoadState(ByteStream* stream, bool init_components);
+  bool DoLoadState(ByteStream* stream, bool init_components, bool force_software_renderer);
   bool DoState(StateWrapper& sw);
   bool CreateGPU(GPURenderer renderer);
 
-  void InitializeComponents();
+  bool InitializeComponents(bool force_software_renderer);
   void DestroyComponents();
 
   // Active event management

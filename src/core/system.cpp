@@ -88,11 +88,7 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
 
 std::unique_ptr<System> System::Create(HostInterface* host_interface)
 {
-  std::unique_ptr<System> system(new System(host_interface));
-  if (!system->CreateGPU(host_interface->m_settings.gpu_renderer))
-    return {};
-
-  return system;
+  return std::unique_ptr<System>(new System(host_interface));
 }
 
 bool System::RecreateGPU(GPURenderer renderer)
@@ -138,7 +134,7 @@ void System::SetCPUExecutionMode(CPUExecutionMode mode)
 bool System::Boot(const SystemBootParameters& params)
 {
   if (params.state_stream)
-    return DoLoadState(params.state_stream.get(), true);
+    return DoLoadState(params.state_stream.get(), true, params.force_software_renderer);
 
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> media;
@@ -201,11 +197,12 @@ bool System::Boot(const SystemBootParameters& params)
     return false;
   }
 
+  // Component setup.
+  if (!InitializeComponents(params.force_software_renderer))
+    return false;
+
   // Notify change of disc.
   UpdateRunningGame(params.filename.c_str(), media.get());
-
-  // Component setup.
-  InitializeComponents();
   UpdateControllers();
   UpdateMemoryCards();
   Reset();
@@ -243,8 +240,11 @@ bool System::Boot(const SystemBootParameters& params)
   return true;
 }
 
-void System::InitializeComponents()
+bool System::InitializeComponents(bool force_software_renderer)
 {
+  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : GetSettings().gpu_renderer))
+    return false;
+
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
   m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(),
@@ -260,9 +260,9 @@ void System::InitializeComponents()
   m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
   m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
-  m_gpu->UpdateHardwareType();
 
   UpdateThrottlePeriod();
+  return true;
 }
 
 void System::DestroyComponents()
@@ -398,10 +398,10 @@ void System::Reset()
 
 bool System::LoadState(ByteStream* state)
 {
-  return DoLoadState(state, false);
+  return DoLoadState(state, false, false);
 }
 
-bool System::DoLoadState(ByteStream* state, bool init_components)
+bool System::DoLoadState(ByteStream* state, bool init_components, bool force_software_renderer)
 {
   SAVE_STATE_HEADER header;
   if (!state->Read2(&header, sizeof(header)))
@@ -440,7 +440,9 @@ bool System::DoLoadState(ByteStream* state, bool init_components)
 
   if (init_components)
   {
-    InitializeComponents();
+    if (!InitializeComponents(force_software_renderer))
+      return false;
+
     UpdateControllers();
     UpdateMemoryCards();
 

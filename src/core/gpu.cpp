@@ -63,12 +63,6 @@ void GPU::UpdateSettings()
   UpdateCRTCDisplayParameters();
 }
 
-void GPU::UpdateHardwareType()
-{
-  m_console_is_pal = m_system->IsPALRegion();
-  UpdateCRTCDisplayParameters();
-}
-
 void GPU::Reset()
 {
   SoftReset();

@@ -173,9 +173,6 @@ public:
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
   bool ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, u32* out_tick, u32* out_line) const;
 
-  // Updates hardware type from settings.
-  void UpdateHardwareType();
-
 protected:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
   TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const;
