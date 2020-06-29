@@ -42,8 +42,8 @@ bool LibretroD3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::str
   else if (ri->interface_type != RETRO_HW_RENDER_INTERFACE_D3D11 ||
            ri->interface_version != RETRO_HW_RENDER_INTERFACE_D3D11_VERSION)
   {
-    Log_ErrorPrint("Unexpected HW interface - type %u version %u", static_cast<unsigned>(ri->interface_type),
-                   static_cast<unsigned>(ri->interface_version));
+    Log_ErrorPrintf("Unexpected HW interface - type %u version %u", static_cast<unsigned>(ri->interface_type),
+                    static_cast<unsigned>(ri->interface_version));
     return false;
   }
 

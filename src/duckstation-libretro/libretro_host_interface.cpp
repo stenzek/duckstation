@@ -544,9 +544,13 @@ void LibretroHostInterface::UpdateControllers()
         UpdateControllersDigitalController(i);
         break;
 
+      case ControllerType::AnalogController:
+        UpdateControllersAnalogController(i);
+        break;
+
       default:
-        Log_ErrorPrintf("Unhandled controller type '%s'",
-                        Settings::GetControllerTypeDisplayName(m_settings.controller_types[i]));
+        ReportFormattedError("Unhandled controller type '%s'.",
+                             Settings::GetControllerTypeDisplayName(m_settings.controller_types[i]));
         break;
     }
   }
@@ -577,6 +581,48 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
   {
     const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
     controller->SetButtonState(it.first, state != 0);
+  }
+}
+
+void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
+{
+  AnalogController* controller = static_cast<AnalogController*>(m_system->GetController(index));
+  DebugAssert(controller);
+
+  static constexpr std::array<std::pair<AnalogController::Button, u32>, 16> button_mapping = {
+    {{AnalogController::Button::Left, RETRO_DEVICE_ID_JOYPAD_LEFT},
+     {AnalogController::Button::Right, RETRO_DEVICE_ID_JOYPAD_RIGHT},
+     {AnalogController::Button::Up, RETRO_DEVICE_ID_JOYPAD_UP},
+     {AnalogController::Button::Down, RETRO_DEVICE_ID_JOYPAD_DOWN},
+     {AnalogController::Button::Circle, RETRO_DEVICE_ID_JOYPAD_A},
+     {AnalogController::Button::Cross, RETRO_DEVICE_ID_JOYPAD_B},
+     {AnalogController::Button::Triangle, RETRO_DEVICE_ID_JOYPAD_X},
+     {AnalogController::Button::Square, RETRO_DEVICE_ID_JOYPAD_Y},
+     {AnalogController::Button::Start, RETRO_DEVICE_ID_JOYPAD_START},
+     {AnalogController::Button::Select, RETRO_DEVICE_ID_JOYPAD_SELECT},
+     {AnalogController::Button::L1, RETRO_DEVICE_ID_JOYPAD_L},
+     {AnalogController::Button::L2, RETRO_DEVICE_ID_JOYPAD_L2},
+     {AnalogController::Button::L3, RETRO_DEVICE_ID_JOYPAD_L3},
+     {AnalogController::Button::R1, RETRO_DEVICE_ID_JOYPAD_R},
+     {AnalogController::Button::R2, RETRO_DEVICE_ID_JOYPAD_R2},
+     {AnalogController::Button::Analog, RETRO_DEVICE_ID_JOYPAD_R3}}};
+
+  static constexpr std::array<std::pair<AnalogController::Axis, std::pair<u32, u32>>, 4> axis_mapping = {
+    {{AnalogController::Axis::LeftX, {RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X}},
+     {AnalogController::Axis::LeftY, {RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y}},
+     {AnalogController::Axis::RightX, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X}},
+     {AnalogController::Axis::RightY, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y}}}};
+
+  for (const auto& it : button_mapping)
+  {
+    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+    controller->SetButtonState(it.first, state != 0);
+  }
+
+  for (const auto& it : axis_mapping)
+  {
+    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_ANALOG, it.second.first, it.second.second);
+    controller->SetAxisState(static_cast<s32>(it.first), std::clamp(static_cast<float>(state) / 32767.0f, -1.0f, 1.0f));
   }
 }
 

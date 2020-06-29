@@ -46,6 +46,7 @@ private:
   void UpdateSettings();
   void UpdateControllers();
   void UpdateControllersDigitalController(u32 index);
+  void UpdateControllersAnalogController(u32 index);
   void GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale);
   void UpdateSystemAVInfo(bool use_resolution_scale);
   void UpdateGeometry();
