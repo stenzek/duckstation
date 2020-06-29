@@ -1814,8 +1814,8 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   const bool has_progress = (progress_min < progress_max);
 
   // eat the last imgui frame, it might've been partially rendered by the caller.
-  ImGui::EndFrame();
-  ImGui::NewFrame();
+  //ImGui::EndFrame();
+  //ImGui::NewFrame();
 
   ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 50.0f : 30.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
@@ -1843,6 +1843,7 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   ImGui::End();
 
   m_display->Render();
+  ImGui::NewFrame();
 }
 
 void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title)

@@ -2,15 +2,11 @@ add_executable(duckstation-sdl
   imgui_impl_sdl.cpp
   imgui_impl_sdl.h
   main.cpp
-  opengl_host_display.cpp
-  opengl_host_display.h
   sdl_host_interface.cpp
   sdl_host_interface.h
   sdl_key_names.h
   sdl_util.cpp
   sdl_util.h
-  sdl_vulkan_host_display.cpp
-  sdl_vulkan_host_display.h
 )
 
 target_include_directories(duckstation-sdl PRIVATE ${SDL2_INCLUDE_DIRS})
@@ -18,8 +14,6 @@ target_link_libraries(duckstation-sdl PRIVATE core common imgui nativefiledialog
 
 if(WIN32)
   target_sources(duckstation-sdl PRIVATE
-    sdl_d3d11_host_display.cpp
-    sdl_d3d11_host_display.h
     duckstation-sdl.manifest
   )
 

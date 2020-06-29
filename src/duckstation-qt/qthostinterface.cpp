@@ -8,14 +8,17 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "frontend-common/imgui_styles.h"
+#include "frontend-common/opengl_host_display.h"
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
+#include "frontend-common/vulkan_host_display.h"
+#include "imgui.h"
 #include "mainwindow.h"
-#include "openglhostdisplay.h"
+#include "qtdisplaywidget.h"
 #include "qtprogresscallback.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
-#include "vulkanhostdisplay.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
@@ -27,7 +30,7 @@
 Log_SetChannel(QtHostInterface);
 
 #ifdef WIN32
-#include "d3d11hostdisplay.h"
+#include "frontend-common/d3d11_host_display.h"
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
@@ -37,7 +40,7 @@ QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostI
 
 QtHostInterface::~QtHostInterface()
 {
-  Assert(!getHostDisplay());
+  Assert(!m_display);
 }
 
 const char* QtHostInterface::GetFrontendName() const
@@ -177,7 +180,7 @@ void QtHostInterface::applySettings()
   if (m_system)
   {
     const bool render_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
-    if (getHostDisplay() && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
+    if (m_display && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
     {
       m_is_rendering_to_main = render_to_main;
       updateDisplayState();
@@ -271,10 +274,10 @@ void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 void QtHostInterface::onHostDisplayWindowResized(int width, int height)
 {
   // this can be null if it was destroyed and the main thread is late catching up
-  if (!getHostDisplay())
+  if (!m_display)
     return;
 
-  getHostDisplay()->WindowResized(width, height);
+  m_display->ResizeRenderWindow(width, height);
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (m_system)
@@ -289,7 +292,7 @@ void QtHostInterface::redrawDisplayWindow()
     return;
   }
 
-  if (!getHostDisplay() || !m_system)
+  if (!m_display || !m_system)
     return;
 
   renderDisplay();
@@ -306,71 +309,69 @@ void QtHostInterface::toggleFullscreen()
   SetFullscreen(!m_is_fullscreen);
 }
 
-QtHostDisplay* QtHostInterface::getHostDisplay()
-{
-  return static_cast<QtHostDisplay*>(m_display);
-}
-
 bool QtHostInterface::AcquireHostDisplay()
 {
   Assert(!m_display);
 
   m_is_rendering_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
-  emit createDisplayRequested(m_worker_thread, QString::fromStdString(m_settings.gpu_adapter),
-                              m_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
-  Assert(m_display);
 
-  if (!getHostDisplay()->hasDeviceContext())
+  QtDisplayWidget* display_widget =
+    createDisplayRequested(m_worker_thread, QString::fromStdString(m_settings.gpu_adapter),
+                           m_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
+  if (!display_widget || !m_display->HasRenderDevice())
   {
     emit destroyDisplayRequested();
     m_display = nullptr;
     return false;
   }
 
-  if (!getHostDisplay()->activateDeviceContext() ||
-      !getHostDisplay()->initializeDeviceContext(GetShaderCacheDirectory(), m_settings.gpu_use_debug_device))
+  createImGuiContext(display_widget->devicePixelRatioFromScreen());
+
+  if (!m_display->MakeRenderContextCurrent() ||
+      !m_display->InitializeRenderDevice(GetShaderCacheDirectory(), m_settings.gpu_use_debug_device))
   {
-    getHostDisplay()->destroyDeviceContext();
+    destroyImGuiContext();
+    m_display->DestroyRenderDevice();
     emit destroyDisplayRequested();
-    m_display = nullptr;
+    m_display.reset();
     return false;
   }
 
-  connectDisplaySignals();
+  connectDisplaySignals(display_widget);
+  ImGui::NewFrame();
   return true;
 }
 
-QtHostDisplay* QtHostInterface::createHostDisplay()
+HostDisplay* QtHostInterface::createHostDisplay()
 {
-  Assert(!getHostDisplay());
-
   switch (m_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
-      m_display = new VulkanHostDisplay(this);
+      m_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
       break;
 
     case GPURenderer::HardwareOpenGL:
 #ifndef WIN32
     default:
 #endif
-      m_display = new OpenGLHostDisplay(this);
+      m_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
       break;
 
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
     default:
-      m_display = new D3D11HostDisplay(this);
+      m_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
       break;
 #endif
   }
 
-  return getHostDisplay();
+  return m_display.get();
 }
 
-void QtHostInterface::connectDisplaySignals()
+void QtHostInterface::connectDisplaySignals(QtDisplayWidget* widget)
 {
-  QtDisplayWidget* widget = getHostDisplay()->getWidget();
+  widget->disconnect(this);
+
   connect(widget, &QtDisplayWidget::windowResizedEvent, this, &QtHostInterface::onHostDisplayWindowResized);
   connect(widget, &QtDisplayWidget::windowRestoredEvent, this, &QtHostInterface::redrawDisplayWindow);
   connect(widget, &QtDisplayWidget::windowClosedEvent, this, &QtHostInterface::powerOffSystem,
@@ -380,21 +381,16 @@ void QtHostInterface::connectDisplaySignals()
   connect(widget, &QtDisplayWidget::windowMouseButtonEvent, this, &QtHostInterface::onDisplayWindowMouseButtonEvent);
 }
 
-void QtHostInterface::disconnectDisplaySignals()
-{
-  getHostDisplay()->getWidget()->disconnect(this);
-}
-
 void QtHostInterface::updateDisplayState()
 {
   // this expects the context to get moved back to us afterwards
-  getHostDisplay()->deactivateDeviceContext();
-  emit updateDisplayRequested(m_worker_thread, m_is_fullscreen, m_is_rendering_to_main);
-  if (!getHostDisplay()->activateDeviceContext())
+  m_display->DoneRenderContextCurrent();
+
+  QtDisplayWidget* display_widget = updateDisplayRequested(m_worker_thread, m_is_fullscreen, m_is_rendering_to_main);
+  if (!display_widget || !m_display->MakeRenderContextCurrent())
     Panic("Failed to make device context current after updating");
 
-  getHostDisplay()->updateImGuiDisplaySize();
-  connectDisplaySignals();
+  connectDisplaySignals(display_widget);
   redrawDisplayWindow();
   UpdateSpeedLimiterState();
 }
@@ -403,9 +399,10 @@ void QtHostInterface::ReleaseHostDisplay()
 {
   Assert(m_display);
 
-  getHostDisplay()->destroyDeviceContext();
+  m_display->DestroyRenderDevice();
+  destroyImGuiContext();
   emit destroyDisplayRequested();
-  m_display = nullptr;
+  m_display.reset();
   m_is_fullscreen = false;
 }
 
@@ -938,6 +935,7 @@ void QtHostInterface::renderDisplay()
   DrawImGuiWindows();
 
   m_display->Render();
+  ImGui::NewFrame();
 
   m_system->GetGPU()->RestoreGraphicsAPIState();
 }
@@ -948,6 +946,25 @@ void QtHostInterface::wakeThread()
     m_worker_thread_event_loop->quit();
   else
     QMetaObject::invokeMethod(m_worker_thread_event_loop, "quit", Qt::QueuedConnection);
+}
+
+void QtHostInterface::createImGuiContext(float framebuffer_scale)
+{
+  ImGui::CreateContext();
+
+  auto& io = ImGui::GetIO();
+  io.IniFilename = nullptr;
+  io.DisplayFramebufferScale.x = framebuffer_scale;
+  io.DisplayFramebufferScale.y = framebuffer_scale;
+  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
+
+  ImGui::StyleColorsDarker();
+  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
+}
+
+void QtHostInterface::destroyImGuiContext()
+{
+  ImGui::DestroyContext();
 }
 
 QtHostInterface::Thread::Thread(QtHostInterface* parent) : QThread(parent), m_parent(parent) {}

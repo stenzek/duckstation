@@ -2,13 +2,13 @@
 #include "aboutdialog.h"
 #include "common/assert.h"
 #include "core/game_list.h"
+#include "core/host_display.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
 #include "qtdisplaywidget.h"
-#include "qthostdisplay.h"
 #include "qthostinterface.h"
 #include "qtsettingsinterface.h"
 #include "qtutils.h"
@@ -22,8 +22,8 @@
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QStyleFactory>
 #include <cmath>
 
 static constexpr char DISC_IMAGE_FILTER[] =
@@ -72,14 +72,13 @@ bool MainWindow::confirmMessage(const QString& message)
   return (result == QMessageBox::Yes);
 }
 
-void MainWindow::createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
-                               bool fullscreen, bool render_to_main)
+QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
+                                           bool fullscreen, bool render_to_main)
 {
   Assert(!m_host_display && !m_display_widget);
   Assert(!fullscreen || !render_to_main);
 
-  m_host_display = m_host_interface->createHostDisplay();
-  m_display_widget = m_host_display->createWidget((!fullscreen && render_to_main) ? m_ui.mainContainer : nullptr);
+  m_display_widget = new QtDisplayWidget((!fullscreen && render_to_main) ? m_ui.mainContainer : nullptr);
   m_display_widget->setWindowTitle(windowTitle());
   m_display_widget->setWindowIcon(windowIcon());
 
@@ -101,32 +100,37 @@ void MainWindow::createDisplay(QThread* worker_thread, const QString& adapter_na
   // we need the surface visible.. this might be able to be replaced with something else
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  if (!m_host_display->createDeviceContext(adapter_name, use_debug_device))
+  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
+  if (!wi.has_value())
   {
-    reportError(tr("Failed to create host display device context."));
-    return;
+    reportError(tr("Failed to get window info from widget"));
+    destroyDisplayWidget();
+    return nullptr;
   }
 
-  m_host_display->deactivateDeviceContext();
+  m_host_display = m_host_interface->createHostDisplay();
+  if (!m_host_display || !m_host_display->CreateRenderDevice(wi.value(), adapter_name.toStdString(), use_debug_device))
+  {
+    reportError(tr("Failed to create host display device context."));
+    destroyDisplayWidget();
+    return nullptr;
+  }
+
+  m_host_display->DoneRenderContextCurrent();
+  return m_display_widget;
 }
 
-void MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main)
+QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main)
 {
   const bool is_fullscreen = m_display_widget->isFullScreen();
   const bool is_rendering_to_main = (!is_fullscreen && m_display_widget->parent());
   if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
-    return;
+    return m_display_widget;
 
-  m_host_display->destroySurface();
+  m_host_display->DestroyRenderSurface();
 
-  if (is_rendering_to_main)
-  {
-    switchToGameListView();
-    m_ui.mainContainer->removeWidget(m_display_widget);
-  }
-
-  m_host_display->destroyWidget();
-  m_display_widget = m_host_display->createWidget((!fullscreen && render_to_main) ? m_ui.mainContainer : nullptr);
+  destroyDisplayWidget();
+  m_display_widget = new QtDisplayWidget((!fullscreen && render_to_main) ? m_ui.mainContainer : nullptr);
   m_display_widget->setWindowTitle(windowTitle());
   m_display_widget->setWindowIcon(windowIcon());
 
@@ -148,30 +152,44 @@ void MainWindow::updateDisplay(QThread* worker_thread, bool fullscreen, bool ren
   // we need the surface visible.. this might be able to be replaced with something else
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  if (!m_host_display->recreateSurface())
+  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
+  if (!wi.has_value())
+  {
+    reportError(tr("Failed to get new window info from widget"));
+    destroyDisplayWidget();
+    return nullptr;
+  }
+
+  if (!m_host_display->ChangeRenderWindow(wi.value()))
     Panic("Failed to recreate surface on new widget.");
 
   m_display_widget->setFocus();
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
+  return m_display_widget;
 }
 
 void MainWindow::destroyDisplay()
 {
   DebugAssert(m_host_display && m_display_widget);
+  m_host_display = nullptr;
+  destroyDisplayWidget();
+}
+
+void MainWindow::destroyDisplayWidget()
+{
+  if (!m_display_widget)
+    return;
 
   if (m_display_widget->parent())
   {
-    m_ui.mainContainer->removeWidget(m_display_widget);
     switchToGameListView();
+    m_ui.mainContainer->removeWidget(m_display_widget);
   }
 
-  m_host_display->destroyWidget();
+  delete m_display_widget;
   m_display_widget = nullptr;
-
-  delete m_host_display;
-  m_host_display = nullptr;
 }
 
 void MainWindow::focusDisplayWidget()

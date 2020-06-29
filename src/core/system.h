@@ -45,6 +45,12 @@ struct SystemBootParameters
 class System
 {
 public:
+  enum : u32
+  {
+    // 5 megabytes is sufficient for now, at the moment they're around 4.2MB.
+    MAX_SAVE_STATE_SIZE = 5 * 1024 * 1024
+  };
+
   friend TimingEvent;
 
   ~System();

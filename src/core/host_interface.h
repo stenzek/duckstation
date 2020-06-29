@@ -39,7 +39,7 @@ public:
   virtual ~HostInterface();
 
   /// Access to host display.
-  ALWAYS_INLINE HostDisplay* GetDisplay() const { return m_display; }
+  ALWAYS_INLINE HostDisplay* GetDisplay() const { return m_display.get(); }
 
   /// Access to host audio stream.
   ALWAYS_INLINE AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
@@ -96,6 +96,12 @@ public:
   /// Retrieves information about specified game from game list.
   virtual void GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title);
 
+  /// Returns the default path to a memory card.
+  virtual std::string GetSharedMemoryCardPath(u32 slot) const;
+
+  /// Returns the default path to a memory card for a specific game.
+  virtual std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const;
+
   /// Enables the software cursor. Can be called multiple times, but must be matched by a call to DisableSoftwareCursor().
   void EnableSoftwareCursor();
 
@@ -135,12 +141,6 @@ protected:
   /// Sets the user directory to the program directory, i.e. "portable mode".
   void SetUserDirectoryToProgramDirectory();
 
-  /// Returns the default path to a memory card.
-  std::string GetSharedMemoryCardPath(u32 slot) const;
-
-  /// Returns the default path to a memory card for a specific game.
-  std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const;
-
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
@@ -153,7 +153,7 @@ protected:
   bool SaveState(const char* filename);
   void CreateAudioStream();
 
-  HostDisplay* m_display = nullptr;
+  std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
   Settings m_settings;

@@ -41,10 +41,6 @@ add_executable(duckstation-qt
   mainwindow.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
-  openglhostdisplay.cpp
-  openglhostdisplay.h
-  qthostdisplay.cpp
-  qthostdisplay.h
   qtdisplaywidget.cpp
   qtdisplaywidget.h
   qthostinterface.cpp
@@ -58,19 +54,12 @@ add_executable(duckstation-qt
   settingsdialog.cpp
   settingsdialog.h
   settingsdialog.ui
-  vulkanhostdisplay.cpp
-  vulkanhostdisplay.h
 )
 
 target_include_directories(duckstation-qt PRIVATE "${Qt5Gui_PRIVATE_INCLUDE_DIRS}")
 target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
 
 if(WIN32)
-  target_sources(duckstation-qt PRIVATE
-    d3d11hostdisplay.cpp
-    d3d11hostdisplay.h
-  )
-
   # We want a Windows subsystem application not console.
   set_target_properties(duckstation-qt PROPERTIES
     WIN32_EXECUTABLE TRUE

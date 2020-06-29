@@ -5,6 +5,7 @@
 #include "frontend-common/common_host_interface.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
+#include <QtCore/QString>
 #include <QtCore/QSettings>
 #include <QtCore/QThread>
 #include <atomic>
@@ -25,8 +26,7 @@ class QTimer;
 class GameList;
 
 class MainWindow;
-
-class QtHostDisplay;
+class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(SystemBootParameters);
 
@@ -66,7 +66,7 @@ public:
 
   ALWAYS_INLINE MainWindow* getMainWindow() const { return m_main_window; }
   void setMainWindow(MainWindow* window);
-  QtHostDisplay* createHostDisplay();
+  HostDisplay* createHostDisplay();
 
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
@@ -96,9 +96,9 @@ Q_SIGNALS:
   void emulationPaused(bool paused);
   void stateSaved(const QString& game_code, bool global, qint32 slot);
   void gameListRefreshed();
-  void createDisplayRequested(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
-                              bool fullscreen, bool render_to_main);
-  void updateDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
+  QtDisplayWidget* createDisplayRequested(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
+                                          bool fullscreen, bool render_to_main);
+  QtDisplayWidget* updateDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
   void focusDisplayWidgetRequested();
   void destroyDisplayRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
@@ -186,12 +186,13 @@ private:
     Common::Event m_init_event;
   };
 
-  QtHostDisplay* getHostDisplay();
-
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
+
+  void createImGuiContext(float framebuffer_scale);
+  void destroyImGuiContext();
 
   void createThread();
   void stopThread();
@@ -199,8 +200,7 @@ private:
   bool initializeOnThread();
   void shutdownOnThread();
   void renderDisplay();
-  void connectDisplaySignals();
-  void disconnectDisplaySignals();
+  void connectDisplaySignals(QtDisplayWidget* widget);
   void updateDisplayState();
   void wakeThread();
 

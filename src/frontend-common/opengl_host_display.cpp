@@ -1,21 +1,19 @@
-#include "openglhostdisplay.h"
+#include "opengl_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "imgui.h"
-#include "qtdisplaywidget.h"
-#include "qthostinterface.h"
-#include <QtGui/QKeyEvent>
-#include <QtGui/QWindow>
 #include <array>
 #include <imgui_impl_opengl3.h>
 #include <tuple>
-Log_SetChannel(OpenGLHostDisplay);
+Log_SetChannel(LibretroOpenGLHostDisplay);
 
-class OpenGLDisplayWidgetTexture : public HostDisplayTexture
+namespace FrontendCommon {
+
+class OpenGLHostDisplayTexture : public HostDisplayTexture
 {
 public:
-  OpenGLDisplayWidgetTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
-  ~OpenGLDisplayWidgetTexture() override { glDeleteTextures(1, &m_id); }
+  OpenGLHostDisplayTexture(GLuint id, u32 width, u32 height) : m_id(id), m_width(width), m_height(height) {}
+  ~OpenGLHostDisplayTexture() override { glDeleteTextures(1, &m_id); }
 
   void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_id)); }
   u32 GetWidth() const override { return m_width; }
@@ -23,8 +21,8 @@ public:
 
   GLuint GetGLID() const { return m_id; }
 
-  static std::unique_ptr<OpenGLDisplayWidgetTexture> Create(u32 width, u32 height, const void* initial_data,
-                                                            u32 initial_data_stride)
+  static std::unique_ptr<OpenGLHostDisplayTexture> Create(u32 width, u32 height, const void* initial_data,
+                                                          u32 initial_data_stride)
   {
     GLuint id;
     glGenTextures(1, &id);
@@ -42,7 +40,7 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, id);
-    return std::make_unique<OpenGLDisplayWidgetTexture>(id, width, height);
+    return std::make_unique<OpenGLHostDisplayTexture>(id, width, height);
   }
 
 private:
@@ -51,13 +49,16 @@ private:
   u32 m_height;
 };
 
-OpenGLHostDisplay::OpenGLHostDisplay(QtHostInterface* host_interface) : QtHostDisplay(host_interface) {}
+OpenGLHostDisplay::OpenGLHostDisplay() = default;
 
-OpenGLHostDisplay::~OpenGLHostDisplay() = default;
+OpenGLHostDisplay::~OpenGLHostDisplay()
+{
+  AssertMsg(!m_gl_context, "Context should have been destroyed by now");
+}
 
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
-  return m_gl_context->IsGLES() ? HostDisplay::RenderAPI::OpenGLES : HostDisplay::RenderAPI::OpenGL;
+  return m_gl_context->IsGLES() ? RenderAPI::OpenGLES : RenderAPI::OpenGL;
 }
 
 void* OpenGLHostDisplay::GetRenderDevice() const
@@ -70,22 +71,16 @@ void* OpenGLHostDisplay::GetRenderContext() const
   return m_gl_context.get();
 }
 
-void OpenGLHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
-{
-  QtHostDisplay::WindowResized(new_window_width, new_window_height);
-  m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
-}
-
 std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* initial_data,
                                                                      u32 initial_data_stride, bool dynamic)
 {
-  return OpenGLDisplayWidgetTexture::Create(width, height, initial_data, initial_data_stride);
+  return OpenGLHostDisplayTexture::Create(width, height, initial_data, initial_data_stride);
 }
 
 void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
                                       const void* texture_data, u32 texture_data_stride)
 {
-  OpenGLDisplayWidgetTexture* tex = static_cast<OpenGLDisplayWidgetTexture*>(texture);
+  OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
   Assert((texture_data_stride % sizeof(u32)) == 0);
 
   GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
@@ -134,7 +129,7 @@ void OpenGLHostDisplay::SetVSync(bool enabled)
 
 const char* OpenGLHostDisplay::GetGLSLVersionString() const
 {
-  if (m_gl_context->IsGLES())
+  if (GetRenderAPI() == RenderAPI::OpenGLES)
   {
     if (GLAD_GL_ES_VERSION_3_0)
       return "#version 300 es";
@@ -154,7 +149,7 @@ std::string OpenGLHostDisplay::GetGLSLVersionHeader() const
 {
   std::string header = GetGLSLVersionString();
   header += "\n\n";
-  if (m_gl_context->IsGLES())
+  if (GetRenderAPI() == RenderAPI::OpenGLES)
   {
     header += "precision highp float;\n";
     header += "precision highp int;\n\n";
@@ -183,49 +178,54 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLHostDisplay::hasDeviceContext() const
+bool OpenGLHostDisplay::HasRenderDevice() const
 {
   return static_cast<bool>(m_gl_context);
 }
 
-bool OpenGLHostDisplay::createDeviceContext(const QString& adapter_name, bool debug_device)
+bool OpenGLHostDisplay::HasRenderSurface() const
 {
-  m_window_width = m_widget->scaledWindowWidth();
-  m_window_height = m_widget->scaledWindowHeight();
+  return m_window_info.type != WindowInfo::Type::Surfaceless;
+}
 
-  std::optional<WindowInfo> wi = getWindowInfo();
-  if (!wi.has_value())
-    return false;
-
-  m_gl_context = GL::Context::Create(wi.value());
+bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
+{
+  m_gl_context = GL::Context::Create(wi);
   if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create any GL context");
     return false;
   }
 
+  m_window_info = wi;
+  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
+  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
   return true;
 }
 
-bool OpenGLHostDisplay::initializeDeviceContext(std::string_view shader_cache_directory, bool debug_device)
+bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
   if (debug_device && GLAD_GL_KHR_debug)
   {
-    glad_glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
+    if (GetRenderAPI() == RenderAPI::OpenGLES)
+      glDebugMessageCallbackKHR(GLDebugCallback, nullptr);
+    else
+      glDebugMessageCallback(GLDebugCallback, nullptr);
+
     glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
-  if (!QtHostDisplay::initializeDeviceContext(shader_cache_directory, debug_device))
-  {
-    m_gl_context->DoneCurrent();
+  if (!CreateResources())
     return false;
-  }
+
+  if (ImGui::GetCurrentContext() && !CreateImGuiContext())
+    return false;
 
   return true;
 }
 
-bool OpenGLHostDisplay::activateDeviceContext()
+bool OpenGLHostDisplay::MakeRenderContextCurrent()
 {
   if (!m_gl_context->MakeCurrent())
   {
@@ -236,56 +236,92 @@ bool OpenGLHostDisplay::activateDeviceContext()
   return true;
 }
 
-void OpenGLHostDisplay::deactivateDeviceContext()
+bool OpenGLHostDisplay::DoneRenderContextCurrent()
 {
-  m_gl_context->DoneCurrent();
+  return m_gl_context->DoneCurrent();
 }
 
-void OpenGLHostDisplay::destroyDeviceContext()
+void OpenGLHostDisplay::DestroyRenderDevice()
 {
-  QtHostDisplay::destroyDeviceContext();
+  if (!m_gl_context)
+    return;
+
+  if (ImGui::GetCurrentContext())
+    DestroyImGuiContext();
+
+  DestroyResources();
+
   m_gl_context->DoneCurrent();
   m_gl_context.reset();
 }
 
-bool OpenGLHostDisplay::recreateSurface()
+bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
-  m_window_width = m_widget->scaledWindowWidth();
-  m_window_height = m_widget->scaledWindowHeight();
+  Assert(m_gl_context);
 
-  if (m_gl_context)
+  if (!m_gl_context->ChangeSurface(new_wi))
   {
-    std::optional<WindowInfo> wi = getWindowInfo();
-    if (!wi.has_value() || !m_gl_context->ChangeSurface(wi.value()))
-      return false;
+    Log_ErrorPrintf("Failed to change surface");
+    return false;
+  }
+
+  m_window_info = new_wi;
+  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
+  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
 
   return true;
 }
 
-void OpenGLHostDisplay::destroySurface() {}
-
-bool OpenGLHostDisplay::createImGuiContext()
+void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
 {
-  if (!QtHostDisplay::createImGuiContext())
-    return false;
+  if (!m_gl_context)
+    return;
+
+  m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
+  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
+  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
+  }
+}
+
+void OpenGLHostDisplay::DestroyRenderSurface()
+{
+  if (!m_gl_context)
+    return;
+
+  m_window_info = {};
+  if (!m_gl_context->ChangeSurface(m_window_info))
+    Log_ErrorPrintf("Failed to switch to surfaceless");
+}
+
+bool OpenGLHostDisplay::CreateImGuiContext()
+{
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
   if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
     return false;
 
   ImGui_ImplOpenGL3_NewFrame();
-  ImGui::NewFrame();
   return true;
 }
 
-void OpenGLHostDisplay::destroyImGuiContext()
+void OpenGLHostDisplay::DestroyImGuiContext()
 {
   ImGui_ImplOpenGL3_Shutdown();
-
-  QtHostDisplay::destroyImGuiContext();
 }
 
-bool OpenGLHostDisplay::createDeviceResources()
+bool OpenGLHostDisplay::CreateResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
 uniform vec4 u_src_rect;
@@ -318,7 +354,7 @@ void main()
     return false;
   }
 
-  if (!m_gl_context->IsGLES())
+  if (GetRenderAPI() != RenderAPI::OpenGLES)
     m_display_program.BindFragData(0, "o_col0");
 
   if (!m_display_program.Link())
@@ -345,10 +381,8 @@ void main()
   return true;
 }
 
-void OpenGLHostDisplay::destroyDeviceResources()
+void OpenGLHostDisplay::DestroyResources()
 {
-  QtHostDisplay::destroyDeviceResources();
-
   if (m_display_vao != 0)
     glDeleteVertexArrays(1, &m_display_vao);
   if (m_display_linear_sampler != 0)
@@ -359,49 +393,95 @@ void OpenGLHostDisplay::destroyDeviceResources()
   m_display_program.Destroy();
 }
 
-void OpenGLHostDisplay::Render()
+bool OpenGLHostDisplay::Render()
 {
   glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  renderDisplay();
+  RenderDisplay();
 
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  if (ImGui::GetCurrentContext())
+    RenderImGui();
+
+  RenderSoftwareCursor();
 
   m_gl_context->SwapBuffers();
 
-  ImGui::NewFrame();
-  ImGui_ImplOpenGL3_NewFrame();
+  if (ImGui::GetCurrentContext())
+    ImGui_ImplOpenGL3_NewFrame();
 
+  return true;
+}
+
+void OpenGLHostDisplay::RenderImGui()
+{
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   GL::Program::ResetLastProgram();
 }
 
-void OpenGLHostDisplay::renderDisplay()
+void OpenGLHostDisplay::RenderDisplay()
 {
-  if (!m_display_texture_handle)
+  if (!HasDisplayTexture())
     return;
 
-  const auto [vp_left, vp_top, vp_width, vp_height] =
-    CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
+  const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+  RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
+                m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+}
 
-  glViewport(vp_left, m_window_height - (m_display_top_margin + vp_top) - vp_height, vp_width, vp_height);
+void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle,
+                                      u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
+                                      s32 texture_view_width, s32 texture_view_height, bool linear_filter)
+{
+  glViewport(left, bottom, width, height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
   m_display_program.Bind();
-  m_display_program.Uniform4f(
-    0, static_cast<float>(m_display_texture_view_x) / static_cast<float>(m_display_texture_width),
-    static_cast<float>(m_display_texture_view_y) / static_cast<float>(m_display_texture_height),
-    (static_cast<float>(m_display_texture_view_width) - 0.5f) / static_cast<float>(m_display_texture_width),
-    (static_cast<float>(m_display_texture_view_height) + 0.5f) / static_cast<float>(m_display_texture_height));
-  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(m_display_texture_handle)));
-  glBindSampler(0, m_display_linear_filtering ? m_display_linear_sampler : m_display_nearest_sampler);
+  m_display_program.Uniform4f(0, static_cast<float>(texture_view_x) / static_cast<float>(texture_width),
+                              static_cast<float>(texture_view_y) / static_cast<float>(texture_height),
+                              (static_cast<float>(texture_view_width) - 0.5f) / static_cast<float>(texture_width),
+                              (static_cast<float>(texture_view_height) + 0.5f) / static_cast<float>(texture_height));
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)));
+  glBindSampler(0, linear_filter ? m_display_linear_sampler : m_display_nearest_sampler);
   glBindVertexArray(m_display_vao);
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindSampler(0, 0);
 }
+
+void OpenGLHostDisplay::RenderSoftwareCursor()
+{
+  if (!HasSoftwareCursor())
+    return;
+
+  const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
+  RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
+}
+
+void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height,
+                                             HostDisplayTexture* texture_handle)
+{
+  glViewport(left, GetWindowHeight() - top - height, width, height);
+  glEnable(GL_BLEND);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_SCISSOR_TEST);
+  glDepthMask(GL_FALSE);
+  m_display_program.Bind();
+  m_display_program.Uniform4f(0, 0.0f, 0.0f, 1.0f, 1.0f);
+  glBindTexture(GL_TEXTURE_2D, static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetGLID());
+  glBindSampler(0, m_display_linear_sampler);
+  glBindVertexArray(m_display_vao);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
+  glBindSampler(0, 0);
+}
+
+} // namespace FrontendCommon

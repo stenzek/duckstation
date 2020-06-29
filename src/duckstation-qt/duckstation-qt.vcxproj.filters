@@ -30,9 +30,6 @@
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="generalsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
-    <ClCompile Include="qthostdisplay.cpp" />
-    <ClCompile Include="openglhostdisplay.cpp" />
-    <ClCompile Include="d3d11hostdisplay.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="gamepropertiesdialog.cpp" />
@@ -43,18 +40,13 @@
     <ClCompile Include="$(IntDir)moc_aboutdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)qrc_icons.cpp" />
-    <ClCompile Include="vulkanhostdisplay.cpp" />
+    <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
-    <ClInclude Include="qthostdisplay.h" />
-    <ClInclude Include="d3d11hostdisplay.h" />
-    <ClInclude Include="openglhostdisplay.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="vulkanhostdisplay.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -62,7 +54,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtResource Include="resources\icons.qrc" />
+    <QtResource Include="resources\resources.qrc" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="consolesettingswidget.h" />

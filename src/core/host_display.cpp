@@ -13,12 +13,6 @@ HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;
 
-void HostDisplay::WindowResized(s32 new_window_width, s32 new_window_height)
-{
-  m_window_width = new_window_width;
-  m_window_height = new_window_height;
-}
-
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
 {
   m_cursor_texture = std::move(texture);
@@ -68,7 +62,7 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
                                     float* out_y_scale) const
 {
   const float y_scale =
-    (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_pixel_aspect_ratio;
+    (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)) / m_display_aspect_ratio;
   const float display_width = static_cast<float>(m_display_width);
   const float display_height = static_cast<float>(m_display_height) * y_scale;
   const float active_left = static_cast<float>(m_display_active_left);
@@ -266,26 +260,28 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   s32 resize_height = 0;
   if (apply_aspect_ratio && full_resolution)
   {
-    if (m_display_pixel_aspect_ratio > 1.0f)
+    if (m_display_aspect_ratio > 1.0f)
     {
       resize_width = m_display_texture_view_width;
-      resize_height = static_cast<s32>(static_cast<float>(resize_width) / m_display_pixel_aspect_ratio);
+      resize_height = static_cast<s32>(static_cast<float>(resize_width) / m_display_aspect_ratio);
     }
     else
     {
       resize_height = std::abs(m_display_texture_view_height);
-      resize_width = static_cast<s32>(static_cast<float>(resize_height) * m_display_pixel_aspect_ratio);
+      resize_width = static_cast<s32>(static_cast<float>(resize_height) * m_display_aspect_ratio);
     }
   }
   else if (apply_aspect_ratio)
   {
-    const auto [left, top, right, bottom] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
+    const auto [left, top, right, bottom] =
+      CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
     resize_width = right - left;
     resize_height = bottom - top;
   }
   else if (!full_resolution)
   {
-    const auto [left, top, right, bottom] = CalculateDrawRect(m_window_width, m_window_height, m_display_top_margin);
+    const auto [left, top, right, bottom] =
+      CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
     const float ratio =
       static_cast<float>(m_display_texture_view_width) / static_cast<float>(std::abs(m_display_texture_view_height));
     if (ratio > 1.0f)

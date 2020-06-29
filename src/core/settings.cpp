@@ -463,7 +463,7 @@ const char* Settings::GetControllerTypeDisplayName(ControllerType type)
 static std::array<const char*, 4> s_memory_card_type_names = {{"None", "Shared", "PerGame", "PerGameTitle"}};
 static std::array<const char*, 4> s_memory_card_type_display_names = {{"No Memory Card", "Shared Between All Games",
                                                                        "Separate Card Per Game (Game Code)",
-                                                                       "Seperate Card Per Game (Game Title)"}};
+                                                                       "Separate Card Per Game (Game Title)"}};
 
 std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
 {

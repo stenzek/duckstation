@@ -11,13 +11,14 @@
 #include "frontend-common/icon.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/ini_settings_interface.h"
+#include "frontend-common/opengl_host_display.h"
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
+#include "frontend-common/vulkan_host_display.h"
 #include "imgui_impl_sdl.h"
-#include "opengl_host_display.h"
 #include "scmversion/scmversion.h"
 #include "sdl_key_names.h"
-#include "sdl_vulkan_host_display.h"
+#include "sdl_util.h"
 #include <cinttypes>
 #include <cmath>
 #include <imgui.h>
@@ -26,7 +27,7 @@
 Log_SetChannel(SDLHostInterface);
 
 #ifdef WIN32
-#include "sdl_d3d11_host_display.h"
+#include "frontend-common/d3d11_host_display.h"
 #endif
 
 SDLHostInterface::SDLHostInterface()
@@ -129,49 +130,86 @@ void SDLHostInterface::DestroySDLWindow()
 
 bool SDLHostInterface::CreateDisplay()
 {
-  const std::string shader_cache_directory(GetShaderCacheDirectory());
-  std::unique_ptr<HostDisplay> display;
+  std::optional<WindowInfo> wi = SDLUtil::GetWindowInfoForSDLWindow(m_window);
+  if (!wi.has_value())
+  {
+    ReportError("Failed to get window info from SDL window");
+    return false;
+  }
 
+  std::unique_ptr<HostDisplay> display;
   switch (m_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
-      display = SDLVulkanHostDisplay::Create(m_window, m_settings.gpu_adapter, shader_cache_directory,
-                                             m_settings.gpu_use_debug_device);
+      display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
       break;
 
     case GPURenderer::HardwareOpenGL:
 #ifndef WIN32
     default:
 #endif
-      display = OpenGLHostDisplay::Create(m_window, m_settings.gpu_use_debug_device);
+      display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
       break;
 
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
     default:
-      display = SDLD3D11HostDisplay::Create(m_window, m_settings.gpu_adapter, m_settings.gpu_use_debug_device);
+      display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
       break;
 #endif
   }
 
-  if (!display)
+  Assert(display);
+  if (!display->CreateRenderDevice(wi.value(), m_settings.gpu_adapter, m_settings.gpu_use_debug_device) ||
+      !display->InitializeRenderDevice(GetShaderCacheDirectory(), m_settings.gpu_use_debug_device))
+  {
+    ReportError("Failed to create/initialize display render device");
     return false;
+  }
+
+  bool imgui_result;
+  switch (display->GetRenderAPI())
+  {
+#ifdef WIN32
+    case HostDisplay::RenderAPI::D3D11:
+      imgui_result = ImGui_ImplSDL2_InitForD3D(m_window);
+      break;
+#endif
+
+    case HostDisplay::RenderAPI::Vulkan:
+      imgui_result = ImGui_ImplSDL2_InitForVulkan(m_window);
+      break;
+
+    case HostDisplay::RenderAPI::OpenGL:
+    case HostDisplay::RenderAPI::OpenGLES:
+      imgui_result = ImGui_ImplSDL2_InitForOpenGL(m_window, nullptr);
+      break;
+
+    default:
+      imgui_result = true;
+      break;
+  }
+  if (!imgui_result)
+  {
+    ReportError("Failed to initialize ImGui SDL2 wrapper");
+    return false;
+  }
 
   m_app_icon_texture =
     display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
-  if (!display)
+  if (!m_app_icon_texture)
     return false;
 
   display->SetDisplayTopMargin(m_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
-  m_display = display.release();
+  m_display = std::move(display);
   return true;
 }
 
 void SDLHostInterface::DestroyDisplay()
 {
   m_app_icon_texture.reset();
-  delete m_display;
-  m_display = nullptr;
+  m_display->DestroyRenderDevice();
+  m_display.reset();
 }
 
 void SDLHostInterface::CreateImGuiContext()
@@ -227,13 +265,16 @@ bool SDLHostInterface::AcquireHostDisplay()
   {
     ImGui::EndFrame();
     DestroyDisplay();
-    DestroySDLWindow();
 
+    // We need to recreate the window, otherwise bad things happen...
+    DestroySDLWindow();
     if (!CreateSDLWindow())
       Panic("Failed to recreate SDL window on GPU renderer switch");
 
     if (!CreateDisplay())
       Panic("Failed to recreate display on GPU renderer switch");
+
+    ImGui::NewFrame();
   }
 
   return true;
@@ -357,7 +398,7 @@ bool SDLHostInterface::SetFullscreen(bool enabled)
 
   int window_width, window_height;
   SDL_GetWindowSize(m_window, &window_width, &window_height);
-  m_display->WindowResized(window_width, window_height);
+  m_display->ResizeRenderWindow(window_width, window_height);
   m_fullscreen = enabled;
   return true;
 }
@@ -388,6 +429,8 @@ bool SDLHostInterface::Initialize()
     Log_ErrorPrintf("Failed to create host display");
     return false;
   }
+
+  ImGui::NewFrame();
 
   RegisterHotkeys();
 
@@ -488,7 +531,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     {
       if (event->window.event == SDL_WINDOWEVENT_RESIZED)
       {
-        m_display->WindowResized(event->window.data1, event->window.data2);
+        m_display->ResizeRenderWindow(event->window.data1, event->window.data2);
         UpdateFramebufferScale();
       }
       else if (event->window.event == SDL_WINDOWEVENT_MOVED)
@@ -1492,6 +1535,8 @@ void SDLHostInterface::Run()
         m_system->GetGPU()->ResetGraphicsAPIState();
 
       m_display->Render();
+      ImGui_ImplSDL2_NewFrame(m_window);
+      ImGui::NewFrame();
 
       if (m_system)
       {

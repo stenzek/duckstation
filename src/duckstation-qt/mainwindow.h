@@ -12,9 +12,9 @@ class QThread;
 
 class GameListWidget;
 class QtHostInterface;
-class QtHostDisplay;
 class QtDisplayWidget;
 
+class HostDisplay;
 struct GameListEntry;
 
 class MainWindow final : public QMainWindow
@@ -29,9 +29,9 @@ private Q_SLOTS:
   void reportError(const QString& message);
   void reportMessage(const QString& message);
   bool confirmMessage(const QString& message);
-  void createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device, bool fullscreen,
-                     bool render_to_main);
-  void updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main);
+  QtDisplayWidget* createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
+                                 bool fullscreen, bool render_to_main);
+  QtDisplayWidget* updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main);
   void destroyDisplay();
   void focusDisplayWidget();
 
@@ -72,6 +72,7 @@ private:
   void updateEmulationActions(bool starting, bool running);
   void switchToGameListView();
   void switchToEmulationView();
+  void destroyDisplayWidget();
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
   void updateDebugMenuCPUExecutionMode();
@@ -83,7 +84,7 @@ private:
 
   GameListWidget* m_game_list_widget = nullptr;
 
-  QtHostDisplay* m_host_display = nullptr;
+  HostDisplay* m_host_display = nullptr;
   QtDisplayWidget* m_display_widget = nullptr;
 
   QLabel* m_status_speed_widget = nullptr;

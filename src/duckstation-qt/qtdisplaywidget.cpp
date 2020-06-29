@@ -1,14 +1,18 @@
 #include "qtdisplaywidget.h"
 #include "common/bitutils.h"
-#include "qthostdisplay.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
 #include <cmath>
+
+#if !defined(WIN32) && !defined(APPLE)
+#include <qpa/qplatformnativeinterface.h>
+#endif
 
 QtDisplayWidget::QtDisplayWidget(QWidget* parent) : QWidget(parent)
 {
@@ -45,6 +49,46 @@ int QtDisplayWidget::scaledWindowWidth() const
 int QtDisplayWidget::scaledWindowHeight() const
 {
   return static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen()));
+}
+
+std::optional<WindowInfo> QtDisplayWidget::getWindowInfo() const
+{
+  WindowInfo wi;
+
+  // Windows and Apple are easy here since there's no display connection.
+#if defined(WIN32)
+  wi.type = WindowInfo::Type::Win32;
+  wi.window_handle = reinterpret_cast<void*>(winId());
+#elif defined(__APPLE__)
+  wi.type = WindowInfo::Type::MacOS;
+  wi.window_handle = reinterpret_cast<void*>(winId());
+#else
+  QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
+  const QString platform_name = QGuiApplication::platformName();
+  if (platform_name == QStringLiteral("xcb"))
+  {
+    wi.type = WindowInfo::Type::X11;
+    wi.display_connection = pni->nativeResourceForWindow("display", windowHandle());
+    wi.window_handle = reinterpret_cast<void*>(winId());
+  }
+  else if (platform_name == QStringLiteral("wayland"))
+  {
+    wi.type = WindowInfo::Type::Wayland;
+    wi.display_connection = pni->nativeResourceForWindow("display", windowHandle());
+    wi.window_handle = pni->nativeResourceForWindow("surface", windowHandle());
+  }
+  else
+  {
+    qCritical() << "Unknown PNI platform " << platform_name;
+    return std::nullopt;
+  }
+#endif
+
+  wi.surface_width = scaledWindowWidth();
+  wi.surface_height = scaledWindowHeight();
+  wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
+
+  return wi;
 }
 
 QPaintEngine* QtDisplayWidget::paintEngine() const

@@ -67,7 +67,36 @@ private:
 
 D3D11HostDisplay::D3D11HostDisplay() = default;
 
-D3D11HostDisplay::~D3D11HostDisplay() = default;
+D3D11HostDisplay::~D3D11HostDisplay()
+{
+  AssertMsg(!m_context, "Context should have been destroyed by now");
+  AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
+}
+
+HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
+{
+  return HostDisplay::RenderAPI::D3D11;
+}
+
+void* D3D11HostDisplay::GetRenderDevice() const
+{
+  return m_device.Get();
+}
+
+void* D3D11HostDisplay::GetRenderContext() const
+{
+  return m_context.Get();
+}
+
+bool D3D11HostDisplay::HasRenderDevice() const
+{
+  return static_cast<bool>(m_device);
+}
+
+bool D3D11HostDisplay::HasRenderSurface() const
+{
+  return static_cast<bool>(m_swap_chain);
+}
 
 std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, const void* initial_data,
                                                                     u32 initial_data_stride, bool dynamic)
@@ -135,13 +164,7 @@ void D3D11HostDisplay::SetVSync(bool enabled)
   m_vsync = enabled;
 }
 
-bool D3D11HostDisplay::HasContext() const
-{
-  return static_cast<bool>(m_device);
-}
-
-bool D3D11HostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, std::string_view adapter_name,
-                                                 bool use_flip_model, bool debug_device)
+bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
 {
   UINT create_flags = 0;
   if (debug_device)
@@ -242,24 +265,53 @@ bool D3D11HostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, std::stri
       m_allow_tearing_supported = (allow_tearing_supported == TRUE);
   }
 
-  return CreateSwapChain(wi, use_flip_model);
+  m_window_info = wi;
+  return true;
 }
 
-void D3D11HostDisplay::DestroyContext()
+bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
-  Assert(!m_swap_chain);
+  if (!CreateSwapChain())
+    return false;
+
+  if (!CreateResources())
+    return false;
+
+  if (ImGui::GetCurrentContext() && !CreateImGuiContext())
+    return false;
+
+  return true;
+}
+
+void D3D11HostDisplay::DestroyRenderDevice()
+{
+  if (ImGui::GetCurrentContext())
+    DestroyImGuiContext();
+
+  DestroyResources();
+  DestroyRenderSurface();
   m_context.Reset();
   m_device.Reset();
 }
 
-bool D3D11HostDisplay::CreateSwapChain(const WindowInfo& new_wi, bool use_flip_model)
+bool D3D11HostDisplay::MakeRenderContextCurrent()
 {
-  if (new_wi.type != WindowInfo::Type::Win32)
+  return true;
+}
+
+bool D3D11HostDisplay::DoneRenderContextCurrent()
+{
+  return true;
+}
+
+bool D3D11HostDisplay::CreateSwapChain()
+{
+  if (m_window_info.type != WindowInfo::Type::Win32)
     return false;
 
-  m_using_flip_model_swap_chain = use_flip_model;
+  m_using_flip_model_swap_chain = UseFlipModelSwapChain();
 
-  const HWND window_hwnd = reinterpret_cast<HWND>(new_wi.window_handle);
+  const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
   const u32 width = static_cast<u32>(client_rc.right - client_rc.left);
@@ -330,23 +382,33 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
     return false;
   }
 
-  m_swap_chain_width = backbuffer_desc.Width;
-  m_swap_chain_height = backbuffer_desc.Height;
+  m_window_info.surface_width = backbuffer_desc.Width;
+  m_window_info.surface_height = backbuffer_desc.Height;
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(backbuffer_desc.Width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(backbuffer_desc.Height);
+  }
+
   return true;
 }
 
-bool D3D11HostDisplay::RecreateSwapChain(const WindowInfo& new_wi, bool use_flip_model)
+bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
-  return CreateSwapChain(new_wi, use_flip_model);
+  DestroyRenderSurface();
+
+  m_window_info = new_wi;
+  return CreateSwapChain();
 }
 
-void D3D11HostDisplay::DestroySwapChain()
+void D3D11HostDisplay::DestroyRenderSurface()
 {
   m_swap_chain_rtv.Reset();
   m_swap_chain.Reset();
 }
 
-void D3D11HostDisplay::ResizeSwapChain(u32 new_width, u32 new_height)
+void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
 {
   if (!m_swap_chain)
     return;
@@ -423,8 +485,8 @@ void D3D11HostDisplay::DestroyResources()
 
 bool D3D11HostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_swap_chain_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_swap_chain_height);
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
   if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
     return false;
@@ -438,11 +500,26 @@ void D3D11HostDisplay::DestroyImGuiContext()
   ImGui_ImplDX11_Shutdown();
 }
 
-bool D3D11HostDisplay::BeginRender()
+bool D3D11HostDisplay::Render()
 {
   static constexpr std::array<float, 4> clear_color = {};
   m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
+
+  RenderDisplay();
+
+  if (ImGui::GetCurrentContext())
+    RenderImGui();
+
+  RenderSoftwareCursor();
+
+  if (!m_vsync && m_using_allow_tearing)
+    m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+  else
+    m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
+
+  if (ImGui::GetCurrentContext())
+    ImGui_ImplDX11_NewFrame();
 
   return true;
 }
@@ -453,20 +530,20 @@ void D3D11HostDisplay::RenderImGui()
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void D3D11HostDisplay::EndRenderAndPresent()
+void D3D11HostDisplay::RenderDisplay()
 {
-  if (!m_vsync && m_using_allow_tearing)
-    m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-  else
-    m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
+  if (!HasDisplayTexture())
+    return;
 
-  ImGui::NewFrame();
-  ImGui_ImplDX11_NewFrame();
+  const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+  RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                m_display_texture_view_height, m_display_linear_filtering);
 }
 
 void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
-                                     u32 texture_height, u32 texture_view_x, u32 texture_view_y, u32 texture_view_width,
-                                     u32 texture_view_height, bool linear_filter)
+                                     s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                                     s32 texture_view_height, bool linear_filter)
 {
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
@@ -491,6 +568,15 @@ void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, v
   m_context->OMSetBlendState(m_display_blend_state.Get(), nullptr, 0xFFFFFFFFu);
 
   m_context->Draw(3, 0);
+}
+
+void D3D11HostDisplay::RenderSoftwareCursor()
+{
+  if (!HasSoftwareCursor())
+    return;
+
+  const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
+  RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
 }
 
 void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height,
@@ -572,6 +658,11 @@ std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames(IDXGIFactory* d
   }
 
   return adapter_names;
+}
+
+bool D3D11HostDisplay::UseFlipModelSwapChain() const
+{
+  return true;
 }
 
 } // namespace FrontendCommon

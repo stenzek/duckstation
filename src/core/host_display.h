@@ -1,7 +1,9 @@
 #pragma once
 #include "common/rectangle.h"
+#include "common/window_info.h"
 #include "types.h"
 #include <memory>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
@@ -31,8 +33,8 @@ public:
 
   virtual ~HostDisplay();
 
-  ALWAYS_INLINE s32 GetWindowWidth() const { return m_window_width; }
-  ALWAYS_INLINE s32 GetWindowHeight() const { return m_window_height; }
+  ALWAYS_INLINE s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
+  ALWAYS_INLINE s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
 
   // Position is relative to the top-left corner of the window.
   ALWAYS_INLINE s32 GetMousePositionX() const { return m_mouse_position_x; }
@@ -47,8 +49,19 @@ public:
   virtual void* GetRenderDevice() const = 0;
   virtual void* GetRenderContext() const = 0;
 
+  virtual bool HasRenderDevice() const = 0;
+  virtual bool HasRenderSurface() const = 0;
+
+  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) = 0;
+  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) = 0;
+  virtual bool MakeRenderContextCurrent() = 0;
+  virtual bool DoneRenderContextCurrent() = 0;
+  virtual void DestroyRenderDevice() = 0;
+  virtual void DestroyRenderSurface() = 0;
+  virtual bool ChangeRenderWindow(const WindowInfo& wi) = 0;
+
   /// Call when the window size changes externally to recreate any resources.
-  virtual void WindowResized(s32 new_window_width, s32 new_window_height);
+  virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) = 0;
 
   /// Creates an abstracted RGBA8 texture. If dynamic, the texture can be updated with UpdateTexture() below.
   virtual std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
@@ -59,7 +72,8 @@ public:
   virtual bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
                                u32 out_data_stride) = 0;
 
-  virtual void Render() = 0;
+  /// Returns false if the window was completely occluded.
+  virtual bool Render() = 0;
 
   virtual void SetVSync(bool enabled) = 0;
 
@@ -91,7 +105,7 @@ public:
   }
 
   void SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top, s32 active_width,
-                            s32 active_height, float pixel_aspect_ratio)
+                            s32 active_height, float display_aspect_ratio)
   {
     m_display_width = display_width;
     m_display_height = display_height;
@@ -99,7 +113,7 @@ public:
     m_display_active_top = active_top;
     m_display_active_width = active_width;
     m_display_active_height = active_height;
-    m_display_pixel_aspect_ratio = pixel_aspect_ratio;
+    m_display_aspect_ratio = display_aspect_ratio;
     m_display_changed = true;
   }
 
@@ -147,8 +161,7 @@ protected:
 
   std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect() const;
 
-  s32 m_window_width = 0;
-  s32 m_window_height = 0;
+  WindowInfo m_window_info;
 
   s32 m_mouse_position_x = 0;
   s32 m_mouse_position_y = 0;
@@ -159,7 +172,7 @@ protected:
   s32 m_display_active_top = 0;
   s32 m_display_active_width = 0;
   s32 m_display_active_height = 0;
-  float m_display_pixel_aspect_ratio = 1.0f;
+  float m_display_aspect_ratio = 1.0f;
 
   void* m_display_texture_handle = nullptr;
   s32 m_display_texture_width = 0;

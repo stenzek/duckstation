@@ -15,7 +15,7 @@
 
 namespace FrontendCommon {
 
-class D3D11HostDisplay final
+class D3D11HostDisplay : public HostDisplay
 {
 public:
   template<typename T>
@@ -24,55 +24,61 @@ public:
   D3D11HostDisplay();
   ~D3D11HostDisplay();
 
-  ALWAYS_INLINE HostDisplay::RenderAPI GetRenderAPI() const { return HostDisplay::RenderAPI::D3D11; }
-  ALWAYS_INLINE void* GetRenderDevice() const { return m_device.Get(); }
-  ALWAYS_INLINE void* GetRenderContext() const { return m_context.Get(); }
+  virtual RenderAPI GetRenderAPI() const override;
+  virtual void* GetRenderDevice() const override;
+  virtual void* GetRenderContext() const override;
 
-  bool CreateContextAndSwapChain(const WindowInfo& wi, std::string_view adapter_name, bool use_flip_model,
-                                 bool debug_device);
-  bool HasContext() const;
-  void DestroyContext();
+  virtual bool HasRenderDevice() const override;
+  virtual bool HasRenderSurface() const override;
 
-  bool CreateResources();
-  void DestroyResources();
+  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) override;
+  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
+  virtual void DestroyRenderDevice() override;
 
-  bool CreateImGuiContext();
-  void DestroyImGuiContext();
+  virtual bool MakeRenderContextCurrent() override;
+  virtual bool DoneRenderContextCurrent() override;
 
-  ALWAYS_INLINE u32 GetSwapChainWidth() const { return m_swap_chain_width; }
-  ALWAYS_INLINE u32 GetSwapChainHeight() const { return m_swap_chain_height; }
-  ALWAYS_INLINE bool HasSwapChain() const { return static_cast<bool>(m_swap_chain); }
-
-  bool RecreateSwapChain(const WindowInfo& new_wi, bool use_flip_model);
-  void ResizeSwapChain(u32 new_width, u32 new_height);
-  void DestroySwapChain();
+  virtual bool ChangeRenderWindow(const WindowInfo& new_wi) override;
+  virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  virtual void DestroyRenderSurface() override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
-                                                    u32 initial_data_stride, bool dynamic);
+                                                    u32 initial_data_stride, bool dynamic) override;
   void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data,
-                     u32 texture_data_stride);
+                     u32 texture_data_stride) override;
   bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                       u32 out_data_stride);
+                       u32 out_data_stride) override;
 
-  void SetVSync(bool enabled);
+  virtual void SetVSync(bool enabled) override;
 
-  bool BeginRender();
-  void RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
-                     u32 texture_height, u32 texture_view_x, u32 texture_view_y, u32 texture_view_width,
-                     u32 texture_view_height, bool linear_filter);
-  void RenderImGui();
-  void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
-  void EndRenderAndPresent();
+  virtual bool Render() override;
 
   static std::vector<std::string> EnumerateAdapterNames();
 
-private:
+protected:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
+
+  virtual bool UseFlipModelSwapChain() const;
 
   static std::vector<std::string> EnumerateAdapterNames(IDXGIFactory* dxgi_factory);
 
-  bool CreateSwapChain(const WindowInfo& new_wi, bool use_flip_model);
+  virtual bool CreateResources();
+  virtual void DestroyResources();
+
+  virtual bool CreateImGuiContext();
+  virtual void DestroyImGuiContext();
+
+  bool CreateSwapChain();
   bool CreateSwapChainRTV();
+
+  void RenderDisplay();
+  void RenderImGui();
+  void RenderSoftwareCursor();
+
+  void RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
+                     s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                     s32 texture_view_height, bool linear_filter);
+  void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
 
   ComPtr<IDXGIFactory> m_dxgi_factory;
 
@@ -93,9 +99,6 @@ private:
   D3D11::Texture m_display_pixels_texture;
   D3D11::StreamBuffer m_display_uniform_buffer;
   D3D11::AutoStagingTexture m_readback_staging_texture;
-
-  u32 m_swap_chain_width = 0;
-  u32 m_swap_chain_height = 0;
 
   bool m_allow_tearing_supported = false;
   bool m_using_flip_model_swap_chain = true;

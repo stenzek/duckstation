@@ -96,7 +96,22 @@ VulkanHostDisplay::~VulkanHostDisplay()
   AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
 }
 
-bool VulkanHostDisplay::RecreateSwapChain(const WindowInfo& new_wi)
+HostDisplay::RenderAPI VulkanHostDisplay::GetRenderAPI() const
+{
+  return HostDisplay::RenderAPI::Vulkan;
+}
+
+void* VulkanHostDisplay::GetRenderDevice() const
+{
+  return nullptr;
+}
+
+void* VulkanHostDisplay::GetRenderContext() const
+{
+  return nullptr;
+}
+
+bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
   Assert(!m_swap_chain);
 
@@ -115,22 +130,39 @@ bool VulkanHostDisplay::RecreateSwapChain(const WindowInfo& new_wi)
     return false;
   }
 
+  m_window_info = wi_copy;
+  m_window_info.surface_width = m_swap_chain->GetWidth();
+  m_window_info.surface_height = m_swap_chain->GetHeight();
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
+  }
+
   return true;
 }
 
-void VulkanHostDisplay::ResizeSwapChain(u32 new_width, u32 new_height)
+void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
 {
   g_vulkan_context->WaitForGPUIdle();
 
-  if (!m_swap_chain->ResizeSwapChain(new_width, new_height))
+  if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height))
     Panic("Failed to resize swap chain");
 
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_swap_chain->GetWidth());
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_swap_chain->GetHeight());
+  m_window_info.surface_width = m_swap_chain->GetWidth();
+  m_window_info.surface_height = m_swap_chain->GetHeight();
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
+  }
 }
 
-void VulkanHostDisplay::DestroySwapChain()
+void VulkanHostDisplay::DestroyRenderSurface()
 {
+  m_window_info = {};
   m_swap_chain.reset();
 }
 
@@ -193,25 +225,45 @@ void VulkanHostDisplay::SetVSync(bool enabled)
   m_swap_chain->SetVSync(enabled);
 }
 
-bool VulkanHostDisplay::CreateContextAndSwapChain(const WindowInfo& wi, std::string_view gpu_name, bool debug_device)
+bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
 {
-  if (!Vulkan::Context::Create(gpu_name, &wi, &m_swap_chain, debug_device, false))
+  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     return false;
   }
 
+  m_window_info = wi;
+  if (m_swap_chain)
+  {
+    m_window_info.surface_width = m_swap_chain->GetWidth();
+    m_window_info.surface_height = m_swap_chain->GetHeight();
+  }
+
   return true;
 }
 
-void VulkanHostDisplay::CreateShaderCache(std::string_view shader_cache_directory, bool debug_shaders)
+bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
-  Vulkan::ShaderCache::Create(shader_cache_directory, debug_shaders);
+  Vulkan::ShaderCache::Create(shader_cache_directory, debug_device);
+
+  if (!CreateResources())
+    return false;
+
+  if (ImGui::GetCurrentContext() && !CreateImGuiContext())
+    return false;
+
+  return true;
 }
 
-bool VulkanHostDisplay::HasContext() const
+bool VulkanHostDisplay::HasRenderDevice() const
 {
   return static_cast<bool>(g_vulkan_context);
+}
+
+bool VulkanHostDisplay::HasRenderSurface() const
+{
+  return static_cast<bool>(m_swap_chain);
 }
 
 bool VulkanHostDisplay::CreateResources()
@@ -329,24 +381,37 @@ void VulkanHostDisplay::DestroyImGuiContext()
   ImGui_ImplVulkan_Shutdown();
 }
 
-void VulkanHostDisplay::DestroyContext()
+void VulkanHostDisplay::DestroyRenderDevice()
 {
   if (!g_vulkan_context)
     return;
 
   g_vulkan_context->WaitForGPUIdle();
+
+  if (ImGui::GetCurrentContext())
+    DestroyImGuiContext();
+
+  DestroyResources();
+
+  Vulkan::ShaderCache::Destroy();
+  DestroyRenderSurface();
   Vulkan::Context::Destroy();
 }
 
-void VulkanHostDisplay::DestroyShaderCache()
+bool VulkanHostDisplay::MakeRenderContextCurrent()
 {
-  Vulkan::ShaderCache::Destroy();
+  return true;
+}
+
+bool VulkanHostDisplay::DoneRenderContextCurrent()
+{
+  return true;
 }
 
 bool VulkanHostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_swap_chain->GetWidth());
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_swap_chain->GetHeight());
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
   ImGui_ImplVulkan_InitInfo vii = {};
   vii.Instance = g_vulkan_context->GetVulkanInstance();
@@ -370,14 +435,14 @@ bool VulkanHostDisplay::CreateImGuiContext()
   return true;
 }
 
-bool VulkanHostDisplay::BeginRender()
+bool VulkanHostDisplay::Render()
 {
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
     if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
     {
-      ResizeSwapChain(0, 0);
+      ResizeRenderWindow(0, 0);
       res = m_swap_chain->AcquireNextImage();
     }
 
@@ -409,13 +474,13 @@ bool VulkanHostDisplay::BeginRender()
                                     1u,
                                     &clear_value};
   vkCmdBeginRenderPass(cmdbuffer, &rp, VK_SUBPASS_CONTENTS_INLINE);
-  return true;
-}
 
-void VulkanHostDisplay::EndRenderAndPresent()
-{
-  VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
-  Vulkan::Texture& swap_chain_texture = m_swap_chain->GetCurrentTexture();
+  RenderDisplay();
+
+  if (ImGui::GetCurrentContext())
+    RenderImGui();
+
+  RenderSoftwareCursor();
 
   vkCmdEndRenderPass(cmdbuffer);
 
@@ -426,13 +491,26 @@ void VulkanHostDisplay::EndRenderAndPresent()
                                         m_swap_chain->GetCurrentImageIndex());
   g_vulkan_context->MoveToNextCommandBuffer();
 
-  ImGui::NewFrame();
-  ImGui_ImplVulkan_NewFrame();
+  if (ImGui::GetCurrentContext())
+    ImGui_ImplVulkan_NewFrame();
+
+  return true;
+}
+
+void VulkanHostDisplay::RenderDisplay()
+{
+  if (!HasDisplayTexture())
+    return;
+
+  const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+  RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                m_display_texture_view_height, m_display_linear_filtering);
 }
 
 void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
-                                      u32 texture_height, u32 texture_view_x, u32 texture_view_y,
-                                      u32 texture_view_width, u32 texture_view_height, bool linear_filter)
+                                      s32 texture_height, s32 texture_view_x, s32 texture_view_y,
+                                      s32 texture_view_width, s32 texture_view_height, bool linear_filter)
 {
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
 
@@ -467,6 +545,15 @@ void VulkanHostDisplay::RenderImGui()
 {
   ImGui::Render();
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_vulkan_context->GetCurrentCommandBuffer());
+}
+
+void VulkanHostDisplay::RenderSoftwareCursor()
+{
+  if (!HasSoftwareCursor())
+    return;
+
+  const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
+  RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
 }
 
 void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture)

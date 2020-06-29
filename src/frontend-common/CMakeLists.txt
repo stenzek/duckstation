@@ -9,13 +9,15 @@ add_library(frontend-common
   imgui_styles.h
   ini_settings_interface.cpp
   ini_settings_interface.h
+  opengl_host_display.cpp
+  opengl_host_display.h
   save_state_selector_ui.cpp
   save_state_selector_ui.h
   vulkan_host_display.cpp
   vulkan_host_display.h
 )
 
-target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion vulkan-loader)
+target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion glad vulkan-loader)
 
 if(WIN32)
   target_sources(frontend-common PRIVATE
@@ -25,7 +27,7 @@ if(WIN32)
   target_link_libraries(frontend-common PRIVATE d3d11.lib dxgi.lib)
 endif()
 
-if(SDL2_FOUND)
+if(SDL2_FOUND AND NOT BUILD_LIBRETRO_CORE)
   target_sources(frontend-common PRIVATE 
     sdl_audio_stream.cpp
     sdl_audio_stream.h
@@ -45,7 +47,7 @@ if(SDL2_FOUND)
   endif()
 endif()
 
-if(ENABLE_DISCORD_PRESENCE)
+if(ENABLE_DISCORD_PRESENCE AND NOT BUILD_LIBRETRO_CORE)
   target_compile_definitions(frontend-common PUBLIC -DWITH_DISCORD_PRESENCE=1)
   target_link_libraries(frontend-common PRIVATE discord-rpc)
 endif()
