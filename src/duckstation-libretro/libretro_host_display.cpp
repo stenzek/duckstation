@@ -1,8 +1,8 @@
 #include "libretro_host_display.h"
-#include "libretro_host_interface.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "libretro.h"
+#include "libretro_host_interface.h"
 #include <array>
 #include <tuple>
 Log_SetChannel(LibretroHostDisplay);
@@ -102,7 +102,52 @@ void* LibretroHostDisplay::GetRenderContext() const
   return nullptr;
 }
 
-void LibretroHostDisplay::WindowResized(s32 new_window_width, s32 new_window_height) {}
+bool LibretroHostDisplay::HasRenderDevice() const
+{
+  return true;
+}
+
+bool LibretroHostDisplay::HasRenderSurface() const
+{
+  return true;
+}
+
+bool LibretroHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
+{
+  m_window_info = wi;
+  return true;
+}
+
+bool LibretroHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+{
+  return true;
+}
+
+bool LibretroHostDisplay::MakeRenderContextCurrent()
+{
+  return true;
+}
+
+bool LibretroHostDisplay::DoneRenderContextCurrent()
+{
+  return true;
+}
+
+void LibretroHostDisplay::DestroyRenderDevice() {}
+
+void LibretroHostDisplay::DestroyRenderSurface() {}
+
+bool LibretroHostDisplay::ChangeRenderWindow(const WindowInfo& wi)
+{
+  m_window_info = wi;
+  return true;
+}
+
+void LibretroHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
+{
+  m_window_info.surface_width = new_window_width;
+  m_window_info.surface_height = new_window_height;
+}
 
 std::unique_ptr<HostDisplayTexture> LibretroHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
                                                                        u32 data_stride, bool dynamic)
@@ -123,28 +168,21 @@ bool LibretroHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32
   return true;
 }
 
-void LibretroHostDisplay::SetVSync(bool enabled) {}
-
-void LibretroHostDisplay::Render()
+void LibretroHostDisplay::SetVSync(bool enabled)
 {
-  if (m_display_texture_view_width != m_last_display_width || m_display_texture_view_height != m_last_display_height)
-  {
-    retro_game_geometry geom = {};
-    geom.base_width = m_display_width;
-    geom.base_height = m_display_height;
-    geom.aspect_ratio = m_display_pixel_aspect_ratio;
+  // The libretro frontend controls this.
+  Log_DevPrintf("Ignoring SetVSync(%u)", BoolToUInt32(enabled));
+}
 
-    if (!g_retro_environment_callback(RETRO_ENVIRONMENT_SET_GEOMETRY, &geom))
-      Log_WarningPrint("RETRO_ENVIRONMENT_SET_GEOMETRY failed");
-
-    m_last_display_width = m_display_texture_view_width;
-    m_last_display_height = m_display_texture_view_height;
-  }
-
-  // TODO: padding...
-  if (m_display_texture_handle)
+bool LibretroHostDisplay::Render()
+{
+  if (HasDisplayTexture())
   {
     const LibretroDisplayTexture* tex = static_cast<const LibretroDisplayTexture*>(m_display_texture_handle);
-    g_retro_video_refresh_callback(tex->GetData() + m_display_texture_view_y * tex->GetWidth() + m_display_texture_view_x, m_display_texture_view_width, m_display_texture_view_height , tex->GetDataPitch());
+    g_retro_video_refresh_callback(tex->GetData() + m_display_texture_view_y * tex->GetWidth() +
+                                     m_display_texture_view_x,
+                                   m_display_texture_view_width, m_display_texture_view_height, tex->GetDataPitch());
   }
+
+  return true;
 }

@@ -11,9 +11,8 @@ RETRO_API unsigned retro_api_version(void)
 
 RETRO_API void retro_init(void)
 {
-  Log::SetConsoleOutputParams(true);
-  Log::SetDebugOutputParams(true);
-  Log_InfoPrintf("retro_init()");
+  // default log to stdout until we get an interface
+  Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_INFO);
 
   if (!g_libretro_host_interface.Initialize())
     Panic("Host interface initialization failed");
@@ -21,7 +20,6 @@ RETRO_API void retro_init(void)
 
 RETRO_API void retro_deinit(void)
 {
-  Log_InfoPrintf("retro_deinit()");
   g_libretro_host_interface.Shutdown();
 }
 
@@ -66,20 +64,17 @@ RETRO_API void retro_run(void)
 
 RETRO_API size_t retro_serialize_size(void)
 {
-  Log_ErrorPrintf("retro_serialize_size()");
-  return 0;
+  return g_libretro_host_interface.retro_serialize_size();
 }
 
 RETRO_API bool retro_serialize(void* data, size_t size)
 {
-  Log_ErrorPrintf("retro_serialize()");
-  return false;
+  return g_libretro_host_interface.retro_serialize(data, size);
 }
 
 RETRO_API bool retro_unserialize(const void* data, size_t size)
 {
-  Log_ErrorPrintf("retro_unserialize()");
-  return false;
+  return g_libretro_host_interface.retro_unserialize(data, size);
 }
 
 RETRO_API void retro_cheat_reset(void)
@@ -106,7 +101,6 @@ RETRO_API bool retro_load_game_special(unsigned game_type, const struct retro_ga
 
 RETRO_API void retro_unload_game(void)
 {
-  Log_ErrorPrintf("retro_unload_game()");
   g_libretro_host_interface.DestroySystem();
 }
 
@@ -133,6 +127,7 @@ RETRO_API void retro_set_environment(retro_environment_t f)
   if (!core_options_set)
   {
     core_options_set = true;
+    g_libretro_host_interface.InitLogging();
     if (!g_libretro_host_interface.SetCoreOptions())
       Log_WarningPrintf("Failed to set core options, settings will not be changeable.");
   }

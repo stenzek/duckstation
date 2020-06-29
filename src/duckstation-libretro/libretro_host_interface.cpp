@@ -1,16 +1,18 @@
 #include "libretro_host_interface.h"
 #include "common/assert.h"
+#include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/analog_controller.h"
 #include "core/digital_controller.h"
+#include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
 #include "libretro_audio_stream.h"
 #include "libretro_host_display.h"
+#include "libretro_opengl_host_display.h"
 #include "libretro_settings_interface.h"
-#include "opengl_host_display.h"
 #include <array>
 #include <cstring>
 #include <tuple>
@@ -19,17 +21,8 @@
 Log_SetChannel(LibretroHostInterface);
 
 #ifdef WIN32
-#include "d3d11_host_display.h"
+#include "libretro_d3d11_host_display.h"
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-// TODO:
-//  - Fix up D3D11
-//  - Save states
-//  - Expose the rest of the options
-//  - Memory card and controller settings
-//  - Better paths for memory cards/BIOS
-//////////////////////////////////////////////////////////////////////////
 
 LibretroHostInterface g_libretro_host_interface;
 
@@ -40,9 +33,40 @@ retro_audio_sample_batch_t g_retro_audio_sample_batch_callback;
 retro_input_poll_t g_retro_input_poll_callback;
 retro_input_state_t g_retro_input_state_callback;
 
+static retro_log_callback s_libretro_log_callback = {};
+static bool s_libretro_log_callback_valid = false;
+
+static const char* GetSaveDirectory()
+{
+  const char* save_directory = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_directory) || !save_directory)
+    save_directory = "saves";
+
+  return save_directory;
+}
+
+static void LibretroLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
+                                const char* message)
+{
+  static constexpr std::array<retro_log_level, LOGLEVEL_COUNT> levels = {
+    {RETRO_LOG_ERROR, RETRO_LOG_ERROR, RETRO_LOG_WARN, RETRO_LOG_INFO, RETRO_LOG_INFO, RETRO_LOG_INFO, RETRO_LOG_DEBUG,
+     RETRO_LOG_DEBUG, RETRO_LOG_DEBUG, RETRO_LOG_DEBUG}};
+
+  s_libretro_log_callback.log(levels[level], "[%s] %s\n", (level <= LOGLEVEL_PERF) ? functionName : channelName,
+                              message);
+}
+
 LibretroHostInterface::LibretroHostInterface() = default;
 
 LibretroHostInterface::~LibretroHostInterface() = default;
+
+void LibretroHostInterface::InitLogging()
+{
+  s_libretro_log_callback_valid =
+    g_retro_environment_callback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &s_libretro_log_callback);
+  if (s_libretro_log_callback_valid)
+    Log::RegisterCallback(LibretroLogCallback, nullptr);
+}
 
 bool LibretroHostInterface::Initialize()
 {
@@ -50,6 +74,7 @@ bool LibretroHostInterface::Initialize()
     return false;
 
   LoadSettings();
+  UpdateLogging();
   return true;
 }
 
@@ -60,11 +85,12 @@ void LibretroHostInterface::Shutdown()
 
 void LibretroHostInterface::ReportError(const char* message)
 {
-  Log_ErrorPrint(message);
+  AddFormattedOSDMessage(60.0f, "ERROR: %s", message);
 }
 
 void LibretroHostInterface::ReportMessage(const char* message)
 {
+  AddOSDMessage(message, 10.0f);
   Log_InfoPrint(message);
 }
 
@@ -74,8 +100,44 @@ bool LibretroHostInterface::ConfirmMessage(const char* message)
   return false;
 }
 
+void LibretroHostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title)
+{
+  // Just use the filename for now... we don't have the game list. Unless we can pull this from the frontend somehow?
+  *title = GameList::GetTitleForPath(path);
+  code->clear();
+}
+
+std::string LibretroHostInterface::GetSharedMemoryCardPath(u32 slot) const
+{
+  return GetUserDirectoryRelativePath("%s/shared_card_%d.mcd", GetSaveDirectory(), slot + 1);
+}
+
+std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
+{
+  return GetUserDirectoryRelativePath("%s/%s_%d.mcd", GetSaveDirectory(), game_code, slot + 1);
+}
+
+void LibretroHostInterface::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
+{
+  retro_message msg = {};
+  msg.msg = message.c_str();
+  msg.frames = static_cast<u32>(duration * (m_system ? m_system->GetThrottleFrequency() : 60.0f));
+  g_retro_environment_callback(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
+}
+
 void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info* info)
 {
+  const bool use_resolution_scale = (m_settings.gpu_renderer != GPURenderer::Software);
+  GetSystemAVInfo(info, use_resolution_scale);
+
+  Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f, fps = %.2f", info->geometry.base_width,
+                 info->geometry.base_height, info->geometry.max_width, info->geometry.max_height,
+                 info->geometry.aspect_ratio, info->timing.fps);
+}
+
+void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale)
+{
+  const u32 resolution_scale = use_resolution_scale ? m_settings.gpu_resolution_scale : 1u;
   Assert(m_system);
 
   std::memset(info, 0, sizeof(*info));
@@ -93,28 +155,75 @@ void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info
     info->geometry.base_height = 576;
   }
 
-  info->geometry.max_width = 1024;
-  info->geometry.max_height = 512;
+  info->geometry.max_width = 1024 * resolution_scale;
+  info->geometry.max_height = 512 * resolution_scale;
 
   info->timing.fps = m_system->GetThrottleFrequency();
   info->timing.sample_rate = static_cast<double>(AUDIO_SAMPLE_RATE);
+}
+
+void LibretroHostInterface::UpdateSystemAVInfo(bool use_resolution_scale)
+{
+  struct retro_system_av_info avi;
+  GetSystemAVInfo(&avi, use_resolution_scale);
+
+  Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f, fps = %.2f", avi.geometry.base_width,
+                 avi.geometry.base_height, avi.geometry.max_width, avi.geometry.max_height, avi.geometry.aspect_ratio,
+                 avi.timing.fps);
+
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &avi))
+    Log_ErrorPrintf("Failed to update system AV info on resolution change");
+}
+
+void LibretroHostInterface::UpdateGeometry()
+{
+  struct retro_system_av_info avi;
+  const bool use_resolution_scale = (m_settings.gpu_renderer != GPURenderer::Software);
+  GetSystemAVInfo(&avi, use_resolution_scale);
+
+  Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f", avi.geometry.base_width, avi.geometry.base_height,
+                 avi.geometry.max_width, avi.geometry.max_height, avi.geometry.aspect_ratio);
+
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_SET_GEOMETRY, &avi.geometry))
+    Log_WarningPrint("RETRO_ENVIRONMENT_SET_GEOMETRY failed");
+}
+
+void LibretroHostInterface::UpdateLogging()
+{
+  Log::SetFilterLevel(m_settings.log_level);
+
+  if (s_libretro_log_callback_valid)
+    Log::SetConsoleOutputParams(false);
+  else
+    Log::SetConsoleOutputParams(true, nullptr, m_settings.log_level);
 }
 
 bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
 {
   SystemBootParameters bp;
   bp.filename = game->path;
+  bp.force_software_renderer = !m_hw_render_callback_valid;
 
   if (!BootSystem(bp))
     return false;
 
-  RequestHardwareRendererContext();
+  if (m_settings.gpu_renderer != GPURenderer::Software)
+  {
+    if (!m_hw_render_callback_valid)
+      RequestHardwareRendererContext();
+    else
+      SwitchToHardwareRenderer();
+  }
+
   return true;
 }
 
 void LibretroHostInterface::retro_run_frame()
 {
   Assert(m_system);
+
+  if (HasCoreVariablesChanged())
+    UpdateSettings();
 
   UpdateControllers();
 
@@ -132,17 +241,46 @@ unsigned LibretroHostInterface::retro_get_region()
   return m_system->IsPALRegion() ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
 
+size_t LibretroHostInterface::retro_serialize_size()
+{
+  return System::MAX_SAVE_STATE_SIZE;
+}
+
+bool LibretroHostInterface::retro_serialize(void* data, size_t size)
+{
+  std::unique_ptr<ByteStream> stream = ByteStream_CreateMemoryStream(data, static_cast<u32>(size));
+  if (!m_system->SaveState(stream.get(), 0))
+  {
+    Log_ErrorPrintf("Failed to save state to memory stream");
+    return false;
+  }
+
+  return true;
+}
+
+bool LibretroHostInterface::retro_unserialize(const void* data, size_t size)
+{
+  std::unique_ptr<ByteStream> stream = ByteStream_CreateReadOnlyMemoryStream(data, static_cast<u32>(size));
+  if (!m_system->LoadState(stream.get()))
+  {
+    Log_ErrorPrintf("Failed to load save state from memory stream");
+    return false;
+  }
+
+  return true;
+}
+
 bool LibretroHostInterface::AcquireHostDisplay()
 {
   // start in software mode, switch to hardware later
-  m_display = new LibretroHostDisplay();
+  m_display = std::make_unique<LibretroHostDisplay>();
   return true;
 }
 
 void LibretroHostInterface::ReleaseHostDisplay()
 {
-  delete m_display;
-  m_display = nullptr;
+  m_display->DestroyRenderDevice();
+  m_display.reset();
 }
 
 std::unique_ptr<AudioStream> LibretroHostInterface::CreateAudioStream(AudioBackend backend)
@@ -150,7 +288,13 @@ std::unique_ptr<AudioStream> LibretroHostInterface::CreateAudioStream(AudioBacke
   return std::make_unique<LibretroAudioStream>();
 }
 
-static std::array<retro_core_option_definition, 14> s_option_definitions = {{
+void LibretroHostInterface::OnSystemDestroyed()
+{
+  HostInterface::OnSystemDestroyed();
+  m_using_hardware_renderer = false;
+}
+
+static std::array<retro_core_option_definition, 20> s_option_definitions = {{
   {"Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -188,7 +332,12 @@ static std::array<retro_core_option_definition, 14> s_option_definitions = {{
 #endif
      {"OpenGL", "Hardware (OpenGL)"},
      {"Software", "Software"}},
-   "OpenGL"},
+#ifdef WIN32
+   "D3D11"
+#else
+   "OpenGL"
+#endif
+  },
   {"GPU.ResolutionScale",
    "Rendering Resolution Scale",
    "Scales internal rendering resolution by the specified multiplier. Larger values are slower. Some games require "
@@ -234,8 +383,63 @@ static std::array<retro_core_option_definition, 14> s_option_definitions = {{
   {"Display.AspectRatio",
    "Aspect Ratio",
    "Sets the core-provided aspect ratio.",
-   {{"4:3", "4:3"}, {"16:9", "16:9"}, {"1:1", "1:1"}},
+   {{"4:3", "4:3"}, {"16:9", "16:9"}, {"2:1", "2:1 (VRAM 1:1)"}, {"1:1", "1:1"}},
    "4:3"},
+  {"MemoryCards.LoadFromSaveStates",
+   "Load Memory Cards From Save States",
+   "Sets whether the contents of memory cards will be loaded when a save state is loaded.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"MemoryCards.Card1Type",
+   "Memory Card 1 Type",
+   "Sets the type of memory card for Slot 1.",
+   {{"None", "No Memory Card"},
+    {"Shared", "Shared Between All Games"},
+    {"PerGame", "Separate Card Per Game (Game Code)"},
+    {"PerGameTitle", "Separate Card Per Game (Game Title)"}},
+   "PerGameTitle"},
+  {"MemoryCards.Card2Type",
+   "Memory Card 2 Type",
+   "Sets the type of memory card for Slot 2.",
+   {{"None", "No Memory Card"},
+    {"Shared", "Shared Between All Games"},
+    {"PerGame", "Separate Card Per Game (Game Code)"},
+    {"PerGameTitle", "Separate Card Per Game (Game Title)"}},
+   "None"},
+  {"Controller1.Type",
+   "Controller 1 Type",
+   "Sets the type of controller for Slot 1.",
+   {{"None", "None"},
+    {"DigitalController", "Digital Controller"},
+    {"AnalogController", "Analog Controller (DualShock)"},
+    {"NamcoGunCon", "Namco GunCon"},
+    {"PlayStationMouse", "PlayStation Mouse"},
+    {"NeGcon", "NeGcon"}},
+   "DigitalController"},
+  {"Controller2.Type",
+   "Controller 2 Type",
+   "Sets the type of controller for Slot 2.",
+   {{"None", "None"},
+    {"DigitalController", "Digital Controller"},
+    {"AnalogController", "Analog Controller (DualShock)"},
+    {"NamcoGunCon", "Namco GunCon"},
+    {"PlayStationMouse", "PlayStation Mouse"},
+    {"NeGcon", "NeGcon"}},
+   "None"},
+  {"Logging.LogLevel",
+   "Log Level",
+   "Sets the level of information logged by the core.",
+   {{"None", "None"},
+    {"Error", "Error"},
+    {"Warning", "Warning"},
+    {"Perf", "Performance"},
+    {"Success", "Success"},
+    {"Info", "Information"},
+    {"Dev", "Developer"},
+    {"Profile", "Profile"},
+    {"Debug", "Debug"},
+    {"Trace", "Trace"}},
+   "Info"},
   {},
 }};
 
@@ -252,17 +456,16 @@ bool LibretroHostInterface::SetCoreOptions()
   return false;
 }
 
+bool LibretroHostInterface::HasCoreVariablesChanged()
+{
+  bool changed = false;
+  return (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &changed) && changed);
+}
+
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
   m_settings.Load(si);
-
-  // Overrides
-  m_settings.log_level = LOGLEVEL_DEV;
-  m_settings.log_to_console = true;
-
-  // start in software, switch later
-  m_settings.gpu_renderer = GPURenderer::Software;
 
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;
@@ -270,19 +473,59 @@ void LibretroHostInterface::LoadSettings()
     system_directory = "bios";
   m_settings.bios_path =
     StringUtil::StdStringFromFormat("%s%cscph1001.bin", system_directory, FS_OSPATH_SEPERATOR_CHARACTER);
-
-  // TODOs - expose via config
-  m_settings.controller_types[0] = ControllerType::DigitalController;
-  m_settings.controller_types[1] = ControllerType::None;
-  m_settings.memory_card_types[0] = MemoryCardType::None;
-  m_settings.memory_card_types[1] = MemoryCardType::None;
 }
 
 void LibretroHostInterface::UpdateSettings()
 {
   Settings old_settings(std::move(m_settings));
   LoadSettings();
+
+  if (m_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
+      m_settings.gpu_renderer != GPURenderer::Software)
+  {
+    ReportMessage("Resolution changed, updating system AV info...");
+
+    // this will probably recreate the device... so save the state first by switching to software
+    if (m_using_hardware_renderer)
+      SwitchToSoftwareRenderer();
+
+    UpdateSystemAVInfo(true);
+
+    if (!m_hw_render_callback_valid)
+      RequestHardwareRendererContext();
+    else if (!m_using_hardware_renderer)
+      SwitchToHardwareRenderer();
+
+    // Don't let the base class mess with the GPU.
+    old_settings.gpu_resolution_scale = m_settings.gpu_resolution_scale;
+  }
+
+  if (m_settings.gpu_renderer != old_settings.gpu_renderer)
+  {
+    ReportFormattedMessage("Switching to %s renderer...", Settings::GetRendererDisplayName(m_settings.gpu_renderer));
+
+    if (m_using_hardware_renderer)
+      SwitchToSoftwareRenderer();
+
+    if (m_settings.gpu_renderer != GPURenderer::Software)
+      RequestHardwareRendererContext();
+
+    // Don't let the base class recreate the GPU or system.
+    old_settings.gpu_renderer = m_settings.gpu_renderer;
+  }
+
   CheckForSettingsChanges(old_settings);
+}
+
+void LibretroHostInterface::CheckForSettingsChanges(const Settings& old_settings)
+{
+  HostInterface::CheckForSettingsChanges(old_settings);
+
+  if (m_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+    UpdateGeometry();
+
+  if (m_settings.log_level != old_settings.log_level)
+    UpdateLogging();
 }
 
 void LibretroHostInterface::UpdateControllers()
@@ -339,26 +582,42 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
 bool LibretroHostInterface::RequestHardwareRendererContext()
 {
   GPURenderer renderer = Settings::DEFAULT_GPU_RENDERER;
-  retro_variable renderer_variable{"GPU.Renderer", "OpenGL"};
+  retro_variable renderer_variable{"GPU.Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER)};
   if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &renderer_variable) && renderer_variable.value)
     renderer = Settings::ParseRendererName(renderer_variable.value).value_or(Settings::DEFAULT_GPU_RENDERER);
 
+  Log_InfoPrintf("Renderer = %s", Settings::GetRendererName(renderer));
   if (renderer == GPURenderer::Software)
-    return true;
+  {
+    m_hw_render_callback_valid = false;
+    return false;
+  }
+
+  Log_InfoPrintf("Requesting hardware renderer context for %s", Settings::GetRendererName(renderer));
 
   m_hw_render_callback = {};
   m_hw_render_callback.context_reset = HardwareRendererContextReset;
   m_hw_render_callback.context_destroy = HardwareRendererContextDestroy;
 
+  switch (renderer)
+  {
 #ifdef WIN32
-  if (renderer == GPURenderer::HardwareD3D11 && false)
-    return D3D11HostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
+    case GPURenderer::HardwareD3D11:
+      m_hw_render_callback_valid = LibretroD3D11HostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
+      break;
 #endif
 
-  if (renderer == GPURenderer::HardwareOpenGL)
-    return OpenGLHostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
+    case GPURenderer::HardwareOpenGL:
+      m_hw_render_callback_valid = LibretroOpenGLHostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
+      break;
 
-  return false;
+    default:
+      Log_ErrorPrintf("Unhandled renderer %s", Settings::GetRendererName(renderer));
+      m_hw_render_callback_valid = false;
+      break;
+  }
+
+  return m_hw_render_callback_valid;
 }
 
 void LibretroHostInterface::HardwareRendererContextReset()
@@ -366,23 +625,25 @@ void LibretroHostInterface::HardwareRendererContextReset()
   Log_InfoPrintf("Hardware context reset, type = %u",
                  static_cast<unsigned>(g_libretro_host_interface.m_hw_render_callback.context_type));
 
-  std::unique_ptr<HostDisplay> new_display = nullptr;
-  GPURenderer new_renderer = GPURenderer::Software;
+  g_libretro_host_interface.m_hw_render_callback_valid = true;
+  g_libretro_host_interface.SwitchToHardwareRenderer();
+}
 
+void LibretroHostInterface::SwitchToHardwareRenderer()
+{
+  std::unique_ptr<HostDisplay> display = nullptr;
   switch (g_libretro_host_interface.m_hw_render_callback.context_type)
   {
     case RETRO_HW_CONTEXT_OPENGL:
     case RETRO_HW_CONTEXT_OPENGL_CORE:
     case RETRO_HW_CONTEXT_OPENGLES3:
     case RETRO_HW_CONTEXT_OPENGLES_VERSION:
-      new_display = OpenGLHostDisplay::Create(g_libretro_host_interface.m_settings.gpu_use_debug_device);
-      new_renderer = GPURenderer::HardwareOpenGL;
+      display = std::make_unique<LibretroOpenGLHostDisplay>();
       break;
 
 #ifdef WIN32
     case RETRO_HW_CONTEXT_DIRECT3D:
-      new_display = D3D11HostDisplay::Create(g_libretro_host_interface.m_settings.gpu_use_debug_device);
-      new_renderer = GPURenderer::HardwareD3D11;
+      display = std::make_unique<LibretroD3D11HostDisplay>();
       break;
 #endif
 
@@ -390,25 +651,43 @@ void LibretroHostInterface::HardwareRendererContextReset()
       break;
   }
 
-  if (!new_display)
+  struct retro_system_av_info avi;
+  g_libretro_host_interface.GetSystemAVInfo(&avi, true);
+
+  WindowInfo wi;
+  wi.type = WindowInfo::Type::Libretro;
+  wi.display_connection = &g_libretro_host_interface.m_hw_render_callback;
+  wi.surface_width = avi.geometry.base_width;
+  wi.surface_height = avi.geometry.base_height;
+  if (!display || !display->CreateRenderDevice(wi, {}, g_libretro_host_interface.m_settings.gpu_use_debug_device))
   {
     Log_ErrorPrintf("Failed to create hardware host display");
     return;
   }
 
-  HostDisplay* old_display = g_libretro_host_interface.m_display;
-  g_libretro_host_interface.m_display = new_display.release();
-  g_libretro_host_interface.m_settings.gpu_renderer = new_renderer;
-  g_libretro_host_interface.m_system->RecreateGPU(new_renderer);
-  delete old_display;
+  std::swap(display, g_libretro_host_interface.m_display);
+  g_libretro_host_interface.m_system->RecreateGPU(g_libretro_host_interface.m_settings.gpu_renderer);
+  display->DestroyRenderDevice();
+  m_using_hardware_renderer = true;
 }
 
 void LibretroHostInterface::HardwareRendererContextDestroy()
 {
+  g_libretro_host_interface.m_hw_render_callback_valid = false;
+
   // switch back to software
-  HostDisplay* old_display = g_libretro_host_interface.m_display;
-  g_libretro_host_interface.m_display = new LibretroHostDisplay();
-  g_libretro_host_interface.m_settings.gpu_renderer = GPURenderer::Software;
+  if (g_libretro_host_interface.m_using_hardware_renderer)
+  {
+    Log_InfoPrintf("Lost hardware renderer context, switching to software renderer");
+    g_libretro_host_interface.SwitchToSoftwareRenderer();
+  }
+}
+
+void LibretroHostInterface::SwitchToSoftwareRenderer()
+{
+  std::unique_ptr<HostDisplay> display = std::make_unique<LibretroHostDisplay>();
+  std::swap(display, g_libretro_host_interface.m_display);
   g_libretro_host_interface.m_system->RecreateGPU(GPURenderer::Software);
-  delete old_display;
+  display->DestroyRenderDevice();
+  m_using_hardware_renderer = false;
 }

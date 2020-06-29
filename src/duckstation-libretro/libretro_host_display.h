@@ -11,7 +11,20 @@ public:
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
   void* GetRenderContext() const override;
-  void WindowResized(s32 new_window_width, s32 new_window_height) override;
+
+  bool HasRenderDevice() const override;
+  bool HasRenderSurface() const override;
+
+  bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) override;
+  bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
+  void DestroyRenderDevice() override;
+
+  bool MakeRenderContextCurrent() override;
+  bool DoneRenderContextCurrent() override;
+
+  bool ChangeRenderWindow(const WindowInfo& wi) override;
+  void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  void DestroyRenderSurface() override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
                                                     bool dynamic) override;
@@ -22,9 +35,5 @@ public:
 
   void SetVSync(bool enabled) override;
 
-  void Render() override;
-
-private:
-  s32 m_last_display_width = -1;
-  s32 m_last_display_height = -1;
+  bool Render() override;
 };
