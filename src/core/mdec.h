@@ -34,7 +34,7 @@ private:
   static constexpr u32 DATA_IN_FIFO_SIZE = 1024;
   static constexpr u32 DATA_OUT_FIFO_SIZE = 768;
   static constexpr u32 NUM_BLOCKS = 6;
-  static constexpr TickCount TICKS_PER_BLOCK = 3072 / 4;
+  static constexpr TickCount TICKS_PER_BLOCK = 448;
 
   enum DataOutputDepth : u8
   {

@@ -389,7 +389,7 @@ bool MDEC::DecodeColoredMacroblock()
   yuv_to_rgb(8, 8, m_blocks[0], m_blocks[1], m_blocks[5]);
   m_total_blocks_decoded += 4;
 
-  ScheduleBlockCopyOut(TICKS_PER_BLOCK * 4);
+  ScheduleBlockCopyOut(TICKS_PER_BLOCK * 6);
   return true;
 }
 
