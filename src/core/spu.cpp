@@ -444,8 +444,11 @@ void SPU::WriteRegister(u32 offset, u16 value)
           new_value.ram_transfer_mode == RAMTransferMode::Stopped)
       {
         // clear the fifo here?
-        Log_DebugPrintf("Clearing SPU transfer FIFO");
-        m_transfer_fifo.Clear();
+        if (!m_transfer_fifo.IsEmpty())
+        {
+          Log_WarningPrintf("Clearing SPU transfer FIFO with %u bytes left", m_transfer_fifo.GetSize());
+          m_transfer_fifo.Clear();
+        }
       }
 
       if (!new_value.enable && m_SPUCNT.enable)
