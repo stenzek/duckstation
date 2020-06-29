@@ -58,6 +58,27 @@
 #ifdef Status
 #undef Status
 #endif
+#ifdef CursorShape
+#undef CursorShape
+#endif
+#ifdef KeyPress
+#undef KeyPress
+#endif
+#ifdef KeyRelease
+#undef KeyRelease
+#endif
+#ifdef FocusIn
+#undef FocusIn
+#endif
+#ifdef FocusOut
+#undef FocusOut
+#endif
+#ifdef FontChange
+#undef FontChange
+#endif
+#ifdef Expose
+#undef Expose
+#endif
 
 #endif
 
