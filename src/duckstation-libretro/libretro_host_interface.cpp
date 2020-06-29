@@ -86,6 +86,7 @@ void LibretroHostInterface::Shutdown()
 void LibretroHostInterface::ReportError(const char* message)
 {
   AddFormattedOSDMessage(60.0f, "ERROR: %s", message);
+  Log_ErrorPrint(message);
 }
 
 void LibretroHostInterface::ReportMessage(const char* message)
@@ -579,6 +580,31 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
   }
 }
 
+static std::optional<GPURenderer> RetroHwContextToRenderer(retro_hw_context_type type)
+{
+  switch (type)
+  {
+    case RETRO_HW_CONTEXT_OPENGL:
+    case RETRO_HW_CONTEXT_OPENGL_CORE:
+    case RETRO_HW_CONTEXT_OPENGLES3:
+    case RETRO_HW_CONTEXT_OPENGLES_VERSION:
+      return GPURenderer::HardwareOpenGL;
+
+#ifdef WIN32
+    case RETRO_HW_CONTEXT_DIRECT3D:
+      return GPURenderer::HardwareD3D11;
+#endif
+
+#if 0
+    case RETRO_HW_CONTEXT_VULKAN:
+      return GPURenderer::HardwareVulkan;
+#endif
+
+    default:
+      return std::nullopt;
+  }
+}
+
 bool LibretroHostInterface::RequestHardwareRendererContext()
 {
   GPURenderer renderer = Settings::DEFAULT_GPU_RENDERER;
@@ -587,6 +613,25 @@ bool LibretroHostInterface::RequestHardwareRendererContext()
     renderer = Settings::ParseRendererName(renderer_variable.value).value_or(Settings::DEFAULT_GPU_RENDERER);
 
   Log_InfoPrintf("Renderer = %s", Settings::GetRendererName(renderer));
+
+  unsigned preferred_renderer = 0;
+  if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred_renderer))
+  {
+    std::optional<GPURenderer> preferred_gpu_renderer =
+      RetroHwContextToRenderer(static_cast<retro_hw_context_type>(preferred_renderer));
+    if (!preferred_gpu_renderer.has_value() || preferred_gpu_renderer.value() != renderer)
+    {
+      const char* preferred_name =
+        preferred_gpu_renderer.has_value() ? Settings::GetRendererName(preferred_gpu_renderer.value()) : "Unknown";
+      const char* config_name = Settings::GetRendererName(renderer);
+      renderer = preferred_gpu_renderer.value_or(GPURenderer::Software);
+      ReportFormattedError(
+        "Mismatch between frontend's preferred GPU renderer '%s' and configured renderer '%s'. Please "
+        "change your video driver to '%s'. Using '%s' renderer for now.",
+        preferred_name, config_name, config_name, Settings::GetRendererName(renderer));
+    }
+  }
+
   if (renderer == GPURenderer::Software)
   {
     m_hw_render_callback_valid = false;
@@ -631,24 +676,29 @@ void LibretroHostInterface::HardwareRendererContextReset()
 
 void LibretroHostInterface::SwitchToHardwareRenderer()
 {
-  std::unique_ptr<HostDisplay> display = nullptr;
-  switch (g_libretro_host_interface.m_hw_render_callback.context_type)
+  std::optional<GPURenderer> renderer = RetroHwContextToRenderer(m_hw_render_callback.context_type);
+  if (!renderer.has_value())
   {
-    case RETRO_HW_CONTEXT_OPENGL:
-    case RETRO_HW_CONTEXT_OPENGL_CORE:
-    case RETRO_HW_CONTEXT_OPENGLES3:
-    case RETRO_HW_CONTEXT_OPENGLES_VERSION:
+    Log_ErrorPrintf("Unknown context type %u", static_cast<unsigned>(m_hw_render_callback.context_type));
+    return;
+  }
+
+  std::unique_ptr<HostDisplay> display = nullptr;
+  switch (renderer.value())
+  {
+    case GPURenderer::HardwareOpenGL:
       display = std::make_unique<LibretroOpenGLHostDisplay>();
       break;
 
 #ifdef WIN32
-    case RETRO_HW_CONTEXT_DIRECT3D:
+    case GPURenderer::HardwareD3D11:
       display = std::make_unique<LibretroD3D11HostDisplay>();
       break;
 #endif
 
     default:
-      break;
+      Log_ErrorPrintf("Unhandled renderer '%s'", Settings::GetRendererName(renderer.value()));
+      return;
   }
 
   struct retro_system_av_info avi;
@@ -666,7 +716,7 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   }
 
   std::swap(display, g_libretro_host_interface.m_display);
-  g_libretro_host_interface.m_system->RecreateGPU(g_libretro_host_interface.m_settings.gpu_renderer);
+  g_libretro_host_interface.m_system->RecreateGPU(renderer.value());
   display->DestroyRenderDevice();
   m_using_hardware_renderer = true;
 }
