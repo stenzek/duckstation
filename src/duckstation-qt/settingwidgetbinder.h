@@ -8,6 +8,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
@@ -22,6 +23,9 @@ struct SettingAccessor
 
   static int getIntValue(const T* widget);
   static void setIntValue(T* widget, int value);
+
+  static int getFloatValue(const T* widget);
+  static void setFloatValue(T* widget, int value);
 
   static QString getStringValue(const T* widget);
   static void setStringValue(T* widget, const QString& value);
@@ -42,6 +46,9 @@ struct SettingAccessor<QLineEdit>
   static int getIntValue(const QLineEdit* widget) { return widget->text().toInt(); }
   static void setIntValue(QLineEdit* widget, int value) { widget->setText(QStringLiteral("%1").arg(value)); }
 
+  static float getFloatValue(const QLineEdit* widget) { return widget->text().toFloat(); }
+  static void setFloatValue(QLineEdit* widget, float value) { widget->setText(QStringLiteral("%1").arg(value)); }
+
   static QString getStringValue(const QLineEdit* widget) { return widget->text(); }
   static void setStringValue(QLineEdit* widget, const QString& value) { widget->setText(value); }
 
@@ -61,6 +68,9 @@ struct SettingAccessor<QComboBox>
   static int getIntValue(const QComboBox* widget) { return widget->currentIndex(); }
   static void setIntValue(QComboBox* widget, int value) { widget->setCurrentIndex(value); }
 
+  static float getFloatValue(const QComboBox* widget) { return static_cast<float>(widget->currentIndex()); }
+  static void setFloatValue(QComboBox* widget, float value) { widget->setCurrentIndex(static_cast<int>(value)); }
+
   static QString getStringValue(const QComboBox* widget) { return widget->currentText(); }
   static void setStringValue(QComboBox* widget, const QString& value) { widget->setCurrentText(value); }
 
@@ -79,6 +89,9 @@ struct SettingAccessor<QCheckBox>
 
   static int getIntValue(const QCheckBox* widget) { return widget->isChecked() ? 1 : 0; }
   static void setIntValue(QCheckBox* widget, int value) { widget->setChecked(value != 0); }
+
+  static float getFloatValue(const QCheckBox* widget) { return widget->isChecked() ? 1.0f : 0.0f; }
+  static void setFloatValue(QCheckBox* widget, float value) { widget->setChecked(value != 0.0f); }
 
   static QString getStringValue(const QCheckBox* widget)
   {
@@ -102,6 +115,9 @@ struct SettingAccessor<QSlider>
   static int getIntValue(const QSlider* widget) { return widget->value(); }
   static void setIntValue(QSlider* widget, int value) { widget->setValue(value); }
 
+  static float getFloatValue(const QSlider* widget) { return static_cast<float>(widget->value()); }
+  static void setFloatValue(QSlider* widget, float value) { widget->setValue(static_cast<int>(value)); }
+
   static QString getStringValue(const QSlider* widget) { return QStringLiteral("%1").arg(widget->value()); }
   static void setStringValue(QSlider* widget, const QString& value) { widget->setValue(value.toInt()); }
 
@@ -121,6 +137,9 @@ struct SettingAccessor<QSpinBox>
   static int getIntValue(const QSpinBox* widget) { return widget->value(); }
   static void setIntValue(QSpinBox* widget, int value) { widget->setValue(value); }
 
+  static float getFloatValue(const QSpinBox* widget) { return static_cast<float>(widget->value()); }
+  static void setFloatValue(QSpinBox* widget, float value) { widget->setValue(static_cast<int>(value)); }
+
   static QString getStringValue(const QSpinBox* widget) { return QStringLiteral("%1").arg(widget->value()); }
   static void setStringValue(QSpinBox* widget, const QString& value) { widget->setValue(value.toInt()); }
 
@@ -132,6 +151,28 @@ struct SettingAccessor<QSpinBox>
 };
 
 template<>
+struct SettingAccessor<QDoubleSpinBox>
+{
+  static bool getBoolValue(const QDoubleSpinBox* widget) { return widget->value() > 0.0; }
+  static void setBoolValue(QDoubleSpinBox* widget, bool value) { widget->setValue(value ? 1.0 : 0.0); }
+
+  static int getIntValue(const QDoubleSpinBox* widget) { return static_cast<int>(widget->value()); }
+  static void setIntValue(QDoubleSpinBox* widget, int value) { widget->setValue(static_cast<double>(value)); }
+
+  static float getFloatValue(const QDoubleSpinBox* widget) { return static_cast<float>(widget->value()); }
+  static void setFloatValue(QDoubleSpinBox* widget, float value) { widget->setValue(static_cast<double>(value)); }
+
+  static QString getStringValue(const QDoubleSpinBox* widget) { return QStringLiteral("%1").arg(widget->value()); }
+  static void setStringValue(QDoubleSpinBox* widget, const QString& value) { widget->setValue(value.toDouble()); }
+
+  template<typename F>
+  static void connectValueChanged(QDoubleSpinBox* widget, F func)
+  {
+    widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), func);
+  }
+};
+
+template<>
 struct SettingAccessor<QAction>
 {
   static bool getBoolValue(const QAction* widget) { return widget->isChecked(); }
@@ -139,6 +180,9 @@ struct SettingAccessor<QAction>
 
   static int getIntValue(const QAction* widget) { return widget->isChecked() ? 1 : 0; }
   static void setIntValue(QAction* widget, int value) { widget->setChecked(value != 0); }
+
+  static float getFloatValue(const QAction* widget) { return widget->isChecked() ? 1.0f : 0.0f; }
+  static void setFloatValue(QAction* widget, float value) { widget->setChecked(value != 0.0f); }
 
   static QString getStringValue(const QAction* widget)
   {
@@ -187,6 +231,25 @@ void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const QStri
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
     const int new_value = Accessor::getIntValue(widget);
+    hi->putSettingValue(setting_name, new_value);
+    hi->applySettings();
+  });
+}
+
+template<typename WidgetType>
+void BindWidgetToFloatSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name,
+                              float default_value = 0.0f)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+
+  QVariant value = hi->getSettingValue(setting_name);
+  if (value.isValid())
+    Accessor::setFloatValue(widget, value.toFloat());
+  else
+    Accessor::setFloatValue(widget, default_value);
+
+  Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
+    const float new_value = Accessor::getFloatValue(widget);
     hi->putSettingValue(setting_name, new_value);
     hi->applySettings();
   });
