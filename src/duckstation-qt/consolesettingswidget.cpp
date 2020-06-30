@@ -16,12 +16,14 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.cpuExecutionMode->addItem(tr(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console/Region",
-                                               &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName);
+                                               &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
+                                               Settings::DEFAULT_CONSOLE_REGION);
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.biosPath, "BIOS/Path");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableTTYOutput, "BIOS/PatchTTYEnable");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.fastBoot, "BIOS/PatchFastBoot");
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU/ExecutionMode",
-                                               &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName);
+                                               &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
+                                               Settings::DEFAULT_CPU_EXECUTION_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromReadThread, "CDROM/ReadThread");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM/RegionCheck");
 

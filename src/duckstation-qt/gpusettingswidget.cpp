@@ -17,15 +17,16 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   setupAdditionalUi();
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, QStringLiteral("GPU/Renderer"),
-                                               &Settings::ParseRendererName, &Settings::GetRendererName);
+                                               &Settings::ParseRendererName, &Settings::GetRendererName,
+                                               Settings::DEFAULT_GPU_RENDERER);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice,
                                                QStringLiteral("GPU/UseDebugDevice"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
     m_host_interface, m_ui.displayAspectRatio, QStringLiteral("Display/AspectRatio"),
-    &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName);
+    &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName, Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode,
                                                QStringLiteral("Display/CropMode"), &Settings::ParseDisplayCropMode,
-                                               &Settings::GetDisplayCropModeName);
+                                               &Settings::GetDisplayCropModeName, Settings::DEFAULT_DISPLAY_CROP_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering,
                                                QStringLiteral("Display/LinearFiltering"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling,

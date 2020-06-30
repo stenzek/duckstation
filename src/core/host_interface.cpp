@@ -321,7 +321,7 @@ std::string HostInterface::GetShaderCacheDirectory()
 
 void HostInterface::SetDefaultSettings(SettingsInterface& si)
 {
-  si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(ConsoleRegion::Auto));
+  si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION));
 
   si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
   si.SetBoolValue("Main", "SpeedLimiterEnabled", true);
@@ -330,7 +330,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "SaveStateOnExit", true);
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
 
-  si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(CPUExecutionMode::Recompiler));
+  si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
@@ -341,8 +341,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "DisableInterlacing", true);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
 
-  si.SetStringValue("Display", "CropMode", "Overscan");
-  si.SetStringValue("Display", "AspectRatio", "4:3");
+  si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
+  si.SetStringValue("Display", "AspectRatio",
+                    Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
@@ -357,7 +358,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", true);
 
-  si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Cubeb));
+  si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND));
   si.SetIntValue("Audio", "OutputVolume", 100);
   si.SetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
   si.SetIntValue("Audio", "OutputMuted", false);
@@ -368,16 +369,16 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("BIOS", "PatchTTYEnable", false);
   si.SetBoolValue("BIOS", "PatchFastBoot", false);
 
-  si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
-  si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(ControllerType::None));
+  si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_1_TYPE));
+  si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_2_TYPE));
 
   si.SetBoolValue("MemoryCards", "LoadFromSaveStates", false);
-  si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::PerGameTitle));
+  si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_1_TYPE));
   si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
-  si.SetStringValue("MemoryCards", "Card2Type", "None");
+  si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
   si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
 
-  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_INFO));
+  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
   si.SetStringValue("Logging", "LogFilter", "");
   si.SetBoolValue("Logging", "LogToConsole", false);
   si.SetBoolValue("Logging", "LogToDebug", false);

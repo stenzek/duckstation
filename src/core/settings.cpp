@@ -72,7 +72,7 @@ bool Settings::HasAnyPerGameMemoryCards() const
 void Settings::Load(SettingsInterface& si)
 {
   region =
-    ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(ConsoleRegion::NTSC_U);
+    ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(DEFAULT_CONSOLE_REGION);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
   speed_limiter_enabled = si.GetBoolValue("Main", "SpeedLimiterEnabled", true);
@@ -82,8 +82,10 @@ void Settings::Load(SettingsInterface& si)
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
 
-  cpu_execution_mode = ParseCPUExecutionMode(si.GetStringValue("CPU", "ExecutionMode", "Recompiler").c_str())
-                         .value_or(CPUExecutionMode::Interpreter);
+  cpu_execution_mode =
+    ParseCPUExecutionMode(
+      si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
+      .value_or(DEFAULT_CPU_EXECUTION_MODE);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
@@ -96,13 +98,14 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
 
-  display_crop_mode = ParseDisplayCropMode(
-                        si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DisplayCropMode::None)).c_str())
-                        .value_or(DisplayCropMode::None);
+  display_crop_mode =
+    ParseDisplayCropMode(
+      si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)).c_str())
+      .value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio =
     ParseDisplayAspectRatio(
-      si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DisplayAspectRatio::R4_3)).c_str())
-      .value_or(DisplayAspectRatio::R4_3);
+      si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
+      .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
@@ -117,7 +120,8 @@ void Settings::Load(SettingsInterface& si)
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
 
   audio_backend =
-    ParseAudioBackend(si.GetStringValue("Audio", "Backend", "Cubeb").c_str()).value_or(AudioBackend::Cubeb);
+    ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
+      .value_or(DEFAULT_AUDIO_BACKEND);
   audio_output_volume = si.GetIntValue("Audio", "OutputVolume", 100);
   audio_buffer_size = si.GetIntValue("Audio", "BufferSize", HostInterface::DEFAULT_AUDIO_BUFFER_SIZE);
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
@@ -133,27 +137,31 @@ void Settings::Load(SettingsInterface& si)
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
 
-  controller_types[0] = ParseControllerTypeName(si.GetStringValue("Controller1", "Type", "DigitalController").c_str())
-                          .value_or(ControllerType::DigitalController);
+  controller_types[0] =
+    ParseControllerTypeName(
+      si.GetStringValue("Controller1", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE)).c_str())
+      .value_or(DEFAULT_CONTROLLER_1_TYPE);
   controller_types[1] =
-    ParseControllerTypeName(si.GetStringValue("Controller2", "Type", "None").c_str()).value_or(ControllerType::None);
+    ParseControllerTypeName(
+      si.GetStringValue("Controller2", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE)).c_str())
+      .value_or(DEFAULT_CONTROLLER_2_TYPE);
 
   // NOTE: The default value here if not present in the config is shared, but SetDefaultSettings() makes per-game.
   // This is so we don't break older builds which had the shared card by default.
   load_memory_cards_from_save_states = si.GetBoolValue("MemoryCards", "LoadFromSaveStates", false);
   memory_card_types[0] =
     ParseMemoryCardTypeName(
-      si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(MemoryCardType::Shared)).c_str())
-      .value_or(MemoryCardType::Shared);
+      si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
+      .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
   memory_card_types[1] =
     ParseMemoryCardTypeName(
-      si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(MemoryCardType::None)).c_str())
-      .value_or(MemoryCardType::None);
+      si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_2_TYPE)).c_str())
+      .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
 
-  log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(LOGLEVEL_INFO)).c_str())
-                .value_or(LOGLEVEL_INFO);
+  log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
+                .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
   log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
   log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);

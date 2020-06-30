@@ -10,7 +10,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
     m_ui.logLevel->addItem(tr(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.logLevel, QStringLiteral("Logging/LogLevel"),
-                                               &Settings::ParseLogLevelName, &Settings::GetLogLevelName);
+                                               &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
+                                               Settings::DEFAULT_LOG_LEVEL);
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.logFilter, QStringLiteral("Logging/LogFilter"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToConsole,
                                                QStringLiteral("Logging/LogToConsole"));

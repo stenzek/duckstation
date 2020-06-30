@@ -156,11 +156,16 @@ struct SettingAccessor<QAction>
 /// Binds a widget's value to a setting, updating it when the value changes.
 
 template<typename WidgetType>
-void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name)
+void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name,
+                             bool default_value = false)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  Accessor::setBoolValue(widget, hi->getSettingValue(setting_name).toBool());
+  QVariant value = hi->getSettingValue(setting_name);
+  if (value.isValid())
+    Accessor::setBoolValue(widget, value.toBool());
+  else
+    Accessor::setBoolValue(widget, default_value);
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
     const bool new_value = Accessor::getBoolValue(widget);
@@ -170,11 +175,15 @@ void BindWidgetToBoolSetting(QtHostInterface* hi, WidgetType* widget, const QStr
 }
 
 template<typename WidgetType>
-void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name)
+void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name, int default_value = 0)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  Accessor::setIntValue(widget, hi->getSettingValue(setting_name).toInt());
+  QVariant value = hi->getSettingValue(setting_name);
+  if (value.isValid())
+    Accessor::setIntValue(widget, value.toInt());
+  else
+    Accessor::setIntValue(widget, default_value);
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
     const int new_value = Accessor::getIntValue(widget);
@@ -184,11 +193,16 @@ void BindWidgetToIntSetting(QtHostInterface* hi, WidgetType* widget, const QStri
 }
 
 template<typename WidgetType>
-void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name, float range)
+void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name, float range,
+                                   float default_value = 0.0f)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  Accessor::setIntValue(widget, static_cast<int>(hi->getSettingValue(setting_name).toFloat() * range));
+  QVariant value = hi->getSettingValue(setting_name);
+  if (value.isValid())
+    Accessor::setIntValue(widget, static_cast<int>(value.toFloat() * range));
+  else
+    Accessor::setIntValue(widget, static_cast<int>(default_value * range));
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name, range]() {
     const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
@@ -198,11 +212,16 @@ void BindWidgetToNormalizedSetting(QtHostInterface* hi, WidgetType* widget, cons
 }
 
 template<typename WidgetType>
-void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name)
+void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name,
+                               const QString& default_value = QString())
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  Accessor::setStringValue(widget, hi->getSettingValue(setting_name).toString());
+  QVariant value = hi->getSettingValue(setting_name);
+  if (value.isValid())
+    Accessor::setStringValue(widget, value.toString());
+  else
+    Accessor::setStringValue(widget, default_value);
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name]() {
     const QString new_value = Accessor::getStringValue(widget);
@@ -214,7 +233,7 @@ void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, const QS
 template<typename WidgetType, typename DataType>
 void BindWidgetToEnumSetting(QtHostInterface* hi, WidgetType* widget, const QString& setting_name,
                              std::optional<DataType> (*from_string_function)(const char* str),
-                             const char* (*to_string_function)(DataType value))
+                             const char* (*to_string_function)(DataType value), DataType default_value)
 {
   using Accessor = SettingAccessor<WidgetType>;
   using UnderlyingType = std::underlying_type_t<DataType>;
@@ -224,6 +243,8 @@ void BindWidgetToEnumSetting(QtHostInterface* hi, WidgetType* widget, const QStr
     from_string_function(old_setting_string_value.toStdString().c_str());
   if (old_setting_value.has_value())
     Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
+  else
+    Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(default_value)));
 
   Accessor::connectValueChanged(widget, [hi, widget, setting_name, to_string_function]() {
     const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
