@@ -1,4 +1,5 @@
 #pragma once
+#include "common/image.h"
 #include "settings.h"
 #include "types.h"
 #include <memory>
@@ -53,6 +54,9 @@ public:
 
   /// Loads/refreshes any per-controller settings.
   virtual void LoadSettings(HostInterface* host_interface, const char* section);
+
+  /// Returns the software cursor to use for this controller, if any.
+  virtual bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale);
 
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(System* system, ControllerType type, u32 index);

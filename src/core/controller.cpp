@@ -41,6 +41,11 @@ float Controller::GetVibrationMotorStrength(u32 motor)
 
 void Controller::LoadSettings(HostInterface* host_interface, const char* section) {}
 
+bool Controller::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)
+{
+  return false;
+}
+
 std::unique_ptr<Controller> Controller::Create(System* system, ControllerType type, u32 index)
 {
   switch (type)
@@ -207,6 +212,9 @@ Controller::SettingList Controller::GetSettings(ControllerType type)
   {
     case ControllerType::AnalogController:
       return AnalogController::StaticGetSettings();
+
+    case ControllerType::NamcoGunCon:
+      return NamcoGunCon::StaticGetSettings();
 
     default:
       return {};

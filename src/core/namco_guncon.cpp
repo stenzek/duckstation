@@ -5,19 +5,14 @@
 #include "gpu.h"
 #include "host_display.h"
 #include "host_interface.h"
+#include "resources.h"
 #include "system.h"
 #include <array>
 Log_SetChannel(NamcoGunCon);
 
-NamcoGunCon::NamcoGunCon(System* system) : m_system(system)
-{
-  m_system->GetHostInterface()->EnableSoftwareCursor();
-}
+NamcoGunCon::NamcoGunCon(System* system) : m_system(system) {}
 
-NamcoGunCon::~NamcoGunCon()
-{
-  m_system->GetHostInterface()->DisableSoftwareCursor();
-}
+NamcoGunCon::~NamcoGunCon() = default;
 
 ControllerType NamcoGunCon::GetType() const
 {
@@ -225,4 +220,49 @@ Controller::ButtonList NamcoGunCon::StaticGetButtonNames()
 u32 NamcoGunCon::StaticGetVibrationMotorCount()
 {
   return 0;
+}
+
+Controller::SettingList NamcoGunCon::StaticGetSettings()
+{
+  static constexpr std::array<SettingInfo, 2> settings = {
+    {{SettingInfo::Type::Path, "CrosshairImagePath", "Crosshair Image Path",
+      "Path to an image to use as a crosshair/cursor."},
+     {SettingInfo::Type::Float, "CrosshairScale", "Crosshair Image Scale", "Scale of crosshair image on screen.", "1.0",
+      "0.0001", "100.0"}}};
+
+  return SettingList(settings.begin(), settings.end());
+}
+
+void NamcoGunCon::LoadSettings(HostInterface* host_interface, const char* section)
+{
+  Controller::LoadSettings(host_interface, section);
+
+  std::string path = host_interface->GetSettingValue(section, "CrosshairImagePath");
+  if (path != m_crosshair_image_path)
+  {
+    m_crosshair_image_path = std::move(path);
+    if (m_crosshair_image_path.empty() ||
+        !Common::LoadImageFromFile(&m_crosshair_image, m_crosshair_image_path.c_str()))
+    {
+      m_crosshair_image.Invalidate();
+    }
+  }
+
+  if (!m_crosshair_image.IsValid())
+  {
+    m_crosshair_image.SetPixels(Resources::CROSSHAIR_IMAGE_WIDTH, Resources::CROSSHAIR_IMAGE_HEIGHT,
+                                Resources::CROSSHAIR_IMAGE_DATA.data());
+  }
+
+  m_crosshair_image_scale = host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
+}
+
+bool NamcoGunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)
+{
+  if (!m_crosshair_image.IsValid())
+    return false;
+
+  *image = &m_crosshair_image;
+  *image_scale = m_crosshair_image_scale;
+  return true;
 }

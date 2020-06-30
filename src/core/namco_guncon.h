@@ -24,6 +24,7 @@ public:
   static AxisList StaticGetAxisNames();
   static ButtonList StaticGetButtonNames();
   static u32 StaticGetVibrationMotorCount();
+  static SettingList StaticGetSettings();
 
   ControllerType GetType() const override;
   std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const override;
@@ -31,6 +32,8 @@ public:
 
   void Reset() override;
   bool DoState(StateWrapper& sw) override;
+  void LoadSettings(HostInterface* host_interface, const char* section) override;
+  bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale) override;
 
   void SetAxisState(s32 axis_code, float value) override;
   void SetButtonState(s32 button_code, bool pressed) override;
@@ -56,6 +59,9 @@ private:
   };
 
   System* m_system;
+  Common::RGBA8Image m_crosshair_image;
+  std::string m_crosshair_image_path;
+  float m_crosshair_image_scale = 1.0f;
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);

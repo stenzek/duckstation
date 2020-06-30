@@ -97,8 +97,6 @@ struct Settings
   bool display_show_vps = false;
   bool display_show_speed = false;
   bool video_sync_enabled = true;
-  std::string display_software_cursor_path;
-  float display_software_cursor_scale = 1.0f;
 
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;

@@ -110,17 +110,10 @@ public:
   bool GetBooleanSettingValue(const char* section, const char* key, bool default_value = false);
 
   /// Returns an integer setting from the configuration.
-  bool GetIntegerSettingValue(const char* section, const char* key, s32 default_value = 0);
+  s32 GetIntegerSettingValue(const char* section, const char* key, s32 default_value = 0);
 
   /// Returns a float setting from the configuration.
-  bool GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
-
-  /// Enables the software cursor. Can be called multiple times, but must be matched by a call to
-  /// DisableSoftwareCursor().
-  void EnableSoftwareCursor();
-
-  /// Disables the software cursor, preventing it from being renderered.
-  void DisableSoftwareCursor();
+  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
 protected:
   virtual bool AcquireHostDisplay() = 0;
@@ -164,6 +157,9 @@ protected:
   /// Adjusts the internal (render) resolution of the hardware backends.
   void ModifyResolutionScale(s32 increment);
 
+  /// Updates software cursor state, based on controllers.
+  void UpdateSoftwareCursor();
+
   bool SaveState(const char* filename);
   void CreateAudioStream();
 
@@ -173,6 +169,4 @@ protected:
   Settings m_settings;
   std::string m_program_directory;
   std::string m_user_directory;
-
-  u32 m_software_cursor_use_count = 0;
 };

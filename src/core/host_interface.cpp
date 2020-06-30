@@ -4,8 +4,10 @@
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
+#include "common/image.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "controller.h"
 #include "dma.h"
 #include "gpu.h"
 #include "host_display.h"
@@ -89,6 +91,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
     return false;
   }
 
+  UpdateSoftwareCursor();
   OnSystemCreated();
 
   m_audio_stream->PauseOutput(false);
@@ -117,6 +120,7 @@ void HostInterface::DestroySystem()
 
   m_system.reset();
   m_audio_stream.reset();
+  UpdateSoftwareCursor();
   ReleaseHostDisplay();
   OnSystemDestroyed();
   OnRunningGameChanged();
@@ -352,8 +356,6 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
-  si.SetStringValue("Display", "SoftwareCursorPath", "");
-  si.SetFloatValue("Display", "SoftwareCursorScale", 1.0f);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", true);
@@ -476,6 +478,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       if (m_system && !controllers_updated)
       {
         m_system->UpdateControllers();
+        UpdateSoftwareCursor();
         controllers_updated = true;
       }
 
@@ -483,7 +486,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (m_system && !controllers_updated)
+    {
       m_system->UpdateControllerSettings();
+      UpdateSoftwareCursor();
+    }
   }
 
   if (m_display && m_settings.display_linear_filtering != old_settings.display_linear_filtering)
@@ -491,21 +497,6 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
   if (m_display && m_settings.display_integer_scaling != old_settings.display_integer_scaling)
     m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
-
-  if (m_software_cursor_use_count > 0 && m_display &&
-      (m_settings.display_software_cursor_path != old_settings.display_software_cursor_path ||
-       m_settings.display_software_cursor_scale != old_settings.display_software_cursor_scale))
-  {
-    if (m_settings.display_software_cursor_path.empty())
-    {
-      m_display->ClearSoftwareCursor();
-    }
-    else
-    {
-      m_display->SetSoftwareCursor(m_settings.display_software_cursor_path.c_str(),
-                                   m_settings.display_software_cursor_scale);
-    }
-  }
 }
 
 void HostInterface::SetUserDirectoryToProgramDirectory()
@@ -580,7 +571,7 @@ bool HostInterface::GetBooleanSettingValue(const char* section, const char* key,
   return bool_value.value_or(default_value);
 }
 
-bool HostInterface::GetIntegerSettingValue(const char* section, const char* key, s32 default_value /*= 0*/)
+s32 HostInterface::GetIntegerSettingValue(const char* section, const char* key, s32 default_value /*= 0*/)
 {
   std::string value = GetSettingValue(section, key, "");
   if (value.empty())
@@ -590,7 +581,7 @@ bool HostInterface::GetIntegerSettingValue(const char* section, const char* key,
   return int_value.value_or(default_value);
 }
 
-bool HostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
+float HostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
 {
   std::string value = GetSettingValue(section, key, "");
   if (value.empty())
@@ -628,6 +619,35 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     m_system->GetGPU()->UpdateSettings();
 }
 
+void HostInterface::UpdateSoftwareCursor()
+{
+  if (!m_system)
+  {
+    m_display->ClearSoftwareCursor();
+    return;
+  }
+
+  const Common::RGBA8Image* image = nullptr;
+  float image_scale = 1.0f;
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = m_system->GetController(i);
+    if (controller && controller->GetSoftwareCursor(&image, &image_scale))
+      break;
+  }
+
+  if (image && image->IsValid())
+  {
+    m_display->SetSoftwareCursor(image->GetPixels(), image->GetWidth(), image->GetHeight(), image->GetByteStride(),
+                                 image_scale);
+  }
+  else
+  {
+    m_display->ClearSoftwareCursor();
+  }
+}
+
 void HostInterface::RecreateSystem()
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
@@ -655,24 +675,6 @@ void HostInterface::DisplayLoadingScreen(const char* message, int progress_min /
                                          int progress_value /*= -1*/)
 {
   Log_InfoPrintf("Loading: %s %d of %d-%d", message, progress_value, progress_min, progress_max);
-}
-
-void HostInterface::EnableSoftwareCursor()
-{
-  if (m_software_cursor_use_count++ > 0 || m_settings.display_software_cursor_path.empty())
-    return;
-
-  m_display->SetSoftwareCursor(m_settings.display_software_cursor_path.c_str(),
-                               m_settings.display_software_cursor_scale);
-}
-
-void HostInterface::DisableSoftwareCursor()
-{
-  DebugAssert(m_software_cursor_use_count > 0);
-  if (--m_software_cursor_use_count > 0)
-    return;
-
-  m_display->ClearSoftwareCursor();
 }
 
 void HostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title) {}
