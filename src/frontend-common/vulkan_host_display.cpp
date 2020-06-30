@@ -286,7 +286,21 @@ void main()
 }
 )";
 
-  static constexpr char display_fragment_shader[] = R"(
+  static constexpr char display_fragment_shader_src[] = R"(
+#version 450 core
+
+layout(set = 0, binding = 0) uniform sampler2D samp0;
+
+layout(location = 0) in vec2 v_tex0;
+layout(location = 0) out vec4 o_col0;
+
+void main()
+{
+  o_col0 = vec4(texture(samp0, v_tex0).rgb, 1.0);
+}
+)";
+
+  static constexpr char cursor_fragment_shader_src[] = R"(
 #version 450 core
 
 layout(set = 0, binding = 0) uniform sampler2D samp0;
@@ -320,13 +334,14 @@ void main()
   if (vertex_shader == VK_NULL_HANDLE)
     return false;
 
-  VkShaderModule fragment_shader = g_vulkan_shader_cache->GetFragmentShader(display_fragment_shader);
-  if (fragment_shader == VK_NULL_HANDLE)
+  VkShaderModule display_fragment_shader = g_vulkan_shader_cache->GetFragmentShader(display_fragment_shader_src);
+  VkShaderModule cursor_fragment_shader = g_vulkan_shader_cache->GetFragmentShader(cursor_fragment_shader_src);
+  if (display_fragment_shader == VK_NULL_HANDLE || cursor_fragment_shader == VK_NULL_HANDLE)
     return false;
 
   Vulkan::GraphicsPipelineBuilder gpbuilder;
   gpbuilder.SetVertexShader(vertex_shader);
-  gpbuilder.SetFragmentShader(fragment_shader);
+  gpbuilder.SetFragmentShader(display_fragment_shader);
   gpbuilder.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
   gpbuilder.SetNoCullRasterizationState();
   gpbuilder.SetNoDepthTestState();
@@ -339,15 +354,17 @@ void main()
   if (m_display_pipeline == VK_NULL_HANDLE)
     return false;
 
+  gpbuilder.SetFragmentShader(cursor_fragment_shader);
   gpbuilder.SetBlendAttachment(0, true, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                                VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
-  m_software_cursor_pipeline = gpbuilder.Create(device, pipeline_cache, false);
-  if (m_software_cursor_pipeline == VK_NULL_HANDLE)
+  m_cursor_pipeline = gpbuilder.Create(device, pipeline_cache, false);
+  if (m_cursor_pipeline == VK_NULL_HANDLE)
     return false;
 
   // don't need these anymore
   vkDestroyShaderModule(device, vertex_shader, nullptr);
-  vkDestroyShaderModule(device, fragment_shader, nullptr);
+  vkDestroyShaderModule(device, display_fragment_shader, nullptr);
+  vkDestroyShaderModule(device, cursor_fragment_shader, nullptr);
 
   Vulkan::SamplerBuilder sbuilder;
   sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
@@ -369,7 +386,7 @@ void VulkanHostDisplay::DestroyResources()
   m_upload_staging_texture.Destroy(false);
 
   Vulkan::Util::SafeDestroyPipeline(m_display_pipeline);
-  Vulkan::Util::SafeDestroyPipeline(m_software_cursor_pipeline);
+  Vulkan::Util::SafeDestroyPipeline(m_cursor_pipeline);
   Vulkan::Util::SafeDestroyPipelineLayout(m_pipeline_layout);
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_descriptor_set_layout);
   Vulkan::Util::SafeDestroySampler(m_point_sampler);
@@ -575,7 +592,7 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
   }
 
   const PushConstants pc{0.0f, 0.0f, 1.0f, 1.0f};
-  vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_display_pipeline);
+  vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_cursor_pipeline);
   vkCmdPushConstants(cmdbuffer, m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pc), &pc);
   vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout, 0, 1, &ds, 0, nullptr);
   Vulkan::Util::SetViewportAndScissor(cmdbuffer, left, top, width, height);

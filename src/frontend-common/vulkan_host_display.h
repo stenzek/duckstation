@@ -79,7 +79,7 @@ protected:
 
   VkDescriptorSetLayout m_descriptor_set_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_pipeline_layout = VK_NULL_HANDLE;
-  VkPipeline m_software_cursor_pipeline = VK_NULL_HANDLE;
+  VkPipeline m_cursor_pipeline = VK_NULL_HANDLE;
   VkPipeline m_display_pipeline = VK_NULL_HANDLE;
   VkSampler m_point_sampler = VK_NULL_HANDLE;
   VkSampler m_linear_sampler = VK_NULL_HANDLE;
