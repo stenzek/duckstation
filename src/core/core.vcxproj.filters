@@ -45,6 +45,7 @@
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="gpu_hw_vulkan.cpp" />
+    <ClCompile Include="resources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -91,6 +92,7 @@
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="gpu_hw_vulkan.h" />
+    <ClInclude Include="resources.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />

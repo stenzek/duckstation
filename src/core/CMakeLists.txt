@@ -64,6 +64,8 @@ add_library(core
     playstation_mouse.h
     psf_loader.cpp
     psf_loader.h
+    resources.cpp
+    resources.h
     save_state_version.h
     settings.cpp
     settings.h
