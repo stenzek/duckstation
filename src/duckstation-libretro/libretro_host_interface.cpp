@@ -307,7 +307,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 20> s_option_definitions = {{
+static std::array<retro_core_option_definition, 22> s_option_definitions = {{
   {"Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -429,6 +429,11 @@ static std::array<retro_core_option_definition, 20> s_option_definitions = {{
     {"PlayStationMouse", "PlayStation Mouse"},
     {"NeGcon", "NeGcon"}},
    "DigitalController"},
+  {"Controller1.Type",
+   "Controller 1 Auto Analog Mode",
+   "Automatically enables analog mode in supported controllers at start/reset.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"Controller2.Type",
    "Controller 2 Type",
    "Sets the type of controller for Slot 2.",
@@ -439,6 +444,11 @@ static std::array<retro_core_option_definition, 20> s_option_definitions = {{
     {"PlayStationMouse", "PlayStation Mouse"},
     {"NeGcon", "NeGcon"}},
    "None"},
+  {"Controller2.Type",
+   "Controller 2 Auto Analog Mode",
+   "Automatically enables analog mode in supported controllers at start/reset.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"Logging.LogLevel",
    "Log Level",
    "Sets the level of information logged by the core.",
@@ -617,7 +627,7 @@ void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
      {AnalogController::Button::L3, RETRO_DEVICE_ID_JOYPAD_L3},
      {AnalogController::Button::R1, RETRO_DEVICE_ID_JOYPAD_R},
      {AnalogController::Button::R2, RETRO_DEVICE_ID_JOYPAD_R2},
-     {AnalogController::Button::Analog, RETRO_DEVICE_ID_JOYPAD_R3}}};
+     {AnalogController::Button::R3, RETRO_DEVICE_ID_JOYPAD_R3}}};
 
   static constexpr std::array<std::pair<AnalogController::Axis, std::pair<u32, u32>>, 4> axis_mapping = {
     {{AnalogController::Axis::LeftX, {RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X}},
