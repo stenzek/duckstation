@@ -8,6 +8,9 @@
 
 #if defined(__has_include) && __has_include(<charconv>)
 #include <charconv>
+#ifndef _MSC_VER
+#include <sstream>
+#endif
 #else
 #include <sstream>
 #endif
@@ -34,9 +37,19 @@ static inline int Strcasecmp(const char* s1, const char* s2)
 #endif
 }
 
+/// Platform-independent strcasecmp
+static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
+{
+#ifdef _MSC_VER
+  return _strnicmp(s1, s2, n);
+#else
+  return strncasecmp(s1, s2, n);
+#endif
+}
+
 /// Wrapper arond std::from_chars
 template<typename T>
-static inline std::optional<T> FromChars(std::string_view str)
+inline std::optional<T> FromChars(std::string_view str)
 {
   T value;
 
@@ -54,6 +67,41 @@ static inline std::optional<T> FromChars(std::string_view str)
 
   return value;
 }
+
+/// Explicit override for booleans
+template<>
+inline std::optional<bool> FromChars(std::string_view str)
+{
+  if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
+      Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
+  {
+    return true;
+  }
+
+  if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
+      Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0)
+  {
+    return false;
+  }
+
+  return std::nullopt;
+}
+
+#ifndef _MSC_VER
+/// from_chars doesn't seem to work with floats on gcc
+template<>
+inline std::optional<float> FromChars(std::string_view str)
+{
+  float value;
+  std::string temp(str);
+  std::istringstream ss(temp);
+  ss >> value;
+  if (ss.fail())
+    return std::nullopt;
+  else
+    return value;
+}
+#endif
 
 /// starts_with from C++20
 ALWAYS_INLINE static bool StartsWith(std::string_view str, const char* prefix)
