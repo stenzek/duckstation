@@ -28,6 +28,8 @@ add_library(common
   fifo_queue.h
   file_system.cpp
   file_system.h
+  image.cpp
+  image.h
   gl/context.cpp
   gl/context.h
   gl/program.cpp
@@ -91,7 +93,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad libcue Threads::Threads cubeb libchdr glslang vulkan-loader)
+target_link_libraries(common PRIVATE glad libcue stb Threads::Threads cubeb libchdr glslang vulkan-loader)
 
 if(WIN32)
   target_sources(common PRIVATE

@@ -62,6 +62,7 @@
     <ClInclude Include="gl\texture.h" />
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="heap_array.h" />
+    <ClInclude Include="image.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="log.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="gl\shader_cache.cpp" />
     <ClCompile Include="gl\stream_buffer.cpp" />
     <ClCompile Include="gl\texture.cpp" />
+    <ClCompile Include="image.cpp" />
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="cd_subchannel_replacement.cpp" />
@@ -300,7 +302,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -326,7 +328,7 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -355,7 +357,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -381,7 +383,7 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -411,7 +413,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -441,7 +443,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -471,7 +473,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -501,7 +503,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>

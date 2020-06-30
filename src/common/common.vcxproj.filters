@@ -98,6 +98,7 @@
     <ClInclude Include="vulkan\shader_cache.h">
       <Filter>vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -188,6 +189,7 @@
     <ClCompile Include="vulkan\shader_cache.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
