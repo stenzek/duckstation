@@ -35,6 +35,14 @@ public:
   using InputAxisHandler = std::function<void(float)>;
   using ControllerRumbleCallback = std::function<void(const float*, u32)>;
 
+  struct DeviceSubBindingPair
+  {
+    std::string device;
+    std::string sub_binding;
+  };
+
+  using DeviceSubBindingList = std::vector<DeviceSubBindingPair>;
+
   struct HotkeyInfo
   {
     String category;
@@ -294,6 +302,7 @@ private:
   void UpdateControllerInputMap(SettingsInterface& si);
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings(SettingsInterface& si);
+  void SplitBindingIntoList(const std::string& binding, DeviceSubBindingList& splits);
 
 #ifdef WITH_DISCORD_PRESENCE
   void SetDiscordPresenceEnabled(bool enabled);

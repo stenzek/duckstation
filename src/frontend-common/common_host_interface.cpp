@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <sstream>
 
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
@@ -961,6 +962,26 @@ static bool SplitBinding(const std::string& binding, std::string_view* device, s
   return true;
 }
 
+void CommonHostInterface::SplitBindingIntoList(const std::string& binding, DeviceSubBindingList& splits)
+{
+  std::stringstream binding_ss(binding);
+  std::string token;
+
+  while (std::getline(binding_ss, token, ','))
+  {
+    const std::string::size_type slash_pos = token.find('/');
+
+    if (slash_pos == std::string::npos)
+    {
+      Log_WarningPrintf("Malformed binding: '%s'", token.c_str());
+      continue;
+    }
+
+    splits.push_back(DeviceSubBindingPair{token.substr(0, slash_pos),
+                                          token.substr(slash_pos + 1)});
+  }
+}
+
 void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
 {
   StopControllerRumble();
@@ -983,18 +1004,20 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         si.GetStringList(category, TinyString::FromFormat("Button%s", button_name.c_str()));
       for (const std::string& binding : bindings)
       {
-        std::string_view device, button;
-        if (!SplitBinding(binding, &device, &button))
-          continue;
+        DeviceSubBindingList splits;
+        SplitBindingIntoList(binding, splits);
 
-        AddButtonToInputMap(binding, device, button, [this, controller_index, button_code](bool pressed) {
-          if (!m_system)
-            return;
+        for (const auto& s : splits)
+        {
+          AddButtonToInputMap(binding, s.device, s.sub_binding, [this, controller_index, button_code](bool pressed) {
+            if (!m_system)
+              return;
 
-          Controller* controller = m_system->GetController(controller_index);
-          if (controller)
-            controller->SetButtonState(button_code, pressed);
-        });
+            Controller* controller = m_system->GetController(controller_index);
+            if (controller)
+              controller->SetButtonState(button_code, pressed);
+          });
+        }
       }
     }
 
@@ -1008,18 +1031,20 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         si.GetStringList(category, TinyString::FromFormat("Axis%s", axis_name.c_str()));
       for (const std::string& binding : bindings)
       {
-        std::string_view device, axis;
-        if (!SplitBinding(binding, &device, &axis))
-          continue;
+        DeviceSubBindingList splits;
+        SplitBindingIntoList(binding, splits);
 
-        AddAxisToInputMap(binding, device, axis, [this, controller_index, axis_code](float value) {
-          if (!m_system)
-            return;
+        for (const auto& s : splits)
+        {
+          AddAxisToInputMap(binding, s.device, s.sub_binding, [this, controller_index, axis_code](float value) {
+            if (!m_system)
+              return;
 
-          Controller* controller = m_system->GetController(controller_index);
-          if (controller)
-            controller->SetAxisState(axis_code, value);
-        });
+            Controller* controller = m_system->GetController(controller_index);
+            if (controller)
+              controller->SetAxisState(axis_code, value);
+          });
+        }
       }
     }
 
@@ -1136,6 +1161,7 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
   }
 
   Log_WarningPrintf("Unknown input device in button binding '%s'", binding.c_str());
+  Log_WarningPrintf("%s %s", std::string(device).c_str(), std::string(button).c_str());
   return false;
 }
 
