@@ -347,19 +347,36 @@ void main()
 }
 )";
 
+  static constexpr char cursor_fragment_shader[] = R"(
+uniform sampler2D samp0;
+
+in vec2 v_tex0;
+out vec4 o_col0;
+
+void main()
+{
+  o_col0 = texture(samp0, v_tex0);
+}
+)";
+
   if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
-                                 GetGLSLVersionHeader() + display_fragment_shader))
+                                 GetGLSLVersionHeader() + display_fragment_shader) ||
+      !m_cursor_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
+                                GetGLSLVersionHeader() + cursor_fragment_shader))
   {
     Log_ErrorPrintf("Failed to compile display shaders");
     return false;
   }
 
   if (GetRenderAPI() != RenderAPI::OpenGLES)
-    m_display_program.BindFragData(0, "o_col0");
-
-  if (!m_display_program.Link())
   {
-    Log_ErrorPrintf("Failed to link display program");
+    m_display_program.BindFragData(0, "o_col0");
+    m_cursor_program.BindFragData(0, "o_col0");
+  }
+
+  if (!m_display_program.Link() || !m_cursor_program.Link())
+  {
+    Log_ErrorPrintf("Failed to link display programs");
     return false;
   }
 
@@ -367,6 +384,10 @@ void main()
   m_display_program.RegisterUniform("u_src_rect");
   m_display_program.RegisterUniform("samp0");
   m_display_program.Uniform1i(1, 0);
+  m_cursor_program.Bind();
+  m_cursor_program.RegisterUniform("u_src_rect");
+  m_cursor_program.RegisterUniform("samp0");
+  m_cursor_program.Uniform1i(1, 0);
 
   glGenVertexArrays(1, &m_display_vao);
 
@@ -390,6 +411,7 @@ void OpenGLHostDisplay::DestroyResources()
   if (m_display_nearest_sampler != 0)
     glDeleteSamplers(1, &m_display_nearest_sampler);
 
+  m_cursor_program.Destroy();
   m_display_program.Destroy();
 }
 
@@ -475,8 +497,8 @@ void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s3
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
-  m_display_program.Bind();
-  m_display_program.Uniform4f(0, 0.0f, 0.0f, 1.0f, 1.0f);
+  m_cursor_program.Bind();
+  m_cursor_program.Uniform4f(0, 0.0f, 0.0f, 1.0f, 1.0f);
   glBindTexture(GL_TEXTURE_2D, static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetGLID());
   glBindSampler(0, m_display_linear_sampler);
   glBindVertexArray(m_display_vao);

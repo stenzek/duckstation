@@ -74,6 +74,7 @@ protected:
   std::unique_ptr<GL::Context> m_gl_context;
 
   GL::Program m_display_program;
+  GL::Program m_cursor_program;
   GLuint m_display_vao = 0;
   GLuint m_display_nearest_sampler = 0;
   GLuint m_display_linear_sampler = 0;
