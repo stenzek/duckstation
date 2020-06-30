@@ -319,7 +319,7 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
   Log_DebugPrintf("controller %d button %d %s", ev->cbutton.which, ev->cbutton.button,
                   ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
 
-  auto it = GetControllerDataForJoystickId(ev->caxis.which);
+  auto it = GetControllerDataForJoystickId(ev->cbutton.which);
   if (it == m_controllers.end())
     return false;
 
