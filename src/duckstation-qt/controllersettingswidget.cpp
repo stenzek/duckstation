@@ -142,8 +142,7 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
   rebind_all_button->connect(rebind_all_button, &QPushButton::clicked, [this, index]() {
     if (QMessageBox::question(this, tr("Rebind All"),
                               tr("Are you sure you want to rebind all controls? All currently-bound controls will be "
-                                 "irreversibly cleared. Rebinding will begin after confirmation.")) !=
-        QMessageBox::Yes)
+                                 "irreversibly cleared. Rebinding will begin after confirmation.")) != QMessageBox::Yes)
     {
       return;
     }
@@ -272,6 +271,94 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
     last_button = button;
 
     start_row++;
+  }
+
+  const Controller::SettingList settings = Controller::GetSettings(ctype);
+  if (!settings.empty())
+  {
+    layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
+
+    for (const SettingInfo& si : settings)
+    {
+      const QString setting_name = QStringLiteral("Controller%1/%2").arg(index + 1).arg(si.key);
+      const QString setting_tooltip = si.description ? QString::fromUtf8(si.description) : "";
+
+      switch (si.type)
+      {
+        case SettingInfo::Type::Boolean:
+        {
+          QCheckBox* cb = new QCheckBox(tr(si.visible_name), ui->bindings_container);
+          cb->setToolTip(setting_tooltip);
+          SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, setting_name, si.BooleanDefaultValue());
+          layout->addWidget(cb, start_row, 0, 1, 4);
+          start_row++;
+        }
+        break;
+
+        case SettingInfo::Type::Integer:
+        {
+          QSpinBox* sb = new QSpinBox(ui->bindings_container);
+          sb->setToolTip(setting_tooltip);
+          sb->setMinimum(si.IntegerMinValue());
+          sb->setMaximum(si.IntegerMaxValue());
+          sb->setSingleStep(si.IntegerStepValue());
+          SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, sb, setting_name, si.IntegerDefaultValue());
+          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(sb, start_row, 1, 1, 3);
+          start_row++;
+        }
+        break;
+
+        case SettingInfo::Type::Float:
+        {
+          QDoubleSpinBox* sb = new QDoubleSpinBox(ui->bindings_container);
+          sb->setToolTip(setting_tooltip);
+          sb->setMinimum(si.FloatMinValue());
+          sb->setMaximum(si.FloatMaxValue());
+          sb->setSingleStep(si.FloatStepValue());
+          SettingWidgetBinder::BindWidgetToFloatSetting(m_host_interface, sb, setting_name, si.FloatDefaultValue());
+          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(sb, start_row, 1, 1, 3);
+          start_row++;
+        }
+        break;
+
+        case SettingInfo::Type::String:
+        {
+          QLineEdit* le = new QLineEdit(ui->bindings_container);
+          le->setToolTip(setting_tooltip);
+          SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, setting_name,
+                                                         QString::fromUtf8(si.StringDefaultValue()));
+          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(le, start_row, 1, 1, 3);
+          start_row++;
+        }
+        break;
+
+        case SettingInfo::Type::Path:
+        {
+          QLineEdit* le = new QLineEdit(ui->bindings_container);
+          le->setToolTip(setting_tooltip);
+          QPushButton* browse_button = new QPushButton(tr("Browse..."), ui->bindings_container);
+          SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, setting_name,
+                                                         QString::fromUtf8(si.StringDefaultValue()));
+          connect(browse_button, &QPushButton::clicked, [this, index, le, setting_name]() {
+            QString path = QFileDialog::getOpenFileName(this, tr("Select File"));
+            if (!path.isEmpty())
+              le->setText(path);
+          });
+
+          QHBoxLayout* hbox = new QHBoxLayout();
+          hbox->addWidget(le, 1);
+          hbox->addWidget(browse_button);
+
+          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addLayout(hbox, start_row, 1, 1, 3);
+          start_row++;
+        }
+        break;
+      }
+    }
   }
 
   // dummy row to fill remaining space
