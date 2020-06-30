@@ -50,6 +50,7 @@ public:
   static AxisList StaticGetAxisNames();
   static ButtonList StaticGetButtonNames();
   static u32 StaticGetVibrationMotorCount();
+  static SettingList StaticGetSettings();
 
   ControllerType GetType() const override;
   std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const override;
@@ -69,6 +70,8 @@ public:
 
   u32 GetVibrationMotorCount() const override;
   float GetVibrationMotorStrength(u32 motor) override;
+
+  void LoadSettings(HostInterface* host_interface, const char* section) override;
 
 private:
   using MotorState = std::array<u8, NUM_MOTORS>;
@@ -131,6 +134,8 @@ private:
 
   System* m_system;
   u32 m_index;
+
+  bool m_auto_enable_analog = false;
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;

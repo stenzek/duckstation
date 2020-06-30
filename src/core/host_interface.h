@@ -91,7 +91,8 @@ public:
 
   /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
   /// such as compiling shaders when starting up.
-  virtual void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
+  virtual void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1,
+                                    int progress_value = -1);
 
   /// Retrieves information about specified game from game list.
   virtual void GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title);
@@ -102,7 +103,20 @@ public:
   /// Returns the default path to a memory card for a specific game.
   virtual std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const;
 
-  /// Enables the software cursor. Can be called multiple times, but must be matched by a call to DisableSoftwareCursor().
+  /// Returns a setting value from the configuration.
+  virtual std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") = 0;
+
+  /// Returns a boolean setting from the configuration.
+  bool GetBooleanSettingValue(const char* section, const char* key, bool default_value = false);
+
+  /// Returns an integer setting from the configuration.
+  bool GetIntegerSettingValue(const char* section, const char* key, s32 default_value = 0);
+
+  /// Returns a float setting from the configuration.
+  bool GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
+
+  /// Enables the software cursor. Can be called multiple times, but must be matched by a call to
+  /// DisableSoftwareCursor().
   void EnableSoftwareCursor();
 
   /// Disables the software cursor, preventing it from being renderered.

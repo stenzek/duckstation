@@ -50,6 +50,7 @@ public:
   bool parseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
   /// Thread-safe QSettings access.
+  std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
   QVariant getSettingValue(const QString& name, const QVariant& default_value = QVariant());
   void putSettingValue(const QString& name, const QVariant& value);
   void removeSettingValue(const QString& name);

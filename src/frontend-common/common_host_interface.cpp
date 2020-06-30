@@ -1483,12 +1483,20 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     const std::string rumble_value = profile.GetStringValue(section_name, "Rumble");
     if (!rumble_value.empty())
       si.SetStringValue(section_name, "Rumble", rumble_value.c_str());
-  }
 
-  UpdateInputMap(si);
+    Controller::SettingList settings = Controller::GetSettings(*ctype);
+    for (const SettingInfo& ssi : settings)
+    {
+      const std::string value = profile.GetStringValue(section_name, ssi.key, "");
+      if (!value.empty())
+        si.SetStringValue(section_name, ssi.key, value.c_str());
+    }
+  }
 
   if (m_system)
     m_system->UpdateControllers();
+
+  UpdateInputMap(si);
 
   ReportFormattedMessage("Loaded input profile from '%s'", profile_path);
 }
@@ -1532,6 +1540,14 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
     const std::string rumble_value = si.GetStringValue(section_name, "Rumble");
     if (!rumble_value.empty())
       profile.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+
+    Controller::SettingList settings = Controller::GetSettings(ctype);
+    for (const SettingInfo& ssi : settings)
+    {
+      const std::string value = si.GetStringValue(section_name, ssi.key, "");
+      if (!value.empty())
+        profile.SetStringValue(section_name, ssi.key, value.c_str());
+    }
   }
 
   if (!profile.Save())
@@ -1814,8 +1830,8 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   const bool has_progress = (progress_min < progress_max);
 
   // eat the last imgui frame, it might've been partially rendered by the caller.
-  //ImGui::EndFrame();
-  //ImGui::NewFrame();
+  // ImGui::EndFrame();
+  // ImGui::NewFrame();
 
   ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 50.0f : 30.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,

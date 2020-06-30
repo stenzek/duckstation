@@ -1,6 +1,7 @@
 #include "analog_controller.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
 Log_SetChannel(AnalogController);
@@ -23,6 +24,9 @@ void AnalogController::Reset()
   m_rumble_unlocked = false;
   m_configuration_mode = false;
   m_command_param = 0;
+
+  if (m_auto_enable_analog)
+    SetAnalogMode(true);
 }
 
 bool AnalogController::DoState(StateWrapper& sw)
@@ -473,4 +477,19 @@ Controller::ButtonList AnalogController::StaticGetButtonNames()
 u32 AnalogController::StaticGetVibrationMotorCount()
 {
   return NUM_MOTORS;
+}
+
+Controller::SettingList AnalogController::StaticGetSettings()
+{
+  static constexpr std::array<SettingInfo, 1> settings = {
+    {{SettingInfo::Type::Boolean, "AutoEnableAnalog", "Enable Analog Mode on Reset",
+      "Automatically enables analog mode when the console is reset/powered on.", "false"}}};
+
+  return SettingList(settings.begin(), settings.end());
+}
+
+void AnalogController::LoadSettings(HostInterface* host_interface, const char* section)
+{
+  Controller::LoadSettings(host_interface, section);
+  m_auto_enable_analog = host_interface->GetBooleanSettingValue(section, "AutoEnableAnalog", false);
 }

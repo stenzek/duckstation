@@ -3,8 +3,8 @@
 #include "common/state_wrapper.h"
 #include "digital_controller.h"
 #include "namco_guncon.h"
-#include "playstation_mouse.h"
 #include "negcon.h"
+#include "playstation_mouse.h"
 
 Controller::Controller() = default;
 
@@ -38,6 +38,8 @@ float Controller::GetVibrationMotorStrength(u32 motor)
 {
   return 0.0f;
 }
+
+void Controller::LoadSettings(HostInterface* host_interface, const char* section) {}
 
 std::unique_ptr<Controller> Controller::Create(System* system, ControllerType type, u32 index)
 {
@@ -196,5 +198,17 @@ std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::str
     case ControllerType::None:
     default:
       return std::nullopt;
+  }
+}
+
+Controller::SettingList Controller::GetSettings(ControllerType type)
+{
+  switch (type)
+  {
+    case ControllerType::AnalogController:
+      return AnalogController::StaticGetSettings();
+
+    default:
+      return {};
   }
 }

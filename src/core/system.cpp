@@ -832,8 +832,21 @@ void System::UpdateControllers()
     {
       std::unique_ptr<Controller> controller = Controller::Create(this, type, i);
       if (controller)
+      {
+        controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
         m_pad->SetController(i, std::move(controller));
+      }
     }
+  }
+}
+
+void System::UpdateControllerSettings()
+{
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = m_pad->GetController(i);
+    if (controller)
+      controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
   }
 }
 

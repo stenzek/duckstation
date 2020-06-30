@@ -118,6 +118,18 @@ std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, 
   return GetUserDirectoryRelativePath("%s/%s_%d.mcd", GetSaveDirectory(), game_code, slot + 1);
 }
 
+std::string LibretroHostInterface::GetSettingValue(const char* section, const char* key,
+                                                   const char* default_value /*= ""*/)
+{
+  TinyString name;
+  name.Format("%s.%s", section, key);
+  retro_variable var{name, default_value};
+  if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    return var.value;
+  else
+    return default_value;
+}
+
 void LibretroHostInterface::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 {
   retro_message msg = {};

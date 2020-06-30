@@ -139,6 +139,7 @@ public:
   // Access controllers for simulating input.
   Controller* GetController(u32 slot) const;
   void UpdateControllers();
+  void UpdateControllerSettings();
   void UpdateMemoryCards();
 
   bool HasMedia() const;

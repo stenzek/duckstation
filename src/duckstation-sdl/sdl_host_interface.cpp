@@ -456,6 +456,11 @@ void SDLHostInterface::Shutdown()
   CommonHostInterface::Shutdown();
 }
 
+std::string SDLHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+  return m_settings_interface->GetStringValue(section, key, default_value);
+}
+
 void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.

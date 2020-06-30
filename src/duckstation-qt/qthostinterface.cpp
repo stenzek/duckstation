@@ -122,6 +122,13 @@ bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
   return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
+std::string QtHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
+  QVariant value = m_qsettings->value(QStringLiteral("%1/%2").arg(section).arg(key), QString(default_value));
+  return value.toString().toStdString();
+}
+
 QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);

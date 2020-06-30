@@ -34,6 +34,8 @@ public:
   bool Initialize() override;
   void Shutdown() override;
 
+  std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
+
   void Run();
 
 protected:

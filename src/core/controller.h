@@ -1,4 +1,5 @@
 #pragma once
+#include "settings.h"
 #include "types.h"
 #include <memory>
 #include <optional>
@@ -8,12 +9,14 @@
 
 class StateWrapper;
 class System;
+class HostInterface;
 
 class Controller
 {
 public:
   using ButtonList = std::vector<std::pair<std::string, s32>>;
   using AxisList = std::vector<std::pair<std::string, s32>>;
+  using SettingList = std::vector<SettingInfo>;
 
   Controller();
   virtual ~Controller();
@@ -48,6 +51,9 @@ public:
   /// Queries the state of the specified vibration motor. Values are normalized from 0..1.
   virtual float GetVibrationMotorStrength(u32 motor);
 
+  /// Loads/refreshes any per-controller settings.
+  virtual void LoadSettings(HostInterface* host_interface, const char* section);
+
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(System* system, ControllerType type, u32 index);
 
@@ -65,4 +71,7 @@ public:
 
   /// Returns the number of vibration motors.
   static u32 GetVibrationMotorCount(ControllerType type);
+
+  /// Returns settings for the controller.
+  static SettingList GetSettings(ControllerType type);
 };

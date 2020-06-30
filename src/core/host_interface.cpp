@@ -480,6 +480,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
       OnControllerTypeChanged(i);
     }
+
+    if (m_system && !controllers_updated)
+      m_system->UpdateControllerSettings();
   }
 
   if (m_display && m_settings.display_linear_filtering != old_settings.display_linear_filtering)
@@ -564,6 +567,36 @@ std::string HostInterface::GetSharedMemoryCardPath(u32 slot) const
 std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
   return GetUserDirectoryRelativePath("memcards/%s_%d.mcd", game_code, slot + 1);
+}
+
+bool HostInterface::GetBooleanSettingValue(const char* section, const char* key, bool default_value /*= false*/)
+{
+  std::string value = GetSettingValue(section, key, "");
+  if (value.empty())
+    return default_value;
+
+  std::optional<bool> bool_value = StringUtil::FromChars<bool>(value);
+  return bool_value.value_or(default_value);
+}
+
+bool HostInterface::GetIntegerSettingValue(const char* section, const char* key, s32 default_value /*= 0*/)
+{
+  std::string value = GetSettingValue(section, key, "");
+  if (value.empty())
+    return default_value;
+
+  std::optional<s32> int_value = StringUtil::FromChars<s32>(value);
+  return int_value.value_or(default_value);
+}
+
+bool HostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
+{
+  std::string value = GetSettingValue(section, key, "");
+  if (value.empty())
+    return default_value;
+
+  std::optional<float> float_value = StringUtil::FromChars<float>(value);
+  return float_value.value_or(default_value);
 }
 
 void HostInterface::ToggleSoftwareRendering()

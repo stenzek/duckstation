@@ -30,6 +30,38 @@ public:
   virtual void DeleteValue(const char* section, const char* key) = 0;
 };
 
+struct SettingInfo
+{
+  enum class Type
+  {
+    Boolean,
+    Integer,
+    Float,
+    String,
+    Path,
+  };
+
+  Type type;
+  const char* key;
+  const char* visible_name;
+  const char* description;
+  const char* default_value;
+  const char* min_value;
+  const char* max_value;
+  const char* step_value;
+
+  const char* StringDefaultValue() const;
+  bool BooleanDefaultValue() const;
+  s32 IntegerDefaultValue() const;
+  s32 IntegerMinValue() const;
+  s32 IntegerMaxValue() const;
+  s32 IntegerStepValue() const;
+  float FloatDefaultValue() const;
+  float FloatMinValue() const;
+  float FloatMaxValue() const;
+  float FloatStepValue() const;
+};
+
 struct Settings
 {
   Settings();
