@@ -456,6 +456,18 @@ bool D3D11HostDisplay::CreateResources()
   if (FAILED(hr))
     return false;
 
+  blend_desc.RenderTarget[0] = {TRUE,
+                                D3D11_BLEND_SRC_ALPHA,
+                                D3D11_BLEND_INV_SRC_ALPHA,
+                                D3D11_BLEND_OP_ADD,
+                                D3D11_BLEND_ONE,
+                                D3D11_BLEND_ZERO,
+                                D3D11_BLEND_OP_ADD,
+                                D3D11_COLOR_WRITE_ENABLE_ALL};
+  hr = m_device->CreateBlendState(&blend_desc, m_software_cursor_blend_state.GetAddressOf());
+  if (FAILED(hr))
+    return false;
+
   CD3D11_SAMPLER_DESC sampler_desc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
   sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
   hr = m_device->CreateSamplerState(&sampler_desc, m_point_sampler.GetAddressOf());
