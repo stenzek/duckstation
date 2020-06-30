@@ -30,6 +30,7 @@ Other features include:
  - Direct loading of Portable Sound Format (psf) files
  - Digital and analog controllers for input (rumble is forwarded to host)
  - Namco GunCon lightgun support (simulated with mouse)
+ - NeGcon support
  - Qt and SDL frontends for desktop
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
@@ -40,11 +41,11 @@ Other features include:
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Downloading and running
-Binaries of DuckStation for 64-bit Windows are available via GitHub Releases and are automatically built with every commit/push.
+Binaries of DuckStation for 64-bit Windows and 64-bit Linux (in AppImage format) are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
 
-**Windows 10 is the only supported operating system.** Windows 7/8 may work, but is not supported by the developer. I am aware some users are still using Windows 7, but
-it is no longer supported by Microsoft and too much effort to get running on modern hardware. Game bugs are unlikely to be affected by the operating system, however
-performance issues should be verified on Windows 10 before reporting.
+### Windows
+
+**Windows 10 is the only version of Windows supported by the developer.** Windows 7/8 may work, but is not supported. I am aware some users are still using Windows 7, but it is no longer supported by Microsoft and too much effort to get running on modern hardware. Game bugs are unlikely to be affected by the operating system, however performance issues should be verified on Windows 10 before reporting.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a 7-Zip archive containing the prebuilt binary.
@@ -59,13 +60,24 @@ To set up:
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/16/release/vc_redist.x64.exe.
 
-Prebuilt AppImage binaries for 64-bit Linux distros are also available via GitHub Releases, but should not be considered fully supported at the moment. Linux users are encouraged to build from source when possible.
+### Linux
+
+Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
+
+**Linux users are encouraged to build from source when possible and optionally create their own AppImages for features such as desktop integration if desired.**
+
+To download:
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download either `duckstation-qt-x64.AppImage` or `duckstation-sdl-x64.AppImage` for your desired frontend. Keep in mind that keyboard/controller bindings are currently not customizable through the SDL frontend and should be customized through the Qt frontend instead.
+ - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
+ - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
+
+### Title Information
 
 PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
 This database can be manually downloaded and added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in the Qt Frontend,
 and clicking `Update Redump Database`.
 
-## Region detection and BIOS images
+### Region detection and BIOS images
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
 
 If you wish to use auto-detection, you do not need to change the BIOS path each time you switch regions. Simply place the BIOS images for the other regions in the **same directory** as the configured image. This will probably be in the `bios/` subdirectory. Then set the console region to "Auto-Detect", and everything should work fine. The console/log will tell you if you are missing the image for the disc's region.
