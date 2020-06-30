@@ -7,4 +7,5 @@ struct SDL_Window;
 
 namespace SDLUtil {
 std::optional<WindowInfo> GetWindowInfoForSDLWindow(SDL_Window* window);
+float GetDPIScaleFactor(SDL_Window* window);
 }

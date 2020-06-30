@@ -767,6 +767,7 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   wi.display_connection = &g_libretro_host_interface.m_hw_render_callback;
   wi.surface_width = avi.geometry.base_width;
   wi.surface_height = avi.geometry.base_height;
+  wi.surface_scale = 1.0f;
   if (!display || !display->CreateRenderDevice(wi, {}, g_libretro_host_interface.m_settings.gpu_use_debug_device))
   {
     Log_ErrorPrintf("Failed to create hardware host display");

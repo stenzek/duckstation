@@ -29,6 +29,7 @@ struct WindowInfo
   void* window_handle = nullptr;
   u32 surface_width = 0;
   u32 surface_height = 0;
+  float surface_scale = 1.0f;
   SurfaceFormat surface_format = SurfaceFormat::RGB8;
 
   // Needed for macOS.

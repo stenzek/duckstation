@@ -60,8 +60,6 @@ protected:
 private:
   bool HasSystem() const { return static_cast<bool>(m_system); }
 
-  static float GetDPIScaleFactor(SDL_Window* window);
-
   bool CreateSDLWindow();
   void DestroySDLWindow();
   bool CreateDisplay();

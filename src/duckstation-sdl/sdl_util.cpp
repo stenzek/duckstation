@@ -32,6 +32,7 @@ std::optional<WindowInfo> GetWindowInfoForSDLWindow(SDL_Window* window)
   WindowInfo wi;
   wi.surface_width = static_cast<u32>(window_width);
   wi.surface_height = static_cast<u32>(window_height);
+  wi.surface_scale = GetDPIScaleFactor(window);
   wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
 
   switch (syswm.subsystem)
@@ -64,5 +65,35 @@ std::optional<WindowInfo> GetWindowInfoForSDLWindow(SDL_Window* window)
   }
 
   return wi;
+}
+
+float GetDPIScaleFactor(SDL_Window* window)
+{
+#ifdef __APPLE__
+  static constexpr float DEFAULT_DPI = 72.0f;
+#else
+  static constexpr float DEFAULT_DPI = 96.0f;
+#endif
+
+  if (!window)
+  {
+    SDL_Window* dummy_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1, 1,
+                                                SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
+    if (!dummy_window)
+      return 1.0f;
+
+    const float scale = GetDPIScaleFactor(dummy_window);
+
+    SDL_DestroyWindow(dummy_window);
+
+    return scale;
+  }
+
+  int display_index = SDL_GetWindowDisplayIndex(window);
+  float display_dpi = DEFAULT_DPI;
+  if (SDL_GetDisplayDPI(display_index, &display_dpi, nullptr, nullptr) != 0)
+    return 1.0f;
+
+  return display_dpi / DEFAULT_DPI;
 }
 } // namespace SDLUtil

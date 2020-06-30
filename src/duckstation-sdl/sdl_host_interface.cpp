@@ -47,36 +47,6 @@ ALWAYS_INLINE static TinyString GetWindowTitle()
   return TinyString::FromFormat("DuckStation %s (%s)", g_scm_tag_str, g_scm_branch_str);
 }
 
-float SDLHostInterface::GetDPIScaleFactor(SDL_Window* window)
-{
-#ifdef __APPLE__
-  static constexpr float DEFAULT_DPI = 72.0f;
-#else
-  static constexpr float DEFAULT_DPI = 96.0f;
-#endif
-
-  if (!window)
-  {
-    SDL_Window* dummy_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1, 1,
-                                                SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
-    if (!dummy_window)
-      return 1.0f;
-
-    const float scale = GetDPIScaleFactor(dummy_window);
-
-    SDL_DestroyWindow(dummy_window);
-
-    return scale;
-  }
-
-  int display_index = SDL_GetWindowDisplayIndex(window);
-  float display_dpi = DEFAULT_DPI;
-  if (SDL_GetDisplayDPI(display_index, &display_dpi, nullptr, nullptr) != 0)
-    return 1.0f;
-
-  return display_dpi / DEFAULT_DPI;
-}
-
 bool SDLHostInterface::CreateSDLWindow()
 {
   static constexpr u32 DEFAULT_WINDOW_WIDTH = 900;
@@ -92,7 +62,7 @@ bool SDLHostInterface::CreateSDLWindow()
 #ifndef __APPLE__
   {
     // scale by default monitor's DPI
-    float scale = GetDPIScaleFactor(nullptr);
+    float scale = SDLUtil::GetDPIScaleFactor(nullptr);
     window_width = static_cast<u32>(std::round(static_cast<float>(window_width) * scale));
     window_height = static_cast<u32>(std::round(static_cast<float>(window_height) * scale));
   }
@@ -214,7 +184,7 @@ void SDLHostInterface::DestroyDisplay()
 
 void SDLHostInterface::CreateImGuiContext()
 {
-  const float framebuffer_scale = GetDPIScaleFactor(m_window);
+  const float framebuffer_scale = SDLUtil::GetDPIScaleFactor(m_window);
 
   ImGui::CreateContext();
   ImGui::GetIO().IniFilename = nullptr;
@@ -229,7 +199,7 @@ void SDLHostInterface::CreateImGuiContext()
 
 void SDLHostInterface::UpdateFramebufferScale()
 {
-  const float framebuffer_scale = GetDPIScaleFactor(m_window);
+  const float framebuffer_scale = SDLUtil::GetDPIScaleFactor(m_window);
   ImGui::GetIO().DisplayFramebufferScale.x = framebuffer_scale;
   ImGui::GetIO().DisplayFramebufferScale.y = framebuffer_scale;
 }

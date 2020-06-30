@@ -86,6 +86,7 @@ std::optional<WindowInfo> QtDisplayWidget::getWindowInfo() const
 
   wi.surface_width = scaledWindowWidth();
   wi.surface_height = scaledWindowHeight();
+  wi.surface_scale = devicePixelRatioFromScreen();
   wi.surface_format = WindowInfo::SurfaceFormat::RGB8;
 
   return wi;
