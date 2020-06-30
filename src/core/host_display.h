@@ -160,6 +160,7 @@ protected:
                          float* out_y_scale) const;
 
   std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect() const;
+  std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect(s32 cursor_x, s32 cursor_y) const;
 
   WindowInfo m_window_info;
 

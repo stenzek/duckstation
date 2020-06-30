@@ -129,12 +129,17 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, 
 
 std::tuple<s32, s32, s32, s32> HostDisplay::CalculateSoftwareCursorDrawRect() const
 {
+  return CalculateSoftwareCursorDrawRect(m_mouse_position_x, m_mouse_position_y);
+}
+
+std::tuple<s32, s32, s32, s32> HostDisplay::CalculateSoftwareCursorDrawRect(s32 cursor_x, s32 cursor_y) const
+{
   const float scale = m_window_info.surface_scale * m_cursor_texture_scale;
   const u32 cursor_extents_x = static_cast<u32>(static_cast<float>(m_cursor_texture->GetWidth()) * scale * 0.5f);
   const u32 cursor_extents_y = static_cast<u32>(static_cast<float>(m_cursor_texture->GetHeight()) * scale * 0.5f);
 
-  const s32 out_left = m_mouse_position_x - cursor_extents_x;
-  const s32 out_top = m_mouse_position_y - cursor_extents_y;
+  const s32 out_left = cursor_x - cursor_extents_x;
+  const s32 out_top = cursor_y - cursor_extents_y;
   const s32 out_width = cursor_extents_x * 2u;
   const s32 out_height = cursor_extents_y * 2u;
 

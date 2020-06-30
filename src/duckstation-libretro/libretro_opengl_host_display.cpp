@@ -125,18 +125,20 @@ bool LibretroOpenGLHostDisplay::Render()
 
   if (HasDisplayTexture())
   {
-    RenderDisplay(0, 0, m_display_texture_width, m_display_texture_height, m_display_texture_handle,
+    RenderDisplay(0, 0, m_display_texture_view_width, m_display_texture_view_height, m_display_texture_handle,
                   m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
                   m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
   }
 
   if (HasSoftwareCursor())
   {
-    const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
-    RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
+    // TODO: Scale mouse x/y
+    const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect(m_mouse_position_x, m_mouse_position_y);
+    RenderSoftwareCursor(left, m_display_texture_view_height - top - height, width, height, m_cursor_texture.get());
   }
 
-  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, m_display_texture_width, m_display_texture_height, 0);
+  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, m_display_texture_view_width,
+                                 m_display_texture_view_height, 0);
 
   GL::Program::ResetLastProgram();
   return true;

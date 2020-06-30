@@ -76,7 +76,7 @@ void LibretroD3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_
 bool LibretroD3D11HostDisplay::Render()
 {
   // TODO: Skip framebuffer when offset is (0,0).
-  if (!CheckFramebufferSize(m_display_texture_width, m_display_texture_height))
+  if (!CheckFramebufferSize(m_display_texture_view_width, m_display_texture_view_height))
     return false;
 
   // Ensure we're not currently bound.
@@ -86,21 +86,23 @@ bool LibretroD3D11HostDisplay::Render()
 
   if (HasDisplayTexture())
   {
-    RenderDisplay(0, 0, m_display_texture_width, m_display_texture_height, m_display_texture_handle,
+    RenderDisplay(0, 0, m_display_texture_view_width, m_display_texture_view_height, m_display_texture_handle,
                   m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
                   m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
   }
 
   if (HasSoftwareCursor())
   {
-    const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
+    // TODO: Scale mouse x/y
+    const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect(m_mouse_position_x, m_mouse_position_y);
     RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
   }
 
   // NOTE: libretro frontend expects the data bound to PS SRV slot 0.
   m_context->OMSetRenderTargets(0, nullptr, nullptr);
   m_context->PSSetShaderResources(0, 1, m_framebuffer.GetD3DSRVArray());
-  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, m_display_texture_width, m_display_texture_height, 0);
+  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, m_display_texture_view_width,
+                                 m_display_texture_view_height, 0);
   return true;
 }
 

@@ -69,7 +69,7 @@ protected:
   void RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle, u32 texture_width,
                      s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                      s32 texture_view_height, bool linear_filter);
-  void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
+  void RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s32 height, HostDisplayTexture* texture_handle);
 
   std::unique_ptr<GL::Context> m_gl_context;
 

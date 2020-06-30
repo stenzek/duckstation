@@ -461,13 +461,13 @@ void OpenGLHostDisplay::RenderSoftwareCursor()
     return;
 
   const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
-  RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
+  RenderSoftwareCursor(left, GetWindowHeight() - top - height, width, height, m_cursor_texture.get());
 }
 
-void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height,
+void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s32 height,
                                              HostDisplayTexture* texture_handle)
 {
-  glViewport(left, GetWindowHeight() - top - height, width, height);
+  glViewport(left, bottom, width, height);
   glEnable(GL_BLEND);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
