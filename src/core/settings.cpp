@@ -81,6 +81,7 @@ void Settings::Load(SettingsInterface& si)
   start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
+  load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
 
   cpu_execution_mode =
     ParseCPUExecutionMode(
@@ -146,7 +147,6 @@ void Settings::Load(SettingsInterface& si)
 
   // NOTE: The default value here if not present in the config is shared, but SetDefaultSettings() makes per-game.
   // This is so we don't break older builds which had the shared card by default.
-  load_memory_cards_from_save_states = si.GetBoolValue("MemoryCards", "LoadFromSaveStates", false);
   memory_card_types[0] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
@@ -187,6 +187,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
+  si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
 
@@ -239,7 +240,6 @@ void Settings::Save(SettingsInterface& si) const
   else
     si.DeleteValue("Controller2", "Type");
 
-  si.SetBoolValue("MemoryCards", "LoadFromSaveStates", load_memory_cards_from_save_states);
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
   si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));

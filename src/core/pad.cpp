@@ -44,25 +44,48 @@ bool Pad::DoState(StateWrapper& sw)
 
     if (controller_type != state_controller_type)
     {
-      m_system->GetHostInterface()->AddFormattedOSDMessage(
-        2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
-        Settings::GetControllerTypeName(state_controller_type), i, Settings::GetControllerTypeName(controller_type));
+      if (m_system->GetSettings().load_devices_from_save_states)
+      {
+        m_system->GetHostInterface()->AddFormattedOSDMessage(
+          2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
+          Settings::GetControllerTypeName(state_controller_type), i + 1u,
+          Settings::GetControllerTypeName(controller_type));
 
-      m_controllers[i].reset();
-      if (state_controller_type != ControllerType::None)
-        m_controllers[i] = Controller::Create(m_system, state_controller_type, i);
+        m_controllers[i].reset();
+        if (state_controller_type != ControllerType::None)
+          m_controllers[i] = Controller::Create(m_system, state_controller_type, i);
+      }
+      else
+      {
+        m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Ignoring mismatched controller type %s in port %u.",
+                                                             Settings::GetControllerTypeName(state_controller_type),
+                                                             i + 1u);
+
+        // we still need to read the save state controller state
+        if (state_controller_type != ControllerType::None)
+        {
+          std::unique_ptr<Controller> dummy_controller = Controller::Create(m_system, state_controller_type, i);
+          if (dummy_controller)
+          {
+            if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
+              return false;
+          }
+        }
+      }
     }
-
-    if (m_controllers[i])
+    else
     {
-      if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
-        return false;
+      if (m_controllers[i])
+      {
+        if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+          return false;
+      }
     }
 
     bool card_present = static_cast<bool>(m_memory_cards[i]);
     sw.Do(&card_present);
 
-    if (sw.IsReading() && card_present && !m_system->GetSettings().load_memory_cards_from_save_states)
+    if (sw.IsReading() && card_present && !m_system->GetSettings().load_devices_from_save_states)
     {
       Log_WarningPrintf("Skipping loading memory card %u from save state.", i + 1u);
 

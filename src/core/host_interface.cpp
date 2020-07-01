@@ -333,6 +333,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "SaveStateOnExit", true);
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
+  si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
 
@@ -374,7 +375,6 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_1_TYPE));
   si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_2_TYPE));
 
-  si.SetBoolValue("MemoryCards", "LoadFromSaveStates", false);
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_1_TYPE));
   si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
