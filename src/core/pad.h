@@ -92,7 +92,12 @@ private:
   bool CanTransfer() const { return m_transmit_buffer_full && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN; }
 
   TickCount GetTransferTicks() const { return static_cast<TickCount>(ZeroExtend32(m_JOY_BAUD) * 8); }
-  TickCount GetACKTicks() const { return 32; }
+
+  // From @JaCzekanski
+  // ACK lasts ~96 ticks or approximately 2.84us at master clock (not implemented).
+  // ACK delay is between 6.8us-13.7us, or ~338 ticks at master clock for approximately 9.98us.
+  // Memory card responds faster, approximately 5us or ~170 ticks.
+  static constexpr TickCount GetACKTicks(bool memory_card) { return memory_card ? 170 : 450; }
 
   void SoftReset();
   void UpdateJoyStat();
