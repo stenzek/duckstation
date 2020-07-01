@@ -173,6 +173,9 @@ public:
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
   bool ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, u32* out_tick, u32* out_line) const;
 
+  // Returns the video clock frequency.
+  TickCount GetCRTCFrequency() const;
+
 protected:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
   TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const;

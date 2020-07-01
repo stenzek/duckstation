@@ -169,7 +169,8 @@ void NamcoGunCon::UpdatePosition()
   }
 
   // 8MHz units for X = 44100*768*11/7 = 53222400 / 8000000 = 6.6528
-  m_position_x = static_cast<u16>(static_cast<float>(tick) * (1.0f / 6.6528f));
+  const double divider = static_cast<double>(m_system->GetGPU()->GetCRTCFrequency()) / 8000000.0;
+  m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
   m_position_y = static_cast<u16>(line);
   Log_DebugPrintf("Lightgun window coordinates %d,%d -> tick %u line %u 8mhz ticks %u", mouse_x, mouse_y, tick, line,
                   m_position_x);

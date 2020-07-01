@@ -393,6 +393,11 @@ void GPU::DMAWrite(const u32* words, u32 word_count)
  * PAL - sysclk * 709379 / 451584
  */
 
+TickCount GPU::GetCRTCFrequency() const
+{
+  return m_console_is_pal ? 53203425 : 53693175;
+}
+
 TickCount GPU::CRTCTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_ticks) const
 {
   // convert to master clock, rounding up as we want to overshoot not undershoot
