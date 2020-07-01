@@ -2137,6 +2137,17 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   // is read. Fixes audio in Tomb Raider III menu.
   if (!m_xa_current_set)
   {
+    // Some games (Taxi 2 and Blues Blues) have junk audio sectors with a channel number of 255.
+    // We need to skip them otherwise it ends up playing the incorrect file.
+    // TODO: Verify with a hardware test.
+    if (m_last_sector_subheader.channel_number == 255 && (!m_mode.xa_filter || m_xa_filter_channel_number != 255))
+    {
+      Log_WarningPrintf("Skipping XA file with file number %u and channel number %u (submode 0x%02X coding 0x%02X)",
+                        m_last_sector_subheader.file_number, m_last_sector_subheader.channel_number,
+                        m_last_sector_subheader.submode.bits, m_last_sector_subheader.codinginfo.bits);
+      return;
+    }
+
     m_xa_current_file_number = m_last_sector_subheader.file_number;
     m_xa_current_channel_number = m_last_sector_subheader.channel_number;
     m_xa_current_set = true;
