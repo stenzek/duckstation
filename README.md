@@ -9,6 +9,12 @@ DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusi
 
 A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
 
+## Latest News
+
+- 2020/07/02: Now available as a libretro core.
+- 2020/07/01: Lightgun support with custom crosshairs.
+- 2020/06/19: Vulkan hardware renderer added.
+
 ## Features
 
 DuckStation features a fully-featured frontend built using Qt (pictured), as well as a simplified frontend based on SDL and Dear ImGui. An Android version has been started, but is not currently usable.
@@ -32,6 +38,7 @@ Other features include:
  - Namco GunCon lightgun support (simulated with mouse)
  - NeGcon support
  - Qt and SDL frontends for desktop
+ - libretro core for Windows and Linux
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
 
@@ -183,6 +190,16 @@ Hotkeys:
  - **Pause/Break:** Pause/resume emulation
  - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
  - **End:** Toggle software renderer
+ 
+## Libretro Core
+
+DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. Currently, only the D3D11 and OpenGL renderers are available, Vulkan will be available soon. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+
+To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory.
+
+To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DBUILD_LIBRETRO_CORE=ON ..`. The shared library can be found in `src/duckstation-libretro/libduckstation-libretro.so`.
+
+Currently there is no core info file for DuckStation, so if you want to use it with RetroArch, you must manually load the core, and then content via the File menu. Hopefully we can change this in the future.
 
 ## Tests
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
