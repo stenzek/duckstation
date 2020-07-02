@@ -155,6 +155,7 @@ private:
   bool m_next_instruction_is_branch_delay_slot = false;
   bool m_branch_was_taken = false;
   bool m_exception_raised = false;
+  bool m_interrupt_delay = false;
 
   // load delays
   Reg m_load_delay_reg = Reg::count;

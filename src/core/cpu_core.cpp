@@ -1,7 +1,7 @@
 #include "cpu_core.h"
+#include "common/align.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
-#include "common/align.h"
 #include "cpu_disasm.h"
 #include <cstdio>
 Log_SetChannel(CPU::Core);
@@ -93,6 +93,8 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_current_instruction_was_branch_taken);
   sw.Do(&m_next_instruction_is_branch_delay_slot);
   sw.Do(&m_branch_was_taken);
+  sw.Do(&m_exception_raised);
+  sw.Do(&m_interrupt_delay);
   sw.Do(&m_load_delay_reg);
   sw.Do(&m_load_delay_value);
   sw.Do(&m_next_load_delay_reg);
@@ -328,6 +330,7 @@ void Core::RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
 void Core::SetExternalInterrupt(u8 bit)
 {
   m_cop0_regs.cause.Ip |= static_cast<u8>(1u << bit);
+  m_interrupt_delay = 1;
 }
 
 void Core::ClearExternalInterrupt(u8 bit)
@@ -341,7 +344,10 @@ bool Core::HasPendingInterrupt()
   const bool do_interrupt =
     m_cop0_regs.sr.IEc && (((m_cop0_regs.cause.bits & m_cop0_regs.sr.bits) & (UINT32_C(0xFF) << 8)) != 0);
 
-  return do_interrupt;
+  const bool interrupt_delay = m_interrupt_delay;
+  m_interrupt_delay = false;
+
+  return do_interrupt && !interrupt_delay;
 }
 
 void Core::DispatchInterrupt()
