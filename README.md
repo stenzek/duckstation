@@ -199,6 +199,10 @@ Hotkeys:
 
 DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. Currently, only the D3D11 and OpenGL renderers are available, Vulkan will be available soon. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
 
+Prebuilt binaries for Windows and 64-bit Linux can be found on the releases page. Direct links:
+- 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-libretro-windows-x64-release.7z
+- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-libretro-linux-x64-release.zip
+
 To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory.
 
 To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DBUILD_LIBRETRO_CORE=ON ..`. The shared library can be found in `src/duckstation-libretro/libduckstation-libretro.so`.
