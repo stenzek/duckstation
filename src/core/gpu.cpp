@@ -884,7 +884,7 @@ u32 GPU::ReadGPUREAD()
 
 void GPU::WriteGP1(u32 value)
 {
-  const u8 command = Truncate8(value >> 24);
+  const u32 command = (value >> 24) & 0x3Fu;
   const u32 param = value & UINT32_C(0x00FFFFFF);
   switch (command)
   {
