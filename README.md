@@ -95,6 +95,10 @@ Alternatively, the region checking can be disabled in the console options tab. T
 
 Mismatching the disc and console regions with the check disabled is supported, but may break games if they are patching the BIOS and expecting specific content.
 
+### LibCrypt protection and SBI files
+
+A number of PAL region games use LibCrypt protection, requiring additional CD subchannel information to run properly. For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
+
 ## Building
 
 ### Windows
