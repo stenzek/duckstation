@@ -891,6 +891,7 @@ void GPU::WriteGP1(u32 value)
     case 0x00: // Reset GPU
     {
       Log_DebugPrintf("GP1 reset GPU");
+      m_command_tick_event->InvokeEarly();
       SynchronizeCRTC();
       SoftReset();
     }
@@ -899,6 +900,7 @@ void GPU::WriteGP1(u32 value)
     case 0x01: // Clear FIFO
     {
       Log_DebugPrintf("GP1 clear FIFO");
+      m_command_tick_event->InvokeEarly();
       SynchronizeCRTC();
       m_blitter_state = BlitterState::Idle;
       m_command_total_words = 0;
@@ -1007,6 +1009,7 @@ void GPU::WriteGP1(u32 value)
       {
         // Have to be careful when setting this because Synchronize() can modify GPUSTAT.
         static constexpr u32 SET_MASK = UINT32_C(0b00000000011111110100000000000000);
+        m_command_tick_event->InvokeEarly();
         SynchronizeCRTC();
         m_GPUSTAT.bits = (m_GPUSTAT.bits & ~SET_MASK) | (new_GPUSTAT.bits & SET_MASK);
         UpdateCRTCConfig();
