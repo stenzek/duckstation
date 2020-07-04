@@ -140,6 +140,7 @@ public:
   Controller* GetController(u32 slot) const;
   void UpdateControllers();
   void UpdateControllerSettings();
+  void ResetControllers();
   void UpdateMemoryCards();
 
   bool HasMedia() const;

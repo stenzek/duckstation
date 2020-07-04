@@ -478,6 +478,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       if (m_system && !controllers_updated)
       {
         m_system->UpdateControllers();
+        m_system->ResetControllers();
         UpdateSoftwareCursor();
         controllers_updated = true;
       }

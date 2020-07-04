@@ -850,6 +850,16 @@ void System::UpdateControllerSettings()
   }
 }
 
+void System::ResetControllers()
+{
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = m_pad->GetController(i);
+    if (controller)
+      controller->Reset();
+  }
+}
+
 void System::UpdateMemoryCards()
 {
   const Settings& settings = m_host_interface->GetSettings();
