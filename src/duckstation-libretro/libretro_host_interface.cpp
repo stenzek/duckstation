@@ -77,13 +77,13 @@ void LibretroHostInterface::Shutdown()
 
 void LibretroHostInterface::ReportError(const char* message)
 {
-  AddFormattedOSDMessage(60.0f, "ERROR: %s", message);
+  AddFormattedOSDMessage(10.0f, "ERROR: %s", message);
   Log_ErrorPrint(message);
 }
 
 void LibretroHostInterface::ReportMessage(const char* message)
 {
-  AddOSDMessage(message, 10.0f);
+  AddOSDMessage(message, 5.0f);
   Log_InfoPrint(message);
 }
 
