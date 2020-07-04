@@ -271,8 +271,11 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 
 bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
-  if (!CreateSwapChain())
+  if (m_window_info.type != WindowInfo::Type::Surfaceless && m_window_info.type != WindowInfo::Type::Libretro &&
+      !CreateSwapChain())
+  {
     return false;
+  }
 
   if (!CreateResources())
     return false;
