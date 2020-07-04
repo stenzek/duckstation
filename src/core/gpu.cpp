@@ -1448,7 +1448,7 @@ void GPU::DrawDebugStateWindow()
     ImGui::Text("Display origin: %u, %u", cs.display_origin_left, cs.display_origin_top);
     ImGui::Text("Active display: %ux%u @ (%u, %u)", cs.display_vram_width, cs.display_vram_height, cs.display_vram_left,
                 cs.display_vram_top);
-    ImGui::Text("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.display_origin_left, cs.display_origin_top,
+    ImGui::Text("Padding: Left=%d, Top=%d, Right=%d, Bottom=%d", cs.display_origin_left, cs.display_origin_top,
                 cs.display_width - cs.display_vram_width - cs.display_origin_left,
                 cs.display_height - cs.display_vram_height - cs.display_origin_top);
   }
