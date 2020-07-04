@@ -47,12 +47,15 @@ void ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_lev
   m_feature_level = feature_level;
   m_debug = debug;
 
-  const std::string base_filename = GetCacheBaseFileName(base_path, feature_level, debug);
-  const std::string index_filename = base_filename + ".idx";
-  const std::string blob_filename = base_filename + ".bin";
+  if (!base_path.empty())
+  {
+    const std::string base_filename = GetCacheBaseFileName(base_path, feature_level, debug);
+    const std::string index_filename = base_filename + ".idx";
+    const std::string blob_filename = base_filename + ".bin";
 
-  if (!ReadExisting(index_filename, blob_filename))
-    CreateNew(index_filename, blob_filename);
+    if (!ReadExisting(index_filename, blob_filename))
+      CreateNew(index_filename, blob_filename);
+  }
 }
 
 bool ShaderCache::CreateNew(const std::string& index_filename, const std::string& blob_filename)

@@ -72,11 +72,14 @@ void ShaderCache::Open(bool is_gles, std::string_view base_path)
     return;
   }
 
-  const std::string index_filename = GetIndexFileName();
-  const std::string blob_filename = GetBlobFileName();
+  if (!base_path.empty())
+  {
+    const std::string index_filename = GetIndexFileName();
+    const std::string blob_filename = GetBlobFileName();
 
-  if (!ReadExisting(index_filename, blob_filename))
-    CreateNew(index_filename, blob_filename);
+    if (!ReadExisting(index_filename, blob_filename))
+      CreateNew(index_filename, blob_filename);
+  }
 }
 
 bool ShaderCache::CreateNew(const std::string& index_filename, const std::string& blob_filename)
@@ -256,7 +259,7 @@ std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_sha
                                                const std::string_view geometry_shader,
                                                const std::string_view fragment_shader, const PreLinkCallback& callback)
 {
-  if (!m_program_binary_supported)
+  if (!m_program_binary_supported || !m_blob_file)
     return CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
 
   const auto key = GetCacheKey(vertex_shader, geometry_shader, fragment_shader);

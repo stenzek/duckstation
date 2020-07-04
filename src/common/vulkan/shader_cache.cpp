@@ -121,17 +121,24 @@ void ShaderCache::Open(std::string_view base_path, bool debug)
 {
   m_debug = debug;
 
-  m_pipeline_cache_filename = GetPipelineCacheBaseFileName(base_path, debug);
+  if (!base_path.empty())
+  {
+    m_pipeline_cache_filename = GetPipelineCacheBaseFileName(base_path, debug);
 
-  const std::string base_filename = GetShaderCacheBaseFileName(base_path, debug);
-  const std::string index_filename = base_filename + ".idx";
-  const std::string blob_filename = base_filename + ".bin";
+    const std::string base_filename = GetShaderCacheBaseFileName(base_path, debug);
+    const std::string index_filename = base_filename + ".idx";
+    const std::string blob_filename = base_filename + ".bin";
 
-  if (!ReadExistingShaderCache(index_filename, blob_filename))
-    CreateNewShaderCache(index_filename, blob_filename);
+    if (!ReadExistingShaderCache(index_filename, blob_filename))
+      CreateNewShaderCache(index_filename, blob_filename);
 
-  if (!ReadExistingPipelineCache())
+    if (!ReadExistingPipelineCache())
+      CreateNewPipelineCache();
+  }
+  else
+  {
     CreateNewPipelineCache();
+  }
 }
 
 VkPipelineCache ShaderCache::GetPipelineCache(bool set_dirty /*= true*/)
@@ -273,7 +280,7 @@ void ShaderCache::CloseShaderCache()
 
 bool ShaderCache::CreateNewPipelineCache()
 {
-  if (FileSystem::FileExists(m_pipeline_cache_filename.c_str()))
+  if (!m_pipeline_cache_filename.empty() && FileSystem::FileExists(m_pipeline_cache_filename.c_str()))
   {
     Log_WarningPrintf("Removing existing pipeline cache '%s'", m_pipeline_cache_filename.c_str());
     FileSystem::DeleteFile(m_pipeline_cache_filename.c_str());
@@ -322,7 +329,7 @@ bool ShaderCache::ReadExistingPipelineCache()
 
 bool ShaderCache::FlushPipelineCache()
 {
-  if (m_pipeline_cache == VK_NULL_HANDLE || !m_pipeline_cache_dirty)
+  if (m_pipeline_cache == VK_NULL_HANDLE || !m_pipeline_cache_dirty || m_pipeline_cache_filename.empty())
     return false;
 
   size_t data_size;
