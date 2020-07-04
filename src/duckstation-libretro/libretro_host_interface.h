@@ -26,6 +26,7 @@ public:
   void GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title) override;
   std::string GetSharedMemoryCardPath(u32 slot) const override;
   std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const override;
+  std::string GetShaderCacheBasePath() const override;
   std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
 
   // Called by frontend

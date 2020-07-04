@@ -37,15 +37,6 @@ retro_input_state_t g_retro_input_state_callback;
 static retro_log_callback s_libretro_log_callback = {};
 static bool s_libretro_log_callback_valid = false;
 
-static const char* GetSaveDirectory()
-{
-  const char* save_directory = nullptr;
-  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_directory) || !save_directory)
-    save_directory = "saves";
-
-  return save_directory;
-}
-
 static void LibretroLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                                 const char* message)
 {
@@ -109,6 +100,15 @@ void LibretroHostInterface::GetGameInfo(const char* path, CDImage* image, std::s
   code->clear();
 }
 
+static const char* GetSaveDirectory()
+{
+  const char* save_directory = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_directory) || !save_directory)
+    save_directory = "saves";
+
+  return save_directory;
+}
+
 std::string LibretroHostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
   return StringUtil::StdStringFromFormat("%s%cshared_card_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER,
@@ -119,6 +119,13 @@ std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, 
 {
   return StringUtil::StdStringFromFormat("%s%c%s_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER, game_code,
                                          slot + 1);
+}
+
+std::string LibretroHostInterface::GetShaderCacheBasePath() const
+{
+  // TODO: Is there somewhere we can save our shaders?
+  Log_WarningPrint("No shader cache directory available, startup will be slower.");
+  return std::string();
 }
 
 std::string LibretroHostInterface::GetSettingValue(const char* section, const char* key,
