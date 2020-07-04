@@ -80,6 +80,8 @@ private:
 
   Ui::MainWindow m_ui;
 
+  QString m_unthemed_style_name;
+
   QtHostInterface* m_host_interface = nullptr;
 
   GameListWidget* m_game_list_widget = nullptr;

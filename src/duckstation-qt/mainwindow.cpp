@@ -35,7 +35,8 @@ ALWAYS_INLINE static QString getWindowTitle()
   return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
 }
 
-MainWindow::MainWindow(QtHostInterface* host_interface) : QMainWindow(nullptr), m_host_interface(host_interface)
+MainWindow::MainWindow(QtHostInterface* host_interface)
+  : QMainWindow(nullptr), m_unthemed_style_name(QApplication::style()->objectName()), m_host_interface(host_interface)
 {
   m_host_interface->setMainWindow(this);
 
@@ -649,6 +650,9 @@ void MainWindow::updateTheme()
   QString theme = m_host_interface->getSettingValue(QStringLiteral("UI/Theme"), QStringLiteral("default")).toString();
   if (theme == QStringLiteral("qdarkstyle"))
   {
+    qApp->setStyle(m_unthemed_style_name);
+    qApp->setPalette(QApplication::style()->standardPalette());
+
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
       qApp->setStyleSheet(f.readAll());
@@ -691,12 +695,8 @@ void MainWindow::updateTheme()
   else
   {
     qApp->setPalette(QApplication::style()->standardPalette());
-
-    QStringList available_styles = QStyleFactory::keys();
-    if (!available_styles.empty())
-      qApp->setStyle(QStyleFactory::create(available_styles.first()));
-
     qApp->setStyleSheet(QString());
+    qApp->setStyle(m_unthemed_style_name);
   }
 
   for (QObject* obj : m_ui.menuSettingsTheme->children())
