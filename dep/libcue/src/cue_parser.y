@@ -12,20 +12,20 @@
 #include "cd.h"
 #include "time.h"
 
-#ifdef YY_BUF_SIZE
-#undef YY_BUF_SIZE
+#ifdef CUEPARSER_BUF_SIZE
+#undef CUEPARSER_BUF_SIZE
 #endif
-#define YY_BUF_SIZE 16384
+#define CUEPARSER_BUF_SIZE 16384
 
-#define YYDEBUG 1
+#define CUEPARSERDEBUG 1
 
 char fnamebuf[PARSER_BUFFER];
 
 /* debugging */
-//int yydebug = 1;
+//int cueparserdebug = 1;
 
-extern int yylineno;
-extern FILE* yyin;
+extern int cueparserlineno;
+extern FILE* cueparserin;
 
 static Cd *cd = NULL;
 static Track *track = NULL;
@@ -37,22 +37,23 @@ static char *cur_filename = NULL;	/* last file in the last track */
 static char *new_filename = NULL;	/* last file in this track */
 
 /* lexer interface */
-typedef struct yy_buffer_state* YY_BUFFER_STATE;
+typedef struct cueparser_buffer_state* CUEPARSER_BUFFER_STATE;
 
-int yylex(void);
-void yyerror(const char*);
-YY_BUFFER_STATE yy_scan_string(const char*);
-YY_BUFFER_STATE yy_create_buffer(FILE*, int);
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-void yy_delete_buffer(YY_BUFFER_STATE);
+int cueparserlex(void);
+void cueparsererror(const char*);
+CUEPARSER_BUFFER_STATE cueparser_scan_string(const char*);
+CUEPARSER_BUFFER_STATE cueparser_create_buffer(FILE*, int);
+void cueparser_switch_to_buffer(CUEPARSER_BUFFER_STATE);
+void cueparser_delete_buffer(CUEPARSER_BUFFER_STATE);
 
 /* parser interface */
-int yyparse(void);
+int cueparserparse(void);
 Cd *cue_parse_file(FILE *fp);
 Cd *cue_parse_string(const char*);
 %}
 
 %start cuefile
+%define api.prefix {cueparser}
 
 %union {
 	long ival;
@@ -158,7 +159,7 @@ global_statement
 track_data
 	: FFILE STRING file_format '\n' {
 		if (NULL != new_filename) {
-			yyerror("too many files specified\n");
+			cueparsererror("too many files specified\n");
 		}
 		if (track && track_get_index(track, 1) == -1) {
 			track_set_filename (track, $2);
@@ -201,7 +202,7 @@ new_track
 			prev_filename = cur_filename;
 
 		if (NULL == prev_filename)
-			yyerror("no file specified for track");
+			cueparsererror("no file specified for track");
 		else
 			track_set_filename(track, prev_filename);
 
@@ -318,9 +319,9 @@ rem_item
 
 /* lexer interface */
 
-void yyerror (const char *s)
+void cueparsererror (const char *s)
 {
-	fprintf(stderr, "%d: %s\n", yylineno, s);
+	fprintf(stderr, "%d: %s\n", cueparserlineno, s);
 }
 
 static void reset_static_vars()
@@ -337,20 +338,20 @@ static void reset_static_vars()
 
 Cd *cue_parse_file(FILE *fp)
 {
-	YY_BUFFER_STATE buffer = NULL;
+	CUEPARSER_BUFFER_STATE buffer = NULL;
 
-	yyin = fp;
+	cueparserin = fp;
 
-	buffer = yy_create_buffer(yyin, YY_BUF_SIZE);
+	buffer = cueparser_create_buffer(cueparserin, CUEPARSER_BUF_SIZE);
 
-	yy_switch_to_buffer(buffer);
+	cueparser_switch_to_buffer(buffer);
 
 	Cd *ret_cd = NULL;
 
-	if (0 == yyparse()) ret_cd = cd;
+	if (0 == cueparserparse()) ret_cd = cd;
 	else ret_cd = NULL;
 
-	yy_delete_buffer(buffer);
+	cueparser_delete_buffer(buffer);
 	reset_static_vars();
 
 	return ret_cd;
@@ -358,16 +359,16 @@ Cd *cue_parse_file(FILE *fp)
 
 Cd *cue_parse_string(const char* string)
 {
-	YY_BUFFER_STATE buffer = NULL;
+	CUEPARSER_BUFFER_STATE buffer = NULL;
 
-	buffer = yy_scan_string(string);
+	buffer = cueparser_scan_string(string);
 
 	Cd *ret_cd = NULL;
 
-	if (0 == yyparse()) ret_cd = cd;
+	if (0 == cueparserparse()) ret_cd = cd;
 	else ret_cd = NULL;
 
-	yy_delete_buffer(buffer);
+	cueparser_delete_buffer(buffer);
 	reset_static_vars();
 
 	return ret_cd;

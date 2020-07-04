@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.3.2.  */
+/* A Bison parser, made by GNU Bison 3.4.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -48,7 +48,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.3.2"
+#define YYBISON_VERSION "3.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -62,11 +62,20 @@
 /* Pull parsers.  */
 #define YYPULL 1
 
+/* Substitute the type names.  */
+#define YYSTYPE         CUEPARSERSTYPE
+/* Substitute the variable and function names.  */
+#define yyparse         cueparserparse
+#define yylex           cueparserlex
+#define yyerror         cueparsererror
+#define yydebug         cueparserdebug
+#define yynerrs         cueparsernerrs
 
-
+#define yylval          cueparserlval
+#define yychar          cueparserchar
 
 /* First part of user prologue.  */
-#line 1 "cue_parser.y" /* yacc.c:337  */
+#line 1 "cue_parser.y"
 
 /*
  * Copyright (c) 2004, 2005, 2006, 2007, Svend Sorensen
@@ -81,20 +90,20 @@
 #include "cd.h"
 #include "time.h"
 
-#ifdef YY_BUF_SIZE
-#undef YY_BUF_SIZE
+#ifdef CUEPARSER_BUF_SIZE
+#undef CUEPARSER_BUF_SIZE
 #endif
-#define YY_BUF_SIZE 16384
+#define CUEPARSER_BUF_SIZE 16384
 
-#define YYDEBUG 1
+#define CUEPARSERDEBUG 1
 
 char fnamebuf[PARSER_BUFFER];
 
 /* debugging */
-//int yydebug = 1;
+//int cueparserdebug = 1;
 
-extern int yylineno;
-extern FILE* yyin;
+extern int cueparserlineno;
+extern FILE* cueparserin;
 
 static Cd *cd = NULL;
 static Track *track = NULL;
@@ -106,21 +115,22 @@ static char *cur_filename = NULL;	/* last file in the last track */
 static char *new_filename = NULL;	/* last file in this track */
 
 /* lexer interface */
-typedef struct yy_buffer_state* YY_BUFFER_STATE;
+typedef struct cueparser_buffer_state* CUEPARSER_BUFFER_STATE;
 
-int yylex(void);
-void yyerror(const char*);
-YY_BUFFER_STATE yy_scan_string(const char*);
-YY_BUFFER_STATE yy_create_buffer(FILE*, int);
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-void yy_delete_buffer(YY_BUFFER_STATE);
+int cueparserlex(void);
+void cueparsererror(const char*);
+CUEPARSER_BUFFER_STATE cueparser_scan_string(const char*);
+CUEPARSER_BUFFER_STATE cueparser_create_buffer(FILE*, int);
+void cueparser_switch_to_buffer(CUEPARSER_BUFFER_STATE);
+void cueparser_delete_buffer(CUEPARSER_BUFFER_STATE);
 
 /* parser interface */
-int yyparse(void);
+int cueparserparse(void);
 Cd *cue_parse_file(FILE *fp);
 Cd *cue_parse_string(const char*);
 
-#line 124 "cue_parser.c" /* yacc.c:337  */
+#line 133 "cue_parser.c"
+
 # ifndef YY_NULLPTR
 #  if defined __cplusplus
 #   if 201103L <= __cplusplus
@@ -141,22 +151,30 @@ Cd *cue_parse_string(const char*);
 # define YYERROR_VERBOSE 0
 #endif
 
-/* In a future release of Bison, this section will be replaced
-   by #include "cue_parser.h".  */
-#ifndef YY_YY_CUE_PARSER_H_INCLUDED
-# define YY_YY_CUE_PARSER_H_INCLUDED
+/* Use api.header.include to #include this header
+   instead of duplicating it here.  */
+#ifndef YY_CUEPARSER_CUE_PARSER_H_INCLUDED
+# define YY_CUEPARSER_CUE_PARSER_H_INCLUDED
 /* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
+#ifndef CUEPARSERDEBUG
+# if defined YYDEBUG
 #if YYDEBUG
-extern int yydebug;
+#   define CUEPARSERDEBUG 1
+#  else
+#   define CUEPARSERDEBUG 0
+#  endif
+# else /* ! defined YYDEBUG */
+#  define CUEPARSERDEBUG 0
+# endif /* ! defined YYDEBUG */
+#endif  /* ! defined CUEPARSERDEBUG */
+#if CUEPARSERDEBUG
+extern int cueparserdebug;
 #endif
 
 /* Token type.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
+#ifndef CUEPARSERTOKENTYPE
+# define CUEPARSERTOKENTYPE
+  enum cueparsertokentype
   {
     NUMBER = 258,
     STRING = 259,
@@ -210,29 +228,28 @@ extern int yydebug;
 #endif
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-union YYSTYPE
+#if ! defined CUEPARSERSTYPE && ! defined CUEPARSERSTYPE_IS_DECLARED
+union CUEPARSERSTYPE
 {
-#line 57 "cue_parser.y" /* yacc.c:352  */
+#line 58 "cue_parser.y"
 
 	long ival;
 	char *sval;
 
-#line 223 "cue_parser.c" /* yacc.c:352  */
-};
+#line 240 "cue_parser.c"
 
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+};
+typedef union CUEPARSERSTYPE CUEPARSERSTYPE;
+# define CUEPARSERSTYPE_IS_TRIVIAL 1
+# define CUEPARSERSTYPE_IS_DECLARED 1
 #endif
 
 
-extern YYSTYPE yylval;
+extern CUEPARSERSTYPE cueparserlval;
 
-int yyparse (void);
+int cueparserparse (void);
 
-#endif /* !YY_YY_CUE_PARSER_H_INCLUDED  */
+#endif /* !YY_CUEPARSER_CUE_PARSER_H_INCLUDED  */
 
 
 
@@ -336,6 +353,8 @@ typedef short yytype_int16;
 #endif
 
 
+#define YY_ASSERT(E) ((void) (0 && (E)))
+
 #if ! defined yyoverflow || YYERROR_VERBOSE
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
@@ -406,7 +425,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
-         || (defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
+         || (defined CUEPARSERSTYPE_IS_TRIVIAL && CUEPARSERSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
@@ -523,22 +542,22 @@ static const yytype_uint8 yytranslate[] =
       45,    46,    47,    48,    49,    50
 };
 
-#if YYDEBUG
+#if CUEPARSERDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   133,   133,   137,   144,   146,   150,   151,   152,   153,
-     154,   155,   159,   173,   174,   178,   182,   183,   184,   185,
-     186,   187,   191,   213,   219,   220,   221,   222,   223,   224,
-     225,   226,   230,   231,   235,   236,   237,   238,   239,   240,
-     263,   264,   265,   268,   270,   274,   275,   276,   277,   281,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   301,   302,   306,   307,   311,   312,   313,
-     314,   315
+       0,   134,   134,   138,   146,   147,   151,   152,   153,   154,
+     155,   156,   160,   174,   175,   179,   183,   184,   185,   186,
+     187,   188,   192,   214,   220,   221,   222,   223,   224,   225,
+     226,   227,   231,   232,   236,   237,   238,   239,   240,   241,
+     264,   265,   266,   270,   271,   275,   276,   277,   278,   282,
+     286,   287,   288,   289,   290,   291,   292,   293,   294,   295,
+     296,   297,   298,   302,   303,   307,   308,   312,   313,   314,
+     315,   316
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || 0
+#if CUEPARSERDEBUG || YYERROR_VERBOSE || 0
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
@@ -758,7 +777,7 @@ static const yytype_uint8 yyr2[] =
 
 
 /* Enable debugging if requested.  */
-#if YYDEBUG
+#if CUEPARSERDEBUG
 
 # ifndef YYFPRINTF
 #  include <stdio.h> /* INFRINGES ON USER NAME SPACE */
@@ -879,12 +898,12 @@ do {                                    \
 /* Nonzero means print parse trace.  It is left uninitialized so that
    multiple parsers can coexist.  */
 int yydebug;
-#else /* !YYDEBUG */
+#else /* !CUEPARSERDEBUG */
 # define YYDPRINTF(Args)
 # define YY_SYMBOL_PRINT(Title, Type, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
-#endif /* !YYDEBUG */
+#endif /* !CUEPARSERDEBUG */
 
 
 /* YYINITDEPTH -- initial size of the parser's stacks.  */
@@ -1237,6 +1256,8 @@ yynewstate:
 | yynewstate -- set current state (the top of the stack) to yystate.  |
 `--------------------------------------------------------------------*/
 yysetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
   *yyssp = (yytype_int16) yystate;
 
   if (yyss + yystacksize - 1 <= yyssp)
@@ -1298,8 +1319,6 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
-
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1368,7 +1387,6 @@ yybackup:
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
-
   goto yynewstate;
 
 
@@ -1403,33 +1421,33 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 3:
-#line 137 "cue_parser.y" /* yacc.c:1652  */
+  case 3:
+#line 138 "cue_parser.y"
     {
 		cd = cd_init();
 		cdtext = cd_get_cdtext(cd);
 		rem = cd_get_rem(cd);
 	}
-#line 1414 "cue_parser.c" /* yacc.c:1652  */
+#line 1432 "cue_parser.c"
     break;
 
   case 6:
-#line 150 "cue_parser.y" /* yacc.c:1652  */
+#line 151 "cue_parser.y"
     { cd_set_catalog(cd, (yyvsp[-1].sval)); }
-#line 1420 "cue_parser.c" /* yacc.c:1652  */
+#line 1438 "cue_parser.c"
     break;
 
   case 7:
-#line 151 "cue_parser.y" /* yacc.c:1652  */
+#line 152 "cue_parser.y"
     { cd_set_cdtextfile(cd, (yyvsp[-1].sval)); }
-#line 1426 "cue_parser.c" /* yacc.c:1652  */
+#line 1444 "cue_parser.c"
     break;
 
   case 12:
-#line 159 "cue_parser.y" /* yacc.c:1652  */
+#line 160 "cue_parser.y"
     {
 		if (NULL != new_filename) {
-			yyerror("too many files specified\n");
+			cueparsererror("too many files specified\n");
 		}
 		if (track && track_get_index(track, 1) == -1) {
 			track_set_filename (track, (yyvsp[-2].sval));
@@ -1438,11 +1456,11 @@ yyreduce:
 			new_filename[sizeof(fnamebuf) - 1] = '\0';
 		}
 	}
-#line 1442 "cue_parser.c" /* yacc.c:1652  */
+#line 1460 "cue_parser.c"
     break;
 
   case 22:
-#line 191 "cue_parser.y" /* yacc.c:1652  */
+#line 192 "cue_parser.y"
     {
 		/* save previous track, to later set length */
 		prev_track = track;
@@ -1456,37 +1474,37 @@ yyreduce:
 			prev_filename = cur_filename;
 
 		if (NULL == prev_filename)
-			yyerror("no file specified for track");
+			cueparsererror("no file specified for track");
 		else
 			track_set_filename(track, prev_filename);
 
 		new_filename = NULL;
 	}
-#line 1466 "cue_parser.c" /* yacc.c:1652  */
+#line 1484 "cue_parser.c"
     break;
 
   case 23:
-#line 213 "cue_parser.y" /* yacc.c:1652  */
+#line 214 "cue_parser.y"
     {
 		track_set_mode(track, (yyvsp[-1].ival));
 	}
-#line 1474 "cue_parser.c" /* yacc.c:1652  */
+#line 1492 "cue_parser.c"
     break;
 
   case 37:
-#line 238 "cue_parser.y" /* yacc.c:1652  */
+#line 239 "cue_parser.y"
     { track_set_isrc(track, (yyvsp[-1].sval)); }
-#line 1480 "cue_parser.c" /* yacc.c:1652  */
+#line 1498 "cue_parser.c"
     break;
 
   case 38:
-#line 239 "cue_parser.y" /* yacc.c:1652  */
+#line 240 "cue_parser.y"
     { track_set_zero_pre(track, (yyvsp[-1].ival)); }
-#line 1486 "cue_parser.c" /* yacc.c:1652  */
+#line 1504 "cue_parser.c"
     break;
 
   case 39:
-#line 240 "cue_parser.y" /* yacc.c:1652  */
+#line 241 "cue_parser.y"
     {
 		long prev_length;
 
@@ -1510,47 +1528,48 @@ yyreduce:
 
 		track_set_index (track, (yyvsp[-2].ival), (yyvsp[-1].ival));
 	}
-#line 1514 "cue_parser.c" /* yacc.c:1652  */
+#line 1532 "cue_parser.c"
     break;
 
   case 40:
-#line 263 "cue_parser.y" /* yacc.c:1652  */
+#line 264 "cue_parser.y"
     { track_set_zero_post(track, (yyvsp[-1].ival)); }
-#line 1520 "cue_parser.c" /* yacc.c:1652  */
+#line 1538 "cue_parser.c"
     break;
 
   case 44:
-#line 270 "cue_parser.y" /* yacc.c:1652  */
+#line 271 "cue_parser.y"
     { track_set_flag(track, (yyvsp[0].ival)); }
-#line 1526 "cue_parser.c" /* yacc.c:1652  */
+#line 1544 "cue_parser.c"
     break;
 
   case 49:
-#line 281 "cue_parser.y" /* yacc.c:1652  */
+#line 282 "cue_parser.y"
     { cdtext_set ((yyvsp[-2].ival), (yyvsp[-1].sval), cdtext); }
-#line 1532 "cue_parser.c" /* yacc.c:1652  */
+#line 1550 "cue_parser.c"
     break;
 
   case 64:
-#line 302 "cue_parser.y" /* yacc.c:1652  */
+#line 303 "cue_parser.y"
     { (yyval.ival) = time_msf_to_frame((yyvsp[-4].ival), (yyvsp[-2].ival), (yyvsp[0].ival)); }
-#line 1538 "cue_parser.c" /* yacc.c:1652  */
+#line 1556 "cue_parser.c"
     break;
 
   case 65:
-#line 306 "cue_parser.y" /* yacc.c:1652  */
+#line 307 "cue_parser.y"
     { rem_set((yyvsp[-2].ival), (yyvsp[-1].sval), rem); }
-#line 1544 "cue_parser.c" /* yacc.c:1652  */
+#line 1562 "cue_parser.c"
     break;
 
   case 66:
-#line 307 "cue_parser.y" /* yacc.c:1652  */
+#line 308 "cue_parser.y"
     { cdtext_set((yyvsp[-2].ival), (yyvsp[-1].sval), cdtext); }
-#line 1550 "cue_parser.c" /* yacc.c:1652  */
+#line 1568 "cue_parser.c"
     break;
 
 
-#line 1554 "cue_parser.c" /* yacc.c:1652  */
+#line 1572 "cue_parser.c"
+
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1781,14 +1800,14 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 317 "cue_parser.y" /* yacc.c:1918  */
+#line 318 "cue_parser.y"
 
 
 /* lexer interface */
 
-void yyerror (const char *s)
+void cueparsererror (const char *s)
 {
-	fprintf(stderr, "%d: %s\n", yylineno, s);
+	fprintf(stderr, "%d: %s\n", cueparserlineno, s);
 }
 
 static void reset_static_vars()
@@ -1805,20 +1824,20 @@ static void reset_static_vars()
 
 Cd *cue_parse_file(FILE *fp)
 {
-	YY_BUFFER_STATE buffer = NULL;
+	CUEPARSER_BUFFER_STATE buffer = NULL;
 
-	yyin = fp;
+	cueparserin = fp;
 
-	buffer = yy_create_buffer(yyin, YY_BUF_SIZE);
+	buffer = cueparser_create_buffer(cueparserin, CUEPARSER_BUF_SIZE);
 
-	yy_switch_to_buffer(buffer);
+	cueparser_switch_to_buffer(buffer);
 
 	Cd *ret_cd = NULL;
 
-	if (0 == yyparse()) ret_cd = cd;
+	if (0 == cueparserparse()) ret_cd = cd;
 	else ret_cd = NULL;
 
-	yy_delete_buffer(buffer);
+	cueparser_delete_buffer(buffer);
 	reset_static_vars();
 
 	return ret_cd;
@@ -1826,16 +1845,16 @@ Cd *cue_parse_file(FILE *fp)
 
 Cd *cue_parse_string(const char* string)
 {
-	YY_BUFFER_STATE buffer = NULL;
+	CUEPARSER_BUFFER_STATE buffer = NULL;
 
-	buffer = yy_scan_string(string);
+	buffer = cueparser_scan_string(string);
 
 	Cd *ret_cd = NULL;
 
-	if (0 == yyparse()) ret_cd = cd;
+	if (0 == cueparserparse()) ret_cd = cd;
 	else ret_cd = NULL;
 
-	yy_delete_buffer(buffer);
+	cueparser_delete_buffer(buffer);
 	reset_static_vars();
 
 	return ret_cd;

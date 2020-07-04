@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.3.2.  */
+/* A Bison parser, made by GNU Bison 3.4.1.  */
 
 /* Bison interface for Yacc-like parsers in C
 
@@ -34,20 +34,28 @@
 /* Undocumented macros, especially those whose name start with YY_,
    are private implementation details.  Do not rely on them.  */
 
-#ifndef YY_YY_CUE_PARSER_H_INCLUDED
-# define YY_YY_CUE_PARSER_H_INCLUDED
+#ifndef YY_CUEPARSER_CUE_PARSER_H_INCLUDED
+# define YY_CUEPARSER_CUE_PARSER_H_INCLUDED
 /* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
+#ifndef CUEPARSERDEBUG
+# if defined YYDEBUG
 #if YYDEBUG
-extern int yydebug;
+#   define CUEPARSERDEBUG 1
+#  else
+#   define CUEPARSERDEBUG 0
+#  endif
+# else /* ! defined YYDEBUG */
+#  define CUEPARSERDEBUG 0
+# endif /* ! defined YYDEBUG */
+#endif  /* ! defined CUEPARSERDEBUG */
+#if CUEPARSERDEBUG
+extern int cueparserdebug;
 #endif
 
 /* Token type.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
+#ifndef CUEPARSERTOKENTYPE
+# define CUEPARSERTOKENTYPE
+  enum cueparsertokentype
   {
     NUMBER = 258,
     STRING = 259,
@@ -101,26 +109,25 @@ extern int yydebug;
 #endif
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-union YYSTYPE
+#if ! defined CUEPARSERSTYPE && ! defined CUEPARSERSTYPE_IS_DECLARED
+union CUEPARSERSTYPE
 {
-#line 57 "cue_parser.y" /* yacc.c:1921  */
+#line 58 "cue_parser.y"
 
 	long ival;
 	char *sval;
 
-#line 114 "cue_parser.h" /* yacc.c:1921  */
-};
+#line 121 "cue_parser.h"
 
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+};
+typedef union CUEPARSERSTYPE CUEPARSERSTYPE;
+# define CUEPARSERSTYPE_IS_TRIVIAL 1
+# define CUEPARSERSTYPE_IS_DECLARED 1
 #endif
 
 
-extern YYSTYPE yylval;
+extern CUEPARSERSTYPE cueparserlval;
 
-int yyparse (void);
+int cueparserparse (void);
 
-#endif /* !YY_YY_CUE_PARSER_H_INCLUDED  */
+#endif /* !YY_CUEPARSER_CUE_PARSER_H_INCLUDED  */
