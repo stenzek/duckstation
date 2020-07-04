@@ -187,7 +187,7 @@ bool LibretroVulkanHostDisplay::Render()
 
   if (HasDisplayTexture())
   {
-    const auto [left, top, width, height] = CalculateDrawRect(display_width, display_height, 0);
+    const auto [left, top, width, height] = CalculateDrawRect(display_width, display_height, 0, false);
     RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                   m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                   m_display_texture_view_height, m_display_linear_filtering);
