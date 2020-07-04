@@ -111,12 +111,14 @@ void LibretroHostInterface::GetGameInfo(const char* path, CDImage* image, std::s
 
 std::string LibretroHostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
-  return GetUserDirectoryRelativePath("%s/shared_card_%d.mcd", GetSaveDirectory(), slot + 1);
+  return StringUtil::StdStringFromFormat("%s%cshared_card_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER,
+                                         slot + 1);
 }
 
 std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
-  return GetUserDirectoryRelativePath("%s/%s_%d.mcd", GetSaveDirectory(), game_code, slot + 1);
+  return StringUtil::StdStringFromFormat("%s%c%s_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER, game_code,
+                                         slot + 1);
 }
 
 std::string LibretroHostInterface::GetSettingValue(const char* section, const char* key,
