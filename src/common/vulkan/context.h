@@ -46,6 +46,15 @@ public:
   static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
                      bool enable_debug_reports, bool enable_validation_layer);
 
+  // Creates a new context from a pre-existing instance.
+  static bool CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface,
+                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_reports,
+                                         const char** required_device_extensions = nullptr,
+                                         u32 num_required_device_extensions = 0,
+                                         const char** required_device_layers = nullptr,
+                                         u32 num_required_device_layers = 0,
+                                         const VkPhysicalDeviceFeatures* required_features = nullptr);
+
   // Destroys context.
   static void Destroy();
 
@@ -162,13 +171,15 @@ public:
   void WaitForGPUIdle();
 
 private:
-  Context(VkInstance instance, VkPhysicalDevice physical_device);
+  Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device);
 
   using ExtensionList = std::vector<const char*>;
   static bool SelectInstanceExtensions(ExtensionList* extension_list, bool enable_surface, bool enable_debug_report);
   bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
-  bool SelectDeviceFeatures();
-  bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
+  bool SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_features);
+  bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,
+                    u32 num_required_device_extensions, const char** required_device_layers,
+                    u32 num_required_device_layers, const VkPhysicalDeviceFeatures* required_features);
 
   bool CreateCommandBuffers();
   void DestroyCommandBuffers();
@@ -210,6 +221,7 @@ private:
   u64 m_completed_fence_counter = 0;
   u32 m_current_frame;
 
+  bool m_owns_device = false;
   bool m_last_present_failed = false;
 
   // Render pass cache

@@ -13,6 +13,7 @@
 #include "libretro_host_display.h"
 #include "libretro_opengl_host_display.h"
 #include "libretro_settings_interface.h"
+#include "libretro_vulkan_host_display.h"
 #include <array>
 #include <cstring>
 #include <tuple>
@@ -344,6 +345,7 @@ static std::array<retro_core_option_definition, 22> s_option_definitions = {{
      {"D3D11", "Hardware (D3D11)"},
 #endif
      {"OpenGL", "Hardware (OpenGL)"},
+     {"Vulkan", "Hardware (Vulkan)"},
      {"Software", "Software"}},
 #ifdef WIN32
    "D3D11"
@@ -658,14 +660,12 @@ static std::optional<GPURenderer> RetroHwContextToRenderer(retro_hw_context_type
     case RETRO_HW_CONTEXT_OPENGLES_VERSION:
       return GPURenderer::HardwareOpenGL;
 
+    case RETRO_HW_CONTEXT_VULKAN:
+      return GPURenderer::HardwareVulkan;
+
 #ifdef WIN32
     case RETRO_HW_CONTEXT_DIRECT3D:
       return GPURenderer::HardwareD3D11;
-#endif
-
-#if 0
-    case RETRO_HW_CONTEXT_VULKAN:
-      return GPURenderer::HardwareVulkan;
 #endif
 
     default:
@@ -720,6 +720,10 @@ bool LibretroHostInterface::RequestHardwareRendererContext()
       break;
 #endif
 
+    case GPURenderer::HardwareVulkan:
+      m_hw_render_callback_valid = LibretroVulkanHostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
+      break;
+
     case GPURenderer::HardwareOpenGL:
       m_hw_render_callback_valid = LibretroOpenGLHostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
       break;
@@ -756,6 +760,10 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   {
     case GPURenderer::HardwareOpenGL:
       display = std::make_unique<LibretroOpenGLHostDisplay>();
+      break;
+
+    case GPURenderer::HardwareVulkan:
+      display = std::make_unique<LibretroVulkanHostDisplay>();
       break;
 
 #ifdef WIN32

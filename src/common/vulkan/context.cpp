@@ -19,8 +19,8 @@ std::unique_ptr<Vulkan::Context> g_vulkan_context;
 
 namespace Vulkan {
 
-Context::Context(VkInstance instance, VkPhysicalDevice physical_device)
-  : m_instance(instance), m_physical_device(physical_device)
+Context::Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device)
+  : m_instance(instance), m_physical_device(physical_device), m_owns_device(owns_device)
 {
   // Read device physical memory properties, we need it for allocating buffers
   vkGetPhysicalDeviceProperties(physical_device, &m_device_properties);
@@ -44,13 +44,17 @@ Context::~Context()
   DestroyGlobalDescriptorPool();
   DestroyCommandBuffers();
 
-  if (m_device != VK_NULL_HANDLE)
+  if (m_owns_device && m_device != VK_NULL_HANDLE)
     vkDestroyDevice(m_device, nullptr);
 
   if (m_debug_report_callback != VK_NULL_HANDLE)
     DisableDebugReports();
 
-  vkDestroyInstance(m_instance, nullptr);
+  if (m_owns_device)
+  {
+    vkDestroyInstance(m_instance, nullptr);
+    Vulkan::UnloadVulkanLibrary();
+  }
 }
 
 bool Context::CheckValidationLayerAvailablility()
@@ -344,14 +348,14 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
     return false;
   }
 
-  g_vulkan_context.reset(new Context(instance, gpus[gpu_index]));
+  g_vulkan_context.reset(new Context(instance, gpus[gpu_index], true));
 
   // Enable debug reports if the "Host GPU" log category is enabled.
   if (enable_debug_reports)
     g_vulkan_context->EnableDebugReports();
 
   // Attempt to create the device.
-  if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer) ||
+  if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
       !g_vulkan_context->CreateGlobalDescriptorPool() || !g_vulkan_context->CreateCommandBuffers() ||
       (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, true)) == nullptr))
   {
@@ -359,7 +363,33 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
     if (surface != VK_NULL_HANDLE)
       vkDestroySurfaceKHR(instance, surface, nullptr);
 
-    Vulkan::UnloadVulkanLibrary();
+    g_vulkan_context.reset();
+    return false;
+  }
+
+  return true;
+}
+
+bool Context::CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface,
+                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_reports,
+                                         const char** required_device_extensions /* = nullptr */,
+                                         u32 num_required_device_extensions /* = 0 */,
+                                         const char** required_device_layers /* = nullptr */,
+                                         u32 num_required_device_layers /* = 0 */,
+                                         const VkPhysicalDeviceFeatures* required_features /* = nullptr */)
+{
+  g_vulkan_context.reset(new Context(instance, gpu, take_ownership));
+
+  // Enable debug reports if the "Host GPU" log category is enabled.
+  if (enable_debug_reports)
+    g_vulkan_context->EnableDebugReports();
+
+  // Attempt to create the device.
+  if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, required_device_extensions,
+                                      num_required_device_extensions, required_device_layers,
+                                      num_required_device_layers, required_features) ||
+      !g_vulkan_context->CreateGlobalDescriptorPool() || !g_vulkan_context->CreateCommandBuffers())
+  {
     g_vulkan_context.reset();
     return false;
   }
@@ -403,8 +433,13 @@ bool Context::SelectDeviceExtensions(ExtensionList* extension_list, bool enable_
                        return !strcmp(name, properties.extensionName);
                      }) != available_extension_list.end())
     {
-      Log_InfoPrintf("Enabling extension: %s", name);
-      extension_list->push_back(name);
+      if (std::none_of(extension_list->begin(), extension_list->end(),
+                       [&](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
+      {
+        Log_InfoPrintf("Enabling extension: %s", name);
+        extension_list->push_back(name);
+      }
+
       return true;
     }
 
@@ -420,7 +455,7 @@ bool Context::SelectDeviceExtensions(ExtensionList* extension_list, bool enable_
   return true;
 }
 
-bool Context::SelectDeviceFeatures()
+bool Context::SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_features)
 {
   VkPhysicalDeviceFeatures available_features;
   vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
@@ -431,6 +466,9 @@ bool Context::SelectDeviceFeatures()
     return false;
   }
 
+  if (required_features)
+    std::memcpy(&m_device_features, required_features, sizeof(m_device_features));
+
   // Enable the features we use.
   m_device_features.dualSrcBlend = available_features.dualSrcBlend;
   m_device_features.geometryShader = available_features.geometryShader;
@@ -438,7 +476,9 @@ bool Context::SelectDeviceFeatures()
   return true;
 }
 
-bool Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
+bool Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,
+                           u32 num_required_device_extensions, const char** required_device_layers,
+                           u32 num_required_device_layers, const VkPhysicalDeviceFeatures* required_features)
 {
   u32 queue_family_count;
   vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, nullptr);
@@ -536,16 +576,18 @@ bool Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
   device_info.pQueueCreateInfos = queue_infos.data();
 
   ExtensionList enabled_extensions;
+  for (u32 i = 0; i < num_required_device_extensions; i++)
+    enabled_extensions.emplace_back(required_device_extensions[i]);
   if (!SelectDeviceExtensions(&enabled_extensions, surface != VK_NULL_HANDLE))
     return false;
 
-  device_info.enabledLayerCount = 0;
-  device_info.ppEnabledLayerNames = nullptr;
+  device_info.enabledLayerCount = num_required_device_layers;
+  device_info.ppEnabledLayerNames = required_device_layers;
   device_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
   device_info.ppEnabledExtensionNames = enabled_extensions.data();
 
   // Check for required features before creating.
-  if (!SelectDeviceFeatures())
+  if (!SelectDeviceFeatures(required_features))
     return false;
 
   device_info.pEnabledFeatures = &m_device_features;

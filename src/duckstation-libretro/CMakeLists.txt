@@ -9,6 +9,8 @@ add_library(duckstation-libretro SHARED
   libretro_opengl_host_display.h
   libretro_settings_interface.cpp
   libretro_settings_interface.h
+  libretro_vulkan_host_display.cpp
+  libretro_vulkan_host_display.h
   main.cpp
 )
 
@@ -19,5 +21,5 @@ if(WIN32)
   )
 endif()
 
-target_link_libraries(duckstation-libretro PRIVATE core common imgui glad scmversion frontend-common libretro-common)
+target_link_libraries(duckstation-libretro PRIVATE core common imgui glad scmversion frontend-common vulkan-loader libretro-common)
 

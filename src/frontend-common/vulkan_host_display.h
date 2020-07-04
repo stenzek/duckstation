@@ -60,6 +60,9 @@ protected:
     float src_rect_height;
   };
 
+  // Can be overridden by frontends.
+  virtual VkRenderPass GetRenderPassForDisplay() const;
+
   virtual bool CreateResources();
   virtual void DestroyResources();
 

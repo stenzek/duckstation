@@ -1,7 +1,7 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows and Linux (AppImage) Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Windows, Linux (AppImage), and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
 
@@ -11,6 +11,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/07/04: Vulkan renderer now available in libretro core.
 - 2020/07/02: Now available as a libretro core.
 - 2020/07/01: Lightgun support with custom crosshairs.
 - 2020/06/19: Vulkan hardware renderer added.
@@ -197,7 +198,7 @@ Hotkeys:
  
 ## Libretro Core
 
-DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. Currently, only the D3D11 and OpenGL renderers are available, Vulkan will be available soon. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
 
 Prebuilt binaries for Windows and 64-bit Linux can be found on the releases page. Direct links:
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-libretro-windows-x64-release.7z

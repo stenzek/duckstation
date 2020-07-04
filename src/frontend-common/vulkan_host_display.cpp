@@ -266,6 +266,11 @@ bool VulkanHostDisplay::HasRenderSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
+VkRenderPass VulkanHostDisplay::GetRenderPassForDisplay() const
+{
+  return m_swap_chain->GetClearRenderPass();
+}
+
 bool VulkanHostDisplay::CreateResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
@@ -348,7 +353,7 @@ void main()
   gpbuilder.SetNoBlendingState();
   gpbuilder.SetDynamicViewportAndScissorState();
   gpbuilder.SetPipelineLayout(m_pipeline_layout);
-  gpbuilder.SetRenderPass(m_swap_chain->GetClearRenderPass(), 0);
+  gpbuilder.SetRenderPass(GetRenderPassForDisplay(), 0);
 
   m_display_pipeline = gpbuilder.Create(device, pipeline_cache, false);
   if (m_display_pipeline == VK_NULL_HANDLE)

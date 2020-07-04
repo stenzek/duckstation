@@ -41,6 +41,7 @@ void SafeDestroyPipelineLayout(VkPipelineLayout& pl);
 void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl);
 void SafeDestroyBufferView(VkBufferView& bv);
 void SafeDestroySampler(VkSampler& samp);
+void SafeDestroySemaphore(VkSemaphore& sem);
 void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds);
 
 void SetViewport(VkCommandBuffer command_buffer, int x, int y, int width, int height, float min_depth = 0.0f,

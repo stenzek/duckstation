@@ -23,7 +23,8 @@
 #undef VULKAN_MODULE_ENTRY_POINT
 
 namespace Vulkan {
-static void ResetVulkanLibraryFunctionPointers()
+
+void ResetVulkanLibraryFunctionPointers()
 {
 #define VULKAN_MODULE_ENTRY_POINT(name, required) name = nullptr;
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required) name = nullptr;

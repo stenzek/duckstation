@@ -97,5 +97,6 @@ bool LoadVulkanLibrary();
 bool LoadVulkanInstanceFunctions(VkInstance instance);
 bool LoadVulkanDeviceFunctions(VkDevice device);
 void UnloadVulkanLibrary();
+void ResetVulkanLibraryFunctionPointers();
 
 } // namespace Vulkan

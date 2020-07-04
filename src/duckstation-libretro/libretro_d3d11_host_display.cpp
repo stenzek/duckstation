@@ -4,7 +4,7 @@
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
 #include "libretro_host_interface.h"
-Log_SetChannel(D3D11HostDisplay);
+Log_SetChannel(LibretroD3D11HostDisplay);
 
 #define HAVE_D3D11
 #include "libretro_d3d.h"

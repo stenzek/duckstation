@@ -232,6 +232,15 @@ void SafeDestroySampler(VkSampler& samp)
   }
 }
 
+void SafeDestroySemaphore(VkSemaphore& sem)
+{
+  if (sem != VK_NULL_HANDLE)
+  {
+    vkDestroySemaphore(g_vulkan_context->GetDevice(), sem, nullptr);
+    sem = VK_NULL_HANDLE;
+  }
+}
+
 void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds)
 {
   if (ds != VK_NULL_HANDLE)
