@@ -65,6 +65,7 @@ private:
   static void HardwareRendererContextDestroy();
 
   retro_hw_render_callback m_hw_render_callback = {};
+  std::unique_ptr<HostDisplay> m_hw_render_display;
   bool m_hw_render_callback_valid = false;
   bool m_using_hardware_renderer = false;
 };

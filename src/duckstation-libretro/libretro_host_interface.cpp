@@ -50,7 +50,15 @@ static void LibretroLogCallback(void* pUserParam, const char* channelName, const
 
 LibretroHostInterface::LibretroHostInterface() = default;
 
-LibretroHostInterface::~LibretroHostInterface() = default;
+LibretroHostInterface::~LibretroHostInterface()
+{
+  // should be cleaned up by the context destroy, but just in case
+  if (m_hw_render_display)
+  {
+    m_hw_render_display->DestroyRenderDevice();
+    m_hw_render_display.reset();
+  }
+}
 
 void LibretroHostInterface::InitLogging()
 {
@@ -682,6 +690,27 @@ static std::optional<GPURenderer> RetroHwContextToRenderer(retro_hw_context_type
   }
 }
 
+static std::optional<GPURenderer> RenderAPIToRenderer(HostDisplay::RenderAPI api)
+{
+  switch (api)
+  {
+    case HostDisplay::RenderAPI::OpenGL:
+    case HostDisplay::RenderAPI::OpenGLES:
+      return GPURenderer::HardwareOpenGL;
+
+    case HostDisplay::RenderAPI::Vulkan:
+      return GPURenderer::HardwareVulkan;
+
+#ifdef WIN32
+    case HostDisplay::RenderAPI::D3D11:
+      return GPURenderer::HardwareD3D11;
+#endif
+
+    default:
+      return std::nullopt;
+  }
+}
+
 bool LibretroHostInterface::RequestHardwareRendererContext()
 {
   GPURenderer renderer = Settings::DEFAULT_GPU_RENDERER;
@@ -757,49 +786,59 @@ void LibretroHostInterface::HardwareRendererContextReset()
 
 void LibretroHostInterface::SwitchToHardwareRenderer()
 {
-  std::optional<GPURenderer> renderer = RetroHwContextToRenderer(m_hw_render_callback.context_type);
-  if (!renderer.has_value())
+  // use the existing device if we just resized the window
+  std::optional<GPURenderer> renderer;
+  std::unique_ptr<HostDisplay> display = std::move(m_hw_render_display);
+  if (display)
   {
-    Log_ErrorPrintf("Unknown context type %u", static_cast<unsigned>(m_hw_render_callback.context_type));
-    return;
+    Log_InfoPrintf("Using existing hardware display");
+    renderer = RenderAPIToRenderer(display->GetRenderAPI());
   }
-
-  std::unique_ptr<HostDisplay> display = nullptr;
-  switch (renderer.value())
+  else
   {
-    case GPURenderer::HardwareOpenGL:
-      display = std::make_unique<LibretroOpenGLHostDisplay>();
-      break;
+    renderer = RetroHwContextToRenderer(m_hw_render_callback.context_type);
+    if (!renderer.has_value())
+    {
+      Log_ErrorPrintf("Unknown context type %u", static_cast<unsigned>(m_hw_render_callback.context_type));
+      return;
+    }
 
-    case GPURenderer::HardwareVulkan:
-      display = std::make_unique<LibretroVulkanHostDisplay>();
-      break;
+    switch (renderer.value())
+    {
+      case GPURenderer::HardwareOpenGL:
+        display = std::make_unique<LibretroOpenGLHostDisplay>();
+        break;
+
+      case GPURenderer::HardwareVulkan:
+        display = std::make_unique<LibretroVulkanHostDisplay>();
+        break;
 
 #ifdef WIN32
-    case GPURenderer::HardwareD3D11:
-      display = std::make_unique<LibretroD3D11HostDisplay>();
-      break;
+      case GPURenderer::HardwareD3D11:
+        display = std::make_unique<LibretroD3D11HostDisplay>();
+        break;
 #endif
 
-    default:
-      Log_ErrorPrintf("Unhandled renderer '%s'", Settings::GetRendererName(renderer.value()));
+      default:
+        Log_ErrorPrintf("Unhandled renderer '%s'", Settings::GetRendererName(renderer.value()));
+        return;
+    }
+
+    struct retro_system_av_info avi;
+    g_libretro_host_interface.GetSystemAVInfo(&avi, true);
+
+    WindowInfo wi;
+    wi.type = WindowInfo::Type::Libretro;
+    wi.display_connection = &g_libretro_host_interface.m_hw_render_callback;
+    wi.surface_width = avi.geometry.base_width;
+    wi.surface_height = avi.geometry.base_height;
+    wi.surface_scale = 1.0f;
+    if (!display || !display->CreateRenderDevice(wi, {}, g_libretro_host_interface.m_settings.gpu_use_debug_device) ||
+        !display->InitializeRenderDevice({}, m_settings.gpu_use_debug_device))
+    {
+      Log_ErrorPrintf("Failed to create hardware host display");
       return;
-  }
-
-  struct retro_system_av_info avi;
-  g_libretro_host_interface.GetSystemAVInfo(&avi, true);
-
-  WindowInfo wi;
-  wi.type = WindowInfo::Type::Libretro;
-  wi.display_connection = &g_libretro_host_interface.m_hw_render_callback;
-  wi.surface_width = avi.geometry.base_width;
-  wi.surface_height = avi.geometry.base_height;
-  wi.surface_scale = 1.0f;
-  if (!display || !display->CreateRenderDevice(wi, {}, g_libretro_host_interface.m_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice({}, m_settings.gpu_use_debug_device))
-  {
-    Log_ErrorPrintf("Failed to create hardware host display");
-    return;
+    }
   }
 
   std::swap(display, g_libretro_host_interface.m_display);
@@ -810,21 +849,31 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
 
 void LibretroHostInterface::HardwareRendererContextDestroy()
 {
-  g_libretro_host_interface.m_hw_render_callback_valid = false;
-
   // switch back to software
   if (g_libretro_host_interface.m_using_hardware_renderer)
   {
     Log_InfoPrintf("Lost hardware renderer context, switching to software renderer");
     g_libretro_host_interface.SwitchToSoftwareRenderer();
   }
+
+  if (g_libretro_host_interface.m_hw_render_display)
+  {
+    g_libretro_host_interface.m_hw_render_display->DestroyRenderDevice();
+    g_libretro_host_interface.m_hw_render_display.reset();
+  }
+
+  g_libretro_host_interface.m_hw_render_callback_valid = false;
 }
 
 void LibretroHostInterface::SwitchToSoftwareRenderer()
 {
-  std::unique_ptr<HostDisplay> display = std::make_unique<LibretroHostDisplay>();
-  std::swap(display, g_libretro_host_interface.m_display);
-  g_libretro_host_interface.m_system->RecreateGPU(GPURenderer::Software);
-  display->DestroyRenderDevice();
-  m_using_hardware_renderer = false;
+  // keep the hw renderer around in case we need it later
+  if (m_using_hardware_renderer)
+  {
+    m_hw_render_display = std::move(m_display);
+    m_using_hardware_renderer = false;
+  }
+
+  m_display = std::make_unique<LibretroHostDisplay>();
+  m_system->RecreateGPU(GPURenderer::Software);
 }
