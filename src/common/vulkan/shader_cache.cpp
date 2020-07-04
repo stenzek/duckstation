@@ -375,7 +375,6 @@ void ShaderCache::ClosePipelineCache()
 std::string ShaderCache::GetShaderCacheBaseFileName(const std::string_view& base_path, bool debug)
 {
   std::string base_filename(base_path);
-  base_filename += FS_OSPATH_SEPERATOR_CHARACTER;
   base_filename += "vulkan_shaders";
 
   if (debug)
@@ -387,7 +386,6 @@ std::string ShaderCache::GetShaderCacheBaseFileName(const std::string_view& base
 std::string ShaderCache::GetPipelineCacheBaseFileName(const std::string_view& base_path, bool debug)
 {
   std::string base_filename(base_path);
-  base_filename += FS_OSPATH_SEPERATOR_CHARACTER;
   base_filename += "vulkan_pipelines";
 
   if (debug)

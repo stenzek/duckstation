@@ -131,7 +131,7 @@ bool SDLHostInterface::CreateDisplay()
 
   Assert(display);
   if (!display->CreateRenderDevice(wi.value(), m_settings.gpu_adapter, m_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice(GetShaderCacheDirectory(), m_settings.gpu_use_debug_device))
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
   {
     ReportError("Failed to create/initialize display render device");
     return false;

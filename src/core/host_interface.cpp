@@ -318,9 +318,9 @@ void HostInterface::OnRunningGameChanged() {}
 
 void HostInterface::OnControllerTypeChanged(u32 slot) {}
 
-std::string HostInterface::GetShaderCacheDirectory()
+std::string HostInterface::GetShaderCacheBasePath() const
 {
-  return GetUserDirectoryRelativePath("cache");
+  return GetUserDirectoryRelativePath("cache/");
 }
 
 void HostInterface::SetDefaultSettings(SettingsInterface& si)

@@ -160,7 +160,6 @@ std::string ShaderCache::GetCacheBaseFileName(const std::string_view& base_path,
                                               bool debug)
 {
   std::string base_filename(base_path);
-  base_filename += FS_OSPATH_SEPERATOR_CHARACTER;
   base_filename += "d3d_shaders_";
 
   switch (feature_level)

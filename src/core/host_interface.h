@@ -103,6 +103,9 @@ public:
   /// Returns the default path to a memory card for a specific game.
   virtual std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const;
 
+  /// Returns the path to the shader cache directory.
+  virtual std::string GetShaderCacheBasePath() const;
+
   /// Returns a setting value from the configuration.
   virtual std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") = 0;
 
@@ -126,9 +129,6 @@ protected:
   virtual void OnSystemStateSaved(bool global, s32 slot);
   virtual void OnRunningGameChanged();
   virtual void OnControllerTypeChanged(u32 slot);
-
-  /// Returns the path to the shader cache directory.
-  virtual std::string GetShaderCacheDirectory();
 
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);

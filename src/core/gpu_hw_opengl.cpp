@@ -39,7 +39,7 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* d
 
   SetCapabilities(host_display);
 
-  m_shader_cache.Open(IsGLES(), system->GetHostInterface()->GetUserDirectoryRelativePath("cache"));
+  m_shader_cache.Open(IsGLES(), system->GetHostInterface()->GetShaderCacheBasePath());
 
   if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
     return false;

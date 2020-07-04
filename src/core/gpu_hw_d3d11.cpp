@@ -38,7 +38,7 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dm
   if (!m_device || !m_context)
     return false;
 
-  m_shader_cache.Open(system->GetHostInterface()->GetUserDirectoryRelativePath("cache"), m_device->GetFeatureLevel(),
+  m_shader_cache.Open(system->GetHostInterface()->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
                       system->GetSettings().gpu_use_debug_device);
 
   if (!CreateFramebuffer())

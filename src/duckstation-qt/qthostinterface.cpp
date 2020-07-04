@@ -335,7 +335,7 @@ bool QtHostInterface::AcquireHostDisplay()
   createImGuiContext(display_widget->devicePixelRatioFromScreen());
 
   if (!m_display->MakeRenderContextCurrent() ||
-      !m_display->InitializeRenderDevice(GetShaderCacheDirectory(), m_settings.gpu_use_debug_device))
+      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
   {
     destroyImGuiContext();
     m_display->DestroyRenderDevice();

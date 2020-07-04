@@ -244,12 +244,12 @@ ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vert
 
 std::string ShaderCache::GetIndexFileName() const
 {
-  return StringUtil::StdStringFromFormat("%s%cgl_programs.idx", m_base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER);
+  return StringUtil::StdStringFromFormat("%sgl_programs.idx", m_base_path.c_str());
 }
 
 std::string ShaderCache::GetBlobFileName() const
 {
-  return StringUtil::StdStringFromFormat("%s%cgl_programs.bin", m_base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER);
+  return StringUtil::StdStringFromFormat("%sgl_programs.bin", m_base_path.c_str());
 }
 
 std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_shader,
