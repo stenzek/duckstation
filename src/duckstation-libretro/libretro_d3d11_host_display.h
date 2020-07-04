@@ -12,13 +12,15 @@ public:
   static bool RequestHardwareRendererContext(retro_hw_render_callback* cb);
 
   bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) override;
-  void DestroyRenderDevice();
 
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
 
   void SetVSync(bool enabled) override;
 
   bool Render() override;
+
+protected:
+  void DestroyResources() override;
 
 private:
   bool CheckFramebufferSize(u32 width, u32 height);

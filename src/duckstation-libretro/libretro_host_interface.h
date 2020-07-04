@@ -13,6 +13,8 @@ public:
   static bool SetCoreOptions();
   static bool HasCoreVariablesChanged();
 
+  ALWAYS_INLINE u32 GetResolutionScale() const { return m_settings.gpu_resolution_scale; }
+
   bool Initialize() override;
   void Shutdown() override;
 

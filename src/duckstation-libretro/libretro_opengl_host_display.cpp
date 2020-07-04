@@ -99,7 +99,7 @@ bool LibretroOpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::st
     return false;
   }
 
-  return CreateResources();
+  return true;
 }
 
 void LibretroOpenGLHostDisplay::DestroyRenderDevice()
@@ -117,28 +117,32 @@ bool LibretroOpenGLHostDisplay::Render()
 {
   const GLuint fbo = static_cast<GLuint>(
     static_cast<retro_hw_render_callback*>(m_window_info.display_connection)->get_current_framebuffer());
+  const u32 resolution_scale = g_libretro_host_interface.GetResolutionScale();
+  const u32 display_width = static_cast<u32>(m_display_width) * resolution_scale;
+  const u32 display_height = static_cast<u32>(m_display_height) * resolution_scale;
 
-  glDisable(GL_SCISSOR_TEST);
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(0, 0, display_width, display_height);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
   if (HasDisplayTexture())
   {
-    RenderDisplay(0, 0, m_display_texture_view_width, m_display_texture_view_height, m_display_texture_handle,
-                  m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                  m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+    const auto [left, top, width, height] = CalculateDrawRect(display_width, display_height, 0);
+    RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+                  m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                  m_display_texture_view_height, m_display_linear_filtering);
   }
 
   if (HasSoftwareCursor())
   {
     // TODO: Scale mouse x/y
     const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect(m_mouse_position_x, m_mouse_position_y);
-    RenderSoftwareCursor(left, m_display_texture_view_height - top - height, width, height, m_cursor_texture.get());
+    RenderSoftwareCursor(left, display_height - top - height, width, height, m_cursor_texture.get());
   }
 
-  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, m_display_texture_view_width,
-                                 m_display_texture_view_height, 0);
+  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, display_width, display_height, 0);
 
   GL::Program::ResetLastProgram();
   return true;

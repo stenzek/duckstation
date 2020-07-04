@@ -56,15 +56,13 @@ bool LibretroD3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::str
 
   m_device = d3d11_ri->device;
   m_context = d3d11_ri->context;
-  return CreateResources();
+  return true;
 }
 
-void LibretroD3D11HostDisplay::DestroyRenderDevice()
+void LibretroD3D11HostDisplay::DestroyResources()
 {
-  DestroyResources();
+  D3D11HostDisplay::DestroyResources();
   m_framebuffer.Destroy();
-  m_context.Reset();
-  m_device.Reset();
 }
 
 void LibretroD3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
@@ -75,8 +73,10 @@ void LibretroD3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_
 
 bool LibretroD3D11HostDisplay::Render()
 {
-  // TODO: Skip framebuffer when offset is (0,0).
-  if (!CheckFramebufferSize(m_display_texture_view_width, m_display_texture_view_height))
+  const u32 resolution_scale = g_libretro_host_interface.GetResolutionScale();
+  const u32 display_width = static_cast<u32>(m_display_width) * resolution_scale;
+  const u32 display_height = static_cast<u32>(m_display_height) * resolution_scale;
+  if (!CheckFramebufferSize(display_width, display_height))
     return false;
 
   // Ensure we're not currently bound.
@@ -86,9 +86,10 @@ bool LibretroD3D11HostDisplay::Render()
 
   if (HasDisplayTexture())
   {
-    RenderDisplay(0, 0, m_display_texture_view_width, m_display_texture_view_height, m_display_texture_handle,
-                  m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                  m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+    const auto [left, top, width, height] = CalculateDrawRect(display_width, display_height, 0);
+    RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+                  m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                  m_display_texture_view_height, m_display_linear_filtering);
   }
 
   if (HasSoftwareCursor())
@@ -101,18 +102,15 @@ bool LibretroD3D11HostDisplay::Render()
   // NOTE: libretro frontend expects the data bound to PS SRV slot 0.
   m_context->OMSetRenderTargets(0, nullptr, nullptr);
   m_context->PSSetShaderResources(0, 1, m_framebuffer.GetD3DSRVArray());
-  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, m_display_texture_view_width,
-                                 m_display_texture_view_height, 0);
+  g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, display_width, display_height, 0);
   return true;
 }
 
 bool LibretroD3D11HostDisplay::CheckFramebufferSize(u32 width, u32 height)
 {
-  if (m_framebuffer.GetWidth() >= width && m_framebuffer.GetHeight() >= height)
+  if (m_framebuffer.GetWidth() == width && m_framebuffer.GetHeight() == height)
     return true;
 
-  const u32 rounded_width = Common::AlignUpPow2(width, 1024);
-  const u32 rounded_height = Common::AlignUpPow2(height, 512);
-  return m_framebuffer.Create(m_device.Get(), rounded_width, rounded_height, DXGI_FORMAT_R8G8B8A8_UNORM,
+  return m_framebuffer.Create(m_device.Get(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM,
                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
 }
