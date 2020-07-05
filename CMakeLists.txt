@@ -168,6 +168,9 @@ else()
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 endif()
 
+# Needed for Linux - put shared libraries in the binary directory.
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
 
 # Enable threads everywhere.
 set(THREADS_PREFER_PTHREAD_FLAG ON)
