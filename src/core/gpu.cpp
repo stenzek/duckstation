@@ -578,7 +578,7 @@ void GPU::UpdateCRTCDisplayParameters()
   const u8 height_shift = m_force_progressive_scan ? y_shift : BoolToUInt8(m_GPUSTAT.vertical_interlace);
 
   // Determine screen size.
-  cs.display_width = (((cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider) + 2u) & ~3u;
+  cs.display_width = (cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider;
   cs.display_height = (cs.vertical_active_end - cs.vertical_active_start) << height_shift;
 
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
@@ -612,7 +612,8 @@ void GPU::UpdateCRTCDisplayParameters()
   }
 
   // align to 4-pixel boundary
-  cs.display_vram_width = ((horizontal_active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
+  cs.display_vram_width =
+    (static_cast<u16>(std::round(horizontal_active_ticks / static_cast<float>(cs.dot_clock_divider))) + 2u) & ~3u;
 
   // apply the crop from the start (usually overscan)
   cs.display_vram_width -= std::min(cs.display_vram_width, horizontal_skip_pixels);
@@ -1448,7 +1449,7 @@ void GPU::DrawDebugStateWindow()
     ImGui::Text("Display origin: %u, %u", cs.display_origin_left, cs.display_origin_top);
     ImGui::Text("Active display: %ux%u @ (%u, %u)", cs.display_vram_width, cs.display_vram_height, cs.display_vram_left,
                 cs.display_vram_top);
-    ImGui::Text("Padding: Left=%u, Top=%u, Right=%u, Bottom=%u", cs.display_origin_left, cs.display_origin_top,
+    ImGui::Text("Padding: Left=%d, Top=%d, Right=%d, Bottom=%d", cs.display_origin_left, cs.display_origin_top,
                 cs.display_width - cs.display_vram_width - cs.display_origin_left,
                 cs.display_height - cs.display_vram_height - cs.display_origin_top);
   }
