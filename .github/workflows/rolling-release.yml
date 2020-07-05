@@ -34,14 +34,16 @@ jobs:
     - name: Create libretro core archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-libretro-windows-x64-release.7z ./bin/x64/duckstation-libretro-*
+        rename bin\x64\duckstation-libretro-* duckstation_libretro.dll
         del /Q bin\x64\duckstation-libretro-*
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation_libretro.dll.zip ./bin/x64/duckstation_libretro.dll
+        del /Q bin\x64\duckstation_libretro.dll
 
     - name: Upload release artifact
       uses: actions/upload-artifact@v1
       with:
         name: "windows-x64"
-        path: "duckstation-libretro-windows-x64-release.7z"
+        path: "duckstation_libretro.dll.zip"
 
     - name: Create release archive
       shell: cmd
@@ -53,6 +55,7 @@ jobs:
       with:
         name: "windows-x64"
         path: "duckstation-windows-x64-release.7z"
+
 
   linux-build:
     runs-on: ubuntu-20.04
@@ -100,6 +103,20 @@ jobs:
         name: "linux-x64-appimage-qt-zsync"
         path: "build/duckstation-qt-x64.AppImage.zsync"
 
+
+  linux-libretro-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Install packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake ninja-build ccache
+
     - name: Compile libretro core
       shell: bash
       run: |
@@ -112,16 +129,17 @@ jobs:
       shell: bash
       run: |
         cd build-libretro
-        zip -j duckstation-libretro-linux-x64-release.zip src/duckstation-libretro/libduckstation-libretro.so
+        zip -j duckstation_libretro.so.zip bin/duckstation_libretro.so
       
     - name: Upload Linux libretro core
       uses: actions/upload-artifact@v1
       with:
         name: "linux-x64-libretro"
-        path: "build-libretro/duckstation-libretro-linux-x64-release.zip"
-        
+        path: "build-libretro/duckstation_libretro.so.zip"
+
+
   create-release:
-    needs: [windows-build, linux-build]
+    needs: [windows-build, linux-build, linux-libretro-build]
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     steps:
@@ -163,9 +181,9 @@ jobs:
           title: "Latest Development Build"
           files: |
             windows-x64/duckstation-windows-x64-release.7z
-            windows-x64/duckstation-libretro-windows-x64-release.7z
+            windows-x64/duckstation_libretro.dll.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-            linux-x64-libretro/duckstation-libretro-linux-x64-release.zip
+            linux-x64-libretro/duckstation_libretro.so.zip
