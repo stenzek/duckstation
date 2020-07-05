@@ -578,7 +578,7 @@ void GPU::UpdateCRTCDisplayParameters()
   const u8 height_shift = m_force_progressive_scan ? y_shift : BoolToUInt8(m_GPUSTAT.vertical_interlace);
 
   // Determine screen size.
-  cs.display_width = (((cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider) + 2u) & ~3u;
+  cs.display_width = (cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider;
   cs.display_height = (cs.vertical_active_end - cs.vertical_active_start) << height_shift;
 
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
