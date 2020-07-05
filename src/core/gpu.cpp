@@ -612,7 +612,8 @@ void GPU::UpdateCRTCDisplayParameters()
   }
 
   // align to 4-pixel boundary
-  cs.display_vram_width = ((horizontal_active_ticks / cs.dot_clock_divider) + 2u) & ~3u;
+  cs.display_vram_width =
+    (static_cast<u16>(std::round(horizontal_active_ticks / static_cast<float>(cs.dot_clock_divider))) + 2u) & ~3u;
 
   // apply the crop from the start (usually overscan)
   cs.display_vram_width -= std::min(cs.display_vram_width, horizontal_skip_pixels);
