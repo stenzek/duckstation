@@ -128,8 +128,11 @@ bool LibretroVulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::st
     return false;
   }
 
+  // Keeping the pointer instead of memcpying can cause crashes, e.g. fullscreen switches.
+  std::memcpy(&m_ri, reinterpret_cast<const retro_hw_render_interface_vulkan*>(ri),
+              sizeof(retro_hw_render_interface_vulkan));
+
   // TODO: Grab queue? it should be the same
-  m_ri = reinterpret_cast<const retro_hw_render_interface_vulkan*>(ri);
   return true;
 }
 
@@ -203,13 +206,13 @@ bool LibretroVulkanHostDisplay::Render()
   vkCmdEndRenderPass(cmdbuffer);
   m_frame_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   m_frame_view.image_layout = m_frame_texture.GetLayout();
-  m_ri->set_image(m_ri->handle, &m_frame_view, 0, nullptr, VK_QUEUE_FAMILY_IGNORED);
+  m_ri.set_image(m_ri.handle, &m_frame_view, 0, nullptr, VK_QUEUE_FAMILY_IGNORED);
 
   // TODO: We can't use this because it doesn't support passing fences...
-  // m_ri->set_command_buffers(m_ri->handle, 1, &cmdbuffer);
-  m_ri->lock_queue(m_ri->handle);
+  // m_ri.set_command_buffers(m_ri.handle, 1, &cmdbuffer);
+  m_ri.lock_queue(m_ri.handle);
   g_vulkan_context->SubmitCommandBuffer();
-  m_ri->unlock_queue(m_ri->handle);
+  m_ri.unlock_queue(m_ri.handle);
   g_vulkan_context->MoveToNextCommandBuffer();
 
   g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, display_width, display_height, 0);

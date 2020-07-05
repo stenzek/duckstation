@@ -33,7 +33,7 @@ private:
 
   bool CheckFramebufferSize(u32 width, u32 height);
 
-  const retro_hw_render_interface_vulkan* m_ri = nullptr;
+  retro_hw_render_interface_vulkan m_ri;
 
   Vulkan::Texture m_frame_texture;
   retro_vulkan_image m_frame_view = {};
