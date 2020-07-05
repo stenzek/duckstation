@@ -201,12 +201,12 @@ Hotkeys:
 DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
 
 Prebuilt binaries for Windows and 64-bit Linux can be found on the releases page. Direct links:
-- 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-libretro-windows-x64-release.7z
-- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-libretro-linux-x64-release.zip
+- 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
+- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.so.zip
 
-To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory.
+To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory. This will be based on the configuration you selected, you can load it directly into RetroArch, or rename it to `duckstation_libretro.dll`.
 
-To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DBUILD_LIBRETRO_CORE=ON ..`. The shared library can be found in `src/duckstation-libretro/libduckstation-libretro.so`.
+To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DBUILD_LIBRETRO_CORE=ON ..`. The shared library can be found in `bin/duckstation_libretro.so`.
 
 Currently there is no core info file for DuckStation, so if you want to use it with RetroArch, you must manually load the core, and then content via the File menu. Hopefully we can change this in the future.
 
@@ -226,3 +226,4 @@ Currently there is no core info file for DuckStation, so if you want to use it w
 Icon by icons8: https://icons8.com/icon/74847/platforms.undefined.short-title
 
 "PlayStation" and "PSX" are registered trademarks of Sony Interactive Entertainment Europe Limited. This project is not affiliated in any way with Sony Interactive Entertainment.
+
