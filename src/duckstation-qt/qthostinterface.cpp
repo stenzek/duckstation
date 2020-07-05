@@ -991,6 +991,8 @@ void QtHostInterface::Thread::setInitResult(bool result)
 
 bool QtHostInterface::Thread::waitForInit()
 {
-  m_init_event.Wait();
+  while (!m_init_event.TryWait(100))
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
   return m_init_result.load();
 }
