@@ -174,20 +174,10 @@ void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, b
   std::memset(info, 0, sizeof(*info));
 
   info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(m_settings.display_aspect_ratio);
-
-  if (!m_system->IsPALRegion())
-  {
-    info->geometry.base_width = 640;
-    info->geometry.base_height = 480;
-  }
-  else
-  {
-    info->geometry.base_width = 720;
-    info->geometry.base_height = 576;
-  }
-
-  info->geometry.max_width = 1024 * resolution_scale;
-  info->geometry.max_height = 512 * resolution_scale;
+  info->geometry.base_width = 320;
+  info->geometry.base_height = 240;
+  info->geometry.max_width = GPU::VRAM_WIDTH * resolution_scale;
+  info->geometry.max_height = GPU::VRAM_HEIGHT * resolution_scale;
 
   info->timing.fps = m_system->GetThrottleFrequency();
   info->timing.sample_rate = static_cast<double>(AUDIO_SAMPLE_RATE);
