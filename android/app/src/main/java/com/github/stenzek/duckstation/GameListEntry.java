@@ -13,19 +13,33 @@ public class GameListEntry {
         PSExe
     }
 
+    public enum CompatibilityRating
+    {
+        Unknown,
+        DoesntBoot,
+        CrashesInIntro,
+        CrashesInGame,
+        GraphicalAudioIssues,
+        NoIssues,
+    }
+
     private String mPath;
     private String mCode;
     private String mTitle;
+    private long mSize;
+    private String mModifiedTime;
     private ConsoleRegion mRegion;
     private EntryType mType;
-    private long mSize;
+    private CompatibilityRating mCompatibilityRating;
 
-    public GameListEntry(String path, String code, String title, String region,
-                         String type, long size) {
+
+    public GameListEntry(String path, String code, String title, long size, String modifiedTime, String region,
+                         String type, String compatibilityRating) {
         mPath = path;
         mCode = code;
         mTitle = title;
         mSize = size;
+        mModifiedTime = modifiedTime;
 
         try {
             mRegion = ConsoleRegion.valueOf(region);
@@ -37,6 +51,12 @@ public class GameListEntry {
             mType = EntryType.valueOf(type);
         } catch (IllegalArgumentException e) {
             mType = EntryType.Disc;
+        }
+
+        try {
+            mCompatibilityRating = CompatibilityRating.valueOf(compatibilityRating);
+        } catch (IllegalArgumentException e) {
+            mCompatibilityRating = CompatibilityRating.Unknown;
         }
     }
 
@@ -52,11 +72,15 @@ public class GameListEntry {
         return mTitle;
     }
 
+    public String getModifiedTime() { return mModifiedTime; }
+
     public ConsoleRegion getRegion() {
         return mRegion;
     }
 
     public EntryType getType() { return mType; }
+
+    public CompatibilityRating getCompatibilityRating() { return mCompatibilityRating; }
 
     public void fillView(View view) {
         ((TextView) view.findViewById(R.id.game_list_view_entry_title)).setText(mTitle);

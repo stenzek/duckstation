@@ -1,6 +1,7 @@
 #pragma once
 #include "common/event.h"
-#include "core/host_interface.h"
+#include "frontend-common/common_host_interface.h"
+#include "frontend-common/ini_settings_interface.h"
 #include <array>
 #include <atomic>
 #include <functional>
@@ -12,7 +13,7 @@ struct ANativeWindow;
 
 class Controller;
 
-class AndroidHostInterface final : public HostInterface
+class AndroidHostInterface final : public CommonHostInterface
 {
 public:
   AndroidHostInterface(jobject java_object);
@@ -21,8 +22,13 @@ public:
   bool Initialize() override;
   void Shutdown() override;
 
+  const char* GetFrontendName() const override;
+  void RequestExit() override;
+
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
+
+  std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
   bool StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params);
@@ -37,22 +43,21 @@ public:
 protected:
   void SetUserDirectory() override;
   void LoadSettings() override;
+  void UpdateInputMap() override;
+
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
 
 private:
-  enum : u32
-  {
-    NUM_CONTROLLERS = 2
-  };
-
   void EmulationThreadEntryPoint(ANativeWindow* initial_surface, SystemBootParameters boot_params);
 
   void CreateImGuiContext();
   void DestroyImGuiContext();
 
   jobject m_java_object = {};
+
+  std::unique_ptr<INISettingsInterface> m_settings_interface;
 
   ANativeWindow* m_surface = nullptr;
 

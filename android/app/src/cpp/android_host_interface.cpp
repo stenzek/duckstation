@@ -1,15 +1,16 @@
 #include "android_host_interface.h"
-#include "android_gles_host_display.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/string.h"
+#include "common/timestamp.h"
 #include "core/controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
-#include "frontend-common/ini_settings_interface.h"
+#include "frontend-common/opengl_host_display.h"
+#include "frontend-common/vulkan_host_display.h"
 #include <android/native_window_jni.h>
 #include <cmath>
 #include <imgui.h>
@@ -64,7 +65,7 @@ AndroidHostInterface::~AndroidHostInterface()
 
 bool AndroidHostInterface::Initialize()
 {
-  if (!HostInterface::Initialize())
+  if (!CommonHostInterface::Initialize())
     return false;
 
   return true;
@@ -73,6 +74,16 @@ bool AndroidHostInterface::Initialize()
 void AndroidHostInterface::Shutdown()
 {
   HostInterface::Shutdown();
+}
+
+const char* AndroidHostInterface::GetFrontendName() const
+{
+  return "DuckStation Android";
+}
+
+void AndroidHostInterface::RequestExit()
+{
+  ReportError("Ignoring RequestExit()");
 }
 
 void AndroidHostInterface::ReportError(const char* message)
@@ -85,6 +96,11 @@ void AndroidHostInterface::ReportMessage(const char* message)
   HostInterface::ReportMessage(message);
 }
 
+std::string AndroidHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value)
+{
+  return m_settings_interface->GetStringValue(section, key, default_value);
+}
+
 void AndroidHostInterface::SetUserDirectory()
 {
   // TODO: Should this be customizable or use an API-determined path?
@@ -93,10 +109,13 @@ void AndroidHostInterface::SetUserDirectory()
 
 void AndroidHostInterface::LoadSettings()
 {
-  // check settings version, if invalid set defaults, then load settings
-  INISettingsInterface settings_interface(GetSettingsFileName());
-  CheckSettings(settings_interface);
-  UpdateSettings([this, &settings_interface]() { m_settings.Load(settings_interface); });
+  m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+  CommonHostInterface::LoadSettings(*m_settings_interface);
+}
+
+void AndroidHostInterface::UpdateInputMap()
+{
+  CommonHostInterface::UpdateInputMap(*m_settings_interface);
 }
 
 bool AndroidHostInterface::StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params)
@@ -157,6 +176,7 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
 void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surface, SystemBootParameters boot_params)
 {
   CreateImGuiContext();
+  m_surface = initial_surface;
 
   // Boot system.
   if (!BootSystem(boot_params))
@@ -171,8 +191,6 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
   // System is ready to go.
   m_emulation_thread_start_result.store(true);
   m_emulation_thread_started.Signal();
-
-  ImGui::NewFrame();
 
   while (!m_emulation_thread_stop_request.load())
   {
@@ -203,6 +221,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
         m_system->GetGPU()->ResetGraphicsAPIState();
 
       m_display->Render();
+      ImGui::NewFrame();
 
       if (m_system)
       {
@@ -221,21 +240,41 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
 
 bool AndroidHostInterface::AcquireHostDisplay()
 {
-  std::unique_ptr<HostDisplay> display = AndroidGLESHostDisplay::Create(m_surface);
-  if (!display)
+  WindowInfo wi;
+  wi.type = WindowInfo::Type::Android;
+  wi.window_handle = m_surface;
+  wi.surface_width = ANativeWindow_getWidth(m_surface);
+  wi.surface_height = ANativeWindow_getHeight(m_surface);
+
+  std::unique_ptr<HostDisplay> display;
+  switch (m_settings.gpu_renderer)
   {
-    Log_ErrorPrintf("Failed to create GLES host display");
+    case GPURenderer::HardwareVulkan:
+      display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
+      break;
+
+    case GPURenderer::HardwareOpenGL:
+    default:
+      display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+      break;
+  }
+
+  if (!display->CreateRenderDevice(wi, {}, m_settings.gpu_use_debug_device) ||
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
+  {
+    ReportError("Failed to acquire host display.");
     return false;
   }
 
-  m_display = display.release();
+  m_display = std::move(display);
+  ImGui::NewFrame();
   return true;
 }
 
 void AndroidHostInterface::ReleaseHostDisplay()
 {
-  delete m_display;
-  m_display = nullptr;
+  m_display->DestroyRenderDevice();
+  m_display.reset();
 }
 
 std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBackend backend)
@@ -269,14 +308,23 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
   if (m_surface == surface)
   {
     if (m_display)
-      m_display->WindowResized(width, height);
+      m_display->ResizeRenderWindow(width, height);
 
     return;
   }
 
   m_surface = surface;
+
   if (m_display)
-    m_display->ChangeRenderWindow(surface);
+  {
+    WindowInfo wi;
+    wi.type = WindowInfo::Type::Android;
+    wi.window_handle = surface;
+    wi.surface_width = width;
+    wi.surface_height = height;
+
+    m_display->ChangeRenderWindow(wi);
+  }
 }
 
 void AndroidHostInterface::CreateImGuiContext()
@@ -369,6 +417,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused)
 {
+  Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEBUG);
+
   // initialize the java side
   jobject java_obj = env->NewObject(s_AndroidHostInterface_class, s_AndroidHostInterface_constructor);
   if (!java_obj)
@@ -382,7 +432,7 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused)
 
   // initialize the C++ side
   AndroidHostInterface* cpp_obj = new AndroidHostInterface(java_obj_ref);
-  if (!cpp_obj)
+  if (!cpp_obj->Initialize())
   {
     // TODO: Do we need to release the original java object reference?
     Log_ErrorPrint("Failed to create C++ AndroidHostInterface");
@@ -478,12 +528,14 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
       gl.AddDirectory(search_dir.c_str(), search_recursively);
   }
 
+  gl.Refresh(false, false, nullptr);
+
   jclass entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry");
   Assert(entry_class != nullptr);
 
-  jmethodID entry_constructor =
-    env->GetMethodID(entry_class, "<init>",
-                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
+  jmethodID entry_constructor = env->GetMethodID(entry_class, "<init>",
+                                                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/"
+                                                 "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
   Assert(entry_constructor != nullptr);
 
   jobjectArray entry_array = env->NewObjectArray(gl.GetEntryCount(), entry_class, nullptr);
@@ -492,14 +544,21 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
   u32 counter = 0;
   for (const GameListEntry& entry : gl.GetEntries())
   {
+    const Timestamp modified_ts(
+      Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
+
     jstring path = env->NewStringUTF(entry.path.c_str());
     jstring code = env->NewStringUTF(entry.code.c_str());
     jstring title = env->NewStringUTF(entry.title.c_str());
     jstring region = env->NewStringUTF(Settings::GetDiscRegionName(entry.region));
     jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
+    jstring compatibility_rating =
+      env->NewStringUTF(GameList::EntryCompatibilityRatingToString(entry.compatibility_rating));
+    jstring modified_time = env->NewStringUTF(modified_ts.ToString("%Y/%m/%d, %H:%M:%S"));
     jlong size = entry.total_size;
 
-    jobject entry_jobject = env->NewObject(entry_class, entry_constructor, path, code, title, region, type, size);
+    jobject entry_jobject = env->NewObject(entry_class, entry_constructor, path, code, title, size, modified_time,
+                                           region, type, compatibility_rating);
 
     env->SetObjectArrayElement(entry_array, counter++, entry_jobject);
   }
