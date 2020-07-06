@@ -69,6 +69,7 @@ public:
   ~GameList();
 
   static const char* EntryTypeToString(GameListEntryType type);
+  static const char* EntryCompatibilityRatingToString(GameListCompatibilityRating rating);
 
   /// Returns true if the filename is a PlayStation executable we can inject.
   static bool IsExeFileName(const char* path);

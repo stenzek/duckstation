@@ -27,6 +27,13 @@ const char* GameList::EntryTypeToString(GameListEntryType type)
   return names[static_cast<int>(type)];
 }
 
+const char* GameList::EntryCompatibilityRatingToString(GameListCompatibilityRating rating)
+{
+  static std::array<const char*, static_cast<int>(GameListCompatibilityRating::Count)> names = {
+    {"Unknown", "DoesntBoot", "CrashesInIntro", "CrashesInGame", "GraphicalAudioIssues", "NoIssues"}};
+  return names[static_cast<int>(rating)];
+}
+
 std::string GameList::GetGameCodeForPath(const char* image_path)
 {
   std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
