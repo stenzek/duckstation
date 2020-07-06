@@ -39,7 +39,9 @@ Context::Context(VkInstance instance, VkPhysicalDevice physical_device, bool own
 
 Context::~Context()
 {
-  WaitForGPUIdle();
+  if (m_device != VK_NULL_HANDLE)
+    WaitForGPUIdle();
+
   DestroyRenderPassCache();
   DestroyGlobalDescriptorPool();
   DestroyCommandBuffers();
