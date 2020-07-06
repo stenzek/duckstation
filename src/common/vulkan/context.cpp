@@ -460,9 +460,9 @@ bool Context::SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_feat
   VkPhysicalDeviceFeatures available_features;
   vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
 
-  if (!available_features.fillModeNonSolid)
+  if (!available_features.fillModeNonSolid && !available_features.geometryShader)
   {
-    Log_ErrorPrintf("fillModeNonSolid feature is required for line drawing.");
+    Log_ErrorPrintf("fillModeNonSolid or geometryShader feature is required for line drawing.");
     return false;
   }
 

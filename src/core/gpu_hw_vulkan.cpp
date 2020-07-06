@@ -620,7 +620,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     }
   }
 
-  if (m_resolution_scale > 1)
+  if (m_resolution_scale > 1 || !g_vulkan_context->GetDeviceFeatures().fillModeNonSolid)
   {
     if (g_vulkan_context->GetDeviceFeatures().geometryShader)
     {
