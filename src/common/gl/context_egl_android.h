@@ -1,6 +1,5 @@
 #pragma once
 #include "context_egl.h"
-#include "x11_window.h"
 
 namespace GL {
 
@@ -17,11 +16,6 @@ public:
 
 protected:
   EGLNativeWindowType GetNativeWindow(EGLConfig config) override;
-
-private:
-  ALWAYS_INLINE Display* GetDisplay() const { return static_cast<Display*>(m_wi.display_connection); }
-
-  X11Window m_window;
 };
 
 } // namespace GL

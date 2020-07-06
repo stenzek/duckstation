@@ -135,7 +135,7 @@ if(USE_EGL)
   )
   target_compile_definitions(common PRIVATE "-DUSE_EGL=1")
 
-  if(SUPPORTS_X11)
+  if(USE_X11)
     target_sources(common PRIVATE
       gl/context_egl_x11.cpp
       gl/context_egl_x11.h

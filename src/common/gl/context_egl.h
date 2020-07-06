@@ -1,7 +1,6 @@
 #pragma once
 #include "context.h"
 #include "glad_egl.h"
-#include "x11_window.h"
 
 namespace GL {
 
