@@ -534,16 +534,9 @@ void LibretroHostInterface::UpdateSettings()
 
   if (m_settings.gpu_renderer != old_settings.gpu_renderer)
   {
-    ReportFormattedMessage("Switching to %s renderer...", Settings::GetRendererDisplayName(m_settings.gpu_renderer));
-
-    if (m_using_hardware_renderer)
-      SwitchToSoftwareRenderer();
-
-    if (m_settings.gpu_renderer != GPURenderer::Software)
-      RequestHardwareRendererContext();
-
-    // Don't let the base class recreate the GPU or system.
-    old_settings.gpu_renderer = m_settings.gpu_renderer;
+    ReportFormattedMessage("Switch to %s renderer pending, please restart the core to apply.",
+                           Settings::GetRendererDisplayName(m_settings.gpu_renderer));
+    m_settings.gpu_renderer = old_settings.gpu_renderer;
   }
 
   CheckForSettingsChanges(old_settings);
