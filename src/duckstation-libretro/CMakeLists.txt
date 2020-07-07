@@ -26,3 +26,6 @@ target_link_libraries(duckstation_libretro PRIVATE core common imgui glad scmver
 # no lib prefix
 set_target_properties(duckstation_libretro PROPERTIES PREFIX "")
 
+# drop in the build directory
+set_target_properties(duckstation_libretro PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
