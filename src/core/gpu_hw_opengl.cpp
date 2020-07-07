@@ -179,7 +179,8 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
       Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
   }
-  else
+
+  if (!m_supports_texture_buffer || m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
   {
     // Try SSBOs.
     GLint64 max_ssbo_size = 0;
@@ -838,7 +839,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
     // update texture data
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
-                    reinterpret_cast<void*>(map_result.index_aligned * sizeof(u32)));
+                    reinterpret_cast<void*>(map_result.buffer_offset));
     m_texture_stream_buffer->Unbind();
 
     if (m_resolution_scale > 1)
