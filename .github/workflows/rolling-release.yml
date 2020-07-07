@@ -145,7 +145,7 @@ jobs:
       shell: bash
       run: |
         cd build-libretro
-        zip -j duckstation_libretro.so.zip bin/duckstation_libretro.so
+        zip -j duckstation_libretro.so.zip duckstation_libretro.so
       
     - name: Upload Linux libretro core
       uses: actions/upload-artifact@v1
