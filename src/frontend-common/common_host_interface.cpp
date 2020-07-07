@@ -856,6 +856,16 @@ void CommonHostInterface::DrawDebugWindows()
     m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
+void CommonHostInterface::DoFrameStep()
+{
+  if (!m_system)
+    return;
+
+  m_frame_step_request = true;
+  if (m_paused)
+    PauseSystem(false);
+}
+
 std::optional<CommonHostInterface::HostKeyCode>
 CommonHostInterface::GetHostKeyCode(const std::string_view key_code) const
 {
@@ -1263,6 +1273,13 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    if (!pressed && m_system)
                      SaveScreenshot();
                  });
+
+  RegisterHotkey(StaticString("General"), StaticString("FrameStep"), StaticString("Frame Step"), [this](bool pressed) {
+    if (!pressed)
+    {
+      DoFrameStep();
+    }
+  });
 }
 
 void CommonHostInterface::RegisterGraphicsHotkeys()

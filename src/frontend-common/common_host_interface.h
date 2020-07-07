@@ -271,6 +271,7 @@ protected:
   void DrawFPSWindow();
   void DrawOSDMessages();
   void DrawDebugWindows();
+  void DoFrameStep();
 
   std::unique_ptr<GameList> m_game_list;
 
@@ -280,6 +281,7 @@ protected:
   std::mutex m_osd_messages_lock;
 
   bool m_paused = false;
+  bool m_frame_step_request = false;
   bool m_speed_limiter_temp_disabled = false;
   bool m_speed_limiter_enabled = false;
   bool m_timer_resolution_increased = false;

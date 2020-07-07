@@ -914,6 +914,11 @@ void QtHostInterface::threadEntryPoint()
 
     m_system->RunFrame();
     UpdateControllerRumble();
+    if (m_frame_step_request)
+    {
+      m_frame_step_request = false;
+      PauseSystem(true);
+    }
 
     renderDisplay();
 

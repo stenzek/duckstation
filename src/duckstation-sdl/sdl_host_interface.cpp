@@ -402,8 +402,6 @@ bool SDLHostInterface::Initialize()
 
   ImGui::NewFrame();
 
-  RegisterHotkeys();
-
   // process events to pick up controllers before updating input map
   ProcessEvents();
   UpdateInputMap();
@@ -1435,16 +1433,6 @@ void SDLHostInterface::ClearImGuiFocus()
   ImGui::SetWindowFocus(nullptr);
 }
 
-void SDLHostInterface::RegisterHotkeys()
-{
-  RegisterHotkey(StaticString("General"), StaticString("FrameStep"), StaticString("Frame Step"), [this](bool pressed) {
-    if (!pressed)
-    {
-      DoFrameStep();
-    }
-  });
-}
-
 void SDLHostInterface::DoStartDisc()
 {
   Assert(!m_system);
@@ -1474,15 +1462,6 @@ void SDLHostInterface::DoChangeDisc()
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
   m_system->ResetPerformanceCounters();
-}
-
-void SDLHostInterface::DoFrameStep()
-{
-  if (!m_system)
-    return;
-
-  m_frame_step_request = true;
-  m_paused = false;
 }
 
 void SDLHostInterface::Run()

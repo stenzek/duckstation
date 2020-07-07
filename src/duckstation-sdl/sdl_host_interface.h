@@ -66,7 +66,6 @@ private:
   void DestroyDisplay();
   void CreateImGuiContext();
   void UpdateFramebufferScale();
-  void RegisterHotkeys();
 
   /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
   void RunLater(std::function<void()> callback);
@@ -80,7 +79,6 @@ private:
   void DrawImGuiWindows() override;
   void DoStartDisc();
   void DoChangeDisc();
-  void DoFrameStep();
 
   void HandleSDLEvent(const SDL_Event* event);
   void ProcessEvents();
@@ -101,7 +99,6 @@ private:
 
   bool m_fullscreen = false;
   bool m_quit_request = false;
-  bool m_frame_step_request = false;
   bool m_settings_window_open = false;
   bool m_about_window_open = false;
 
