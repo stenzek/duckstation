@@ -30,21 +30,8 @@ jobs:
         del /Q bin\x64\*.iobj
         del /Q bin\x64\*.ipdb
         del /Q bin\x64\common-tests*
-        
-    - name: Create libretro core archive
-      shell: cmd
-      run: |
-        rename bin\x64\duckstation-libretro-* duckstation_libretro.dll
         del /Q bin\x64\duckstation-libretro-*
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation_libretro.dll.zip ./bin/x64/duckstation_libretro.dll
-        del /Q bin\x64\duckstation_libretro.dll
-
-    - name: Upload release artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: "windows-x64"
-        path: "duckstation_libretro.dll.zip"
-
+                
     - name: Create release archive
       shell: cmd
       run: |
@@ -55,6 +42,35 @@ jobs:
       with:
         name: "windows-x64"
         path: "duckstation-windows-x64-release.7z"
+
+
+  windows-libretro-build:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Compile release build
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        mkdir build
+        cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DCMAKE_C_COMPILER:FILEPATH="%VCToolsInstallDir%\bin\HostX64\x64\cl.exe" -DCMAKE_CXX_COMPILER:FILEPATH="%VCToolsInstallDir%\bin\HostX64\x64\cl.exe" ..
+        ninja
+        
+    - name: Create libretro core archive
+      shell: cmd
+      run: |
+        cd build
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation_libretro.dll.zip ./duckstation_libretro.dll
+
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: "windows-libretro-x64"
+        path: "build/duckstation_libretro.dll.zip"
 
 
   linux-build:
@@ -139,7 +155,7 @@ jobs:
 
 
   create-release:
-    needs: [windows-build, linux-build, linux-libretro-build]
+    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build]
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     steps:
@@ -147,6 +163,11 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: "windows-x64"
+
+      - name: Download Windows libretro x64 Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "windows-libretro-x64"
 
       - name: Download SDL AppImage Artifact
         uses: actions/download-artifact@v1
@@ -181,7 +202,7 @@ jobs:
           title: "Latest Development Build"
           files: |
             windows-x64/duckstation-windows-x64-release.7z
-            windows-x64/duckstation_libretro.dll.zip
+            windows-libretro-x64/duckstation_libretro.dll.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
