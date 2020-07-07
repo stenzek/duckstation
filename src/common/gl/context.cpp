@@ -18,6 +18,8 @@ Log_SetChannel(GL::Context);
 #ifdef USE_EGL
 #if defined(USE_X11)
 #include "context_egl_x11.h"
+#elif defined(USE_WAYLAND)
+#include "context_egl_wayland.h"
 #elif defined(ANDROID)
 #include "context_egl_android.h"
 #else
@@ -78,7 +80,9 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
 #ifdef USE_EGL
   context = ContextEGLAndroid::Create(wi, versions_to_try, num_versions_to_try);
 #endif
-#elif defined(USE_X11)
+#endif
+
+#if defined(USE_X11)
   if (wi.type == WindowInfo::Type::X11)
   {
 #ifdef USE_EGL
@@ -91,6 +95,11 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
     context = ContextGLX::Create(wi, versions_to_try, num_versions_to_try);
 #endif
   }
+#endif
+
+#if defined(USE_WAYLAND)
+  if (wi.type == WindowInfo::Type::Wayland)
+    context = ContextEGLWayland::Create(wi, versions_to_try, num_versions_to_try);
 #endif
 
   if (!context)

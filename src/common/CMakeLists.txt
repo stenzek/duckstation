@@ -149,12 +149,21 @@ if(USE_EGL)
   endif()
 endif()
 
-if(SUPPORTS_X11)
+if(USE_X11)
   target_sources(common PRIVATE
     gl/context_glx.cpp
     gl/context_glx.h
   )
   target_compile_definitions(common PRIVATE "-DUSE_GLX=1")
+endif()
+
+if(USE_WAYLAND)
+  target_sources(common PRIVATE
+    gl/context_egl_wayland.cpp
+    gl/context_egl_wayland.h
+  )
+  target_compile_definitions(common PRIVATE "-DUSE_WAYLAND=1")
+  target_link_libraries(common PRIVATE Wayland::Egl)
 endif()
 
 if(APPLE)
