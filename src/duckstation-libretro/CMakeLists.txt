@@ -30,3 +30,7 @@ set_target_properties(duckstation_libretro PROPERTIES PREFIX "")
 set_target_properties(duckstation_libretro PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set_target_properties(duckstation_libretro PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
+# for android, suffix _android
+if(ANDROID)
+  set_target_properties(duckstation_libretro PROPERTIES OUTPUT_NAME "duckstation_libretro_android")
+endif()
