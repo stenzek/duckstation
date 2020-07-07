@@ -75,8 +75,10 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
 #elif defined(__APPLE__)
   context = ContextAGL::Create(wi, versions_to_try, num_versions_to_try);
 #elif defined(ANDROID)
+#ifdef USE_EGL
   context = ContextEGLAndroid::Create(wi, versions_to_try, num_versions_to_try);
-#else
+#endif
+#elif defined(USE_X11)
   if (wi.type == WindowInfo::Type::X11)
   {
 #ifdef USE_EGL

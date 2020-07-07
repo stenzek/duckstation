@@ -141,7 +141,7 @@ if(USE_EGL)
       gl/context_egl_x11.h
     )
   endif()
-  if(ANDROID)
+  if(ANDROID AND USE_EGL)
     target_sources(common PRIVATE
       gl/context_egl_android.cpp
       gl/context_egl_android.h

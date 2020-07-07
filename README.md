@@ -204,11 +204,18 @@ Prebuilt binaries for Windows and 64-bit Linux can be found on the releases page
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
 - 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.so.zip
 
+To use, extract the `dll` or `so` into your RetroArch or other libretro frontend's `cores` directory, load the DuckStation core, and pick any bin/cue/chd-format image as content.
+
 To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory. This will be based on the configuration you selected, you can load it directly into RetroArch, or rename it to `duckstation_libretro.dll`.
 
-To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DBUILD_LIBRETRO_CORE=ON ..`. The shared library can be found in `bin/duckstation_libretro.so`.
+Alternatively, you can build via cmake using the following commands from a `x64 Native Tools Command Prompt for VS 2019`:
+- mkdir build
+- cd build
+- cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..
 
-Currently there is no core info file for DuckStation, so if you want to use it with RetroArch, you must manually load the core, and then content via the File menu. Hopefully we can change this in the future.
+You should then have a file named `duckstation_libretro.dll` which can be loaded as a core.
+
+To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..`. The shared library will be named `duckstation_libretro.so` in the current directory.
 
 ## Tests
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
