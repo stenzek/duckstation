@@ -127,31 +127,35 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install packages
+    - name: Compile and zip Linux x64 libretro core
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get -y install cmake ninja-build ccache
-
-    - name: Compile libretro core
-      shell: bash
-      run: |
-        mkdir build-libretro
-        cd build-libretro
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -G Ninja ..
-        ninja
-
-    - name: Zip libretro core
-      shell: bash
-      run: |
-        cd build-libretro
+        mkdir build-libretro-linux-x64
+        cd build-libretro-linux-x64
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..
+        cmake --build . --parallel 2
         zip -j duckstation_libretro.so.zip duckstation_libretro.so
-      
-    - name: Upload Linux libretro core
+
+    - name: Upload Linux x64 libretro core
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-libretro"
-        path: "build-libretro/duckstation_libretro.so.zip"
+        name: "linux-libretro"
+        path: "build-libretro-linux-x64/duckstation_libretro.so.zip"
+
+    - name: Compile and zip Android AArch64 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-android-aarch64
+        cd build-libretro-android-aarch64
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DANDROID_ABI=arm64-v8a -DCMAKE_TOOLCHAIN_FILE=${ANDROID_SDK_ROOT}/ndk-bundle/build/cmake/android.toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_android_aarch64.so.zip duckstation_libretro_android.so
+      
+    - name: Upload Android AArch64 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-android-aarch64/duckstation_libretro_android_aarch64.so.zip"
 
 
   create-release:
@@ -192,7 +196,7 @@ jobs:
       - name: Download Linux libretro core
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-libretro"
+          name: "linux-libretro"
 
       - name: Create release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -207,4 +211,5 @@ jobs:
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-            linux-x64-libretro/duckstation_libretro.so.zip
+            linux-libretro/duckstation_libretro.so.zip
+            linux-libretro/duckstation_libretro_android_aarch64.so.zip
