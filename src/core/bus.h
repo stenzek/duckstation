@@ -239,7 +239,7 @@ private:
   void DoInvalidateCodeCache(u32 page_index);
 
   /// Direct access to RAM - used by DMA.
-  ALWAYS_INLINE u8* GetRAM() { return m_ram.data(); }
+  ALWAYS_INLINE u8* GetRAM() { return m_ram; }
 
   /// Returns the number of cycles stolen by DMA RAM access.
   ALWAYS_INLINE static TickCount GetDMARAMTickCount(u32 word_count)
@@ -282,8 +282,8 @@ private:
   std::array<TickCount, 3> m_spu_access_time = {};
 
   std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits{};
-  std::array<u8, RAM_SIZE> m_ram{};   // 2MB RAM
-  std::array<u8, BIOS_SIZE> m_bios{}; // 512K BIOS ROM
+  u8 m_ram[RAM_SIZE]{};   // 2MB RAM
+  u8 m_bios[BIOS_SIZE]{}; // 512K BIOS ROM
   std::vector<u8> m_exp1_rom;
 
   MEMCTRL m_MEMCTRL = {};

@@ -518,7 +518,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
   if (dest_pointer == m_transfer_buffer.data())
   {
-    u8* ram_pointer = m_bus->m_ram.data();
+    u8* ram_pointer = m_bus->m_ram;
     for (u32 i = 0; i < word_count; i++)
     {
       std::memcpy(&ram_pointer[address], &m_transfer_buffer[i], sizeof(u32));

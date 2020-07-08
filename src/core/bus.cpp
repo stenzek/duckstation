@@ -55,7 +55,7 @@ void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
 
 void Bus::Reset()
 {
-  m_ram.fill(static_cast<u8>(0));
+  std::memset(m_ram, 0, sizeof(m_ram));
   m_MEMCTRL.exp1_base = 0x1F000000;
   m_MEMCTRL.exp2_base = 0x1F802000;
   m_MEMCTRL.exp1_delay_size.bits = 0x0013243F;
@@ -76,8 +76,8 @@ bool Bus::DoState(StateWrapper& sw)
   sw.Do(&m_bios_access_time);
   sw.Do(&m_cdrom_access_time);
   sw.Do(&m_spu_access_time);
-  sw.DoBytes(m_ram.data(), m_ram.size());
-  sw.DoBytes(m_bios.data(), m_bios.size());
+  sw.DoBytes(m_ram, sizeof(m_ram));
+  sw.DoBytes(m_bios, sizeof(m_bios));
   sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
   sw.Do(&m_ram_size_reg);
   sw.Do(&m_tty_line_buffer);
@@ -183,7 +183,7 @@ void Bus::SetBIOS(const std::vector<u8>& image)
     return;
   }
 
-  std::copy(image.cbegin(), image.cend(), m_bios.begin());
+  std::memcpy(m_bios, image.data(), BIOS_SIZE);
 }
 
 std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)
