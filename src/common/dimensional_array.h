@@ -29,6 +29,9 @@ namespace detail {
 template<typename T, std::size_t rank, std::size_t... sizes>
 struct DimensionalArrayExplicitRank;
 
+// Workaround for VC2017
+#if defined(_MSC_VER) && _MSC_VER < 1920
+
 template<std::size_t rank, std::size_t... sizes>
 struct GetRankSize
 {
@@ -40,6 +43,22 @@ template<typename T, std::size_t rank, std::size_t... sizes>
 using GetArrayImplType =
   std::array<std::conditional_t<rank == 1, T, DimensionalArrayExplicitRank<T, rank - 1, sizes...>>,
              GetRankSize<rank, sizes...>::value>;
+
+#else
+
+template<std::size_t rank, std::size_t... sizes>
+constexpr std::size_t GetRankSize()
+{
+  constexpr std::size_t size_array[] = {sizes...};
+  return size_array[rank - 1];
+}
+
+template<typename T, std::size_t rank, std::size_t... sizes>
+using GetArrayImplType =
+  std::array<std::conditional_t<rank == 1, T, DimensionalArrayExplicitRank<T, rank - 1, sizes...>>,
+             GetRankSize<rank, sizes...>()>;
+
+#endif
 
 template<typename T, std::size_t rank_param, std::size_t... sizes>
 struct DimensionalArrayExplicitRank : public GetArrayImplType<T, rank_param, sizes...>
