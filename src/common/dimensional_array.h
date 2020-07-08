@@ -30,16 +30,16 @@ template<typename T, std::size_t rank, std::size_t... sizes>
 struct DimensionalArrayExplicitRank;
 
 template<std::size_t rank, std::size_t... sizes>
-constexpr std::size_t GetRankSize()
+struct GetRankSize
 {
-  constexpr std::size_t size_array[] = {sizes...};
-  return size_array[rank - 1];
-}
+  static constexpr std::size_t size_array[] = {sizes...};
+  static constexpr std::size_t value = size_array[rank - 1];
+};
 
 template<typename T, std::size_t rank, std::size_t... sizes>
 using GetArrayImplType =
   std::array<std::conditional_t<rank == 1, T, DimensionalArrayExplicitRank<T, rank - 1, sizes...>>,
-             GetRankSize<rank, sizes...>()>;
+             GetRankSize<rank, sizes...>::value>;
 
 template<typename T, std::size_t rank_param, std::size_t... sizes>
 struct DimensionalArrayExplicitRank : public GetArrayImplType<T, rank_param, sizes...>
@@ -77,4 +77,3 @@ struct DimensionalArrayExplicitRank : public GetArrayImplType<T, rank_param, siz
 
 template<typename T, std::size_t... sizes>
 using DimensionalArray = detail::DimensionalArrayExplicitRank<T, sizeof...(sizes), sizes...>;
-
