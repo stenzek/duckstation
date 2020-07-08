@@ -36,6 +36,7 @@ retro_input_state_t g_retro_input_state_callback;
 
 static retro_log_callback s_libretro_log_callback = {};
 static bool s_libretro_log_callback_valid = false;
+static bool s_libretro_log_callback_registered = false;
 
 static void LibretroLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                                 const char* message)
@@ -64,8 +65,16 @@ void LibretroHostInterface::InitLogging()
 {
   s_libretro_log_callback_valid =
     g_retro_environment_callback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &s_libretro_log_callback);
+  if (s_libretro_log_callback_registered)
+  {
+    Log::UnregisterCallback(LibretroLogCallback, nullptr);
+    s_libretro_log_callback_registered = false;
+  }
   if (s_libretro_log_callback_valid)
+  {
     Log::RegisterCallback(LibretroLogCallback, nullptr);
+    s_libretro_log_callback_registered = true;
+  }
 }
 
 bool LibretroHostInterface::Initialize()
