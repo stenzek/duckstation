@@ -200,11 +200,12 @@ Hotkeys:
 
 DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
 
-Prebuilt binaries for Windows and 64-bit Linux can be found on the releases page. Direct links:
+Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
 - 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.so.zip
+- AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
 
-To use, extract the `dll` or `so` into your RetroArch or other libretro frontend's `cores` directory, load the DuckStation core, and pick any bin/cue/chd-format image as content.
+To use, download and extract, and install the core file in RetroArch or your preferred frontend.
 
 To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory. This will be based on the configuration you selected, you can load it directly into RetroArch, or rename it to `duckstation_libretro.dll`.
 
