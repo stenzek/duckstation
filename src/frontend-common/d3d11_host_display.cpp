@@ -6,7 +6,9 @@
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
 #include <array>
+#if defined(__has_include) && __has_include(<dxgi1_5.h>)
 #include <dxgi1_5.h>
+#endif
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 Log_SetChannel(D3D11HostDisplay);
@@ -258,6 +260,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   }
 
   m_allow_tearing_supported = false;
+#if defined(__has_include) && __has_include(<dxgi1_5.h>)
   ComPtr<IDXGIFactory5> dxgi_factory5;
   hr = m_dxgi_factory.As(&dxgi_factory5);
   if (SUCCEEDED(hr))
@@ -268,6 +271,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
     if (SUCCEEDED(hr))
       m_allow_tearing_supported = (allow_tearing_supported == TRUE);
   }
+#endif
 
   m_window_info = wi;
   return true;
