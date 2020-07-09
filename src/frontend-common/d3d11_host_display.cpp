@@ -205,9 +205,13 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   if (FAILED(hr))
     Log_WarningPrintf("Failed to enumerate adapter %u, using default", adapter_index);
 
-  hr = D3D11CreateDevice(dxgi_adapter.Get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
-                         create_flags, nullptr, 0, D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr,
-                         m_context.GetAddressOf());
+  static constexpr std::array<D3D_FEATURE_LEVEL, 3> requested_feature_levels = {
+    {D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_11_0}};
+
+  hr =
+    D3D11CreateDevice(dxgi_adapter.Get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
+                      create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
+                      D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
 
   // we re-grab these later, see below
   dxgi_adapter.Reset();
