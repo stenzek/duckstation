@@ -491,7 +491,7 @@ bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_
     return false;
 
   const bool global = m_system->GetRunningCode().empty();
-  if (m_system->GetRunningCode().empty())
+  if (global)
   {
     ReportFormattedError("Cannot resume system with undetectable game code from '%s'.", filename);
     if (!boot_on_failure)

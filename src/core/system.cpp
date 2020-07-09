@@ -867,9 +867,9 @@ void System::UpdateMemoryCards()
   {
     m_pad->SetMemoryCard(i, nullptr);
 
-    const MemoryCardType type = settings.memory_card_types[i];
     std::unique_ptr<MemoryCard> card;
-    switch (settings.memory_card_types[i])
+    const MemoryCardType type = settings.memory_card_types[i];
+    switch (type)
     {
       case MemoryCardType::None:
         continue;

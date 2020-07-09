@@ -248,16 +248,16 @@ protected:
   void CheckSettings(SettingsInterface& si);
 
   /// Restores all settings to defaults.
-  virtual void SetDefaultSettings(SettingsInterface& si);
+  virtual void SetDefaultSettings(SettingsInterface& si) override;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
-  virtual void LoadSettings(SettingsInterface& si);
+  virtual void LoadSettings(SettingsInterface& si) override;
 
   /// Saves current settings variables to ini.
-  virtual void SaveSettings(SettingsInterface& si);
+  virtual void SaveSettings(SettingsInterface& si) override;
 
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
-  virtual void CheckForSettingsChanges(const Settings& old_settings);
+  virtual void CheckForSettingsChanges(const Settings& old_settings) override;
 
   /// Increases timer resolution when supported by the host OS.
   void SetTimerResolutionIncreased(bool enabled);

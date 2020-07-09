@@ -45,7 +45,7 @@ void QtProgressCallback::SetProgressValue(u32 value)
 {
   BaseProgressCallback::SetProgressValue(value);
 
-  if (m_dialog.value() == m_progress_range)
+  if (static_cast<u32>(m_dialog.value()) == m_progress_range)
     return;
 
   m_dialog.setValue(m_progress_value);

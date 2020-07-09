@@ -411,9 +411,10 @@ void Core::MulMatVecBuggy(const s16 M[3][3], const s32 T[3], const s16 Vx, const
 #define dot3(i)                                                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
-    TruncateAndSetIR<i + 1>(                                                                                           \
-      SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx)))) >> shift,   \
-      false);                                                                                                          \
+    TruncateAndSetIR<i + 1>(static_cast<s32>(SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>(                    \
+                                               (s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx)))) >>                       \
+                                             shift),                                                                   \
+                            false);                                                                                    \
     TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][1]) * s64(Vy))) + (s64(M[i][2]) * s64(Vz)),     \
                                   shift, lm);                                                                          \
   } while (0)

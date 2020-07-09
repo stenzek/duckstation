@@ -75,7 +75,7 @@ static void DestroyMetalLayer(WindowInfo& wi)
 
 namespace Vulkan {
 SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)
-  : m_wi(wi), m_surface(surface), m_vsync_enabled(vsync)
+  : m_wi(wi), m_vsync_enabled(vsync), m_surface(surface)
 {
 }
 

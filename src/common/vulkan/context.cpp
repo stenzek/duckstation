@@ -684,8 +684,6 @@ bool Context::CreateCommandBuffers()
 
 void Context::DestroyCommandBuffers()
 {
-  VkDevice device = m_device;
-
   for (FrameResources& resources : m_frame_resources)
   {
     for (auto& it : resources.cleanup_resources)

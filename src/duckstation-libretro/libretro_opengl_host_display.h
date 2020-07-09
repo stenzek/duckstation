@@ -18,7 +18,7 @@ public:
   RenderAPI GetRenderAPI() const override;
 
   bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) override;
-  void DestroyRenderDevice();
+  void DestroyRenderDevice() override;
 
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
 

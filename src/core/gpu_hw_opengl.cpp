@@ -839,7 +839,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
     // update texture data
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
-                    reinterpret_cast<void*>(map_result.buffer_offset));
+                    reinterpret_cast<void*>(static_cast<uintptr_t>(map_result.buffer_offset)));
     m_texture_stream_buffer->Unbind();
 
     if (m_resolution_scale > 1)
