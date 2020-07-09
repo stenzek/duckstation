@@ -176,15 +176,6 @@ std::string ShaderCache::GetCacheBaseFileName(const std::string_view& base_path,
     case D3D_FEATURE_LEVEL_11_0:
       base_filename += "sm50";
       break;
-    case D3D_FEATURE_LEVEL_11_1:
-      base_filename += "sm51";
-      break;
-    case D3D_FEATURE_LEVEL_12_0:
-      base_filename += "sm60";
-      break;
-    case D3D_FEATURE_LEVEL_12_1:
-      base_filename += "sm61";
-      break;
     default:
       base_filename += "unk";
       break;
