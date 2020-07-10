@@ -59,6 +59,14 @@ std::optional<WindowInfo> GetWindowInfoForSDLWindow(SDL_Window* window)
       break;
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+    case SDL_SYSWM_WAYLAND:
+      wi.type = WindowInfo::Type::Wayland;
+      wi.window_handle = syswm.info.wl.surface;
+      wi.display_connection = syswm.info.wl.display;
+      break;
+#endif
+
     default:
       Log_ErrorPrintf("Unhandled syswm subsystem %u", static_cast<u32>(syswm.subsystem));
       return std::nullopt;
