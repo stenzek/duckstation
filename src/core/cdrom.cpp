@@ -1180,8 +1180,11 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM reset command");
       SendACKAndStat();
 
+      if (IsSeeking())
+        UpdatePositionWhileSeeking();
+
       m_drive_state = DriveState::Resetting;
-      m_drive_event->Schedule(400000);
+      m_drive_event->Schedule(400000 + GetTicksForSeek(0));
 
       EndCommand();
       return;
@@ -1674,6 +1677,9 @@ void CDROM::DoResetComplete(TickCount ticks_late)
     SendAsyncErrorResponse(STAT_ERROR, 0x08);
     return;
   }
+
+  m_current_lba = 0;
+  m_reader.QueueReadSector(0);
 
   m_async_response_fifo.Clear();
   m_async_response_fifo.Push(m_secondary_status.bits);
