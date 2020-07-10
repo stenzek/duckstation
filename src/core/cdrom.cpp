@@ -1034,6 +1034,10 @@ void CDROM::ExecuteCommand()
     {
       const bool logical = (m_command == Command::SeekL);
       Log_DebugPrintf("CDROM %s command", logical ? "SeekL" : "SeekP");
+
+      if (IsSeeking())
+        UpdatePositionWhileSeeking();
+
       if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, 0x80);
