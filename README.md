@@ -18,7 +18,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Features
 
-DuckStation features a fully-featured frontend built using Qt (pictured), as well as a simplified frontend based on SDL and Dear ImGui. An Android version has been started, but is not currently usable.
+DuckStation features a fully-featured frontend built using Qt (pictured), as well as a simplified frontend based on SDL and Dear ImGui. An Android version has been started, but is not yet feature complete.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" />
@@ -143,8 +143,7 @@ Requirements:
 Application bundles/.apps are currently not created, so you can't launch it via Finder yet. This is planned for the future.
 
 ### Android
-**NOTE:** The Android frontend is still incomplete, not all functionality works and some paths are hard-coded.
-**The Android app is currently broken and fixing it is not a priority. However, this will change in the future.**
+**NOTE:** The Android frontend is still incomplete, not all functionality is available yet. User directory is hardcoded to `/sdcard/duckstation` for now.
 
 Requirements:
  - Android Studio with the NDK and CMake installed
