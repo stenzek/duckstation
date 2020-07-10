@@ -630,7 +630,7 @@ protected:
       union
       {
         u32 display_address_start;
-        BitField<u32, u16, 0, 10> X;
+        BitField<u32, u16, 1, 9> X;
         BitField<u32, u16, 10, 9> Y;
       };
       union
