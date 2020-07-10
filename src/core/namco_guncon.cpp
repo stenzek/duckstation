@@ -1,5 +1,6 @@
 #include "namco_guncon.h"
 #include "common/assert.h"
+#include "common/log.h"
 #include "common/state_wrapper.h"
 #include "gpu.h"
 #include "host_display.h"
@@ -7,6 +8,7 @@
 #include "resources.h"
 #include "system.h"
 #include <array>
+Log_SetChannel(NamcoGunCon);
 
 NamcoGunCon::NamcoGunCon(System* system) : m_system(system) {}
 

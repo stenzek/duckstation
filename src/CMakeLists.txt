@@ -1,3 +1,7 @@
+if(BUILD_LIBRETRO_CORE)
+  add_definitions("-DLIBRETRO=1")
+endif()
+
 add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(scmversion)

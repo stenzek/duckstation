@@ -53,39 +53,46 @@ public:
 
   virtual bool Render() override;
 
+#ifndef LIBRETRO
   static std::vector<std::string> EnumerateAdapterNames();
+#endif
 
 protected:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
-
-  virtual bool UseFlipModelSwapChain() const;
 
   static std::vector<std::string> EnumerateAdapterNames(IDXGIFactory* dxgi_factory);
 
   virtual bool CreateResources();
   virtual void DestroyResources();
 
+#ifndef LIBRETRO
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();
 
   bool CreateSwapChain();
   bool CreateSwapChainRTV();
+#endif
 
   void RenderDisplay();
-  void RenderImGui();
   void RenderSoftwareCursor();
+
+#ifndef LIBRETRO
+  void RenderImGui();
+#endif
 
   void RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
                      s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                      s32 texture_view_height, bool linear_filter);
   void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
 
-  ComPtr<IDXGIFactory> m_dxgi_factory;
-
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
+
+#ifndef LIBRETRO
+  ComPtr<IDXGIFactory> m_dxgi_factory;
   ComPtr<IDXGISwapChain> m_swap_chain;
   ComPtr<ID3D11RenderTargetView> m_swap_chain_rtv;
+#endif
 
   ComPtr<ID3D11RasterizerState> m_display_rasterizer_state;
   ComPtr<ID3D11DepthStencilState> m_display_depth_stencil_state;
@@ -100,10 +107,12 @@ protected:
   D3D11::StreamBuffer m_display_uniform_buffer;
   D3D11::AutoStagingTexture m_readback_staging_texture;
 
+#ifdef LIBRETRO
   bool m_allow_tearing_supported = false;
   bool m_using_flip_model_swap_chain = true;
   bool m_using_allow_tearing = false;
   bool m_vsync = true;
+#endif
 };
 
 } // namespace FrontendCommon
