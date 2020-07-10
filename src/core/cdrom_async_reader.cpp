@@ -123,7 +123,13 @@ bool CDROMAsyncReader::WaitForReadToComplete()
   if (m_sector_read_pending.load())
   {
     Log_DebugPrintf("Sector read pending, waiting");
+
+    Common::Timer wait_timer;
     m_notify_read_complete_cv.wait(lock, [this]() { return !m_sector_read_pending.load(); });
+
+    const double wait_time = wait_timer.GetTimeMilliseconds();
+    if (wait_time > 1.0f)
+      Log_WarningPrintf("Had to wait %.2f msec for LBA %u", wait_time, m_last_read_sector);
   }
 
   return m_sector_read_result.load();
@@ -156,7 +162,7 @@ void CDROMAsyncReader::DoSectorRead()
 
   const double read_time = timer.GetTimeMilliseconds();
   if (read_time > 1.0f)
-    Log_WarningPrintf("Read LBA %u took %.2f msec", pos, read_time);
+    Log_DevPrintf("Read LBA %u took %.2f msec", pos, read_time);
 }
 
 void CDROMAsyncReader::WorkerThreadEntryPoint()
