@@ -623,14 +623,14 @@ protected:
   {
     struct Regs
     {
-      static constexpr u32 DISPLAY_ADDRESS_START_MASK = 0b111'11111111'11111111;
+      static constexpr u32 DISPLAY_ADDRESS_START_MASK = 0b111'11111111'11111110;
       static constexpr u32 HORIZONTAL_DISPLAY_RANGE_MASK = 0b11111111'11111111'11111111;
       static constexpr u32 VERTICAL_DISPLAY_RANGE_MASK = 0b1111'11111111'11111111;
 
       union
       {
         u32 display_address_start;
-        BitField<u32, u16, 1, 9> X;
+        BitField<u32, u16, 0, 10> X;
         BitField<u32, u16, 10, 9> Y;
       };
       union
