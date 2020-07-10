@@ -191,6 +191,15 @@
 #define GLAPI extern
 #endif
 
+// ARM drivers are missing EGL_CAST...
+#ifndef EGL_CAST
+#ifdef __cplusplus
+#define EGL_CAST(type, value) static_cast<type>(value)
+#else
+#define EGL_CAST(type, value) ((type) (value))
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
