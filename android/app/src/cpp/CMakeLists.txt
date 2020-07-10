@@ -1,6 +1,8 @@
 set(SRCS
   android_host_interface.cpp
   android_host_interface.h
+  android_settings_interface.cpp
+  android_settings_interface.h
   main.cpp
 )
 

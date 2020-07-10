@@ -49,11 +49,13 @@
         <SwitchPreferenceCompat
             app:key="BIOS/PatchTTYEnable"
             app:title="@string/settings_console_tty_output"
+            app:defaultValue="false"
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat
             app:key="BIOS/PatchFastBoot"
             app:title="@string/settings_console_fast_boot"
+            app:defaultValue="false"
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
@@ -62,6 +64,7 @@
         <SwitchPreferenceCompat
             app:key="General/SpeedLimiterEnabled"
             app:title="@string/settings_behavior_enable_speed_limiter"
+            app:defaultValue="true"
             app:useSimpleSummaryProvider="true" />
         <SwitchPreferenceCompat
             app:key="General/StartPaused"
@@ -79,13 +82,36 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/settings_osd_header">
+        <SwitchPreferenceCompat
+            app:key="Display/ShowOSDMessages"
+            app:title="@string/settings_osd_show_messages"
+            app:defaultValue="true"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreferenceCompat
+            app:key="Display/ShowSpeed"
+            app:title="@string/settings_osd_show_speed"
+            app:defaultValue="false"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreferenceCompat
+            app:key="Display/ShowFPS"
+            app:title="@string/settings_osd_show_show_fps"
+            app:defaultValue="false"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreferenceCompat
+            app:key="Display/ShowVPS"
+            app:title="@string/settings_osd_show_show_vps"
+            app:defaultValue="false"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/settings_cpu_header">
         <ListPreference
             app:key="CPU/ExecutionMode"
             app:title="@string/settings_cpu_execution_mode"
             app:entries="@array/settings_cpu_execution_mode_entries"
             app:entryValues="@array/settings_cpu_execution_mode_values"
-            app:defaultValue="@string/settings_cpu_execution_mode_default"
+            app:defaultValue="Recompiler"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/settings_gpu_header">
@@ -95,7 +121,7 @@
             app:title="@string/settings_gpu_renderer"
             app:entries="@array/gpu_renderer_entries"
             app:entryValues="@array/gpu_renderer_values"
-            app:defaultValue="@string/settings_gpu_renderer_default"
+            app:defaultValue="OpenGL"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
@@ -103,12 +129,13 @@
             app:title="@string/settings_gpu_resolution_scale"
             app:entries="@array/settings_gpu_resolution_scale_entries"
             app:entryValues="@array/settings_gpu_resolution_scale_values"
-            app:defaultValue="@string/settings_gpu_renderer_default"
+            app:defaultValue="1"
             app:useSimpleSummaryProvider="true" />
+
         <SwitchPreferenceCompat
             app:key="GPU/TrueColor"
             app:title="@string/settings_gpu_true_color"
-            app:defaultValue="true"/>
+            app:defaultValue="false"/>
 
         <SwitchPreferenceCompat
             app:key="Display/LinearFiltering"

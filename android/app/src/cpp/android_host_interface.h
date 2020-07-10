@@ -1,12 +1,13 @@
 #pragma once
+#include "android_settings_interface.h"
 #include "common/event.h"
 #include "frontend-common/common_host_interface.h"
-#include "frontend-common/ini_settings_interface.h"
 #include <array>
 #include <atomic>
 #include <functional>
 #include <jni.h>
 #include <memory>
+#include <string>
 #include <thread>
 
 struct ANativeWindow;
@@ -16,7 +17,7 @@ class Controller;
 class AndroidHostInterface final : public CommonHostInterface
 {
 public:
-  AndroidHostInterface(jobject java_object);
+  AndroidHostInterface(jobject java_object, jobject context_object);
   ~AndroidHostInterface() override;
 
   bool Initialize() override;
@@ -57,7 +58,7 @@ private:
 
   jobject m_java_object = {};
 
-  std::unique_ptr<INISettingsInterface> m_settings_interface;
+  AndroidSettingsInterface m_settings_interface;
 
   ANativeWindow* m_surface = nullptr;
 
@@ -69,3 +70,9 @@ private:
   std::atomic_bool m_emulation_thread_start_result{false};
   Common::Event m_emulation_thread_started;
 };
+
+namespace AndroidHelpers {
+JNIEnv* GetJNIEnv();
+AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj);
+std::string JStringToString(JNIEnv* env, jstring str);
+} // namespace AndroidHelpers

@@ -21,8 +21,9 @@ static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_nativePointer;
 
+namespace AndroidHelpers {
 // helper for retrieving the current per-thread jni environment
-static JNIEnv* GetJNIEnv()
+JNIEnv* GetJNIEnv()
 {
   JNIEnv* env;
   if (s_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
@@ -31,13 +32,13 @@ static JNIEnv* GetJNIEnv()
     return env;
 }
 
-static AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj)
+AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj)
 {
   return reinterpret_cast<AndroidHostInterface*>(
     static_cast<uintptr_t>(env->GetLongField(obj, s_AndroidHostInterface_field_nativePointer)));
 }
 
-static std::string JStringToString(JNIEnv* env, jstring str)
+std::string JStringToString(JNIEnv* env, jstring str)
 {
   if (str == nullptr)
     return {};
@@ -54,13 +55,17 @@ static std::string JStringToString(JNIEnv* env, jstring str)
 
   return ret;
 }
+} // namespace AndroidHelpers
 
-AndroidHostInterface::AndroidHostInterface(jobject java_object) : m_java_object(java_object) {}
+AndroidHostInterface::AndroidHostInterface(jobject java_object, jobject context_object)
+  : m_java_object(java_object), m_settings_interface(context_object)
+{
+}
 
 AndroidHostInterface::~AndroidHostInterface()
 {
   ImGui::DestroyContext();
-  GetJNIEnv()->DeleteGlobalRef(m_java_object);
+  AndroidHelpers::GetJNIEnv()->DeleteGlobalRef(m_java_object);
 }
 
 bool AndroidHostInterface::Initialize()
@@ -98,7 +103,7 @@ void AndroidHostInterface::ReportMessage(const char* message)
 
 std::string AndroidHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value)
 {
-  return m_settings_interface->GetStringValue(section, key, default_value);
+  return m_settings_interface.GetStringValue(section, key, default_value);
 }
 
 void AndroidHostInterface::SetUserDirectory()
@@ -109,13 +114,12 @@ void AndroidHostInterface::SetUserDirectory()
 
 void AndroidHostInterface::LoadSettings()
 {
-  m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
-  CommonHostInterface::LoadSettings(*m_settings_interface);
+  CommonHostInterface::LoadSettings(m_settings_interface);
 }
 
 void AndroidHostInterface::UpdateInputMap()
 {
-  CommonHostInterface::UpdateInputMap(*m_settings_interface);
+  CommonHostInterface::UpdateInputMap(m_settings_interface);
 }
 
 bool AndroidHostInterface::StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params)
@@ -382,7 +386,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
   s_jvm = vm;
 
-  JNIEnv* env = GetJNIEnv();
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
   if ((s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
@@ -415,7 +419,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 #define DEFINE_JNI_ARGS_METHOD(return_type, name, ...)                                                                 \
   extern "C" JNIEXPORT return_type JNICALL Java_com_github_stenzek_duckstation_##name(JNIEnv* env, __VA_ARGS__)
 
-DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused)
+DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEBUG);
 
@@ -431,7 +435,7 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused)
   Assert(java_obj_ref != nullptr);
 
   // initialize the C++ side
-  AndroidHostInterface* cpp_obj = new AndroidHostInterface(java_obj_ref);
+  AndroidHostInterface* cpp_obj = new AndroidHostInterface(java_obj_ref, context_object);
   if (!cpp_obj->Initialize())
   {
     // TODO: Do we need to release the original java object reference?
@@ -448,7 +452,7 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused)
 
 DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isEmulationThreadRunning, jobject obj)
 {
-  return GetNativeClass(env, obj)->IsEmulationThreadRunning();
+  return AndroidHelpers::GetNativeClass(env, obj)->IsEmulationThreadRunning();
 }
 
 DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_startEmulationThread, jobject obj, jobject surface,
@@ -461,17 +465,17 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_startEmulationThread, jobj
     return false;
   }
 
-  std::string state_filename_str = JStringToString(env, state_filename);
+  std::string state_filename_str = AndroidHelpers::JStringToString(env, state_filename);
 
   SystemBootParameters boot_params;
-  boot_params.filename = JStringToString(env, filename);
+  boot_params.filename = AndroidHelpers::JStringToString(env, filename);
 
-  return GetNativeClass(env, obj)->StartEmulationThread(native_surface, std::move(boot_params));
+  return AndroidHelpers::GetNativeClass(env, obj)->StartEmulationThread(native_surface, std::move(boot_params));
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_stopEmulationThread, jobject obj)
 {
-  GetNativeClass(env, obj)->StopEmulationThread();
+  AndroidHelpers::GetNativeClass(env, obj)->StopEmulationThread();
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, jobject surface, jint format, jint width,
@@ -481,38 +485,41 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
   if (!native_surface)
     Log_ErrorPrint("ANativeWindow_fromSurface() returned null");
 
-  AndroidHostInterface* hi = GetNativeClass(env, obj);
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread(
     [hi, native_surface, format, width, height]() { hi->SurfaceChanged(native_surface, format, width, height); }, true);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerType, jobject obj, jint index, jstring controller_type)
 {
-  GetNativeClass(env, obj)->SetControllerType(index, JStringToString(env, controller_type));
+  AndroidHelpers::GetNativeClass(env, obj)->SetControllerType(index,
+                                                              AndroidHelpers::JStringToString(env, controller_type));
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobject obj, jint index, jint button_code,
                        jboolean pressed)
 {
-  GetNativeClass(env, obj)->SetControllerButtonState(index, button_code, pressed);
+  AndroidHelpers::GetNativeClass(env, obj)->SetControllerButtonState(index, button_code, pressed);
 }
 
 DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type,
                        jstring button_name)
 {
-  std::optional<ControllerType> type = Settings::ParseControllerTypeName(JStringToString(env, controller_type).c_str());
+  std::optional<ControllerType> type =
+    Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
   if (!type)
     return -1;
 
-  std::optional<s32> code = Controller::GetButtonCodeByName(type.value(), JStringToString(env, button_name));
+  std::optional<s32> code =
+    Controller::GetButtonCodeByName(type.value(), AndroidHelpers::JStringToString(env, button_name));
   return code.value_or(-1);
 }
 
 DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path,
                        jarray j_search_directories, jboolean search_recursively)
 {
-  // const std::string cache_path = JStringToString(env, j_cache_path);
-  std::string redump_dat_path = JStringToString(env, j_redump_dat_path);
+  // const std::string cache_path = AndroidHelpers::JStringToString(env, j_cache_path);
+  std::string redump_dat_path = AndroidHelpers::JStringToString(env, j_redump_dat_path);
 
   // TODO: This should use the base HostInterface.
   GameList gl;
@@ -523,7 +530,7 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
   for (jsize i = 0; i < search_directories_size; i++)
   {
     jobject search_dir_obj = env->GetObjectArrayElement(reinterpret_cast<jobjectArray>(j_search_directories), i);
-    const std::string search_dir = JStringToString(env, reinterpret_cast<jstring>(search_dir_obj));
+    const std::string search_dir = AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(search_dir_obj));
     if (!search_dir.empty())
       gl.AddDirectory(search_dir.c_str(), search_recursively);
   }

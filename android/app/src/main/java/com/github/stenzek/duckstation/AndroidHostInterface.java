@@ -1,5 +1,6 @@
 package com.github.stenzek.duckstation;
 
+import android.content.Context;
 import android.view.Surface;
 
 public class AndroidHostInterface
@@ -10,7 +11,7 @@ public class AndroidHostInterface
         System.loadLibrary("duckstation-native");
     }
 
-    static public native AndroidHostInterface create();
+    static public native AndroidHostInterface create(Context context);
 
     public AndroidHostInterface(long nativePointer)
     {

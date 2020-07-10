@@ -142,7 +142,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
 
-        mHostInterface = AndroidHostInterface.create();
+        mHostInterface = AndroidHostInterface.create(this);
         if (mHostInterface == null)
             throw new InstantiationError("Failed to create host interface");
 

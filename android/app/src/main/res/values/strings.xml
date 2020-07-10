@@ -6,7 +6,7 @@
     <!-- Preference Titles -->
     <string name="settings_console_header">Console</string>
     <string name="settings_behavior_header">Behavior</string>
-    <string name="settings_host_synchronization_header">Host Synchronization</string>
+    <string name="settings_osd_header">On-Screen Display</string>
     <string name="settings_cpu_header">CPU</string>
     <string name="settings_gpu_header">GPU</string>
 
@@ -20,10 +20,14 @@
     <!-- Behavior Preferences -->
     <string name="settings_behavior_enable_speed_limiter">Enable Speed Limiter</string>
     <string name="settings_behavior_pause_on_start">Pause On Start</string>
-
-    <!-- Host Synchronization Preferences -->
     <string name="settings_host_synchronization_sync_to_audio">Sync To Audio</string>
     <string name="settings_host_synchronization_sync_to_video">Sync To Video</string>
+
+    <!-- OSD Preferences -->
+    <string name="settings_osd_show_messages">Show Messages</string>
+    <string name="settings_osd_show_speed">Show Emulation Speed</string>
+    <string name="settings_osd_show_show_fps">Show FPS</string>
+    <string name="settings_osd_show_show_vps">Show VPS</string>
 
     <!-- CPU Preferences -->
     <string name="settings_cpu_execution_mode">Execution Mode</string>
@@ -31,7 +35,6 @@
 
     <!-- GPU Preferences -->
     <string name="settings_gpu_renderer">Renderer</string>
-    <string name="settings_gpu_renderer_default">OpenGL</string>
     <string name="settings_gpu_display_linear_filtering">Display Linear Filtering</string>
     <string name="settings_gpu_resolution_scale">Resolution Scale</string>
     <string name="settings_gpu_true_color">True 24-Bit Color (Disables Dithering)</string>
