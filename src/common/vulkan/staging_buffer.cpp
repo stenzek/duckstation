@@ -84,7 +84,7 @@ void StagingBuffer::Unmap()
 void StagingBuffer::FlushCPUCache(VkDeviceSize offset, VkDeviceSize size)
 {
   Assert(offset >= m_map_offset);
-  if (m_coherent)
+  if (m_coherent || !IsMapped())
     return;
 
   VkMappedMemoryRange range = {VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, m_memory, offset - m_map_offset, size};
@@ -129,7 +129,7 @@ void StagingBuffer::FlushGPUCache(VkCommandBuffer command_buffer, VkAccessFlagBi
 void StagingBuffer::InvalidateCPUCache(VkDeviceSize offset, VkDeviceSize size)
 {
   Assert(offset >= m_map_offset);
-  if (m_coherent)
+  if (m_coherent || !IsMapped())
     return;
 
   VkMappedMemoryRange range = {VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, m_memory, offset - m_map_offset, size};
