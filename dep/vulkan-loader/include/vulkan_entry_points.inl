@@ -13,7 +13,6 @@
 
 VULKAN_MODULE_ENTRY_POINT(vkCreateInstance, true)
 VULKAN_MODULE_ENTRY_POINT(vkGetInstanceProcAddr, true)
-VULKAN_MODULE_ENTRY_POINT(vkGetDeviceProcAddr, true)
 VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceExtensionProperties, true)
 VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceLayerProperties, true)
 VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceVersion, false)
@@ -22,6 +21,7 @@ VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceVersion, false)
 
 #ifdef VULKAN_INSTANCE_ENTRY_POINT
 
+VULKAN_INSTANCE_ENTRY_POINT(vkGetDeviceProcAddr, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkDestroyInstance, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumeratePhysicalDevices, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures, true)
