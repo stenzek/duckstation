@@ -661,7 +661,8 @@ bool Context::CreateCommandBuffers()
     // TODO: A better way to choose the number of descriptors.
     VkDescriptorPoolSize pool_sizes[] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1024},
                                          {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024},
-                                         {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 16}};
+                                         {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 16},
+                                         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 16}};
 
     VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                                                    nullptr,
@@ -718,7 +719,8 @@ bool Context::CreateGlobalDescriptorPool()
   // TODO: A better way to choose the number of descriptors.
   VkDescriptorPoolSize pool_sizes[] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1024},
                                        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024},
-                                       {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 16}};
+                                       {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 16},
+                                       {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 16}};
 
   VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                                                  nullptr,
