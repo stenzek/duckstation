@@ -20,20 +20,6 @@ void LibretroVulkanHostDisplay::SetVSync(bool enabled)
   Log_DevPrintf("Ignoring SetVSync(%u)", BoolToUInt32(enabled));
 }
 
-static bool LoadModuleFunctions(VkInstance instance, PFN_vkGetInstanceProcAddr get_instance_proc_addr)
-{
-#define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
-  if (!name && (name = reinterpret_cast<decltype(name)>(get_instance_proc_addr(instance, #name))) == nullptr)          \
-  {                                                                                                                    \
-    Log_ErrorPrintf("Could not get function pointer for '%s'", #name);                                                 \
-    return false;                                                                                                      \
-  }
-#include "vulkan_entry_points.inl"
-#undef VULKAN_MODULE_ENTRY_POINT
-
-  return true;
-}
-
 static bool RetroCreateVulkanDevice(struct retro_vulkan_context* context, VkInstance instance, VkPhysicalDevice gpu,
                                     VkSurfaceKHR surface, PFN_vkGetInstanceProcAddr get_instance_proc_addr,
                                     const char** required_device_extensions, unsigned num_required_device_extensions,
@@ -42,13 +28,6 @@ static bool RetroCreateVulkanDevice(struct retro_vulkan_context* context, VkInst
 {
   // We need some module functions.
   vkGetInstanceProcAddr = get_instance_proc_addr;
-  if (!LoadModuleFunctions(instance, get_instance_proc_addr))
-  {
-    Log_ErrorPrintf("Failed to load Vulkan module functions");
-    Vulkan::ResetVulkanLibraryFunctionPointers();
-    return false;
-  }
-
   if (!Vulkan::LoadVulkanInstanceFunctions(instance))
   {
     Log_ErrorPrintf("Failed to load Vulkan instance functions");
@@ -175,7 +154,7 @@ bool LibretroVulkanHostDisplay::Render()
   const u32 resolution_scale = g_libretro_host_interface.GetResolutionScale();
   const u32 display_width = static_cast<u32>(m_display_width) * resolution_scale;
   const u32 display_height = static_cast<u32>(m_display_height) * resolution_scale;
-  if (!CheckFramebufferSize(display_width, display_height))
+  if (display_width == 0 || display_height == 0 || !CheckFramebufferSize(display_width, display_height))
     return false;
 
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
@@ -231,6 +210,8 @@ bool LibretroVulkanHostDisplay::CheckFramebufferSize(u32 width, u32 height)
 
   g_vulkan_context->DeferFramebufferDestruction(m_frame_framebuffer);
   m_frame_texture.Destroy(true);
+
+  Log_WarningPrintf("Creating %ux%u framebuffer", width, height);
 
   if (!m_frame_texture.Create(width, height, 1, 1, FRAMEBUFFER_FORMAT, VK_SAMPLE_COUNT_1_BIT, view_type, tiling, usage))
     return false;
