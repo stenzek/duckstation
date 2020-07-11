@@ -681,19 +681,7 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
   GPU_HW::FillVRAM(x, y, width, height, color);
 
-  // drop precision unless true colour is enabled
-  if (!m_true_color)
-    color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
-
-  struct Uniforms
-  {
-    float u_fill_color[4];
-    u32 u_interlaced_displayed_field;
-  };
-  Uniforms uniforms;
-  std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
-    RGBA8ToFloat(color);
-  uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
+  const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
 
   m_context->OMSetDepthStencilState(m_depth_test_always_state.Get(), 0);
 
@@ -708,36 +696,22 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
-  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
-  {
-    // CPU round trip if oversized for now.
-    Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::UpdateVRAM(x, y, width, height, data);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
-    return;
-  }
-
-  GPU_HW::UpdateVRAM(x, y, width, height, data);
+  const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
+  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data);
 
   const u32 num_pixels = width * height;
   const auto map_result = m_texture_stream_buffer.Map(m_context.Get(), sizeof(u16), num_pixels * sizeof(u16));
   std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
   m_texture_stream_buffer.Unmap(m_context.Get(), num_pixels * sizeof(u16));
 
-  const VRAMWriteUBOData uniforms = {x,
-                                     y,
-                                     width,
-                                     height,
-                                     map_result.index_aligned,
-                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedVertexDepth()};
+  const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned);
   m_context->OMSetDepthStencilState(
     m_GPUSTAT.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
   m_context->PSSetShaderResources(0, 1, m_texture_stream_buffer_srv_r16ui.GetAddressOf());
 
   // the viewport should already be set to the full vram, so just adjust the scissor
-  SetScissor(x * m_resolution_scale, y * m_resolution_scale, width * m_resolution_scale, height * m_resolution_scale);
+  const Common::Rectangle<u32> scaled_bounds = bounds * m_resolution_scale;
+  SetScissor(scaled_bounds.left, scaled_bounds.top, scaled_bounds.GetWidth(), scaled_bounds.GetHeight());
 
   DrawUtilityShader(m_vram_write_pixel_shader.Get(), &uniforms, sizeof(uniforms));
 
@@ -754,16 +728,7 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
       UpdateVRAMReadTexture();
     IncludeVRAMDityRectangle(dst_bounds);
 
-    const VRAMCopyUBOData uniforms = {src_x * m_resolution_scale,
-                                      src_y * m_resolution_scale,
-                                      dst_x * m_resolution_scale,
-                                      dst_y * m_resolution_scale,
-                                      ((dst_x + width) % VRAM_WIDTH) * m_resolution_scale,
-                                      ((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale,
-                                      width * m_resolution_scale,
-                                      height * m_resolution_scale,
-                                      m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
-                                      GetCurrentNormalizedVertexDepth()};
+    const VRAMCopyUBOData uniforms = GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height);
 
     const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
     SetViewportAndScissor(dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),

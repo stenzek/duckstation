@@ -125,8 +125,12 @@ protected:
 
   struct VRAMWriteUBOData
   {
-    u32 u_base_coords[2];
-    u32 u_size[2];
+    u32 u_dst_x;
+    u32 u_dst_y;
+    u32 u_end_x;
+    u32 u_end_y;
+    u32 u_width;
+    u32 u_height;
     u32 u_buffer_base_offset;
     u32 u_mask_or_bits;
     float u_depth_value;
@@ -226,6 +230,7 @@ protected:
   bool UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
   VRAMFillUBOData GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 height, u32 color) const;
+  VRAMWriteUBOData GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const;
   VRAMCopyUBOData GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
   /// Handles quads with flipped texture coordinate directions.

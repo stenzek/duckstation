@@ -1177,7 +1177,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(
     ss,
-    {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
+    {"uint2 u_base_coords", "uint2 u_end_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
     true);
 
   if (use_ssbo && m_glsl)
@@ -1203,13 +1203,16 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
-  uint2 coords = uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  uint2 offset = coords - u_base_coords;
+  uint2 coords = uint2(uint(v_pos.x) / RESOLUTION_SCALE, fixYCoord(uint(v_pos.y)) / RESOLUTION_SCALE);
 
-  #if API_OPENGL || API_OPENGL_ES
-    // Lower-left origin flip for OpenGL
-    offset.y = u_size.y - offset.y - 1u;
-  #endif
+  // make sure it's not oversized and out of range
+  if (VECTOR_LT(coords, u_base_coords) && VECTOR_GE(coords, u_end_coords))
+    discard;
+
+  // find offset from the start of the row/column
+  uint2 offset;
+  offset.x = (coords.x < u_base_coords.x) ? (((VRAM_SIZE.x / RESOLUTION_SCALE) - 1u) - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
+  offset.y = (coords.y < u_base_coords.y) ? (((VRAM_SIZE.y / RESOLUTION_SCALE) - 1u) - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
 
   uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
   uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;

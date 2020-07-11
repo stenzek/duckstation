@@ -1080,17 +1080,8 @@ void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
-  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
-  {
-    // CPU round trip if oversized for now.
-    Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::UpdateVRAM(x, y, width, height, data);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
-    return;
-  }
-
-  GPU_HW::UpdateVRAM(x, y, width, height, data);
+  const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
+  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data);
 
   const u32 data_size = width * height * sizeof(u16);
   const u32 alignment = std::max<u32>(sizeof(u16), static_cast<u32>(g_vulkan_context->GetTexelBufferAlignment()));
@@ -1114,13 +1105,7 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   BeginVRAMRenderPass();
 
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
-  const VRAMWriteUBOData uniforms = {x,
-                                     y,
-                                     width,
-                                     height,
-                                     start_index,
-                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedVertexDepth()};
+  const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, start_index);
   vkCmdPushConstants(cmdbuf, m_vram_write_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(uniforms),
                      &uniforms);
   vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1129,8 +1114,9 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
                           &m_vram_write_descriptor_set, 0, nullptr);
 
   // the viewport should already be set to the full vram, so just adjust the scissor
-  Vulkan::Util::SetScissor(cmdbuf, x * m_resolution_scale, y * m_resolution_scale, width * m_resolution_scale,
-                           height * m_resolution_scale);
+  const Common::Rectangle<u32> scaled_bounds = bounds * m_resolution_scale;
+  Vulkan::Util::SetScissor(cmdbuf, scaled_bounds.left, scaled_bounds.top, scaled_bounds.GetWidth(),
+                           scaled_bounds.GetHeight());
   vkCmdDraw(cmdbuf, 3, 1, 0, 0);
 
   RestoreGraphicsAPIState();

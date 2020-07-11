@@ -529,6 +529,20 @@ bool GPU_HW::UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 w
             .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height)));
 }
 
+GPU_HW::VRAMWriteUBOData GPU_HW::GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const
+{
+  const VRAMWriteUBOData uniforms = {x,
+                                     y,
+                                     ((x + width) % VRAM_WIDTH),
+                                     ((y + height) % VRAM_HEIGHT),
+                                     width,
+                                     height,
+                                     buffer_offset,
+                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
+                                     GetCurrentNormalizedVertexDepth()};
+  return uniforms;
+}
+
 GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 height, u32 color) const
 {
   // drop precision unless true colour is enabled

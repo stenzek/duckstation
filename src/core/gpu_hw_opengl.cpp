@@ -711,14 +711,10 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
   glScissor(x, m_vram_texture.GetHeight() - y - height, width, height);
 
-  // drop precision unless true colour is enabled
-  if (!m_true_color)
-    color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
-
   // fast path when not using interlaced rendering
   if (!IsInterlacedRenderingEnabled())
   {
-    const auto [r, g, b, a] = RGBA8ToFloat(color);
+    const auto [r, g, b, a] = RGBA8ToFloat(m_true_color ? color : RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color)));
     glClearColor(r, g, b, a);
     IsGLES() ? glClearDepthf(a) : glClearDepth(a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -726,15 +722,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   }
   else
   {
-    struct Uniforms
-    {
-      float u_fill_color[4];
-      u32 u_interlaced_displayed_field;
-    };
-    Uniforms uniforms;
-    std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
-      RGBA8ToFloat(color);
-    uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
+    const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
 
     m_vram_interlaced_fill_program.Bind();
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
@@ -749,36 +737,18 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
 {
-  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
-  {
-    // CPU round trip if oversized for now.
-    Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::UpdateVRAM(x, y, width, height, data);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
-    return;
-  }
-
-  GPU_HW::UpdateVRAM(x, y, width, height, data);
-
   const u32 num_pixels = width * height;
   if (num_pixels < m_max_texture_buffer_size || m_use_ssbo_for_vram_writes)
   {
+    const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
+    GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data);
+
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
     std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
     m_texture_stream_buffer->Unmap(num_pixels * sizeof(u16));
     m_texture_stream_buffer->Unbind();
 
-    // viewport should be set to the whole VRAM size, so we can just set the scissor
-    const u32 flipped_y = VRAM_HEIGHT - y - height;
-    const u32 scaled_width = width * m_resolution_scale;
-    const u32 scaled_height = height * m_resolution_scale;
-    const u32 scaled_x = x * m_resolution_scale;
-    const u32 scaled_y = y * m_resolution_scale;
-    const u32 scaled_flipped_y = m_vram_texture.GetHeight() - scaled_y - scaled_height;
-    glViewport(scaled_x, scaled_flipped_y, scaled_width, scaled_height);
     glDisable(GL_BLEND);
-    glDisable(GL_SCISSOR_TEST);
     glDepthFunc(m_GPUSTAT.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
 
     m_vram_write_program.Bind();
@@ -787,14 +757,13 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     else
       glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
 
-    const VRAMWriteUBOData uniforms = {x,
-                                       flipped_y,
-                                       width,
-                                       height,
-                                       map_result.index_aligned,
-                                       m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                       GetCurrentNormalizedVertexDepth()};
+    const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned);
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
+
+    // the viewport should already be set to the full vram, so just adjust the scissor
+    const Common::Rectangle<u32> scaled_bounds = bounds * m_resolution_scale;
+    glScissor(scaled_bounds.left, m_vram_texture.GetHeight() - scaled_bounds.top - scaled_bounds.GetHeight(),
+              scaled_bounds.GetWidth(), scaled_bounds.GetHeight());
 
     glBindVertexArray(m_attributeless_vao_id);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -803,6 +772,18 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   }
   else
   {
+    if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
+    {
+      // CPU round trip if oversized for now.
+      Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
+      ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+      GPU::UpdateVRAM(x, y, width, height, data);
+      UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+      return;
+    }
+
+    GPU_HW::UpdateVRAM(x, y, width, height, data);
+
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
 
     // reverse copy the rows so it matches opengl's lower-left origin
