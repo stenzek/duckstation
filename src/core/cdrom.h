@@ -59,6 +59,8 @@ private:
     RESPONSE_FIFO_SIZE = 16,
     DATA_FIFO_SIZE = RAW_SECTOR_OUTPUT_SIZE,
     NUM_SECTOR_BUFFERS = 8,
+
+    BASE_RESET_TICKS = 400000,
   };
 
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -200,7 +202,8 @@ private:
   bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
   bool IsSeeking() const
   {
-    return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical);
+    return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical ||
+            m_drive_state == DriveState::Resetting);
   }
   bool IsReadingOrPlaying() const
   {

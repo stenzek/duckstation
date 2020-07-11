@@ -1184,7 +1184,9 @@ void CDROM::ExecuteCommand()
         UpdatePositionWhileSeeking();
 
       m_drive_state = DriveState::Resetting;
-      m_drive_event->Schedule(400000 + GetTicksForSeek(0));
+      m_drive_event->SetIntervalAndSchedule(BASE_RESET_TICKS + GetTicksForSeek(0));
+      m_seek_start_lba = m_current_lba;
+      m_seek_end_lba = 0;
 
       EndCommand();
       return;
