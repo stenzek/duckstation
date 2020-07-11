@@ -63,13 +63,12 @@ LibretroHostInterface::~LibretroHostInterface()
 
 void LibretroHostInterface::InitLogging()
 {
+  if (s_libretro_log_callback_registered)
+    return;
+
   s_libretro_log_callback_valid =
     g_retro_environment_callback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &s_libretro_log_callback);
-  if (s_libretro_log_callback_registered)
-  {
-    Log::UnregisterCallback(LibretroLogCallback, nullptr);
-    s_libretro_log_callback_registered = false;
-  }
+
   if (s_libretro_log_callback_valid)
   {
     Log::RegisterCallback(LibretroLogCallback, nullptr);
