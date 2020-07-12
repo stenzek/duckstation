@@ -581,6 +581,12 @@ void GPU::UpdateCRTCDisplayParameters()
   cs.display_width = (cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider;
   cs.display_height = (cs.vertical_active_end - cs.vertical_active_start) << height_shift;
 
+  // Determine number of pixels outputted from VRAM (align to 4-pixel boundary).
+  // TODO: Verify behavior if start > end and also if values are outside of the active video portion of scanline.
+  const u16 horizontal_display_ticks = horizontal_display_end - horizontal_display_start;
+  cs.display_vram_width =
+    (static_cast<u16>(std::round(horizontal_display_ticks / static_cast<float>(cs.dot_clock_divider))) + 2u) & ~3u;
+
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
   // padding.
   u16 horizontal_skip_pixels;
@@ -597,26 +603,11 @@ void GPU::UpdateCRTCDisplayParameters()
     cs.display_vram_left = std::min<u16>(m_crtc_state.regs.X + horizontal_skip_pixels, VRAM_WIDTH - 1);
   }
 
-  u16 horizontal_active_ticks;
-  if (horizontal_display_end <= cs.horizontal_active_end)
-  {
-    horizontal_active_ticks =
-      horizontal_display_end -
-      std::min(horizontal_display_end, std::max(horizontal_display_start, cs.horizontal_active_start));
-  }
-  else
-  {
-    horizontal_active_ticks =
-      cs.horizontal_active_end -
-      std::min(cs.horizontal_active_end, std::max(horizontal_display_start, cs.horizontal_active_start));
-  }
-
-  // align to 4-pixel boundary
-  cs.display_vram_width =
-    (static_cast<u16>(std::round(horizontal_active_ticks / static_cast<float>(cs.dot_clock_divider))) + 2u) & ~3u;
-
   // apply the crop from the start (usually overscan)
   cs.display_vram_width -= std::min(cs.display_vram_width, horizontal_skip_pixels);
+
+  // Apply crop from the end by shrinking VRAM rectangle width if display would end outside the visible area.
+  cs.display_vram_width = std::min<u16>(cs.display_vram_width, cs.display_width - cs.display_origin_left);
 
   if (vertical_display_start >= cs.vertical_active_start)
   {
