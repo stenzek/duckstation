@@ -1225,7 +1225,7 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::SameLine(indent);
         int display_aspect_ratio = static_cast<int>(m_settings_copy.display_aspect_ratio);
         if (ImGui::Combo(
-              "##display_pixel_aspect_ratio", &display_aspect_ratio,
+              "##display_aspect_ratio", &display_aspect_ratio,
               [](void*, int index, const char** out_text) {
                 *out_text = Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(index));
                 return true;

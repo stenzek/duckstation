@@ -71,6 +71,7 @@ enum class DisplayAspectRatio : u8
 {
   R4_3,
   R16_9,
+  R8_7,
   R2_1,
   R1_1,
   Count
