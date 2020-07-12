@@ -23,10 +23,12 @@
     </string-array>
     <string-array name="gpu_renderer_entries">
         <item>Hardware (OpenGL)</item>
+        <item>Hardware (Vulkan)</item>
         <item>Software</item>
     </string-array>
     <string-array name="gpu_renderer_values">
         <item>OpenGL</item>
+        <item>Vulkan</item>
         <item>Software</item>
     </string-array>
     <string-array name="settings_gpu_resolution_scale_entries">

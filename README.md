@@ -49,7 +49,7 @@ Other features include:
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
 ## Downloading and running
-Binaries of DuckStation for 64-bit Windows and 64-bit Linux (in AppImage format) are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
+Binaries of DuckStation for Windows 64-bit, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
 
 ### Windows
 
@@ -83,13 +83,19 @@ To download:
 
 A prebuilt APK is now available for Android. However, please keep in mind that the Android version is not yet feature complete, it is more of a preview of things to come. You will need a device running a 64-bit AArch64 userland (anything made in the last few years).
 
-Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-release-unsigned.apk
+Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android-aarch64.apk
 
 The main limitations are:
  - No controller support, only on-screen controls.
- - User directory is currently hardcoded to /sdcard/duckstation. So BIOS files go in /sdcard/duckstation/bios.
+ - User directory is currently hardcoded to `/sdcard/duckstation`. So BIOS files go in `/sdcard/duckstation/bios`.
  - Lack of options in menu when emulator is running.
  - Performance is currently lower than the desktop x86_64 counterpart.
+
+To use:
+ - Install and run the app for the first time.
+ - This will create `/sdcard/duckstation`. Drop your BIOS files in `/sdcard/duckstation/bios`.
+ - Add game directories by hitting the `+` icon and selecting a directory. Due to a bug you may need to restart the app for it to scan the directory.
+ - Tap a game to start.
 
 
 ### Title Information
