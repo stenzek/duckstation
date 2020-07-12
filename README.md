@@ -44,7 +44,7 @@ Other features include:
  - Optional automatic switching of memory cards for each game
 
 ## System Requirements
- - A CPU faster than a potato. But it needs to be 64-bit otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
+ - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
  - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL-compatible game controller (e.g. XB360/XBOne)
 
@@ -78,6 +78,19 @@ To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download either `duckstation-qt-x64.AppImage` or `duckstation-sdl-x64.AppImage` for your desired frontend. Keep in mind that keyboard/controller bindings are currently not customizable through the SDL frontend and should be customized through the Qt frontend instead.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
+
+### Android
+
+A prebuilt APK is now available for Android. However, please keep in mind that the Android version is not yet feature complete, it is more of a preview of things to come. You will need a device running a 64-bit AArch64 userland (anything made in the last few years).
+
+Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-release-unsigned.apk
+
+The main limitations are:
+ - No controller support, only on-screen controls.
+ - User directory is currently hardcoded to /sdcard/duckstation. So BIOS files go in /sdcard/duckstation/bios.
+ - Lack of options in menu when emulator is running.
+ - Performance is currently lower than the desktop x86_64 counterpart.
+
 
 ### Title Information
 
@@ -233,4 +246,5 @@ To build on Linux, follow the same instructions as for a normal build, but for c
 Icon by icons8: https://icons8.com/icon/74847/platforms.undefined.short-title
 
 "PlayStation" and "PSX" are registered trademarks of Sony Interactive Entertainment Europe Limited. This project is not affiliated in any way with Sony Interactive Entertainment.
+
 
