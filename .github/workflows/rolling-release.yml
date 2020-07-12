@@ -158,8 +158,29 @@ jobs:
         path: "build-libretro-android-aarch64/duckstation_libretro_android_aarch64.so.zip"
 
 
+  android-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Compile with Gradle
+      shell: bash
+      run: |
+        cd android
+        ./gradlew assembleRelease
+        mv app/build/outputs/apk/release/app-release-unsigned.apk ../duckstation-release-unsigned.apk
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v1
+      with:
+        name: "android"
+        path: "duckstation-release-unsigned.apk"
+
+
   create-release:
-    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build]
+    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build]
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     steps:
@@ -198,6 +219,11 @@ jobs:
         with:
           name: "linux-libretro"
 
+      - name: Download Android APK
+        uses: actions/download-artifact@v1
+        with:
+          name: "android"
+
       - name: Create release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -213,3 +239,5 @@ jobs:
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             linux-libretro/duckstation_libretro.so.zip
             linux-libretro/duckstation_libretro_android_aarch64.so.zip
+            android/duckstation-release-unsigned.apk
+
