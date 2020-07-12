@@ -170,13 +170,27 @@ jobs:
       run: |
         cd android
         ./gradlew assembleRelease
-        mv app/build/outputs/apk/release/app-release-unsigned.apk ../duckstation-release-unsigned.apk
-        
+
+    - name: Sign APK
+      uses: r0adkll/sign-android-release@v1
+      with:
+        releaseDirectory: android/app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.APK_SIGNING_KEY }}
+        alias: ${{ secrets.APK_KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.APK_KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.APK_KEY_PASSWORD }}
+
+    - name: Rename APK
+      shell: bash
+      run: |
+        cd android
+        mv app/build/outputs/apk/release/app-release-unsigned-signed.apk ../duckstation-android-aarch64.apk
+         
     - name: Upload APK
       uses: actions/upload-artifact@v1
       with:
         name: "android"
-        path: "duckstation-release-unsigned.apk"
+        path: "duckstation-android-aarch64.apk"
 
 
   create-release:
@@ -239,5 +253,5 @@ jobs:
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             linux-libretro/duckstation_libretro.so.zip
             linux-libretro/duckstation_libretro_android_aarch64.so.zip
-            android/duckstation-release-unsigned.apk
+            android/duckstation-android-aarch64.apk
 
