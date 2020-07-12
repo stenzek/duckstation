@@ -268,13 +268,35 @@ void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)
 {
   // display might be null here if the event happened after shutdown
   DebugAssert(isOnWorkerThread());
-  if (m_display)
-    m_display->SetMousePosition(x, y);
+  if (!m_display)
+    return;
+
+  m_display->SetMousePosition(x, y);
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGuiIO& io = ImGui::GetIO();
+    io.MousePos[0] = static_cast<float>(x);
+    io.MousePos[1] = static_cast<float>(y);
+  }
 }
 
 void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 {
   DebugAssert(isOnWorkerThread());
+
+  if (ImGui::GetCurrentContext() && (button > 0 && button <= countof(ImGuiIO::MouseDown)))
+  {
+    ImGuiIO& io = ImGui::GetIO();
+    io.MouseDown[button - 1] = pressed;
+
+    if (io.WantCaptureMouse)
+    {
+      // don't consume input events if it's hitting the UI instead
+      return;
+    }
+  }
+
   HandleHostMouseEvent(button, pressed);
 }
 
