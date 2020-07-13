@@ -96,7 +96,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
-  gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
+  gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", false);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
 
   display_crop_mode =
