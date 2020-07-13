@@ -474,6 +474,8 @@ void CDROM::RemoveMedia(bool force /* = false */)
   m_drive_event->Deactivate();
 
   // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
+  if (HasPendingAsyncInterrupt())
+    ClearAsyncInterrupt();
   SendAsyncErrorResponse(STAT_ERROR, 0x08);
 
   // Begin spin-down timer, we can't swap the new disc in immediately for some games (e.g. Metal Gear Solid).
@@ -1184,7 +1186,7 @@ void CDROM::ExecuteCommand()
         UpdatePositionWhileSeeking();
 
       m_drive_state = DriveState::Resetting;
-      m_drive_event->SetIntervalAndSchedule(BASE_RESET_TICKS + GetTicksForSeek(0));
+      m_drive_event->SetIntervalAndSchedule(BASE_RESET_TICKS + ((m_current_lba != 0) ? GetTicksForSeek(0) : 0));
       m_seek_start_lba = m_current_lba;
       m_seek_end_lba = 0;
 
@@ -1631,13 +1633,22 @@ void CDROM::UpdatePositionWhileSeeking()
   CDImage::LBA current_lba;
   if (m_seek_end_lba > m_seek_start_lba)
   {
-    current_lba = m_seek_start_lba +
-                  static_cast<CDImage::LBA>(static_cast<float>(m_seek_end_lba - m_seek_start_lba) * completed_frac);
+    current_lba =
+      m_seek_start_lba +
+      std::max<CDImage::LBA>(
+        static_cast<CDImage::LBA>(static_cast<float>(m_seek_end_lba - m_seek_start_lba) * completed_frac), 1);
+  }
+  else if (m_seek_end_lba < m_seek_start_lba)
+  {
+    current_lba =
+      m_seek_start_lba -
+      std::max<CDImage::LBA>(
+        static_cast<CDImage::LBA>(static_cast<float>(m_seek_start_lba - m_seek_end_lba) * completed_frac), 1);
   }
   else
   {
-    current_lba = m_seek_start_lba -
-                  static_cast<CDImage::LBA>(static_cast<float>(m_seek_start_lba - m_seek_end_lba) * completed_frac);
+    // strange seek...
+    return;
   }
 
   Log_DevPrintf("Update position while seeking from %u to %u - %u (%.2f)", m_seek_start_lba, m_seek_end_lba,
