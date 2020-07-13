@@ -915,7 +915,7 @@ void SDLHostInterface::DrawDebugMenu()
     debug_settings_copy.show_spu_state = debug_settings.show_spu_state;
     debug_settings_copy.show_timers_state = debug_settings.show_timers_state;
     debug_settings_copy.show_mdec_state = debug_settings.show_mdec_state;
-    SaveAndUpdateSettings();
+    RunLater([this]() { SaveAndUpdateSettings(); });
   }
 }
 
