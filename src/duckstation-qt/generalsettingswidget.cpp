@@ -7,23 +7,33 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 {
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "Main/StartPaused");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, "Main/StartFullscreen");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.renderToMain, "Main/RenderToMainWindow");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.saveStateOnExit, "Main/SaveStateOnExit");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, "Main/ConfirmPowerOff");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.loadDevicesFromSaveStates,
-                                               "Main/LoadDevicesFromSaveStates");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display/ShowOSDMessages");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display/ShowFPS");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showVPS, "Display/ShowVPS");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, "Display/ShowSpeed");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, QStringLiteral("Main"),
+                                               QStringLiteral("StartPaused"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, QStringLiteral("Main"),
+                                               QStringLiteral("StartFullscreen"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.renderToMain, QStringLiteral("Main"),
+                                               QStringLiteral("RenderToMainWindow"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.saveStateOnExit, QStringLiteral("Main"),
+                                               QStringLiteral("SaveStateOnExit"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, QStringLiteral("Main"),
+                                               QStringLiteral("ConfirmPowerOff"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.loadDevicesFromSaveStates, QStringLiteral("Main"),
+                                               QStringLiteral("LoadDevicesFromSaveStates"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, QStringLiteral("Display"),
+                                               QStringLiteral("ShowOSDMessages"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, QStringLiteral("Display"),
+                                               QStringLiteral("ShowFPS"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showVPS, QStringLiteral("Display"),
+                                               QStringLiteral("ShowVPS"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, QStringLiteral("Display"),
+                                               QStringLiteral("ShowSpeed"));
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter, "Main/SpeedLimiterEnabled");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.increaseTimerResolution,
-                                               "Main/IncreaseTimerResolution");
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(m_host_interface, m_ui.emulationSpeed, "Main/EmulationSpeed",
-                                                     100.0f);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter, QStringLiteral("Main"),
+                                               QStringLiteral("SpeedLimiterEnabled"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.increaseTimerResolution, QStringLiteral("Main"),
+                                               QStringLiteral("IncreaseTimerResolution"));
+  SettingWidgetBinder::BindWidgetToNormalizedSetting(m_host_interface, m_ui.emulationSpeed, QStringLiteral("Main"),
+                                                     QStringLiteral("EmulationSpeed"), 100.0f);
 
   connect(m_ui.enableSpeedLimiter, &QCheckBox::stateChanged, this,
           &GeneralSettingsWidget::onEnableSpeedLimiterStateChanged);
@@ -75,8 +85,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 #ifdef WITH_DISCORD_PRESENCE
   {
     QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Discord Presence"), m_ui.groupBox_4);
-    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence,
-                                                 QStringLiteral("Main/EnableDiscordPresence"));
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, QStringLiteral("Main"),
+                                                 QStringLiteral("EnableDiscordPresence"));
     m_ui.formLayout_4->addWidget(enableDiscordPresence, m_ui.formLayout_4->rowCount(), 0);
     dialog->registerWidgetHelp(enableDiscordPresence, "Enable Discord Presence", "Unchecked",
                                "Shows the game you are currently playing as part of your profile in Discord.");

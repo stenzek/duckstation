@@ -9,6 +9,7 @@
 #include "core/gpu.h"
 #include "core/system.h"
 #include "frontend-common/imgui_styles.h"
+#include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
@@ -17,7 +18,6 @@
 #include "mainwindow.h"
 #include "qtdisplaywidget.h"
 #include "qtprogresscallback.h"
-#include "qtsettingsinterface.h"
 #include "qtutils.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
@@ -26,6 +26,7 @@
 #include <QtCore/QTimer>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
+#include <algorithm>
 #include <memory>
 Log_SetChannel(QtHostInterface);
 
@@ -122,29 +123,62 @@ bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
   return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
-std::string QtHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value)
+std::string QtHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
 {
-  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  QVariant value = m_qsettings->value(QStringLiteral("%1/%2").arg(section).arg(key), QString(default_value));
-  return value.toString().toStdString();
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetStringValue(section, key, default_value);
 }
 
-QVariant QtHostInterface::getSettingValue(const QString& name, const QVariant& default_value)
+std::vector<std::string> QtHostInterface::GetStringList(const char* section, const char* key)
 {
-  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  return m_qsettings->value(name, default_value);
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetStringList(section, key);
 }
 
-void QtHostInterface::putSettingValue(const QString& name, const QVariant& value)
+void QtHostInterface::putSettingValue(const QString& section, const QString& key, const bool& value)
 {
-  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  m_qsettings->setValue(name, value);
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  m_settings_interface->SetBoolValue(section.toStdString().c_str(), key.toStdString().c_str(), value);
 }
 
-void QtHostInterface::removeSettingValue(const QString& name)
+void QtHostInterface::putSettingValue(const QString& section, const QString& key, const int& value)
 {
-  std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-  m_qsettings->remove(name);
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  m_settings_interface->SetIntValue(section.toStdString().c_str(), key.toStdString().c_str(), value);
+}
+
+void QtHostInterface::putSettingValue(const QString& section, const QString& key, const float& value)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  m_settings_interface->SetFloatValue(section.toStdString().c_str(), key.toStdString().c_str(), value);
+}
+
+void QtHostInterface::putSettingValue(const QString& section, const QString& key, const QString& value)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  m_settings_interface->SetStringValue(section.toStdString().c_str(), key.toStdString().c_str(),
+                                       value.toStdString().c_str());
+}
+
+void QtHostInterface::putSettingValue(const QString& section, const QString& key, const QStringList& list)
+{  
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  
+  std::vector<std::string> str_list;
+  for (const QString& qstr : list)
+    str_list.push_back(qstr.toStdString());
+
+  std::vector<std::string_view> strview_list;
+  for (const std::string& str : str_list)
+    strview_list.push_back(str);
+
+  m_settings_interface->SetStringList(section.toStdString().c_str(), key.toStdString().c_str(), strview_list);
+}
+
+void QtHostInterface::removeSettingValue(const char* section, const char* key)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  m_settings_interface->DeleteValue(section, key);
 }
 
 void QtHostInterface::setDefaultSettings()
@@ -157,10 +191,9 @@ void QtHostInterface::setDefaultSettings()
 
   Settings old_settings(std::move(m_settings));
   {
-    QtSettingsInterface si(m_qsettings.get());
-    std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-    SetDefaultSettings(si);
-    CommonHostInterface::LoadSettings(si);
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    SetDefaultSettings(*m_settings_interface.get());
+    CommonHostInterface::LoadSettings(*m_settings_interface.get());
   }
 
   CheckForSettingsChanges(old_settings);
@@ -176,9 +209,8 @@ void QtHostInterface::applySettings()
 
   Settings old_settings(std::move(m_settings));
   {
-    QtSettingsInterface si(m_qsettings.get());
-    std::lock_guard<std::recursive_mutex> guard(m_qsettings_mutex);
-    CommonHostInterface::LoadSettings(si);
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    CommonHostInterface::LoadSettings(*m_settings_interface.get());
   }
 
   CheckForSettingsChanges(old_settings);
@@ -186,7 +218,7 @@ void QtHostInterface::applySettings()
   // detect when render-to-main flag changes
   if (m_system)
   {
-    const bool render_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
+    const bool render_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
     if (m_display && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
     {
       m_is_rendering_to_main = render_to_main;
@@ -203,9 +235,8 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
 {
   Assert(!isOnWorkerThread());
 
-  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings.get());
-  m_game_list->SetSearchDirectoriesFromSettings(si);
+  std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
+  m_game_list->SetSearchDirectoriesFromSettings(*m_settings_interface.get());
 
   QtProgressCallback progress(m_main_window);
   m_game_list->Refresh(invalidate_cache, invalidate_database, &progress);
@@ -342,7 +373,7 @@ bool QtHostInterface::AcquireHostDisplay()
 {
   Assert(!m_display);
 
-  m_is_rendering_to_main = getSettingValue("Main/RenderToMainWindow", true).toBool();
+  m_is_rendering_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
 
   QtDisplayWidget* display_widget =
     createDisplayRequested(m_worker_thread, QString::fromStdString(m_settings.gpu_adapter),
@@ -542,21 +573,10 @@ void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 
 void QtHostInterface::LoadSettings()
 {
-  // no need to lock here because the main thread is waiting for us
-  m_qsettings = std::make_unique<QSettings>(QString::fromStdString(GetSettingsFileName()), QSettings::IniFormat);
-  QtSettingsInterface si(m_qsettings.get());
+  m_settings_interface = std::make_unique<INISettingsInterface>(CommonHostInterface::GetSettingsFileName());
 
-  // check settings validity
-  const QSettings::Status settings_status = m_qsettings->status();
-  if (settings_status != QSettings::NoError)
-  {
-    m_qsettings->clear();
-    SetDefaultSettings(si);
-  }
-
-  // load in settings
-  CommonHostInterface::CheckSettings(si);
-  CommonHostInterface::LoadSettings(si);
+  CommonHostInterface::CheckSettings(*m_settings_interface.get());
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
 }
 
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -579,9 +599,8 @@ void QtHostInterface::updateInputMap()
     return;
   }
 
-  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings.get());
-  CommonHostInterface::UpdateInputMap(si);
+  std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
+  CommonHostInterface::UpdateInputMap(*m_settings_interface.get());
 }
 
 void QtHostInterface::applyInputProfile(const QString& profile_path)
@@ -592,17 +611,15 @@ void QtHostInterface::applyInputProfile(const QString& profile_path)
     return;
   }
 
-  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings.get());
-  ApplyInputProfile(profile_path.toUtf8().data(), si);
+  std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
+  ApplyInputProfile(profile_path.toUtf8().data(), *m_settings_interface.get());
   emit inputProfileLoaded();
 }
 
 void QtHostInterface::saveInputProfile(const QString& profile_name)
 {
-  std::lock_guard<std::recursive_mutex> lock(m_qsettings_mutex);
-  QtSettingsInterface si(m_qsettings.get());
-  SaveInputProfile(profile_name.toUtf8().data(), si);
+  std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
+  SaveInputProfile(profile_name.toUtf8().data(), *m_settings_interface.get());
 }
 
 QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const

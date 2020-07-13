@@ -65,7 +65,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
 
   const MemoryCardType default_value = (index == 0) ? MemoryCardType::PerGameTitle : MemoryCardType::None;
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    m_host_interface, ui->memory_card_type, QStringLiteral("MemoryCards/Card%1Type").arg(index + 1),
+    m_host_interface, ui->memory_card_type, QStringLiteral("MemoryCards"), QStringLiteral("Card%1Type").arg(index + 1),
     &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName, default_value);
   ui->layout->addWidget(new QLabel(tr("Memory Card Type:"), ui->container));
   ui->layout->addWidget(ui->memory_card_type);
@@ -73,7 +73,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
   QHBoxLayout* memory_card_layout = new QHBoxLayout();
   ui->memory_card_path = new QLineEdit(ui->container);
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, ui->memory_card_path,
-                                                 QStringLiteral("MemoryCards/Card%1Path").arg(index + 1));
+                                                 QStringLiteral("MemoryCards"), QStringLiteral("Card%1Path").arg(index + 1));
   memory_card_layout->addWidget(ui->memory_card_path);
 
   QPushButton* memory_card_path_browse = new QPushButton(tr("Browse..."), ui->container);
