@@ -2,9 +2,18 @@ name: Create rolling release
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'appveyor.yml'
+      - 'scripts/*'
   push:
     branches:
       - master
+    paths-ignore:
+      - '**.md'
+      - 'appveyor.yml'
+      - 'scripts/*'
+  workflow_dispatch:
 
 jobs:
   windows-build:
