@@ -1,6 +1,9 @@
 #include "x11_window.h"
 #include "../assert.h"
+#include "../log.h"
 #include <cstdio>
+Log_SetChannel(X11Window);
+
 namespace GL {
 X11Window::X11Window() = default;
 
@@ -87,6 +90,11 @@ X11InhibitErrors::~X11InhibitErrors()
 
 int X11InhibitErrors::ErrorHandler(Display* display, XErrorEvent* ee)
 {
+  char error_string[256] = {};
+  XGetErrorText(display, ee->error_code, error_string, sizeof(error_string));
+  Log_WarningPrintf("X11 Error: %s (Error %u Minor %u Request %u)", error_string, ee->error_code, ee->minor_code,
+                    ee->request_code);
+
   s_current_error_inhibiter->m_had_error = true;
   return 0;
 }

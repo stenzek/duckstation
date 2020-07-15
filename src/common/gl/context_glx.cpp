@@ -15,6 +15,9 @@ ContextGLX::~ContextGLX()
   if (m_context)
     glXDestroyContext(GetDisplay(), m_context);
 
+  if (m_vi)
+    XFree(m_vi);
+
   if (m_libGL_handle)
     dlclose(m_libGL_handle);
 }
@@ -242,14 +245,14 @@ bool ContextGLX::CreateWindow(int screen)
     return false;
   }
 
-  const XVisualInfo* vi = glXGetVisualFromFBConfig(GetDisplay(), m_fb_config);
-  if (!vi)
+  m_vi = glXGetVisualFromFBConfig(GetDisplay(), m_fb_config);
+  if (!m_vi)
   {
     Log_ErrorPrintf("glXGetVisualFromFBConfig() failed");
     return false;
   }
 
-  return m_window.Create(GetDisplay(), static_cast<Window>(reinterpret_cast<uintptr_t>(m_wi.window_handle)), vi);
+  return m_window.Create(GetDisplay(), static_cast<Window>(reinterpret_cast<uintptr_t>(m_wi.window_handle)), m_vi);
 }
 
 bool ContextGLX::CreateAnyContext(GLXContext share_context, bool make_current)
