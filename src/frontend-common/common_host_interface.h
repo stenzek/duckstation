@@ -152,7 +152,7 @@ public:
 protected:
   enum : u32
   {
-    SETTINGS_VERSION = 2
+    SETTINGS_VERSION = 3
   };
 
   struct OSDMessage
