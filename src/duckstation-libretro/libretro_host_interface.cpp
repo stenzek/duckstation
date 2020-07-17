@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/analog_controller.h"
+#include "core/bus.h"
 #include "core/digital_controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
@@ -297,6 +298,30 @@ bool LibretroHostInterface::retro_unserialize(const void* data, size_t size)
   }
 
   return true;
+}
+
+void* LibretroHostInterface::retro_get_memory_data(unsigned id)
+{
+  switch (id)
+  {
+    case RETRO_MEMORY_SYSTEM_RAM:
+      return m_system ? m_system->GetBus()->GetRAM() : nullptr;
+
+    default:
+      return nullptr;
+  }
+}
+
+size_t LibretroHostInterface::retro_get_memory_size(unsigned id)
+{
+  switch (id)
+  {
+    case RETRO_MEMORY_SYSTEM_RAM:
+      return Bus::RAM_SIZE;
+
+    default:
+      return 0;
+  }
 }
 
 bool LibretroHostInterface::AcquireHostDisplay()

@@ -111,12 +111,12 @@ RETRO_API unsigned retro_get_region(void)
 
 RETRO_API void* retro_get_memory_data(unsigned id)
 {
-  return nullptr;
+  return g_libretro_host_interface.retro_get_memory_data(id);
 }
 
 RETRO_API size_t retro_get_memory_size(unsigned id)
 {
-  return 0;
+  return g_libretro_host_interface.retro_get_memory_size(id);
 }
 
 RETRO_API void retro_set_environment(retro_environment_t f)

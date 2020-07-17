@@ -37,6 +37,8 @@ public:
   size_t retro_serialize_size();
   bool retro_serialize(void* data, size_t size);
   bool retro_unserialize(const void* data, size_t size);
+  void* retro_get_memory_data(unsigned id);
+  size_t retro_get_memory_size(unsigned id);
 
 protected:
   bool AcquireHostDisplay() override;
