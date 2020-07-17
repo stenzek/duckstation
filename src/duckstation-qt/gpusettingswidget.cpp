@@ -43,6 +43,8 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
                                                QStringLiteral("GPU/ForceNTSCTimings"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering,
                                                QStringLiteral("GPU/TextureFiltering"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack,
+                                               QStringLiteral("GPU/WidescreenHack"));
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
@@ -113,6 +115,10 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     "Smooths out the blockyness of magnified textures on 3D object by using bilinear "
     "filtering. Will have a greater effect on higher resolution scales. Currently this option "
     "produces artifacts around objects in many games and needs further work. Only applies to the hardware renderers.");
+  dialog->registerWidgetHelp(m_ui.widescreenHack, "Widescreen Hack", "Unchecked",
+                             "Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
+                             "increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which "
+                             "use pre-rendered backgrounds, this enhancement will not work as expected.");
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;
