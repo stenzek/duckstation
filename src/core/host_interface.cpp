@@ -8,6 +8,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "controller.h"
+#include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
 #include "host_display.h"
@@ -345,6 +346,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "TextureFiltering", false);
   si.SetBoolValue("GPU", "DisableInterlacing", false);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
+  si.SetBoolValue("GPU", "WidescreenHack", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
   si.SetStringValue("Display", "AspectRatio",
@@ -468,6 +470,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
     m_system->GetDMA()->SetMaxSliceTicks(m_settings.dma_max_slice_ticks);
     m_system->GetDMA()->SetHaltTicks(m_settings.dma_halt_ticks);
+
+    if (m_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack)
+      m_system->GetCPU()->GetCop2().SetWidescreenHack(m_settings.gpu_widescreen_hack);
   }
 
   bool controllers_updated = false;

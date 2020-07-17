@@ -11,6 +11,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/07/18: Widescreen hack enhancement added.
 - 2020/07/04: Vulkan renderer now available in libretro core.
 - 2020/07/02: Now available as a libretro core.
 - 2020/07/01: Lightgun support with custom crosshairs.

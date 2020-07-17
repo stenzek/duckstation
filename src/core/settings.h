@@ -88,6 +88,7 @@ struct Settings
   bool gpu_texture_filtering = false;
   bool gpu_disable_interlacing = false;
   bool gpu_force_ntsc_timings = false;
+  bool gpu_widescreen_hack = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_linear_filtering = true;
