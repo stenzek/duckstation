@@ -395,6 +395,11 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Debug", "ShowSPUState", false);
   si.SetBoolValue("Debug", "ShowTimersState", false);
   si.SetBoolValue("Debug", "ShowMDECState", false);
+
+  si.SetIntValue("Hacks", "DMAMaxSliceTicks", static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
+  si.SetIntValue("Hacks", "DMAHaltTicks", static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
+  si.SetIntValue("Hacks", "GPUFIFOSize", static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
+  si.SetIntValue("Hacks", "GPUMaxRunAhead", static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
 }
 
 void HostInterface::LoadSettings(SettingsInterface& si)
