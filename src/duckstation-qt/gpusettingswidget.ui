@@ -163,7 +163,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="6" column="0" colspan="2">
        <widget class="QCheckBox" name="widescreenHack">
         <property name="text">
          <string>Widescreen Hack</string>
