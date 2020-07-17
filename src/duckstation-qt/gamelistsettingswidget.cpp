@@ -214,14 +214,14 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
   m_ui.searchDirectoryList->setCurrentIndex({});
 
   connect(m_ui.searchDirectoryList, &QTableView::clicked, this, &GameListSettingsWidget::onDirectoryListItemClicked);
-  connect(m_ui.addSearchDirectoryButton, &QToolButton::pressed, this,
-          &GameListSettingsWidget::onAddSearchDirectoryButtonPressed);
-  connect(m_ui.removeSearchDirectoryButton, &QToolButton::pressed, this,
-          &GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed);
-  connect(m_ui.rescanAllGames, &QToolButton::pressed, this, &GameListSettingsWidget::onRescanAllGamesPressed);
-  connect(m_ui.scanForNewGames, &QToolButton::pressed, this, &GameListSettingsWidget::onScanForNewGamesPressed);
-  connect(m_ui.updateRedumpDatabase, &QToolButton::pressed, this,
-          &GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed);
+  connect(m_ui.addSearchDirectoryButton, &QToolButton::clicked, this,
+          &GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
+  connect(m_ui.removeSearchDirectoryButton, &QToolButton::clicked, this,
+          &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
+  connect(m_ui.rescanAllGames, &QToolButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
+  connect(m_ui.scanForNewGames, &QToolButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
+  connect(m_ui.updateRedumpDatabase, &QToolButton::clicked, this,
+          &GameListSettingsWidget::onUpdateRedumpDatabaseButtonClicked);
 }
 
 GameListSettingsWidget::~GameListSettingsWidget() = default;
@@ -265,12 +265,12 @@ void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
   m_search_directories_model->addEntry(dir, recursive);
 }
 
-void GameListSettingsWidget::onAddSearchDirectoryButtonPressed()
+void GameListSettingsWidget::onAddSearchDirectoryButtonClicked()
 {
   addSearchDirectory(this);
 }
 
-void GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed()
+void GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked()
 {
   QModelIndexList selection = m_ui.searchDirectoryList->selectionModel()->selectedIndexes();
   if (selection.size() < 1)
@@ -280,17 +280,17 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonPressed()
   m_search_directories_model->removeEntry(row);
 }
 
-void GameListSettingsWidget::onRescanAllGamesPressed()
+void GameListSettingsWidget::onRescanAllGamesClicked()
 {
   m_host_interface->refreshGameList(true, false);
 }
 
-void GameListSettingsWidget::onScanForNewGamesPressed()
+void GameListSettingsWidget::onScanForNewGamesClicked()
 {
   m_host_interface->refreshGameList(false, false);
 }
 
-void GameListSettingsWidget::onUpdateRedumpDatabaseButtonPressed()
+void GameListSettingsWidget::onUpdateRedumpDatabaseButtonClicked()
 {
   if (QMessageBox::question(this, tr("Download database from redump.org?"),
                             tr("Do you wish to download the disc database from redump.org?\n\nThis will download "
