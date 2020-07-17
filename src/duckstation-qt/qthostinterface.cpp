@@ -285,7 +285,7 @@ void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 {
   DebugAssert(isOnWorkerThread());
 
-  if (ImGui::GetCurrentContext() && (button > 0 && button <= countof(ImGuiIO::MouseDown)))
+  if (ImGui::GetCurrentContext() && (button > 0 && button <= static_cast<int>(countof(ImGuiIO::MouseDown))))
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button - 1] = pressed;
