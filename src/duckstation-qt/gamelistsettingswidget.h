@@ -21,11 +21,11 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void onDirectoryListItemClicked(const QModelIndex& index);
-  void onAddSearchDirectoryButtonPressed();
-  void onRemoveSearchDirectoryButtonPressed();
-  void onScanForNewGamesPressed();
-  void onRescanAllGamesPressed();
-  void onUpdateRedumpDatabaseButtonPressed();
+  void onAddSearchDirectoryButtonClicked();
+  void onRemoveSearchDirectoryButtonClicked();
+  void onScanForNewGamesClicked();
+  void onRescanAllGamesClicked();
+  void onUpdateRedumpDatabaseButtonClicked();
 
 protected:
   void resizeEvent(QResizeEvent* event);
