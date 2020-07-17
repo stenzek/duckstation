@@ -214,13 +214,13 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
   m_ui.searchDirectoryList->setCurrentIndex({});
 
   connect(m_ui.searchDirectoryList, &QTableView::clicked, this, &GameListSettingsWidget::onDirectoryListItemClicked);
-  connect(m_ui.addSearchDirectoryButton, &QToolButton::clicked, this,
+  connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this,
           &GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
-  connect(m_ui.removeSearchDirectoryButton, &QToolButton::clicked, this,
+  connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
           &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
-  connect(m_ui.rescanAllGames, &QToolButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
-  connect(m_ui.scanForNewGames, &QToolButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
-  connect(m_ui.updateRedumpDatabase, &QToolButton::clicked, this,
+  connect(m_ui.rescanAllGames, &QPushButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
+  connect(m_ui.scanForNewGames, &QPushButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
+  connect(m_ui.updateRedumpDatabase, &QPushButton::clicked, this,
           &GameListSettingsWidget::onUpdateRedumpDatabaseButtonClicked);
 }
 
