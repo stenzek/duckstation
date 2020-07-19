@@ -248,7 +248,9 @@ void GameListSettingsWidget::onDirectoryListItemClicked(const QModelIndex& index
 
 void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
 {
-  QString dir = QFileDialog::getExistingDirectory(parent_widget, tr("Select Search Directory"));
+  QString dir =
+    QDir::toNativeSeparators(QFileDialog::getExistingDirectory(parent_widget, tr("Select Search Directory")));
+
   if (dir.isEmpty())
     return;
 
