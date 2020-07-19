@@ -30,9 +30,11 @@ void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam);
 void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam);
 
 // adds a standard console output
+bool IsConsoleOutputEnabled();
 void SetConsoleOutputParams(bool enabled, const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
 
 // adds a debug console output [win32/android only]
+bool IsDebugOutputEnabled();
 void SetDebugOutputParams(bool enabled, const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
 
 // adds a file output
@@ -48,34 +50,28 @@ void Writef(const char* channelName, const char* functionName, LOGLEVEL level, c
 void Writev(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, va_list ap);
 } // namespace Log
 
-#ifdef Y_BUILD_CONFIG_SHIPPING
-#define LOG_MESSAGE_FUNCTION_NAME ""
-#else
-#define LOG_MESSAGE_FUNCTION_NAME __FUNCTION__
-#endif
-
 // log wrappers
 #define Log_SetChannel(ChannelName) static const char* ___LogChannel___ = #ChannelName;
-#define Log_ErrorPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_ERROR, msg)
-#define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_ERROR, __VA_ARGS__)
-#define Log_WarningPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_WARNING, msg)
-#define Log_WarningPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_WARNING, __VA_ARGS__)
-#define Log_SuccessPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_SUCCESS, msg)
-#define Log_SuccessPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_SUCCESS, __VA_ARGS__)
-#define Log_InfoPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_INFO, msg)
-#define Log_InfoPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_INFO, __VA_ARGS__)
-#define Log_PerfPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_PERF, msg)
-#define Log_PerfPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_PERF, __VA_ARGS__)
-#define Log_DevPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_DEV, msg)
-#define Log_DevPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_DEV, __VA_ARGS__)
-#define Log_ProfilePrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_PROFILE, msg)
-#define Log_ProfilePrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_PROFILE, __VA_ARGS__)
+#define Log_ErrorPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_ERROR, msg)
+#define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
+#define Log_WarningPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_WARNING, msg)
+#define Log_WarningPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
+#define Log_SuccessPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_SUCCESS, msg)
+#define Log_SuccessPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_SUCCESS, __VA_ARGS__)
+#define Log_InfoPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_INFO, msg)
+#define Log_InfoPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
+#define Log_PerfPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PERF, msg)
+#define Log_PerfPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PERF, __VA_ARGS__)
+#define Log_DevPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEV, msg)
+#define Log_DevPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEV, __VA_ARGS__)
+#define Log_ProfilePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PROFILE, msg)
+#define Log_ProfilePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
 
 #ifdef _DEBUG
-#define Log_DebugPrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_DEBUG, msg)
-#define Log_DebugPrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_DEBUG, __VA_ARGS__)
-#define Log_TracePrint(msg) Log::Write(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_TRACE, msg)
-#define Log_TracePrintf(...) Log::Writef(___LogChannel___, LOG_MESSAGE_FUNCTION_NAME, LOGLEVEL_TRACE, __VA_ARGS__)
+#define Log_DebugPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEBUG, msg)
+#define Log_DebugPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEBUG, __VA_ARGS__)
+#define Log_TracePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_TRACE, msg)
+#define Log_TracePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
 #else
 #define Log_DebugPrint(msg)                                                                                            \
   do                                                                                                                   \

@@ -204,13 +204,24 @@ void CommonHostInterface::PowerOffSystem()
 
 static void PrintCommandLineVersion(const char* frontend_name)
 {
+  const bool was_console_enabled = Log::IsConsoleOutputEnabled();
+  if (!was_console_enabled)
+    Log::SetConsoleOutputParams(true);
+
   std::fprintf(stderr, "%s Version %s (%s)\n", frontend_name, g_scm_tag_str, g_scm_branch_str);
   std::fprintf(stderr, "https://github.com/stenzek/duckstation\n");
   std::fprintf(stderr, "\n");
+
+  if (!was_console_enabled)
+    Log::SetConsoleOutputParams(false);
 }
 
 static void PrintCommandLineHelp(const char* progname, const char* frontend_name)
 {
+  const bool was_console_enabled = Log::IsConsoleOutputEnabled();
+  if (!was_console_enabled)
+    Log::SetConsoleOutputParams(true);
+
   PrintCommandLineVersion(frontend_name);
   std::fprintf(stderr, "Usage: %s [parameters] [--] [boot filename]\n", progname);
   std::fprintf(stderr, "\n");
@@ -234,6 +245,9 @@ static void PrintCommandLineHelp(const char* progname, const char* frontend_name
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
   std::fprintf(stderr, "\n");
+
+  if (!was_console_enabled)
+    Log::SetConsoleOutputParams(false);
 }
 
 bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],

@@ -75,6 +75,16 @@ void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
   }
 }
 
+bool IsConsoleOutputEnabled()
+{
+  return s_consoleOutputEnabled;
+}
+
+bool IsDebugOutputEnabled()
+{
+  return s_debugOutputEnabled;
+}
+
 static void ExecuteCallbacks(const char* channelName, const char* functionName, LOGLEVEL level, const char* message)
 {
   std::lock_guard<std::mutex> guard(s_callback_mutex);
@@ -273,8 +283,15 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
       if (GetConsoleWindow() == NULL)
       {
         DebugAssert(!console_was_allocated);
+
+        // Attach to the parent console if we're running from a command window
+        if (!AttachConsole(ATTACH_PARENT_PROCESS))
+        {
+          if (!AllocConsole())
+            return;
+        }
+
         console_was_allocated = true;
-        AllocConsole();
 
         std::FILE* fp;
         freopen_s(&fp, "CONIN$", "r", stdin);
