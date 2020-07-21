@@ -146,8 +146,6 @@ void Settings::Load(SettingsInterface& si)
       si.GetStringValue("Controller2", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE)).c_str())
       .value_or(DEFAULT_CONTROLLER_2_TYPE);
 
-  // NOTE: The default value here if not present in the config is shared, but SetDefaultSettings() makes per-game.
-  // This is so we don't break older builds which had the shared card by default.
   memory_card_types[0] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
