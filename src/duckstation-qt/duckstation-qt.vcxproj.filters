@@ -8,7 +8,6 @@
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="qthostinterface.cpp" />
     <ClCompile Include="gamelistsettingswidget.cpp" />
-    <ClCompile Include="qtsettingsinterface.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
@@ -43,7 +42,6 @@
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="qtsettingsinterface.h" />
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />

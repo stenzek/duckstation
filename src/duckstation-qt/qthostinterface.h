@@ -24,13 +24,14 @@ class QWidget;
 class QTimer;
 
 class GameList;
+class INISettingsInterface;
 
 class MainWindow;
 class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(SystemBootParameters);
 
-class QtHostInterface final : public QObject, private CommonHostInterface
+class QtHostInterface final : public QObject, public CommonHostInterface
 {
   Q_OBJECT
 
@@ -49,11 +50,15 @@ public:
 
   bool parseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
-  /// Thread-safe QSettings access.
+  /// Thread-safe settings access.
   std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
-  QVariant getSettingValue(const QString& name, const QVariant& default_value = QVariant());
-  void putSettingValue(const QString& name, const QVariant& value);
-  void removeSettingValue(const QString& name);
+  std::vector<std::string> GetStringList(const char* section, const char* key);
+  void putSettingValue(const QString& section, const QString& key, const bool& value);
+  void putSettingValue(const QString& section, const QString& key, const int& value);
+  void putSettingValue(const QString& section, const QString& key, const float& value);
+  void putSettingValue(const QString& section, const QString& key, const QString& value);
+  void putSettingValue(const QString& section, const QString& key, const QStringList& list);
+  void removeSettingValue(const char* section, const char* key);
 
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }
@@ -205,8 +210,8 @@ private:
   void updateDisplayState();
   void wakeThread();
 
-  std::unique_ptr<QSettings> m_qsettings;
-  std::recursive_mutex m_qsettings_mutex;
+  std::unique_ptr<INISettingsInterface> m_settings_interface;
+  std::recursive_mutex m_settings_mutex;
 
   MainWindow* m_main_window = nullptr;
   QThread* m_original_thread = nullptr;

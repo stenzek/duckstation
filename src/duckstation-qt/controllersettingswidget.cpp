@@ -45,9 +45,9 @@ void ControllerSettingsWidget::onProfileLoaded()
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
   {
     ControllerType ctype = Settings::ParseControllerTypeName(
-                             m_host_interface->getSettingValue(QStringLiteral("Controller%1/Type").arg(i + 1))
-                               .toString()
-                               .toStdString()
+                             m_host_interface
+                               ->GetSettingValue(QStringLiteral("Controller%1").arg(i + 1).toStdString().c_str(),
+                                                 QStringLiteral("Type").toStdString().c_str())
                                .c_str())
                              .value_or(ControllerType::None);
 
@@ -88,9 +88,9 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
       QString::fromUtf8(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
   ControllerType ctype = Settings::ParseControllerTypeName(
-                           m_host_interface->getSettingValue(QStringLiteral("Controller%1/Type").arg(index + 1))
-                             .toString()
-                             .toStdString()
+                           m_host_interface
+                             ->GetSettingValue(QStringLiteral("Controller%1").arg(index + 1).toStdString().c_str(),
+                                               QStringLiteral("Type").toStdString().c_str())
                              .c_str())
                            .value_or(ControllerType::None);
   ui->controller_type->setCurrentIndex(static_cast<int>(ctype));
@@ -195,10 +195,11 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
       }
 
       const QString button_name_q = QString::fromStdString(button_name);
-      const QString setting_name = QStringLiteral("Controller%1/Button%2").arg(index + 1).arg(button_name_q);
+      const QString section_name = QStringLiteral("Controller%1").arg(index + 1);
+      const QString key_name = QStringLiteral("Button%1").arg(button_name_q);
       QLabel* label = new QLabel(button_name_q, ui->bindings_container);
       InputButtonBindingWidget* button =
-        new InputButtonBindingWidget(m_host_interface, setting_name, ui->bindings_container);
+        new InputButtonBindingWidget(m_host_interface, section_name, key_name, ui->bindings_container);
       layout->addWidget(label, start_row + current_row, current_column);
       layout->addWidget(button, start_row + current_row, current_column + 1);
 
@@ -232,10 +233,11 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
       }
 
       const QString axis_name_q = QString::fromStdString(axis_name);
-      const QString setting_name = QStringLiteral("Controller%1/Axis%2").arg(index + 1).arg(axis_name_q);
+      const QString section_name = QStringLiteral("Controller%1").arg(index + 1);
+      const QString key_name = QStringLiteral("Axis%1").arg(axis_name_q);
       QLabel* label = new QLabel(axis_name_q, ui->bindings_container);
       InputAxisBindingWidget* button =
-        new InputAxisBindingWidget(m_host_interface, setting_name, ui->bindings_container);
+        new InputAxisBindingWidget(m_host_interface, section_name, key_name, ui->bindings_container);
       layout->addWidget(label, start_row + current_row, current_column);
       layout->addWidget(button, start_row + current_row, current_column + 1);
 
@@ -256,10 +258,11 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
   {
     layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
 
-    const QString setting_name = QStringLiteral("Controller%1/Rumble").arg(index + 1);
+    const QString section_name = QStringLiteral("Controller%1").arg(index + 1);
+    const QString key_name = QStringLiteral("Rumble");
     QLabel* label = new QLabel(tr("Rumble"), ui->bindings_container);
     InputRumbleBindingWidget* button =
-      new InputRumbleBindingWidget(m_host_interface, setting_name, ui->bindings_container);
+      new InputRumbleBindingWidget(m_host_interface, section_name, key_name, ui->bindings_container);
 
     layout->addWidget(label, start_row, 0);
     layout->addWidget(button, start_row, 1);
@@ -280,7 +283,8 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
 
     for (const SettingInfo& si : settings)
     {
-      const QString setting_name = QStringLiteral("Controller%1/%2").arg(index + 1).arg(si.key);
+      const QString section_name = QStringLiteral("Controller%1").arg(index + 1);
+      const QString key_name = QStringLiteral("%1").arg(si.key);
       const QString setting_tooltip = si.description ? QString::fromUtf8(si.description) : "";
 
       switch (si.type)
@@ -289,7 +293,8 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
         {
           QCheckBox* cb = new QCheckBox(tr(si.visible_name), ui->bindings_container);
           cb->setToolTip(setting_tooltip);
-          SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, setting_name, si.BooleanDefaultValue());
+          SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, section_name, key_name,
+                                                       si.BooleanDefaultValue());
           layout->addWidget(cb, start_row, 0, 1, 4);
           start_row++;
         }
@@ -302,7 +307,8 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           sb->setMinimum(si.IntegerMinValue());
           sb->setMaximum(si.IntegerMaxValue());
           sb->setSingleStep(si.IntegerStepValue());
-          SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, sb, setting_name, si.IntegerDefaultValue());
+          SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, sb, section_name, key_name,
+                                                      si.IntegerDefaultValue());
           layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
           layout->addWidget(sb, start_row, 1, 1, 3);
           start_row++;
@@ -316,7 +322,8 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           sb->setMinimum(si.FloatMinValue());
           sb->setMaximum(si.FloatMaxValue());
           sb->setSingleStep(si.FloatStepValue());
-          SettingWidgetBinder::BindWidgetToFloatSetting(m_host_interface, sb, setting_name, si.FloatDefaultValue());
+          SettingWidgetBinder::BindWidgetToFloatSetting(m_host_interface, sb, section_name, key_name,
+                                                        si.FloatDefaultValue());
           layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
           layout->addWidget(sb, start_row, 1, 1, 3);
           start_row++;
@@ -327,7 +334,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
         {
           QLineEdit* le = new QLineEdit(ui->bindings_container);
           le->setToolTip(setting_tooltip);
-          SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, setting_name,
+          SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, section_name, key_name,
                                                          QString::fromUtf8(si.StringDefaultValue()));
           layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
           layout->addWidget(le, start_row, 1, 1, 3);
@@ -340,9 +347,9 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           QLineEdit* le = new QLineEdit(ui->bindings_container);
           le->setToolTip(setting_tooltip);
           QPushButton* browse_button = new QPushButton(tr("Browse..."), ui->bindings_container);
-          SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, setting_name,
+          SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, section_name, key_name,
                                                          QString::fromUtf8(si.StringDefaultValue()));
-          connect(browse_button, &QPushButton::clicked, [this, index, le, setting_name]() {
+          connect(browse_button, &QPushButton::clicked, [this, le]() {
             QString path = QFileDialog::getOpenFileName(this, tr("Select File"));
             if (!path.isEmpty())
               le->setText(path);
@@ -376,8 +383,9 @@ void ControllerSettingsWidget::onControllerTypeChanged(int index)
     return;
 
   m_host_interface->putSettingValue(
-    QStringLiteral("Controller%1/Type").arg(index + 1),
+    QStringLiteral("Controller%1").arg(index + 1), QStringLiteral("Type"),
     QString::fromStdString(Settings::GetControllerTypeName(static_cast<ControllerType>(type_index))));
+
   m_host_interface->applySettings();
   createPortBindingSettingsUi(index, &m_port_ui[index], static_cast<ControllerType>(type_index));
 }

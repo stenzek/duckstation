@@ -9,25 +9,29 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
     m_ui.logLevel->addItem(tr(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.logLevel, QStringLiteral("Logging/LogLevel"),
-                                               &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
-                                               Settings::DEFAULT_LOG_LEVEL);
-  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.logFilter, QStringLiteral("Logging/LogFilter"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToConsole,
-                                               QStringLiteral("Logging/LogToConsole"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToDebug, QStringLiteral("Logging/LogToDebug"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToWindow,
-                                               QStringLiteral("Logging/LogToWindow"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToFile, QStringLiteral("Logging/LogToFile"));
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.logLevel, QStringLiteral("Logging"),
+                                               QStringLiteral("LogLevel"), &Settings::ParseLogLevelName,
+                                               &Settings::GetLogLevelName, Settings::DEFAULT_LOG_LEVEL);
+  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.logFilter, QStringLiteral("Logging"),
+                                                 QStringLiteral("LogFilter"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToConsole, QStringLiteral("Logging"),
+                                               QStringLiteral("LogToConsole"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToDebug, QStringLiteral("Logging"),
+                                               QStringLiteral("LogToDebug"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToWindow, QStringLiteral("Logging"),
+                                               QStringLiteral("LogToWindow"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToFile, QStringLiteral("Logging"),
+                                               QStringLiteral("LogToFile"));
 
   // Tweaks/Hacks section
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaMaxSliceTicks,
-                                              QStringLiteral("Hacks/DMAMaxSliceTicks"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks,
-                                              QStringLiteral("Hacks/DMAHaltTicks"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuFIFOSize, QStringLiteral("Hacks/GPUFIFOSize"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead,
-                                              QStringLiteral("Hacks/GPUMaxRunAhead"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaMaxSliceTicks, QStringLiteral("Hacks"),
+                                              QStringLiteral("DMAMaxSliceTicks"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks, QStringLiteral("Hacks"),
+                                              QStringLiteral("DMAHaltTicks"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuFIFOSize, QStringLiteral("Hacks"),
+                                              QStringLiteral("GPUFIFOSize"));
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead, QStringLiteral("Hacks"),
+                                              QStringLiteral("GPUMaxRunAhead"));
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
 }
