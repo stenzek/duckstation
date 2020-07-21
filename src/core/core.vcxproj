@@ -73,6 +73,7 @@
     <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="host_display.cpp" />
     <ClCompile Include="host_interface.cpp" />
+    <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="host_display.h" />
     <ClInclude Include="host_interface.h" />
+    <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />

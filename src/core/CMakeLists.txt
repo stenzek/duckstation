@@ -48,6 +48,8 @@ add_library(core
     host_display.h
     host_interface.cpp
     host_interface.h
+    host_interface_progress_callback.cpp
+    host_interface_progress_callback.h
     interrupt_controller.cpp
     interrupt_controller.h
     mdec.cpp

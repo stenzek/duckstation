@@ -46,6 +46,7 @@
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="gpu_hw_vulkan.cpp" />
     <ClCompile Include="resources.cpp" />
+    <ClCompile Include="host_interface_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -93,6 +94,7 @@
     <ClInclude Include="negcon.h" />
     <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="resources.h" />
+    <ClInclude Include="host_interface_progress_callback.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_core.inl" />
