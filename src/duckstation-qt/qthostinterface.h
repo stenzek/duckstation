@@ -145,6 +145,7 @@ private Q_SLOTS:
   void doStopThread();
   void onHostDisplayWindowResized(int width, int height);
   void doBackgroundControllerPoll();
+  void doSaveSettings();
 
 protected:
   bool AcquireHostDisplay() override;
@@ -171,7 +172,9 @@ private:
   enum : u32
   {
     BACKGROUND_CONTROLLER_POLLING_INTERVAL =
-      100 /// Interval at which the controllers are polled when the system is not active.
+      100, /// Interval at which the controllers are polled when the system is not active.
+
+    SETTINGS_SAVE_DELAY = 1000
   };
 
   using InputButtonHandler = std::function<void(bool)>;
@@ -211,6 +214,7 @@ private:
   void renderDisplay();
   void connectDisplaySignals(QtDisplayWidget* widget);
   void updateDisplayState();
+  void queueSettingsSave();
   void wakeThread();
 
   std::unique_ptr<INISettingsInterface> m_settings_interface;
@@ -224,6 +228,7 @@ private:
   std::atomic_bool m_shutdown_flag{false};
 
   QTimer* m_background_controller_polling_timer = nullptr;
+  std::unique_ptr<QTimer> m_settings_save_timer;
 
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;

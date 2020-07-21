@@ -123,7 +123,8 @@ bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
   return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
-std::string QtHostInterface::GetStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+std::string QtHostInterface::GetStringSettingValue(const char* section, const char* key,
+                                                   const char* default_value /*= ""*/)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   return m_settings_interface->GetStringValue(section, key, default_value);
@@ -157,24 +158,28 @@ void QtHostInterface::SetBoolSettingValue(const char* section, const char* key, 
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->SetBoolValue(section, key, value);
+  queueSettingsSave();
 }
 
 void QtHostInterface::SetIntSettingValue(const char* section, const char* key, int value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->SetIntValue(section, key, value);
+  queueSettingsSave();
 }
 
 void QtHostInterface::SetFloatSettingValue(const char* section, const char* key, float value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->SetFloatValue(section, key, value);
+  queueSettingsSave();
 }
 
 void QtHostInterface::SetStringSettingValue(const char* section, const char* key, const char* value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->SetStringValue(section, key, value);
+  queueSettingsSave();
 }
 
 void QtHostInterface::SetStringListSettingValue(const char* section, const char* key,
@@ -182,12 +187,37 @@ void QtHostInterface::SetStringListSettingValue(const char* section, const char*
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->SetStringList(section, key, values);
+  queueSettingsSave();
 }
 
 void QtHostInterface::RemoveSettingValue(const char* section, const char* key)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->DeleteValue(section, key);
+  queueSettingsSave();
+}
+
+void QtHostInterface::queueSettingsSave()
+{
+  if (!m_settings_save_timer)
+  {
+    m_settings_save_timer = std::make_unique<QTimer>();
+    connect(m_settings_save_timer.get(), &QTimer::timeout, this, &QtHostInterface::doSaveSettings);
+    m_settings_save_timer->setSingleShot(true);
+  }
+  else
+  {
+    m_settings_save_timer->stop();
+  }
+
+  m_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+}
+
+void QtHostInterface::doSaveSettings()
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  m_settings_interface->Save();
+  m_settings_save_timer.reset();
 }
 
 void QtHostInterface::setDefaultSettings()
@@ -202,6 +232,8 @@ void QtHostInterface::setDefaultSettings()
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     SetDefaultSettings(*m_settings_interface.get());
+    m_settings_interface->Save();
+
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
   }
 
