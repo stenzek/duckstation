@@ -26,7 +26,7 @@ public:
   void StopThread();
 
   void SetMedia(std::unique_ptr<CDImage> media);
-  void RemoveMedia();
+  std::unique_ptr<CDImage> RemoveMedia();
 
   void QueueReadSector(CDImage::LBA lba);
   void QueueReadNextSector();

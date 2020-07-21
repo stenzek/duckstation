@@ -432,11 +432,17 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
       return false;
     }
 
-    media = CDImage::Open(media_filename.c_str());
-    if (!media)
+    media = m_cdrom->RemoveMedia();
+    if (!media || media->GetFileName() != media_filename)
     {
-      m_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.", media_filename.c_str());
-      return false;
+      media.reset();
+      media = CDImage::Open(media_filename.c_str());
+      if (!media)
+      {
+        m_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.",
+                                               media_filename.c_str());
+        return false;
+      }
     }
   }
 

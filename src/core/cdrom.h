@@ -32,7 +32,7 @@ public:
   std::string GetMediaFileName() const { return m_reader.GetMediaFileName(); }
 
   void InsertMedia(std::unique_ptr<CDImage> media);
-  void RemoveMedia(bool force = false);
+  std::unique_ptr<CDImage> RemoveMedia(bool force = false);
 
   // I/O
   u8 ReadRegister(u32 offset);

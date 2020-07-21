@@ -450,15 +450,15 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   m_reader.SetMedia(std::move(media));
 }
 
-void CDROM::RemoveMedia(bool force /* = false */)
+std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
 {
   if (!HasMedia() && !force)
-    return;
+    return nullptr;
 
   const TickCount stop_ticks = GetTicksForStop(true);
 
   Log_InfoPrintf("Removing CD...");
-  m_reader.RemoveMedia();
+  std::unique_ptr<CDImage> image = m_reader.RemoveMedia();
 
   m_last_sector_header_valid = false;
 
@@ -484,6 +484,8 @@ void CDROM::RemoveMedia(bool force /* = false */)
     m_drive_state = DriveState::ShellOpening;
     m_drive_event->SetIntervalAndSchedule(stop_ticks);
   }
+
+  return image;
 }
 
 void CDROM::SetUseReadThread(bool enabled)

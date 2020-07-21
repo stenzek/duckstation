@@ -43,10 +43,10 @@ void CDROMAsyncReader::SetMedia(std::unique_ptr<CDImage> media)
   m_media = std::move(media);
 }
 
-void CDROMAsyncReader::RemoveMedia()
+std::unique_ptr<CDImage> CDROMAsyncReader::RemoveMedia()
 {
   WaitForReadToComplete();
-  m_media.reset();
+  return std::move(m_media);
 }
 
 void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
