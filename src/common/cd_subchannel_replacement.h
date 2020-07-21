@@ -8,13 +8,6 @@
 class CDSubChannelReplacement
 {
 public:
-  enum : u32
-  {
-    SUBCHANNEL_Q_SIZE = 12,
-  };
-
-  using ReplacementData = std::array<u8, SUBCHANNEL_Q_SIZE>;
-
   CDSubChannelReplacement();
   ~CDSubChannelReplacement();
 
@@ -22,14 +15,17 @@ public:
 
   bool LoadSBI(const char* path);
 
+  /// Adds a sector to the replacement map.
+  void AddReplacementSubChannelQ(u32 lba, const CDImage::SubChannelQ& subq);
+
   /// Returns the replacement subchannel data for the specified position (in BCD).
-  bool GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd, ReplacementData& subq_data) const;
+  bool GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd, CDImage::SubChannelQ* subq) const;
 
   /// Returns the replacement subchannel data for the specified sector.
-  bool GetReplacementSubChannelQ(u32 lba, ReplacementData& subq_data) const;
+  bool GetReplacementSubChannelQ(u32 lba, CDImage::SubChannelQ* subq) const;
 
 private:
-  using ReplacementMap = std::unordered_map<u32, ReplacementData>;
+  using ReplacementMap = std::unordered_map<u32, CDImage::SubChannelQ>;
 
   ReplacementMap m_replacement_subq;
 };

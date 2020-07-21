@@ -1,6 +1,6 @@
 #include "cd_subchannel_replacement.h"
-#include "log.h"
 #include "file_system.h"
+#include "log.h"
 #include <algorithm>
 #include <memory>
 Log_SetChannel(CDSubChannelReplacement);
@@ -68,33 +68,42 @@ bool CDSubChannelReplacement::LoadSBI(const char* path)
 
     const u32 lba = MSFToLBA(entry.minute_bcd, entry.second_bcd, entry.frame_bcd);
 
-    ReplacementData subq_data;
-    std::copy_n(entry.data, countof(entry.data), subq_data.data());
+    CDImage::SubChannelQ subq;
+    std::copy_n(entry.data, countof(entry.data), subq.data.data());
 
     // generate an invalid crc by flipping all bits from the valid crc (will never collide)
-    const u16 crc = CDImage::SubChannelQ::ComputeCRC(subq_data) ^ 0xFFFF;
-    subq_data[10] = Truncate8(crc);
-    subq_data[11] = Truncate8(crc >> 8);
+    const u16 crc = subq.ComputeCRC(subq.data) ^ 0xFFFF;
+    subq.data[10] = Truncate8(crc);
+    subq.data[11] = Truncate8(crc >> 8);
 
-    m_replacement_subq.emplace(lba, subq_data);
+    m_replacement_subq.emplace(lba, subq);
   }
 
   Log_InfoPrintf("Loaded %zu replacement sectors from '%s'", m_replacement_subq.size(), path);
   return true;
 }
 
-bool CDSubChannelReplacement::GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd,
-                                                        ReplacementData& subq_data) const
+void CDSubChannelReplacement::AddReplacementSubChannelQ(u32 lba, const CDImage::SubChannelQ& subq)
 {
-  return GetReplacementSubChannelQ(MSFToLBA(minute_bcd, second_bcd, frame_bcd), subq_data);
+  auto iter = m_replacement_subq.find(lba);
+  if (iter != m_replacement_subq.end())
+    iter->second.data = subq.data;
+  else
+    m_replacement_subq.emplace(lba, subq);
 }
 
-bool CDSubChannelReplacement::GetReplacementSubChannelQ(u32 lba, ReplacementData& subq_data) const
+bool CDSubChannelReplacement::GetReplacementSubChannelQ(u8 minute_bcd, u8 second_bcd, u8 frame_bcd,
+                                                        CDImage::SubChannelQ* subq) const
+{
+  return GetReplacementSubChannelQ(MSFToLBA(minute_bcd, second_bcd, frame_bcd), subq);
+}
+
+bool CDSubChannelReplacement::GetReplacementSubChannelQ(u32 lba, CDImage::SubChannelQ* subq) const
 {
   const auto iter = m_replacement_subq.find(lba);
   if (iter == m_replacement_subq.cend())
     return false;
 
-  subq_data = iter->second;
+  *subq = iter->second;
   return true;
 }

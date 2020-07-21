@@ -108,7 +108,7 @@ bool CDImageBin::Open(const char* filename)
 
 bool CDImageBin::ReadSubChannelQ(SubChannelQ* subq)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq->data))
+  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
     return true;
 
   return CDImage::ReadSubChannelQ(subq);

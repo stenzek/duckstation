@@ -231,7 +231,7 @@ bool CDImageCHD::Open(const char* filename)
 
 bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq->data))
+  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
     return true;
 
   // TODO: Read subchannel data from CHD
