@@ -242,7 +242,8 @@ bool System::Boot(const SystemBootParameters& params)
 
 bool System::InitializeComponents(bool force_software_renderer)
 {
-  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : GetSettings().gpu_renderer))
+  const Settings& settings = GetSettings();
+  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : settings.gpu_renderer))
     return false;
 
   m_cpu->Initialize(m_bus.get());
@@ -260,6 +261,9 @@ bool System::InitializeComponents(bool force_software_renderer)
   m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
   m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
+
+  // load settings
+  m_cpu->GetCop2().SetWidescreenHack(settings.gpu_widescreen_hack);
 
   UpdateThrottlePeriod();
   return true;

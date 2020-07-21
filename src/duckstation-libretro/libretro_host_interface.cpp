@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/analog_controller.h"
+#include "core/bus.h"
 #include "core/digital_controller.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
@@ -299,6 +300,30 @@ bool LibretroHostInterface::retro_unserialize(const void* data, size_t size)
   return true;
 }
 
+void* LibretroHostInterface::retro_get_memory_data(unsigned id)
+{
+  switch (id)
+  {
+    case RETRO_MEMORY_SYSTEM_RAM:
+      return m_system ? m_system->GetBus()->GetRAM() : nullptr;
+
+    default:
+      return nullptr;
+  }
+}
+
+size_t LibretroHostInterface::retro_get_memory_size(unsigned id)
+{
+  switch (id)
+  {
+    case RETRO_MEMORY_SYSTEM_RAM:
+      return Bus::RAM_SIZE;
+
+    default:
+      return 0;
+  }
+}
+
 bool LibretroHostInterface::AcquireHostDisplay()
 {
   // start in software mode, switch to hardware later
@@ -323,7 +348,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 22> s_option_definitions = {{
+static std::array<retro_core_option_definition, 23> s_option_definitions = {{
   {"Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -410,6 +435,12 @@ static std::array<retro_core_option_definition, 22> s_option_definitions = {{
    "Force NTSC Timings",
    "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while "
    "others will break.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"GPU.WidescreenHack",
+   "Widescreen Hack",
+   "Increases the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered "
+   "backgrounds, this enhancement will not work as expected.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"Display.CropMode",

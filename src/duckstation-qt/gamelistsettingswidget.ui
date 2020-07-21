@@ -41,7 +41,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QToolButton" name="addSearchDirectoryButton">
+        <widget class="QPushButton" name="addSearchDirectoryButton">
          <property name="text">
           <string>Add</string>
          </property>
@@ -49,22 +49,16 @@
           <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
          </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextBesideIcon</enum>
-         </property>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="removeSearchDirectoryButton">
+        <widget class="QPushButton" name="removeSearchDirectoryButton">
          <property name="text">
           <string>Remove</string>
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/list-remove.png</normaloff>:/icons/list-remove.png</iconset>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextBesideIcon</enum>
          </property>
         </widget>
        </item>
@@ -82,7 +76,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QToolButton" name="scanForNewGames">
+        <widget class="QPushButton" name="scanForNewGames">
          <property name="text">
           <string>Scan New</string>
          </property>
@@ -90,22 +84,16 @@
           <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
          </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextBesideIcon</enum>
-         </property>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="rescanAllGames">
+        <widget class="QPushButton" name="rescanAllGames">
          <property name="text">
           <string>Rescan All</string>
          </property>
          <property name="icon">
           <iconset resource="resources/icons.qrc">
            <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextBesideIcon</enum>
          </property>
         </widget>
        </item>

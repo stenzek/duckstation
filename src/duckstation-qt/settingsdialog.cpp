@@ -22,9 +22,10 @@ static constexpr std::array<const char*, static_cast<int>(SettingsDialog::Catego
    "to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. "
    "Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs "
    "themselves do not provide title information.",
-   "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting, powering "
-   "off, taking screenshots or saving/loading states at the press of a key/controller button. Hotkey titles are "
-   "self-explanatory.",
+   "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting or taking "
+   "screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will "
+   "start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button "
+   "is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button.",
    "<strong>Controller Settings</strong><hr>This page lets you choose the type of controller you wish to simulate for "
    "the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a "
    "countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press "

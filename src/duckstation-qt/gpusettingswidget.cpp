@@ -45,6 +45,8 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
                                                QStringLiteral("ForceNTSCTimings"));
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, QStringLiteral("GPU"),
                                                QStringLiteral("TextureFiltering"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, QStringLiteral("GPU"),
+                                               QStringLiteral("WidescreenHack"));
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
@@ -73,7 +75,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
                              "Some games display content in the overscan area, or use it for screen effects and may "
                              "not display correctly with the All Borders setting. Only Overscan offers a good "
                              "compromise between stability and hiding black borders.");
-  dialog->registerWidgetHelp(m_ui.disableInterlacing, "Disable Interlacing (force progressive render/scan)", "Checked",
+  dialog->registerWidgetHelp(m_ui.disableInterlacing, "Disable Interlacing (force progressive render/scan)", "Unchecked",
                              "Forces the display of frames to progressive mode. This only affects the displayed image, "
                              "the console will be unaware of the setting. If the game is internally producing "
                              "interlaced frames, this option may not have any effect. Usually safe to enable.");
@@ -115,6 +117,10 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     "Smooths out the blockyness of magnified textures on 3D object by using bilinear "
     "filtering. Will have a greater effect on higher resolution scales. Currently this option "
     "produces artifacts around objects in many games and needs further work. Only applies to the hardware renderers.");
+  dialog->registerWidgetHelp(m_ui.widescreenHack, "Widescreen Hack", "Unchecked",
+                             "Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
+                             "increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which "
+                             "use pre-rendered backgrounds, this enhancement will not work as expected.");
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;

@@ -578,7 +578,10 @@ void Core::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR1+OFX, SX2=MAC0/10000h ;ScrX FIFO -400h..+3FFh
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR2+OFY, SY2=MAC0/10000h ;ScrY FIFO -400h..+3FFh
   const s64 result = static_cast<s64>(ZeroExtend64(UNRDivide(m_regs.H, m_regs.SZ3)));
-  const s64 Sx = s64(result) * s64(m_regs.IR1) + s64(m_regs.OFX);
+
+  // (4 / 3) / (16 / 9) -> 0.75 -> (3 / 4)
+  const s64 Sx = m_widescreen_hack ? ((((s64(result) * s64(m_regs.IR1)) * s64(3)) / s64(4)) + s64(m_regs.OFX)) :
+                                     (s64(result) * s64(m_regs.IR1) + s64(m_regs.OFX));
   const s64 Sy = s64(result) * s64(m_regs.IR2) + s64(m_regs.OFY);
   CheckMACOverflow<0>(Sx);
   CheckMACOverflow<0>(Sy);

@@ -54,6 +54,9 @@ public:
   ALWAYS_INLINE TickCount GetDowncount() const { return m_downcount; }
   ALWAYS_INLINE void SetDowncount(TickCount downcount) { m_downcount = downcount; }
 
+  ALWAYS_INLINE const GTE::Core& GetCop2() const { return m_cop2; }
+  ALWAYS_INLINE GTE::Core& GetCop2() { return m_cop2; }
+
   // Sets the PC and flushes the pipeline.
   void SetPC(u32 new_pc);
 
