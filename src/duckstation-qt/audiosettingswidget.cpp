@@ -1,7 +1,9 @@
 #include "audiosettingswidget.h"
 #include "common/audio_stream.h"
+#include "common/log.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+Log_SetChannel(AudioSettingsWidget);
 
 AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
@@ -16,12 +18,14 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
                                                Settings::DEFAULT_AUDIO_BACKEND);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToOutput, "Audio", "Sync");
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, "Audio", "BufferSize");
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.volume, "Audio", "OutputVolume");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muted, "Audio", "OutputMuted");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
 
+  m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume"));
+  m_ui.muted->setChecked(m_host_interface->GetBoolSettingValue("Audio", "OutputMuted"));
+
   connect(m_ui.bufferSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateBufferingLabel);
-  connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::updateVolumeLabel);
+  connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::onOutputVolumeChanged);
+  connect(m_ui.muted, &QCheckBox::stateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
 
   updateBufferingLabel();
   updateVolumeLabel();
@@ -60,4 +64,20 @@ void AudioSettingsWidget::updateBufferingLabel()
 void AudioSettingsWidget::updateVolumeLabel()
 {
   m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
+}
+
+void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
+{
+  m_host_interface->SetIntSettingValue("Audio", "OutputVolume", new_value);
+  if (!m_ui.muted->isChecked())
+    m_host_interface->setAudioOutputVolume(new_value);
+
+  updateVolumeLabel();
+}
+
+void AudioSettingsWidget::onOutputMutedChanged(int new_state)
+{
+  const bool muted = (new_state != 0);
+  m_host_interface->SetBoolSettingValue("Audio", "OutputMuted", muted);
+  m_host_interface->setAudioOutputVolume(muted ? 0 : m_ui.volume->value());
 }

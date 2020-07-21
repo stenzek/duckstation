@@ -884,6 +884,18 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
     SaveState(global, slot);
 }
 
+void QtHostInterface::setAudioOutputVolume(int value)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "setAudioOutputVolume", Q_ARG(int, value));
+    return;
+  }
+
+  if (m_audio_stream)
+    m_audio_stream->SetOutputVolume(value);
+}
+
 void QtHostInterface::startDumpingAudio()
 {
   if (!isOnWorkerThread())
