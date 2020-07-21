@@ -5,8 +5,8 @@
 #include "frontend-common/common_host_interface.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
-#include <QtCore/QString>
 #include <QtCore/QSettings>
+#include <QtCore/QString>
 #include <QtCore/QThread>
 #include <atomic>
 #include <functional>
@@ -51,14 +51,17 @@ public:
   bool parseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
   /// Thread-safe settings access.
-  std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
-  std::vector<std::string> GetStringList(const char* section, const char* key);
-  void putSettingValue(const QString& section, const QString& key, const bool& value);
-  void putSettingValue(const QString& section, const QString& key, const int& value);
-  void putSettingValue(const QString& section, const QString& key, const float& value);
-  void putSettingValue(const QString& section, const QString& key, const QString& value);
-  void putSettingValue(const QString& section, const QString& key, const QStringList& list);
-  void removeSettingValue(const char* section, const char* key);
+  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
+  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
+  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
+  std::vector<std::string> GetSettingStringList(const char* section, const char* key);
+  void SetBoolSettingValue(const char* section, const char* key, bool value);
+  void SetIntSettingValue(const char* section, const char* key, int value);
+  void SetFloatSettingValue(const char* section, const char* key, float value);
+  void SetStringSettingValue(const char* section, const char* key, const char* value);
+  void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
+  void RemoveSettingValue(const char* section, const char* key);
 
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }

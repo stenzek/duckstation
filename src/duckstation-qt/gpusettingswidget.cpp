@@ -16,37 +16,29 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, QStringLiteral("GPU"),
-                                               QStringLiteral("Renderer"), &Settings::ParseRendererName,
-                                               &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice, QStringLiteral("GPU"),
-                                               QStringLiteral("UseDebugDevice"));
-  SettingWidgetBinder::BindWidgetToEnumSetting(
-    m_host_interface, m_ui.displayAspectRatio, QStringLiteral("Display"), QStringLiteral("AspectRatio"),
-    &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName, Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, QStringLiteral("Display"),
-                                               QStringLiteral("CropMode"), &Settings::ParseDisplayCropMode,
-                                               &Settings::GetDisplayCropModeName, Settings::DEFAULT_DISPLAY_CROP_MODE);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering, QStringLiteral("Display"),
-                                               QStringLiteral("LinearFiltering"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, QStringLiteral("Display"),
-                                               QStringLiteral("IntegerScaling"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, QStringLiteral("Display"),
-                                               QStringLiteral("VSync"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, QStringLiteral("GPU"),
-                                              QStringLiteral("ResolutionScale"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, QStringLiteral("GPU"),
-                                               QStringLiteral("TrueColor"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, QStringLiteral("GPU"),
-                                               QStringLiteral("ScaledDithering"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, QStringLiteral("GPU"),
-                                               QStringLiteral("DisableInterlacing"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, QStringLiteral("GPU"),
-                                               QStringLiteral("ForceNTSCTimings"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, QStringLiteral("GPU"),
-                                               QStringLiteral("TextureFiltering"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, QStringLiteral("GPU"),
-                                               QStringLiteral("WidescreenHack"));
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, "GPU", "Renderer",
+                                               &Settings::ParseRendererName, &Settings::GetRendererName,
+                                               Settings::DEFAULT_GPU_RENDERER);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice, "GPU", "UseDebugDevice");
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayAspectRatio, "Display", "AspectRatio",
+                                               &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
+                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, "Display", "CropMode",
+                                               &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
+                                               Settings::DEFAULT_DISPLAY_CROP_MODE);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering, "Display",
+                                               "LinearFiltering");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, "Display",
+                                               "IntegerScaling");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display", "VSync");
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU", "ResolutionScale");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU", "TrueColor");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU", "ScaledDithering");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, "GPU",
+                                               "TextureFiltering");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
@@ -174,7 +166,7 @@ void GPUSettingsWidget::populateGPUAdapters()
       break;
   }
 
-  QString current_value = QString::fromStdString(m_host_interface->GetSettingValue("GPU", "Adapter"));
+  QString current_value = QString::fromStdString(m_host_interface->GetStringSettingValue("GPU", "Adapter"));
 
   QSignalBlocker blocker(m_ui.adapter);
 
@@ -201,9 +193,9 @@ void GPUSettingsWidget::onGPUAdapterIndexChanged()
   if (m_ui.adapter->currentIndex() == 0)
   {
     // default
-    m_host_interface->removeSettingValue("GPU", "Adapter");
+    m_host_interface->RemoveSettingValue("GPU", "Adapter");
     return;
   }
 
-  m_host_interface->putSettingValue(QStringLiteral("GPU"), QStringLiteral("Adapter"), m_ui.adapter->currentText());
+  m_host_interface->SetStringSettingValue("GPU", "Adapter", m_ui.adapter->currentText().toUtf8().constData());
 }

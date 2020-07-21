@@ -123,59 +123,68 @@ bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
   return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
-std::string QtHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+std::string QtHostInterface::GetStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   return m_settings_interface->GetStringValue(section, key, default_value);
 }
 
-std::vector<std::string> QtHostInterface::GetStringList(const char* section, const char* key)
+bool QtHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetBoolValue(section, key, default_value);
+}
+
+int QtHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetIntValue(section, key, default_value);
+}
+
+float QtHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetFloatValue(section, key, default_value);
+}
+
+std::vector<std::string> QtHostInterface::GetSettingStringList(const char* section, const char* key)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   return m_settings_interface->GetStringList(section, key);
 }
 
-void QtHostInterface::putSettingValue(const QString& section, const QString& key, const bool& value)
+void QtHostInterface::SetBoolSettingValue(const char* section, const char* key, bool value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  m_settings_interface->SetBoolValue(section.toStdString().c_str(), key.toStdString().c_str(), value);
+  m_settings_interface->SetBoolValue(section, key, value);
 }
 
-void QtHostInterface::putSettingValue(const QString& section, const QString& key, const int& value)
+void QtHostInterface::SetIntSettingValue(const char* section, const char* key, int value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  m_settings_interface->SetIntValue(section.toStdString().c_str(), key.toStdString().c_str(), value);
+  m_settings_interface->SetIntValue(section, key, value);
 }
 
-void QtHostInterface::putSettingValue(const QString& section, const QString& key, const float& value)
+void QtHostInterface::SetFloatSettingValue(const char* section, const char* key, float value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  m_settings_interface->SetFloatValue(section.toStdString().c_str(), key.toStdString().c_str(), value);
+  m_settings_interface->SetFloatValue(section, key, value);
 }
 
-void QtHostInterface::putSettingValue(const QString& section, const QString& key, const QString& value)
+void QtHostInterface::SetStringSettingValue(const char* section, const char* key, const char* value)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  m_settings_interface->SetStringValue(section.toStdString().c_str(), key.toStdString().c_str(),
-                                       value.toStdString().c_str());
+  m_settings_interface->SetStringValue(section, key, value);
 }
 
-void QtHostInterface::putSettingValue(const QString& section, const QString& key, const QStringList& list)
-{  
+void QtHostInterface::SetStringListSettingValue(const char* section, const char* key,
+                                                const std::vector<std::string>& values)
+{
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  
-  std::vector<std::string> str_list;
-  for (const QString& qstr : list)
-    str_list.push_back(qstr.toStdString());
-
-  std::vector<std::string_view> strview_list;
-  for (const std::string& str : str_list)
-    strview_list.push_back(str);
-
-  m_settings_interface->SetStringList(section.toStdString().c_str(), key.toStdString().c_str(), strview_list);
+  m_settings_interface->SetStringList(section, key, values);
 }
 
-void QtHostInterface::removeSettingValue(const char* section, const char* key)
+void QtHostInterface::RemoveSettingValue(const char* section, const char* key)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   m_settings_interface->DeleteValue(section, key);

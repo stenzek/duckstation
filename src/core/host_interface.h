@@ -107,16 +107,16 @@ public:
   virtual std::string GetShaderCacheBasePath() const;
 
   /// Returns a setting value from the configuration.
-  virtual std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") = 0;
+  virtual std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") = 0;
 
   /// Returns a boolean setting from the configuration.
-  bool GetBooleanSettingValue(const char* section, const char* key, bool default_value = false);
+  virtual bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
 
   /// Returns an integer setting from the configuration.
-  s32 GetIntegerSettingValue(const char* section, const char* key, s32 default_value = 0);
+  virtual int GetIntSettingValue(const char* section, const char* key, int default_value = 0);
 
   /// Returns a float setting from the configuration.
-  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
+  virtual float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
 protected:
   virtual bool AcquireHostDisplay() = 0;

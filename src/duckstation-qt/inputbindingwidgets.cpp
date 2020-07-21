@@ -1,5 +1,6 @@
 #include "inputbindingwidgets.h"
 #include "common/bitutils.h"
+#include "common/string_util.h"
 #include "core/settings.h"
 #include "frontend-common/controller_interface.h"
 #include "qthostinterface.h"
@@ -9,14 +10,13 @@
 #include <QtGui/QMouseEvent>
 #include <cmath>
 
-InputBindingWidget::InputBindingWidget(QtHostInterface* host_interface, QString section_name, QString key_name,
+InputBindingWidget::InputBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name,
                                        QWidget* parent)
-  : QPushButton(parent), m_host_interface(host_interface),
-    m_section_name(std::move(section_name)), m_key_name(std::move(key_name))
+  : QPushButton(parent), m_host_interface(host_interface), m_section_name(std::move(section_name)),
+    m_key_name(std::move(key_name))
 {
-  m_current_binding_value = QString::fromStdString(
-    m_host_interface->GetSettingValue(m_section_name.toStdString().c_str(), m_key_name.toStdString().c_str()));
-  setText(m_current_binding_value);
+  m_current_binding_value = m_host_interface->GetStringSettingValue(m_section_name.c_str(), m_key_name.c_str());
+  setText(QString::fromStdString(m_current_binding_value));
   setMinimumWidth(150);
   setMaximumWidth(150);
 
@@ -63,10 +63,10 @@ void InputBindingWidget::mouseReleaseEvent(QMouseEvent* e)
 
 void InputBindingWidget::setNewBinding()
 {
-  if (m_new_binding_value.isEmpty())
+  if (m_new_binding_value.empty())
     return;
 
-  m_host_interface->putSettingValue(m_section_name, m_key_name, m_new_binding_value);
+  m_host_interface->SetStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_new_binding_value.c_str());
   m_host_interface->updateInputMap();
 
   m_current_binding_value = std::move(m_new_binding_value);
@@ -76,16 +76,15 @@ void InputBindingWidget::setNewBinding()
 void InputBindingWidget::clearBinding()
 {
   m_current_binding_value.clear();
-  m_host_interface->removeSettingValue(m_section_name.toStdString().c_str(), m_key_name.toStdString().c_str());
+  m_host_interface->RemoveSettingValue(m_section_name.c_str(), m_key_name.c_str());
   m_host_interface->updateInputMap();
-  setText(m_current_binding_value);
+  setText(QString::fromStdString(m_current_binding_value));
 }
 
 void InputBindingWidget::reloadBinding()
 {
-  m_current_binding_value = QString::fromStdString(m_host_interface->GetSettingValue(m_section_name.toStdString().c_str(),
-                                                                                     m_key_name.toStdString().c_str()));
-  setText(m_current_binding_value);
+  m_current_binding_value = m_host_interface->GetStringSettingValue(m_section_name.c_str(), m_key_name.c_str());
+  setText(QString::fromStdString(m_current_binding_value));
 }
 
 void InputBindingWidget::onClicked()
@@ -126,7 +125,7 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 
 void InputBindingWidget::stopListeningForInput()
 {
-  setText(m_current_binding_value);
+  setText(QString::fromStdString(m_current_binding_value));
   delete m_input_listen_timer;
   m_input_listen_timer = nullptr;
 
@@ -139,9 +138,9 @@ void InputBindingWidget::stopListeningForInput()
   m_is_binding_all = false;
 }
 
-InputButtonBindingWidget::InputButtonBindingWidget(QtHostInterface* host_interface, QString section_name,
-                                                   QString key_name, QWidget* parent)
-  : InputBindingWidget(host_interface, section_name, key_name, parent)
+InputButtonBindingWidget::InputButtonBindingWidget(QtHostInterface* host_interface, std::string section_name,
+                                                   std::string key_name, QWidget* parent)
+  : InputBindingWidget(host_interface, std::move(section_name), std::move(key_name), parent)
 {
 }
 
@@ -166,7 +165,7 @@ bool InputButtonBindingWidget::eventFilter(QObject* watched, QEvent* event)
   {
     QString binding = QtUtils::KeyEventToString(static_cast<QKeyEvent*>(event));
     if (!binding.isEmpty())
-      m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding);
+      m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding).toStdString();
 
     return true;
   }
@@ -174,7 +173,7 @@ bool InputButtonBindingWidget::eventFilter(QObject* watched, QEvent* event)
   {
     const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button());
     const u32 button_index = (button_mask == 0u) ? 0 : CountTrailingZeros(button_mask);
-    m_new_binding_value = QStringLiteral("Mouse/Button%1").arg(button_index + 1);
+    m_new_binding_value = StringUtil::StdStringFromFormat("Mouse/Button%d", button_index + 1);
     setNewBinding();
     stopListeningForInput();
     return true;
@@ -224,14 +223,14 @@ void InputButtonBindingWidget::unhookControllerInput()
 void InputButtonBindingWidget::bindToControllerAxis(int controller_index, int axis_index, bool positive)
 {
   m_new_binding_value =
-    QStringLiteral("Controller%1/%2Axis%3").arg(controller_index).arg(positive ? '+' : '-').arg(axis_index);
+    StringUtil::StdStringFromFormat("Controller%d/%cAxis%d", controller_index, positive ? '+' : '-', axis_index);
   setNewBinding();
   stopListeningForInput();
 }
 
 void InputButtonBindingWidget::bindToControllerButton(int controller_index, int button_index)
 {
-  m_new_binding_value = QStringLiteral("Controller%1/Button%2").arg(controller_index).arg(button_index);
+  m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d/Button%d", controller_index, button_index);
   setNewBinding();
   stopListeningForInput();
 }
@@ -248,9 +247,9 @@ void InputButtonBindingWidget::stopListeningForInput()
   InputBindingWidget::stopListeningForInput();
 }
 
-InputAxisBindingWidget::InputAxisBindingWidget(QtHostInterface* host_interface, QString section_name, QString key_name,
-                                               QWidget* parent)
-  : InputBindingWidget(host_interface, section_name, key_name, parent)
+InputAxisBindingWidget::InputAxisBindingWidget(QtHostInterface* host_interface, std::string section_name,
+                                               std::string key_name, QWidget* parent)
+  : InputBindingWidget(host_interface, std::move(section_name), std::move(key_name), parent)
 {
 }
 
@@ -293,7 +292,7 @@ void InputAxisBindingWidget::unhookControllerInput()
 
 void InputAxisBindingWidget::bindToControllerAxis(int controller_index, int axis_index)
 {
-  m_new_binding_value = QStringLiteral("Controller%1/Axis%2").arg(controller_index).arg(axis_index);
+  m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d/Axis%d", controller_index, axis_index);
   setNewBinding();
   stopListeningForInput();
 }
@@ -310,9 +309,9 @@ void InputAxisBindingWidget::stopListeningForInput()
   InputBindingWidget::stopListeningForInput();
 }
 
-InputRumbleBindingWidget::InputRumbleBindingWidget(QtHostInterface* host_interface, QString section_name,
-                                                   QString key_name, QWidget* parent)
-  : InputBindingWidget(host_interface, section_name, key_name, parent)
+InputRumbleBindingWidget::InputRumbleBindingWidget(QtHostInterface* host_interface, std::string section_name,
+                                                   std::string key_name, QWidget* parent)
+  : InputBindingWidget(host_interface, std::move(section_name), std::move(key_name), parent)
 {
 }
 
@@ -350,7 +349,7 @@ void InputRumbleBindingWidget::unhookControllerInput()
 
 void InputRumbleBindingWidget::bindToControllerRumble(int controller_index)
 {
-  m_new_binding_value = QStringLiteral("Controller%1").arg(controller_index);
+  m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d", controller_index);
   setNewBinding();
   stopListeningForInput();
 }

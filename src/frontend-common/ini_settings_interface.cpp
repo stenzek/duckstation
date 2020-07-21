@@ -98,14 +98,13 @@ std::vector<std::string> INISettingsInterface::GetStringList(const char* section
   return ret;
 }
 
-void INISettingsInterface::SetStringList(const char* section, const char* key,
-                                         const std::vector<std::string_view>& items)
+void INISettingsInterface::SetStringList(const char* section, const char* key, const std::vector<std::string>& items)
 {
   m_dirty = true;
   m_ini.Delete(section, key);
 
-  for (const std::string_view& sv : items)
-    m_ini.SetValue(section, key, std::string(sv).c_str(), nullptr, false);
+  for (const std::string& sv : items)
+    m_ini.SetValue(section, key, sv.c_str(), nullptr, false);
 }
 
 bool INISettingsInterface::RemoveFromStringList(const char* section, const char* key, const char* item)

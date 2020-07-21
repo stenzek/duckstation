@@ -11,7 +11,7 @@ class InputBindingWidget : public QPushButton
   Q_OBJECT
 
 public:
-  InputBindingWidget(QtHostInterface* host_interface, QString section_name, QString key_name, QWidget* parent);
+  InputBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
   ~InputBindingWidget();
 
   ALWAYS_INLINE InputBindingWidget* getNextWidget() const { return m_next_widget; }
@@ -43,10 +43,10 @@ protected:
   void setNewBinding();
 
   QtHostInterface* m_host_interface;
-  QString m_section_name;
-  QString m_key_name;
-  QString m_current_binding_value;
-  QString m_new_binding_value;
+  std::string m_section_name;
+  std::string m_key_name;
+  std::string m_current_binding_value;
+  std::string m_new_binding_value;
   QTimer* m_input_listen_timer = nullptr;
   u32 m_input_listen_remaining_seconds = 0;
 
@@ -59,7 +59,7 @@ class InputButtonBindingWidget : public InputBindingWidget
   Q_OBJECT
 
 public:
-  InputButtonBindingWidget(QtHostInterface* host_interface, QString section_name, QString key_name, QWidget* parent);
+  InputButtonBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
   ~InputButtonBindingWidget();
 
 protected:
@@ -81,7 +81,7 @@ class InputAxisBindingWidget : public InputBindingWidget
   Q_OBJECT
 
 public:
-  InputAxisBindingWidget(QtHostInterface* host_interface, QString section_name, QString key_name, QWidget* parent);
+  InputAxisBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
   ~InputAxisBindingWidget();
 
 private Q_SLOTS:
@@ -99,7 +99,7 @@ class InputRumbleBindingWidget : public InputBindingWidget
   Q_OBJECT
 
 public:
-  InputRumbleBindingWidget(QtHostInterface* host_interface, QString section_name, QString key_name, QWidget* parent);
+  InputRumbleBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
   ~InputRumbleBindingWidget();
 
 private Q_SLOTS:

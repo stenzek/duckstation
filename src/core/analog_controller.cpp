@@ -491,5 +491,5 @@ Controller::SettingList AnalogController::StaticGetSettings()
 void AnalogController::LoadSettings(HostInterface* host_interface, const char* section)
 {
   Controller::LoadSettings(host_interface, section);
-  m_auto_enable_analog = host_interface->GetBooleanSettingValue(section, "AutoEnableAnalog", false);
+  m_auto_enable_analog = host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
 }

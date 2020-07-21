@@ -337,7 +337,7 @@ void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
   QString path = QString::fromStdString(entry->path);
   if (!m_emulation_running)
   {
-    if (!entry->code.empty() && m_host_interface->GetBooleanSettingValue("General", "SaveStateOnExit", true))
+    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("General", "SaveStateOnExit", true))
     {
       m_host_interface->resumeSystemFromState(path, true);
     }
@@ -433,8 +433,7 @@ void MainWindow::setupAdditionalUi()
     QAction* action = m_ui.menuCPUExecutionMode->addAction(tr(Settings::GetCPUExecutionModeDisplayName(mode)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, mode]() {
-      m_host_interface->putSettingValue(QStringLiteral("CPU"), QStringLiteral("ExecutionMode"),
-                                        QString(Settings::GetCPUExecutionModeName(mode)));
+      m_host_interface->SetStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
       m_host_interface->applySettings();
       updateDebugMenuCPUExecutionMode();
     });
@@ -447,8 +446,7 @@ void MainWindow::setupAdditionalUi()
     QAction* action = m_ui.menuRenderer->addAction(tr(Settings::GetRendererDisplayName(renderer)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, renderer]() {
-      m_host_interface->putSettingValue(QStringLiteral("GPU"), QStringLiteral("Renderer"),
-                                        QString(Settings::GetRendererName(renderer)));
+      m_host_interface->SetStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer));
       m_host_interface->applySettings();
       updateDebugMenuGPURenderer();
     });
@@ -607,28 +605,25 @@ void MainWindow::connectSignals()
 
   m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies,
-                                               QStringLiteral("Debug"), QStringLiteral("DumpCPUToVRAMCopies"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpVRAMtoCPUCopies,
-                                               QStringLiteral("Debug"), QStringLiteral("DumpVRAMToCPUCopies"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies, "Debug",
+                                               "DumpCPUToVRAMCopies");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
+                                               "DumpVRAMToCPUCopies");
   connect(m_ui.actionDumpAudio, &QAction::toggled, [this](bool checked) {
     if (checked)
       m_host_interface->startDumpingAudio();
     else
       m_host_interface->stopDumpingAudio();
   });
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, QStringLiteral("Debug"),
-                                               QStringLiteral("ShowVRAM"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, QStringLiteral("Debug"),
-                                               QStringLiteral("ShowGPUState"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowCDROMState,
-                                               QStringLiteral("Debug"), QStringLiteral("ShowCDROMState"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowSPUState, QStringLiteral("Debug"),
-                                               QStringLiteral("ShowSPUState"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowTimersState,
-                                               QStringLiteral("Debug"), QStringLiteral("ShowTimersState"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, QStringLiteral("Debug"),
-                                               QStringLiteral("ShowMDECState"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug", "ShowVRAM");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, "Debug", "ShowGPUState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowCDROMState, "Debug",
+                                               "ShowCDROMState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowSPUState, "Debug", "ShowSPUState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowTimersState, "Debug",
+                                               "ShowTimersState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, "Debug",
+                                               "ShowMDECState");
 
   addThemeToMenu(tr("Default"), QStringLiteral("default"));
   addThemeToMenu(tr("DarkFusion"), QStringLiteral("darkfusion"));
@@ -645,13 +640,13 @@ void MainWindow::addThemeToMenu(const QString& name, const QString& key)
 
 void MainWindow::setTheme(const QString& theme)
 {
-  m_host_interface->putSettingValue(QStringLiteral("UI"), QStringLiteral("Theme"), theme);
+  m_host_interface->SetStringSettingValue("UI", "Theme", theme.toUtf8().constData());
   updateTheme();
 }
 
 void MainWindow::updateTheme()
 {
-  QString theme = QString::fromStdString(m_host_interface->GetSettingValue("UI", "Theme", "default"));
+  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", "default"));
   if (theme == QStringLiteral("qdarkstyle"))
   {
     qApp->setStyle(m_unthemed_style_name);
@@ -742,7 +737,7 @@ void MainWindow::doSettings(SettingsDialog::Category category)
 void MainWindow::updateDebugMenuCPUExecutionMode()
 {
   std::optional<CPUExecutionMode> current_mode =
-    Settings::ParseCPUExecutionMode(m_host_interface->GetSettingValue("CPU", "ExecutionMode").c_str());
+    Settings::ParseCPUExecutionMode(m_host_interface->GetStringSettingValue("CPU", "ExecutionMode").c_str());
   if (!current_mode.has_value())
     return;
 
@@ -759,7 +754,7 @@ void MainWindow::updateDebugMenuGPURenderer()
 {
   // update the menu with the new selected renderer
   std::optional<GPURenderer> current_renderer =
-    Settings::ParseRendererName(m_host_interface->GetSettingValue("GPU", "Renderer").c_str());
+    Settings::ParseRendererName(m_host_interface->GetStringSettingValue("GPU", "Renderer").c_str());
   if (!current_renderer.has_value())
     return;
 

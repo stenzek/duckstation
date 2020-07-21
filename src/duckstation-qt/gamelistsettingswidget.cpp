@@ -154,37 +154,37 @@ public:
 
   void loadFromSettings()
   {
-    std::vector<std::string> path_list = m_host_interface->GetStringList("GameList", "Paths");
+    std::vector<std::string> path_list = m_host_interface->GetSettingStringList("GameList", "Paths");
     for (std::string& entry : path_list)
       m_entries.push_back({QString::fromStdString(entry), false});
 
-    path_list = m_host_interface->GetStringList("GameList", "RecursivePaths");
+    path_list = m_host_interface->GetSettingStringList("GameList", "RecursivePaths");
     for (std::string& entry : path_list)
       m_entries.push_back({QString::fromStdString(entry), true});
   }
 
   void saveToSettings()
   {
-    QStringList paths;
-    QStringList recursive_paths;
+    std::vector<std::string> paths;
+    std::vector<std::string> recursive_paths;
 
     for (const Entry& entry : m_entries)
     {
       if (entry.recursive)
-        recursive_paths.push_back(entry.path);
+        recursive_paths.push_back(entry.path.toStdString());
       else
-        paths.push_back(entry.path);
+        paths.push_back(entry.path.toStdString());
     }
 
     if (paths.empty())
-      m_host_interface->removeSettingValue("GameList", "Paths");
+      m_host_interface->RemoveSettingValue("GameList", "Paths");
     else
-      m_host_interface->putSettingValue(QStringLiteral("GameList"), QStringLiteral("Paths"), paths);
+      m_host_interface->SetStringListSettingValue("GameList", "Paths", paths);
 
     if (recursive_paths.empty())
-      m_host_interface->removeSettingValue("GameList", "RecursivePaths");
+      m_host_interface->RemoveSettingValue("GameList", "RecursivePaths");
     else
-      m_host_interface->putSettingValue(QStringLiteral("GameList"), QStringLiteral("RecursivePaths"), recursive_paths);
+      m_host_interface->SetStringListSettingValue("GameList", "RecursivePaths", recursive_paths);
   }
 
 private:

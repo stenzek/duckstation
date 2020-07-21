@@ -34,7 +34,10 @@ public:
   bool Initialize() override;
   void Shutdown() override;
 
-  std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
+  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
+  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
 
   void Run();
 

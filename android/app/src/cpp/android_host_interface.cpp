@@ -101,9 +101,24 @@ void AndroidHostInterface::ReportMessage(const char* message)
   HostInterface::ReportMessage(message);
 }
 
-std::string AndroidHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value)
+std::string AndroidHostInterface::GetStringSettingValue(const char* section, const char* key, const char* default_value)
 {
   return m_settings_interface.GetStringValue(section, key, default_value);
+}
+
+bool AndroidHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
+{
+  return m_settings_interface.GetBoolValue(section, key, default_value);
+}
+
+int AndroidHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
+{
+  return m_settings_interface.GetIntValue(section, key, default_value);
+}
+
+float AndroidHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
+{
+  return m_settings_interface.GetFloatValue(section, key, default_value);
 }
 
 void AndroidHostInterface::SetUserDirectory()

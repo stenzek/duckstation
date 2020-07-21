@@ -424,9 +424,25 @@ void SDLHostInterface::Shutdown()
   CommonHostInterface::Shutdown();
 }
 
-std::string SDLHostInterface::GetSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+std::string SDLHostInterface::GetStringSettingValue(const char* section, const char* key,
+                                                    const char* default_value /*= ""*/)
 {
   return m_settings_interface->GetStringValue(section, key, default_value);
+}
+
+bool SDLHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
+{
+  return m_settings_interface->GetBoolValue(section, key, default_value);
+}
+
+int SDLHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
+{
+  return m_settings_interface->GetIntValue(section, key, default_value);
+}
+
+float SDLHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
+{
+  return m_settings_interface->GetFloatValue(section, key, default_value);
 }
 
 void SDLHostInterface::LoadSettings()

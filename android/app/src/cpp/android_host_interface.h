@@ -29,7 +29,10 @@ public:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
 
-  std::string GetSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
+  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
+  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
   bool StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params);

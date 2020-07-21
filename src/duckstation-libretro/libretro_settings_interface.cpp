@@ -93,7 +93,7 @@ std::vector<std::string> LibretroSettingsInterface::GetStringList(const char* se
 }
 
 void LibretroSettingsInterface::SetStringList(const char* section, const char* key,
-                                              const std::vector<std::string_view>& items)
+                                              const std::vector<std::string>& items)
 {
   Log_ErrorPrintf("SetStringList(\"%s\", \"%s\") not implemented", section, key);
 }

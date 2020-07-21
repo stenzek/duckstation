@@ -238,7 +238,7 @@ void NamcoGunCon::LoadSettings(HostInterface* host_interface, const char* sectio
 {
   Controller::LoadSettings(host_interface, section);
 
-  std::string path = host_interface->GetSettingValue(section, "CrosshairImagePath");
+  std::string path = host_interface->GetStringSettingValue(section, "CrosshairImagePath");
   if (path != m_crosshair_image_path)
   {
     m_crosshair_image_path = std::move(path);

@@ -11,19 +11,14 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
     m_ui.audioBackend->addItem(tr(Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(i))));
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.audioBackend, QStringLiteral("Audio"),
-                                               QStringLiteral("Backend"), &Settings::ParseAudioBackend,
-                                               &Settings::GetAudioBackendName, Settings::DEFAULT_AUDIO_BACKEND);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToOutput, QStringLiteral("Audio"),
-                                               QStringLiteral("Sync"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, QStringLiteral("Audio"),
-                                              QStringLiteral("BufferSize"));
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.volume, QStringLiteral("Audio"),
-                                              QStringLiteral("OutputVolume"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muted, QStringLiteral("Audio"),
-                                               QStringLiteral("OutputMuted"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, QStringLiteral("Audio"),
-                                               QStringLiteral("DumpOnBoot"));
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.audioBackend, "Audio", "Backend",
+                                               &Settings::ParseAudioBackend, &Settings::GetAudioBackendName,
+                                               Settings::DEFAULT_AUDIO_BACKEND);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToOutput, "Audio", "Sync");
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, "Audio", "BufferSize");
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.volume, "Audio", "OutputVolume");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muted, "Audio", "OutputMuted");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
 
   connect(m_ui.bufferSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateBufferingLabel);
   connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::updateVolumeLabel);

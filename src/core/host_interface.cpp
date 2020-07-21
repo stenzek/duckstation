@@ -572,9 +572,9 @@ std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot
   return GetUserDirectoryRelativePath("memcards/%s_%d.mcd", game_code, slot + 1);
 }
 
-bool HostInterface::GetBooleanSettingValue(const char* section, const char* key, bool default_value /*= false*/)
+bool HostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
 {
-  std::string value = GetSettingValue(section, key, "");
+  std::string value = GetStringSettingValue(section, key, "");
   if (value.empty())
     return default_value;
 
@@ -582,19 +582,19 @@ bool HostInterface::GetBooleanSettingValue(const char* section, const char* key,
   return bool_value.value_or(default_value);
 }
 
-s32 HostInterface::GetIntegerSettingValue(const char* section, const char* key, s32 default_value /*= 0*/)
+int HostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /*= 0*/)
 {
-  std::string value = GetSettingValue(section, key, "");
+  std::string value = GetStringSettingValue(section, key, "");
   if (value.empty())
     return default_value;
 
-  std::optional<s32> int_value = StringUtil::FromChars<s32>(value);
+  std::optional<int> int_value = StringUtil::FromChars<int>(value);
   return int_value.value_or(default_value);
 }
 
 float HostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
 {
-  std::string value = GetSettingValue(section, key, "");
+  std::string value = GetStringSettingValue(section, key, "");
   if (value.empty())
     return default_value;
 

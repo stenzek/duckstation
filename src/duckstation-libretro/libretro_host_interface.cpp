@@ -145,8 +145,8 @@ std::string LibretroHostInterface::GetShaderCacheBasePath() const
   return std::string();
 }
 
-std::string LibretroHostInterface::GetSettingValue(const char* section, const char* key,
-                                                   const char* default_value /*= ""*/)
+std::string LibretroHostInterface::GetStringSettingValue(const char* section, const char* key,
+                                                         const char* default_value /*= ""*/)
 {
   TinyString name;
   name.Format("%s.%s", section, key);
