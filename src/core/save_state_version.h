@@ -2,7 +2,7 @@
 #include "types.h"
 
 static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-static constexpr u32 SAVE_STATE_VERSION = 38;
+static constexpr u32 SAVE_STATE_VERSION = 39;
 
 #pragma pack(push, 4)
 struct SAVE_STATE_HEADER
@@ -20,7 +20,7 @@ struct SAVE_STATE_HEADER
 
   u32 media_filename_length;
   u32 offset_to_media_filename;
-  
+
   u32 screenshot_width;
   u32 screenshot_height;
   u32 screenshot_size;

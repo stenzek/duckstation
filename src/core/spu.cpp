@@ -1,4 +1,5 @@
 #include "spu.h"
+#include "cdrom.h"
 #include "common/audio_stream.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
@@ -14,10 +15,11 @@ SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-void SPU::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller)
+void SPU::Initialize(System* system, DMA* dma, CDROM* cdrom, InterruptController* interrupt_controller)
 {
   m_system = system;
   m_dma = dma;
+  m_cdrom = cdrom;
   m_interrupt_controller = interrupt_controller;
   m_tick_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
                                              std::bind(&SPU::Execute, this, std::placeholders::_1), false);
@@ -80,7 +82,6 @@ void SPU::Reset()
 
   m_transfer_fifo.Clear();
   m_ram.fill(0);
-  m_cd_audio_buffer.Clear();
   UpdateEventInterval();
 }
 
@@ -143,7 +144,6 @@ bool SPU::DoState(StateWrapper& sw)
 
   sw.Do(&m_transfer_fifo);
   sw.DoBytes(m_ram.data(), RAM_SIZE);
-  sw.Do(&m_cd_audio_buffer);
 
   if (sw.IsReading())
   {
@@ -730,31 +730,20 @@ void SPU::Execute(TickCount ticks)
       UpdateNoise();
 
       // Mix in CD audio.
-      s16 cd_audio_left;
-      s16 cd_audio_right;
-      if (!m_cd_audio_buffer.IsEmpty())
+      const auto [cd_audio_left, cd_audio_right] = m_cdrom->GetAudioFrame();
+      if (m_SPUCNT.cd_audio_enable)
       {
-        cd_audio_left = m_cd_audio_buffer.Pop();
-        cd_audio_right = m_cd_audio_buffer.Pop();
-        if (m_SPUCNT.cd_audio_enable)
+        const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
+        const s32 cd_audio_volume_right = ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
+
+        left_sum += cd_audio_volume_left;
+        right_sum += cd_audio_volume_right;
+
+        if (m_SPUCNT.cd_audio_reverb)
         {
-          const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
-          const s32 cd_audio_volume_right = ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
-
-          left_sum += cd_audio_volume_left;
-          right_sum += cd_audio_volume_right;
-
-          if (m_SPUCNT.cd_audio_reverb)
-          {
-            reverb_in_left += cd_audio_volume_left;
-            reverb_in_right += cd_audio_volume_right;
-          }
+          reverb_in_left += cd_audio_volume_left;
+          reverb_in_right += cd_audio_volume_right;
         }
-      }
-      else
-      {
-        cd_audio_left = 0;
-        cd_audio_right = 0;
       }
 
       // Compute reverb.
@@ -1746,19 +1735,6 @@ void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out
 
   s_last_reverb_output[0] = *left_out = ApplyVolume(out[0], m_reverb_registers.vLOUT);
   s_last_reverb_output[1] = *right_out = ApplyVolume(out[1], m_reverb_registers.vROUT);
-}
-
-void SPU::EnsureCDAudioSpace(u32 remaining_frames)
-{
-  if (m_cd_audio_buffer.GetSpace() >= (remaining_frames * 2))
-    return;
-
-  const u32 frames_to_drop = (remaining_frames * 2) - m_cd_audio_buffer.GetSpace();
-  Log_WarningPrintf(
-    "SPU CD Audio buffer overflow with %d pending ticks - writing %u frames with %u frames space. Dropping %u frames.",
-    m_tick_event->IsActive() ? (m_tick_event->GetTicksSinceLastExecution() / SYSCLK_TICKS_PER_SPU_TICK) : 0,
-    remaining_frames, m_cd_audio_buffer.GetSpace() / 2, frames_to_drop);
-  m_cd_audio_buffer.Remove(frames_to_drop);
 }
 
 void SPU::DrawDebugStateWindow()

@@ -268,7 +268,7 @@ bool System::InitializeComponents(bool force_software_renderer)
   m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get());
   m_pad->Initialize(this, m_interrupt_controller.get());
   m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
-  m_spu->Initialize(this, m_dma.get(), m_interrupt_controller.get());
+  m_spu->Initialize(this, m_dma.get(), m_cdrom.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
 
   // load settings

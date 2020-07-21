@@ -8,6 +8,7 @@
 #include "types.h"
 #include <array>
 #include <string>
+#include <tuple>
 #include <vector>
 
 class StateWrapper;
@@ -44,6 +45,13 @@ public:
 
   void SetUseReadThread(bool enabled);
 
+  /// Reads a frame from the audio FIFO, used by the SPU.
+  ALWAYS_INLINE std::tuple<s16, s16> GetAudioFrame()
+  {
+    const u32 frame = m_audio_fifo.IsEmpty() ? 0u : m_audio_fifo.Pop();
+    return std::tuple<s16, s16>(static_cast<s16>(frame), static_cast<s16>(frame >> 16));
+  }
+
 private:
   enum : u32
   {
@@ -59,6 +67,8 @@ private:
     RESPONSE_FIFO_SIZE = 16,
     DATA_FIFO_SIZE = RAW_SECTOR_OUTPUT_SIZE,
     NUM_SECTOR_BUFFERS = 8,
+    AUDIO_FIFO_SIZE = 44100 * 2,
+    AUDIO_FIFO_LOW_WATERMARK = 5,
 
     BASE_RESET_TICKS = 400000,
   };
@@ -199,20 +209,25 @@ private:
 
   void SoftReset();
 
-  bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
-  bool IsSeeking() const
+  ALWAYS_INLINE bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
+  ALWAYS_INLINE bool IsSeeking() const
   {
     return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical ||
             m_drive_state == DriveState::Resetting);
   }
-  bool IsReadingOrPlaying() const
+  ALWAYS_INLINE bool IsReadingOrPlaying() const
   {
     return (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
   }
-  bool CanReadMedia() const { return (m_drive_state != DriveState::ShellOpening && m_reader.HasMedia()); }
-  bool HasPendingCommand() const { return m_command != Command::None; }
-  bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
-  bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
+  ALWAYS_INLINE bool CanReadMedia() const { return (m_drive_state != DriveState::ShellOpening && m_reader.HasMedia()); }
+  ALWAYS_INLINE bool HasPendingCommand() const { return m_command != Command::None; }
+  ALWAYS_INLINE bool HasPendingInterrupt() const { return m_interrupt_flag_register != 0; }
+  ALWAYS_INLINE bool HasPendingAsyncInterrupt() const { return m_pending_async_interrupt != 0; }
+  ALWAYS_INLINE void AddCDAudioFrame(s16 left, s16 right)
+  {
+    m_audio_fifo.Push(ZeroExtend32(static_cast<u16>(left)) | (ZeroExtend32(static_cast<u16>(right)) << 16));
+  }
+
   void SetInterrupt(Interrupt interrupt);
   void SetAsyncInterrupt(Interrupt interrupt);
   void ClearAsyncInterrupt();
@@ -254,9 +269,12 @@ private:
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void UpdatePositionWhileSeeking();
   void ResetCurrentXAFile();
-  void ResetXAResampler();
+  void ResetAudioDecoder();
   void LoadDataFIFO();
   void ClearSectorBuffers();
+
+  template<bool STEREO, bool SAMPLE_RATE>
+  void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
@@ -327,4 +345,7 @@ private:
   std::array<SectorBuffer, NUM_SECTOR_BUFFERS> m_sector_buffers;
 
   CDROMAsyncReader m_reader;
+
+  // two 16-bit samples packed in 32-bits
+  InlineFIFOQueue<u32, AUDIO_FIFO_SIZE> m_audio_fifo;
 };
