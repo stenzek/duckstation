@@ -357,7 +357,7 @@ static std::array<retro_core_option_definition, 23> s_option_definitions = {{
     {"NTSC-U", "NTSC-U (US)"},
     {"PAL", "PAL (Europe, Australia)"}},
    "Auto"},
-  {"BIOS.FastBoot",
+  {"BIOS.PatchFastBoot",
    "Fast Boot",
    "Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
