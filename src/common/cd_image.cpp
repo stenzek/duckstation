@@ -229,7 +229,7 @@ bool CDImage::ReadRawSector(void* buffer)
 bool CDImage::ReadSubChannelQ(SubChannelQ* subq)
 {
   // handle case where we're at the end of the track/index
-  if (m_position_in_index == m_current_index->length)
+  if (!m_current_index || m_position_in_index == m_current_index->length)
     return GenerateSubChannelQ(subq, m_position_on_disc);
 
   // otherwise save the index lookup
