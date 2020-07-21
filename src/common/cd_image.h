@@ -1,5 +1,6 @@
 #pragma once
 #include "bitfield.h"
+#include "progress_callback.h"
 #include "types.h"
 #include <array>
 #include <memory>
@@ -161,57 +162,6 @@ public:
   };
   static_assert(sizeof(SubChannelQ) == SUBCHANNEL_BYTES_PER_FRAME, "SubChannelQ is correct size");
 
-  // Helper functions.
-  static u32 GetBytesPerSector(TrackMode mode);
-
-  // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename);
-  static std::unique_ptr<CDImage> OpenBinImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename);
-
-  // Accessors.
-  const std::string& GetFileName() const { return m_filename; }
-  LBA GetPositionOnDisc() const { return m_position_on_disc; }
-  Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
-  LBA GetPositionInTrack() const { return m_position_in_track; }
-  Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
-  LBA GetLBACount() const { return m_lba_count; }
-  u32 GetIndexNumber() const { return m_current_index->index_number; }
-  u32 GetTrackNumber() const { return m_current_index->track_number; }
-  u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
-  LBA GetTrackStartPosition(u8 track) const;
-  Position GetTrackStartMSFPosition(u8 track) const;
-  LBA GetTrackLength(u8 track) const;
-  Position GetTrackMSFLength(u8 track) const;
-  TrackMode GetTrackMode(u8 track) const;
-  LBA GetTrackIndexPosition(u8 track, u8 index) const;
-  LBA GetTrackIndexLength(u8 track, u8 index) const;
-  u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
-  u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
-
-  // Seek to data LBA.
-  bool Seek(LBA lba);
-
-  // Seek to disc position (MSF).
-  bool Seek(const Position& pos);
-
-  // Seek to track and position.
-  bool Seek(u32 track_number, const Position& pos_in_track);
-
-  // Seek to track and LBA.
-  bool Seek(u32 track_number, LBA lba);
-
-  // Read from the current LBA. Returns the number of sectors read.
-  u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
-
-  // Read a single raw sector from the current LBA.
-  bool ReadRawSector(void* buffer);
-
-  // Reads sub-channel Q for the current LBA.
-  virtual bool ReadSubChannelQ(SubChannelQ* subq);
-
-protected:
   struct Track
   {
     u32 track_number;
@@ -237,9 +187,65 @@ protected:
     bool is_pregap;
   };
 
+  // Helper functions.
+  static u32 GetBytesPerSector(TrackMode mode);
+
+  // Opening disc image.
+  static std::unique_ptr<CDImage> Open(const char* filename);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* filename);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename);
+  static std::unique_ptr<CDImage>
+  CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
+
+  // Accessors.
+  const std::string& GetFileName() const { return m_filename; }
+  LBA GetPositionOnDisc() const { return m_position_on_disc; }
+  Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
+  LBA GetPositionInTrack() const { return m_position_in_track; }
+  Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
+  LBA GetLBACount() const { return m_lba_count; }
+  u32 GetIndexNumber() const { return m_current_index->index_number; }
+  u32 GetTrackNumber() const { return m_current_index->track_number; }
+  u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
+  LBA GetTrackStartPosition(u8 track) const;
+  Position GetTrackStartMSFPosition(u8 track) const;
+  LBA GetTrackLength(u8 track) const;
+  Position GetTrackMSFLength(u8 track) const;
+  TrackMode GetTrackMode(u8 track) const;
+  LBA GetTrackIndexPosition(u8 track, u8 index) const;
+  LBA GetTrackIndexLength(u8 track, u8 index) const;
+  u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
+  u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
+  u32 GetIndexCount() const { return static_cast<u32>(m_indices.size()); }
+  const Track& GetTrack(u32 track) const;
+  const Index& GetIndex(u32 i) const;
+
+  // Seek to data LBA.
+  bool Seek(LBA lba);
+
+  // Seek to disc position (MSF).
+  bool Seek(const Position& pos);
+
+  // Seek to track and position.
+  bool Seek(u32 track_number, const Position& pos_in_track);
+
+  // Seek to track and LBA.
+  bool Seek(u32 track_number, LBA lba);
+
+  // Read from the current LBA. Returns the number of sectors read.
+  u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
+
+  // Read a single raw sector from the current LBA.
+  bool ReadRawSector(void* buffer);
+
+  // Reads sub-channel Q for the current LBA.
+  virtual bool ReadSubChannelQ(SubChannelQ* subq);
+
   // Reads a single sector from an index.
   virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
 
+protected:
   const Index* GetIndexForDiscPosition(LBA pos);
   const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos);
 

@@ -15,6 +15,7 @@ add_library(common
   cd_image_chd.cpp
   cd_image_hasher.cpp
   cd_image_hasher.h
+  cd_image_memory.cpp
   cd_subchannel_replacement.cpp
   cd_subchannel_replacement.h
   cd_xa.cpp

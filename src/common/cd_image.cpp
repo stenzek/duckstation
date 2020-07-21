@@ -94,6 +94,17 @@ CDImage::LBA CDImage::GetTrackIndexLength(u8 track, u8 index) const
   return 0;
 }
 
+const CDImage::CDImage::Track& CDImage::GetTrack(u32 track) const
+{
+  Assert(track > 0 && track <= m_tracks.size());
+  return m_tracks[track - 1];
+}
+
+const CDImage::CDImage::Index& CDImage::GetIndex(u32 i) const
+{
+  return m_indices[i];
+}
+
 bool CDImage::Seek(LBA lba)
 {
   const Index* new_index;

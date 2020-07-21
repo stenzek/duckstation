@@ -190,6 +190,7 @@
       <Filter>vulkan</Filter>
     </ClCompile>
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="cd_image_memory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
