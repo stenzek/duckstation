@@ -101,13 +101,13 @@ bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash)
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      return (hash == SCPH_1000_HASH || hash == SCPH_3000_HASH || hash == SCPH_5500_HASH);
+      return (hash == SCPH_1000_HASH || hash == SCPH_3000_HASH || hash == SCPH_5500_HASH || hash == SCPH_POPS660_HASH);
 
     case ConsoleRegion::NTSC_U:
-      return (hash == SCPH_1001_HASH || hash == SCPH_5501_HASH);
+      return (hash == SCPH_1001_HASH || hash == SCPH_5501_HASH || hash == SCPH_POPS660_HASH);
 
     case ConsoleRegion::PAL:
-      return (hash == SCPH_1002_HASH || hash == SCPH_5502_HASH);
+      return (hash == SCPH_1002_HASH || hash == SCPH_5502_HASH || hash == SCPH_POPS660_HASH);
 
     case ConsoleRegion::Auto:
     default:
@@ -136,7 +136,7 @@ void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFF
 bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
 {
   if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
-      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH)
+      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_POPS660_HASH)
   {
     Log_WarningPrintf("Incompatible version for TTY patch: %s", hash.ToString().c_str());
     return false;
