@@ -14,6 +14,7 @@
 #include "gpu.h"
 #include "host_display.h"
 #include "host_interface.h"
+#include "host_interface_progress_callback.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "memory_card.h"
@@ -161,6 +162,14 @@ bool System::Boot(const SystemBootParameters& params)
       {
         m_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
         return false;
+      }
+
+      if (params.override_load_image_to_ram.value_or(GetSettings().cdrom_load_image_to_ram))
+      {
+        HostInterfaceProgressCallback callback(m_host_interface);
+        std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
+        if (memory_image)
+          media = std::move(memory_image);
       }
 
       if (m_region == ConsoleRegion::Auto)

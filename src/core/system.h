@@ -38,6 +38,7 @@ struct SystemBootParameters
   std::string filename;
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
+  std::optional<bool> override_load_image_to_ram;
   std::unique_ptr<ByteStream> state_stream;
   bool force_software_renderer = false;
 };

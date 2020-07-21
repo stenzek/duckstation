@@ -1109,6 +1109,7 @@ void SDLHostInterface::DrawSettingsWindow()
       {
         settings_changed |= ImGui::Checkbox("Use Read Thread (Asynchronous)", &m_settings_copy.cdrom_read_thread);
         settings_changed |= ImGui::Checkbox("Enable Region Check", &m_settings_copy.cdrom_region_check);
+        settings_changed |= ImGui::Checkbox("Preload Image To RAM", &m_settings_copy.cdrom_load_image_to_ram);
       }
 
       ImGui::NewLine();
