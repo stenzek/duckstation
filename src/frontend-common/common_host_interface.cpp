@@ -551,13 +551,16 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
 
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
+  if (!m_system || !m_audio_stream || !m_display)
+    return;
+
   m_speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
 
   const bool is_non_standard_speed = (std::abs(m_settings.emulation_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
-    !m_system || m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled && !is_non_standard_speed);
+    m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
-    !m_system || m_paused || (m_speed_limiter_enabled && m_settings.video_sync_enabled && !is_non_standard_speed);
+    m_paused || (m_speed_limiter_enabled && m_settings.video_sync_enabled && !is_non_standard_speed);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
 

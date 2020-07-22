@@ -484,6 +484,9 @@ void QtHostInterface::connectDisplaySignals(QtDisplayWidget* widget)
 
 void QtHostInterface::updateDisplayState()
 {
+  if (!m_display)
+    return;
+
   // this expects the context to get moved back to us afterwards
   m_display->DoneRenderContextCurrent();
 
