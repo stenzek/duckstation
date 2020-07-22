@@ -1959,7 +1959,8 @@ void CDROM::DoSectorRead()
   {
     ProcessDataSector(m_reader.GetSectorBuffer().data(), subq);
   }
-  else if (!is_data_sector && m_drive_state == DriveState::Playing)
+  else if (!is_data_sector &&
+           (m_drive_state == DriveState::Playing || (m_drive_state == DriveState::Reading && m_mode.cdda)))
   {
     ProcessCDDASector(m_reader.GetSectorBuffer().data(), subq);
   }
@@ -2233,39 +2234,43 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
 {
   // For CDDA sectors, the whole sector contains the audio data.
   Log_DevPrintf("Read sector %u as CDDA", m_current_lba);
-  m_secondary_status.playing_cdda = true;
 
-  if (m_mode.report_audio)
+  // These bits/reporting doesn't happen if we're reading with the CDDA mode bit set.
+  if (m_drive_state == DriveState::Playing)
   {
-    const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
-    if (m_last_cdda_report_frame_nibble != frame_nibble)
+    m_secondary_status.playing_cdda = true;
+    if (m_mode.report_audio)
     {
-      m_last_cdda_report_frame_nibble = frame_nibble;
-
-      Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", subq.track_number_bcd,
-                      subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
-                      subq.relative_frame_bcd);
-
-      ClearAsyncInterrupt();
-      m_async_response_fifo.Push(m_secondary_status.bits);
-      m_async_response_fifo.Push(subq.track_number_bcd);
-      m_async_response_fifo.Push(subq.index_number_bcd);
-      if (subq.absolute_frame_bcd & 0x10)
+      const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
+      if (m_last_cdda_report_frame_nibble != frame_nibble)
       {
-        m_async_response_fifo.Push(subq.relative_minute_bcd);
-        m_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
-        m_async_response_fifo.Push(subq.relative_frame_bcd);
-      }
-      else
-      {
-        m_async_response_fifo.Push(subq.absolute_minute_bcd);
-        m_async_response_fifo.Push(subq.absolute_second_bcd);
-        m_async_response_fifo.Push(subq.absolute_frame_bcd);
-      }
+        m_last_cdda_report_frame_nibble = frame_nibble;
 
-      m_async_response_fifo.Push(0); // peak low
-      m_async_response_fifo.Push(0); // peak high
-      SetAsyncInterrupt(Interrupt::DataReady);
+        Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", subq.track_number_bcd,
+                        subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
+                        subq.relative_frame_bcd);
+
+        ClearAsyncInterrupt();
+        m_async_response_fifo.Push(m_secondary_status.bits);
+        m_async_response_fifo.Push(subq.track_number_bcd);
+        m_async_response_fifo.Push(subq.index_number_bcd);
+        if (subq.absolute_frame_bcd & 0x10)
+        {
+          m_async_response_fifo.Push(subq.relative_minute_bcd);
+          m_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
+          m_async_response_fifo.Push(subq.relative_frame_bcd);
+        }
+        else
+        {
+          m_async_response_fifo.Push(subq.absolute_minute_bcd);
+          m_async_response_fifo.Push(subq.absolute_second_bcd);
+          m_async_response_fifo.Push(subq.absolute_frame_bcd);
+        }
+
+        m_async_response_fifo.Push(0); // peak low
+        m_async_response_fifo.Push(0); // peak high
+        SetAsyncInterrupt(Interrupt::DataReady);
+      }
     }
   }
 
