@@ -850,16 +850,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
       UpdateVRAMReadTexture();
     IncludeVRAMDityRectangle(dst_bounds);
 
-    VRAMCopyUBOData uniforms = {src_x * m_resolution_scale,
-                                src_y * m_resolution_scale,
-                                dst_x * m_resolution_scale,
-                                dst_y * m_resolution_scale,
-                                ((dst_x + width) % VRAM_WIDTH) * m_resolution_scale,
-                                ((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale,
-                                width * m_resolution_scale,
-                                height * m_resolution_scale,
-                                m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
-                                GetCurrentNormalizedVertexDepth()};
+    VRAMCopyUBOData uniforms = GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height);
     uniforms.u_src_y = m_vram_texture.GetHeight() - uniforms.u_src_y - uniforms.u_height;
     uniforms.u_dst_y = m_vram_texture.GetHeight() - uniforms.u_dst_y - uniforms.u_height;
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
