@@ -337,7 +337,7 @@ void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
   QString path = QString::fromStdString(entry->path);
   if (!m_emulation_running)
   {
-    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("General", "SaveStateOnExit", true))
+    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true))
     {
       m_host_interface->resumeSystemFromState(path, true);
     }
