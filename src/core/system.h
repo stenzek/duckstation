@@ -155,6 +155,9 @@ public:
 private:
   System(HostInterface* host_interface);
 
+  /// Opens CD image, preloading if needed.
+  std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
+
   bool DoLoadState(ByteStream* stream, bool init_components, bool force_software_renderer);
   bool DoState(StateWrapper& sw);
   bool CreateGPU(GPURenderer renderer);

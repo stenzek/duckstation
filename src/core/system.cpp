@@ -132,6 +132,25 @@ void System::SetCPUExecutionMode(CPUExecutionMode mode)
   m_cpu_code_cache->SetUseRecompiler(mode == CPUExecutionMode::Recompiler);
 }
 
+std::unique_ptr<CDImage> System::OpenCDImage(const char* path, bool force_preload)
+{
+  std::unique_ptr<CDImage> media = CDImage::Open(path);
+  if (!media)
+    return {};
+
+  if (force_preload || GetSettings().cdrom_load_image_to_ram)
+  {
+    HostInterfaceProgressCallback callback(m_host_interface);
+    std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
+    if (memory_image)
+      media = std::move(memory_image);
+    else
+      Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
+  }
+
+  return media;
+}
+
 bool System::Boot(const SystemBootParameters& params)
 {
   if (params.state_stream)
@@ -157,19 +176,11 @@ bool System::Boot(const SystemBootParameters& params)
     else
     {
       Log_InfoPrintf("Loading CD image '%s'...", params.filename.c_str());
-      media = CDImage::Open(params.filename.c_str());
+      media = OpenCDImage(params.filename.c_str(), params.override_load_image_to_ram.value_or(false));
       if (!media)
       {
         m_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
         return false;
-      }
-
-      if (params.override_load_image_to_ram.value_or(GetSettings().cdrom_load_image_to_ram))
-      {
-        HostInterfaceProgressCallback callback(m_host_interface);
-        std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
-        if (memory_image)
-          media = std::move(memory_image);
       }
 
       if (m_region == ConsoleRegion::Auto)
@@ -444,8 +455,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
     media = m_cdrom->RemoveMedia();
     if (!media || media->GetFileName() != media_filename)
     {
-      media.reset();
-      media = CDImage::Open(media_filename.c_str());
+      media = OpenCDImage(media_filename.c_str(), false);
       if (!media)
       {
         m_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.",
@@ -955,7 +965,7 @@ bool System::HasMedia() const
 
 bool System::InsertMedia(const char* path)
 {
-  std::unique_ptr<CDImage> image = CDImage::Open(path);
+  std::unique_ptr<CDImage> image = OpenCDImage(path, false);
   if (!image)
     return false;
 
