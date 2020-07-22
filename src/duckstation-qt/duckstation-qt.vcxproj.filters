@@ -40,11 +40,13 @@
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
+    <ClCompile Include="inputbindingdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="inputbindingdialog.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -94,5 +96,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="duckstation-qt.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="inputbindingdialog.ui" />
   </ItemGroup>
 </Project>

@@ -33,6 +33,9 @@ add_executable(duckstation-qt
   gpusettingswidget.ui
   hotkeysettingswidget.cpp
   hotkeysettingswidget.h
+  inputbindingdialog.cpp
+  inputbindingdialog.h
+  inputbindingdialog.ui
   inputbindingwidgets.cpp
   inputbindingwidgets.h
   main.cpp

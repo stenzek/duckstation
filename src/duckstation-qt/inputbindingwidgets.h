@@ -34,18 +34,21 @@ protected:
   };
 
   virtual bool eventFilter(QObject* watched, QEvent* event) override;
+  virtual bool event(QEvent* event) override;
   virtual void mouseReleaseEvent(QMouseEvent* e) override;
 
   virtual void startListeningForInput(u32 timeout_in_seconds);
   virtual void stopListeningForInput();
+  virtual void openDialog();
 
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
   void setNewBinding();
+  void updateText();
 
   QtHostInterface* m_host_interface;
   std::string m_section_name;
   std::string m_key_name;
-  std::string m_current_binding_value;
+  std::vector<std::string> m_bindings;
   std::string m_new_binding_value;
   QTimer* m_input_listen_timer = nullptr;
   u32 m_input_listen_remaining_seconds = 0;
@@ -59,7 +62,8 @@ class InputButtonBindingWidget : public InputBindingWidget
   Q_OBJECT
 
 public:
-  InputButtonBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
+  InputButtonBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name,
+                           QWidget* parent);
   ~InputButtonBindingWidget();
 
 protected:
@@ -72,6 +76,7 @@ private Q_SLOTS:
 protected:
   void startListeningForInput(u32 timeout_in_seconds) override;
   void stopListeningForInput() override;
+  void openDialog() override;
   void hookControllerInput();
   void unhookControllerInput();
 };
@@ -81,7 +86,8 @@ class InputAxisBindingWidget : public InputBindingWidget
   Q_OBJECT
 
 public:
-  InputAxisBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
+  InputAxisBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name,
+                         QWidget* parent);
   ~InputAxisBindingWidget();
 
 private Q_SLOTS:
@@ -90,6 +96,7 @@ private Q_SLOTS:
 protected:
   void startListeningForInput(u32 timeout_in_seconds) override;
   void stopListeningForInput() override;
+  void openDialog() override;
   void hookControllerInput();
   void unhookControllerInput();
 };
@@ -99,7 +106,8 @@ class InputRumbleBindingWidget : public InputBindingWidget
   Q_OBJECT
 
 public:
-  InputRumbleBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name, QWidget* parent);
+  InputRumbleBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name,
+                           QWidget* parent);
   ~InputRumbleBindingWidget();
 
 private Q_SLOTS:
