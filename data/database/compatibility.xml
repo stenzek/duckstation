@@ -8,6 +8,26 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLPS-02604" compatibility="5" region="NTSC-J" title="007 - Tomorrow Never Dies (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
+  <entry code="SLUS-00975" compatibility="5" region="NTSC-U" title="007 - Tomorrow Never Dies (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
+  <entry code="SLUS-01300" compatibility="5" region="NTSC-U" title="007 Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
+  <entry code="SLPS-01706" compatibility="5" region="NTSC-J" title="1 on 1 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
+  <entry code="SLPS-01054" compatibility="5" region="NTSC-J" title="10101 - Will the Starship (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
   <entry code="SLUS-00874" compatibility="2" region="NTSC-U" title="40 Winks (USA)">
     <compatibility>Crashes In Intro</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
@@ -100,6 +120,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLUS-00007" compatibility="5" region="NTSC-U" title="Alien Trilogy (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
   <entry code="SLUS-01460" compatibility="5" region="NTSC-U" title="All Star Racing (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
@@ -166,6 +190,15 @@
   <entry code="SLPM-87270" compatibility="5" region="NTSC-J" title="Arcade Hits - Wolf Fang - Kuuga 2001 (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-00399" compatibility="5" region="NTSC-U" title="Arcade's Greatest Hits - The Atari Collection 1 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
+  <entry code="SLUS-00449" compatibility="4" region="NTSC-U" title="Arcade's Greatest Hits - The Atari Collection 2 (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1313-g10cd00c</version-tested>
+    <comments>Graphical issues in Paperboy, Audio stuttering in Marble Madness (tested with both interpreter/recompiler and hardware/software renderers).</comments>
   </entry>
   <entry code="SLUS-00164" compatibility="5" region="NTSC-U" title="Area 51 (USA)">
     <compatibility>No Issues</compatibility>
@@ -806,8 +839,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-00684" compatibility="5" region="NTSC-U" title="Jackie Chan Stuntmaster (USA)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-941-g2e64f77</version-tested>
-    <comments>Broken in cached interpreter/recompiler (Issue #58)</comments>
+    <comments>Must use interpreter to avoid crash</comments>
   </entry>
   <entry code="SLPM-86323" compatibility="4" region="NTSC-J" title="Jet de Go! Let's Go by Airliner (Japan)">
     <compatibility>Graphical/Audio Issues</compatibility>
