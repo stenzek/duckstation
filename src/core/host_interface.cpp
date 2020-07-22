@@ -306,10 +306,7 @@ bool HostInterface::SaveState(const char* filename)
 
 void HostInterface::OnSystemCreated() {}
 
-void HostInterface::OnSystemDestroyed()
-{
-  ReportFormattedMessage("System shut down.");
-}
+void HostInterface::OnSystemDestroyed() {}
 
 void HostInterface::OnSystemPerformanceCountersUpdated() {}
 

@@ -314,6 +314,7 @@ void SDLHostInterface::OnSystemPaused(bool paused)
 void SDLHostInterface::OnSystemDestroyed()
 {
   CommonHostInterface::OnSystemDestroyed();
+  ReportFormattedMessage("System shut down.");
 }
 
 void SDLHostInterface::OnRunningGameChanged()
