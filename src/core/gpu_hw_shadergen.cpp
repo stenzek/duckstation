@@ -1175,10 +1175,10 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
-  DeclareUniformBuffer(
-    ss,
-    {"uint2 u_base_coords", "uint2 u_end_coords", "uint2 u_size", "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
-    true);
+  DeclareUniformBuffer(ss,
+                       {"uint2 u_base_coords", "uint2 u_end_coords", "uint2 u_size", "uint u_buffer_base_offset",
+                        "uint u_mask_or_bits", "float u_depth_value"},
+                       true);
 
   if (use_ssbo && m_glsl)
   {
@@ -1211,8 +1211,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
 
   // find offset from the start of the row/column
   uint2 offset;
-  offset.x = (coords.x < u_base_coords.x) ? (((VRAM_SIZE.x / RESOLUTION_SCALE) - 1u) - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
-  offset.y = (coords.y < u_base_coords.y) ? (((VRAM_SIZE.y / RESOLUTION_SCALE) - 1u) - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
+  offset.x = (coords.x < u_base_coords.x) ? ((VRAM_SIZE.x / RESOLUTION_SCALE) - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
+  offset.y = (coords.y < u_base_coords.y) ? ((VRAM_SIZE.y / RESOLUTION_SCALE) - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
 
   uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
   uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
@@ -1246,8 +1246,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
 
   // find offset from the start of the row/column
   uint2 offset;
-  offset.x = (dst_coords.x < u_dst_coords.x) ? ((VRAM_SIZE.x - 1u) - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
-  offset.y = (dst_coords.y < u_dst_coords.y) ? ((VRAM_SIZE.y - 1u) - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
+  offset.x = (dst_coords.x < u_dst_coords.x) ? (VRAM_SIZE.x - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
+  offset.y = (dst_coords.y < u_dst_coords.y) ? (VRAM_SIZE.y - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
 
   // find the source coordinates to copy from
   uint2 src_coords = (u_src_coords + offset) % VRAM_SIZE;
