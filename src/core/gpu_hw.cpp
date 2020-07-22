@@ -504,45 +504,6 @@ void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)
   *bottom = std::max<u32>((m_drawing_area.bottom + 1) * m_resolution_scale, *top + 1);
 }
 
-Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height) const
-{
-  Common::Rectangle<u32> out_rc = Common::Rectangle<u32>::FromExtents(x, y, width, height);
-  if (out_rc.right > VRAM_WIDTH)
-  {
-    out_rc.left = 0;
-    out_rc.right = VRAM_WIDTH;
-  }
-  if (out_rc.bottom > VRAM_HEIGHT)
-  {
-    out_rc.top = 0;
-    out_rc.bottom = VRAM_HEIGHT;
-  }
-  return out_rc;
-}
-
-bool GPU_HW::UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const
-{
-  // masking enabled, oversized, or overlapping
-  return (m_GPUSTAT.IsMaskingEnabled() || (src_x + width) > VRAM_WIDTH || (src_y + height) > VRAM_HEIGHT ||
-          (dst_x + width) > VRAM_WIDTH || (dst_y + height) > VRAM_HEIGHT ||
-          Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)
-            .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height)));
-}
-
-GPU_HW::VRAMWriteUBOData GPU_HW::GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const
-{
-  const VRAMWriteUBOData uniforms = {x,
-                                     y,
-                                     ((x + width) % VRAM_WIDTH),
-                                     ((y + height) % VRAM_HEIGHT),
-                                     width,
-                                     height,
-                                     buffer_offset,
-                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedVertexDepth()};
-  return uniforms;
-}
-
 GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 height, u32 color) const
 {
   // drop precision unless true colour is enabled
@@ -556,13 +517,53 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
   return uniforms;
 }
 
+Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height) const
+{
+  Common::Rectangle<u32> out_rc = Common::Rectangle<u32>::FromExtents(x % VRAM_WIDTH, y % VRAM_HEIGHT, width, height);
+  if (out_rc.right > VRAM_WIDTH)
+  {
+    out_rc.left = 0;
+    out_rc.right = VRAM_WIDTH;
+  }
+  if (out_rc.bottom > VRAM_HEIGHT)
+  {
+    out_rc.top = 0;
+    out_rc.bottom = VRAM_HEIGHT;
+  }
+  return out_rc;
+}
+
+GPU_HW::VRAMWriteUBOData GPU_HW::GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const
+{
+  const VRAMWriteUBOData uniforms = {(x % VRAM_WIDTH),
+                                     (y % VRAM_HEIGHT),
+                                     ((x + width) % VRAM_WIDTH),
+                                     ((y + height) % VRAM_HEIGHT),
+                                     width,
+                                     height,
+                                     buffer_offset,
+                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
+                                     GetCurrentNormalizedVertexDepth()};
+  return uniforms;
+}
+
+bool GPU_HW::UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const
+{
+  // masking enabled, oversized, or overlapping
+  return (m_GPUSTAT.IsMaskingEnabled() || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
+          ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
+          ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT ||
+          Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)
+            .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height)));
+}
+
 GPU_HW::VRAMCopyUBOData GPU_HW::GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width,
                                                    u32 height) const
 {
-  const VRAMCopyUBOData uniforms = {src_x * m_resolution_scale,
-                                    src_y * m_resolution_scale,
-                                    dst_x * m_resolution_scale,
-                                    dst_y * m_resolution_scale,
+  const VRAMCopyUBOData uniforms = {(src_x % VRAM_WIDTH) * m_resolution_scale,
+                                    (src_y % VRAM_HEIGHT) * m_resolution_scale,
+                                    (dst_x % VRAM_WIDTH) * m_resolution_scale,
+                                    (dst_y % VRAM_HEIGHT) * m_resolution_scale,
                                     ((dst_x + width) % VRAM_WIDTH) * m_resolution_scale,
                                     ((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale,
                                     width * m_resolution_scale,
