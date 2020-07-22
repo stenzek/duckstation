@@ -230,6 +230,16 @@ void SanitizeFileName(String& Destination, bool StripSlashes /* = true */)
   return SanitizeFileName(Destination, Destination, StripSlashes);
 }
 
+bool IsAbsolutePath(const std::string_view& path)
+{
+#ifdef WIN32
+  return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
+          path[1] == ':' && (path[2] == '/' || path[2] == '\\'));
+#else
+  return (path.length() >= 1 && path[0] == '/');
+#endif
+}
+
 std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
 {
   std::string_view::size_type pos = path.rfind('.');

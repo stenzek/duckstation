@@ -46,6 +46,7 @@
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
     <ClCompile Include="bitutils_tests.cpp" />
     <ClCompile Include="event_tests.cpp" />
+    <ClCompile Include="file_system_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
