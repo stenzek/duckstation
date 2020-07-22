@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <fstream>
 #include <string_view>
 #include <tinyxml2.h>
 #include <utility>
@@ -212,6 +213,58 @@ bool GameList::IsPsfFileName(const char* path)
 {
   const char* extension = std::strrchr(path, '.');
   return (extension && StringUtil::Strcasecmp(extension, ".psf") == 0);
+}
+
+bool GameList::IsM3UFileName(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  return (extension && StringUtil::Strcasecmp(extension, ".m3u") == 0);
+}
+
+std::vector<std::string> GameList::ParseM3UFile(const char* path)
+{
+  std::ifstream ifs(path);
+  if (!ifs.is_open())
+  {
+    Log_ErrorPrintf("Failed to open %s", path);
+    return {};
+  }
+
+  std::vector<std::string> entries;
+  std::string line;
+  while (std::getline(ifs, line))
+  {
+    u32 start_offset = 0;
+    while (start_offset < line.size() && std::isspace(line[start_offset]))
+      start_offset++;
+
+    // skip comments
+    if (start_offset == line.size() || line[start_offset] == '#')
+      continue;
+
+    // strip ending whitespace
+    u32 end_offset = static_cast<u32>(line.size()) - 1;
+    while (std::isspace(line[end_offset]) && end_offset > start_offset)
+      end_offset--;
+
+    // anything?
+    if (start_offset == end_offset)
+      continue;
+
+    std::string entry_path(line.begin() + start_offset, line.begin() + end_offset + 1);
+    if (!FileSystem::IsAbsolutePath(entry_path))
+    {
+      SmallString absolute_path;
+      FileSystem::BuildPathRelativeToFile(absolute_path, path, entry_path.c_str());
+      entry_path = absolute_path;
+    }
+
+    Log_DevPrintf("Read path from m3u: '%s'", entry_path.c_str());
+    entries.push_back(std::move(entry_path));
+  }
+
+  Log_InfoPrintf("Loaded %zu paths from m3u '%s'", entries.size(), path);
+  return entries;
 }
 
 const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibilityRating rating)

@@ -38,8 +38,9 @@ struct SystemBootParameters
   std::string filename;
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
-  std::optional<bool> override_load_image_to_ram;
   std::unique_ptr<ByteStream> state_stream;
+  u32 media_playlist_index = 0;
+  bool load_image_to_ram = false;
   bool force_software_renderer = false;
 };
 
@@ -152,6 +153,28 @@ public:
   std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
                                                  TimingEventCallback callback, bool activate);
 
+  /// Returns the number of entries in the media/disc playlist.
+  ALWAYS_INLINE u32 GetMediaPlaylistCount() const { return static_cast<u32>(m_media_playlist.size()); }
+
+  /// Returns the current image from the media/disc playlist.
+  u32 GetMediaPlaylistIndex() const;
+
+  /// Returns the path to the specified playlist index.
+  const std::string& GetMediaPlaylistPath(u32 index) const { return m_media_playlist[index]; }
+
+  /// Adds a new path to the media playlist.
+  bool AddMediaPathToPlaylist(const std::string_view& path);
+
+  /// Removes a path from the media playlist.
+  bool RemoveMediaPathFromPlaylist(const std::string_view& path);
+  bool RemoveMediaPathFromPlaylist(u32 index);
+
+  /// Changes a path from the media playlist.
+  bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path);
+
+  /// Switches to the specified media/disc playlist index.
+  bool SwitchMediaFromPlaylist(u32 index);
+
 private:
   System(HostInterface* host_interface);
 
@@ -241,4 +264,7 @@ private:
   u32 m_last_global_tick_counter = 0;
   Common::Timer m_fps_timer;
   Common::Timer m_frame_timer;
+
+  // Playlist of disc images.
+  std::vector<std::string> m_media_playlist;
 };

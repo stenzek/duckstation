@@ -26,6 +26,7 @@
 #include "timers.h"
 #include <cstdio>
 #include <imgui.h>
+#include <limits>
 Log_SetChannel(System);
 
 #ifdef WIN32
@@ -175,8 +176,35 @@ bool System::Boot(const SystemBootParameters& params)
     }
     else
     {
-      Log_InfoPrintf("Loading CD image '%s'...", params.filename.c_str());
-      media = OpenCDImage(params.filename.c_str(), params.override_load_image_to_ram.value_or(false));
+      u32 playlist_index;
+      if (GameList::IsM3UFileName(params.filename.c_str()))
+      {
+        m_media_playlist = GameList::ParseM3UFile(params.filename.c_str());
+        if (m_media_playlist.empty())
+        {
+          m_host_interface->ReportFormattedError("Failed to parse playlist '%s'", params.filename.c_str());
+          return false;
+        }
+
+        if (params.media_playlist_index >= m_media_playlist.size())
+        {
+          Log_WarningPrintf("Media playlist index %u out of range, using first", params.media_playlist_index);
+          playlist_index = 0;
+        }
+        else
+        {
+          playlist_index = params.media_playlist_index;
+        }
+      }
+      else
+      {
+        AddMediaPathToPlaylist(params.filename);
+        playlist_index = 0;
+      }
+
+      const std::string& media_path = m_media_playlist[playlist_index];
+      Log_InfoPrintf("Loading CD image '%s' from playlist index %u...", media_path.c_str(), playlist_index);
+      media = OpenCDImage(media_path.c_str(), params.load_image_to_ram);
       if (!media)
       {
         m_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
@@ -518,11 +546,14 @@ bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   StringUtil::Strlcpy(header.title, m_running_game_title.c_str(), sizeof(header.title));
   StringUtil::Strlcpy(header.game_code, m_running_game_code.c_str(), sizeof(header.game_code));
 
-  std::string media_filename = m_cdrom->GetMediaFileName();
-  header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
-  header.media_filename_length = static_cast<u32>(media_filename.length());
-  if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
-    return false;
+  if (m_cdrom->HasMedia())
+  {
+    const std::string& media_filename = m_cdrom->GetMediaFileName();
+    header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
+    header.media_filename_length = static_cast<u32>(media_filename.length());
+    if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
+      return false;
+  }
 
   // save screenshot
   if (screenshot_size > 0)
@@ -971,6 +1002,8 @@ bool System::InsertMedia(const char* path)
 
   UpdateRunningGame(path, image.get());
   m_cdrom->InsertMedia(std::move(image));
+  Log_InfoPrintf("Inserted media from %s (%s, %s)", m_running_game_path.c_str(), m_running_game_code.c_str(),
+                 m_running_game_title.c_str());
 
   if (GetSettings().HasAnyPerGameMemoryCards())
   {
@@ -1195,4 +1228,90 @@ void System::UpdateRunningGame(const char* path, CDImage* image)
   }
 
   m_host_interface->OnRunningGameChanged();
+}
+
+u32 System::GetMediaPlaylistIndex() const
+{
+  if (!m_cdrom->HasMedia())
+    return std::numeric_limits<u32>::max();
+
+  const std::string& media_path = m_cdrom->GetMediaFileName();
+  for (u32 i = 0; i < static_cast<u32>(m_media_playlist.size()); i++)
+  {
+    if (m_media_playlist[i] == media_path)
+      return i;
+  }
+
+  return std::numeric_limits<u32>::max();
+}
+
+bool System::AddMediaPathToPlaylist(const std::string_view& path)
+{
+  if (std::any_of(m_media_playlist.begin(), m_media_playlist.end(),
+                  [&path](const std::string& p) { return (path == p); }))
+  {
+    return false;
+  }
+
+  m_media_playlist.emplace_back(path);
+  return true;
+}
+
+bool System::RemoveMediaPathFromPlaylist(const std::string_view& path)
+{
+  for (u32 i = 0; i < static_cast<u32>(m_media_playlist.size()); i++)
+  {
+    if (path == m_media_playlist[i])
+      return RemoveMediaPathFromPlaylist(i);
+  }
+
+  return false;
+}
+
+bool System::RemoveMediaPathFromPlaylist(u32 index)
+{
+  if (index >= static_cast<u32>(m_media_playlist.size()))
+    return false;
+
+  if (GetMediaPlaylistIndex() == index)
+  {
+    m_host_interface->ReportMessage("Removing current media from playlist, removing media from CD-ROM.");
+    m_cdrom->RemoveMedia();
+  }
+
+  m_media_playlist.erase(m_media_playlist.begin() + index);
+  return true;
+}
+
+bool System::ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
+{
+  if (index >= static_cast<u32>(m_media_playlist.size()))
+    return false;
+
+  if (GetMediaPlaylistIndex() == index)
+  {
+    m_host_interface->ReportMessage("Changing current media from playlist, replacing current media.");
+    m_cdrom->RemoveMedia();
+
+    m_media_playlist[index] = path;
+    InsertMedia(m_media_playlist[index].c_str());
+  }
+  else
+  {
+    m_media_playlist[index] = path;
+  }
+
+  return true;
+}
+
+bool System::SwitchMediaFromPlaylist(u32 index)
+{
+  if (index >= m_media_playlist.size())
+    return false;
+
+  const std::string& path = m_media_playlist[index];
+  if (m_cdrom->HasMedia() && m_cdrom->GetMediaFileName() == path)
+    return true;
+
+  return InsertMedia(path.c_str());
 }

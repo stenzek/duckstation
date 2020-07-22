@@ -77,6 +77,12 @@ public:
   /// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
   static bool IsPsfFileName(const char* path);
 
+  /// Returns true if the filename is a M3U Playlist we can handle.
+  static bool IsM3UFileName(const char* path);
+
+  /// Parses an M3U playlist, returning the entries.
+  static std::vector<std::string> ParseM3UFile(const char* path);
+
   /// Returns a string representation of a compatibility level.
   static const char* GetGameListCompatibilityRatingString(GameListCompatibilityRating rating);
 

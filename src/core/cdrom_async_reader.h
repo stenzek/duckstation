@@ -19,7 +19,7 @@ public:
   const CDImage::SubChannelQ& GetSectorSubQ() const { return m_subq; }
   const bool HasMedia() const { return static_cast<bool>(m_media); }
   const CDImage* GetMedia() const { return m_media.get(); }
-  const std::string GetMediaFileName() const { return m_media ? m_media->GetFileName() : std::string(); }
+  const std::string& GetMediaFileName() const { return m_media->GetFileName(); }
 
   bool IsUsingThread() const { return m_read_thread.joinable(); }
   void StartThread();

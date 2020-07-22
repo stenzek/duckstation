@@ -30,7 +30,7 @@ public:
   bool DoState(StateWrapper& sw);
 
   bool HasMedia() const { return m_reader.HasMedia(); }
-  std::string GetMediaFileName() const { return m_reader.GetMediaFileName(); }
+  const std::string& GetMediaFileName() const { return m_reader.GetMediaFileName(); }
 
   void InsertMedia(std::unique_ptr<CDImage> media);
   std::unique_ptr<CDImage> RemoveMedia(bool force = false);
