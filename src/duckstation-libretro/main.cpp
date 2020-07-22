@@ -127,6 +127,7 @@ RETRO_API void retro_set_environment(retro_environment_t f)
     Log_WarningPrintf("Failed to set core options, settings will not be changeable.");
 
   g_libretro_host_interface.InitLogging();
+  g_libretro_host_interface.InitDiskControlInterface();
 }
 
 RETRO_API void retro_set_video_refresh(retro_video_refresh_t f)

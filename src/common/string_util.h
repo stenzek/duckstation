@@ -5,6 +5,7 @@
 #include <cstring>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #if defined(__has_include) && __has_include(<charconv>)
 #include <charconv>
@@ -26,6 +27,9 @@ bool WildcardMatch(const char* subject, const char* mask, bool case_sensitive = 
 
 /// Safe version of strlcpy.
 std::size_t Strlcpy(char* dst, const char* src, std::size_t size);
+
+/// Strlcpy from string_view.
+std::size_t Strlcpy(char* dst, const std::string_view& src, std::size_t size);
 
 /// Platform-independent strcasecmp
 static inline int Strcasecmp(const char* s1, const char* s2)

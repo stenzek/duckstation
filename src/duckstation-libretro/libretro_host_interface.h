@@ -2,6 +2,8 @@
 #include "core/host_interface.h"
 #include "core/system.h"
 #include "libretro.h"
+#include <limits>
+#include <optional>
 
 class LibretroHostInterface : public HostInterface
 {
@@ -12,6 +14,7 @@ public:
   static void InitLogging();
   static bool SetCoreOptions();
   static bool HasCoreVariablesChanged();
+  static void InitDiskControlInterface();
 
   ALWAYS_INLINE u32 GetResolutionScale() const { return m_settings.gpu_resolution_scale; }
 
@@ -66,10 +69,23 @@ private:
   static void HardwareRendererContextReset();
   static void HardwareRendererContextDestroy();
 
+  // Disk control callbacks
+  static bool RETRO_CALLCONV DiskControlSetEjectState(bool ejected);
+  static bool RETRO_CALLCONV DiskControlGetEjectState();
+  static unsigned RETRO_CALLCONV DiskControlGetImageIndex();
+  static bool RETRO_CALLCONV DiskControlSetImageIndex(unsigned index);
+  static unsigned RETRO_CALLCONV DiskControlGetNumImages();
+  static bool RETRO_CALLCONV DiskControlReplaceImageIndex(unsigned index, const retro_game_info* info);
+  static bool RETRO_CALLCONV DiskControlAddImageIndex();
+  static bool RETRO_CALLCONV DiskControlSetInitialImage(unsigned index, const char* path);
+  static bool RETRO_CALLCONV DiskControlGetImagePath(unsigned index, char* path, size_t len);
+  static bool RETRO_CALLCONV DiskControlGetImageLabel(unsigned index, char* label, size_t len);
+
   retro_hw_render_callback m_hw_render_callback = {};
   std::unique_ptr<HostDisplay> m_hw_render_display;
   bool m_hw_render_callback_valid = false;
   bool m_using_hardware_renderer = false;
+  std::optional<u32> m_next_disc_index;
 };
 
 extern LibretroHostInterface g_libretro_host_interface;

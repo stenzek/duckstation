@@ -27,6 +27,7 @@ Log_SetChannel(LibretroHostInterface);
 #endif
 
 LibretroHostInterface g_libretro_host_interface;
+#define P_THIS (&g_libretro_host_interface)
 
 retro_environment_t g_retro_environment_callback;
 retro_video_refresh_t g_retro_video_refresh_callback;
@@ -232,6 +233,7 @@ bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
 {
   SystemBootParameters bp;
   bp.filename = game->path;
+  bp.media_playlist_index = m_next_disc_index.value_or(0);
   bp.force_software_renderer = !m_hw_render_callback_valid;
 
   if (!BootSystem(bp))
@@ -906,4 +908,181 @@ void LibretroHostInterface::SwitchToSoftwareRenderer()
 
   m_display = std::make_unique<LibretroHostDisplay>();
   m_system->RecreateGPU(GPURenderer::Software);
+}
+
+bool LibretroHostInterface::DiskControlSetEjectState(bool ejected)
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlSetEjectState() - no system");
+    return false;
+  }
+
+  Log_DevPrintf("DiskControlSetEjectState(%u)", static_cast<unsigned>(ejected));
+
+  if (ejected)
+  {
+    if (!system->HasMedia())
+      return false;
+
+    system->RemoveMedia();
+    return true;
+  }
+  else
+  {
+    const u32 image_to_insert = P_THIS->m_next_disc_index.value_or(0);
+    Log_DevPrintf("Inserting image %u", image_to_insert);
+    return system->SwitchMediaFromPlaylist(image_to_insert);
+  }
+}
+
+bool LibretroHostInterface::DiskControlGetEjectState()
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlGetEjectState() - no system");
+    return false;
+  }
+
+  Log_DevPrintf("DiskControlGetEjectState() -> %u", static_cast<unsigned>(system->HasMedia()));
+  return system->HasMedia();
+}
+
+unsigned LibretroHostInterface::DiskControlGetImageIndex()
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlGetImageIndex() - no system");
+    return false;
+  }
+
+  const u32 index = P_THIS->m_next_disc_index.value_or(system->GetMediaPlaylistIndex());
+  Log_DevPrintf("DiskControlGetImageIndex() -> %u", index);
+  return index;
+}
+
+bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlSetImageIndex() - no system");
+    return false;
+  }
+
+  Log_DevPrintf("DiskControlSetImageIndex(%u)", index);
+
+  if (index >= system->GetMediaPlaylistCount())
+    return false;
+
+  P_THIS->m_next_disc_index = index;
+  return true;
+}
+
+unsigned LibretroHostInterface::DiskControlGetNumImages()
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlGetNumImages() - no system");
+    return false;
+  }
+
+  Log_DevPrintf("DiskControlGetNumImages() -> %u", system->GetMediaPlaylistCount());
+  return static_cast<unsigned>(system->GetMediaPlaylistCount());
+}
+
+bool LibretroHostInterface::DiskControlReplaceImageIndex(unsigned index, const retro_game_info* info)
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlReplaceImageIndex() - no system");
+    return false;
+  }
+
+  Log_DevPrintf("DiskControlReplaceImageIndex(%u, %s)", index, info ? info->path : "null");
+  if (info && info->path)
+    return system->ReplaceMediaPathFromPlaylist(index, info->path);
+  else
+    return system->RemoveMediaPathFromPlaylist(index);
+}
+
+bool LibretroHostInterface::DiskControlAddImageIndex()
+{
+  System* system = P_THIS->GetSystem();
+  if (!system)
+  {
+    Log_ErrorPrintf("DiskControlAddImageIndex() - no system");
+    return false;
+  }
+
+  Log_DevPrintf("DiskControlAddImageIndex() -> %zu", system->GetMediaPlaylistCount());
+  system->AddMediaPathToPlaylist({});
+  return true;
+}
+
+bool LibretroHostInterface::DiskControlSetInitialImage(unsigned index, const char* path)
+{
+  Log_DevPrintf("DiskControlSetInitialImage(%u, %s)", index, path);
+  P_THIS->m_next_disc_index = index;
+  return true;
+}
+
+bool LibretroHostInterface::DiskControlGetImagePath(unsigned index, char* path, size_t len)
+{
+  System* system = P_THIS->GetSystem();
+  if (!system || index >= system->GetMediaPlaylistCount())
+    return false;
+
+  const std::string& image_path = system->GetMediaPlaylistPath(index);
+  Log_DevPrintf("DiskControlGetImagePath(%u) -> %s", index, image_path.c_str());
+  if (image_path.empty())
+    return false;
+
+  StringUtil::Strlcpy(path, image_path.c_str(), len);
+  return true;
+}
+
+bool LibretroHostInterface::DiskControlGetImageLabel(unsigned index, char* label, size_t len)
+{
+  System* system = P_THIS->GetSystem();
+  if (!system || index >= system->GetMediaPlaylistCount())
+    return false;
+
+  const std::string& image_path = system->GetMediaPlaylistPath(index);
+  if (image_path.empty())
+    return false;
+
+  const std::string_view title = GameList::GetTitleForPath(label);
+  StringUtil::Strlcpy(label, title, len);
+  Log_DevPrintf("DiskControlGetImagePath(%u) -> %s", index, label);
+  return true;
+}
+
+void LibretroHostInterface::InitDiskControlInterface()
+{
+  unsigned version = 0;
+  if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &version) && version >= 1)
+  {
+    retro_disk_control_ext_callback ext_cb = {
+      &LibretroHostInterface::DiskControlSetEjectState, &LibretroHostInterface::DiskControlGetEjectState,
+      &LibretroHostInterface::DiskControlGetImageIndex, &LibretroHostInterface::DiskControlSetImageIndex,
+      &LibretroHostInterface::DiskControlGetNumImages,  &LibretroHostInterface::DiskControlReplaceImageIndex,
+      &LibretroHostInterface::DiskControlAddImageIndex, &LibretroHostInterface::DiskControlSetInitialImage,
+      &LibretroHostInterface::DiskControlGetImagePath,  &LibretroHostInterface::DiskControlGetImageLabel};
+    if (g_retro_environment_callback(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &ext_cb))
+      return;
+  }
+
+  retro_disk_control_callback cb = {
+    &LibretroHostInterface::DiskControlSetEjectState, &LibretroHostInterface::DiskControlGetEjectState,
+    &LibretroHostInterface::DiskControlGetImageIndex, &LibretroHostInterface::DiskControlSetImageIndex,
+    &LibretroHostInterface::DiskControlGetNumImages,  &LibretroHostInterface::DiskControlReplaceImageIndex,
+    &LibretroHostInterface::DiskControlAddImageIndex};
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &cb))
+    Log_WarningPrint("Failed to set disk control interface");
 }
