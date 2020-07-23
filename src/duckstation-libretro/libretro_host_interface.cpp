@@ -554,6 +554,10 @@ void LibretroHostInterface::LoadSettings()
     system_directory = "bios";
   m_settings.bios_path =
     StringUtil::StdStringFromFormat("%s%cscph1001.bin", system_directory, FS_OSPATH_SEPERATOR_CHARACTER);
+
+  // Ensure we don't use the standalone memcard directory in shared mode.
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+    m_settings.memory_card_paths[i] = GetSharedMemoryCardPath(i);
 }
 
 void LibretroHostInterface::UpdateSettings()
