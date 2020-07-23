@@ -129,8 +129,8 @@ static const char* GetSaveDirectory()
 
 std::string LibretroHostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
-  return StringUtil::StdStringFromFormat("%s%cshared_card_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER,
-                                         slot + 1);
+  return StringUtil::StdStringFromFormat("%s%cduckstation_shared_card_%d.mcd", GetSaveDirectory(),
+                                         FS_OSPATH_SEPERATOR_CHARACTER, slot + 1);
 }
 
 std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
