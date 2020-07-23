@@ -1285,22 +1285,22 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::SameLine(indent);
 
         static constexpr std::array<const char*, GPU::MAX_RESOLUTION_SCALE> resolutions = {{
-          "1x (1024x512)",
-          "2x (2048x1024)",
-          "3x (3072x1536)",
-          "4x (4096x2048)",
-          "5x (5120x2560)",
-          "6x (6144x3072)",
-          "7x (7168x3584)",
-          "8x (8192x4096)",
-          "9x (9216x4608)",
-          "10x (10240x5120)",
-          "11x (11264x5632)",
-          "12x (12288x6144)",
-          "13x (13312x6656)",
-          "14x (14336x7168)",
-          "15x (15360x7680)",
-          "16x (16384x8192)",
+          "1x (1024x512 VRAM)",
+          "2x (2048x1024 VRAM)",
+          "3x (3072x1536 VRAM)",
+          "4x (4096x2048 VRAM)",
+          "5x (5120x2560 VRAM)",
+          "6x (6144x3072 VRAM)",
+          "7x (7168x3584 VRAM)",
+          "8x (8192x4096 VRAM)",
+          "9x (9216x4608 VRAM)",
+          "10x (10240x5120 VRAM)",
+          "11x (11264x5632 VRAM)",
+          "12x (12288x6144 VRAM)",
+          "13x (13312x6656 VRAM)",
+          "14x (14336x7168 VRAM)",
+          "15x (15360x7680 VRAM)",
+          "16x (16384x8192 VRAM)",
         }};
 
         int current_resolution_index = static_cast<int>(m_settings_copy.gpu_resolution_scale) - 1;
