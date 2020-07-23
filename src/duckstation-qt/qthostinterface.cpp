@@ -897,6 +897,22 @@ void QtHostInterface::setAudioOutputVolume(int value)
 
   if (m_audio_stream)
     m_audio_stream->SetOutputVolume(value);
+
+  m_settings.audio_output_volume = value;
+}
+
+void QtHostInterface::setAudioOutputMuted(bool muted)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "setAudioOutputMuted", Q_ARG(bool, muted));
+    return;
+  }
+
+  if (m_audio_stream)
+    m_audio_stream->SetOutputVolume(muted ? 0 : m_settings.audio_output_volume);
+
+  m_settings.audio_output_muted = muted;
 }
 
 void QtHostInterface::startDumpingAudio()

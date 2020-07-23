@@ -79,5 +79,5 @@ void AudioSettingsWidget::onOutputMutedChanged(int new_state)
 {
   const bool muted = (new_state != 0);
   m_host_interface->SetBoolSettingValue("Audio", "OutputMuted", muted);
-  m_host_interface->setAudioOutputVolume(muted ? 0 : m_ui.volume->value());
+  m_host_interface->setAudioOutputMuted(muted);
 }
