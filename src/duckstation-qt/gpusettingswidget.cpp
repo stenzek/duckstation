@@ -144,7 +144,7 @@ void GPUSettingsWidget::setupAdditionalUi()
 
   m_ui.resolutionScale->addItem(tr("Automatic based on window size"));
   for (u32 i = 1; i <= GPU::MAX_RESOLUTION_SCALE; i++)
-    m_ui.resolutionScale->addItem(tr("%1x (%2x%3)").arg(i).arg(GPU::VRAM_WIDTH * i).arg(GPU::VRAM_HEIGHT * i));
+    m_ui.resolutionScale->addItem(tr("%1x (%2x%3 VRAM)").arg(i).arg(GPU::VRAM_WIDTH * i).arg(GPU::VRAM_HEIGHT * i));
 }
 
 void GPUSettingsWidget::populateGPUAdapters()
