@@ -373,26 +373,37 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 
     menu.addSeparator();
 
-    if (!entry->code.empty())
+    if (!m_emulation_running)
     {
-      m_host_interface->populateGameListContextMenu(entry->code.c_str(), this, &menu);
-      menu.addSeparator();
+      if (!entry->code.empty())
+      {
+        m_host_interface->populateGameListContextMenu(entry->code.c_str(), this, &menu);
+        menu.addSeparator();
+      }
+
+      connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
+              [this, entry]() { m_host_interface->bootSystem(SystemBootParameters(entry->path)); });
+
+      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
+        SystemBootParameters boot_params(entry->path);
+        boot_params.override_fast_boot = true;
+        m_host_interface->bootSystem(boot_params);
+      });
+
+      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
+        SystemBootParameters boot_params(entry->path);
+        boot_params.override_fast_boot = false;
+        m_host_interface->bootSystem(boot_params);
+      });
     }
-
-    connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
-            [this, entry]() { m_host_interface->bootSystem(SystemBootParameters(entry->path)); });
-
-    connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
-      SystemBootParameters boot_params(entry->path);
-      boot_params.override_fast_boot = true;
-      m_host_interface->bootSystem(boot_params);
-    });
-
-    connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
-      SystemBootParameters boot_params(entry->path);
-      boot_params.override_fast_boot = false;
-      m_host_interface->bootSystem(boot_params);
-    });
+    else
+    {
+      connect(menu.addAction(tr("Change Disc")), &QAction::triggered, [this, entry]() {
+        m_host_interface->changeDisc(QString::fromStdString(entry->path));
+        m_host_interface->pauseSystem(false);
+        switchToEmulationView();
+      });
+    }
 
     menu.addSeparator();
   }
