@@ -591,8 +591,8 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
 
   {
     Vulkan::DescriptorSetUpdateBuilder dsupdate;
-    dsupdate.AddImageDescriptorWrite(ds, 0, static_cast<VulkanHostDisplayTexture*>(texture)->GetTexture().GetView());
-    dsupdate.AddSamplerDescriptorWrite(ds, 0, m_linear_sampler);
+    dsupdate.AddCombinedImageSamplerDescriptorWrite(
+      ds, 0, static_cast<VulkanHostDisplayTexture*>(texture)->GetTexture().GetView(), m_linear_sampler);
     dsupdate.Update(g_vulkan_context->GetDevice());
   }
 
