@@ -186,6 +186,27 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   }
 }
 
+// The PlayStation GPU draws lines from start to end, inclusive. Or, more specifically, inclusive of the greatest delta
+// in the x or y direction.
+void GPU_HW::FixLineVertexCoordinates(BatchVertex& start, BatchVertex& end, s32 dx, s32 dy)
+{
+  // deliberately not else if to catch the equal case
+  if (dx >= dy)
+  {
+    if (start.x > end.x)
+      start.x++;
+    else
+      end.x++;
+  }
+  if (dx <= dy)
+  {
+    if (start.y > end.y)
+      start.y++;
+    else
+      end.y++;
+  }
+}
+
 void GPU_HW::LoadVertices()
 {
   const RenderCommand rc{m_render_command.bits};
@@ -414,12 +435,16 @@ void GPU_HW::LoadVertices()
         const s32 max_x = std::max(start.x, end.x);
         const s32 min_y = std::min(start.y, end.y);
         const s32 max_y = std::max(start.y, end.y);
+        const s32 dx = max_x - min_x;
+        const s32 dy = max_y - min_y;
 
-        if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+        if (dx >= MAX_PRIMITIVE_WIDTH || dy >= MAX_PRIMITIVE_HEIGHT)
         {
           Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start.x, start.y, end.x, end.y);
           return;
         }
+
+        FixLineVertexCoordinates(start, end, dx, dy);
 
         AddVertex(start);
         AddVertex(end);
@@ -461,16 +486,21 @@ void GPU_HW::LoadVertices()
             const s32 max_x = std::max(last_vertex.x, vertex.x);
             const s32 min_y = std::min(last_vertex.y, vertex.y);
             const s32 max_y = std::max(last_vertex.y, vertex.y);
+            const s32 dx = max_x - min_x;
+            const s32 dy = max_y - min_y;
 
-            if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+            if (dx >= MAX_PRIMITIVE_WIDTH || dy >= MAX_PRIMITIVE_HEIGHT)
             {
               Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_vertex.x, last_vertex.y, vertex.x,
                               vertex.y);
             }
             else
             {
-              AddVertex(last_vertex);
-              AddVertex(vertex);
+              BatchVertex start(last_vertex);
+              BatchVertex end(vertex);
+              FixLineVertexCoordinates(start, end, dx, dy);
+              AddVertex(start);
+              AddVertex(end);
 
               const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
               const u32 clip_right =

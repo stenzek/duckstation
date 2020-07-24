@@ -235,6 +235,7 @@ protected:
 
   /// Handles quads with flipped texture coordinate directions.
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
+  static void FixLineVertexCoordinates(BatchVertex& start, BatchVertex& end, s32 dx, s32 dy);
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 
