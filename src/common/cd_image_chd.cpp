@@ -99,7 +99,7 @@ bool CDImageCHD::Open(const char* filename)
   m_filename = filename;
 
   u32 disc_lba = 0;
-  u64 disc_frame = 0;
+  u64 file_lba = 0;
 
   // for each track..
   int num_tracks = 0;
@@ -187,9 +187,9 @@ bool CDImageCHD::Open(const char* filename)
         }
 
         pregap_index.file_index = 0;
-        pregap_index.file_offset = disc_lba;
+        pregap_index.file_offset = file_lba;
         pregap_index.file_sector_size = CHD_SECTOR_DATA_SIZE;
-        disc_frame += pregap_frames;
+        file_lba += pregap_frames;
         frames -= pregap_frames;
       }
 
@@ -209,7 +209,7 @@ bool CDImageCHD::Open(const char* filename)
     index.index_number = 1;
     index.file_index = 0;
     index.file_sector_size = CHD_SECTOR_DATA_SIZE;
-    index.file_offset = disc_frame;
+    index.file_offset = file_lba;
     index.mode = mode.value();
     index.control.bits = control.bits;
     index.is_pregap = false;
@@ -217,7 +217,7 @@ bool CDImageCHD::Open(const char* filename)
     m_indices.push_back(index);
 
     disc_lba += index.length;
-    disc_frame += index.length;
+    file_lba += index.length;
     num_tracks++;
   }
 
