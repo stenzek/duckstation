@@ -158,7 +158,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
 
     // add the track itself
     m_tracks.push_back(Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()),
-                             static_cast<u32>(track_length), mode, control});
+                             static_cast<u32>(track_length + pregap_frames), mode, control});
 
     // how many indices in this track?
     Index last_index;

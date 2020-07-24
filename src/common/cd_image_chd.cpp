@@ -199,7 +199,7 @@ bool CDImageCHD::Open(const char* filename)
 
     // add the track itself
     m_tracks.push_back(Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()),
-                             static_cast<u32>(frames), mode.value(), control});
+                             static_cast<u32>(frames + pregap_frames), mode.value(), control});
 
     // how many indices in this track?
     Index index = {};
