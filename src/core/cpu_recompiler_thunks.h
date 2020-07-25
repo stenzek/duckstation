@@ -44,9 +44,6 @@ public:
   static void UpdateLoadDelay(Core* cpu);
   static void RaiseException(Core* cpu, u32 epc, u32 ri_bits);
   static void RaiseAddressException(Core* cpu, u32 address, bool store, bool branch);
-  static void ExecuteGTEInstruction(Core* cpu, u32 instruction_bits);
-  static u32 ReadGTERegister(Core* cpu, u32 reg);
-  static void WriteGTERegister(Core* cpu, u32 reg, u32 value);
 };
 
 class ASMFunctions

@@ -1,5 +1,6 @@
 #pragma once
 #include "common/align.h"
+#include "common/assert.h"
 #include "bus.h"
 #include "cpu_core.h"
 

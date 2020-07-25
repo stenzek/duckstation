@@ -11,6 +11,7 @@
 #include "cpu_core.h"
 #include "dma.h"
 #include "gpu.h"
+#include "gte.h"
 #include "host_display.h"
 #include "save_state_version.h"
 #include "system.h"
@@ -493,7 +494,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     m_system->GetDMA()->SetHaltTicks(m_settings.dma_halt_ticks);
 
     if (m_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack)
-      m_system->GetCPU()->GetCop2().SetWidescreenHack(m_settings.gpu_widescreen_hack);
+      GTE::SetWidescreenHack(m_settings.gpu_widescreen_hack);
   }
 
   bool controllers_updated = false;

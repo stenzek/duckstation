@@ -12,6 +12,7 @@
 #include "dma.h"
 #include "game_list.h"
 #include "gpu.h"
+#include "gte.h"
 #include "host_display.h"
 #include "host_interface.h"
 #include "host_interface_progress_callback.h"
@@ -311,7 +312,7 @@ bool System::InitializeComponents(bool force_software_renderer)
   m_mdec->Initialize(this, m_dma.get());
 
   // load settings
-  m_cpu->GetCop2().SetWidescreenHack(settings.gpu_widescreen_hack);
+  GTE::SetWidescreenHack(settings.gpu_widescreen_hack);
 
   UpdateThrottlePeriod();
   return true;

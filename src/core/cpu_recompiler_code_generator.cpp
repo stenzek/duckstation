@@ -2,6 +2,7 @@
 #include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
+#include "gte.h"
 Log_SetChannel(CPU::Recompiler);
 
 // TODO: Turn load+sext/zext into a single signed/unsigned load
@@ -1717,13 +1718,13 @@ Value CodeGenerator::DoGTERegisterRead(u32 index)
     case 28: // IRGB
     case 29: // ORGB
     {
-      EmitFunctionCall(&value, &Thunks::ReadGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index));
+      EmitFunctionCall(&value, &GTE::ReadRegister, Value::FromConstantU32(index));
     }
     break;
 
     default:
     {
-      EmitLoadCPUStructField(value.host_reg, RegSize_32, offsetof(Core, m_cop2.m_regs.r32[index]));
+      EmitLoadGlobal(value.host_reg, RegSize_32, GTE::GetRegisterPtr(index));
     }
     break;
   }
@@ -1752,7 +1753,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     {
       // sign-extend z component of vector registers
       Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, true);
-      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[index]), temp);
+      EmitStoreGlobal(GTE::GetRegisterPtr(index), temp);
       return;
     }
     break;
@@ -1765,7 +1766,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     {
       // zero-extend unsigned values
       Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, false);
-      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[index]), temp);
+      EmitStoreGlobal(GTE::GetRegisterPtr(index), temp);
       return;
     }
     break;
@@ -1776,15 +1777,15 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
       Value temp = m_register_cache.AllocateScratch(RegSize_32);
 
       // SXY0 <- SXY1
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(Core, m_cop2.m_regs.r32[13]));
-      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[12]), temp);
+      EmitLoadGlobal(temp.host_reg, RegSize_32, GTE::GetRegisterPtr(13));
+      EmitStoreGlobal(GTE::GetRegisterPtr(12), temp);
 
       // SXY1 <- SXY2
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(Core, m_cop2.m_regs.r32[14]));
-      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[13]), temp);
+      EmitLoadGlobal(temp.host_reg, RegSize_32, GTE::GetRegisterPtr(14));
+      EmitStoreGlobal(GTE::GetRegisterPtr(13), temp);
 
       // SXY2 <- SXYP
-      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[14]), value);
+      EmitStoreGlobal(GTE::GetRegisterPtr(14), value);
       return;
     }
     break;
@@ -1793,8 +1794,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     case 30: // LZCS
     case 63: // FLAG
     {
-      EmitFunctionCall(nullptr, &Thunks::WriteGTERegister, m_register_cache.GetCPUPtr(), Value::FromConstantU32(index),
-                       value);
+      EmitFunctionCall(nullptr, &GTE::WriteRegister, Value::FromConstantU32(index), value);
       return;
     }
 
@@ -1808,7 +1808,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     default:
     {
       // written as-is, 2x16 or 1x32 bits
-      EmitStoreCPUStructField(offsetof(Core, m_cop2.m_regs.r32[index]), value);
+      EmitStoreGlobal(GTE::GetRegisterPtr(index), value);
       return;
     }
   }
@@ -1878,7 +1878,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     InstructionPrologue(cbi, 1);
 
     Value instruction_bits = Value::FromConstantU32(cbi.instruction.bits & GTE::Instruction::REQUIRED_BITS_MASK);
-    EmitFunctionCall(nullptr, &Thunks::ExecuteGTEInstruction, m_register_cache.GetCPUPtr(), instruction_bits);
+    EmitFunctionCall(nullptr, &GTE::ExecuteInstruction, instruction_bits);
 
     InstructionEpilogue(cbi);
     return true;

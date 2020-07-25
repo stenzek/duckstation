@@ -1,7 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
 #include "cpu_types.h"
-#include "gte.h"
 #include "types.h"
 #include <array>
 #include <optional>
@@ -53,9 +52,6 @@ public:
 
   ALWAYS_INLINE TickCount GetDowncount() const { return m_downcount; }
   ALWAYS_INLINE void SetDowncount(TickCount downcount) { m_downcount = downcount; }
-
-  ALWAYS_INLINE const GTE::Core& GetCop2() const { return m_cop2; }
-  ALWAYS_INLINE GTE::Core& GetCop2() { return m_cop2; }
 
   // Sets the PC and flushes the pipeline.
   void SetPC(u32 new_pc);
@@ -171,8 +167,6 @@ private:
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> m_dcache = {};
-
-  GTE::Core m_cop2;
 };
 
 extern bool TRACE_EXECUTION;

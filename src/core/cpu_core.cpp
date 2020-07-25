@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_disasm.h"
+#include "gte.h"
 #include <cstdio>
 Log_SetChannel(CPU::Core);
 
@@ -45,7 +46,7 @@ void Core::Initialize(Bus* bus)
   // From nocash spec.
   m_cop0_regs.PRID = UINT32_C(0x00000002);
 
-  m_cop2.Initialize();
+  GTE::Initialize();
 }
 
 void Core::Reset()
@@ -65,7 +66,7 @@ void Core::Reset()
   m_cop0_regs.sr.bits = 0;
   m_cop0_regs.cause.bits = 0;
 
-  m_cop2.Reset();
+  GTE::Reset();
 
   SetPC(RESET_VECTOR);
 }
@@ -102,7 +103,7 @@ bool Core::DoState(StateWrapper& sw)
   sw.Do(&m_cache_control);
   sw.DoBytes(m_dcache.data(), m_dcache.size());
 
-  if (!m_cop2.DoState(sw))
+  if (!GTE::DoState(sw))
     return false;
 
   return !sw.HasError();
@@ -1234,7 +1235,7 @@ void Core::ExecuteInstruction()
       if (!ReadMemoryWord(addr, &value))
         return;
 
-      m_cop2.WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
+      GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
     }
     break;
 
@@ -1248,7 +1249,7 @@ void Core::ExecuteInstruction()
       }
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      const u32 value = m_cop2.ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
+      const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
       WriteMemoryWord(addr, value);
     }
     break;
@@ -1332,19 +1333,19 @@ void Core::ExecuteCop2Instruction()
     switch (inst.cop.CommonOp())
     {
       case CopCommonInstruction::cfcn:
-        WriteRegDelayed(inst.r.rt, m_cop2.ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32));
+        WriteRegDelayed(inst.r.rt, GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32));
         break;
 
       case CopCommonInstruction::ctcn:
-        m_cop2.WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, ReadReg(inst.r.rt));
+        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, ReadReg(inst.r.rt));
         break;
 
       case CopCommonInstruction::mfcn:
-        WriteRegDelayed(inst.r.rt, m_cop2.ReadRegister(static_cast<u32>(inst.r.rd.GetValue())));
+        WriteRegDelayed(inst.r.rt, GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue())));
         break;
 
       case CopCommonInstruction::mtcn:
-        m_cop2.WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
         break;
 
       case CopCommonInstruction::bcnc:
@@ -1355,7 +1356,7 @@ void Core::ExecuteCop2Instruction()
   }
   else
   {
-    m_cop2.ExecuteInstruction(GTE::Instruction{inst.bits});
+    GTE::ExecuteInstruction(inst.bits);
   }
 }
 

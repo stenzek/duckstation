@@ -148,20 +148,4 @@ void Thunks::RaiseAddressException(Core* cpu, u32 address, bool store, bool bran
   else
     cpu->RaiseException(store ? Exception::AdES : Exception::AdEL);
 }
-
-void Thunks::ExecuteGTEInstruction(Core* cpu, u32 instruction_bits)
-{
-  cpu->m_cop2.ExecuteInstruction(GTE::Instruction{instruction_bits});
-}
-
-u32 Thunks::ReadGTERegister(Core* cpu, u32 reg)
-{
-  return cpu->m_cop2.ReadRegister(reg);
-}
-
-void Thunks::WriteGTERegister(Core* cpu, u32 reg, u32 value)
-{
-  cpu->m_cop2.WriteRegister(reg, value);
-}
-
 } // namespace CPU::Recompiler
