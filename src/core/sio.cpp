@@ -7,11 +7,15 @@
 #include "memory_card.h"
 Log_SetChannel(SIO);
 
+SIO g_sio;
+
 SIO::SIO() = default;
 
 SIO::~SIO() = default;
 
 void SIO::Initialize() {}
+
+void SIO::Shutdown() {}
 
 void SIO::Reset()
 {

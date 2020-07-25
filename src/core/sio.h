@@ -17,6 +17,7 @@ public:
   ~SIO();
 
   void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -76,3 +77,5 @@ private:
   SIO_MODE m_SIO_MODE = {};
   u16 m_SIO_BAUD = 0;
 };
+
+extern SIO g_sio;

@@ -208,7 +208,6 @@ private:
   std::unique_ptr<CPU::Core> m_cpu;
   std::unique_ptr<CPU::CodeCache> m_cpu_code_cache;
   std::unique_ptr<Bus> m_bus;
-  std::unique_ptr<SIO> m_sio;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;
   u32 m_frame_number = 1;

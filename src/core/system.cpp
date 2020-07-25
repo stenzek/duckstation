@@ -56,7 +56,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_cpu = std::make_unique<CPU::Core>();
   m_cpu_code_cache = std::make_unique<CPU::CodeCache>();
   m_bus = std::make_unique<Bus>();
-  m_sio = std::make_unique<SIO>();
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
 }
@@ -292,7 +291,7 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_sio.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get());
 
   g_dma.Initialize(m_bus.get());
 
@@ -303,6 +302,7 @@ bool System::InitializeComponents(bool force_software_renderer)
   g_timers.Initialize();
   g_spu.Initialize();
   g_mdec.Initialize();
+  g_sio.Initialize();
 
   // load settings
   GTE::SetWidescreenHack(settings.gpu_widescreen_hack);
@@ -313,6 +313,7 @@ bool System::InitializeComponents(bool force_software_renderer)
 
 void System::DestroyComponents()
 {
+  g_sio.Shutdown();
   g_mdec.Shutdown();
   g_spu.Shutdown();
   g_timers.Shutdown();
@@ -405,7 +406,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("MDEC") || !g_mdec.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("SIO") || !m_sio->DoState(sw))
+  if (!sw.DoMarker("SIO") || !g_sio.DoState(sw))
     return false;
 
   if (!sw.DoMarker("Events") || !DoEventsState(sw))
@@ -427,7 +428,7 @@ void System::Reset()
   g_timers.Reset();
   g_spu.Reset();
   g_mdec.Reset();
-  m_sio->Reset();
+  g_sio.Reset();
   m_frame_number = 1;
   m_internal_frame_number = 0;
   m_global_tick_counter = 0;
