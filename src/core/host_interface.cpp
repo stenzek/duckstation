@@ -45,20 +45,20 @@ void HostInterface::Shutdown() {}
 void HostInterface::CreateAudioStream()
 {
   Log_InfoPrintf("Creating '%s' audio stream, sample rate = %u, channels = %u, buffer size = %u",
-                 Settings::GetAudioBackendName(m_settings.audio_backend), AUDIO_SAMPLE_RATE, AUDIO_CHANNELS,
-                 m_settings.audio_buffer_size);
+                 Settings::GetAudioBackendName(g_settings.audio_backend), AUDIO_SAMPLE_RATE, AUDIO_CHANNELS,
+                 g_settings.audio_buffer_size);
 
-  m_audio_stream = CreateAudioStream(m_settings.audio_backend);
+  m_audio_stream = CreateAudioStream(g_settings.audio_backend);
 
-  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size))
+  if (!m_audio_stream || !m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, g_settings.audio_buffer_size))
   {
     ReportFormattedError("Failed to create or configure audio stream, falling back to null output.");
     m_audio_stream.reset();
     m_audio_stream = AudioStream::CreateNullAudioStream();
-    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, m_settings.audio_buffer_size);
+    m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, g_settings.audio_buffer_size);
   }
 
-  m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
+  m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
 }
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
@@ -79,8 +79,8 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   }
 
   // set host display settings
-  m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
-  m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
+  m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
+  m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
 
   // create the audio stream. this will never fail, since we'll just fall back to null
   CreateAudioStream();
@@ -211,50 +211,50 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   } while (0)
 
   // Try the configured image.
-  TRY_FILENAME(m_settings.bios_path.c_str());
+  TRY_FILENAME(g_settings.bios_path.c_str());
 
   // Try searching in the same folder for other region's images.
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph3000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-11j.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-10j.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5500.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30j.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7500.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-40j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph3000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-11j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph1000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-10j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5500.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-30j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7500.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-40j.bin", false, false));
       break;
 
     case ConsoleRegion::NTSC_U:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1001.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-22a.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5501.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5503.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7003.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30a.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7001.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7501.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7503.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9001.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9003.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9903.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-41a.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph1001.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-22a.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5501.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5503.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7003.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-30a.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7001.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7501.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7503.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9001.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9003.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9903.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-41a.bin", false, false));
       break;
 
     case ConsoleRegion::PAL:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1002.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-21e.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5502.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5552.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30e.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7002.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7502.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9002.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-41e.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph1002.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-21e.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5502.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5552.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-30e.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7002.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7502.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9002.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-41e.bin", false, false));
       break;
 
     default:
@@ -267,8 +267,8 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   // Fall back to the default image.
   Log_WarningPrintf("No suitable BIOS image for region %s could be located, using configured image '%s'. This may "
                     "result in instability.",
-                    Settings::GetConsoleRegionName(region), m_settings.bios_path.c_str());
-  return BIOS::LoadImageFromFile(m_settings.bios_path);
+                    Settings::GetConsoleRegionName(region), g_settings.bios_path.c_str());
+  return BIOS::LoadImageFromFile(g_settings.bios_path);
 }
 
 bool HostInterface::LoadState(const char* filename)
@@ -423,84 +423,84 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
 void HostInterface::LoadSettings(SettingsInterface& si)
 {
-  m_settings.Load(si);
+  g_settings.Load(si);
 }
 
 void HostInterface::SaveSettings(SettingsInterface& si)
 {
-  m_settings.Save(si);
+  g_settings.Save(si);
 }
 
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
   if (m_system)
   {
-    if (m_settings.gpu_renderer != old_settings.gpu_renderer ||
-        m_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
+    if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
+        g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
     {
-      ReportFormattedMessage("Switching to %s%s GPU renderer.", Settings::GetRendererName(m_settings.gpu_renderer),
-                             m_settings.gpu_use_debug_device ? " (debug)" : "");
+      ReportFormattedMessage("Switching to %s%s GPU renderer.", Settings::GetRendererName(g_settings.gpu_renderer),
+                             g_settings.gpu_use_debug_device ? " (debug)" : "");
       RecreateSystem();
     }
 
-    if (m_settings.audio_backend != old_settings.audio_backend ||
-        m_settings.audio_buffer_size != old_settings.audio_buffer_size)
+    if (g_settings.audio_backend != old_settings.audio_backend ||
+        g_settings.audio_buffer_size != old_settings.audio_buffer_size)
     {
-      if (m_settings.audio_backend != old_settings.audio_backend)
+      if (g_settings.audio_backend != old_settings.audio_backend)
         ReportFormattedMessage("Switching to %s audio backend.",
-                               Settings::GetAudioBackendName(m_settings.audio_backend));
+                               Settings::GetAudioBackendName(g_settings.audio_backend));
       DebugAssert(m_audio_stream);
       m_audio_stream.reset();
       CreateAudioStream();
       m_audio_stream->PauseOutput(false);
     }
 
-    if (m_settings.emulation_speed != old_settings.emulation_speed)
+    if (g_settings.emulation_speed != old_settings.emulation_speed)
       m_system->UpdateThrottlePeriod();
 
-    if (m_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
+    if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
       ReportFormattedMessage("Switching to %s CPU execution mode.",
-                             Settings::GetCPUExecutionModeName(m_settings.cpu_execution_mode));
-      m_system->SetCPUExecutionMode(m_settings.cpu_execution_mode);
+                             Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
+      m_system->SetCPUExecutionMode(g_settings.cpu_execution_mode);
     }
 
-    m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
+    m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
 
-    if (m_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
-        m_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
-        m_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
-        m_settings.gpu_true_color != old_settings.gpu_true_color ||
-        m_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
-        m_settings.gpu_texture_filtering != old_settings.gpu_texture_filtering ||
-        m_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
-        m_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
-        m_settings.display_crop_mode != old_settings.display_crop_mode ||
-        m_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+    if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
+        g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
+        g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
+        g_settings.gpu_true_color != old_settings.gpu_true_color ||
+        g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
+        g_settings.gpu_texture_filtering != old_settings.gpu_texture_filtering ||
+        g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
+        g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
+        g_settings.display_crop_mode != old_settings.display_crop_mode ||
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     {
       m_system->UpdateGPUSettings();
     }
 
-    if (m_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
-      m_system->GetCDROM()->SetUseReadThread(m_settings.cdrom_read_thread);
+    if (g_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
+      m_system->GetCDROM()->SetUseReadThread(g_settings.cdrom_read_thread);
 
-    if (m_settings.memory_card_types != old_settings.memory_card_types ||
-        m_settings.memory_card_paths != old_settings.memory_card_paths)
+    if (g_settings.memory_card_types != old_settings.memory_card_types ||
+        g_settings.memory_card_paths != old_settings.memory_card_paths)
     {
       m_system->UpdateMemoryCards();
     }
 
-    m_system->GetDMA()->SetMaxSliceTicks(m_settings.dma_max_slice_ticks);
-    m_system->GetDMA()->SetHaltTicks(m_settings.dma_halt_ticks);
+    m_system->GetDMA()->SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
+    m_system->GetDMA()->SetHaltTicks(g_settings.dma_halt_ticks);
 
-    if (m_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack)
-      GTE::SetWidescreenHack(m_settings.gpu_widescreen_hack);
+    if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack)
+      GTE::SetWidescreenHack(g_settings.gpu_widescreen_hack);
   }
 
   bool controllers_updated = false;
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if (m_settings.controller_types[i] != old_settings.controller_types[i])
+    if (g_settings.controller_types[i] != old_settings.controller_types[i])
     {
       if (m_system && !controllers_updated)
       {
@@ -520,11 +520,11 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
-  if (m_display && m_settings.display_linear_filtering != old_settings.display_linear_filtering)
-    m_display->SetDisplayLinearFiltering(m_settings.display_linear_filtering);
+  if (m_display && g_settings.display_linear_filtering != old_settings.display_linear_filtering)
+    m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
 
-  if (m_display && m_settings.display_integer_scaling != old_settings.display_integer_scaling)
-    m_display->SetDisplayIntegerScaling(m_settings.display_integer_scaling);
+  if (m_display && g_settings.display_integer_scaling != old_settings.display_integer_scaling)
+    m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
 }
 
 void HostInterface::SetUserDirectoryToProgramDirectory()
@@ -621,11 +621,11 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
 
 void HostInterface::ToggleSoftwareRendering()
 {
-  if (!m_system || m_settings.gpu_renderer == GPURenderer::Software)
+  if (!m_system || g_settings.gpu_renderer == GPURenderer::Software)
     return;
 
   const GPURenderer new_renderer =
-    m_system->GetGPU()->IsHardwareRenderer() ? GPURenderer::Software : m_settings.gpu_renderer;
+    m_system->GetGPU()->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
   AddFormattedOSDMessage(2.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
   m_system->RecreateGPU(new_renderer);
@@ -634,14 +634,14 @@ void HostInterface::ToggleSoftwareRendering()
 void HostInterface::ModifyResolutionScale(s32 increment)
 {
   const u32 new_resolution_scale = std::clamp<u32>(
-    static_cast<u32>(static_cast<s32>(m_settings.gpu_resolution_scale) + increment), 1, GPU::MAX_RESOLUTION_SCALE);
-  if (new_resolution_scale == m_settings.gpu_resolution_scale)
+    static_cast<u32>(static_cast<s32>(g_settings.gpu_resolution_scale) + increment), 1, GPU::MAX_RESOLUTION_SCALE);
+  if (new_resolution_scale == g_settings.gpu_resolution_scale)
     return;
 
-  m_settings.gpu_resolution_scale = new_resolution_scale;
-  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", m_settings.gpu_resolution_scale,
-                         GPU::VRAM_WIDTH * m_settings.gpu_resolution_scale,
-                         GPU::VRAM_HEIGHT * m_settings.gpu_resolution_scale);
+  g_settings.gpu_resolution_scale = new_resolution_scale;
+  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", g_settings.gpu_resolution_scale,
+                         GPU::VRAM_WIDTH * g_settings.gpu_resolution_scale,
+                         GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 
   if (m_system)
     m_system->GetGPU()->UpdateSettings();

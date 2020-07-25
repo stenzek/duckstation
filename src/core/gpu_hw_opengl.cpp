@@ -580,7 +580,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_system->GetSettings().debugging.show_vram)
+  if (g_settings.debugging.show_vram)
   {
     m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
                                       m_vram_texture.GetWidth(), static_cast<s32>(m_vram_texture.GetHeight()), 0,

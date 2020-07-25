@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <array>
 
+Settings g_settings;
+
 const char* SettingInfo::StringDefaultValue() const
 {
   return default_value ? default_value : "";

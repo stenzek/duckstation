@@ -44,7 +44,7 @@ bool Pad::DoState(StateWrapper& sw)
 
     if (controller_type != state_controller_type)
     {
-      if (m_system->GetSettings().load_devices_from_save_states)
+      if (g_settings.load_devices_from_save_states)
       {
         m_system->GetHostInterface()->AddFormattedOSDMessage(
           2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
@@ -85,7 +85,7 @@ bool Pad::DoState(StateWrapper& sw)
     bool card_present = static_cast<bool>(m_memory_cards[i]);
     sw.Do(&card_present);
 
-    if (sw.IsReading() && card_present && !m_system->GetSettings().load_devices_from_save_states)
+    if (sw.IsReading() && card_present && !g_settings.load_devices_from_save_states)
     {
       Log_WarningPrintf("Skipping loading memory card %u from save state.", i + 1u);
 

@@ -62,8 +62,8 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
   m_sio = std::make_unique<SIO>();
-  m_region = host_interface->m_settings.region;
-  m_cpu_execution_mode = host_interface->m_settings.cpu_execution_mode;
+  m_region = g_settings.region;
+  m_cpu_execution_mode = g_settings.cpu_execution_mode;
 }
 
 System::~System()
@@ -140,7 +140,7 @@ std::unique_ptr<CDImage> System::OpenCDImage(const char* path, bool force_preloa
   if (!media)
     return {};
 
-  if (force_preload || GetSettings().cdrom_load_image_to_ram)
+  if (force_preload || g_settings.cdrom_load_image_to_ram)
   {
     HostInterfaceProgressCallback callback(m_host_interface);
     std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
@@ -258,7 +258,7 @@ bool System::Boot(const SystemBootParameters& params)
 
   // Enable tty by patching bios.
   const BIOS::Hash bios_hash = BIOS::GetHash(*bios_image);
-  if (GetSettings().bios_patch_tty_enable)
+  if (g_settings.bios_patch_tty_enable)
     BIOS::PatchBIOSEnableTTY(*bios_image, bios_hash);
 
   // Load EXE late after BIOS.
@@ -277,7 +277,7 @@ bool System::Boot(const SystemBootParameters& params)
   if (media)
     m_cdrom->InsertMedia(std::move(media));
   if (m_cdrom->HasMedia() &&
-      (params.override_fast_boot.has_value() ? params.override_fast_boot.value() : GetSettings().bios_patch_fast_boot))
+      (params.override_fast_boot.has_value() ? params.override_fast_boot.value() : g_settings.bios_patch_fast_boot))
   {
     BIOS::PatchBIOSFastBoot(*bios_image, bios_hash);
   }
@@ -291,7 +291,7 @@ bool System::Boot(const SystemBootParameters& params)
 
 bool System::InitializeComponents(bool force_software_renderer)
 {
-  const Settings& settings = GetSettings();
+  const Settings& settings = g_settings;
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : settings.gpu_renderer))
     return false;
 
@@ -516,7 +516,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
       m_cdrom->RemoveMedia();
 
     // ensure the correct card is loaded
-    if (GetSettings().HasAnyPerGameMemoryCards())
+    if (g_settings.HasAnyPerGameMemoryCards())
       UpdateMemoryCards();
   }
 
@@ -636,7 +636,7 @@ void System::SetThrottleFrequency(float frequency)
 void System::UpdateThrottlePeriod()
 {
   m_throttle_period = static_cast<s32>(1000000000.0 / static_cast<double>(m_throttle_frequency) /
-                                       static_cast<double>(GetSettings().emulation_speed));
+                                       static_cast<double>(g_settings.emulation_speed));
 }
 
 void System::Throttle()
@@ -883,12 +883,11 @@ Controller* System::GetController(u32 slot) const
 
 void System::UpdateControllers()
 {
-  const Settings& settings = m_host_interface->GetSettings();
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     m_pad->SetController(i, nullptr);
 
-    const ControllerType type = settings.controller_types[i];
+    const ControllerType type = g_settings.controller_types[i];
     if (type != ControllerType::None)
     {
       std::unique_ptr<Controller> controller = Controller::Create(this, type, i);
@@ -923,13 +922,12 @@ void System::ResetControllers()
 
 void System::UpdateMemoryCards()
 {
-  const Settings& settings = m_host_interface->GetSettings();
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     m_pad->SetMemoryCard(i, nullptr);
 
     std::unique_ptr<MemoryCard> card;
-    const MemoryCardType type = settings.memory_card_types[i];
+    const MemoryCardType type = g_settings.memory_card_types[i];
     switch (type)
     {
       case MemoryCardType::None:
@@ -971,7 +969,7 @@ void System::UpdateMemoryCards()
 
       case MemoryCardType::Shared:
       {
-        if (settings.memory_card_paths[i].empty())
+        if (g_settings.memory_card_paths[i].empty())
         {
           m_host_interface->AddFormattedOSDMessage(2.0f, "Memory card path for slot %u is missing, using default.",
                                                    i + 1u);
@@ -979,7 +977,7 @@ void System::UpdateMemoryCards()
         }
         else
         {
-          card = MemoryCard::Open(this, settings.memory_card_paths[i]);
+          card = MemoryCard::Open(this, g_settings.memory_card_paths[i]);
         }
       }
       break;
@@ -1006,7 +1004,7 @@ bool System::InsertMedia(const char* path)
   Log_InfoPrintf("Inserted media from %s (%s, %s)", m_running_game_path.c_str(), m_running_game_code.c_str(),
                  m_running_game_title.c_str());
 
-  if (GetSettings().HasAnyPerGameMemoryCards())
+  if (g_settings.HasAnyPerGameMemoryCards())
   {
     m_host_interface->AddOSDMessage("Game changed, reloading memory cards.", 2.0f);
     UpdateMemoryCards();

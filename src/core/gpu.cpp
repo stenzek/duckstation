@@ -27,16 +27,15 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
   m_timers = timers;
-  m_force_progressive_scan = m_system->GetSettings().gpu_disable_interlacing;
-  m_force_ntsc_timings = m_system->GetSettings().gpu_force_ntsc_timings;
-  m_crtc_state.display_aspect_ratio =
-    Settings::GetDisplayAspectRatioValue(m_system->GetSettings().display_aspect_ratio);
+  m_force_progressive_scan = g_settings.gpu_disable_interlacing;
+  m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
+  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
   m_crtc_tick_event = m_system->CreateTimingEvent("GPU CRTC Tick", 1, 1,
                                                   std::bind(&GPU::CRTCTickEvent, this, std::placeholders::_1), true);
   m_command_tick_event = m_system->CreateTimingEvent(
     "GPU Command Tick", 1, 1, std::bind(&GPU::CommandTickEvent, this, std::placeholders::_1), true);
-  m_fifo_size = system->GetSettings().gpu_fifo_size;
-  m_max_run_ahead = system->GetSettings().gpu_max_run_ahead;
+  m_fifo_size = g_settings.gpu_fifo_size;
+  m_max_run_ahead = g_settings.gpu_max_run_ahead;
   m_console_is_pal = system->IsPALRegion();
   UpdateCRTCConfig();
   return true;
@@ -44,20 +43,18 @@ bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Interr
 
 void GPU::UpdateSettings()
 {
-  const Settings& settings = m_system->GetSettings();
+  m_force_progressive_scan = g_settings.gpu_disable_interlacing;
+  m_fifo_size = g_settings.gpu_fifo_size;
+  m_max_run_ahead = g_settings.gpu_max_run_ahead;
 
-  m_force_progressive_scan = settings.gpu_disable_interlacing;
-  m_fifo_size = settings.gpu_fifo_size;
-  m_max_run_ahead = settings.gpu_max_run_ahead;
-
-  if (m_force_ntsc_timings != settings.gpu_force_ntsc_timings || m_console_is_pal != m_system->IsPALRegion())
+  if (m_force_ntsc_timings != g_settings.gpu_force_ntsc_timings || m_console_is_pal != m_system->IsPALRegion())
   {
-    m_force_ntsc_timings = settings.gpu_force_ntsc_timings;
+    m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
     m_console_is_pal = m_system->IsPALRegion();
     UpdateCRTCConfig();
   }
 
-  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(settings.display_aspect_ratio);
+  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
 
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
@@ -507,7 +504,7 @@ void GPU::UpdateCRTCConfig()
 void GPU::UpdateCRTCDisplayParameters()
 {
   CRTCState& cs = m_crtc_state;
-  const DisplayCropMode crop_mode = m_system->GetSettings().display_crop_mode;
+  const DisplayCropMode crop_mode = g_settings.display_crop_mode;
 
   const u16 horizontal_total = m_GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
   const u16 vertical_total = m_GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
@@ -1339,7 +1336,7 @@ void GPU::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(450.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("GPU", &m_system->GetSettings().debugging.show_gpu_state))
+  if (!ImGui::Begin("GPU", &g_settings.debugging.show_gpu_state))
   {
     ImGui::End();
     return;

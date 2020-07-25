@@ -26,8 +26,8 @@ void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_co
   m_spu = spu;
   m_mdec = mdec;
 
-  m_max_slice_ticks = system->GetSettings().dma_max_slice_ticks;
-  m_halt_ticks = system->GetSettings().dma_halt_ticks;
+  m_max_slice_ticks = g_settings.dma_max_slice_ticks;
+  m_halt_ticks = g_settings.dma_halt_ticks;
 
   m_transfer_buffer.resize(32);
   m_unhalt_event = system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,

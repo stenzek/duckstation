@@ -61,9 +61,9 @@ bool CommonHostInterface::Initialize()
     Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
 
   LoadSettings();
-  UpdateLogSettings(m_settings.log_level, m_settings.log_filter.empty() ? nullptr : m_settings.log_filter.c_str(),
-                    m_settings.log_to_console, m_settings.log_to_debug, m_settings.log_to_window,
-                    m_settings.log_to_file);
+  UpdateLogSettings(g_settings.log_level, g_settings.log_filter.empty() ? nullptr : g_settings.log_filter.c_str(),
+                    g_settings.log_to_console, g_settings.log_to_debug, g_settings.log_to_window,
+                    g_settings.log_to_file);
 
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
@@ -155,13 +155,13 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
   }
 
   // enter fullscreen if requested in the parameters
-  if (!m_settings.start_paused && ((parameters.override_fullscreen.has_value() && *parameters.override_fullscreen) ||
-                                   (!parameters.override_fullscreen.has_value() && m_settings.start_fullscreen)))
+  if (!g_settings.start_paused && ((parameters.override_fullscreen.has_value() && *parameters.override_fullscreen) ||
+                                   (!parameters.override_fullscreen.has_value() && g_settings.start_fullscreen)))
   {
     SetFullscreen(true);
   }
 
-  if (m_settings.audio_dump_on_boot)
+  if (g_settings.audio_dump_on_boot)
     StartDumpingAudio();
 
   UpdateSpeedLimiterState();
@@ -193,7 +193,7 @@ void CommonHostInterface::DestroySystem()
 
 void CommonHostInterface::PowerOffSystem()
 {
-  if (m_settings.save_state_on_exit)
+  if (g_settings.save_state_on_exit)
     SaveResumeSaveState();
 
   HostInterface::PowerOffSystem();
@@ -554,13 +554,13 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   if (!m_system || !m_audio_stream || !m_display)
     return;
 
-  m_speed_limiter_enabled = m_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
+  m_speed_limiter_enabled = g_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
 
-  const bool is_non_standard_speed = (std::abs(m_settings.emulation_speed - 1.0f) > 0.05f);
+  const bool is_non_standard_speed = (std::abs(g_settings.emulation_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
-    m_paused || (m_speed_limiter_enabled && m_settings.audio_sync_enabled && !is_non_standard_speed);
+    m_paused || (m_speed_limiter_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
-    m_paused || (m_speed_limiter_enabled && m_settings.video_sync_enabled && !is_non_standard_speed);
+    m_paused || (m_speed_limiter_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
 
@@ -570,7 +570,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
 
   m_display->SetVSync(video_sync_enabled);
 
-  if (m_settings.increase_timer_resolution)
+  if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(m_speed_limiter_enabled);
 
   m_system->ResetPerformanceCounters();
@@ -588,12 +588,12 @@ void CommonHostInterface::UpdateLogSettings(LOGLEVEL level, const char* filter, 
                                             bool log_to_window, bool log_to_file)
 {
   Log::SetFilterLevel(level);
-  Log::SetConsoleOutputParams(m_settings.log_to_console, filter, level);
-  Log::SetDebugOutputParams(m_settings.log_to_debug, filter, level);
+  Log::SetConsoleOutputParams(g_settings.log_to_console, filter, level);
+  Log::SetDebugOutputParams(g_settings.log_to_debug, filter, level);
 
   if (log_to_file)
   {
-    Log::SetFileOutputParams(m_settings.log_to_file, GetUserDirectoryRelativePath("duckstation.log").c_str(), true,
+    Log::SetFileOutputParams(g_settings.log_to_file, GetUserDirectoryRelativePath("duckstation.log").c_str(), true,
                              filter, level);
   }
   else
@@ -721,7 +721,7 @@ void CommonHostInterface::DrawImGuiWindows()
 
 void CommonHostInterface::DrawFPSWindow()
 {
-  if (!(m_settings.display_show_fps | m_settings.display_show_vps | m_settings.display_show_speed))
+  if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed))
     return;
 
   const ImVec2 window_size =
@@ -739,12 +739,12 @@ void CommonHostInterface::DrawFPSWindow()
   }
 
   bool first = true;
-  if (m_settings.display_show_fps)
+  if (g_settings.display_show_fps)
   {
     ImGui::Text("%.2f", m_system->GetFPS());
     first = false;
   }
-  if (m_settings.display_show_vps)
+  if (g_settings.display_show_vps)
   {
     if (first)
     {
@@ -759,7 +759,7 @@ void CommonHostInterface::DrawFPSWindow()
 
     ImGui::Text("%.2f", m_system->GetVPS());
   }
-  if (m_settings.display_show_speed)
+  if (g_settings.display_show_speed)
   {
     if (first)
     {
@@ -823,7 +823,7 @@ void CommonHostInterface::DrawOSDMessages()
       continue;
     }
 
-    if (!m_settings.display_show_osd_messages)
+    if (!g_settings.display_show_osd_messages)
       continue;
 
     const float opacity = std::min(time_remaining, 1.0f);
@@ -848,17 +848,15 @@ void CommonHostInterface::DrawOSDMessages()
 
 void CommonHostInterface::DrawDebugWindows()
 {
-  const Settings::DebugSettings& debug_settings = m_system->GetSettings().debugging;
-
-  if (debug_settings.show_gpu_state)
+  if (g_settings.debugging.show_gpu_state)
     m_system->GetGPU()->DrawDebugStateWindow();
-  if (debug_settings.show_cdrom_state)
+  if (g_settings.debugging.show_cdrom_state)
     m_system->GetCDROM()->DrawDebugWindow();
-  if (debug_settings.show_timers_state)
+  if (g_settings.debugging.show_timers_state)
     m_system->GetTimers()->DrawDebugStateWindow();
-  if (debug_settings.show_spu_state)
+  if (g_settings.debugging.show_spu_state)
     m_system->GetSPU()->DrawDebugStateWindow();
-  if (debug_settings.show_mdec_state)
+  if (g_settings.debugging.show_mdec_state)
     m_system->GetMDEC()->DrawDebugStateWindow();
 }
 
@@ -984,7 +982,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
 
   for (u32 controller_index = 0; controller_index < 2; controller_index++)
   {
-    const ControllerType ctype = m_settings.controller_types[controller_index];
+    const ControllerType ctype = g_settings.controller_types[controller_index];
     if (ctype == ControllerType::None)
       continue;
 
@@ -1261,10 +1259,10 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  [this](bool pressed) {
                    if (!pressed && m_system)
                    {
-                     if (m_settings.confim_power_off && !m_batch_mode)
+                     if (g_settings.confim_power_off && !m_batch_mode)
                      {
                        SmallString confirmation_message("Are you sure you want to stop emulation?");
-                       if (m_settings.save_state_on_exit)
+                       if (g_settings.save_state_on_exit)
                          confirmation_message.AppendString("\n\nThe current state will be saved.");
 
                        if (!ConfirmMessage(confirmation_message))
@@ -1365,31 +1363,31 @@ void CommonHostInterface::RegisterAudioHotkeys()
   RegisterHotkey(StaticString("Audio"), StaticString("AudioMute"), StaticString("Toggle Mute"), [this](bool pressed) {
     if (m_system && !pressed)
     {
-      m_settings.audio_output_muted = !m_settings.audio_output_muted;
-      m_audio_stream->SetOutputVolume(m_settings.audio_output_muted ? 0 : m_settings.audio_output_volume);
-      if (m_settings.audio_output_muted)
+      g_settings.audio_output_muted = !g_settings.audio_output_muted;
+      m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
+      if (g_settings.audio_output_muted)
         AddOSDMessage("Volume: Muted", 2.0f);
       else
-        AddFormattedOSDMessage(2.0f, "Volume: %d%%", m_settings.audio_output_volume);
+        AddFormattedOSDMessage(2.0f, "Volume: %d%%", g_settings.audio_output_volume);
     }
   });
   RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeUp"), StaticString("Volume Up"), [this](bool pressed) {
     if (m_system && pressed)
     {
-      m_settings.audio_output_volume = std::min<s32>(m_settings.audio_output_volume + 10, 100);
-      m_settings.audio_output_muted = false;
-      m_audio_stream->SetOutputVolume(m_settings.audio_output_volume);
-      AddFormattedOSDMessage(2.0f, "Volume: %d%%", m_settings.audio_output_volume);
+      g_settings.audio_output_volume = std::min<s32>(g_settings.audio_output_volume + 10, 100);
+      g_settings.audio_output_muted = false;
+      m_audio_stream->SetOutputVolume(g_settings.audio_output_volume);
+      AddFormattedOSDMessage(2.0f, "Volume: %d%%", g_settings.audio_output_volume);
     }
   });
   RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeDown"), StaticString("Volume Down"),
                  [this](bool pressed) {
                    if (m_system && pressed)
                    {
-                     m_settings.audio_output_volume = std::max<s32>(m_settings.audio_output_volume - 10, 0);
-                     m_settings.audio_output_muted = false;
-                     m_audio_stream->SetOutputVolume(m_settings.audio_output_volume);
-                     AddFormattedOSDMessage(2.0f, "Volume: %d%%", m_settings.audio_output_volume);
+                     g_settings.audio_output_volume = std::max<s32>(g_settings.audio_output_volume - 10, 0);
+                     g_settings.audio_output_muted = false;
+                     m_audio_stream->SetOutputVolume(g_settings.audio_output_volume);
+                     AddFormattedOSDMessage(2.0f, "Volume: %d%%", g_settings.audio_output_volume);
                    }
                  });
 }
@@ -1443,7 +1441,7 @@ void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
 {
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
-    const ControllerType ctype = m_settings.controller_types[controller_index - 1];
+    const ControllerType ctype = g_settings.controller_types[controller_index - 1];
     if (ctype == ControllerType::None)
       continue;
 
@@ -1483,7 +1481,7 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
       return;
     }
 
-    m_settings.controller_types[controller_index - 1] = *ctype;
+    g_settings.controller_types[controller_index - 1] = *ctype;
     HostInterface::OnControllerTypeChanged(controller_index - 1);
 
     si.SetStringValue(section_name, "Type", Settings::GetControllerTypeName(*ctype));
@@ -1540,7 +1538,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
 
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
-    const ControllerType ctype = m_settings.controller_types[controller_index - 1];
+    const ControllerType ctype = g_settings.controller_types[controller_index - 1];
     if (ctype == ControllerType::None)
       continue;
 
@@ -1804,30 +1802,30 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
   if (m_system)
   {
-    if (m_settings.audio_backend != old_settings.audio_backend ||
-        m_settings.audio_buffer_size != old_settings.audio_buffer_size)
+    if (g_settings.audio_backend != old_settings.audio_backend ||
+        g_settings.audio_buffer_size != old_settings.audio_buffer_size)
     {
       m_audio_stream->PauseOutput(m_paused);
       UpdateSpeedLimiterState();
     }
 
-    if (m_settings.video_sync_enabled != old_settings.video_sync_enabled ||
-        m_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
-        m_settings.speed_limiter_enabled != old_settings.speed_limiter_enabled ||
-        m_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
-        m_settings.emulation_speed != old_settings.emulation_speed)
+    if (g_settings.video_sync_enabled != old_settings.video_sync_enabled ||
+        g_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
+        g_settings.speed_limiter_enabled != old_settings.speed_limiter_enabled ||
+        g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
+        g_settings.emulation_speed != old_settings.emulation_speed)
     {
       UpdateSpeedLimiterState();
     }
   }
 
-  if (m_settings.log_level != old_settings.log_level || m_settings.log_filter != old_settings.log_filter ||
-      m_settings.log_to_console != old_settings.log_to_console ||
-      m_settings.log_to_window != old_settings.log_to_window || m_settings.log_to_file != old_settings.log_to_file)
+  if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
+      g_settings.log_to_console != old_settings.log_to_console ||
+      g_settings.log_to_window != old_settings.log_to_window || g_settings.log_to_file != old_settings.log_to_file)
   {
-    UpdateLogSettings(m_settings.log_level, m_settings.log_filter.empty() ? nullptr : m_settings.log_filter.c_str(),
-                      m_settings.log_to_console, m_settings.log_to_debug, m_settings.log_to_window,
-                      m_settings.log_to_file);
+    UpdateLogSettings(g_settings.log_level, g_settings.log_filter.empty() ? nullptr : g_settings.log_filter.c_str(),
+                      g_settings.log_to_console, g_settings.log_to_debug, g_settings.log_to_window,
+                      g_settings.log_to_file);
   }
 
   UpdateInputMap();

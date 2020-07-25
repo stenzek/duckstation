@@ -367,7 +367,7 @@ void Timers::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 100.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("Timer State", &m_system->GetSettings().debugging.show_timers_state))
+  if (!ImGui::Begin("Timer State", &g_settings.debugging.show_timers_state))
   {
     ImGui::End();
     return;

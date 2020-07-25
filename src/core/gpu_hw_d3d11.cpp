@@ -39,7 +39,7 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dm
     return false;
 
   m_shader_cache.Open(system->GetHostInterface()->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
-                      system->GetSettings().gpu_use_debug_device);
+                      g_settings.gpu_use_debug_device);
 
   if (!CreateFramebuffer())
   {
@@ -572,7 +572,7 @@ void GPU_HW_D3D11::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_system->GetSettings().debugging.show_vram)
+  if (g_settings.debugging.show_vram)
   {
     m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                                       0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());

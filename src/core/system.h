@@ -88,8 +88,6 @@ public:
   }
   void IncrementInternalFrameNumber() { m_internal_frame_number++; }
 
-  const Settings& GetSettings() { return m_host_interface->GetSettings(); }
-
   const std::string& GetRunningPath() const { return m_running_game_path; }
   const std::string& GetRunningCode() const { return m_running_game_code; }
   const std::string& GetRunningTitle() const { return m_running_game_title; }

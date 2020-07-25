@@ -941,7 +941,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_system->GetSettings().debugging.show_vram)
+  if (g_settings.debugging.show_vram)
   {
     m_host_display->SetDisplayTexture(&m_vram_texture, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
                                       m_vram_texture.GetWidth(), m_vram_texture.GetHeight());

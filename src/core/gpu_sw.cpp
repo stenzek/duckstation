@@ -148,7 +148,7 @@ void GPU_SW::UpdateDisplay()
   // fill display texture
   m_display_texture_buffer.resize(VRAM_WIDTH * VRAM_HEIGHT);
 
-  if (!m_system->GetSettings().debugging.show_vram)
+  if (!g_settings.debugging.show_vram)
   {
     if (IsDisplayDisabled())
     {

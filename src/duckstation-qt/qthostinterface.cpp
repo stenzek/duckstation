@@ -269,7 +269,7 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     SetDefaultSettings(*m_settings_interface.get());
@@ -289,7 +289,7 @@ void QtHostInterface::applySettings()
     return;
   }
 
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
@@ -458,8 +458,8 @@ bool QtHostInterface::AcquireHostDisplay()
   m_is_rendering_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
 
   QtDisplayWidget* display_widget =
-    createDisplayRequested(m_worker_thread, QString::fromStdString(m_settings.gpu_adapter),
-                           m_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
+    createDisplayRequested(m_worker_thread, QString::fromStdString(g_settings.gpu_adapter),
+                           g_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
   if (!display_widget || !m_display->HasRenderDevice())
   {
     emit destroyDisplayRequested();
@@ -470,7 +470,7 @@ bool QtHostInterface::AcquireHostDisplay()
   createImGuiContext(display_widget->devicePixelRatioFromScreen());
 
   if (!m_display->MakeRenderContextCurrent() ||
-      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
+      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
   {
     destroyImGuiContext();
     m_display->DestroyRenderDevice();
@@ -486,7 +486,7 @@ bool QtHostInterface::AcquireHostDisplay()
 
 HostDisplay* QtHostInterface::createHostDisplay()
 {
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
       m_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
@@ -734,7 +734,7 @@ void QtHostInterface::powerOffSystem()
   if (!m_system)
     return;
 
-  if (m_settings.save_state_on_exit)
+  if (g_settings.save_state_on_exit)
     SaveResumeSaveState();
 
   DestroySystem();
@@ -940,7 +940,7 @@ void QtHostInterface::setAudioOutputVolume(int value)
   if (m_audio_stream)
     m_audio_stream->SetOutputVolume(value);
 
-  m_settings.audio_output_volume = value;
+  g_settings.audio_output_volume = value;
 }
 
 void QtHostInterface::setAudioOutputMuted(bool muted)
@@ -952,9 +952,9 @@ void QtHostInterface::setAudioOutputMuted(bool muted)
   }
 
   if (m_audio_stream)
-    m_audio_stream->SetOutputVolume(muted ? 0 : m_settings.audio_output_volume);
+    m_audio_stream->SetOutputVolume(muted ? 0 : g_settings.audio_output_volume);
 
-  m_settings.audio_output_muted = muted;
+  g_settings.audio_output_muted = muted;
 }
 
 void QtHostInterface::startDumpingAudio()

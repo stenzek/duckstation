@@ -290,7 +290,7 @@ void CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_
   m_drive_event = m_system->CreateTimingEvent("CDROM Drive Event", 1, 1,
                                               std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
 
-  if (m_system->GetSettings().cdrom_read_thread)
+  if (g_settings.cdrom_read_thread)
     m_reader.StartThread();
 }
 
@@ -1860,7 +1860,7 @@ void CDROM::DoIDRead()
     m_current_lba = 0;
     m_reader.QueueReadSector(0);
 
-    if (m_system->GetSettings().cdrom_region_check &&
+    if (g_settings.cdrom_region_check &&
         (m_disc_region == DiscRegion::Other ||
          m_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
     {
@@ -2347,7 +2347,7 @@ void CDROM::DrawDebugWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("CDROM State", &m_system->GetSettings().debugging.show_cdrom_state))
+  if (!ImGui::Begin("CDROM State", &g_settings.debugging.show_cdrom_state))
   {
     ImGui::End();
     return;

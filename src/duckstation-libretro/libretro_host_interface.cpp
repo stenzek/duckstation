@@ -168,7 +168,7 @@ void LibretroHostInterface::AddOSDMessage(std::string message, float duration /*
 
 void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info* info)
 {
-  const bool use_resolution_scale = (m_settings.gpu_renderer != GPURenderer::Software);
+  const bool use_resolution_scale = (g_settings.gpu_renderer != GPURenderer::Software);
   GetSystemAVInfo(info, use_resolution_scale);
 
   Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f, fps = %.2f", info->geometry.base_width,
@@ -178,12 +178,12 @@ void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info
 
 void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale)
 {
-  const u32 resolution_scale = use_resolution_scale ? m_settings.gpu_resolution_scale : 1u;
+  const u32 resolution_scale = use_resolution_scale ? g_settings.gpu_resolution_scale : 1u;
   Assert(m_system);
 
   std::memset(info, 0, sizeof(*info));
 
-  info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(m_settings.display_aspect_ratio);
+  info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
   info->geometry.base_width = 320;
   info->geometry.base_height = 240;
   info->geometry.max_width = GPU::VRAM_WIDTH * resolution_scale;
@@ -209,7 +209,7 @@ void LibretroHostInterface::UpdateSystemAVInfo(bool use_resolution_scale)
 void LibretroHostInterface::UpdateGeometry()
 {
   struct retro_system_av_info avi;
-  const bool use_resolution_scale = (m_settings.gpu_renderer != GPURenderer::Software);
+  const bool use_resolution_scale = (g_settings.gpu_renderer != GPURenderer::Software);
   GetSystemAVInfo(&avi, use_resolution_scale);
 
   Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f", avi.geometry.base_width, avi.geometry.base_height,
@@ -221,12 +221,12 @@ void LibretroHostInterface::UpdateGeometry()
 
 void LibretroHostInterface::UpdateLogging()
 {
-  Log::SetFilterLevel(m_settings.log_level);
+  Log::SetFilterLevel(g_settings.log_level);
 
   if (s_libretro_log_callback_valid)
     Log::SetConsoleOutputParams(false);
   else
-    Log::SetConsoleOutputParams(true, nullptr, m_settings.log_level);
+    Log::SetConsoleOutputParams(true, nullptr, g_settings.log_level);
 }
 
 bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
@@ -239,7 +239,7 @@ bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
   if (!BootSystem(bp))
     return false;
 
-  if (m_settings.gpu_renderer != GPURenderer::Software)
+  if (g_settings.gpu_renderer != GPURenderer::Software)
   {
     if (!m_hw_render_callback_valid)
       RequestHardwareRendererContext();
@@ -552,27 +552,27 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
-  m_settings.Load(si);
+  g_settings.Load(si);
 
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;
   if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_directory) || !system_directory)
     system_directory = "bios";
-  m_settings.bios_path =
+  g_settings.bios_path =
     StringUtil::StdStringFromFormat("%s%cscph1001.bin", system_directory, FS_OSPATH_SEPERATOR_CHARACTER);
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-    m_settings.memory_card_paths[i] = GetSharedMemoryCardPath(i);
+    g_settings.memory_card_paths[i] = GetSharedMemoryCardPath(i);
 }
 
 void LibretroHostInterface::UpdateSettings()
 {
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   LoadSettings();
 
-  if (m_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
-      m_settings.gpu_renderer != GPURenderer::Software)
+  if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
+      g_settings.gpu_renderer != GPURenderer::Software)
   {
     ReportMessage("Resolution changed, updating system AV info...");
 
@@ -588,14 +588,14 @@ void LibretroHostInterface::UpdateSettings()
       SwitchToHardwareRenderer();
 
     // Don't let the base class mess with the GPU.
-    old_settings.gpu_resolution_scale = m_settings.gpu_resolution_scale;
+    old_settings.gpu_resolution_scale = g_settings.gpu_resolution_scale;
   }
 
-  if (m_settings.gpu_renderer != old_settings.gpu_renderer)
+  if (g_settings.gpu_renderer != old_settings.gpu_renderer)
   {
     ReportFormattedMessage("Switch to %s renderer pending, please restart the core to apply.",
-                           Settings::GetRendererDisplayName(m_settings.gpu_renderer));
-    m_settings.gpu_renderer = old_settings.gpu_renderer;
+                           Settings::GetRendererDisplayName(g_settings.gpu_renderer));
+    g_settings.gpu_renderer = old_settings.gpu_renderer;
   }
 
   CheckForSettingsChanges(old_settings);
@@ -605,10 +605,10 @@ void LibretroHostInterface::CheckForSettingsChanges(const Settings& old_settings
 {
   HostInterface::CheckForSettingsChanges(old_settings);
 
-  if (m_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+  if (g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     UpdateGeometry();
 
-  if (m_settings.log_level != old_settings.log_level)
+  if (g_settings.log_level != old_settings.log_level)
     UpdateLogging();
 }
 
@@ -618,7 +618,7 @@ void LibretroHostInterface::UpdateControllers()
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    switch (m_settings.controller_types[i])
+    switch (g_settings.controller_types[i])
     {
       case ControllerType::None:
         break;
@@ -633,7 +633,7 @@ void LibretroHostInterface::UpdateControllers()
 
       default:
         ReportFormattedError("Unhandled controller type '%s'.",
-                             Settings::GetControllerTypeDisplayName(m_settings.controller_types[i]));
+                             Settings::GetControllerTypeDisplayName(g_settings.controller_types[i]));
         break;
     }
   }
@@ -875,8 +875,8 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
     wi.surface_width = avi.geometry.base_width;
     wi.surface_height = avi.geometry.base_height;
     wi.surface_scale = 1.0f;
-    if (!display || !display->CreateRenderDevice(wi, {}, g_libretro_host_interface.m_settings.gpu_use_debug_device) ||
-        !display->InitializeRenderDevice({}, m_settings.gpu_use_debug_device))
+    if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
+        !display->InitializeRenderDevice({}, g_settings.gpu_use_debug_device))
     {
       Log_ErrorPrintf("Failed to create hardware host display");
       return;

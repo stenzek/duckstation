@@ -108,7 +108,7 @@ bool SDLHostInterface::CreateDisplay()
   }
 
   std::unique_ptr<HostDisplay> display;
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
       display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
@@ -130,8 +130,8 @@ bool SDLHostInterface::CreateDisplay()
   }
 
   Assert(display);
-  if (!display->CreateRenderDevice(wi.value(), m_settings.gpu_adapter, m_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
+  if (!display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device) ||
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
   {
     ReportError("Failed to create/initialize display render device");
     return false;
@@ -209,7 +209,7 @@ bool SDLHostInterface::AcquireHostDisplay()
   // Handle renderer switch if required.
   const HostDisplay::RenderAPI render_api = m_display->GetRenderAPI();
   bool needs_switch = false;
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
@@ -345,7 +345,7 @@ void SDLHostInterface::SaveAndUpdateSettings()
 {
   m_settings_copy.Save(*m_settings_interface.get());
 
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
   CheckForSettingsChanges(old_settings);
 
@@ -451,7 +451,7 @@ void SDLHostInterface::LoadSettings()
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  m_settings_copy = m_settings;
+  m_settings_copy = g_settings;
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -800,7 +800,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   if (ImGui::BeginMenu("CPU Execution Mode"))
   {
-    const CPUExecutionMode current = m_settings.cpu_execution_mode;
+    const CPUExecutionMode current = g_settings.cpu_execution_mode;
     for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
     {
       if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
@@ -885,7 +885,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
 void SDLHostInterface::DrawDebugMenu()
 {
-  Settings::DebugSettings& debug_settings = m_settings.debugging;
+  Settings::DebugSettings& debug_settings = g_settings.debugging;
   bool settings_changed = false;
 
   if (ImGui::BeginMenu("Log Level"))
@@ -893,7 +893,7 @@ void SDLHostInterface::DrawDebugMenu()
     for (u32 i = LOGLEVEL_NONE; i < LOGLEVEL_COUNT; i++)
     {
       if (ImGui::MenuItem(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i)), nullptr,
-                          m_settings.log_level == static_cast<LOGLEVEL>(i)))
+                          g_settings.log_level == static_cast<LOGLEVEL>(i)))
       {
         m_settings_copy.log_level = static_cast<LOGLEVEL>(i);
         settings_changed = true;
@@ -1526,7 +1526,7 @@ void SDLHostInterface::Run()
   // Save state on exit so it can be resumed
   if (m_system)
   {
-    if (m_settings.save_state_on_exit)
+    if (g_settings.save_state_on_exit)
       SaveResumeSaveState();
     DestroySystem();
   }

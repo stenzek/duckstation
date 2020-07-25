@@ -44,9 +44,6 @@ public:
   /// Access to host audio stream.
   ALWAYS_INLINE AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
 
-  /// Returns a settings object which can be modified.
-  ALWAYS_INLINE Settings& GetSettings() { return m_settings; }
-
   /// Access to emulated system.
   ALWAYS_INLINE System* GetSystem() const { return m_system.get(); }
 
@@ -166,7 +163,6 @@ protected:
   std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
   std::unique_ptr<System> m_system;
-  Settings m_settings;
   std::string m_program_directory;
   std::string m_user_directory;
 };
