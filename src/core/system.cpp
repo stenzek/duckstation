@@ -56,7 +56,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_cpu = std::make_unique<CPU::Core>();
   m_cpu_code_cache = std::make_unique<CPU::CodeCache>();
   m_bus = std::make_unique<Bus>();
-  m_cdrom = std::make_unique<CDROM>();
   m_pad = std::make_unique<Pad>();
   m_mdec = std::make_unique<MDEC>();
   m_sio = std::make_unique<SIO>();
@@ -273,8 +272,8 @@ bool System::Boot(const SystemBootParameters& params)
 
   // Insert CD, and apply fastboot patch if enabled.
   if (media)
-    m_cdrom->InsertMedia(std::move(media));
-  if (m_cdrom->HasMedia() &&
+    g_cdrom.InsertMedia(std::move(media));
+  if (g_cdrom.HasMedia() &&
       (params.override_fast_boot.has_value() ? params.override_fast_boot.value() : g_settings.bios_patch_fast_boot))
   {
     BIOS::PatchBIOSFastBoot(*bios_image, bios_hash);
@@ -295,17 +294,16 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_cdrom.get(), m_pad.get(), m_mdec.get(),
-                    m_sio.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_pad.get(), m_mdec.get(), m_sio.get());
 
-  g_dma.Initialize(m_bus.get(), m_cdrom.get(), m_mdec.get());
+  g_dma.Initialize(m_bus.get(), m_mdec.get());
 
   g_interrupt_controller.Initialize(m_cpu.get());
 
-  m_cdrom->Initialize();
+  g_cdrom.Initialize();
   m_pad->Initialize();
   g_timers.Initialize();
-  g_spu.Initialize(m_cdrom.get());
+  g_spu.Initialize();
   m_mdec->Initialize();
 
   // load settings
@@ -321,7 +319,7 @@ void System::DestroyComponents()
   g_spu.Shutdown();
   g_timers.Shutdown();
   m_pad.reset();
-  m_cdrom.reset();
+  g_cdrom.Shutdown();
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
@@ -394,7 +392,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw))
     return false;
 
-  if (!sw.DoMarker("CDROM") || !m_cdrom->DoState(sw))
+  if (!sw.DoMarker("CDROM") || !g_cdrom.DoState(sw))
     return false;
 
   if (!sw.DoMarker("Pad") || !m_pad->DoState(sw))
@@ -426,7 +424,7 @@ void System::Reset()
   g_dma.Reset();
   g_interrupt_controller.Reset();
   g_gpu->Reset();
-  m_cdrom->Reset();
+  g_cdrom.Reset();
   m_pad->Reset();
   g_timers.Reset();
   g_spu.Reset();
@@ -471,7 +469,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
       return false;
     }
 
-    media = m_cdrom->RemoveMedia();
+    media = g_cdrom.RemoveMedia();
     if (!media || media->GetFileName() != media_filename)
     {
       media = OpenCDImage(media_filename.c_str(), false);
@@ -495,15 +493,15 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
     UpdateMemoryCards();
 
     if (media)
-      m_cdrom->InsertMedia(std::move(media));
+      g_cdrom.InsertMedia(std::move(media));
   }
   else
   {
-    m_cdrom->Reset();
+    g_cdrom.Reset();
     if (media)
-      m_cdrom->InsertMedia(std::move(media));
+      g_cdrom.InsertMedia(std::move(media));
     else
-      m_cdrom->RemoveMedia();
+      g_cdrom.RemoveMedia();
 
     // ensure the correct card is loaded
     if (g_settings.HasAnyPerGameMemoryCards())
@@ -537,9 +535,9 @@ bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   StringUtil::Strlcpy(header.title, m_running_game_title.c_str(), sizeof(header.title));
   StringUtil::Strlcpy(header.game_code, m_running_game_code.c_str(), sizeof(header.game_code));
 
-  if (m_cdrom->HasMedia())
+  if (g_cdrom.HasMedia())
   {
-    const std::string& media_filename = m_cdrom->GetMediaFileName();
+    const std::string& media_filename = g_cdrom.GetMediaFileName();
     header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
     header.media_filename_length = static_cast<u32>(media_filename.length());
     if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
@@ -980,7 +978,7 @@ void System::UpdateMemoryCards()
 
 bool System::HasMedia() const
 {
-  return m_cdrom->HasMedia();
+  return g_cdrom.HasMedia();
 }
 
 bool System::InsertMedia(const char* path)
@@ -990,7 +988,7 @@ bool System::InsertMedia(const char* path)
     return false;
 
   UpdateRunningGame(path, image.get());
-  m_cdrom->InsertMedia(std::move(image));
+  g_cdrom.InsertMedia(std::move(image));
   Log_InfoPrintf("Inserted media from %s (%s, %s)", m_running_game_path.c_str(), m_running_game_code.c_str(),
                  m_running_game_title.c_str());
 
@@ -1005,7 +1003,7 @@ bool System::InsertMedia(const char* path)
 
 void System::RemoveMedia()
 {
-  m_cdrom->RemoveMedia();
+  g_cdrom.RemoveMedia();
 }
 
 std::unique_ptr<TimingEvent> System::CreateTimingEvent(std::string name, TickCount period, TickCount interval,
@@ -1225,10 +1223,10 @@ void System::UpdateRunningGame(const char* path, CDImage* image)
 
 u32 System::GetMediaPlaylistIndex() const
 {
-  if (!m_cdrom->HasMedia())
+  if (!g_cdrom.HasMedia())
     return std::numeric_limits<u32>::max();
 
-  const std::string& media_path = m_cdrom->GetMediaFileName();
+  const std::string& media_path = g_cdrom.GetMediaFileName();
   for (u32 i = 0; i < static_cast<u32>(m_media_playlist.size()); i++)
   {
     if (m_media_playlist[i] == media_path)
@@ -1269,7 +1267,7 @@ bool System::RemoveMediaPathFromPlaylist(u32 index)
   if (GetMediaPlaylistIndex() == index)
   {
     m_host_interface->ReportMessage("Removing current media from playlist, removing media from CD-ROM.");
-    m_cdrom->RemoveMedia();
+    g_cdrom.RemoveMedia();
   }
 
   m_media_playlist.erase(m_media_playlist.begin() + index);
@@ -1284,7 +1282,7 @@ bool System::ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& pat
   if (GetMediaPlaylistIndex() == index)
   {
     m_host_interface->ReportMessage("Changing current media from playlist, replacing current media.");
-    m_cdrom->RemoveMedia();
+    g_cdrom.RemoveMedia();
 
     m_media_playlist[index] = path;
     InsertMedia(m_media_playlist[index].c_str());
@@ -1303,7 +1301,7 @@ bool System::SwitchMediaFromPlaylist(u32 index)
     return false;
 
   const std::string& path = m_media_playlist[index];
-  if (m_cdrom->HasMedia() && m_cdrom->GetMediaFileName() == path)
+  if (g_cdrom.HasMedia() && g_cdrom.GetMediaFileName() == path)
     return true;
 
   return InsertMedia(path.c_str());

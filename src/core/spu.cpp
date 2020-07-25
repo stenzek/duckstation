@@ -17,9 +17,8 @@ SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-void SPU::Initialize(CDROM* cdrom)
+void SPU::Initialize()
 {
-  m_cdrom = cdrom;
   m_tick_event = g_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
                                              std::bind(&SPU::Execute, this, std::placeholders::_1), false);
   m_transfer_event =
@@ -29,7 +28,6 @@ void SPU::Initialize(CDROM* cdrom)
 
 void SPU::Shutdown()
 {
-  m_cdrom = nullptr;
   m_tick_event.reset();
   m_transfer_event.reset();
   m_dump_writer.reset();
@@ -737,7 +735,7 @@ void SPU::Execute(TickCount ticks)
       UpdateNoise();
 
       // Mix in CD audio.
-      const auto [cd_audio_left, cd_audio_right] = m_cdrom->GetAudioFrame();
+      const auto [cd_audio_left, cd_audio_right] = g_cdrom.GetAudioFrame();
       if (m_SPUCNT.cd_audio_enable)
       {
         const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);

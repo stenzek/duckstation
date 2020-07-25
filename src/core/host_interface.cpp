@@ -482,7 +482,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
-      g_system->GetCDROM()->SetUseReadThread(g_settings.cdrom_read_thread);
+      g_cdrom.SetUseReadThread(g_settings.cdrom_read_thread);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths)

@@ -275,6 +275,8 @@ static std::array<CommandInfo, 255> s_command_info = {{
   0 // Unknown
 }};
 
+CDROM g_cdrom;
+
 CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
@@ -288,6 +290,14 @@ void CDROM::Initialize()
 
   if (g_settings.cdrom_read_thread)
     m_reader.StartThread();
+}
+
+void CDROM::Shutdown()
+{
+  m_command_event.reset();
+  m_drive_event.reset();
+  m_reader.StopThread();
+  m_reader.RemoveMedia();
 }
 
 void CDROM::Reset()

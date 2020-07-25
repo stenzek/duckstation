@@ -12,17 +12,16 @@
 #include <vector>
 
 class StateWrapper;
-
-class System;
 class TimingEvent;
 
-class CDROM
+class CDROM final
 {
 public:
   CDROM();
   ~CDROM();
 
   void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -342,3 +341,5 @@ private:
   // two 16-bit samples packed in 32-bits
   InlineFIFOQueue<u32, AUDIO_FIFO_SIZE> m_audio_fifo;
 };
+
+extern CDROM g_cdrom;

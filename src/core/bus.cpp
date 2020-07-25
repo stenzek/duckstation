@@ -36,11 +36,10 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, CDROM* cdrom, Pad* pad, MDEC* mdec, SIO* sio)
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, Pad* pad, MDEC* mdec, SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
-  m_cdrom = cdrom;
   m_pad = pad;
   m_mdec = mdec;
   m_sio = sio;
@@ -423,23 +422,23 @@ u32 Bus::DoReadCDROM(MemoryAccessSize size, u32 offset)
   {
     case MemoryAccessSize::Word:
     {
-      const u32 b0 = ZeroExtend32(m_cdrom->ReadRegister(offset));
-      const u32 b1 = ZeroExtend32(m_cdrom->ReadRegister(offset + 1u));
-      const u32 b2 = ZeroExtend32(m_cdrom->ReadRegister(offset + 2u));
-      const u32 b3 = ZeroExtend32(m_cdrom->ReadRegister(offset + 3u));
+      const u32 b0 = ZeroExtend32(g_cdrom.ReadRegister(offset));
+      const u32 b1 = ZeroExtend32(g_cdrom.ReadRegister(offset + 1u));
+      const u32 b2 = ZeroExtend32(g_cdrom.ReadRegister(offset + 2u));
+      const u32 b3 = ZeroExtend32(g_cdrom.ReadRegister(offset + 3u));
       return b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
     }
 
     case MemoryAccessSize::HalfWord:
     {
-      const u32 lsb = ZeroExtend32(m_cdrom->ReadRegister(offset));
-      const u32 msb = ZeroExtend32(m_cdrom->ReadRegister(offset + 1u));
+      const u32 lsb = ZeroExtend32(g_cdrom.ReadRegister(offset));
+      const u32 msb = ZeroExtend32(g_cdrom.ReadRegister(offset + 1u));
       return lsb | (msb << 8);
     }
 
     case MemoryAccessSize::Byte:
     default:
-      return ZeroExtend32(m_cdrom->ReadRegister(offset));
+      return ZeroExtend32(g_cdrom.ReadRegister(offset));
   }
 }
 
@@ -449,23 +448,23 @@ void Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
   {
     case MemoryAccessSize::Word:
     {
-      m_cdrom->WriteRegister(offset, Truncate8(value & 0xFFu));
-      m_cdrom->WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
-      m_cdrom->WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
-      m_cdrom->WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
+      g_cdrom.WriteRegister(offset, Truncate8(value & 0xFFu));
+      g_cdrom.WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+      g_cdrom.WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
+      g_cdrom.WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
     }
     break;
 
     case MemoryAccessSize::HalfWord:
     {
-      m_cdrom->WriteRegister(offset, Truncate8(value & 0xFFu));
-      m_cdrom->WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+      g_cdrom.WriteRegister(offset, Truncate8(value & 0xFFu));
+      g_cdrom.WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
     }
     break;
 
     case MemoryAccessSize::Byte:
     default:
-      return m_cdrom->WriteRegister(offset, Truncate8(value));
+      return g_cdrom.WriteRegister(offset, Truncate8(value));
   }
 }
 

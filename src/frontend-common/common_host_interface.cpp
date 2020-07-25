@@ -851,7 +851,7 @@ void CommonHostInterface::DrawDebugWindows()
   if (g_settings.debugging.show_gpu_state)
     g_gpu->DrawDebugStateWindow();
   if (g_settings.debugging.show_cdrom_state)
-    g_system->GetCDROM()->DrawDebugWindow();
+    g_cdrom.DrawDebugWindow();
   if (g_settings.debugging.show_timers_state)
     g_timers.DrawDebugStateWindow();
   if (g_settings.debugging.show_spu_state)
