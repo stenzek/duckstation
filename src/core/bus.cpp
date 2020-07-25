@@ -36,11 +36,10 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, Pad* pad, SIO* sio)
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
-  m_pad = pad;
   m_sio = sio;
 }
 
@@ -397,12 +396,12 @@ void Bus::DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadPad(MemoryAccessSize size, u32 offset)
 {
-  return m_pad->ReadRegister(offset);
+  return g_pad.ReadRegister(offset);
 }
 
 void Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
 {
-  m_pad->WriteRegister(offset, value);
+  g_pad.WriteRegister(offset, value);
 }
 
 u32 Bus::DoReadSIO(MemoryAccessSize size, u32 offset)

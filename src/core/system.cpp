@@ -56,7 +56,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_cpu = std::make_unique<CPU::Core>();
   m_cpu_code_cache = std::make_unique<CPU::CodeCache>();
   m_bus = std::make_unique<Bus>();
-  m_pad = std::make_unique<Pad>();
   m_sio = std::make_unique<SIO>();
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
@@ -293,14 +292,14 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_pad.get(), m_sio.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_sio.get());
 
   g_dma.Initialize(m_bus.get());
 
   g_interrupt_controller.Initialize(m_cpu.get());
 
   g_cdrom.Initialize();
-  m_pad->Initialize();
+  g_pad.Initialize();
   g_timers.Initialize();
   g_spu.Initialize();
   g_mdec.Initialize();
@@ -317,7 +316,7 @@ void System::DestroyComponents()
   g_mdec.Shutdown();
   g_spu.Shutdown();
   g_timers.Shutdown();
-  m_pad.reset();
+  g_pad.Shutdown();
   g_cdrom.Shutdown();
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
@@ -394,7 +393,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("CDROM") || !g_cdrom.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Pad") || !m_pad->DoState(sw))
+  if (!sw.DoMarker("Pad") || !g_pad.DoState(sw))
     return false;
 
   if (!sw.DoMarker("Timers") || !g_timers.DoState(sw))
@@ -424,7 +423,7 @@ void System::Reset()
   g_interrupt_controller.Reset();
   g_gpu->Reset();
   g_cdrom.Reset();
-  m_pad->Reset();
+  g_pad.Reset();
   g_timers.Reset();
   g_spu.Reset();
   g_mdec.Reset();
@@ -865,14 +864,14 @@ void System::StallCPU(TickCount ticks)
 
 Controller* System::GetController(u32 slot) const
 {
-  return m_pad->GetController(slot);
+  return g_pad.GetController(slot);
 }
 
 void System::UpdateControllers()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    m_pad->SetController(i, nullptr);
+    g_pad.SetController(i, nullptr);
 
     const ControllerType type = g_settings.controller_types[i];
     if (type != ControllerType::None)
@@ -881,7 +880,7 @@ void System::UpdateControllers()
       if (controller)
       {
         controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
-        m_pad->SetController(i, std::move(controller));
+        g_pad.SetController(i, std::move(controller));
       }
     }
   }
@@ -891,7 +890,7 @@ void System::UpdateControllerSettings()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    Controller* controller = m_pad->GetController(i);
+    Controller* controller = g_pad.GetController(i);
     if (controller)
       controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
   }
@@ -901,7 +900,7 @@ void System::ResetControllers()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    Controller* controller = m_pad->GetController(i);
+    Controller* controller = g_pad.GetController(i);
     if (controller)
       controller->Reset();
   }
@@ -911,7 +910,7 @@ void System::UpdateMemoryCards()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    m_pad->SetMemoryCard(i, nullptr);
+    g_pad.SetMemoryCard(i, nullptr);
 
     std::unique_ptr<MemoryCard> card;
     const MemoryCardType type = g_settings.memory_card_types[i];
@@ -971,7 +970,7 @@ void System::UpdateMemoryCards()
     }
 
     if (card)
-      m_pad->SetMemoryCard(i, std::move(card));
+      g_pad.SetMemoryCard(i, std::move(card));
   }
 }
 

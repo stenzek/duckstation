@@ -8,6 +8,8 @@
 #include "system.h"
 Log_SetChannel(Pad);
 
+Pad g_pad;
+
 Pad::Pad() = default;
 
 Pad::~Pad() = default;
@@ -16,6 +18,17 @@ void Pad::Initialize()
 {
   m_transfer_event = g_system->CreateTimingEvent("Pad Serial Transfer", 1, 1,
                                                  std::bind(&Pad::TransferEvent, this, std::placeholders::_2), false);
+}
+
+void Pad::Shutdown()
+{
+  m_transfer_event.reset();
+
+  for (u32 i = 0; i < NUM_SLOTS; i++)
+  {
+    m_controllers[i].reset();
+    m_memory_cards[i].reset();
+  }
 }
 
 void Pad::Reset()

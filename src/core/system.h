@@ -65,7 +65,6 @@ public:
   HostInterface* GetHostInterface() const { return m_host_interface; }
   CPU::Core* GetCPU() const { return m_cpu.get(); }
   Bus* GetBus() const { return m_bus.get(); }
-  Pad* GetPad() const { return m_pad.get(); }
 
   ConsoleRegion GetRegion() const { return m_region; }
   bool IsPALRegion() const { return m_region == ConsoleRegion::PAL; }
@@ -209,7 +208,6 @@ private:
   std::unique_ptr<CPU::Core> m_cpu;
   std::unique_ptr<CPU::CodeCache> m_cpu_code_cache;
   std::unique_ptr<Bus> m_bus;
-  std::unique_ptr<Pad> m_pad;
   std::unique_ptr<SIO> m_sio;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;

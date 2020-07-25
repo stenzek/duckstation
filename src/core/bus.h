@@ -80,7 +80,7 @@ public:
   Bus();
   ~Bus();
 
-  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, Pad* pad, SIO* sio);
+  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, SIO* sio);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -260,7 +260,6 @@ private:
 
   CPU::Core* m_cpu = nullptr;
   CPU::CodeCache* m_cpu_code_cache = nullptr;
-  Pad* m_pad = nullptr;
   SIO* m_sio = nullptr;
 
   std::array<TickCount, 3> m_exp1_access_time = {};

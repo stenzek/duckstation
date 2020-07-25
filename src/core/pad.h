@@ -11,13 +11,14 @@ class TimingEvent;
 class Controller;
 class MemoryCard;
 
-class Pad
+class Pad final
 {
 public:
   Pad();
   ~Pad();
 
   void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -124,3 +125,5 @@ private:
   bool m_receive_buffer_full = false;
   bool m_transmit_buffer_full = false;
 };
+
+extern Pad g_pad;
