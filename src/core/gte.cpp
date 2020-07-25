@@ -1085,4 +1085,81 @@ void ExecuteInstruction(u32 inst_bits)
   }
 }
 
+InstructionImpl GetInstructionImpl(u32 inst_bits)
+{
+  const Instruction inst{inst_bits};
+  switch (inst.command)
+  {
+    case 0x01:
+      return &Execute_RTPS;
+
+    case 0x06:
+      return &Execute_NCLIP;
+
+    case 0x0C:
+      return &Execute_OP;
+
+    case 0x10:
+      return &Execute_DPCS;
+
+    case 0x11:
+      return &Execute_INTPL;
+
+    case 0x12:
+      return &Execute_MVMVA;
+
+    case 0x13:
+      return &Execute_NCDS;
+
+    case 0x14:
+      return &Execute_CDP;
+
+    case 0x16:
+      return &Execute_NCDT;
+
+    case 0x1B:
+      return &Execute_NCCS;
+
+    case 0x1C:
+      return &Execute_CC;
+
+    case 0x1E:
+      return &Execute_NCS;
+
+    case 0x20:
+      return &Execute_NCT;
+
+    case 0x28:
+      return &Execute_SQR;
+
+    case 0x29:
+      return &Execute_DCPL;
+
+    case 0x2A:
+      return &Execute_DPCT;
+
+    case 0x2D:
+      return &Execute_AVSZ3;
+
+    case 0x2E:
+      return &Execute_AVSZ4;
+
+    case 0x30:
+      return &Execute_RTPT;
+
+    case 0x3D:
+      return &Execute_GPF;
+
+    case 0x3E:
+      return &Execute_GPL;
+
+    case 0x3F:
+      return &Execute_NCCT;
+
+    default:
+      Panic("Missing handler");
+      return nullptr;
+  }
+}
+
 } // namespace GTE

@@ -157,4 +157,7 @@ u32* GetRegisterPtr(u32 index);
 
 void ExecuteInstruction(u32 inst_bits);
 
+using InstructionImpl = void(*)(Instruction);
+InstructionImpl GetInstructionImpl(u32 inst_bits);
+
 } // namespace GTE

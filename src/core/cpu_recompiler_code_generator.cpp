@@ -1878,7 +1878,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     InstructionPrologue(cbi, 1);
 
     Value instruction_bits = Value::FromConstantU32(cbi.instruction.bits & GTE::Instruction::REQUIRED_BITS_MASK);
-    EmitFunctionCall(nullptr, &GTE::ExecuteInstruction, instruction_bits);
+    EmitFunctionCall(nullptr, GTE::GetInstructionImpl(cbi.instruction.bits), instruction_bits);
 
     InstructionEpilogue(cbi);
     return true;
