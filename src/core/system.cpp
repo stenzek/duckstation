@@ -59,7 +59,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_dma = std::make_unique<DMA>();
   m_cdrom = std::make_unique<CDROM>();
   m_pad = std::make_unique<Pad>();
-  m_timers = std::make_unique<Timers>();
   m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
   m_sio = std::make_unique<SIO>();
@@ -298,8 +297,8 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_cdrom.get(), m_pad.get(), m_timers.get(),
-                    m_spu.get(), m_mdec.get(), m_sio.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_cdrom.get(), m_pad.get(), m_spu.get(),
+                    m_mdec.get(), m_sio.get());
 
   m_dma->Initialize(m_bus.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
 
@@ -307,7 +306,7 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cdrom->Initialize(m_dma.get(), m_spu.get());
   m_pad->Initialize();
-  m_timers->Initialize();
+  g_timers.Initialize();
   m_spu->Initialize(m_dma.get(), m_cdrom.get());
   m_mdec->Initialize(m_dma.get());
 
@@ -322,7 +321,7 @@ void System::DestroyComponents()
 {
   m_mdec.reset();
   m_spu.reset();
-  m_timers.reset();
+  g_timers.Shutdown();
   m_pad.reset();
   m_cdrom.reset();
   g_gpu.reset();
@@ -357,12 +356,12 @@ bool System::CreateGPU(GPURenderer renderer)
       break;
   }
 
-  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), m_dma.get(), m_timers.get()))
+  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), m_dma.get()))
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
-    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), m_dma.get(), m_timers.get()))
+    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), m_dma.get()))
       return false;
   }
 
@@ -403,7 +402,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("Pad") || !m_pad->DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Timers") || !m_timers->DoState(sw))
+  if (!sw.DoMarker("Timers") || !g_timers.DoState(sw))
     return false;
 
   if (!sw.DoMarker("SPU") || !m_spu->DoState(sw))
@@ -431,7 +430,7 @@ void System::Reset()
   g_gpu->Reset();
   m_cdrom->Reset();
   m_pad->Reset();
-  m_timers->Reset();
+  g_timers.Reset();
   m_spu->Reset();
   m_mdec->Reset();
   m_sio->Reset();

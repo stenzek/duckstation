@@ -121,7 +121,7 @@ public:
 
   virtual bool IsHardwareRenderer() const = 0;
 
-  virtual bool Initialize(HostDisplay* host_display, DMA* dma, Timers* timers);
+  virtual bool Initialize(HostDisplay* host_display, DMA* dma);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
@@ -451,7 +451,6 @@ protected:
 
   HostDisplay* m_host_display = nullptr;
   DMA* m_dma = nullptr;
-  Timers* m_timers = nullptr;
 
   std::unique_ptr<TimingEvent> m_crtc_tick_event;
   std::unique_ptr<TimingEvent> m_command_tick_event;

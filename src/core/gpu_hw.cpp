@@ -20,9 +20,9 @@ bool GPU_HW::IsHardwareRenderer() const
   return true;
 }
 
-bool GPU_HW::Initialize(HostDisplay* host_display, DMA* dma, Timers* timers)
+bool GPU_HW::Initialize(HostDisplay* host_display, DMA* dma)
 {
-  if (!GPU::Initialize(host_display, dma, timers))
+  if (!GPU::Initialize(host_display, dma))
     return false;
 
   m_resolution_scale = g_settings.gpu_resolution_scale;

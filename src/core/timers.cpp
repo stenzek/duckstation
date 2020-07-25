@@ -7,6 +7,8 @@
 #include <imgui.h>
 Log_SetChannel(Timers);
 
+Timers g_timers;
+
 Timers::Timers() = default;
 
 Timers::~Timers() = default;
@@ -15,6 +17,11 @@ void Timers::Initialize()
 {
   m_sysclk_event = g_system->CreateTimingEvent("Timer SysClk Interrupt", 1, 1,
                                                std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
+}
+
+void Timers::Shutdown()
+{
+  m_sysclk_event.reset();
 }
 
 void Timers::Reset()

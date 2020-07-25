@@ -853,7 +853,7 @@ void CommonHostInterface::DrawDebugWindows()
   if (g_settings.debugging.show_cdrom_state)
     g_system->GetCDROM()->DrawDebugWindow();
   if (g_settings.debugging.show_timers_state)
-    g_system->GetTimers()->DrawDebugStateWindow();
+    g_timers.DrawDebugStateWindow();
   if (g_settings.debugging.show_spu_state)
     g_system->GetSPU()->DrawDebugStateWindow();
   if (g_settings.debugging.show_mdec_state)

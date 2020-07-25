@@ -19,7 +19,7 @@ GPU_HW_D3D11::~GPU_HW_D3D11()
   }
 }
 
-bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, DMA* dma, Timers* timers)
+bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, DMA* dma)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)
   {
@@ -29,7 +29,7 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, DMA* dma, Timers* timer
 
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display, dma, timers))
+  if (!GPU_HW::Initialize(host_display, dma))
     return false;
 
   m_device = static_cast<ID3D11Device*>(host_display->GetRenderDevice());

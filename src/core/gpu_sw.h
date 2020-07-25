@@ -14,7 +14,7 @@ public:
 
   bool IsHardwareRenderer() const override;
 
-  bool Initialize(HostDisplay* host_display, DMA* dma, Timers* timers) override;
+  bool Initialize(HostDisplay* host_display, DMA* dma) override;
   void Reset() override;
 
   u16 GetPixel(u32 x, u32 y) const { return m_vram[VRAM_WIDTH * y + x]; }

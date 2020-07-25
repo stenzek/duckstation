@@ -9,13 +9,14 @@ class StateWrapper;
 class TimingEvent;
 class GPU;
 
-class Timers
+class Timers final
 {
 public:
   Timers();
   ~Timers();
 
   void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -24,10 +25,10 @@ public:
   void DrawDebugStateWindow();
 
   // dot clock/hblank/sysclk div 8
-  bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
+  ALWAYS_INLINE bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
 
   // queries for GPU
-  bool IsExternalIRQEnabled(u32 timer) const
+  ALWAYS_INLINE bool IsExternalIRQEnabled(u32 timer) const
   {
     const CounterState& cs = m_states[timer];
     return (cs.external_counting_enabled && (cs.mode.bits & ((1u << 4) | (1u << 5))) != 0);
@@ -93,3 +94,5 @@ private:
   std::array<CounterState, NUM_TIMERS> m_states{};
   u32 m_sysclk_div_8_carry = 0; // partial ticks for timer 3 with sysclk/8
 };
+
+extern Timers g_timers;

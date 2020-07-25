@@ -25,7 +25,7 @@ GPU_HW_Vulkan::~GPU_HW_Vulkan()
   DestroyResources();
 }
 
-bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, DMA* dma, Timers* timers)
+bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, DMA* dma)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::Vulkan)
   {
@@ -36,7 +36,7 @@ bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, DMA* dma, Timers* time
   Assert(g_vulkan_shader_cache);
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display, dma, timers))
+  if (!GPU_HW::Initialize(host_display, dma))
     return false;
 
   if (!CreatePipelineLayouts())

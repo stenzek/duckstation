@@ -36,8 +36,7 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
-                     CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu,
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, CDROM* cdrom, Pad* pad, SPU* spu,
                      MDEC* mdec, SIO* sio)
 {
   m_cpu = cpu;
@@ -45,7 +44,6 @@ void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
   m_dma = dma;
   m_cdrom = cdrom;
   m_pad = pad;
-  m_timers = timers;
   m_spu = spu;
   m_mdec = mdec;
   m_sio = sio;
@@ -515,7 +513,7 @@ void Bus::DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 valu
 
 u32 Bus::DoReadTimers(MemoryAccessSize size, u32 offset)
 {
-  u32 value = m_timers->ReadRegister(offset);
+  u32 value = g_timers.ReadRegister(offset);
   FixupUnalignedWordAccessW32(offset, value);
   return value;
 }
@@ -523,7 +521,7 @@ u32 Bus::DoReadTimers(MemoryAccessSize size, u32 offset)
 void Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
-  m_timers->WriteRegister(offset, value);
+  g_timers.WriteRegister(offset, value);
 }
 
 u32 Bus::DoReadSPU(MemoryAccessSize size, u32 offset)

@@ -69,7 +69,6 @@ public:
   DMA* GetDMA() const { return m_dma.get(); }
   CDROM* GetCDROM() const { return m_cdrom.get(); }
   Pad* GetPad() const { return m_pad.get(); }
-  Timers* GetTimers() const { return m_timers.get(); }
   SPU* GetSPU() const { return m_spu.get(); }
   MDEC* GetMDEC() const { return m_mdec.get(); }
 
@@ -218,7 +217,6 @@ private:
   std::unique_ptr<DMA> m_dma;
   std::unique_ptr<CDROM> m_cdrom;
   std::unique_ptr<Pad> m_pad;
-  std::unique_ptr<Timers> m_timers;
   std::unique_ptr<SPU> m_spu;
   std::unique_ptr<MDEC> m_mdec;
   std::unique_ptr<SIO> m_sio;
