@@ -273,7 +273,7 @@ bool GPU_HW_D3D11::CreateBatchInputLayout()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_supports_dual_source_blend);
   ComPtr<ID3DBlob> vs_bytecode =
-    m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true));
+    m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true, false));
   if (!vs_bytecode)
     return false;
 
@@ -379,7 +379,7 @@ bool GPU_HW_D3D11::CompileShaders()
 
   for (u8 textured = 0; textured < 2; textured++)
   {
-    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured));
+    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), false);
     m_batch_vertex_shaders[textured] = m_shader_cache.GetVertexShader(m_device.Get(), vs);
     if (!m_batch_vertex_shaders[textured])
       return false;

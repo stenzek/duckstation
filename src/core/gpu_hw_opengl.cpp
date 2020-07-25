@@ -348,7 +348,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
-          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured);
+          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured, false);
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
@@ -397,9 +397,10 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
           if (!textured && m_supports_geometry_shaders)
           {
+            const std::string line_expand_vs = shadergen.GenerateBatchVertexShader(textured, true);
             const std::string line_expand_gs = shadergen.GenerateBatchLineExpandGeometryShader();
 
-            prog = m_shader_cache.GetProgram(batch_vs, line_expand_gs, fs, link_callback);
+            prog = m_shader_cache.GetProgram(line_expand_vs, line_expand_gs, fs, link_callback);
             if (!prog)
               return false;
 

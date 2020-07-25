@@ -295,7 +295,7 @@ void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* n
 void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
   std::stringstream& ss, const std::initializer_list<const char*>& attributes, u32 num_color_outputs,
   u32 num_texcoord_outputs, const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
-  bool declare_vertex_id)
+  bool declare_vertex_id, const char* output_block_suffix)
 {
   if (m_glsl)
   {
@@ -319,7 +319,7 @@ void GPU_HW_ShaderGen::DeclareVertexEntryPoint(
       if (IsVulkan())
         ss << "layout(location = 0) ";
 
-      ss << "out VertexData {\n";
+      ss << "out VertexData" << output_block_suffix << " {\n";
       for (u32 i = 0; i < num_color_outputs; i++)
         ss << "  float4 v_col" << i << ";\n";
 
@@ -502,7 +502,7 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
                        false);
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
+std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool upscaled_lines)
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -513,14 +513,15 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   ss << "CONSTANT float EPSILON = 0.00001;\n";
 
+  const char* output_block_suffix = upscaled_lines ? "VS" : "";
   if (textured)
   {
     DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                            {{"nointerpolation", "uint4 v_texpage"}}, false);
+                            {{"nointerpolation", "uint4 v_texpage"}}, false, output_block_suffix);
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0"}, 1, 0, {}, false);
+    DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0"}, 1, 0, {}, false, output_block_suffix);
   }
 
   ss << R"(
@@ -899,7 +900,7 @@ CONSTANT float2 WIDTH = (float(RESOLUTION_SCALE * 2u) / float2(VRAM_SIZE));
     if (IsVulkan())
       ss << "layout(location = 0) ";
 
-    ss << R"(in VertexData {
+    ss << R"(in VertexDataVS {
   float4 v_col0;
 } in_data[];)";
 

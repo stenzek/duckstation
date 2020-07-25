@@ -578,7 +578,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
-  DimensionalArray<VkShaderModule, 2> batch_vertex_shaders{};
+  DimensionalArray<VkShaderModule, 2, 2> batch_vertex_shaders{};
   DimensionalArray<VkShaderModule, 2, 2, 9, 4> batch_fragment_shaders{};
   VkShaderModule batch_line_geometry_shader = VK_NULL_HANDLE;
   Common::ScopeGuard batch_shader_guard(
@@ -590,12 +590,12 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   for (u8 textured = 0; textured < 2; textured++)
   {
-    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured));
+    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), false);
     VkShaderModule shader = g_vulkan_shader_cache->GetVertexShader(vs);
     if (shader == VK_NULL_HANDLE)
       return false;
 
-    batch_vertex_shaders[textured] = shader;
+    batch_vertex_shaders[textured][0] = shader;
   }
 
   for (u8 render_mode = 0; render_mode < 4; render_mode++)
@@ -628,6 +628,16 @@ bool GPU_HW_Vulkan::CompilePipelines()
       batch_line_geometry_shader = g_vulkan_shader_cache->GetGeometryShader(gs);
       if (batch_line_geometry_shader == VK_NULL_HANDLE)
         return false;
+
+      for (u8 textured = 0; textured < 2; textured++)
+      {
+        const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), true);
+        VkShaderModule shader = g_vulkan_shader_cache->GetVertexShader(vs);
+        if (shader == VK_NULL_HANDLE)
+          return false;
+
+        batch_vertex_shaders[textured][1] = shader;
+      }
     }
     else
     {
@@ -667,17 +677,18 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 }
 
                 gpbuilder.SetPrimitiveTopology(primitive_mapping[primitive]);
-                gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)]);
                 gpbuilder.SetFragmentShader(batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing]);
                 if (static_cast<BatchPrimitive>(primitive) == BatchPrimitive::Lines &&
                     batch_line_geometry_shader != VK_NULL_HANDLE)
                 {
+                  gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)][1]);
                   gpbuilder.SetGeometryShader(batch_line_geometry_shader);
                   gpbuilder.SetRasterizationState(polygon_mode_mapping[static_cast<u8>(BatchPrimitive::Triangles)],
                                                   VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
                 }
                 else
                 {
+                  gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)][0]);
                   gpbuilder.SetRasterizationState(polygon_mode_mapping[primitive], VK_CULL_MODE_NONE,
                                                   VK_FRONT_FACE_CLOCKWISE);
                 }

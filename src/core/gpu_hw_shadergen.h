@@ -13,7 +13,7 @@ public:
 
   static bool UseGLSLBindingLayout();
 
-  std::string GenerateBatchVertexShader(bool textured);
+  std::string GenerateBatchVertexShader(bool textured, bool upscaled_lines);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPU::TextureMode texture_mode,
                                           bool dithering, bool interlacing);
   std::string GenerateBatchLineExpandGeometryShader();
@@ -39,7 +39,7 @@ private:
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,
                                u32 num_color_outputs, u32 num_texcoord_outputs,
                                const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
-                               bool declare_vertex_id = false);
+                               bool declare_vertex_id = false, const char* output_block_suffix = "");
   void DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
                                  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
                                  bool declare_fragcoord = false, u32 num_color_outputs = 1, bool depth_output = false);
