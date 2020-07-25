@@ -295,8 +295,7 @@ void Core::PushSXY(s32 x, s32 y)
 
   m_regs.dr32[12] = m_regs.dr32[13]; // SXY0 <- SXY1
   m_regs.dr32[13] = m_regs.dr32[14]; // SXY1 <- SXY2
-  m_regs.SXY2[0] = static_cast<s16>(x);
-  m_regs.SXY2[1] = static_cast<s16>(y);
+  m_regs.dr32[14] = (static_cast<u32>(x) & 0xFFFFu) | (static_cast<u32>(y) << 16);
 }
 
 void Core::PushSZ(s32 value)
