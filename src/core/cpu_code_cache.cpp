@@ -16,6 +16,9 @@ constexpr bool USE_BLOCK_LINKING = true;
 
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+#ifdef WITH_RECOMPILER
+static u8 s_code_buffer[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
+#endif
 
 CodeCache::CodeCache() = default;
 
@@ -33,7 +36,8 @@ void CodeCache::Initialize(System* system, Core* core, Bus* bus, bool use_recomp
 
 #ifdef WITH_RECOMPILER
   m_use_recompiler = use_recompiler;
-  m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
+  //m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
+   m_code_buffer = std::make_unique<JitCodeBuffer>(s_code_buffer, sizeof(s_code_buffer), RECOMPILER_FAR_CODE_CACHE_SIZE);
   m_asm_functions = std::make_unique<Recompiler::ASMFunctions>();
   m_asm_functions->Generate(m_code_buffer.get());
 #else
