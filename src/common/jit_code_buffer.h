@@ -5,6 +5,7 @@ class JitCodeBuffer
 {
 public:
   JitCodeBuffer(u32 size = 64 * 1024 * 1024, u32 far_code_size = 0);
+  JitCodeBuffer(void* buffer, u32 size, u32 far_code_size = 0);
   ~JitCodeBuffer();
 
   void Reset();
@@ -36,5 +37,7 @@ private:
   u32 m_far_code_used;
 
   u32 m_total_size;
+  u32 m_old_protection;
+  bool m_owns_buffer;
 };
 

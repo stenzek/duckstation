@@ -33,15 +33,66 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
   if (!m_code_ptr)
     Panic("Failed to allocate code space.");
+
+  m_old_protection = 0;
+  m_owns_buffer = true;
+}
+
+JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size /* = 0 */)
+{
+#if defined(WIN32)
+  DWORD old_protect = 0;
+  if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
+    Panic("Failed to change protection of code space");
+
+  m_code_ptr = static_cast<u8*>(buffer);
+  m_old_protection = static_cast<u32>(old_protect);
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+  if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
+    Panic("Failed to change protection of code space");
+
+  // reasonable default?
+  m_code_ptr = static_cast<u8*>(buffer);
+  m_old_protection = PROT_READ | PROT_WRITE;
+#else
+  m_code_ptr = nullptr;
+#endif
+
+  m_total_size = size;
+  m_free_code_ptr = m_code_ptr;
+  m_code_size = size - far_code_size;
+  m_code_used = 0;
+
+  m_far_code_ptr = static_cast<u8*>(m_code_ptr) + m_code_size;
+  m_free_far_code_ptr = m_far_code_ptr;
+  m_far_code_size = far_code_size;
+  m_far_code_used = 0;
+
+  if (!m_code_ptr)
+    Panic("Failed to allocate code space.");
+
+  m_owns_buffer = false;
 }
 
 JitCodeBuffer::~JitCodeBuffer()
 {
+  if (m_owns_buffer)
+  {
 #if defined(WIN32)
-  VirtualFree(m_code_ptr, 0, MEM_RELEASE);
+    VirtualFree(m_code_ptr, 0, MEM_RELEASE);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-  munmap(m_code_ptr, m_total_size);
+    munmap(m_code_ptr, m_total_size);
 #endif
+  }
+  else if (m_code_ptr)
+  {
+#if defined(WIN32)
+    DWORD old_protect = 0;
+    VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect);
+#else
+    mprotect(m_code_ptr, m_total_size, m_old_protection);
+#endif
+  }
 }
 
 void JitCodeBuffer::CommitCode(u32 length)
