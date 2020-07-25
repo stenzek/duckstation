@@ -38,6 +38,7 @@ public:
   ~DMA();
 
   void Initialize(Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec);
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -206,3 +207,5 @@ private:
     }
   } m_DICR = {};
 };
+
+extern DMA g_dma;

@@ -80,8 +80,8 @@ public:
   Bus();
   ~Bus();
 
-  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, CDROM* cdrom, Pad* pad, SPU* spu,
-                  MDEC* mdec, SIO* sio);
+  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, CDROM* cdrom, Pad* pad, SPU* spu, MDEC* mdec,
+                  SIO* sio);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -261,7 +261,6 @@ private:
 
   CPU::Core* m_cpu = nullptr;
   CPU::CodeCache* m_cpu_code_cache = nullptr;
-  DMA* m_dma = nullptr;
   CDROM* m_cdrom = nullptr;
   Pad* m_pad = nullptr;
   SPU* m_spu = nullptr;

@@ -11,6 +11,8 @@
 #include "system.h"
 Log_SetChannel(DMA);
 
+DMA g_dma;
+
 DMA::DMA() = default;
 
 DMA::~DMA() = default;
@@ -28,6 +30,11 @@ void DMA::Initialize(Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec)
   m_transfer_buffer.resize(32);
   m_unhalt_event = g_system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
                                                std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+}
+
+void DMA::Shutdown()
+{
+  m_unhalt_event.reset();
 }
 
 void DMA::Reset()

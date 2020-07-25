@@ -11,9 +11,8 @@ MDEC::MDEC() = default;
 
 MDEC::~MDEC() = default;
 
-void MDEC::Initialize(DMA* dma)
+void MDEC::Initialize()
 {
-  m_dma = dma;
   m_block_copy_out_event = g_system->CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
                                                        std::bind(&MDEC::CopyOutBlock, this), false);
 }
@@ -175,12 +174,12 @@ void MDEC::UpdateStatus()
   // we always want data in if it's enabled
   const bool data_in_request = m_enable_dma_in && m_data_in_fifo.GetSpace() >= (32 * 2);
   m_status.data_in_request = data_in_request;
-  m_dma->SetRequest(DMA::Channel::MDECin, data_in_request);
+  g_dma.SetRequest(DMA::Channel::MDECin, data_in_request);
 
   // we only want to send data out if we have some in the fifo
   const bool data_out_request = m_enable_dma_out && !m_data_out_fifo.IsEmpty();
   m_status.data_out_request = data_out_request;
-  m_dma->SetRequest(DMA::Channel::MDECout, data_out_request);
+  g_dma.SetRequest(DMA::Channel::MDECout, data_out_request);
 }
 
 u32 MDEC::ReadDataRegister()

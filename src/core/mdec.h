@@ -8,7 +8,6 @@
 class StateWrapper;
 
 class TimingEvent;
-class DMA;
 
 class MDEC
 {
@@ -16,7 +15,7 @@ public:
   MDEC();
   ~MDEC();
 
-  void Initialize(DMA* dma);
+  void Initialize();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -120,8 +119,6 @@ private:
   void yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
                   const std::array<s16, 64>& Yblk);
   void y_to_mono(const std::array<s16, 64>& Yblk);
-
-  DMA* m_dma = nullptr;
 
   StatusRegister m_status = {};
   bool m_enable_dma_in = false;

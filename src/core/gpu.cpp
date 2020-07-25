@@ -21,10 +21,9 @@ GPU::GPU() = default;
 
 GPU::~GPU() = default;
 
-bool GPU::Initialize(HostDisplay* host_display, DMA* dma)
+bool GPU::Initialize(HostDisplay* host_display)
 {
   m_host_display = host_display;
-  m_dma = dma;
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
   m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
@@ -271,7 +270,7 @@ void GPU::UpdateDMARequest()
       break;
   }
   m_GPUSTAT.dma_data_request = dma_request;
-  m_dma->SetRequest(DMA::Channel::GPU, dma_request);
+  g_dma.SetRequest(DMA::Channel::GPU, dma_request);
 }
 
 void GPU::UpdateGPUIdle()

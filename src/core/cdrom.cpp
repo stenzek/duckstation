@@ -279,9 +279,8 @@ CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
 
-void CDROM::Initialize(DMA* dma, SPU* spu)
+void CDROM::Initialize(SPU* spu)
 {
-  m_dma = dma;
   m_spu = spu;
   m_command_event =
     g_system->CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
@@ -785,7 +784,7 @@ void CDROM::UpdateStatusRegister()
   m_status.DRQSTS = !m_data_fifo.IsEmpty();
   m_status.BUSYSTS = HasPendingCommand();
 
-  m_dma->SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
+  g_dma.SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
 }
 
 void CDROM::UpdateInterruptRequest()

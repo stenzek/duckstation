@@ -17,7 +17,6 @@ class CodeCache;
 } // namespace CPU
 
 class Bus;
-class DMA;
 class GPU;
 class CDROM;
 class Pad;
@@ -66,7 +65,6 @@ public:
   HostInterface* GetHostInterface() const { return m_host_interface; }
   CPU::Core* GetCPU() const { return m_cpu.get(); }
   Bus* GetBus() const { return m_bus.get(); }
-  DMA* GetDMA() const { return m_dma.get(); }
   CDROM* GetCDROM() const { return m_cdrom.get(); }
   Pad* GetPad() const { return m_pad.get(); }
   SPU* GetSPU() const { return m_spu.get(); }
@@ -214,7 +212,6 @@ private:
   std::unique_ptr<CPU::Core> m_cpu;
   std::unique_ptr<CPU::CodeCache> m_cpu_code_cache;
   std::unique_ptr<Bus> m_bus;
-  std::unique_ptr<DMA> m_dma;
   std::unique_ptr<CDROM> m_cdrom;
   std::unique_ptr<Pad> m_pad;
   std::unique_ptr<SPU> m_spu;

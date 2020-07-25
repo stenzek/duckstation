@@ -36,12 +36,11 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, CDROM* cdrom, Pad* pad, SPU* spu,
-                     MDEC* mdec, SIO* sio)
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, CDROM* cdrom, Pad* pad, SPU* spu, MDEC* mdec,
+                     SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
-  m_dma = dma;
   m_cdrom = cdrom;
   m_pad = pad;
   m_spu = spu;
@@ -586,7 +585,7 @@ void Bus::DoInvalidateCodeCache(u32 page_index)
 
 u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)
 {
-  return FIXUP_WORD_READ_VALUE(offset, m_dma->ReadRegister(FIXUP_WORD_READ_OFFSET(offset)));
+  return FIXUP_WORD_READ_VALUE(offset, g_dma.ReadRegister(FIXUP_WORD_READ_OFFSET(offset)));
 }
 
 void Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
@@ -607,5 +606,5 @@ void Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
       break;
   }
 
-  m_dma->WriteRegister(offset, value);
+  g_dma.WriteRegister(offset, value);
 }

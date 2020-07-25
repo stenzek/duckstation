@@ -15,9 +15,8 @@ SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-void SPU::Initialize(DMA* dma, CDROM* cdrom)
+void SPU::Initialize(CDROM* cdrom)
 {
-  m_dma = dma;
   m_cdrom = cdrom;
   m_tick_event = g_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
                                              std::bind(&SPU::Execute, this, std::placeholders::_1), false);
@@ -928,7 +927,7 @@ void SPU::UpdateDMARequest()
   }
 
   // This might call us back directly.
-  m_dma->SetRequest(DMA::Channel::SPU, m_SPUSTAT.dma_request);
+  g_dma.SetRequest(DMA::Channel::SPU, m_SPUSTAT.dma_request);
 }
 
 void SPU::DMARead(u32* words, u32 word_count)

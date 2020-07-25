@@ -27,7 +27,7 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   }
 }
 
-bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, DMA* dma)
+bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL &&
       host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGLES)
@@ -40,7 +40,7 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, DMA* dma)
 
   m_shader_cache.Open(IsGLES(), g_system->GetHostInterface()->GetShaderCacheBasePath());
 
-  if (!GPU_HW::Initialize(host_display, dma))
+  if (!GPU_HW::Initialize(host_display))
     return false;
 
   if (!CreateFramebuffer())

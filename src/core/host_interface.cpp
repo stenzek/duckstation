@@ -490,8 +490,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       g_system->UpdateMemoryCards();
     }
 
-    g_system->GetDMA()->SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
-    g_system->GetDMA()->SetHaltTicks(g_settings.dma_halt_ticks);
+    g_dma.SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
+    g_dma.SetHaltTicks(g_settings.dma_halt_ticks);
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack)
       GTE::SetWidescreenHack(g_settings.gpu_widescreen_hack);

@@ -12,7 +12,6 @@ class WAVWriter;
 }
 
 class TimingEvent;
-class DMA;
 class CDROM;
 
 class SPU
@@ -21,7 +20,7 @@ public:
   SPU();
   ~SPU();
 
-  void Initialize(DMA* dma, CDROM* cdrom);
+  void Initialize(CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -367,7 +366,6 @@ private:
   void UpdateTransferEvent();
   void UpdateDMARequest();
 
-  DMA* m_dma = nullptr;
   CDROM* m_cdrom = nullptr;
   std::unique_ptr<TimingEvent> m_tick_event;
   std::unique_ptr<TimingEvent> m_transfer_event;

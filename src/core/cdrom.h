@@ -15,7 +15,6 @@ class StateWrapper;
 
 class System;
 class TimingEvent;
-class DMA;
 class SPU;
 
 class CDROM
@@ -24,7 +23,7 @@ public:
   CDROM();
   ~CDROM();
 
-  void Initialize(DMA* dma, SPU* spu);
+  void Initialize(SPU* spu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -275,7 +274,6 @@ private:
   template<bool STEREO, bool SAMPLE_RATE>
   void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
-  DMA* m_dma = nullptr;
   SPU* m_spu = nullptr;
   std::unique_ptr<TimingEvent> m_command_event;
   std::unique_ptr<TimingEvent> m_drive_event;
