@@ -849,7 +849,7 @@ void CommonHostInterface::DrawOSDMessages()
 void CommonHostInterface::DrawDebugWindows()
 {
   if (g_settings.debugging.show_gpu_state)
-    m_system->GetGPU()->DrawDebugStateWindow();
+    g_gpu->DrawDebugStateWindow();
   if (g_settings.debugging.show_cdrom_state)
     m_system->GetCDROM()->DrawDebugWindow();
   if (g_settings.debugging.show_timers_state)
@@ -1989,9 +1989,9 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     filename = auto_filename.c_str();
   }
 
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  g_gpu->ResetGraphicsAPIState();
   const bool screenshot_saved = m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio);
-  m_system->GetGPU()->RestoreGraphicsAPIState();
+  g_gpu->RestoreGraphicsAPIState();
   if (!screenshot_saved)
   {
     AddFormattedOSDMessage(10.0f, "Failed to save screenshot to '%s'", filename);

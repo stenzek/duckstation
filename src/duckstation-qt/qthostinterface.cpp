@@ -1095,14 +1095,14 @@ void QtHostInterface::threadEntryPoint()
 
 void QtHostInterface::renderDisplay()
 {
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  g_gpu->ResetGraphicsAPIState();
 
   DrawImGuiWindows();
 
   m_display->Render();
   ImGui::NewFrame();
 
-  m_system->GetGPU()->RestoreGraphicsAPIState();
+  g_gpu->RestoreGraphicsAPIState();
 }
 
 void QtHostInterface::wakeThread()

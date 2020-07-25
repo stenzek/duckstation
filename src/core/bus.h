@@ -82,7 +82,7 @@ public:
   ~Bus();
 
   void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, InterruptController* interrupt_controller,
-                  GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu, MDEC* mdec, SIO* sio);
+                  CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu, MDEC* mdec, SIO* sio);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -102,9 +102,6 @@ public:
 
   void SetExpansionROM(std::vector<u8> data);
   void SetBIOS(const std::vector<u8>& image);
-
-  // changing interfaces
-  void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
   /// Returns the address which should be used for code caching (i.e. removes mirrors).
   ALWAYS_INLINE static PhysicalMemoryAddress UnmirrorAddress(PhysicalMemoryAddress address)
@@ -267,7 +264,6 @@ private:
   CPU::CodeCache* m_cpu_code_cache = nullptr;
   DMA* m_dma = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
-  GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
   Pad* m_pad = nullptr;
   Timers* m_timers = nullptr;

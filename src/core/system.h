@@ -69,7 +69,6 @@ public:
   Bus* GetBus() const { return m_bus.get(); }
   DMA* GetDMA() const { return m_dma.get(); }
   InterruptController* GetInterruptController() const { return m_interrupt_controller.get(); }
-  GPU* GetGPU() const { return m_gpu.get(); }
   CDROM* GetCDROM() const { return m_cdrom.get(); }
   Pad* GetPad() const { return m_pad.get(); }
   Timers* GetTimers() const { return m_timers.get(); }
@@ -220,7 +219,6 @@ private:
   std::unique_ptr<Bus> m_bus;
   std::unique_ptr<DMA> m_dma;
   std::unique_ptr<InterruptController> m_interrupt_controller;
-  std::unique_ptr<GPU> m_gpu;
   std::unique_ptr<CDROM> m_cdrom;
   std::unique_ptr<Pad> m_pad;
   std::unique_ptr<Timers> m_timers;

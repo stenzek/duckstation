@@ -38,7 +38,7 @@ public:
   DMA();
   ~DMA();
 
-  void Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, SPU* spu,
+  void Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, CDROM* cdrom, SPU* spu,
                   MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -49,7 +49,6 @@ public:
   void SetRequest(Channel channel, bool request);
 
   // changing interfaces
-  void SetGPU(GPU* gpu) { m_gpu = gpu; }
   void SetMaxSliceTicks(TickCount ticks) { m_max_slice_ticks = ticks; }
   void SetHaltTicks(TickCount ticks) { m_halt_ticks = ticks; }
 
@@ -85,7 +84,6 @@ private:
   System* m_system = nullptr;
   Bus* m_bus = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
-  GPU* m_gpu = nullptr;
   CDROM* m_cdrom = nullptr;
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;

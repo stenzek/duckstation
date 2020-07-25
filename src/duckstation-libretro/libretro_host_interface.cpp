@@ -259,11 +259,11 @@ void LibretroHostInterface::retro_run_frame()
 
   UpdateControllers();
 
-  m_system->GetGPU()->RestoreGraphicsAPIState();
+  g_gpu->RestoreGraphicsAPIState();
 
   m_system->RunFrame();
 
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  g_gpu->ResetGraphicsAPIState();
 
   m_display->Render();
 }

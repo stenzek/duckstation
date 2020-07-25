@@ -159,8 +159,7 @@ void NamcoGunCon::UpdatePosition()
 
   // are we within the active display area?
   u32 tick, line;
-  if (mouse_x < 0 || mouse_y < 0 ||
-      !m_system->GetGPU()->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line))
+  if (mouse_x < 0 || mouse_y < 0 || !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line))
   {
     Log_DebugPrintf("Lightgun out of range for window coordinates %d,%d", mouse_x, mouse_y);
     m_position_x = 0x01;
@@ -169,7 +168,7 @@ void NamcoGunCon::UpdatePosition()
   }
 
   // 8MHz units for X = 44100*768*11/7 = 53222400 / 8000000 = 6.6528
-  const double divider = static_cast<double>(m_system->GetGPU()->GetCRTCFrequency()) / 8000000.0;
+  const double divider = static_cast<double>(g_gpu->GetCRTCFrequency()) / 8000000.0;
   m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
   m_position_y = static_cast<u16>(line);
   Log_DebugPrintf("Lightgun window coordinates %d,%d -> tick %u line %u 8mhz ticks %u", mouse_x, mouse_y, tick, line,

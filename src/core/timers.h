@@ -17,7 +17,7 @@ public:
   Timers();
   ~Timers();
 
-  void Initialize(System* system, InterruptController* interrupt_controller, GPU* gpu);
+  void Initialize(System* system, InterruptController* interrupt_controller);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -41,9 +41,6 @@ public:
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
-
-  // changing interfaces
-  void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
 private:
   static constexpr u32 NUM_TIMERS = 3;
@@ -95,7 +92,6 @@ private:
 
   System* m_system = nullptr;
   InterruptController* m_interrupt_controller = nullptr;
-  GPU* m_gpu = nullptr;
   std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};

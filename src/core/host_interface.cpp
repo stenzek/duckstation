@@ -625,7 +625,7 @@ void HostInterface::ToggleSoftwareRendering()
     return;
 
   const GPURenderer new_renderer =
-    m_system->GetGPU()->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
+    g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
   AddFormattedOSDMessage(2.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
   m_system->RecreateGPU(new_renderer);
@@ -644,7 +644,7 @@ void HostInterface::ModifyResolutionScale(s32 increment)
                          GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 
   if (m_system)
-    m_system->GetGPU()->UpdateSettings();
+    g_gpu->UpdateSettings();
 }
 
 void HostInterface::UpdateSoftwareCursor()

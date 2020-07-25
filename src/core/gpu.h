@@ -757,3 +757,5 @@ private:
 };
 
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPU::TextureMode);
+
+extern std::unique_ptr<GPU> g_gpu;

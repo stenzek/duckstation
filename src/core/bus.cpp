@@ -37,14 +37,13 @@ Bus::Bus() = default;
 Bus::~Bus() = default;
 
 void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
-                     InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers,
-                     SPU* spu, MDEC* mdec, SIO* sio)
+                     InterruptController* interrupt_controller, CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu,
+                     MDEC* mdec, SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
   m_dma = dma;
   m_interrupt_controller = interrupt_controller;
-  m_gpu = gpu;
   m_cdrom = cdrom;
   m_pad = pad;
   m_timers = timers;
@@ -478,7 +477,7 @@ void Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadGPU(MemoryAccessSize size, u32 offset)
 {
-  u32 value = m_gpu->ReadRegister(offset);
+  u32 value = g_gpu->ReadRegister(offset);
   FixupUnalignedWordAccessW32(offset, value);
   return value;
 }
@@ -486,7 +485,7 @@ u32 Bus::DoReadGPU(MemoryAccessSize size, u32 offset)
 void Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
-  m_gpu->WriteRegister(offset, value);
+  g_gpu->WriteRegister(offset, value);
 }
 
 u32 Bus::DoReadMDEC(MemoryAccessSize size, u32 offset)

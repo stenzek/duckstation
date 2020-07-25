@@ -15,13 +15,12 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                     SPU* spu, MDEC* mdec)
+void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, CDROM* cdrom, SPU* spu,
+                     MDEC* mdec)
 {
   m_system = system;
   m_bus = bus;
   m_interrupt_controller = interrupt_controller;
-  m_gpu = gpu;
   m_cdrom = cdrom;
   m_spu = spu;
   m_mdec = mdec;
@@ -440,7 +439,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
   switch (channel)
   {
     case Channel::GPU:
-      m_gpu->DMAWrite(src_pointer, word_count);
+      g_gpu->DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::SPU:
@@ -495,7 +494,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
   switch (channel)
   {
     case Channel::GPU:
-      m_gpu->DMARead(dest_pointer, word_count);
+      g_gpu->DMARead(dest_pointer, word_count);
       break;
 
     case Channel::CDROM:

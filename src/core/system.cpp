@@ -99,12 +99,12 @@ bool System::RecreateGPU(GPURenderer renderer)
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
-  const bool state_valid = m_gpu->DoState(sw) && DoEventsState(sw);
+  const bool state_valid = g_gpu->DoState(sw) && DoEventsState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
 
   // create new renderer
-  m_gpu.reset();
+  g_gpu.reset();
   if (!CreateGPU(renderer))
   {
     Panic("Failed to recreate GPU");
@@ -115,7 +115,7 @@ bool System::RecreateGPU(GPURenderer renderer)
   {
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
-    m_gpu->DoState(sw);
+    g_gpu->DoState(sw);
     DoEventsState(sw);
   }
 
@@ -124,7 +124,7 @@ bool System::RecreateGPU(GPURenderer renderer)
 
 void System::UpdateGPUSettings()
 {
-  m_gpu->UpdateSettings();
+  g_gpu->UpdateSettings();
 }
 
 void System::SetCPUExecutionMode(CPUExecutionMode mode)
@@ -297,17 +297,16 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_gpu.get(),
-                    m_cdrom.get(), m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get(), m_sio.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_cdrom.get(),
+                    m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get(), m_sio.get());
 
-  m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_gpu.get(), m_cdrom.get(), m_spu.get(),
-                    m_mdec.get());
+  m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
 
   m_interrupt_controller->Initialize(m_cpu.get());
 
   m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get());
   m_pad->Initialize(this, m_interrupt_controller.get());
-  m_timers->Initialize(this, m_interrupt_controller.get(), m_gpu.get());
+  m_timers->Initialize(this, m_interrupt_controller.get());
   m_spu->Initialize(this, m_dma.get(), m_cdrom.get(), m_interrupt_controller.get());
   m_mdec->Initialize(this, m_dma.get());
 
@@ -325,7 +324,7 @@ void System::DestroyComponents()
   m_timers.reset();
   m_pad.reset();
   m_cdrom.reset();
-  m_gpu.reset();
+  g_gpu.reset();
   m_interrupt_controller.reset();
   m_dma.reset();
   m_cpu_code_cache.reset();
@@ -338,41 +337,38 @@ bool System::CreateGPU(GPURenderer renderer)
   switch (renderer)
   {
     case GPURenderer::HardwareOpenGL:
-      m_gpu = GPU::CreateHardwareOpenGLRenderer();
+      g_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
 
     case GPURenderer::HardwareVulkan:
-      m_gpu = GPU::CreateHardwareVulkanRenderer();
+      g_gpu = GPU::CreateHardwareVulkanRenderer();
       break;
 
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
-      m_gpu = GPU::CreateHardwareD3D11Renderer();
+      g_gpu = GPU::CreateHardwareD3D11Renderer();
       break;
 #endif
 
     case GPURenderer::Software:
     default:
-      m_gpu = GPU::CreateSoftwareRenderer();
+      g_gpu = GPU::CreateSoftwareRenderer();
       break;
   }
 
-  if (!m_gpu || !m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
+  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
                                    m_timers.get()))
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
-    m_gpu.reset();
-    m_gpu = GPU::CreateSoftwareRenderer();
-    if (!m_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
+    g_gpu.reset();
+    g_gpu = GPU::CreateSoftwareRenderer();
+    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
                            m_timers.get()))
     {
       return false;
     }
   }
 
-  m_bus->SetGPU(m_gpu.get());
-  m_dma->SetGPU(m_gpu.get());
-  m_timers->SetGPU(m_gpu.get());
   return true;
 }
 
@@ -401,7 +397,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("InterruptController") || !m_interrupt_controller->DoState(sw))
     return false;
 
-  if (!sw.DoMarker("GPU") || !m_gpu->DoState(sw))
+  if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw))
     return false;
 
   if (!sw.DoMarker("CDROM") || !m_cdrom->DoState(sw))
@@ -435,7 +431,7 @@ void System::Reset()
   m_bus->Reset();
   m_dma->Reset();
   m_interrupt_controller->Reset();
-  m_gpu->Reset();
+  g_gpu->Reset();
   m_cdrom->Reset();
   m_pad->Reset();
   m_timers->Reset();
@@ -560,10 +556,10 @@ bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   if (screenshot_size > 0)
   {
     std::vector<u32> screenshot_buffer;
-    m_gpu->ResetGraphicsAPIState();
+    g_gpu->ResetGraphicsAPIState();
     const bool screenshot_saved =
       m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size, screenshot_size);
-    m_gpu->RestoreGraphicsAPIState();
+    g_gpu->RestoreGraphicsAPIState();
     if (screenshot_saved && !screenshot_buffer.empty())
     {
       header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
