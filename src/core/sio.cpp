@@ -12,10 +12,9 @@ SIO::SIO() = default;
 
 SIO::~SIO() = default;
 
-void SIO::Initialize(System* system, InterruptController* interrupt_controller)
+void SIO::Initialize(System* system)
 {
   m_system = system;
-  m_interrupt_controller = interrupt_controller;
 }
 
 void SIO::Reset()

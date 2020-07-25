@@ -14,7 +14,6 @@ class CodeCache;
 } // namespace CPU
 
 class DMA;
-class InterruptController;
 class GPU;
 class CDROM;
 class Pad;
@@ -81,8 +80,8 @@ public:
   Bus();
   ~Bus();
 
-  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, InterruptController* interrupt_controller,
-                  CDROM* cdrom, Pad* pad, Timers* timers, SPU* spu, MDEC* mdec, SIO* sio);
+  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma, CDROM* cdrom, Pad* pad, Timers* timers,
+                  SPU* spu, MDEC* mdec, SIO* sio);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -263,7 +262,6 @@ private:
   CPU::Core* m_cpu = nullptr;
   CPU::CodeCache* m_cpu_code_cache = nullptr;
   DMA* m_dma = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
   CDROM* m_cdrom = nullptr;
   Pad* m_pad = nullptr;
   Timers* m_timers = nullptr;

@@ -8,7 +8,6 @@ class StateWrapper;
 
 class System;
 class TimingEvent;
-class InterruptController;
 class GPU;
 
 class Timers
@@ -17,7 +16,7 @@ public:
   Timers();
   ~Timers();
 
-  void Initialize(System* system, InterruptController* interrupt_controller);
+  void Initialize(System* system);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -91,7 +90,6 @@ private:
   void UpdateSysClkEvent();
 
   System* m_system = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
   std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};

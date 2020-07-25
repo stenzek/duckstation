@@ -18,7 +18,6 @@ class HostDisplay;
 class System;
 class TimingEvent;
 class DMA;
-class InterruptController;
 class Timers;
 
 class GPU
@@ -123,7 +122,7 @@ public:
   virtual bool IsHardwareRenderer() const = 0;
 
   virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
-                          InterruptController* interrupt_controller, Timers* timers);
+                          Timers* timers);
   virtual void Reset();
   virtual bool DoState(StateWrapper& sw);
 
@@ -454,7 +453,6 @@ protected:
   HostDisplay* m_host_display = nullptr;
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
   Timers* m_timers = nullptr;
 
   std::unique_ptr<TimingEvent> m_crtc_tick_event;

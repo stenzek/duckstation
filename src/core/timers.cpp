@@ -11,10 +11,9 @@ Timers::Timers() = default;
 
 Timers::~Timers() = default;
 
-void Timers::Initialize(System* system, InterruptController* interrupt_controller)
+void Timers::Initialize(System* system)
 {
   m_system = system;
-  m_interrupt_controller = interrupt_controller;
   m_sysclk_event = system->CreateTimingEvent("Timer SysClk Interrupt", 1, 1,
                                              std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
 }
@@ -310,7 +309,7 @@ void Timers::UpdateIRQ(u32 index)
 
   Log_DebugPrintf("Raising timer %u IRQ", index);
   cs.irq_done = true;
-  m_interrupt_controller->InterruptRequest(
+  g_interrupt_controller.InterruptRequest(
     static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + index));
 }
 

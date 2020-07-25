@@ -55,7 +55,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_cpu_code_cache = std::make_unique<CPU::CodeCache>();
   m_bus = std::make_unique<Bus>();
   m_dma = std::make_unique<DMA>();
-  m_interrupt_controller = std::make_unique<InterruptController>();
   m_cdrom = std::make_unique<CDROM>();
   m_pad = std::make_unique<Pad>();
   m_timers = std::make_unique<Timers>();
@@ -297,17 +296,17 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_interrupt_controller.get(), m_cdrom.get(),
-                    m_pad.get(), m_timers.get(), m_spu.get(), m_mdec.get(), m_sio.get());
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_cdrom.get(), m_pad.get(), m_timers.get(),
+                    m_spu.get(), m_mdec.get(), m_sio.get());
 
-  m_dma->Initialize(this, m_bus.get(), m_interrupt_controller.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
+  m_dma->Initialize(this, m_bus.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
 
-  m_interrupt_controller->Initialize(m_cpu.get());
+  g_interrupt_controller.Initialize(m_cpu.get());
 
-  m_cdrom->Initialize(this, m_dma.get(), m_interrupt_controller.get(), m_spu.get());
-  m_pad->Initialize(this, m_interrupt_controller.get());
-  m_timers->Initialize(this, m_interrupt_controller.get());
-  m_spu->Initialize(this, m_dma.get(), m_cdrom.get(), m_interrupt_controller.get());
+  m_cdrom->Initialize(this, m_dma.get(), m_spu.get());
+  m_pad->Initialize(this);
+  m_timers->Initialize(this);
+  m_spu->Initialize(this, m_dma.get(), m_cdrom.get());
   m_mdec->Initialize(this, m_dma.get());
 
   // load settings
@@ -325,7 +324,7 @@ void System::DestroyComponents()
   m_pad.reset();
   m_cdrom.reset();
   g_gpu.reset();
-  m_interrupt_controller.reset();
+  g_interrupt_controller.Shutdown();
   m_dma.reset();
   m_cpu_code_cache.reset();
   m_bus.reset();
@@ -356,17 +355,13 @@ bool System::CreateGPU(GPURenderer renderer)
       break;
   }
 
-  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
-                                   m_timers.get()))
+  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_timers.get()))
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
-    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_interrupt_controller.get(),
-                           m_timers.get()))
-    {
+    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_timers.get()))
       return false;
-    }
   }
 
   return true;
@@ -394,7 +389,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("DMA") || !m_dma->DoState(sw))
     return false;
 
-  if (!sw.DoMarker("InterruptController") || !m_interrupt_controller->DoState(sw))
+  if (!sw.DoMarker("InterruptController") || !g_interrupt_controller.DoState(sw))
     return false;
 
   if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw))
@@ -430,7 +425,7 @@ void System::Reset()
   m_cpu_code_cache->Flush();
   m_bus->Reset();
   m_dma->Reset();
-  m_interrupt_controller->Reset();
+  g_interrupt_controller.Reset();
   g_gpu->Reset();
   m_cdrom->Reset();
   m_pad->Reset();

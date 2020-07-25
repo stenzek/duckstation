@@ -15,12 +15,11 @@ SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-void SPU::Initialize(System* system, DMA* dma, CDROM* cdrom, InterruptController* interrupt_controller)
+void SPU::Initialize(System* system, DMA* dma, CDROM* cdrom)
 {
   m_system = system;
   m_dma = dma;
   m_cdrom = cdrom;
-  m_interrupt_controller = interrupt_controller;
   m_tick_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
                                              std::bind(&SPU::Execute, this, std::placeholders::_1), false);
   m_transfer_event =
@@ -649,7 +648,7 @@ void SPU::CheckRAMIRQ(u32 address)
   {
     Log_DebugPrintf("SPU IRQ at address 0x%08X", address);
     m_SPUSTAT.irq9_flag = true;
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::SPU);
+    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::SPU);
   }
 }
 

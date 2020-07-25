@@ -279,11 +279,10 @@ CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
 
-void CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu)
+void CDROM::Initialize(System* system, DMA* dma, SPU* spu)
 {
   m_system = system;
   m_dma = dma;
-  m_interrupt_controller = interrupt_controller;
   m_spu = spu;
   m_command_event =
     m_system->CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
@@ -795,7 +794,7 @@ void CDROM::UpdateInterruptRequest()
   if ((m_interrupt_flag_register & m_interrupt_enable_register) == 0)
     return;
 
-  m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
+  g_interrupt_controller.InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)

@@ -37,8 +37,7 @@ public:
 
   virtual bool IsHardwareRenderer() const override;
 
-  virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma,
-                          InterruptController* interrupt_controller, Timers* timers) override;
+  virtual bool Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers) override;
   virtual void Reset() override;
   virtual bool DoState(StateWrapper& sw) override;
   virtual void UpdateSettings() override;

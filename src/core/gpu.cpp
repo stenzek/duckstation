@@ -21,13 +21,11 @@ GPU::GPU() = default;
 
 GPU::~GPU() = default;
 
-bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
-                     Timers* timers)
+bool GPU::Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers)
 {
   m_host_display = host_display;
   m_system = system;
   m_dma = dma;
-  m_interrupt_controller = interrupt_controller;
   m_timers = timers;
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
@@ -744,7 +742,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
       if (new_vblank)
       {
         Log_DebugPrintf("Now in v-blank");
-        m_interrupt_controller->InterruptRequest(InterruptController::IRQ::VBLANK);
+        g_interrupt_controller.InterruptRequest(InterruptController::IRQ::VBLANK);
 
         // flush any pending draws and "scan out" the image
         FlushRender();

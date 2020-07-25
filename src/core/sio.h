@@ -8,7 +8,6 @@
 class StateWrapper;
 
 class System;
-class InterruptController;
 class Controller;
 class MemoryCard;
 
@@ -18,7 +17,7 @@ public:
   SIO();
   ~SIO();
 
-  void Initialize(System* system, InterruptController* interrupt_controller);
+  void Initialize(System* system);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -74,7 +73,6 @@ private:
   void SoftReset();
 
   System* m_system = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
 
   SIO_CTRL m_SIO_CTRL = {};
   SIO_STAT m_SIO_STAT = {};

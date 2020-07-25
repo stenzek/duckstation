@@ -12,10 +12,9 @@ Pad::Pad() = default;
 
 Pad::~Pad() = default;
 
-void Pad::Initialize(System* system, InterruptController* interrupt_controller)
+void Pad::Initialize(System* system)
 {
   m_system = system;
-  m_interrupt_controller = interrupt_controller;
   m_transfer_event = system->CreateTimingEvent("Pad Serial Transfer", 1, 1,
                                                std::bind(&Pad::TransferEvent, this, std::placeholders::_2), false);
 }
@@ -411,7 +410,7 @@ void Pad::DoACK()
   {
     Log_DebugPrintf("Triggering ACK interrupt");
     m_JOY_STAT.INTR = true;
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::IRQ7);
+    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::IRQ7);
   }
 
   EndTransfer();

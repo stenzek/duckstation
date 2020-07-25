@@ -4,6 +4,8 @@
 #include "cpu_core.h"
 Log_SetChannel(InterruptController);
 
+InterruptController g_interrupt_controller;
+
 InterruptController::InterruptController() = default;
 
 InterruptController::~InterruptController() = default;
@@ -12,6 +14,8 @@ void InterruptController::Initialize(CPU::Core* cpu)
 {
   m_cpu = cpu;
 }
+
+void InterruptController::Shutdown() {}
 
 void InterruptController::Reset()
 {

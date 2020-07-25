@@ -23,10 +23,9 @@ bool GPU_SW::IsHardwareRenderer() const
   return false;
 }
 
-bool GPU_SW::Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
-                        Timers* timers)
+bool GPU_SW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers)
 {
-  if (!GPU::Initialize(host_display, system, dma, interrupt_controller, timers))
+  if (!GPU::Initialize(host_display, system, dma, timers))
     return false;
 
   m_display_texture = host_display->CreateTexture(VRAM_WIDTH, VRAM_HEIGHT, nullptr, 0, true);

@@ -15,7 +15,6 @@ class System;
 class TimingEvent;
 class DMA;
 class CDROM;
-class InterruptController;
 
 class SPU
 {
@@ -23,7 +22,7 @@ public:
   SPU();
   ~SPU();
 
-  void Initialize(System* system, DMA* dma, CDROM* cdrom, InterruptController* interrupt_controller);
+  void Initialize(System* system, DMA* dma, CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -372,7 +371,6 @@ private:
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
   CDROM* m_cdrom = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
   std::unique_ptr<TimingEvent> m_tick_event;
   std::unique_ptr<TimingEvent> m_transfer_event;
   std::unique_ptr<Common::WAVWriter> m_dump_writer;

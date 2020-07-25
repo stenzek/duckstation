@@ -15,12 +15,10 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, CDROM* cdrom, SPU* spu,
-                     MDEC* mdec)
+void DMA::Initialize(System* system, Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec)
 {
   m_system = system;
   m_bus = bus;
-  m_interrupt_controller = interrupt_controller;
   m_cdrom = cdrom;
   m_spu = spu;
   m_mdec = mdec;
@@ -237,7 +235,7 @@ void DMA::UpdateIRQ()
   if (m_DICR.master_flag)
   {
     Log_TracePrintf("Firing DMA master interrupt");
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::DMA);
+    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::DMA);
   }
 }
 

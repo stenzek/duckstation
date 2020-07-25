@@ -16,7 +16,6 @@ class StateWrapper;
 class System;
 class TimingEvent;
 class DMA;
-class InterruptController;
 class SPU;
 
 class CDROM
@@ -25,7 +24,7 @@ public:
   CDROM();
   ~CDROM();
 
-  void Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu);
+  void Initialize(System* system, DMA* dma, SPU* spu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -278,7 +277,6 @@ private:
 
   System* m_system = nullptr;
   DMA* m_dma = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
   SPU* m_spu = nullptr;
   std::unique_ptr<TimingEvent> m_command_event;
   std::unique_ptr<TimingEvent> m_drive_event;

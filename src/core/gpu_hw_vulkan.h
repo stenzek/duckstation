@@ -14,8 +14,7 @@ public:
   GPU_HW_Vulkan();
   ~GPU_HW_Vulkan() override;
 
-  bool Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
-                  Timers* timers) override;
+  bool Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers) override;
   void Reset() override;
 
   void ResetGraphicsAPIState() override;

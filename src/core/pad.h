@@ -9,7 +9,6 @@ class StateWrapper;
 
 class System;
 class TimingEvent;
-class InterruptController;
 class Controller;
 class MemoryCard;
 
@@ -19,7 +18,7 @@ public:
   Pad();
   ~Pad();
 
-  void Initialize(System* system, InterruptController* interrupt_controller);
+  void Initialize(System* system);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -109,7 +108,6 @@ private:
   void ResetDeviceTransferState();
 
   System* m_system = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
 
   std::array<std::unique_ptr<Controller>, NUM_SLOTS> m_controllers;
   std::array<std::unique_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;

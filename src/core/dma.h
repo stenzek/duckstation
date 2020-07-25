@@ -10,7 +10,6 @@ class StateWrapper;
 class System;
 class TimingEvent;
 class Bus;
-class InterruptController;
 class GPU;
 class CDROM;
 class SPU;
@@ -38,8 +37,7 @@ public:
   DMA();
   ~DMA();
 
-  void Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, CDROM* cdrom, SPU* spu,
-                  MDEC* mdec);
+  void Initialize(System* system, Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -83,7 +81,6 @@ private:
 
   System* m_system = nullptr;
   Bus* m_bus = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
   CDROM* m_cdrom = nullptr;
   SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
