@@ -17,11 +17,10 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-void DMA::Initialize(Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec)
+void DMA::Initialize(Bus* bus, CDROM* cdrom, MDEC* mdec)
 {
   m_bus = bus;
   m_cdrom = cdrom;
-  m_spu = spu;
   m_mdec = mdec;
 
   m_max_slice_ticks = g_settings.dma_max_slice_ticks;
@@ -447,7 +446,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
       break;
 
     case Channel::SPU:
-      m_spu->DMAWrite(src_pointer, word_count);
+      g_spu.DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::MDECin:
@@ -506,7 +505,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
       break;
 
     case Channel::SPU:
-      m_spu->DMARead(dest_pointer, word_count);
+      g_spu.DMARead(dest_pointer, word_count);
       break;
 
     case Channel::MDECout:

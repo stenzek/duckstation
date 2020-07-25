@@ -279,9 +279,8 @@ CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
 
-void CDROM::Initialize(SPU* spu)
+void CDROM::Initialize()
 {
-  m_spu = spu;
   m_command_event =
     g_system->CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
   m_drive_event = g_system->CreateTimingEvent("CDROM Drive Event", 1, 1,
@@ -2211,7 +2210,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   if (m_muted || m_adpcm_muted)
     return;
 
-  m_spu->GeneratePendingSamples();
+  g_spu.GeneratePendingSamples();
 
   if (m_last_sector_subheader.codinginfo.IsStereo())
   {
@@ -2279,7 +2278,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   if (m_muted)
     return;
 
-  m_spu->GeneratePendingSamples();
+  g_spu.GeneratePendingSamples();
 
   constexpr bool is_stereo = true;
   constexpr u32 num_samples = CDImage::RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);

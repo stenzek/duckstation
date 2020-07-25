@@ -21,6 +21,7 @@ public:
   ~SPU();
 
   void Initialize(CDROM* cdrom);
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -416,3 +417,5 @@ private:
 
   std::array<u8, RAM_SIZE> m_ram{};
 };
+
+extern SPU g_spu;

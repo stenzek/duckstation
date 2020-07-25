@@ -11,6 +11,8 @@
 #include <imgui.h>
 Log_SetChannel(SPU);
 
+SPU g_spu;
+
 SPU::SPU() = default;
 
 SPU::~SPU() = default;
@@ -23,6 +25,14 @@ void SPU::Initialize(CDROM* cdrom)
   m_transfer_event =
     g_system->CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
                                 std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
+}
+
+void SPU::Shutdown()
+{
+  m_cdrom = nullptr;
+  m_tick_event.reset();
+  m_transfer_event.reset();
+  m_dump_writer.reset();
 }
 
 void SPU::Reset()

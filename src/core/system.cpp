@@ -58,7 +58,6 @@ System::System(HostInterface* host_interface) : m_host_interface(host_interface)
   m_bus = std::make_unique<Bus>();
   m_cdrom = std::make_unique<CDROM>();
   m_pad = std::make_unique<Pad>();
-  m_spu = std::make_unique<SPU>();
   m_mdec = std::make_unique<MDEC>();
   m_sio = std::make_unique<SIO>();
   m_region = g_settings.region;
@@ -296,17 +295,17 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   m_cpu->Initialize(m_bus.get());
   m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_cdrom.get(), m_pad.get(), m_spu.get(), m_mdec.get(),
+  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_cdrom.get(), m_pad.get(), m_mdec.get(),
                     m_sio.get());
 
-  g_dma.Initialize(m_bus.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
+  g_dma.Initialize(m_bus.get(), m_cdrom.get(), m_mdec.get());
 
   g_interrupt_controller.Initialize(m_cpu.get());
 
-  m_cdrom->Initialize(m_spu.get());
+  m_cdrom->Initialize();
   m_pad->Initialize();
   g_timers.Initialize();
-  m_spu->Initialize(m_cdrom.get());
+  g_spu.Initialize(m_cdrom.get());
   m_mdec->Initialize();
 
   // load settings
@@ -319,7 +318,7 @@ bool System::InitializeComponents(bool force_software_renderer)
 void System::DestroyComponents()
 {
   m_mdec.reset();
-  m_spu.reset();
+  g_spu.Shutdown();
   g_timers.Shutdown();
   m_pad.reset();
   m_cdrom.reset();
@@ -404,7 +403,7 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("Timers") || !g_timers.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("SPU") || !m_spu->DoState(sw))
+  if (!sw.DoMarker("SPU") || !g_spu.DoState(sw))
     return false;
 
   if (!sw.DoMarker("MDEC") || !m_mdec->DoState(sw))
@@ -430,7 +429,7 @@ void System::Reset()
   m_cdrom->Reset();
   m_pad->Reset();
   g_timers.Reset();
-  m_spu->Reset();
+  g_spu.Reset();
   m_mdec->Reset();
   m_sio->Reset();
   m_frame_number = 1;
@@ -615,7 +614,7 @@ void System::RunFrame()
   }
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
-  m_spu->GeneratePendingSamples();
+  g_spu.GeneratePendingSamples();
 }
 
 void System::SetThrottleFrequency(float frequency)

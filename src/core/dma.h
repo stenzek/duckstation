@@ -37,7 +37,7 @@ public:
   DMA();
   ~DMA();
 
-  void Initialize(Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec);
+  void Initialize(Bus* bus, CDROM* cdrom, MDEC* mdec);
   void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -82,7 +82,6 @@ private:
 
   Bus* m_bus = nullptr;
   CDROM* m_cdrom = nullptr;
-  SPU* m_spu = nullptr;
   MDEC* m_mdec = nullptr;
 
   // configuration

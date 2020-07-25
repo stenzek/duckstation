@@ -36,14 +36,12 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, CDROM* cdrom, Pad* pad, SPU* spu, MDEC* mdec,
-                     SIO* sio)
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, CDROM* cdrom, Pad* pad, MDEC* mdec, SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
   m_cdrom = cdrom;
   m_pad = pad;
-  m_spu = spu;
   m_mdec = mdec;
   m_sio = sio;
 }
@@ -530,20 +528,20 @@ u32 Bus::DoReadSPU(MemoryAccessSize size, u32 offset)
     case MemoryAccessSize::Word:
     {
       // 32-bit reads are read as two 16-bit accesses.
-      const u16 lsb = m_spu->ReadRegister(offset);
-      const u16 msb = m_spu->ReadRegister(offset + 2);
+      const u16 lsb = g_spu.ReadRegister(offset);
+      const u16 msb = g_spu.ReadRegister(offset + 2);
       return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
     }
 
     case MemoryAccessSize::HalfWord:
     {
-      return ZeroExtend32(m_spu->ReadRegister(offset));
+      return ZeroExtend32(g_spu.ReadRegister(offset));
     }
 
     case MemoryAccessSize::Byte:
     default:
     {
-      u16 value = m_spu->ReadRegister(FIXUP_HALFWORD_READ_OFFSET(offset));
+      u16 value = g_spu.ReadRegister(FIXUP_HALFWORD_READ_OFFSET(offset));
       return FIXUP_HALFWORD_READ_VALUE(offset, value);
     }
   }
@@ -558,21 +556,21 @@ void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
     case MemoryAccessSize::Word:
     {
       DebugAssert(Common::IsAlignedPow2(offset, 2));
-      m_spu->WriteRegister(offset, Truncate16(value));
-      m_spu->WriteRegister(offset + 2, Truncate16(value >> 16));
+      g_spu.WriteRegister(offset, Truncate16(value));
+      g_spu.WriteRegister(offset + 2, Truncate16(value >> 16));
       return;
     }
 
     case MemoryAccessSize::HalfWord:
     {
       DebugAssert(Common::IsAlignedPow2(offset, 2));
-      m_spu->WriteRegister(offset, Truncate16(value));
+      g_spu.WriteRegister(offset, Truncate16(value));
       return;
     }
 
     case MemoryAccessSize::Byte:
     {
-      m_spu->WriteRegister(FIXUP_HALFWORD_READ_OFFSET(offset), Truncate16(FIXUP_HALFWORD_READ_VALUE(offset, value)));
+      g_spu.WriteRegister(FIXUP_HALFWORD_READ_OFFSET(offset), Truncate16(FIXUP_HALFWORD_READ_VALUE(offset, value)));
       return;
     }
   }

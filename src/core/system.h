@@ -67,7 +67,6 @@ public:
   Bus* GetBus() const { return m_bus.get(); }
   CDROM* GetCDROM() const { return m_cdrom.get(); }
   Pad* GetPad() const { return m_pad.get(); }
-  SPU* GetSPU() const { return m_spu.get(); }
   MDEC* GetMDEC() const { return m_mdec.get(); }
 
   ConsoleRegion GetRegion() const { return m_region; }
@@ -214,7 +213,6 @@ private:
   std::unique_ptr<Bus> m_bus;
   std::unique_ptr<CDROM> m_cdrom;
   std::unique_ptr<Pad> m_pad;
-  std::unique_ptr<SPU> m_spu;
   std::unique_ptr<MDEC> m_mdec;
   std::unique_ptr<SIO> m_sio;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;

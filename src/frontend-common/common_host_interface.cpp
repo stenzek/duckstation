@@ -855,7 +855,7 @@ void CommonHostInterface::DrawDebugWindows()
   if (g_settings.debugging.show_timers_state)
     g_timers.DrawDebugStateWindow();
   if (g_settings.debugging.show_spu_state)
-    g_system->GetSPU()->DrawDebugStateWindow();
+    g_spu.DrawDebugStateWindow();
   if (g_settings.debugging.show_mdec_state)
     g_system->GetMDEC()->DrawDebugStateWindow();
 }
@@ -1919,7 +1919,7 @@ bool CommonHostInterface::SaveResumeSaveState()
 
 bool CommonHostInterface::IsDumpingAudio() const
 {
-  return g_system ? g_system->GetSPU()->IsDumpingAudio() : false;
+  return g_spu.IsDumpingAudio();
 }
 
 bool CommonHostInterface::StartDumpingAudio(const char* filename)
@@ -1944,7 +1944,7 @@ bool CommonHostInterface::StartDumpingAudio(const char* filename)
     filename = auto_filename.c_str();
   }
 
-  if (g_system->GetSPU()->StartDumpingAudio(filename))
+  if (g_spu.StartDumpingAudio(filename))
   {
     AddFormattedOSDMessage(5.0f, "Started dumping audio to '%s'.", filename);
     return true;
@@ -1958,7 +1958,7 @@ bool CommonHostInterface::StartDumpingAudio(const char* filename)
 
 void CommonHostInterface::StopDumpingAudio()
 {
-  if (!g_system || !g_system->GetSPU()->StopDumpingAudio())
+  if (!g_system || !g_spu.StopDumpingAudio())
     return;
 
   AddOSDMessage("Stopped dumping audio.", 5.0f);
