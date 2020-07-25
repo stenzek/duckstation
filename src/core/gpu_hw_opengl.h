@@ -15,7 +15,7 @@ public:
   GPU_HW_OpenGL();
   ~GPU_HW_OpenGL() override;
 
-  bool Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers) override;
+  bool Initialize(HostDisplay* host_display, DMA* dma, Timers* timers) override;
   void Reset() override;
 
   void ResetGraphicsAPIState() override;

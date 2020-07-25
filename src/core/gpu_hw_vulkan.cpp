@@ -25,7 +25,7 @@ GPU_HW_Vulkan::~GPU_HW_Vulkan()
   DestroyResources();
 }
 
-bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers)
+bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, DMA* dma, Timers* timers)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::Vulkan)
   {
@@ -36,7 +36,7 @@ bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, System* system, DMA* d
   Assert(g_vulkan_shader_cache);
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display, system, dma, timers))
+  if (!GPU_HW::Initialize(host_display, dma, timers))
     return false;
 
   if (!CreatePipelineLayouts())
@@ -569,7 +569,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     {VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}};
   static constexpr std::array<VkPolygonMode, 2> polygon_mode_mapping = {{VK_POLYGON_MODE_LINE, VK_POLYGON_MODE_FILL}};
 
-  m_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
+  g_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
 
   VkDevice device = g_vulkan_context->GetDevice();
   VkPipelineCache pipeline_cache = g_vulkan_shader_cache->GetPipelineCache();

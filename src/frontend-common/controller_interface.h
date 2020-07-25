@@ -75,7 +75,6 @@ public:
   void ClearHook();
 
 protected:
-  System* GetSystem() const;
   Controller* GetController(u32 slot) const;
   bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value);
 

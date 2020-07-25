@@ -162,7 +162,7 @@ void LibretroHostInterface::AddOSDMessage(std::string message, float duration /*
 {
   retro_message msg = {};
   msg.msg = message.c_str();
-  msg.frames = static_cast<u32>(duration * (m_system ? m_system->GetThrottleFrequency() : 60.0f));
+  msg.frames = static_cast<u32>(duration * (g_system ? g_system->GetThrottleFrequency() : 60.0f));
   g_retro_environment_callback(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
 
@@ -179,7 +179,7 @@ void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info
 void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale)
 {
   const u32 resolution_scale = use_resolution_scale ? g_settings.gpu_resolution_scale : 1u;
-  Assert(m_system);
+  Assert(g_system);
 
   std::memset(info, 0, sizeof(*info));
 
@@ -189,7 +189,7 @@ void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, b
   info->geometry.max_width = GPU::VRAM_WIDTH * resolution_scale;
   info->geometry.max_height = GPU::VRAM_HEIGHT * resolution_scale;
 
-  info->timing.fps = m_system->GetThrottleFrequency();
+  info->timing.fps = g_system->GetThrottleFrequency();
   info->timing.sample_rate = static_cast<double>(AUDIO_SAMPLE_RATE);
 }
 
@@ -252,7 +252,7 @@ bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
 
 void LibretroHostInterface::retro_run_frame()
 {
-  Assert(m_system);
+  Assert(g_system);
 
   if (HasCoreVariablesChanged())
     UpdateSettings();
@@ -261,7 +261,7 @@ void LibretroHostInterface::retro_run_frame()
 
   g_gpu->RestoreGraphicsAPIState();
 
-  m_system->RunFrame();
+  g_system->RunFrame();
 
   g_gpu->ResetGraphicsAPIState();
 
@@ -270,7 +270,7 @@ void LibretroHostInterface::retro_run_frame()
 
 unsigned LibretroHostInterface::retro_get_region()
 {
-  return m_system->IsPALRegion() ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
+  return g_system->IsPALRegion() ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
 
 size_t LibretroHostInterface::retro_serialize_size()
@@ -281,7 +281,7 @@ size_t LibretroHostInterface::retro_serialize_size()
 bool LibretroHostInterface::retro_serialize(void* data, size_t size)
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateMemoryStream(data, static_cast<u32>(size));
-  if (!m_system->SaveState(stream.get(), 0))
+  if (!g_system->SaveState(stream.get(), 0))
   {
     Log_ErrorPrintf("Failed to save state to memory stream");
     return false;
@@ -293,7 +293,7 @@ bool LibretroHostInterface::retro_serialize(void* data, size_t size)
 bool LibretroHostInterface::retro_unserialize(const void* data, size_t size)
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateReadOnlyMemoryStream(data, static_cast<u32>(size));
-  if (!m_system->LoadState(stream.get()))
+  if (!g_system->LoadState(stream.get()))
   {
     Log_ErrorPrintf("Failed to load save state from memory stream");
     return false;
@@ -307,7 +307,7 @@ void* LibretroHostInterface::retro_get_memory_data(unsigned id)
   switch (id)
   {
     case RETRO_MEMORY_SYSTEM_RAM:
-      return m_system ? m_system->GetBus()->GetRAM() : nullptr;
+      return g_system ? g_system->GetBus()->GetRAM() : nullptr;
 
     default:
       return nullptr;
@@ -641,7 +641,7 @@ void LibretroHostInterface::UpdateControllers()
 
 void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
 {
-  DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(index));
+  DigitalController* controller = static_cast<DigitalController*>(g_system->GetController(index));
   DebugAssert(controller);
 
   static constexpr std::array<std::pair<DigitalController::Button, u32>, 14> mapping = {
@@ -669,7 +669,7 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
 
 void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
 {
-  AnalogController* controller = static_cast<AnalogController*>(m_system->GetController(index));
+  AnalogController* controller = static_cast<AnalogController*>(g_system->GetController(index));
   DebugAssert(controller);
 
   static constexpr std::array<std::pair<AnalogController::Button, u32>, 16> button_mapping = {
@@ -884,7 +884,7 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   }
 
   std::swap(display, g_libretro_host_interface.m_display);
-  g_libretro_host_interface.m_system->RecreateGPU(renderer.value());
+  g_system->RecreateGPU(renderer.value());
   display->DestroyRenderDevice();
   m_using_hardware_renderer = true;
 }
@@ -917,13 +917,12 @@ void LibretroHostInterface::SwitchToSoftwareRenderer()
   }
 
   m_display = std::make_unique<LibretroHostDisplay>();
-  m_system->RecreateGPU(GPURenderer::Software);
+  g_system->RecreateGPU(GPURenderer::Software);
 }
 
 bool LibretroHostInterface::DiskControlSetEjectState(bool ejected)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlSetEjectState() - no system");
     return false;
@@ -933,51 +932,48 @@ bool LibretroHostInterface::DiskControlSetEjectState(bool ejected)
 
   if (ejected)
   {
-    if (!system->HasMedia())
+    if (!g_system->HasMedia())
       return false;
 
-    system->RemoveMedia();
+    g_system->RemoveMedia();
     return true;
   }
   else
   {
     const u32 image_to_insert = P_THIS->m_next_disc_index.value_or(0);
     Log_DevPrintf("Inserting image %u", image_to_insert);
-    return system->SwitchMediaFromPlaylist(image_to_insert);
+    return g_system->SwitchMediaFromPlaylist(image_to_insert);
   }
 }
 
 bool LibretroHostInterface::DiskControlGetEjectState()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlGetEjectState() - no system");
     return false;
   }
 
-  Log_DevPrintf("DiskControlGetEjectState() -> %u", static_cast<unsigned>(system->HasMedia()));
-  return system->HasMedia();
+  Log_DevPrintf("DiskControlGetEjectState() -> %u", static_cast<unsigned>(g_system->HasMedia()));
+  return g_system->HasMedia();
 }
 
 unsigned LibretroHostInterface::DiskControlGetImageIndex()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlGetImageIndex() - no system");
     return false;
   }
 
-  const u32 index = P_THIS->m_next_disc_index.value_or(system->GetMediaPlaylistIndex());
+  const u32 index = P_THIS->m_next_disc_index.value_or(g_system->GetMediaPlaylistIndex());
   Log_DevPrintf("DiskControlGetImageIndex() -> %u", index);
   return index;
 }
 
 bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlSetImageIndex() - no system");
     return false;
@@ -985,7 +981,7 @@ bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
 
   Log_DevPrintf("DiskControlSetImageIndex(%u)", index);
 
-  if (index >= system->GetMediaPlaylistCount())
+  if (index >= g_system->GetMediaPlaylistCount())
     return false;
 
   P_THIS->m_next_disc_index = index;
@@ -994,21 +990,19 @@ bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
 
 unsigned LibretroHostInterface::DiskControlGetNumImages()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlGetNumImages() - no system");
     return false;
   }
 
-  Log_DevPrintf("DiskControlGetNumImages() -> %u", system->GetMediaPlaylistCount());
-  return static_cast<unsigned>(system->GetMediaPlaylistCount());
+  Log_DevPrintf("DiskControlGetNumImages() -> %u", g_system->GetMediaPlaylistCount());
+  return static_cast<unsigned>(g_system->GetMediaPlaylistCount());
 }
 
 bool LibretroHostInterface::DiskControlReplaceImageIndex(unsigned index, const retro_game_info* info)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlReplaceImageIndex() - no system");
     return false;
@@ -1016,22 +1010,21 @@ bool LibretroHostInterface::DiskControlReplaceImageIndex(unsigned index, const r
 
   Log_DevPrintf("DiskControlReplaceImageIndex(%u, %s)", index, info ? info->path : "null");
   if (info && info->path)
-    return system->ReplaceMediaPathFromPlaylist(index, info->path);
+    return g_system->ReplaceMediaPathFromPlaylist(index, info->path);
   else
-    return system->RemoveMediaPathFromPlaylist(index);
+    return g_system->RemoveMediaPathFromPlaylist(index);
 }
 
 bool LibretroHostInterface::DiskControlAddImageIndex()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (!g_system)
   {
     Log_ErrorPrintf("DiskControlAddImageIndex() - no system");
     return false;
   }
 
-  Log_DevPrintf("DiskControlAddImageIndex() -> %zu", system->GetMediaPlaylistCount());
-  system->AddMediaPathToPlaylist({});
+  Log_DevPrintf("DiskControlAddImageIndex() -> %zu", g_system->GetMediaPlaylistCount());
+  g_system->AddMediaPathToPlaylist({});
   return true;
 }
 
@@ -1044,11 +1037,10 @@ bool LibretroHostInterface::DiskControlSetInitialImage(unsigned index, const cha
 
 bool LibretroHostInterface::DiskControlGetImagePath(unsigned index, char* path, size_t len)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system || index >= system->GetMediaPlaylistCount())
+  if (!g_system || index >= g_system->GetMediaPlaylistCount())
     return false;
 
-  const std::string& image_path = system->GetMediaPlaylistPath(index);
+  const std::string& image_path = g_system->GetMediaPlaylistPath(index);
   Log_DevPrintf("DiskControlGetImagePath(%u) -> %s", index, image_path.c_str());
   if (image_path.empty())
     return false;
@@ -1059,11 +1051,10 @@ bool LibretroHostInterface::DiskControlGetImagePath(unsigned index, char* path, 
 
 bool LibretroHostInterface::DiskControlGetImageLabel(unsigned index, char* label, size_t len)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system || index >= system->GetMediaPlaylistCount())
+  if (!g_system || index >= g_system->GetMediaPlaylistCount())
     return false;
 
-  const std::string& image_path = system->GetMediaPlaylistPath(index);
+  const std::string& image_path = g_system->GetMediaPlaylistPath(index);
   if (image_path.empty())
     return false;
 

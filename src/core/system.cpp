@@ -36,6 +36,8 @@ Log_SetChannel(System);
 #include <time.h>
 #endif
 
+std::unique_ptr<System> g_system;
+
 SystemBootParameters::SystemBootParameters() = default;
 
 SystemBootParameters::SystemBootParameters(std::string filename_) : filename(filename_) {}
@@ -295,19 +297,19 @@ bool System::InitializeComponents(bool force_software_renderer)
     return false;
 
   m_cpu->Initialize(m_bus.get());
-  m_cpu_code_cache->Initialize(this, m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
+  m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
   m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get(), m_dma.get(), m_cdrom.get(), m_pad.get(), m_timers.get(),
                     m_spu.get(), m_mdec.get(), m_sio.get());
 
-  m_dma->Initialize(this, m_bus.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
+  m_dma->Initialize(m_bus.get(), m_cdrom.get(), m_spu.get(), m_mdec.get());
 
   g_interrupt_controller.Initialize(m_cpu.get());
 
-  m_cdrom->Initialize(this, m_dma.get(), m_spu.get());
-  m_pad->Initialize(this);
-  m_timers->Initialize(this);
-  m_spu->Initialize(this, m_dma.get(), m_cdrom.get());
-  m_mdec->Initialize(this, m_dma.get());
+  m_cdrom->Initialize(m_dma.get(), m_spu.get());
+  m_pad->Initialize();
+  m_timers->Initialize();
+  m_spu->Initialize(m_dma.get(), m_cdrom.get());
+  m_mdec->Initialize(m_dma.get());
 
   // load settings
   GTE::SetWidescreenHack(settings.gpu_widescreen_hack);
@@ -355,12 +357,12 @@ bool System::CreateGPU(GPURenderer renderer)
       break;
   }
 
-  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_timers.get()))
+  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay(), m_dma.get(), m_timers.get()))
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
-    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), this, m_dma.get(), m_timers.get()))
+    if (!g_gpu->Initialize(m_host_interface->GetDisplay(), m_dma.get(), m_timers.get()))
       return false;
   }
 
@@ -881,7 +883,7 @@ void System::UpdateControllers()
     const ControllerType type = g_settings.controller_types[i];
     if (type != ControllerType::None)
     {
-      std::unique_ptr<Controller> controller = Controller::Create(this, type, i);
+      std::unique_ptr<Controller> controller = Controller::Create(type, i);
       if (controller)
       {
         controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
@@ -932,11 +934,11 @@ void System::UpdateMemoryCards()
                                                    "Per-game memory card cannot be used for slot %u as the running "
                                                    "game has no code. Using shared card instead.",
                                                    i + 1u);
-          card = MemoryCard::Open(this, m_host_interface->GetSharedMemoryCardPath(i));
+          card = MemoryCard::Open(m_host_interface->GetSharedMemoryCardPath(i));
         }
         else
         {
-          card = MemoryCard::Open(this, m_host_interface->GetGameMemoryCardPath(m_running_game_code.c_str(), i));
+          card = MemoryCard::Open(m_host_interface->GetGameMemoryCardPath(m_running_game_code.c_str(), i));
         }
       }
       break;
@@ -949,11 +951,11 @@ void System::UpdateMemoryCards()
                                                    "Per-game memory card cannot be used for slot %u as the running "
                                                    "game has no title. Using shared card instead.",
                                                    i + 1u);
-          card = MemoryCard::Open(this, m_host_interface->GetSharedMemoryCardPath(i));
+          card = MemoryCard::Open(m_host_interface->GetSharedMemoryCardPath(i));
         }
         else
         {
-          card = MemoryCard::Open(this, m_host_interface->GetGameMemoryCardPath(m_running_game_title.c_str(), i));
+          card = MemoryCard::Open(m_host_interface->GetGameMemoryCardPath(m_running_game_title.c_str(), i));
         }
       }
       break;
@@ -964,11 +966,11 @@ void System::UpdateMemoryCards()
         {
           m_host_interface->AddFormattedOSDMessage(2.0f, "Memory card path for slot %u is missing, using default.",
                                                    i + 1u);
-          card = MemoryCard::Open(this, m_host_interface->GetSharedMemoryCardPath(i));
+          card = MemoryCard::Open(m_host_interface->GetSharedMemoryCardPath(i));
         }
         else
         {
-          card = MemoryCard::Open(this, g_settings.memory_card_paths[i]);
+          card = MemoryCard::Open(g_settings.memory_card_paths[i]);
         }
       }
       break;
@@ -1013,7 +1015,7 @@ std::unique_ptr<TimingEvent> System::CreateTimingEvent(std::string name, TickCou
                                                        TimingEventCallback callback, bool activate)
 {
   std::unique_ptr<TimingEvent> event =
-    std::make_unique<TimingEvent>(this, std::move(name), period, interval, std::move(callback));
+    std::make_unique<TimingEvent>(std::move(name), period, interval, std::move(callback));
   if (activate)
     event->Activate();
 

@@ -27,7 +27,7 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   }
 }
 
-bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers)
+bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, DMA* dma, Timers* timers)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL &&
       host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGLES)
@@ -38,9 +38,9 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* d
 
   SetCapabilities(host_display);
 
-  m_shader_cache.Open(IsGLES(), system->GetHostInterface()->GetShaderCacheBasePath());
+  m_shader_cache.Open(IsGLES(), g_system->GetHostInterface()->GetShaderCacheBasePath());
 
-  if (!GPU_HW::Initialize(host_display, system, dma, timers))
+  if (!GPU_HW::Initialize(host_display, dma, timers))
     return false;
 
   if (!CreateFramebuffer())
@@ -336,7 +336,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_supports_dual_source_blend);
 
-  m_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
+  g_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {

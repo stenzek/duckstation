@@ -21,15 +21,9 @@ void ControllerInterface::Shutdown()
   m_host_interface = nullptr;
 }
 
-System* ControllerInterface::GetSystem() const
-{
-  return m_host_interface->GetSystem();
-}
-
 Controller* ControllerInterface::GetController(u32 slot) const
 {
-  System* system = GetSystem();
-  return system ? system->GetController(slot) : nullptr;
+  return g_system ? g_system->GetController(slot) : nullptr;
 }
 
 void ControllerInterface::SetHook(Hook::Callback callback)

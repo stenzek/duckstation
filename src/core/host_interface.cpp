@@ -32,7 +32,7 @@ HostInterface::HostInterface()
 HostInterface::~HostInterface()
 {
   // system should be shut down prior to the destructor
-  Assert(!m_system && !m_audio_stream && !m_display);
+  Assert(!g_system && !m_audio_stream && !m_display);
 }
 
 bool HostInterface::Initialize()
@@ -85,8 +85,8 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   // create the audio stream. this will never fail, since we'll just fall back to null
   CreateAudioStream();
 
-  m_system = System::Create(this);
-  if (!m_system->Boot(parameters))
+  g_system = System::Create(this);
+  if (!g_system->Boot(parameters))
   {
     ReportFormattedError("System failed to boot. The log may contain more information.");
     DestroySystem();
@@ -102,14 +102,14 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
 void HostInterface::ResetSystem()
 {
-  m_system->Reset();
-  m_system->ResetPerformanceCounters();
+  g_system->Reset();
+  g_system->ResetPerformanceCounters();
   AddOSDMessage("System reset.");
 }
 
 void HostInterface::PowerOffSystem()
 {
-  if (!m_system)
+  if (!g_system)
     return;
 
   DestroySystem();
@@ -117,10 +117,10 @@ void HostInterface::PowerOffSystem()
 
 void HostInterface::DestroySystem()
 {
-  if (!m_system)
+  if (!g_system)
     return;
 
-  m_system.reset();
+  g_system.reset();
   m_audio_stream.reset();
   UpdateSoftwareCursor();
   ReleaseHostDisplay();
@@ -279,12 +279,12 @@ bool HostInterface::LoadState(const char* filename)
 
   AddFormattedOSDMessage(2.0f, "Loading state from '%s'...", filename);
 
-  if (m_system)
+  if (g_system)
   {
-    if (!m_system->LoadState(stream.get()))
+    if (!g_system->LoadState(stream.get()))
     {
       ReportFormattedError("Loading state from '%s' failed. Resetting.", filename);
-      m_system->Reset();
+      g_system->Reset();
       return false;
     }
   }
@@ -296,7 +296,7 @@ bool HostInterface::LoadState(const char* filename)
       return false;
   }
 
-  m_system->ResetPerformanceCounters();
+  g_system->ResetPerformanceCounters();
   return true;
 }
 
@@ -308,7 +308,7 @@ bool HostInterface::SaveState(const char* filename)
   if (!stream)
     return false;
 
-  const bool result = m_system->SaveState(stream.get());
+  const bool result = g_system->SaveState(stream.get());
   if (!result)
   {
     ReportFormattedError("Saving state to '%s' failed.", filename);
@@ -433,7 +433,7 @@ void HostInterface::SaveSettings(SettingsInterface& si)
 
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
-  if (m_system)
+  if (g_system)
   {
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
@@ -456,13 +456,13 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.emulation_speed != old_settings.emulation_speed)
-      m_system->UpdateThrottlePeriod();
+      g_system->UpdateThrottlePeriod();
 
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
       ReportFormattedMessage("Switching to %s CPU execution mode.",
                              Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
-      m_system->SetCPUExecutionMode(g_settings.cpu_execution_mode);
+      g_system->SetCPUExecutionMode(g_settings.cpu_execution_mode);
     }
 
     m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
@@ -478,20 +478,20 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     {
-      m_system->UpdateGPUSettings();
+      g_system->UpdateGPUSettings();
     }
 
     if (g_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
-      m_system->GetCDROM()->SetUseReadThread(g_settings.cdrom_read_thread);
+      g_system->GetCDROM()->SetUseReadThread(g_settings.cdrom_read_thread);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths)
     {
-      m_system->UpdateMemoryCards();
+      g_system->UpdateMemoryCards();
     }
 
-    m_system->GetDMA()->SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
-    m_system->GetDMA()->SetHaltTicks(g_settings.dma_halt_ticks);
+    g_system->GetDMA()->SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
+    g_system->GetDMA()->SetHaltTicks(g_settings.dma_halt_ticks);
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack)
       GTE::SetWidescreenHack(g_settings.gpu_widescreen_hack);
@@ -502,10 +502,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
   {
     if (g_settings.controller_types[i] != old_settings.controller_types[i])
     {
-      if (m_system && !controllers_updated)
+      if (g_system && !controllers_updated)
       {
-        m_system->UpdateControllers();
-        m_system->ResetControllers();
+        g_system->UpdateControllers();
+        g_system->ResetControllers();
         UpdateSoftwareCursor();
         controllers_updated = true;
       }
@@ -513,9 +513,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       OnControllerTypeChanged(i);
     }
 
-    if (m_system && !controllers_updated)
+    if (g_system && !controllers_updated)
     {
-      m_system->UpdateControllerSettings();
+      g_system->UpdateControllerSettings();
       UpdateSoftwareCursor();
     }
   }
@@ -621,14 +621,14 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
 
 void HostInterface::ToggleSoftwareRendering()
 {
-  if (!m_system || g_settings.gpu_renderer == GPURenderer::Software)
+  if (!g_system || g_settings.gpu_renderer == GPURenderer::Software)
     return;
 
   const GPURenderer new_renderer =
     g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
   AddFormattedOSDMessage(2.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
-  m_system->RecreateGPU(new_renderer);
+  g_system->RecreateGPU(new_renderer);
 }
 
 void HostInterface::ModifyResolutionScale(s32 increment)
@@ -643,13 +643,13 @@ void HostInterface::ModifyResolutionScale(s32 increment)
                          GPU::VRAM_WIDTH * g_settings.gpu_resolution_scale,
                          GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 
-  if (m_system)
+  if (g_system)
     g_gpu->UpdateSettings();
 }
 
 void HostInterface::UpdateSoftwareCursor()
 {
-  if (!m_system)
+  if (!g_system)
   {
     m_display->ClearSoftwareCursor();
     return;
@@ -660,7 +660,7 @@ void HostInterface::UpdateSoftwareCursor()
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    Controller* controller = m_system->GetController(i);
+    Controller* controller = g_system->GetController(i);
     if (controller && controller->GetSoftwareCursor(&image, &image_scale))
       break;
   }
@@ -679,7 +679,7 @@ void HostInterface::UpdateSoftwareCursor()
 void HostInterface::RecreateSystem()
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!m_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
+  if (!g_system->SaveState(stream.get()) || !stream->SeekAbsolute(0))
   {
     ReportError("Failed to save state before system recreation. Shutting down.");
     DestroySystem();
@@ -696,7 +696,7 @@ void HostInterface::RecreateSystem()
     return;
   }
 
-  m_system->ResetPerformanceCounters();
+  g_system->ResetPerformanceCounters();
 }
 
 void HostInterface::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,

@@ -15,9 +15,8 @@ DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-void DMA::Initialize(System* system, Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec)
+void DMA::Initialize(Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec)
 {
-  m_system = system;
   m_bus = bus;
   m_cdrom = cdrom;
   m_spu = spu;
@@ -27,8 +26,8 @@ void DMA::Initialize(System* system, Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mde
   m_halt_ticks = g_settings.dma_halt_ticks;
 
   m_transfer_buffer.resize(32);
-  m_unhalt_event = system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
-                                             std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+  m_unhalt_event = g_system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
+                                               std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
 }
 
 void DMA::Reset()
@@ -264,7 +263,7 @@ bool DMA::TransferChannel(Channel channel)
       else
         used_ticks = TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, word_count);
 
-      m_system->StallCPU(used_ticks);
+      g_system->StallCPU(used_ticks);
     }
     break;
 
@@ -316,7 +315,7 @@ bool DMA::TransferChannel(Channel channel)
       }
 
       cs.base_address = current_address;
-      m_system->StallCPU(used_ticks);
+      g_system->StallCPU(used_ticks);
 
       if (current_address & UINT32_C(0x800000))
         break;
@@ -367,7 +366,7 @@ bool DMA::TransferChannel(Channel channel)
 
       cs.base_address = current_address & BASE_ADDRESS_MASK;
       cs.block_control.request.block_count = blocks_remaining;
-      m_system->StallCPU(used_ticks);
+      g_system->StallCPU(used_ticks);
 
       // finish transfer later if the request was cleared
       if (blocks_remaining > 0)

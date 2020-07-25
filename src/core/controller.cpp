@@ -46,7 +46,7 @@ bool Controller::GetSoftwareCursor(const Common::RGBA8Image** image, float* imag
   return false;
 }
 
-std::unique_ptr<Controller> Controller::Create(System* system, ControllerType type, u32 index)
+std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 {
   switch (type)
   {
@@ -54,13 +54,13 @@ std::unique_ptr<Controller> Controller::Create(System* system, ControllerType ty
       return DigitalController::Create();
 
     case ControllerType::AnalogController:
-      return AnalogController::Create(system, index);
+      return AnalogController::Create(index);
 
     case ControllerType::NamcoGunCon:
-      return NamcoGunCon::Create(system);
+      return NamcoGunCon::Create();
 
     case ControllerType::PlayStationMouse:
-      return PlayStationMouse::Create(system);
+      return PlayStationMouse::Create();
 
     case ControllerType::NeGcon:
       return NeGcon::Create();

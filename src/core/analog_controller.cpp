@@ -6,7 +6,7 @@
 #include "system.h"
 Log_SetChannel(AnalogController);
 
-AnalogController::AnalogController(System* system, u32 index) : m_system(system), m_index(index)
+AnalogController::AnalogController(u32 index) : m_index(index)
 {
   m_axis_state.fill(0x80);
 }
@@ -52,7 +52,7 @@ bool AnalogController::DoState(StateWrapper& sw)
 
     if (old_analog_mode != m_analog_mode)
     {
-      m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+      g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
                                                            m_analog_mode ? "analog" : "digital");
     }
   }
@@ -94,7 +94,7 @@ void AnalogController::SetButtonState(Button button, bool pressed)
     {
       if (m_analog_locked)
       {
-        m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.",
+        g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.",
                                                              m_index + 1u, m_analog_mode ? "analog" : "digital");
       }
       else
@@ -154,7 +154,7 @@ void AnalogController::SetAnalogMode(bool enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+  g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
                                                        enabled ? "analog" : "digital");
   m_analog_mode = enabled;
 }
@@ -397,9 +397,9 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
-std::unique_ptr<AnalogController> AnalogController::Create(System* system, u32 index)
+std::unique_ptr<AnalogController> AnalogController::Create(u32 index)
 {
-  return std::make_unique<AnalogController>(system, index);
+  return std::make_unique<AnalogController>(index);
 }
 
 std::optional<s32> AnalogController::StaticGetAxisCodeByName(std::string_view axis_name)

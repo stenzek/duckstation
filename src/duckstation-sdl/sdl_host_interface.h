@@ -61,7 +61,7 @@ protected:
   void UpdateInputMap() override;
 
 private:
-  bool HasSystem() const { return static_cast<bool>(m_system); }
+  bool HasSystem() const;
 
   bool CreateSDLWindow();
   void DestroySDLWindow();

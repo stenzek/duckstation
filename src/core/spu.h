@@ -11,7 +11,6 @@ namespace Common {
 class WAVWriter;
 }
 
-class System;
 class TimingEvent;
 class DMA;
 class CDROM;
@@ -22,7 +21,7 @@ public:
   SPU();
   ~SPU();
 
-  void Initialize(System* system, DMA* dma, CDROM* cdrom);
+  void Initialize(DMA* dma, CDROM* cdrom);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -368,7 +367,6 @@ private:
   void UpdateTransferEvent();
   void UpdateDMARequest();
 
-  System* m_system = nullptr;
   DMA* m_dma = nullptr;
   CDROM* m_cdrom = nullptr;
   std::unique_ptr<TimingEvent> m_tick_event;

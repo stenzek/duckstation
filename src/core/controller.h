@@ -59,7 +59,7 @@ public:
   virtual bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale);
 
   /// Creates a new controller of the specified type.
-  static std::unique_ptr<Controller> Create(System* system, ControllerType type, u32 index);
+  static std::unique_ptr<Controller> Create(ControllerType type, u32 index);
 
   /// Gets the integer code for an axis in the specified controller type.
   static std::optional<s32> GetAxisCodeByName(ControllerType type, std::string_view axis_name);

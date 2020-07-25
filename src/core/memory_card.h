@@ -19,11 +19,11 @@ public:
     NUM_SECTORS = DATA_SIZE / SECTOR_SIZE
   };
 
-  MemoryCard(System* system);
+  MemoryCard();
   ~MemoryCard();
 
-  static std::unique_ptr<MemoryCard> Create(System* system);
-  static std::unique_ptr<MemoryCard> Open(System* system, std::string_view filename);
+  static std::unique_ptr<MemoryCard> Create();
+  static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -85,7 +85,6 @@ private:
   bool SaveIfChanged(bool display_osd_message);
   void QueueFileSave();
 
-  System* m_system;
   std::unique_ptr<TimingEvent> m_save_event;
 
   State m_state = State::Idle;

@@ -24,7 +24,7 @@ public:
   CDROM();
   ~CDROM();
 
-  void Initialize(System* system, DMA* dma, SPU* spu);
+  void Initialize(DMA* dma, SPU* spu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -275,7 +275,6 @@ private:
   template<bool STEREO, bool SAMPLE_RATE>
   void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
-  System* m_system = nullptr;
   DMA* m_dma = nullptr;
   SPU* m_spu = nullptr;
   std::unique_ptr<TimingEvent> m_command_event;

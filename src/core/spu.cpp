@@ -15,15 +15,14 @@ SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-void SPU::Initialize(System* system, DMA* dma, CDROM* cdrom)
+void SPU::Initialize(DMA* dma, CDROM* cdrom)
 {
-  m_system = system;
   m_dma = dma;
   m_cdrom = cdrom;
-  m_tick_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
+  m_tick_event = g_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
                                              std::bind(&SPU::Execute, this, std::placeholders::_1), false);
   m_transfer_event =
-    m_system->CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
+    g_system->CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
                                 std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
 }
 
@@ -146,7 +145,7 @@ bool SPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    m_system->GetHostInterface()->GetAudioStream()->EmptyBuffers();
+    g_system->GetHostInterface()->GetAudioStream()->EmptyBuffers();
     UpdateEventInterval();
     UpdateTransferEvent();
   }
@@ -674,7 +673,7 @@ void SPU::Execute(TickCount ticks)
 
   while (remaining_frames > 0)
   {
-    AudioStream* const output_stream = m_system->GetHostInterface()->GetAudioStream();
+    AudioStream* const output_stream = g_system->GetHostInterface()->GetAudioStream();
     s16* output_frame_start;
     u32 output_frame_space = remaining_frames;
     output_stream->BeginWrite(&output_frame_start, &output_frame_space);
@@ -781,7 +780,7 @@ void SPU::UpdateEventInterval()
   // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
   // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
   // the SPU state.
-  const u32 max_slice_frames = m_system->GetHostInterface()->GetAudioStream()->GetBufferSize();
+  const u32 max_slice_frames = g_system->GetHostInterface()->GetAudioStream()->GetBufferSize();
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;

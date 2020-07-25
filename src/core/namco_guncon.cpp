@@ -10,7 +10,7 @@
 #include <array>
 Log_SetChannel(NamcoGunCon);
 
-NamcoGunCon::NamcoGunCon(System* system) : m_system(system) {}
+NamcoGunCon::NamcoGunCon() = default;
 
 NamcoGunCon::~NamcoGunCon() = default;
 
@@ -153,7 +153,7 @@ bool NamcoGunCon::Transfer(const u8 data_in, u8* data_out)
 void NamcoGunCon::UpdatePosition()
 {
   // get screen coordinates
-  const HostDisplay* display = m_system->GetHostInterface()->GetDisplay();
+  const HostDisplay* display = g_system->GetHostInterface()->GetDisplay();
   const s32 mouse_x = display->GetMousePositionX();
   const s32 mouse_y = display->GetMousePositionY();
 
@@ -175,9 +175,9 @@ void NamcoGunCon::UpdatePosition()
                   m_position_x);
 }
 
-std::unique_ptr<NamcoGunCon> NamcoGunCon::Create(System* system)
+std::unique_ptr<NamcoGunCon> NamcoGunCon::Create()
 {
-  return std::make_unique<NamcoGunCon>(system);
+  return std::make_unique<NamcoGunCon>();
 }
 
 std::optional<s32> NamcoGunCon::StaticGetAxisCodeByName(std::string_view button_name)

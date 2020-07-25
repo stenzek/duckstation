@@ -92,7 +92,7 @@ public:
   CodeCache();
   ~CodeCache();
 
-  void Initialize(System* system, Core* core, Bus* bus, bool use_recompiler);
+  void Initialize(Core* core, Bus* bus, bool use_recompiler);
   void Execute();
 
   /// Flushes the code cache, forcing all blocks to be recompiled.
@@ -133,7 +133,6 @@ private:
   void InterpretCachedBlock(const CodeBlock& block);
   void InterpretUncachedBlock();
 
-  System* m_system = nullptr;
   Core* m_core = nullptr;
   Bus* m_bus = nullptr;
 

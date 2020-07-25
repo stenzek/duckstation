@@ -41,10 +41,10 @@ public:
 
   static constexpr u8 NUM_MOTORS = 2;
 
-  AnalogController(System* system, u32 index);
+  AnalogController(u32 index);
   ~AnalogController() override;
 
-  static std::unique_ptr<AnalogController> Create(System* system, u32 index);
+  static std::unique_ptr<AnalogController> Create(u32 index);
   static std::optional<s32> StaticGetAxisCodeByName(std::string_view axis_name);
   static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
   static AxisList StaticGetAxisNames();
@@ -132,7 +132,6 @@ private:
   void SetAnalogMode(bool enabled);
   void SetMotorState(u8 motor, u8 value);
 
-  System* m_system;
   u32 m_index;
 
   bool m_auto_enable_analog = false;

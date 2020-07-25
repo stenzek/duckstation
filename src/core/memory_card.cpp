@@ -1,21 +1,21 @@
 #include "memory_card.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
-#include "common/string_util.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
 #include <cstdio>
 Log_SetChannel(MemoryCard);
 
-MemoryCard::MemoryCard(System* system) : m_system(system)
+MemoryCard::MemoryCard()
 {
   m_FLAG.no_write_yet = true;
 
   m_save_event =
-    system->CreateTimingEvent("Memory Card Host Flush", SAVE_DELAY_IN_SYSCLK_TICKS, SAVE_DELAY_IN_SYSCLK_TICKS,
-                              std::bind(&MemoryCard::SaveIfChanged, this, true), false);
+    g_system->CreateTimingEvent("Memory Card Host Flush", SAVE_DELAY_IN_SYSCLK_TICKS, SAVE_DELAY_IN_SYSCLK_TICKS,
+                                std::bind(&MemoryCard::SaveIfChanged, this, true), false);
 }
 
 MemoryCard::~MemoryCard()
@@ -237,16 +237,16 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
-std::unique_ptr<MemoryCard> MemoryCard::Create(System* system)
+std::unique_ptr<MemoryCard> MemoryCard::Create()
 {
-  std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>(system);
+  std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>();
   mc->Format();
   return mc;
 }
 
-std::unique_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view filename)
+std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
 {
-  std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>(system);
+  std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>();
   mc->m_filename = filename;
   if (!mc->LoadFromFile())
   {
@@ -255,7 +255,7 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(System* system, std::string_view fi
     message.AppendString(filename.data(), static_cast<u32>(filename.length()));
     message.AppendString("' could not be read, formatting.");
     Log_ErrorPrint(message);
-    system->GetHostInterface()->AddOSDMessage(message.GetCharArray(), 5.0f);
+    g_system->GetHostInterface()->AddOSDMessage(message.GetCharArray(), 5.0f);
     mc->Format();
   }
 
@@ -385,7 +385,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   Log_InfoPrintf("Saved memory card to '%s'", m_filename.c_str());
   if (display_osd_message)
   {
-    m_system->GetHostInterface()->AddOSDMessage(
+    g_system->GetHostInterface()->AddOSDMessage(
       StringUtil::StdStringFromFormat("Saved memory card to '%s'", m_filename.c_str()));
   }
 

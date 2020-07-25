@@ -7,7 +7,6 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
 class DMA;
 
@@ -17,7 +16,7 @@ public:
   MDEC();
   ~MDEC();
 
-  void Initialize(System* system, DMA* dma);
+  void Initialize(DMA* dma);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -122,7 +121,6 @@ private:
                   const std::array<s16, 64>& Yblk);
   void y_to_mono(const std::array<s16, 64>& Yblk);
 
-  System* m_system = nullptr;
   DMA* m_dma = nullptr;
 
   StatusRegister m_status = {};

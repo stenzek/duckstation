@@ -11,12 +11,11 @@ MDEC::MDEC() = default;
 
 MDEC::~MDEC() = default;
 
-void MDEC::Initialize(System* system, DMA* dma)
+void MDEC::Initialize(DMA* dma)
 {
-  m_system = system;
   m_dma = dma;
-  m_block_copy_out_event = system->CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
-                                                     std::bind(&MDEC::CopyOutBlock, this), false);
+  m_block_copy_out_event = g_system->CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
+                                                       std::bind(&MDEC::CopyOutBlock, this), false);
 }
 
 void MDEC::Reset()
@@ -192,7 +191,7 @@ u32 MDEC::ReadDataRegister()
     if (HasPendingBlockCopyOut())
     {
       Log_DevPrint("MDEC data out FIFO empty on read - stalling CPU");
-      m_system->StallCPU(m_block_copy_out_event->GetTicksUntilNextExecution());
+      g_system->StallCPU(m_block_copy_out_event->GetTicksUntilNextExecution());
     }
     else
     {

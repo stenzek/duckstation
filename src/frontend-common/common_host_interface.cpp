@@ -102,7 +102,7 @@ void CommonHostInterface::Shutdown()
   ShutdownDiscordPresence();
 #endif
 
-  m_system.reset();
+  g_system.reset();
   m_audio_stream.reset();
   if (m_display)
     ReleaseHostDisplay();
@@ -170,7 +170,7 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
 
 void CommonHostInterface::PauseSystem(bool paused)
 {
-  if (paused == m_paused || !m_system)
+  if (paused == m_paused || !g_system)
     return;
 
   m_paused = paused;
@@ -179,7 +179,7 @@ void CommonHostInterface::PauseSystem(bool paused)
   UpdateSpeedLimiterState();
 
   if (!paused)
-    m_system->ResetPerformanceCounters();
+    g_system->ResetPerformanceCounters();
 }
 
 void CommonHostInterface::DestroySystem()
@@ -469,20 +469,20 @@ std::unique_ptr<ControllerInterface> CommonHostInterface::CreateControllerInterf
 
 bool CommonHostInterface::LoadState(bool global, s32 slot)
 {
-  if (!global && (!m_system || m_system->GetRunningCode().empty()))
+  if (!global && (!g_system || g_system->GetRunningCode().empty()))
   {
     ReportFormattedError("Can't save per-game state without a running game code.");
     return false;
   }
 
   std::string save_path =
-    global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(m_system->GetRunningCode().c_str(), slot);
+    global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(g_system->GetRunningCode().c_str(), slot);
   return LoadState(save_path.c_str());
 }
 
 bool CommonHostInterface::SaveState(bool global, s32 slot)
 {
-  const std::string& code = m_system->GetRunningCode();
+  const std::string& code = g_system->GetRunningCode();
   if (!global && code.empty())
   {
     ReportFormattedError("Can't save per-game state without a running game code.");
@@ -504,7 +504,7 @@ bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_
   if (!BootSystem(boot_params))
     return false;
 
-  const bool global = m_system->GetRunningCode().empty();
+  const bool global = g_system->GetRunningCode().empty();
   if (global)
   {
     ReportFormattedError("Cannot resume system with undetectable game code from '%s'.", filename);
@@ -516,7 +516,7 @@ bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_
   }
   else
   {
-    const std::string path = GetGameSaveStateFileName(m_system->GetRunningCode().c_str(), -1);
+    const std::string path = GetGameSaveStateFileName(g_system->GetRunningCode().c_str(), -1);
     if (FileSystem::FileExists(path.c_str()))
     {
       if (!LoadState(path.c_str()) && !boot_on_failure)
@@ -527,8 +527,8 @@ bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_
     }
     else if (!boot_on_failure)
     {
-      ReportFormattedError("Resume save state not found for '%s' ('%s').", m_system->GetRunningCode().c_str(),
-                           m_system->GetRunningTitle().c_str());
+      ReportFormattedError("Resume save state not found for '%s' ('%s').", g_system->GetRunningCode().c_str(),
+                           g_system->GetRunningTitle().c_str());
       DestroySystem();
       return false;
     }
@@ -551,7 +551,7 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
 
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
-  if (!m_system || !m_audio_stream || !m_display)
+  if (!g_system || !m_audio_stream || !m_display)
     return;
 
   m_speed_limiter_enabled = g_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
@@ -573,7 +573,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(m_speed_limiter_enabled);
 
-  m_system->ResetPerformanceCounters();
+  g_system->ResetPerformanceCounters();
 }
 
 void CommonHostInterface::RecreateSystem()
@@ -707,7 +707,7 @@ void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 
 void CommonHostInterface::DrawImGuiWindows()
 {
-  if (m_system)
+  if (g_system)
   {
     DrawDebugWindows();
     DrawFPSWindow();
@@ -741,7 +741,7 @@ void CommonHostInterface::DrawFPSWindow()
   bool first = true;
   if (g_settings.display_show_fps)
   {
-    ImGui::Text("%.2f", m_system->GetFPS());
+    ImGui::Text("%.2f", g_system->GetFPS());
     first = false;
   }
   if (g_settings.display_show_vps)
@@ -757,7 +757,7 @@ void CommonHostInterface::DrawFPSWindow()
       ImGui::SameLine();
     }
 
-    ImGui::Text("%.2f", m_system->GetVPS());
+    ImGui::Text("%.2f", g_system->GetVPS());
   }
   if (g_settings.display_show_speed)
   {
@@ -772,7 +772,7 @@ void CommonHostInterface::DrawFPSWindow()
       ImGui::SameLine();
     }
 
-    const float speed = m_system->GetEmulationSpeed();
+    const float speed = g_system->GetEmulationSpeed();
     const u32 rounded_speed = static_cast<u32>(std::round(speed));
     if (speed < 90.0f)
       ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
@@ -851,18 +851,18 @@ void CommonHostInterface::DrawDebugWindows()
   if (g_settings.debugging.show_gpu_state)
     g_gpu->DrawDebugStateWindow();
   if (g_settings.debugging.show_cdrom_state)
-    m_system->GetCDROM()->DrawDebugWindow();
+    g_system->GetCDROM()->DrawDebugWindow();
   if (g_settings.debugging.show_timers_state)
-    m_system->GetTimers()->DrawDebugStateWindow();
+    g_system->GetTimers()->DrawDebugStateWindow();
   if (g_settings.debugging.show_spu_state)
-    m_system->GetSPU()->DrawDebugStateWindow();
+    g_system->GetSPU()->DrawDebugStateWindow();
   if (g_settings.debugging.show_mdec_state)
-    m_system->GetMDEC()->DrawDebugStateWindow();
+    g_system->GetMDEC()->DrawDebugStateWindow();
 }
 
 void CommonHostInterface::DoFrameStep()
 {
-  if (!m_system)
+  if (!g_system)
     return;
 
   m_frame_step_request = true;
@@ -924,11 +924,11 @@ void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_moto
 
 void CommonHostInterface::UpdateControllerRumble()
 {
-  DebugAssert(m_system);
+  DebugAssert(g_system);
 
   for (ControllerRumbleState& rumble : m_controller_vibration_motors)
   {
-    Controller* controller = m_system->GetController(rumble.controller_index);
+    Controller* controller = g_system->GetController(rumble.controller_index);
     if (!controller)
       continue;
 
@@ -1002,10 +1002,10 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
           continue;
 
         AddButtonToInputMap(binding, device, button, [this, controller_index, button_code](bool pressed) {
-          if (!m_system)
+          if (!g_system)
             return;
 
-          Controller* controller = m_system->GetController(controller_index);
+          Controller* controller = g_system->GetController(controller_index);
           if (controller)
             controller->SetButtonState(button_code, pressed);
         });
@@ -1027,10 +1027,10 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
           continue;
 
         AddAxisToInputMap(binding, device, axis, [this, controller_index, axis_code](float value) {
-          if (!m_system)
+          if (!g_system)
             return;
 
-          Controller* controller = m_system->GetController(controller_index);
+          Controller* controller = g_system->GetController(controller_index);
           if (controller)
             controller->SetAxisState(axis_code, value);
         });
@@ -1257,7 +1257,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
   RegisterHotkey(StaticString("General"), StaticString("PowerOff"), StaticString("Power Off System"),
                  [this](bool pressed) {
-                   if (!pressed && m_system)
+                   if (!pressed && g_system)
                    {
                      if (g_settings.confim_power_off && !m_batch_mode)
                      {
@@ -1267,7 +1267,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
                        if (!ConfirmMessage(confirmation_message))
                        {
-                         m_system->ResetPerformanceCounters();
+                         g_system->ResetPerformanceCounters();
                          return;
                        }
                      }
@@ -1278,7 +1278,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
   RegisterHotkey(StaticString("General"), StaticString("Screenshot"), StaticString("Save Screenshot"),
                  [this](bool pressed) {
-                   if (!pressed && m_system)
+                   if (!pressed && g_system)
                      SaveScreenshot();
                  });
 
@@ -1361,7 +1361,7 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
 void CommonHostInterface::RegisterAudioHotkeys()
 {
   RegisterHotkey(StaticString("Audio"), StaticString("AudioMute"), StaticString("Toggle Mute"), [this](bool pressed) {
-    if (m_system && !pressed)
+    if (g_system && !pressed)
     {
       g_settings.audio_output_muted = !g_settings.audio_output_muted;
       m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
@@ -1372,7 +1372,7 @@ void CommonHostInterface::RegisterAudioHotkeys()
     }
   });
   RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeUp"), StaticString("Volume Up"), [this](bool pressed) {
-    if (m_system && pressed)
+    if (g_system && pressed)
     {
       g_settings.audio_output_volume = std::min<s32>(g_settings.audio_output_volume + 10, 100);
       g_settings.audio_output_muted = false;
@@ -1382,7 +1382,7 @@ void CommonHostInterface::RegisterAudioHotkeys()
   });
   RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeDown"), StaticString("Volume Down"),
                  [this](bool pressed) {
-                   if (m_system && pressed)
+                   if (g_system && pressed)
                    {
                      g_settings.audio_output_volume = std::max<s32>(g_settings.audio_output_volume - 10, 0);
                      g_settings.audio_output_muted = false;
@@ -1518,8 +1518,8 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     }
   }
 
-  if (m_system)
-    m_system->UpdateControllers();
+  if (g_system)
+    g_system->UpdateControllers();
 
   UpdateInputMap(si);
 
@@ -1800,7 +1800,7 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
   HostInterface::CheckForSettingsChanges(old_settings);
 
-  if (m_system)
+  if (g_system)
   {
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.audio_buffer_size != old_settings.audio_buffer_size)
@@ -1910,27 +1910,27 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
 
 bool CommonHostInterface::SaveResumeSaveState()
 {
-  if (!m_system)
+  if (!g_system)
     return false;
 
-  const bool global = m_system->GetRunningCode().empty();
+  const bool global = g_system->GetRunningCode().empty();
   return SaveState(global, -1);
 }
 
 bool CommonHostInterface::IsDumpingAudio() const
 {
-  return m_system ? m_system->GetSPU()->IsDumpingAudio() : false;
+  return g_system ? g_system->GetSPU()->IsDumpingAudio() : false;
 }
 
 bool CommonHostInterface::StartDumpingAudio(const char* filename)
 {
-  if (!m_system)
+  if (!g_system)
     return false;
 
   std::string auto_filename;
   if (!filename)
   {
-    const auto& code = m_system->GetRunningCode();
+    const auto& code = g_system->GetRunningCode();
     if (code.empty())
     {
       auto_filename = GetUserDirectoryRelativePath("dump/audio/%s.wav", GetTimestampStringForFileName().GetCharArray());
@@ -1944,7 +1944,7 @@ bool CommonHostInterface::StartDumpingAudio(const char* filename)
     filename = auto_filename.c_str();
   }
 
-  if (m_system->GetSPU()->StartDumpingAudio(filename))
+  if (g_system->GetSPU()->StartDumpingAudio(filename))
   {
     AddFormattedOSDMessage(5.0f, "Started dumping audio to '%s'.", filename);
     return true;
@@ -1958,7 +1958,7 @@ bool CommonHostInterface::StartDumpingAudio(const char* filename)
 
 void CommonHostInterface::StopDumpingAudio()
 {
-  if (!m_system || !m_system->GetSPU()->StopDumpingAudio())
+  if (!g_system || !g_system->GetSPU()->StopDumpingAudio())
     return;
 
   AddOSDMessage("Stopped dumping audio.", 5.0f);
@@ -1967,13 +1967,13 @@ void CommonHostInterface::StopDumpingAudio()
 bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, bool full_resolution /* = true */,
                                          bool apply_aspect_ratio /* = true */)
 {
-  if (!m_system)
+  if (!g_system)
     return false;
 
   std::string auto_filename;
   if (!filename)
   {
-    const auto& code = m_system->GetRunningCode();
+    const auto& code = g_system->GetRunningCode();
     const char* extension = "png";
     if (code.empty())
     {
@@ -2050,10 +2050,10 @@ void CommonHostInterface::UpdateDiscordPresence()
   rp.startTimestamp = std::time(nullptr);
 
   SmallString details_string;
-  if (m_system)
+  if (g_system)
   {
-    details_string.AppendFormattedString("%s (%s)", m_system->GetRunningTitle().c_str(),
-                                         m_system->GetRunningCode().c_str());
+    details_string.AppendFormattedString("%s (%s)", g_system->GetRunningTitle().c_str(),
+                                         g_system->GetRunningCode().c_str());
   }
   else
   {

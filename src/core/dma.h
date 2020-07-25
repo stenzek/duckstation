@@ -37,7 +37,7 @@ public:
   DMA();
   ~DMA();
 
-  void Initialize(System* system, Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec);
+  void Initialize(Bus* bus, CDROM* cdrom, SPU* spu, MDEC* mdec);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -79,7 +79,6 @@ private:
   // from memory -> device
   TickCount TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
 
-  System* m_system = nullptr;
   Bus* m_bus = nullptr;
   CDROM* m_cdrom = nullptr;
   SPU* m_spu = nullptr;

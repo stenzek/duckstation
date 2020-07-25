@@ -17,10 +17,9 @@ class TimingEvent
   friend System;
 
 public:
-  TimingEvent(System* system, std::string name, TickCount period, TickCount interval, TimingEventCallback callback);
+  TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback);
   ~TimingEvent();
 
-  System* GetSystem() const { return m_system; }
   const std::string& GetName() const { return m_name; }
   bool IsActive() const { return m_active; }
 
@@ -68,7 +67,6 @@ private:
   TickCount m_interval;
 
   TimingEventCallback m_callback;
-  System* m_system;
   std::string m_name;
   bool m_active;
 };

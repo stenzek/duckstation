@@ -20,9 +20,9 @@ bool GPU_HW::IsHardwareRenderer() const
   return true;
 }
 
-bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Timers* timers)
+bool GPU_HW::Initialize(HostDisplay* host_display, DMA* dma, Timers* timers)
 {
-  if (!GPU::Initialize(host_display, system, dma, timers))
+  if (!GPU::Initialize(host_display, dma, timers))
     return false;
 
   m_resolution_scale = g_settings.gpu_resolution_scale;
@@ -32,7 +32,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display, System* system, DMA* dma, Tim
   m_texture_filtering = g_settings.gpu_texture_filtering;
   if (m_resolution_scale < 1 || m_resolution_scale > m_max_resolution_scale)
   {
-    m_system->GetHostInterface()->AddFormattedOSDMessage(5.0f, "Invalid resolution scale %ux specified. Maximum is %u.",
+    g_system->GetHostInterface()->AddFormattedOSDMessage(5.0f, "Invalid resolution scale %ux specified. Maximum is %u.",
                                                          m_resolution_scale, m_max_resolution_scale);
     m_resolution_scale = std::clamp<u32>(m_resolution_scale, 1u, m_max_resolution_scale);
   }

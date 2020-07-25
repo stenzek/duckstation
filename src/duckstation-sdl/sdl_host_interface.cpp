@@ -296,6 +296,11 @@ void SDLHostInterface::UpdateInputMap()
   CommonHostInterface::UpdateInputMap(*m_settings_interface.get());
 }
 
+bool SDLHostInterface::HasSystem() const
+{
+  return static_cast<bool>(g_system);
+}
+
 void SDLHostInterface::OnSystemCreated()
 {
   CommonHostInterface::OnSystemCreated();
@@ -321,8 +326,8 @@ void SDLHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
-  if (m_system && !m_system->GetRunningTitle().empty())
-    SDL_SetWindowTitle(m_window, m_system->GetRunningTitle().c_str());
+  if (g_system && !g_system->GetRunningTitle().empty())
+    SDL_SetWindowTitle(m_window, g_system->GetRunningTitle().c_str());
   else
     SDL_SetWindowTitle(m_window, GetWindowTitle());
 }
@@ -604,7 +609,7 @@ void SDLHostInterface::DrawImGuiWindows()
 
   CommonHostInterface::DrawImGuiWindows();
 
-  if (!m_system)
+  if (!g_system)
     DrawPoweredOffWindow();
 
   if (m_settings_window_open)
@@ -621,7 +626,7 @@ void SDLHostInterface::DrawMainMenuBar()
   if (!ImGui::BeginMainMenuBar())
     return;
 
-  const bool system_enabled = static_cast<bool>(m_system);
+  const bool system_enabled = static_cast<bool>(g_system);
 
   if (ImGui::BeginMenu("System"))
   {
@@ -669,7 +674,7 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (ImGui::MenuItem("Remove Disc", nullptr, false, system_enabled))
     {
-      RunLater([this]() { m_system->RemoveMedia(); });
+      RunLater([this]() { g_system->RemoveMedia(); });
       ClearImGuiFocus();
     }
 
@@ -752,21 +757,21 @@ void SDLHostInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (m_system)
+  if (g_system)
   {
     const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
     if (!m_paused)
     {
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (420.0f * framebuffer_scale));
-      ImGui::Text("Average: %.2fms", m_system->GetAverageFrameTime());
+      ImGui::Text("Average: %.2fms", g_system->GetAverageFrameTime());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (310.0f * framebuffer_scale));
-      ImGui::Text("Worst: %.2fms", m_system->GetWorstFrameTime());
+      ImGui::Text("Worst: %.2fms", g_system->GetWorstFrameTime());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
 
-      const float speed = m_system->GetEmulationSpeed();
+      const float speed = g_system->GetEmulationSpeed();
       const u32 rounded_speed = static_cast<u32>(std::round(speed));
       if (speed < 90.0f)
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
@@ -776,10 +781,10 @@ void SDLHostInterface::DrawMainMenuBar()
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (165.0f * framebuffer_scale));
-      ImGui::Text("FPS: %.2f", m_system->GetFPS());
+      ImGui::Text("FPS: %.2f", g_system->GetFPS());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (80.0f * framebuffer_scale));
-      ImGui::Text("VPS: %.2f", m_system->GetVPS());
+      ImGui::Text("VPS: %.2f", g_system->GetVPS());
     }
     else
     {
@@ -1455,7 +1460,7 @@ void SDLHostInterface::ClearImGuiFocus()
 
 void SDLHostInterface::DoStartDisc()
 {
-  Assert(!m_system);
+  Assert(!g_system);
 
   nfdchar_t* path = nullptr;
   if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe,psf", nullptr, &path) || !path || std::strlen(path) == 0)
@@ -1470,18 +1475,18 @@ void SDLHostInterface::DoStartDisc()
 
 void SDLHostInterface::DoChangeDisc()
 {
-  Assert(m_system);
+  Assert(g_system);
 
   nfdchar_t* path = nullptr;
   if (!NFD_OpenDialog("bin,img,cue,chd", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
-  if (m_system->InsertMedia(path))
+  if (g_system->InsertMedia(path))
     AddFormattedOSDMessage(2.0f, "Switched CD to '%s'", path);
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
-  m_system->ResetPerformanceCounters();
+  g_system->ResetPerformanceCounters();
 }
 
 void SDLHostInterface::Run()
@@ -1490,9 +1495,9 @@ void SDLHostInterface::Run()
   {
     PollAndUpdate();
 
-    if (m_system && !m_paused)
+    if (g_system && !m_paused)
     {
-      m_system->RunFrame();
+      g_system->RunFrame();
       UpdateControllerRumble();
       if (m_frame_step_request)
       {
@@ -1505,26 +1510,26 @@ void SDLHostInterface::Run()
     {
       DrawImGuiWindows();
 
-      if (m_system)
+      if (g_system)
         g_gpu->ResetGraphicsAPIState();
 
       m_display->Render();
       ImGui_ImplSDL2_NewFrame(m_window);
       ImGui::NewFrame();
 
-      if (m_system)
+      if (g_system)
       {
         g_gpu->RestoreGraphicsAPIState();
-        m_system->UpdatePerformanceCounters();
+        g_system->UpdatePerformanceCounters();
 
         if (m_speed_limiter_enabled)
-          m_system->Throttle();
+          g_system->Throttle();
       }
     }
   }
 
   // Save state on exit so it can be resumed
-  if (m_system)
+  if (g_system)
   {
     if (g_settings.save_state_on_exit)
       SaveResumeSaveState();

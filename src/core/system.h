@@ -261,3 +261,5 @@ private:
   // Playlist of disc images.
   std::vector<std::string> m_media_playlist;
 };
+
+extern std::unique_ptr<System> g_system;

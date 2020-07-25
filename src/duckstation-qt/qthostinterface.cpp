@@ -298,7 +298,7 @@ void QtHostInterface::applySettings()
   CheckForSettingsChanges(old_settings);
 
   // detect when render-to-main flag changes
-  if (m_system)
+  if (g_system)
   {
     const bool render_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
     if (m_display && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
@@ -422,7 +422,7 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
   m_display->ResizeRenderWindow(width, height);
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
-  if (m_system)
+  if (g_system)
     renderDisplay();
 }
 
@@ -434,7 +434,7 @@ void QtHostInterface::redrawDisplayWindow()
     return;
   }
 
-  if (!m_display || !m_system)
+  if (!m_display || !g_system)
     return;
 
   renderDisplay();
@@ -630,20 +630,20 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 {
   HostInterface::OnSystemPerformanceCountersUpdated();
 
-  DebugAssert(m_system);
-  emit systemPerformanceCountersUpdated(m_system->GetEmulationSpeed(), m_system->GetFPS(), m_system->GetVPS(),
-                                        m_system->GetAverageFrameTime(), m_system->GetWorstFrameTime());
+  DebugAssert(g_system);
+  emit systemPerformanceCountersUpdated(g_system->GetEmulationSpeed(), g_system->GetFPS(), g_system->GetVPS(),
+                                        g_system->GetAverageFrameTime(), g_system->GetWorstFrameTime());
 }
 
 void QtHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
-  if (m_system)
+  if (g_system)
   {
-    emit runningGameChanged(QString::fromStdString(m_system->GetRunningPath()),
-                            QString::fromStdString(m_system->GetRunningCode()),
-                            QString::fromStdString(m_system->GetRunningTitle()));
+    emit runningGameChanged(QString::fromStdString(g_system->GetRunningPath()),
+                            QString::fromStdString(g_system->GetRunningCode()),
+                            QString::fromStdString(g_system->GetRunningTitle()));
   }
   else
   {
@@ -653,7 +653,7 @@ void QtHostInterface::OnRunningGameChanged()
 
 void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 {
-  emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
+  emit stateSaved(QString::fromStdString(g_system->GetRunningCode()), global, slot);
 }
 
 void QtHostInterface::LoadSettings()
@@ -731,7 +731,7 @@ void QtHostInterface::powerOffSystem()
     return;
   }
 
-  if (!m_system)
+  if (!g_system)
     return;
 
   if (g_settings.save_state_on_exit)
@@ -756,7 +756,7 @@ void QtHostInterface::resetSystem()
     return;
   }
 
-  if (!m_system)
+  if (!g_system)
   {
     Log_ErrorPrintf("resetSystem() called without system");
     return;
@@ -784,13 +784,13 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
     return;
   }
 
-  if (!m_system)
+  if (!g_system)
     return;
 
   if (!new_disc_filename.isEmpty())
-    m_system->InsertMedia(new_disc_filename.toStdString().c_str());
+    g_system->InsertMedia(new_disc_filename.toStdString().c_str());
   else
-    m_system->RemoveMedia();
+    g_system->RemoveMedia();
 }
 
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
@@ -925,7 +925,7 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
     return;
   }
 
-  if (m_system)
+  if (g_system)
     SaveState(global, slot);
 }
 
@@ -1058,14 +1058,14 @@ void QtHostInterface::threadEntryPoint()
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
   {
-    if (!m_system || m_paused)
+    if (!g_system || m_paused)
     {
       // wait until we have a system before running
       m_worker_thread_event_loop->exec();
       continue;
     }
 
-    m_system->RunFrame();
+    g_system->RunFrame();
     UpdateControllerRumble();
     if (m_frame_step_request)
     {
@@ -1075,10 +1075,10 @@ void QtHostInterface::threadEntryPoint()
 
     renderDisplay();
 
-    m_system->UpdatePerformanceCounters();
+    g_system->UpdatePerformanceCounters();
 
     if (m_speed_limiter_enabled)
-      m_system->Throttle();
+      g_system->Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
     PollAndUpdate();

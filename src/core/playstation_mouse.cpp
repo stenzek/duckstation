@@ -9,10 +9,10 @@
 #include <array>
 Log_SetChannel(PlayStationMouse);
 
-PlayStationMouse::PlayStationMouse(System* system) : m_system(system)
+PlayStationMouse::PlayStationMouse()
 {
-  m_last_host_position_x = system->GetHostInterface()->GetDisplay()->GetMousePositionX();
-  m_last_host_position_y = system->GetHostInterface()->GetDisplay()->GetMousePositionY();
+  m_last_host_position_x = g_system->GetHostInterface()->GetDisplay()->GetMousePositionX();
+  m_last_host_position_y = g_system->GetHostInterface()->GetDisplay()->GetMousePositionY();
 }
 
 PlayStationMouse::~PlayStationMouse() = default;
@@ -142,7 +142,7 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 void PlayStationMouse::UpdatePosition()
 {
   // get screen coordinates
-  const HostDisplay* display = m_system->GetHostInterface()->GetDisplay();
+  const HostDisplay* display = g_system->GetHostInterface()->GetDisplay();
   const s32 mouse_x = display->GetMousePositionX();
   const s32 mouse_y = display->GetMousePositionY();
   const s32 delta_x = mouse_x - m_last_host_position_x;
@@ -157,9 +157,9 @@ void PlayStationMouse::UpdatePosition()
   m_delta_y = static_cast<s8>(std::clamp<s32>(delta_y, std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
 }
 
-std::unique_ptr<PlayStationMouse> PlayStationMouse::Create(System* system)
+std::unique_ptr<PlayStationMouse> PlayStationMouse::Create()
 {
-  return std::make_unique<PlayStationMouse>(system);
+  return std::make_unique<PlayStationMouse>();
 }
 
 std::optional<s32> PlayStationMouse::StaticGetAxisCodeByName(std::string_view button_name)

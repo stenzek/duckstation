@@ -6,7 +6,6 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
 class GPU;
 
@@ -16,7 +15,7 @@ public:
   Timers();
   ~Timers();
 
-  void Initialize(System* system);
+  void Initialize();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -89,7 +88,6 @@ private:
   TickCount GetTicksUntilNextInterrupt() const;
   void UpdateSysClkEvent();
 
-  System* m_system = nullptr;
   std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};

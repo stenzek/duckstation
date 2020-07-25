@@ -163,7 +163,6 @@ private:
   u32 m_next_load_delay_value = 0;
 
   u32 m_cache_control = 0;
-  System* m_system = nullptr;
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> m_dcache = {};
