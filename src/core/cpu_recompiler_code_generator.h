@@ -62,6 +62,8 @@ public:
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
+  void EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr);
+  void EmitStoreGlobal(void* ptr, const Value& value);
 
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);

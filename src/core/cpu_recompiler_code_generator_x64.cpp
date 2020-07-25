@@ -1742,6 +1742,200 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   m_register_cache.PopState();
 }
 
+void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
+{
+  const s64 displacement =
+    static_cast<s64>(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())) + 2;
+  if (Xbyak::inner::IsInInt32(static_cast<u64>(displacement)))
+  {
+    switch (size)
+    {
+      case RegSize_8:
+        m_emit->mov(GetHostReg8(host_reg), m_emit->byte[m_emit->rip + ptr]);
+        break;
+
+      case RegSize_16:
+        m_emit->mov(GetHostReg16(host_reg), m_emit->word[m_emit->rip + ptr]);
+        break;
+
+      case RegSize_32:
+        m_emit->mov(GetHostReg32(host_reg), m_emit->dword[m_emit->rip + ptr]);
+        break;
+
+      case RegSize_64:
+        m_emit->mov(GetHostReg64(host_reg), m_emit->qword[m_emit->rip + ptr]);
+        break;
+
+      default:
+      {
+        UnreachableCode();
+      }
+      break;
+    }
+  }
+  else
+  {
+    Value temp = m_register_cache.AllocateScratch(RegSize_64);
+    m_emit->mov(GetHostReg64(temp), reinterpret_cast<size_t>(ptr));
+    switch (size)
+    {
+      case RegSize_8:
+        m_emit->mov(GetHostReg8(host_reg), m_emit->byte[GetHostReg64(temp)]);
+        break;
+
+      case RegSize_16:
+        m_emit->mov(GetHostReg16(host_reg), m_emit->word[GetHostReg64(temp)]);
+        break;
+
+      case RegSize_32:
+        m_emit->mov(GetHostReg32(host_reg), m_emit->dword[GetHostReg64(temp)]);
+        break;
+
+      case RegSize_64:
+        m_emit->mov(GetHostReg64(host_reg), m_emit->qword[GetHostReg64(temp)]);
+        break;
+
+      default:
+      {
+        UnreachableCode();
+      }
+      break;
+    }
+  }
+}
+
+void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value)
+{
+  DebugAssert(value.IsInHostRegister() || value.IsConstant());
+
+  const s64 displacement =
+    static_cast<s64>(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr()));
+  if (Xbyak::inner::IsInInt32(static_cast<u64>(displacement)))
+  {
+    switch (value.size)
+    {
+      case RegSize_8:
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->byte[m_emit->rip + ptr], value.constant_value);
+        else
+          m_emit->mov(m_emit->byte[m_emit->rip + ptr], GetHostReg8(value.host_reg));
+      }
+      break;
+
+      case RegSize_16:
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->word[m_emit->rip + ptr], value.constant_value);
+        else
+          m_emit->mov(m_emit->word[m_emit->rip + ptr], GetHostReg16(value.host_reg));
+      }
+      break;
+
+      case RegSize_32:
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->dword[m_emit->rip + ptr], value.constant_value);
+        else
+          m_emit->mov(m_emit->dword[m_emit->rip + ptr], GetHostReg32(value.host_reg));
+      }
+      break;
+
+      case RegSize_64:
+      {
+        if (value.IsConstant())
+        {
+          // we need a temporary to load the value if it doesn't fit in 32-bits
+          if (!Xbyak::inner::IsInInt32(value.constant_value))
+          {
+            Value temp = m_register_cache.AllocateScratch(RegSize_64);
+            EmitCopyValue(temp.host_reg, value);
+            m_emit->mov(m_emit->qword[m_emit->rip + ptr], GetHostReg64(temp.host_reg));
+          }
+          else
+          {
+            m_emit->mov(m_emit->qword[m_emit->rip + ptr], value.constant_value);
+          }
+        }
+        else
+        {
+          m_emit->mov(m_emit->qword[m_emit->rip + ptr], GetHostReg64(value.host_reg));
+        }
+      }
+      break;
+
+      default:
+      {
+        UnreachableCode();
+      }
+      break;
+    }
+  }
+  else
+  {
+    Value address_temp = m_register_cache.AllocateScratch(RegSize_64);
+    m_emit->mov(GetHostReg64(address_temp), reinterpret_cast<size_t>(ptr));
+    switch (value.size)
+    {
+      case RegSize_8:
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->byte[GetHostReg64(address_temp)], value.constant_value);
+        else
+          m_emit->mov(m_emit->byte[GetHostReg64(address_temp)], GetHostReg8(value.host_reg));
+      }
+      break;
+
+      case RegSize_16:
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->word[GetHostReg64(address_temp)], value.constant_value);
+        else
+          m_emit->mov(m_emit->word[GetHostReg64(address_temp)], GetHostReg16(value.host_reg));
+      }
+      break;
+
+      case RegSize_32:
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->dword[GetHostReg64(address_temp)], value.constant_value);
+        else
+          m_emit->mov(m_emit->dword[GetHostReg64(address_temp)], GetHostReg32(value.host_reg));
+      }
+      break;
+
+      case RegSize_64:
+      {
+        if (value.IsConstant())
+        {
+          // we need a temporary to load the value if it doesn't fit in 32-bits
+          if (!Xbyak::inner::IsInInt32(value.constant_value))
+          {
+            Value temp = m_register_cache.AllocateScratch(RegSize_64);
+            EmitCopyValue(temp.host_reg, value);
+            m_emit->mov(m_emit->qword[GetHostReg64(address_temp)], GetHostReg64(temp.host_reg));
+          }
+          else
+          {
+            m_emit->mov(m_emit->qword[GetHostReg64(address_temp)], value.constant_value);
+          }
+        }
+        else
+        {
+          m_emit->mov(m_emit->qword[GetHostReg64(address_temp)], GetHostReg64(value.host_reg));
+        }
+      }
+      break;
+
+      default:
+      {
+        UnreachableCode();
+      }
+      break;
+    }
+  }
+}
+
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
 {
   Value reg = m_register_cache.AllocateScratch(RegSize_8);
