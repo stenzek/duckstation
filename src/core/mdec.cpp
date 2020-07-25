@@ -7,6 +7,8 @@
 #include <imgui.h>
 Log_SetChannel(MDEC);
 
+MDEC g_mdec;
+
 MDEC::MDEC() = default;
 
 MDEC::~MDEC() = default;
@@ -15,6 +17,12 @@ void MDEC::Initialize()
 {
   m_block_copy_out_event = g_system->CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
                                                        std::bind(&MDEC::CopyOutBlock, this), false);
+  m_total_blocks_decoded = 0;
+}
+
+void MDEC::Shutdown()
+{
+  m_block_copy_out_event.reset();
 }
 
 void MDEC::Reset()

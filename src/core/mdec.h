@@ -16,6 +16,7 @@ public:
   ~MDEC();
 
   void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -146,3 +147,5 @@ private:
 
   u32 m_total_blocks_decoded = 0;
 };
+
+extern MDEC g_mdec;

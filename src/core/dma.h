@@ -37,7 +37,7 @@ public:
   DMA();
   ~DMA();
 
-  void Initialize(Bus* bus, MDEC* mdec);
+  void Initialize(Bus* bus);
   void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -81,7 +81,6 @@ private:
   TickCount TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
 
   Bus* m_bus = nullptr;
-  MDEC* m_mdec = nullptr;
 
   // configuration
   TickCount m_max_slice_ticks = 1000;

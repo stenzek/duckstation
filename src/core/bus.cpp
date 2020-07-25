@@ -36,12 +36,11 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, Pad* pad, MDEC* mdec, SIO* sio)
+void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, Pad* pad, SIO* sio)
 {
   m_cpu = cpu;
   m_cpu_code_cache = cpu_code_cache;
   m_pad = pad;
-  m_mdec = mdec;
   m_sio = sio;
 }
 
@@ -483,7 +482,7 @@ void Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
 
 u32 Bus::DoReadMDEC(MemoryAccessSize size, u32 offset)
 {
-  u32 value = m_mdec->ReadRegister(offset);
+  u32 value = g_mdec.ReadRegister(offset);
   FixupUnalignedWordAccessW32(offset, value);
   return value;
 }
@@ -491,7 +490,7 @@ u32 Bus::DoReadMDEC(MemoryAccessSize size, u32 offset)
 void Bus::DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value)
 {
   FixupUnalignedWordAccessW32(offset, value);
-  m_mdec->WriteRegister(offset, value);
+  g_mdec.WriteRegister(offset, value);
 }
 
 u32 Bus::DoReadInterruptController(MemoryAccessSize size, u32 offset)
