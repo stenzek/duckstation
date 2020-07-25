@@ -1305,8 +1305,15 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
   const u32 adjust_size = PrepareStackForCall();
 
   // actually call the function
-  m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-  m_emit->call(GetHostReg64(RRETURN));
+  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
+  {
+    m_emit->call(ptr);
+  }
+  else
+  {
+    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
+    m_emit->call(GetHostReg64(RRETURN));
+  }
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
