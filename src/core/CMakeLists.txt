@@ -88,7 +88,6 @@ set(RECOMPILER_SRCS
     cpu_recompiler_code_generator_generic.cpp
     cpu_recompiler_register_cache.cpp
     cpu_recompiler_register_cache.h
-    cpu_recompiler_thunks.cpp
     cpu_recompiler_thunks.h
     cpu_recompiler_types.h
 )

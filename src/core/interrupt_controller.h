@@ -3,11 +3,6 @@
 
 class StateWrapper;
 
-namespace CPU
-{
-class Core;
-}
-
 class InterruptController final
 {
 public:
@@ -32,7 +27,7 @@ public:
   InterruptController();
   ~InterruptController();
 
-  void Initialize(CPU::Core* cpu);
+  void Initialize();
   void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -52,8 +47,6 @@ private:
   static constexpr u32 DEFAULT_INTERRUPT_MASK = 0; //(u32(1) << NUM_IRQS) - 1;
 
   void UpdateCPUInterruptRequest();
-
-  CPU::Core* m_cpu;
 
   u32 m_interrupt_status_register = 0;
   u32 m_interrupt_mask_register = DEFAULT_INTERRUPT_MASK;

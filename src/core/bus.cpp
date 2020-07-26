@@ -38,9 +38,9 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu)
+void Bus::Initialize()
 {
-  m_cpu = cpu;
+  //
 }
 
 void Bus::Reset()
@@ -160,10 +160,7 @@ TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 w
   return GetDMARAMTickCount(word_count);
 }
 
-void Bus::SetExpansionROM(std::vector<u8> data)
-{
-  m_exp1_rom = std::move(data);
-}
+void Bus::SetExpansionROM(std::vector<u8> data) { m_exp1_rom = std::move(data); }
 
 void Bus::SetBIOS(const std::vector<u8>& image)
 {
@@ -394,25 +391,13 @@ void Bus::DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value)
   DoInvalidAccess(MemoryAccessType::Write, size, MEMCTRL2_BASE | offset, value);
 }
 
-u32 Bus::DoReadPad(MemoryAccessSize size, u32 offset)
-{
-  return g_pad.ReadRegister(offset);
-}
+u32 Bus::DoReadPad(MemoryAccessSize size, u32 offset) { return g_pad.ReadRegister(offset); }
 
-void Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
-{
-  g_pad.WriteRegister(offset, value);
-}
+void Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value) { g_pad.WriteRegister(offset, value); }
 
-u32 Bus::DoReadSIO(MemoryAccessSize size, u32 offset)
-{
-  return g_sio.ReadRegister(offset);
-}
+u32 Bus::DoReadSIO(MemoryAccessSize size, u32 offset) { return g_sio.ReadRegister(offset); }
 
-void Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
-{
-  g_sio.WriteRegister(offset, value);
-}
+void Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value) { g_sio.WriteRegister(offset, value); }
 
 u32 Bus::DoReadCDROM(MemoryAccessSize size, u32 offset)
 {
@@ -598,3 +583,416 @@ void Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
 
   g_dma.WriteRegister(offset, value);
 }
+
+namespace CPU {
+
+// defined in cpu_core.cpp
+void RaiseException(Exception excode);
+void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
+
+static void WriteCacheControl(u32 value)
+{
+  Log_WarningPrintf("Cache control <- 0x%08X", value);
+  g_state.cache_control = value;
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+static void DoScratchpadAccess(PhysicalMemoryAddress address, u32& value)
+{
+  const PhysicalMemoryAddress cache_offset = address & DCACHE_OFFSET_MASK;
+  if constexpr (size == MemoryAccessSize::Byte)
+  {
+    if constexpr (type == MemoryAccessType::Read)
+      value = ZeroExtend32(g_state.dcache[cache_offset]);
+    else
+      g_state.dcache[cache_offset] = Truncate8(value);
+  }
+  else if constexpr (size == MemoryAccessSize::HalfWord)
+  {
+    if constexpr (type == MemoryAccessType::Read)
+    {
+      u16 temp;
+      std::memcpy(&temp, &g_state.dcache[cache_offset], sizeof(temp));
+      value = ZeroExtend32(temp);
+    }
+    else
+    {
+      u16 temp = Truncate16(value);
+      std::memcpy(&g_state.dcache[cache_offset], &temp, sizeof(temp));
+    }
+  }
+  else if constexpr (size == MemoryAccessSize::Word)
+  {
+    if constexpr (type == MemoryAccessType::Read)
+      std::memcpy(&value, &g_state.dcache[cache_offset], sizeof(value));
+    else
+      std::memcpy(&g_state.dcache[cache_offset], &value, sizeof(value));
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+static TickCount DoMemoryAccess(VirtualMemoryAddress address, u32& value)
+{
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    {
+      if constexpr (type == MemoryAccessType::Write)
+      {
+        if (g_state.cop0_regs.sr.Isc)
+          return 0;
+      }
+
+      const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
+      if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+      {
+        DoScratchpadAccess<type, size>(phys_addr, value);
+        return 0;
+      }
+
+      return g_bus->DispatchAccess<type, size>(phys_addr, value);
+    }
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    {
+      // Above 512mb raises an exception.
+      return -1;
+    }
+
+    case 0x04: // KSEG0 - physical memory cached
+    {
+      if constexpr (type == MemoryAccessType::Write)
+      {
+        if (g_state.cop0_regs.sr.Isc)
+          return 0;
+      }
+
+      const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
+      if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+      {
+        DoScratchpadAccess<type, size>(phys_addr, value);
+        return 0;
+      }
+
+      return g_bus->DispatchAccess<type, size>(phys_addr, value);
+    }
+    break;
+
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
+      return g_bus->DispatchAccess<type, size>(phys_addr, value);
+    }
+    break;
+
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    {
+      if (address == 0xFFFE0130)
+      {
+        if constexpr (type == MemoryAccessType::Read)
+          value = g_state.cache_control;
+        else
+          WriteCacheControl(value);
+
+        return 0;
+      }
+      else
+      {
+        return -1;
+      }
+    }
+
+    default:
+      UnreachableCode();
+      return false;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+static bool DoAlignmentCheck(VirtualMemoryAddress address)
+{
+  if constexpr (size == MemoryAccessSize::HalfWord)
+  {
+    if (Common::IsAlignedPow2(address, 2))
+      return true;
+  }
+  else if constexpr (size == MemoryAccessSize::Word)
+  {
+    if (Common::IsAlignedPow2(address, 4))
+      return true;
+  }
+  else
+  {
+    return true;
+  }
+
+  g_state.cop0_regs.BadVaddr = address;
+  RaiseException(type == MemoryAccessType::Read ? Exception::AdEL : Exception::AdES);
+  return false;
+}
+
+bool FetchInstruction()
+{
+  DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
+  if (DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(g_state.regs.npc, g_state.next_instruction.bits) <
+      0)
+  {
+    // Bus errors don't set BadVaddr.
+    RaiseException(Exception::IBE, g_state.regs.npc, false, false, 0);
+    return false;
+  }
+
+  g_state.regs.pc = g_state.regs.npc;
+  g_state.regs.npc += sizeof(g_state.next_instruction.bits);
+  return true;
+}
+
+bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  *value = Truncate8(temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  g_state.pending_ticks += cycles;
+  return true;
+}
+
+bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  *value = Truncate16(temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  g_state.pending_ticks += cycles;
+  return true;
+}
+
+bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+    return false;
+
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  g_state.pending_ticks += cycles;
+  return true;
+}
+
+bool WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+    return false;
+
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  *value = Truncate8(temp);
+  return (cycles >= 0);
+}
+
+bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  *value = Truncate16(temp);
+  return (cycles >= 0);
+}
+
+bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value) >= 0;
+}
+
+bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp) >= 0;
+}
+
+bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp) >= 0;
+}
+
+bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value) >= 0;
+}
+
+namespace Recompiler::Thunks {
+
+u64 ReadMemoryByte(u32 pc, u32 address)
+{
+  g_state.current_instruction_pc = pc;
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  g_state.pending_ticks += cycles;
+  return ZeroExtend64(temp);
+}
+
+u64 ReadMemoryHalfWord(u32 pc, u32 address)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address))
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  g_state.pending_ticks += cycles;
+  return ZeroExtend64(temp);
+}
+
+u64 ReadMemoryWord(u32 pc, u32 address)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(address))
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  g_state.pending_ticks += cycles;
+  return ZeroExtend64(temp);
+}
+
+bool WriteMemoryByte(u32 pc, u32 address, u8 value)
+{
+  g_state.current_instruction_pc = pc;
+
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryHalfWord(u32 pc, u32 address, u16 value)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address))
+    return false;
+
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryWord(u32 pc, u32 address, u32 value)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(address))
+    return false;
+
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+} // namespace Recompiler::Thunks
+
+} // namespace CPU

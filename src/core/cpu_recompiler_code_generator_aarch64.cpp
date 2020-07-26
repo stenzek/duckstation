@@ -21,10 +21,7 @@ constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 
 constexpr u64 FUNCTION_STACK_SIZE =
   FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE + FUNCTION_CALL_SHADOW_SPACE;
 
-static const a64::WRegister GetHostReg8(HostReg reg)
-{
-  return a64::WRegister(reg);
-}
+static const a64::WRegister GetHostReg8(HostReg reg) { return a64::WRegister(reg); }
 
 static const a64::WRegister GetHostReg8(const Value& value)
 {
@@ -32,10 +29,7 @@ static const a64::WRegister GetHostReg8(const Value& value)
   return a64::WRegister(value.host_reg);
 }
 
-static const a64::WRegister GetHostReg16(HostReg reg)
-{
-  return a64::WRegister(reg);
-}
+static const a64::WRegister GetHostReg16(HostReg reg) { return a64::WRegister(reg); }
 
 static const a64::WRegister GetHostReg16(const Value& value)
 {
@@ -43,10 +37,7 @@ static const a64::WRegister GetHostReg16(const Value& value)
   return a64::WRegister(value.host_reg);
 }
 
-static const a64::WRegister GetHostReg32(HostReg reg)
-{
-  return a64::WRegister(reg);
-}
+static const a64::WRegister GetHostReg32(HostReg reg) { return a64::WRegister(reg); }
 
 static const a64::WRegister GetHostReg32(const Value& value)
 {
@@ -54,10 +45,7 @@ static const a64::WRegister GetHostReg32(const Value& value)
   return a64::WRegister(value.host_reg);
 }
 
-static const a64::XRegister GetHostReg64(HostReg reg)
-{
-  return a64::XRegister(reg);
-}
+static const a64::XRegister GetHostReg64(HostReg reg) { return a64::XRegister(reg); }
 
 static const a64::XRegister GetHostReg64(const Value& value)
 {
@@ -65,13 +53,10 @@ static const a64::XRegister GetHostReg64(const Value& value)
   return a64::XRegister(value.host_reg);
 }
 
-static const a64::XRegister GetCPUPtrReg()
-{
-  return GetHostReg64(RCPUPTR);
-}
+static const a64::XRegister GetCPUPtrReg() { return GetHostReg64(RCPUPTR); }
 
-CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer)
-  : m_cpu(cpu), m_code_buffer(code_buffer), m_register_cache(*this),
+CodeGenerator::CodeGenerator(JitCodeBuffer* code_buffer)
+  : m_code_buffer(code_buffer), m_register_cache(*this),
     m_near_emitter(static_cast<vixl::byte*>(code_buffer->GetFreeCodePointer()), code_buffer->GetFreeCodeSpace(),
                    a64::PositionDependentCode),
     m_far_emitter(static_cast<vixl::byte*>(code_buffer->GetFreeFarCodePointer()), code_buffer->GetFreeFarCodeSpace(),
@@ -111,10 +96,7 @@ const char* CodeGenerator::GetHostRegName(HostReg reg, RegSize size /*= HostPoin
   }
 }
 
-void CodeGenerator::AlignCodeBuffer(JitCodeBuffer* code_buffer)
-{
-  code_buffer->Align(16, 0x90);
-}
+void CodeGenerator::AlignCodeBuffer(JitCodeBuffer* code_buffer) { code_buffer->Align(16, 0x90); }
 
 void CodeGenerator::InitHostRegs()
 {
@@ -127,15 +109,9 @@ void CodeGenerator::InitHostRegs()
   m_register_cache.SetCPUPtrHostReg(RCPUPTR);
 }
 
-void CodeGenerator::SwitchToFarCode()
-{
-  m_emit = &m_far_emitter;
-}
+void CodeGenerator::SwitchToFarCode() { m_emit = &m_far_emitter; }
 
-void CodeGenerator::SwitchToNearCode()
-{
-  m_emit = &m_near_emitter;
-}
+void CodeGenerator::SwitchToNearCode() { m_emit = &m_near_emitter; }
 
 void* CodeGenerator::GetCurrentNearCodePointer() const
 {
@@ -904,10 +880,7 @@ u32 CodeGenerator::PrepareStackForCall()
   return 0;
 }
 
-void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
-{
-  m_register_cache.PopCallerSavedRegisters();
-}
+void CodeGenerator::RestoreStackAfterCall(u32 adjust_size) { m_register_cache.PopCallerSavedRegisters(); }
 
 static s64 GetBranchDisplacement(void* current, void* target)
 {
@@ -1282,15 +1255,15 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
   switch (size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, m_register_cache.GetCPUPtr(), pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, pc, address);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, m_register_cache.GetCPUPtr(), pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, pc, address);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, m_register_cache.GetCPUPtr(), pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, pc, address);
       break;
 
     default:
@@ -1345,15 +1318,15 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   switch (value.size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, m_register_cache.GetCPUPtr(), pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, pc, address, value);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, m_register_cache.GetCPUPtr(), pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, pc, address, value);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, m_register_cache.GetCPUPtr(), pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, pc, address, value);
       break;
 
     default:
@@ -1381,9 +1354,9 @@ void CodeGenerator::EmitFlushInterpreterLoadDelay()
   Value reg = m_register_cache.AllocateScratch(RegSize_32);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_load_delay_reg));
-  const a64::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(Core, m_load_delay_value));
-  const a64::MemOperand regs_base(GetCPUPtrReg(), offsetof(Core, m_regs.r[0]));
+  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(State, load_delay_reg));
+  const a64::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(State, load_delay_value));
+  const a64::MemOperand regs_base(GetCPUPtrReg(), offsetof(State, regs.r[0]));
 
   a64::Label skip_flush;
 
@@ -1399,7 +1372,7 @@ void CodeGenerator::EmitFlushInterpreterLoadDelay()
 
   // reg = offset(r[0] + reg << 2)
   m_emit->Lsl(GetHostReg32(reg), GetHostReg32(reg), 2);
-  m_emit->Add(GetHostReg32(reg), GetHostReg32(reg), offsetof(Core, m_regs.r[0]));
+  m_emit->Add(GetHostReg32(reg), GetHostReg32(reg), offsetof(State, regs.r[0]));
 
   // r[reg] = value
   m_emit->Str(GetHostReg32(value), a64::MemOperand(GetCPUPtrReg(), GetHostReg32(reg)));
@@ -1416,10 +1389,10 @@ void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
   Value reg = m_register_cache.AllocateScratch(RegSize_32);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_load_delay_reg));
-  const a64::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(Core, m_load_delay_value));
-  const a64::MemOperand next_load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_next_load_delay_reg));
-  const a64::MemOperand next_load_delay_value(GetCPUPtrReg(), offsetof(Core, m_next_load_delay_value));
+  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(State, load_delay_reg));
+  const a64::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(State, load_delay_value));
+  const a64::MemOperand next_load_delay_reg(GetCPUPtrReg(), offsetof(State, next_load_delay_reg));
+  const a64::MemOperand next_load_delay_value(GetCPUPtrReg(), offsetof(State, next_load_delay_value));
 
   m_emit->Ldrb(GetHostReg32(reg), next_load_delay_reg);
   m_emit->Ldr(GetHostReg32(value), next_load_delay_value);
@@ -1434,7 +1407,7 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   if (!m_load_delay_dirty)
     return;
 
-  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(Core, m_load_delay_reg));
+  const a64::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(State, load_delay_reg));
   Value temp = m_register_cache.AllocateScratch(RegSize_8);
 
   a64::Label skip_cancel;
@@ -1692,9 +1665,6 @@ void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, Labe
   }
 }
 
-void CodeGenerator::EmitBindLabel(LabelType* label)
-{
-  m_emit->Bind(label);
-}
+void CodeGenerator::EmitBindLabel(LabelType* label) { m_emit->Bind(label); }
 
 } // namespace CPU::Recompiler

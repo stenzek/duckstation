@@ -21,8 +21,6 @@
 
 namespace CPU {
 
-class Core;
-
 namespace Recompiler {
 
 class CodeGenerator;

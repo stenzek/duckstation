@@ -11,19 +11,7 @@ class ByteStream;
 class CDImage;
 class StateWrapper;
 
-namespace CPU {
-class Core;
-} // namespace CPU
-
-class Bus;
-class GPU;
-class CDROM;
-class Pad;
 class Controller;
-class Timers;
-class SPU;
-class MDEC;
-class SIO;
 
 struct SystemBootParameters
 {
@@ -62,7 +50,6 @@ public:
 
   // Accessing components.
   HostInterface* GetHostInterface() const { return m_host_interface; }
-  CPU::Core* GetCPU() const { return m_cpu.get(); }
 
   ConsoleRegion GetRegion() const { return m_region; }
   bool IsPALRegion() const { return m_region == ConsoleRegion::PAL; }
@@ -203,7 +190,6 @@ private:
   void UpdateRunningGame(const char* path, CDImage* image);
 
   HostInterface* m_host_interface;
-  std::unique_ptr<CPU::Core> m_cpu;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;
   u32 m_frame_number = 1;

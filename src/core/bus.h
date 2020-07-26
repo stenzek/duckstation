@@ -9,10 +9,6 @@
 
 class StateWrapper;
 
-namespace CPU {
-class Core;
-} // namespace CPU
-
 class DMA;
 class GPU;
 class CDROM;
@@ -80,7 +76,7 @@ public:
   Bus();
   ~Bus();
 
-  void Initialize(CPU::Core* cpu);
+  void Initialize();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -255,8 +251,6 @@ private:
         CPU::CodeCache::InvalidateBlocksWithPageIndex(page);
     }
   }
-
-  CPU::Core* m_cpu = nullptr;
 
   std::array<TickCount, 3> m_exp1_access_time = {};
   std::array<TickCount, 3> m_exp2_access_time = {};

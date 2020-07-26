@@ -10,7 +10,6 @@
 class Bus;
 
 namespace CPU {
-class Core;
 
 union CodeBlockKey
 {
@@ -52,7 +51,7 @@ struct CodeBlockInstruction
 
 struct CodeBlock
 {
-  using HostCodePointer = void (*)(Core*);
+  using HostCodePointer = void (*)();
 
   CodeBlock(const CodeBlockKey key_) : key(key_) {}
 
@@ -82,7 +81,7 @@ struct CodeBlock
 
 namespace CodeCache {
 
-void Initialize(Core* core, bool use_recompiler);
+void Initialize(bool use_recompiler);
 void Shutdown();
 void Execute();
 
@@ -94,6 +93,9 @@ void SetUseRecompiler(bool enable);
 
 /// Invalidates all blocks which are in the range of the specified code page.
 void InvalidateBlocksWithPageIndex(u32 page_index);
+
+void InterpretCachedBlock(const CodeBlock& block);
+void InterpretUncachedBlock();
 
 }; // namespace CodeCache
 

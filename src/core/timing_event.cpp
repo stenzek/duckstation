@@ -17,17 +17,17 @@ TimingEvent::~TimingEvent()
 
 TickCount TimingEvent::GetTicksSinceLastExecution() const
 {
-  return g_system->m_cpu->GetPendingTicks() + m_time_since_last_run;
+  return CPU::GetPendingTicks() + m_time_since_last_run;
 }
 
 TickCount TimingEvent::GetTicksUntilNextExecution() const
 {
-  return std::max(m_downcount - g_system->m_cpu->GetPendingTicks(), static_cast<TickCount>(0));
+  return std::max(m_downcount - CPU::GetPendingTicks(), static_cast<TickCount>(0));
 }
 
 void TimingEvent::Schedule(TickCount ticks)
 {
-  const TickCount pending_ticks = g_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = CPU::GetPendingTicks();
   m_downcount = pending_ticks + ticks;
 
   if (!m_active)
@@ -73,7 +73,7 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
   if (!m_active)
     return;
 
-  const TickCount pending_ticks = g_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = CPU::GetPendingTicks();
   const TickCount ticks_to_execute = m_time_since_last_run + pending_ticks;
   if (!force && ticks_to_execute < m_period)
     return;
@@ -92,7 +92,7 @@ void TimingEvent::Activate()
     return;
 
   // leave the downcount intact
-  const TickCount pending_ticks = g_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = CPU::GetPendingTicks();
   m_downcount += pending_ticks;
   m_time_since_last_run -= pending_ticks;
 
@@ -105,7 +105,7 @@ void TimingEvent::Deactivate()
   if (!m_active)
     return;
 
-  const TickCount pending_ticks = g_system->m_cpu->GetPendingTicks();
+  const TickCount pending_ticks = CPU::GetPendingTicks();
   m_downcount -= pending_ticks;
   m_time_since_last_run += pending_ticks;
 

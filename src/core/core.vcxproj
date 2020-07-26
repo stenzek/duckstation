@@ -57,7 +57,6 @@
     <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_x64.cpp" />
     <ClCompile Include="cpu_recompiler_register_cache.cpp" />
-    <ClCompile Include="cpu_recompiler_thunks.cpp" />
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="game_list.cpp" />
@@ -150,7 +149,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpu_core.inl" />
     <None Include="bus.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

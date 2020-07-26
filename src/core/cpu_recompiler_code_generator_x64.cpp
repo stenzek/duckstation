@@ -1,6 +1,7 @@
 #include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
+#include "common/align.h"
 
 namespace CPU::Recompiler {
 
@@ -73,8 +74,8 @@ static const Xbyak::Reg64 GetCPUPtrReg()
   return GetHostReg64(RCPUPTR);
 }
 
-CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer)
-  : m_cpu(cpu), m_code_buffer(code_buffer), m_register_cache(*this),
+CodeGenerator::CodeGenerator(JitCodeBuffer* code_buffer)
+  : m_code_buffer(code_buffer), m_register_cache(*this),
     m_near_emitter(code_buffer->GetFreeCodeSpace(), code_buffer->GetFreeCodePointer()),
     m_far_emitter(code_buffer->GetFreeFarCodeSpace(), code_buffer->GetFreeFarCodePointer()), m_emit(&m_near_emitter)
 {
@@ -187,7 +188,7 @@ void CodeGenerator::EmitBeginBlock()
   // Store the CPU struct pointer.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
-  m_emit->mov(GetCPUPtrReg(), GetHostReg64(RARG1));
+  m_emit->mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
 }
 
 void CodeGenerator::EmitEndBlock()
@@ -1652,15 +1653,15 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
   switch (size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, m_register_cache.GetCPUPtr(), pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, pc, address);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, m_register_cache.GetCPUPtr(), pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, pc, address);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, m_register_cache.GetCPUPtr(), pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, pc, address);
       break;
 
     default:
@@ -1713,15 +1714,15 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   switch (value.size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, m_register_cache.GetCPUPtr(), pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, pc, address, value);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, m_register_cache.GetCPUPtr(), pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, pc, address, value);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, m_register_cache.GetCPUPtr(), pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, pc, address, value);
       break;
 
     default:
@@ -1941,9 +1942,9 @@ void CodeGenerator::EmitFlushInterpreterLoadDelay()
   Value reg = m_register_cache.AllocateScratch(RegSize_8);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
-  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
-  auto reg_ptr = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
+  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(State, load_delay_reg)];
+  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(State, load_delay_value)];
+  auto reg_ptr = m_emit->dword[GetCPUPtrReg() + offsetof(State, regs.r[0]) + GetHostReg64(reg.host_reg) * 4];
 
   Xbyak::Label skip_flush;
 
@@ -1969,10 +1970,10 @@ void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
   Value reg = m_register_cache.AllocateScratch(RegSize_8);
   Value value = m_register_cache.AllocateScratch(RegSize_32);
 
-  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
-  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_load_delay_value)];
-  auto next_load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_reg)];
-  auto next_load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(Core, m_next_load_delay_value)];
+  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(State, load_delay_reg)];
+  auto load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(State, load_delay_value)];
+  auto next_load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(State, next_load_delay_reg)];
+  auto next_load_delay_value = m_emit->dword[GetCPUPtrReg() + offsetof(State, next_load_delay_value)];
 
   m_emit->mov(GetHostReg32(value), next_load_delay_value);
   m_emit->mov(GetHostReg8(reg), next_load_delay_reg);
@@ -1986,7 +1987,7 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   if (!m_load_delay_dirty)
     return;
 
-  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(Core, m_load_delay_reg)];
+  auto load_delay_reg = m_emit->byte[GetCPUPtrReg() + offsetof(State, load_delay_reg)];
 
   Xbyak::Label skip_cancel;
 

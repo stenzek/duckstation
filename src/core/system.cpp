@@ -53,7 +53,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
-  m_cpu = std::make_unique<CPU::Core>();
   g_bus = std::make_unique<Bus>();
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
@@ -287,13 +286,13 @@ bool System::InitializeComponents(bool force_software_renderer)
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : settings.gpu_renderer))
     return false;
 
-  m_cpu->Initialize();
-  CPU::CodeCache::Initialize(m_cpu.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  g_bus->Initialize(m_cpu.get());
+  CPU::Initialize();
+  CPU::CodeCache::Initialize(m_cpu_execution_mode == CPUExecutionMode::Recompiler);
+  g_bus->Initialize();
 
   g_dma.Initialize();
 
-  g_interrupt_controller.Initialize(m_cpu.get());
+  g_interrupt_controller.Initialize();
 
   g_cdrom.Initialize();
   g_pad.Initialize();
@@ -322,7 +321,7 @@ void System::DestroyComponents()
   g_dma.Shutdown();
   CPU::CodeCache::Shutdown();
   g_bus.reset();
-  m_cpu.reset();
+  CPU::Shutdown();
 }
 
 bool System::CreateGPU(GPURenderer renderer)
@@ -371,7 +370,7 @@ bool System::DoState(StateWrapper& sw)
   sw.Do(&m_internal_frame_number);
   sw.Do(&m_global_tick_counter);
 
-  if (!sw.DoMarker("CPU") || !m_cpu->DoState(sw))
+  if (!sw.DoMarker("CPU") || !CPU::DoState(sw))
     return false;
 
   if (sw.IsReading())
@@ -415,7 +414,7 @@ bool System::DoState(StateWrapper& sw)
 
 void System::Reset()
 {
-  m_cpu->Reset();
+  CPU::Reset();
   CPU::CodeCache::Flush();
   g_bus->Reset();
   g_dma.Reset();
@@ -594,7 +593,7 @@ void System::RunFrame()
     do
     {
       UpdateCPUDowncount();
-      m_cpu->Execute();
+      CPU::Execute();
       RunEvents();
     } while (!m_frame_done);
   }
@@ -728,7 +727,7 @@ bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
     u32 address = header.memfill_start & ~UINT32_C(3);
     for (u32 i = 0; i < words_to_write; i++)
     {
-      m_cpu->SafeWriteMemoryWord(address, 0);
+      CPU::SafeWriteMemoryWord(address, 0);
       address += sizeof(u32);
     }
   }
@@ -746,7 +745,7 @@ bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
     u32 address = header.load_address;
     for (u32 i = 0; i < num_words; i++)
     {
-      m_cpu->SafeWriteMemoryWord(address, data_words[i]);
+      CPU::SafeWriteMemoryWord(address, data_words[i]);
       address += sizeof(u32);
     }
   }
@@ -782,7 +781,7 @@ bool System::LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<
     u32 address = header.memfill_start & ~UINT32_C(3);
     for (u32 i = 0; i < words_to_write; i++)
     {
-      m_cpu->SafeWriteMemoryWord(address, 0);
+      CPU::SafeWriteMemoryWord(address, 0);
       address += sizeof(u32);
     }
   }
@@ -799,7 +798,7 @@ bool System::LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<
     u32 address = header.load_address;
     for (u32 i = 0; i < num_words; i++)
     {
-      m_cpu->SafeWriteMemoryWord(address, data_words[i]);
+      CPU::SafeWriteMemoryWord(address, data_words[i]);
       address += sizeof(u32);
     }
   }
@@ -854,9 +853,9 @@ bool System::SetExpansionROM(const char* filename)
 
 void System::StallCPU(TickCount ticks)
 {
-  m_cpu->AddPendingTicks(ticks);
+  CPU::AddPendingTicks(ticks);
 #if 0
-  if (m_cpu->GetPendingTicks() >= m_cpu->GetDowncount() && !m_running_events)
+  if (CPU::GetPendingTicks() >= CPU::GetDowncount() && !m_running_events)
     RunEvents();
 #endif
 }
@@ -1076,8 +1075,8 @@ void System::RunEvents()
 
   m_running_events = true;
 
-  TickCount pending_ticks = (m_global_tick_counter + m_cpu->GetPendingTicks()) - m_last_event_run_time;
-  m_cpu->ResetPendingTicks();
+  TickCount pending_ticks = (m_global_tick_counter + CPU::GetPendingTicks()) - m_last_event_run_time;
+  CPU::ResetPendingTicks();
   while (pending_ticks > 0)
   {
     const TickCount time = std::min(pending_ticks, m_events[0]->m_downcount);
@@ -1125,12 +1124,12 @@ void System::RunEvents()
 
   m_last_event_run_time = m_global_tick_counter;
   m_running_events = false;
-  m_cpu->SetDowncount(m_events.front()->GetDowncount());
+  CPU::SetDowncount(m_events.front()->GetDowncount());
 }
 
 void System::UpdateCPUDowncount()
 {
-  m_cpu->SetDowncount(m_events[0]->GetDowncount());
+  CPU::SetDowncount(m_events[0]->GetDowncount());
 }
 
 bool System::DoEventsState(StateWrapper& sw)

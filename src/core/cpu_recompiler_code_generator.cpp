@@ -13,7 +13,7 @@ namespace CPU::Recompiler {
 
 u32 CodeGenerator::CalculateRegisterOffset(Reg reg)
 {
-  return u32(offsetof(Core, m_regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
+  return u32(offsetof(State, regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
 }
 
 bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code,
@@ -803,7 +803,7 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
 
-    EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(), epc, ri_bits);
+    EmitFunctionCall(nullptr, &Thunks::RaiseException, epc, ri_bits);
     return;
   }
 
@@ -815,7 +815,7 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
   EmitBranch(GetCurrentFarCodePointer());
 
   SwitchToFarCode();
-  EmitFunctionCall(nullptr, &Thunks::RaiseException, m_register_cache.GetCPUPtr(), epc, ri_bits);
+  EmitFunctionCall(nullptr, &Thunks::RaiseException, epc, ri_bits);
   EmitExceptionExit();
   SwitchToNearCode();
 
@@ -826,7 +826,7 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
 
 void CodeGenerator::BlockPrologue()
 {
-  EmitStoreCPUStructField(offsetof(Core, m_exception_raised), Value::FromConstantU8(0));
+  EmitStoreCPUStructField(offsetof(State, exception_raised), Value::FromConstantU8(0));
 
   // we don't know the state of the last block, so assume load delays might be in progress
   // TODO: Pull load delay into register cache
@@ -860,21 +860,21 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
   if (m_branch_was_taken_dirty)
   {
     Value temp = m_register_cache.AllocateScratch(RegSize_8);
-    EmitLoadCPUStructField(temp.host_reg, RegSize_8, offsetof(Core, m_branch_was_taken));
-    EmitStoreCPUStructField(offsetof(Core, m_current_instruction_was_branch_taken), temp);
-    EmitStoreCPUStructField(offsetof(Core, m_branch_was_taken), Value::FromConstantU8(0));
+    EmitLoadCPUStructField(temp.host_reg, RegSize_8, offsetof(State, branch_was_taken));
+    EmitStoreCPUStructField(offsetof(State, current_instruction_was_branch_taken), temp);
+    EmitStoreCPUStructField(offsetof(State, branch_was_taken), Value::FromConstantU8(0));
     m_current_instruction_was_branch_taken_dirty = true;
     m_branch_was_taken_dirty = false;
   }
   else if (m_current_instruction_was_branch_taken_dirty)
   {
-    EmitStoreCPUStructField(offsetof(Core, m_current_instruction_was_branch_taken), Value::FromConstantU8(0));
+    EmitStoreCPUStructField(offsetof(State, current_instruction_was_branch_taken), Value::FromConstantU8(0));
     m_current_instruction_was_branch_taken_dirty = false;
   }
 
   if (m_current_instruction_in_branch_delay_slot_dirty && !cbi.is_branch_delay_slot)
   {
-    EmitStoreCPUStructField(offsetof(Core, m_current_instruction_in_branch_delay_slot), Value::FromConstantU8(0));
+    EmitStoreCPUStructField(offsetof(State, current_instruction_in_branch_delay_slot), Value::FromConstantU8(0));
     m_current_instruction_in_branch_delay_slot_dirty = false;
   }
 
@@ -895,7 +895,7 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
   if (cbi.is_branch_delay_slot)
   {
     // m_current_instruction_in_branch_delay_slot = true
-    EmitStoreCPUStructField(offsetof(Core, m_current_instruction_in_branch_delay_slot), Value::FromConstantU8(1));
+    EmitStoreCPUStructField(offsetof(State, current_instruction_in_branch_delay_slot), Value::FromConstantU8(1));
     m_current_instruction_in_branch_delay_slot_dirty = true;
   }
 
@@ -932,7 +932,7 @@ void CodeGenerator::AddPendingCycles(bool commit)
   if (m_delayed_cycles_add == 0)
     return;
 
-  EmitAddCPUStructField(offsetof(Core, m_pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
+  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
 
   if (commit)
     m_delayed_cycles_add = 0;
@@ -940,7 +940,7 @@ void CodeGenerator::AddPendingCycles(bool commit)
 
 void CodeGenerator::SetCurrentInstructionPC(const CodeBlockInstruction& cbi)
 {
-  EmitStoreCPUStructField(offsetof(Core, m_current_instruction_pc), Value::FromConstantU32(cbi.pc));
+  EmitStoreCPUStructField(offsetof(State, current_instruction_pc), Value::FromConstantU32(cbi.pc));
 }
 
 bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
@@ -955,19 +955,19 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
     m_register_cache.WriteLoadDelayToCPU(true);
   }
 
-  EmitStoreCPUStructField(offsetof(Core, m_current_instruction.bits), Value::FromConstantU32(cbi.instruction.bits));
+  EmitStoreCPUStructField(offsetof(State, current_instruction.bits), Value::FromConstantU32(cbi.instruction.bits));
 
   // emit the function call
   if (CanInstructionTrap(cbi.instruction, m_block->key.user_mode))
   {
     // TODO: Use carry flag or something here too
     Value return_value = m_register_cache.AllocateScratch(RegSize_8);
-    EmitFunctionCall(&return_value, &Thunks::InterpretInstruction, m_register_cache.GetCPUPtr());
+    EmitFunctionCall(&return_value, &Thunks::InterpretInstruction);
     EmitExceptionExitOnBool(return_value);
   }
   else
   {
-    EmitFunctionCall(nullptr, &Thunks::InterpretInstruction, m_register_cache.GetCPUPtr());
+    EmitFunctionCall(nullptr, &Thunks::InterpretInstruction);
   }
 
   m_current_instruction_in_branch_delay_slot_dirty = cbi.is_branch_instruction;
@@ -1390,8 +1390,8 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       EmitBindLabel(&branch_okay);
 
       SwitchToFarCode();
-      EmitFunctionCall(nullptr, &Thunks::RaiseAddressException, m_register_cache.GetCPUPtr(), branch_target,
-                       Value::FromConstantU8(0), Value::FromConstantU8(1));
+      EmitFunctionCall(nullptr, &Thunks::RaiseAddressException, branch_target, Value::FromConstantU8(0),
+                       Value::FromConstantU8(1));
       EmitExceptionExit();
       SwitchToNearCode();
 
@@ -1551,53 +1551,53 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
         switch (reg)
         {
           case Cop0Reg::BPC:
-            offset = offsetof(Core, m_cop0_regs.BPC);
+            offset = offsetof(State, cop0_regs.BPC);
             break;
 
           case Cop0Reg::BPCM:
-            offset = offsetof(Core, m_cop0_regs.BPCM);
+            offset = offsetof(State, cop0_regs.BPCM);
             break;
 
           case Cop0Reg::BDA:
-            offset = offsetof(Core, m_cop0_regs.BDA);
+            offset = offsetof(State, cop0_regs.BDA);
             break;
 
           case Cop0Reg::BDAM:
-            offset = offsetof(Core, m_cop0_regs.BDAM);
+            offset = offsetof(State, cop0_regs.BDAM);
             break;
 
           case Cop0Reg::DCIC:
-            offset = offsetof(Core, m_cop0_regs.dcic.bits);
+            offset = offsetof(State, cop0_regs.dcic.bits);
             write_mask = Cop0Registers::DCIC::WRITE_MASK;
             break;
 
           case Cop0Reg::JUMPDEST:
-            offset = offsetof(Core, m_cop0_regs.TAR);
+            offset = offsetof(State, cop0_regs.TAR);
             write_mask = 0;
             break;
 
           case Cop0Reg::BadVaddr:
-            offset = offsetof(Core, m_cop0_regs.BadVaddr);
+            offset = offsetof(State, cop0_regs.BadVaddr);
             write_mask = 0;
             break;
 
           case Cop0Reg::SR:
-            offset = offsetof(Core, m_cop0_regs.sr.bits);
+            offset = offsetof(State, cop0_regs.sr.bits);
             write_mask = Cop0Registers::SR::WRITE_MASK;
             break;
 
           case Cop0Reg::CAUSE:
-            offset = offsetof(Core, m_cop0_regs.cause.bits);
+            offset = offsetof(State, cop0_regs.cause.bits);
             write_mask = Cop0Registers::CAUSE::WRITE_MASK;
             break;
 
           case Cop0Reg::EPC:
-            offset = offsetof(Core, m_cop0_regs.EPC);
+            offset = offsetof(State, cop0_regs.EPC);
             write_mask = 0;
             break;
 
           case Cop0Reg::PRID:
-            offset = offsetof(Core, m_cop0_regs.PRID);
+            offset = offsetof(State, cop0_regs.PRID);
             write_mask = 0;
             break;
 
@@ -1639,8 +1639,8 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
 
           // m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0)
           LabelType no_interrupt;
-          EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(Core, m_cop0_regs.sr.bits));
-          EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(Core, m_cop0_regs.cause.bits));
+          EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
+          EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
           EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
           EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
           EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
@@ -1681,7 +1681,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
         // shift mode bits right two, preserving upper bits
         static constexpr u32 mode_bits_mask = UINT32_C(0b1111);
         Value sr = m_register_cache.AllocateScratch(RegSize_32);
-        EmitLoadCPUStructField(sr.host_reg, RegSize_32, offsetof(Core, m_cop0_regs.sr.bits));
+        EmitLoadCPUStructField(sr.host_reg, RegSize_32, offsetof(State, cop0_regs.sr.bits));
         {
           Value new_mode_bits = m_register_cache.AllocateScratch(RegSize_32);
           EmitShr(new_mode_bits.host_reg, sr.host_reg, new_mode_bits.size, Value::FromConstantU32(2));
@@ -1690,7 +1690,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           EmitOr(sr.host_reg, sr.host_reg, new_mode_bits);
         }
 
-        EmitStoreCPUStructField(offsetof(Core, m_cop0_regs.sr.bits), sr);
+        EmitStoreCPUStructField(offsetof(State, cop0_regs.sr.bits), sr);
 
         InstructionEpilogue(cbi);
         return true;

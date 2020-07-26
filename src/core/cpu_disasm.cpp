@@ -1,5 +1,6 @@
 #include "cpu_disasm.h"
 #include "cpu_core.h"
+#include "common/assert.h"
 #include <array>
 
 namespace CPU {
@@ -166,7 +167,7 @@ static const std::array<std::pair<CopCommonInstruction, const char*>, 5> s_cop_c
 
 static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 
-static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core* state, const char* format)
+static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
 {
   dest->Clear();
 
@@ -185,10 +186,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     if (std::strncmp(str, "rs", 2) == 0)
     {
       dest->AppendString(GetRegName(inst.r.rs));
-      if (state)
+      if (regs)
       {
         comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rs),
-                                      state->GetRegs().r[static_cast<u8>(inst.r.rs.GetValue())]);
+                                      regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
       }
 
       str += 2;
@@ -196,10 +197,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     else if (std::strncmp(str, "rt", 2) == 0)
     {
       dest->AppendString(GetRegName(inst.r.rt));
-      if (state)
+      if (regs)
       {
         comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rt),
-                                      state->GetRegs().r[static_cast<u8>(inst.r.rt.GetValue())]);
+                                      regs->r[static_cast<u8>(inst.r.rt.GetValue())]);
       }
 
       str += 2;
@@ -207,10 +208,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     else if (std::strncmp(str, "rd", 2) == 0)
     {
       dest->AppendString(GetRegName(inst.r.rd));
-      if (state)
+      if (regs)
       {
         comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rd),
-                                      state->GetRegs().r[static_cast<u8>(inst.r.rd.GetValue())]);
+                                      regs->r[static_cast<u8>(inst.r.rd.GetValue())]);
       }
 
       str += 2;
@@ -241,10 +242,10 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
       dest->AppendFormattedString("%d(%s)", offset, GetRegName(inst.i.rs));
-      if (state)
+      if (regs)
       {
         comment.AppendFormattedString("%saddr=0x%08X", comment.IsEmpty() ? "" : ", ",
-                                      state->GetRegs().r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+                                      regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
       }
 
       str += 8;
@@ -291,14 +292,14 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Core
 }
 
 template<typename T>
-void FormatCopInstruction(String* dest, u32 pc, Core* state, const Instruction inst,
+void FormatCopInstruction(String* dest, u32 pc, Registers* regs, const Instruction inst,
                           const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
     if (table[i].first == table_key)
     {
-      FormatInstruction(dest, inst, pc, state, table[i].second);
+      FormatInstruction(dest, inst, pc, regs, table[i].second);
       return;
     }
   }
@@ -306,13 +307,13 @@ void FormatCopInstruction(String* dest, u32 pc, Core* state, const Instruction i
   dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
 }
 
-void DisassembleInstruction(String* dest, u32 pc, u32 bits, Core* state)
+void DisassembleInstruction(String* dest, u32 pc, u32 bits, Registers* regs)
 {
   const Instruction inst{bits};
   switch (inst.op)
   {
     case InstructionOp::funct:
-      FormatInstruction(dest, inst, pc, state, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
+      FormatInstruction(dest, inst, pc, regs, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
       return;
 
     case InstructionOp::cop0:
@@ -322,7 +323,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits, Core* state)
     {
       if (inst.cop.IsCommonInstruction())
       {
-        FormatCopInstruction(dest, pc, state, inst, s_cop_common_table.data(), s_cop_common_table.size(),
+        FormatCopInstruction(dest, pc, regs, inst, s_cop_common_table.data(), s_cop_common_table.size(),
                              inst.cop.CommonOp());
       }
       else
@@ -331,7 +332,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits, Core* state)
         {
           case InstructionOp::cop0:
           {
-            FormatCopInstruction(dest, pc, state, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
+            FormatCopInstruction(dest, pc, regs, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
           }
           break;
 
@@ -355,14 +356,14 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits, Core* state)
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
       const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
       if (link)
-        FormatInstruction(dest, inst, pc, state, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
+        FormatInstruction(dest, inst, pc, regs, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
       else
-        FormatInstruction(dest, inst, pc, state, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
+        FormatInstruction(dest, inst, pc, regs, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
     }
     break;
 
     default:
-      FormatInstruction(dest, inst, pc, state, s_base_table[static_cast<u8>(inst.op.GetValue())]);
+      FormatInstruction(dest, inst, pc, regs, s_base_table[static_cast<u8>(inst.op.GetValue())]);
       break;
   }
 }
