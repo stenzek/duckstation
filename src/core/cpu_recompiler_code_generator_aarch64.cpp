@@ -1,3 +1,4 @@
+#include "common/align.h"
 #include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
@@ -882,7 +883,7 @@ u32 CodeGenerator::PrepareStackForCall()
 
 void CodeGenerator::RestoreStackAfterCall(u32 adjust_size) { m_register_cache.PopCallerSavedRegisters(); }
 
-static s64 GetBranchDisplacement(void* current, void* target)
+static s64 GetBranchDisplacement(const void* current, const void* target)
 {
   return static_cast<s64>(reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current));
 }
@@ -1347,6 +1348,16 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   SwitchToNearCode();
 
   m_register_cache.PopState();
+}
+
+void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
+{
+  Panic("Not implemented");
+}
+
+void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value)
+{
+  Panic("Not implemented");
 }
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()

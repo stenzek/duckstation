@@ -115,6 +115,7 @@
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
+    <ClInclude Include="gte_types.h" />
     <ClInclude Include="host_display.h" />
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="host_interface_progress_callback.h" />

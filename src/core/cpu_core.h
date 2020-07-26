@@ -1,6 +1,7 @@
 #pragma once
 #include "common/bitfield.h"
 #include "cpu_types.h"
+#include "gte_types.h"
 #include "types.h"
 #include <array>
 #include <optional>
@@ -48,6 +49,9 @@ struct State
   u32 next_load_delay_value = 0;
 
   u32 cache_control = 0;
+
+  // GTE registers are stored here so we can access them on ARM with a single instruction
+  GTE::Regs gte_regs = {};
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> dcache = {};

@@ -93,5 +93,6 @@
     <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
+    <ClInclude Include="gte_types.h" />
   </ItemGroup>
 </Project>

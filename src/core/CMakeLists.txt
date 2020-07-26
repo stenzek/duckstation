@@ -40,6 +40,7 @@ add_library(core
     gpu_sw.h
     gte.cpp
     gte.h
+    gte_types.h
     host_display.cpp
     host_display.h
     host_interface.cpp
