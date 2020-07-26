@@ -168,8 +168,7 @@ void SetUseRecompiler(bool enable)
 
 void Flush()
 {
-  if (g_bus)
-    g_bus->ClearRAMCodePageFlags();
+  Bus::ClearRAMCodePageFlags();
   for (auto& it : m_ram_block_map)
     it.clear();
 
@@ -184,16 +183,16 @@ void Flush()
 void LogCurrentState()
 {
   const auto& regs = g_state.regs;
-  WriteToExecutionLog(
-    "tick=%u pc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
-    "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
-    "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
-    "ldv=%08X\n",
-    g_system->GetGlobalTickCounter() + GetPendingTicks(), regs.pc, regs.zero, regs.at, regs.v0, regs.v1, regs.a0,
-    regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5, regs.t6, regs.t7, regs.s0, regs.s1,
-    regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8, regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp,
-    regs.ra, (g_state.next_load_delay_reg == Reg::count) ? "NONE" : GetRegName(g_state.next_load_delay_reg),
-    (g_state.next_load_delay_reg == Reg::count) ? 0 : g_state.next_load_delay_value);
+  WriteToExecutionLog("tick=%u pc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
+                      "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
+                      "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
+                      "ldv=%08X\n",
+                      g_system->GetGlobalTickCounter() + GetPendingTicks(), regs.pc, regs.zero, regs.at, regs.v0,
+                      regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5,
+                      regs.t6, regs.t7, regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8,
+                      regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp, regs.ra,
+                      (g_state.next_load_delay_reg == Reg::count) ? "NONE" : GetRegName(g_state.next_load_delay_reg),
+                      (g_state.next_load_delay_reg == Reg::count) ? 0 : g_state.next_load_delay_value);
 }
 
 CodeBlockKey GetNextBlockKey()
@@ -236,9 +235,7 @@ bool RevalidateBlock(CodeBlock* block)
 {
   for (const CodeBlockInstruction& cbi : block->instructions)
   {
-    u32 new_code = 0;
-    g_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK,
-                                                                          new_code);
+    u32 new_code = Bus::ReadCacheableAddress(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK);
     if (cbi.instruction.bits != new_code)
     {
       Log_DebugPrintf("Block 0x%08X changed at PC 0x%08X - %08X to %08X - recompiling.", block->GetPC(), cbi.pc,
@@ -284,12 +281,12 @@ bool CompileBlock(CodeBlock* block)
     CodeBlockInstruction cbi = {};
 
     const PhysicalMemoryAddress phys_addr = pc & PHYSICAL_MEMORY_ADDRESS_MASK;
-    if (!g_bus->IsCacheableAddress(phys_addr) ||
-        g_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(phys_addr, cbi.instruction.bits) < 0 ||
-        !IsInvalidInstruction(cbi.instruction))
-    {
+    if (!Bus::IsCacheableAddress(phys_addr))
       break;
-    }
+
+    cbi.instruction.bits = Bus::ReadCacheableAddress(phys_addr);
+    if (!IsInvalidInstruction(cbi.instruction))
+      break;
 
     cbi.pc = pc;
     cbi.is_branch_delay_slot = is_branch_delay_slot;
@@ -379,7 +376,7 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
 
   // Block will be re-added next execution.
   blocks.clear();
-  g_bus->ClearRAMCodePage(page_index);
+  Bus::ClearRAMCodePage(page_index);
 }
 
 void FlushBlock(CodeBlock* block)
@@ -408,7 +405,7 @@ void AddBlockToPageMap(CodeBlock* block)
   for (u32 page = start_page; page <= end_page; page++)
   {
     m_ram_block_map[page].push_back(block);
-    g_bus->SetRAMCodePage(page);
+    Bus::SetRAMCodePage(page);
   }
 }
 

@@ -5,7 +5,6 @@ add_library(core
     bios.h
     bus.cpp
     bus.h
-    bus.inl
     cdrom.cpp
     cdrom.h
     cdrom_async_reader.cpp
@@ -16,7 +15,6 @@ add_library(core
     cpu_code_cache.h
     cpu_core.cpp
     cpu_core.h
-    cpu_core.inl
     cpu_disasm.cpp
     cpu_disasm.h
     cpu_types.cpp

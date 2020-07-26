@@ -53,7 +53,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
-  g_bus = std::make_unique<Bus>();
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
 }
@@ -274,7 +273,7 @@ bool System::Boot(const SystemBootParameters& params)
   }
 
   // Load the patched BIOS up.
-  g_bus->SetBIOS(*bios_image);
+  Bus::SetBIOS(*bios_image);
 
   // Good to go.
   return true;
@@ -288,7 +287,7 @@ bool System::InitializeComponents(bool force_software_renderer)
 
   CPU::Initialize();
   CPU::CodeCache::Initialize(m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  g_bus->Initialize();
+  Bus::Initialize();
 
   g_dma.Initialize();
 
@@ -320,7 +319,7 @@ void System::DestroyComponents()
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
   CPU::CodeCache::Shutdown();
-  g_bus.reset();
+  Bus::Shutdown();
   CPU::Shutdown();
 }
 
@@ -376,7 +375,7 @@ bool System::DoState(StateWrapper& sw)
   if (sw.IsReading())
     CPU::CodeCache::Flush();
 
-  if (!sw.DoMarker("Bus") || !g_bus->DoState(sw))
+  if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
 
   if (!sw.DoMarker("DMA") || !g_dma.DoState(sw))
@@ -416,7 +415,7 @@ void System::Reset()
 {
   CPU::Reset();
   CPU::CodeCache::Flush();
-  g_bus->Reset();
+  Bus::Reset();
   g_dma.Reset();
   g_interrupt_controller.Reset();
   g_gpu->Reset();
@@ -847,7 +846,7 @@ bool System::SetExpansionROM(const char* filename)
   std::fclose(fp);
 
   Log_InfoPrintf("Loaded expansion ROM from '%s': %u bytes", filename, size);
-  g_bus->SetExpansionROM(std::move(data));
+  Bus::SetExpansionROM(std::move(data));
   return true;
 }
 

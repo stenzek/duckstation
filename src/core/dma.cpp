@@ -27,10 +27,7 @@ void DMA::Initialize()
                                                std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
 }
 
-void DMA::Shutdown()
-{
-  m_unhalt_event.reset();
-}
+void DMA::Shutdown() { m_unhalt_event.reset(); }
 
 void DMA::Reset()
 {
@@ -225,10 +222,7 @@ bool DMA::CanTransferChannel(Channel channel) const
   return cs.request;
 }
 
-bool DMA::IsTransferHalted() const
-{
-  return m_unhalt_event->IsActive();
-}
+bool DMA::IsTransferHalted() const { return m_unhalt_event->IsActive(); }
 
 void DMA::UpdateIRQ()
 {
@@ -281,7 +275,7 @@ bool DMA::TransferChannel(Channel channel)
       Log_DebugPrintf("DMA%u: Copying linked list starting at 0x%08X to device", static_cast<u32>(channel),
                       current_address & ADDRESS_MASK);
 
-      u8* ram_pointer = g_bus->GetRAM();
+      u8* ram_pointer = Bus::g_ram;
       bool halt_transfer = false;
       while (cs.request)
       {
@@ -425,14 +419,20 @@ void DMA::UnhaltTransfer(TickCount ticks)
 
 TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count)
 {
-  const u32* src_pointer = reinterpret_cast<u32*>(g_bus->GetRAM() + address);
+  const u32* src_pointer = reinterpret_cast<u32*>(Bus::g_ram + address);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & ADDRESS_MASK) <= address)
   {
     // Use temp buffer if it's wrapping around
     if (m_transfer_buffer.size() < word_count)
       m_transfer_buffer.resize(word_count);
     src_pointer = m_transfer_buffer.data();
-    g_bus->ReadWords(address, m_transfer_buffer.data(), word_count);
+
+    u8* ram_pointer = Bus::g_ram;
+    for (u32 i = 0; i < word_count; i++)
+    {
+      std::memcpy(&m_transfer_buffer[i], &ram_pointer[address], sizeof(u32));
+      address = (address + increment) & ADDRESS_MASK;
+    }
   }
 
   switch (channel)
@@ -457,7 +457,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
       break;
   }
 
-  return g_bus->GetDMARAMTickCount(word_count);
+  return Bus::GetDMARAMTickCount(word_count);
 }
 
 TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count)
@@ -465,7 +465,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
   if (channel == Channel::OTC)
   {
     // clear ordering table
-    u8* ram_pointer = g_bus->GetRAM();
+    u8* ram_pointer = Bus::g_ram;
     const u32 word_count_less_1 = word_count - 1;
     for (u32 i = 0; i < word_count_less_1; i++)
     {
@@ -476,11 +476,11 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
     const u32 terminator = UINT32_C(0xFFFFFF);
     std::memcpy(&ram_pointer[address], &terminator, sizeof(terminator));
-    g_bus->InvalidateCodePages(address, word_count);
-    return g_bus->GetDMARAMTickCount(word_count);
+    Bus::InvalidateCodePages(address, word_count);
+    return Bus::GetDMARAMTickCount(word_count);
   }
 
-  u32* dest_pointer = reinterpret_cast<u32*>(&g_bus->m_ram[address]);
+  u32* dest_pointer = reinterpret_cast<u32*>(&Bus::g_ram[address]);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & ADDRESS_MASK) <= address)
   {
     // Use temp buffer if it's wrapping around
@@ -516,7 +516,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
   if (dest_pointer == m_transfer_buffer.data())
   {
-    u8* ram_pointer = g_bus->m_ram;
+    u8* ram_pointer = Bus::g_ram;
     for (u32 i = 0; i < word_count; i++)
     {
       std::memcpy(&ram_pointer[address], &m_transfer_buffer[i], sizeof(u32));
@@ -524,6 +524,6 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
     }
   }
 
-  g_bus->InvalidateCodePages(address, word_count);
-  return g_bus->GetDMARAMTickCount(word_count);
+  Bus::InvalidateCodePages(address, word_count);
+  return Bus::GetDMARAMTickCount(word_count);
 }

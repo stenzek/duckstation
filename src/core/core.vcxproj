@@ -148,9 +148,6 @@
       <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="bus.inl" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{868B98C8-65A1-494B-8346-250A73A48C0A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

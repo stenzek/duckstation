@@ -94,7 +94,4 @@
     <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="bus.inl" />
-  </ItemGroup>
 </Project>

@@ -7,8 +7,6 @@
 #include <unordered_map>
 #include <vector>
 
-class Bus;
-
 namespace CPU {
 
 union CodeBlockKey
