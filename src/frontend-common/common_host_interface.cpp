@@ -1058,12 +1058,15 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         AddRumbleToInputMap(binding, controller_index, num_motors);
     }
 
-    const float axis_scale = si.GetFloatValue(category, "AxisScale", 1.00f);
-    m_controller_interface->SetControllerAxisScale(controller_index,
-                                                   (ctype == ControllerType::AnalogController) ? axis_scale : 1.00f);
+    if (m_controller_interface)
+    {
+      const float axis_scale = si.GetFloatValue(category, "AxisScale", 1.00f);
+      m_controller_interface->SetControllerAxisScale(controller_index,
+                                                     (ctype == ControllerType::AnalogController) ? axis_scale : 1.00f);
 
-    const float deadzone_size = si.GetFloatValue(category, "Deadzone", 0.25f);
-    m_controller_interface->SetControllerDeadzone(controller_index, deadzone_size);
+      const float deadzone_size = si.GetFloatValue(category, "Deadzone", 0.25f);
+      m_controller_interface->SetControllerDeadzone(controller_index, deadzone_size);
+    }
   }
 }
 
@@ -2000,8 +2003,7 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
   }
 
   m_system->GetGPU()->ResetGraphicsAPIState();
-  const bool screenshot_saved =
-    m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio);
+  const bool screenshot_saved = m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio);
   m_system->GetGPU()->RestoreGraphicsAPIState();
   if (!screenshot_saved)
   {
