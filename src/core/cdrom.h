@@ -339,7 +339,7 @@ private:
   CDROMAsyncReader m_reader;
 
   // two 16-bit samples packed in 32-bits
-  InlineFIFOQueue<u32, AUDIO_FIFO_SIZE> m_audio_fifo;
+  HeapFIFOQueue<u32, AUDIO_FIFO_SIZE> m_audio_fifo;
 };
 
 extern CDROM g_cdrom;
