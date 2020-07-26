@@ -1059,7 +1059,8 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
     }
 
     const float axis_scale = si.GetFloatValue(category, "AxisScale", 1.00f);
-    m_controller_interface->SetControllerAxisScale(controller_index, axis_scale);
+    m_controller_interface->SetControllerAxisScale(controller_index,
+                                                   (ctype == ControllerType::AnalogController) ? axis_scale : 1.00f);
 
     const float deadzone_size = si.GetFloatValue(category, "Deadzone", 0.25f);
     m_controller_interface->SetControllerDeadzone(controller_index, deadzone_size);

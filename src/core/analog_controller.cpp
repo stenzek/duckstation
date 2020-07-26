@@ -481,9 +481,13 @@ u32 AnalogController::StaticGetVibrationMotorCount()
 
 Controller::SettingList AnalogController::StaticGetSettings()
 {
-  static constexpr std::array<SettingInfo, 1> settings = {
+  static constexpr std::array<SettingInfo, 2> settings = {
     {{SettingInfo::Type::Boolean, "AutoEnableAnalog", "Enable Analog Mode on Reset",
-      "Automatically enables analog mode when the console is reset/powered on.", "false"}}};
+      "Automatically enables analog mode when the console is reset/powered on.", "false"},
+     {SettingInfo::Type::Float, "AxisScale", "Analog Axis Scale",
+      "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+      "controllers, e.g. DualShock 4, Xbox One Controller.",
+      "1.00f", "0.01f", "1.50f", "0.01f"}}};
 
   return SettingList(settings.begin(), settings.end());
 }
