@@ -307,7 +307,7 @@ void* LibretroHostInterface::retro_get_memory_data(unsigned id)
   switch (id)
   {
     case RETRO_MEMORY_SYSTEM_RAM:
-      return g_system ? g_system->GetBus()->GetRAM() : nullptr;
+      return g_system ? g_bus->GetRAM() : nullptr;
 
     default:
       return nullptr;

@@ -18,6 +18,8 @@
 #include <cstdio>
 Log_SetChannel(Bus);
 
+std::unique_ptr<Bus> g_bus;
+
 #define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
 #define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8u))
 #define FIXUP_HALFWORD_READ_OFFSET(offset) ((offset) & ~u32(1))

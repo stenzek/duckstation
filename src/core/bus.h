@@ -275,4 +275,6 @@ private:
   std::string m_tty_line_buffer;
 };
 
+extern std::unique_ptr<Bus> g_bus;
+
 #include "bus.inl"

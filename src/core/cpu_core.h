@@ -7,9 +7,6 @@
 
 class StateWrapper;
 
-class Bus;
-class System;
-
 namespace CPU {
 
 namespace Recompiler {
@@ -32,13 +29,11 @@ public:
   Core();
   ~Core();
 
-  void Initialize(Bus* bus);
+  void Initialize();
   void Reset();
   bool DoState(StateWrapper& sw);
 
   void Execute();
-
-  ALWAYS_INLINE Bus* GetBus() const { return m_bus; }
 
   ALWAYS_INLINE const Registers& GetRegs() const { return m_regs; }
   ALWAYS_INLINE Registers& GetRegs() { return m_regs; }
@@ -131,8 +126,6 @@ public:
   // read/write cop0 regs
   std::optional<u32> ReadCop0Reg(Cop0Reg reg);
   void WriteCop0Reg(Cop0Reg reg, u32 value);
-
-  Bus* m_bus = nullptr;
 
   // ticks the CPU has executed
   TickCount m_pending_ticks = 0;

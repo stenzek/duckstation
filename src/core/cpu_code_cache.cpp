@@ -50,15 +50,13 @@ static void InterpretCachedBlock(const CodeBlock& block);
 static void InterpretUncachedBlock();
 
 static Core* s_core = nullptr;
-static Bus* s_bus = nullptr;
 static bool s_use_recompiler = false;
 static BlockMap s_blocks;
 static std::array<std::vector<CodeBlock*>, CPU_CODE_CACHE_PAGE_COUNT> m_ram_block_map;
 
-void Initialize(Core* core, Bus* bus, bool use_recompiler)
+void Initialize(Core* core, bool use_recompiler)
 {
   s_core = core;
-  s_bus = bus;
 
 #ifdef WITH_RECOMPILER
   s_use_recompiler = use_recompiler;
@@ -176,8 +174,8 @@ void SetUseRecompiler(bool enable)
 
 void Flush()
 {
-  if (s_bus)
-    s_bus->ClearRAMCodePageFlags();
+  if (g_bus)
+    g_bus->ClearRAMCodePageFlags();
   for (auto& it : m_ram_block_map)
     it.clear();
 
@@ -246,7 +244,7 @@ bool RevalidateBlock(CodeBlock* block)
   for (const CodeBlockInstruction& cbi : block->instructions)
   {
     u32 new_code = 0;
-    s_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK,
+    g_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK,
                                                                           new_code);
     if (cbi.instruction.bits != new_code)
     {
@@ -293,8 +291,8 @@ bool CompileBlock(CodeBlock* block)
     CodeBlockInstruction cbi = {};
 
     const PhysicalMemoryAddress phys_addr = pc & PHYSICAL_MEMORY_ADDRESS_MASK;
-    if (!s_bus->IsCacheableAddress(phys_addr) ||
-        s_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(phys_addr, cbi.instruction.bits) < 0 ||
+    if (!g_bus->IsCacheableAddress(phys_addr) ||
+        g_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(phys_addr, cbi.instruction.bits) < 0 ||
         !IsInvalidInstruction(cbi.instruction))
     {
       break;
@@ -388,7 +386,7 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
 
   // Block will be re-added next execution.
   blocks.clear();
-  s_bus->ClearRAMCodePage(page_index);
+  g_bus->ClearRAMCodePage(page_index);
 }
 
 void FlushBlock(CodeBlock* block)
@@ -415,7 +413,7 @@ void AddBlockToPageMap(CodeBlock* block)
   for (u32 page = start_page; page <= end_page; page++)
   {
     m_ram_block_map[page].push_back(block);
-    s_bus->SetRAMCodePage(page);
+    g_bus->SetRAMCodePage(page);
   }
 }
 

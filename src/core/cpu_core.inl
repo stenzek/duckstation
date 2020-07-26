@@ -26,7 +26,7 @@ TickCount Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
         return 0;
       }
 
-      return m_bus->DispatchAccess<type, size>(phys_addr, value);
+      return g_bus->DispatchAccess<type, size>(phys_addr, value);
     }
 
     case 0x01: // KUSEG 512M-1024M
@@ -52,14 +52,14 @@ TickCount Core::DoMemoryAccess(VirtualMemoryAddress address, u32& value)
         return 0;
       }
 
-      return m_bus->DispatchAccess<type, size>(phys_addr, value);
+      return g_bus->DispatchAccess<type, size>(phys_addr, value);
     }
     break;
 
     case 0x05: // KSEG1 - physical memory uncached
     {
       const PhysicalMemoryAddress phys_addr = address & UINT32_C(0x1FFFFFFF);
-      return m_bus->DispatchAccess<type, size>(phys_addr, value);
+      return g_bus->DispatchAccess<type, size>(phys_addr, value);
     }
     break;
 

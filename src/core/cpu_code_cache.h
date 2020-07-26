@@ -82,7 +82,7 @@ struct CodeBlock
 
 namespace CodeCache {
 
-void Initialize(Core* core, Bus* bus, bool use_recompiler);
+void Initialize(Core* core, bool use_recompiler);
 void Shutdown();
 void Execute();
 

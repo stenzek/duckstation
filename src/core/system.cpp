@@ -54,7 +54,7 @@ SystemBootParameters::~SystemBootParameters() = default;
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
-  m_bus = std::make_unique<Bus>();
+  g_bus = std::make_unique<Bus>();
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
 }
@@ -275,7 +275,7 @@ bool System::Boot(const SystemBootParameters& params)
   }
 
   // Load the patched BIOS up.
-  m_bus->SetBIOS(*bios_image);
+  g_bus->SetBIOS(*bios_image);
 
   // Good to go.
   return true;
@@ -287,11 +287,11 @@ bool System::InitializeComponents(bool force_software_renderer)
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : settings.gpu_renderer))
     return false;
 
-  m_cpu->Initialize(m_bus.get());
-  CPU::CodeCache::Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get());
+  m_cpu->Initialize();
+  CPU::CodeCache::Initialize(m_cpu.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
+  g_bus->Initialize(m_cpu.get());
 
-  g_dma.Initialize(m_bus.get());
+  g_dma.Initialize();
 
   g_interrupt_controller.Initialize(m_cpu.get());
 
@@ -321,7 +321,7 @@ void System::DestroyComponents()
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
   CPU::CodeCache::Shutdown();
-  m_bus.reset();
+  g_bus.reset();
   m_cpu.reset();
 }
 
@@ -377,7 +377,7 @@ bool System::DoState(StateWrapper& sw)
   if (sw.IsReading())
     CPU::CodeCache::Flush();
 
-  if (!sw.DoMarker("Bus") || !m_bus->DoState(sw))
+  if (!sw.DoMarker("Bus") || !g_bus->DoState(sw))
     return false;
 
   if (!sw.DoMarker("DMA") || !g_dma.DoState(sw))
@@ -417,7 +417,7 @@ void System::Reset()
 {
   m_cpu->Reset();
   CPU::CodeCache::Flush();
-  m_bus->Reset();
+  g_bus->Reset();
   g_dma.Reset();
   g_interrupt_controller.Reset();
   g_gpu->Reset();
@@ -848,7 +848,7 @@ bool System::SetExpansionROM(const char* filename)
   std::fclose(fp);
 
   Log_InfoPrintf("Loaded expansion ROM from '%s': %u bytes", filename, size);
-  m_bus->SetExpansionROM(std::move(data));
+  g_bus->SetExpansionROM(std::move(data));
   return true;
 }
 

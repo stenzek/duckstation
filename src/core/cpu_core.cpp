@@ -39,10 +39,8 @@ Core::Core() = default;
 
 Core::~Core() = default;
 
-void Core::Initialize(Bus* bus)
+void Core::Initialize()
 {
-  m_bus = bus;
-
   // From nocash spec.
   m_cop0_regs.PRID = UINT32_C(0x00000002);
 
