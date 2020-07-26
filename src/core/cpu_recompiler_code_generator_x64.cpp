@@ -73,8 +73,8 @@ static const Xbyak::Reg64 GetCPUPtrReg()
   return GetHostReg64(RCPUPTR);
 }
 
-CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer, const ASMFunctions& asm_functions)
-  : m_cpu(cpu), m_code_buffer(code_buffer), m_asm_functions(asm_functions), m_register_cache(*this),
+CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer)
+  : m_cpu(cpu), m_code_buffer(code_buffer), m_register_cache(*this),
     m_near_emitter(code_buffer->GetFreeCodeSpace(), code_buffer->GetFreeCodePointer()),
     m_far_emitter(code_buffer->GetFreeFarCodeSpace(), code_buffer->GetFreeFarCodePointer()), m_emit(&m_near_emitter)
 {
@@ -2247,7 +2247,5 @@ void CodeGenerator::EmitBindLabel(LabelType* label)
 {
   m_emit->L(*label);
 }
-
-void ASMFunctions::Generate(JitCodeBuffer* code_buffer) {}
 
 } // namespace CPU::Recompiler

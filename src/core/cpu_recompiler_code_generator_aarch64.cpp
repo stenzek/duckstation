@@ -1,7 +1,7 @@
 #include "common/log.h"
+#include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
-#include "cpu_core.h"
 Log_SetChannel(CPU::Recompiler);
 
 namespace a64 = vixl::aarch64;
@@ -70,8 +70,8 @@ static const a64::XRegister GetCPUPtrReg()
   return GetHostReg64(RCPUPTR);
 }
 
-CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer, const ASMFunctions& asm_functions)
-  : m_cpu(cpu), m_code_buffer(code_buffer), m_asm_functions(asm_functions), m_register_cache(*this),
+CodeGenerator::CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer)
+  : m_cpu(cpu), m_code_buffer(code_buffer), m_register_cache(*this),
     m_near_emitter(static_cast<vixl::byte*>(code_buffer->GetFreeCodePointer()), code_buffer->GetFreeCodeSpace(),
                    a64::PositionDependentCode),
     m_far_emitter(static_cast<vixl::byte*>(code_buffer->GetFreeFarCodePointer()), code_buffer->GetFreeFarCodeSpace(),
@@ -1696,7 +1696,5 @@ void CodeGenerator::EmitBindLabel(LabelType* label)
 {
   m_emit->Bind(label);
 }
-
-void ASMFunctions::Generate(JitCodeBuffer* code_buffer) {}
 
 } // namespace CPU::Recompiler

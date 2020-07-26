@@ -36,8 +36,6 @@ void CodeCache::Initialize(Core* core, Bus* bus, bool use_recompiler)
   m_use_recompiler = use_recompiler;
   // m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
   m_code_buffer = std::make_unique<JitCodeBuffer>(s_code_buffer, sizeof(s_code_buffer), RECOMPILER_FAR_CODE_CACHE_SIZE);
-  m_asm_functions = std::make_unique<Recompiler::ASMFunctions>();
-  m_asm_functions->Generate(m_code_buffer.get());
 #else
   m_use_recompiler = false;
 #endif
@@ -331,7 +329,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
       Flush();
     }
 
-    Recompiler::CodeGenerator codegen(m_core, m_code_buffer.get(), *m_asm_functions.get());
+    Recompiler::CodeGenerator codegen(m_core, m_code_buffer.get());
     if (!codegen.CompileBlock(block, &block->host_code, &block->host_code_size))
     {
       Log_ErrorPrintf("Failed to compile host code for block at 0x%08X", block->key.GetPC());

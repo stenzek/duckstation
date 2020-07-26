@@ -14,10 +14,6 @@ class System;
 namespace CPU {
 class Core;
 
-namespace Recompiler {
-class ASMFunctions;
-}
-
 union CodeBlockKey
 {
   u32 bits;
@@ -138,7 +134,6 @@ private:
 
 #ifdef WITH_RECOMPILER
   std::unique_ptr<JitCodeBuffer> m_code_buffer;
-  std::unique_ptr<Recompiler::ASMFunctions> m_asm_functions;
 #endif
 
   BlockMap m_blocks;

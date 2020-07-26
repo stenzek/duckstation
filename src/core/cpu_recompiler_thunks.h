@@ -46,19 +46,6 @@ public:
   static void RaiseAddressException(Core* cpu, u32 address, bool store, bool branch);
 };
 
-class ASMFunctions
-{
-public:
-  bool (*read_memory_byte)(u32 address, u8* value);
-  bool (*read_memory_word)(u32 address, u16* value);
-  bool (*read_memory_dword)(u32 address, u32* value);
-  void (*write_memory_byte)(u32 address, u8 value);
-  void (*write_memory_word)(u32 address, u16 value);
-  void (*write_memory_dword)(u32 address, u32 value);
-
-  void Generate(JitCodeBuffer* code_buffer);
-};
-
 } // namespace Recompiler
 
 } // namespace CPU
