@@ -54,7 +54,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 System::System(HostInterface* host_interface) : m_host_interface(host_interface)
 {
   m_cpu = std::make_unique<CPU::Core>();
-  m_cpu_code_cache = std::make_unique<CPU::CodeCache>();
   m_bus = std::make_unique<Bus>();
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
@@ -124,8 +123,7 @@ void System::UpdateGPUSettings()
 void System::SetCPUExecutionMode(CPUExecutionMode mode)
 {
   m_cpu_execution_mode = mode;
-  m_cpu_code_cache->Flush();
-  m_cpu_code_cache->SetUseRecompiler(mode == CPUExecutionMode::Recompiler);
+  CPU::CodeCache::SetUseRecompiler(mode == CPUExecutionMode::Recompiler);
 }
 
 std::unique_ptr<CDImage> System::OpenCDImage(const char* path, bool force_preload)
@@ -290,8 +288,8 @@ bool System::InitializeComponents(bool force_software_renderer)
     return false;
 
   m_cpu->Initialize(m_bus.get());
-  m_cpu_code_cache->Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
-  m_bus->Initialize(m_cpu.get(), m_cpu_code_cache.get());
+  CPU::CodeCache::Initialize(m_cpu.get(), m_bus.get(), m_cpu_execution_mode == CPUExecutionMode::Recompiler);
+  m_bus->Initialize(m_cpu.get());
 
   g_dma.Initialize(m_bus.get());
 
@@ -322,7 +320,7 @@ void System::DestroyComponents()
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
-  m_cpu_code_cache.reset();
+  CPU::CodeCache::Shutdown();
   m_bus.reset();
   m_cpu.reset();
 }
@@ -377,7 +375,7 @@ bool System::DoState(StateWrapper& sw)
     return false;
 
   if (sw.IsReading())
-    m_cpu_code_cache->Flush();
+    CPU::CodeCache::Flush();
 
   if (!sw.DoMarker("Bus") || !m_bus->DoState(sw))
     return false;
@@ -418,7 +416,7 @@ bool System::DoState(StateWrapper& sw)
 void System::Reset()
 {
   m_cpu->Reset();
-  m_cpu_code_cache->Flush();
+  CPU::CodeCache::Flush();
   m_bus->Reset();
   g_dma.Reset();
   g_interrupt_controller.Reset();
@@ -605,7 +603,7 @@ void System::RunFrame()
     do
     {
       UpdateCPUDowncount();
-      m_cpu_code_cache->Execute();
+      CPU::CodeCache::Execute();
       RunEvents();
     } while (!m_frame_done);
   }

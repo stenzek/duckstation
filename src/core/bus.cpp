@@ -36,10 +36,9 @@ Bus::Bus() = default;
 
 Bus::~Bus() = default;
 
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache)
+void Bus::Initialize(CPU::Core* cpu)
 {
   m_cpu = cpu;
-  m_cpu_code_cache = cpu_code_cache;
 }
 
 void Bus::Reset()
@@ -570,11 +569,6 @@ void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
       return;
     }
   }
-}
-
-void Bus::DoInvalidateCodeCache(u32 page_index)
-{
-  m_cpu_code_cache->InvalidateBlocksWithPageIndex(page_index);
 }
 
 u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)

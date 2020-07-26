@@ -10,8 +10,29 @@
 #include <sys/mman.h>
 #endif
 
-JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
+JitCodeBuffer::JitCodeBuffer() = default;
+
+JitCodeBuffer::JitCodeBuffer(u32 size, u32 far_code_size)
 {
+  if (!Allocate(size, far_code_size))
+    Panic("Failed to allocate code space");
+}
+
+JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size)
+{
+  if (!Initialize(buffer, size, far_code_size))
+    Panic("Failed to initialize code space");
+}
+
+JitCodeBuffer::~JitCodeBuffer()
+{
+  Destroy();
+}
+
+bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
+{
+  Destroy();
+
   m_total_size = size + far_code_size;
 
 #if defined(WIN32)
@@ -22,6 +43,10 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 #else
   m_code_ptr = nullptr;
 #endif
+
+  if (!m_code_ptr)
+    return false;
+
   m_free_code_ptr = m_code_ptr;
   m_code_size = size;
   m_code_used = 0;
@@ -31,15 +56,15 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   m_far_code_size = far_code_size;
   m_far_code_used = 0;
 
-  if (!m_code_ptr)
-    Panic("Failed to allocate code space.");
-
   m_old_protection = 0;
   m_owns_buffer = true;
+  return true;
 }
 
-JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size /* = 0 */)
+bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 */)
 {
+  Destroy();
+
 #if defined(WIN32)
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
@@ -58,6 +83,9 @@ JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size /* = 0 */
   m_code_ptr = nullptr;
 #endif
 
+  if (!m_code_ptr)
+    return false;
+
   m_total_size = size;
   m_free_code_ptr = m_code_ptr;
   m_code_size = size - far_code_size;
@@ -68,13 +96,11 @@ JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size /* = 0 */
   m_far_code_size = far_code_size;
   m_far_code_used = 0;
 
-  if (!m_code_ptr)
-    Panic("Failed to allocate code space.");
-
   m_owns_buffer = false;
+  return true;
 }
 
-JitCodeBuffer::~JitCodeBuffer()
+void JitCodeBuffer::Destroy()
 {
   if (m_owns_buffer)
   {

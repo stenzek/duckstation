@@ -1,5 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
+#include "cpu_code_cache.h"
 #include "types.h"
 #include <array>
 #include <bitset>
@@ -10,7 +11,6 @@ class StateWrapper;
 
 namespace CPU {
 class Core;
-class CodeCache;
 } // namespace CPU
 
 class DMA;
@@ -80,7 +80,7 @@ public:
   Bus();
   ~Bus();
 
-  void Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache);
+  void Initialize(CPU::Core* cpu);
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -234,8 +234,6 @@ private:
   u32 DoReadSPU(MemoryAccessSize size, u32 offset);
   void DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value);
 
-  void DoInvalidateCodeCache(u32 page_index);
-
   /// Returns the number of cycles stolen by DMA RAM access.
   ALWAYS_INLINE static TickCount GetDMARAMTickCount(u32 word_count)
   {
@@ -254,12 +252,11 @@ private:
     for (u32 page = start_page; page <= end_page; page++)
     {
       if (m_ram_code_bits[page])
-        DoInvalidateCodeCache(page);
+        CPU::CodeCache::InvalidateBlocksWithPageIndex(page);
     }
   }
 
   CPU::Core* m_cpu = nullptr;
-  CPU::CodeCache* m_cpu_code_cache = nullptr;
 
   std::array<TickCount, 3> m_exp1_access_time = {};
   std::array<TickCount, 3> m_exp2_access_time = {};

@@ -4,10 +4,14 @@
 class JitCodeBuffer
 {
 public:
-  JitCodeBuffer(u32 size = 64 * 1024 * 1024, u32 far_code_size = 0);
-  JitCodeBuffer(void* buffer, u32 size, u32 far_code_size = 0);
+  JitCodeBuffer();
+  JitCodeBuffer(u32 size, u32 far_code_size);
+  JitCodeBuffer(void* buffer, u32 size, u32 far_code_size);
   ~JitCodeBuffer();
 
+  bool Allocate(u32 size = 64 * 1024 * 1024, u32 far_code_size = 0);
+  bool Initialize(void* buffer, u32 size, u32 far_code_size = 0);
+  void Destroy();
   void Reset();
 
   u8* GetFreeCodePointer() const { return m_free_code_ptr; }
@@ -26,18 +30,18 @@ public:
   static void FlushInstructionCache(void* address, u32 size);
 
 private:
-  u8* m_code_ptr;
-  u8* m_free_code_ptr;
-  u32 m_code_size;
-  u32 m_code_used;
+  u8* m_code_ptr = nullptr;
+  u8* m_free_code_ptr = nullptr;
+  u32 m_code_size = 0;
+  u32 m_code_used = 0;
 
-  u8* m_far_code_ptr;
-  u8* m_free_far_code_ptr;
-  u32 m_far_code_size;
-  u32 m_far_code_used;
+  u8* m_far_code_ptr = nullptr;
+  u8* m_free_far_code_ptr = nullptr;
+  u32 m_far_code_size = 0;
+  u32 m_far_code_used = 0;
 
-  u32 m_total_size;
-  u32 m_old_protection;
-  bool m_owns_buffer;
+  u32 m_total_size = 0;
+  u32 m_old_protection = 0;
+  bool m_owns_buffer = false;
 };
 

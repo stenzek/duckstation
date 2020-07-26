@@ -13,7 +13,6 @@ class StateWrapper;
 
 namespace CPU {
 class Core;
-class CodeCache;
 } // namespace CPU
 
 class Bus;
@@ -206,7 +205,6 @@ private:
 
   HostInterface* m_host_interface;
   std::unique_ptr<CPU::Core> m_cpu;
-  std::unique_ptr<CPU::CodeCache> m_cpu_code_cache;
   std::unique_ptr<Bus> m_bus;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;

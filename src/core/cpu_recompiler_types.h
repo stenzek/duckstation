@@ -22,7 +22,6 @@
 namespace CPU {
 
 class Core;
-class CodeCache;
 
 namespace Recompiler {
 

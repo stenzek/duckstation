@@ -12,8 +12,6 @@ class System;
 
 namespace CPU {
 
-class CodeCache;
-
 namespace Recompiler {
 class CodeGenerator;
 class Thunks;
@@ -28,7 +26,6 @@ public:
   static constexpr PhysicalMemoryAddress DCACHE_OFFSET_MASK = UINT32_C(0x000003FF);
   static constexpr PhysicalMemoryAddress DCACHE_SIZE = UINT32_C(0x00000400);
 
-  friend CodeCache;
   friend Recompiler::CodeGenerator;
   friend Recompiler::Thunks;
 
@@ -68,7 +65,6 @@ public:
   void SetExternalInterrupt(u8 bit);
   void ClearExternalInterrupt(u8 bit);
 
-private:
   template<MemoryAccessType type, MemoryAccessSize size>
   TickCount DoMemoryAccess(VirtualMemoryAddress address, u32& value);
 

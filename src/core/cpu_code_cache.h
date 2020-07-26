@@ -1,15 +1,13 @@
 #pragma once
 #include "common/bitfield.h"
+#include "common/jit_code_buffer.h"
 #include "cpu_types.h"
 #include <array>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-class JitCodeBuffer;
-
 class Bus;
-class System;
 
 namespace CPU {
 class Core;
@@ -82,65 +80,21 @@ struct CodeBlock
   }
 };
 
-class CodeCache
-{
-public:
-  CodeCache();
-  ~CodeCache();
+namespace CodeCache {
 
-  void Initialize(Core* core, Bus* bus, bool use_recompiler);
-  void Execute();
+void Initialize(Core* core, Bus* bus, bool use_recompiler);
+void Shutdown();
+void Execute();
 
-  /// Flushes the code cache, forcing all blocks to be recompiled.
-  void Flush();
+/// Flushes the code cache, forcing all blocks to be recompiled.
+void Flush();
 
-  /// Changes whether the recompiler is enabled.
-  void SetUseRecompiler(bool enable);
+/// Changes whether the recompiler is enabled.
+void SetUseRecompiler(bool enable);
 
-  /// Invalidates all blocks which are in the range of the specified code page.
-  void InvalidateBlocksWithPageIndex(u32 page_index);
+/// Invalidates all blocks which are in the range of the specified code page.
+void InvalidateBlocksWithPageIndex(u32 page_index);
 
-private:
-  using BlockMap = std::unordered_map<u32, CodeBlock*>;
-
-  void LogCurrentState();
-
-  /// Returns the block key for the current execution state.
-  CodeBlockKey GetNextBlockKey() const;
-
-  /// Looks up the block in the cache if it's already been compiled.
-  CodeBlock* LookupBlock(CodeBlockKey key);
-
-  /// Can the current block execute? This will re-validate the block if necessary.
-  /// The block can also be flushed if recompilation failed, so ignore the pointer if false is returned.
-  bool RevalidateBlock(CodeBlock* block);
-
-  bool CompileBlock(CodeBlock* block);
-  void FlushBlock(CodeBlock* block);
-  void AddBlockToPageMap(CodeBlock* block);
-  void RemoveBlockFromPageMap(CodeBlock* block);
-
-  /// Link block from to to.
-  void LinkBlock(CodeBlock* from, CodeBlock* to);
-
-  /// Unlink all blocks which point to this block, and any that this block links to.
-  void UnlinkBlock(CodeBlock* block);
-
-  void InterpretCachedBlock(const CodeBlock& block);
-  void InterpretUncachedBlock();
-
-  Core* m_core = nullptr;
-  Bus* m_bus = nullptr;
-
-#ifdef WITH_RECOMPILER
-  std::unique_ptr<JitCodeBuffer> m_code_buffer;
-#endif
-
-  BlockMap m_blocks;
-
-  bool m_use_recompiler = false;
-
-  std::array<std::vector<CodeBlock*>, CPU_CODE_CACHE_PAGE_COUNT> m_ram_block_map;
-};
+}; // namespace CodeCache
 
 } // namespace CPU

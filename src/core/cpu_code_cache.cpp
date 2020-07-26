@@ -10,55 +10,89 @@ Log_SetChannel(CPU::CodeCache);
 #include "cpu_recompiler_thunks.h"
 #endif
 
-namespace CPU {
+namespace CPU::CodeCache {
 
 constexpr bool USE_BLOCK_LINKING = true;
 
+#ifdef WITH_RECOMPILER
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
-#ifdef WITH_RECOMPILER
-static u8 s_code_buffer[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
+static u8 s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
+static JitCodeBuffer s_code_buffer;
 #endif
 
-CodeCache::CodeCache() = default;
+using BlockMap = std::unordered_map<u32, CodeBlock*>;
 
-CodeCache::~CodeCache()
+void LogCurrentState();
+
+/// Returns the block key for the current execution state.
+static CodeBlockKey GetNextBlockKey();
+
+/// Looks up the block in the cache if it's already been compiled.
+static CodeBlock* LookupBlock(CodeBlockKey key);
+
+/// Can the current block execute? This will re-validate the block if necessary.
+/// The block can also be flushed if recompilation failed, so ignore the pointer if false is returned.
+static bool RevalidateBlock(CodeBlock* block);
+
+static bool CompileBlock(CodeBlock* block);
+static void FlushBlock(CodeBlock* block);
+static void AddBlockToPageMap(CodeBlock* block);
+static void RemoveBlockFromPageMap(CodeBlock* block);
+
+/// Link block from to to.
+static void LinkBlock(CodeBlock* from, CodeBlock* to);
+
+/// Unlink all blocks which point to this block, and any that this block links to.
+static void UnlinkBlock(CodeBlock* block);
+
+static void InterpretCachedBlock(const CodeBlock& block);
+static void InterpretUncachedBlock();
+
+static Core* s_core = nullptr;
+static Bus* s_bus = nullptr;
+static bool s_use_recompiler = false;
+static BlockMap s_blocks;
+static std::array<std::vector<CodeBlock*>, CPU_CODE_CACHE_PAGE_COUNT> m_ram_block_map;
+
+void Initialize(Core* core, Bus* bus, bool use_recompiler)
+{
+  s_core = core;
+  s_bus = bus;
+
+#ifdef WITH_RECOMPILER
+  s_use_recompiler = use_recompiler;
+  // s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
+  s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE);
+#else
+  s_use_recompiler = false;
+#endif
+}
+
+void Shutdown()
 {
   Flush();
+  s_code_buffer.Destroy();
 }
 
-void CodeCache::Initialize(Core* core, Bus* bus, bool use_recompiler)
-{
-  m_core = core;
-  m_bus = bus;
-
-#ifdef WITH_RECOMPILER
-  m_use_recompiler = use_recompiler;
-  // m_code_buffer = std::make_unique<JitCodeBuffer>(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
-  m_code_buffer = std::make_unique<JitCodeBuffer>(s_code_buffer, sizeof(s_code_buffer), RECOMPILER_FAR_CODE_CACHE_SIZE);
-#else
-  m_use_recompiler = false;
-#endif
-}
-
-void CodeCache::Execute()
+void Execute()
 {
   CodeBlockKey next_block_key = GetNextBlockKey();
 
-  while (m_core->m_pending_ticks < m_core->m_downcount)
+  while (s_core->m_pending_ticks < s_core->m_downcount)
   {
-    if (m_core->HasPendingInterrupt())
+    if (s_core->HasPendingInterrupt())
     {
       // TODO: Fill in m_next_instruction...
-      m_core->SafeReadMemoryWord(m_core->m_regs.pc, &m_core->m_next_instruction.bits);
-      m_core->DispatchInterrupt();
+      s_core->SafeReadMemoryWord(s_core->m_regs.pc, &s_core->m_next_instruction.bits);
+      s_core->DispatchInterrupt();
       next_block_key = GetNextBlockKey();
     }
 
     CodeBlock* block = LookupBlock(next_block_key);
     if (!block)
     {
-      Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", m_core->GetRegs().pc);
+      Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", s_core->GetRegs().pc);
       InterpretUncachedBlock();
       continue;
     }
@@ -75,14 +109,14 @@ void CodeCache::Execute()
     LogCurrentState();
 #endif
 
-    if (m_use_recompiler)
-      block->host_code(m_core);
+    if (s_use_recompiler)
+      block->host_code(s_core);
     else
       InterpretCachedBlock(*block);
 
-    if (m_core->m_pending_ticks >= m_core->m_downcount)
+    if (s_core->m_pending_ticks >= s_core->m_downcount)
       break;
-    else if (m_core->HasPendingInterrupt() || !USE_BLOCK_LINKING)
+    else if (s_core->HasPendingInterrupt() || !USE_BLOCK_LINKING)
       continue;
 
     next_block_key = GetNextBlockKey();
@@ -126,63 +160,63 @@ void CodeCache::Execute()
   }
 
   // in case we switch to interpreter...
-  m_core->m_regs.npc = m_core->m_regs.pc;
+  s_core->m_regs.npc = s_core->m_regs.pc;
 }
 
-void CodeCache::SetUseRecompiler(bool enable)
+void SetUseRecompiler(bool enable)
 {
 #ifdef WITH_RECOMPILER
-  if (m_use_recompiler == enable)
+  if (s_use_recompiler == enable)
     return;
 
-  m_use_recompiler = enable;
+  s_use_recompiler = enable;
   Flush();
 #endif
 }
 
-void CodeCache::Flush()
+void Flush()
 {
-  if (m_bus)
-    m_bus->ClearRAMCodePageFlags();
+  if (s_bus)
+    s_bus->ClearRAMCodePageFlags();
   for (auto& it : m_ram_block_map)
     it.clear();
 
-  for (const auto& it : m_blocks)
+  for (const auto& it : s_blocks)
     delete it.second;
-  m_blocks.clear();
+  s_blocks.clear();
 #ifdef WITH_RECOMPILER
-  m_code_buffer->Reset();
+  s_code_buffer.Reset();
 #endif
 }
 
-void CodeCache::LogCurrentState()
+void LogCurrentState()
 {
-  const auto& regs = m_core->m_regs;
+  const auto& regs = s_core->m_regs;
   WriteToExecutionLog("tick=%u pc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
                       "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
                       "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
                       "ldv=%08X\n",
-                      g_system->GetGlobalTickCounter() + m_core->GetPendingTicks(), regs.pc, regs.zero, regs.at,
+                      g_system->GetGlobalTickCounter() + s_core->GetPendingTicks(), regs.pc, regs.zero, regs.at,
                       regs.v0, regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4,
                       regs.t5, regs.t6, regs.t7, regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7,
                       regs.t8, regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp, regs.ra,
-                      (m_core->m_next_load_delay_reg == Reg::count) ? "NONE" :
-                                                                      GetRegName(m_core->m_next_load_delay_reg),
-                      (m_core->m_next_load_delay_reg == Reg::count) ? 0 : m_core->m_next_load_delay_value);
+                      (s_core->m_next_load_delay_reg == Reg::count) ? "NONE" :
+                                                                      GetRegName(s_core->m_next_load_delay_reg),
+                      (s_core->m_next_load_delay_reg == Reg::count) ? 0 : s_core->m_next_load_delay_value);
 }
 
-CodeBlockKey CodeCache::GetNextBlockKey() const
+CodeBlockKey GetNextBlockKey()
 {
   CodeBlockKey key = {};
-  key.SetPC(m_core->GetRegs().pc);
-  key.user_mode = m_core->InUserMode();
+  key.SetPC(s_core->GetRegs().pc);
+  key.user_mode = s_core->InUserMode();
   return key;
 }
 
-CodeBlock* CodeCache::LookupBlock(CodeBlockKey key)
+CodeBlock* LookupBlock(CodeBlockKey key)
 {
-  BlockMap::iterator iter = m_blocks.find(key.bits);
-  if (iter != m_blocks.end())
+  BlockMap::iterator iter = s_blocks.find(key.bits);
+  if (iter != s_blocks.end())
   {
     // ensure it hasn't been invalidated
     CodeBlock* existing_block = iter->second;
@@ -203,16 +237,16 @@ CodeBlock* CodeCache::LookupBlock(CodeBlockKey key)
     block = nullptr;
   }
 
-  iter = m_blocks.emplace(key.bits, block).first;
+  iter = s_blocks.emplace(key.bits, block).first;
   return block;
 }
 
-bool CodeCache::RevalidateBlock(CodeBlock* block)
+bool RevalidateBlock(CodeBlock* block)
 {
   for (const CodeBlockInstruction& cbi : block->instructions)
   {
     u32 new_code = 0;
-    m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK,
+    s_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK,
                                                                           new_code);
     if (cbi.instruction.bits != new_code)
     {
@@ -243,7 +277,7 @@ recompile:
   return true;
 }
 
-bool CodeCache::CompileBlock(CodeBlock* block)
+bool CompileBlock(CodeBlock* block)
 {
   u32 pc = block->GetPC();
   bool is_branch_delay_slot = false;
@@ -259,8 +293,8 @@ bool CodeCache::CompileBlock(CodeBlock* block)
     CodeBlockInstruction cbi = {};
 
     const PhysicalMemoryAddress phys_addr = pc & PHYSICAL_MEMORY_ADDRESS_MASK;
-    if (!m_bus->IsCacheableAddress(phys_addr) ||
-        m_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(phys_addr, cbi.instruction.bits) < 0 ||
+    if (!s_bus->IsCacheableAddress(phys_addr) ||
+        s_bus->DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(phys_addr, cbi.instruction.bits) < 0 ||
         !IsInvalidInstruction(cbi.instruction))
     {
       break;
@@ -273,7 +307,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
     cbi.is_load_instruction = IsMemoryLoadInstruction(cbi.instruction);
     cbi.is_store_instruction = IsMemoryStoreInstruction(cbi.instruction);
     cbi.has_load_delay = InstructionHasLoadDelay(cbi.instruction);
-    cbi.can_trap = CanInstructionTrap(cbi.instruction, m_core->InUserMode());
+    cbi.can_trap = CanInstructionTrap(cbi.instruction, s_core->InUserMode());
 
     // instruction is decoded now
     block->instructions.push_back(cbi);
@@ -317,19 +351,19 @@ bool CodeCache::CompileBlock(CodeBlock* block)
   }
 
 #ifdef WITH_RECOMPILER
-  if (m_use_recompiler)
+  if (s_use_recompiler)
   {
     // Ensure we're not going to run out of space while compiling this block.
-    if (m_code_buffer->GetFreeCodeSpace() <
+    if (s_code_buffer.GetFreeCodeSpace() <
           (block->instructions.size() * Recompiler::MAX_NEAR_HOST_BYTES_PER_INSTRUCTION) ||
-        m_code_buffer->GetFreeFarCodeSpace() <
+        s_code_buffer.GetFreeFarCodeSpace() <
           (block->instructions.size() * Recompiler::MAX_FAR_HOST_BYTES_PER_INSTRUCTION))
     {
       Log_WarningPrintf("Out of code space, flushing all blocks.");
       Flush();
     }
 
-    Recompiler::CodeGenerator codegen(m_core, m_code_buffer.get());
+    Recompiler::CodeGenerator codegen(s_core, &s_code_buffer);
     if (!codegen.CompileBlock(block, &block->host_code, &block->host_code_size))
     {
       Log_ErrorPrintf("Failed to compile host code for block at 0x%08X", block->key.GetPC());
@@ -341,7 +375,7 @@ bool CodeCache::CompileBlock(CodeBlock* block)
   return true;
 }
 
-void CodeCache::InvalidateBlocksWithPageIndex(u32 page_index)
+void InvalidateBlocksWithPageIndex(u32 page_index)
 {
   DebugAssert(page_index < CPU_CODE_CACHE_PAGE_COUNT);
   auto& blocks = m_ram_block_map[page_index];
@@ -354,24 +388,24 @@ void CodeCache::InvalidateBlocksWithPageIndex(u32 page_index)
 
   // Block will be re-added next execution.
   blocks.clear();
-  m_bus->ClearRAMCodePage(page_index);
+  s_bus->ClearRAMCodePage(page_index);
 }
 
-void CodeCache::FlushBlock(CodeBlock* block)
+void FlushBlock(CodeBlock* block)
 {
-  BlockMap::iterator iter = m_blocks.find(block->key.GetPC());
-  Assert(iter != m_blocks.end() && iter->second == block);
+  BlockMap::iterator iter = s_blocks.find(block->key.GetPC());
+  Assert(iter != s_blocks.end() && iter->second == block);
   Log_DevPrintf("Flushing block at address 0x%08X", block->GetPC());
 
   // if it's been invalidated it won't be in the page map
   if (block->invalidated)
     RemoveBlockFromPageMap(block);
 
-  m_blocks.erase(iter);
+  s_blocks.erase(iter);
   delete block;
 }
 
-void CodeCache::AddBlockToPageMap(CodeBlock* block)
+void AddBlockToPageMap(CodeBlock* block)
 {
   if (!block->IsInRAM())
     return;
@@ -381,11 +415,11 @@ void CodeCache::AddBlockToPageMap(CodeBlock* block)
   for (u32 page = start_page; page <= end_page; page++)
   {
     m_ram_block_map[page].push_back(block);
-    m_bus->SetRAMCodePage(page);
+    s_bus->SetRAMCodePage(page);
   }
 }
 
-void CodeCache::RemoveBlockFromPageMap(CodeBlock* block)
+void RemoveBlockFromPageMap(CodeBlock* block)
 {
   if (!block->IsInRAM())
     return;
@@ -401,14 +435,14 @@ void CodeCache::RemoveBlockFromPageMap(CodeBlock* block)
   }
 }
 
-void CodeCache::LinkBlock(CodeBlock* from, CodeBlock* to)
+void LinkBlock(CodeBlock* from, CodeBlock* to)
 {
   Log_DebugPrintf("Linking block %p(%08x) to %p(%08x)", from, from->GetPC(), to, to->GetPC());
   from->link_successors.push_back(to);
   to->link_predecessors.push_back(from);
 }
 
-void CodeCache::UnlinkBlock(CodeBlock* block)
+void UnlinkBlock(CodeBlock* block)
 {
   for (CodeBlock* predecessor : block->link_predecessors)
   {
@@ -427,44 +461,44 @@ void CodeCache::UnlinkBlock(CodeBlock* block)
   block->link_successors.clear();
 }
 
-void CodeCache::InterpretCachedBlock(const CodeBlock& block)
+void InterpretCachedBlock(const CodeBlock& block)
 {
   // set up the state so we've already fetched the instruction
-  DebugAssert(m_core->m_regs.pc == block.GetPC());
+  DebugAssert(s_core->m_regs.pc == block.GetPC());
 
-  m_core->m_regs.npc = block.GetPC() + 4;
+  s_core->m_regs.npc = block.GetPC() + 4;
 
   for (const CodeBlockInstruction& cbi : block.instructions)
   {
-    m_core->m_pending_ticks++;
+    s_core->m_pending_ticks++;
 
     // now executing the instruction we previously fetched
-    m_core->m_current_instruction.bits = cbi.instruction.bits;
-    m_core->m_current_instruction_pc = cbi.pc;
-    m_core->m_current_instruction_in_branch_delay_slot = cbi.is_branch_delay_slot;
-    m_core->m_current_instruction_was_branch_taken = m_core->m_branch_was_taken;
-    m_core->m_branch_was_taken = false;
-    m_core->m_exception_raised = false;
+    s_core->m_current_instruction.bits = cbi.instruction.bits;
+    s_core->m_current_instruction_pc = cbi.pc;
+    s_core->m_current_instruction_in_branch_delay_slot = cbi.is_branch_delay_slot;
+    s_core->m_current_instruction_was_branch_taken = s_core->m_branch_was_taken;
+    s_core->m_branch_was_taken = false;
+    s_core->m_exception_raised = false;
 
     // update pc
-    m_core->m_regs.pc = m_core->m_regs.npc;
-    m_core->m_regs.npc += 4;
+    s_core->m_regs.pc = s_core->m_regs.npc;
+    s_core->m_regs.npc += 4;
 
     // execute the instruction we previously fetched
-    m_core->ExecuteInstruction();
+    s_core->ExecuteInstruction();
 
     // next load delay
-    m_core->UpdateLoadDelay();
+    s_core->UpdateLoadDelay();
 
-    if (m_core->m_exception_raised)
+    if (s_core->m_exception_raised)
       break;
   }
 
   // cleanup so the interpreter can kick in if needed
-  m_core->m_next_instruction_is_branch_delay_slot = false;
+  s_core->m_next_instruction_is_branch_delay_slot = false;
 }
 
-void CodeCache::InterpretUncachedBlock()
+void InterpretUncachedBlock()
 {
   Panic("Fixme with regards to re-fetching PC");
 
@@ -473,30 +507,30 @@ void CodeCache::InterpretUncachedBlock()
   bool in_branch_delay_slot = false;
   for (;;)
   {
-    m_core->m_pending_ticks++;
+    s_core->m_pending_ticks++;
 
     // now executing the instruction we previously fetched
-    m_core->m_current_instruction.bits = m_core->m_next_instruction.bits;
-    m_core->m_current_instruction_pc = m_core->m_regs.pc;
-    m_core->m_current_instruction_in_branch_delay_slot = m_core->m_next_instruction_is_branch_delay_slot;
-    m_core->m_current_instruction_was_branch_taken = m_core->m_branch_was_taken;
-    m_core->m_next_instruction_is_branch_delay_slot = false;
-    m_core->m_branch_was_taken = false;
-    m_core->m_exception_raised = false;
+    s_core->m_current_instruction.bits = s_core->m_next_instruction.bits;
+    s_core->m_current_instruction_pc = s_core->m_regs.pc;
+    s_core->m_current_instruction_in_branch_delay_slot = s_core->m_next_instruction_is_branch_delay_slot;
+    s_core->m_current_instruction_was_branch_taken = s_core->m_branch_was_taken;
+    s_core->m_next_instruction_is_branch_delay_slot = false;
+    s_core->m_branch_was_taken = false;
+    s_core->m_exception_raised = false;
 
     // Fetch the next instruction, except if we're in a branch delay slot. The "fetch" is done in the next block.
-    if (!m_core->FetchInstruction())
+    if (!s_core->FetchInstruction())
       break;
 
     // execute the instruction we previously fetched
-    m_core->ExecuteInstruction();
+    s_core->ExecuteInstruction();
 
     // next load delay
-    m_core->UpdateLoadDelay();
+    s_core->UpdateLoadDelay();
 
-    const bool branch = IsBranchInstruction(m_core->m_current_instruction);
-    if (m_core->m_exception_raised || (!branch && in_branch_delay_slot) ||
-        IsExitBlockInstruction(m_core->m_current_instruction))
+    const bool branch = IsBranchInstruction(s_core->m_current_instruction);
+    if (s_core->m_exception_raised || (!branch && in_branch_delay_slot) ||
+        IsExitBlockInstruction(s_core->m_current_instruction))
     {
       break;
     }

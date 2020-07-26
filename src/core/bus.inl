@@ -27,7 +27,7 @@ TickCount Bus::DoRAMAccess(u32 offset, u32& value)
   {
     const u32 page_index = offset / CPU_CODE_CACHE_PAGE_SIZE;
     if (m_ram_code_bits[page_index])
-      DoInvalidateCodeCache(page_index);
+      CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
 
     if constexpr (size == MemoryAccessSize::Byte)
     {
