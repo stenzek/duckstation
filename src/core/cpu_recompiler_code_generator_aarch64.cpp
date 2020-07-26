@@ -1,4 +1,5 @@
 #include "common/align.h"
+#include "common/assert.h"
 #include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
@@ -145,10 +146,10 @@ void CodeGenerator::EmitBeginBlock()
   const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
   DebugAssert(link_reg_allocated);
 
-  // Store the CPU struct pointer.
+  // Store the CPU struct pointer. TODO: make this better.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
-  m_emit->Mov(GetCPUPtrReg(), GetHostReg64(RARG1));
+  m_emit->Mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
 }
 
 void CodeGenerator::EmitEndBlock()
@@ -885,7 +886,9 @@ void CodeGenerator::RestoreStackAfterCall(u32 adjust_size) { m_register_cache.Po
 
 static s64 GetBranchDisplacement(const void* current, const void* target)
 {
-  return static_cast<s64>(reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current));
+  Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(current), 4));
+  Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(target), 4));
+  return static_cast<s64>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)) >> 2);
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
@@ -893,21 +896,16 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
   if (return_value)
     return_value->Discard();
 
-  // must be allocated before the stack push
-  Value temp;
-  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
-  const bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr)
-    temp = m_register_cache.AllocateScratch(RegSize_64);
-
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
   // actually call the function
+  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
+  const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(temp));
+    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RRETURN));
   }
   else
   {
@@ -916,9 +914,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
-
-  // must happen after the stack push
-  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -933,13 +928,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     return_value->Discard();
 
-  // must be allocated before the stack push
-  Value temp;
-  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
-  const bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr)
-    temp = m_register_cache.AllocateScratch(RegSize_64);
-
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -947,10 +935,12 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG1, arg1);
 
   // actually call the function
+  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
+  const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(temp));
+    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RRETURN));
   }
   else
   {
@@ -959,9 +949,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
-
-  // must happen after the stack push
-  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -976,13 +963,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     return_value->Discard();
 
-  // must be allocated before the stack push
-  Value temp;
-  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
-  const bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr)
-    temp = m_register_cache.AllocateScratch(RegSize_64);
-
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -991,10 +971,12 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG2, arg2);
 
   // actually call the function
+  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
+  const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(temp));
+    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RRETURN));
   }
   else
   {
@@ -1003,9 +985,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
-
-  // must happen after the stack push
-  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -1021,13 +1000,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     m_register_cache.DiscardHostReg(return_value->GetHostRegister());
 
-  // must be allocated before the stack push
-  Value temp;
-  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
-  const bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr)
-    temp = m_register_cache.AllocateScratch(RegSize_64);
-
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
 
@@ -1037,10 +1009,12 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG3, arg3);
 
   // actually call the function
+  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
+  const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(temp));
+    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RRETURN));
   }
   else
   {
@@ -1049,9 +1023,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
-
-  // must happen after the stack push
-  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -1067,12 +1038,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   if (return_value)
     return_value->Discard();
 
-  // must be allocated before the stack push
-  Value temp;
-  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
-  const bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr)
-    temp = m_register_cache.AllocateScratch(RegSize_64);
 
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
@@ -1084,10 +1049,12 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG4, arg4);
 
   // actually call the function
+  const s64 displacement = GetBranchDisplacement(GetCurrentCodePointer(), ptr);
+  const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(temp));
+    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RRETURN));
   }
   else
   {
@@ -1096,9 +1063,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
-
-  // must happen after the stack push
-  temp.ReleaseAndClear();
 
   // copy out return value if requested
   if (return_value)
@@ -1350,15 +1314,9 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   m_register_cache.PopState();
 }
 
-void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
-{
-  Panic("Not implemented");
-}
+void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr) { Panic("Not implemented"); }
 
-void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value)
-{
-  Panic("Not implemented");
-}
+void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value) { Panic("Not implemented"); }
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
 {
