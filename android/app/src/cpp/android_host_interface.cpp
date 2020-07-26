@@ -130,6 +130,7 @@ void AndroidHostInterface::SetUserDirectory()
 void AndroidHostInterface::LoadSettings()
 {
   CommonHostInterface::LoadSettings(m_settings_interface);
+  CommonHostInterface::UpdateInputMap(m_settings_interface);
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -396,6 +397,19 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
     false);
 }
 
+void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database)
+{
+  m_game_list->SetSearchDirectoriesFromSettings(m_settings_interface);
+  m_game_list->Refresh(invalidate_cache, invalidate_database);
+}
+
+void AndroidHostInterface::ApplySettings()
+{
+  Settings old_settings = std::move(m_settings);
+  CommonHostInterface::LoadSettings(m_settings_interface);
+  CheckForSettingsChanges(old_settings);
+}
+
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
@@ -530,28 +544,18 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobje
   return code.value_or(-1);
 }
 
-DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_cache_path, jstring j_redump_dat_path,
-                       jarray j_search_directories, jboolean search_recursively)
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_refreshGameList, jobject obj, jboolean invalidate_cache, jboolean invalidate_database)
 {
-  // const std::string cache_path = AndroidHelpers::JStringToString(env, j_cache_path);
-  std::string redump_dat_path = AndroidHelpers::JStringToString(env, j_redump_dat_path);
+  AndroidHelpers::GetNativeClass(env, obj)->RefreshGameList(invalidate_cache, invalidate_database);
+}
 
-  // TODO: This should use the base HostInterface.
-  GameList gl;
-  if (!redump_dat_path.empty())
-    gl.SetDatabaseFilename(std::move(redump_dat_path));
+static const char* DiscRegionToString(DiscRegion region) {
+  static std::array<const char*, 4> names = {{"NTSC_J", "NTSC_U", "PAL", "Other"}};
+  return names[static_cast<int>(region)];
+}
 
-  const jsize search_directories_size = env->GetArrayLength(j_search_directories);
-  for (jsize i = 0; i < search_directories_size; i++)
-  {
-    jobject search_dir_obj = env->GetObjectArrayElement(reinterpret_cast<jobjectArray>(j_search_directories), i);
-    const std::string search_dir = AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(search_dir_obj));
-    if (!search_dir.empty())
-      gl.AddDirectory(search_dir.c_str(), search_recursively);
-  }
-
-  gl.Refresh(false, false, nullptr);
-
+DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject obj)
+{
   jclass entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry");
   Assert(entry_class != nullptr);
 
@@ -560,11 +564,12 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
                                                  "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
   Assert(entry_constructor != nullptr);
 
-  jobjectArray entry_array = env->NewObjectArray(gl.GetEntryCount(), entry_class, nullptr);
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  jobjectArray entry_array = env->NewObjectArray(hi->GetGameList()->GetEntryCount(), entry_class, nullptr);
   Assert(entry_array != nullptr);
 
   u32 counter = 0;
-  for (const GameListEntry& entry : gl.GetEntries())
+  for (const GameListEntry& entry : hi->GetGameList()->GetEntries())
   {
     const Timestamp modified_ts(
       Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
@@ -572,7 +577,7 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
     jstring path = env->NewStringUTF(entry.path.c_str());
     jstring code = env->NewStringUTF(entry.code.c_str());
     jstring title = env->NewStringUTF(entry.title.c_str());
-    jstring region = env->NewStringUTF(Settings::GetDiscRegionName(entry.region));
+    jstring region = env->NewStringUTF(DiscRegionToString(entry.region));
     jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
     jstring compatibility_rating =
       env->NewStringUTF(GameList::EntryCompatibilityRatingToString(entry.compatibility_rating));
@@ -586,4 +591,43 @@ DEFINE_JNI_ARGS_METHOD(jarray, GameList_getEntries, jobject unused, jstring j_ca
   }
 
   return entry_array;
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_applySettings, jobject obj)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  if (hi->IsEmulationThreadRunning())
+  {
+    hi->RunOnEmulationThread([hi]() {
+      hi->ApplySettings();
+    });
+  }
+  else
+  {
+    hi->ApplySettings();
+  }
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_resetSystem, jobject obj, jboolean global, jint slot)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([hi]() {
+    hi->ResetSystem();
+  });
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_loadState, jobject obj, jboolean global, jint slot)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([hi, global, slot]() {
+    hi->LoadState(global, slot);
+  });
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_saveState, jobject obj, jboolean global, jint slot)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([hi, global, slot]() {
+    hi->SaveState(global, slot);
+  });
 }

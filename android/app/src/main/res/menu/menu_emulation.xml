@@ -2,14 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <group android:id="@+id/quick_load_save">
-        <item android:title="Quick Load" />
-        <item android:title="Quick Save" />
+    <group android:id="@+id/actions">
+        <item android:id="@+id/reset"
+            android:title="Reset" />
+        <item android:id="@+id/quick_load"
+            android:title="Quick Load" />
+        <item android:id="@+id/quick_save"
+            android:title="Quick Save" />
     </group>
     <group android:id="@+id/quick_settings">
         <item
             android:id="@+id/change_disc"
             android:title="Change Disc" />
+        <item
+            android:id="@+id/enable_speed_limiter"
+            android:title="Enable Speed Limiter"
+            android:checkable="true" />
         <item
             android:id="@+id/show_controller"
             android:checkable="true"

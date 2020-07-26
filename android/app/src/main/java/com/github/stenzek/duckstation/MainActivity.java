@@ -43,22 +43,26 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!AndroidHostInterface.createInstance(this)) {
+            Log.i("MainActivity", "Failed to create host interface");
+            throw new RuntimeException("Failed to create host interface");
+        }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fab_add_game_directory).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!checkForExternalStoragePermissions())
-                    return;
-
-                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                i.addCategory(Intent.CATEGORY_DEFAULT);
-                i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                startActivityForResult(Intent.createChooser(i, "Choose directory"),
-                        REQUEST_ADD_DIRECTORY_TO_GAME_LIST);
+                startAddGameDirectory();
+            }
+        });
+        findViewById(R.id.fab_resume).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startEmulation(null, true);
             }
         });
 
@@ -69,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         mGameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startEmulation(mGameList.getEntry(position).getPath());
+                startEmulation(mGameList.getEntry(position).getPath(), true);
             }
         });
         mGameListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -89,6 +93,18 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+        mGameList.refresh(false, false);
+    }
+
+    private void startAddGameDirectory() {
+        if (!checkForExternalStoragePermissions())
+            return;
+
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
+        i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        startActivityForResult(Intent.createChooser(i, "Choose directory"),
+                REQUEST_ADD_DIRECTORY_TO_GAME_LIST);
     }
 
     @Override
@@ -106,6 +122,13 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        if (id == R.id.action_add_game_directory) {
+            startAddGameDirectory();
+        } else if (id == R.id.action_scan_for_new_games) {
+            mGameList.refresh(false, false);
+        } if (id == R.id.action_rescan_all_games) {
+            mGameList.refresh(true, false);
+        }
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
@@ -132,16 +155,16 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                Set<String> currentValues = prefs.getStringSet("GameList/SearchDirectories", null);
+                Set<String> currentValues = prefs.getStringSet("GameList/RecursivePaths", null);
                 if (currentValues == null)
                     currentValues = new HashSet<String>();
 
                 currentValues.add(path);
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putStringSet("GameList/SearchDirectories", currentValues);
+                editor.putStringSet("GameList/RecursivePaths", currentValues);
                 editor.apply();
                 Log.i("MainActivity", "Added path '" + path + "' to game list search directories");
-                mGameList.refresh();
+                mGameList.refresh(false, false);
             }
             break;
         }
@@ -175,13 +198,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean startEmulation(String bootPath) {
+    private boolean startEmulation(String bootPath, boolean resumeState) {
         if (!checkForExternalStoragePermissions()) {
             return false;
         }
 
         Intent intent = new Intent(this, EmulationActivity.class);
         intent.putExtra("bootPath", bootPath);
+        intent.putExtra("resumeState", resumeState);
         startActivity(intent);
         return true;
     }

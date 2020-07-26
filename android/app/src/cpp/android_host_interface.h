@@ -44,6 +44,9 @@ public:
   void SetControllerType(u32 index, std::string_view type_name);
   void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
 
+  void RefreshGameList(bool invalidate_cache, bool invalidate_database);
+  void ApplySettings();
+
 protected:
   void SetUserDirectory() override;
   void LoadSettings() override;

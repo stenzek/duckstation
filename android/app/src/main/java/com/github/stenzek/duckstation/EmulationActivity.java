@@ -6,6 +6,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import androidx.core.app.NavUtils;
+import androidx.preference.PreferenceManager;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -25,9 +27,17 @@ import androidx.core.app.NavUtils;
  */
 public class EmulationActivity extends AppCompatActivity implements SurfaceHolder.Callback {
     /**
-     * Interface to the native emulator core
+     * Settings interfaces.
      */
-    AndroidHostInterface mHostInterface;
+    SharedPreferences mPreferences;
+    private boolean getBooleanSetting(String key, boolean defaultValue) {
+        return mPreferences.getBoolean(key, defaultValue);
+    }
+    private void setBooleanSetting(String key, boolean value) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putBoolean(key, value);
+        editor.apply();
+    }
 
     /**
      * Touchscreen controller overlay
@@ -96,15 +106,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // Once we get a surface, we can boot.
-        if (mHostInterface.isEmulationThreadRunning()) {
-            mHostInterface.surfaceChanged(holder.getSurface(), format, width, height);
+        if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
             return;
         }
 
         String bootPath = getIntent().getStringExtra("bootPath");
         String bootSaveStatePath = getIntent().getStringExtra("bootSaveStatePath");
+        boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
 
-        if (!mHostInterface
+        if (!AndroidHostInterface.getInstance()
                 .startEmulationThread(holder.getSurface(), bootPath, bootSaveStatePath)) {
             Log.e("EmulationActivity", "Failed to start emulation thread");
             finishActivity(0);
@@ -114,16 +125,17 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if (!mHostInterface.isEmulationThreadRunning())
+        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
             return;
 
         Log.i("EmulationActivity", "Stopping emulation thread");
-        mHostInterface.stopEmulationThread();
+        AndroidHostInterface.getInstance().stopEmulationThread();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         setContentView(R.layout.activity_emulation);
         ActionBar actionBar = getSupportActionBar();
@@ -142,19 +154,15 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
 
-        mHostInterface = AndroidHostInterface.create(this);
-        if (mHostInterface == null)
-            throw new InstantiationError("Failed to create host interface");
-
         // Create touchscreen controller.
         FrameLayout activityLayout = findViewById(R.id.frameLayout);
         mTouchscreenController = new TouchscreenControllerView(this);
         activityLayout.addView(mTouchscreenController);
-        mTouchscreenController.init(0, "DigitalController", mHostInterface);
+        mTouchscreenController.init(0, "DigitalController", AndroidHostInterface.getInstance());
         setTouchscreenControllerVisibility(true);
 
         // Hook up controller input.
-        mContentView.initControllerKeyMapping(mHostInterface, "DigitalController");
+        mContentView.initControllerKeyMapping("DigitalController");
     }
 
     @Override
@@ -172,6 +180,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_emulation, menu);
         menu.findItem(R.id.show_controller).setChecked(mTouchscreenControllerVisible);
+        menu.findItem(R.id.enable_speed_limiter).setChecked(getBooleanSetting("Main/SpeedLimiterEnabled", true));
         return true;
     }
 
@@ -191,6 +200,18 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
             item.setChecked(mTouchscreenControllerVisible);
             return true;
+        } else if (id == R.id.enable_speed_limiter) {
+            boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
+            setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
+            item.setChecked(newSetting);
+            AndroidHostInterface.getInstance().applySettings();
+            return true;
+        } else if (id == R.id.reset) {
+            AndroidHostInterface.getInstance().resetSystem();
+        } else if (id == R.id.quick_load) {
+            AndroidHostInterface.getInstance().loadState(false, 0);
+        } else if (id == R.id.quick_save) {
+            AndroidHostInterface.getInstance().saveState(false, 0);
         } else if (id == R.id.quit) {
             finish();
             return true;

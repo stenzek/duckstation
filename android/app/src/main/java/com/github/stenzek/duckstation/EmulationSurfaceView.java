@@ -48,7 +48,6 @@ public class EmulationSurfaceView extends SurfaceView {
         return super.onKeyDown(keyCode, event);
     }
 
-    private AndroidHostInterface mHostInterface;
     private ArrayMap<Integer, Integer> mControllerKeyMapping;
 
     private void addControllerKeyMapping(int keyCode, String controllerType, String buttonName) {
@@ -59,9 +58,7 @@ public class EmulationSurfaceView extends SurfaceView {
             mControllerKeyMapping.put(keyCode, mapping);
     }
 
-    public void initControllerKeyMapping(AndroidHostInterface hostInterface,
-                                         String controllerType) {
-        mHostInterface = hostInterface;
+    public void initControllerKeyMapping(String controllerType) {
         mControllerKeyMapping = new ArrayMap<>();
 
         // TODO: Don't hardcode...
@@ -86,7 +83,7 @@ public class EmulationSurfaceView extends SurfaceView {
             return false;
 
         final int mapping = mControllerKeyMapping.get(keyCode);
-        mHostInterface.setControllerButtonState(0, mapping, pressed);
+        AndroidHostInterface.getInstance().setControllerButtonState(0, mapping, pressed);
         return true;
     }
 }

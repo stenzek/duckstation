@@ -15,44 +15,21 @@ import androidx.preference.PreferenceManager;
 import java.util.Set;
 
 public class GameList {
-    static {
-        System.loadLibrary("duckstation-native");
-    }
-
     private Context mContext;
-    private String mCachePath;
-    private String mRedumpDatPath;
-    private String[] mSearchDirectories;
-    private boolean mSearchRecursively;
     private GameListEntry[] mEntries;
-
-    static private native GameListEntry[] getEntries(String cachePath, String redumpDatPath,
-                                                     String[] searchDirectories,
-                                                     boolean searchRecursively);
+    private ListViewAdapter mAdapter;
 
     public GameList(Context context) {
         mContext = context;
-        refresh();
+        mAdapter = new ListViewAdapter();
+        mEntries = new GameListEntry[0];
     }
 
-    public void refresh() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mCachePath = preferences.getString("GameList/CachePath", "");
-        mRedumpDatPath = preferences.getString("GameList/RedumpDatPath", "");
-
-        Set<String> searchDirectories =
-                preferences.getStringSet("GameList/SearchDirectories", null);
-        if (searchDirectories != null) {
-            mSearchDirectories = new String[searchDirectories.size()];
-            searchDirectories.toArray(mSearchDirectories);
-        } else {
-            mSearchDirectories = new String[0];
-        }
-
-        mSearchRecursively = preferences.getBoolean("GameList/SearchRecursively", true);
-
+    public void refresh(boolean invalidateCache, boolean invalidateDatabase) {
         // Search and get entries from native code
-        mEntries = getEntries(mCachePath, mRedumpDatPath, mSearchDirectories, mSearchRecursively);
+        AndroidHostInterface.getInstance().refreshGameList(invalidateCache, invalidateDatabase);
+        mEntries = AndroidHostInterface.getInstance().getGameListEntries();
+        mAdapter.notifyDataSetChanged();
     }
 
     public int getEntryCount() {
@@ -97,6 +74,6 @@ public class GameList {
     }
 
     public BaseAdapter getListViewAdapter() {
-        return new ListViewAdapter();
+        return mAdapter;
     }
 }

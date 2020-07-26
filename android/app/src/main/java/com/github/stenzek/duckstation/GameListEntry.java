@@ -28,7 +28,7 @@ public class GameListEntry {
     private String mTitle;
     private long mSize;
     private String mModifiedTime;
-    private ConsoleRegion mRegion;
+    private DiscRegion mRegion;
     private EntryType mType;
     private CompatibilityRating mCompatibilityRating;
 
@@ -42,9 +42,9 @@ public class GameListEntry {
         mModifiedTime = modifiedTime;
 
         try {
-            mRegion = ConsoleRegion.valueOf(region);
+            mRegion = DiscRegion.valueOf(region);
         } catch (IllegalArgumentException e) {
-            mRegion = ConsoleRegion.NTSC_U;
+            mRegion = DiscRegion.NTSC_U;
         }
 
         try {
@@ -74,7 +74,7 @@ public class GameListEntry {
 
     public String getModifiedTime() { return mModifiedTime; }
 
-    public ConsoleRegion getRegion() {
+    public DiscRegion getRegion() {
         return mRegion;
     }
 
