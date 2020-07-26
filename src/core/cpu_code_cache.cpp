@@ -17,7 +17,8 @@ constexpr bool USE_BLOCK_LINKING = true;
 #ifdef WITH_RECOMPILER
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
-static u8 s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
+alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
+  s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
 static JitCodeBuffer s_code_buffer;
 #endif
 
@@ -54,8 +55,9 @@ void Initialize(bool use_recompiler)
 {
 #ifdef WITH_RECOMPILER
   s_use_recompiler = use_recompiler;
-  // s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
-  s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE);
+  // if (!s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
+  if (!s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE))
+    Panic("Failed to initialize code space");
 #else
   s_use_recompiler = false;
 #endif

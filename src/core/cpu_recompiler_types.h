@@ -74,6 +74,9 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 // Are shifts implicitly masked to 0..31?
 constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
 
+// Alignment of code stoarge.
+constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
+
 // ABI selection
 #if defined(WIN32)
 #define ABI_WIN64 1
@@ -101,6 +104,9 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
 // Are shifts implicitly masked to 0..31?
 constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
+
+// Alignment of code stoarge.
+constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
 #else
 

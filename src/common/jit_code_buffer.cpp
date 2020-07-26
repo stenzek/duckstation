@@ -68,13 +68,13 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
 #if defined(WIN32)
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
-    Panic("Failed to change protection of code space");
+    return false;
 
   m_code_ptr = static_cast<u8*>(buffer);
   m_old_protection = static_cast<u32>(old_protect);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
-    Panic("Failed to change protection of code space");
+    return false;
 
   // reasonable default?
   m_code_ptr = static_cast<u8*>(buffer);
