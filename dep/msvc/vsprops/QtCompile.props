@@ -13,6 +13,7 @@
     <QtPluginsDir>$(QTDIR)plugins\</QtPluginsDir>
     <QtToolOutDir>$(SolutionDir)build\$(ProjectName)-$(Platform)-$(Configuration)\</QtToolOutDir>
     <QtMocOutPrefix>$(QtToolOutDir)moc_</QtMocOutPrefix>
+    <QtTsOutDir>$(BinaryOutputDir)translations\</QtTsOutDir>
     <QtDebugSuffix>d</QtDebugSuffix>
     <QtLibSuffix Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='DebugFast'">$(QtDebugSuffix)</QtLibSuffix>
     <QtPluginFolder>QtPlugins</QtPluginFolder>
@@ -113,6 +114,9 @@
     <AvailableItemName Include="QtMoc">
       <Targets>QtMoc</Targets>
     </AvailableItemName>
+    <AvailableItemName Include="QtTs">
+      <Targets>QtTs</Targets>
+    </AvailableItemName>
   </ItemGroup>
 
   <!--Copy the needed dlls-->
@@ -156,5 +160,26 @@
       Lines="[Paths];Plugins = ./$(QtPluginFolder)"
       Overwrite="true"
     />
+  </Target>
+
+  <!--Compiles all translation files-->
+  <ItemGroup>
+    <TsFiles Include="$(MSBuildProjectDirectory)\**\*.ts" />
+  </ItemGroup>
+  <Target Name="QtTs"
+    BeforeTargets="ClCompile"
+    Inputs="@(TsFiles)"
+    Condition="'@(QtTs)'!=''"
+    Outputs="@(TsFiles->'$(QtTsOutDir)%(Filename).qm')">
+    <Message Text="lrelease %(TsFiles.Filename)" Importance="High" />
+    <Error Condition="!$(QtDirValid)" Text="QTDIR not set or non-existent (pull the submodule?)" />
+    <MakeDir Directories="$(QtTsOutDir)" />
+    <Exec Command="&quot;$(QtBinDir)lrelease.exe&quot; &quot;%(TsFiles.FullPath)&quot; -qm &quot;$(QtTsOutDir)%(TsFiles.Filename).qm&quot;" />
+  </Target>
+  <ItemGroup>
+    <TsOutputs Include="$(QtTsOutDir)*.qm" />
+  </ItemGroup>
+  <Target Name="QtTsClean">
+    <Delete Files="@(TsOutputs)" />
   </Target>
 </Project>
