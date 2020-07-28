@@ -155,9 +155,29 @@ void GPUSettingsWidget::setupAdditionalUi()
       QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
+  std::array<QString, GPU::MAX_RESOLUTION_SCALE + 1> resolution_suffixes = {{
+    QString(),          // auto
+    QString(),          // 1x
+    QString(),          // 2x
+    tr(" (for 720p)"),  // 3x
+    QString(),          // 4x
+    tr(" (for 1080p)"), // 5x
+    tr(" (for 1440p)"), // 6x
+    QString(),          // 7x
+    QString(),          // 8x
+    tr(" (for 4K)"),    // 9x
+    QString(),          // 10x
+    QString(),          // 11x
+    QString(),          // 12x
+    QString(),          // 13x
+    QString(),          // 14x
+    QString(),          // 15x
+    QString()           // 16x
+  }};
+
   m_ui.resolutionScale->addItem(tr("Automatic based on window size"));
   for (u32 i = 1; i <= GPU::MAX_RESOLUTION_SCALE; i++)
-    m_ui.resolutionScale->addItem(tr("%1x (%2x%3 VRAM)").arg(i).arg(GPU::VRAM_WIDTH * i).arg(GPU::VRAM_HEIGHT * i));
+    m_ui.resolutionScale->addItem(tr("%1x%2").arg(i).arg(resolution_suffixes[i]));
 }
 
 void GPUSettingsWidget::populateGPUAdapters()
