@@ -23,7 +23,9 @@ public class AndroidHostInterface
     // TODO: Find a better place for this.
     public native void setControllerType(int index, String typeName);
     public native void setControllerButtonState(int index, int buttonCode, boolean pressed);
+    public native void setControllerAxisState(int index, int axisCode, float value);
     public static native int getControllerButtonCode(String controllerType, String buttonName);
+    public static native int getControllerAxisCode(String controllerType, String axisName);
 
     public native void refreshGameList(boolean invalidateCache, boolean invalidateDatabase);
     public native GameListEntry[] getGameListEntries();

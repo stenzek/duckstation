@@ -11,6 +11,7 @@
 #include "core/system.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
+#include "frontend-common/imgui_styles.h"
 #include <android/native_window_jni.h>
 #include <cmath>
 #include <imgui.h>
@@ -195,8 +196,18 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
 
 void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surface, SystemBootParameters boot_params)
 {
+  JNIEnv* thread_env;
+  if (s_jvm->AttachCurrentThread(&thread_env, nullptr) != JNI_OK)
+  {
+    Log_ErrorPrintf("Failed to attach JNI to thread");
+    m_emulation_thread_start_result.store(false);
+    m_emulation_thread_started.Signal();
+    return;
+  }
+
   CreateImGuiContext();
   m_surface = initial_surface;
+  ApplySettings();
 
   // Boot system.
   if (!BootSystem(boot_params))
@@ -205,6 +216,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
     DestroyImGuiContext();
     m_emulation_thread_start_result.store(false);
     m_emulation_thread_started.Signal();
+    s_jvm->DetachCurrentThread();
     return;
   }
 
@@ -256,6 +268,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
 
   DestroySystem();
   DestroyImGuiContext();
+  s_jvm->DetachCurrentThread();
 }
 
 bool AndroidHostInterface::AcquireHostDisplay()
@@ -297,31 +310,6 @@ void AndroidHostInterface::ReleaseHostDisplay()
   m_display.reset();
 }
 
-std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBackend backend)
-{
-  std::unique_ptr<AudioStream> stream;
-
-  switch (m_settings.audio_backend)
-  {
-    case AudioBackend::Cubeb:
-      stream = AudioStream::CreateCubebAudioStream();
-      break;
-
-    default:
-      stream = AudioStream::CreateNullAudioStream();
-      break;
-  }
-
-  if (!stream)
-  {
-    ReportFormattedError("Failed to create %s audio stream, falling back to null",
-                         Settings::GetAudioBackendName(m_settings.audio_backend));
-    stream = AudioStream::CreateNullAudioStream();
-  }
-
-  return stream;
-}
-
 void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, int width, int height)
 {
   Log_InfoPrintf("SurfaceChanged %p %d %d %d", surface, format, width, height);
@@ -351,9 +339,16 @@ void AndroidHostInterface::CreateImGuiContext()
 {
   ImGui::CreateContext();
 
-  ImGui::GetIO().IniFilename = nullptr;
-  // ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-  // ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasGamepad;
+  const float framebuffer_scale = 2.0f;
+
+  auto& io = ImGui::GetIO();
+  io.IniFilename = nullptr;
+  io.DisplayFramebufferScale.x = framebuffer_scale;
+  io.DisplayFramebufferScale.y = framebuffer_scale;
+  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
+
+  ImGui::StyleColorsDarker();
+  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
 }
 
 void AndroidHostInterface::DestroyImGuiContext()
@@ -395,6 +390,22 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
       controller->SetButtonState(button_code, pressed);
     },
     false);
+}
+
+void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, float value)
+{
+  if (!IsEmulationThreadRunning())
+    return;
+
+  RunOnEmulationThread(
+      [this, index, button_code, value]() {
+        Controller* controller = m_system->GetController(index);
+        if (!controller)
+          return;
+
+        controller->SetAxisState(button_code, value);
+      },
+      false);
 }
 
 void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database)
@@ -541,6 +552,25 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobje
 
   std::optional<s32> code =
     Controller::GetButtonCodeByName(type.value(), AndroidHelpers::JStringToString(env, button_name));
+  return code.value_or(-1);
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerAxisState, jobject obj, jint index, jint button_code,
+                       jfloat value)
+{
+  AndroidHelpers::GetNativeClass(env, obj)->SetControllerAxisState(index, button_code, value);
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisCode, jobject unused, jstring controller_type,
+                       jstring axis_name)
+{
+  std::optional<ControllerType> type =
+      Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return -1;
+
+  std::optional<s32> code =
+      Controller::GetAxisCodeByName(type.value(), AndroidHelpers::JStringToString(env, axis_name));
   return code.value_or(-1);
 }
 

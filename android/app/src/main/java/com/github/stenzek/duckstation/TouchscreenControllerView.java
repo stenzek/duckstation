@@ -13,7 +13,6 @@ import android.widget.FrameLayout;
 public class TouchscreenControllerView extends FrameLayout implements TouchscreenControllerButtonView.ButtonStateChangedListener {
     private int mControllerIndex;
     private String mControllerType;
-    private AndroidHostInterface mHostInterface;
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -27,14 +26,9 @@ public class TouchscreenControllerView extends FrameLayout implements Touchscree
         super(context, attrs, defStyle);
     }
 
-    public void init(int controllerIndex, String controllerType,
-                     AndroidHostInterface hostInterface) {
+    public void init(int controllerIndex, String controllerType) {
         mControllerIndex = controllerIndex;
         mControllerType = controllerType;
-        mHostInterface = hostInterface;
-
-        if (mHostInterface != null)
-            mHostInterface.setControllerType(controllerIndex, controllerType);
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View view = inflater.inflate(R.layout.layout_touchscreen_controller, this, true);
@@ -62,25 +56,22 @@ public class TouchscreenControllerView extends FrameLayout implements Touchscree
         buttonView.setButtonName(buttonName);
         buttonView.setButtonStateChangedListener(this);
 
-        if (mHostInterface != null)
-        {
-            int code = mHostInterface.getControllerButtonCode(mControllerType, buttonName);
-            buttonView.setButtonCode(code);
-            Log.i("TouchscreenController", String.format("%s -> %d", buttonName, code));
+        int code = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonName);
+        buttonView.setButtonCode(code);
+        Log.i("TouchscreenController", String.format("%s -> %d", buttonName, code));
 
-            if (code < 0) {
-                Log.e("TouchscreenController", String.format("Unknown button name '%s' " +
-                        "for '%s'", buttonName, mControllerType));
-            }
+        if (code < 0) {
+            Log.e("TouchscreenController", String.format("Unknown button name '%s' " +
+                    "for '%s'", buttonName, mControllerType));
         }
     }
 
 
     @Override
     public void onButtonStateChanged(TouchscreenControllerButtonView view, boolean pressed) {
-        if (mHostInterface == null || view.getButtonCode() < 0)
+        if (view.getButtonCode() < 0)
             return;
 
-        mHostInterface.setControllerButtonState(mControllerIndex, view.getButtonCode(), pressed);
+        AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, view.getButtonCode(), pressed);
     }
 }

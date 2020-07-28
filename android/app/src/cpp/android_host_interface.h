@@ -43,6 +43,7 @@ public:
 
   void SetControllerType(u32 index, std::string_view type_name);
   void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
+  void SetControllerAxisState(u32 index, s32 button_code, float value);
 
   void RefreshGameList(bool invalidate_cache, bool invalidate_database);
   void ApplySettings();
@@ -54,7 +55,6 @@ protected:
 
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
-  std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
 
 private:
   void EmulationThreadEntryPoint(ANativeWindow* initial_surface, SystemBootParameters boot_params);

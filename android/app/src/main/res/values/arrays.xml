@@ -67,4 +67,12 @@
         <item>15</item>
         <item>16</item>
     </string-array>
+    <string-array name="settings_controller_type_entries">
+        <item>Digital Controller (Gamepad)</item>
+        <item>Analog Controller (DualShock)</item>
+    </string-array>
+    <string-array name="settings_controller_type_values">
+        <item>DigitalController</item>
+        <item>AnalogController</item>
+    </string-array>
 </resources>

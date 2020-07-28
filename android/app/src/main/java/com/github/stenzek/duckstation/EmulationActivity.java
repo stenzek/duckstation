@@ -38,6 +38,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         editor.putBoolean(key, value);
         editor.apply();
     }
+    private String getStringSetting(String key, String defaultValue) {
+        return mPreferences.getString(key, defaultValue);
+    }
 
     /**
      * Touchscreen controller overlay
@@ -154,15 +157,17 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
 
+        // Hook up controller input.
+        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
+        Log.i("EmulationActivity", "Controller type: " + controllerType);
+        mContentView.initControllerKeyMapping(controllerType);
+
         // Create touchscreen controller.
         FrameLayout activityLayout = findViewById(R.id.frameLayout);
         mTouchscreenController = new TouchscreenControllerView(this);
         activityLayout.addView(mTouchscreenController);
-        mTouchscreenController.init(0, "DigitalController", AndroidHostInterface.getInstance());
-        setTouchscreenControllerVisibility(true);
-
-        // Hook up controller input.
-        mContentView.initControllerKeyMapping("DigitalController");
+        mTouchscreenController.init(0, controllerType);
+        setTouchscreenControllerVisibility(getBooleanSetting("Controller1/EnableTouchscreenController", true));
     }
 
     @Override
@@ -181,6 +186,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         getMenuInflater().inflate(R.menu.menu_emulation, menu);
         menu.findItem(R.id.show_controller).setChecked(mTouchscreenControllerVisible);
         menu.findItem(R.id.enable_speed_limiter).setChecked(getBooleanSetting("Main/SpeedLimiterEnabled", true));
+        menu.findItem(R.id.show_controller).setChecked(getBooleanSetting("Controller1/EnableTouchscreenController", true));
         return true;
     }
 
