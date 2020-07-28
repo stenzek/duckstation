@@ -23,7 +23,9 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QEventLoop>
+#include <QtCore/QFile>
 #include <QtCore/QTimer>
+#include <QtCore/QTranslator>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
@@ -49,10 +51,19 @@ const char* QtHostInterface::GetFrontendName() const
   return "DuckStation Qt Frontend";
 }
 
+std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageList()
+{
+  return {{QStringLiteral("English"), QStringLiteral("")}};
+}
+
 bool QtHostInterface::Initialize()
 {
   createThread();
-  return m_worker_thread->waitForInit();
+  if (!m_worker_thread->waitForInit())
+    return false;
+
+  installTranslator();
+  return true;
 }
 
 void QtHostInterface::Shutdown()
@@ -80,6 +91,36 @@ void QtHostInterface::shutdownOnThread()
 {
   destroyBackgroundControllerPollTimer();
   CommonHostInterface::Shutdown();
+}
+
+void QtHostInterface::installTranslator()
+{
+  m_translator = std::make_unique<QTranslator>();
+
+  std::string language = GetStringSettingValue("Main", "Language", "");
+  if (language.empty())
+    return;
+
+  const QString path =
+    QStringLiteral("%1/translations/duckstation-qt_%3.qm").arg(qApp->applicationDirPath()).arg(language.c_str());
+  if (!QFile::exists(path))
+  {
+    QMessageBox::warning(
+      nullptr, QStringLiteral("Translation Error"),
+      QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(language.c_str()).arg(path));
+    return;
+  }
+
+  if (!m_translator->load(path))
+  {
+    QMessageBox::warning(
+      nullptr, QStringLiteral("Translation Error"),
+      QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(language.c_str()).arg(path));
+    return;
+  }
+
+  Log_InfoPrintf("Loaded translation file for language '%s'", language.c_str());
+  qApp->installTranslator(m_translator.get());
 }
 
 void QtHostInterface::ReportError(const char* message)

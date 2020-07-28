@@ -22,6 +22,7 @@ class QEventLoop;
 class QMenu;
 class QWidget;
 class QTimer;
+class QTranslator;
 
 class GameList;
 class INISettingsInterface;
@@ -94,6 +95,9 @@ public:
 
   /// Returns a path relative to the application directory (for system files).
   QString getProgramDirectoryRelativePath(const QString& arg) const;
+
+  /// Returns a list of supported languages and codes (suffixes for translation files).
+  static std::vector<std::pair<QString, QString>> getAvailableLanguageList();
 
 Q_SIGNALS:
   void errorReported(const QString& message);
@@ -213,6 +217,7 @@ private:
   void threadEntryPoint();
   bool initializeOnThread();
   void shutdownOnThread();
+  void installTranslator();
   void renderDisplay();
   void connectDisplaySignals(QtDisplayWidget* widget);
   void updateDisplayState();
@@ -221,6 +226,8 @@ private:
 
   std::unique_ptr<INISettingsInterface> m_settings_interface;
   std::recursive_mutex m_settings_mutex;
+
+  std::unique_ptr<QTranslator> m_translator;
 
   MainWindow* m_main_window = nullptr;
   QThread* m_original_thread = nullptr;

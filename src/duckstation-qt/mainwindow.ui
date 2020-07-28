@@ -90,6 +90,11 @@
       <string>Theme</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuSettingsLanguage">
+     <property name="title">
+      <string>Language</string>
+     </property>
+    </widget>
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionGeneralSettings"/>
@@ -106,6 +111,7 @@
     <addaction name="actionScanForNewGames"/>
     <addaction name="actionRescanAllGames"/>
     <addaction name="separator"/>
+    <addaction name="menuSettingsLanguage"/>
     <addaction name="menuSettingsTheme"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
