@@ -335,6 +335,12 @@ bool LibretroHostInterface::AcquireHostDisplay()
 
 void LibretroHostInterface::ReleaseHostDisplay()
 {
+  if (m_hw_render_display)
+  {
+    m_hw_render_display->DestroyRenderDevice();
+    m_hw_render_display.reset();
+  }
+
   m_display->DestroyRenderDevice();
   m_display.reset();
 }
