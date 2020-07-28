@@ -105,13 +105,12 @@ void SettingsDialog::onCategoryCurrentRowChanged(int row)
   m_ui.helpText->setText(m_category_help_text[row]);
 }
 
-void SettingsDialog::registerWidgetHelp(QObject* object, const char* title, const char* recommended_value,
-                                        const char* text)
+void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
 {
   // construct rich text with formatted description
   QString full_text;
   full_text += "<table width='100%' cellpadding='0' cellspacing='0'><tr><td><strong>";
-  full_text += tr(title);
+  full_text += title;
   full_text += "</strong></td><td align='right'><strong>";
   full_text += tr("Recommended Value");
   full_text += ": </strong>";

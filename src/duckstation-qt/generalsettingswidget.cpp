@@ -35,44 +35,49 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   onEnableSpeedLimiterStateChanged();
   onEmulationSpeedValueChanged(m_ui.emulationSpeed->value());
 
-  dialog->registerWidgetHelp(m_ui.confirmPowerOff, "Confirm Power Off", "Checked",
-                             "Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
-                             "when the hotkey is pressed.");
-  dialog->registerWidgetHelp(m_ui.saveStateOnExit, "Save State On Exit", "Checked",
-                             "Automatically saves the emulator state when powering down or exiting. You can then "
-                             "resume directly from where you left off next time.");
-  dialog->registerWidgetHelp(m_ui.startFullscreen, "Start Fullscreen", "Unchecked",
-                             "Automatically switches to fullscreen mode when a game is started.");
-  dialog->registerWidgetHelp(m_ui.renderToMain, "Render To Main Window", "Checked",
-                             "Renders the display of the simulated console to the main window of the application, over "
-                             "the game list. If unchecked, the display will render in a seperate window.");
-  dialog->registerWidgetHelp(m_ui.pauseOnStart, "Pause On Start", "Unchecked",
-                             "Pauses the emulator when a game is started.");
   dialog->registerWidgetHelp(
-    m_ui.loadDevicesFromSaveStates, "Load Devices From Save States", "Unchecked",
-    "When enabled, memory cards and controllers will be overwritten when save states are loaded. This can "
-    "result in lost saves, and controller type mismatches. For deterministic save states, enable this option, "
-    "otherwise leave disabled.");
-  dialog->registerWidgetHelp(m_ui.enableSpeedLimiter, "Enable Speed Limiter", "Checked",
-                             "Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will "
-                             "run as fast as possible, which may not be playable.");
-  dialog->registerWidgetHelp(m_ui.increaseTimerResolution, "Increase Timer Resolution", "Checked",
-                             "Increases the system timer resolution when emulation is started to provide more accurate "
-                             "frame pacing. May increase battery usage on laptops.");
-  dialog->registerWidgetHelp(m_ui.emulationSpeed, "Emulation Speed", "100%",
-                             "Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
-                             "and if not, the emulator will run as fast as it can manage.");
-  dialog->registerWidgetHelp(m_ui.showOSDMessages, "Show OSD Messages", "Checked",
-                             "Shows on-screen-display messages when events occur such as save states being "
-                             "created/loaded, screenshots being taken, etc.");
-  dialog->registerWidgetHelp(m_ui.showFPS, "Show FPS", "Unchecked",
-                             "Shows the internal frame rate of the game in the top-right corner of the display.");
-  dialog->registerWidgetHelp(m_ui.showVPS, "Show VPS", "Unchecked",
-                             "Shows the number of frames (or v-syncs) displayed per second by the system in the "
-                             "top-right corner of the display.");
+    m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
+    tr("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
+       "when the hotkey is pressed."));
+  dialog->registerWidgetHelp(m_ui.saveStateOnExit, tr("Save State On Exit"), tr("Checked"),
+                             tr("Automatically saves the emulator state when powering down or exiting. You can then "
+                                "resume directly from where you left off next time."));
+  dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
+                             tr("Automatically switches to fullscreen mode when a game is started."));
   dialog->registerWidgetHelp(
-    m_ui.showSpeed, "Show Speed", "Unchecked",
-    "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.");
+    m_ui.renderToMain, tr("Render To Main Window"), tr("Checked"),
+    tr("Renders the display of the simulated console to the main window of the application, over "
+       "the game list. If unchecked, the display will render in a separate window."));
+  dialog->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
+                             tr("Pauses the emulator when a game is started."));
+  dialog->registerWidgetHelp(
+    m_ui.loadDevicesFromSaveStates, tr("Load Devices From Save States"), tr("Unchecked"),
+    tr("When enabled, memory cards and controllers will be overwritten when save states are loaded. This can "
+       "result in lost saves, and controller type mismatches. For deterministic save states, enable this option, "
+       "otherwise leave disabled."));
+  dialog->registerWidgetHelp(
+    m_ui.enableSpeedLimiter, tr("Enable Speed Limiter"), tr("Checked"),
+    tr("Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will "
+       "run as fast as possible, which may not be playable."));
+  dialog->registerWidgetHelp(
+    m_ui.increaseTimerResolution, tr("Increase Timer Resolution"), tr("Checked"),
+    tr("Increases the system timer resolution when emulation is started to provide more accurate "
+       "frame pacing. May increase battery usage on laptops."));
+  dialog->registerWidgetHelp(
+    m_ui.emulationSpeed, tr("Emulation Speed"), "100%",
+    tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
+       "and if not, the emulator will run as fast as it can manage."));
+  dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
+                             tr("Shows on-screen-display messages when events occur such as save states being "
+                                "created/loaded, screenshots being taken, etc."));
+  dialog->registerWidgetHelp(m_ui.showFPS, tr("Show FPS"), tr("Unchecked"),
+                             tr("Shows the internal frame rate of the game in the top-right corner of the display."));
+  dialog->registerWidgetHelp(m_ui.showVPS, tr("Show VPS"), tr("Unchecked"),
+                             tr("Shows the number of frames (or v-syncs) displayed per second by the system in the "
+                                "top-right corner of the display."));
+  dialog->registerWidgetHelp(
+    m_ui.showSpeed, tr("Show Speed"), tr("Unchecked"),
+    tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
 #ifdef WITH_DISCORD_PRESENCE
@@ -81,8 +86,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "Main",
                                                  "EnableDiscordPresence");
     m_ui.formLayout_4->addWidget(enableDiscordPresence, m_ui.formLayout_4->rowCount(), 0);
-    dialog->registerWidgetHelp(enableDiscordPresence, "Enable Discord Presence", "Unchecked",
-                               "Shows the game you are currently playing as part of your profile in Discord.");
+    dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
+                               tr("Shows the game you are currently playing as part of your profile in Discord."));
   }
 #endif
 }

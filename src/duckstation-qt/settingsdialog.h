@@ -49,7 +49,7 @@ public:
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
   AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
 
-  void registerWidgetHelp(QObject* object, const char* title, const char* recommended_value, const char* text);
+  void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
   bool eventFilter(QObject* object, QEvent* event) override;
 
 public Q_SLOTS:
