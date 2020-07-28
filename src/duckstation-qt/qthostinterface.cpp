@@ -53,7 +53,7 @@ const char* QtHostInterface::GetFrontendName() const
 
 std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageList()
 {
-  return {{QStringLiteral("English"), QStringLiteral("")}, {QStringLiteral("Portuguese"), QStringLiteral("pt")}};
+  return {{QStringLiteral("English"), QStringLiteral("")}, {QStringLiteral("Portuguese (Br)"), QStringLiteral("pt")}};
 }
 
 bool QtHostInterface::Initialize()

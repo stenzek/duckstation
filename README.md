@@ -11,6 +11,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/07/28: Qt frontend supports displaying interface in multiple languages.
 - 2020/07/23: m3u multi-disc support for libretro core.
 - 2020/07/22: Support multiple bindings for each controller button/axis.
 - 2020/07/18: Widescreen hack enhancement added.
