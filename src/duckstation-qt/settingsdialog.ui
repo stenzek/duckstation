@@ -13,11 +13,17 @@
     <height>650</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>DuckStation Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icons.qrc">
+   <iconset resource="resources/resources.qrc">
     <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -28,9 +34,21 @@
      </property>
      <item row="0" column="0">
       <widget class="QListWidget" name="settingsCategory">
-       <property name="maximumSize">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
         <size>
          <width>230</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>400</width>
          <height>16777215</height>
         </size>
        </property>
@@ -45,7 +63,7 @@
          <string>General Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
         </property>
        </item>
@@ -54,7 +72,7 @@
          <string>Console Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
         </property>
        </item>
@@ -63,7 +81,7 @@
          <string>Game List Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
         </property>
        </item>
@@ -72,7 +90,7 @@
          <string>Hotkey Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
         </property>
        </item>
@@ -81,25 +99,25 @@
          <string>Controller Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
         </property>
-       </item> 
+       </item>
        <item>
         <property name="text">
          <string>Memory Card Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/media-flash.png</normaloff>:/icons/media-flash.png</iconset>
         </property>
-       </item> 
+       </item>
        <item>
         <property name="text">
          <string>GPU Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
         </property>
        </item>
@@ -108,7 +126,7 @@
          <string>Audio Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
         </property>
        </item>
@@ -117,7 +135,7 @@
          <string>Advanced Settings</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
         </property>
        </item>
@@ -125,6 +143,12 @@
      </item>
      <item row="0" column="1">
       <widget class="QStackedWidget" name="settingsContainer">
+       <property name="minimumSize">
+        <size>
+         <width>500</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
@@ -134,12 +158,9 @@
      </item>
      <item row="1" column="0" colspan="2">
       <widget class="QTextEdit" name="helpText">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
        <property name="minimumSize">
         <size>
-         <width>16777215</width>
+         <width>0</width>
          <height>120</height>
         </size>
        </property>
@@ -148,6 +169,9 @@
          <width>16777215</width>
          <height>120</height>
         </size>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -166,7 +190,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>
