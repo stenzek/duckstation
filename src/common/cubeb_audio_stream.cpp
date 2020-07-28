@@ -47,29 +47,37 @@ bool CubebAudioStream::OpenDevice()
 
   u32 latency_frames = 0;
   rv = cubeb_get_min_latency(m_cubeb_context, &params, &latency_frames);
-  if (rv != CUBEB_OK)
+  if (rv == CUBEB_ERROR_NOT_SUPPORTED)
   {
-    Log_ErrorPrintf("Could not get minimum latency: %d", rv);
-    DestroyContext();
-    return false;
-  }
-
-  Log_InfoPrintf("Minimum latency in frames: %u", latency_frames);
-  if (latency_frames > m_buffer_size)
-  {
-    Log_WarningPrintf("Minimum latency is above buffer size: %u vs %u, adjusting to compensate.", latency_frames,
-                      m_buffer_size);
-
-    if (!SetBufferSize(latency_frames))
-    {
-      Log_ErrorPrintf("Failed to set new buffer size of %u frames", latency_frames);
-      DestroyContext();
-      return false;
-    }
+    Log_WarningPrintf("Cubeb backend does not support latency queries, using buffer size of %u.", m_buffer_size);
+    latency_frames = m_buffer_size;
   }
   else
   {
-    latency_frames = m_buffer_size;
+    if (rv != CUBEB_OK)
+    {
+      Log_ErrorPrintf("Could not get minimum latency: %d", rv);
+      DestroyContext();
+      return false;
+    }
+
+    Log_InfoPrintf("Minimum latency in frames: %u", latency_frames);
+    if (latency_frames > m_buffer_size)
+    {
+      Log_WarningPrintf("Minimum latency is above buffer size: %u vs %u, adjusting to compensate.", latency_frames,
+                        m_buffer_size);
+
+      if (!SetBufferSize(latency_frames))
+      {
+        Log_ErrorPrintf("Failed to set new buffer size of %u frames", latency_frames);
+        DestroyContext();
+        return false;
+      }
+    }
+    else
+    {
+      latency_frames = m_buffer_size;
+    }
   }
 
   char stream_name[32];
