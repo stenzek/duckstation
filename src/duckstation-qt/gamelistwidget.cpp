@@ -42,6 +42,7 @@ public:
   GameListModel(GameList* game_list, QObject* parent = nullptr) : QAbstractTableModel(parent), m_game_list(game_list)
   {
     loadCommonImages();
+    setColumnDisplayNames();
   }
   ~GameListModel() = default;
 
@@ -183,8 +184,10 @@ public:
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= Column_Count)
       return {};
 
-    return tr(s_column_names[section]);
+    return m_column_display_names[section];
   }
+
+  ALWAYS_INLINE const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
 
   void refresh()
   {
@@ -220,7 +223,20 @@ private:
       m_compatibiliy_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i));
   }
 
+  void setColumnDisplayNames()
+  {
+    m_column_display_names[Column_Type] = tr("Type");
+    m_column_display_names[Column_Code] = tr("Code");
+    m_column_display_names[Column_Title] = tr("Title");
+    m_column_display_names[Column_FileTitle] = tr("File Title");
+    m_column_display_names[Column_Size] = tr("Size");
+    m_column_display_names[Column_Region] = tr("Region");
+    m_column_display_names[Column_Compatibility] = tr("Compatibility");
+  }
+
   GameList* m_game_list;
+
+  std::array<QString, Column_Count> m_column_display_names;
 
   QPixmap m_type_disc_pixmap;
   QPixmap m_type_exe_pixmap;
@@ -349,7 +365,7 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {
-    QAction* action = menu.addAction(tr(GameListModel::s_column_names[column]));
+    QAction* action = menu.addAction(m_table_model->getColumnDisplayName(column));
     action->setCheckable(true);
     action->setChecked(!m_table_view->isColumnHidden(column));
     connect(action, &QAction::toggled, [this, column](bool enabled) {
