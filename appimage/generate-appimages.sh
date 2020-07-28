@@ -48,6 +48,15 @@ for frontend in ${FRONTENDS[@]}; do
   cp -av ${DATA_DIR}/* ${CURRENT_APPDIR}/usr/bin
 done
 
+# Add translations into the AppDir.
+TRANSLATIONS_DIR=${BUILD_DIR}/bin/translations
+echo "Translation directory is: ${BUILD_DIR}"
+for frontend in ${FRONTENDS[@]}; do
+  CURRENT_APPDIR=${BUILD_DIR}/AppDir-duckstation-${frontend}
+  mkdir -p ${CURRENT_APPDIR}/usr/bin
+  cp -av ${TRANSLATIONS_DIR} ${CURRENT_APPDIR}/usr/bin
+done
+
 # Pass UPDATE_INFORMATION and OUTPUT variables (used by linuxdeploy-plugin-appimage)
 # to the environment of the linuxdeploy commands
 

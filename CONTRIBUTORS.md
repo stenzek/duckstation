@@ -5,6 +5,9 @@ The following people have contributed to the project in some way, and are credit
 - Connor McLaughlin - @stenzek
 - @ggrtk
 
+## Translators
+- Anderson Cardoso - Portuguese
+
 ## Game Compatibility Database
  - @Zet-sensei
  - @DarkFrost89

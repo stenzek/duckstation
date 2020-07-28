@@ -2,7 +2,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-add_executable(duckstation-qt
+set(SRCS
   resources/resources.qrc
   aboutdialog.cpp
   aboutdialog.h
@@ -57,6 +57,14 @@ add_executable(duckstation-qt
   settingsdialog.ui
 )
 
+set(TS_FILES
+  translations/duckstation-qt_pt.ts
+)
+
+set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
+qt5_add_translation(QM_FILES ${TS_FILES})
+
+add_executable(duckstation-qt ${SRCS} ${QM_FILES})
 target_include_directories(duckstation-qt PRIVATE "${Qt5Gui_PRIVATE_INCLUDE_DIRS}")
 target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
 

@@ -91,7 +91,7 @@ if(NOT ANDROID)
     find_package(SDL2 REQUIRED)
   endif()
   if(BUILD_QT_FRONTEND)
-    find_package(Qt5 COMPONENTS Core Gui Widgets Network REQUIRED)
+    find_package(Qt5 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
   endif()
 endif()
 

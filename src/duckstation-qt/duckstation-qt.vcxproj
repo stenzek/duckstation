@@ -179,6 +179,11 @@
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>
+  <ItemGroup>
+    <QtTs Include="translations\duckstation-qt_pt.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+  </ItemGroup>
   <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying common data files" Importance="High" />
     <Copy SourceFiles="@(CommonDataFiles)" DestinationFolder="$(BinaryOutputDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
