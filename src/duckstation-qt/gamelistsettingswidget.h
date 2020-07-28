@@ -21,6 +21,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void onDirectoryListItemClicked(const QModelIndex& index);
+  void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
   void onScanForNewGamesClicked();

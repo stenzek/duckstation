@@ -13,6 +13,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 #include <algorithm>
@@ -152,6 +153,14 @@ public:
     m_host_interface->refreshGameList(false);
   }
 
+  void openEntryInExplorer(QWidget* parent, int row) const
+  {
+    if (row < 0 || row >= static_cast<int>(m_entries.size()))
+      return;
+
+    QtUtils::OpenURL(parent, QUrl::fromLocalFile(m_entries[row].path));
+  }
+
   void loadFromSettings()
   {
     std::vector<std::string> path_list = m_host_interface->GetSettingStringList("GameList", "Paths");
@@ -212,8 +221,11 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
   m_ui.searchDirectoryList->horizontalHeader()->setHighlightSections(false);
   m_ui.searchDirectoryList->verticalHeader()->hide();
   m_ui.searchDirectoryList->setCurrentIndex({});
+  m_ui.searchDirectoryList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
   connect(m_ui.searchDirectoryList, &QTableView::clicked, this, &GameListSettingsWidget::onDirectoryListItemClicked);
+  connect(m_ui.searchDirectoryList, &QTableView::customContextMenuRequested, this,
+          &GameListSettingsWidget::onDirectoryListContextMenuRequested);
   connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this,
           &GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
   connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
@@ -244,6 +256,22 @@ void GameListSettingsWidget::onDirectoryListItemClicked(const QModelIndex& index
     return;
 
   m_search_directories_model->setEntryRecursive(row, !m_search_directories_model->isEntryRecursive(row));
+}
+
+void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& point)
+{
+  QModelIndexList selection = m_ui.searchDirectoryList->selectionModel()->selectedIndexes();
+  if (selection.size() < 1)
+    return;
+
+  const int row = selection[0].row();
+
+  QMenu menu;
+  menu.addAction(tr("Remove"), [this, row]() { m_search_directories_model->removeEntry(row); });
+  menu.addSeparator();
+  menu.addAction(tr("Open Directory..."),
+                 [this, row]() { m_search_directories_model->openEntryInExplorer(this, row); });
+  menu.exec(m_ui.searchDirectoryList->mapToGlobal(point));
 }
 
 void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
