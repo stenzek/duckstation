@@ -13,39 +13,11 @@
 
 static constexpr char DEFAULT_SETTING_HELP_TEXT[] = "";
 
-static constexpr std::array<const char*, static_cast<int>(SettingsDialog::Category::Count)> s_category_help_text = {
-  {"<strong>General Settings</strong><hr>These options control how the emulator looks and behaves.<br><br>Mouse over "
-   "an option for additional information.",
-   "<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
-   "console.<br><br>Mouse over an option for additional information.",
-   "<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by DuckStation "
-   "to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. "
-   "Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs "
-   "themselves do not provide title information.",
-   "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting or taking "
-   "screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will "
-   "start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button "
-   "is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To "
-   "bind multiple buttons, hold Shift and click the button.",
-   "<strong>Controller Settings</strong><hr>This page lets you choose the type of controller you wish to simulate for "
-   "the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a "
-   "countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press "
-   "any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, "
-   "the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift "
-   "and click the button.",
-   "<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
-   "function in, and where the images for these cards will be stored on disk.",
-   "<strong>GPU Settings</strong><hr>These options control the simulation of the GPU in the console. Various "
-   "enhancements are available, mouse over each for additional information.",
-   "<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for "
-   "additional information.",
-   "<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the emulator. Mouse "
-   "over an option for additional information."}};
-
 SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QDialog(parent), m_host_interface(host_interface)
 {
   m_ui.setupUi(this);
+  setCategoryHelpTexts();
 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -71,11 +43,52 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
 
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);
-  m_ui.helpText->setText(tr(s_category_help_text[0]));
+  m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
 }
 
 SettingsDialog::~SettingsDialog() = default;
+
+void SettingsDialog::setCategoryHelpTexts()
+{
+  m_category_help_text[static_cast<int>(Category::GeneralSettings)] = tr(
+    "<strong>General Settings</strong><hr>These options control how the emulator looks and behaves.<br><br>Mouse over "
+    "an option for additional information.");
+  m_category_help_text[static_cast<int>(Category::ConsoleSettings)] =
+    tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
+       "console.<br><br>Mouse over an option for additional information.");
+  m_category_help_text[static_cast<int>(Category::GameListSettings)] =
+    tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
+       "DuckStation "
+       "to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. "
+       "Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs "
+       "themselves do not provide title information.");
+  m_category_help_text[static_cast<int>(Category::HotkeySettings)] = tr(
+    "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting or taking "
+    "screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will "
+    "start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no "
+    "button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the "
+    "button. To  bind multiple buttons, hold Shift and click the button.");
+  m_category_help_text[static_cast<int>(Category::ControllerSettings)] = tr(
+    "<strong>Controller Settings</strong><hr>This page lets you choose the type of controller you wish to simulate for "
+    "the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start "
+    "a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, "
+    "press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer "
+    "lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold "
+    "Shift and click the button.");
+  m_category_help_text[static_cast<int>(Category::MemoryCardSettings)] =
+    tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
+       "function in, and where the images for these cards will be stored on disk.");
+  m_category_help_text[static_cast<int>(Category::GPUSettings)] =
+    tr("<strong>GPU Settings</strong><hr>These options control the simulation of the GPU in the console. Various "
+       "enhancements are available, mouse over each for additional information.");
+  m_category_help_text[static_cast<int>(Category::AudioSettings)] =
+    tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
+       "for additional information.");
+  m_category_help_text[static_cast<int>(Category::AdvancedSettings)] = tr(
+    "<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the emulator. Mouse "
+    "over an option for additional information.");
+}
 
 void SettingsDialog::setCategory(Category category)
 {
@@ -89,7 +102,7 @@ void SettingsDialog::onCategoryCurrentRowChanged(int row)
 {
   Q_ASSERT(row < static_cast<int>(Category::Count));
   m_ui.settingsContainer->setCurrentIndex(row);
-  m_ui.helpText->setText(tr(s_category_help_text[row]));
+  m_ui.helpText->setText(m_category_help_text[row]);
 }
 
 void SettingsDialog::registerWidgetHelp(QObject* object, const char* title, const char* recommended_value,
@@ -126,7 +139,7 @@ bool SettingsDialog::eventFilter(QObject* object, QEvent* event)
     if (m_current_help_widget)
     {
       m_current_help_widget = nullptr;
-      m_ui.helpText->setText(tr(s_category_help_text[m_ui.settingsCategory->currentRow()]));
+      m_ui.helpText->setText(m_category_help_text[m_ui.settingsCategory->currentRow()]);
     }
   }
 

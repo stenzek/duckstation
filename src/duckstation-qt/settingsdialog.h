@@ -1,8 +1,9 @@
 #pragma once
-
 #include "ui_settingsdialog.h"
 #include <QtCore/QMap>
+#include <QtCore/QString>
 #include <QtWidgets/QDialog>
+#include <array>
 
 class QtHostInterface;
 
@@ -58,6 +59,8 @@ private Q_SLOTS:
   void onCategoryCurrentRowChanged(int row);
 
 private:
+  void setCategoryHelpTexts();
+
   Ui::SettingsDialog m_ui;
 
   QtHostInterface* m_host_interface;
@@ -71,6 +74,8 @@ private:
   GPUSettingsWidget* m_gpu_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AdvancedSettingsWidget* m_advanced_settings = nullptr;
+
+  std::array<QString, static_cast<int>(Category::Count)> m_category_help_text;
 
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
