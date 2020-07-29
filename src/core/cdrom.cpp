@@ -1161,6 +1161,9 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM pause command");
       SendACKAndStat();
 
+      // Reset audio buffer here - control room cutscene audio repeats in Dino Crisis otherwise.
+      ResetAudioDecoder();
+
       m_drive_state = DriveState::Pausing;
       m_drive_event->Schedule(pause_time);
 
@@ -1544,6 +1547,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   Log_DebugPrintf("Starting reading @ LBA %u", m_current_lba);
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+  ResetAudioDecoder();
 
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
@@ -1552,8 +1556,6 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   m_drive_event->Schedule(first_sector_ticks);
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
-  ResetCurrentXAFile();
-  ResetAudioDecoder();
 
   m_reader.QueueReadSector(m_current_lba);
 }
@@ -1587,6 +1589,7 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool afte
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   ClearSectorBuffers();
+  ResetAudioDecoder();
 
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
@@ -1595,8 +1598,6 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool afte
   m_drive_event->Schedule(first_sector_ticks);
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
-  ResetAudioDecoder();
-  ResetCurrentXAFile();
 
   m_reader.QueueReadSector(m_current_lba);
 }
@@ -1620,6 +1621,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   m_secondary_status.motor_on = true;
   m_secondary_status.seeking = true;
   m_last_sector_header_valid = false;
+  ResetAudioDecoder();
 
   m_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   m_drive_event->SetIntervalAndSchedule(seek_time);
@@ -2148,6 +2150,8 @@ void CDROM::ResetCurrentXAFile()
 
 void CDROM::ResetAudioDecoder()
 {
+  ResetCurrentXAFile();
+
   m_xa_last_samples.fill(0);
   for (u32 i = 0; i < 2; i++)
   {
@@ -2185,10 +2189,10 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
       return;
     }
 
+    ResetAudioDecoder();
     m_xa_current_file_number = m_last_sector_subheader.file_number;
     m_xa_current_channel_number = m_last_sector_subheader.channel_number;
     m_xa_current_set = true;
-    ResetAudioDecoder();
   }
   else if (m_last_sector_subheader.file_number != m_xa_current_file_number ||
            m_last_sector_subheader.channel_number != m_xa_current_channel_number)
