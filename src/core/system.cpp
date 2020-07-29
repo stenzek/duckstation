@@ -1090,52 +1090,56 @@ void System::RunEvents()
 {
   DebugAssert(!m_running_events && !m_events.empty());
 
-  const TickCount pending_ticks = m_cpu->GetPendingTicks();
-  m_global_tick_counter += static_cast<u32>(pending_ticks);
-  m_cpu->ResetPendingTicks();
-
-  TickCount time = static_cast<TickCount>(m_global_tick_counter - m_last_event_run_time);
   m_running_events = true;
+
+  TickCount pending_ticks = (m_global_tick_counter + m_cpu->GetPendingTicks()) - m_last_event_run_time;
+  m_cpu->ResetPendingTicks();
+  while (pending_ticks > 0)
+  {
+    const TickCount time = std::min(pending_ticks, m_events[0]->m_downcount);
+    m_global_tick_counter += static_cast<u32>(time);
+    pending_ticks -= time;
+
+    // Apply downcount to all events.
+    // This will result in a negative downcount for those events which are late.
+    for (TimingEvent* evt : m_events)
+    {
+      evt->m_downcount -= time;
+      evt->m_time_since_last_run += time;
+    }
+
+    // Now we can actually run the callbacks.
+    while (m_events.front()->GetDowncount() <= 0)
+    {
+      TimingEvent* evt = m_events.front();
+      const TickCount ticks_late = -evt->m_downcount;
+      std::pop_heap(m_events.begin(), m_events.end(), CompareEvents);
+
+      // Factor late time into the time for the next invocation.
+      const TickCount ticks_to_execute = evt->m_time_since_last_run;
+      evt->m_downcount += evt->m_interval;
+      evt->m_time_since_last_run = 0;
+
+      // The cycles_late is only an indicator, it doesn't modify the cycles to execute.
+      evt->m_callback(ticks_to_execute, ticks_late);
+
+      // Place it in the appropriate position in the queue.
+      if (m_events_need_sorting)
+      {
+        // Another event may have been changed by this event, or the interval/downcount changed.
+        std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
+        m_events_need_sorting = false;
+      }
+      else
+      {
+        // Keep the event list in a heap. The event we just serviced will be in the last place,
+        // so we can use push_here instead of make_heap, which should be faster.
+        std::push_heap(m_events.begin(), m_events.end(), CompareEvents);
+      }
+    }
+  }
+
   m_last_event_run_time = m_global_tick_counter;
-
-  // Apply downcount to all events.
-  // This will result in a negative downcount for those events which are late.
-  for (TimingEvent* evt : m_events)
-  {
-    evt->m_downcount -= time;
-    evt->m_time_since_last_run += time;
-  }
-
-  // Now we can actually run the callbacks.
-  while (m_events.front()->GetDowncount() <= 0)
-  {
-    TimingEvent* evt = m_events.front();
-    const TickCount ticks_late = -evt->m_downcount;
-    std::pop_heap(m_events.begin(), m_events.end(), CompareEvents);
-
-    // Factor late time into the time for the next invocation.
-    const TickCount ticks_to_execute = evt->m_time_since_last_run;
-    evt->m_downcount += evt->m_interval;
-    evt->m_time_since_last_run = 0;
-
-    // The cycles_late is only an indicator, it doesn't modify the cycles to execute.
-    evt->m_callback(ticks_to_execute, ticks_late);
-
-    // Place it in the appropriate position in the queue.
-    if (m_events_need_sorting)
-    {
-      // Another event may have been changed by this event, or the interval/downcount changed.
-      std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
-      m_events_need_sorting = false;
-    }
-    else
-    {
-      // Keep the event list in a heap. The event we just serviced will be in the last place,
-      // so we can use push_here instead of make_heap, which should be faster.
-      std::push_heap(m_events.begin(), m_events.end(), CompareEvents);
-    }
-  }
-
   m_running_events = false;
   m_cpu->SetDowncount(m_events.front()->GetDowncount());
 }
