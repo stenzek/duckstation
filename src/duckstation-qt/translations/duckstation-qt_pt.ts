@@ -159,6 +159,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="152"/>
+        <location filename="../audiosettingswidget.cpp" line="53"/>
         <source>Mute</source>
         <translation type="unfinished">Mudo</translation>
     </message>
@@ -168,12 +169,68 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">100%</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="61"/>
+        <location filename="../audiosettingswidget.cpp" line="34"/>
+        <source>Audio Backend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="35"/>
+        <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="39"/>
+        <source>Buffer Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="40"/>
+        <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="45"/>
+        <source>Checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="46"/>
+        <source>Throttles the emulation speed based on the audio backend pulling audio frames. Sync will automatically be disabled if not running at 100% speed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="49"/>
+        <location filename="../audiosettingswidget.cpp" line="53"/>
+        <source>Unchecked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="50"/>
+        <source>Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="51"/>
+        <source>Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="52"/>
+        <source>Controls the volume of the audio played on the host. Values are in percentage.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="54"/>
+        <source>Prevents the emulator from producing any audible sound.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="64"/>
         <source>Maximum latency: %1 frames (%2ms)</source>
         <translation type="unfinished">Latência Máxima:%1 frames (%2ms)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="66"/>
+        <location filename="../audiosettingswidget.cpp" line="69"/>
         <source>%1%</source>
         <translation type="unfinished">%1%</translation>
     </message>
@@ -388,6 +445,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="58"/>
+        <location filename="../gpusettingswidget.cpp" line="64"/>
         <source>Use Debug Device</source>
         <translation type="unfinished">Usar Depuração para Dispositivo</translation>
     </message>
@@ -408,16 +466,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="94"/>
+        <location filename="../gpusettingswidget.cpp" line="83"/>
         <source>Linear Upscaling</source>
         <translation type="unfinished">Escalonamento Linear</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="101"/>
+        <location filename="../gpusettingswidget.cpp" line="88"/>
         <source>Integer Upscaling</source>
         <translation type="unfinished">Escalonamento Integro</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="108"/>
+        <location filename="../gpusettingswidget.cpp" line="92"/>
         <source>VSync</source>
         <translation type="unfinished">Sincronização Vertical (VSync)</translation>
     </message>
@@ -433,46 +494,200 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="134"/>
+        <location filename="../gpusettingswidget.cpp" line="102"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation type="unfinished">Renderização em (24 Cores, desativa o efeito dithering)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="141"/>
+        <location filename="../gpusettingswidget.cpp" line="109"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation type="unfinished">Dithering Escalonado, (escalona o padrão do dithering para a resolução)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="148"/>
+        <location filename="../gpusettingswidget.cpp" line="78"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation type="unfinished">Desativa o entrelaçamento(força rederização progressiva)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="155"/>
+        <location filename="../gpusettingswidget.cpp" line="113"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation type="unfinished">Força o temporizador rodar em NTSC(60hz em jogos EU)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="162"/>
+        <location filename="../gpusettingswidget.cpp" line="119"/>
         <source>Bilinear Texture Filtering</source>
         <translation type="unfinished">Filtragem de Textura Bilinear</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="169"/>
+        <location filename="../gpusettingswidget.cpp" line="125"/>
         <source>Widescreen Hack</source>
         <translation type="unfinished">Hack para Telas Widescreen</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="145"/>
+        <location filename="../gpusettingswidget.cpp" line="55"/>
+        <source>Renderer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="56"/>
+        <source>Chooses the backend to use for rendering tasks for the the console GPU. Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="61"/>
+        <source>Adapter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="62"/>
+        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. This option is only supported in Direct3D and Vulkan, OpenGL will always use the default device.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="64"/>
+        <location filename="../gpusettingswidget.cpp" line="78"/>
+        <location filename="../gpusettingswidget.cpp" line="88"/>
+        <location filename="../gpusettingswidget.cpp" line="102"/>
+        <location filename="../gpusettingswidget.cpp" line="113"/>
+        <location filename="../gpusettingswidget.cpp" line="119"/>
+        <location filename="../gpusettingswidget.cpp" line="125"/>
+        <source>Unchecked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="65"/>
+        <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="68"/>
+        <source>Aspect Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="69"/>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="72"/>
+        <source>Crop Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="72"/>
+        <source>Only Overscan Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="73"/>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects and may not display correctly with the All Borders setting. Only Overscan offers a good compromise between stability and hiding black borders.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="79"/>
+        <source>Forces the display of frames to progressive mode. This only affects the displayed image, the console will be unaware of the setting. If the game is internally producing interlaced frames, this option may not have any effect. Usually safe to enable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="83"/>
+        <location filename="../gpusettingswidget.cpp" line="92"/>
+        <location filename="../gpusettingswidget.cpp" line="109"/>
+        <source>Checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="84"/>
+        <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less noticable the higher the resolution scale.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="89"/>
+        <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="93"/>
+        <source>Enables synchronization with the host display when possible. Enabling this option will provide better frame pacing and smoother motion with fewer duplicated frames. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="97"/>
+        <source>Resolution Scale</source>
+        <translation type="unfinished">Escala de Resolução</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="98"/>
+        <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="103"/>
+        <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="110"/>
+        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="114"/>
+        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the framerate.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="120"/>
+        <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a greater effect on higher resolution scales. Currently this option produces artifacts around objects in many games and needs further work. Only applies to the hardware renderers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="126"/>
+        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="162"/>
+        <source> (for 720p)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="164"/>
+        <source> (for 1080p)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="165"/>
+        <source> (for 1440p)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="168"/>
+        <source> (for 4K)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="178"/>
         <source>Automatic based on window size</source>
         <translation type="unfinished">Automático, baseado no tamanho da janela aberta</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="147"/>
-        <source>%1x (%2x%3 VRAM)</source>
-        <translation type="unfinished">%1x (%2x%3 VRAM)</translation>
+        <location filename="../gpusettingswidget.cpp" line="180"/>
+        <source>%1x%2</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="175"/>
+        <source>%1x (%2x%3 VRAM)</source>
+        <translation type="obsolete">%1x (%2x%3 VRAM)</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="61"/>
+        <location filename="../gpusettingswidget.cpp" line="208"/>
         <source>(Default)</source>
         <translation type="unfinished">Padrão</translation>
     </message>
@@ -480,37 +695,37 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="226"/>
+        <location filename="../gamelistwidget.cpp" line="228"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="227"/>
+        <location filename="../gamelistwidget.cpp" line="229"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="228"/>
+        <location filename="../gamelistwidget.cpp" line="230"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="229"/>
+        <location filename="../gamelistwidget.cpp" line="231"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="230"/>
+        <location filename="../gamelistwidget.cpp" line="232"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="231"/>
+        <location filename="../gamelistwidget.cpp" line="233"/>
         <source>Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="232"/>
+        <location filename="../gamelistwidget.cpp" line="234"/>
         <source>Compatibility</source>
         <translation type="unfinished"></translation>
     </message>
@@ -772,36 +987,43 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
+        <location filename="../generalsettingswidget.cpp" line="51"/>
         <source>Pause On Start</source>
         <translation type="unfinished">Pausar ao Iniciar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
+        <location filename="../generalsettingswidget.cpp" line="39"/>
         <source>Confirm Power Off</source>
         <translation type="unfinished">Confirmar que Deseja Fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
+        <location filename="../generalsettingswidget.cpp" line="42"/>
         <source>Save State On Exit</source>
         <translation type="unfinished">Salvar ao Sair</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
+        <location filename="../generalsettingswidget.cpp" line="54"/>
         <source>Load Devices From Save States</source>
         <translation type="unfinished">Carregar a partir do estado salvo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
+        <location filename="../generalsettingswidget.cpp" line="45"/>
         <source>Start Fullscreen</source>
         <translation type="unfinished">Iniciar em Tela Cheia</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
+        <location filename="../generalsettingswidget.cpp" line="48"/>
         <source>Render To Main Window</source>
         <translation type="unfinished">Carregar Jogo na janela principal</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="83"/>
+        <location filename="../generalsettingswidget.cpp" line="67"/>
         <source>Emulation Speed</source>
         <translation type="unfinished">Velocidade da emulação</translation>
     </message>
@@ -812,11 +1034,13 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="128"/>
+        <location filename="../generalsettingswidget.cpp" line="59"/>
         <source>Enable Speed Limiter</source>
         <translation type="unfinished">Ativa Limitador de Velocidade</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="135"/>
+        <location filename="../generalsettingswidget.cpp" line="63"/>
         <source>Increase Timer Resolution</source>
         <translation type="unfinished">Aumentar Resolução em Tempo Real</translation>
     </message>
@@ -832,6 +1056,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="158"/>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Show FPS</source>
         <translatorcomment>Ah, que delicia cara rodando a 60 fps</translatorcomment>
         <translation type="unfinished">Mostar FPS</translation>
@@ -843,16 +1068,119 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="172"/>
+        <location filename="../generalsettingswidget.cpp" line="75"/>
         <source>Show VPS</source>
         <translation type="unfinished">Mostar VPS</translation>
     </message>
     <message>
+        <location filename="../generalsettingswidget.cpp" line="39"/>
+        <location filename="../generalsettingswidget.cpp" line="42"/>
+        <location filename="../generalsettingswidget.cpp" line="48"/>
+        <location filename="../generalsettingswidget.cpp" line="59"/>
+        <location filename="../generalsettingswidget.cpp" line="63"/>
+        <location filename="../generalsettingswidget.cpp" line="70"/>
+        <source>Checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="40"/>
+        <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="43"/>
+        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="45"/>
+        <location filename="../generalsettingswidget.cpp" line="51"/>
+        <location filename="../generalsettingswidget.cpp" line="54"/>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
+        <location filename="../generalsettingswidget.cpp" line="75"/>
+        <location filename="../generalsettingswidget.cpp" line="79"/>
+        <location filename="../generalsettingswidget.cpp" line="89"/>
+        <source>Unchecked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="46"/>
+        <source>Automatically switches to fullscreen mode when a game is started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="49"/>
+        <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="52"/>
+        <source>Pauses the emulator when a game is started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="55"/>
+        <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="60"/>
+        <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="64"/>
+        <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="70"/>
+        <source>Show OSD Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="71"/>
+        <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="74"/>
+        <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="76"/>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="79"/>
+        <source>Show Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../generalsettingswidget.cpp" line="80"/>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="85"/>
+        <location filename="../generalsettingswidget.cpp" line="89"/>
         <source>Enable Discord Presence</source>
         <translation type="unfinished">Ativar Presença Rica no Discord</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="99"/>
+        <location filename="../generalsettingswidget.cpp" line="90"/>
+        <source>Shows the game you are currently playing as part of your profile in Discord.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="104"/>
         <source>%1%</source>
         <translation type="unfinished">%1%</translation>
     </message>
@@ -1468,7 +1796,52 @@ não será possivel reverter esta ação.</translation>
         <translation type="unfinished">Config. Avançadas</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="103"/>
+        <location filename="../settingsdialog.cpp" line="54"/>
+        <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="58"/>
+        <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="61"/>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="66"/>
+        <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="72"/>
+        <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="80"/>
+        <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="83"/>
+        <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="86"/>
+        <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="88"/>
+        <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="115"/>
         <source>Recommended Value</source>
         <translation type="unfinished">Valor Recomendado</translation>
     </message>
