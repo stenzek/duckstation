@@ -75,4 +75,16 @@
         <item>DigitalController</item>
         <item>AnalogController</item>
     </string-array>
+    <string-array name="settings_memory_card_mode_entries">
+        <item>No Memory Card</item>
+        <item>Shared Between All Games</item>
+        <item>Separate Card Per Game (Game Code)</item>
+        <item>Separate Card Per Game (Game Title)</item>
+    </string-array>
+    <string-array name="settings_memory_card_mode_values">
+        <item>None</item>
+        <item>Shared</item>
+        <item>PerGame</item>
+        <item>PerGameTitle</item>
+    </string-array>
 </resources>

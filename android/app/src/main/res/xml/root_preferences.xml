@@ -156,5 +156,22 @@
             app:title="Display Touchscreen Controller"
             app:defaultValue="true" />
     </PreferenceCategory>
+  
+    <PreferenceCategory app:title="Memory Cards">
+        <ListPreference
+            app:key="MemoryCards/Card1Type"
+            app:title="Memory Card 1 Type"
+            app:entries="@array/settings_memory_card_mode_entries"
+            app:entryValues="@array/settings_memory_card_mode_values"
+            app:defaultValue="PerGameTitle"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:key="MemoryCards/Card2Type"
+            app:title="Memory Card 2 Type"
+            app:entries="@array/settings_memory_card_mode_entries"
+            app:entryValues="@array/settings_memory_card_mode_values"
+            app:defaultValue="None"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
