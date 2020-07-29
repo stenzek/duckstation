@@ -2342,7 +2342,7 @@ void CDROM::DrawDebugWindow()
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 500.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("CDROM State", &m_system->GetSettings().debugging.show_cdrom_state))
   {
     ImGui::End();
@@ -2513,6 +2513,8 @@ void CDROM::DrawDebugWindow()
     ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", m_cd_audio_volume_matrix[0][1],
                 ZeroExtend32(m_cd_audio_volume_matrix[0][1]) * 100 / 0x80, m_cd_audio_volume_matrix[1][1],
                 ZeroExtend32(m_cd_audio_volume_matrix[1][1]) * 100 / 0x80);
+
+    ImGui::Text("Audio FIFO Size: %u frames", m_audio_fifo.GetSize());
   }
 
   ImGui::End();
