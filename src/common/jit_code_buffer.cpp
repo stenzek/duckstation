@@ -18,7 +18,7 @@ JitCodeBuffer::JitCodeBuffer(u32 size, u32 far_code_size)
     Panic("Failed to allocate code space");
 }
 
-JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size)
+JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size, u32 guard_pages)
 {
   if (!Initialize(buffer, size, far_code_size))
     Panic("Failed to initialize code space");
@@ -61,20 +61,41 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   return true;
 }
 
-bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 */)
+bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 */, u32 guard_size /* = 0 */)
 {
   Destroy();
+
+  if ((far_code_size > 0 && guard_size >= far_code_size) || (far_code_size + (guard_size * 2)) > size)
+    return false;
 
 #if defined(WIN32)
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
     return false;
 
+  if (guard_size > 0)
+  {
+    DWORD old_guard_protect = 0;
+    u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
+    if (!VirtualProtect(buffer, guard_size, PAGE_NOACCESS, &old_guard_protect) ||
+        !VirtualProtect(guard_at_end, guard_size, PAGE_NOACCESS, &old_guard_protect))
+    {
+      return false;
+    }
+  }
+
   m_code_ptr = static_cast<u8*>(buffer);
   m_old_protection = static_cast<u32>(old_protect);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
     return false;
+
+  if (guard_size > 0)
+  {
+    u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
+    if (mprotect(buffer, guard_size, PROT_NONE) != 0 || mprotect(guard_at_end, guard_size, PROT_NONE) != 0)
+      return false;
+  }
 
   // reasonable default?
   m_code_ptr = static_cast<u8*>(buffer);
@@ -87,15 +108,16 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
     return false;
 
   m_total_size = size;
-  m_free_code_ptr = m_code_ptr;
-  m_code_size = size - far_code_size;
+  m_free_code_ptr = m_code_ptr + guard_size;
+  m_code_size = size - far_code_size - (guard_size * 2);
   m_code_used = 0;
 
   m_far_code_ptr = static_cast<u8*>(m_code_ptr) + m_code_size;
   m_free_far_code_ptr = m_far_code_ptr;
-  m_far_code_size = far_code_size;
+  m_far_code_size = far_code_size - guard_size;
   m_far_code_used = 0;
 
+  m_guard_size = guard_size;
   m_owns_buffer = false;
   return true;
 }
@@ -153,18 +175,18 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 
 void JitCodeBuffer::Reset()
 {
-  std::memset(m_code_ptr, 0, m_code_size);
-  FlushInstructionCache(m_code_ptr, m_code_size);
+  m_free_code_ptr = m_code_ptr + m_guard_size;
+  m_code_used = 0;
+  std::memset(m_free_code_ptr, 0, m_code_size);
+  FlushInstructionCache(m_free_code_ptr, m_code_size);
+
   if (m_far_code_size > 0)
   {
-    std::memset(m_far_code_ptr, 0, m_far_code_size);
-    FlushInstructionCache(m_far_code_ptr, m_far_code_size);
+    m_free_far_code_ptr = m_far_code_ptr;
+    m_far_code_used = 0;
+    std::memset(m_free_far_code_ptr, 0, m_far_code_size);
+    FlushInstructionCache(m_free_far_code_ptr, m_far_code_size);
   }
-  m_free_code_ptr = m_code_ptr;
-  m_code_used = 0;
-
-  m_free_far_code_ptr = m_far_code_ptr;
-  m_far_code_used = 0;
 }
 
 void JitCodeBuffer::Align(u32 alignment, u8 padding_value)

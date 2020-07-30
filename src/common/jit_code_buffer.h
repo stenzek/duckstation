@@ -6,11 +6,11 @@ class JitCodeBuffer
 public:
   JitCodeBuffer();
   JitCodeBuffer(u32 size, u32 far_code_size);
-  JitCodeBuffer(void* buffer, u32 size, u32 far_code_size);
+  JitCodeBuffer(void* buffer, u32 size, u32 far_code_size, u32 guard_size);
   ~JitCodeBuffer();
 
   bool Allocate(u32 size = 64 * 1024 * 1024, u32 far_code_size = 0);
-  bool Initialize(void* buffer, u32 size, u32 far_code_size = 0);
+  bool Initialize(void* buffer, u32 size, u32 far_code_size = 0, u32 guard_size = 0);
   void Destroy();
   void Reset();
 
@@ -41,6 +41,7 @@ private:
   u32 m_far_code_used = 0;
 
   u32 m_total_size = 0;
+  u32 m_guard_size = 0;
   u32 m_old_protection = 0;
   bool m_owns_buffer = false;
 };
