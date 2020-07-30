@@ -98,7 +98,7 @@ The main limitations are:
 To use:
  - Install and run the app for the first time.
  - This will create `/sdcard/duckstation`. Drop your BIOS files in `/sdcard/duckstation/bios`.
- - Add game directories by hitting the `+` icon and selecting a directory. Due to a bug you may need to restart the app for it to scan the directory.
+ - Add game directories by hitting the `+` icon and selecting a directory.
  - Tap a game to start.
 
 
