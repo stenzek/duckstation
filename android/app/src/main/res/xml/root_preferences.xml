@@ -57,22 +57,17 @@
 
     <PreferenceCategory app:title="@string/settings_behavior_header">
         <SwitchPreferenceCompat
-            app:key="General/SpeedLimiterEnabled"
+            app:key="Main/SpeedLimiterEnabled"
             app:title="@string/settings_behavior_enable_speed_limiter"
             app:defaultValue="true"
             app:useSimpleSummaryProvider="true" />
         <SwitchPreferenceCompat
-            app:key="General/StartPaused"
+            app:key="Main/StartPaused"
             app:title="@string/settings_behavior_pause_on_start"
             app:useSimpleSummaryProvider="true" />
         <SwitchPreferenceCompat
-            app:key="General/SyncToAudio"
+            app:key="Audio/Sync"
             app:title="@string/settings_host_synchronization_sync_to_audio"
-            app:defaultValue="true"
-            app:useSimpleSummaryProvider="true" />
-        <SwitchPreferenceCompat
-            app:key="General/SyncToVideo"
-            app:title="@string/settings_host_synchronization_sync_to_video"
             app:defaultValue="true"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
@@ -132,11 +127,40 @@
             app:title="@string/settings_gpu_true_color"
             app:defaultValue="false"/>
 
-        <SwitchPreferenceCompat
+    </PreferenceCategory>
+  
+    <PreferenceCategory app:title="Display">
+         <ListPreference
+            app:key="Display/CropMode"
+            app:title="Crop Mode"
+            app:entries="@array/settings_display_crop_mode_entries"
+            app:entryValues="@array/settings_display_crop_mode_values"
+            app:defaultValue="Overscan"
+            app:useSimpleSummaryProvider="true" />
+      
+         <ListPreference
+            app:key="Display/AspectRatio"
+            app:title="Aspect Ratio"
+            app:entries="@array/settings_display_aspect_ratio_names"
+            app:entryValues="@array/settings_display_aspect_ratio_values"
+            app:defaultValue="4:3"
+            app:useSimpleSummaryProvider="true" />]
+            
+         <SwitchPreferenceCompat
             app:key="Display/LinearFiltering"
-            app:title="@string/settings_gpu_display_linear_filtering"
+            app:title="Linear Upscaling"
             app:defaultValue="true"/>
-
+      
+         <SwitchPreferenceCompat
+            app:key="Display/IntegerScaling"
+            app:title="Integer Upscaling"
+            app:defaultValue="false"/>
+      
+         <SwitchPreferenceCompat
+            app:key="Display/VSync"
+            app:title="VSync"
+            app:defaultValue="true"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Controller">

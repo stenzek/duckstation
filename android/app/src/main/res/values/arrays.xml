@@ -67,6 +67,32 @@
         <item>15</item>
         <item>16</item>
     </string-array>
+    <string-array name="settings_display_crop_mode_entries">
+        <item>None</item>
+        <item>Overscan</item>
+        <item>Borders</item>
+    </string-array>
+    <string-array name="settings_display_crop_mode_values">
+        <item>None</item>
+        <item>Only Overscan Area</item>
+        <item>All Borders</item>
+    </string-array>
+      <string-array name="settings_display_aspect_ratio_names">
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>8:7</item>
+        <item>2:1 (VRAM 1:1)</item>
+        <item>1:1</item>
+        <item>PAR 1:1</item>
+    </string-array>
+    <string-array name="settings_display_aspect_ratio_values">
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>8:7</item>
+        <item>2:1 (VRAM 1:1)</item>
+        <item>1:1</item>
+        <item>PAR 1:1</item>
+    </string-array>
     <string-array name="settings_controller_type_entries">
         <item>Digital Controller (Gamepad)</item>
         <item>Analog Controller (DualShock)</item>
