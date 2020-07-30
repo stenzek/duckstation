@@ -208,6 +208,88 @@ public:
     return ascending ? (left.title < right.title) : (right.title < left.title);
   }
 
+  bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column, bool ascending) const
+  {
+    if (!left_index.isValid() || !right_index.isValid())
+      return false;
+
+    const int left_row = left_index.row();
+    const int right_row = right_index.row();
+    if (left_row < 0 || left_row >= static_cast<int>(m_game_list->GetEntryCount()) || right_row < 0 ||
+        right_row >= static_cast<int>(m_game_list->GetEntryCount()))
+    {
+      return false;
+    }
+
+    const GameListEntry& left = m_game_list->GetEntries()[left_row];
+    const GameListEntry& right = m_game_list->GetEntries()[right_row];
+    switch (column)
+    {
+      case Column_Type:
+      {
+        if (left.type == right.type)
+          return titlesLessThan(left_row, right_row, ascending);
+
+        return ascending ? (static_cast<int>(left.type) < static_cast<int>(right.type)) :
+                           (static_cast<int>(right.type) > static_cast<int>(left.type));
+      }
+
+      case Column_Code:
+      {
+        if (left.code == right.code)
+          return titlesLessThan(left_row, right_row, ascending);
+        return ascending ? (left.code < right.code) : (right.code > left.code);
+      }
+
+      case Column_Title:
+      {
+        if (left.title == right.title)
+          return titlesLessThan(left_row, right_row, ascending);
+
+        return ascending ? (left.title < right.title) : (right.title > left.title);
+      }
+
+      case Column_FileTitle:
+      {
+        const std::string_view file_title_left(GameList::GetTitleForPath(left.path.c_str()));
+        const std::string_view file_title_right(GameList::GetTitleForPath(right.path.c_str()));
+        if (file_title_left == file_title_right)
+          return titlesLessThan(left_row, right_row, ascending);
+
+        return ascending ? (file_title_left < file_title_right) : (file_title_right > file_title_left);
+      }
+
+      case Column_Region:
+      {
+        if (left.region == right.region)
+          return titlesLessThan(left_row, right_row, ascending);
+        return ascending ? (static_cast<int>(left.region) < static_cast<int>(right.region)) :
+                           (static_cast<int>(right.region) > static_cast<int>(left.region));
+      }
+
+      case Column_Compatibility:
+      {
+        if (left.compatibility_rating == right.compatibility_rating)
+          return titlesLessThan(left_row, right_row, ascending);
+
+        return ascending ?
+                 (static_cast<int>(left.compatibility_rating) < static_cast<int>(right.compatibility_rating)) :
+                 (static_cast<int>(right.compatibility_rating) > static_cast<int>(left.compatibility_rating));
+      }
+
+      case Column_Size:
+      {
+        if (left.total_size == right.total_size)
+          return titlesLessThan(left_row, right_row, ascending);
+
+        return ascending ? (left.total_size < right.total_size) : (right.total_size > left.total_size);
+      }
+
+      default:
+        return false;
+    }
+  }
+
 private:
   void loadCommonImages()
   {
@@ -262,13 +344,7 @@ public:
   bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override
   {
     const bool ascending = sortOrder() == Qt::AscendingOrder;
-    const QVariant left = source_left.data(Qt::InitialSortOrderRole);
-    const QVariant right = source_right.data(Qt::InitialSortOrderRole);
-    if (left != right)
-      return ascending ? (left < right) : (right > left);
-
-    // fallback to sorting by title for equal items
-    return m_model->titlesLessThan(source_left.row(), source_right.row(), ascending);
+    return m_model->lessThan(source_left, source_right, source_left.column(), ascending);
   }
 
 private:

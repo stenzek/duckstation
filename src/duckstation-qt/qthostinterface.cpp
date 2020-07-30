@@ -796,7 +796,7 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
 {
   const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
-  return qtime.toString(Qt::SystemLocaleShortDate);
+  return qtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat));
 }
 
 void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
@@ -846,6 +846,7 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
   load_state_menu->setEnabled(false);
 
   const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(game_code));
+  const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
   for (const SaveStateInfo& ssi : available_states)
   {
     if (ssi.global)
@@ -853,7 +854,7 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
 
     const s32 slot = ssi.slot;
     const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
-    const QString timestamp_str(timestamp.toString(Qt::SystemLocaleShortDate));
+    const QString timestamp_str(timestamp.toString(timestamp_format));
     const QString path(QString::fromStdString(ssi.path));
 
     QAction* action;
