@@ -27,13 +27,13 @@ bool GPU::Initialize(HostDisplay* host_display)
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
   m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
-  m_crtc_tick_event = g_system->CreateTimingEvent("GPU CRTC Tick", 1, 1,
-                                                  std::bind(&GPU::CRTCTickEvent, this, std::placeholders::_1), true);
-  m_command_tick_event = g_system->CreateTimingEvent(
+  m_crtc_tick_event = TimingEvents::CreateTimingEvent(
+    "GPU CRTC Tick", 1, 1, std::bind(&GPU::CRTCTickEvent, this, std::placeholders::_1), true);
+  m_command_tick_event = TimingEvents::CreateTimingEvent(
     "GPU Command Tick", 1, 1, std::bind(&GPU::CommandTickEvent, this, std::placeholders::_1), true);
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
-  m_console_is_pal = g_system->IsPALRegion();
+  m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
   return true;
 }
@@ -44,10 +44,10 @@ void GPU::UpdateSettings()
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
 
-  if (m_force_ntsc_timings != g_settings.gpu_force_ntsc_timings || m_console_is_pal != g_system->IsPALRegion())
+  if (m_force_ntsc_timings != g_settings.gpu_force_ntsc_timings || m_console_is_pal != System::IsPALRegion())
   {
     m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
-    m_console_is_pal = g_system->IsPALRegion();
+    m_console_is_pal = System::IsPALRegion();
     UpdateCRTCConfig();
   }
 
@@ -69,7 +69,7 @@ void GPU::SoftReset()
   FlushRender();
 
   m_GPUSTAT.bits = 0x14802000;
-  m_GPUSTAT.pal_mode = g_system->IsPALRegion();
+  m_GPUSTAT.pal_mode = System::IsPALRegion();
   m_drawing_area.Set(0, 0, 0, 0);
   m_drawing_area_changed = true;
   m_drawing_offset = {};
@@ -492,7 +492,7 @@ void GPU::UpdateCRTCConfig()
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
 
-  g_system->SetThrottleFrequency(ComputeVerticalFrequency());
+  System::SetThrottleFrequency(ComputeVerticalFrequency());
 
   UpdateCRTCDisplayParameters();
   UpdateCRTCTickEvent();
@@ -744,7 +744,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
         // flush any pending draws and "scan out" the image
         FlushRender();
         UpdateDisplay();
-        g_system->IncrementFrameNumber();
+        System::FrameDone();
 
         // switch fields early. this is needed so we draw to the correct one.
         if (m_GPUSTAT.vertical_interlace)
@@ -932,7 +932,7 @@ void GPU::WriteGP1(u32 value)
     {
       m_crtc_state.regs.display_address_start = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
       Log_DebugPrintf("Display address start <- 0x%08X", m_crtc_state.regs.display_address_start);
-      g_system->IncrementInternalFrameNumber();
+      System::IncrementInternalFrameNumber();
       UpdateCRTCDisplayParameters();
     }
     break;

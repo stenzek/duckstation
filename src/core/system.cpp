@@ -36,8 +36,6 @@ Log_SetChannel(System);
 #include <time.h>
 #endif
 
-std::unique_ptr<System> g_system;
-
 SystemBootParameters::SystemBootParameters() = default;
 
 SystemBootParameters::SystemBootParameters(std::string filename_) : filename(filename_) {}
@@ -51,19 +49,160 @@ SystemBootParameters::SystemBootParameters(const SystemBootParameters& copy)
 
 SystemBootParameters::~SystemBootParameters() = default;
 
-System::System()
+namespace System {
+
+static bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
+static bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image);
+static bool LoadPSF(const char* filename, std::vector<u8>& bios_image);
+static bool SetExpansionROM(const char* filename);
+
+/// Opens CD image, preloading if needed.
+static std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
+
+static bool DoLoadState(ByteStream* stream, bool force_software_renderer);
+static bool DoState(StateWrapper& sw);
+static bool CreateGPU(GPURenderer renderer);
+
+static bool Initialize(bool force_software_renderer);
+
+static void UpdateRunningGame(const char* path, CDImage* image);
+
+static State s_state = State::Shutdown;
+
+static ConsoleRegion s_region = ConsoleRegion::NTSC_U;
+static u32 s_frame_number = 1;
+static u32 s_internal_frame_number = 1;
+
+static std::string s_running_game_path;
+static std::string s_running_game_code;
+static std::string s_running_game_title;
+
+static float s_throttle_frequency = 60.0f;
+static s32 s_throttle_period = 0;
+static u64 s_last_throttle_time = 0;
+static Common::Timer s_throttle_timer;
+static Common::Timer s_speed_lost_time_timestamp;
+
+static float s_average_frame_time_accumulator = 0.0f;
+static float s_worst_frame_time_accumulator = 0.0f;
+
+static float s_vps = 0.0f;
+static float s_fps = 0.0f;
+static float s_speed = 0.0f;
+static float s_worst_frame_time = 0.0f;
+static float s_average_frame_time = 0.0f;
+static u32 s_last_frame_number = 0;
+static u32 s_last_internal_frame_number = 0;
+static u32 s_last_global_tick_counter = 0;
+static Common::Timer s_fps_timer;
+static Common::Timer s_frame_timer;
+
+// Playlist of disc images.
+std::vector<std::string> m_media_playlist;
+
+State GetState()
 {
-  m_region = g_settings.region;
-  m_cpu_execution_mode = g_settings.cpu_execution_mode;
+  return s_state;
 }
 
-System::~System()
+void SetState(State new_state)
 {
-  // we have to explicitly destroy components because they can deregister events
-  DestroyComponents();
+  Assert(s_state == State::Paused || s_state == State::Running);
+  Assert(new_state == State::Paused || new_state == State::Running);
+  s_state = new_state;
 }
 
-ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
+bool IsRunning()
+{
+  return s_state == State::Running;
+}
+
+bool IsPaused()
+{
+  return s_state == State::Paused;
+}
+
+bool IsShutdown()
+{
+  return s_state == State::Shutdown;
+}
+
+bool IsValid()
+{
+  return s_state != State::Shutdown;
+}
+
+ConsoleRegion GetRegion()
+{
+  return s_region;
+}
+
+bool IsPALRegion()
+{
+  return s_region == ConsoleRegion::PAL;
+}
+
+u32 GetFrameNumber()
+{
+  return s_frame_number;
+}
+
+u32 GetInternalFrameNumber()
+{
+  return s_internal_frame_number;
+}
+
+void FrameDone()
+{
+  s_frame_number++;
+  CPU::g_state.frame_done = true;
+}
+
+void IncrementInternalFrameNumber()
+{
+  s_internal_frame_number++;
+}
+
+const std::string& GetRunningPath()
+{
+  return s_running_game_path;
+}
+const std::string& GetRunningCode()
+{
+  return s_running_game_code;
+}
+
+const std::string& GetRunningTitle()
+{
+  return s_running_game_title;
+}
+
+float GetFPS()
+{
+  return s_fps;
+}
+float GetVPS()
+{
+  return s_vps;
+}
+float GetEmulationSpeed()
+{
+  return s_speed;
+}
+float GetAverageFrameTime()
+{
+  return s_average_frame_time;
+}
+float GetWorstFrameTime()
+{
+  return s_worst_frame_time;
+}
+float GetThrottleFrequency()
+{
+  return s_throttle_frequency;
+}
+
+ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
 {
   switch (region)
   {
@@ -80,17 +219,12 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
   }
 }
 
-std::unique_ptr<System> System::Create()
-{
-  return std::unique_ptr<System>(new System());
-}
-
-bool System::RecreateGPU(GPURenderer renderer)
+bool RecreateGPU(GPURenderer renderer)
 {
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
-  const bool state_valid = g_gpu->DoState(sw) && DoEventsState(sw);
+  const bool state_valid = g_gpu->DoState(sw) && TimingEvents::DoState(sw, TimingEvents::GetGlobalTickCounter());
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
 
@@ -107,24 +241,13 @@ bool System::RecreateGPU(GPURenderer renderer)
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
     g_gpu->DoState(sw);
-    DoEventsState(sw);
+    TimingEvents::DoState(sw, TimingEvents::GetGlobalTickCounter());
   }
 
   return true;
 }
 
-void System::UpdateGPUSettings()
-{
-  g_gpu->UpdateSettings();
-}
-
-void System::SetCPUExecutionMode(CPUExecutionMode mode)
-{
-  m_cpu_execution_mode = mode;
-  CPU::CodeCache::SetUseRecompiler(mode == CPUExecutionMode::Recompiler);
-}
-
-std::unique_ptr<CDImage> System::OpenCDImage(const char* path, bool force_preload)
+std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload)
 {
   std::unique_ptr<CDImage> media = CDImage::Open(path);
   if (!media)
@@ -143,10 +266,15 @@ std::unique_ptr<CDImage> System::OpenCDImage(const char* path, bool force_preloa
   return media;
 }
 
-bool System::Boot(const SystemBootParameters& params)
+bool Boot(const SystemBootParameters& params)
 {
+  Assert(s_state == State::Shutdown);
+  Assert(m_media_playlist.empty());
+  s_state = State::Starting;
+  s_region = g_settings.region;
+
   if (params.state_stream)
-    return DoLoadState(params.state_stream.get(), true, params.force_software_renderer);
+    return DoLoadState(params.state_stream.get(), params.force_software_renderer);
 
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> media;
@@ -159,10 +287,10 @@ bool System::Boot(const SystemBootParameters& params)
     if (exe_boot || psf_boot)
     {
       // TODO: Pull region from PSF
-      if (m_region == ConsoleRegion::Auto)
+      if (s_region == ConsoleRegion::Auto)
       {
         Log_InfoPrintf("Defaulting to NTSC-U region for executable.");
-        m_region = ConsoleRegion::NTSC_U;
+        s_region = ConsoleRegion::NTSC_U;
       }
     }
     else
@@ -174,6 +302,7 @@ bool System::Boot(const SystemBootParameters& params)
         if (m_media_playlist.empty())
         {
           g_host_interface->ReportFormattedError("Failed to parse playlist '%s'", params.filename.c_str());
+          Shutdown();
           return false;
         }
 
@@ -199,24 +328,25 @@ bool System::Boot(const SystemBootParameters& params)
       if (!media)
       {
         g_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
+        Shutdown();
         return false;
       }
 
-      if (m_region == ConsoleRegion::Auto)
+      if (s_region == ConsoleRegion::Auto)
       {
         const DiscRegion disc_region = GameList::GetRegionForImage(media.get());
         if (disc_region != DiscRegion::Other)
         {
-          m_region = GetConsoleRegionForDiscRegion(disc_region);
+          s_region = GetConsoleRegionForDiscRegion(disc_region);
           Log_InfoPrintf("Auto-detected console %s region for '%s' (region %s)",
-                         Settings::GetConsoleRegionName(m_region), params.filename.c_str(),
+                         Settings::GetConsoleRegionName(s_region), params.filename.c_str(),
                          Settings::GetDiscRegionName(disc_region));
         }
         else
         {
-          m_region = ConsoleRegion::NTSC_U;
+          s_region = ConsoleRegion::NTSC_U;
           Log_WarningPrintf("Could not determine console region for disc region %s. Defaulting to %s.",
-                            Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(m_region));
+                            Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_region));
         }
       }
     }
@@ -224,21 +354,25 @@ bool System::Boot(const SystemBootParameters& params)
   else
   {
     // Default to NTSC for BIOS boot.
-    if (m_region == ConsoleRegion::Auto)
-      m_region = ConsoleRegion::NTSC_U;
+    if (s_region == ConsoleRegion::Auto)
+      s_region = ConsoleRegion::NTSC_U;
   }
 
   // Load BIOS image.
-  std::optional<BIOS::Image> bios_image = g_host_interface->GetBIOSImage(m_region);
+  std::optional<BIOS::Image> bios_image = g_host_interface->GetBIOSImage(s_region);
   if (!bios_image)
   {
-    g_host_interface->ReportFormattedError("Failed to load %s BIOS", Settings::GetConsoleRegionName(m_region));
+    g_host_interface->ReportFormattedError("Failed to load %s BIOS", Settings::GetConsoleRegionName(s_region));
+    Shutdown();
     return false;
   }
 
   // Component setup.
-  if (!InitializeComponents(params.force_software_renderer))
+  if (!Initialize(params.force_software_renderer))
+  {
+    Shutdown();
     return false;
+  }
 
   // Notify change of disc.
   UpdateRunningGame(params.filename.c_str(), media.get());
@@ -255,11 +389,13 @@ bool System::Boot(const SystemBootParameters& params)
   if (exe_boot && !LoadEXE(params.filename.c_str(), *bios_image))
   {
     g_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
+    Shutdown();
     return false;
   }
   else if (psf_boot && !LoadPSF(params.filename.c_str(), *bios_image))
   {
     g_host_interface->ReportFormattedError("Failed to load PSF file '%s'", params.filename.c_str());
+    Shutdown();
     return false;
   }
 
@@ -276,18 +412,43 @@ bool System::Boot(const SystemBootParameters& params)
   Bus::SetBIOS(*bios_image);
 
   // Good to go.
+  s_state = State::Running;
   return true;
 }
 
-bool System::InitializeComponents(bool force_software_renderer)
+bool Initialize(bool force_software_renderer)
 {
-  const Settings& settings = g_settings;
-  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : settings.gpu_renderer))
-    return false;
+  s_frame_number = 1;
+  s_internal_frame_number = 1;
+
+  s_throttle_frequency = 60.0f;
+  s_throttle_period = 0;
+  s_last_throttle_time = 0;
+  s_throttle_timer.Reset();
+  s_speed_lost_time_timestamp.Reset();
+
+  s_average_frame_time_accumulator = 0.0f;
+  s_worst_frame_time_accumulator = 0.0f;
+
+  s_vps = 0.0f;
+  s_fps = 0.0f;
+  s_speed = 0.0f;
+  s_worst_frame_time = 0.0f;
+  s_average_frame_time = 0.0f;
+  s_last_frame_number = 0;
+  s_last_internal_frame_number = 0;
+  s_last_global_tick_counter = 0;
+  s_fps_timer.Reset();
+  s_frame_timer.Reset();
+
+  TimingEvents::Initialize();
 
   CPU::Initialize();
-  CPU::CodeCache::Initialize(m_cpu_execution_mode == CPUExecutionMode::Recompiler);
+  CPU::CodeCache::Initialize(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
   Bus::Initialize();
+
+  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer))
+    return false;
 
   g_dma.Initialize();
 
@@ -300,15 +461,15 @@ bool System::InitializeComponents(bool force_software_renderer)
   g_mdec.Initialize();
   g_sio.Initialize();
 
-  // load settings
-  GTE::SetWidescreenHack(settings.gpu_widescreen_hack);
-
   UpdateThrottlePeriod();
   return true;
 }
 
-void System::DestroyComponents()
+void Shutdown()
 {
+  if (s_state == State::Shutdown)
+    return;
+
   g_sio.Shutdown();
   g_mdec.Shutdown();
   g_spu.Shutdown();
@@ -321,9 +482,15 @@ void System::DestroyComponents()
   CPU::CodeCache::Shutdown();
   Bus::Shutdown();
   CPU::Shutdown();
+  TimingEvents::Shutdown();
+  s_running_game_code.clear();
+  s_running_game_path.clear();
+  s_running_game_title.clear();
+  m_media_playlist.clear();
+  s_state = State::Shutdown;
 }
 
-bool System::CreateGPU(GPURenderer renderer)
+bool CreateGPU(GPURenderer renderer)
 {
   switch (renderer)
   {
@@ -356,18 +523,23 @@ bool System::CreateGPU(GPURenderer renderer)
       return false;
   }
 
+  // we put this here rather than in Initialize() because of the virtual calls
+  g_gpu->Reset();
   return true;
 }
 
-bool System::DoState(StateWrapper& sw)
+bool DoState(StateWrapper& sw)
 {
   if (!sw.DoMarker("System"))
     return false;
 
-  sw.Do(&m_region);
-  sw.Do(&m_frame_number);
-  sw.Do(&m_internal_frame_number);
-  sw.Do(&m_global_tick_counter);
+  // TODO: Move this into timing state
+  u32 global_tick_counter = TimingEvents::GetGlobalTickCounter();
+
+  sw.Do(&s_region);
+  sw.Do(&s_frame_number);
+  sw.Do(&s_internal_frame_number);
+  sw.Do(&global_tick_counter);
 
   if (!sw.DoMarker("CPU") || !CPU::DoState(sw))
     return false;
@@ -405,13 +577,13 @@ bool System::DoState(StateWrapper& sw)
   if (!sw.DoMarker("SIO") || !g_sio.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Events") || !DoEventsState(sw))
+  if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw, global_tick_counter))
     return false;
 
   return !sw.HasError();
 }
 
-void System::Reset()
+void Reset()
 {
   CPU::Reset();
   CPU::CodeCache::Flush();
@@ -425,19 +597,21 @@ void System::Reset()
   g_spu.Reset();
   g_mdec.Reset();
   g_sio.Reset();
-  m_frame_number = 1;
-  m_internal_frame_number = 0;
-  m_global_tick_counter = 0;
-  m_last_event_run_time = 0;
+  s_frame_number = 1;
+  s_internal_frame_number = 0;
+  TimingEvents::Reset();
   ResetPerformanceCounters();
 }
 
-bool System::LoadState(ByteStream* state)
+bool LoadState(ByteStream* state)
 {
-  return DoLoadState(state, false, false);
+  if (IsShutdown())
+    return false;
+
+  return DoLoadState(state, false);
 }
 
-bool System::DoLoadState(ByteStream* state, bool init_components, bool force_software_renderer)
+bool DoLoadState(ByteStream* state, bool force_software_renderer)
 {
   SAVE_STATE_HEADER header;
   if (!state->Read2(&header, sizeof(header)))
@@ -479,9 +653,9 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
 
   UpdateRunningGame(media_filename.c_str(), media.get());
 
-  if (init_components)
+  if (s_state == State::Starting)
   {
-    if (!InitializeComponents(force_software_renderer))
+    if (!Initialize(force_software_renderer))
       return false;
 
     UpdateControllers();
@@ -513,11 +687,25 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
     return false;
 
   StateWrapper sw(state, StateWrapper::Mode::Read);
-  return DoState(sw);
+  if (!DoState(sw))
+  {
+    if (s_state == State::Starting)
+      Shutdown();
+
+    return false;
+  }
+
+  if (s_state == State::Starting)
+    s_state = State::Running;
+
+  return true;
 }
 
-bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
+bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
 {
+  if (IsShutdown())
+    return false;
+
   SAVE_STATE_HEADER header = {};
 
   const u64 header_position = state->GetPosition();
@@ -527,8 +715,8 @@ bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   // fill in header
   header.magic = SAVE_STATE_MAGIC;
   header.version = SAVE_STATE_VERSION;
-  StringUtil::Strlcpy(header.title, m_running_game_title.c_str(), sizeof(header.title));
-  StringUtil::Strlcpy(header.game_code, m_running_game_code.c_str(), sizeof(header.game_code));
+  StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
+  StringUtil::Strlcpy(header.game_code, s_running_game_code.c_str(), sizeof(header.game_code));
 
   if (g_cdrom.HasMedia())
   {
@@ -581,48 +769,32 @@ bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   return true;
 }
 
-void System::RunFrame()
+void RunFrame()
 {
-  m_frame_timer.Reset();
-  m_frame_done = false;
+  s_frame_timer.Reset();
 
-  // Duplicated to avoid branch in the while loop, as the downcount can be quite low at times.
-  if (m_cpu_execution_mode == CPUExecutionMode::Interpreter)
-  {
-    do
-    {
-      UpdateCPUDowncount();
-      CPU::Execute();
-      RunEvents();
-    } while (!m_frame_done);
-  }
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
+    CPU::Execute();
   else
-  {
-    do
-    {
-      UpdateCPUDowncount();
-      CPU::CodeCache::Execute();
-      RunEvents();
-    } while (!m_frame_done);
-  }
+    CPU::CodeCache::Execute();
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   g_spu.GeneratePendingSamples();
 }
 
-void System::SetThrottleFrequency(float frequency)
+void SetThrottleFrequency(float frequency)
 {
-  m_throttle_frequency = frequency;
+  s_throttle_frequency = frequency;
   UpdateThrottlePeriod();
 }
 
-void System::UpdateThrottlePeriod()
+void UpdateThrottlePeriod()
 {
-  m_throttle_period = static_cast<s32>(1000000000.0 / static_cast<double>(m_throttle_frequency) /
+  s_throttle_period = static_cast<s32>(1000000000.0 / static_cast<double>(s_throttle_frequency) /
                                        static_cast<double>(g_settings.emulation_speed));
 }
 
-void System::Throttle()
+void Throttle()
 {
   // Allow variance of up to 40ms either way.
   constexpr s64 MAX_VARIANCE_TIME = INT64_C(40000000);
@@ -631,24 +803,24 @@ void System::Throttle()
   constexpr s64 MINIMUM_SLEEP_TIME = INT64_C(1000000);
 
   // Use unsigned for defined overflow/wrap-around.
-  const u64 time = static_cast<u64>(m_throttle_timer.GetTimeNanoseconds());
-  const s64 sleep_time = static_cast<s64>(m_last_throttle_time - time);
+  const u64 time = static_cast<u64>(s_throttle_timer.GetTimeNanoseconds());
+  const s64 sleep_time = static_cast<s64>(s_last_throttle_time - time);
   if (sleep_time < -MAX_VARIANCE_TIME)
   {
 #ifndef _DEBUG
     // Don't display the slow messages in debug, it'll always be slow...
     // Limit how often the messages are displayed.
-    if (m_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
+    if (s_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
     {
       Log_WarningPrintf("System too slow, lost %.2f ms",
                         static_cast<double>(-sleep_time - MAX_VARIANCE_TIME) / 1000000.0);
-      m_speed_lost_time_timestamp.Reset();
+      s_speed_lost_time_timestamp.Reset();
     }
 #endif
-    m_last_throttle_time = 0;
-    m_throttle_timer.Reset();
+    s_last_throttle_time = 0;
+    s_throttle_timer.Reset();
   }
-  else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= m_throttle_period)
+  else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= s_throttle_period)
   {
 #ifdef WIN32
     Sleep(static_cast<u32>(sleep_time / 1000000));
@@ -658,52 +830,53 @@ void System::Throttle()
 #endif
   }
 
-  m_last_throttle_time += m_throttle_period;
+  s_last_throttle_time += s_throttle_period;
 }
 
-void System::UpdatePerformanceCounters()
+void UpdatePerformanceCounters()
 {
-  const float frame_time = static_cast<float>(m_frame_timer.GetTimeMilliseconds());
-  m_average_frame_time_accumulator += frame_time;
-  m_worst_frame_time_accumulator = std::max(m_worst_frame_time_accumulator, frame_time);
+  const float frame_time = static_cast<float>(s_frame_timer.GetTimeMilliseconds());
+  s_average_frame_time_accumulator += frame_time;
+  s_worst_frame_time_accumulator = std::max(s_worst_frame_time_accumulator, frame_time);
 
   // update fps counter
-  const float time = static_cast<float>(m_fps_timer.GetTimeSeconds());
+  const float time = static_cast<float>(s_fps_timer.GetTimeSeconds());
   if (time < 1.0f)
     return;
 
-  const float frames_presented = static_cast<float>(m_frame_number - m_last_frame_number);
+  const float frames_presented = static_cast<float>(s_frame_number - s_last_frame_number);
+  const u32 global_tick_counter = TimingEvents::GetGlobalTickCounter();
 
-  m_worst_frame_time = m_worst_frame_time_accumulator;
-  m_worst_frame_time_accumulator = 0.0f;
-  m_average_frame_time = m_average_frame_time_accumulator / frames_presented;
-  m_average_frame_time_accumulator = 0.0f;
-  m_vps = static_cast<float>(frames_presented / time);
-  m_last_frame_number = m_frame_number;
-  m_fps = static_cast<float>(m_internal_frame_number - m_last_internal_frame_number) / time;
-  m_last_internal_frame_number = m_internal_frame_number;
-  m_speed = static_cast<float>(static_cast<double>(m_global_tick_counter - m_last_global_tick_counter) /
+  s_worst_frame_time = s_worst_frame_time_accumulator;
+  s_worst_frame_time_accumulator = 0.0f;
+  s_average_frame_time = s_average_frame_time_accumulator / frames_presented;
+  s_average_frame_time_accumulator = 0.0f;
+  s_vps = static_cast<float>(frames_presented / time);
+  s_last_frame_number = s_frame_number;
+  s_fps = static_cast<float>(s_internal_frame_number - s_last_internal_frame_number) / time;
+  s_last_internal_frame_number = s_internal_frame_number;
+  s_speed = static_cast<float>(static_cast<double>(global_tick_counter - s_last_global_tick_counter) /
                                (static_cast<double>(MASTER_CLOCK) * time)) *
             100.0f;
-  m_last_global_tick_counter = m_global_tick_counter;
-  m_fps_timer.Reset();
+  s_last_global_tick_counter = global_tick_counter;
+  s_fps_timer.Reset();
 
   g_host_interface->OnSystemPerformanceCountersUpdated();
 }
 
-void System::ResetPerformanceCounters()
+void ResetPerformanceCounters()
 {
-  m_last_frame_number = m_frame_number;
-  m_last_internal_frame_number = m_internal_frame_number;
-  m_last_global_tick_counter = m_global_tick_counter;
-  m_average_frame_time_accumulator = 0.0f;
-  m_worst_frame_time_accumulator = 0.0f;
-  m_fps_timer.Reset();
-  m_throttle_timer.Reset();
-  m_last_throttle_time = 0;
+  s_last_frame_number = s_frame_number;
+  s_last_internal_frame_number = s_internal_frame_number;
+  s_last_global_tick_counter = TimingEvents::GetGlobalTickCounter();
+  s_average_frame_time_accumulator = 0.0f;
+  s_worst_frame_time_accumulator = 0.0f;
+  s_fps_timer.Reset();
+  s_throttle_timer.Reset();
+  s_last_throttle_time = 0;
 }
 
-bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
+bool LoadEXE(const char* filename, std::vector<u8>& bios_image)
 {
   std::FILE* fp = std::fopen(filename, "rb");
   if (!fp)
@@ -759,7 +932,7 @@ bool System::LoadEXE(const char* filename, std::vector<u8>& bios_image)
   return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
 }
 
-bool System::LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image)
+bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image)
 {
   const u8* buffer_ptr = static_cast<const u8*>(buffer);
   const u8* buffer_end = static_cast<const u8*>(buffer) + buffer_size;
@@ -810,7 +983,7 @@ bool System::LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<
   return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
 }
 
-bool System::LoadPSF(const char* filename, std::vector<u8>& bios_image)
+bool LoadPSF(const char* filename, std::vector<u8>& bios_image)
 {
   Log_InfoPrintf("Loading PSF file from '%s'", filename);
 
@@ -822,7 +995,7 @@ bool System::LoadPSF(const char* filename, std::vector<u8>& bios_image)
   return LoadEXEFromBuffer(exe_data.data(), static_cast<u32>(exe_data.size()), bios_image);
 }
 
-bool System::SetExpansionROM(const char* filename)
+bool SetExpansionROM(const char* filename)
 {
   std::FILE* fp = std::fopen(filename, "rb");
   if (!fp)
@@ -850,7 +1023,7 @@ bool System::SetExpansionROM(const char* filename)
   return true;
 }
 
-void System::StallCPU(TickCount ticks)
+void StallCPU(TickCount ticks)
 {
   CPU::AddPendingTicks(ticks);
 #if 0
@@ -859,12 +1032,12 @@ void System::StallCPU(TickCount ticks)
 #endif
 }
 
-Controller* System::GetController(u32 slot) const
+Controller* GetController(u32 slot)
 {
   return g_pad.GetController(slot);
 }
 
-void System::UpdateControllers()
+void UpdateControllers()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -883,7 +1056,7 @@ void System::UpdateControllers()
   }
 }
 
-void System::UpdateControllerSettings()
+void UpdateControllerSettings()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -893,7 +1066,7 @@ void System::UpdateControllerSettings()
   }
 }
 
-void System::ResetControllers()
+void ResetControllers()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -903,7 +1076,7 @@ void System::ResetControllers()
   }
 }
 
-void System::UpdateMemoryCards()
+void UpdateMemoryCards()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -918,7 +1091,7 @@ void System::UpdateMemoryCards()
 
       case MemoryCardType::PerGame:
       {
-        if (m_running_game_code.empty())
+        if (s_running_game_code.empty())
         {
           g_host_interface->AddFormattedOSDMessage(5.0f,
                                                    "Per-game memory card cannot be used for slot %u as the running "
@@ -928,14 +1101,14 @@ void System::UpdateMemoryCards()
         }
         else
         {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(m_running_game_code.c_str(), i));
+          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_code.c_str(), i));
         }
       }
       break;
 
       case MemoryCardType::PerGameTitle:
       {
-        if (m_running_game_title.empty())
+        if (s_running_game_title.empty())
         {
           g_host_interface->AddFormattedOSDMessage(5.0f,
                                                    "Per-game memory card cannot be used for slot %u as the running "
@@ -945,7 +1118,7 @@ void System::UpdateMemoryCards()
         }
         else
         {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(m_running_game_title.c_str(), i));
+          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_title.c_str(), i));
         }
       }
       break;
@@ -971,12 +1144,12 @@ void System::UpdateMemoryCards()
   }
 }
 
-bool System::HasMedia() const
+bool HasMedia()
 {
   return g_cdrom.HasMedia();
 }
 
-bool System::InsertMedia(const char* path)
+bool InsertMedia(const char* path)
 {
   std::unique_ptr<CDImage> image = OpenCDImage(path, false);
   if (!image)
@@ -984,8 +1157,8 @@ bool System::InsertMedia(const char* path)
 
   UpdateRunningGame(path, image.get());
   g_cdrom.InsertMedia(std::move(image));
-  Log_InfoPrintf("Inserted media from %s (%s, %s)", m_running_game_path.c_str(), m_running_game_code.c_str(),
-                 m_running_game_title.c_str());
+  Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_code.c_str(),
+                 s_running_game_title.c_str());
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
@@ -996,227 +1169,37 @@ bool System::InsertMedia(const char* path)
   return true;
 }
 
-void System::RemoveMedia()
+void RemoveMedia()
 {
   g_cdrom.RemoveMedia();
 }
 
-std::unique_ptr<TimingEvent> System::CreateTimingEvent(std::string name, TickCount period, TickCount interval,
-                                                       TimingEventCallback callback, bool activate)
+void UpdateRunningGame(const char* path, CDImage* image)
 {
-  std::unique_ptr<TimingEvent> event =
-    std::make_unique<TimingEvent>(std::move(name), period, interval, std::move(callback));
-  if (activate)
-    event->Activate();
-
-  return event;
-}
-
-static bool CompareEvents(const TimingEvent* lhs, const TimingEvent* rhs)
-{
-  return lhs->GetDowncount() > rhs->GetDowncount();
-}
-
-void System::AddActiveEvent(TimingEvent* event)
-{
-  m_events.push_back(event);
-  if (!m_running_events)
-  {
-    std::push_heap(m_events.begin(), m_events.end(), CompareEvents);
-    if (!m_frame_done)
-      UpdateCPUDowncount();
-  }
-  else
-  {
-    m_events_need_sorting = true;
-  }
-}
-
-void System::RemoveActiveEvent(TimingEvent* event)
-{
-  auto iter = std::find_if(m_events.begin(), m_events.end(), [event](const auto& it) { return event == it; });
-  if (iter == m_events.end())
-  {
-    Panic("Attempt to remove inactive event");
-    return;
-  }
-
-  m_events.erase(iter);
-  if (!m_running_events)
-  {
-    std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
-    if (!m_events.empty() && !m_frame_done)
-      UpdateCPUDowncount();
-  }
-  else
-  {
-    m_events_need_sorting = true;
-  }
-}
-
-void System::SortEvents()
-{
-  if (!m_running_events)
-  {
-    std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
-    if (!m_frame_done)
-      UpdateCPUDowncount();
-  }
-  else
-  {
-    m_events_need_sorting = true;
-  }
-}
-
-void System::RunEvents()
-{
-  DebugAssert(!m_running_events && !m_events.empty());
-
-  m_running_events = true;
-
-  TickCount pending_ticks = (m_global_tick_counter + CPU::GetPendingTicks()) - m_last_event_run_time;
-  CPU::ResetPendingTicks();
-  while (pending_ticks > 0)
-  {
-    const TickCount time = std::min(pending_ticks, m_events[0]->m_downcount);
-    m_global_tick_counter += static_cast<u32>(time);
-    pending_ticks -= time;
-
-    // Apply downcount to all events.
-    // This will result in a negative downcount for those events which are late.
-    for (TimingEvent* evt : m_events)
-    {
-      evt->m_downcount -= time;
-      evt->m_time_since_last_run += time;
-    }
-
-    // Now we can actually run the callbacks.
-    while (m_events.front()->GetDowncount() <= 0)
-    {
-      TimingEvent* evt = m_events.front();
-      const TickCount ticks_late = -evt->m_downcount;
-      std::pop_heap(m_events.begin(), m_events.end(), CompareEvents);
-
-      // Factor late time into the time for the next invocation.
-      const TickCount ticks_to_execute = evt->m_time_since_last_run;
-      evt->m_downcount += evt->m_interval;
-      evt->m_time_since_last_run = 0;
-
-      // The cycles_late is only an indicator, it doesn't modify the cycles to execute.
-      evt->m_callback(ticks_to_execute, ticks_late);
-
-      // Place it in the appropriate position in the queue.
-      if (m_events_need_sorting)
-      {
-        // Another event may have been changed by this event, or the interval/downcount changed.
-        std::make_heap(m_events.begin(), m_events.end(), CompareEvents);
-        m_events_need_sorting = false;
-      }
-      else
-      {
-        // Keep the event list in a heap. The event we just serviced will be in the last place,
-        // so we can use push_here instead of make_heap, which should be faster.
-        std::push_heap(m_events.begin(), m_events.end(), CompareEvents);
-      }
-    }
-  }
-
-  m_last_event_run_time = m_global_tick_counter;
-  m_running_events = false;
-  CPU::SetDowncount(m_events.front()->GetDowncount());
-}
-
-void System::UpdateCPUDowncount()
-{
-  CPU::SetDowncount(m_events[0]->GetDowncount());
-}
-
-bool System::DoEventsState(StateWrapper& sw)
-{
-  if (sw.IsReading())
-  {
-    // Load timestamps for the clock events.
-    // Any oneshot events should be recreated by the load state method, so we can fix up their times here.
-    u32 event_count = 0;
-    sw.Do(&event_count);
-
-    for (u32 i = 0; i < event_count; i++)
-    {
-      std::string event_name;
-      TickCount downcount, time_since_last_run, period, interval;
-      sw.Do(&event_name);
-      sw.Do(&downcount);
-      sw.Do(&time_since_last_run);
-      sw.Do(&period);
-      sw.Do(&interval);
-      if (sw.HasError())
-        return false;
-
-      TimingEvent* event = FindActiveEvent(event_name.c_str());
-      if (!event)
-      {
-        Log_WarningPrintf("Save state has event '%s', but couldn't find this event when loading.", event_name.c_str());
-        continue;
-      }
-
-      // Using reschedule is safe here since we call sort afterwards.
-      event->m_downcount = downcount;
-      event->m_time_since_last_run = time_since_last_run;
-      event->m_period = period;
-      event->m_interval = interval;
-    }
-
-    sw.Do(&m_last_event_run_time);
-
-    Log_DevPrintf("Loaded %u events from save state.", event_count);
-    SortEvents();
-  }
-  else
-  {
-    u32 event_count = static_cast<u32>(m_events.size());
-    sw.Do(&event_count);
-
-    for (TimingEvent* evt : m_events)
-    {
-      sw.Do(&evt->m_name);
-      sw.Do(&evt->m_downcount);
-      sw.Do(&evt->m_time_since_last_run);
-      sw.Do(&evt->m_period);
-      sw.Do(&evt->m_interval);
-    }
-
-    sw.Do(&m_last_event_run_time);
-
-    Log_DevPrintf("Wrote %u events to save state.", event_count);
-  }
-
-  return !sw.HasError();
-}
-
-TimingEvent* System::FindActiveEvent(const char* name)
-{
-  auto iter =
-    std::find_if(m_events.begin(), m_events.end(), [&name](auto& ev) { return ev->GetName().compare(name) == 0; });
-
-  return (iter != m_events.end()) ? *iter : nullptr;
-}
-
-void System::UpdateRunningGame(const char* path, CDImage* image)
-{
-  m_running_game_path.clear();
-  m_running_game_code.clear();
-  m_running_game_title.clear();
+  s_running_game_path.clear();
+  s_running_game_code.clear();
+  s_running_game_title.clear();
 
   if (path && std::strlen(path) > 0)
   {
-    m_running_game_path = path;
-    g_host_interface->GetGameInfo(path, image, &m_running_game_code, &m_running_game_title);
+    s_running_game_path = path;
+    g_host_interface->GetGameInfo(path, image, &s_running_game_code, &s_running_game_title);
   }
 
   g_host_interface->OnRunningGameChanged();
 }
 
-u32 System::GetMediaPlaylistIndex() const
+u32 GetMediaPlaylistCount()
+{
+  return static_cast<u32>(m_media_playlist.size());
+}
+
+const std::string& GetMediaPlaylistPath(u32 index)
+{
+  return m_media_playlist[index];
+}
+
+u32 GetMediaPlaylistIndex()
 {
   if (!g_cdrom.HasMedia())
     return std::numeric_limits<u32>::max();
@@ -1231,7 +1214,7 @@ u32 System::GetMediaPlaylistIndex() const
   return std::numeric_limits<u32>::max();
 }
 
-bool System::AddMediaPathToPlaylist(const std::string_view& path)
+bool AddMediaPathToPlaylist(const std::string_view& path)
 {
   if (std::any_of(m_media_playlist.begin(), m_media_playlist.end(),
                   [&path](const std::string& p) { return (path == p); }))
@@ -1243,7 +1226,7 @@ bool System::AddMediaPathToPlaylist(const std::string_view& path)
   return true;
 }
 
-bool System::RemoveMediaPathFromPlaylist(const std::string_view& path)
+bool RemoveMediaPathFromPlaylist(const std::string_view& path)
 {
   for (u32 i = 0; i < static_cast<u32>(m_media_playlist.size()); i++)
   {
@@ -1254,7 +1237,7 @@ bool System::RemoveMediaPathFromPlaylist(const std::string_view& path)
   return false;
 }
 
-bool System::RemoveMediaPathFromPlaylist(u32 index)
+bool RemoveMediaPathFromPlaylist(u32 index)
 {
   if (index >= static_cast<u32>(m_media_playlist.size()))
     return false;
@@ -1269,7 +1252,7 @@ bool System::RemoveMediaPathFromPlaylist(u32 index)
   return true;
 }
 
-bool System::ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
+bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
 {
   if (index >= static_cast<u32>(m_media_playlist.size()))
     return false;
@@ -1290,7 +1273,7 @@ bool System::ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& pat
   return true;
 }
 
-bool System::SwitchMediaFromPlaylist(u32 index)
+bool SwitchMediaFromPlaylist(u32 index)
 {
   if (index >= m_media_playlist.size())
     return false;
@@ -1301,3 +1284,5 @@ bool System::SwitchMediaFromPlaylist(u32 index)
 
   return InsertMedia(path.c_str());
 }
+
+} // namespace System

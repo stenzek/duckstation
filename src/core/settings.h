@@ -146,6 +146,9 @@ struct Settings
   bool log_to_window = false;
   bool log_to_file = false;
 
+  ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
+  ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
+
   bool HasAnyPerGameMemoryCards() const;
 
   enum : u32

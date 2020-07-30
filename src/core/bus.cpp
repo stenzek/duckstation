@@ -104,7 +104,7 @@ ALWAYS_INLINE static void FixupUnalignedWordAccessW32(u32& offset, u32& value)
 
 void Initialize()
 {
-  //
+  Reset();
 }
 
 void Shutdown()
@@ -125,6 +125,7 @@ void Reset()
   m_MEMCTRL.exp2_delay_size.bits = 0x00070777;
   m_MEMCTRL.common_delay.bits = 0x00031125;
   m_ram_size_reg = UINT32_C(0x00000B88);
+  m_ram_code_bits = {};
   RecalculateMemoryTimings();
 }
 
@@ -143,7 +144,10 @@ bool DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void SetExpansionROM(std::vector<u8> data) { m_exp1_rom = std::move(data); }
+void SetExpansionROM(std::vector<u8> data)
+{
+  m_exp1_rom = std::move(data);
+}
 
 void SetBIOS(const std::vector<u8>& image)
 {

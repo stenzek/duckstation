@@ -42,12 +42,12 @@ void SaveStateSelectorUI::RefreshList()
 {
   ClearList();
 
-  if (g_system && !g_system->GetRunningCode().empty())
+  if (!System::GetRunningCode().empty())
   {
     for (s32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
     {
       std::optional<CommonHostInterface::ExtendedSaveStateInfo> ssi =
-        m_host_interface->GetExtendedSaveStateInfo(g_system->GetRunningCode().c_str(), i);
+        m_host_interface->GetExtendedSaveStateInfo(System::GetRunningCode().c_str(), i);
 
       ListEntry li;
       if (ssi)

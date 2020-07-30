@@ -6,7 +6,6 @@
 #include <string>
 #include <string_view>
 
-class System;
 class TimingEvent;
 
 class MemoryCard final

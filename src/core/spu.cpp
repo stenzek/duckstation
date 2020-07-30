@@ -19,11 +19,13 @@ SPU::~SPU() = default;
 
 void SPU::Initialize()
 {
-  m_tick_event = g_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
-                                             std::bind(&SPU::Execute, this, std::placeholders::_1), false);
+  m_tick_event = TimingEvents::CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
+                                                 std::bind(&SPU::Execute, this, std::placeholders::_1), false);
   m_transfer_event =
-    g_system->CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
-                                std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
+    TimingEvents::CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
+                                    std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
+
+  Reset();
 }
 
 void SPU::Shutdown()
@@ -86,6 +88,7 @@ void SPU::Reset()
   }
 
   m_transfer_fifo.Clear();
+  m_transfer_event->Deactivate();
   m_ram.fill(0);
   UpdateEventInterval();
 }

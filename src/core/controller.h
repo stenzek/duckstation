@@ -9,7 +9,6 @@
 #include <vector>
 
 class StateWrapper;
-class System;
 class HostInterface;
 
 class Controller

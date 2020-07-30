@@ -41,6 +41,7 @@ struct State
   bool branch_was_taken = false;
   bool exception_raised = false;
   bool interrupt_delay = false;
+  bool frame_done = false;
 
   // load delays
   Reg load_delay_reg = Reg::count;
@@ -72,9 +73,6 @@ ALWAYS_INLINE Registers& GetRegs() { return g_state.regs; }
 ALWAYS_INLINE TickCount GetPendingTicks() { return g_state.pending_ticks; }
 ALWAYS_INLINE void ResetPendingTicks() { g_state.pending_ticks = 0; }
 ALWAYS_INLINE void AddPendingTicks(TickCount ticks) { g_state.pending_ticks += ticks; }
-
-ALWAYS_INLINE TickCount GetDowncount() { return g_state.downcount; }
-ALWAYS_INLINE void SetDowncount(TickCount downcount) { g_state.downcount = downcount; }
 
 // state helpers
 ALWAYS_INLINE bool InUserMode() { return g_state.cop0_regs.sr.KUc; }

@@ -5,6 +5,7 @@
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
+#include "timing_event.h"
 #include <cstdio>
 Log_SetChannel(CPU::Core);
 
@@ -229,15 +230,17 @@ void SetExternalInterrupt(u8 bit)
   g_state.interrupt_delay = 1;
 }
 
-void ClearExternalInterrupt(u8 bit) { g_state.cop0_regs.cause.Ip &= static_cast<u8>(~(1u << bit)); }
+void ClearExternalInterrupt(u8 bit)
+{
+  g_state.cop0_regs.cause.Ip &= static_cast<u8>(~(1u << bit));
+}
 
 bool HasPendingInterrupt()
 {
   // const bool do_interrupt = g_state.m_cop0_regs.sr.IEc && ((g_state.m_cop0_regs.cause.Ip & g_state.m_cop0_regs.sr.Im)
   // != 0);
-  const bool do_interrupt =
-    g_state.cop0_regs.sr.IEc &&
-    (((g_state.cop0_regs.cause.bits & g_state.cop0_regs.sr.bits) & (UINT32_C(0xFF) << 8)) != 0);
+  const bool do_interrupt = g_state.cop0_regs.sr.IEc &&
+                            (((g_state.cop0_regs.cause.bits & g_state.cop0_regs.sr.bits) & (UINT32_C(0xFF) << 8)) != 0);
 
   const bool interrupt_delay = g_state.interrupt_delay;
   g_state.interrupt_delay = false;
@@ -292,7 +295,10 @@ void FlushPipeline()
   g_state.current_instruction_was_branch_taken = false;
 }
 
-ALWAYS_INLINE u32 ReadReg(Reg rs) { return g_state.regs.r[static_cast<u8>(rs)]; }
+ALWAYS_INLINE u32 ReadReg(Reg rs)
+{
+  return g_state.regs.r[static_cast<u8>(rs)];
+}
 
 ALWAYS_INLINE void WriteReg(Reg rd, u32 value)
 {
@@ -417,8 +423,8 @@ static void WriteCop0Reg(Cop0Reg reg, u32 value)
 
     case Cop0Reg::CAUSE:
     {
-      g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) |
-                                       (value & Cop0Registers::CAUSE::WRITE_MASK);
+      g_state.cop0_regs.cause.bits =
+        (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
       Log_DebugPrintf("COP0 CAUSE <- %08X (now %08X)", value, g_state.cop0_regs.cause.bits);
     }
     break;
@@ -483,39 +489,47 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
 
 void Execute()
 {
-  while (g_state.pending_ticks <= g_state.downcount)
+  g_state.frame_done = false;
+  while (!g_state.frame_done)
   {
-    if (HasPendingInterrupt())
-      DispatchInterrupt();
+    TimingEvents::UpdateCPUDowncount();
 
-    g_state.pending_ticks++;
+    while (g_state.pending_ticks <= g_state.downcount)
+    {
+      if (HasPendingInterrupt())
+        DispatchInterrupt();
 
-    // now executing the instruction we previously fetched
-    g_state.current_instruction.bits = g_state.next_instruction.bits;
-    g_state.current_instruction_pc = g_state.regs.pc;
-    g_state.current_instruction_in_branch_delay_slot = g_state.next_instruction_is_branch_delay_slot;
-    g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
-    g_state.next_instruction_is_branch_delay_slot = false;
-    g_state.branch_was_taken = false;
-    g_state.exception_raised = false;
+      g_state.pending_ticks++;
 
-    // fetch the next instruction
-    if (!FetchInstruction())
-      continue;
+      // now executing the instruction we previously fetched
+      g_state.current_instruction.bits = g_state.next_instruction.bits;
+      g_state.current_instruction_pc = g_state.regs.pc;
+      g_state.current_instruction_in_branch_delay_slot = g_state.next_instruction_is_branch_delay_slot;
+      g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
+      g_state.next_instruction_is_branch_delay_slot = false;
+      g_state.branch_was_taken = false;
+      g_state.exception_raised = false;
+
+      // fetch the next instruction
+      if (!FetchInstruction())
+        continue;
 
 #if 0 // GTE flag test debugging
-    if (g_state.m_current_instruction_pc == 0x8002cdf4)
-    {
-      if (g_state.m_regs.v1 != g_state.m_regs.v0)
-        printf("Got %08X Expected? %08X\n", g_state.m_regs.v1, g_state.m_regs.v0);
-    }
+      if (g_state.m_current_instruction_pc == 0x8002cdf4)
+      {
+        if (g_state.m_regs.v1 != g_state.m_regs.v0)
+          printf("Got %08X Expected? %08X\n", g_state.m_regs.v1, g_state.m_regs.v0);
+      }
 #endif
 
-    // execute the instruction we previously fetched
-    ExecuteInstruction();
+      // execute the instruction we previously fetched
+      ExecuteInstruction();
 
-    // next load delay
-    UpdateLoadDelay();
+      // next load delay
+      UpdateLoadDelay();
+    }
+
+    TimingEvents::RunEvents();
   }
 }
 
@@ -936,8 +950,7 @@ void ExecuteInstruction()
         return;
 
       // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
-      const u32 existing_value =
-        (inst.i.rt == g_state.load_delay_reg) ? g_state.load_delay_value : ReadReg(inst.i.rt);
+      const u32 existing_value = (inst.i.rt == g_state.load_delay_reg) ? g_state.load_delay_value : ReadReg(inst.i.rt);
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 new_value;
       if (inst.op == InstructionOp::lwl)

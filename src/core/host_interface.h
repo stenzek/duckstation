@@ -20,13 +20,10 @@ class CDImage;
 class HostDisplay;
 class GameList;
 
-class System;
 struct SystemBootParameters;
 
 class HostInterface
 {
-  friend System;
-
 public:
   enum : u32
   {
@@ -112,6 +109,12 @@ public:
   /// Returns a float setting from the configuration.
   virtual float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
+  /// Loads the BIOS image for the specified region.
+  std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
+
+  virtual void OnRunningGameChanged();
+  virtual void OnSystemPerformanceCountersUpdated();
+
 protected:
   virtual bool AcquireHostDisplay() = 0;
   virtual void ReleaseHostDisplay() = 0;
@@ -119,9 +122,7 @@ protected:
 
   virtual void OnSystemCreated();
   virtual void OnSystemDestroyed();
-  virtual void OnSystemPerformanceCountersUpdated();
   virtual void OnSystemStateSaved(bool global, s32 slot);
-  virtual void OnRunningGameChanged();
   virtual void OnControllerTypeChanged(u32 slot);
 
   /// Restores all settings to defaults.
@@ -141,9 +142,6 @@ protected:
 
   /// Sets the user directory to the program directory, i.e. "portable mode".
   void SetUserDirectoryToProgramDirectory();
-
-  /// Loads the BIOS image for the specified region.
-  std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
   /// Quick switch between software and hardware rendering.
   void ToggleSoftwareRendering();

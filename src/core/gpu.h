@@ -15,7 +15,6 @@ class StateWrapper;
 
 class HostDisplay;
 
-class System;
 class TimingEvent;
 class Timers;
 

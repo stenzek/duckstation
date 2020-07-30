@@ -296,11 +296,6 @@ void SDLHostInterface::UpdateInputMap()
   CommonHostInterface::UpdateInputMap(*m_settings_interface.get());
 }
 
-bool SDLHostInterface::HasSystem() const
-{
-  return static_cast<bool>(g_system);
-}
-
 void SDLHostInterface::OnSystemCreated()
 {
   CommonHostInterface::OnSystemCreated();
@@ -326,8 +321,8 @@ void SDLHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
-  if (g_system && !g_system->GetRunningTitle().empty())
-    SDL_SetWindowTitle(m_window, g_system->GetRunningTitle().c_str());
+  if (!System::GetRunningTitle().empty())
+    SDL_SetWindowTitle(m_window, System::GetRunningTitle().c_str());
   else
     SDL_SetWindowTitle(m_window, GetWindowTitle());
 }
@@ -609,7 +604,7 @@ void SDLHostInterface::DrawImGuiWindows()
 
   CommonHostInterface::DrawImGuiWindows();
 
-  if (!g_system)
+  if (System::IsShutdown())
     DrawPoweredOffWindow();
 
   if (m_settings_window_open)
@@ -626,7 +621,7 @@ void SDLHostInterface::DrawMainMenuBar()
   if (!ImGui::BeginMainMenuBar())
     return;
 
-  const bool system_enabled = static_cast<bool>(g_system);
+  const bool system_enabled = static_cast<bool>(!System::IsShutdown());
 
   if (ImGui::BeginMenu("System"))
   {
@@ -658,9 +653,9 @@ void SDLHostInterface::DrawMainMenuBar()
       ClearImGuiFocus();
     }
 
-    if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
+    if (ImGui::MenuItem("Pause", nullptr, System::IsPaused(), system_enabled))
     {
-      RunLater([this]() { PauseSystem(!m_paused); });
+      RunLater([this]() { PauseSystem(!System::IsPaused()); });
       ClearImGuiFocus();
     }
 
@@ -674,7 +669,7 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (ImGui::MenuItem("Remove Disc", nullptr, false, system_enabled))
     {
-      RunLater([this]() { g_system->RemoveMedia(); });
+      RunLater([this]() { System::RemoveMedia(); });
       ClearImGuiFocus();
     }
 
@@ -757,21 +752,26 @@ void SDLHostInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (g_system)
+  if (!System::IsShutdown())
   {
     const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
-    if (!m_paused)
+    if (System::IsPaused())
+    {
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
+    }
+    else
     {
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (420.0f * framebuffer_scale));
-      ImGui::Text("Average: %.2fms", g_system->GetAverageFrameTime());
+      ImGui::Text("Average: %.2fms", System::GetAverageFrameTime());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (310.0f * framebuffer_scale));
-      ImGui::Text("Worst: %.2fms", g_system->GetWorstFrameTime());
+      ImGui::Text("Worst: %.2fms", System::GetWorstFrameTime());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
 
-      const float speed = g_system->GetEmulationSpeed();
+      const float speed = System::GetEmulationSpeed();
       const u32 rounded_speed = static_cast<u32>(std::round(speed));
       if (speed < 90.0f)
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
@@ -781,15 +781,10 @@ void SDLHostInterface::DrawMainMenuBar()
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (165.0f * framebuffer_scale));
-      ImGui::Text("FPS: %.2f", g_system->GetFPS());
+      ImGui::Text("FPS: %.2f", System::GetFPS());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (80.0f * framebuffer_scale));
-      ImGui::Text("VPS: %.2f", g_system->GetVPS());
-    }
-    else
-    {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
+      ImGui::Text("VPS: %.2f", System::GetVPS());
     }
   }
 
@@ -873,7 +868,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   ImGui::Separator();
 
-  if (ImGui::MenuItem("Dump Audio", nullptr, IsDumpingAudio(), HasSystem()))
+  if (ImGui::MenuItem("Dump Audio", nullptr, IsDumpingAudio(), System::IsValid()))
   {
     if (!IsDumpingAudio())
       StartDumpingAudio();
@@ -1460,7 +1455,7 @@ void SDLHostInterface::ClearImGuiFocus()
 
 void SDLHostInterface::DoStartDisc()
 {
-  Assert(!g_system);
+  Assert(System::IsShutdown());
 
   nfdchar_t* path = nullptr;
   if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe,psf", nullptr, &path) || !path || std::strlen(path) == 0)
@@ -1475,18 +1470,18 @@ void SDLHostInterface::DoStartDisc()
 
 void SDLHostInterface::DoChangeDisc()
 {
-  Assert(g_system);
+  Assert(!System::IsShutdown());
 
   nfdchar_t* path = nullptr;
   if (!NFD_OpenDialog("bin,img,cue,chd", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
-  if (g_system->InsertMedia(path))
+  if (System::InsertMedia(path))
     AddFormattedOSDMessage(2.0f, "Switched CD to '%s'", path);
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
-  g_system->ResetPerformanceCounters();
+  System::ResetPerformanceCounters();
 }
 
 void SDLHostInterface::Run()
@@ -1495,9 +1490,9 @@ void SDLHostInterface::Run()
   {
     PollAndUpdate();
 
-    if (g_system && !m_paused)
+    if (System::IsRunning())
     {
-      g_system->RunFrame();
+      System::RunFrame();
       UpdateControllerRumble();
       if (m_frame_step_request)
       {
@@ -1510,26 +1505,26 @@ void SDLHostInterface::Run()
     {
       DrawImGuiWindows();
 
-      if (g_system)
+      if (System::IsRunning())
         g_gpu->ResetGraphicsAPIState();
 
       m_display->Render();
       ImGui_ImplSDL2_NewFrame(m_window);
       ImGui::NewFrame();
 
-      if (g_system)
+      if (System::IsRunning())
       {
         g_gpu->RestoreGraphicsAPIState();
-        g_system->UpdatePerformanceCounters();
+        System::UpdatePerformanceCounters();
 
         if (m_speed_limiter_enabled)
-          g_system->Throttle();
+          System::Throttle();
       }
     }
   }
 
   // Save state on exit so it can be resumed
-  if (g_system)
+  if (!System::IsShutdown())
   {
     if (g_settings.save_state_on_exit)
       SaveResumeSaveState();

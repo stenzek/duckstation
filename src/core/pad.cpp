@@ -16,8 +16,9 @@ Pad::~Pad() = default;
 
 void Pad::Initialize()
 {
-  m_transfer_event = g_system->CreateTimingEvent("Pad Serial Transfer", 1, 1,
-                                                 std::bind(&Pad::TransferEvent, this, std::placeholders::_2), false);
+  m_transfer_event = TimingEvents::CreateTimingEvent(
+    "Pad Serial Transfer", 1, 1, std::bind(&Pad::TransferEvent, this, std::placeholders::_2), false);
+  Reset();
 }
 
 void Pad::Shutdown()
@@ -146,9 +147,15 @@ bool Pad::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev) { m_controllers[slot] = std::move(dev); }
+void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev)
+{
+  m_controllers[slot] = std::move(dev);
+}
 
-void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev) { m_memory_cards[slot] = std::move(dev); }
+void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
+{
+  m_memory_cards[slot] = std::move(dev);
+}
 
 u32 Pad::ReadRegister(u32 offset)
 {

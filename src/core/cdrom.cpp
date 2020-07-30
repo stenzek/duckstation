@@ -284,12 +284,14 @@ CDROM::~CDROM() = default;
 void CDROM::Initialize()
 {
   m_command_event =
-    g_system->CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
-  m_drive_event = g_system->CreateTimingEvent("CDROM Drive Event", 1, 1,
-                                              std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
+    TimingEvents::CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
+  m_drive_event = TimingEvents::CreateTimingEvent("CDROM Drive Event", 1, 1,
+                                                  std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
 
   if (g_settings.cdrom_read_thread)
     m_reader.StartThread();
+
+  Reset();
 }
 
 void CDROM::Shutdown()
@@ -444,7 +446,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   // set the region from the system area of the disc
   m_disc_region = GameList::GetRegionForImage(media.get());
   Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(m_disc_region),
-                 Settings::GetConsoleRegionName(g_system->GetRegion()));
+                 Settings::GetConsoleRegionName(System::GetRegion()));
 
   // motor automatically spins up
   if (m_drive_state != DriveState::ShellOpening)
@@ -1427,7 +1429,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     {
       Log_DebugPrintf("Get CDROM region ID string");
 
-      switch (g_system->GetRegion())
+      switch (System::GetRegion())
       {
         case ConsoleRegion::NTSC_J:
         {
@@ -1868,7 +1870,7 @@ void CDROM::DoIDRead()
 
     if (g_settings.cdrom_region_check &&
         (m_disc_region == DiscRegion::Other ||
-         g_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
+         System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed

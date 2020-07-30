@@ -3,6 +3,7 @@
 #include "common/bitutils.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "settings.h"
 #include <algorithm>
 #include <array>
 
@@ -18,7 +19,6 @@ static constexpr s32 IR123_MIN_VALUE = -(INT64_C(1) << 15);
 static constexpr s32 IR123_MAX_VALUE = (INT64_C(1) << 15) - 1;
 
 #define REGS CPU::g_state.gte_regs
-static bool s_widescreen_hack = false;
 
 ALWAYS_INLINE static u32 CountLeadingBits(u32 value)
 {
@@ -145,17 +145,21 @@ static u32 TruncateRGB(s32 value)
   return static_cast<u32>(value);
 }
 
-void Initialize() { Reset(); }
+void Initialize()
+{
+  Reset();
+}
 
-void Reset() { std::memset(&REGS, 0, sizeof(REGS)); }
+void Reset()
+{
+  std::memset(&REGS, 0, sizeof(REGS));
+}
 
 bool DoState(StateWrapper& sw)
 {
   sw.DoArray(REGS.r32, NUM_DATA_REGS + NUM_CONTROL_REGS);
   return !sw.HasError();
 }
-
-void SetWidescreenHack(bool enabled) { s_widescreen_hack = enabled; }
 
 u32 ReadRegister(u32 index)
 {
@@ -279,7 +283,10 @@ void WriteRegister(u32 index, u32 value)
   }
 }
 
-u32* GetRegisterPtr(u32 index) { return &REGS.r32[index]; }
+u32* GetRegisterPtr(u32 index)
+{
+  return &REGS.r32[index];
+}
 
 static void SetOTZ(s32 value)
 {
@@ -606,8 +613,9 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   const s64 result = static_cast<s64>(ZeroExtend64(UNRDivide(REGS.H, REGS.SZ3)));
 
   // (4 / 3) / (16 / 9) -> 0.75 -> (3 / 4)
-  const s64 Sx = s_widescreen_hack ? ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX)) :
-                                     (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
+  const s64 Sx = g_settings.gpu_widescreen_hack ?
+                   ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX)) :
+                   (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
   const s64 Sy = s64(result) * s64(REGS.IR2) + s64(REGS.OFY);
   CheckMACOverflow<0>(Sx);
   CheckMACOverflow<0>(Sy);

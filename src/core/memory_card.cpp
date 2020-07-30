@@ -14,8 +14,8 @@ MemoryCard::MemoryCard()
   m_FLAG.no_write_yet = true;
 
   m_save_event =
-    g_system->CreateTimingEvent("Memory Card Host Flush", SAVE_DELAY_IN_SYSCLK_TICKS, SAVE_DELAY_IN_SYSCLK_TICKS,
-                                std::bind(&MemoryCard::SaveIfChanged, this, true), false);
+    TimingEvents::CreateTimingEvent("Memory Card Host Flush", SAVE_DELAY_IN_SYSCLK_TICKS, SAVE_DELAY_IN_SYSCLK_TICKS,
+                                    std::bind(&MemoryCard::SaveIfChanged, this, true), false);
 }
 
 MemoryCard::~MemoryCard()
@@ -385,8 +385,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   Log_InfoPrintf("Saved memory card to '%s'", m_filename.c_str());
   if (display_osd_message)
   {
-    g_host_interface->AddOSDMessage(
-      StringUtil::StdStringFromFormat("Saved memory card to '%s'", m_filename.c_str()));
+    g_host_interface->AddOSDMessage(StringUtil::StdStringFromFormat("Saved memory card to '%s'", m_filename.c_str()));
   }
 
   return true;

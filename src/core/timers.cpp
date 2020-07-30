@@ -15,8 +15,9 @@ Timers::~Timers() = default;
 
 void Timers::Initialize()
 {
-  m_sysclk_event = g_system->CreateTimingEvent("Timer SysClk Interrupt", 1, 1,
-                                               std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
+  m_sysclk_event = TimingEvents::CreateTimingEvent(
+    "Timer SysClk Interrupt", 1, 1, std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
+  Reset();
 }
 
 void Timers::Shutdown()

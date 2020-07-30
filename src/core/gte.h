@@ -8,7 +8,6 @@ namespace GTE {
 void Initialize();
 void Reset();
 bool DoState(StateWrapper& sw);
-void SetWidescreenHack(bool enabled);
 
 // control registers are offset by +32
 u32 ReadRegister(u32 index);

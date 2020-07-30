@@ -10,7 +10,10 @@ InterruptController::InterruptController() = default;
 
 InterruptController::~InterruptController() = default;
 
-void InterruptController::Initialize() {}
+void InterruptController::Initialize()
+{
+  Reset();
+}
 
 void InterruptController::Shutdown() {}
 

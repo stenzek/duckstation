@@ -13,7 +13,10 @@ SIO::SIO() = default;
 
 SIO::~SIO() = default;
 
-void SIO::Initialize() {}
+void SIO::Initialize()
+{
+  Reset();
+}
 
 void SIO::Shutdown() {}
 

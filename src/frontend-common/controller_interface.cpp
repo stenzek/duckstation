@@ -21,11 +21,6 @@ void ControllerInterface::Shutdown()
   m_host_interface = nullptr;
 }
 
-Controller* ControllerInterface::GetController(u32 slot) const
-{
-  return g_system ? g_system->GetController(slot) : nullptr;
-}
-
 void ControllerInterface::SetHook(Hook::Callback callback)
 {
   std::unique_lock<std::mutex> lock(m_event_intercept_mutex);

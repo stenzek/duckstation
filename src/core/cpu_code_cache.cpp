@@ -4,6 +4,7 @@
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "system.h"
+#include "timing_event.h"
 Log_SetChannel(CPU::CodeCache);
 
 #ifdef WITH_RECOMPILER
@@ -53,6 +54,8 @@ static std::array<std::vector<CodeBlock*>, CPU_CODE_CACHE_PAGE_COUNT> m_ram_bloc
 
 void Initialize(bool use_recompiler)
 {
+  Assert(s_blocks.empty());
+
 #ifdef WITH_RECOMPILER
   s_use_recompiler = use_recompiler;
   // if (!s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
@@ -71,86 +74,95 @@ void Shutdown()
 
 void Execute()
 {
-  CodeBlockKey next_block_key = GetNextBlockKey();
+  CodeBlockKey next_block_key;
 
-  while (g_state.pending_ticks < g_state.downcount)
+  g_state.frame_done = false;
+  while (!g_state.frame_done)
   {
-    if (HasPendingInterrupt())
-    {
-      // TODO: Fill in m_next_instruction...
-      SafeReadMemoryWord(g_state.regs.pc, &g_state.next_instruction.bits);
-      DispatchInterrupt();
-      next_block_key = GetNextBlockKey();
-    }
-
-    CodeBlock* block = LookupBlock(next_block_key);
-    if (!block)
-    {
-      Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", g_state.regs.pc);
-      InterpretUncachedBlock();
-      continue;
-    }
-
-  reexecute_block:
-
-#if 0
-    const u32 tick = g_system->GetGlobalTickCounter() + m_core->GetPendingTicks();
-    if (tick == 61033207)
-      __debugbreak();
-#endif
-
-#if 0
-    LogCurrentState();
-#endif
-
-    if (s_use_recompiler)
-      block->host_code();
-    else
-      InterpretCachedBlock(*block);
-
-    if (g_state.pending_ticks >= g_state.downcount)
-      break;
-    else if (HasPendingInterrupt() || !USE_BLOCK_LINKING)
-      continue;
+    TimingEvents::UpdateCPUDowncount();
 
     next_block_key = GetNextBlockKey();
-    if (next_block_key.bits == block->key.bits)
+    while (g_state.pending_ticks < g_state.downcount)
     {
-      // we can jump straight to it if there's no pending interrupts
-      // ensure it's not a self-modifying block
-      if (!block->invalidated || RevalidateBlock(block))
-        goto reexecute_block;
-    }
-    else if (!block->invalidated)
-    {
-      // Try to find an already-linked block.
-      // TODO: Don't need to dereference the block, just store a pointer to the code.
-      for (CodeBlock* linked_block : block->link_successors)
+      if (HasPendingInterrupt())
       {
-        if (linked_block->key.bits == next_block_key.bits)
-        {
-          if (linked_block->invalidated && !RevalidateBlock(linked_block))
-          {
-            // CanExecuteBlock can result in a block flush, so stop iterating here.
-            break;
-          }
+        // TODO: Fill in m_next_instruction...
+        SafeReadMemoryWord(g_state.regs.pc, &g_state.next_instruction.bits);
+        DispatchInterrupt();
+        next_block_key = GetNextBlockKey();
+      }
 
-          // Execute the linked block
-          block = linked_block;
+      CodeBlock* block = LookupBlock(next_block_key);
+      if (!block)
+      {
+        Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", g_state.regs.pc);
+        InterpretUncachedBlock();
+        continue;
+      }
+
+    reexecute_block:
+
+#if 0
+      const u32 tick = g_system->GetGlobalTickCounter() + m_core->GetPendingTicks();
+      if (tick == 61033207)
+        __debugbreak();
+#endif
+
+#if 0
+      LogCurrentState();
+#endif
+
+      if (s_use_recompiler)
+        block->host_code();
+      else
+        InterpretCachedBlock(*block);
+
+      if (g_state.pending_ticks >= g_state.downcount)
+        break;
+      else if (HasPendingInterrupt() || !USE_BLOCK_LINKING)
+        continue;
+
+      next_block_key = GetNextBlockKey();
+      if (next_block_key.bits == block->key.bits)
+      {
+        // we can jump straight to it if there's no pending interrupts
+        // ensure it's not a self-modifying block
+        if (!block->invalidated || RevalidateBlock(block))
+          goto reexecute_block;
+      }
+      else if (!block->invalidated)
+      {
+        // Try to find an already-linked block.
+        // TODO: Don't need to dereference the block, just store a pointer to the code.
+        for (CodeBlock* linked_block : block->link_successors)
+        {
+          if (linked_block->key.bits == next_block_key.bits)
+          {
+            if (linked_block->invalidated && !RevalidateBlock(linked_block))
+            {
+              // CanExecuteBlock can result in a block flush, so stop iterating here.
+              break;
+            }
+
+            // Execute the linked block
+            block = linked_block;
+            goto reexecute_block;
+          }
+        }
+
+        // No acceptable blocks found in the successor list, try a new one.
+        CodeBlock* next_block = LookupBlock(next_block_key);
+        if (next_block)
+        {
+          // Link the previous block to this new block if we find a new block.
+          LinkBlock(block, next_block);
+          block = next_block;
           goto reexecute_block;
         }
       }
-
-      // No acceptable blocks found in the successor list, try a new one.
-      CodeBlock* next_block = LookupBlock(next_block_key);
-      if (next_block)
-      {
-        // Link the previous block to this new block if we find a new block.
-        LinkBlock(block, next_block);
-        block = next_block;
-        goto reexecute_block;
-      }
     }
+
+    TimingEvents::RunEvents();
   }
 
   // in case we switch to interpreter...
@@ -189,7 +201,7 @@ void LogCurrentState()
                       "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
                       "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
                       "ldv=%08X\n",
-                      g_system->GetGlobalTickCounter() + GetPendingTicks(), regs.pc, regs.zero, regs.at, regs.v0,
+                      TimingEvents::GetGlobalTickCounter() + GetPendingTicks(), regs.pc, regs.zero, regs.at, regs.v0,
                       regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5,
                       regs.t6, regs.t7, regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8,
                       regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp, regs.ra,

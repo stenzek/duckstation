@@ -1,6 +1,7 @@
 #include "mdec.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "cpu_core.h"
 #include "dma.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -15,9 +16,10 @@ MDEC::~MDEC() = default;
 
 void MDEC::Initialize()
 {
-  m_block_copy_out_event = g_system->CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
-                                                       std::bind(&MDEC::CopyOutBlock, this), false);
+  m_block_copy_out_event = TimingEvents::CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
+                                                           std::bind(&MDEC::CopyOutBlock, this), false);
   m_total_blocks_decoded = 0;
+  Reset();
 }
 
 void MDEC::Shutdown()
@@ -27,6 +29,7 @@ void MDEC::Shutdown()
 
 void MDEC::Reset()
 {
+  m_block_copy_out_event->Deactivate();
   SoftReset();
 }
 
@@ -198,7 +201,7 @@ u32 MDEC::ReadDataRegister()
     if (HasPendingBlockCopyOut())
     {
       Log_DevPrint("MDEC data out FIFO empty on read - stalling CPU");
-      g_system->StallCPU(m_block_copy_out_event->GetTicksUntilNextExecution());
+      CPU::AddPendingTicks(m_block_copy_out_event->GetTicksUntilNextExecution());
     }
     else
     {

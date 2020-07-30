@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
+#include "cpu_core.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
@@ -23,11 +24,16 @@ void DMA::Initialize()
   m_halt_ticks = g_settings.dma_halt_ticks;
 
   m_transfer_buffer.resize(32);
-  m_unhalt_event = g_system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
-                                               std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+  m_unhalt_event = TimingEvents::CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
+                                                   std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+
+  Reset();
 }
 
-void DMA::Shutdown() { m_unhalt_event.reset(); }
+void DMA::Shutdown()
+{
+  m_unhalt_event.reset();
+}
 
 void DMA::Reset()
 {
@@ -222,7 +228,10 @@ bool DMA::CanTransferChannel(Channel channel) const
   return cs.request;
 }
 
-bool DMA::IsTransferHalted() const { return m_unhalt_event->IsActive(); }
+bool DMA::IsTransferHalted() const
+{
+  return m_unhalt_event->IsActive();
+}
 
 void DMA::UpdateIRQ()
 {
@@ -259,7 +268,7 @@ bool DMA::TransferChannel(Channel channel)
       else
         used_ticks = TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, word_count);
 
-      g_system->StallCPU(used_ticks);
+      CPU::AddPendingTicks(used_ticks);
     }
     break;
 
@@ -311,7 +320,7 @@ bool DMA::TransferChannel(Channel channel)
       }
 
       cs.base_address = current_address;
-      g_system->StallCPU(used_ticks);
+      CPU::AddPendingTicks(used_ticks);
 
       if (current_address & UINT32_C(0x800000))
         break;
@@ -362,7 +371,7 @@ bool DMA::TransferChannel(Channel channel)
 
       cs.base_address = current_address & BASE_ADDRESS_MASK;
       cs.block_control.request.block_count = blocks_remaining;
-      g_system->StallCPU(used_ticks);
+      CPU::AddPendingTicks(used_ticks);
 
       // finish transfer later if the request was cleared
       if (blocks_remaining > 0)

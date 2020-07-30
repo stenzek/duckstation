@@ -7,7 +7,6 @@
 #include <mutex>
 
 class HostInterface;
-class System;
 class Controller;
 
 class ControllerInterface
@@ -75,7 +74,6 @@ public:
   void ClearHook();
 
 protected:
-  Controller* GetController(u32 slot) const;
   bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value);
 
   void OnControllerConnected(int host_id);

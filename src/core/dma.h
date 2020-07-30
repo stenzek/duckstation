@@ -7,7 +7,6 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
 
 class DMA
