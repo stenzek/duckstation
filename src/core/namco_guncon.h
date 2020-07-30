@@ -32,7 +32,7 @@ public:
 
   void Reset() override;
   bool DoState(StateWrapper& sw) override;
-  void LoadSettings(HostInterface* host_interface, const char* section) override;
+  void LoadSettings(const char* section) override;
   bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale) override;
 
   void SetAxisState(s32 axis_code, float value) override;

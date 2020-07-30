@@ -46,10 +46,7 @@ public:
   static ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 
   /// Creates a new System.
-  static std::unique_ptr<System> Create(HostInterface* host_interface);
-
-  // Accessing components.
-  HostInterface* GetHostInterface() const { return m_host_interface; }
+  static std::unique_ptr<System> Create();
 
   ConsoleRegion GetRegion() const { return m_region; }
   bool IsPALRegion() const { return m_region == ConsoleRegion::PAL; }
@@ -149,7 +146,7 @@ public:
   bool SwitchMediaFromPlaylist(u32 index);
 
 private:
-  System(HostInterface* host_interface);
+  System();
 
   /// Opens CD image, preloading if needed.
   std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
@@ -189,7 +186,6 @@ private:
 
   void UpdateRunningGame(const char* path, CDImage* image);
 
-  HostInterface* m_host_interface;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
   CPUExecutionMode m_cpu_execution_mode = CPUExecutionMode::Interpreter;
   u32 m_frame_number = 1;

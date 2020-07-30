@@ -153,7 +153,7 @@ bool NamcoGunCon::Transfer(const u8 data_in, u8* data_out)
 void NamcoGunCon::UpdatePosition()
 {
   // get screen coordinates
-  const HostDisplay* display = g_system->GetHostInterface()->GetDisplay();
+  const HostDisplay* display = g_host_interface->GetDisplay();
   const s32 mouse_x = display->GetMousePositionX();
   const s32 mouse_y = display->GetMousePositionY();
 
@@ -233,11 +233,11 @@ Controller::SettingList NamcoGunCon::StaticGetSettings()
   return SettingList(settings.begin(), settings.end());
 }
 
-void NamcoGunCon::LoadSettings(HostInterface* host_interface, const char* section)
+void NamcoGunCon::LoadSettings(const char* section)
 {
-  Controller::LoadSettings(host_interface, section);
+  Controller::LoadSettings(section);
 
-  std::string path = host_interface->GetStringSettingValue(section, "CrosshairImagePath");
+  std::string path = g_host_interface->GetStringSettingValue(section, "CrosshairImagePath");
   if (path != m_crosshair_image_path)
   {
     m_crosshair_image_path = std::move(path);
@@ -254,7 +254,7 @@ void NamcoGunCon::LoadSettings(HostInterface* host_interface, const char* sectio
                                 Resources::CROSSHAIR_IMAGE_DATA.data());
   }
 
-  m_crosshair_image_scale = host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
+  m_crosshair_image_scale = g_host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
 }
 
 bool NamcoGunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)

@@ -8,17 +8,11 @@
 #include <sstream>
 Log_SetChannel(GPU_HW);
 
-GPU_HW::GPU_HW() : GPU()
-{
-  m_vram_ptr = m_vram_shadow.data();
-}
+GPU_HW::GPU_HW() : GPU() { m_vram_ptr = m_vram_shadow.data(); }
 
 GPU_HW::~GPU_HW() = default;
 
-bool GPU_HW::IsHardwareRenderer() const
-{
-  return true;
-}
+bool GPU_HW::IsHardwareRenderer() const { return true; }
 
 bool GPU_HW::Initialize(HostDisplay* host_display)
 {
@@ -32,8 +26,8 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   m_texture_filtering = g_settings.gpu_texture_filtering;
   if (m_resolution_scale < 1 || m_resolution_scale > m_max_resolution_scale)
   {
-    g_system->GetHostInterface()->AddFormattedOSDMessage(5.0f, "Invalid resolution scale %ux specified. Maximum is %u.",
-                                                         m_resolution_scale, m_max_resolution_scale);
+    g_host_interface->AddFormattedOSDMessage(5.0f, "Invalid resolution scale %ux specified. Maximum is %u.",
+                                             m_resolution_scale, m_max_resolution_scale);
     m_resolution_scale = std::clamp<u32>(m_resolution_scale, 1u, m_max_resolution_scale);
   }
 

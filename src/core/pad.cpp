@@ -57,7 +57,7 @@ bool Pad::DoState(StateWrapper& sw)
     {
       if (g_settings.load_devices_from_save_states)
       {
-        g_system->GetHostInterface()->AddFormattedOSDMessage(
+        g_host_interface->AddFormattedOSDMessage(
           2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
           Settings::GetControllerTypeName(state_controller_type), i + 1u,
           Settings::GetControllerTypeName(controller_type));
@@ -68,9 +68,8 @@ bool Pad::DoState(StateWrapper& sw)
       }
       else
       {
-        g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Ignoring mismatched controller type %s in port %u.",
-                                                             Settings::GetControllerTypeName(state_controller_type),
-                                                             i + 1u);
+        g_host_interface->AddFormattedOSDMessage(2.0f, "Ignoring mismatched controller type %s in port %u.",
+                                                 Settings::GetControllerTypeName(state_controller_type), i + 1u);
 
         // we still need to read the save state controller state
         if (state_controller_type != ControllerType::None)
@@ -113,13 +112,13 @@ bool Pad::DoState(StateWrapper& sw)
 
     if (card_present && !m_memory_cards[i])
     {
-      g_system->GetHostInterface()->AddFormattedOSDMessage(
+      g_host_interface->AddFormattedOSDMessage(
         2.0f, "Memory card %u present in save state but not in system. Creating temporary card.", i + 1u);
       m_memory_cards[i] = MemoryCard::Create();
     }
     else if (!card_present && m_memory_cards[i])
     {
-      g_system->GetHostInterface()->AddFormattedOSDMessage(
+      g_host_interface->AddFormattedOSDMessage(
         2.0f, "Memory card %u present in system but not in save state. Removing card.", i + 1u);
       m_memory_cards[i].reset();
     }
@@ -147,15 +146,9 @@ bool Pad::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev)
-{
-  m_controllers[slot] = std::move(dev);
-}
+void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev) { m_controllers[slot] = std::move(dev); }
 
-void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
-{
-  m_memory_cards[slot] = std::move(dev);
-}
+void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev) { m_memory_cards[slot] = std::move(dev); }
 
 u32 Pad::ReadRegister(u32 offset)
 {

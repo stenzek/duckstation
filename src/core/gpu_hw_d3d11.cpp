@@ -37,7 +37,7 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
   if (!m_device || !m_context)
     return false;
 
-  m_shader_cache.Open(g_system->GetHostInterface()->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
+  m_shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
                       g_settings.gpu_use_debug_device);
 
   if (!CreateFramebuffer())
@@ -369,7 +369,7 @@ bool GPU_HW_D3D11::CompileShaders()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_supports_dual_source_blend);
 
-  g_system->GetHostInterface()->DisplayLoadingScreen("Compiling shaders...");
+  g_host_interface->DisplayLoadingScreen("Compiling shaders...");
 
   m_screen_quad_vertex_shader =
     m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
@@ -788,7 +788,4 @@ void GPU_HW_D3D11::UpdateDepthBufferFromMaskBit()
   RestoreGraphicsAPIState();
 }
 
-std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer()
-{
-  return std::make_unique<GPU_HW_D3D11>();
-}
+std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer() { return std::make_unique<GPU_HW_D3D11>(); }

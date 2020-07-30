@@ -6,17 +6,11 @@
 #include "system.h"
 Log_SetChannel(AnalogController);
 
-AnalogController::AnalogController(u32 index) : m_index(index)
-{
-  m_axis_state.fill(0x80);
-}
+AnalogController::AnalogController(u32 index) : m_index(index) { m_axis_state.fill(0x80); }
 
 AnalogController::~AnalogController() = default;
 
-ControllerType AnalogController::GetType() const
-{
-  return ControllerType::AnalogController;
-}
+ControllerType AnalogController::GetType() const { return ControllerType::AnalogController; }
 
 void AnalogController::Reset()
 {
@@ -52,8 +46,8 @@ bool AnalogController::DoState(StateWrapper& sw)
 
     if (old_analog_mode != m_analog_mode)
     {
-      g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
-                                                           m_analog_mode ? "analog" : "digital");
+      g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+                                               m_analog_mode ? "analog" : "digital");
     }
   }
   return true;
@@ -80,10 +74,7 @@ void AnalogController::SetAxisState(s32 axis_code, float value)
   SetAxisState(static_cast<Axis>(axis_code), u8_value);
 }
 
-void AnalogController::SetAxisState(Axis axis, u8 value)
-{
-  m_axis_state[static_cast<u8>(axis)] = value;
-}
+void AnalogController::SetAxisState(Axis axis, u8 value) { m_axis_state[static_cast<u8>(axis)] = value; }
 
 void AnalogController::SetButtonState(Button button, bool pressed)
 {
@@ -94,8 +85,8 @@ void AnalogController::SetButtonState(Button button, bool pressed)
     {
       if (m_analog_locked)
       {
-        g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.",
-                                                             m_index + 1u, m_analog_mode ? "analog" : "digital");
+        g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.", m_index + 1u,
+                                                 m_analog_mode ? "analog" : "digital");
       }
       else
       {
@@ -120,10 +111,7 @@ void AnalogController::SetButtonState(s32 button_code, bool pressed)
   SetButtonState(static_cast<Button>(button_code), pressed);
 }
 
-u32 AnalogController::GetVibrationMotorCount() const
-{
-  return NUM_MOTORS;
-}
+u32 AnalogController::GetVibrationMotorCount() const { return NUM_MOTORS; }
 
 float AnalogController::GetVibrationMotorStrength(u32 motor)
 {
@@ -131,10 +119,7 @@ float AnalogController::GetVibrationMotorStrength(u32 motor)
   return static_cast<float>(m_motor_state[motor]) * (1.0f / 255.0f);
 }
 
-void AnalogController::ResetTransferState()
-{
-  m_state = State::Idle;
-}
+void AnalogController::ResetTransferState() { m_state = State::Idle; }
 
 u16 AnalogController::GetID() const
 {
@@ -154,8 +139,8 @@ void AnalogController::SetAnalogMode(bool enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  g_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
-                                                       enabled ? "analog" : "digital");
+  g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+                                           enabled ? "analog" : "digital");
   m_analog_mode = enabled;
 }
 
@@ -474,10 +459,7 @@ Controller::ButtonList AnalogController::StaticGetButtonNames()
 #undef B
 }
 
-u32 AnalogController::StaticGetVibrationMotorCount()
-{
-  return NUM_MOTORS;
-}
+u32 AnalogController::StaticGetVibrationMotorCount() { return NUM_MOTORS; }
 
 Controller::SettingList AnalogController::StaticGetSettings()
 {
@@ -492,8 +474,8 @@ Controller::SettingList AnalogController::StaticGetSettings()
   return SettingList(settings.begin(), settings.end());
 }
 
-void AnalogController::LoadSettings(HostInterface* host_interface, const char* section)
+void AnalogController::LoadSettings(const char* section)
 {
-  Controller::LoadSettings(host_interface, section);
-  m_auto_enable_analog = host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
+  Controller::LoadSettings(section);
+  m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
 }

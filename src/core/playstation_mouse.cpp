@@ -11,8 +11,8 @@ Log_SetChannel(PlayStationMouse);
 
 PlayStationMouse::PlayStationMouse()
 {
-  m_last_host_position_x = g_system->GetHostInterface()->GetDisplay()->GetMousePositionX();
-  m_last_host_position_y = g_system->GetHostInterface()->GetDisplay()->GetMousePositionY();
+  m_last_host_position_x = g_host_interface->GetDisplay()->GetMousePositionX();
+  m_last_host_position_y = g_host_interface->GetDisplay()->GetMousePositionY();
 }
 
 PlayStationMouse::~PlayStationMouse() = default;
@@ -142,7 +142,7 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 void PlayStationMouse::UpdatePosition()
 {
   // get screen coordinates
-  const HostDisplay* display = g_system->GetHostInterface()->GetDisplay();
+  const HostDisplay* display = g_host_interface->GetDisplay();
   const s32 mouse_x = display->GetMousePositionX();
   const s32 mouse_y = display->GetMousePositionY();
   const s32 delta_x = mouse_x - m_last_host_position_x;

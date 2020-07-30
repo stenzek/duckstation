@@ -162,3 +162,5 @@ protected:
   std::string m_program_directory;
   std::string m_user_directory;
 };
+
+extern HostInterface* g_host_interface;

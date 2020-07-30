@@ -569,7 +569,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     {VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}};
   static constexpr std::array<VkPolygonMode, 2> polygon_mode_mapping = {{VK_POLYGON_MODE_LINE, VK_POLYGON_MODE_FILL}};
 
-  g_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
+  g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
 
   VkDevice device = g_vulkan_context->GetDevice();
   VkPipelineCache pipeline_cache = g_vulkan_shader_cache->GetPipelineCache();

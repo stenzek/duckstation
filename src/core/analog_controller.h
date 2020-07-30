@@ -71,7 +71,7 @@ public:
   u32 GetVibrationMotorCount() const override;
   float GetVibrationMotorStrength(u32 motor) override;
 
-  void LoadSettings(HostInterface* host_interface, const char* section) override;
+  void LoadSettings(const char* section) override;
 
 private:
   using MotorState = std::array<u8, NUM_MOTORS>;

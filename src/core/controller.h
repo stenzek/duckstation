@@ -53,7 +53,7 @@ public:
   virtual float GetVibrationMotorStrength(u32 motor);
 
   /// Loads/refreshes any per-controller settings.
-  virtual void LoadSettings(HostInterface* host_interface, const char* section);
+  virtual void LoadSettings(const char* section);
 
   /// Returns the software cursor to use for this controller, if any.
   virtual bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale);

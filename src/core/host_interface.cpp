@@ -22,8 +22,13 @@
 #include <stdlib.h>
 Log_SetChannel(HostInterface);
 
+HostInterface* g_host_interface;
+
 HostInterface::HostInterface()
 {
+  Assert(!g_host_interface);
+  g_host_interface = this;
+
   // we can get the program directory at construction time
   const std::string program_path = FileSystem::GetProgramPath();
   m_program_directory = FileSystem::GetPathDirectory(program_path.c_str());
@@ -33,6 +38,8 @@ HostInterface::~HostInterface()
 {
   // system should be shut down prior to the destructor
   Assert(!g_system && !m_audio_stream && !m_display);
+  Assert(g_host_interface == this);
+  g_host_interface = nullptr;
 }
 
 bool HostInterface::Initialize()
@@ -85,7 +92,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   // create the audio stream. this will never fail, since we'll just fall back to null
   CreateAudioStream();
 
-  g_system = System::Create(this);
+  g_system = System::Create();
   if (!g_system->Boot(parameters))
   {
     ReportFormattedError("System failed to boot. The log may contain more information.");

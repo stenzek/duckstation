@@ -39,7 +39,7 @@ float Controller::GetVibrationMotorStrength(u32 motor)
   return 0.0f;
 }
 
-void Controller::LoadSettings(HostInterface* host_interface, const char* section) {}
+void Controller::LoadSettings(const char* section) {}
 
 bool Controller::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)
 {

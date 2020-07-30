@@ -51,7 +51,7 @@ SystemBootParameters::SystemBootParameters(const SystemBootParameters& copy)
 
 SystemBootParameters::~SystemBootParameters() = default;
 
-System::System(HostInterface* host_interface) : m_host_interface(host_interface)
+System::System()
 {
   m_region = g_settings.region;
   m_cpu_execution_mode = g_settings.cpu_execution_mode;
@@ -80,9 +80,9 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
   }
 }
 
-std::unique_ptr<System> System::Create(HostInterface* host_interface)
+std::unique_ptr<System> System::Create()
 {
-  return std::unique_ptr<System>(new System(host_interface));
+  return std::unique_ptr<System>(new System());
 }
 
 bool System::RecreateGPU(GPURenderer renderer)
@@ -132,7 +132,7 @@ std::unique_ptr<CDImage> System::OpenCDImage(const char* path, bool force_preloa
 
   if (force_preload || g_settings.cdrom_load_image_to_ram)
   {
-    HostInterfaceProgressCallback callback(m_host_interface);
+    HostInterfaceProgressCallback callback;
     std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
     if (memory_image)
       media = std::move(memory_image);
@@ -173,7 +173,7 @@ bool System::Boot(const SystemBootParameters& params)
         m_media_playlist = GameList::ParseM3UFile(params.filename.c_str());
         if (m_media_playlist.empty())
         {
-          m_host_interface->ReportFormattedError("Failed to parse playlist '%s'", params.filename.c_str());
+          g_host_interface->ReportFormattedError("Failed to parse playlist '%s'", params.filename.c_str());
           return false;
         }
 
@@ -198,7 +198,7 @@ bool System::Boot(const SystemBootParameters& params)
       media = OpenCDImage(media_path.c_str(), params.load_image_to_ram);
       if (!media)
       {
-        m_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
+        g_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
         return false;
       }
 
@@ -229,10 +229,10 @@ bool System::Boot(const SystemBootParameters& params)
   }
 
   // Load BIOS image.
-  std::optional<BIOS::Image> bios_image = m_host_interface->GetBIOSImage(m_region);
+  std::optional<BIOS::Image> bios_image = g_host_interface->GetBIOSImage(m_region);
   if (!bios_image)
   {
-    m_host_interface->ReportFormattedError("Failed to load %s BIOS", Settings::GetConsoleRegionName(m_region));
+    g_host_interface->ReportFormattedError("Failed to load %s BIOS", Settings::GetConsoleRegionName(m_region));
     return false;
   }
 
@@ -254,12 +254,12 @@ bool System::Boot(const SystemBootParameters& params)
   // Load EXE late after BIOS.
   if (exe_boot && !LoadEXE(params.filename.c_str(), *bios_image))
   {
-    m_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
+    g_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
     return false;
   }
   else if (psf_boot && !LoadPSF(params.filename.c_str(), *bios_image))
   {
-    m_host_interface->ReportFormattedError("Failed to load PSF file '%s'", params.filename.c_str());
+    g_host_interface->ReportFormattedError("Failed to load PSF file '%s'", params.filename.c_str());
     return false;
   }
 
@@ -347,12 +347,12 @@ bool System::CreateGPU(GPURenderer renderer)
       break;
   }
 
-  if (!g_gpu || !g_gpu->Initialize(m_host_interface->GetDisplay()))
+  if (!g_gpu || !g_gpu->Initialize(g_host_interface->GetDisplay()))
   {
     Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
-    if (!g_gpu->Initialize(m_host_interface->GetDisplay()))
+    if (!g_gpu->Initialize(g_host_interface->GetDisplay()))
       return false;
   }
 
@@ -448,7 +448,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
 
   if (header.version != SAVE_STATE_VERSION)
   {
-    m_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
+    g_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
                                            SAVE_STATE_VERSION, header.version);
     return false;
   }
@@ -470,7 +470,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
       media = OpenCDImage(media_filename.c_str(), false);
       if (!media)
       {
-        m_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.",
+        g_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.",
                                                media_filename.c_str());
         return false;
       }
@@ -505,7 +505,7 @@ bool System::DoLoadState(ByteStream* state, bool init_components, bool force_sof
 
   if (header.data_compression_type != 0)
   {
-    m_host_interface->ReportFormattedError("Unknown save state compression type %u", header.data_compression_type);
+    g_host_interface->ReportFormattedError("Unknown save state compression type %u", header.data_compression_type);
     return false;
   }
 
@@ -545,7 +545,7 @@ bool System::SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
     std::vector<u32> screenshot_buffer;
     g_gpu->ResetGraphicsAPIState();
     const bool screenshot_saved =
-      m_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size, screenshot_size);
+      g_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size, screenshot_size);
     g_gpu->RestoreGraphicsAPIState();
     if (screenshot_saved && !screenshot_buffer.empty())
     {
@@ -688,7 +688,7 @@ void System::UpdatePerformanceCounters()
   m_last_global_tick_counter = m_global_tick_counter;
   m_fps_timer.Reset();
 
-  m_host_interface->OnSystemPerformanceCountersUpdated();
+  g_host_interface->OnSystemPerformanceCountersUpdated();
 }
 
 void System::ResetPerformanceCounters()
@@ -876,7 +876,7 @@ void System::UpdateControllers()
       std::unique_ptr<Controller> controller = Controller::Create(type, i);
       if (controller)
       {
-        controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
+        controller->LoadSettings(TinyString::FromFormat("Controller%u", i + 1u));
         g_pad.SetController(i, std::move(controller));
       }
     }
@@ -889,7 +889,7 @@ void System::UpdateControllerSettings()
   {
     Controller* controller = g_pad.GetController(i);
     if (controller)
-      controller->LoadSettings(m_host_interface, TinyString::FromFormat("Controller%u", i + 1u));
+      controller->LoadSettings(TinyString::FromFormat("Controller%u", i + 1u));
   }
 }
 
@@ -920,15 +920,15 @@ void System::UpdateMemoryCards()
       {
         if (m_running_game_code.empty())
         {
-          m_host_interface->AddFormattedOSDMessage(5.0f,
+          g_host_interface->AddFormattedOSDMessage(5.0f,
                                                    "Per-game memory card cannot be used for slot %u as the running "
                                                    "game has no code. Using shared card instead.",
                                                    i + 1u);
-          card = MemoryCard::Open(m_host_interface->GetSharedMemoryCardPath(i));
+          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
         else
         {
-          card = MemoryCard::Open(m_host_interface->GetGameMemoryCardPath(m_running_game_code.c_str(), i));
+          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(m_running_game_code.c_str(), i));
         }
       }
       break;
@@ -937,15 +937,15 @@ void System::UpdateMemoryCards()
       {
         if (m_running_game_title.empty())
         {
-          m_host_interface->AddFormattedOSDMessage(5.0f,
+          g_host_interface->AddFormattedOSDMessage(5.0f,
                                                    "Per-game memory card cannot be used for slot %u as the running "
                                                    "game has no title. Using shared card instead.",
                                                    i + 1u);
-          card = MemoryCard::Open(m_host_interface->GetSharedMemoryCardPath(i));
+          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
         else
         {
-          card = MemoryCard::Open(m_host_interface->GetGameMemoryCardPath(m_running_game_title.c_str(), i));
+          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(m_running_game_title.c_str(), i));
         }
       }
       break;
@@ -954,9 +954,9 @@ void System::UpdateMemoryCards()
       {
         if (g_settings.memory_card_paths[i].empty())
         {
-          m_host_interface->AddFormattedOSDMessage(2.0f, "Memory card path for slot %u is missing, using default.",
+          g_host_interface->AddFormattedOSDMessage(2.0f, "Memory card path for slot %u is missing, using default.",
                                                    i + 1u);
-          card = MemoryCard::Open(m_host_interface->GetSharedMemoryCardPath(i));
+          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
         else
         {
@@ -989,7 +989,7 @@ bool System::InsertMedia(const char* path)
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
-    m_host_interface->AddOSDMessage("Game changed, reloading memory cards.", 2.0f);
+    g_host_interface->AddOSDMessage("Game changed, reloading memory cards.", 2.0f);
     UpdateMemoryCards();
   }
 
@@ -1210,10 +1210,10 @@ void System::UpdateRunningGame(const char* path, CDImage* image)
   if (path && std::strlen(path) > 0)
   {
     m_running_game_path = path;
-    m_host_interface->GetGameInfo(path, image, &m_running_game_code, &m_running_game_title);
+    g_host_interface->GetGameInfo(path, image, &m_running_game_code, &m_running_game_title);
   }
 
-  m_host_interface->OnRunningGameChanged();
+  g_host_interface->OnRunningGameChanged();
 }
 
 u32 System::GetMediaPlaylistIndex() const
@@ -1261,7 +1261,7 @@ bool System::RemoveMediaPathFromPlaylist(u32 index)
 
   if (GetMediaPlaylistIndex() == index)
   {
-    m_host_interface->ReportMessage("Removing current media from playlist, removing media from CD-ROM.");
+    g_host_interface->ReportMessage("Removing current media from playlist, removing media from CD-ROM.");
     g_cdrom.RemoveMedia();
   }
 
@@ -1276,7 +1276,7 @@ bool System::ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& pat
 
   if (GetMediaPlaylistIndex() == index)
   {
-    m_host_interface->ReportMessage("Changing current media from playlist, replacing current media.");
+    g_host_interface->ReportMessage("Changing current media from playlist, replacing current media.");
     g_cdrom.RemoveMedia();
 
     m_media_playlist[index] = path;
