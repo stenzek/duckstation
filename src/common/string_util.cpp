@@ -1,6 +1,11 @@
 #include "string_util.h"
 #include <cctype>
+#include <codecvt>
 #include <cstdio>
+
+#ifdef WIN32
+#include "windows_headers.h"
+#endif
 
 namespace StringUtil {
 
@@ -157,5 +162,38 @@ std::size_t Strlcpy(char* dst, const std::string_view& src, std::size_t size)
   }
   return len;
 }
+
+#ifdef WIN32
+
+std::wstring UTF8StringToWideString(const std::string_view& str)
+{
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
+  if (wlen <= 0)
+    return {};
+
+  std::wstring ret;
+  ret.resize(wlen);
+  if (MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), ret.data(), wlen) <= 0)
+    return {};
+
+  return ret;
+}
+
+std::string WideStringToUTF8String(const std::wstring_view& str)
+{
+  int mblen = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0, nullptr, nullptr);
+  if (mblen <= 0)
+    return {};
+
+  std::string ret;
+  ret.resize(mblen);
+  if (WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), ret.data(), mblen, nullptr, nullptr) <
+      0)
+    return {};
+
+  return ret;
+}
+
+#endif
 
 } // namespace StringUtil

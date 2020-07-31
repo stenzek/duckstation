@@ -626,22 +626,11 @@ void CommonHostInterface::SetUserDirectory()
     PWSTR documents_directory;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
     {
-      const size_t documents_directory_len = std::wcslen(documents_directory);
-      int documents_directory_u8len = WideCharToMultiByte(
-        CP_UTF8, 0, documents_directory, static_cast<int>(documents_directory_len), nullptr, 0, nullptr, nullptr);
-      if (documents_directory_u8len > 0)
+      const std::string documents_directory_str(StringUtil::WideStringToUTF8String(documents_directory));
+      if (!documents_directory_str.empty())
       {
-        std::string documents_directory_str;
-        documents_directory_str.resize(documents_directory_u8len);
-        documents_directory_u8len = WideCharToMultiByte(
-          CP_UTF8, 0, documents_directory, static_cast<int>(documents_directory_len), documents_directory_str.data(),
-          static_cast<int>(documents_directory_str.size()), 0, nullptr);
-        if (documents_directory_u8len > 0)
-        {
-          documents_directory_str.resize(documents_directory_u8len);
-          m_user_directory = StringUtil::StdStringFromFormat("%s%c%s", documents_directory_str.c_str(),
-                                                             FS_OSPATH_SEPERATOR_CHARACTER, "DuckStation");
-        }
+        m_user_directory = StringUtil::StdStringFromFormat("%s%c%s", documents_directory_str.c_str(),
+                                                           FS_OSPATH_SEPERATOR_CHARACTER, "DuckStation");
       }
       CoTaskMemFree(documents_directory);
     }

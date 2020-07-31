@@ -53,7 +53,7 @@ static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 
 /// Wrapper arond std::from_chars
 template<typename T>
-inline std::optional<T> FromChars(std::string_view str)
+inline std::optional<T> FromChars(const std::string_view& str)
 {
   T value;
 
@@ -74,7 +74,7 @@ inline std::optional<T> FromChars(std::string_view str)
 
 /// Explicit override for booleans
 template<>
-inline std::optional<bool> FromChars(std::string_view str)
+inline std::optional<bool> FromChars(const std::string_view& str)
 {
   if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
       Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
@@ -94,7 +94,7 @@ inline std::optional<bool> FromChars(std::string_view str)
 #ifndef _MSC_VER
 /// from_chars doesn't seem to work with floats on gcc
 template<>
-inline std::optional<float> FromChars(std::string_view str)
+inline std::optional<float> FromChars(const std::string_view& str)
 {
   float value;
   std::string temp(str);
@@ -108,9 +108,19 @@ inline std::optional<float> FromChars(std::string_view str)
 #endif
 
 /// starts_with from C++20
-ALWAYS_INLINE static bool StartsWith(std::string_view str, const char* prefix)
+ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const char* prefix)
 {
   return (str.compare(0, std::strlen(prefix), prefix) == 0);
 }
+
+#ifdef WIN32
+
+/// Converts the specified UTF-8 string to a wide string.
+std::wstring UTF8StringToWideString(const std::string_view& str);
+
+/// Converts the specified wide string to a UTF-8 string.
+std::string WideStringToUTF8String(const std::wstring_view& str);
+
+#endif
 
 } // namespace StringUtil
