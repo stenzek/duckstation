@@ -401,6 +401,28 @@ FileSystem::ManagedCFilePtr OpenManagedCFile(const char* filename, const char* m
 std::FILE* OpenCFile(const char* filename, const char* mode)
 {
 #ifdef WIN32
+  int filename_len = static_cast<int>(std::strlen(filename));
+  int mode_len = static_cast<int>(std::strlen(mode));
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, filename, filename_len, nullptr, 0);
+  int wmodelen = MultiByteToWideChar(CP_UTF8, 0, mode, mode_len, nullptr, 0);
+  if (wlen > 0 && wmodelen > 0)
+  {
+    wchar_t* wfilename = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
+    wchar_t* wmode = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wmodelen + 1)));
+    wlen = MultiByteToWideChar(CP_UTF8, 0, filename, filename_len, wfilename, wlen);
+    wmodelen = MultiByteToWideChar(CP_UTF8, 0, mode, mode_len, wmode, wmodelen);
+    if (wlen > 0 && wmodelen > 0)
+    {
+      wfilename[wlen] = 0;
+      wmode[wmodelen] = 0;
+      std::FILE* fp;
+      if (_wfopen_s(&fp, wfilename, wmode) != 0)
+        return nullptr;
+
+      return fp;
+    }
+  }
+
   std::FILE* fp;
   if (fopen_s(&fp, filename, mode) != 0)
     return nullptr;
