@@ -3,7 +3,6 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
-#include "common/windows_headers.h"
 #include "cpu_disasm.h"
 #include <cerrno>
 Log_SetChannel(BIOS);
