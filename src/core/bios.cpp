@@ -1,7 +1,9 @@
 #include "bios.h"
 #include "common/assert.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
+#include "common/windows_headers.h"
 #include "cpu_disasm.h"
 #include <cerrno>
 Log_SetChannel(BIOS);
@@ -35,13 +37,13 @@ std::string Hash::ToString() const
   return str;
 }
 
-static constexpr Hash SCPH_1000_HASH    = MakeHashFromString("239665b1a3dade1b5a52c06338011044");
-static constexpr Hash SCPH_1001_HASH    = MakeHashFromString("924e392ed05558ffdb115408c263dccf");
-static constexpr Hash SCPH_1002_HASH    = MakeHashFromString("54847e693405ffeb0359c6287434cbef");
-static constexpr Hash SCPH_3000_HASH    = MakeHashFromString("849515939161e62f6b866f6853006780");
-static constexpr Hash SCPH_5500_HASH    = MakeHashFromString("8dd7d5296a650fac7319bce665a6a53c");
-static constexpr Hash SCPH_5501_HASH    = MakeHashFromString("490f666e1afb15b7362b406ed1cea246");
-static constexpr Hash SCPH_5502_HASH    = MakeHashFromString("32736f17079d0b2b7024407c39bd3050");
+static constexpr Hash SCPH_1000_HASH = MakeHashFromString("239665b1a3dade1b5a52c06338011044");
+static constexpr Hash SCPH_1001_HASH = MakeHashFromString("924e392ed05558ffdb115408c263dccf");
+static constexpr Hash SCPH_1002_HASH = MakeHashFromString("54847e693405ffeb0359c6287434cbef");
+static constexpr Hash SCPH_3000_HASH = MakeHashFromString("849515939161e62f6b866f6853006780");
+static constexpr Hash SCPH_5500_HASH = MakeHashFromString("8dd7d5296a650fac7319bce665a6a53c");
+static constexpr Hash SCPH_5501_HASH = MakeHashFromString("490f666e1afb15b7362b406ed1cea246");
+static constexpr Hash SCPH_5502_HASH = MakeHashFromString("32736f17079d0b2b7024407c39bd3050");
 static constexpr Hash SCPH_POPS660_HASH = MakeHashFromString("c53ca5908936d412331790f4426c6c33");
 
 Hash GetHash(const Image& image)
@@ -57,33 +59,30 @@ std::optional<Image> LoadImageFromFile(std::string_view filename)
 {
   Image ret(BIOS_SIZE);
   std::string filename_str(filename);
-  std::FILE* fp = std::fopen(filename_str.c_str(), "rb");
+  auto fp = FileSystem::OpenManagedCFile(filename_str.c_str(), "rb");
   if (!fp)
   {
     Log_ErrorPrintf("Failed to open BIOS image '%s', errno=%d", filename_str.c_str(), errno);
     return std::nullopt;
   }
 
-  std::fseek(fp, 0, SEEK_END);
-  const u32 size = static_cast<u32>(std::ftell(fp));
-  std::fseek(fp, 0, SEEK_SET);
+  std::fseek(fp.get(), 0, SEEK_END);
+  const u32 size = static_cast<u32>(std::ftell(fp.get()));
+  std::fseek(fp.get(), 0, SEEK_SET);
 
   if (size != BIOS_SIZE)
   {
     Log_ErrorPrintf("BIOS image '%s' mismatch, expecting %u bytes, got %u bytes", filename_str.c_str(), BIOS_SIZE,
                     size);
-    std::fclose(fp);
     return std::nullopt;
   }
 
-  if (std::fread(ret.data(), 1, ret.size(), fp) != ret.size())
+  if (std::fread(ret.data(), 1, ret.size(), fp.get()) != ret.size())
   {
     Log_ErrorPrintf("Failed to read BIOS image '%s'", filename_str.c_str());
-    std::fclose(fp);
     return std::nullopt;
   }
 
-  std::fclose(fp);
   return ret;
 }
 
