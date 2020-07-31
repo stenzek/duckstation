@@ -20,13 +20,10 @@ class CDImage;
 class HostDisplay;
 class GameList;
 
-class System;
 struct SystemBootParameters;
 
 class HostInterface
 {
-  friend System;
-
 public:
   enum : u32
   {
@@ -43,12 +40,6 @@ public:
 
   /// Access to host audio stream.
   ALWAYS_INLINE AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
-
-  /// Returns a settings object which can be modified.
-  ALWAYS_INLINE Settings& GetSettings() { return m_settings; }
-
-  /// Access to emulated system.
-  ALWAYS_INLINE System* GetSystem() const { return m_system.get(); }
 
   /// Initializes the emulator frontend.
   virtual bool Initialize();
@@ -118,6 +109,12 @@ public:
   /// Returns a float setting from the configuration.
   virtual float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
+  /// Loads the BIOS image for the specified region.
+  std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
+
+  virtual void OnRunningGameChanged();
+  virtual void OnSystemPerformanceCountersUpdated();
+
 protected:
   virtual bool AcquireHostDisplay() = 0;
   virtual void ReleaseHostDisplay() = 0;
@@ -125,9 +122,7 @@ protected:
 
   virtual void OnSystemCreated();
   virtual void OnSystemDestroyed();
-  virtual void OnSystemPerformanceCountersUpdated();
   virtual void OnSystemStateSaved(bool global, s32 slot);
-  virtual void OnRunningGameChanged();
   virtual void OnControllerTypeChanged(u32 slot);
 
   /// Restores all settings to defaults.
@@ -148,9 +143,6 @@ protected:
   /// Sets the user directory to the program directory, i.e. "portable mode".
   void SetUserDirectoryToProgramDirectory();
 
-  /// Loads the BIOS image for the specified region.
-  std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
-
   /// Quick switch between software and hardware rendering.
   void ToggleSoftwareRendering();
 
@@ -165,8 +157,8 @@ protected:
 
   std::unique_ptr<HostDisplay> m_display;
   std::unique_ptr<AudioStream> m_audio_stream;
-  std::unique_ptr<System> m_system;
-  Settings m_settings;
   std::string m_program_directory;
   std::string m_user_directory;
 };
+
+extern HostInterface* g_host_interface;

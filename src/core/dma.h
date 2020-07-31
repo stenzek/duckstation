@@ -7,14 +7,7 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
-class Bus;
-class InterruptController;
-class GPU;
-class CDROM;
-class SPU;
-class MDEC;
 
 class DMA
 {
@@ -38,8 +31,8 @@ public:
   DMA();
   ~DMA();
 
-  void Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, SPU* spu,
-                  MDEC* mdec);
+  void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -49,7 +42,6 @@ public:
   void SetRequest(Channel channel, bool request);
 
   // changing interfaces
-  void SetGPU(GPU* gpu) { m_gpu = gpu; }
   void SetMaxSliceTicks(TickCount ticks) { m_max_slice_ticks = ticks; }
   void SetHaltTicks(TickCount ticks) { m_halt_ticks = ticks; }
 
@@ -81,14 +73,6 @@ private:
 
   // from memory -> device
   TickCount TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
-
-  System* m_system = nullptr;
-  Bus* m_bus = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
-  GPU* m_gpu = nullptr;
-  CDROM* m_cdrom = nullptr;
-  SPU* m_spu = nullptr;
-  MDEC* m_mdec = nullptr;
 
   // configuration
   TickCount m_max_slice_ticks = 1000;
@@ -212,3 +196,5 @@ private:
     }
   } m_DICR = {};
 };
+
+extern DMA g_dma;

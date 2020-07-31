@@ -17,8 +17,8 @@ void CodeGenerator::EmitStoreGuestRegister(Reg guest_reg, const Value& value)
 void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)
 {
   DebugAssert(value.size == RegSize_32 && value.IsInHostRegister());
-  EmitStoreCPUStructField(offsetof(Core, m_load_delay_reg), Value::FromConstantU8(static_cast<u8>(reg)));
-  EmitStoreCPUStructField(offsetof(Core, m_load_delay_value), value);
+  EmitStoreCPUStructField(offsetof(State, load_delay_reg), Value::FromConstantU8(static_cast<u8>(reg)));
+  EmitStoreCPUStructField(offsetof(State, load_delay_value), value);
   m_load_delay_dirty = true;
 }
 

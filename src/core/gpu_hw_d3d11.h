@@ -19,8 +19,7 @@ public:
   GPU_HW_D3D11();
   ~GPU_HW_D3D11() override;
 
-  bool Initialize(HostDisplay* host_display, System* system, DMA* dma, InterruptController* interrupt_controller,
-                  Timers* timers) override;
+  bool Initialize(HostDisplay* host_display) override;
   void Reset() override;
 
   void ResetGraphicsAPIState() override;

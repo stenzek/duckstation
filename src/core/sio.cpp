@@ -1,22 +1,24 @@
 #include "sio.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "controller.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
-#include "controller.h"
-#include "system.h"
 Log_SetChannel(SIO);
+
+SIO g_sio;
 
 SIO::SIO() = default;
 
 SIO::~SIO() = default;
 
-void SIO::Initialize(System* system, InterruptController* interrupt_controller)
+void SIO::Initialize()
 {
-  m_system = system;
-  m_interrupt_controller = interrupt_controller;
+  Reset();
 }
+
+void SIO::Shutdown() {}
 
 void SIO::Reset()
 {

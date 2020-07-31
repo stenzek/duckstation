@@ -275,23 +275,31 @@ static std::array<CommandInfo, 255> s_command_info = {{
   0 // Unknown
 }};
 
+CDROM g_cdrom;
+
 CDROM::CDROM() = default;
 
 CDROM::~CDROM() = default;
 
-void CDROM::Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu)
+void CDROM::Initialize()
 {
-  m_system = system;
-  m_dma = dma;
-  m_interrupt_controller = interrupt_controller;
-  m_spu = spu;
   m_command_event =
-    m_system->CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
-  m_drive_event = m_system->CreateTimingEvent("CDROM Drive Event", 1, 1,
-                                              std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
+    TimingEvents::CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
+  m_drive_event = TimingEvents::CreateTimingEvent("CDROM Drive Event", 1, 1,
+                                                  std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
 
-  if (m_system->GetSettings().cdrom_read_thread)
+  if (g_settings.cdrom_read_thread)
     m_reader.StartThread();
+
+  Reset();
+}
+
+void CDROM::Shutdown()
+{
+  m_command_event.reset();
+  m_drive_event.reset();
+  m_reader.StopThread();
+  m_reader.RemoveMedia();
 }
 
 void CDROM::Reset()
@@ -438,7 +446,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   // set the region from the system area of the disc
   m_disc_region = GameList::GetRegionForImage(media.get());
   Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(m_disc_region),
-                 Settings::GetConsoleRegionName(m_system->GetRegion()));
+                 Settings::GetConsoleRegionName(System::GetRegion()));
 
   // motor automatically spins up
   if (m_drive_state != DriveState::ShellOpening)
@@ -787,7 +795,7 @@ void CDROM::UpdateStatusRegister()
   m_status.DRQSTS = !m_data_fifo.IsEmpty();
   m_status.BUSYSTS = HasPendingCommand();
 
-  m_dma->SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
+  g_dma.SetRequest(DMA::Channel::CDROM, m_status.DRQSTS);
 }
 
 void CDROM::UpdateInterruptRequest()
@@ -795,7 +803,7 @@ void CDROM::UpdateInterruptRequest()
   if ((m_interrupt_flag_register & m_interrupt_enable_register) == 0)
     return;
 
-  m_interrupt_controller->InterruptRequest(InterruptController::IRQ::CDROM);
+  g_interrupt_controller.InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
@@ -1421,7 +1429,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     {
       Log_DebugPrintf("Get CDROM region ID string");
 
-      switch (m_system->GetRegion())
+      switch (System::GetRegion())
       {
         case ConsoleRegion::NTSC_J:
         {
@@ -1860,9 +1868,9 @@ void CDROM::DoIDRead()
     m_current_lba = 0;
     m_reader.QueueReadSector(0);
 
-    if (m_system->GetSettings().cdrom_region_check &&
+    if (g_settings.cdrom_region_check &&
         (m_disc_region == DiscRegion::Other ||
-         m_system->GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
+         System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed
@@ -2214,7 +2222,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   if (m_muted || m_adpcm_muted)
     return;
 
-  m_spu->GeneratePendingSamples();
+  g_spu.GeneratePendingSamples();
 
   if (m_last_sector_subheader.codinginfo.IsStereo())
   {
@@ -2282,7 +2290,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   if (m_muted)
     return;
 
-  m_spu->GeneratePendingSamples();
+  g_spu.GeneratePendingSamples();
 
   constexpr bool is_stereo = true;
   constexpr u32 num_samples = CDImage::RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
@@ -2347,7 +2355,7 @@ void CDROM::DrawDebugWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("CDROM State", &m_system->GetSettings().debugging.show_cdrom_state))
+  if (!ImGui::Begin("CDROM State", &g_settings.debugging.show_cdrom_state))
   {
     ImGui::End();
     return;

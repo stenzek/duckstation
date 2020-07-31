@@ -280,7 +280,6 @@ protected:
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
 
-  bool m_paused = false;
   bool m_frame_step_request = false;
   bool m_speed_limiter_temp_disabled = false;
   bool m_speed_limiter_enabled = false;

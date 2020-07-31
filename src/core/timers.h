@@ -6,18 +6,17 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
-class InterruptController;
 class GPU;
 
-class Timers
+class Timers final
 {
 public:
   Timers();
   ~Timers();
 
-  void Initialize(System* system, InterruptController* interrupt_controller, GPU* gpu);
+  void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -26,10 +25,10 @@ public:
   void DrawDebugStateWindow();
 
   // dot clock/hblank/sysclk div 8
-  bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
+  ALWAYS_INLINE bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
 
   // queries for GPU
-  bool IsExternalIRQEnabled(u32 timer) const
+  ALWAYS_INLINE bool IsExternalIRQEnabled(u32 timer) const
   {
     const CounterState& cs = m_states[timer];
     return (cs.external_counting_enabled && (cs.mode.bits & ((1u << 4) | (1u << 5))) != 0);
@@ -41,9 +40,6 @@ public:
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
-
-  // changing interfaces
-  void SetGPU(GPU* gpu) { m_gpu = gpu; }
 
 private:
   static constexpr u32 NUM_TIMERS = 3;
@@ -93,11 +89,10 @@ private:
   TickCount GetTicksUntilNextInterrupt() const;
   void UpdateSysClkEvent();
 
-  System* m_system = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
-  GPU* m_gpu = nullptr;
   std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};
   u32 m_sysclk_div_8_carry = 0; // partial ticks for timer 3 with sysclk/8
 };
+
+extern Timers g_timers;

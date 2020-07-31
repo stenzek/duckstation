@@ -3,12 +3,7 @@
 
 class StateWrapper;
 
-namespace CPU
-{
-class Core;
-}
-
-class InterruptController
+class InterruptController final
 {
 public:
   static constexpr u32 NUM_IRQS = 11;
@@ -32,12 +27,13 @@ public:
   InterruptController();
   ~InterruptController();
 
-  void Initialize(CPU::Core* cpu);
+  void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
   // Should mirror CPU state.
-  bool GetIRQLineState() const { return (m_interrupt_status_register != 0); }
+  ALWAYS_INLINE bool GetIRQLineState() const { return (m_interrupt_status_register != 0); }
 
   // Interupts are edge-triggered, so if it is masked when TriggerInterrupt() is called, it will be lost.
   void InterruptRequest(IRQ irq);
@@ -52,9 +48,8 @@ private:
 
   void UpdateCPUInterruptRequest();
 
-  CPU::Core* m_cpu;
-
   u32 m_interrupt_status_register = 0;
   u32 m_interrupt_mask_register = DEFAULT_INTERRUPT_MASK;
 };
 
+extern InterruptController g_interrupt_controller;

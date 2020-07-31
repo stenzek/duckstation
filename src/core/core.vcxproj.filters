@@ -27,7 +27,6 @@
     <ClCompile Include="bios.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
     <ClCompile Include="cpu_recompiler_register_cache.cpp" />
-    <ClCompile Include="cpu_recompiler_thunks.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_x64.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
@@ -64,7 +63,6 @@
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="cdrom.h" />
     <ClInclude Include="gte.h" />
-    <ClInclude Include="gte_types.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="timers.h" />
@@ -95,10 +93,6 @@
     <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpu_core.inl" />
-    <None Include="bus.inl" />
-    <None Include="gte.inl" />
+    <ClInclude Include="gte_types.h" />
   </ItemGroup>
 </Project>

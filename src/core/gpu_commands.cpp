@@ -205,7 +205,7 @@ bool GPU::HandleInterruptRequestCommand()
   if (!m_GPUSTAT.interrupt_request)
   {
     m_GPUSTAT.interrupt_request = true;
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::GPU);
+    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::GPU);
   }
 
   m_fifo.RemoveOne();
@@ -496,7 +496,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 
 void GPU::FinishVRAMWrite()
 {
-  if (m_system->GetSettings().debugging.dump_cpu_to_vram_copies)
+  if (g_settings.debugging.dump_cpu_to_vram_copies)
   {
     DumpVRAMToFile(StringUtil::StdStringFromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++).c_str(),
                    m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width,
@@ -535,7 +535,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   // ensure VRAM shadow is up to date
   ReadVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height);
 
-  if (m_system->GetSettings().debugging.dump_vram_to_cpu_copies)
+  if (g_settings.debugging.dump_vram_to_cpu_copies)
   {
     DumpVRAMToFile(StringUtil::StdStringFromFormat("vram_to_cpu_copy_%u.png", s_vram_to_cpu_dump_id++).c_str(),
                    m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,

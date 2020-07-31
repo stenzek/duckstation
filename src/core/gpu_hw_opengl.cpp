@@ -27,8 +27,7 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   }
 }
 
-bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* dma,
-                               InterruptController* interrupt_controller, Timers* timers)
+bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL &&
       host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGLES)
@@ -39,9 +38,9 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display, System* system, DMA* d
 
   SetCapabilities(host_display);
 
-  m_shader_cache.Open(IsGLES(), system->GetHostInterface()->GetShaderCacheBasePath());
+  m_shader_cache.Open(IsGLES(), g_host_interface->GetShaderCacheBasePath());
 
-  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
+  if (!GPU_HW::Initialize(host_display))
     return false;
 
   if (!CreateFramebuffer())
@@ -337,7 +336,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_supports_dual_source_blend);
 
-  m_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
+  g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -580,7 +579,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_system->GetSettings().debugging.show_vram)
+  if (g_settings.debugging.show_vram)
   {
     m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
                                       m_vram_texture.GetWidth(), static_cast<s32>(m_vram_texture.GetHeight()), 0,

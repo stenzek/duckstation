@@ -5,7 +5,7 @@
 class HostInterfaceProgressCallback : public BaseProgressCallback
 {
 public:
-  HostInterfaceProgressCallback(HostInterface* intf);
+  HostInterfaceProgressCallback();
 
   void PushState() override;
   void PopState() override;
@@ -27,6 +27,5 @@ public:
 private:
   void Redraw(bool force);
 
-  HostInterface* m_host_interface;
   int m_last_progress_percent = -1;
 };

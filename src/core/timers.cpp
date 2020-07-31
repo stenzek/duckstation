@@ -7,17 +7,22 @@
 #include <imgui.h>
 Log_SetChannel(Timers);
 
+Timers g_timers;
+
 Timers::Timers() = default;
 
 Timers::~Timers() = default;
 
-void Timers::Initialize(System* system, InterruptController* interrupt_controller, GPU* gpu)
+void Timers::Initialize()
 {
-  m_system = system;
-  m_interrupt_controller = interrupt_controller;
-  m_gpu = gpu;
-  m_sysclk_event = system->CreateTimingEvent("Timer SysClk Interrupt", 1, 1,
-                                             std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
+  m_sysclk_event = TimingEvents::CreateTimingEvent(
+    "Timer SysClk Interrupt", 1, 1, std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
+  Reset();
+}
+
+void Timers::Shutdown()
+{
+  m_sysclk_event.reset();
 }
 
 void Timers::Reset()
@@ -182,8 +187,8 @@ u32 Timers::ReadRegister(u32 offset)
       if (timer_index < 2 && cs.external_counting_enabled)
       {
         // timers 0/1 depend on the GPU
-        if (timer_index == 0 || m_gpu->IsCRTCScanlinePending())
-          m_gpu->SynchronizeCRTC();
+        if (timer_index == 0 || g_gpu->IsCRTCScanlinePending())
+          g_gpu->SynchronizeCRTC();
       }
 
       m_sysclk_event->InvokeEarly();
@@ -196,8 +201,8 @@ u32 Timers::ReadRegister(u32 offset)
       if (timer_index < 2 && cs.external_counting_enabled)
       {
         // timers 0/1 depend on the GPU
-        if (timer_index == 0 || m_gpu->IsCRTCScanlinePending())
-          m_gpu->SynchronizeCRTC();
+        if (timer_index == 0 || g_gpu->IsCRTCScanlinePending())
+          g_gpu->SynchronizeCRTC();
       }
 
       m_sysclk_event->InvokeEarly();
@@ -227,8 +232,8 @@ void Timers::WriteRegister(u32 offset, u32 value)
   if (timer_index < 2 && cs.external_counting_enabled)
   {
     // timers 0/1 depend on the GPU
-    if (timer_index == 0 || m_gpu->IsCRTCScanlinePending())
-      m_gpu->SynchronizeCRTC();
+    if (timer_index == 0 || g_gpu->IsCRTCScanlinePending())
+      g_gpu->SynchronizeCRTC();
   }
 
   m_sysclk_event->InvokeEarly();
@@ -311,7 +316,7 @@ void Timers::UpdateIRQ(u32 index)
 
   Log_DebugPrintf("Raising timer %u IRQ", index);
   cs.irq_done = true;
-  m_interrupt_controller->InterruptRequest(
+  g_interrupt_controller.InterruptRequest(
     static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + index));
 }
 
@@ -367,7 +372,7 @@ void Timers::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 100.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("Timer State", &m_system->GetSettings().debugging.show_timers_state))
+  if (!ImGui::Begin("Timer State", &g_settings.debugging.show_timers_state))
   {
     ImGui::End();
     return;

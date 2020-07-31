@@ -25,8 +25,7 @@ GPU_HW_Vulkan::~GPU_HW_Vulkan()
   DestroyResources();
 }
 
-bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, System* system, DMA* dma,
-                               InterruptController* interrupt_controller, Timers* timers)
+bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::Vulkan)
   {
@@ -37,7 +36,7 @@ bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display, System* system, DMA* d
   Assert(g_vulkan_shader_cache);
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
+  if (!GPU_HW::Initialize(host_display))
     return false;
 
   if (!CreatePipelineLayouts())
@@ -570,7 +569,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     {VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}};
   static constexpr std::array<VkPolygonMode, 2> polygon_mode_mapping = {{VK_POLYGON_MODE_LINE, VK_POLYGON_MODE_FILL}};
 
-  m_system->GetHostInterface()->DisplayLoadingScreen("Compiling Shaders...");
+  g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
 
   VkDevice device = g_vulkan_context->GetDevice();
   VkPipelineCache pipeline_cache = g_vulkan_shader_cache->GetPipelineCache();
@@ -941,7 +940,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_system->GetSettings().debugging.show_vram)
+  if (g_settings.debugging.show_vram)
   {
     m_host_display->SetDisplayTexture(&m_vram_texture, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
                                       m_vram_texture.GetWidth(), m_vram_texture.GetHeight());

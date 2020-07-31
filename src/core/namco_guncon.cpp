@@ -10,7 +10,7 @@
 #include <array>
 Log_SetChannel(NamcoGunCon);
 
-NamcoGunCon::NamcoGunCon(System* system) : m_system(system) {}
+NamcoGunCon::NamcoGunCon() = default;
 
 NamcoGunCon::~NamcoGunCon() = default;
 
@@ -153,14 +153,13 @@ bool NamcoGunCon::Transfer(const u8 data_in, u8* data_out)
 void NamcoGunCon::UpdatePosition()
 {
   // get screen coordinates
-  const HostDisplay* display = m_system->GetHostInterface()->GetDisplay();
+  const HostDisplay* display = g_host_interface->GetDisplay();
   const s32 mouse_x = display->GetMousePositionX();
   const s32 mouse_y = display->GetMousePositionY();
 
   // are we within the active display area?
   u32 tick, line;
-  if (mouse_x < 0 || mouse_y < 0 ||
-      !m_system->GetGPU()->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line))
+  if (mouse_x < 0 || mouse_y < 0 || !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line))
   {
     Log_DebugPrintf("Lightgun out of range for window coordinates %d,%d", mouse_x, mouse_y);
     m_position_x = 0x01;
@@ -169,16 +168,16 @@ void NamcoGunCon::UpdatePosition()
   }
 
   // 8MHz units for X = 44100*768*11/7 = 53222400 / 8000000 = 6.6528
-  const double divider = static_cast<double>(m_system->GetGPU()->GetCRTCFrequency()) / 8000000.0;
+  const double divider = static_cast<double>(g_gpu->GetCRTCFrequency()) / 8000000.0;
   m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
   m_position_y = static_cast<u16>(line);
   Log_DebugPrintf("Lightgun window coordinates %d,%d -> tick %u line %u 8mhz ticks %u", mouse_x, mouse_y, tick, line,
                   m_position_x);
 }
 
-std::unique_ptr<NamcoGunCon> NamcoGunCon::Create(System* system)
+std::unique_ptr<NamcoGunCon> NamcoGunCon::Create()
 {
-  return std::make_unique<NamcoGunCon>(system);
+  return std::make_unique<NamcoGunCon>();
 }
 
 std::optional<s32> NamcoGunCon::StaticGetAxisCodeByName(std::string_view button_name)
@@ -234,11 +233,11 @@ Controller::SettingList NamcoGunCon::StaticGetSettings()
   return SettingList(settings.begin(), settings.end());
 }
 
-void NamcoGunCon::LoadSettings(HostInterface* host_interface, const char* section)
+void NamcoGunCon::LoadSettings(const char* section)
 {
-  Controller::LoadSettings(host_interface, section);
+  Controller::LoadSettings(section);
 
-  std::string path = host_interface->GetStringSettingValue(section, "CrosshairImagePath");
+  std::string path = g_host_interface->GetStringSettingValue(section, "CrosshairImagePath");
   if (path != m_crosshair_image_path)
   {
     m_crosshair_image_path = std::move(path);
@@ -255,7 +254,7 @@ void NamcoGunCon::LoadSettings(HostInterface* host_interface, const char* sectio
                                 Resources::CROSSHAIR_IMAGE_DATA.data());
   }
 
-  m_crosshair_image_scale = host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
+  m_crosshair_image_scale = g_host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
 }
 
 bool NamcoGunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)

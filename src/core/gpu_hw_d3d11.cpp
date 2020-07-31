@@ -19,8 +19,7 @@ GPU_HW_D3D11::~GPU_HW_D3D11()
   }
 }
 
-bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dma,
-                              InterruptController* interrupt_controller, Timers* timers)
+bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)
   {
@@ -30,7 +29,7 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dm
 
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display, system, dma, interrupt_controller, timers))
+  if (!GPU_HW::Initialize(host_display))
     return false;
 
   m_device = static_cast<ID3D11Device*>(host_display->GetRenderDevice());
@@ -38,8 +37,8 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display, System* system, DMA* dm
   if (!m_device || !m_context)
     return false;
 
-  m_shader_cache.Open(system->GetHostInterface()->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
-                      system->GetSettings().gpu_use_debug_device);
+  m_shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
+                      g_settings.gpu_use_debug_device);
 
   if (!CreateFramebuffer())
   {
@@ -370,7 +369,7 @@ bool GPU_HW_D3D11::CompileShaders()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_supports_dual_source_blend);
 
-  m_system->GetHostInterface()->DisplayLoadingScreen("Compiling shaders...");
+  g_host_interface->DisplayLoadingScreen("Compiling shaders...");
 
   m_screen_quad_vertex_shader =
     m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
@@ -572,7 +571,7 @@ void GPU_HW_D3D11::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
 
-  if (m_system->GetSettings().debugging.show_vram)
+  if (g_settings.debugging.show_vram)
   {
     m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                                       0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
@@ -789,7 +788,4 @@ void GPU_HW_D3D11::UpdateDepthBufferFromMaskBit()
   RestoreGraphicsAPIState();
 }
 
-std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer()
-{
-  return std::make_unique<GPU_HW_D3D11>();
-}
+std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer() { return std::make_unique<GPU_HW_D3D11>(); }

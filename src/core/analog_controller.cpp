@@ -6,9 +6,10 @@
 #include "system.h"
 Log_SetChannel(AnalogController);
 
-AnalogController::AnalogController(System* system, u32 index) : m_system(system), m_index(index)
+AnalogController::AnalogController(u32 index) : m_index(index)
 {
   m_axis_state.fill(0x80);
+  Reset();
 }
 
 AnalogController::~AnalogController() = default;
@@ -52,8 +53,8 @@ bool AnalogController::DoState(StateWrapper& sw)
 
     if (old_analog_mode != m_analog_mode)
     {
-      m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
-                                                           m_analog_mode ? "analog" : "digital");
+      g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+                                               m_analog_mode ? "analog" : "digital");
     }
   }
   return true;
@@ -94,8 +95,8 @@ void AnalogController::SetButtonState(Button button, bool pressed)
     {
       if (m_analog_locked)
       {
-        m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.",
-                                                             m_index + 1u, m_analog_mode ? "analog" : "digital");
+        g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.", m_index + 1u,
+                                                 m_analog_mode ? "analog" : "digital");
       }
       else
       {
@@ -154,8 +155,8 @@ void AnalogController::SetAnalogMode(bool enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  m_system->GetHostInterface()->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
-                                                       enabled ? "analog" : "digital");
+  g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+                                           enabled ? "analog" : "digital");
   m_analog_mode = enabled;
 }
 
@@ -397,9 +398,9 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
-std::unique_ptr<AnalogController> AnalogController::Create(System* system, u32 index)
+std::unique_ptr<AnalogController> AnalogController::Create(u32 index)
 {
-  return std::make_unique<AnalogController>(system, index);
+  return std::make_unique<AnalogController>(index);
 }
 
 std::optional<s32> AnalogController::StaticGetAxisCodeByName(std::string_view axis_name)
@@ -492,8 +493,8 @@ Controller::SettingList AnalogController::StaticGetSettings()
   return SettingList(settings.begin(), settings.end());
 }
 
-void AnalogController::LoadSettings(HostInterface* host_interface, const char* section)
+void AnalogController::LoadSettings(const char* section)
 {
-  Controller::LoadSettings(host_interface, section);
-  m_auto_enable_analog = host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
+  Controller::LoadSettings(section);
+  m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
 }

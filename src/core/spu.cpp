@@ -11,21 +11,28 @@
 #include <imgui.h>
 Log_SetChannel(SPU);
 
+SPU g_spu;
+
 SPU::SPU() = default;
 
 SPU::~SPU() = default;
 
-void SPU::Initialize(System* system, DMA* dma, CDROM* cdrom, InterruptController* interrupt_controller)
+void SPU::Initialize()
 {
-  m_system = system;
-  m_dma = dma;
-  m_cdrom = cdrom;
-  m_interrupt_controller = interrupt_controller;
-  m_tick_event = m_system->CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
-                                             std::bind(&SPU::Execute, this, std::placeholders::_1), false);
+  m_tick_event = TimingEvents::CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
+                                                 std::bind(&SPU::Execute, this, std::placeholders::_1), false);
   m_transfer_event =
-    m_system->CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
-                                std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
+    TimingEvents::CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
+                                    std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
+
+  Reset();
+}
+
+void SPU::Shutdown()
+{
+  m_tick_event.reset();
+  m_transfer_event.reset();
+  m_dump_writer.reset();
 }
 
 void SPU::Reset()
@@ -81,6 +88,7 @@ void SPU::Reset()
   }
 
   m_transfer_fifo.Clear();
+  m_transfer_event->Deactivate();
   m_ram.fill(0);
   UpdateEventInterval();
 }
@@ -147,7 +155,7 @@ bool SPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    m_system->GetHostInterface()->GetAudioStream()->EmptyBuffers();
+    g_host_interface->GetAudioStream()->EmptyBuffers();
     UpdateEventInterval();
     UpdateTransferEvent();
   }
@@ -649,7 +657,7 @@ void SPU::CheckRAMIRQ(u32 address)
   {
     Log_DebugPrintf("SPU IRQ at address 0x%08X", address);
     m_SPUSTAT.irq9_flag = true;
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::SPU);
+    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::SPU);
   }
 }
 
@@ -675,7 +683,7 @@ void SPU::Execute(TickCount ticks)
 
   while (remaining_frames > 0)
   {
-    AudioStream* const output_stream = m_system->GetHostInterface()->GetAudioStream();
+    AudioStream* const output_stream = g_host_interface->GetAudioStream();
     s16* output_frame_start;
     u32 output_frame_space = remaining_frames;
     output_stream->BeginWrite(&output_frame_start, &output_frame_space);
@@ -730,7 +738,7 @@ void SPU::Execute(TickCount ticks)
       UpdateNoise();
 
       // Mix in CD audio.
-      const auto [cd_audio_left, cd_audio_right] = m_cdrom->GetAudioFrame();
+      const auto [cd_audio_left, cd_audio_right] = g_cdrom.GetAudioFrame();
       if (m_SPUCNT.cd_audio_enable)
       {
         const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
@@ -782,7 +790,7 @@ void SPU::UpdateEventInterval()
   // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
   // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
   // the SPU state.
-  const u32 max_slice_frames = m_system->GetHostInterface()->GetAudioStream()->GetBufferSize();
+  const u32 max_slice_frames = g_host_interface->GetAudioStream()->GetBufferSize();
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;
@@ -930,7 +938,7 @@ void SPU::UpdateDMARequest()
   }
 
   // This might call us back directly.
-  m_dma->SetRequest(DMA::Channel::SPU, m_SPUSTAT.dma_request);
+  g_dma.SetRequest(DMA::Channel::SPU, m_SPUSTAT.dma_request);
 }
 
 void SPU::DMARead(u32* words, u32 word_count)
@@ -1744,7 +1752,7 @@ void SPU::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 800.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("SPU State", &m_system->GetSettings().debugging.show_spu_state))
+  if (!ImGui::Begin("SPU State", &g_settings.debugging.show_spu_state))
   {
     ImGui::End();
     return;

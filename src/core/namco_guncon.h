@@ -15,10 +15,10 @@ public:
     Count
   };
 
-  NamcoGunCon(System* system);
+  NamcoGunCon();
   ~NamcoGunCon() override;
 
-  static std::unique_ptr<NamcoGunCon> Create(System* system);
+  static std::unique_ptr<NamcoGunCon> Create();
   static std::optional<s32> StaticGetAxisCodeByName(std::string_view button_name);
   static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
   static AxisList StaticGetAxisNames();
@@ -32,7 +32,7 @@ public:
 
   void Reset() override;
   bool DoState(StateWrapper& sw) override;
-  void LoadSettings(HostInterface* host_interface, const char* section) override;
+  void LoadSettings(const char* section) override;
   bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale) override;
 
   void SetAxisState(s32 axis_code, float value) override;
@@ -58,7 +58,6 @@ private:
     YMSB
   };
 
-  System* m_system;
   Common::RGBA8Image m_crosshair_image;
   std::string m_crosshair_image_path;
   float m_crosshair_image_scale = 1.0f;

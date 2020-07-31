@@ -7,9 +7,7 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
-class DMA;
 
 class MDEC
 {
@@ -17,7 +15,8 @@ public:
   MDEC();
   ~MDEC();
 
-  void Initialize(System* system, DMA* dma);
+  void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -122,9 +121,6 @@ private:
                   const std::array<s16, 64>& Yblk);
   void y_to_mono(const std::array<s16, 64>& Yblk);
 
-  System* m_system = nullptr;
-  DMA* m_dma = nullptr;
-
   StatusRegister m_status = {};
   bool m_enable_dma_in = false;
   bool m_enable_dma_out = false;
@@ -151,3 +147,5 @@ private:
 
   u32 m_total_blocks_decoded = 0;
 };
+
+extern MDEC g_mdec;

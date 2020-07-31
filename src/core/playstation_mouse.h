@@ -14,10 +14,10 @@ public:
     Count
   };
 
-  PlayStationMouse(System* system);
+  PlayStationMouse();
   ~PlayStationMouse() override;
 
-  static std::unique_ptr<PlayStationMouse> Create(System* system);
+  static std::unique_ptr<PlayStationMouse> Create();
   static std::optional<s32> StaticGetAxisCodeByName(std::string_view button_name);
   static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
   static AxisList StaticGetAxisNames();
@@ -51,8 +51,6 @@ private:
     DeltaX,
     DeltaY
   };
-
-  System* m_system;
 
   s32 m_last_host_position_x = 0;
   s32 m_last_host_position_y = 0;

@@ -3,7 +3,5 @@
 #include "cpu_types.h"
 
 namespace CPU {
-class Core;
-
-void DisassembleInstruction(String* dest, u32 pc, u32 bits, Core* state = nullptr);
+void DisassembleInstruction(String* dest, u32 pc, u32 bits, Registers* regs = nullptr);
 } // namespace CPU

@@ -12,20 +12,16 @@
 #include <vector>
 
 class StateWrapper;
-
-class System;
 class TimingEvent;
-class DMA;
-class InterruptController;
-class SPU;
 
-class CDROM
+class CDROM final
 {
 public:
   CDROM();
   ~CDROM();
 
-  void Initialize(System* system, DMA* dma, InterruptController* interrupt_controller, SPU* spu);
+  void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -276,10 +272,6 @@ private:
   template<bool STEREO, bool SAMPLE_RATE>
   void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
-  System* m_system = nullptr;
-  DMA* m_dma = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
-  SPU* m_spu = nullptr;
   std::unique_ptr<TimingEvent> m_command_event;
   std::unique_ptr<TimingEvent> m_drive_event;
 
@@ -347,5 +339,7 @@ private:
   CDROMAsyncReader m_reader;
 
   // two 16-bit samples packed in 32-bits
-  InlineFIFOQueue<u32, AUDIO_FIFO_SIZE> m_audio_fifo;
+  HeapFIFOQueue<u32, AUDIO_FIFO_SIZE> m_audio_fifo;
 };
+
+extern CDROM g_cdrom;

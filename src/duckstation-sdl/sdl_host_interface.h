@@ -12,7 +12,6 @@
 #include <mutex>
 #include <string>
 
-class System;
 class AudioStream;
 
 class INISettingsInterface;
@@ -61,8 +60,6 @@ protected:
   void UpdateInputMap() override;
 
 private:
-  bool HasSystem() const { return static_cast<bool>(m_system); }
-
   bool CreateSDLWindow();
   void DestroySDLWindow();
   bool CreateDisplay();

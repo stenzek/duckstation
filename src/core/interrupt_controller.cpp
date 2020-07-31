@@ -4,14 +4,18 @@
 #include "cpu_core.h"
 Log_SetChannel(InterruptController);
 
+InterruptController g_interrupt_controller;
+
 InterruptController::InterruptController() = default;
 
 InterruptController::~InterruptController() = default;
 
-void InterruptController::Initialize(CPU::Core* cpu)
+void InterruptController::Initialize()
 {
-  m_cpu = cpu;
+  Reset();
 }
+
+void InterruptController::Shutdown() {}
 
 void InterruptController::Reset()
 {
@@ -82,7 +86,7 @@ void InterruptController::UpdateCPUInterruptRequest()
 {
   // external interrupts set bit 10 only?
   if ((m_interrupt_status_register & m_interrupt_mask_register) != 0)
-    m_cpu->SetExternalInterrupt(2);
+    CPU::SetExternalInterrupt(2);
   else
-    m_cpu->ClearExternalInterrupt(2);
+    CPU::ClearExternalInterrupt(2);
 }

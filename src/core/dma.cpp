@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
+#include "cpu_core.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
@@ -11,27 +12,27 @@
 #include "system.h"
 Log_SetChannel(DMA);
 
+DMA g_dma;
+
 DMA::DMA() = default;
 
 DMA::~DMA() = default;
 
-void DMA::Initialize(System* system, Bus* bus, InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom,
-                     SPU* spu, MDEC* mdec)
+void DMA::Initialize()
 {
-  m_system = system;
-  m_bus = bus;
-  m_interrupt_controller = interrupt_controller;
-  m_gpu = gpu;
-  m_cdrom = cdrom;
-  m_spu = spu;
-  m_mdec = mdec;
-
-  m_max_slice_ticks = system->GetSettings().dma_max_slice_ticks;
-  m_halt_ticks = system->GetSettings().dma_halt_ticks;
+  m_max_slice_ticks = g_settings.dma_max_slice_ticks;
+  m_halt_ticks = g_settings.dma_halt_ticks;
 
   m_transfer_buffer.resize(32);
-  m_unhalt_event = system->CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
-                                             std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+  m_unhalt_event = TimingEvents::CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
+                                                   std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+
+  Reset();
+}
+
+void DMA::Shutdown()
+{
+  m_unhalt_event.reset();
 }
 
 void DMA::Reset()
@@ -238,7 +239,7 @@ void DMA::UpdateIRQ()
   if (m_DICR.master_flag)
   {
     Log_TracePrintf("Firing DMA master interrupt");
-    m_interrupt_controller->InterruptRequest(InterruptController::IRQ::DMA);
+    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::DMA);
   }
 }
 
@@ -267,7 +268,7 @@ bool DMA::TransferChannel(Channel channel)
       else
         used_ticks = TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, word_count);
 
-      m_system->StallCPU(used_ticks);
+      CPU::AddPendingTicks(used_ticks);
     }
     break;
 
@@ -283,7 +284,7 @@ bool DMA::TransferChannel(Channel channel)
       Log_DebugPrintf("DMA%u: Copying linked list starting at 0x%08X to device", static_cast<u32>(channel),
                       current_address & ADDRESS_MASK);
 
-      u8* ram_pointer = m_bus->GetRAM();
+      u8* ram_pointer = Bus::g_ram;
       bool halt_transfer = false;
       while (cs.request)
       {
@@ -319,7 +320,7 @@ bool DMA::TransferChannel(Channel channel)
       }
 
       cs.base_address = current_address;
-      m_system->StallCPU(used_ticks);
+      CPU::AddPendingTicks(used_ticks);
 
       if (current_address & UINT32_C(0x800000))
         break;
@@ -370,7 +371,7 @@ bool DMA::TransferChannel(Channel channel)
 
       cs.base_address = current_address & BASE_ADDRESS_MASK;
       cs.block_control.request.block_count = blocks_remaining;
-      m_system->StallCPU(used_ticks);
+      CPU::AddPendingTicks(used_ticks);
 
       // finish transfer later if the request was cleared
       if (blocks_remaining > 0)
@@ -427,28 +428,34 @@ void DMA::UnhaltTransfer(TickCount ticks)
 
 TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count)
 {
-  const u32* src_pointer = reinterpret_cast<u32*>(m_bus->GetRAM() + address);
+  const u32* src_pointer = reinterpret_cast<u32*>(Bus::g_ram + address);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & ADDRESS_MASK) <= address)
   {
     // Use temp buffer if it's wrapping around
     if (m_transfer_buffer.size() < word_count)
       m_transfer_buffer.resize(word_count);
     src_pointer = m_transfer_buffer.data();
-    m_bus->ReadWords(address, m_transfer_buffer.data(), word_count);
+
+    u8* ram_pointer = Bus::g_ram;
+    for (u32 i = 0; i < word_count; i++)
+    {
+      std::memcpy(&m_transfer_buffer[i], &ram_pointer[address], sizeof(u32));
+      address = (address + increment) & ADDRESS_MASK;
+    }
   }
 
   switch (channel)
   {
     case Channel::GPU:
-      m_gpu->DMAWrite(src_pointer, word_count);
+      g_gpu->DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::SPU:
-      m_spu->DMAWrite(src_pointer, word_count);
+      g_spu.DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::MDECin:
-      m_mdec->DMAWrite(src_pointer, word_count);
+      g_mdec.DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::CDROM:
@@ -459,7 +466,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
       break;
   }
 
-  return m_bus->GetDMARAMTickCount(word_count);
+  return Bus::GetDMARAMTickCount(word_count);
 }
 
 TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count)
@@ -467,7 +474,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
   if (channel == Channel::OTC)
   {
     // clear ordering table
-    u8* ram_pointer = m_bus->GetRAM();
+    u8* ram_pointer = Bus::g_ram;
     const u32 word_count_less_1 = word_count - 1;
     for (u32 i = 0; i < word_count_less_1; i++)
     {
@@ -478,11 +485,11 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
     const u32 terminator = UINT32_C(0xFFFFFF);
     std::memcpy(&ram_pointer[address], &terminator, sizeof(terminator));
-    m_bus->InvalidateCodePages(address, word_count);
-    return m_bus->GetDMARAMTickCount(word_count);
+    Bus::InvalidateCodePages(address, word_count);
+    return Bus::GetDMARAMTickCount(word_count);
   }
 
-  u32* dest_pointer = reinterpret_cast<u32*>(&m_bus->m_ram[address]);
+  u32* dest_pointer = reinterpret_cast<u32*>(&Bus::g_ram[address]);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & ADDRESS_MASK) <= address)
   {
     // Use temp buffer if it's wrapping around
@@ -495,19 +502,19 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
   switch (channel)
   {
     case Channel::GPU:
-      m_gpu->DMARead(dest_pointer, word_count);
+      g_gpu->DMARead(dest_pointer, word_count);
       break;
 
     case Channel::CDROM:
-      m_cdrom->DMARead(dest_pointer, word_count);
+      g_cdrom.DMARead(dest_pointer, word_count);
       break;
 
     case Channel::SPU:
-      m_spu->DMARead(dest_pointer, word_count);
+      g_spu.DMARead(dest_pointer, word_count);
       break;
 
     case Channel::MDECout:
-      m_mdec->DMARead(dest_pointer, word_count);
+      g_mdec.DMARead(dest_pointer, word_count);
       break;
 
     default:
@@ -518,7 +525,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
   if (dest_pointer == m_transfer_buffer.data())
   {
-    u8* ram_pointer = m_bus->m_ram;
+    u8* ram_pointer = Bus::g_ram;
     for (u32 i = 0; i < word_count; i++)
     {
       std::memcpy(&ram_pointer[address], &m_transfer_buffer[i], sizeof(u32));
@@ -526,6 +533,6 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
     }
   }
 
-  m_bus->InvalidateCodePages(address, word_count);
-  return m_bus->GetDMARAMTickCount(word_count);
+  Bus::InvalidateCodePages(address, word_count);
+  return Bus::GetDMARAMTickCount(word_count);
 }

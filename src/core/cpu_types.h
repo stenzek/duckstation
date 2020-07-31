@@ -4,8 +4,6 @@
 
 namespace CPU {
 
-class Core;
-
 // Memory address mask used for fetching as well as loadstores (removes cached/uncached/user/kernel bits).
 enum : PhysicalMemoryAddress
 {

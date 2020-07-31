@@ -108,7 +108,7 @@ bool SDLHostInterface::CreateDisplay()
   }
 
   std::unique_ptr<HostDisplay> display;
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
       display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
@@ -130,8 +130,8 @@ bool SDLHostInterface::CreateDisplay()
   }
 
   Assert(display);
-  if (!display->CreateRenderDevice(wi.value(), m_settings.gpu_adapter, m_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
+  if (!display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device) ||
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
   {
     ReportError("Failed to create/initialize display render device");
     return false;
@@ -209,7 +209,7 @@ bool SDLHostInterface::AcquireHostDisplay()
   // Handle renderer switch if required.
   const HostDisplay::RenderAPI render_api = m_display->GetRenderAPI();
   bool needs_switch = false;
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
@@ -321,8 +321,8 @@ void SDLHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
-  if (m_system && !m_system->GetRunningTitle().empty())
-    SDL_SetWindowTitle(m_window, m_system->GetRunningTitle().c_str());
+  if (!System::GetRunningTitle().empty())
+    SDL_SetWindowTitle(m_window, System::GetRunningTitle().c_str());
   else
     SDL_SetWindowTitle(m_window, GetWindowTitle());
 }
@@ -345,7 +345,7 @@ void SDLHostInterface::SaveAndUpdateSettings()
 {
   m_settings_copy.Save(*m_settings_interface.get());
 
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
   CheckForSettingsChanges(old_settings);
 
@@ -451,7 +451,7 @@ void SDLHostInterface::LoadSettings()
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  m_settings_copy = m_settings;
+  m_settings_copy = g_settings;
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -604,7 +604,7 @@ void SDLHostInterface::DrawImGuiWindows()
 
   CommonHostInterface::DrawImGuiWindows();
 
-  if (!m_system)
+  if (System::IsShutdown())
     DrawPoweredOffWindow();
 
   if (m_settings_window_open)
@@ -621,7 +621,7 @@ void SDLHostInterface::DrawMainMenuBar()
   if (!ImGui::BeginMainMenuBar())
     return;
 
-  const bool system_enabled = static_cast<bool>(m_system);
+  const bool system_enabled = static_cast<bool>(!System::IsShutdown());
 
   if (ImGui::BeginMenu("System"))
   {
@@ -653,9 +653,9 @@ void SDLHostInterface::DrawMainMenuBar()
       ClearImGuiFocus();
     }
 
-    if (ImGui::MenuItem("Pause", nullptr, m_paused, system_enabled))
+    if (ImGui::MenuItem("Pause", nullptr, System::IsPaused(), system_enabled))
     {
-      RunLater([this]() { PauseSystem(!m_paused); });
+      RunLater([this]() { PauseSystem(!System::IsPaused()); });
       ClearImGuiFocus();
     }
 
@@ -669,7 +669,7 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (ImGui::MenuItem("Remove Disc", nullptr, false, system_enabled))
     {
-      RunLater([this]() { m_system->RemoveMedia(); });
+      RunLater([this]() { System::RemoveMedia(); });
       ClearImGuiFocus();
     }
 
@@ -752,21 +752,26 @@ void SDLHostInterface::DrawMainMenuBar()
     ImGui::EndMenu();
   }
 
-  if (m_system)
+  if (!System::IsShutdown())
   {
     const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
-    if (!m_paused)
+    if (System::IsPaused())
+    {
+      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
+    }
+    else
     {
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (420.0f * framebuffer_scale));
-      ImGui::Text("Average: %.2fms", m_system->GetAverageFrameTime());
+      ImGui::Text("Average: %.2fms", System::GetAverageFrameTime());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (310.0f * framebuffer_scale));
-      ImGui::Text("Worst: %.2fms", m_system->GetWorstFrameTime());
+      ImGui::Text("Worst: %.2fms", System::GetWorstFrameTime());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
 
-      const float speed = m_system->GetEmulationSpeed();
+      const float speed = System::GetEmulationSpeed();
       const u32 rounded_speed = static_cast<u32>(std::round(speed));
       if (speed < 90.0f)
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
@@ -776,15 +781,10 @@ void SDLHostInterface::DrawMainMenuBar()
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (165.0f * framebuffer_scale));
-      ImGui::Text("FPS: %.2f", m_system->GetFPS());
+      ImGui::Text("FPS: %.2f", System::GetFPS());
 
       ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (80.0f * framebuffer_scale));
-      ImGui::Text("VPS: %.2f", m_system->GetVPS());
-    }
-    else
-    {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
+      ImGui::Text("VPS: %.2f", System::GetVPS());
     }
   }
 
@@ -800,7 +800,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   if (ImGui::BeginMenu("CPU Execution Mode"))
   {
-    const CPUExecutionMode current = m_settings.cpu_execution_mode;
+    const CPUExecutionMode current = g_settings.cpu_execution_mode;
     for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
     {
       if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
@@ -868,7 +868,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   ImGui::Separator();
 
-  if (ImGui::MenuItem("Dump Audio", nullptr, IsDumpingAudio(), HasSystem()))
+  if (ImGui::MenuItem("Dump Audio", nullptr, IsDumpingAudio(), System::IsValid()))
   {
     if (!IsDumpingAudio())
       StartDumpingAudio();
@@ -885,7 +885,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
 void SDLHostInterface::DrawDebugMenu()
 {
-  Settings::DebugSettings& debug_settings = m_settings.debugging;
+  Settings::DebugSettings& debug_settings = g_settings.debugging;
   bool settings_changed = false;
 
   if (ImGui::BeginMenu("Log Level"))
@@ -893,7 +893,7 @@ void SDLHostInterface::DrawDebugMenu()
     for (u32 i = LOGLEVEL_NONE; i < LOGLEVEL_COUNT; i++)
     {
       if (ImGui::MenuItem(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i)), nullptr,
-                          m_settings.log_level == static_cast<LOGLEVEL>(i)))
+                          g_settings.log_level == static_cast<LOGLEVEL>(i)))
       {
         m_settings_copy.log_level = static_cast<LOGLEVEL>(i);
         settings_changed = true;
@@ -1455,7 +1455,7 @@ void SDLHostInterface::ClearImGuiFocus()
 
 void SDLHostInterface::DoStartDisc()
 {
-  Assert(!m_system);
+  Assert(System::IsShutdown());
 
   nfdchar_t* path = nullptr;
   if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe,psf", nullptr, &path) || !path || std::strlen(path) == 0)
@@ -1470,18 +1470,18 @@ void SDLHostInterface::DoStartDisc()
 
 void SDLHostInterface::DoChangeDisc()
 {
-  Assert(m_system);
+  Assert(!System::IsShutdown());
 
   nfdchar_t* path = nullptr;
   if (!NFD_OpenDialog("bin,img,cue,chd", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
-  if (m_system->InsertMedia(path))
+  if (System::InsertMedia(path))
     AddFormattedOSDMessage(2.0f, "Switched CD to '%s'", path);
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
 
-  m_system->ResetPerformanceCounters();
+  System::ResetPerformanceCounters();
 }
 
 void SDLHostInterface::Run()
@@ -1490,9 +1490,9 @@ void SDLHostInterface::Run()
   {
     PollAndUpdate();
 
-    if (m_system && !m_paused)
+    if (System::IsRunning())
     {
-      m_system->RunFrame();
+      System::RunFrame();
       UpdateControllerRumble();
       if (m_frame_step_request)
       {
@@ -1505,28 +1505,28 @@ void SDLHostInterface::Run()
     {
       DrawImGuiWindows();
 
-      if (m_system)
-        m_system->GetGPU()->ResetGraphicsAPIState();
+      if (System::IsRunning())
+        g_gpu->ResetGraphicsAPIState();
 
       m_display->Render();
       ImGui_ImplSDL2_NewFrame(m_window);
       ImGui::NewFrame();
 
-      if (m_system)
+      if (System::IsRunning())
       {
-        m_system->GetGPU()->RestoreGraphicsAPIState();
-        m_system->UpdatePerformanceCounters();
+        g_gpu->RestoreGraphicsAPIState();
+        System::UpdatePerformanceCounters();
 
         if (m_speed_limiter_enabled)
-          m_system->Throttle();
+          System::Throttle();
       }
     }
   }
 
   // Save state on exit so it can be resumed
-  if (m_system)
+  if (!System::IsShutdown())
   {
-    if (m_settings.save_state_on_exit)
+    if (g_settings.save_state_on_exit)
       SaveResumeSaveState();
     DestroySystem();
   }

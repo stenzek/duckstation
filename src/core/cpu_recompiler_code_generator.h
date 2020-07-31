@@ -16,7 +16,7 @@ namespace CPU::Recompiler {
 class CodeGenerator
 {
 public:
-  CodeGenerator(Core* cpu, JitCodeBuffer* code_buffer, const ASMFunctions& asm_functions);
+  CodeGenerator(JitCodeBuffer* code_buffer);
   ~CodeGenerator();
 
   static u32 CalculateRegisterOffset(Reg reg);
@@ -62,6 +62,8 @@ public:
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
+  void EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr);
+  void EmitStoreGlobal(void* ptr, const Value& value);
 
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);
@@ -188,9 +190,7 @@ private:
   bool Compile_cop0(const CodeBlockInstruction& cbi);
   bool Compile_cop2(const CodeBlockInstruction& cbi);
 
-  Core* m_cpu;
   JitCodeBuffer* m_code_buffer;
-  const ASMFunctions& m_asm_functions;
   const CodeBlock* m_block = nullptr;
   const CodeBlockInstruction* m_block_start = nullptr;
   const CodeBlockInstruction* m_block_end = nullptr;

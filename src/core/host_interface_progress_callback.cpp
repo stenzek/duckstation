@@ -2,15 +2,9 @@
 #include "common/log.h"
 Log_SetChannel(HostInterfaceProgressCallback);
 
-HostInterfaceProgressCallback::HostInterfaceProgressCallback(HostInterface* intf)
-  : BaseProgressCallback(), m_host_interface(intf)
-{
-}
+HostInterfaceProgressCallback::HostInterfaceProgressCallback() : BaseProgressCallback() {}
 
-void HostInterfaceProgressCallback::PushState()
-{
-  BaseProgressCallback::PushState();
-}
+void HostInterfaceProgressCallback::PushState() { BaseProgressCallback::PushState(); }
 
 void HostInterfaceProgressCallback::PopState()
 {
@@ -58,38 +52,23 @@ void HostInterfaceProgressCallback::Redraw(bool force)
     return;
 
   m_last_progress_percent = percent;
-  m_host_interface->DisplayLoadingScreen(m_status_text, 0, static_cast<int>(m_progress_range),
+  g_host_interface->DisplayLoadingScreen(m_status_text, 0, static_cast<int>(m_progress_range),
                                          static_cast<int>(m_progress_value));
 }
 
-void HostInterfaceProgressCallback::DisplayError(const char* message)
-{
-  Log_ErrorPrint(message);
-}
+void HostInterfaceProgressCallback::DisplayError(const char* message) { Log_ErrorPrint(message); }
 
-void HostInterfaceProgressCallback::DisplayWarning(const char* message)
-{
-  Log_WarningPrint(message);
-}
+void HostInterfaceProgressCallback::DisplayWarning(const char* message) { Log_WarningPrint(message); }
 
-void HostInterfaceProgressCallback::DisplayInformation(const char* message)
-{
-  Log_InfoPrint(message);
-}
+void HostInterfaceProgressCallback::DisplayInformation(const char* message) { Log_InfoPrint(message); }
 
-void HostInterfaceProgressCallback::DisplayDebugMessage(const char* message)
-{
-  Log_DevPrint(message);
-}
+void HostInterfaceProgressCallback::DisplayDebugMessage(const char* message) { Log_DevPrint(message); }
 
-void HostInterfaceProgressCallback::ModalError(const char* message)
-{
-  m_host_interface->ReportError(message);
-}
+void HostInterfaceProgressCallback::ModalError(const char* message) { g_host_interface->ReportError(message); }
 
 bool HostInterfaceProgressCallback::ModalConfirmation(const char* message)
 {
-  return m_host_interface->ConfirmMessage(message);
+  return g_host_interface->ConfirmMessage(message);
 }
 
 u32 HostInterfaceProgressCallback::ModalPrompt(const char* message, u32 num_options, ...)

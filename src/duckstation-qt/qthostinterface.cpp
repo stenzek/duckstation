@@ -269,7 +269,7 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     SetDefaultSettings(*m_settings_interface.get());
@@ -289,7 +289,7 @@ void QtHostInterface::applySettings()
     return;
   }
 
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
@@ -298,7 +298,7 @@ void QtHostInterface::applySettings()
   CheckForSettingsChanges(old_settings);
 
   // detect when render-to-main flag changes
-  if (m_system)
+  if (!System::IsShutdown())
   {
     const bool render_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
     if (m_display && !m_is_fullscreen && render_to_main != m_is_rendering_to_main)
@@ -422,7 +422,7 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
   m_display->ResizeRenderWindow(width, height);
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
-  if (m_system)
+  if (!System::IsShutdown())
     renderDisplay();
 }
 
@@ -434,7 +434,7 @@ void QtHostInterface::redrawDisplayWindow()
     return;
   }
 
-  if (!m_display || !m_system)
+  if (!m_display || System::IsShutdown())
     return;
 
   renderDisplay();
@@ -458,8 +458,8 @@ bool QtHostInterface::AcquireHostDisplay()
   m_is_rendering_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
 
   QtDisplayWidget* display_widget =
-    createDisplayRequested(m_worker_thread, QString::fromStdString(m_settings.gpu_adapter),
-                           m_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
+    createDisplayRequested(m_worker_thread, QString::fromStdString(g_settings.gpu_adapter),
+                           g_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
   if (!display_widget || !m_display->HasRenderDevice())
   {
     emit destroyDisplayRequested();
@@ -470,7 +470,7 @@ bool QtHostInterface::AcquireHostDisplay()
   createImGuiContext(display_widget->devicePixelRatioFromScreen());
 
   if (!m_display->MakeRenderContextCurrent() ||
-      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
+      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
   {
     destroyImGuiContext();
     m_display->DestroyRenderDevice();
@@ -486,7 +486,7 @@ bool QtHostInterface::AcquireHostDisplay()
 
 HostDisplay* QtHostInterface::createHostDisplay()
 {
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
       m_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
@@ -630,20 +630,19 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 {
   HostInterface::OnSystemPerformanceCountersUpdated();
 
-  DebugAssert(m_system);
-  emit systemPerformanceCountersUpdated(m_system->GetEmulationSpeed(), m_system->GetFPS(), m_system->GetVPS(),
-                                        m_system->GetAverageFrameTime(), m_system->GetWorstFrameTime());
+  emit systemPerformanceCountersUpdated(System::GetEmulationSpeed(), System::GetFPS(), System::GetVPS(),
+                                        System::GetAverageFrameTime(), System::GetWorstFrameTime());
 }
 
 void QtHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
-  if (m_system)
+  if (!System::IsShutdown())
   {
-    emit runningGameChanged(QString::fromStdString(m_system->GetRunningPath()),
-                            QString::fromStdString(m_system->GetRunningCode()),
-                            QString::fromStdString(m_system->GetRunningTitle()));
+    emit runningGameChanged(QString::fromStdString(System::GetRunningPath()),
+                            QString::fromStdString(System::GetRunningCode()),
+                            QString::fromStdString(System::GetRunningTitle()));
   }
   else
   {
@@ -653,7 +652,7 @@ void QtHostInterface::OnRunningGameChanged()
 
 void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 {
-  emit stateSaved(QString::fromStdString(m_system->GetRunningCode()), global, slot);
+  emit stateSaved(QString::fromStdString(System::GetRunningCode()), global, slot);
 }
 
 void QtHostInterface::LoadSettings()
@@ -731,10 +730,10 @@ void QtHostInterface::powerOffSystem()
     return;
   }
 
-  if (!m_system)
+  if (System::IsShutdown())
     return;
 
-  if (m_settings.save_state_on_exit)
+  if (g_settings.save_state_on_exit)
     SaveResumeSaveState();
 
   DestroySystem();
@@ -756,7 +755,7 @@ void QtHostInterface::resetSystem()
     return;
   }
 
-  if (!m_system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("resetSystem() called without system");
     return;
@@ -784,13 +783,13 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
     return;
   }
 
-  if (!m_system)
+  if (System::IsShutdown())
     return;
 
   if (!new_disc_filename.isEmpty())
-    m_system->InsertMedia(new_disc_filename.toStdString().c_str());
+    System::InsertMedia(new_disc_filename.toStdString().c_str());
   else
-    m_system->RemoveMedia();
+    System::RemoveMedia();
 }
 
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
@@ -925,7 +924,7 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
     return;
   }
 
-  if (m_system)
+  if (!System::IsShutdown())
     SaveState(global, slot);
 }
 
@@ -940,7 +939,7 @@ void QtHostInterface::setAudioOutputVolume(int value)
   if (m_audio_stream)
     m_audio_stream->SetOutputVolume(value);
 
-  m_settings.audio_output_volume = value;
+  g_settings.audio_output_volume = value;
 }
 
 void QtHostInterface::setAudioOutputMuted(bool muted)
@@ -952,9 +951,9 @@ void QtHostInterface::setAudioOutputMuted(bool muted)
   }
 
   if (m_audio_stream)
-    m_audio_stream->SetOutputVolume(muted ? 0 : m_settings.audio_output_volume);
+    m_audio_stream->SetOutputVolume(muted ? 0 : g_settings.audio_output_volume);
 
-  m_settings.audio_output_muted = muted;
+  g_settings.audio_output_muted = muted;
 }
 
 void QtHostInterface::startDumpingAudio()
@@ -1058,14 +1057,14 @@ void QtHostInterface::threadEntryPoint()
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
   {
-    if (!m_system || m_paused)
+    if (!System::IsRunning())
     {
       // wait until we have a system before running
       m_worker_thread_event_loop->exec();
       continue;
     }
 
-    m_system->RunFrame();
+    System::RunFrame();
     UpdateControllerRumble();
     if (m_frame_step_request)
     {
@@ -1075,10 +1074,10 @@ void QtHostInterface::threadEntryPoint()
 
     renderDisplay();
 
-    m_system->UpdatePerformanceCounters();
+    System::UpdatePerformanceCounters();
 
     if (m_speed_limiter_enabled)
-      m_system->Throttle();
+      System::Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
     PollAndUpdate();
@@ -1095,14 +1094,14 @@ void QtHostInterface::threadEntryPoint()
 
 void QtHostInterface::renderDisplay()
 {
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  g_gpu->ResetGraphicsAPIState();
 
   DrawImGuiWindows();
 
   m_display->Render();
   ImGui::NewFrame();
 
-  m_system->GetGPU()->RestoreGraphicsAPIState();
+  g_gpu->RestoreGraphicsAPIState();
 }
 
 void QtHostInterface::wakeThread()

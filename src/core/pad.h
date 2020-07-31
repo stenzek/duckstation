@@ -7,19 +7,18 @@
 
 class StateWrapper;
 
-class System;
 class TimingEvent;
-class InterruptController;
 class Controller;
 class MemoryCard;
 
-class Pad
+class Pad final
 {
 public:
   Pad();
   ~Pad();
 
-  void Initialize(System* system, InterruptController* interrupt_controller);
+  void Initialize();
+  void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -108,9 +107,6 @@ private:
   void EndTransfer();
   void ResetDeviceTransferState();
 
-  System* m_system = nullptr;
-  InterruptController* m_interrupt_controller = nullptr;
-
   std::array<std::unique_ptr<Controller>, NUM_SLOTS> m_controllers;
   std::array<std::unique_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
 
@@ -129,3 +125,5 @@ private:
   bool m_receive_buffer_full = false;
   bool m_transmit_buffer_full = false;
 };
+
+extern Pad g_pad;

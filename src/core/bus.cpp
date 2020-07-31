@@ -16,7 +16,76 @@
 #include "spu.h"
 #include "timers.h"
 #include <cstdio>
+#include <tuple>
 Log_SetChannel(Bus);
+
+namespace Bus {
+
+union MEMDELAY
+{
+  u32 bits;
+
+  BitField<u32, u8, 4, 4> access_time; // cycles
+  BitField<u32, bool, 8, 1> use_com0_time;
+  BitField<u32, bool, 9, 1> use_com1_time;
+  BitField<u32, bool, 10, 1> use_com2_time;
+  BitField<u32, bool, 11, 1> use_com3_time;
+  BitField<u32, bool, 12, 1> data_bus_16bit;
+  BitField<u32, u8, 16, 5> memory_window_size;
+
+  static constexpr u32 WRITE_MASK = 0b10101111'00011111'11111111'11111111;
+};
+
+union COMDELAY
+{
+  u32 bits;
+
+  BitField<u32, u8, 0, 4> com0;
+  BitField<u32, u8, 4, 4> com1;
+  BitField<u32, u8, 8, 4> com2;
+  BitField<u32, u8, 12, 4> com3;
+  BitField<u32, u8, 16, 2> comunk;
+
+  static constexpr u32 WRITE_MASK = 0b00000000'00000011'11111111'11111111;
+};
+
+union MEMCTRL
+{
+  u32 regs[MEMCTRL_REG_COUNT];
+
+  struct
+  {
+    u32 exp1_base;
+    u32 exp2_base;
+    MEMDELAY exp1_delay_size;
+    MEMDELAY exp3_delay_size;
+    MEMDELAY bios_delay_size;
+    MEMDELAY spu_delay_size;
+    MEMDELAY cdrom_delay_size;
+    MEMDELAY exp2_delay_size;
+    COMDELAY common_delay;
+  };
+};
+
+std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits{};
+u8 g_ram[RAM_SIZE]{};   // 2MB RAM
+u8 g_bios[BIOS_SIZE]{}; // 512K BIOS ROM
+
+static std::array<TickCount, 3> m_exp1_access_time = {};
+static std::array<TickCount, 3> m_exp2_access_time = {};
+static std::array<TickCount, 3> m_bios_access_time = {};
+static std::array<TickCount, 3> m_cdrom_access_time = {};
+static std::array<TickCount, 3> m_spu_access_time = {};
+
+static std::vector<u8> m_exp1_rom;
+
+static MEMCTRL m_MEMCTRL = {};
+static u32 m_ram_size_reg = 0;
+
+static std::string m_tty_line_buffer;
+
+static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
+static void RecalculateMemoryTimings();
 
 #define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
 #define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8u))
@@ -25,6 +94,7 @@ Log_SetChannel(Bus);
 #define FIXUP_HALFWORD_WRITE_VALUE(offset, value) ((value) << (((offset)&u32(1)) * 8u))
 
 // Offset and value remapping for (w32) registers from nocash docs.
+// TODO: Make template function based on type, and noop for word access
 ALWAYS_INLINE static void FixupUnalignedWordAccessW32(u32& offset, u32& value)
 {
   const u32 byte_offset = offset & u32(3);
@@ -32,30 +102,19 @@ ALWAYS_INLINE static void FixupUnalignedWordAccessW32(u32& offset, u32& value)
   value <<= byte_offset * 8;
 }
 
-Bus::Bus() = default;
-
-Bus::~Bus() = default;
-
-void Bus::Initialize(CPU::Core* cpu, CPU::CodeCache* cpu_code_cache, DMA* dma,
-                     InterruptController* interrupt_controller, GPU* gpu, CDROM* cdrom, Pad* pad, Timers* timers,
-                     SPU* spu, MDEC* mdec, SIO* sio)
+void Initialize()
 {
-  m_cpu = cpu;
-  m_cpu_code_cache = cpu_code_cache;
-  m_dma = dma;
-  m_interrupt_controller = interrupt_controller;
-  m_gpu = gpu;
-  m_cdrom = cdrom;
-  m_pad = pad;
-  m_timers = timers;
-  m_spu = spu;
-  m_mdec = mdec;
-  m_sio = sio;
+  Reset();
 }
 
-void Bus::Reset()
+void Shutdown()
 {
-  std::memset(m_ram, 0, sizeof(m_ram));
+  //
+}
+
+void Reset()
+{
+  std::memset(g_ram, 0, sizeof(g_ram));
   m_MEMCTRL.exp1_base = 0x1F000000;
   m_MEMCTRL.exp2_base = 0x1F802000;
   m_MEMCTRL.exp1_delay_size.bits = 0x0013243F;
@@ -66,116 +125,31 @@ void Bus::Reset()
   m_MEMCTRL.exp2_delay_size.bits = 0x00070777;
   m_MEMCTRL.common_delay.bits = 0x00031125;
   m_ram_size_reg = UINT32_C(0x00000B88);
+  m_ram_code_bits = {};
   RecalculateMemoryTimings();
 }
 
-bool Bus::DoState(StateWrapper& sw)
+bool DoState(StateWrapper& sw)
 {
   sw.Do(&m_exp1_access_time);
   sw.Do(&m_exp2_access_time);
   sw.Do(&m_bios_access_time);
   sw.Do(&m_cdrom_access_time);
   sw.Do(&m_spu_access_time);
-  sw.DoBytes(m_ram, sizeof(m_ram));
-  sw.DoBytes(m_bios, sizeof(m_bios));
+  sw.DoBytes(g_ram, sizeof(g_ram));
+  sw.DoBytes(g_bios, sizeof(g_bios));
   sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
   sw.Do(&m_ram_size_reg);
   sw.Do(&m_tty_line_buffer);
   return !sw.HasError();
 }
 
-bool Bus::ReadByte(PhysicalMemoryAddress address, u8* value)
-{
-  u32 temp = 0;
-  const bool result = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
-  *value = Truncate8(temp);
-  return result;
-}
-
-bool Bus::ReadHalfWord(PhysicalMemoryAddress address, u16* value)
-{
-  u32 temp = 0;
-  const bool result = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
-  *value = Truncate16(temp);
-  return result;
-}
-
-bool Bus::ReadWord(PhysicalMemoryAddress address, u32* value)
-{
-  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, *value);
-}
-
-bool Bus::WriteByte(PhysicalMemoryAddress address, u8 value)
-{
-  u32 temp = ZeroExtend32(value);
-  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
-}
-
-bool Bus::WriteHalfWord(PhysicalMemoryAddress address, u16 value)
-{
-  u32 temp = ZeroExtend32(value);
-  return DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
-}
-
-bool Bus::WriteWord(PhysicalMemoryAddress address, u32 value)
-{
-  return DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
-}
-
-TickCount Bus::ReadWords(PhysicalMemoryAddress address, u32* words, u32 word_count)
-{
-  if (address + (word_count * sizeof(u32)) > (RAM_BASE + RAM_SIZE))
-  {
-    // Not RAM, or RAM mirrors.
-    TickCount total_ticks = 0;
-    for (u32 i = 0; i < word_count; i++)
-    {
-      const TickCount ticks = DispatchAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, words[i]);
-      if (ticks < 0)
-        return -1;
-
-      total_ticks += ticks;
-      address += sizeof(u32);
-    }
-
-    return total_ticks;
-  }
-
-  std::memcpy(words, &m_ram[address], sizeof(u32) * word_count);
-  return GetDMARAMTickCount(word_count);
-}
-
-TickCount Bus::WriteWords(PhysicalMemoryAddress address, const u32* words, u32 word_count)
-{
-  if (address + (word_count * sizeof(u32)) > (RAM_BASE + RAM_SIZE))
-  {
-    // Not RAM, or RAM mirrors.
-    TickCount total_ticks = 0;
-    for (u32 i = 0; i < word_count; i++)
-    {
-      u32 value = words[i];
-      const TickCount ticks = DispatchAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
-      if (ticks < 0)
-        return -1;
-
-      total_ticks += ticks;
-      address += sizeof(u32);
-    }
-
-    return total_ticks;
-  }
-
-  std::memcpy(&m_ram[address], words, sizeof(u32) * word_count);
-  InvalidateCodePages(address, word_count);
-  return GetDMARAMTickCount(word_count);
-}
-
-void Bus::SetExpansionROM(std::vector<u8> data)
+void SetExpansionROM(std::vector<u8> data)
 {
   m_exp1_rom = std::move(data);
 }
 
-void Bus::SetBIOS(const std::vector<u8>& image)
+void SetBIOS(const std::vector<u8>& image)
 {
   if (image.size() != static_cast<u32>(BIOS_SIZE))
   {
@@ -183,10 +157,10 @@ void Bus::SetBIOS(const std::vector<u8>& image)
     return;
   }
 
-  std::memcpy(m_bios, image.data(), BIOS_SIZE);
+  std::memcpy(g_bios, image.data(), BIOS_SIZE);
 }
 
-std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)
+std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)
 {
   // from nocash spec
   s32 first = 0, seq = 0, min = 0;
@@ -222,7 +196,7 @@ std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY 
                   std::max(word_access_time - 1, 0));
 }
 
-void Bus::RecalculateMemoryTimings()
+void RecalculateMemoryTimings()
 {
   std::tie(m_bios_access_time[0], m_bios_access_time[1], m_bios_access_time[2]) =
     CalculateMemoryTiming(m_MEMCTRL.bios_delay_size, m_MEMCTRL.common_delay);
@@ -242,7 +216,8 @@ void Bus::RecalculateMemoryTimings()
                   m_spu_access_time[2] + 1);
 }
 
-TickCount Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address, u32& value)
+static TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address,
+                                 u32& value)
 {
   SmallString str;
   str.AppendString("Invalid bus ");
@@ -269,347 +244,976 @@ TickCount Bus::DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, Phy
   return 1;
 }
 
-u32 Bus::DoReadEXP1(MemoryAccessSize size, u32 offset)
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoRAMAccess(u32 offset, u32& value)
 {
-  if (m_exp1_rom.empty())
+  // TODO: Configurable mirroring.
+  offset &= UINT32_C(0x1FFFFF);
+  if constexpr (type == MemoryAccessType::Read)
   {
-    // EXP1 not present.
-    return UINT32_C(0xFFFFFFFF);
-  }
-
-  if (offset == 0x20018)
-  {
-    // Bit 0 - Action Replay On/Off
-    return UINT32_C(1);
-  }
-
-  const u32 transfer_size = u32(1) << static_cast<u32>(size);
-  if ((offset + transfer_size) > m_exp1_rom.size())
-  {
-    return UINT32_C(0);
-  }
-
-  u32 value;
-  if (size == MemoryAccessSize::Byte)
-  {
-    value = ZeroExtend32(m_exp1_rom[offset]);
-  }
-  else if (size == MemoryAccessSize::HalfWord)
-  {
-    u16 halfword;
-    std::memcpy(&halfword, &m_exp1_rom[offset], sizeof(halfword));
-    value = ZeroExtend32(halfword);
+    if constexpr (size == MemoryAccessSize::Byte)
+    {
+      value = ZeroExtend32(g_ram[offset]);
+    }
+    else if constexpr (size == MemoryAccessSize::HalfWord)
+    {
+      u16 temp;
+      std::memcpy(&temp, &g_ram[offset], sizeof(u16));
+      value = ZeroExtend32(temp);
+    }
+    else if constexpr (size == MemoryAccessSize::Word)
+    {
+      std::memcpy(&value, &g_ram[offset], sizeof(u32));
+    }
   }
   else
   {
-    std::memcpy(&value, &m_exp1_rom[offset], sizeof(value));
-  }
+    const u32 page_index = offset / CPU_CODE_CACHE_PAGE_SIZE;
+    if (m_ram_code_bits[page_index])
+      CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
 
-  // Log_DevPrintf("EXP1 read: 0x%08X -> 0x%08X", EXP1_BASE | offset, value);
-  return value;
-}
-
-void Bus::DoWriteEXP1(MemoryAccessSize size, u32 offset, u32 value)
-{
-  Log_WarningPrintf("EXP1 write: 0x%08X <- 0x%08X", EXP1_BASE | offset, value);
-}
-
-u32 Bus::DoReadEXP2(MemoryAccessSize size, u32 offset)
-{
-  // rx/tx buffer empty
-  if (offset == 0x21)
-  {
-    return 0x04 | 0x08;
-  }
-
-  Log_WarningPrintf("EXP2 read: 0x%08X", EXP2_BASE | offset);
-  return UINT32_C(0xFFFFFFFF);
-}
-
-void Bus::DoWriteEXP2(MemoryAccessSize size, u32 offset, u32 value)
-{
-  if (offset == 0x23)
-  {
-    if (value == '\r')
-      return;
-
-    if (value == '\n')
+    if constexpr (size == MemoryAccessSize::Byte)
     {
-      if (!m_tty_line_buffer.empty())
-      {
-        Log_InfoPrintf("TTY: %s", m_tty_line_buffer.c_str());
-#ifdef _DEBUG
-        if (CPU::LOG_EXECUTION)
-          CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.c_str());
-#endif
-      }
-      m_tty_line_buffer.clear();
+      g_ram[offset] = Truncate8(value);
+    }
+    else if constexpr (size == MemoryAccessSize::HalfWord)
+    {
+      const u16 temp = Truncate16(value);
+      std::memcpy(&g_ram[offset], &temp, sizeof(u16));
+    }
+    else if constexpr (size == MemoryAccessSize::Word)
+    {
+      std::memcpy(&g_ram[offset], &value, sizeof(u32));
+    }
+  }
+
+  return (type == MemoryAccessType::Read) ? 4 : 0;
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoBIOSAccess(u32 offset, u32& value)
+{
+  // TODO: Configurable mirroring.
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    offset &= UINT32_C(0x7FFFF);
+    if constexpr (size == MemoryAccessSize::Byte)
+    {
+      value = ZeroExtend32(g_bios[offset]);
+    }
+    else if constexpr (size == MemoryAccessSize::HalfWord)
+    {
+      u16 temp;
+      std::memcpy(&temp, &g_bios[offset], sizeof(u16));
+      value = ZeroExtend32(temp);
     }
     else
     {
-      m_tty_line_buffer += static_cast<char>(Truncate8(value));
-    }
-
-    return;
-  }
-
-  if (offset == 0x41)
-  {
-    Log_WarningPrintf("BIOS POST status: %02X", value & UINT32_C(0x0F));
-    return;
-  }
-
-  Log_WarningPrintf("EXP2 write: 0x%08X <- 0x%08X", EXP2_BASE | offset, value);
-}
-
-u32 Bus::DoReadMemoryControl(MemoryAccessSize size, u32 offset)
-{
-  u32 value = m_MEMCTRL.regs[offset / 4];
-  FixupUnalignedWordAccessW32(offset, value);
-  return value;
-}
-
-void Bus::DoWriteMemoryControl(MemoryAccessSize size, u32 offset, u32 value)
-{
-  FixupUnalignedWordAccessW32(offset, value);
-
-  const u32 index = offset / 4;
-  const u32 write_mask = (index == 8) ? COMDELAY::WRITE_MASK : MEMDELAY::WRITE_MASK;
-  const u32 new_value = (m_MEMCTRL.regs[index] & ~write_mask) | (value & write_mask);
-  if (m_MEMCTRL.regs[index] != new_value)
-  {
-    m_MEMCTRL.regs[index] = new_value;
-    RecalculateMemoryTimings();
-  }
-}
-
-u32 Bus::DoReadMemoryControl2(MemoryAccessSize size, u32 offset)
-{
-  if (offset == 0x00)
-    return m_ram_size_reg;
-
-  u32 value = 0;
-  DoInvalidAccess(MemoryAccessType::Read, size, MEMCTRL2_BASE | offset, value);
-  return value;
-}
-
-void Bus::DoWriteMemoryControl2(MemoryAccessSize size, u32 offset, u32 value)
-{
-  if (offset == 0x00)
-  {
-    m_ram_size_reg = value;
-    return;
-  }
-
-  DoInvalidAccess(MemoryAccessType::Write, size, MEMCTRL2_BASE | offset, value);
-}
-
-u32 Bus::DoReadPad(MemoryAccessSize size, u32 offset)
-{
-  return m_pad->ReadRegister(offset);
-}
-
-void Bus::DoWritePad(MemoryAccessSize size, u32 offset, u32 value)
-{
-  m_pad->WriteRegister(offset, value);
-}
-
-u32 Bus::DoReadSIO(MemoryAccessSize size, u32 offset)
-{
-  return m_sio->ReadRegister(offset);
-}
-
-void Bus::DoWriteSIO(MemoryAccessSize size, u32 offset, u32 value)
-{
-  m_sio->WriteRegister(offset, value);
-}
-
-u32 Bus::DoReadCDROM(MemoryAccessSize size, u32 offset)
-{
-  switch (size)
-  {
-    case MemoryAccessSize::Word:
-    {
-      const u32 b0 = ZeroExtend32(m_cdrom->ReadRegister(offset));
-      const u32 b1 = ZeroExtend32(m_cdrom->ReadRegister(offset + 1u));
-      const u32 b2 = ZeroExtend32(m_cdrom->ReadRegister(offset + 2u));
-      const u32 b3 = ZeroExtend32(m_cdrom->ReadRegister(offset + 3u));
-      return b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
-    }
-
-    case MemoryAccessSize::HalfWord:
-    {
-      const u32 lsb = ZeroExtend32(m_cdrom->ReadRegister(offset));
-      const u32 msb = ZeroExtend32(m_cdrom->ReadRegister(offset + 1u));
-      return lsb | (msb << 8);
-    }
-
-    case MemoryAccessSize::Byte:
-    default:
-      return ZeroExtend32(m_cdrom->ReadRegister(offset));
-  }
-}
-
-void Bus::DoWriteCDROM(MemoryAccessSize size, u32 offset, u32 value)
-{
-  switch (size)
-  {
-    case MemoryAccessSize::Word:
-    {
-      m_cdrom->WriteRegister(offset, Truncate8(value & 0xFFu));
-      m_cdrom->WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
-      m_cdrom->WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
-      m_cdrom->WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
-    }
-    break;
-
-    case MemoryAccessSize::HalfWord:
-    {
-      m_cdrom->WriteRegister(offset, Truncate8(value & 0xFFu));
-      m_cdrom->WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
-    }
-    break;
-
-    case MemoryAccessSize::Byte:
-    default:
-      return m_cdrom->WriteRegister(offset, Truncate8(value));
-  }
-}
-
-u32 Bus::DoReadGPU(MemoryAccessSize size, u32 offset)
-{
-  u32 value = m_gpu->ReadRegister(offset);
-  FixupUnalignedWordAccessW32(offset, value);
-  return value;
-}
-
-void Bus::DoWriteGPU(MemoryAccessSize size, u32 offset, u32 value)
-{
-  FixupUnalignedWordAccessW32(offset, value);
-  m_gpu->WriteRegister(offset, value);
-}
-
-u32 Bus::DoReadMDEC(MemoryAccessSize size, u32 offset)
-{
-  u32 value = m_mdec->ReadRegister(offset);
-  FixupUnalignedWordAccessW32(offset, value);
-  return value;
-}
-
-void Bus::DoWriteMDEC(MemoryAccessSize size, u32 offset, u32 value)
-{
-  FixupUnalignedWordAccessW32(offset, value);
-  m_mdec->WriteRegister(offset, value);
-}
-
-u32 Bus::DoReadInterruptController(MemoryAccessSize size, u32 offset)
-{
-  u32 value = m_interrupt_controller->ReadRegister(offset);
-  FixupUnalignedWordAccessW32(offset, value);
-  return value;
-}
-
-void Bus::DoWriteInterruptController(MemoryAccessSize size, u32 offset, u32 value)
-{
-  FixupUnalignedWordAccessW32(offset, value);
-  m_interrupt_controller->WriteRegister(offset, value);
-}
-
-u32 Bus::DoReadTimers(MemoryAccessSize size, u32 offset)
-{
-  u32 value = m_timers->ReadRegister(offset);
-  FixupUnalignedWordAccessW32(offset, value);
-  return value;
-}
-
-void Bus::DoWriteTimers(MemoryAccessSize size, u32 offset, u32 value)
-{
-  FixupUnalignedWordAccessW32(offset, value);
-  m_timers->WriteRegister(offset, value);
-}
-
-u32 Bus::DoReadSPU(MemoryAccessSize size, u32 offset)
-{
-  switch (size)
-  {
-    case MemoryAccessSize::Word:
-    {
-      // 32-bit reads are read as two 16-bit accesses.
-      const u16 lsb = m_spu->ReadRegister(offset);
-      const u16 msb = m_spu->ReadRegister(offset + 2);
-      return ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
-    }
-
-    case MemoryAccessSize::HalfWord:
-    {
-      return ZeroExtend32(m_spu->ReadRegister(offset));
-    }
-
-    case MemoryAccessSize::Byte:
-    default:
-    {
-      u16 value = m_spu->ReadRegister(FIXUP_HALFWORD_READ_OFFSET(offset));
-      return FIXUP_HALFWORD_READ_VALUE(offset, value);
+      std::memcpy(&value, &g_bios[offset], sizeof(u32));
     }
   }
-}
-
-void Bus::DoWriteSPU(MemoryAccessSize size, u32 offset, u32 value)
-{
-  // 32-bit writes are written as two 16-bit writes.
-  // TODO: Ignore if address is not aligned.
-  switch (size)
+  else
   {
-    case MemoryAccessSize::Word:
-    {
-      DebugAssert(Common::IsAlignedPow2(offset, 2));
-      m_spu->WriteRegister(offset, Truncate16(value));
-      m_spu->WriteRegister(offset + 2, Truncate16(value >> 16));
-      return;
-    }
-
-    case MemoryAccessSize::HalfWord:
-    {
-      DebugAssert(Common::IsAlignedPow2(offset, 2));
-      m_spu->WriteRegister(offset, Truncate16(value));
-      return;
-    }
-
-    case MemoryAccessSize::Byte:
-    {
-      m_spu->WriteRegister(FIXUP_HALFWORD_READ_OFFSET(offset), Truncate16(FIXUP_HALFWORD_READ_VALUE(offset, value)));
-      return;
-    }
+    // Writes are ignored.
   }
+
+  return m_bios_access_time[static_cast<u32>(size)];
 }
 
-void Bus::DoInvalidateCodeCache(u32 page_index)
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoEXP1Access(u32 offset, u32& value)
 {
-  m_cpu_code_cache->InvalidateBlocksWithPageIndex(page_index);
-}
-
-u32 Bus::DoReadDMA(MemoryAccessSize size, u32 offset)
-{
-  return FIXUP_WORD_READ_VALUE(offset, m_dma->ReadRegister(FIXUP_WORD_READ_OFFSET(offset)));
-}
-
-void Bus::DoWriteDMA(MemoryAccessSize size, u32 offset, u32 value)
-{
-  switch (size)
+  if constexpr (type == MemoryAccessType::Read)
   {
-    case MemoryAccessSize::Byte:
-    case MemoryAccessSize::HalfWord:
+    if (m_exp1_rom.empty())
     {
-      // zero extend length register
-      if ((offset & u32(0xF0)) < 7 && (offset & u32(0x0F)) == 0x4)
-        value = ZeroExtend32(value);
+      // EXP1 not present.
+      value = UINT32_C(0xFFFFFFFF);
+    }
+    else if (offset == 0x20018)
+    {
+      // Bit 0 - Action Replay On/Off
+      value = UINT32_C(1);
+    }
+    else
+    {
+      const u32 transfer_size = u32(1) << static_cast<u32>(size);
+      if ((offset + transfer_size) > m_exp1_rom.size())
+      {
+        value = UINT32_C(0);
+      }
       else
-        FixupUnalignedWordAccessW32(offset, value);
+      {
+        if constexpr (size == MemoryAccessSize::Byte)
+        {
+          value = ZeroExtend32(m_exp1_rom[offset]);
+        }
+        else if constexpr (size == MemoryAccessSize::HalfWord)
+        {
+          u16 halfword;
+          std::memcpy(&halfword, &m_exp1_rom[offset], sizeof(halfword));
+          value = ZeroExtend32(halfword);
+        }
+        else
+        {
+          std::memcpy(&value, &m_exp1_rom[offset], sizeof(value));
+        }
+
+        // Log_DevPrintf("EXP1 read: 0x%08X -> 0x%08X", EXP1_BASE | offset, value);
+      }
     }
 
-    default:
+    return m_exp1_access_time[static_cast<u32>(size)];
+  }
+  else
+  {
+    Log_WarningPrintf("EXP1 write: 0x%08X <- 0x%08X", EXP1_BASE | offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoEXP2Access(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    // rx/tx buffer empty
+    if (offset == 0x21)
+    {
+      value = 0x04 | 0x08;
+    }
+    else
+    {
+      Log_WarningPrintf("EXP2 read: 0x%08X", EXP2_BASE | offset);
+      value = UINT32_C(0xFFFFFFFF);
+    }
+
+    return m_exp2_access_time[static_cast<u32>(size)];
+  }
+  else
+  {
+    if (offset == 0x23)
+    {
+      if (value == '\r')
+      {
+      }
+      else if (value == '\n')
+      {
+        if (!m_tty_line_buffer.empty())
+        {
+          Log_InfoPrintf("TTY: %s", m_tty_line_buffer.c_str());
+#ifdef _DEBUG
+          if (CPU::LOG_EXECUTION)
+            CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.c_str());
+#endif
+        }
+        m_tty_line_buffer.clear();
+      }
+      else
+      {
+        m_tty_line_buffer += static_cast<char>(Truncate8(value));
+      }
+    }
+    else if (offset == 0x41)
+    {
+      Log_WarningPrintf("BIOS POST status: %02X", value & UINT32_C(0x0F));
+    }
+    else
+    {
+      Log_WarningPrintf("EXP2 write: 0x%08X <- 0x%08X", EXP2_BASE | offset, value);
+    }
+
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoMemoryControlAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = m_MEMCTRL.regs[offset / 4];
+    FixupUnalignedWordAccessW32(offset, value);
+    return 2;
+  }
+  else
+  {
+    FixupUnalignedWordAccessW32(offset, value);
+
+    const u32 index = offset / 4;
+    const u32 write_mask = (index == 8) ? COMDELAY::WRITE_MASK : MEMDELAY::WRITE_MASK;
+    const u32 new_value = (m_MEMCTRL.regs[index] & ~write_mask) | (value & write_mask);
+    if (m_MEMCTRL.regs[index] != new_value)
+    {
+      m_MEMCTRL.regs[index] = new_value;
+      RecalculateMemoryTimings();
+    }
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoMemoryControl2Access(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    if (offset == 0x00)
+    {
+      value = m_ram_size_reg;
+    }
+    else
+    {
+      return DoInvalidAccess(type, size, MEMCTRL2_BASE | offset, value);
+    }
+
+    return 2;
+  }
+  else
+  {
+    if (offset == 0x00)
+    {
+      m_ram_size_reg = value;
+    }
+    else
+    {
+      return DoInvalidAccess(type, size, MEMCTRL2_BASE | offset, value);
+    }
+
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoPadAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = g_pad.ReadRegister(offset);
+    return 2;
+  }
+  else
+  {
+    g_pad.WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoSIOAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = g_sio.ReadRegister(offset);
+    return 2;
+  }
+  else
+  {
+    g_sio.WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoCDROMAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    switch (size)
+    {
+      case MemoryAccessSize::Word:
+      {
+        const u32 b0 = ZeroExtend32(g_cdrom.ReadRegister(offset));
+        const u32 b1 = ZeroExtend32(g_cdrom.ReadRegister(offset + 1u));
+        const u32 b2 = ZeroExtend32(g_cdrom.ReadRegister(offset + 2u));
+        const u32 b3 = ZeroExtend32(g_cdrom.ReadRegister(offset + 3u));
+        value = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+      }
+
+      case MemoryAccessSize::HalfWord:
+      {
+        const u32 lsb = ZeroExtend32(g_cdrom.ReadRegister(offset));
+        const u32 msb = ZeroExtend32(g_cdrom.ReadRegister(offset + 1u));
+        value = lsb | (msb << 8);
+      }
+
+      case MemoryAccessSize::Byte:
+      default:
+        value = ZeroExtend32(g_cdrom.ReadRegister(offset));
+    }
+
+    return m_cdrom_access_time[static_cast<u32>(size)];
+  }
+  else
+  {
+    switch (size)
+    {
+      case MemoryAccessSize::Word:
+      {
+        g_cdrom.WriteRegister(offset, Truncate8(value & 0xFFu));
+        g_cdrom.WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+        g_cdrom.WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
+        g_cdrom.WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
+      }
       break;
+
+      case MemoryAccessSize::HalfWord:
+      {
+        g_cdrom.WriteRegister(offset, Truncate8(value & 0xFFu));
+        g_cdrom.WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+      }
+      break;
+
+      case MemoryAccessSize::Byte:
+      default:
+        g_cdrom.WriteRegister(offset, Truncate8(value));
+        break;
+    }
+
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoGPUAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = g_gpu->ReadRegister(offset);
+    FixupUnalignedWordAccessW32(offset, value);
+    return 2;
+  }
+  else
+  {
+    FixupUnalignedWordAccessW32(offset, value);
+    g_gpu->WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoMDECAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = g_mdec.ReadRegister(offset);
+    FixupUnalignedWordAccessW32(offset, value);
+    return 2;
+  }
+  else
+  {
+    FixupUnalignedWordAccessW32(offset, value);
+    g_mdec.WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoAccessInterruptController(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = g_interrupt_controller.ReadRegister(offset);
+    FixupUnalignedWordAccessW32(offset, value);
+    return 2;
+  }
+  else
+  {
+    FixupUnalignedWordAccessW32(offset, value);
+    g_interrupt_controller.WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoAccessTimers(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = g_timers.ReadRegister(offset);
+    FixupUnalignedWordAccessW32(offset, value);
+    return 2;
+  }
+  else
+  {
+    FixupUnalignedWordAccessW32(offset, value);
+    g_timers.WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoAccessSPU(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    switch (size)
+    {
+      case MemoryAccessSize::Word:
+      {
+        // 32-bit reads are read as two 16-bit accesses.
+        const u16 lsb = g_spu.ReadRegister(offset);
+        const u16 msb = g_spu.ReadRegister(offset + 2);
+        value = ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
+      }
+      break;
+
+      case MemoryAccessSize::HalfWord:
+      {
+        value = ZeroExtend32(g_spu.ReadRegister(offset));
+      }
+      break;
+
+      case MemoryAccessSize::Byte:
+      default:
+      {
+        const u16 value16 = g_spu.ReadRegister(FIXUP_HALFWORD_READ_OFFSET(offset));
+        value = FIXUP_HALFWORD_READ_VALUE(offset, value16);
+      }
+      break;
+    }
+
+    return m_spu_access_time[static_cast<u32>(size)];
+  }
+  else
+  {
+    // 32-bit writes are written as two 16-bit writes.
+    // TODO: Ignore if address is not aligned.
+    switch (size)
+    {
+      case MemoryAccessSize::Word:
+      {
+        DebugAssert(Common::IsAlignedPow2(offset, 2));
+        g_spu.WriteRegister(offset, Truncate16(value));
+        g_spu.WriteRegister(offset + 2, Truncate16(value >> 16));
+        break;
+      }
+
+      case MemoryAccessSize::HalfWord:
+      {
+        DebugAssert(Common::IsAlignedPow2(offset, 2));
+        g_spu.WriteRegister(offset, Truncate16(value));
+        break;
+      }
+
+      case MemoryAccessSize::Byte:
+      {
+        g_spu.WriteRegister(FIXUP_HALFWORD_READ_OFFSET(offset), Truncate16(FIXUP_HALFWORD_READ_VALUE(offset, value)));
+        break;
+      }
+    }
+
+    return 0;
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoDMAAccess(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    value = FIXUP_WORD_READ_VALUE(offset, g_dma.ReadRegister(FIXUP_WORD_READ_OFFSET(offset)));
+    return 2;
+  }
+  else
+  {
+    switch (size)
+    {
+      case MemoryAccessSize::Byte:
+      case MemoryAccessSize::HalfWord:
+      {
+        // zero extend length register
+        if ((offset & u32(0xF0)) < 7 && (offset & u32(0x0F)) == 0x4)
+          value = ZeroExtend32(value);
+        else
+          FixupUnalignedWordAccessW32(offset, value);
+      }
+
+      default:
+        break;
+    }
+
+    g_dma.WriteRegister(offset, value);
+    return 0;
+  }
+}
+
+} // namespace Bus
+
+namespace CPU {
+
+// defined in cpu_core.cpp
+void RaiseException(Exception excode);
+void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
+
+static void WriteCacheControl(u32 value)
+{
+  Log_WarningPrintf("Cache control <- 0x%08X", value);
+  g_state.cache_control = value;
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE static TickCount DoScratchpadAccess(PhysicalMemoryAddress address, u32& value)
+{
+  const PhysicalMemoryAddress cache_offset = address & DCACHE_OFFSET_MASK;
+  if constexpr (size == MemoryAccessSize::Byte)
+  {
+    if constexpr (type == MemoryAccessType::Read)
+      value = ZeroExtend32(g_state.dcache[cache_offset]);
+    else
+      g_state.dcache[cache_offset] = Truncate8(value);
+  }
+  else if constexpr (size == MemoryAccessSize::HalfWord)
+  {
+    if constexpr (type == MemoryAccessType::Read)
+    {
+      u16 temp;
+      std::memcpy(&temp, &g_state.dcache[cache_offset], sizeof(temp));
+      value = ZeroExtend32(temp);
+    }
+    else
+    {
+      u16 temp = Truncate16(value);
+      std::memcpy(&g_state.dcache[cache_offset], &temp, sizeof(temp));
+    }
+  }
+  else if constexpr (size == MemoryAccessSize::Word)
+  {
+    if constexpr (type == MemoryAccessType::Read)
+      std::memcpy(&value, &g_state.dcache[cache_offset], sizeof(value));
+    else
+      std::memcpy(&g_state.dcache[cache_offset], &value, sizeof(value));
   }
 
-  m_dma->WriteRegister(offset, value);
+  return 0;
 }
+
+template<MemoryAccessType type, MemoryAccessSize size>
+static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32& value)
+{
+  using namespace Bus;
+
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    {
+      if constexpr (type == MemoryAccessType::Write)
+      {
+        if (g_state.cop0_regs.sr.Isc)
+          return 0;
+      }
+
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+      if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+        return DoScratchpadAccess<type, size>(address, value);
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    {
+      // Above 512mb raises an exception.
+      return -1;
+    }
+
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+    }
+    break;
+
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    {
+      if (address == 0xFFFE0130)
+      {
+        if constexpr (type == MemoryAccessType::Read)
+          value = g_state.cache_control;
+        else
+          WriteCacheControl(value);
+
+        return 0;
+      }
+      else
+      {
+        return -1;
+      }
+    }
+  }
+
+  if (address < 0x800000)
+  {
+    return DoRAMAccess<type, size>(address, value);
+  }
+  else if (address < EXP1_BASE)
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+  else if (address < (EXP1_BASE + EXP1_SIZE))
+  {
+    return DoEXP1Access<type, size>(address & EXP1_MASK, value);
+  }
+  else if (address < MEMCTRL_BASE)
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+  else if (address < (MEMCTRL_BASE + MEMCTRL_SIZE))
+  {
+    return DoMemoryControlAccess<type, size>(address & MEMCTRL_MASK, value);
+  }
+  else if (address < (PAD_BASE + PAD_SIZE))
+  {
+    return DoPadAccess<type, size>(address & PAD_MASK, value);
+  }
+  else if (address < (SIO_BASE + SIO_SIZE))
+  {
+    return DoSIOAccess<type, size>(address & SIO_MASK, value);
+  }
+  else if (address < (MEMCTRL2_BASE + MEMCTRL2_SIZE))
+  {
+    return DoMemoryControl2Access<type, size>(address & MEMCTRL2_MASK, value);
+  }
+  else if (address < (INTERRUPT_CONTROLLER_BASE + INTERRUPT_CONTROLLER_SIZE))
+  {
+    return DoAccessInterruptController<type, size>(address & INTERRUPT_CONTROLLER_MASK, value);
+  }
+  else if (address < (DMA_BASE + DMA_SIZE))
+  {
+    return DoDMAAccess<type, size>(address & DMA_MASK, value);
+  }
+  else if (address < (TIMERS_BASE + TIMERS_SIZE))
+  {
+    return DoAccessTimers<type, size>(address & TIMERS_MASK, value);
+  }
+  else if (address < CDROM_BASE)
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+  else if (address < (CDROM_BASE + GPU_SIZE))
+  {
+    return DoCDROMAccess<type, size>(address & CDROM_MASK, value);
+  }
+  else if (address < (GPU_BASE + GPU_SIZE))
+  {
+    return DoGPUAccess<type, size>(address & GPU_MASK, value);
+  }
+  else if (address < (MDEC_BASE + MDEC_SIZE))
+  {
+    return DoMDECAccess<type, size>(address & MDEC_MASK, value);
+  }
+  else if (address < SPU_BASE)
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+  else if (address < (SPU_BASE + SPU_SIZE))
+  {
+    return DoAccessSPU<type, size>(address & SPU_MASK, value);
+  }
+  else if (address < EXP2_BASE)
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+  else if (address < (EXP2_BASE + EXP2_SIZE))
+  {
+    return DoEXP2Access<type, size>(address & EXP2_MASK, value);
+  }
+  else if (address < BIOS_BASE)
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+  else if (address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
+  }
+  else
+  {
+    return DoInvalidAccess(type, size, address, value);
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+static bool DoAlignmentCheck(VirtualMemoryAddress address)
+{
+  if constexpr (size == MemoryAccessSize::HalfWord)
+  {
+    if (Common::IsAlignedPow2(address, 2))
+      return true;
+  }
+  else if constexpr (size == MemoryAccessSize::Word)
+  {
+    if (Common::IsAlignedPow2(address, 4))
+      return true;
+  }
+  else
+  {
+    return true;
+  }
+
+  g_state.cop0_regs.BadVaddr = address;
+  RaiseException(type == MemoryAccessType::Read ? Exception::AdEL : Exception::AdES);
+  return false;
+}
+
+bool FetchInstruction()
+{
+  DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
+  if (DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(g_state.regs.npc, g_state.next_instruction.bits) <
+      0)
+  {
+    // Bus errors don't set BadVaddr.
+    RaiseException(Exception::IBE, g_state.regs.npc, false, false, 0);
+    return false;
+  }
+
+  g_state.regs.pc = g_state.regs.npc;
+  g_state.regs.npc += sizeof(g_state.next_instruction.bits);
+  return true;
+}
+
+bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  *value = Truncate8(temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  g_state.pending_ticks += cycles;
+  return true;
+}
+
+bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  *value = Truncate16(temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  g_state.pending_ticks += cycles;
+  return true;
+}
+
+bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+    return false;
+
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  g_state.pending_ticks += cycles;
+  return true;
+}
+
+bool WriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+    return false;
+
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  *value = Truncate8(temp);
+  return (cycles >= 0);
+}
+
+bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  *value = Truncate16(temp);
+  return (cycles >= 0);
+}
+
+bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value) >= 0;
+}
+
+bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp) >= 0;
+}
+
+bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp) >= 0;
+}
+
+bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value) >= 0;
+}
+
+namespace Recompiler::Thunks {
+
+u64 ReadMemoryByte(u32 pc, u32 address)
+{
+  g_state.current_instruction_pc = pc;
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  g_state.pending_ticks += cycles;
+  return ZeroExtend64(temp);
+}
+
+u64 ReadMemoryHalfWord(u32 pc, u32 address)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address))
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  g_state.pending_ticks += cycles;
+  return ZeroExtend64(temp);
+}
+
+u64 ReadMemoryWord(u32 pc, u32 address)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(address))
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  u32 temp = 0;
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  }
+
+  g_state.pending_ticks += cycles;
+  return ZeroExtend64(temp);
+}
+
+bool WriteMemoryByte(u32 pc, u32 address, u8 value)
+{
+  g_state.current_instruction_pc = pc;
+
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryHalfWord(u32 pc, u32 address, u16 value)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address))
+    return false;
+
+  u32 temp = ZeroExtend32(value);
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address, temp);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+bool WriteMemoryWord(u32 pc, u32 address, u32 value)
+{
+  g_state.current_instruction_pc = pc;
+
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(address))
+    return false;
+
+  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
+  if (cycles < 0)
+  {
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  DebugAssert(cycles == 0);
+  return true;
+}
+
+} // namespace Recompiler::Thunks
+
+} // namespace CPU

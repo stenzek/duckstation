@@ -162,13 +162,13 @@ void LibretroHostInterface::AddOSDMessage(std::string message, float duration /*
 {
   retro_message msg = {};
   msg.msg = message.c_str();
-  msg.frames = static_cast<u32>(duration * (m_system ? m_system->GetThrottleFrequency() : 60.0f));
+  msg.frames = static_cast<u32>(duration * (System::IsShutdown() ? 60.0f : System::GetThrottleFrequency()));
   g_retro_environment_callback(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
 
 void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info* info)
 {
-  const bool use_resolution_scale = (m_settings.gpu_renderer != GPURenderer::Software);
+  const bool use_resolution_scale = (g_settings.gpu_renderer != GPURenderer::Software);
   GetSystemAVInfo(info, use_resolution_scale);
 
   Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f, fps = %.2f", info->geometry.base_width,
@@ -178,18 +178,18 @@ void LibretroHostInterface::retro_get_system_av_info(struct retro_system_av_info
 
 void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale)
 {
-  const u32 resolution_scale = use_resolution_scale ? m_settings.gpu_resolution_scale : 1u;
-  Assert(m_system);
+  const u32 resolution_scale = use_resolution_scale ? g_settings.gpu_resolution_scale : 1u;
+  Assert(System::IsValid());
 
   std::memset(info, 0, sizeof(*info));
 
-  info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(m_settings.display_aspect_ratio);
+  info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
   info->geometry.base_width = 320;
   info->geometry.base_height = 240;
   info->geometry.max_width = GPU::VRAM_WIDTH * resolution_scale;
   info->geometry.max_height = GPU::VRAM_HEIGHT * resolution_scale;
 
-  info->timing.fps = m_system->GetThrottleFrequency();
+  info->timing.fps = System::GetThrottleFrequency();
   info->timing.sample_rate = static_cast<double>(AUDIO_SAMPLE_RATE);
 }
 
@@ -209,7 +209,7 @@ void LibretroHostInterface::UpdateSystemAVInfo(bool use_resolution_scale)
 void LibretroHostInterface::UpdateGeometry()
 {
   struct retro_system_av_info avi;
-  const bool use_resolution_scale = (m_settings.gpu_renderer != GPURenderer::Software);
+  const bool use_resolution_scale = (g_settings.gpu_renderer != GPURenderer::Software);
   GetSystemAVInfo(&avi, use_resolution_scale);
 
   Log_InfoPrintf("base = %ux%u, max = %ux%u, aspect ratio = %.2f", avi.geometry.base_width, avi.geometry.base_height,
@@ -221,12 +221,12 @@ void LibretroHostInterface::UpdateGeometry()
 
 void LibretroHostInterface::UpdateLogging()
 {
-  Log::SetFilterLevel(m_settings.log_level);
+  Log::SetFilterLevel(g_settings.log_level);
 
   if (s_libretro_log_callback_valid)
     Log::SetConsoleOutputParams(false);
   else
-    Log::SetConsoleOutputParams(true, nullptr, m_settings.log_level);
+    Log::SetConsoleOutputParams(true, nullptr, g_settings.log_level);
 }
 
 bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
@@ -239,7 +239,7 @@ bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
   if (!BootSystem(bp))
     return false;
 
-  if (m_settings.gpu_renderer != GPURenderer::Software)
+  if (g_settings.gpu_renderer != GPURenderer::Software)
   {
     if (!m_hw_render_callback_valid)
       RequestHardwareRendererContext();
@@ -252,25 +252,25 @@ bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
 
 void LibretroHostInterface::retro_run_frame()
 {
-  Assert(m_system);
+  Assert(!System::IsShutdown());
 
   if (HasCoreVariablesChanged())
     UpdateSettings();
 
   UpdateControllers();
 
-  m_system->GetGPU()->RestoreGraphicsAPIState();
+  g_gpu->RestoreGraphicsAPIState();
 
-  m_system->RunFrame();
+  System::RunFrame();
 
-  m_system->GetGPU()->ResetGraphicsAPIState();
+  g_gpu->ResetGraphicsAPIState();
 
   m_display->Render();
 }
 
 unsigned LibretroHostInterface::retro_get_region()
 {
-  return m_system->IsPALRegion() ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
+  return System::IsPALRegion() ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
 
 size_t LibretroHostInterface::retro_serialize_size()
@@ -281,7 +281,7 @@ size_t LibretroHostInterface::retro_serialize_size()
 bool LibretroHostInterface::retro_serialize(void* data, size_t size)
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateMemoryStream(data, static_cast<u32>(size));
-  if (!m_system->SaveState(stream.get(), 0))
+  if (!System::SaveState(stream.get(), 0))
   {
     Log_ErrorPrintf("Failed to save state to memory stream");
     return false;
@@ -293,7 +293,7 @@ bool LibretroHostInterface::retro_serialize(void* data, size_t size)
 bool LibretroHostInterface::retro_unserialize(const void* data, size_t size)
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateReadOnlyMemoryStream(data, static_cast<u32>(size));
-  if (!m_system->LoadState(stream.get()))
+  if (!System::LoadState(stream.get()))
   {
     Log_ErrorPrintf("Failed to load save state from memory stream");
     return false;
@@ -307,7 +307,7 @@ void* LibretroHostInterface::retro_get_memory_data(unsigned id)
   switch (id)
   {
     case RETRO_MEMORY_SYSTEM_RAM:
-      return m_system ? m_system->GetBus()->GetRAM() : nullptr;
+      return System::IsShutdown() ? nullptr : Bus::g_ram;
 
     default:
       return nullptr;
@@ -552,27 +552,27 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
-  m_settings.Load(si);
+  g_settings.Load(si);
 
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;
   if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_directory) || !system_directory)
     system_directory = "bios";
-  m_settings.bios_path =
+  g_settings.bios_path =
     StringUtil::StdStringFromFormat("%s%cscph1001.bin", system_directory, FS_OSPATH_SEPERATOR_CHARACTER);
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-    m_settings.memory_card_paths[i] = GetSharedMemoryCardPath(i);
+    g_settings.memory_card_paths[i] = GetSharedMemoryCardPath(i);
 }
 
 void LibretroHostInterface::UpdateSettings()
 {
-  Settings old_settings(std::move(m_settings));
+  Settings old_settings(std::move(g_settings));
   LoadSettings();
 
-  if (m_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
-      m_settings.gpu_renderer != GPURenderer::Software)
+  if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
+      g_settings.gpu_renderer != GPURenderer::Software)
   {
     ReportMessage("Resolution changed, updating system AV info...");
 
@@ -588,14 +588,14 @@ void LibretroHostInterface::UpdateSettings()
       SwitchToHardwareRenderer();
 
     // Don't let the base class mess with the GPU.
-    old_settings.gpu_resolution_scale = m_settings.gpu_resolution_scale;
+    old_settings.gpu_resolution_scale = g_settings.gpu_resolution_scale;
   }
 
-  if (m_settings.gpu_renderer != old_settings.gpu_renderer)
+  if (g_settings.gpu_renderer != old_settings.gpu_renderer)
   {
     ReportFormattedMessage("Switch to %s renderer pending, please restart the core to apply.",
-                           Settings::GetRendererDisplayName(m_settings.gpu_renderer));
-    m_settings.gpu_renderer = old_settings.gpu_renderer;
+                           Settings::GetRendererDisplayName(g_settings.gpu_renderer));
+    g_settings.gpu_renderer = old_settings.gpu_renderer;
   }
 
   CheckForSettingsChanges(old_settings);
@@ -605,10 +605,10 @@ void LibretroHostInterface::CheckForSettingsChanges(const Settings& old_settings
 {
   HostInterface::CheckForSettingsChanges(old_settings);
 
-  if (m_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+  if (g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     UpdateGeometry();
 
-  if (m_settings.log_level != old_settings.log_level)
+  if (g_settings.log_level != old_settings.log_level)
     UpdateLogging();
 }
 
@@ -618,7 +618,7 @@ void LibretroHostInterface::UpdateControllers()
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    switch (m_settings.controller_types[i])
+    switch (g_settings.controller_types[i])
     {
       case ControllerType::None:
         break;
@@ -633,7 +633,7 @@ void LibretroHostInterface::UpdateControllers()
 
       default:
         ReportFormattedError("Unhandled controller type '%s'.",
-                             Settings::GetControllerTypeDisplayName(m_settings.controller_types[i]));
+                             Settings::GetControllerTypeDisplayName(g_settings.controller_types[i]));
         break;
     }
   }
@@ -641,7 +641,7 @@ void LibretroHostInterface::UpdateControllers()
 
 void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
 {
-  DigitalController* controller = static_cast<DigitalController*>(m_system->GetController(index));
+  DigitalController* controller = static_cast<DigitalController*>(System::GetController(index));
   DebugAssert(controller);
 
   static constexpr std::array<std::pair<DigitalController::Button, u32>, 14> mapping = {
@@ -669,7 +669,7 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
 
 void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
 {
-  AnalogController* controller = static_cast<AnalogController*>(m_system->GetController(index));
+  AnalogController* controller = static_cast<AnalogController*>(System::GetController(index));
   DebugAssert(controller);
 
   static constexpr std::array<std::pair<AnalogController::Button, u32>, 16> button_mapping = {
@@ -875,8 +875,8 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
     wi.surface_width = avi.geometry.base_width;
     wi.surface_height = avi.geometry.base_height;
     wi.surface_scale = 1.0f;
-    if (!display || !display->CreateRenderDevice(wi, {}, g_libretro_host_interface.m_settings.gpu_use_debug_device) ||
-        !display->InitializeRenderDevice({}, m_settings.gpu_use_debug_device))
+    if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
+        !display->InitializeRenderDevice({}, g_settings.gpu_use_debug_device))
     {
       Log_ErrorPrintf("Failed to create hardware host display");
       return;
@@ -884,7 +884,7 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   }
 
   std::swap(display, g_libretro_host_interface.m_display);
-  g_libretro_host_interface.m_system->RecreateGPU(renderer.value());
+  System::RecreateGPU(renderer.value());
   display->DestroyRenderDevice();
   m_using_hardware_renderer = true;
 }
@@ -917,13 +917,12 @@ void LibretroHostInterface::SwitchToSoftwareRenderer()
   }
 
   m_display = std::make_unique<LibretroHostDisplay>();
-  m_system->RecreateGPU(GPURenderer::Software);
+  System::RecreateGPU(GPURenderer::Software);
 }
 
 bool LibretroHostInterface::DiskControlSetEjectState(bool ejected)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlSetEjectState() - no system");
     return false;
@@ -933,51 +932,48 @@ bool LibretroHostInterface::DiskControlSetEjectState(bool ejected)
 
   if (ejected)
   {
-    if (!system->HasMedia())
+    if (!System::HasMedia())
       return false;
 
-    system->RemoveMedia();
+    System::RemoveMedia();
     return true;
   }
   else
   {
     const u32 image_to_insert = P_THIS->m_next_disc_index.value_or(0);
     Log_DevPrintf("Inserting image %u", image_to_insert);
-    return system->SwitchMediaFromPlaylist(image_to_insert);
+    return System::SwitchMediaFromPlaylist(image_to_insert);
   }
 }
 
 bool LibretroHostInterface::DiskControlGetEjectState()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlGetEjectState() - no system");
     return false;
   }
 
-  Log_DevPrintf("DiskControlGetEjectState() -> %u", static_cast<unsigned>(system->HasMedia()));
-  return system->HasMedia();
+  Log_DevPrintf("DiskControlGetEjectState() -> %u", static_cast<unsigned>(System::HasMedia()));
+  return System::HasMedia();
 }
 
 unsigned LibretroHostInterface::DiskControlGetImageIndex()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlGetImageIndex() - no system");
     return false;
   }
 
-  const u32 index = P_THIS->m_next_disc_index.value_or(system->GetMediaPlaylistIndex());
+  const u32 index = P_THIS->m_next_disc_index.value_or(System::GetMediaPlaylistIndex());
   Log_DevPrintf("DiskControlGetImageIndex() -> %u", index);
   return index;
 }
 
 bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlSetImageIndex() - no system");
     return false;
@@ -985,7 +981,7 @@ bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
 
   Log_DevPrintf("DiskControlSetImageIndex(%u)", index);
 
-  if (index >= system->GetMediaPlaylistCount())
+  if (index >= System::GetMediaPlaylistCount())
     return false;
 
   P_THIS->m_next_disc_index = index;
@@ -994,21 +990,19 @@ bool LibretroHostInterface::DiskControlSetImageIndex(unsigned index)
 
 unsigned LibretroHostInterface::DiskControlGetNumImages()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlGetNumImages() - no system");
     return false;
   }
 
-  Log_DevPrintf("DiskControlGetNumImages() -> %u", system->GetMediaPlaylistCount());
-  return static_cast<unsigned>(system->GetMediaPlaylistCount());
+  Log_DevPrintf("DiskControlGetNumImages() -> %u", System::GetMediaPlaylistCount());
+  return static_cast<unsigned>(System::GetMediaPlaylistCount());
 }
 
 bool LibretroHostInterface::DiskControlReplaceImageIndex(unsigned index, const retro_game_info* info)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlReplaceImageIndex() - no system");
     return false;
@@ -1016,22 +1010,21 @@ bool LibretroHostInterface::DiskControlReplaceImageIndex(unsigned index, const r
 
   Log_DevPrintf("DiskControlReplaceImageIndex(%u, %s)", index, info ? info->path : "null");
   if (info && info->path)
-    return system->ReplaceMediaPathFromPlaylist(index, info->path);
+    return System::ReplaceMediaPathFromPlaylist(index, info->path);
   else
-    return system->RemoveMediaPathFromPlaylist(index);
+    return System::RemoveMediaPathFromPlaylist(index);
 }
 
 bool LibretroHostInterface::DiskControlAddImageIndex()
 {
-  System* system = P_THIS->GetSystem();
-  if (!system)
+  if (System::IsShutdown())
   {
     Log_ErrorPrintf("DiskControlAddImageIndex() - no system");
     return false;
   }
 
-  Log_DevPrintf("DiskControlAddImageIndex() -> %zu", system->GetMediaPlaylistCount());
-  system->AddMediaPathToPlaylist({});
+  Log_DevPrintf("DiskControlAddImageIndex() -> %zu", System::GetMediaPlaylistCount());
+  System::AddMediaPathToPlaylist({});
   return true;
 }
 
@@ -1044,11 +1037,10 @@ bool LibretroHostInterface::DiskControlSetInitialImage(unsigned index, const cha
 
 bool LibretroHostInterface::DiskControlGetImagePath(unsigned index, char* path, size_t len)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system || index >= system->GetMediaPlaylistCount())
+  if (System::IsShutdown() || index >= System::GetMediaPlaylistCount())
     return false;
 
-  const std::string& image_path = system->GetMediaPlaylistPath(index);
+  const std::string& image_path = System::GetMediaPlaylistPath(index);
   Log_DevPrintf("DiskControlGetImagePath(%u) -> %s", index, image_path.c_str());
   if (image_path.empty())
     return false;
@@ -1059,11 +1051,10 @@ bool LibretroHostInterface::DiskControlGetImagePath(unsigned index, char* path, 
 
 bool LibretroHostInterface::DiskControlGetImageLabel(unsigned index, char* label, size_t len)
 {
-  System* system = P_THIS->GetSystem();
-  if (!system || index >= system->GetMediaPlaylistCount())
+  if (System::IsShutdown() || index >= System::GetMediaPlaylistCount())
     return false;
 
-  const std::string& image_path = system->GetMediaPlaylistPath(index);
+  const std::string& image_path = System::GetMediaPlaylistPath(index);
   if (image_path.empty())
     return false;
 

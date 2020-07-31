@@ -5,7 +5,6 @@ add_library(core
     bios.h
     bus.cpp
     bus.h
-    bus.inl
     cdrom.cpp
     cdrom.h
     cdrom_async_reader.cpp
@@ -16,7 +15,6 @@ add_library(core
     cpu_code_cache.h
     cpu_core.cpp
     cpu_core.h
-    cpu_core.inl
     cpu_disasm.cpp
     cpu_disasm.h
     cpu_types.cpp
@@ -42,7 +40,6 @@ add_library(core
     gpu_sw.h
     gte.cpp
     gte.h
-    gte.inl
     gte_types.h
     host_display.cpp
     host_display.h
@@ -90,7 +87,6 @@ set(RECOMPILER_SRCS
     cpu_recompiler_code_generator_generic.cpp
     cpu_recompiler_register_cache.cpp
     cpu_recompiler_register_cache.h
-    cpu_recompiler_thunks.cpp
     cpu_recompiler_thunks.h
     cpu_recompiler_types.h
 )

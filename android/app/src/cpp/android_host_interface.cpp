@@ -9,9 +9,9 @@
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
+#include "frontend-common/imgui_styles.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
-#include "frontend-common/imgui_styles.h"
 #include <android/native_window_jni.h>
 #include <cmath>
 #include <imgui.h>
@@ -242,27 +242,23 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
     m_callback_mutex.unlock();
 
     // simulate the system if not paused
-    if (m_system && !m_paused)
-      m_system->RunFrame();
+    if (System::IsRunning())
+      System::RunFrame();
 
     // rendering
     {
       DrawImGuiWindows();
 
-      if (m_system)
-        m_system->GetGPU()->ResetGraphicsAPIState();
+      g_gpu->ResetGraphicsAPIState();
 
       m_display->Render();
       ImGui::NewFrame();
 
-      if (m_system)
-      {
-        m_system->GetGPU()->RestoreGraphicsAPIState();
-        m_system->UpdatePerformanceCounters();
+      g_gpu->RestoreGraphicsAPIState();
+      System::UpdatePerformanceCounters();
 
-        if (m_speed_limiter_enabled)
-          m_system->Throttle();
-      }
+      if (m_speed_limiter_enabled)
+        System::Throttle();
     }
   }
 
@@ -280,7 +276,7 @@ bool AndroidHostInterface::AcquireHostDisplay()
   wi.surface_height = ANativeWindow_getHeight(m_surface);
 
   std::unique_ptr<HostDisplay> display;
-  switch (m_settings.gpu_renderer)
+  switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
       display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
@@ -292,8 +288,8 @@ bool AndroidHostInterface::AcquireHostDisplay()
       break;
   }
 
-  if (!display->CreateRenderDevice(wi, {}, m_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice(GetShaderCacheBasePath(), m_settings.gpu_use_debug_device))
+  if (!display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
   {
     ReportError("Failed to acquire host display.");
     return false;
@@ -363,15 +359,15 @@ void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_na
 
   if (!IsEmulationThreadRunning())
   {
-    m_settings.controller_types[index] = type;
+    g_settings.controller_types[index] = type;
     return;
   }
 
   RunOnEmulationThread(
     [this, index, type]() {
       Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
-      m_settings.controller_types[index] = type;
-      m_system->UpdateControllers();
+      g_settings.controller_types[index] = type;
+      System::UpdateControllers();
     },
     false);
 }
@@ -383,7 +379,7 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
 
   RunOnEmulationThread(
     [this, index, button_code, pressed]() {
-      Controller* controller = m_system->GetController(index);
+      Controller* controller = System::GetController(index);
       if (!controller)
         return;
 
@@ -398,14 +394,14 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     return;
 
   RunOnEmulationThread(
-      [this, index, button_code, value]() {
-        Controller* controller = m_system->GetController(index);
-        if (!controller)
-          return;
+    [this, index, button_code, value]() {
+      Controller* controller = System::GetController(index);
+      if (!controller)
+        return;
 
-        controller->SetAxisState(button_code, value);
-      },
-      false);
+      controller->SetAxisState(button_code, value);
+    },
+    false);
 }
 
 void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database)
@@ -416,7 +412,7 @@ void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidat
 
 void AndroidHostInterface::ApplySettings()
 {
-  Settings old_settings = std::move(m_settings);
+  Settings old_settings = std::move(g_settings);
   CommonHostInterface::LoadSettings(m_settings_interface);
   CheckForSettingsChanges(old_settings);
 }
@@ -565,21 +561,23 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisCode, jobject
                        jstring axis_name)
 {
   std::optional<ControllerType> type =
-      Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+    Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
   if (!type)
     return -1;
 
   std::optional<s32> code =
-      Controller::GetAxisCodeByName(type.value(), AndroidHelpers::JStringToString(env, axis_name));
+    Controller::GetAxisCodeByName(type.value(), AndroidHelpers::JStringToString(env, axis_name));
   return code.value_or(-1);
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_refreshGameList, jobject obj, jboolean invalidate_cache, jboolean invalidate_database)
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_refreshGameList, jobject obj, jboolean invalidate_cache,
+                       jboolean invalidate_database)
 {
   AndroidHelpers::GetNativeClass(env, obj)->RefreshGameList(invalidate_cache, invalidate_database);
 }
 
-static const char* DiscRegionToString(DiscRegion region) {
+static const char* DiscRegionToString(DiscRegion region)
+{
   static std::array<const char*, 4> names = {{"NTSC_J", "NTSC_U", "PAL", "Other"}};
   return names[static_cast<int>(region)];
 }
@@ -628,9 +626,7 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_applySettings, jobject obj)
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   if (hi->IsEmulationThreadRunning())
   {
-    hi->RunOnEmulationThread([hi]() {
-      hi->ApplySettings();
-    });
+    hi->RunOnEmulationThread([hi]() { hi->ApplySettings(); });
   }
   else
   {
@@ -641,23 +637,17 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_applySettings, jobject obj)
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_resetSystem, jobject obj, jboolean global, jint slot)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  hi->RunOnEmulationThread([hi]() {
-    hi->ResetSystem();
-  });
+  hi->RunOnEmulationThread([hi]() { hi->ResetSystem(); });
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_loadState, jobject obj, jboolean global, jint slot)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  hi->RunOnEmulationThread([hi, global, slot]() {
-    hi->LoadState(global, slot);
-  });
+  hi->RunOnEmulationThread([hi, global, slot]() { hi->LoadState(global, slot); });
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_saveState, jobject obj, jboolean global, jint slot)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  hi->RunOnEmulationThread([hi, global, slot]() {
-    hi->SaveState(global, slot);
-  });
+  hi->RunOnEmulationThread([hi, global, slot]() { hi->SaveState(global, slot); });
 }

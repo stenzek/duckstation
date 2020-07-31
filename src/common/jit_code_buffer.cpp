@@ -10,8 +10,29 @@
 #include <sys/mman.h>
 #endif
 
-JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
+JitCodeBuffer::JitCodeBuffer() = default;
+
+JitCodeBuffer::JitCodeBuffer(u32 size, u32 far_code_size)
 {
+  if (!Allocate(size, far_code_size))
+    Panic("Failed to allocate code space");
+}
+
+JitCodeBuffer::JitCodeBuffer(void* buffer, u32 size, u32 far_code_size, u32 guard_pages)
+{
+  if (!Initialize(buffer, size, far_code_size))
+    Panic("Failed to initialize code space");
+}
+
+JitCodeBuffer::~JitCodeBuffer()
+{
+  Destroy();
+}
+
+bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_size /* = 0 */)
+{
+  Destroy();
+
   m_total_size = size + far_code_size;
 
 #if defined(WIN32)
@@ -22,6 +43,10 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 #else
   m_code_ptr = nullptr;
 #endif
+
+  if (!m_code_ptr)
+    return false;
+
   m_free_code_ptr = m_code_ptr;
   m_code_size = size;
   m_code_used = 0;
@@ -31,17 +56,91 @@ JitCodeBuffer::JitCodeBuffer(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   m_far_code_size = far_code_size;
   m_far_code_used = 0;
 
-  if (!m_code_ptr)
-    Panic("Failed to allocate code space.");
+  m_old_protection = 0;
+  m_owns_buffer = true;
+  return true;
 }
 
-JitCodeBuffer::~JitCodeBuffer()
+bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 */, u32 guard_size /* = 0 */)
 {
+  Destroy();
+
+  if ((far_code_size > 0 && guard_size >= far_code_size) || (far_code_size + (guard_size * 2)) > size)
+    return false;
+
 #if defined(WIN32)
-  VirtualFree(m_code_ptr, 0, MEM_RELEASE);
+  DWORD old_protect = 0;
+  if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
+    return false;
+
+  if (guard_size > 0)
+  {
+    DWORD old_guard_protect = 0;
+    u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
+    if (!VirtualProtect(buffer, guard_size, PAGE_NOACCESS, &old_guard_protect) ||
+        !VirtualProtect(guard_at_end, guard_size, PAGE_NOACCESS, &old_guard_protect))
+    {
+      return false;
+    }
+  }
+
+  m_code_ptr = static_cast<u8*>(buffer);
+  m_old_protection = static_cast<u32>(old_protect);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-  munmap(m_code_ptr, m_total_size);
+  if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
+    return false;
+
+  if (guard_size > 0)
+  {
+    u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
+    if (mprotect(buffer, guard_size, PROT_NONE) != 0 || mprotect(guard_at_end, guard_size, PROT_NONE) != 0)
+      return false;
+  }
+
+  // reasonable default?
+  m_code_ptr = static_cast<u8*>(buffer);
+  m_old_protection = PROT_READ | PROT_WRITE;
+#else
+  m_code_ptr = nullptr;
 #endif
+
+  if (!m_code_ptr)
+    return false;
+
+  m_total_size = size;
+  m_free_code_ptr = m_code_ptr + guard_size;
+  m_code_size = size - far_code_size - (guard_size * 2);
+  m_code_used = 0;
+
+  m_far_code_ptr = static_cast<u8*>(m_code_ptr) + m_code_size;
+  m_free_far_code_ptr = m_far_code_ptr;
+  m_far_code_size = far_code_size - guard_size;
+  m_far_code_used = 0;
+
+  m_guard_size = guard_size;
+  m_owns_buffer = false;
+  return true;
+}
+
+void JitCodeBuffer::Destroy()
+{
+  if (m_owns_buffer)
+  {
+#if defined(WIN32)
+    VirtualFree(m_code_ptr, 0, MEM_RELEASE);
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+    munmap(m_code_ptr, m_total_size);
+#endif
+  }
+  else if (m_code_ptr)
+  {
+#if defined(WIN32)
+    DWORD old_protect = 0;
+    VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect);
+#else
+    mprotect(m_code_ptr, m_total_size, m_old_protection);
+#endif
+  }
 }
 
 void JitCodeBuffer::CommitCode(u32 length)
@@ -76,18 +175,18 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 
 void JitCodeBuffer::Reset()
 {
-  std::memset(m_code_ptr, 0, m_code_size);
-  FlushInstructionCache(m_code_ptr, m_code_size);
+  m_free_code_ptr = m_code_ptr + m_guard_size;
+  m_code_used = 0;
+  std::memset(m_free_code_ptr, 0, m_code_size);
+  FlushInstructionCache(m_free_code_ptr, m_code_size);
+
   if (m_far_code_size > 0)
   {
-    std::memset(m_far_code_ptr, 0, m_far_code_size);
-    FlushInstructionCache(m_far_code_ptr, m_far_code_size);
+    m_free_far_code_ptr = m_far_code_ptr;
+    m_far_code_used = 0;
+    std::memset(m_free_far_code_ptr, 0, m_far_code_size);
+    FlushInstructionCache(m_free_far_code_ptr, m_far_code_size);
   }
-  m_free_code_ptr = m_code_ptr;
-  m_code_used = 0;
-
-  m_free_far_code_ptr = m_far_code_ptr;
-  m_far_code_used = 0;
 }
 
 void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
