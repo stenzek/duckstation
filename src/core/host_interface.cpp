@@ -222,20 +222,38 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-10j.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5500.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30j.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7500.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9000.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-40j.bin", false, false));
       break;
 
     case ConsoleRegion::NTSC_U:
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1001.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-22a.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5501.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5503.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7003.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30a.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7001.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7501.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7503.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9001.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9003.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9903.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-41a.bin", false, false));
       break;
 
     case ConsoleRegion::PAL:
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph1002.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-21e.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5502.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph5552.bin", false, false));
       TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-30e.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7002.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph7502.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "scph9002.bin", false, false));
+      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(m_settings.bios_path.c_str(), "ps-41e.bin", false, false));
       break;
 
     default:

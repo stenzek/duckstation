@@ -44,6 +44,8 @@ static constexpr Hash SCPH_3000_HASH = MakeHashFromString("849515939161e62f6b866
 static constexpr Hash SCPH_5500_HASH = MakeHashFromString("8dd7d5296a650fac7319bce665a6a53c");
 static constexpr Hash SCPH_5501_HASH = MakeHashFromString("490f666e1afb15b7362b406ed1cea246");
 static constexpr Hash SCPH_5502_HASH = MakeHashFromString("32736f17079d0b2b7024407c39bd3050");
+static constexpr Hash SCPH_7001_HASH = MakeHashFromString("1e68c231d0896b7eadcad1d7d8e76129");
+static constexpr Hash SCPH_7002_HASH = MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee");
 static constexpr Hash SCPH_POPS660_HASH = MakeHashFromString("c53ca5908936d412331790f4426c6c33");
 
 Hash GetHash(const Image& image)
@@ -103,10 +105,10 @@ bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash)
       return (hash == SCPH_1000_HASH || hash == SCPH_3000_HASH || hash == SCPH_5500_HASH || hash == SCPH_POPS660_HASH);
 
     case ConsoleRegion::NTSC_U:
-      return (hash == SCPH_1001_HASH || hash == SCPH_5501_HASH || hash == SCPH_POPS660_HASH);
+      return (hash == SCPH_1001_HASH || hash == SCPH_5501_HASH || hash == SCPH_7001_HASH || hash == SCPH_POPS660_HASH);
 
     case ConsoleRegion::PAL:
-      return (hash == SCPH_1002_HASH || hash == SCPH_5502_HASH || hash == SCPH_POPS660_HASH);
+      return (hash == SCPH_1002_HASH || hash == SCPH_5502_HASH || hash == SCPH_7002_HASH || hash == SCPH_POPS660_HASH);
 
     case ConsoleRegion::Auto:
     default:
@@ -135,7 +137,8 @@ void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFF
 bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
 {
   if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
-      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_POPS660_HASH)
+      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_7001_HASH &&
+      hash != SCPH_7002_HASH && hash != SCPH_POPS660_HASH)
   {
     Log_WarningPrintf("Incompatible version for TTY patch: %s", hash.ToString().c_str());
     return false;
@@ -150,7 +153,8 @@ bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
 bool PatchBIOSFastBoot(Image& image, const Hash& hash)
 {
   if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
-      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_POPS660_HASH)
+      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_7001_HASH &&
+      hash != SCPH_7002_HASH && hash != SCPH_POPS660_HASH)
   {
     Log_WarningPrintf("Incompatible version for fast-boot patch: %s", hash.ToString().c_str());
     return false;
