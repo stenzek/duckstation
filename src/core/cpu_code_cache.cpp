@@ -1,5 +1,6 @@
 #include "cpu_code_cache.h"
 #include "bus.h"
+#include "common/assert.h"
 #include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
@@ -72,7 +73,9 @@ void Initialize(bool use_recompiler)
 void Shutdown()
 {
   Flush();
+#ifdef WITH_RECOMPILER
   s_code_buffer.Destroy();
+#endif
 }
 
 void Execute()
