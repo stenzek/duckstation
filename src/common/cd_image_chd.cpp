@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <cstring>
 #include <map>
+#include <cerrno>
 #include <optional>
 Log_SetChannel(CDImageCHD);
 
@@ -59,6 +60,7 @@ private:
 
   bool ReadHunk(u32 hunk_index);
 
+  std::FILE* m_fp = nullptr;
   chd_file* m_chd = nullptr;
   u32 m_hunk_size = 0;
   u32 m_sectors_per_hunk = 0;
@@ -75,11 +77,21 @@ CDImageCHD::~CDImageCHD()
 {
   if (m_chd)
     chd_close(m_chd);
+  if (m_fp)
+    std::fclose(m_fp);
 }
 
 bool CDImageCHD::Open(const char* filename)
 {
-  chd_error err = chd_open(filename, CHD_OPEN_READ, nullptr, &m_chd);
+  Assert(!m_fp);
+  m_fp = FileSystem::OpenCFile(filename, "rb");
+  if (!m_fp)
+  {
+    Log_ErrorPrintf("Failed to open CHD '%s': errno %d", filename, errno);
+    return false;
+  }
+
+  chd_error err = chd_open_file(m_fp, CHD_OPEN_READ, nullptr, &m_chd);
   if (err != CHDERR_NONE)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
