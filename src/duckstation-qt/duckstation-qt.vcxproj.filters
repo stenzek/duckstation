@@ -43,12 +43,14 @@
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
+    <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="gamelistmodel.h" />
+    <ClInclude Include="gamelistsearchdirectoriesmodel.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -81,6 +83,7 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="inputbindingdialog.h" />
+    <QtMoc Include="gamelistmodel.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

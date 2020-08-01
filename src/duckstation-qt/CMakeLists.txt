@@ -19,6 +19,8 @@ set(SRCS
   controllersettingswidget.h
   gamelistmodel.cpp
   gamelistmodel.h
+  gamelistsearchdirectoriesmodel.cpp
+  gamelistsearchdirectoriesmodel.h
   gamelistsettingswidget.cpp
   gamelistsettingswidget.h
   gamelistsettingswidget.ui

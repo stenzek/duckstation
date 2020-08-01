@@ -798,12 +798,12 @@
 <context>
     <name>GameListSearchDirectoriesModel</name>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="48"/>
+        <location filename="../gamelistsearchdirectoriesmodel.cpp" line="29"/>
         <source>Path</source>
         <translation>Caminho</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="50"/>
+        <location filename="../gamelistsearchdirectoriesmodel.cpp" line="31"/>
         <source>Recursive</source>
         <translation>Recursivo</translation>
     </message>
@@ -827,7 +827,7 @@
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="57"/>
-        <location filename="../gamelistsettingswidget.cpp" line="270"/>
+        <location filename="../gamelistsettingswidget.cpp" line="85"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
@@ -847,66 +847,66 @@
         <translation>Atualizar Lista de Jogos</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="272"/>
+        <location filename="../gamelistsettingswidget.cpp" line="87"/>
         <source>Open Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="280"/>
+        <location filename="../gamelistsettingswidget.cpp" line="95"/>
         <source>Select Search Directory</source>
         <translation>Escolha o Diretório de Busca</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="286"/>
+        <location filename="../gamelistsettingswidget.cpp" line="101"/>
         <source>Scan Recursively?</source>
         <translation>Ler Recursivamente?</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="287"/>
+        <location filename="../gamelistsettingswidget.cpp" line="102"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
         <translation>Gostaria der ler o diretório recursivamente? Escanear o diretório desta forma demora mais tempo porém, identificará arquivos em sub-pastas.</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="325"/>
+        <location filename="../gamelistsettingswidget.cpp" line="140"/>
         <source>Download database from redump.org?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="326"/>
+        <location filename="../gamelistsettingswidget.cpp" line="141"/>
         <source>Do you wish to download the disc database from redump.org?
 
 This will download approximately 4 megabytes over your current internet connection.</source>
         <translation>Quer baixar o banco de dados do redump? Isto significa que serão baixados 4MB de informação.</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="478"/>
+        <location filename="../gamelistsettingswidget.cpp" line="293"/>
         <source>Downloading %1...</source>
         <translation>Baixando %1...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="478"/>
+        <location filename="../gamelistsettingswidget.cpp" line="293"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="489"/>
+        <location filename="../gamelistsettingswidget.cpp" line="304"/>
         <source>Download failed</source>
         <translation>Falha ao Baixar</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="496"/>
+        <location filename="../gamelistsettingswidget.cpp" line="311"/>
         <source>Extracting...</source>
         <translation>Extraindo...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="502"/>
+        <location filename="../gamelistsettingswidget.cpp" line="317"/>
         <source>Extract failed</source>
         <translation>Falha na Extração</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="502"/>
+        <location filename="../gamelistsettingswidget.cpp" line="317"/>
         <source>Extracting game database failed.</source>
         <translation>Extração do banco de dados falhou.</translation>
     </message>
