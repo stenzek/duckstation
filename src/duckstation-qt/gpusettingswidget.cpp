@@ -114,7 +114,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     tr(
       "Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which "
       "have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable "
-      "frame rate games, it may not affect the framerate."));
+      "frame rate games, it may not affect the speed."));
   dialog->registerWidgetHelp(
     m_ui.linearTextureFiltering, tr("Bilinear Texture Filtering"), tr("Unchecked"),
     tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear "
