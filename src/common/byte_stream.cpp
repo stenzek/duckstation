@@ -1,6 +1,8 @@
 #include "byte_stream.h"
 #include "assert.h"
+#include "file_system.h"
 #include "log.h"
+#include "string_util.h"
 #include <algorithm>
 #include <cerrno>
 #include <cstdio>
@@ -958,16 +960,14 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
 
     // fill in random characters
     _mktemp_s(temporaryFileName, fileNameLength + 8);
-
-    // open the file
-    errno_t err;
-    FILE* pTemporaryFile;
+    const std::wstring wideTemporaryFileName(StringUtil::UTF8StringToWideString(temporaryFileName));
 
     // massive hack here
     DWORD desiredAccess = GENERIC_WRITE;
     if (openMode & BYTESTREAM_OPEN_READ)
       desiredAccess |= GENERIC_READ;
-    HANDLE hFile = CreateFileA(temporaryFileName, desiredAccess, FILE_SHARE_DELETE, NULL, CREATE_NEW, 0, NULL);
+    HANDLE hFile =
+      CreateFileW(wideTemporaryFileName.c_str(), desiredAccess, FILE_SHARE_DELETE, NULL, CREATE_NEW, 0, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
       return nullptr;
 
@@ -976,16 +976,16 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     if (fd < 0)
     {
       CloseHandle(hFile);
-      DeleteFileA(temporaryFileName);
+      DeleteFileW(wideTemporaryFileName.c_str());
       return nullptr;
     }
 
     // convert to a stream
-    pTemporaryFile = _fdopen(fd, modeString);
-    if (pTemporaryFile == nullptr)
+    FILE* pTemporaryFile = _fdopen(fd, modeString);
+    if (!pTemporaryFile)
     {
       _close(fd);
-      DeleteFileA(temporaryFileName);
+      DeleteFileW(wideTemporaryFileName.c_str());
       return nullptr;
     }
 
@@ -996,9 +996,8 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     // do we need to copy the existing file into this one?
     if (!(openMode & BYTESTREAM_OPEN_TRUNCATE))
     {
-      FILE* pOriginalFile;
-      err = fopen_s(&pOriginalFile, fileName, "rb");
-      if (err != 0 || pOriginalFile == nullptr)
+      FILE* pOriginalFile = FileSystem::OpenCFile(fileName, "rb");
+      if (!pOriginalFile)
       {
         // this will delete the temporary file
         pStream->Discard();
@@ -1031,9 +1030,8 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
   else
   {
     // forward through
-    FILE* pFile;
-    errno_t err = fopen_s(&pFile, fileName, modeString);
-    if (err != 0 || pFile == NULL)
+    FILE* pFile = FileSystem::OpenCFile(fileName, modeString);
+    if (!pFile)
       return nullptr;
 
     return std::make_unique<FileByteStream>(pFile);

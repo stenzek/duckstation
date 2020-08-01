@@ -307,7 +307,7 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   if (!FileSystem::StatFile(path, &ffd))
     return false;
 
-  std::FILE* fp = std::fopen(path, "rb");
+  std::FILE* fp = FileSystem::OpenCFile(path, "rb");
   if (!fp)
     return false;
 

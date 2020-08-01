@@ -1,5 +1,6 @@
 #include "cpu_core.h"
 #include "common/align.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_disasm.h"
@@ -53,7 +54,7 @@ void WriteToExecutionLog(const char* format, ...)
 
   if (!log_file_opened)
   {
-    log_file = std::fopen("cpu_log.txt", "wb");
+    log_file = FileSystem::OpenCFile("cpu_log.txt", "wb");
     log_file_opened = true;
   }
 

@@ -3,6 +3,7 @@
 #include "bus.h"
 #include "cdrom.h"
 #include "common/audio_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
@@ -878,7 +879,7 @@ void ResetPerformanceCounters()
 
 bool LoadEXE(const char* filename, std::vector<u8>& bios_image)
 {
-  std::FILE* fp = std::fopen(filename, "rb");
+  std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
   if (!fp)
     return false;
 
@@ -997,7 +998,7 @@ bool LoadPSF(const char* filename, std::vector<u8>& bios_image)
 
 bool SetExpansionROM(const char* filename)
 {
-  std::FILE* fp = std::fopen(filename, "rb");
+  std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
   if (!fp)
   {
     Log_ErrorPrintf("Failed to open '%s'", filename);
