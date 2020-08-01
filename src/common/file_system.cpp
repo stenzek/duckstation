@@ -700,8 +700,8 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     tempStr = StringUtil::StdStringFromFormat("%s\\*", OriginPath);
   }
 
-  WIN32_FIND_DATA wfd;
-  HANDLE hFind = FindFirstFileA(tempStr.c_str(), &wfd);
+  WIN32_FIND_DATAW wfd;
+  HANDLE hFind = FindFirstFileW(StringUtil::UTF8StringToWideString(tempStr).c_str(), &wfd);
   if (hFind == INVALID_HANDLE_VALUE)
     return 0;
 
@@ -715,20 +715,27 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     wildCardMatchAll = !(std::strcmp(Pattern, "*"));
   }
 
+  // holder for utf-8 conversion
+  std::string utf8_filename;
+  utf8_filename.reserve(countof(wfd.cFileName) * 2);
+
   // iterate results
   do
   {
     if (wfd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN && !(Flags & FILESYSTEM_FIND_HIDDEN_FILES))
       continue;
 
-    if (wfd.cFileName[0] == '.')
+    if (wfd.cFileName[0] == L'.')
     {
-      if (wfd.cFileName[1] == '\0' || (wfd.cFileName[1] == '.' && wfd.cFileName[2] == '\0'))
+      if (wfd.cFileName[1] == L'\0' || (wfd.cFileName[1] == L'.' && wfd.cFileName[2] == L'\0'))
         continue;
 
       if (!(Flags & FILESYSTEM_FIND_HIDDEN_FILES))
         continue;
     }
+
+    if (!StringUtil::WideStringToUTF8String(utf8_filename, wfd.cFileName))
+      continue;
 
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
@@ -741,11 +748,11 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         if (ParentPath != nullptr)
         {
           const std::string recurseDir = StringUtil::StdStringFromFormat("%s\\%s", ParentPath, Path);
-          nFiles += RecursiveFindFiles(OriginPath, recurseDir.c_str(), wfd.cFileName, Pattern, Flags, pResults);
+          nFiles += RecursiveFindFiles(OriginPath, recurseDir.c_str(), utf8_filename.c_str(), Pattern, Flags, pResults);
         }
         else
         {
-          nFiles += RecursiveFindFiles(OriginPath, Path, wfd.cFileName, Pattern, Flags, pResults);
+          nFiles += RecursiveFindFiles(OriginPath, Path, utf8_filename.c_str(), Pattern, Flags, pResults);
         }
       }
 
@@ -766,12 +773,12 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     // match the filename
     if (hasWildCards)
     {
-      if (!wildCardMatchAll && !StringUtil::WildcardMatch(wfd.cFileName, Pattern))
+      if (!wildCardMatchAll && !StringUtil::WildcardMatch(utf8_filename.c_str(), Pattern))
         continue;
     }
     else
     {
-      if (std::strcmp(wfd.cFileName, Pattern) != 0)
+      if (std::strcmp(utf8_filename.c_str(), Pattern) != 0)
         continue;
     }
 
@@ -781,20 +788,20 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     {
       if (ParentPath != nullptr)
         outData.FileName =
-          StringUtil::StdStringFromFormat("%s\\%s\\%s\\%s", OriginPath, ParentPath, Path, wfd.cFileName);
+          StringUtil::StdStringFromFormat("%s\\%s\\%s\\%s", OriginPath, ParentPath, Path, utf8_filename.c_str());
       else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", OriginPath, Path, wfd.cFileName);
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", OriginPath, Path, utf8_filename.c_str());
       else
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", OriginPath, wfd.cFileName);
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", OriginPath, utf8_filename.c_str());
     }
     else
     {
       if (ParentPath != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", ParentPath, Path, wfd.cFileName);
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", ParentPath, Path, utf8_filename.c_str());
       else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", Path, wfd.cFileName);
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", Path, utf8_filename.c_str());
       else
-        outData.FileName = wfd.cFileName;
+        outData.FileName = utf8_filename;
     }
 
     outData.ModificationTime.SetWindowsFileTime(&wfd.ftLastWriteTime);
@@ -802,7 +809,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
     nFiles++;
     pResults->push_back(std::move(outData));
-  } while (FindNextFileA(hFind, &wfd) == TRUE);
+  } while (FindNextFileW(hFind, &wfd) == TRUE);
   FindClose(hFind);
 
   return nFiles;
@@ -822,14 +829,27 @@ bool FileSystem::FindFiles(const char* Path, const char* Pattern, u32 Flags, Fin
   return (RecursiveFindFiles(Path, nullptr, nullptr, Pattern, Flags, pResults) > 0);
 }
 
-bool FileSystem::StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
+bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
+  // convert to wide string
+  int len = static_cast<int>(std::strlen(path));
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
+  if (wlen <= 0)
+    return false;
+
+  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
+  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
+  if (wlen <= 0)
+    return false;
+
+  wpath[wlen] = 0;
+
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesA(Path);
+  DWORD fileAttributes = GetFileAttributesW(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -837,12 +857,12 @@ bool FileSystem::StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
   HANDLE hFile;
   if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
   {
-    hFile = CreateFileA(Path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+    hFile = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   }
   else
   {
-    hFile = CreateFileA(Path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+    hFile = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                         OPEN_EXISTING, 0, nullptr);
   }
 

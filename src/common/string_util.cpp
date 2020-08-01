@@ -167,31 +167,49 @@ std::size_t Strlcpy(char* dst, const std::string_view& src, std::size_t size)
 
 std::wstring UTF8StringToWideString(const std::string_view& str)
 {
-  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
-  if (wlen <= 0)
-    return {};
-
   std::wstring ret;
-  ret.resize(wlen);
-  if (MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), ret.data(), wlen) <= 0)
+  if (!UTF8StringToWideString(ret, str))
     return {};
 
   return ret;
 }
 
+bool UTF8StringToWideString(std::wstring& dest, const std::string_view& str)
+{
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
+  if (wlen < 0)
+    return false;
+
+  dest.resize(wlen);
+  if (wlen > 0 && MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), dest.data(), wlen) < 0)
+    return false;
+
+  return true;
+}
+
 std::string WideStringToUTF8String(const std::wstring_view& str)
 {
-  int mblen = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0, nullptr, nullptr);
-  if (mblen <= 0)
-    return {};
-
   std::string ret;
-  ret.resize(mblen);
-  if (WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), ret.data(), mblen, nullptr, nullptr) <
-      0)
+  if (!WideStringToUTF8String(ret, str))
     return {};
 
   return ret;
+}
+
+bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
+{
+  int mblen = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0, nullptr, nullptr);
+  if (mblen < 0)
+    return false;
+
+  dest.resize(mblen);
+  if (mblen > 0 && WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), dest.data(), mblen,
+                                       nullptr, nullptr) < 0)
+  {
+    return false;
+  }
+
+  return true;
 }
 
 #endif
