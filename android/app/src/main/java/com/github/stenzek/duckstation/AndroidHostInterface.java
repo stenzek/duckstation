@@ -1,13 +1,15 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
 import android.view.Surface;
 
 public class AndroidHostInterface
 {
     private long nativePointer;
 
-    static public native AndroidHostInterface create(Context context);
+    static public native AndroidHostInterface create(Context context, String userDirectory);
 
     public AndroidHostInterface(long nativePointer)
     {
@@ -41,7 +43,14 @@ public class AndroidHostInterface
 
     static private AndroidHostInterface mInstance;
     static public boolean createInstance(Context context) {
-        mInstance = create(context);
+        // Set user path.
+        String externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+        if (externalStorageDirectory.isEmpty())
+            externalStorageDirectory = "/sdcard";
+
+        externalStorageDirectory += "/duckstation";
+        Log.i("AndroidHostInterface", "User directory: " + externalStorageDirectory);
+        mInstance = create(context, externalStorageDirectory);
         return mInstance != null;
     }
 

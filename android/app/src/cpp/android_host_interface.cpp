@@ -58,9 +58,10 @@ std::string JStringToString(JNIEnv* env, jstring str)
 }
 } // namespace AndroidHelpers
 
-AndroidHostInterface::AndroidHostInterface(jobject java_object, jobject context_object)
+AndroidHostInterface::AndroidHostInterface(jobject java_object, jobject context_object, std::string user_directory)
   : m_java_object(java_object), m_settings_interface(context_object)
 {
+  m_user_directory = std::move(user_directory);
 }
 
 AndroidHostInterface::~AndroidHostInterface()
@@ -124,8 +125,8 @@ float AndroidHostInterface::GetFloatSettingValue(const char* section, const char
 
 void AndroidHostInterface::SetUserDirectory()
 {
-  // TODO: Should this be customizable or use an API-determined path?
-  m_user_directory = "/sdcard/duckstation";
+  // Already set in constructor.
+  Assert(!m_user_directory.empty());
 }
 
 void AndroidHostInterface::LoadSettings()
@@ -455,7 +456,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 #define DEFINE_JNI_ARGS_METHOD(return_type, name, ...)                                                                 \
   extern "C" JNIEXPORT return_type JNICALL Java_com_github_stenzek_duckstation_##name(JNIEnv* env, __VA_ARGS__)
 
-DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object)
+DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object, jstring user_directory)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEBUG);
 
@@ -471,7 +472,8 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, job
   Assert(java_obj_ref != nullptr);
 
   // initialize the C++ side
-  AndroidHostInterface* cpp_obj = new AndroidHostInterface(java_obj_ref, context_object);
+  std::string user_directory_str = AndroidHelpers::JStringToString(env, user_directory);
+  AndroidHostInterface* cpp_obj = new AndroidHostInterface(java_obj_ref, context_object, std::move(user_directory_str));
   if (!cpp_obj->Initialize())
   {
     // TODO: Do we need to release the original java object reference?
