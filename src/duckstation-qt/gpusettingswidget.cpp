@@ -76,9 +76,9 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
        "compromise between stability and hiding black borders."));
   dialog->registerWidgetHelp(
     m_ui.disableInterlacing, tr("Disable Interlacing (force progressive render/scan)"), tr("Unchecked"),
-    tr("Forces the display of frames to progressive mode. This only affects the displayed image, "
-       "the console will be unaware of the setting. If the game is internally producing "
-       "interlaced frames, this option may not have any effect. Usually safe to enable."));
+    tr("Forces the rendering and display of frames to progressive mode. This removes the \"combing\" effect seen in "
+       "480i games by rendering them in 480p. Not all games are compatible with this option, some require interlaced "
+       "rendering or render interlaced internally. Usually safe to enable."));
   dialog->registerWidgetHelp(
     m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
     tr("Uses bilinear texture filtering when displaying the console's framebuffer to the screen. Disabling filtering "
