@@ -33,7 +33,7 @@ void GPU::ExecuteCommands()
       {
         case BlitterState::Idle:
         {
-          const u32 command = m_fifo.Peek(0) >> 24;
+          const u32 command = FifoPeek(0) >> 24;
           if ((this->*s_GP0_command_handler_table[command])())
             continue;
           else
@@ -45,8 +45,11 @@ void GPU::ExecuteCommands()
           DebugAssert(m_blit_remaining_words > 0);
           const u32 words_to_copy = std::min(m_blit_remaining_words, m_fifo.GetSize());
           const size_t old_size = m_blit_buffer.size();
-          m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
-          m_fifo.PopRange(&m_blit_buffer[old_size], words_to_copy);
+          // m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
+          // FifoPopRange(&m_blit_buffer[old_size], words_to_copy);
+          m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
+          for (u32 i = 0; i < words_to_copy; i++)
+            m_blit_buffer.push_back(FifoPop());
           m_blit_remaining_words -= words_to_copy;
           AddCommandTicks(words_to_copy);
 
@@ -72,7 +75,7 @@ void GPU::ExecuteCommands()
           {
             // polyline must have at least two vertices, and the terminator is (word & 0xf000f000) == 0x50005000.
             // terminator is on the first word for the vertex
-            if ((m_fifo.Peek(terminator_index) & UINT32_C(0xF000F000)) == UINT32_C(0x50005000))
+            if ((FifoPeek(terminator_index) & UINT32_C(0xF000F000)) == UINT32_C(0x50005000))
               break;
           }
 
@@ -81,8 +84,11 @@ void GPU::ExecuteCommands()
           if (words_to_copy > 0)
           {
             const size_t old_size = m_blit_buffer.size();
-            m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
-            m_fifo.PopRange(&m_blit_buffer[old_size], words_to_copy);
+            // m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
+            // FifoPopRange(&m_blit_buffer[old_size], words_to_copy);
+            m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
+            for (u32 i = 0; i < words_to_copy; i++)
+              m_blit_buffer.push_back(FifoPop());
           }
 
           Log_DebugPrintf("Added %u words to polyline", words_to_copy);
@@ -170,12 +176,12 @@ GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
 
 bool GPU::HandleUnknownGP0Command()
 {
-  const u32 command = m_fifo.Peek() >> 24;
+  const u32 command = FifoPeek() >> 24;
   Log_ErrorPrintf("Unimplemented GP0 command 0x%02X", command);
 
   SmallString dump;
   for (u32 i = 0; i < m_fifo.GetSize(); i++)
-    dump.AppendFormattedString("%s0x%08X", (i > 0) ? " " : "", m_fifo.Peek(i));
+    dump.AppendFormattedString("%s0x%08X", (i > 0) ? " " : "", FifoPeek(i));
   Log_ErrorPrintf("FIFO: %s", dump.GetCharArray());
 
   m_fifo.RemoveOne();
@@ -216,7 +222,7 @@ bool GPU::HandleInterruptRequestCommand()
 
 bool GPU::HandleSetDrawModeCommand()
 {
-  const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
+  const u32 param = FifoPop() & 0x00FFFFFFu;
   Log_DebugPrintf("Set draw mode %08X", param);
   SetDrawMode(Truncate16(param));
   AddCommandTicks(1);
@@ -226,7 +232,7 @@ bool GPU::HandleSetDrawModeCommand()
 
 bool GPU::HandleSetTextureWindowCommand()
 {
-  const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
+  const u32 param = FifoPop() & 0x00FFFFFFu;
   SetTextureWindow(param);
   Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_draw_mode.texture_window_mask_x,
                   m_draw_mode.texture_window_mask_y, m_draw_mode.texture_window_offset_x,
@@ -239,7 +245,7 @@ bool GPU::HandleSetTextureWindowCommand()
 
 bool GPU::HandleSetDrawingAreaTopLeftCommand()
 {
-  const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
+  const u32 param = FifoPop() & 0x00FFFFFFu;
   const u32 left = param & VRAM_WIDTH_MASK;
   const u32 top = (param >> 10) & VRAM_HEIGHT_MASK;
   Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
@@ -259,7 +265,7 @@ bool GPU::HandleSetDrawingAreaTopLeftCommand()
 
 bool GPU::HandleSetDrawingAreaBottomRightCommand()
 {
-  const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
+  const u32 param = FifoPop() & 0x00FFFFFFu;
 
   const u32 right = param & VRAM_WIDTH_MASK;
   const u32 bottom = (param >> 10) & VRAM_HEIGHT_MASK;
@@ -280,7 +286,7 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand()
 
 bool GPU::HandleSetDrawingOffsetCommand()
 {
-  const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
+  const u32 param = FifoPop() & 0x00FFFFFFu;
   const s32 x = SignExtendN<11, s32>(param & 0x7FFu);
   const s32 y = SignExtendN<11, s32>((param >> 11) & 0x7FFu);
   Log_DebugPrintf("Set drawing offset (%d, %d)", m_drawing_offset.x, m_drawing_offset.y);
@@ -299,7 +305,7 @@ bool GPU::HandleSetDrawingOffsetCommand()
 
 bool GPU::HandleSetMaskBitCommand()
 {
-  const u32 param = m_fifo.Pop() & 0x00FFFFFFu;
+  const u32 param = FifoPop() & 0x00FFFFFFu;
 
   constexpr u32 gpustat_mask = (1 << 11) | (1 << 12);
   const u32 gpustat_bits = (param & 0x03) << 11;
@@ -318,7 +324,7 @@ bool GPU::HandleSetMaskBitCommand()
 
 bool GPU::HandleRenderPolygonCommand()
 {
-  const RenderCommand rc{m_fifo.Peek(0)};
+  const RenderCommand rc{FifoPeek(0)};
 
   // shaded vertices use the colour from the first word for the first vertex
   const u32 words_per_vertex = 1 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.shading_enable);
@@ -344,10 +350,10 @@ bool GPU::HandleRenderPolygonCommand()
   // set draw state up
   if (rc.texture_enable)
   {
-    const u16 texpage_attribute = Truncate16((rc.shading_enable ? m_fifo.Peek(5) : m_fifo.Peek(4)) >> 16);
+    const u16 texpage_attribute = Truncate16((rc.shading_enable ? FifoPeek(5) : FifoPeek(4)) >> 16);
     SetDrawMode((texpage_attribute & DrawMode::Reg::POLYGON_TEXPAGE_MASK) |
                 (m_draw_mode.mode_reg.bits & ~DrawMode::Reg::POLYGON_TEXPAGE_MASK));
-    SetTexturePalette(Truncate16(m_fifo.Peek(2) >> 16));
+    SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
   }
 
   m_stats.num_vertices += num_vertices;
@@ -362,7 +368,7 @@ bool GPU::HandleRenderPolygonCommand()
 
 bool GPU::HandleRenderRectangleCommand()
 {
-  const RenderCommand rc{m_fifo.Peek(0)};
+  const RenderCommand rc{FifoPeek(0)};
   const u32 total_words =
     2 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.rectangle_size == DrawRectangleSize::Variable);
 
@@ -372,7 +378,7 @@ bool GPU::HandleRenderRectangleCommand()
     SynchronizeCRTC();
 
   if (rc.texture_enable)
-    SetTexturePalette(Truncate16(m_fifo.Peek(2) >> 16));
+    SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
 
   const TickCount setup_ticks = 16;
   AddCommandTicks(setup_ticks);
@@ -394,7 +400,7 @@ bool GPU::HandleRenderRectangleCommand()
 
 bool GPU::HandleRenderLineCommand()
 {
-  const RenderCommand rc{m_fifo.Peek(0)};
+  const RenderCommand rc{FifoPeek(0)};
   const u32 total_words = rc.shading_enable ? 4 : 3;
   CHECK_COMMAND_SIZE(total_words);
 
@@ -417,7 +423,7 @@ bool GPU::HandleRenderLineCommand()
 bool GPU::HandleRenderPolyLineCommand()
 {
   // always read the first two vertices, we test for the terminator after that
-  const RenderCommand rc{m_fifo.Peek(0)};
+  const RenderCommand rc{FifoPeek(0)};
   const u32 min_words = rc.shading_enable ? 3 : 4;
   CHECK_COMMAND_SIZE(min_words);
 
@@ -434,8 +440,11 @@ bool GPU::HandleRenderPolyLineCommand()
   m_fifo.RemoveOne();
 
   const u32 words_to_pop = min_words - 1;
-  m_blit_buffer.resize(words_to_pop);
-  m_fifo.PopRange(m_blit_buffer.data(), words_to_pop);
+  // m_blit_buffer.resize(words_to_pop);
+  // FifoPopRange(m_blit_buffer.data(), words_to_pop);
+  m_blit_buffer.reserve(words_to_pop);
+  for (u32 i = 0; i < words_to_pop; i++)
+    m_blit_buffer.push_back(Truncate32(FifoPop()));
 
   // polyline goes via a different path through the blit buffer
   m_blitter_state = BlitterState::DrawingPolyLine;
@@ -452,11 +461,11 @@ bool GPU::HandleFillRectangleCommand()
 
   FlushRender();
 
-  const u32 color = m_fifo.Pop() & 0x00FFFFFF;
-  const u32 dst_x = m_fifo.Peek() & 0x3F0;
-  const u32 dst_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
-  const u32 width = ((m_fifo.Peek() & VRAM_WIDTH_MASK) + 0xF) & ~0xF;
-  const u32 height = (m_fifo.Pop() >> 16) & VRAM_HEIGHT_MASK;
+  const u32 color = FifoPop() & 0x00FFFFFF;
+  const u32 dst_x = FifoPeek() & 0x3F0;
+  const u32 dst_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 width = ((FifoPeek() & VRAM_WIDTH_MASK) + 0xF) & ~0xF;
+  const u32 height = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
@@ -472,10 +481,10 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
   CHECK_COMMAND_SIZE(3);
   m_fifo.RemoveOne();
 
-  const u32 dst_x = m_fifo.Peek() & VRAM_COORD_MASK;
-  const u32 dst_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
-  const u32 copy_width = ReplaceZero(m_fifo.Peek() & VRAM_WIDTH_MASK, 0x400);
-  const u32 copy_height = ReplaceZero((m_fifo.Pop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
+  const u32 dst_x = FifoPeek() & VRAM_COORD_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 copy_width = ReplaceZero(FifoPeek() & VRAM_WIDTH_MASK, 0x400);
+  const u32 copy_height = ReplaceZero((FifoPop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
   const u32 num_pixels = copy_width * copy_height;
   const u32 num_words = ((num_pixels + 1) / 2);
 
@@ -520,10 +529,10 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   CHECK_COMMAND_SIZE(3);
   m_fifo.RemoveOne();
 
-  m_vram_transfer.x = Truncate16(m_fifo.Peek() & VRAM_COORD_MASK);
-  m_vram_transfer.y = Truncate16((m_fifo.Pop() >> 16) & VRAM_COORD_MASK);
-  m_vram_transfer.width = ((Truncate16(m_fifo.Peek()) - 1) & VRAM_WIDTH_MASK) + 1;
-  m_vram_transfer.height = ((Truncate16(m_fifo.Pop() >> 16) - 1) & VRAM_HEIGHT_MASK) + 1;
+  m_vram_transfer.x = Truncate16(FifoPeek() & VRAM_COORD_MASK);
+  m_vram_transfer.y = Truncate16((FifoPop() >> 16) & VRAM_COORD_MASK);
+  m_vram_transfer.width = ((Truncate16(FifoPeek()) - 1) & VRAM_WIDTH_MASK) + 1;
+  m_vram_transfer.height = ((Truncate16(FifoPop() >> 16) - 1) & VRAM_HEIGHT_MASK) + 1;
 
   Log_DebugPrintf("Copy rectangle from VRAM to CPU offset=(%u,%u), size=(%u,%u)", m_vram_transfer.x, m_vram_transfer.y,
                   m_vram_transfer.width, m_vram_transfer.height);
@@ -554,12 +563,12 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
   CHECK_COMMAND_SIZE(4);
   m_fifo.RemoveOne();
 
-  const u32 src_x = m_fifo.Peek() & VRAM_COORD_MASK;
-  const u32 src_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
-  const u32 dst_x = m_fifo.Peek() & VRAM_COORD_MASK;
-  const u32 dst_y = (m_fifo.Pop() >> 16) & VRAM_COORD_MASK;
-  const u32 width = ReplaceZero(m_fifo.Peek() & VRAM_WIDTH_MASK, 0x400);
-  const u32 height = ReplaceZero((m_fifo.Pop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
+  const u32 src_x = FifoPeek() & VRAM_COORD_MASK;
+  const u32 src_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 dst_x = FifoPeek() & VRAM_COORD_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 width = ReplaceZero(FifoPeek() & VRAM_WIDTH_MASK, 0x400);
+  const u32 height = ReplaceZero((FifoPop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
 
   Log_DebugPrintf("Copy rectangle from VRAM to VRAM src=(%u,%u), dst=(%u,%u), size=(%u,%u)", src_x, src_y, dst_x, dst_y,
                   width, height);

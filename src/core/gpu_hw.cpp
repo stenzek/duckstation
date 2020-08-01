@@ -2,17 +2,25 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "cpu_core.h"
+#include "pgxp.h"
 #include "settings.h"
 #include "system.h"
 #include <imgui.h>
 #include <sstream>
 Log_SetChannel(GPU_HW);
 
-GPU_HW::GPU_HW() : GPU() { m_vram_ptr = m_vram_shadow.data(); }
+GPU_HW::GPU_HW() : GPU()
+{
+  m_vram_ptr = m_vram_shadow.data();
+}
 
 GPU_HW::~GPU_HW() = default;
 
-bool GPU_HW::IsHardwareRenderer() const { return true; }
+bool GPU_HW::IsHardwareRenderer() const
+{
+  return true;
+}
 
 bool GPU_HW::Initialize(HostDisplay* host_display)
 {
@@ -110,35 +118,39 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
 
   // It might be faster to do more direct checking here, but the code below handles primitives in any order and
   // orientation, and is far more SIMD-friendly if needed.
-  const s32 abx = vertices[1].x - vertices[0].x;
-  const s32 aby = vertices[1].y - vertices[0].y;
-  const s32 bcx = vertices[2].x - vertices[1].x;
-  const s32 bcy = vertices[2].y - vertices[1].y;
-  const s32 cax = vertices[0].x - vertices[2].x;
-  const s32 cay = vertices[0].y - vertices[2].y;
+  const float abx = vertices[1].x - vertices[0].x;
+  const float aby = vertices[1].y - vertices[0].y;
+  const float bcx = vertices[2].x - vertices[1].x;
+  const float bcy = vertices[2].y - vertices[1].y;
+  const float cax = vertices[0].x - vertices[2].x;
+  const float cay = vertices[0].y - vertices[2].y;
 
   // Compute static derivatives, just assume W is uniform across the primitive and that the plane equation remains the
   // same across the quad. (which it is, there is no Z.. yet).
-  const s32 dudx = -aby * vertices[2].u - bcy * vertices[0].u - cay * vertices[1].u;
-  const s32 dvdx = -aby * vertices[2].v - bcy * vertices[0].v - cay * vertices[1].v;
-  const s32 dudy = +abx * vertices[2].u + bcx * vertices[0].u + cax * vertices[1].u;
-  const s32 dvdy = +abx * vertices[2].v + bcx * vertices[0].v + cax * vertices[1].v;
-  const s32 area = bcx * cay - bcy * cax;
+  const float dudx = -aby * static_cast<float>(vertices[2].u) - bcy * static_cast<float>(vertices[0].u) -
+                     cay * static_cast<float>(vertices[1].u);
+  const float dvdx = -aby * static_cast<float>(vertices[2].v) - bcy * static_cast<float>(vertices[0].v) -
+                     cay * static_cast<float>(vertices[1].v);
+  const float dudy = +abx * static_cast<float>(vertices[2].u) + bcx * static_cast<float>(vertices[0].u) +
+                     cax * static_cast<float>(vertices[1].u);
+  const float dvdy = +abx * static_cast<float>(vertices[2].v) + bcx * static_cast<float>(vertices[0].v) +
+                     cax * static_cast<float>(vertices[1].v);
+  const float area = bcx * cay - bcy * cax;
 
   // Detect and reject any triangles with 0 size texture area
   const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
                       (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
 
   // Shouldn't matter as degenerate primitives will be culled anyways.
-  if (area == 0 && texArea == 0)
+  if (area == 0.0f && texArea == 0)
     return;
 
   // Use floats here as it'll be faster than integer divides.
-  const float rcp_area = 1.0f / static_cast<float>(area);
-  const float dudx_area = static_cast<float>(dudx) * rcp_area;
-  const float dudy_area = static_cast<float>(dudy) * rcp_area;
-  const float dvdx_area = static_cast<float>(dvdx) * rcp_area;
-  const float dvdy_area = static_cast<float>(dvdy) * rcp_area;
+  const float rcp_area = 1.0f / area;
+  const float dudx_area = dudx * rcp_area;
+  const float dudy_area = dudy * rcp_area;
+  const float dvdx_area = dvdx * rcp_area;
+  const float dvdy_area = dvdy * rcp_area;
   const bool neg_dudx = dudx_area < 0.0f;
   const bool neg_dudy = dudy_area < 0.0f;
   const bool neg_dvdx = dvdx_area < 0.0f;
@@ -179,22 +191,22 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
 
 // The PlayStation GPU draws lines from start to end, inclusive. Or, more specifically, inclusive of the greatest delta
 // in the x or y direction.
-void GPU_HW::FixLineVertexCoordinates(BatchVertex& start, BatchVertex& end, s32 dx, s32 dy)
+void GPU_HW::FixLineVertexCoordinates(s32& start_x, s32& start_y, s32& end_x, s32& end_y, s32 dx, s32 dy)
 {
   // deliberately not else if to catch the equal case
   if (dx >= dy)
   {
-    if (start.x > end.x)
-      start.x++;
+    if (start_x > end_x)
+      start_x++;
     else
-      end.x++;
+      end_x++;
   }
   if (dx <= dy)
   {
-    if (start.y > end.y)
-      start.y++;
+    if (start_y > end_y)
+      start_y++;
     else
-      end.y++;
+      end_y++;
   }
 }
 
@@ -202,6 +214,7 @@ void GPU_HW::LoadVertices()
 {
   const RenderCommand rc{m_render_command.bits};
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
+  const float depth = GetCurrentNormalizedVertexDepth();
 
   if (m_GPUSTAT.check_mask_before_draw)
     m_current_depth++;
@@ -215,17 +228,36 @@ void GPU_HW::LoadVertices()
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
+      const bool pgxp = g_settings.gpu_pgxp_enable;
 
       const u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<BatchVertex, 4> vertices;
+      std::array<std::array<s32, 2>, 4> native_vertex_positions;
+      bool valid_w = g_settings.gpu_pgxp_texture_correction;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        const u32 color = (shaded && i > 0) ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color;
-        const VertexPosition vp{m_fifo.Pop()};
-        const u16 packed_texcoord = textured ? Truncate16(m_fifo.Pop()) : 0;
+        const u32 color = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
+        const u64 maddr_and_pos = m_fifo.Pop();
+        const VertexPosition vp{Truncate32(maddr_and_pos)};
+        const u16 texcoord = textured ? Truncate16(FifoPop()) : 0;
+        const s32 native_x = m_drawing_offset.x + vp.x;
+        const s32 native_y = m_drawing_offset.y + vp.y;
+        native_vertex_positions[i][0] = native_x;
+        native_vertex_positions[i][1] = native_y;
+        vertices[i].Set(static_cast<float>(native_x), static_cast<float>(native_y), depth, 1.0f, color, texpage,
+                        texcoord);
 
-        vertices[i].Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, m_current_depth, color, texpage,
-                        packed_texcoord);
+        if (pgxp)
+        {
+          valid_w &=
+            PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, native_x, native_y, m_drawing_offset.x,
+                                 m_drawing_offset.y, &vertices[i].x, &vertices[i].y, &vertices[i].w);
+        }
+      }
+      if (!valid_w)
+      {
+        for (BatchVertex& v : vertices)
+          v.w = 1.0f;
       }
 
       if (rc.quad_polygon && m_resolution_scale > 1)
@@ -235,19 +267,20 @@ void GPU_HW::LoadVertices()
         return;
 
       // Cull polygons which are too large.
-      const s32 min_x_12 = std::min(vertices[1].x, vertices[2].x);
-      const s32 max_x_12 = std::max(vertices[1].x, vertices[2].x);
-      const s32 min_y_12 = std::min(vertices[1].y, vertices[2].y);
-      const s32 max_y_12 = std::max(vertices[1].y, vertices[2].y);
-      const s32 min_x = std::min(min_x_12, vertices[0].x);
-      const s32 max_x = std::max(max_x_12, vertices[0].x);
-      const s32 min_y = std::min(min_y_12, vertices[0].y);
-      const s32 max_y = std::max(max_y_12, vertices[0].y);
+      const s32 min_x_12 = std::min(native_vertex_positions[1][0], native_vertex_positions[2][0]);
+      const s32 max_x_12 = std::max(native_vertex_positions[1][0], native_vertex_positions[2][0]);
+      const s32 min_y_12 = std::min(native_vertex_positions[1][1], native_vertex_positions[2][1]);
+      const s32 max_y_12 = std::max(native_vertex_positions[1][1], native_vertex_positions[2][1]);
+      const s32 min_x = std::min(min_x_12, native_vertex_positions[0][0]);
+      const s32 max_x = std::max(max_x_12, native_vertex_positions[0][0]);
+      const s32 min_y = std::min(min_y_12, native_vertex_positions[0][1]);
+      const s32 max_y = std::max(max_y_12, native_vertex_positions[0][1]);
 
       if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
       {
-        Log_DebugPrintf("Culling too-large polygon: %d,%d %d,%d %d,%d", vertices[0].x, vertices[0].y, vertices[1].x,
-                        vertices[1].y, vertices[2].x, vertices[2].y);
+        Log_DebugPrintf("Culling too-large polygon: %d,%d %d,%d %d,%d", native_vertex_positions[0][0],
+                        native_vertex_positions[0][1], native_vertex_positions[1][0], native_vertex_positions[1][1],
+                        native_vertex_positions[2][0], native_vertex_positions[2][1]);
       }
       else
       {
@@ -268,16 +301,17 @@ void GPU_HW::LoadVertices()
       // quads
       if (rc.quad_polygon)
       {
-        const s32 min_x_123 = std::min(min_x_12, vertices[3].x);
-        const s32 max_x_123 = std::max(max_x_12, vertices[3].x);
-        const s32 min_y_123 = std::min(min_y_12, vertices[3].y);
-        const s32 max_y_123 = std::max(max_y_12, vertices[3].y);
+        const s32 min_x_123 = std::min(min_x_12, native_vertex_positions[3][0]);
+        const s32 max_x_123 = std::max(max_x_12, native_vertex_positions[3][0]);
+        const s32 min_y_123 = std::min(min_y_12, native_vertex_positions[3][1]);
+        const s32 max_y_123 = std::max(max_y_12, native_vertex_positions[3][1]);
 
         // Cull polygons which are too large.
         if ((max_x_123 - min_x_123) >= MAX_PRIMITIVE_WIDTH || (max_y_123 - min_y_123) >= MAX_PRIMITIVE_HEIGHT)
         {
-          Log_DebugPrintf("Culling too-large polygon (quad second half): %d,%d %d,%d %d,%d", vertices[2].x,
-                          vertices[2].y, vertices[1].x, vertices[1].y, vertices[0].x, vertices[0].y);
+          Log_DebugPrintf("Culling too-large polygon (quad second half): %d,%d %d,%d %d,%d",
+                          native_vertex_positions[2][0], native_vertex_positions[2][1], native_vertex_positions[1][0],
+                          native_vertex_positions[1][1], native_vertex_positions[0][0], native_vertex_positions[0][1]);
         }
         else
         {
@@ -303,11 +337,11 @@ void GPU_HW::LoadVertices()
     case Primitive::Rectangle:
     {
       const u32 color = rc.color_for_first_vertex;
-      const VertexPosition vp{m_fifo.Pop()};
+      const VertexPosition vp{FifoPop()};
       const s32 pos_x = TruncateVertexPosition(m_drawing_offset.x + vp.x);
       const s32 pos_y = TruncateVertexPosition(m_drawing_offset.y + vp.y);
 
-      const auto [texcoord_x, texcoord_y] = UnpackTexcoord(rc.texture_enable ? Truncate16(m_fifo.Pop()) : 0);
+      const auto [texcoord_x, texcoord_y] = UnpackTexcoord(rc.texture_enable ? Truncate16(FifoPop()) : 0);
       u16 orig_tex_left = ZeroExtend16(texcoord_x);
       u16 orig_tex_top = ZeroExtend16(texcoord_y);
       s32 rectangle_width;
@@ -328,7 +362,7 @@ void GPU_HW::LoadVertices()
           break;
         default:
         {
-          const u32 width_and_height = m_fifo.Pop();
+          const u32 width_and_height = FifoPop();
           rectangle_width = static_cast<s32>(width_and_height & VRAM_WIDTH_MASK);
           rectangle_height = static_cast<s32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
 
@@ -353,25 +387,25 @@ void GPU_HW::LoadVertices()
       for (s32 y_offset = 0; y_offset < rectangle_height;)
       {
         const s32 quad_height = std::min<s32>(rectangle_height - y_offset, TEXTURE_PAGE_WIDTH - tex_top);
-        const s32 quad_start_y = pos_y + y_offset;
-        const s32 quad_end_y = quad_start_y + quad_height;
+        const float quad_start_y = static_cast<float>(pos_y + y_offset);
+        const float quad_end_y = quad_start_y + static_cast<float>(quad_height);
         const u16 tex_bottom = tex_top + static_cast<u16>(quad_height);
 
         u16 tex_left = orig_tex_left;
         for (s32 x_offset = 0; x_offset < rectangle_width;)
         {
           const s32 quad_width = std::min<s32>(rectangle_width - x_offset, TEXTURE_PAGE_HEIGHT - tex_left);
-          const s32 quad_start_x = pos_x + x_offset;
-          const s32 quad_end_x = quad_start_x + quad_width;
+          const float quad_start_x = static_cast<float>(pos_x + x_offset);
+          const float quad_end_x = quad_start_x + static_cast<float>(quad_width);
           const u16 tex_right = tex_left + static_cast<u16>(quad_width);
 
-          AddNewVertex(quad_start_x, quad_start_y, m_current_depth, color, texpage, tex_left, tex_top);
-          AddNewVertex(quad_end_x, quad_start_y, m_current_depth, color, texpage, tex_right, tex_top);
-          AddNewVertex(quad_start_x, quad_end_y, m_current_depth, color, texpage, tex_left, tex_bottom);
+          AddNewVertex(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, tex_left, tex_top);
+          AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top);
+          AddNewVertex(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom);
 
-          AddNewVertex(quad_start_x, quad_end_y, m_current_depth, color, texpage, tex_left, tex_bottom);
-          AddNewVertex(quad_end_x, quad_start_y, m_current_depth, color, texpage, tex_right, tex_top);
-          AddNewVertex(quad_end_x, quad_end_y, m_current_depth, color, texpage, tex_right, tex_bottom);
+          AddNewVertex(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom);
+          AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top);
+          AddNewVertex(quad_end_x, quad_end_y, depth, 1.0f, color, texpage, tex_right, tex_bottom);
 
           x_offset += quad_width;
           tex_left = 0;
@@ -404,41 +438,41 @@ void GPU_HW::LoadVertices()
         if (rc.shading_enable)
         {
           color0 = rc.color_for_first_vertex;
-          pos0.bits = m_fifo.Pop();
-          color1 = m_fifo.Pop() & UINT32_C(0x00FFFFFF);
-          pos1.bits = m_fifo.Pop();
+          pos0.bits = FifoPop();
+          color1 = FifoPop() & UINT32_C(0x00FFFFFF);
+          pos1.bits = FifoPop();
         }
         else
         {
           color0 = color1 = rc.color_for_first_vertex;
-          pos0.bits = m_fifo.Pop();
-          pos1.bits = m_fifo.Pop();
+          pos0.bits = FifoPop();
+          pos1.bits = FifoPop();
         }
 
         if (!IsDrawingAreaIsValid())
           return;
 
-        BatchVertex start, end;
-        start.Set(m_drawing_offset.x + pos0.x, m_drawing_offset.y + pos0.y, m_current_depth, color0, 0, 0);
-        end.Set(m_drawing_offset.x + pos1.x, m_drawing_offset.y + pos1.y, m_current_depth, color1, 0, 0);
+        s32 start_x = pos0.x + m_drawing_offset.x;
+        s32 start_y = pos0.y + m_drawing_offset.y;
+        s32 end_x = pos1.x + m_drawing_offset.x;
+        s32 end_y = pos1.y + m_drawing_offset.y;
 
-        const s32 min_x = std::min(start.x, end.x);
-        const s32 max_x = std::max(start.x, end.x);
-        const s32 min_y = std::min(start.y, end.y);
-        const s32 max_y = std::max(start.y, end.y);
+        const s32 min_x = std::min(start_x, end_x);
+        const s32 max_x = std::max(start_x, end_x);
+        const s32 min_y = std::min(start_y, end_y);
+        const s32 max_y = std::max(start_y, end_y);
         const s32 dx = max_x - min_x;
         const s32 dy = max_y - min_y;
-
         if (dx >= MAX_PRIMITIVE_WIDTH || dy >= MAX_PRIMITIVE_HEIGHT)
         {
-          Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start.x, start.y, end.x, end.y);
+          Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start_x, start_y, end_x, end_y);
           return;
         }
 
-        FixLineVertexCoordinates(start, end, dx, dy);
-
-        AddVertex(start);
-        AddVertex(end);
+        FixLineVertexCoordinates(start_x, start_y, end_x, end_y, dx, dy);
+        AddNewVertex(static_cast<float>(start_x), static_cast<float>(start_y), depth, 1.0f, color0, 0,
+                     static_cast<u16>(0));
+        AddNewVertex(static_cast<float>(end_x), static_cast<float>(end_y), depth, 1.0f, color1, 0, static_cast<u16>(0));
 
         const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
         const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
@@ -461,37 +495,38 @@ void GPU_HW::LoadVertices()
         const u32 first_color = rc.color_for_first_vertex;
         const bool shaded = rc.shading_enable;
 
-        BatchVertex last_vertex;
+        s32 last_x, last_y;
+        u32 last_color;
         u32 buffer_pos = 0;
         for (u32 i = 0; i < num_vertices; i++)
         {
           const u32 color = (shaded && i > 0) ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
           const VertexPosition vp{m_blit_buffer[buffer_pos++]};
-
-          BatchVertex vertex;
-          vertex.Set(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y, m_current_depth, color, 0, 0);
+          const s32 x = m_drawing_offset.x + vp.x;
+          const s32 y = m_drawing_offset.y + vp.y;
 
           if (i > 0)
           {
-            const s32 min_x = std::min(last_vertex.x, vertex.x);
-            const s32 max_x = std::max(last_vertex.x, vertex.x);
-            const s32 min_y = std::min(last_vertex.y, vertex.y);
-            const s32 max_y = std::max(last_vertex.y, vertex.y);
+            const s32 min_x = std::min(last_x, x);
+            const s32 max_x = std::max(last_x, x);
+            const s32 min_y = std::min(last_y, y);
+            const s32 max_y = std::max(last_y, y);
             const s32 dx = max_x - min_x;
             const s32 dy = max_y - min_y;
 
             if (dx >= MAX_PRIMITIVE_WIDTH || dy >= MAX_PRIMITIVE_HEIGHT)
             {
-              Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_vertex.x, last_vertex.y, vertex.x,
-                              vertex.y);
+              Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_x, last_y, x, y);
             }
             else
             {
-              BatchVertex start(last_vertex);
-              BatchVertex end(vertex);
-              FixLineVertexCoordinates(start, end, dx, dy);
-              AddVertex(start);
-              AddVertex(end);
+              s32 start_x = last_x, start_y = last_y;
+              s32 end_x = x, end_y = y;
+              FixLineVertexCoordinates(start_x, start_y, end_x, end_y, dx, dy);
+              AddNewVertex(static_cast<float>(start_x), static_cast<float>(start_y), depth, 1.0f, last_color, 0,
+                           static_cast<u16>(0));
+              AddNewVertex(static_cast<float>(end_x), static_cast<float>(end_y), depth, 1.0f, color, 0,
+                           static_cast<u16>(0));
 
               const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
               const u32 clip_right =
@@ -505,7 +540,9 @@ void GPU_HW::LoadVertices()
             }
           }
 
-          std::memcpy(&last_vertex, &vertex, sizeof(BatchVertex));
+          last_x = x;
+          last_y = y;
+          last_color = color;
         }
       }
     }

@@ -46,6 +46,7 @@
     <ClCompile Include="gpu_hw_vulkan.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
+    <ClCompile Include="pgxp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -94,5 +95,6 @@
     <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="gte_types.h" />
+    <ClInclude Include="pgxp.h" />
   </ItemGroup>
 </Project>

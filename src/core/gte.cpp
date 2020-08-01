@@ -3,6 +3,7 @@
 #include "common/bitutils.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "pgxp.h"
 #include "settings.h"
 #include <algorithm>
 #include <array>
@@ -621,6 +622,21 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   CheckMACOverflow<0>(Sy);
   PushSXY(s32(Sx >> 16), s32(Sy >> 16));
 
+  if (g_settings.gpu_pgxp_enable)
+  {
+    // this can potentially use increased precision on Z
+    const float precise_z = std::max<float>((float)REGS.H / 2.f, (float)REGS.SZ3);
+    const float precise_h_div_sz = (float)REGS.H / precise_z;
+    const float fofx = ((float)REGS.OFX / (float)(1 << 16));
+    const float fofy = ((float)REGS.OFY / (float)(1 << 16));
+    float precise_x = fofx + ((float)REGS.IR1 * precise_h_div_sz) * ((g_settings.gpu_widescreen_hack) ? 0.75f : 1.00f);
+    float precise_y = fofy + ((float)REGS.IR2 * precise_h_div_sz);
+
+    precise_x = std::clamp<float>(precise_x, -0x400, 0x3ff);
+    precise_y = std::clamp<float>(precise_y, -0x400, 0x3ff);
+    PGXP::GTE_PushSXYZ2f(precise_x, precise_y, precise_z, REGS.dr32[14]);
+  }
+
   if (last)
   {
     // MAC0=(((H*20000h/SZ3)+1)/2)*DQA+DQB, IR0=MAC0/1000h  ;Depth cueing 0..+1000h
@@ -662,6 +678,19 @@ static void Execute_NCLIP(Instruction inst)
                        0);
 
   REGS.FLAG.UpdateError();
+}
+
+static void Execute_NCLIP_PGXP(Instruction inst)
+{
+  if (PGXP::GTE_NCLIP_valid(REGS.dr32[12], REGS.dr32[13], REGS.dr32[14]))
+  {
+    REGS.FLAG.Clear();
+    REGS.MAC0 = static_cast<s32>(PGXP::GTE_NCLIP());
+  }
+  else
+  {
+    Execute_NCLIP(inst);
+  }
 }
 
 static void Execute_AVSZ3(Instruction inst)
@@ -994,8 +1023,13 @@ void ExecuteInstruction(u32 inst_bits)
       break;
 
     case 0x06:
-      Execute_NCLIP(inst);
-      break;
+    {
+      if (g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
+        Execute_NCLIP_PGXP(inst);
+      else
+        Execute_NCLIP(inst);
+    }
+    break;
 
     case 0x0C:
       Execute_OP(inst);
@@ -1092,7 +1126,12 @@ InstructionImpl GetInstructionImpl(u32 inst_bits)
       return &Execute_RTPS;
 
     case 0x06:
-      return &Execute_NCLIP;
+    {
+      if (g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
+        return &Execute_NCLIP_PGXP;
+      else
+        return &Execute_NCLIP;
+    }
 
     case 0x0C:
       return &Execute_OP;

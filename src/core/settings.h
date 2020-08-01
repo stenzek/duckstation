@@ -88,6 +88,10 @@ struct Settings
   bool gpu_disable_interlacing = false;
   bool gpu_force_ntsc_timings = false;
   bool gpu_widescreen_hack = false;
+  bool gpu_pgxp_enable = false;
+  bool gpu_pgxp_culling = true;
+  bool gpu_pgxp_texture_correction = true;
+  bool gpu_pgxp_vertex_cache = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_linear_filtering = true;
@@ -146,6 +150,7 @@ struct Settings
   bool log_to_window = false;
   bool log_to_file = false;
 
+  ALWAYS_INLINE bool IsUsingCodeCache() const { return (cpu_execution_mode != CPUExecutionMode::Interpreter); }
   ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
 

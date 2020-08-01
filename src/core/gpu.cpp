@@ -349,32 +349,17 @@ void GPU::DMARead(u32* words, u32 word_count)
     words[i] = ReadGPUREAD();
 }
 
-void GPU::DMAWrite(const u32* words, u32 word_count)
+void GPU::EndDMAWrite()
 {
-  switch (m_GPUSTAT.dma_direction)
+  m_fifo_pushed = true;
+  if (!m_syncing)
   {
-    case DMADirection::CPUtoGP0:
-    {
-      m_fifo.PushRange(words, word_count);
-      m_fifo_pushed = true;
-      if (!m_syncing)
-      {
-        ExecuteCommands();
-        UpdateCommandTickEvent();
-      }
-      else
-      {
-        UpdateDMARequest();
-      }
-    }
-    break;
-
-    default:
-    {
-      Log_ErrorPrintf("Unhandled GPU DMA write mode %u for %u words",
-                      static_cast<u32>(m_GPUSTAT.dma_direction.GetValue()), word_count);
-    }
-    break;
+    ExecuteCommands();
+    UpdateCommandTickEvent();
+  }
+  else
+  {
+    UpdateDMARequest();
   }
 }
 

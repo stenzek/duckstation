@@ -40,10 +40,19 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
                                                "TextureFiltering");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCulling, "GPU", "PGXPCulling", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpTextureCorrection, "GPU",
+                                               "PGXPTextureCorrection", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
+
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
   connect(m_ui.trueColor, &QCheckBox::stateChanged, this, &GPUSettingsWidget::updateScaledDitheringEnabled);
   updateScaledDitheringEnabled();
+
+  connect(m_ui.pgxpEnable, &QCheckBox::stateChanged, this, &GPUSettingsWidget::updatePGXPSettingsEnabled);
+  updatePGXPSettingsEnabled();
 
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::populateGPUAdapters);
@@ -126,6 +135,19 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
        "increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which "
        "use pre-rendered backgrounds, this enhancement will not work as expected."));
+  dialog->registerWidgetHelp(
+    m_ui.pgxpEnable, tr("Geometry Correction"), tr("Unchecked"),
+    tr("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory transfers. Only "
+       "works with the hardware renderers, and may not be compatible with all games."));
+  dialog->registerWidgetHelp(m_ui.pgxpCulling, tr("Culling Correction"), tr("Checked"),
+                             tr("Increases the precision of polygon culling, reducing the number of holes in geometry. "
+                                "Requires geometry correction enabled."));
+  dialog->registerWidgetHelp(m_ui.pgxpTextureCorrection, tr("Texture Correction"), tr("Checked"),
+                             tr("Uses perspective-correct interpolation for texture coordinates and colors, "
+                                "straightening out warped textures. Requires geometry correction enabled."));
+  dialog->registerWidgetHelp(m_ui.pgxpVertexCache, tr("Vertex Cache"), tr("Unchecked"),
+                             tr("Uses screen coordinates as a fallback when tracking vertices through memory fails. "
+                                "May improve PGXP compatibility."));
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;
@@ -231,4 +253,12 @@ void GPUSettingsWidget::onGPUAdapterIndexChanged()
   }
 
   m_host_interface->SetStringSettingValue("GPU", "Adapter", m_ui.adapter->currentText().toUtf8().constData());
+}
+
+void GPUSettingsWidget::updatePGXPSettingsEnabled()
+{
+  const bool enabled = m_ui.pgxpEnable->isChecked();
+  m_ui.pgxpCulling->setEnabled(enabled);
+  m_ui.pgxpTextureCorrection->setEnabled(enabled);
+  m_ui.pgxpVertexCache->setEnabled(enabled);
 }

@@ -516,12 +516,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool upsc
   const char* output_block_suffix = upscaled_lines ? "VS" : "";
   if (textured)
   {
-    DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
+    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
                             {{"nointerpolation", "uint4 v_texpage"}}, false, output_block_suffix);
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"int3 a_pos", "float4 a_col0"}, 1, 0, {}, false, output_block_suffix);
+    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false, output_block_suffix);
   }
 
   ss << R"(
@@ -532,9 +532,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool upsc
   float vertex_offset = (RESOLUTION_SCALE == 1u) ? 0.5 : 0.0;
 
   // 0..+1023 -> -1..1
-  float pos_x = ((float(a_pos.x) + vertex_offset) / 512.0) - 1.0;
-  float pos_y = ((float(a_pos.y) + vertex_offset) / -256.0) + 1.0;
-  float pos_z = 1.0 - (float(a_pos.z) / 65535.0);
+  float pos_x = ((a_pos.x + vertex_offset) / 512.0) - 1.0;
+  float pos_y = ((a_pos.y + vertex_offset) / -256.0) + 1.0;
+  float pos_z = a_pos.z;
+  float pos_w = a_pos.w;
 
 #if API_OPENGL || API_OPENGL_ES
   // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
@@ -550,7 +551,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool upsc
   pos_y = -pos_y;
 #endif
 
-  v_pos = float4(pos_x, pos_y, pos_z, 1.0);
+  v_pos = float4(pos_x * pos_w, pos_y * pos_w, pos_z * pos_w, pos_w);
 
   v_col0 = a_col0;
   #if TEXTURED

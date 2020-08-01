@@ -19,6 +19,7 @@ private Q_SLOTS:
   void updateScaledDitheringEnabled();
   void populateGPUAdapters();
   void onGPUAdapterIndexChanged();
+  void updatePGXPSettingsEnabled();
 
 private:
   void setupAdditionalUi();

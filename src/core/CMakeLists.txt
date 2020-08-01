@@ -59,6 +59,8 @@ add_library(core
     negcon.h
     pad.cpp
     pad.h
+    pgxp.cpp
+    pgxp.h
     playstation_mouse.cpp
     playstation_mouse.h
     psf_loader.cpp

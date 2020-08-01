@@ -129,6 +129,50 @@
 
     </PreferenceCategory>
   
+    <PreferenceCategory app:title="Enhancements">
+
+        <SwitchPreferenceCompat
+            app:key="GPU/TrueColor"
+            app:title="True Color Rendering (24-bit, disables dithering)"
+            app:defaultValue="false"/>
+
+        <SwitchPreferenceCompat
+          app:key="GPU/ScaledDithering"
+          app:title="Scaled Dithering (scale dither pattern to resolution)"
+          app:defaultValue="true"/>
+
+         <SwitchPreferenceCompat
+          app:key="GPU/DisableInterlacing"
+          app:title="Disable Interlacing (force progressive render/scan)"
+          app:defaultValue="true"/>
+      
+        <SwitchPreferenceCompat
+          app:key="GPU/ForceNTSCTimings"
+          app:title="Force NTSC Timings (60hz-on-PAL)"
+          app:defaultValue="false"/>
+
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPEnable"
+            app:title="PGXP Geometry Correction"
+            app:defaultValue="false"/>
+
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPCulling"
+            app:title="PGXP Culling Correction"
+            app:defaultValue="true"/>
+      
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPTextureCorrection"
+            app:title="PGXP Texture Correction"
+            app:defaultValue="true"/>
+      
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPVertexCache"
+            app:title="PGXP Vertex Cache"
+            app:defaultValue="false"/>
+
+    </PreferenceCategory>
+  
     <PreferenceCategory app:title="Display">
          <ListPreference
             app:key="Display/CropMode"
@@ -144,7 +188,7 @@
             app:entries="@array/settings_display_aspect_ratio_names"
             app:entryValues="@array/settings_display_aspect_ratio_values"
             app:defaultValue="4:3"
-            app:useSimpleSummaryProvider="true" />]
+            app:useSimpleSummaryProvider="true" />
             
          <SwitchPreferenceCompat
             app:key="Display/LinearFiltering"

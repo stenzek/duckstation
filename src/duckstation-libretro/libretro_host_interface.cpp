@@ -352,7 +352,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 23> s_option_definitions = {{
+static std::array<retro_core_option_definition, 27> s_option_definitions = {{
   {"Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -445,6 +445,29 @@ static std::array<retro_core_option_definition, 23> s_option_definitions = {{
    "Widescreen Hack",
    "Increases the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered "
    "backgrounds, this enhancement will not work as expected.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"GPU.PGXPEnable",
+   "PGXP Geometry Correction",
+   "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory transfers. Only "
+   "works with the hardware renderers, and may not be compatible with all games.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"GPU.PGXPCulling",
+   "PGXP Culling Correction",
+   "Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction "
+   "enabled.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "true"},
+  {"GPU.PGXPTextureCorrection",
+   "PGXP Texture Correction",
+   "Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. "
+   "Requires geometry correction enabled.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "true"},
+  {"GPU.PGXPVertexCache",
+   "PGXP Vertex Cache",
+   "Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"Display.CropMode",

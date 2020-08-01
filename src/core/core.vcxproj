@@ -80,6 +80,7 @@
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
+    <ClCompile Include="pgxp.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="resources.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="negcon.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
+    <ClInclude Include="pgxp.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="psf_loader.h" />
     <ClInclude Include="resources.h" />

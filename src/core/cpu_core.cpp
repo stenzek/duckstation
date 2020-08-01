@@ -6,6 +6,8 @@
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
+#include "pgxp.h"
+#include "settings.h"
 #include "timing_event.h"
 #include <cstdio>
 Log_SetChannel(CPU::Core);
@@ -73,6 +75,9 @@ void Initialize()
   g_state.cop0_regs.PRID = UINT32_C(0x00000002);
 
   GTE::Initialize();
+
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Initialize();
 }
 
 void Shutdown()
@@ -100,6 +105,9 @@ void Reset()
   GTE::Reset();
 
   SetPC(RESET_VECTOR);
+
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Initialize();
 }
 
 bool DoState(StateWrapper& sw)
@@ -136,6 +144,9 @@ bool DoState(StateWrapper& sw)
 
   if (!GTE::DoState(sw))
     return false;
+
+  if (sw.IsReading())
+    PGXP::Initialize();
 
   return !sw.HasError();
 }
@@ -893,7 +904,12 @@ void ExecuteInstruction()
       if (!ReadMemoryByte(addr, &value))
         return;
 
-      WriteRegDelayed(inst.i.rt, SignExtend32(value));
+      const u32 sxvalue = SignExtend32(value);
+
+      WriteRegDelayed(inst.i.rt, sxvalue);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LBx(inst.bits, sxvalue, addr);
     }
     break;
 
@@ -904,7 +920,11 @@ void ExecuteInstruction()
       if (!ReadMemoryHalfWord(addr, &value))
         return;
 
-      WriteRegDelayed(inst.i.rt, SignExtend32(value));
+      const u32 sxvalue = SignExtend32(value);
+      WriteRegDelayed(inst.i.rt, sxvalue);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LHx(inst.bits, sxvalue, addr);
     }
     break;
 
@@ -916,6 +936,9 @@ void ExecuteInstruction()
         return;
 
       WriteRegDelayed(inst.i.rt, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LW(inst.bits, value, addr);
     }
     break;
 
@@ -926,7 +949,11 @@ void ExecuteInstruction()
       if (!ReadMemoryByte(addr, &value))
         return;
 
-      WriteRegDelayed(inst.i.rt, ZeroExtend32(value));
+      const u32 zxvalue = ZeroExtend32(value);
+      WriteRegDelayed(inst.i.rt, zxvalue);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LBx(inst.bits, zxvalue, addr);
     }
     break;
 
@@ -937,7 +964,11 @@ void ExecuteInstruction()
       if (!ReadMemoryHalfWord(addr, &value))
         return;
 
-      WriteRegDelayed(inst.i.rt, ZeroExtend32(value));
+      const u32 zxvalue = ZeroExtend32(value);
+      WriteRegDelayed(inst.i.rt, zxvalue);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LHx(inst.bits, zxvalue, addr);
     }
     break;
 
@@ -966,6 +997,9 @@ void ExecuteInstruction()
       }
 
       WriteRegDelayed(inst.i.rt, new_value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LW(inst.bits, new_value, addr);
     }
     break;
 
@@ -974,6 +1008,9 @@ void ExecuteInstruction()
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u8 value = Truncate8(ReadReg(inst.i.rt));
       WriteMemoryByte(addr, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_SB(inst.bits, value, addr);
     }
     break;
 
@@ -982,6 +1019,9 @@ void ExecuteInstruction()
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u16 value = Truncate16(ReadReg(inst.i.rt));
       WriteMemoryHalfWord(addr, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_SH(inst.bits, value, addr);
     }
     break;
 
@@ -990,6 +1030,9 @@ void ExecuteInstruction()
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryWord(addr, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_SW(inst.bits, value, addr);
     }
     break;
 
@@ -1017,6 +1060,9 @@ void ExecuteInstruction()
       }
 
       WriteMemoryWord(aligned_addr, new_value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_SW(inst.bits, new_value, addr);
     }
     break;
 
@@ -1132,6 +1178,9 @@ void ExecuteInstruction()
         return;
 
       GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_LWC2(inst.bits, value, addr);
     }
     break;
 
@@ -1147,6 +1196,9 @@ void ExecuteInstruction()
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
       WriteMemoryWord(addr, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        PGXP::CPU_SWC2(inst.bits, value, addr);
     }
     break;
 
@@ -1230,20 +1282,44 @@ void ExecuteCop2Instruction()
     switch (inst.cop.CommonOp())
     {
       case CopCommonInstruction::cfcn:
-        WriteRegDelayed(inst.r.rt, GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32));
-        break;
+      {
+        const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32);
+        WriteRegDelayed(inst.r.rt, value);
+
+        if (g_settings.gpu_pgxp_enable)
+          PGXP::CPU_CFC2(inst.bits, value, value);
+      }
+      break;
 
       case CopCommonInstruction::ctcn:
-        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, ReadReg(inst.r.rt));
-        break;
+      {
+        const u32 value = ReadReg(inst.r.rt);
+        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, value);
+
+        if (g_settings.gpu_pgxp_enable)
+          PGXP::CPU_CTC2(inst.bits, value, value);
+      }
+      break;
 
       case CopCommonInstruction::mfcn:
-        WriteRegDelayed(inst.r.rt, GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue())));
-        break;
+      {
+        const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()));
+        WriteRegDelayed(inst.r.rt, value);
+
+        if (g_settings.gpu_pgxp_enable)
+          PGXP::CPU_MFC2(inst.bits, value, value);
+      }
+      break;
 
       case CopCommonInstruction::mtcn:
-        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
-        break;
+      {
+        const u32 value = ReadReg(inst.r.rt);
+        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), value);
+
+        if (g_settings.gpu_pgxp_enable)
+          PGXP::CPU_MTC2(inst.bits, value, value);
+      }
+      break;
 
       case CopCommonInstruction::bcnc:
       default:

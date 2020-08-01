@@ -291,7 +291,7 @@ bool GPU_HW_OpenGL::CreateVertexBuffer()
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
-  glVertexAttribIPointer(0, 3, GL_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
+  glVertexAttribPointer(0, 4, GL_FLOAT, false, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
                         reinterpret_cast<void*>(offsetof(BatchVertex, color)));
   glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, u)));

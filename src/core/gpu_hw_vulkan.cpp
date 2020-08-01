@@ -669,7 +669,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetRenderPass(m_vram_render_pass, 0);
 
                 gpbuilder.AddVertexBuffer(0, sizeof(BatchVertex), VK_VERTEX_INPUT_RATE_VERTEX);
-                gpbuilder.AddVertexAttribute(0, 0, VK_FORMAT_R32G32B32_SINT, offsetof(BatchVertex, x));
+                gpbuilder.AddVertexAttribute(0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(BatchVertex, x));
                 gpbuilder.AddVertexAttribute(1, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(BatchVertex, color));
                 if (textured)
                 {

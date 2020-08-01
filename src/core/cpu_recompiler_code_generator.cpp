@@ -3,6 +3,8 @@
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "gte.h"
+#include "pgxp.h"
+#include "settings.h"
 Log_SetChannel(CPU::Recompiler);
 
 // TODO: Turn load+sext/zext into a single signed/unsigned load
@@ -1115,19 +1117,32 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   {
     case InstructionOp::lb:
     case InstructionOp::lbu:
+    {
       result = EmitLoadGuestMemory(cbi, address, RegSize_8);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lb));
-      break;
+      if (g_settings.gpu_pgxp_enable)
+        EmitFunctionCall(nullptr, PGXP::CPU_LBx, Value::FromConstantU32(cbi.instruction.bits), result, address);
+    }
+    break;
 
     case InstructionOp::lh:
     case InstructionOp::lhu:
+    {
       result = EmitLoadGuestMemory(cbi, address, RegSize_16);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lh));
-      break;
+
+      if (g_settings.gpu_pgxp_enable)
+        EmitFunctionCall(nullptr, PGXP::CPU_LHx, Value::FromConstantU32(cbi.instruction.bits), result, address);
+    }
+    break;
 
     case InstructionOp::lw:
+    {
       result = EmitLoadGuestMemory(cbi, address, RegSize_32);
-      break;
+      if (g_settings.gpu_pgxp_enable)
+        EmitFunctionCall(nullptr, PGXP::CPU_LW, Value::FromConstantU32(cbi.instruction.bits), result, address);
+    }
+    break;
 
     default:
       UnreachableCode();
@@ -1153,16 +1168,34 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   switch (cbi.instruction.op)
   {
     case InstructionOp::sb:
+    {
       EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_8));
-      break;
+      if (g_settings.gpu_pgxp_enable)
+      {
+        EmitFunctionCall(nullptr, PGXP::CPU_SB, Value::FromConstantU32(cbi.instruction.bits),
+                         value.ViewAsSize(RegSize_8), address);
+      }
+    }
+    break;
 
     case InstructionOp::sh:
+    {
       EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_16));
-      break;
+      if (g_settings.gpu_pgxp_enable)
+      {
+        EmitFunctionCall(nullptr, PGXP::CPU_SH, Value::FromConstantU32(cbi.instruction.bits),
+                         value.ViewAsSize(RegSize_16), address);
+      }
+    }
+    break;
 
     case InstructionOp::sw:
+    {
       EmitStoreGuestMemory(cbi, address, value);
-      break;
+      if (g_settings.gpu_pgxp_enable)
+        EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), value, address);
+    }
+    break;
 
     default:
       UnreachableCode();
@@ -1827,11 +1860,17 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     {
       Value value = EmitLoadGuestMemory(cbi, address, RegSize_32);
       DoGTERegisterWrite(reg, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        EmitFunctionCall(nullptr, PGXP::CPU_LWC2, Value::FromConstantU32(cbi.instruction.bits), value, address);
     }
     else
     {
       Value value = DoGTERegisterRead(reg);
       EmitStoreGuestMemory(cbi, address, value);
+
+      if (g_settings.gpu_pgxp_enable)
+        EmitFunctionCall(nullptr, PGXP::CPU_SWC2, Value::FromConstantU32(cbi.instruction.bits), value, address);
     }
 
     InstructionEpilogue(cbi);
@@ -1851,7 +1890,19 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
                         ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::cfcn) ? 32 : 0);
 
         InstructionPrologue(cbi, 1);
-        m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, DoGTERegisterRead(reg));
+
+        Value value = DoGTERegisterRead(reg);
+
+        // PGXP done first here before ownership is transferred.
+        if (g_settings.gpu_pgxp_enable)
+        {
+          EmitFunctionCall(
+            nullptr, (cbi.instruction.cop.CommonOp() == CopCommonInstruction::cfcn) ? PGXP::CPU_CFC2 : PGXP::CPU_MFC2,
+            Value::FromConstantU32(cbi.instruction.bits), value, value);
+        }
+
+        m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+
         InstructionEpilogue(cbi);
         return true;
       }
@@ -1863,7 +1914,17 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
                         ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::ctcn) ? 32 : 0);
 
         InstructionPrologue(cbi, 1);
-        DoGTERegisterWrite(reg, m_register_cache.ReadGuestRegister(cbi.instruction.r.rt));
+
+        Value value = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+        DoGTERegisterWrite(reg, value);
+
+        if (g_settings.gpu_pgxp_enable)
+        {
+          EmitFunctionCall(
+            nullptr, (cbi.instruction.cop.CommonOp() == CopCommonInstruction::ctcn) ? PGXP::CPU_CTC2 : PGXP::CPU_MTC2,
+            Value::FromConstantU32(cbi.instruction.bits), value, value);
+        }
+
         InstructionEpilogue(cbi);
         return true;
       }

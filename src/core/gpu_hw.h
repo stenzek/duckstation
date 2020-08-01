@@ -55,24 +55,26 @@ protected:
 
   struct BatchVertex
   {
-    s32 x;
-    s32 y;
-    s32 z;
+    float x;
+    float y;
+    float z;
+    float w;
     u32 color;
     u32 texpage;
     u16 u; // 16-bit texcoords are needed for 256 extent rectangles
     u16 v;
 
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, s32 z_, u32 color_, u32 texpage_, u16 packed_texcoord)
+    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 packed_texcoord)
     {
-      Set(x_, y_, z_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
+      Set(x_, y_, z_, w_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
     }
 
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, s32 z_, u32 color_, u32 texpage_, u16 u_, u16 v_)
+    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 u_, u16 v_)
     {
       x = x_;
       y = y_;
       z = z_;
+      w = w_;
       color = color_;
       texpage = texpage_;
       u = u_;
@@ -191,7 +193,7 @@ protected:
   /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
   ALWAYS_INLINE float GetCurrentNormalizedVertexDepth() const
   {
-    return (static_cast<float>(m_current_depth) / 65535.0f);
+    return 1.0f - (static_cast<float>(m_current_depth) / 65535.0f);
   }
 
   /// Returns the interlaced mode to use when scanning out/displaying.
@@ -234,7 +236,7 @@ protected:
 
   /// Handles quads with flipped texture coordinate directions.
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
-  static void FixLineVertexCoordinates(BatchVertex& start, BatchVertex& end, s32 dx, s32 dy);
+  static void FixLineVertexCoordinates(s32& start_x, s32& start_y, s32& end_x, s32& end_y, s32 dx, s32 dy);
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 

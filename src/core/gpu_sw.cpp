@@ -227,18 +227,18 @@ void GPU_SW::DispatchRenderCommand()
       for (u32 i = 0; i < num_vertices; i++)
       {
         SWVertex& vert = vertices[i];
-        const u32 color_rgb = (shaded && i > 0) ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color;
+        const u32 color_rgb = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
         vert.color_r = Truncate8(color_rgb);
         vert.color_g = Truncate8(color_rgb >> 8);
         vert.color_b = Truncate8(color_rgb >> 16);
 
-        const VertexPosition vp{m_fifo.Pop()};
+        const VertexPosition vp{FifoPop()};
         vert.x = vp.x;
         vert.y = vp.y;
 
         if (textured)
         {
-          std::tie(vert.texcoord_x, vert.texcoord_y) = UnpackTexcoord(Truncate16(m_fifo.Pop()));
+          std::tie(vert.texcoord_x, vert.texcoord_y) = UnpackTexcoord(Truncate16(FifoPop()));
         }
         else
         {
@@ -262,8 +262,8 @@ void GPU_SW::DispatchRenderCommand()
     case Primitive::Rectangle:
     {
       const auto [r, g, b] = UnpackColorRGB24(rc.color_for_first_vertex);
-      const VertexPosition vp{m_fifo.Pop()};
-      const u32 texcoord_and_palette = rc.texture_enable ? m_fifo.Pop() : 0;
+      const VertexPosition vp{FifoPop()};
+      const u32 texcoord_and_palette = rc.texture_enable ? FifoPop() : 0;
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(texcoord_and_palette));
 
       s32 width;
@@ -284,7 +284,7 @@ void GPU_SW::DispatchRenderCommand()
           break;
         default:
         {
-          const u32 width_and_height = m_fifo.Pop();
+          const u32 width_and_height = FifoPop();
           width = static_cast<s32>(width_and_height & VRAM_WIDTH_MASK);
           height = static_cast<s32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
 
@@ -321,7 +321,7 @@ void GPU_SW::DispatchRenderCommand()
       // first vertex
       SWVertex* p0 = &vertices[0];
       SWVertex* p1 = &vertices[1];
-      p0->SetPosition(VertexPosition{rc.polyline ? m_blit_buffer[buffer_pos++] : m_fifo.Pop()});
+      p0->SetPosition(VertexPosition{rc.polyline ? m_blit_buffer[buffer_pos++] : Truncate32(FifoPop())});
       p0->SetColorRGB24(first_color);
 
       // remaining vertices in line strip
@@ -335,8 +335,8 @@ void GPU_SW::DispatchRenderCommand()
         }
         else
         {
-          p1->SetColorRGB24(shaded ? (m_fifo.Pop() & UINT32_C(0x00FFFFFF)) : first_color);
-          p1->SetPosition(VertexPosition{m_fifo.Pop()});
+          p1->SetColorRGB24(shaded ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color);
+          p1->SetPosition(VertexPosition{Truncate32(FifoPop())});
         }
 
         // down here because of the FIFO pops
