@@ -54,6 +54,9 @@ public class AndroidHostInterface
         return mInstance != null;
     }
 
+    static public boolean hasInstance() {
+        return mInstance != null;
+    }
     static public AndroidHostInterface getInstance() {
         return mInstance;
     }

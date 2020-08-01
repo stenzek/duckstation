@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!AndroidHostInterface.createInstance(this)) {
+        if (!AndroidHostInterface.hasInstance() && !AndroidHostInterface.createInstance(this)) {
             Log.i("MainActivity", "Failed to create host interface");
             throw new RuntimeException("Failed to create host interface");
         }
