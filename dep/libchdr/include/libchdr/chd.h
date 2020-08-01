@@ -358,7 +358,7 @@ struct _chd_verify_result
 
 /* open an existing CHD file */
 chd_error chd_open(const char *filename, int mode, chd_file *parent, chd_file **chd);
-
+chd_error chd_open_file(core_file* file, int mode, chd_file* parent, chd_file** chd);
 
 /* close a CHD file */
 void chd_close(chd_file *chd);
