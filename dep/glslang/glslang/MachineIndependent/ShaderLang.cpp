@@ -1429,6 +1429,7 @@ int ShFinalize()
     glslang::HlslScanContext::deleteKeywordMap();
 #endif
 
+    DetachProcess();
     return 1;
 }
 
