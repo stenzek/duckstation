@@ -249,16 +249,16 @@ void AndroidHostInterface::EmulationThreadEntryPoint(ANativeWindow* initial_surf
     {
       DrawImGuiWindows();
 
-      g_gpu->ResetGraphicsAPIState();
-
       m_display->Render();
       ImGui::NewFrame();
 
-      g_gpu->RestoreGraphicsAPIState();
-      System::UpdatePerformanceCounters();
+      if (System::IsRunning())
+      {
+        System::UpdatePerformanceCounters();
 
-      if (m_speed_limiter_enabled)
-        System::Throttle();
+        if (m_speed_limiter_enabled)
+          System::Throttle();
+      }
     }
   }
 

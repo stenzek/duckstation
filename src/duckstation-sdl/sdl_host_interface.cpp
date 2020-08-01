@@ -1505,16 +1505,12 @@ void SDLHostInterface::Run()
     {
       DrawImGuiWindows();
 
-      if (System::IsRunning())
-        g_gpu->ResetGraphicsAPIState();
-
       m_display->Render();
       ImGui_ImplSDL2_NewFrame(m_window);
       ImGui::NewFrame();
 
       if (System::IsRunning())
       {
-        g_gpu->RestoreGraphicsAPIState();
         System::UpdatePerformanceCounters();
 
         if (m_speed_limiter_enabled)

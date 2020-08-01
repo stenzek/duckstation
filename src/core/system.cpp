@@ -586,6 +586,11 @@ bool DoState(StateWrapper& sw)
 
 void Reset()
 {
+  if (IsShutdown())
+    return;
+
+  g_gpu->RestoreGraphicsAPIState();
+
   CPU::Reset();
   CPU::CodeCache::Flush();
   Bus::Reset();
@@ -602,6 +607,8 @@ void Reset()
   s_internal_frame_number = 0;
   TimingEvents::Reset();
   ResetPerformanceCounters();
+
+  g_gpu->ResetGraphicsAPIState();
 }
 
 bool LoadState(ByteStream* state)
@@ -609,7 +616,13 @@ bool LoadState(ByteStream* state)
   if (IsShutdown())
     return false;
 
-  return DoLoadState(state, false);
+  g_gpu->RestoreGraphicsAPIState();
+
+  const bool result = DoLoadState(state, false);
+
+  g_gpu->ResetGraphicsAPIState();
+
+  return result;
 }
 
 bool DoLoadState(ByteStream* state, bool force_software_renderer)
@@ -732,11 +745,9 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   if (screenshot_size > 0)
   {
     std::vector<u32> screenshot_buffer;
-    g_gpu->ResetGraphicsAPIState();
-    const bool screenshot_saved =
-      g_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size, screenshot_size);
-    g_gpu->RestoreGraphicsAPIState();
-    if (screenshot_saved && !screenshot_buffer.empty())
+    if (g_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size,
+                                                                    screenshot_size) &&
+        !screenshot_buffer.empty())
     {
       header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
       header.screenshot_width = screenshot_size;
@@ -751,8 +762,14 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   {
     header.offset_to_data = static_cast<u32>(state->GetPosition());
 
+    g_gpu->RestoreGraphicsAPIState();
+
     StateWrapper sw(state, StateWrapper::Mode::Write);
-    if (!DoState(sw))
+    const bool result = DoState(sw);
+
+    g_gpu->ResetGraphicsAPIState();
+
+    if (!result)
       return false;
 
     header.data_compression_type = 0;
@@ -774,6 +791,8 @@ void RunFrame()
 {
   s_frame_timer.Reset();
 
+  g_gpu->RestoreGraphicsAPIState();
+
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
     CPU::Execute();
   else
@@ -781,6 +800,8 @@ void RunFrame()
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   g_spu.GeneratePendingSamples();
+
+  g_gpu->ResetGraphicsAPIState();
 }
 
 void SetThrottleFrequency(float frequency)
