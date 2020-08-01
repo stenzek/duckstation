@@ -42,11 +42,13 @@
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
+    <ClCompile Include="gamelistmodel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="gamelistmodel.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -103,11 +105,6 @@
     <Image Include="duckstation-qt.ico" />
   </ItemGroup>
   <ItemGroup>
-    <QtTs Include="translations\duckstation-qt_de.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="translations\duckstation-qt_pt.ts">
-      <Filter>translations</Filter>
-    </None>
+    <QtTs Include="translations\duckstation-qt_pt.ts" />
   </ItemGroup>
 </Project>

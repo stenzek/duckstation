@@ -39,6 +39,7 @@
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
+    <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="generalsettingswidget.cpp" />
     <ClCompile Include="gpusettingswidget.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
@@ -70,6 +71,7 @@
     <QtMoc Include="advancedsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="inputbindingdialog.h" />
+    <QtMoc Include="gamelistmodel.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
@@ -144,6 +146,7 @@
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
