@@ -24,6 +24,8 @@ bool InitializeGlslang();
 
 static unsigned s_next_bad_shader_id = 1;
 
+static bool glslang_initialized = false;
+
 static std::optional<SPIRVCodeVector> CompileShaderToSPV(EShLanguage stage, const char* stage_filename,
                                                          std::string_view source)
 {
@@ -113,7 +115,6 @@ static std::optional<SPIRVCodeVector> CompileShaderToSPV(EShLanguage stage, cons
 
 bool InitializeGlslang()
 {
-  static bool glslang_initialized = false;
   if (glslang_initialized)
     return true;
 
@@ -123,10 +124,21 @@ bool InitializeGlslang()
     return false;
   }
 
+#ifndef LIBRETRO
   std::atexit([]() { glslang::FinalizeProcess(); });
+#endif
 
   glslang_initialized = true;
   return true;
+}
+
+void DeinitializeGlslang()
+{
+  if (!glslang_initialized)
+    return;
+
+  glslang::FinalizeProcess();
+  glslang_initialized = false;
 }
 
 std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code)

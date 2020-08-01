@@ -21,6 +21,8 @@ enum class Type
   Compute
 };
 
+void DeinitializeGlslang();
+
 // SPIR-V compiled code type
 using SPIRVCodeType = u32;
 using SPIRVCodeVector = std::vector<SPIRVCodeType>;

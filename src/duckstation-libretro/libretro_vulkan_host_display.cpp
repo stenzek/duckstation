@@ -136,6 +136,7 @@ void LibretroVulkanHostDisplay::DestroyResources()
   VulkanHostDisplay::DestroyResources();
   Vulkan::Util::SafeDestroyFramebuffer(m_frame_framebuffer);
   m_frame_texture.Destroy();
+  Vulkan::ShaderCompiler::DeinitializeGlslang();
 }
 
 VkRenderPass LibretroVulkanHostDisplay::GetRenderPassForDisplay() const
