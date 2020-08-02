@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "system.h"
 #include <sstream>
+#include <cmath>
 #include <tuple>
 Log_SetChannel(GPU_HW);
 
@@ -214,8 +215,8 @@ void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1
   }
   else
   {
-    const float abs_dx = std::abs(dx);
-    const float abs_dy = std::abs(dy);
+    const float abs_dx = std::fabs(dx);
+    const float abs_dy = std::fabs(dy);
     float fill_dx, fill_dy;
     float dxdk, dydk;
     float pad_x0 = 0.0f;
