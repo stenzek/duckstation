@@ -82,6 +82,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
+  <entry code="SLUS-00003" compatibility="5" region="NTSC-U" title="A-Train - Trains, Power, Money (USA) (En,Ja,Fr,De)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
   <entry code="SLUS-90010" compatibility="4" region="NTSC-U" title="ASCII Entertainment Demo CD (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
@@ -90,6 +94,10 @@
   <entry code="SLUS-01137" compatibility="5" region="NTSC-U" title="ATV - Quad Power Racing (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
+  </entry>
+  <entry code="SLUS-01545" compatibility="5" region="NTSC-U" title="ATV Mania (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SLUS-01572" compatibility="5" region="NTSC-U" title="ATV Racers (USA)">
     <compatibility>No Issues</compatibility>
@@ -109,6 +117,14 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
     <comments>Works only on Interpreter Mode</comments>
+  </entry>
+  <entry code="SLUS-00972" compatibility="5" region="NTSC-U" title="Ace Combat 3 - Electrosphere (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
+  <entry code="SLUS-01470" compatibility="5" region="NTSC-U" title="Aces of the Air (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SLUS-00887" compatibility="5" region="NTSC-U" title="Action Man - Operation Extreme (USA)">
     <compatibility>No Issues</compatibility>
@@ -185,6 +201,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
   </entry>
+  <entry code="SLUS-01431" compatibility="5" region="NTSC-U" title="All-Star Slammin' D-Ball (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
   <entry code="SLUS-00239" compatibility="5" region="NTSC-U" title="Alone in the Dark - One-Eyed Jack's Revenge (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
@@ -237,9 +257,21 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
   </entry>
+  <entry code="SLUS-01010" compatibility="5" region="NTSC-U" title="Animorphs - Shattered Reality (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
   <entry code="SCUS-94423" compatibility="5" region="NTSC-U" title="Ape Escape (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCUS-94489" compatibility="5" region="NTSC-U" title="Ape Escape (USA) (Demo 2) (EDC)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
+  <entry code="SLUS-00373" compatibility="5" region="NTSC-U" title="Apocalypse (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SLUS-01253" compatibility="5" region="NTSC-U" title="Arc the Lad Collection - Arc the Lad III (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -379,6 +411,26 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1337-gcaf9943</version-tested>
   </entry>
+  <entry code="SLUS-01361" compatibility="5" region="NTSC-U" title="Barbie - Explorer (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-01569" compatibility="5" region="NTSC-U" title="Barbie - Gotta Have Games (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-00981" compatibility="5" region="NTSC-U" title="Barbie - Race &amp; Ride (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-00946" compatibility="5" region="NTSC-U" title="Barbie - Super Sports (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-00393" compatibility="5" region="NTSC-U" title="Batman &amp; Robin (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
   <entry code="SLUS-01141" compatibility="5" region="NTSC-U" title="Batman - Gotham City Racer (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
@@ -426,6 +478,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
   </entry>
+  <entry code="SLUS-01031" compatibility="5" region="NTSC-U" title="Blaster Master - Blasting Again (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
   <entry code="SCES-01224" compatibility="4" region="PAL" title="Blasto (Europe) (En,Fr,De,Es,It)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
@@ -469,6 +525,10 @@
   <entry code="SLPS-01525" compatibility="5" region="NTSC-J" title="Bomberman Fantasy Race (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1064-g73cdd676</version-tested>
+  </entry>
+  <entry code="SLUS-00823" compatibility="5" region="NTSC-U" title="Bomberman Fantasy Race (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SLPS-03002" compatibility="5" region="NTSC-J" title="Bomberman Land">
     <compatibility>No Issues</compatibility>
@@ -517,6 +577,18 @@
   <entry code="SLUS-01159" compatibility="5" region="NTSC-U" title="Bust A Groove 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1130-g38aa485</version-tested>
+  </entry>
+  <entry code="SLUS-00725" compatibility="5" region="NTSC-U" title="Bust-A-Move '99 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-00233" compatibility="5" region="NTSC-U" title="Bust-A-Move 2 - Arcade Edition (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-00754" compatibility="5" region="NTSC-U" title="Bust-A-Move 4 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
   </entry>
   <entry code="SLUS-00208" compatibility="4" region="NTSC-U" title="Buster Bros. Collection (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
@@ -682,6 +754,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01281" compatibility="5" region="NTSC-U" title="Dance Dance Revolution - Disney Mix (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
+  </entry>
+  <entry code="SLUS-00881" compatibility="5" region="NTSC-U" title="Danger Girl (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SLUS-00300" compatibility="5" region="NTSC-U" title="Dare Devil Derby 3D (USA)">
     <compatibility>No Issues</compatibility>
@@ -1060,6 +1136,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLUS-01559" compatibility="5" region="NTSC-U" title="Hugo - The Evil Mirror (USA) (En,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
   <entry code="SLES-00342" compatibility="5" region="PAL" title="In the Hunt (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
@@ -1091,6 +1171,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPM-86008" compatibility="5" region="NTSC-J" title="Jikkyou Oshaberi Parodius - Forever with Me">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00194" compatibility="5" region="NTSC-U" title="Johnny Bazookatone (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SLES-00130" compatibility="5" region="PAL" title="Jupiter Strike (Europe)">
     <compatibility>No Issues</compatibility>
@@ -2102,6 +2186,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
   </entry>
+  <entry code="SLUS-00706" compatibility="5" region="NTSC-U" title="Tenchu - Stealth Assassins (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
   <entry code="SLUS-00939" compatibility="5" region="NTSC-U" title="Tenchu 2 - Birth of the Stealth Assassins">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -2305,6 +2393,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01278" compatibility="4" region="NTSC-U" title="Walt Disney's The Jungle Book - Rhythm n' Groove (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <comments>Graphical in the loading bar when using hardware renderer. No issues if the software renderer is used.</comments>
+  </entry>
+  <entry code="SLUS-00976" compatibility="5" region="NTSC-U" title="Warpath - Jurassic Park (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
+  <entry code="SLUS-00425" compatibility="5" region="NTSC-U" title="Wild 9 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
   <entry code="SCES-01909" compatibility="5" region="PAL" title="Wip3out (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
