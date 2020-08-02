@@ -980,7 +980,9 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   m_vram_readback_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  BeginRenderPass(m_vram_readback_render_pass, m_vram_readback_framebuffer, 0, 0, encoded_width, encoded_height);
+  // Work around Mali driver bug: set full framebuffer size for render area. The GPU crashes with a page fault if we use
+  // the actual size we're rendering to...
+  BeginRenderPass(m_vram_readback_render_pass, m_vram_readback_framebuffer, 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 
   // Encode the 24-bit texture as 16-bit.
   const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
