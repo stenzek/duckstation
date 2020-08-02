@@ -7,8 +7,8 @@
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
-#include <sstream>
 #include <cmath>
+#include <sstream>
 #include <tuple>
 Log_SetChannel(GPU_HW);
 
@@ -38,18 +38,11 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   if (!GPU::Initialize(host_display))
     return false;
 
-  m_resolution_scale = g_settings.gpu_resolution_scale;
+  m_resolution_scale = CalculateResolutionScale();
   m_render_api = host_display->GetRenderAPI();
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filtering;
-  if (m_resolution_scale < 1 || m_resolution_scale > m_max_resolution_scale)
-  {
-    g_host_interface->AddFormattedOSDMessage(5.0f, "Invalid resolution scale %ux specified. Maximum is %u.",
-                                             m_resolution_scale, m_max_resolution_scale);
-    m_resolution_scale = std::clamp<u32>(m_resolution_scale, 1u, m_max_resolution_scale);
-  }
-
   PrintSettingsToLog();
   return true;
 }
@@ -90,11 +83,33 @@ void GPU_HW::UpdateSettings()
 {
   GPU::UpdateSettings();
 
-  m_resolution_scale = std::clamp<u32>(g_settings.gpu_resolution_scale, 1, m_max_resolution_scale);
+  m_resolution_scale = CalculateResolutionScale();
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filtering;
   PrintSettingsToLog();
+}
+
+u32 GPU_HW::CalculateResolutionScale() const
+{
+  if (g_settings.gpu_resolution_scale != 0)
+    return std::clamp<u32>(g_settings.gpu_resolution_scale, 1, m_max_resolution_scale);
+
+  // auto scaling
+  const s32 height = (m_crtc_state.display_height != 0) ? static_cast<s32>(m_crtc_state.display_height) : 480;
+  const s32 preferred_scale =
+    static_cast<s32>(std::ceil(static_cast<float>(m_host_display->GetWindowHeight()) / height));
+  Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
+
+  return static_cast<u32>(std::clamp<s32>(preferred_scale, 1, m_max_resolution_scale));
+}
+
+void GPU_HW::UpdateResolutionScale()
+{
+  GPU::UpdateResolutionScale();
+
+  if (CalculateResolutionScale() != m_resolution_scale)
+    UpdateSettings();
 }
 
 void GPU_HW::PrintSettingsToLog()

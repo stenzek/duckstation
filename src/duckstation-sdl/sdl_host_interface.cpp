@@ -370,6 +370,10 @@ bool SDLHostInterface::SetFullscreen(bool enabled)
   int window_width, window_height;
   SDL_GetWindowSize(m_window, &window_width, &window_height);
   m_display->ResizeRenderWindow(window_width, window_height);
+
+  if (!System::IsShutdown())
+    g_gpu->UpdateResolutionScale();
+
   m_fullscreen = enabled;
   return true;
 }
@@ -523,6 +527,9 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
       {
         m_display->ResizeRenderWindow(event->window.data1, event->window.data2);
         UpdateFramebufferScale();
+
+        if (!System::IsShutdown())
+          g_gpu->UpdateResolutionScale();
       }
       else if (event->window.event == SDL_WINDOWEVENT_MOVED)
       {

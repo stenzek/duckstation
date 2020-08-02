@@ -425,7 +425,10 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (!System::IsShutdown())
+  {
+    g_gpu->UpdateResolutionScale();
     renderDisplay();
+  }
 }
 
 void QtHostInterface::redrawDisplayWindow()
@@ -538,7 +541,12 @@ void QtHostInterface::updateDisplayState()
     Panic("Failed to make device context current after updating");
 
   connectDisplaySignals(display_widget);
-  redrawDisplayWindow();
+
+  if (!System::IsShutdown())
+  {
+    g_gpu->UpdateResolutionScale();
+    redrawDisplayWindow();
+  }
   UpdateSpeedLimiterState();
 }
 

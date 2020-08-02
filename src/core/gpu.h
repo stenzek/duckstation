@@ -154,11 +154,14 @@ public:
   /// Returns true if a raster scanline or command execution is pending.
   bool IsCommandCompletionPending() const;
 
-  // Synchronizes the CRTC, updating the hblank timer.
+  /// Synchronizes the CRTC, updating the hblank timer.
   void SynchronizeCRTC();
 
-  // Recompile shaders/recreate framebuffers when needed.
+  /// Recompile shaders/recreate framebuffers when needed.
   virtual void UpdateSettings();
+
+  /// Updates the resolution scale when it's set to automatic.
+  virtual void UpdateResolutionScale();
 
   // gpu_hw_d3d11.cpp
   static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();

@@ -57,6 +57,8 @@ void GPU::UpdateSettings()
   UpdateCRTCDisplayParameters();
 }
 
+void GPU::UpdateResolutionScale() {}
+
 void GPU::Reset()
 {
   SoftReset();

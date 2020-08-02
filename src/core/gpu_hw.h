@@ -35,6 +35,7 @@ public:
   virtual void Reset() override;
   virtual bool DoState(StateWrapper& sw) override;
   virtual void UpdateSettings() override;
+  virtual void UpdateResolutionScale() override;
 
 protected:
   enum : u32
@@ -166,6 +167,8 @@ protected:
   virtual void UnmapBatchVertexPointer(u32 used_vertices) = 0;
   virtual void UploadUniformBuffer(const void* uniforms, u32 uniforms_size) = 0;
   virtual void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) = 0;
+
+  u32 CalculateResolutionScale() const;
 
   void SetFullVRAMDirtyRectangle()
   {
