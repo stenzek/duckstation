@@ -1742,42 +1742,42 @@ The URL was: %1</source>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="841"/>
+        <location filename="../qthostinterface.cpp" line="843"/>
         <source>Resume</source>
         <translation>Resumir</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="844"/>
+        <location filename="../qthostinterface.cpp" line="846"/>
         <source>Load State</source>
         <translation>Carregar Estado</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="862"/>
+        <location filename="../qthostinterface.cpp" line="864"/>
         <source>Resume (%1)</source>
         <translation>Resumir (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="869"/>
+        <location filename="../qthostinterface.cpp" line="871"/>
         <source>%1 Save %2 (%3)</source>
         <translation>%1 Salvar %2 (%3)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="869"/>
+        <location filename="../qthostinterface.cpp" line="871"/>
         <source>Game</source>
         <translation>Jogo</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="876"/>
+        <location filename="../qthostinterface.cpp" line="878"/>
         <source>Delete Save States...</source>
         <translation>Apagar Jogos Salvos...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="883"/>
+        <location filename="../qthostinterface.cpp" line="885"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirma deleção de Estado Salvo</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="884"/>
+        <location filename="../qthostinterface.cpp" line="886"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>

@@ -6,7 +6,8 @@ The following people have contributed to the project in some way, and are credit
 - @ggrtk
 
 ## Translators
-- Anderson Cardoso - Portuguese
+- Anderson Cardoso - Portuguese (Br)
+- @bajolzas - Portuguese (Pt)
 
 ## Game Compatibility Database
  - @Zet-sensei
