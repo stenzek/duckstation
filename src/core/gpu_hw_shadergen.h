@@ -16,7 +16,6 @@ public:
   std::string GenerateBatchVertexShader(bool textured, bool upscaled_lines);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPU::TextureMode texture_mode,
                                           bool dithering, bool interlacing);
-  std::string GenerateBatchLineExpandGeometryShader();
   std::string GenerateScreenQuadVertexShader();
   std::string GenerateFillFragmentShader();
   std::string GenerateInterlacedFillFragmentShader();

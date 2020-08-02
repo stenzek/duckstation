@@ -565,10 +565,6 @@ bool GPU_HW_Vulkan::CreateTextureBuffer()
 
 bool GPU_HW_Vulkan::CompilePipelines()
 {
-  static constexpr std::array<VkPrimitiveTopology, 2> primitive_mapping = {
-    {VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}};
-  static constexpr std::array<VkPolygonMode, 2> polygon_mode_mapping = {{VK_POLYGON_MODE_LINE, VK_POLYGON_MODE_FILL}};
-
   g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
 
   VkDevice device = g_vulkan_context->GetDevice();
@@ -579,15 +575,12 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
-  DimensionalArray<VkShaderModule, 2, 2> batch_vertex_shaders{};
+  DimensionalArray<VkShaderModule, 2> batch_vertex_shaders{};
   DimensionalArray<VkShaderModule, 2, 2, 9, 4> batch_fragment_shaders{};
-  VkShaderModule batch_line_geometry_shader = VK_NULL_HANDLE;
-  Common::ScopeGuard batch_shader_guard(
-    [&batch_vertex_shaders, &batch_fragment_shaders, &batch_line_geometry_shader]() {
-      batch_vertex_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
-      batch_fragment_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
-      Vulkan::Util::SafeDestroyShaderModule(batch_line_geometry_shader);
-    });
+  Common::ScopeGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
+    batch_vertex_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
+    batch_fragment_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
+  });
 
   for (u8 textured = 0; textured < 2; textured++)
   {
@@ -596,7 +589,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     if (shader == VK_NULL_HANDLE)
       return false;
 
-    batch_vertex_shaders[textured][0] = shader;
+    batch_vertex_shaders[textured] = shader;
   }
 
   for (u8 render_mode = 0; render_mode < 4; render_mode++)
@@ -621,107 +614,66 @@ bool GPU_HW_Vulkan::CompilePipelines()
     }
   }
 
-  if (m_resolution_scale > 1 || !g_vulkan_context->GetDeviceFeatures().fillModeNonSolid)
-  {
-    if (g_vulkan_context->GetDeviceFeatures().geometryShader)
-    {
-      const std::string gs = shadergen.GenerateBatchLineExpandGeometryShader();
-      batch_line_geometry_shader = g_vulkan_shader_cache->GetGeometryShader(gs);
-      if (batch_line_geometry_shader == VK_NULL_HANDLE)
-        return false;
-
-      for (u8 textured = 0; textured < 2; textured++)
-      {
-        const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), true);
-        VkShaderModule shader = g_vulkan_shader_cache->GetVertexShader(vs);
-        if (shader == VK_NULL_HANDLE)
-          return false;
-
-        batch_vertex_shaders[textured][1] = shader;
-      }
-    }
-    else
-    {
-      Log_WarningPrintf("Upscaling requested but geometry shaders are unsupported, line rendering will be incorrect.");
-    }
-  }
-
   Vulkan::GraphicsPipelineBuilder gpbuilder;
 
   // [primitive][depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
-  for (u8 primitive = 0; primitive < 2; primitive++)
+  for (u8 depth_test = 0; depth_test < 2; depth_test++)
   {
-    for (u8 depth_test = 0; depth_test < 2; depth_test++)
+    for (u8 render_mode = 0; render_mode < 4; render_mode++)
     {
-      for (u8 render_mode = 0; render_mode < 4; render_mode++)
+      for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
       {
-        for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
+        for (u8 texture_mode = 0; texture_mode < 9; texture_mode++)
         {
-          for (u8 texture_mode = 0; texture_mode < 9; texture_mode++)
+          for (u8 dithering = 0; dithering < 2; dithering++)
           {
-            for (u8 dithering = 0; dithering < 2; dithering++)
+            for (u8 interlacing = 0; interlacing < 2; interlacing++)
             {
-              for (u8 interlacing = 0; interlacing < 2; interlacing++)
+              const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
+
+              gpbuilder.SetPipelineLayout(m_batch_pipeline_layout);
+              gpbuilder.SetRenderPass(m_vram_render_pass, 0);
+
+              gpbuilder.AddVertexBuffer(0, sizeof(BatchVertex), VK_VERTEX_INPUT_RATE_VERTEX);
+              gpbuilder.AddVertexAttribute(0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(BatchVertex, x));
+              gpbuilder.AddVertexAttribute(1, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(BatchVertex, color));
+              if (textured)
               {
-                const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
-
-                gpbuilder.SetPipelineLayout(m_batch_pipeline_layout);
-                gpbuilder.SetRenderPass(m_vram_render_pass, 0);
-
-                gpbuilder.AddVertexBuffer(0, sizeof(BatchVertex), VK_VERTEX_INPUT_RATE_VERTEX);
-                gpbuilder.AddVertexAttribute(0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(BatchVertex, x));
-                gpbuilder.AddVertexAttribute(1, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(BatchVertex, color));
-                if (textured)
-                {
-                  gpbuilder.AddVertexAttribute(2, 0, VK_FORMAT_R32_UINT, offsetof(BatchVertex, u));
-                  gpbuilder.AddVertexAttribute(3, 0, VK_FORMAT_R32_UINT, offsetof(BatchVertex, texpage));
-                }
-
-                gpbuilder.SetPrimitiveTopology(primitive_mapping[primitive]);
-                gpbuilder.SetFragmentShader(batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing]);
-                if (static_cast<BatchPrimitive>(primitive) == BatchPrimitive::Lines &&
-                    batch_line_geometry_shader != VK_NULL_HANDLE)
-                {
-                  gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)][1]);
-                  gpbuilder.SetGeometryShader(batch_line_geometry_shader);
-                  gpbuilder.SetRasterizationState(polygon_mode_mapping[static_cast<u8>(BatchPrimitive::Triangles)],
-                                                  VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-                }
-                else
-                {
-                  gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)][0]);
-                  gpbuilder.SetRasterizationState(polygon_mode_mapping[primitive], VK_CULL_MODE_NONE,
-                                                  VK_FRONT_FACE_CLOCKWISE);
-                }
-
-                gpbuilder.SetDepthState(true, true,
-                                        (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
-
-                gpbuilder.SetNoBlendingState();
-
-                if ((static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled &&
-                     (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
-                      static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
-                    m_texture_filtering)
-                {
-                  gpbuilder.SetBlendAttachment(
-                    0, true, VK_BLEND_FACTOR_ONE,
-                    m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC1_ALPHA : VK_BLEND_FACTOR_SRC_ALPHA,
-                    (static_cast<TransparencyMode>(transparency_mode) == TransparencyMode::BackgroundMinusForeground) ?
-                      VK_BLEND_OP_REVERSE_SUBTRACT :
-                      VK_BLEND_OP_ADD,
-                    VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
-                }
-
-                gpbuilder.SetDynamicViewportAndScissorState();
-
-                VkPipeline pipeline = gpbuilder.Create(device, pipeline_cache);
-                if (pipeline == VK_NULL_HANDLE)
-                  return false;
-
-                m_batch_pipelines[primitive][depth_test][render_mode][texture_mode][transparency_mode][dithering]
-                                 [interlacing] = pipeline;
+                gpbuilder.AddVertexAttribute(2, 0, VK_FORMAT_R32_UINT, offsetof(BatchVertex, u));
+                gpbuilder.AddVertexAttribute(3, 0, VK_FORMAT_R32_UINT, offsetof(BatchVertex, texpage));
               }
+
+              gpbuilder.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+              gpbuilder.SetVertexShader(batch_vertex_shaders[BoolToUInt8(textured)]);
+              gpbuilder.SetFragmentShader(batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing]);
+
+              gpbuilder.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+              gpbuilder.SetDepthState(true, true,
+                                      (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
+              gpbuilder.SetNoBlendingState();
+
+              if ((static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled &&
+                   (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
+                    static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
+                  m_texture_filtering)
+              {
+                gpbuilder.SetBlendAttachment(
+                  0, true, VK_BLEND_FACTOR_ONE,
+                  m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC1_ALPHA : VK_BLEND_FACTOR_SRC_ALPHA,
+                  (static_cast<TransparencyMode>(transparency_mode) == TransparencyMode::BackgroundMinusForeground) ?
+                    VK_BLEND_OP_REVERSE_SUBTRACT :
+                    VK_BLEND_OP_ADD,
+                  VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+              }
+
+              gpbuilder.SetDynamicViewportAndScissorState();
+
+              VkPipeline pipeline = gpbuilder.Create(device, pipeline_cache);
+              if (pipeline == VK_NULL_HANDLE)
+                return false;
+
+              m_batch_pipelines[depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing] =
+                pipeline;
             }
           }
         }
@@ -920,8 +872,8 @@ void GPU_HW_Vulkan::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
 
   // [primitive][depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   VkPipeline pipeline =
-    m_batch_pipelines[static_cast<u8>(m_batch.primitive)][BoolToUInt8(m_batch.check_mask_before_draw)][static_cast<u8>(
-      render_mode)][static_cast<u8>(m_batch.texture_mode)][static_cast<u8>(m_batch.transparency_mode)]
+    m_batch_pipelines[BoolToUInt8(m_batch.check_mask_before_draw)][static_cast<u8>(render_mode)]
+                     [static_cast<u8>(m_batch.texture_mode)][static_cast<u8>(m_batch.transparency_mode)]
                      [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
 
   vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);

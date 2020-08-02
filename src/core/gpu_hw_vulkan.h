@@ -105,8 +105,8 @@ private:
   u32 m_current_uniform_buffer_offset = 0;
   VkBufferView m_texture_stream_buffer_view = VK_NULL_HANDLE;
 
-  // [primitive][depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
-  DimensionalArray<VkPipeline, 2, 2, 5, 9, 4, 2, 2> m_batch_pipelines{};
+  // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
+  DimensionalArray<VkPipeline, 2, 2, 5, 9, 4, 2> m_batch_pipelines{};
 
   // [interlaced]
   std::array<VkPipeline, 2> m_vram_fill_pipelines{};

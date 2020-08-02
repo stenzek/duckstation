@@ -110,7 +110,6 @@ private:
   std::array<ComPtr<ID3D11VertexShader>, 2> m_batch_vertex_shaders; // [textured]
   std::array<std::array<std::array<std::array<ComPtr<ID3D11PixelShader>, 2>, 2>, 9>, 4>
     m_batch_pixel_shaders; // [render_mode][texture_mode][dithering][interlacing]
-  ComPtr<ID3D11GeometryShader> m_batch_line_expand_geometry_shader;
 
   ComPtr<ID3D11VertexShader> m_screen_quad_vertex_shader;
   ComPtr<ID3D11PixelShader> m_copy_pixel_shader;

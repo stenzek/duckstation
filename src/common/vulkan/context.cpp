@@ -462,19 +462,11 @@ bool Context::SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_feat
   VkPhysicalDeviceFeatures available_features;
   vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
 
-  if (!available_features.fillModeNonSolid && !available_features.geometryShader)
-  {
-    Log_ErrorPrintf("fillModeNonSolid or geometryShader feature is required for line drawing.");
-    return false;
-  }
-
   if (required_features)
     std::memcpy(&m_device_features, required_features, sizeof(m_device_features));
 
   // Enable the features we use.
   m_device_features.dualSrcBlend = available_features.dualSrcBlend;
-  m_device_features.geometryShader = available_features.geometryShader;
-  m_device_features.fillModeNonSolid = available_features.fillModeNonSolid;
   return true;
 }
 

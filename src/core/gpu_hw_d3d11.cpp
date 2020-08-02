@@ -109,6 +109,7 @@ void GPU_HW_D3D11::RestoreGraphicsAPIState()
   const UINT offset = 0;
   m_context->IASetVertexBuffers(0, 1, m_vertex_stream_buffer.GetD3DBufferArray(), &stride, &offset);
   m_context->IASetInputLayout(m_batch_input_layout.Get());
+  m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), m_vram_depth_view.Get());
   m_context->RSSetState(m_cull_none_rasterizer_state.Get());
@@ -405,15 +406,6 @@ bool GPU_HW_D3D11::CompileShaders()
     }
   }
 
-  m_batch_line_expand_geometry_shader.Reset();
-  if (m_resolution_scale > 1)
-  {
-    m_batch_line_expand_geometry_shader =
-      m_shader_cache.GetGeometryShader(m_device.Get(), shadergen.GenerateBatchLineExpandGeometryShader());
-    if (!m_batch_line_expand_geometry_shader)
-      return false;
-  }
-
   m_copy_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateCopyFragmentShader());
   if (!m_copy_pixel_shader)
     return false;
@@ -520,7 +512,6 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
     m_batch_ubo_dirty = true;
   }
 
-  m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_screen_quad_vertex_shader.Get(), nullptr, 0);
   m_context->GSSetShader(nullptr, nullptr, 0);
   m_context->PSSetShader(shader, nullptr, 0);
@@ -533,16 +524,7 @@ void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_verte
 {
   const bool textured = (m_batch.texture_mode != TextureMode::Disabled);
 
-  static constexpr std::array<D3D11_PRIMITIVE_TOPOLOGY, 2> d3d_primitives = {
-    {D3D11_PRIMITIVE_TOPOLOGY_LINELIST, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST}};
-  m_context->IASetPrimitiveTopology(d3d_primitives[static_cast<u8>(m_batch.primitive)]);
-
   m_context->VSSetShader(m_batch_vertex_shaders[BoolToUInt8(textured)].Get(), nullptr, 0);
-
-  m_context->GSSetShader((m_batch.primitive < GPU_HW::BatchPrimitive::Triangles && m_resolution_scale > 1) ?
-                           m_batch_line_expand_geometry_shader.Get() :
-                           nullptr,
-                         nullptr, 0);
 
   m_context->PSSetShader(m_batch_pixel_shaders[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
                                               [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)]

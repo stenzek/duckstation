@@ -10,6 +10,15 @@
 #include <sstream>
 Log_SetChannel(GPU_HW);
 
+template<typename T>
+ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
+{
+  if (v1 > v2)
+    return std::tie(v2, v1);
+  else
+    return std::tie(v1, v2);
+}
+
 GPU_HW::GPU_HW() : GPU()
 {
   m_vram_ptr = m_vram_shadow.data();
@@ -189,25 +198,93 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   }
 }
 
-// The PlayStation GPU draws lines from start to end, inclusive. Or, more specifically, inclusive of the greatest delta
-// in the x or y direction.
-void GPU_HW::FixLineVertexCoordinates(s32& start_x, s32& start_y, s32& end_x, s32& end_y, s32 dx, s32 dy)
+void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)
 {
-  // deliberately not else if to catch the equal case
-  if (dx >= dy)
+  const float dx = x1 - x0;
+  const float dy = y1 - y0;
+  std::array<BatchVertex, 4> output;
+  if (dx == 0.0f && dy == 0.0f)
   {
-    if (start_x > end_x)
-      start_x++;
-    else
-      end_x++;
+    // Degenerate, render a point.
+    output[0].Set(x0, y0, depth, 1.0f, col0, 0, 0);
+    output[1].Set(x0 + 1.0f, y0, depth, 1.0f, col0, 0, 0);
+    output[2].Set(x1, y1 + 1.0f, depth, 1.0f, col0, 0, 0);
+    output[3].Set(x1 + 1.0f, y1 + 1.0f, depth, 1.0f, col0, 0, 0);
   }
-  if (dx <= dy)
+  else
   {
-    if (start_y > end_y)
-      start_y++;
+    const float abs_dx = std::abs(dx);
+    const float abs_dy = std::abs(dy);
+    float fill_dx, fill_dy;
+    float dxdk, dydk;
+    float pad_x0 = 0.0f;
+    float pad_x1 = 0.0f;
+    float pad_y0 = 0.0f;
+    float pad_y1 = 0.0f;
+
+    // Check for vertical or horizontal major lines.
+    // When expanding to a rect, do so in the appropriate direction.
+    // FIXME: This scheme seems to kinda work, but it seems very hard to find a method
+    // that looks perfect on every game.
+    // Vagrant Story speech bubbles are a very good test case here!
+    if (abs_dx > abs_dy)
+    {
+      fill_dx = 0.0f;
+      fill_dy = 1.0f;
+      dxdk = 1.0f;
+      dydk = dy / abs_dx;
+
+      if (dx > 0.0f)
+      {
+        // Right
+        pad_x1 = 1.0f;
+        pad_y1 = dydk;
+      }
+      else
+      {
+        // Left
+        pad_x0 = 1.0f;
+        pad_y0 = -dydk;
+      }
+    }
     else
-      end_y++;
+    {
+      fill_dx = 1.0f;
+      fill_dy = 0.0f;
+      dydk = 1.0f;
+      dxdk = dx / abs_dy;
+
+      if (dy > 0.0f)
+      {
+        // Down
+        pad_y1 = 1.0f;
+        pad_x1 = dxdk;
+      }
+      else
+      {
+        // Up
+        pad_y0 = 1.0f;
+        pad_x0 = -dxdk;
+      }
+    }
+
+    const float ox0 = x0 + pad_x0;
+    const float oy0 = y0 + pad_y0;
+    const float ox1 = x1 + pad_x1;
+    const float oy1 = y1 + pad_y1;
+
+    output[0].Set(ox0, oy0, depth, 1.0f, col0, 0, 0);
+    output[1].Set(ox0 + fill_dx, oy0 + fill_dy, depth, 1.0f, col0, 0, 0);
+    output[2].Set(ox1, oy1, depth, 1.0f, col1, 0, 0);
+    output[3].Set(ox1 + fill_dx, oy1 + fill_dy, depth, 1.0f, col1, 0, 0);
   }
+
+  AddVertex(output[0]);
+  AddVertex(output[1]);
+  AddVertex(output[2]);
+  AddVertex(output[3]);
+  AddVertex(output[2]);
+  AddVertex(output[1]);
 }
 
 void GPU_HW::LoadVertices()
@@ -251,7 +328,7 @@ void GPU_HW::LoadVertices()
         {
           valid_w &=
             PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, native_x, native_y, m_drawing_offset.x,
-                                 m_drawing_offset.y, &vertices[i].x, &vertices[i].y, &vertices[i].w);
+                                   m_drawing_offset.y, &vertices[i].x, &vertices[i].y, &vertices[i].w);
         }
       }
       if (!valid_w)
@@ -433,46 +510,36 @@ void GPU_HW::LoadVertices()
       {
         DebugAssert(GetBatchVertexSpace() >= 2);
 
-        u32 color0, color1;
-        VertexPosition pos0, pos1;
+        u32 start_color, end_color;
+        VertexPosition start_pos, end_pos;
         if (rc.shading_enable)
         {
-          color0 = rc.color_for_first_vertex;
-          pos0.bits = FifoPop();
-          color1 = FifoPop() & UINT32_C(0x00FFFFFF);
-          pos1.bits = FifoPop();
+          start_color = rc.color_for_first_vertex;
+          start_pos.bits = FifoPop();
+          end_color = FifoPop() & UINT32_C(0x00FFFFFF);
+          end_pos.bits = FifoPop();
         }
         else
         {
-          color0 = color1 = rc.color_for_first_vertex;
-          pos0.bits = FifoPop();
-          pos1.bits = FifoPop();
+          start_color = end_color = rc.color_for_first_vertex;
+          start_pos.bits = FifoPop();
+          end_pos.bits = FifoPop();
         }
 
         if (!IsDrawingAreaIsValid())
           return;
 
-        s32 start_x = pos0.x + m_drawing_offset.x;
-        s32 start_y = pos0.y + m_drawing_offset.y;
-        s32 end_x = pos1.x + m_drawing_offset.x;
-        s32 end_y = pos1.y + m_drawing_offset.y;
-
-        const s32 min_x = std::min(start_x, end_x);
-        const s32 max_x = std::max(start_x, end_x);
-        const s32 min_y = std::min(start_y, end_y);
-        const s32 max_y = std::max(start_y, end_y);
-        const s32 dx = max_x - min_x;
-        const s32 dy = max_y - min_y;
-        if (dx >= MAX_PRIMITIVE_WIDTH || dy >= MAX_PRIMITIVE_HEIGHT)
+        s32 start_x = start_pos.x + m_drawing_offset.x;
+        s32 start_y = start_pos.y + m_drawing_offset.y;
+        s32 end_x = end_pos.x + m_drawing_offset.x;
+        s32 end_y = end_pos.y + m_drawing_offset.y;
+        const auto [min_x, max_x] = MinMax(start_x, end_x);
+        const auto [min_y, max_y] = MinMax(start_y, end_y);
+        if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
         {
           Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start_x, start_y, end_x, end_y);
           return;
         }
-
-        FixLineVertexCoordinates(start_x, start_y, end_x, end_y, dx, dy);
-        AddNewVertex(static_cast<float>(start_x), static_cast<float>(start_y), depth, 1.0f, color0, 0,
-                     static_cast<u16>(0));
-        AddNewVertex(static_cast<float>(end_x), static_cast<float>(end_y), depth, 1.0f, color1, 0, static_cast<u16>(0));
 
         const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
         const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
@@ -482,6 +549,10 @@ void GPU_HW::LoadVertices()
 
         m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
         AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
+
+        // TODO: Should we do a PGXP lookup here? Most lines are 2D.
+        DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
+                 static_cast<float>(end_y), end_color, depth);
       }
       else
       {
@@ -492,57 +563,47 @@ void GPU_HW::LoadVertices()
         if (!IsDrawingAreaIsValid())
           return;
 
-        const u32 first_color = rc.color_for_first_vertex;
         const bool shaded = rc.shading_enable;
 
-        s32 last_x, last_y;
-        u32 last_color;
         u32 buffer_pos = 0;
-        for (u32 i = 0; i < num_vertices; i++)
+        const VertexPosition start_vp{m_blit_buffer[buffer_pos++]};
+        s32 start_x = start_vp.x + m_drawing_offset.x;
+        s32 start_y = start_vp.y + m_drawing_offset.y;
+        u32 start_color = rc.color_for_first_vertex;
+
+        for (u32 i = 1; i < num_vertices; i++)
         {
-          const u32 color = (shaded && i > 0) ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color;
+          const u32 end_color = shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : start_color;
           const VertexPosition vp{m_blit_buffer[buffer_pos++]};
-          const s32 x = m_drawing_offset.x + vp.x;
-          const s32 y = m_drawing_offset.y + vp.y;
+          const s32 end_x = m_drawing_offset.x + vp.x;
+          const s32 end_y = m_drawing_offset.y + vp.y;
 
-          if (i > 0)
+          const auto [min_x, max_x] = MinMax(start_x, end_x);
+          const auto [min_y, max_y] = MinMax(start_y, end_y);
+          if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
           {
-            const s32 min_x = std::min(last_x, x);
-            const s32 max_x = std::max(last_x, x);
-            const s32 min_y = std::min(last_y, y);
-            const s32 max_y = std::max(last_y, y);
-            const s32 dx = max_x - min_x;
-            const s32 dy = max_y - min_y;
+            Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start_x, start_y, x, y);
+          }
+          else
+          {
+            const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
+            const u32 clip_right =
+              static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
+            const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
+            const u32 clip_bottom =
+              static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
-            if (dx >= MAX_PRIMITIVE_WIDTH || dy >= MAX_PRIMITIVE_HEIGHT)
-            {
-              Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", last_x, last_y, x, y);
-            }
-            else
-            {
-              s32 start_x = last_x, start_y = last_y;
-              s32 end_x = x, end_y = y;
-              FixLineVertexCoordinates(start_x, start_y, end_x, end_y, dx, dy);
-              AddNewVertex(static_cast<float>(start_x), static_cast<float>(start_y), depth, 1.0f, last_color, 0,
-                           static_cast<u16>(0));
-              AddNewVertex(static_cast<float>(end_x), static_cast<float>(end_y), depth, 1.0f, color, 0,
-                           static_cast<u16>(0));
+            m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
+            AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
 
-              const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.left));
-              const u32 clip_right =
-                static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-              const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-              const u32 clip_bottom =
-                static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-              m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
-              AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
-            }
+            // TODO: Should we do a PGXP lookup here? Most lines are 2D.
+            DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
+                     static_cast<float>(end_y), end_color, depth);
           }
 
-          last_x = x;
-          last_y = y;
-          last_color = color;
+          start_x = end_x;
+          start_y = end_y;
+          start_color = end_color;
         }
       }
     }
@@ -632,14 +693,6 @@ GPU_HW::VRAMCopyUBOData GPU_HW::GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst
   return uniforms;
 }
 
-GPU_HW::BatchPrimitive GPU_HW::GetPrimitiveForCommand(RenderCommand rc)
-{
-  if (rc.primitive == Primitive::Line)
-    return BatchPrimitive::Lines;
-  else
-    return BatchPrimitive::Triangles;
-}
-
 void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
 {
   m_vram_dirty_rect.Include(rect);
@@ -680,7 +733,7 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
       break;
     case Primitive::Line:
     default:
-      required_vertices = m_render_command.polyline ? (GetPolyLineVertexCount() * 2u) : 2u;
+      required_vertices = m_render_command.polyline ? (GetPolyLineVertexCount() * 6u) : 6u;
       break;
   }
 
@@ -778,10 +831,9 @@ void GPU_HW::DispatchRenderCommand()
   // has any state changed which requires a new batch?
   const TransparencyMode transparency_mode =
     rc.transparency_enable ? m_draw_mode.GetTransparencyMode() : TransparencyMode::Disabled;
-  const BatchPrimitive rc_primitive = GetPrimitiveForCommand(rc);
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
   if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
-      m_batch.primitive != rc_primitive || dithering_enable != m_batch.dithering)
+      dithering_enable != m_batch.dithering)
   {
     FlushRender();
   }
@@ -815,7 +867,6 @@ void GPU_HW::DispatchRenderCommand()
   }
 
   // update state
-  m_batch.primitive = rc_primitive;
   m_batch.texture_mode = texture_mode;
   m_batch.transparency_mode = transparency_mode;
   m_batch.dithering = dithering_enable;

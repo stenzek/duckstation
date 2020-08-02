@@ -397,20 +397,6 @@ bool GPU_HW_OpenGL::CompilePrograms()
           }
 
           m_render_programs[render_mode][texture_mode][dithering][interlacing] = std::move(*prog);
-
-          if (!textured && m_supports_geometry_shaders)
-          {
-            const std::string line_expand_vs = shadergen.GenerateBatchVertexShader(textured, true);
-            const std::string line_expand_gs = shadergen.GenerateBatchLineExpandGeometryShader();
-
-            prog = m_shader_cache.GetProgram(line_expand_vs, line_expand_gs, fs, link_callback);
-            if (!prog)
-              return false;
-
-            if (!use_binding_layout)
-              prog->BindUniformBlock("UBOBlock", 1);
-            m_line_render_programs[render_mode][dithering][interlacing] = std::move(*prog);
-          }
         }
       }
     }
@@ -524,12 +510,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
 void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
 {
-  const GL::Program& prog =
-    ((m_batch.primitive < BatchPrimitive::Triangles && m_supports_geometry_shaders && m_resolution_scale > 1) ?
-       m_line_render_programs[static_cast<u8>(render_mode)][BoolToUInt8(m_batch.dithering)]
-                             [BoolToUInt8(m_batch.interlacing)] :
-       m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
-                        [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)]);
+  const GL::Program& prog = m_render_programs[static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)]
+                                             [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
   prog.Bind();
 
   if (m_batch.texture_mode != TextureMode::Disabled)
@@ -550,8 +532,7 @@ void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
 
   glDepthFunc(m_GPUSTAT.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
 
-  static constexpr std::array<GLenum, 2> gl_primitives = {{GL_LINES, GL_TRIANGLES}};
-  glDrawArrays(gl_primitives[static_cast<u8>(m_batch.primitive)], m_batch_base_vertex, num_vertices);
+  glDrawArrays(GL_TRIANGLES, m_batch_base_vertex, num_vertices);
 }
 
 void GPU_HW_OpenGL::SetScissorFromDrawingArea()

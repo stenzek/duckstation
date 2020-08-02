@@ -11,12 +11,6 @@
 class GPU_HW : public GPU
 {
 public:
-  enum class BatchPrimitive : u8
-  {
-    Lines = 0,
-    Triangles = 1
-  };
-
   enum class BatchRenderMode : u8
   {
     TransparencyDisabled,
@@ -84,7 +78,6 @@ protected:
 
   struct BatchConfig
   {
-    BatchPrimitive primitive;
     TextureMode texture_mode;
     TransparencyMode transparency_mode;
     bool dithering;
@@ -234,9 +227,11 @@ protected:
   VRAMWriteUBOData GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const;
   VRAMCopyUBOData GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
+  /// Expands a line into two triangles.
+  void DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth);
+
   /// Handles quads with flipped texture coordinate directions.
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
-  static void FixLineVertexCoordinates(s32& start_x, s32& start_y, s32& end_x, s32& end_y, s32 dx, s32 dy);
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 
@@ -273,8 +268,6 @@ private:
     MIN_BATCH_VERTEX_COUNT = 6,
     MAX_BATCH_VERTEX_COUNT = VERTEX_BUFFER_SIZE / sizeof(BatchVertex)
   };
-
-  static BatchPrimitive GetPrimitiveForCommand(RenderCommand rc);
 
   void LoadVertices();
 
