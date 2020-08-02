@@ -3,11 +3,12 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "imgui.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
-#include <imgui.h>
 #include <sstream>
+#include <tuple>
 Log_SetChannel(GPU_HW);
 
 template<typename T>
@@ -344,10 +345,8 @@ void GPU_HW::LoadVertices()
         return;
 
       // Cull polygons which are too large.
-      const s32 min_x_12 = std::min(native_vertex_positions[1][0], native_vertex_positions[2][0]);
-      const s32 max_x_12 = std::max(native_vertex_positions[1][0], native_vertex_positions[2][0]);
-      const s32 min_y_12 = std::min(native_vertex_positions[1][1], native_vertex_positions[2][1]);
-      const s32 max_y_12 = std::max(native_vertex_positions[1][1], native_vertex_positions[2][1]);
+      const auto [min_x_12, max_x_12] = MinMax(native_vertex_positions[1][0], native_vertex_positions[2][0]);
+      const auto [min_y_12, max_y_12] = MinMax(native_vertex_positions[1][1], native_vertex_positions[2][1]);
       const s32 min_x = std::min(min_x_12, native_vertex_positions[0][0]);
       const s32 max_x = std::max(max_x_12, native_vertex_positions[0][0]);
       const s32 min_y = std::min(min_y_12, native_vertex_positions[0][1]);
