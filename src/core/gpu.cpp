@@ -769,6 +769,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
 void GPU::CommandTickEvent(TickCount ticks)
 {
   m_pending_command_ticks -= SystemTicksToGPUTicks(ticks);
+  m_command_tick_event->Deactivate();
 
   // we can be syncing if this came from a DMA write. recursively executing commands would be bad.
   if (!m_syncing)
@@ -777,14 +778,9 @@ void GPU::CommandTickEvent(TickCount ticks)
   UpdateGPUIdle();
 
   if (m_pending_command_ticks <= 0)
-  {
     m_pending_command_ticks = 0;
-    m_command_tick_event->Deactivate();
-  }
   else
-  {
     m_command_tick_event->SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
-  }
 }
 
 void GPU::UpdateCommandTickEvent()
