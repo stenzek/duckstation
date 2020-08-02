@@ -597,7 +597,7 @@ void GPU_HW::LoadVertices()
           const auto [min_y, max_y] = MinMax(start_y, end_y);
           if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
           {
-            Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start_x, start_y, x, y);
+            Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", start_x, start_y, end_x, end_y);
           }
           else
           {
