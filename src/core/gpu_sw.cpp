@@ -142,6 +142,11 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u3
   }
 }
 
+void GPU_SW::ClearDisplay()
+{
+  std::memset(m_display_texture_buffer.data(), 0, sizeof(u32) * m_display_texture_buffer.size());
+}
+
 void GPU_SW::UpdateDisplay()
 {
   // fill display texture

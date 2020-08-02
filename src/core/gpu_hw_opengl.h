@@ -23,6 +23,7 @@ public:
   void UpdateSettings() override;
 
 protected:
+  void ClearDisplay() override;
   void UpdateDisplay() override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;

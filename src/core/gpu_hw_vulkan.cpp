@@ -467,6 +467,7 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
     old_vram_texture.Destroy(true);
   }
 
+  ClearDisplay();
   SetFullVRAMDirtyRectangle();
   return true;
 }
@@ -886,6 +887,18 @@ void GPU_HW_Vulkan::SetScissorFromDrawingArea()
   CalcScissorRect(&left, &top, &right, &bottom);
 
   Vulkan::Util::SetScissor(g_vulkan_context->GetCurrentCommandBuffer(), left, top, right - left, bottom - top);
+}
+
+void GPU_HW_Vulkan::ClearDisplay()
+{
+  GPU_HW::ClearDisplay();
+
+  VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+  m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+  static const VkClearColorValue cc = {0.0f, 0.0f, 0.0f, 1.0f};
+  static const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+  vkCmdClearColorImage(cmdbuf, m_display_texture.GetImage(), m_display_texture.GetLayout(), &cc, 1, &srr);
 }
 
 void GPU_HW_Vulkan::UpdateDisplay()

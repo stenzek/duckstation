@@ -549,6 +549,14 @@ void GPU_HW_D3D11::SetScissorFromDrawingArea()
   m_context->RSSetScissorRects(1, &rc);
 }
 
+void GPU_HW_D3D11::ClearDisplay()
+{
+  GPU_HW::ClearDisplay();
+
+  static constexpr std::array<float, 4> clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
+  m_context->ClearRenderTargetView(m_display_texture.GetD3DRTV(), clear_color.data());
+}
+
 void GPU_HW_D3D11::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();

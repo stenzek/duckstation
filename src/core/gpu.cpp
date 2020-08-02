@@ -974,6 +974,12 @@ void GPU::WriteGP1(u32 value)
       new_GPUSTAT.reverse_flag = dm.reverse_flag;
       Log_DebugPrintf("Set display mode <- 0x%08X", dm.bits);
 
+      if (!m_GPUSTAT.vertical_interlace && dm.vertical_interlace && !m_force_progressive_scan)
+      {
+        // bit of a hack, technically we should pull the previous frame in, but this may not exist anymore
+        ClearDisplay();
+      }
+
       if (m_GPUSTAT.bits != new_GPUSTAT.bits)
       {
         // Have to be careful when setting this because Synchronize() can modify GPUSTAT.
@@ -1068,6 +1074,8 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
       break;
   }
 }
+
+void GPU::ClearDisplay() {}
 
 void GPU::UpdateDisplay() {}
 

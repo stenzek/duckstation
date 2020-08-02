@@ -427,6 +427,7 @@ protected:
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand();
   virtual void FlushRender();
+  virtual void ClearDisplay();
   virtual void UpdateDisplay();
   virtual void DrawRendererStats(bool is_idle_frame);
 

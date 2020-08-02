@@ -560,6 +560,18 @@ void GPU_HW_OpenGL::UploadUniformBuffer(const void* data, u32 data_size)
   m_renderer_stats.num_uniform_buffer_updates++;
 }
 
+void GPU_HW_OpenGL::ClearDisplay()
+{
+  GPU_HW::ClearDisplay();
+
+  m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  glDisable(GL_SCISSOR_TEST);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glEnable(GL_SCISSOR_TEST);
+  m_vram_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+}
+
 void GPU_HW_OpenGL::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
