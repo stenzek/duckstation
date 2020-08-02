@@ -675,9 +675,33 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SLUS-01491" compatibility="5" region="NTSC-U" title="Cleopatra's Fortune (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
   <entry code="SLUS-00539" compatibility="5" region="NTSC-U" title="Clock Tower (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1337-gcaf9943</version-tested>
+  </entry>
+  <entry code="SCUS-94294" compatibility="5" region="NTSC-U" title="Contender (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-01305" compatibility="5" region="NTSC-U" title="Contender 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SLUS-00288" compatibility="5" region="NTSC-U" title="Contra - Legacy of War (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SCUS-94356" compatibility="5" region="NTSC-U" title="Cool Boarders (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SCUS-94358" compatibility="5" region="NTSC-U" title="Cool Boarders 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
   </entry>
   <entry code="SLUS-01151" compatibility="5" region="NTSC-U" title="Covert Ops - Nuclear Dawn (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -2401,6 +2425,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00425" compatibility="5" region="NTSC-U" title="Wild 9 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1391-g5f9481dd</version-tested>
+  </entry>
+  <entry code="SCUS-94608" compatibility="5" region="NTSC-U" title="Wild Arms (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1400-gb527118c</version-tested>
   </entry>
   <entry code="SCES-01909" compatibility="5" region="PAL" title="Wip3out (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
