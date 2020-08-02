@@ -212,12 +212,12 @@ void GPU_HW::FixLineVertexCoordinates(s32& start_x, s32& start_y, s32& end_x, s3
 
 void GPU_HW::LoadVertices()
 {
+  if (m_GPUSTAT.check_mask_before_draw)
+    m_current_depth++;
+
   const RenderCommand rc{m_render_command.bits};
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
   const float depth = GetCurrentNormalizedVertexDepth();
-
-  if (m_GPUSTAT.check_mask_before_draw)
-    m_current_depth++;
 
   switch (rc.primitive)
   {
