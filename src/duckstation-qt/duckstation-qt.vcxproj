@@ -191,6 +191,7 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <None Include="translations\duckstation-qt_de.ts" />
     <None Include="translations\duckstation-qt_pt-br.ts" />
     <None Include="translations\duckstation-qt_pt-pt.ts" />
   </ItemGroup>
