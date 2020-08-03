@@ -13,7 +13,7 @@ public:
   LibretroOpenGLHostDisplay();
   ~LibretroOpenGLHostDisplay();
 
-  static bool RequestHardwareRendererContext(retro_hw_render_callback* cb);
+  static bool RequestHardwareRendererContext(retro_hw_render_callback* cb, bool prefer_gles);
 
   RenderAPI GetRenderAPI() const override;
 

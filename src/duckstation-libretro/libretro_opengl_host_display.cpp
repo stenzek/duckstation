@@ -23,15 +23,10 @@ void LibretroOpenGLHostDisplay::SetVSync(bool enabled)
   Log_DevPrintf("Ignoring SetVSync(%u)", BoolToUInt32(enabled));
 }
 
-bool LibretroOpenGLHostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb)
+static bool TryDesktopVersions(retro_hw_render_callback* cb)
 {
-  // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
   static constexpr std::array<std::tuple<u32, u32>, 11> desktop_versions_to_try = {
-    {/*{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}, */ {3, 1}, {3, 0}}};
-  static constexpr std::array<std::tuple<u32, u32>, 4> es_versions_to_try = {{{3, 2}, {3, 1}, {3, 0}}};
-
-  cb->cache_context = true;
-  cb->bottom_left_origin = true;
+    {/*{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, */ {3, 3}, {3, 2}, {3, 1}, {3, 0}}};
 
   for (const auto& [major, minor] : desktop_versions_to_try)
   {
@@ -52,6 +47,13 @@ bool LibretroOpenGLHostDisplay::RequestHardwareRendererContext(retro_hw_render_c
       return true;
   }
 
+  return false;
+}
+
+static bool TryESVersions(retro_hw_render_callback* cb)
+{
+  static constexpr std::array<std::tuple<u32, u32>, 4> es_versions_to_try = {{{3, 2}, {3, 1}, {3, 0}}};
+
   for (const auto& [major, minor] : es_versions_to_try)
   {
     if (major >= 3 && minor > 0)
@@ -68,6 +70,26 @@ bool LibretroOpenGLHostDisplay::RequestHardwareRendererContext(retro_hw_render_c
     }
 
     if (g_retro_environment_callback(RETRO_ENVIRONMENT_SET_HW_RENDER, cb))
+      return true;
+  }
+
+  return false;
+}
+
+bool LibretroOpenGLHostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb, bool prefer_gles)
+{
+  // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
+  cb->cache_context = true;
+  cb->bottom_left_origin = true;
+
+  if (!prefer_gles)
+  {
+    if (TryDesktopVersions(cb) || TryESVersions(cb))
+      return true;
+  }
+  else
+  {
+    if (TryESVersions(cb) || TryDesktopVersions(cb))
       return true;
   }
 

@@ -824,8 +824,13 @@ bool LibretroHostInterface::RequestHardwareRendererContext()
       break;
 
     case GPURenderer::HardwareOpenGL:
-      m_hw_render_callback_valid = LibretroOpenGLHostDisplay::RequestHardwareRendererContext(&m_hw_render_callback);
-      break;
+    {
+      const bool prefer_gles =
+        (preferred_renderer == RETRO_HW_CONTEXT_OPENGLES2 || preferred_renderer == RETRO_HW_CONTEXT_OPENGLES_VERSION);
+      m_hw_render_callback_valid =
+        LibretroOpenGLHostDisplay::RequestHardwareRendererContext(&m_hw_render_callback, prefer_gles);
+    }
+    break;
 
     default:
       Log_ErrorPrintf("Unhandled renderer %s", Settings::GetRendererName(renderer));
