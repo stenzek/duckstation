@@ -6,7 +6,7 @@
     <message>
         <location filename="../aboutdialog.ui" line="14"/>
         <source>About DuckStation</source>
-        <translation>Sobre Duckstation</translation>
+        <translation>Sobre o Emulador</translation>
     </message>
     <message>
         <location filename="../aboutdialog.ui" line="101"/>
@@ -21,22 +21,22 @@
     <message>
         <location filename="../aboutdialog.cpp" line="29"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Duckstation é um emulador de código aberto do console Playstation 1 &lt;span style=&quot;vertical-align:super;&quot;&gt;&lt;/span&gt;focado na velocidade, jogabilidade e suporte a longo prazo.</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="32"/>
         <source>Authors</source>
-        <translation type="unfinished"></translation>
+        <translation>Autores</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="33"/>
         <source>Icon by</source>
-        <translation type="unfinished"></translation>
+        <translation>Icone</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="34"/>
         <source>License</source>
-        <translation type="unfinished"></translation>
+        <translation>Licença</translation>
     </message>
 </context>
 <context>
@@ -44,7 +44,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Formulário</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="32"/>
@@ -54,7 +54,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="40"/>
         <source>Log Level:</source>
-        <translation>Nivel do Ratreio:</translation>
+        <translation>Nivel do Registro:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="50"/>
@@ -122,7 +122,7 @@
     <message>
         <location filename="../audiosettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="32"/>
@@ -493,7 +493,6 @@
     <message>
         <location filename="../gpusettingswidget.ui" line="139"/>
         <source>Resolution Scale:</source>
-        <translatorcomment>ou Relação de Aspecto</translatorcomment>
         <translation>Escala de Resolução:</translation>
     </message>
     <message>
@@ -535,36 +534,36 @@
     <message>
         <location filename="../gpusettingswidget.ui" line="194"/>
         <source>PGXP</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="200"/>
         <location filename="../gpusettingswidget.cpp" line="139"/>
         <source>Geometry Correction</source>
-        <translation type="unfinished"></translation>
+        <translation>Correção Geométrica</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="207"/>
         <location filename="../gpusettingswidget.cpp" line="142"/>
         <source>Culling Correction</source>
-        <translation type="unfinished"></translation>
+        <translation>Correção de Curvas</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="214"/>
         <location filename="../gpusettingswidget.cpp" line="145"/>
         <source>Texture Correction</source>
-        <translation type="unfinished"></translation>
+        <translation>Correção de Textura</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="221"/>
         <location filename="../gpusettingswidget.cpp" line="148"/>
         <source>Vertex Cache</source>
-        <translation type="unfinished"></translation>
+        <translation>Vertice Armazenado</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="64"/>
         <source>Renderer</source>
-        <translation></translation>
+        <translation>Rederizador</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="65"/>
@@ -627,12 +626,12 @@
     <message>
         <location filename="../gpusettingswidget.cpp" line="88"/>
         <source>Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Not all games are compatible with this option, some require interlaced rendering or render interlaced internally. Usually safe to enable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Força a renderização e a exibição de quadros para o modo progressivo. Isso remove efeitos de &quot;trepidação&quot; Visto nos jogos 480i renderizando-os em 480p.Nem todos os jogos são compatíveis com esta opção, alguns requerem renderização entrelaçada internamente. Normalmente é seguro ativar.</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="123"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the speed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%.Em jogos com taxas de quadro (fps) variável pode isto não afetará a velocidade na hora da jogatina.</translation>
     </message>
     <message>
         <source>Forces the display of frames to progressive mode. This only affects the displayed image, the console will be unaware of the setting. If the game is internally producing interlaced frames, this option may not have any effect. Usually safe to enable.</source>
@@ -665,7 +664,7 @@
     <message>
         <location filename="../gpusettingswidget.cpp" line="106"/>
         <source>Resolution Scale</source>
-        <translation></translation>
+        <translation>Escala de Resolução</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="107"/>
@@ -699,22 +698,22 @@
     <message>
         <location filename="../gpusettingswidget.cpp" line="140"/>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers. Only works with the hardware renderers, and may not be compatible with all games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduz &apos;tremeliques&apos; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não é  compatível com todos os jogos.</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="143"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aumenta a precisão das curvas nos poligonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="146"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliza interpolação corretiva em perspetiva para cordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="149"/>
         <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="unfinished"></translation>
+        <translation>Quando a correção de vertices falha, essa opção se encarrega de usar as coordenadas da tela para o rastreamento. Pode melhorar a compatibilidade com o PGXP.</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="184"/>
@@ -767,7 +766,7 @@
     <message>
         <location filename="../gamelistmodel.cpp" line="290"/>
         <source>Code</source>
-        <translation>Codigo</translation>
+        <translation>Código</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="291"/>
@@ -777,7 +776,7 @@
     <message>
         <location filename="../gamelistmodel.cpp" line="292"/>
         <source>File Title</source>
-        <translation>Titulo do Jogo</translation>
+        <translation>Titulo do Jogo (Na pasta)</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="293"/>
@@ -849,7 +848,7 @@
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="87"/>
         <source>Open Directory...</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir Diretório...</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="95"/>
@@ -871,7 +870,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="140"/>
         <source>Download database from redump.org?</source>
-        <translation></translation>
+        <translation>Atualizar Banco de Dados de Jogos</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="141"/>
@@ -1140,7 +1139,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="172"/>
         <location filename="../generalsettingswidget.cpp" line="75"/>
         <source>Show VPS</source>
-        <translation>Mostar VPS</translation>
+        <translation>Mostrar VPS</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="39"/>
@@ -1658,7 +1657,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.cpp" line="479"/>
         <source>Language changed. Please restart the application to apply.</source>
-        <translation>Lingua Alterada. Reinicie para Aplicar.</translation>
+        <translation>Lingua Alterada. Reinicie para Aplicar!.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="664"/>
@@ -1893,8 +1892,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="83"/>
         <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
-        <translatorcomment>&lt;strong&gt;Configuração da GPU&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a simulação da GPU no console. Estão disponíveis várias melhorias, passe o mouse sobre cada uma para obter informações adicionais.</translatorcomment>
-        <translation></translation>
+        <translation>&lt;strong&gt;Configuração da GPU&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a simulação da GPU no console. Estão disponíveis várias melhorias, passe o mouse sobre cada uma para obter informações adicionais.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="86"/>
