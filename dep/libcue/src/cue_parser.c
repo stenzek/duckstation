@@ -88,7 +88,7 @@
 #include <string.h>
 
 #include "cd.h"
-#include "time.h"
+#include "cuetime.h"
 
 #ifdef CUEPARSER_BUF_SIZE
 #undef CUEPARSER_BUF_SIZE

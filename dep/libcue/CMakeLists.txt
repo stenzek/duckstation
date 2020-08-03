@@ -3,7 +3,7 @@ set(SRCS
     include/libcue/cdtext.h
     include/libcue/libcue.h
     include/libcue/rem.h
-    include/libcue/time.h
+    include/libcue/cuetime.h
     src/cd.c
     src/cdtext.c
     src/cue_parser.c
