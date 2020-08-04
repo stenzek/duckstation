@@ -1999,9 +1999,7 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     filename = auto_filename.c_str();
   }
 
-  g_gpu->ResetGraphicsAPIState();
   const bool screenshot_saved = m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio);
-  g_gpu->RestoreGraphicsAPIState();
   if (!screenshot_saved)
   {
     AddFormattedOSDMessage(10.0f, "Failed to save screenshot to '%s'", filename);
