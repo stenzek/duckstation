@@ -1741,20 +1741,15 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
                    subq.absolute_frame_bcd == seek_ff);
       if (seek_okay)
       {
-        if (subq.control.data && logical)
+        if (subq.control.data)
         {
-          // ensure the location matches up (it should)
-          ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
-          seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
-                       m_last_sector_header.frame == seek_ff);
+          if (logical)
+            ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
         }
         else
         {
           if (logical)
-          {
             Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]", seek_mm, seek_ss, seek_ff);
-            seek_okay = false;
-          }
         }
 
         if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
@@ -1868,9 +1863,8 @@ void CDROM::DoIDRead()
     m_current_lba = 0;
     m_reader.QueueReadSector(0);
 
-    if (g_settings.cdrom_region_check &&
-        (m_disc_region == DiscRegion::Other ||
-         System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
+    if (g_settings.cdrom_region_check && (m_disc_region == DiscRegion::Other ||
+                                          System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed
