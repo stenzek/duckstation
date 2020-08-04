@@ -1095,8 +1095,12 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
   uint2 coords = uint2(uint(v_pos.x) / RESOLUTION_SCALE, fixYCoord(uint(v_pos.y)) / RESOLUTION_SCALE);
 
   // make sure it's not oversized and out of range
-  if (VECTOR_LT(coords, u_base_coords) && VECTOR_GE(coords, u_end_coords))
+  if ((coords.x < u_base_coords.x && coords.x >= u_end_coords.x) ||
+      (coords.y < u_base_coords.y && coords.y >= u_end_coords.y))
+  {
     discard;
+  }
+
 
   // find offset from the start of the row/column
   uint2 offset;
@@ -1130,8 +1134,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   uint2 dst_coords = uint2(v_pos.xy);
 
   // make sure it's not oversized and out of range
-  if (VECTOR_LT(dst_coords, u_dst_coords) && VECTOR_GE(dst_coords, u_end_coords))
+  if ((dst_coords.x < u_dst_coords.x && dst_coords.x >= u_end_coords.x) ||
+      (dst_coords.y < u_dst_coords.y && dst_coords.y >= u_end_coords.y))
+  {
     discard;
+  }
 
   // find offset from the start of the row/column
   uint2 offset;
