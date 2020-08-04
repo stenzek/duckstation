@@ -228,10 +228,12 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
   const u32 texture_width = VRAM_WIDTH * m_resolution_scale;
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
 
-  if (!m_vram_texture.Create(texture_width, texture_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+  if (!m_vram_texture.Create(texture_width, texture_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false,
+                             true) ||
       !m_vram_depth_texture.Create(texture_width, texture_height, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
                                    GL_UNSIGNED_SHORT, nullptr, false) ||
-      !m_vram_read_texture.Create(texture_width, texture_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+      !m_vram_read_texture.Create(texture_width, texture_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false,
+                                  true) ||
       !m_vram_read_texture.CreateFramebuffer() ||
       !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
       !m_vram_encoding_texture.CreateFramebuffer() ||

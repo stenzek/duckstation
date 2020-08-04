@@ -331,6 +331,8 @@ bool GPU_HW_D3D11::CreateStateObjects()
 
   CD3D11_SAMPLER_DESC sampler_desc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
   sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+  sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+  sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
   hr = m_device->CreateSamplerState(&sampler_desc, m_point_sampler_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
@@ -553,7 +555,7 @@ void GPU_HW_D3D11::ClearDisplay()
 {
   GPU_HW::ClearDisplay();
 
-  static constexpr std::array<float, 4> clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
+  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
   m_context->ClearRenderTargetView(m_display_texture.GetD3DRTV(), clear_color.data());
 }
 
@@ -778,4 +780,7 @@ void GPU_HW_D3D11::UpdateDepthBufferFromMaskBit()
   RestoreGraphicsAPIState();
 }
 
-std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer() { return std::make_unique<GPU_HW_D3D11>(); }
+std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer()
+{
+  return std::make_unique<GPU_HW_D3D11>();
+}

@@ -332,11 +332,15 @@ bool GPU_HW_Vulkan::CreateSamplers()
 
   Vulkan::SamplerBuilder sbuilder;
   sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                          VK_SAMPLER_ADDRESS_MODE_REPEAT);
   m_point_sampler = sbuilder.Create(device);
   if (m_point_sampler == VK_NULL_HANDLE)
     return false;
 
   sbuilder.SetLinearSampler(false, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                          VK_SAMPLER_ADDRESS_MODE_REPEAT);
   m_linear_sampler = sbuilder.Create(device);
   if (m_linear_sampler == VK_NULL_HANDLE)
     return false;
