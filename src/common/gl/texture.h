@@ -11,7 +11,7 @@ public:
   ~Texture();
 
   bool Create(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data = nullptr,
-              bool linear_filter = false);
+              bool linear_filter = false, bool wrap = false);
   bool CreateFramebuffer();
 
   void Destroy();
