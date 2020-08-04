@@ -614,33 +614,28 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
     {
       case GPU::TextureMode::Palette4Bit:
       {
-        const u16 palette_value =
-          GetPixel(std::min<u32>(m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 4), VRAM_WIDTH - 1),
-                   std::min<u32>(m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
+        const u16 palette_value = GetPixel((m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 4)) % VRAM_WIDTH,
+                                           (m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
         const u16 palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
-        texture_color.bits =
-          GetPixel(std::min<u32>(m_draw_mode.texture_palette_x + ZeroExtend32(palette_index), VRAM_WIDTH - 1),
-                   m_draw_mode.texture_palette_y);
+        texture_color.bits = GetPixel((m_draw_mode.texture_palette_x + ZeroExtend32(palette_index)) % VRAM_WIDTH,
+                                      m_draw_mode.texture_palette_y);
       }
       break;
 
       case GPU::TextureMode::Palette8Bit:
       {
-        const u16 palette_value =
-          GetPixel(std::min<u32>(m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 2), VRAM_WIDTH - 1),
-                   std::min<u32>(m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
+        const u16 palette_value = GetPixel((m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 2)) % VRAM_WIDTH,
+                                           (m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
         const u16 palette_index = (palette_value >> ((texcoord_x % 2) * 8)) & 0xFFu;
-        texture_color.bits =
-          GetPixel(std::min<u32>(m_draw_mode.texture_palette_x + ZeroExtend32(palette_index), VRAM_WIDTH - 1),
-                   m_draw_mode.texture_palette_y);
+        texture_color.bits = GetPixel((m_draw_mode.texture_palette_x + ZeroExtend32(palette_index)) % VRAM_WIDTH,
+                                      m_draw_mode.texture_palette_y);
       }
       break;
 
       default:
       {
-        texture_color.bits =
-          GetPixel(std::min<u32>(m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x), VRAM_WIDTH - 1),
-                   std::min<u32>(m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y), VRAM_HEIGHT - 1));
+        texture_color.bits = GetPixel((m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x)) % VRAM_WIDTH,
+                                      (m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
       }
       break;
     }
