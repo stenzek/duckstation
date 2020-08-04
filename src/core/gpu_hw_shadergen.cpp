@@ -147,10 +147,6 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT const\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
-    ss << "#define VECTOR_LT(a, b) (any(lessThan((a), (b))))\n";
-    ss << "#define VECTOR_LE(a, b) (any(lessThanEqual((a), (b))))\n";
-    ss << "#define VECTOR_GT(a, b) (any(greaterThan((a), (b))))\n";
-    ss << "#define VECTOR_GE(a, b) (any(greaterThanEqual((a), (b))))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -163,10 +159,6 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT static const\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
-    ss << "#define VECTOR_LT(a, b) (any((a) < (b)))\n";
-    ss << "#define VECTOR_LE(a, b) (any((a) <= (b)))\n";
-    ss << "#define VECTOR_GT(a, b) (any((a) > (b)))\n";
-    ss << "#define VECTOR_GE(a, b) (any((a) >= (b)))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
@@ -684,7 +676,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     uint2 vicoord = uint2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
 
     // load colour/palette
-    float4 texel = LOAD_TEXTURE(samp0, int2(vicoord), 0);
+    float4 texel = SAMPLE_TEXTURE(samp0, float2(vicoord) * RCP_VRAM_SIZE);
     uint vram_value = RGBA8ToRGBA5551(texel);
 
     // apply palette
@@ -698,12 +690,12 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
 
     // sample palette
     uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
-    return LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
+    return SAMPLE_TEXTURE(samp0, float2(palette_icoord) * RCP_VRAM_SIZE);
   #else
     // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
     uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));    
     uint2 direct_icoord = uint2(texpage.x + icoord.x, fixYCoord(texpage.y + icoord.y));
-    return LOAD_TEXTURE(samp0, int2(direct_icoord), 0);
+    return SAMPLE_TEXTURE(samp0, float2(direct_icoord) * RCP_VRAM_SIZE);
   #endif
 }
 #endif
