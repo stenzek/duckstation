@@ -46,15 +46,18 @@ CDImageCueSheet::~CDImageCueSheet()
 
 bool CDImageCueSheet::OpenAndParse(const char* filename)
 {
-  std::FILE* cue_fp = FileSystem::OpenCFile(filename, "rb");
-  if (!cue_fp)
+  std::optional<std::string> cuesheet_string = FileSystem::ReadFileToString(filename);
+  if (!cuesheet_string.has_value())
   {
     Log_ErrorPrintf("Failed to open cuesheet '%s': errno %d", filename, errno);
     return false;
   }
 
-  m_cd = cue_parse_file(cue_fp);
-  std::fclose(cue_fp);
+  // work around cuesheet parsing issue - ensure the last character is a newline.
+  if (!cuesheet_string->empty() && cuesheet_string->at(cuesheet_string->size() - 1) != '\n')
+    *cuesheet_string += '\n';
+
+  m_cd = cue_parse_string(cuesheet_string->c_str());
   if (!m_cd)
   {
     Log_ErrorPrintf("Failed to parse cuesheet '%s'", filename);

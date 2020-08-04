@@ -173,7 +173,9 @@ ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
 
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
+std::optional<std::string> ReadFileToString(const char* filename);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
+bool WriteFileToString(const char* filename, const std::string_view& sv);
 
 // creates a directory in the local filesystem
 // if the directory already exists, the return value will be true.
