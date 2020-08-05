@@ -592,10 +592,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1400-gb527118c</version-tested>
   </entry>
-  <entry code="SLUS-00208" compatibility="4" region="NTSC-U" title="Buster Bros. Collection (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-896-gc8a00c5</version-tested>
-    <comments>Overcropping problem with Overscan Area only; artifacts on the right side when no cropping.</comments>
+  <entry code="SLUS-00208" compatibility="5" region="NTSC-U" title="Buster Bros. Collection (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
+    <comments>The original software writes in the oversacan area. Not a bug, but you may prefer to use the crop option 'OverScan Area Only'.</comments>
   </entry>
   <entry code="SCUS-94666" compatibility="5" region="NTSC-U" title="C-12 - The Final Resistance (USA)">
     <compatibility>No Issues</compatibility>
@@ -1353,14 +1353,13 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-941-g2e64f77</version-tested>
   </entry>
-  <entry code="SCES-00311" compatibility="4" region="PAL" title="MediEvil (Europe)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1304-gc8b6712</version-tested>
-    <comments>Stuttering sometimes (maybe cache compiling?)</comments>
+  <entry code="SCES-00311" compatibility="5" region="PAL" title="MediEvil (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
   </entry>
   <entry code="SCUS-94227" compatibility="5" region="NTSC-U" title="MediEvil (USA)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-1304-gc8b6712</version-tested>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
   </entry>
   <entry code="SCUS-94564" compatibility="5" region="NTSC-U" title="MediEvil II (USA)">
     <compatibility>No Issues</compatibility>
@@ -1835,10 +1834,9 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-1337-gcaf9943</version-tested>
     <comments>Music plays out of order (Issue #579).</comments>
   </entry>
-  <entry code="SLUS-00005" compatibility="4" region="NTSC-U" title="Rayman (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1337-gcaf9943</version-tested>
-    <comments>Text flickering in level 3 (Issue #580).</comments>
+  <entry code="SLUS-00005" compatibility="5" region="NTSC-U" title="Rayman (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
   </entry>
   <entry code="SLUS-01235" compatibility="5" region="NTSC-U" title="Rayman 2 - The Great Escape (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
@@ -2089,8 +2087,8 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-90075" compatibility="4" region="NTSC-U" title="Squaresoft on PlayStation 2000 Collector's CD Vol. 3 (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1323-ga6acd33</version-tested>
-    <comments>Graphical errors in Thread of Fate demo (broken polygons), in Recompiler mode (no issues found with Interpreter mode).</comments>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
+    <comments>Messy graphics in &quot;Recompiler mode&quot; in Threads of Fate demo. Use &quot;Interpreter mode&quot; to fix for now (Issue #710).</comments>
   </entry>
   <entry code="SLPS-00162" compatibility="5" region="NTSC-J" title="Stahlfeder - Tekkou Hikuudan (Japan)">
     <compatibility>No Issues</compatibility>
@@ -2130,10 +2128,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
   </entry>
-  <entry code="SLUS-00423" compatibility="4" region="NTSC-U" title="Street Fighter Collection (USA) (Disc 1)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1336-gd711baa</version-tested>
-    <comments>Buggy health meter when upscaled (Issue #664)</comments>
+  <entry code="SLUS-00423" compatibility="5" region="NTSC-U" title="Street Fighter Collection (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>Buggy health meter when upscaled (Issue #664).</upscaling-issues>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
   </entry>
   <entry code="SLUS-00584" compatibility="5" region="NTSC-U" title="Street Fighter Collection (USA) (Disc 2)">
     <compatibility>No Issues</compatibility>
@@ -2239,10 +2237,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPM-87135" compatibility="1" region="NTSC-J" title="Super Gals! Kotobuki Ran Special - Ikemen Get You Gals Party (Japan)">
     <compatibility>Doesn't Boot</compatibility>
   </entry>
-  <entry code="SLUS-00418" compatibility="4" region="NTSC-U" title="Super Puzzle Fighter II Turbo (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-887-g1eecd50</version-tested>
-    <comments>Needs to use the crop option 'OverScan Area Only'.</comments>
+  <entry code="SLUS-00418" compatibility="5" region="NTSC-U" title="Super Puzzle Fighter II Turbo (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
+    <comments>The original software writes in the oversacan area. Not a bug, but you may prefer to use the crop option 'OverScan Area Only'.</comments>
   </entry>
   <entry code="SLPM-86461" compatibility="5" region="NTSC-J" title="SuperLite 1500 Series - Fantastic Night Dreams - Cotton Original (Japan)">
     <compatibility>No Issues</compatibility>
@@ -2323,6 +2321,11 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPM-86462" compatibility="5" region="NTSC-J" title="The King of Fighters '99">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01019" compatibility="4" region="NTSC-U" title="Threads of Fate (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1419-g34a515cd</version-tested>
+    <comments>Messy graphics in &quot;Recompiler mode&quot;. Use &quot;Interpreter mode&quot; to fix for now (Issue #710).</comments>
   </entry>
   <entry code="SLUS-00752" compatibility="5" region="NTSC-U" title="Thrill Kill (USA) (Beta)">
     <compatibility>No Issues</compatibility>
@@ -2444,10 +2447,6 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-02549" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun Second Edition">
     <compatibility>No Issues</compatibility>
-  </entry>
-  <entry code="SLUS-01019" compatibility="5" region="NTSC-U" title="Urban Chaos (USA)">
-    <compatibility>No Issues</compatibility>
-    <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
   <entry code="SLUS-01228" compatibility="5" region="NTSC-U" title="V.I.P. (USA)">
     <compatibility>No Issues</compatibility>
