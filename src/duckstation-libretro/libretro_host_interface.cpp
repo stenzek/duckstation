@@ -376,6 +376,13 @@ static std::array<retro_core_option_definition, 27> s_option_definitions = {{
    "Reads CD-ROM sectors ahead asynchronously, reducing the risk of frame time spikes.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "true"},
+  {"CDROM.LoadImageToRAM",
+   "Preload CD-ROM Image To RAM",
+   "Loads the disc image to RAM before starting emulation. May reduce hitching if you are running off a network share, "
+   "at a cost of a greater startup time. As libretro provides no way to draw overlays, the emulator will appear to "
+   "lock up while the image is preloaded.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"CPU.ExecutionMode",
    "CPU Execution Mode",
    "Which mode to use for CPU emulation. Recompiler provides the best performance.",
