@@ -487,7 +487,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     {
+      g_gpu->RestoreGraphicsAPIState();
       g_gpu->UpdateSettings();
+      g_gpu->ResetGraphicsAPIState();
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
@@ -662,7 +664,11 @@ void HostInterface::ModifyResolutionScale(s32 increment)
                          GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 
   if (!System::IsShutdown())
+  {
+    g_gpu->RestoreGraphicsAPIState();
     g_gpu->UpdateSettings();
+    g_gpu->ResetGraphicsAPIState();
+  }
 }
 
 void HostInterface::UpdateSoftwareCursor()

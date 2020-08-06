@@ -222,12 +222,16 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
 
 bool RecreateGPU(GPURenderer renderer)
 {
+  g_gpu->RestoreGraphicsAPIState();
+
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
   const bool state_valid = g_gpu->DoState(sw) && TimingEvents::DoState(sw, TimingEvents::GetGlobalTickCounter());
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
+
+  g_gpu->ResetGraphicsAPIState();
 
   // create new renderer
   g_gpu.reset();
@@ -241,8 +245,10 @@ bool RecreateGPU(GPURenderer renderer)
   {
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
+    g_gpu->RestoreGraphicsAPIState();
     g_gpu->DoState(sw);
     TimingEvents::DoState(sw, TimingEvents::GetGlobalTickCounter());
+    g_gpu->ResetGraphicsAPIState();
   }
 
   return true;
