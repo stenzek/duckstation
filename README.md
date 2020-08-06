@@ -11,6 +11,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/08/07: Automatic updater for standalone Windows builds.
 - 2020/08/01: Initial PGXP (geometry/perspective correction) support.
 - 2020/07/28: Qt frontend supports displaying interface in multiple languages.
 - 2020/07/23: m3u multi-disc support for libretro core.
@@ -73,6 +74,8 @@ To set up:
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/16/release/vc_redist.x64.exe.
 
+The Qt frontend includes an automatic update checker. Builds downloaded after 2020/08/07 will automatically check for updates each time the emulator starts, this can be disabled in Settings. Alternatively, you can force an update check by clicking `Help->Check for Updates`.
+
 ### Linux
 
 Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
@@ -91,8 +94,7 @@ A prebuilt APK is now available for Android. However, please keep in mind that t
 Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android-aarch64.apk
 
 The main limitations are:
- - No controller support, only on-screen controls.
- - User directory is currently hardcoded to `/sdcard/duckstation`. So BIOS files go in `/sdcard/duckstation/bios`.
+ - User directory is currently hardcoded to `<external storage path>/duckstation`. This is usually `/storage/emulated/0` or `/sdcard`'. So BIOS files go in `/sdcard/duckstation/bios`.
  - Lack of options in menu when emulator is running.
  - Performance is currently lower than the desktop x86_64 counterpart.
 
