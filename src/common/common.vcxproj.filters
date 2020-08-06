@@ -99,6 +99,7 @@
       <Filter>vulkan</Filter>
     </ClInclude>
     <ClInclude Include="image.h" />
+    <ClInclude Include="minizip_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -191,6 +192,7 @@
     </ClCompile>
     <ClCompile Include="image.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
+    <ClCompile Include="minizip_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

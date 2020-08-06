@@ -51,6 +51,8 @@ add_library(common
   log.h
   md5_digest.cpp
   md5_digest.h
+  minizip_helpers.cpp
+  minizip_helpers.h
   null_audio_stream.cpp
   null_audio_stream.h
   rectangle.h
@@ -94,7 +96,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad libcue stb Threads::Threads cubeb libchdr glslang vulkan-loader)
+target_link_libraries(common PRIVATE glad libcue stb Threads::Threads cubeb libchdr glslang vulkan-loader zlib minizip)
 
 if(WIN32)
   target_sources(common PRIVATE

@@ -1,5 +1,6 @@
 #include "gamelistsettingswidget.h"
 #include "common/assert.h"
+#include "common/minizip_helpers.h"
 #include "common/string_util.h"
 #include "core/game_list.h"
 #include "gamelistsearchdirectoriesmodel.h"
@@ -18,7 +19,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 #include <algorithm>
-#include <unzip.h>
 
 static constexpr char REDUMP_DOWNLOAD_URL[] = "http://redump.org/datfile/psx/serial,version,description";
 
@@ -153,52 +153,7 @@ static bool ExtractRedumpDatabase(const QByteArray& data, const QString& destina
   if (data.isEmpty())
     return false;
 
-  struct MemoryFileInfo
-  {
-    const QByteArray& data;
-    int position;
-  };
-
-  MemoryFileInfo fi{data, 0};
-
-#define FI static_cast<MemoryFileInfo*>(stream)
-
-  zlib_filefunc64_def funcs = {
-    [](voidpf opaque, const void* filename, int mode) -> voidpf { return opaque; }, // open
-    [](voidpf opaque, voidpf stream, void* buf, uLong size) -> uLong {              // read
-      const int remaining = FI->data.size() - FI->position;
-      const int to_read = std::min(remaining, static_cast<int>(size));
-      if (to_read > 0)
-      {
-        std::memcpy(buf, FI->data.constData() + FI->position, to_read);
-        FI->position += to_read;
-      }
-
-      return static_cast<uLong>(to_read);
-    },
-    [](voidpf opaque, voidpf stream, const void* buf, uLong size) -> uLong { return 0; },         // write
-    [](voidpf opaque, voidpf stream) -> ZPOS64_T { return static_cast<ZPOS64_T>(FI->position); }, // tell
-    [](voidpf opaque, voidpf stream, ZPOS64_T offset, int origin) -> long {                       // seek
-      int new_position = FI->position;
-      if (origin == SEEK_SET)
-        new_position = static_cast<int>(offset);
-      else if (origin == SEEK_CUR)
-        new_position += static_cast<int>(offset);
-      else
-        new_position = FI->data.size();
-      if (new_position < 0 || new_position > FI->data.size())
-        return -1;
-
-      FI->position = new_position;
-      return 0;
-    },
-    [](voidpf opaque, voidpf stream) -> int { return 0; }, // close
-    [](voidpf opaque, voidpf stream) -> int { return 0; }, // testerror
-    static_cast<voidpf>(&fi)};
-
-#undef FI
-
-  unzFile zf = unzOpen2_64("", &funcs);
+  unzFile zf = MinizipHelpers::OpenUnzMemoryFile(data.constData(), data.size());
   if (!zf)
   {
     qCritical() << "unzOpen2_64() failed";
