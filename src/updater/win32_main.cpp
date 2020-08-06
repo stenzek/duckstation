@@ -18,8 +18,6 @@ static void WaitForProcessToExit(int process_id)
 
 int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-  Log::SetConsoleOutputParams(true);
-
   Win32ProgressCallback progress;
 
   int argc = 0;
