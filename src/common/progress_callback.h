@@ -17,6 +17,7 @@ public:
 
   virtual void SetCancellable(bool cancellable) = 0;
 
+  virtual void SetTitle(const char* title) = 0;
   virtual void SetStatusText(const char* text) = 0;
   virtual void SetProgressRange(u32 range) = 0;
   virtual void SetProgressValue(u32 value) = 0;
@@ -31,7 +32,7 @@ public:
 
   virtual void ModalError(const char* message) = 0;
   virtual bool ModalConfirmation(const char* message) = 0;
-  virtual u32 ModalPrompt(const char* message, u32 num_options, ...) = 0;
+  virtual void ModalInformation(const char* message) = 0;
 
   void DisplayFormattedError(const char* format, ...);
   void DisplayFormattedWarning(const char* format, ...);
@@ -39,6 +40,7 @@ public:
   void DisplayFormattedDebugMessage(const char* format, ...);
   void DisplayFormattedModalError(const char* format, ...);
   bool DisplayFormattedModalConfirmation(const char* format, ...);
+  void DisplayFormattedModalInformation(const char* format, ...);
 
   void UpdateProgressFromStream(ByteStream* stream);
 
@@ -86,7 +88,7 @@ protected:
   State* m_saved_state;
 };
 
-class ConsoleProgressCallback : public BaseProgressCallback
+class ConsoleProgressCallback final : public BaseProgressCallback
 {
 public:
   static const u32 COLUMNS = 78;
@@ -95,22 +97,23 @@ public:
   ConsoleProgressCallback();
   ~ConsoleProgressCallback();
 
-  virtual void PushState() override;
-  virtual void PopState() override;
+  void PushState() override;
+  void PopState() override;
 
-  virtual void SetCancellable(bool cancellable) override;
-  virtual void SetStatusText(const char* text) override;
-  virtual void SetProgressRange(u32 range) override;
-  virtual void SetProgressValue(u32 value) override;
+  void SetCancellable(bool cancellable) override;
+  void SetTitle(const char* title) override;
+  void SetStatusText(const char* text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
 
-  virtual void DisplayError(const char* message) override;
-  virtual void DisplayWarning(const char* message) override;
-  virtual void DisplayInformation(const char* message) override;
-  virtual void DisplayDebugMessage(const char* message) override;
+  void DisplayError(const char* message) override;
+  void DisplayWarning(const char* message) override;
+  void DisplayInformation(const char* message) override;
+  void DisplayDebugMessage(const char* message) override;
 
-  virtual void ModalError(const char* message) override;
-  virtual bool ModalConfirmation(const char* message) override;
-  virtual u32 ModalPrompt(const char* message, u32 num_options, ...) override;
+  void ModalError(const char* message) override;
+  bool ModalConfirmation(const char* message) override;
+  void ModalInformation(const char* message) override;
 
 private:
   void Clear();

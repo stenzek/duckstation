@@ -2,7 +2,7 @@
 #include "common/progress_callback.h"
 #include "host_interface.h"
 
-class HostInterfaceProgressCallback : public BaseProgressCallback
+class HostInterfaceProgressCallback final : public BaseProgressCallback
 {
 public:
   HostInterfaceProgressCallback();
@@ -11,6 +11,7 @@ public:
   void PopState() override;
 
   void SetCancellable(bool cancellable) override;
+  void SetTitle(const char* title) override;
   void SetStatusText(const char* text) override;
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
@@ -22,7 +23,7 @@ public:
 
   void ModalError(const char* message) override;
   bool ModalConfirmation(const char* message) override;
-  u32 ModalPrompt(const char* message, u32 num_options, ...) override;
+  void ModalInformation(const char* message) override;
   
 private:
   void Redraw(bool force);

@@ -93,6 +93,18 @@ bool ProgressCallback::DisplayFormattedModalConfirmation(const char* format, ...
   return ModalConfirmation(str);
 }
 
+void ProgressCallback::DisplayFormattedModalInformation(const char* format, ...)
+{
+  SmallString str;
+  va_list ap;
+
+  va_start(ap, format);
+  str.FormatVA(format, ap);
+  va_end(ap);
+
+  ModalInformation(str);
+}
+
 void ProgressCallback::UpdateProgressFromStream(ByteStream* pStream)
 {
   u32 streamSize = (u32)pStream->GetSize();
@@ -112,6 +124,7 @@ public:
   bool IsCancellable() const override { return false; }
 
   void SetCancellable(bool cancellable) override {}
+  void SetTitle(const char* title) override {}
   void SetStatusText(const char* statusText) override {}
   void SetProgressRange(u32 range) override {}
   void SetProgressValue(u32 value) override {}
@@ -128,12 +141,7 @@ public:
     Log_InfoPrint(message);
     return false;
   }
-  u32 ModalPrompt(const char* message, u32 nOptions, ...) override
-  {
-    DebugAssert(nOptions > 0);
-    Log_InfoPrint(message);
-    return 0;
-  }
+  void ModalInformation(const char* message) override { Log_InfoPrint(message); }
 };
 
 static NullProgressCallbacks s_nullProgressCallbacks;
@@ -264,6 +272,13 @@ void ConsoleProgressCallback::SetCancellable(bool cancellable)
   Redraw(false);
 }
 
+void ConsoleProgressCallback::SetTitle(const char* title)
+{
+  Clear();
+  std::fprintf(stdout, "== %s ==\n", title);
+  Redraw(false);
+}
+
 void ConsoleProgressCallback::SetStatusText(const char* text)
 {
   BaseProgressCallback::SetStatusText(text);
@@ -387,11 +402,9 @@ bool ConsoleProgressCallback::ModalConfirmation(const char* message)
   return false;
 }
 
-u32 ConsoleProgressCallback::ModalPrompt(const char* message, u32 num_options, ...)
+void ConsoleProgressCallback::ModalInformation(const char* message)
 {
   Clear();
-  DebugAssert(num_options > 0);
   Log_InfoPrint(message);
   Redraw(false);
-  return 0;
 }

@@ -18,6 +18,11 @@ void HostInterfaceProgressCallback::SetCancellable(bool cancellable)
   Redraw(true);
 }
 
+void HostInterfaceProgressCallback::SetTitle(const char* title)
+{
+  // todo?
+}
+
 void HostInterfaceProgressCallback::SetStatusText(const char* text)
 {
   BaseProgressCallback::SetStatusText(text);
@@ -64,15 +69,20 @@ void HostInterfaceProgressCallback::DisplayInformation(const char* message) { Lo
 
 void HostInterfaceProgressCallback::DisplayDebugMessage(const char* message) { Log_DevPrint(message); }
 
-void HostInterfaceProgressCallback::ModalError(const char* message) { g_host_interface->ReportError(message); }
+void HostInterfaceProgressCallback::ModalError(const char* message)
+{
+  Log_ErrorPrint(message);
+  g_host_interface->ReportError(message);
+}
 
 bool HostInterfaceProgressCallback::ModalConfirmation(const char* message)
 {
+  Log_InfoPrint(message);
   return g_host_interface->ConfirmMessage(message);
 }
 
-u32 HostInterfaceProgressCallback::ModalPrompt(const char* message, u32 num_options, ...)
+void HostInterfaceProgressCallback::ModalInformation(const char* message)
 {
   Log_InfoPrint(message);
-  return 0;
+  g_host_interface->ReportMessage(message);
 }

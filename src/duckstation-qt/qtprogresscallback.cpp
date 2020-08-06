@@ -29,6 +29,11 @@ void QtProgressCallback::SetCancellable(bool cancellable)
   m_dialog.setCancelButtonText(cancellable ? tr("Cancel") : QString());
 }
 
+void QtProgressCallback::SetTitle(const char* title)
+{
+  m_dialog.setWindowTitle(QString::fromUtf8(title));
+}
+
 void QtProgressCallback::SetStatusText(const char* text)
 {
   BaseProgressCallback::SetStatusText(text);
@@ -83,23 +88,7 @@ bool QtProgressCallback::ModalConfirmation(const char* message)
                                 QMessageBox::No) == QMessageBox::Yes);
 }
 
-u32 QtProgressCallback::ModalPrompt(const char* message, u32 num_options, ...)
+void QtProgressCallback::ModalInformation(const char* message)
 {
-  enum : u32
-  {
-    MAX_OPTIONS = 3,
-  };
-
-  std::array<QString, MAX_OPTIONS> options;
-
-  std::va_list ap;
-  va_start(ap, num_options);
-
-  for (u32 i = 0; i < num_options && i < MAX_OPTIONS; i++)
-    options[i] = QString::fromUtf8(va_arg(ap, const char*));
-
-  va_end(ap);
-
-  return static_cast<u32>(QMessageBox::question(&m_dialog, tr("Question"), QString::fromUtf8(message), options[0],
-                                                options[1], options[2], 0, 0));
+  QMessageBox::information(&m_dialog, tr("Information"), QString::fromUtf8(message));
 }
