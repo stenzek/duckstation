@@ -45,7 +45,7 @@ jobs:
     - name: Create release archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.7z ./bin/x64/*
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
 
     - name: Upload release artifact
       uses: actions/upload-artifact@v1
