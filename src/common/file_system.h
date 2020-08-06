@@ -161,10 +161,6 @@ bool DirectoryExists(const char* Path);
 // delete file
 bool DeleteFile(const char* Path);
 
-// reads file name
-bool GetFileName(String& Destination, const char* FileName);
-bool GetFileName(String& FileName);
-
 // open files
 std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags);
 

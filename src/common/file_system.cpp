@@ -927,7 +927,8 @@ bool FileSystem::FileExists(const char* Path)
     return false;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesA(Path);
+  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
+  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -944,7 +945,8 @@ bool FileSystem::DirectoryExists(const char* Path)
     return false;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesA(Path);
+  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
+  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -954,59 +956,24 @@ bool FileSystem::DirectoryExists(const char* Path)
     return false;
 }
 
-bool FileSystem::GetFileName(String& Destination, const char* FileName)
-{
-  // fastpath for non-existant files
-  DWORD fileAttributes = GetFileAttributesA(FileName);
-  if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-    return false;
-
-  //     // temp buffer for storing string returned by windows
-  //     char tempName[MAX_PATH];
-  //     DWORD tempNameLength;
-  //
-  //     // query windows
-  //     if ((tempNameLength = GetFullPathNameA(FileName, countof(tempName), tempName, nullptr)) == 0 || tempNameLength
-  //     >= countof(tempName))
-  //     {
-  //         // something went wrong, or buffer overflow
-  //         return false;
-  //     }
-  //
-  //     // move it into destination buffer, doesn't matter if it's the same as FileName, as
-  //     // we aren't going to use it any more.
-  //     DebugAssert(Destination[tempNameLength] == '\0');
-  //     Destination = tempName;
-  if (Destination.GetWriteableCharArray() != FileName)
-    Destination = FileName;
-
-  return true;
-}
-
-bool FileSystem::GetFileName(String& FileName)
-{
-  return GetFileName(FileName, FileName);
-}
-
 bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
 {
-  u32 i;
-  DWORD lastError;
+  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
 
   // has a path
-  if (Path[0] == '\0')
+  if (wpath[0] == L'\0')
     return false;
 
   // try just flat-out, might work if there's no other segments that have to be made
-  if (CreateDirectoryA(Path, nullptr))
+  if (CreateDirectoryW(wpath.c_str(), nullptr))
     return true;
 
   // check error
-  lastError = GetLastError();
+  DWORD lastError = GetLastError();
   if (lastError == ERROR_ALREADY_EXISTS)
   {
     // check the attributes
-    u32 Attributes = GetFileAttributesA(Path);
+    u32 Attributes = GetFileAttributesW(wpath.c_str());
     if (Attributes != INVALID_FILE_ATTRIBUTES && Attributes & FILE_ATTRIBUTE_DIRECTORY)
       return true;
     else
@@ -1016,16 +983,16 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   {
     // part of the path does not exist, so we'll create the parent folders, then
     // the full path again. allocate another buffer with the same length
-    u32 pathLength = static_cast<u32>(std::strlen(Path));
-    char* tempStr = (char*)alloca(pathLength + 1);
+    u32 pathLength = static_cast<u32>(wpath.size());
+    wchar_t* tempStr = (wchar_t*)alloca(sizeof(wchar_t) * (pathLength + 1));
 
     // create directories along the path
-    for (i = 0; i < pathLength; i++)
+    for (u32 i = 0; i < pathLength; i++)
     {
-      if (Path[i] == '\\' || Path[i] == '/')
+      if (wpath[i] == L'\\' || wpath[i] == L'/')
       {
-        tempStr[i] = '\0';
-        if (!CreateDirectoryA(tempStr, nullptr))
+        tempStr[i] = L'\0';
+        if (!CreateDirectoryW(tempStr, nullptr))
         {
           lastError = GetLastError();
           if (lastError != ERROR_ALREADY_EXISTS) // fine, continue to next path segment
@@ -1033,13 +1000,13 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
         }
       }
 
-      tempStr[i] = Path[i];
+      tempStr[i] = wpath[i];
     }
 
     // re-create the end if it's not a separator, check / as well because windows can interpret them
-    if (Path[pathLength - 1] != '\\' && Path[pathLength - 1] != '/')
+    if (wpath[pathLength - 1] != L'\\' && wpath[pathLength - 1] != L'/')
     {
-      if (!CreateDirectoryA(Path, nullptr))
+      if (!CreateDirectoryW(wpath.c_str(), nullptr))
       {
         lastError = GetLastError();
         if (lastError != ERROR_ALREADY_EXISTS)
@@ -1062,34 +1029,35 @@ bool FileSystem::DeleteFile(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-  DWORD fileAttributes = GetFileAttributesA(Path);
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
+  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
   if (!(fileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-    return (DeleteFileA(Path) == TRUE);
+    return (DeleteFileW(wpath.c_str()) == TRUE);
   else
     return false;
 }
 
-bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
+static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
 {
   // ensure it exists
-  DWORD fileAttributes = GetFileAttributesA(Path);
+  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES || !(fileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     return false;
 
   // non-recursive case just try removing the directory
   if (!Recursive)
-    return (RemoveDirectoryA(Path) == TRUE);
+    return (RemoveDirectoryW(wpath.c_str()) == TRUE);
 
   // doing a recursive delete
-  SmallString fileName;
-  fileName.Format("%s\\*", Path);
+  std::wstring fileName = wpath;
+  fileName += L"\\*";
 
   // is there any files?
-  WIN32_FIND_DATA findData;
-  HANDLE hFind = FindFirstFileA(fileName, &findData);
+  WIN32_FIND_DATAW findData;
+  HANDLE hFind = FindFirstFileW(fileName.c_str(), &findData);
   if (hFind == INVALID_HANDLE_VALUE)
     return false;
 
@@ -1097,20 +1065,22 @@ bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
   do
   {
     // skip . and ..
-    if (findData.cFileName[0] == '.')
+    if (findData.cFileName[0] == L'.')
     {
-      if ((findData.cFileName[1] == '\0') || (findData.cFileName[1] == '.' && findData.cFileName[2] == '\0'))
+      if ((findData.cFileName[1] == L'\0') || (findData.cFileName[1] == L'.' && findData.cFileName[2] == L'\0'))
       {
         continue;
       }
     }
 
     // found a directory?
-    fileName.Format("%s\\%s", Path, findData.cFileName);
+    fileName = wpath;
+    fileName += L"\\";
+    fileName += findData.cFileName;
     if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     {
       // recurse into that
-      if (!DeleteDirectory(fileName, true))
+      if (!RecursiveDeleteDirectory(fileName, true))
       {
         FindClose(hFind);
         return false;
@@ -1119,34 +1089,40 @@ bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
     else
     {
       // found a file, so delete it
-      if (!DeleteFileA(fileName))
+      if (!DeleteFileW(fileName.c_str()))
       {
         FindClose(hFind);
         return false;
       }
     }
-  } while (FindNextFileA(hFind, &findData));
+  } while (FindNextFileW(hFind, &findData));
   FindClose(hFind);
 
   // nuke the directory itself
-  if (!RemoveDirectoryA(Path))
+  if (!RemoveDirectoryW(wpath.c_str()))
     return false;
 
   // done
   return true;
 }
 
+bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
+{
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
+  return RecursiveDeleteDirectory(wpath, Recursive);
+}
+
 std::string GetProgramPath()
 {
   const HANDLE hProcess = GetCurrentProcess();
 
-  std::string buffer;
+  std::wstring buffer;
   buffer.resize(MAX_PATH);
 
   for (;;)
   {
     DWORD nChars = static_cast<DWORD>(buffer.size());
-    if (!QueryFullProcessImageNameA(GetCurrentProcess(), 0, buffer.data(), &nChars) &&
+    if (!QueryFullProcessImageNameW(GetCurrentProcess(), 0, buffer.data(), &nChars) &&
         GetLastError() == ERROR_INSUFFICIENT_BUFFER)
     {
       buffer.resize(buffer.size() * 2);
@@ -1157,28 +1133,30 @@ std::string GetProgramPath()
     break;
   }
 
-  CanonicalizePath(buffer);
-  return buffer;
+  std::string utf8_path(StringUtil::WideStringToUTF8String(buffer));
+  CanonicalizePath(utf8_path);
+  return utf8_path;
 }
 
 std::string GetWorkingDirectory()
 {
-  DWORD required_size = GetCurrentDirectoryA(0, nullptr);
+  DWORD required_size = GetCurrentDirectoryW(0, nullptr);
   if (!required_size)
     return {};
 
-  std::string buffer;
+  std::wstring buffer;
   buffer.resize(required_size - 1);
 
-  if (!GetCurrentDirectoryA(static_cast<DWORD>(buffer.size() + 1), buffer.data()))
+  if (!GetCurrentDirectoryW(static_cast<DWORD>(buffer.size() + 1), buffer.data()))
     return {};
 
-  return buffer;
+  return StringUtil::WideStringToUTF8String(buffer);
 }
 
 bool SetWorkingDirectory(const char* path)
 {
-  return (SetCurrentDirectoryA(path) == TRUE);
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  return (SetCurrentDirectoryW(wpath.c_str()) == TRUE);
 }
 
 #else
@@ -1385,24 +1363,6 @@ bool DirectoryExists(const char* Path)
     return true;
   else
     return false;
-}
-
-bool GetFileName(String& Destination, const char* FileName)
-{
-  // fastpath for non-existant files
-  struct stat sysStatData;
-  if (stat(FileName, &sysStatData) < 0)
-    return false;
-
-  if (Destination.GetWriteableCharArray() != FileName)
-    Destination = FileName;
-
-  return true;
-}
-
-bool GetFileName(String& FileName)
-{
-  return GetFileName(FileName, FileName);
 }
 
 bool CreateDirectory(const char* Path, bool Recursive)
