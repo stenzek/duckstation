@@ -41,12 +41,6 @@ static constexpr char LATEST_RELEASE_URL[] =
   "https://api.github.com/repos/stenzek/duckstation/releases/tags/" SCM_RELEASE_TAG;
 static constexpr char UPDATE_ASSET_FILENAME[] = SCM_RELEASE_ASSET;
 
-#else
-
-static constexpr char LATEST_TAG_URL[] = "";
-static constexpr char LATEST_RELEASE_URL[] = "";
-static constexpr char UPDATE_ASSET_FILENAME[] = "";
-
 #endif
 
 AutoUpdaterDialog::AutoUpdaterDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
@@ -89,28 +83,35 @@ void AutoUpdaterDialog::reportError(const char* msg, ...)
 
 void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 {
+  m_display_messages = display_message;
+
+#ifdef AUTO_UPDATER_SUPPORTED
   connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestTagComplete);
 
   QUrl url(QUrl::fromEncoded(QByteArray(LATEST_TAG_URL, sizeof(LATEST_TAG_URL) - 1)));
   QNetworkRequest request(url);
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
   m_network_access_mgr->get(request);
-
-  m_display_messages = display_message;
+#else
+  emit updateCheckCompleted();
+#endif
 }
 
 void AutoUpdaterDialog::queueGetLatestRelease()
 {
+#ifdef AUTO_UPDATER_SUPPORTED
   connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestReleaseComplete);
 
   QUrl url(QUrl::fromEncoded(QByteArray(LATEST_RELEASE_URL, sizeof(LATEST_RELEASE_URL) - 1)));
   QNetworkRequest request(url);
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
   m_network_access_mgr->get(request);
+#endif
 }
 
 void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
 {
+#ifdef AUTO_UPDATER_SUPPORTED
   // this might fail due to a lack of internet connection - in which case, don't spam the user with messages every time.
   m_network_access_mgr->disconnect(this);
   reply->deleteLater();
@@ -166,10 +167,12 @@ void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
   }
 
   emit updateCheckCompleted();
+#endif
 }
 
 void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 {
+#ifdef AUTO_UPDATER_SUPPORTED
   m_network_access_mgr->disconnect(this);
   reply->deleteLater();
 
@@ -217,8 +220,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
   {
     reportError("Failed to download latest release info: %d", static_cast<int>(reply->error()));
   }
-
-  emit updateCheckCompleted();
+#endif
 }
 
 void AutoUpdaterDialog::downloadUpdateClicked()
