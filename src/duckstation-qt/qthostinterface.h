@@ -71,6 +71,7 @@ public:
   ALWAYS_INLINE const HotkeyInfoList& getHotkeyInfoList() const { return GetHotkeyInfoList(); }
   ALWAYS_INLINE ControllerInterface* getControllerInterface() const { return GetControllerInterface(); }
   ALWAYS_INLINE bool inBatchMode() const { return InBatchMode(); }
+  ALWAYS_INLINE void requestExit() { RequestExit(); }
 
   ALWAYS_INLINE bool isOnWorkerThread() const { return QThread::currentThread() == m_worker_thread; }
 
@@ -98,6 +99,9 @@ public:
 
   /// Returns a list of supported languages and codes (suffixes for translation files).
   static std::vector<std::pair<QString, QString>> getAvailableLanguageList();
+
+  /// Returns program directory as a QString.
+  QString getProgramDirectory() const;
 
 Q_SIGNALS:
   void errorReported(const QString& message);

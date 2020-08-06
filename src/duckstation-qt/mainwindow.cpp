@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "aboutdialog.h"
+#include "autoupdaterdialog.h"
 #include "common/assert.h"
 #include "core/game_list.h"
 #include "core/host_display.h"
@@ -609,6 +610,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
+  connect(m_ui.actionCheckForUpdates, &QAction::triggered, [this]() { checkForUpdates(true); });
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
@@ -819,4 +821,39 @@ void MainWindow::changeEvent(QEvent* event)
   }
 
   QMainWindow::changeEvent(event);
+}
+
+void MainWindow::startupUpdateCheck()
+{
+  if (!m_host_interface->GetBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
+    return;
+
+  checkForUpdates(false);
+}
+
+void MainWindow::checkForUpdates(bool display_message)
+{
+  if (!AutoUpdaterDialog::isSupported())
+  {
+    if (display_message)
+      QMessageBox::critical(this, tr("Updater Error"), tr("Updates are not supported on this build."));
+
+    return;
+  }
+
+  if (m_auto_updater_dialog)
+    return;
+
+  m_auto_updater_dialog = new AutoUpdaterDialog(m_host_interface, this);
+  connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
+  m_auto_updater_dialog->queueUpdateCheck(display_message);
+}
+
+void MainWindow::onUpdateCheckComplete()
+{
+  if (!m_auto_updater_dialog)
+    return;
+
+  m_auto_updater_dialog->deleteLater();
+  m_auto_updater_dialog = nullptr;
 }

@@ -46,6 +46,10 @@ int main(int argc, char* argv[])
     host_interface->bootSystem(*boot_params);
     boot_params.reset();
   }
+  else
+  {
+    window->startupUpdateCheck();
+  }
 
   int result = app.exec();
 

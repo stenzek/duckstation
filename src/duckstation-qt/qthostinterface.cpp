@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/controller.h"
@@ -720,7 +721,7 @@ void QtHostInterface::saveInputProfile(const QString& profile_name)
 QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const
 {
   QString result = QString::fromStdString(m_user_directory);
-  result += '/';
+  result += FS_OSPATH_SEPERATOR_CHARACTER;
   result += arg;
   return result;
 }
@@ -728,9 +729,14 @@ QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const
 QString QtHostInterface::getProgramDirectoryRelativePath(const QString& arg) const
 {
   QString result = QString::fromStdString(m_program_directory);
-  result += '/';
+  result += FS_OSPATH_SEPERATOR_CHARACTER;
   result += arg;
   return result;
+}
+
+QString QtHostInterface::getProgramDirectory() const
+{
+  return QString::fromStdString(m_program_directory);
 }
 
 void QtHostInterface::powerOffSystem()

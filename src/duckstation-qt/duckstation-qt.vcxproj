@@ -38,6 +38,7 @@
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
+    <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
@@ -74,6 +75,7 @@
     <QtMoc Include="inputbindingdialog.h" />
     <QtMoc Include="gamelistmodel.h" />
     <QtMoc Include="gamelistsearchdirectoriesmodel.h" />
+    <QtMoc Include="autoupdaterdialog.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
@@ -145,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="$(IntDir)moc_aboutdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
@@ -194,6 +197,11 @@
     <None Include="translations\duckstation-qt_de.ts" />
     <None Include="translations\duckstation-qt_pt-br.ts" />
     <None Include="translations\duckstation-qt_pt-pt.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUi Include="autoupdaterdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying common data files" Importance="High" />

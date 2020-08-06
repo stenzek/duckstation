@@ -13,6 +13,7 @@ class QThread;
 class GameListWidget;
 class QtHostInterface;
 class QtDisplayWidget;
+class AutoUpdaterDialog;
 
 class HostDisplay;
 struct GameListEntry;
@@ -24,6 +25,9 @@ class MainWindow final : public QMainWindow
 public:
   explicit MainWindow(QtHostInterface* host_interface);
   ~MainWindow();
+
+  /// Performs update check if enabled in settings.
+  void startupUpdateCheck();
 
 private Q_SLOTS:
   void reportError(const QString& message);
@@ -61,6 +65,9 @@ private Q_SLOTS:
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
   void onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry);
 
+  void checkForUpdates(bool display_message);
+  void onUpdateCheckComplete();
+
 protected:
   void closeEvent(QCloseEvent* event) override;
   void changeEvent(QEvent* event) override;
@@ -94,6 +101,7 @@ private:
   QLabel* m_status_frame_time_widget = nullptr;
 
   SettingsDialog* m_settings_dialog = nullptr;
+  AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
   bool m_emulation_running = false;
 };

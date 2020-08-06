@@ -122,6 +122,8 @@
     <addaction name="actionIssueTracker"/>
     <addaction name="actionDiscordServer"/>
     <addaction name="separator"/>
+    <addaction name="actionCheckForUpdates"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
@@ -344,6 +346,11 @@
   <action name="actionDiscordServer">
    <property name="text">
     <string>&amp;Discord Server...</string>
+   </property>
+  </action>
+  <action name="actionCheckForUpdates">
+   <property name="text">
+    <string>Check for &amp;Updates...</string>
    </property>
   </action>
   <action name="actionAbout">

@@ -1,4 +1,5 @@
 #include "generalsettingswidget.h"
+#include "autoupdaterdialog.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
@@ -80,16 +81,27 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
+  const int last_row_count = m_ui.formLayout_4->rowCount();
 #ifdef WITH_DISCORD_PRESENCE
   {
     QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Discord Presence"), m_ui.groupBox_4);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "Main",
                                                  "EnableDiscordPresence");
-    m_ui.formLayout_4->addWidget(enableDiscordPresence, m_ui.formLayout_4->rowCount(), 0);
+    m_ui.formLayout_4->addWidget(enableDiscordPresence, last_row_count, 0);
     dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
                                tr("Shows the game you are currently playing as part of your profile in Discord."));
   }
 #endif
+  if (AutoUpdaterDialog::isSupported())
+  {
+    QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Automatic Update Check"), m_ui.groupBox_4);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "AutoUpdater",
+                                                 "CheckAtStartup");
+    m_ui.formLayout_4->addWidget(enableDiscordPresence, last_row_count, 1);
+    dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Automatic Update Check"), tr("Checked"),
+                               tr("Automatically checks for updates to the program on startup. Updates can be deferred "
+                                  "until later or skipped entirely."));
+  }
 }
 
 GeneralSettingsWidget::~GeneralSettingsWidget() = default;

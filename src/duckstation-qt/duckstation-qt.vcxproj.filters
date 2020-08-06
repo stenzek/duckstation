@@ -46,6 +46,8 @@
     <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsearchdirectoriesmodel.cpp" />
+    <ClCompile Include="autoupdaterdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -85,6 +87,7 @@
     <QtMoc Include="inputbindingdialog.h" />
     <QtMoc Include="gamelistmodel.h" />
     <QtMoc Include="gamelistsearchdirectoriesmodel.h" />
+    <QtMoc Include="autoupdaterdialog.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -98,6 +101,7 @@
     <QtUi Include="gamepropertiesdialog.ui" />
     <QtUi Include="aboutdialog.ui" />
     <QtUi Include="inputbindingdialog.ui" />
+    <QtUi Include="autoupdaterdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
