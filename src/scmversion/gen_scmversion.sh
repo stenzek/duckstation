@@ -1,10 +1,11 @@
 #!/bin/sh
 
 VERSION_FILE="scmversion.cpp"
+HASH=$(git rev-parse HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD | tr -d '\r\n')
 TAG=$(git describe --tags --dirty --exclude latest | tr -d '\r\n')
 
-SIGNATURE_LINE="// ${BRANCH} ${TAG}"
+SIGNATURE_LINE="// ${HASH} ${BRANCH} ${TAG}"
 
 if [ -f $VERSION_FILE ]; then
   EXISTING_LINE=$(head -n1 $VERSION_FILE | tr -d '\n')
@@ -18,6 +19,7 @@ echo "Writing ${VERSION_FILE}..."
 
 cat > $VERSION_FILE << EOF
 ${SIGNATURE_LINE}
+const char* g_scm_hash_str = "${HASH}";
 const char* g_scm_branch_str = "${BRANCH}";
 const char* g_scm_tag_str = "${TAG}";
 
