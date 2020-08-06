@@ -51,7 +51,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: "windows-x64"
-        path: "duckstation-windows-x64-release.7z"
+        path: "duckstation-windows-x64-release.zip"
 
 
   windows-libretro-build:
@@ -255,7 +255,7 @@ jobs:
           automatic_release_tag: "latest"
           title: "Latest Development Build"
           files: |
-            windows-x64/duckstation-windows-x64-release.7z
+            windows-x64/duckstation-windows-x64-release.zip
             windows-libretro-x64/duckstation_libretro.dll.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
