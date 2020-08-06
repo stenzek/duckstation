@@ -836,7 +836,27 @@ void MainWindow::checkForUpdates(bool display_message)
   if (!AutoUpdaterDialog::isSupported())
   {
     if (display_message)
-      QMessageBox::critical(this, tr("Updater Error"), tr("Updates are not supported on this build."));
+    {
+      QMessageBox mbox(this);
+      mbox.setWindowTitle(tr("Updater Error"));
+      mbox.setTextFormat(Qt::RichText);
+
+      QString message;
+#ifdef WIN32
+      message =
+        tr("<p>Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To "
+           "prevent incompatibilities, the auto-updater is only enabled on official builds.</p>"
+           "<p>To obtain an official build, please follow the instructions under \"Downloading and Running\" at the "
+           "link below:</p>"
+           "<p><a href=\"https://github.com/stenzek/duckstation/\">https://github.com/stenzek/duckstation/</a></p>");
+#else
+      message = tr("Automatic updating is not supported on the current platform.");
+#endif
+
+      mbox.setText(message);
+      mbox.setIcon(QMessageBox::Critical);
+      mbox.exec();
+    }
 
     return;
   }
