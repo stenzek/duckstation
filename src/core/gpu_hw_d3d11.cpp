@@ -110,6 +110,7 @@ void GPU_HW_D3D11::RestoreGraphicsAPIState()
   m_context->IASetVertexBuffers(0, 1, m_vertex_stream_buffer.GetD3DBufferArray(), &stride, &offset);
   m_context->IASetInputLayout(m_batch_input_layout.Get());
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+  m_context->GSSetShader(nullptr, nullptr, 0);
   m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
   m_context->PSSetSamplers(0, 1, m_point_sampler_state.GetAddressOf());
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), m_vram_depth_view.Get());
