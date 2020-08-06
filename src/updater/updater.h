@@ -19,6 +19,8 @@ public:
   void CleanupStagingDirectory();
 
 private:
+  static bool RecursiveDeleteDirectory(const char* path);
+
   struct FileToUpdate
   {
     std::string original_zip_filename;

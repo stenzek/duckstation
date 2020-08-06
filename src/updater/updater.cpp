@@ -12,6 +12,10 @@
 #include <string>
 #include <vector>
 
+#ifdef WIN32
+#include <shellapi.h>
+#endif
+
 Updater::Updater(ProgressCallback* progress) : m_progress(progress)
 {
   progress->SetTitle("DuckStation Update Installer");
@@ -47,6 +51,24 @@ bool Updater::OpenUpdateZip(const char* path)
 
   m_progress->SetStatusText("Parsing update zip...");
   return ParseZip();
+}
+
+bool Updater::RecursiveDeleteDirectory(const char* path)
+{
+#ifdef WIN32
+  // making this safer on Win32...
+  std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  wpath += L'\0';
+
+  SHFILEOPSTRUCTW op = {};
+  op.wFunc = FO_DELETE;
+  op.pFrom = wpath.c_str();
+  op.fFlags = FOF_NOCONFIRMATION;
+
+  return (SHFileOperationW(&op) == 0 && !op.fAnyOperationsAborted);
+#else
+  return FileSystem::DeleteDirectory(path, true);
+#endif
 }
 
 bool Updater::ParseZip()
@@ -140,8 +162,7 @@ bool Updater::PrepareStagingDirectory()
   if (FileSystem::DirectoryExists(m_staging_directory.c_str()))
   {
     m_progress->DisplayFormattedWarning("Update staging directory already exists, removing");
-    FileSystem::DeleteDirectory(m_staging_directory.c_str(), true);
-    if (FileSystem::DirectoryExists(m_staging_directory.c_str()))
+    if (!RecursiveDeleteDirectory(m_staging_directory.c_str()) || FileSystem::DirectoryExists(m_staging_directory.c_str()))
     {
       m_progress->ModalError("Failed to remove old staging directory");
       return false;
@@ -285,6 +306,6 @@ bool Updater::CommitUpdate()
 void Updater::CleanupStagingDirectory()
 {
   // remove staging directory itself
-  if (!FileSystem::DeleteDirectory(m_staging_directory.c_str(), true))
+  if (!RecursiveDeleteDirectory(m_staging_directory.c_str()))
     m_progress->DisplayFormattedError("Failed to remove staging directory '%s'", m_staging_directory.c_str());
 }
