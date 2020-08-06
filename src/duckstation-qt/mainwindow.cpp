@@ -21,6 +21,7 @@
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
+#include <QtWidgets/QActionGroup>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStyleFactory>
@@ -467,26 +468,19 @@ void MainWindow::setupAdditionalUi()
 
   const QString current_language(
     QString::fromStdString(m_host_interface->GetStringSettingValue("Main", "Language", "")));
+  QActionGroup* language_group = new QActionGroup(m_ui.menuSettingsLanguage);
   for (const std::pair<QString, QString>& it : m_host_interface->getAvailableLanguageList())
   {
-    QAction* action = m_ui.menuSettingsLanguage->addAction(it.first);
+    QAction* action = language_group->addAction(it.first);
     action->setCheckable(true);
-    action->setChecked(it.second == current_language);
+    action->setChecked(current_language == it.second);
+    m_ui.menuSettingsLanguage->addAction(action);
     action->setData(it.second);
     connect(action, &QAction::triggered, [this, action]() {
       const QString new_language = action->data().toString();
       m_host_interface->SetStringSettingValue("Main", "Language", new_language.toUtf8().constData());
       QMessageBox::information(this, tr("DuckStation"),
                                tr("Language changed. Please restart the application to apply."));
-      for (QObject* obj : m_ui.menuSettingsLanguage->children())
-      {
-        QAction* other_action = qobject_cast<QAction*>(obj);
-        if (other_action)
-        {
-          QSignalBlocker blocker(other_action);
-          action->setChecked(other_action == action);
-        }
-      }
     });
   }
 }
