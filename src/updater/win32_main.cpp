@@ -29,7 +29,9 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
   }
   if (argc != 4)
   {
-    progress.ModalError("Expected 4 arguments: parent process id, output directory, update zip, program to launch.");
+    progress.ModalError("Expected 4 arguments: parent process id, output directory, update zip, program to "
+                        "launch.\n\nThis program is not intended to be ran manually, please use the Qt frontend and "
+                        "click Help->Check for Updates.");
     LocalFree(argv);
     return 1;
   }
