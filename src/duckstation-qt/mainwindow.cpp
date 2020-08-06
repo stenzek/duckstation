@@ -103,7 +103,7 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
   if (!wi.has_value())
   {
-    reportError(tr("Failed to get window info from widget"));
+    reportError(QStringLiteral("Failed to get window info from widget"));
     destroyDisplayWidget();
     return nullptr;
   }
@@ -155,7 +155,7 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
   if (!wi.has_value())
   {
-    reportError(tr("Failed to get new window info from widget"));
+    reportError(QStringLiteral("Failed to get new window info from widget"));
     destroyDisplayWidget();
     return nullptr;
   }
