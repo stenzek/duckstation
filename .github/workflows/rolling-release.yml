@@ -24,6 +24,13 @@ jobs:
         fetch-depth: 0
         submodules: true
 
+    - name: Tag as release build
+      shell: cmd
+      run: |
+        echo #pragma once > src/scmversion/tag.h
+        echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
+        echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
+
     - name: Compile release build
       shell: cmd
       run: |
