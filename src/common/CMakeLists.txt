@@ -113,6 +113,8 @@ if(WIN32)
     d3d11/texture.cpp
     d3d11/texture.h
     windows_headers.h
+    win32_progress_callback.cpp
+    win32_progress_callback.h
   )
   target_link_libraries(common PRIVATE d3dcompiler.lib)
 endif()

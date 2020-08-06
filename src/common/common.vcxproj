@@ -91,6 +91,7 @@
     <ClInclude Include="vulkan\texture.h" />
     <ClInclude Include="vulkan\util.h" />
     <ClInclude Include="wav_writer.h" />
+    <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="window_info.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClCompile Include="vulkan\texture.cpp" />
     <ClCompile Include="vulkan\util.cpp" />
     <ClCompile Include="wav_writer.cpp" />
+    <ClCompile Include="win32_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

@@ -100,6 +100,7 @@
     </ClInclude>
     <ClInclude Include="image.h" />
     <ClInclude Include="minizip_helpers.h" />
+    <ClInclude Include="win32_progress_callback.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -193,6 +194,7 @@
     <ClCompile Include="image.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />
+    <ClCompile Include="win32_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
