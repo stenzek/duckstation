@@ -28,8 +28,8 @@ bool Updater::Initialize(std::string destination_directory)
   m_destination_directory = std::move(destination_directory);
   m_staging_directory = StringUtil::StdStringFromFormat("%s%c%s", m_destination_directory.c_str(),
                                                         FS_OSPATH_SEPERATOR_CHARACTER, "UPDATE_STAGING");
-  m_progress->DisplayFormattedDebugMessage("Destination directory: '%s'", m_destination_directory.c_str());
-  m_progress->DisplayFormattedDebugMessage("Staging directory: '%s'", m_staging_directory.c_str());
+  m_progress->DisplayFormattedInformation("Destination directory: '%s'", m_destination_directory.c_str());
+  m_progress->DisplayFormattedInformation("Staging directory: '%s'", m_staging_directory.c_str());
 
   // log everything to file as well
   Log::SetFileOutputParams(true, StringUtil::StdStringFromFormat("%s%cupdater.log", m_destination_directory.c_str(),
@@ -45,6 +45,7 @@ bool Updater::OpenUpdateZip(const char* path)
   if (!m_zf)
     return false;
 
+  m_progress->SetStatusText("Parsing update zip...");
   return ParseZip();
 }
 
@@ -86,12 +87,12 @@ bool Updater::ParseZip()
     if (len > 0 && zip_filename_buffer[len - 1] != FS_OSPATH_SEPERATOR_CHARACTER)
     {
       // skip updater itself, since it was already pre-extracted.
-      if (StringUtil::Strcasecmp(zip_filename_buffer, "updater.exe") == 0)
-        continue;
-
-      entry.destination_filename = zip_filename_buffer;
-      m_progress->DisplayFormattedDebugMessage("Found file in zip: '%s'", entry.destination_filename.c_str());
-      m_update_paths.push_back(std::move(entry));
+      if (StringUtil::Strcasecmp(zip_filename_buffer, "updater.exe") != 0)
+      {
+        entry.destination_filename = zip_filename_buffer;
+        m_progress->DisplayFormattedInformation("Found file in zip: '%s'", entry.destination_filename.c_str());
+        m_update_paths.push_back(std::move(entry));
+      }
     }
 
     int res = unzGoToNextFile(m_zf);
