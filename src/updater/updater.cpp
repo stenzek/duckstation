@@ -162,7 +162,8 @@ bool Updater::PrepareStagingDirectory()
   if (FileSystem::DirectoryExists(m_staging_directory.c_str()))
   {
     m_progress->DisplayFormattedWarning("Update staging directory already exists, removing");
-    if (!RecursiveDeleteDirectory(m_staging_directory.c_str()) || FileSystem::DirectoryExists(m_staging_directory.c_str()))
+    if (!RecursiveDeleteDirectory(m_staging_directory.c_str()) ||
+        FileSystem::DirectoryExists(m_staging_directory.c_str()))
     {
       m_progress->ModalError("Failed to remove old staging directory");
       return false;
@@ -284,7 +285,7 @@ bool Updater::CommitUpdate()
       "%s%c%s", m_staging_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, ftu.destination_filename.c_str());
     const std::string dest_file_name = StringUtil::StdStringFromFormat(
       "%s%c%s", m_destination_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, ftu.destination_filename.c_str());
-    m_progress->DisplayFormattedDebugMessage("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
+    m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
 #ifdef WIN32
     const bool result =
       MoveFileExW(StringUtil::UTF8StringToWideString(staging_file_name).c_str(),

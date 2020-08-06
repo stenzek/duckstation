@@ -37,7 +37,7 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
   const int parent_process_id = StringUtil::FromChars<int>(StringUtil::WideStringToUTF8String(argv[0])).value_or(0);
   const std::string destination_directory = StringUtil::WideStringToUTF8String(argv[1]);
   const std::string zip_path = StringUtil::WideStringToUTF8String(argv[2]);
-  const std::string program_to_launch = StringUtil::WideStringToUTF8String(argv[3]);
+  const std::wstring program_to_launch(argv[3]);
   LocalFree(argv);
 
   if (parent_process_id <= 0 || destination_directory.empty() || zip_path.empty() || program_to_launch.empty())
@@ -85,7 +85,8 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 
   progress.ModalInformation("Update complete.");
 
-  progress.DisplayFormattedInformation("Launching '%s'...", program_to_launch.c_str());
-  ShellExecuteA(nullptr, "open", program_to_launch.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+  progress.DisplayFormattedInformation("Launching '%s'...",
+                                       StringUtil::WideStringToUTF8String(program_to_launch).c_str());
+  ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
   return 0;
 }
