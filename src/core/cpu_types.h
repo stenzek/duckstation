@@ -332,9 +332,9 @@ struct Cop0Registers
     BitField<u32, bool, 22, 1> BEV; // boot exception vectors, 0 = KSEG0, 1 = KSEG1
     BitField<u32, bool, 25, 1> RE;  // reverse endianness in user mode
     BitField<u32, bool, 28, 1> CU0; // coprocessor 0 enable in user mode
-    BitField<u32, bool, 29, 1> CU1; // coprocessor 1 enable in user mode
-    BitField<u32, bool, 30, 1> CU2; // coprocessor 2 enable in user mode
-    BitField<u32, bool, 31, 1> CU3; // coprocessor 3 enable in user mode
+    BitField<u32, bool, 29, 1> CE1; // coprocessor 1 enable
+    BitField<u32, bool, 30, 1> CE2; // coprocessor 2 enable
+    BitField<u32, bool, 31, 1> CE3; // coprocessor 3 enable
 
     BitField<u32, u8, 0, 6> mode_bits;
     BitField<u32, u8, 28, 2> coprocessor_enable_mask;

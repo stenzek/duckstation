@@ -1152,9 +1152,9 @@ void ExecuteInstruction()
 
     case InstructionOp::cop2:
     {
-      if (InUserMode() && !g_state.cop0_regs.sr.CU2)
+      if (!g_state.cop0_regs.sr.CE2)
       {
-        Log_WarningPrintf("Coprocessor 2 not present in user mode");
+        Log_WarningPrintf("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
         return;
       }
@@ -1165,9 +1165,9 @@ void ExecuteInstruction()
 
     case InstructionOp::lwc2:
     {
-      if (InUserMode() && !g_state.cop0_regs.sr.CU2)
+      if (!g_state.cop0_regs.sr.CE2)
       {
-        Log_WarningPrintf("Coprocessor 2 not present in user mode");
+        Log_WarningPrintf("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
         return;
       }
@@ -1186,9 +1186,9 @@ void ExecuteInstruction()
 
     case InstructionOp::swc2:
     {
-      if (InUserMode() && !g_state.cop0_regs.sr.CU2)
+      if (!g_state.cop0_regs.sr.CE2)
       {
-        Log_WarningPrintf("Coprocessor 2 not present in user mode");
+        Log_WarningPrintf("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
         return;
       }
