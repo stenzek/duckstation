@@ -23,7 +23,10 @@ constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 
 constexpr u64 FUNCTION_STACK_SIZE =
   FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE + FUNCTION_CALL_SHADOW_SPACE;
 
-static const a64::WRegister GetHostReg8(HostReg reg) { return a64::WRegister(reg); }
+static const a64::WRegister GetHostReg8(HostReg reg)
+{
+  return a64::WRegister(reg);
+}
 
 static const a64::WRegister GetHostReg8(const Value& value)
 {
@@ -31,7 +34,10 @@ static const a64::WRegister GetHostReg8(const Value& value)
   return a64::WRegister(value.host_reg);
 }
 
-static const a64::WRegister GetHostReg16(HostReg reg) { return a64::WRegister(reg); }
+static const a64::WRegister GetHostReg16(HostReg reg)
+{
+  return a64::WRegister(reg);
+}
 
 static const a64::WRegister GetHostReg16(const Value& value)
 {
@@ -39,7 +45,10 @@ static const a64::WRegister GetHostReg16(const Value& value)
   return a64::WRegister(value.host_reg);
 }
 
-static const a64::WRegister GetHostReg32(HostReg reg) { return a64::WRegister(reg); }
+static const a64::WRegister GetHostReg32(HostReg reg)
+{
+  return a64::WRegister(reg);
+}
 
 static const a64::WRegister GetHostReg32(const Value& value)
 {
@@ -47,7 +56,10 @@ static const a64::WRegister GetHostReg32(const Value& value)
   return a64::WRegister(value.host_reg);
 }
 
-static const a64::XRegister GetHostReg64(HostReg reg) { return a64::XRegister(reg); }
+static const a64::XRegister GetHostReg64(HostReg reg)
+{
+  return a64::XRegister(reg);
+}
 
 static const a64::XRegister GetHostReg64(const Value& value)
 {
@@ -55,7 +67,10 @@ static const a64::XRegister GetHostReg64(const Value& value)
   return a64::XRegister(value.host_reg);
 }
 
-static const a64::XRegister GetCPUPtrReg() { return GetHostReg64(RCPUPTR); }
+static const a64::XRegister GetCPUPtrReg()
+{
+  return GetHostReg64(RCPUPTR);
+}
 
 CodeGenerator::CodeGenerator(JitCodeBuffer* code_buffer)
   : m_code_buffer(code_buffer), m_register_cache(*this),
@@ -98,7 +113,10 @@ const char* CodeGenerator::GetHostRegName(HostReg reg, RegSize size /*= HostPoin
   }
 }
 
-void CodeGenerator::AlignCodeBuffer(JitCodeBuffer* code_buffer) { code_buffer->Align(16, 0x90); }
+void CodeGenerator::AlignCodeBuffer(JitCodeBuffer* code_buffer)
+{
+  code_buffer->Align(16, 0x90);
+}
 
 void CodeGenerator::InitHostRegs()
 {
@@ -111,9 +129,15 @@ void CodeGenerator::InitHostRegs()
   m_register_cache.SetCPUPtrHostReg(RCPUPTR);
 }
 
-void CodeGenerator::SwitchToFarCode() { m_emit = &m_far_emitter; }
+void CodeGenerator::SwitchToFarCode()
+{
+  m_emit = &m_far_emitter;
+}
 
-void CodeGenerator::SwitchToNearCode() { m_emit = &m_near_emitter; }
+void CodeGenerator::SwitchToNearCode()
+{
+  m_emit = &m_near_emitter;
+}
 
 void* CodeGenerator::GetCurrentNearCodePointer() const
 {
@@ -125,12 +149,12 @@ void* CodeGenerator::GetCurrentFarCodePointer() const
   return static_cast<u8*>(m_code_buffer->GetFreeFarCodePointer()) + m_far_emitter.GetCursorOffset();
 }
 
-Value CodeGenerator::GetValueInHostRegister(const Value& value)
+Value CodeGenerator::GetValueInHostRegister(const Value& value, bool allow_zero_register /* = true */)
 {
   if (value.IsInHostRegister())
     return Value::FromHostReg(&m_register_cache, value.host_reg, value.size);
 
-  if (value.HasConstantValue(0))
+  if (value.HasConstantValue(0) && allow_zero_register)
     return Value::FromHostReg(&m_register_cache, static_cast<HostReg>(31), value.size);
 
   Value new_value = m_register_cache.AllocateScratch(value.size);
@@ -484,6 +508,38 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
   {
     // TODO: Use mul + smulh
     Panic("Not implemented");
+  }
+}
+
+void CodeGenerator::EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, HostReg num, HostReg denom, RegSize size,
+                            bool signed_divide)
+{
+  // only 32-bit supported for now..
+  Assert(size == RegSize_32);
+
+  Value quotient_value;
+  if (to_reg_quotient == HostReg_Count)
+    quotient_value = m_register_cache.AllocateScratch(size);
+  else
+    quotient_value.SetHostReg(&m_register_cache, to_reg_quotient, size);
+
+  if (signed_divide)
+  {
+    m_emit->sdiv(GetHostReg32(quotient_value), GetHostReg32(num), GetHostReg32(denom));
+    if (to_reg_remainder != HostReg_Count)
+    {
+      m_emit->msub(GetHostReg32(to_reg_remainder), GetHostReg32(quotient_value), GetHostReg32(denom),
+                   GetHostReg32(num));
+    }
+  }
+  else
+  {
+    m_emit->udiv(GetHostReg32(quotient_value), GetHostReg32(num), GetHostReg32(denom));
+    if (to_reg_remainder != HostReg_Count)
+    {
+      m_emit->msub(GetHostReg32(to_reg_remainder), GetHostReg32(quotient_value), GetHostReg32(denom),
+                   GetHostReg32(num));
+    }
   }
 }
 
@@ -882,7 +938,10 @@ u32 CodeGenerator::PrepareStackForCall()
   return 0;
 }
 
-void CodeGenerator::RestoreStackAfterCall(u32 adjust_size) { m_register_cache.PopCallerSavedRegisters(); }
+void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
+{
+  m_register_cache.PopCallerSavedRegisters();
+}
 
 static s64 GetBranchDisplacement(const void* current, const void* target)
 {
@@ -1037,7 +1096,6 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 {
   if (return_value)
     return_value->Discard();
-
 
   // shadow space allocate
   const u32 adjust_size = PrepareStackForCall();
@@ -1314,9 +1372,15 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   m_register_cache.PopState();
 }
 
-void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr) { Panic("Not implemented"); }
+void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
+{
+  Panic("Not implemented");
+}
 
-void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value) { Panic("Not implemented"); }
+void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value)
+{
+  Panic("Not implemented");
+}
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()
 {
@@ -1409,6 +1473,11 @@ void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
   Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(address));
   m_emit->br(GetHostReg64(temp));
+}
+
+void CodeGenerator::EmitBranch(LabelType* label)
+{
+  m_emit->B(label);
 }
 
 static a64::Condition TranslateCondition(Condition condition, bool invert)
@@ -1634,6 +1703,9 @@ void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, Labe
   }
 }
 
-void CodeGenerator::EmitBindLabel(LabelType* label) { m_emit->Bind(label); }
+void CodeGenerator::EmitBindLabel(LabelType* label)
+{
+  m_emit->Bind(label);
+}
 
 } // namespace CPU::Recompiler

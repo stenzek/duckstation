@@ -167,6 +167,14 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
           result = Compile_Multiply(cbi);
           break;
 
+        case InstructionFunct::div:
+          result = Compile_SignedDivide(cbi);
+          break;
+
+        case InstructionFunct::divu:
+          result = Compile_Divide(cbi);
+          break;
+
         case InstructionFunct::slt:
         case InstructionFunct::sltu:
           result = Compile_SetLess(cbi);
@@ -1312,6 +1320,186 @@ bool CodeGenerator::Compile_Multiply(const CodeBlockInstruction& cbi)
                                              m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), signed_multiply);
   m_register_cache.WriteGuestRegister(Reg::hi, std::move(result.first));
   m_register_cache.WriteGuestRegister(Reg::lo, std::move(result.second));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+static std::tuple<u32, u32> MIPSDivide(u32 num, u32 denom)
+{
+  u32 lo, hi;
+
+  if (denom == 0)
+  {
+    // divide by zero
+    lo = UINT32_C(0xFFFFFFFF);
+    hi = static_cast<u32>(num);
+  }
+  else
+  {
+    lo = num / denom;
+    hi = num % denom;
+  }
+
+  return std::tie(lo, hi);
+}
+
+static std::tuple<s32, s32> MIPSDivide(s32 num, s32 denom)
+{
+  s32 lo, hi;
+  if (denom == 0)
+  {
+    // divide by zero
+    lo = (num >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
+    hi = static_cast<u32>(num);
+  }
+  else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1)
+  {
+    // unrepresentable
+    lo = UINT32_C(0x80000000);
+    hi = 0;
+  }
+  else
+  {
+    lo = num / denom;
+    hi = num % denom;
+  }
+
+  return std::tie(lo, hi);
+}
+
+bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  const bool signed_divide = (cbi.instruction.r.funct == InstructionFunct::div);
+
+  Value num = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  if (num.IsConstant() && denom.IsConstant())
+  {
+    const auto [lo, hi] = MIPSDivide(static_cast<u32>(num.constant_value), static_cast<u32>(denom.constant_value));
+    m_register_cache.WriteGuestRegister(Reg::lo, Value::FromConstantU32(lo));
+    m_register_cache.WriteGuestRegister(Reg::hi, Value::FromConstantU32(hi));
+  }
+  else
+  {
+    Value num_reg = GetValueInHostRegister(num, false);
+    Value denom_reg = GetValueInHostRegister(denom, false);
+
+    m_register_cache.InvalidateGuestRegister(Reg::lo);
+    m_register_cache.InvalidateGuestRegister(Reg::hi);
+
+    Value lo = m_register_cache.AllocateScratch(RegSize_32);
+    Value hi = m_register_cache.AllocateScratch(RegSize_32);
+
+    LabelType do_divide, done;
+
+    if (!denom.IsConstant() || denom.HasConstantValue(0))
+    {
+      // if (denom == 0)
+      EmitConditionalBranch(Condition::NotEqual, false, denom_reg.GetHostRegister(), Value::FromConstantU32(0),
+                            &do_divide);
+      {
+        // unrepresentable
+        EmitCopyValue(lo.GetHostRegister(), Value::FromConstantU32(0xFFFFFFFF));
+        EmitCopyValue(hi.GetHostRegister(), num_reg);
+        EmitBranch(&done);
+      }
+    }
+
+    // else
+    {
+      EmitBindLabel(&do_divide);
+      EmitDiv(lo.GetHostRegister(), hi.GetHostRegister(), num_reg.GetHostRegister(), denom_reg.GetHostRegister(),
+              RegSize_32, false);
+    }
+
+    EmitBindLabel(&done);
+
+    m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
+    m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
+  }
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  Value num = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  if (num.IsConstant() && denom.IsConstant())
+  {
+    const auto [lo, hi] = MIPSDivide(num.GetS32ConstantValue(), denom.GetS32ConstantValue());
+    m_register_cache.WriteGuestRegister(Reg::lo, Value::FromConstantU32(static_cast<u32>(lo)));
+    m_register_cache.WriteGuestRegister(Reg::hi, Value::FromConstantU32(static_cast<u32>(hi)));
+  }
+  else
+  {
+    Value num_reg = GetValueInHostRegister(num, false);
+    Value denom_reg = GetValueInHostRegister(denom, false);
+
+    m_register_cache.InvalidateGuestRegister(Reg::lo);
+    m_register_cache.InvalidateGuestRegister(Reg::hi);
+
+    Value lo = m_register_cache.AllocateScratch(RegSize_32);
+    Value hi = m_register_cache.AllocateScratch(RegSize_32);
+
+    // we need this in a register on ARM because it won't fit in an immediate
+    EmitCopyValue(lo.GetHostRegister(), Value::FromConstantU32(0x80000000u));
+
+    LabelType do_divide, done;
+
+    LabelType not_zero;
+    if (!denom.IsConstant() || denom.HasConstantValue(0))
+    {
+      // if (denom == 0)
+      EmitConditionalBranch(Condition::NotEqual, false, denom_reg.GetHostRegister(), Value::FromConstantU32(0),
+                            &not_zero);
+      {
+        // hi = static_cast<u32>(num);
+        EmitCopyValue(hi.GetHostRegister(), num_reg);
+
+        // lo = (num >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
+        LabelType greater_equal_zero;
+        EmitConditionalBranch(Condition::GreaterEqual, false, num_reg.GetHostRegister(), Value::FromConstantU32(0),
+                              &greater_equal_zero);
+        EmitCopyValue(lo.GetHostRegister(), Value::FromConstantU32(1));
+        EmitBranch(&done);
+        EmitBindLabel(&greater_equal_zero);
+        EmitCopyValue(lo.GetHostRegister(), Value::FromConstantU32(0xFFFFFFFFu));
+        EmitBranch(&done);
+      }
+    }
+
+    // else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1)
+    {
+      EmitBindLabel(&not_zero);
+      EmitConditionalBranch(Condition::NotEqual, false, denom_reg.GetHostRegister(),
+                            Value::FromConstantU32(0xFFFFFFFFu), &do_divide);
+      EmitConditionalBranch(Condition::NotEqual, false, num_reg.GetHostRegister(), lo, &do_divide);
+
+      // unrepresentable
+      // EmitCopyValue(lo.GetHostRegister(), Value::FromConstantU32(0x80000000u)); // done above
+      EmitCopyValue(hi.GetHostRegister(), Value::FromConstantU32(0));
+      EmitBranch(&done);
+    }
+
+    // else
+    {
+      EmitBindLabel(&do_divide);
+      EmitDiv(lo.GetHostRegister(), hi.GetHostRegister(), num_reg.GetHostRegister(), denom_reg.GetHostRegister(),
+              RegSize_32, true);
+    }
+
+    EmitBindLabel(&done);
+
+    m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
+    m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
+  }
 
   InstructionEpilogue(cbi);
   return true;

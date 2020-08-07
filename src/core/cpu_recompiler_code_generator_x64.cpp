@@ -1,7 +1,7 @@
+#include "common/align.h"
 #include "cpu_core.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
-#include "common/align.h"
 
 namespace CPU::Recompiler {
 
@@ -173,7 +173,7 @@ void* CodeGenerator::GetCurrentFarCodePointer() const
   return m_far_emitter.getCurr<void*>();
 }
 
-Value CodeGenerator::GetValueInHostRegister(const Value& value)
+Value CodeGenerator::GetValueInHostRegister(const Value& value, bool allow_zero_register /* = true */)
 {
   if (value.IsInHostRegister())
     return Value(value.regcache, value.host_reg, value.size, ValueFlags::Valid | ValueFlags::InHostRegister);
@@ -669,6 +669,102 @@ void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& l
     m_emit->push(m_emit->rax);
     m_emit->pop(GetHostReg64(to_reg_lo));
     m_emit->pop(GetHostReg64(to_reg_hi));
+  }
+
+  // restore original contents
+  if (save_edx)
+    m_emit->pop(m_emit->rdx);
+
+  if (save_eax)
+    m_emit->pop(m_emit->rax);
+}
+
+void CodeGenerator::EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, HostReg num, HostReg denom, RegSize size,
+                            bool signed_divide)
+{
+  const bool save_eax = (to_reg_quotient != Xbyak::Operand::RAX && to_reg_remainder != Xbyak::Operand::RAX);
+  const bool save_edx = (to_reg_quotient != Xbyak::Operand::RDX && to_reg_remainder != Xbyak::Operand::RDX);
+
+  if (save_eax)
+    m_emit->push(m_emit->rax);
+
+  if (save_edx)
+    m_emit->push(m_emit->rdx);
+
+  // unsupported cases.. for now
+  Assert(num != Xbyak::Operand::RDX && num != Xbyak::Operand::RAX);
+  if (num != Xbyak::Operand::RAX)
+    EmitCopyValue(Xbyak::Operand::RAX, Value::FromHostReg(&m_register_cache, num, size));
+
+  if (size == RegSize_8)
+  {
+    if (signed_divide)
+    {
+      m_emit->cbw();
+      m_emit->idiv(GetHostReg8(denom));
+    }
+    else
+    {
+      m_emit->xor_(m_emit->dx, m_emit->dx);
+      m_emit->div(GetHostReg8(denom));
+    }
+  }
+  else if (size == RegSize_16)
+  {
+    if (signed_divide)
+    {
+      m_emit->cwd();
+      m_emit->idiv(GetHostReg16(denom));
+    }
+    else
+    {
+      m_emit->xor_(m_emit->edx, m_emit->edx);
+      m_emit->div(GetHostReg16(denom));
+    }
+  }
+  else if (size == RegSize_32)
+  {
+    if (signed_divide)
+    {
+      m_emit->cdq();
+      m_emit->idiv(GetHostReg32(denom));
+    }
+    else
+    {
+      m_emit->xor_(m_emit->rdx, m_emit->edx);
+      m_emit->div(GetHostReg32(denom));
+    }
+  }
+  else
+  {
+    if (signed_divide)
+      m_emit->idiv(GetHostReg64(denom));
+    else
+      m_emit->div(GetHostReg64(denom));
+  }
+
+  if (to_reg_quotient == Xbyak::Operand::RAX && to_reg_remainder == Xbyak::Operand::RDX)
+  {
+    // ideal case: registers are the ones we want: don't have to do anything
+  }
+  else if (to_reg_quotient == Xbyak::Operand::RDX && to_reg_remainder == Xbyak::Operand::RAX)
+  {
+    // what we want, but swapped, so exchange them
+    m_emit->xchg(m_emit->rax, m_emit->rdx);
+  }
+  else
+  {
+    // store to the registers we want.. this could be optimized better
+    if (to_reg_quotient != HostReg_Count)
+    {
+      m_emit->push(m_emit->rax);
+      m_emit->pop(GetHostReg64(to_reg_quotient));
+    }
+    if (to_reg_remainder != HostReg_Count)
+    {
+      m_emit->push(m_emit->rdx);
+      m_emit->pop(GetHostReg64(to_reg_remainder));
+    }
   }
 
   // restore original contents
@@ -2016,6 +2112,11 @@ void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
   Value temp = m_register_cache.AllocateScratch(RegSize_64);
   m_emit->mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(address));
   m_emit->jmp(GetHostReg64(temp));
+}
+
+void CodeGenerator::EmitBranch(LabelType* label)
+{
+  m_emit->jmp(*label);
 }
 
 void CodeGenerator::EmitConditionalBranch(Condition condition, bool invert, HostReg value, RegSize size,

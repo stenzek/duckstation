@@ -138,6 +138,24 @@ struct Value
     return Value();
   }
 
+  /// Returns the constant value as a signed 32-bit integer, suitable as an immediate.
+  s32 GetS32ConstantValue() const
+  {
+    switch (size)
+    {
+      case RegSize_8:
+        return static_cast<s32>(SignExtend32(Truncate8(constant_value)));
+
+      case RegSize_16:
+        return static_cast<s32>(SignExtend32(Truncate16(constant_value)));
+
+      case RegSize_32:
+      case RegSize_64:
+      default:
+        return static_cast<s32>(constant_value);
+    }
+  }
+
   /// Returns the constant value as a signed 64-bit integer, suitable as an immediate.
   s64 GetS64ConstantValue() const
   {

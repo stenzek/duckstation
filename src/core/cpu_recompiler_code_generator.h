@@ -41,6 +41,7 @@ public:
   void EmitSub(HostReg to_reg, HostReg from_reg, const Value& value, bool set_flags);
   void EmitCmp(HostReg to_reg, const Value& value);
   void EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs, bool signed_multiply);
+  void EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, HostReg num, HostReg denom, RegSize size, bool signed_divide);
   void EmitInc(HostReg to_reg, RegSize size);
   void EmitDec(HostReg to_reg, RegSize size);
   void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
@@ -71,6 +72,7 @@ public:
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);
+  void EmitBranch(LabelType* label);
 
   // Branching, generates two paths.
   void EmitConditionalBranch(Condition condition, bool invert, HostReg value, RegSize size, LabelType* label);
@@ -149,7 +151,7 @@ private:
   Value ConvertValueSize(const Value& value, RegSize size, bool sign_extend);
   void ConvertValueSizeInPlace(Value* value, RegSize size, bool sign_extend);
 
-  Value GetValueInHostRegister(const Value& value);
+  Value GetValueInHostRegister(const Value& value, bool allow_zero_register = true);
 
   void SwitchToFarCode();
   void SwitchToNearCode();
@@ -184,6 +186,8 @@ private:
   bool Compile_Add(const CodeBlockInstruction& cbi);
   bool Compile_Subtract(const CodeBlockInstruction& cbi);
   bool Compile_Multiply(const CodeBlockInstruction& cbi);
+  bool Compile_Divide(const CodeBlockInstruction& cbi);
+  bool Compile_SignedDivide(const CodeBlockInstruction& cbi);
   bool Compile_SetLess(const CodeBlockInstruction& cbi);
   bool Compile_Branch(const CodeBlockInstruction& cbi);
   bool Compile_lui(const CodeBlockInstruction& cbi);
