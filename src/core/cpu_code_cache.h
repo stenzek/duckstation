@@ -83,6 +83,10 @@ void Initialize(bool use_recompiler);
 void Shutdown();
 void Execute();
 
+#ifdef WITH_RECOMPILER
+void ExecuteRecompiler();
+#endif
+
 /// Flushes the code cache, forcing all blocks to be recompiled.
 void Flush();
 

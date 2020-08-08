@@ -799,10 +799,25 @@ void RunFrame()
 
   g_gpu->RestoreGraphicsAPIState();
 
-  if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
-    CPU::Execute();
-  else
-    CPU::CodeCache::Execute();
+  switch (g_settings.cpu_execution_mode)
+  {
+    case CPUExecutionMode::Recompiler:
+#ifdef WITH_RECOMPILER
+      CPU::CodeCache::ExecuteRecompiler();
+#else
+      CPU::CodeCache::Execute();
+#endif
+      break;
+
+    case CPUExecutionMode::CachedInterpreter:
+      CPU::CodeCache::Execute();
+      break;
+
+    case CPUExecutionMode::Interpreter:
+    default:
+      CPU::Execute();
+      break;
+  }
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   g_spu.GeneratePendingSamples();

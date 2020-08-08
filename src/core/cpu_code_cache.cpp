@@ -23,6 +23,35 @@ static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
 alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
   s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
 static JitCodeBuffer s_code_buffer;
+
+enum : u32
+{
+  FAST_MAP_RAM_SLOT_COUNT = Bus::RAM_SIZE / 4,
+  FAST_MAP_BIOS_SLOT_COUNT = Bus::BIOS_SIZE / 4,
+  FAST_MAP_TOTAL_SLOT_COUNT = FAST_MAP_RAM_SLOT_COUNT + FAST_MAP_BIOS_SLOT_COUNT,
+};
+
+std::array<CodeBlock::HostCodePointer, FAST_MAP_TOTAL_SLOT_COUNT> s_fast_map;
+
+ALWAYS_INLINE static u32 GetFastMapIndex(u32 pc)
+{
+  return ((pc & PHYSICAL_MEMORY_ADDRESS_MASK) >= Bus::BIOS_BASE) ?
+           (FAST_MAP_RAM_SLOT_COUNT + ((pc & Bus::BIOS_MASK) >> 2)) :
+           ((pc & Bus::RAM_MASK) >> 2);
+}
+
+static void FastCompileBlockFunction();
+
+static void ResetFastMap()
+{
+  s_fast_map.fill(FastCompileBlockFunction);
+}
+
+static void SetFastMap(u32 pc, CodeBlock::HostCodePointer function)
+{
+  s_fast_map[GetFastMapIndex(pc)] = function;
+}
+
 #endif
 
 using BlockMap = std::unordered_map<u32, CodeBlock*>;
@@ -65,6 +94,8 @@ void Initialize(bool use_recompiler)
   {
     Panic("Failed to initialize code space");
   }
+
+  ResetFastMap();
 #else
   s_use_recompiler = false;
 #endif
@@ -180,6 +211,38 @@ void Execute()
   g_state.regs.npc = g_state.regs.pc;
 }
 
+#ifdef WITH_RECOMPILER
+
+void ExecuteRecompiler()
+{
+  g_state.frame_done = false;
+  while (!g_state.frame_done)
+  {
+    TimingEvents::UpdateCPUDowncount();
+
+    while (g_state.pending_ticks < g_state.downcount)
+    {
+      if (HasPendingInterrupt())
+      {
+        SafeReadMemoryWord(g_state.regs.pc, &g_state.next_instruction.bits);
+        DispatchInterrupt();
+      }
+
+      const u32 pc = g_state.regs.pc;
+      g_state.current_instruction_pc = pc;
+      const u32 fast_map_index = GetFastMapIndex(pc);
+      s_fast_map[fast_map_index]();
+    }
+
+    TimingEvents::RunEvents();
+  }
+
+  // in case we switch to interpreter...
+  g_state.regs.npc = g_state.regs.pc;
+}
+
+#endif
+
 void SetUseRecompiler(bool enable)
 {
 #ifdef WITH_RECOMPILER
@@ -202,6 +265,7 @@ void Flush()
   s_blocks.clear();
 #ifdef WITH_RECOMPILER
   s_code_buffer.Reset();
+  ResetFastMap();
 #endif
 }
 
@@ -244,6 +308,10 @@ CodeBlock* LookupBlock(CodeBlockKey key)
   {
     // add it to the page map if it's in ram
     AddBlockToPageMap(block);
+
+#ifdef WITH_RECOMPILER
+    SetFastMap(block->GetPC(), block->host_code);
+#endif
   }
   else
   {
@@ -272,6 +340,9 @@ bool RevalidateBlock(CodeBlock* block)
   // re-add it to the page map since it's still up-to-date
   block->invalidated = false;
   AddBlockToPageMap(block);
+#ifdef WITH_RECOMPILER
+  SetFastMap(block->GetPC(), block->host_code);
+#endif
   return true;
 
 recompile:
@@ -388,6 +459,19 @@ bool CompileBlock(CodeBlock* block)
   return true;
 }
 
+#ifdef WITH_RECOMPILER
+
+void FastCompileBlockFunction()
+{
+  CodeBlock* block = LookupBlock(GetNextBlockKey());
+  if (block)
+    block->host_code();
+  else
+    InterpretUncachedBlock();
+}
+
+#endif
+
 void InvalidateBlocksWithPageIndex(u32 page_index)
 {
   DebugAssert(page_index < CPU_CODE_CACHE_PAGE_COUNT);
@@ -397,6 +481,9 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
     // Invalidate forces the block to be checked again.
     Log_DebugPrintf("Invalidating block at 0x%08X", block->GetPC());
     block->invalidated = true;
+#ifdef WITH_RECOMPILER
+    SetFastMap(block->GetPC(), FastCompileBlockFunction);
+#endif
   }
 
   // Block will be re-added next execution.
@@ -409,6 +496,10 @@ void FlushBlock(CodeBlock* block)
   BlockMap::iterator iter = s_blocks.find(block->key.GetPC());
   Assert(iter != s_blocks.end() && iter->second == block);
   Log_DevPrintf("Flushing block at address 0x%08X", block->GetPC());
+
+#ifdef WITH_RECOMPILER
+  SetFastMap(block->GetPC(), FastCompileBlockFunction);
+#endif
 
   // if it's been invalidated it won't be in the page map
   if (block->invalidated)
