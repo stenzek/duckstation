@@ -358,6 +358,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
+  si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
@@ -472,6 +473,14 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       ReportFormattedMessage("Switching to %s CPU execution mode.",
                              Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
       CPU::CodeCache::SetUseRecompiler(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
+    }
+
+    if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
+        g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
+    {
+      ReportFormattedMessage("CPU memory exceptions %s, flushing all blocks.",
+                             g_settings.cpu_recompiler_memory_exceptions ? "enabled" : "disabled");
+      CPU::CodeCache::Flush();
     }
 
     m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);

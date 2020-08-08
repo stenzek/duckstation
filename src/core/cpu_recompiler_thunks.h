@@ -22,6 +22,15 @@ u32 WriteMemoryByte(u32 address, u8 value);
 u32 WriteMemoryHalfWord(u32 address, u16 value);
 u32 WriteMemoryWord(u32 address, u32 value);
 
+// Unchecked memory access variants. No alignment or bus exceptions.
+u32 UncheckedReadMemoryByte(u32 address);
+u32 UncheckedReadMemoryHalfWord(u32 address);
+u32 UncheckedReadMemoryWord(u32 address);
+void UncheckedWriteMemoryByte(u32 address, u8 value);
+void UncheckedWriteMemoryHalfWord(u32 address, u16 value);
+void UncheckedWriteMemoryWord(u32 address, u32 value);
+
+
 } // namespace Recompiler::Thunks
 
 } // namespace CPU

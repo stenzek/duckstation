@@ -23,6 +23,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks, "Hacks", "DMAHaltTicks");
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuFIFOSize, "Hacks", "GPUFIFOSize");
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead, "Hacks", "GPUMaxRunAhead");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cpuRecompilerMemoryExceptions, "CPU",
+                                               "RecompilerMemoryExceptions", false);
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
 }
@@ -35,4 +37,5 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   m_ui.dmaHaltTicks->setValue(static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
   m_ui.gpuFIFOSize->setValue(static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
   m_ui.gpuMaxRunAhead->setValue(static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
+  m_ui.cpuRecompilerMemoryExceptions->setChecked(false);
 }

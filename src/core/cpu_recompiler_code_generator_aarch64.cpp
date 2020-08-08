@@ -5,6 +5,7 @@
 #include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
+#include "settings.h"
 Log_SetChannel(CPU::Recompiler);
 
 namespace a64 = vixl::aarch64;
@@ -1268,121 +1269,190 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 {
   AddPendingCycles(true);
 
-  // We need to use the full 64 bits here since we test the sign bit result.
-  Value result = m_register_cache.AllocateScratch(RegSize_64);
-
-  // NOTE: This can leave junk in the upper bits
-  switch (size)
+  if (g_settings.cpu_recompiler_memory_exceptions)
   {
-    case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, address);
-      break;
+    // We need to use the full 64 bits here since we test the sign bit result.
+    Value result = m_register_cache.AllocateScratch(RegSize_64);
 
-    case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, address);
-      break;
+    // NOTE: This can leave junk in the upper bits
+    switch (size)
+    {
+      case RegSize_8:
+        EmitFunctionCall(&result, &Thunks::ReadMemoryByte, address);
+        break;
 
-    case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, address);
-      break;
+      case RegSize_16:
+        EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, address);
+        break;
 
-    default:
-      UnreachableCode();
-      break;
+      case RegSize_32:
+        EmitFunctionCall(&result, &Thunks::ReadMemoryWord, address);
+        break;
+
+      default:
+        UnreachableCode();
+        break;
+    }
+
+    m_register_cache.PushState();
+
+    a64::Label load_okay;
+    m_emit->Tbz(GetHostReg64(result.host_reg), 63, &load_okay);
+    EmitBranch(GetCurrentFarCodePointer());
+    m_emit->Bind(&load_okay);
+
+    // load exception path
+    SwitchToFarCode();
+
+    // cause_bits = (-result << 2) | BD | cop_n
+    m_emit->neg(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg));
+    m_emit->lsl(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg), 2);
+    EmitOr(result.host_reg, result.host_reg,
+           Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(
+             static_cast<Exception>(0), cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n)));
+    EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
+
+    EmitExceptionExit();
+    SwitchToNearCode();
+
+    m_register_cache.PopState();
+
+    // Downcast to ignore upper 56/48/32 bits. This should be a noop.
+    switch (size)
+    {
+      case RegSize_8:
+        ConvertValueSizeInPlace(&result, RegSize_8, false);
+        break;
+
+      case RegSize_16:
+        ConvertValueSizeInPlace(&result, RegSize_16, false);
+        break;
+
+      case RegSize_32:
+        ConvertValueSizeInPlace(&result, RegSize_32, false);
+        break;
+
+      default:
+        UnreachableCode();
+        break;
+    }
+
+    return result;
   }
-
-  m_register_cache.PushState();
-
-  a64::Label load_okay;
-  m_emit->Tbz(GetHostReg64(result.host_reg), 63, &load_okay);
-  EmitBranch(GetCurrentFarCodePointer());
-  m_emit->Bind(&load_okay);
-
-  // load exception path
-  SwitchToFarCode();
-
-  // cause_bits = (-result << 2) | BD | cop_n
-  m_emit->neg(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg));
-  m_emit->lsl(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg), 2);
-  EmitOr(result.host_reg, result.host_reg,
-         Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(
-           static_cast<Exception>(0), cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n)));
-  EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
-
-  EmitExceptionExit();
-  SwitchToNearCode();
-
-  m_register_cache.PopState();
-
-  // Downcast to ignore upper 56/48/32 bits. This should be a noop.
-  switch (size)
+  else
   {
-    case RegSize_8:
-      ConvertValueSizeInPlace(&result, RegSize_8, false);
-      break;
+    Value result = m_register_cache.AllocateScratch(RegSize_32);
+    switch (size)
+    {
+      case RegSize_8:
+        EmitFunctionCall(&result, &Thunks::UncheckedReadMemoryByte, address);
+        break;
 
-    case RegSize_16:
-      ConvertValueSizeInPlace(&result, RegSize_16, false);
-      break;
+      case RegSize_16:
+        EmitFunctionCall(&result, &Thunks::UncheckedReadMemoryHalfWord, address);
+        break;
 
-    case RegSize_32:
-      ConvertValueSizeInPlace(&result, RegSize_32, false);
-      break;
+      case RegSize_32:
+        EmitFunctionCall(&result, &Thunks::UncheckedReadMemoryWord, address);
+        break;
 
-    default:
-      UnreachableCode();
-      break;
+      default:
+        UnreachableCode();
+        break;
+    }
+
+    // Downcast to ignore upper 56/48/32 bits. This should be a noop.
+    switch (size)
+    {
+      case RegSize_8:
+        ConvertValueSizeInPlace(&result, RegSize_8, false);
+        break;
+
+      case RegSize_16:
+        ConvertValueSizeInPlace(&result, RegSize_16, false);
+        break;
+
+      case RegSize_32:
+        break;
+
+      default:
+        UnreachableCode();
+        break;
+    }
+
+    return result;
   }
-
-  return result;
 }
 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
 {
   AddPendingCycles(true);
 
-  Value result = m_register_cache.AllocateScratch(RegSize_32);
-
-  switch (value.size)
+  if (g_settings.cpu_recompiler_memory_exceptions)
   {
-    case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, address, value);
-      break;
+    Value result = m_register_cache.AllocateScratch(RegSize_32);
+    switch (value.size)
+    {
+      case RegSize_8:
+        EmitFunctionCall(&result, &Thunks::WriteMemoryByte, address, value);
+        break;
 
-    case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, address, value);
-      break;
+      case RegSize_16:
+        EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, address, value);
+        break;
 
-    case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, address, value);
-      break;
+      case RegSize_32:
+        EmitFunctionCall(&result, &Thunks::WriteMemoryWord, address, value);
+        break;
 
-    default:
-      UnreachableCode();
-      break;
+      default:
+        UnreachableCode();
+        break;
+    }
+
+    m_register_cache.PushState();
+
+    a64::Label store_okay;
+    m_emit->Cbz(GetHostReg64(result.host_reg), &store_okay);
+    EmitBranch(GetCurrentFarCodePointer());
+    m_emit->Bind(&store_okay);
+
+    // store exception path
+    SwitchToFarCode();
+
+    // cause_bits = (result << 2) | BD | cop_n
+    m_emit->lsl(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg), 2);
+    EmitOr(result.host_reg, result.host_reg,
+           Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(
+             static_cast<Exception>(0), cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n)));
+    EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
+
+    EmitExceptionExit();
+    SwitchToNearCode();
+
+    m_register_cache.PopState();
   }
+  else
+  {
+    switch (value.size)
+    {
+      case RegSize_8:
+        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryByte, address, value);
+        break;
 
-  m_register_cache.PushState();
+      case RegSize_16:
+        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryHalfWord, address, value);
+        break;
 
-  a64::Label store_okay;
-  m_emit->Cbz(GetHostReg64(result.host_reg), &store_okay);
-  EmitBranch(GetCurrentFarCodePointer());
-  m_emit->Bind(&store_okay);
+      case RegSize_32:
+        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryWord, address, value);
+        break;
 
-  // store exception path
-  SwitchToFarCode();
-
-  // cause_bits = (result << 2) | BD | cop_n
-  m_emit->lsl(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg), 2);
-  EmitOr(result.host_reg, result.host_reg,
-         Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(
-           static_cast<Exception>(0), cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n)));
-  EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
-
-  EmitExceptionExit();
-  SwitchToNearCode();
-
-  m_register_cache.PopState();
+      default:
+        UnreachableCode();
+        break;
+    }
+  }
 }
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)

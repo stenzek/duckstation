@@ -68,6 +68,7 @@ struct Settings
   ConsoleRegion region = ConsoleRegion::Auto;
 
   CPUExecutionMode cpu_execution_mode = CPUExecutionMode::Interpreter;
+  bool cpu_recompiler_memory_exceptions = false;
 
   float emulation_speed = 1.0f;
   bool speed_limiter_enabled = true;

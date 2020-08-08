@@ -89,8 +89,6 @@ bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 // External IRQs
 void SetExternalInterrupt(u8 bit);
 void ClearExternalInterrupt(u8 bit);
-bool HasPendingInterrupt();
-void DispatchInterrupt();
 
 void DisassembleAndPrint(u32 addr);
 void DisassembleAndLog(u32 addr);

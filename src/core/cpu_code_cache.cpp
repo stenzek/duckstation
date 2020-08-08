@@ -3,6 +3,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "system.h"
 #include "timing_event.h"

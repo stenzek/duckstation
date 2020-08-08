@@ -1231,6 +1231,9 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed = true;
       }
 
+      settings_changed |=
+        ImGui::Checkbox("Enable Recompiler Memory Exceptions", &m_settings_copy.cpu_recompiler_memory_exceptions);
+
       ImGui::EndTabItem();
     }
 

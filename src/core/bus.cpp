@@ -811,6 +811,9 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
     case 0x03: // KUSEG 1536M-2048M
     {
       // Above 512mb raises an exception.
+      if constexpr (type == MemoryAccessType::Read)
+        value = UINT32_C(0xFFFFFFFF);
+
       return -1;
     }
 
@@ -834,6 +837,9 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
       }
       else
       {
+        if constexpr (type == MemoryAccessType::Read)
+          value = UINT32_C(0xFFFFFFFF);
+
         return -1;
       }
     }
@@ -1106,7 +1112,7 @@ namespace Recompiler::Thunks {
 
 u64 ReadMemoryByte(u32 address)
 {
-  u32 temp = 0;
+  u32 temp;
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
   if (cycles < 0)
     return static_cast<u64>(-static_cast<s64>(Exception::DBE));
@@ -1123,7 +1129,7 @@ u64 ReadMemoryHalfWord(u32 address)
     return static_cast<u64>(-static_cast<s64>(Exception::AdEL));
   }
 
-  u32 temp = 0;
+  u32 temp;
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
   if (cycles < 0)
     return static_cast<u64>(-static_cast<s64>(Exception::DBE));
@@ -1140,7 +1146,7 @@ u64 ReadMemoryWord(u32 address)
     return static_cast<u64>(-static_cast<s64>(Exception::AdEL));
   }
 
-  u32 temp = 0;
+  u32 temp;
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, temp);
   if (cycles < 0)
     return static_cast<u64>(-static_cast<s64>(Exception::DBE));
@@ -1191,6 +1197,44 @@ u32 WriteMemoryWord(u32 address, u32 value)
 
   DebugAssert(cycles == 0);
   return 0;
+}
+
+u32 UncheckedReadMemoryByte(u32 address)
+{
+  u32 temp;
+  g_state.pending_ticks += DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
+  return temp;
+}
+
+u32 UncheckedReadMemoryHalfWord(u32 address)
+{
+  u32 temp;
+  g_state.pending_ticks += DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
+  return temp;
+}
+
+u32 UncheckedReadMemoryWord(u32 address)
+{
+  u32 temp;
+  g_state.pending_ticks += DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, temp);
+  return temp;
+}
+
+void UncheckedWriteMemoryByte(u32 address, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  g_state.pending_ticks += DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(address, temp);
+}
+
+void UncheckedWriteMemoryHalfWord(u32 address, u16 value)
+{
+  u32 temp = ZeroExtend32(value);
+  g_state.pending_ticks += DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address, temp);
+}
+
+void UncheckedWriteMemoryWord(u32 address, u32 value)
+{
+  g_state.pending_ticks += DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
 }
 
 } // namespace Recompiler::Thunks

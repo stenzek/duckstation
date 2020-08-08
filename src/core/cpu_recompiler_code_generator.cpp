@@ -1626,7 +1626,8 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 
     // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
     // strange.
-    if (!branch_target.IsConstant() || (branch_target.constant_value & 0x3) != 0)
+    if (g_settings.cpu_recompiler_memory_exceptions &&
+        (!branch_target.IsConstant() || (branch_target.constant_value & 0x3) != 0))
     {
       LabelType branch_okay;
 
