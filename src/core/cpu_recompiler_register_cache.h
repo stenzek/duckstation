@@ -191,6 +191,7 @@ struct Value
   static Value FromConstantU8(u8 value) { return FromConstant(ZeroExtend64(value), RegSize_8); }
   static Value FromConstantU16(u16 value) { return FromConstant(ZeroExtend64(value), RegSize_16); }
   static Value FromConstantU32(u32 value) { return FromConstant(ZeroExtend64(value), RegSize_32); }
+  static Value FromConstantS32(s32 value) { return FromConstant(ZeroExtend64(static_cast<u32>(value)), RegSize_32); }
   static Value FromConstantU64(u64 value) { return FromConstant(value, RegSize_64); }
 
 private:

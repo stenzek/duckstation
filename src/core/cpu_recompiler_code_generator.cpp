@@ -1522,8 +1522,8 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
     // else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1)
     {
       EmitBindLabel(&not_zero);
-      EmitConditionalBranch(Condition::NotEqual, false, denom_reg.GetHostRegister(),
-                            Value::FromConstantU32(0xFFFFFFFFu), &do_divide);
+      EmitConditionalBranch(Condition::NotEqual, false, denom_reg.GetHostRegister(), Value::FromConstantS32(-1),
+                            &do_divide);
       EmitConditionalBranch(Condition::NotEqual, false, num_reg.GetHostRegister(), lo, &do_divide);
 
       // unrepresentable

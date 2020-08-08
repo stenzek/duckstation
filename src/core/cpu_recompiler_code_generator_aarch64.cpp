@@ -465,14 +465,29 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
 
   // do we need temporary storage for the constant, if it won't fit in an immediate?
   const s64 constant_value = value.GetS64ConstantValue();
-  if (a64::Assembler::IsImmAddSub(constant_value))
+  if (constant_value >= 0)
   {
-    if (value.size < RegSize_64)
-      m_emit->cmp(GetHostReg32(to_reg), constant_value);
-    else
-      m_emit->cmp(GetHostReg64(to_reg), constant_value);
+    if (a64::Assembler::IsImmAddSub(constant_value))
+    {
+      if (value.size < RegSize_64)
+        m_emit->cmp(GetHostReg32(to_reg), constant_value);
+      else
+        m_emit->cmp(GetHostReg64(to_reg), constant_value);
 
-    return;
+      return;
+    }
+  }
+  else
+  {
+    if (a64::Assembler::IsImmAddSub(-constant_value))
+    {
+      if (value.size < RegSize_64)
+        m_emit->cmn(GetHostReg32(to_reg), -constant_value);
+      else
+        m_emit->cmn(GetHostReg64(to_reg), -constant_value);
+
+      return;
+    }
   }
 
   // need a temporary
