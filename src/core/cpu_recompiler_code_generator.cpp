@@ -987,11 +987,12 @@ void CodeGenerator::UpdateCurrentInstructionPC(bool commit)
   }
 }
 
-void CodeGenerator::WriteNewPC(const Value& value)
+void CodeGenerator::WriteNewPC(const Value& value, bool commit)
 {
   // TODO: This _could_ be moved into the register cache, but would it gain anything?
   EmitStoreGuestRegister(Reg::pc, value);
-  m_next_pc_offset = 0;
+  if (commit)
+    m_next_pc_offset = 0;
 }
 
 bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
@@ -1671,12 +1672,12 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 
       // converge point
       EmitBindLabel(&branch_not_taken);
-      WriteNewPC(next_pc);
+      WriteNewPC(next_pc, true);
     }
     else
     {
       // next_pc is not used for unconditional branches
-      WriteNewPC(branch_target);
+      WriteNewPC(branch_target, true);
     }
 
     // now invalidate lr becuase it was possibly written in the branch
@@ -1917,6 +1918,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           // we want to flush pc here
           m_register_cache.PushState();
           m_register_cache.FlushAllGuestRegisters(false, true);
+          WriteNewPC(CalculatePC(), false);
           EmitExceptionExit();
           m_register_cache.PopState();
 

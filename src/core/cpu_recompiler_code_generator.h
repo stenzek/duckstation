@@ -171,10 +171,9 @@ private:
   void AddPendingCycles(bool commit);
 
   Value CalculatePC(u32 offset = 0);
-  void CalculatePC(Value* dest_value, u32 offset = 0);
   Value GetCurrentInstructionPC(u32 offset = 0);
   void UpdateCurrentInstructionPC(bool commit);
-  void WriteNewPC(const Value& value);
+  void WriteNewPC(const Value& value, bool commit);
 
   Value DoGTERegisterRead(u32 index);
   void DoGTERegisterWrite(u32 index, const Value& value);

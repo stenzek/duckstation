@@ -141,8 +141,8 @@ void Execute()
     reexecute_block:
 
 #if 0
-      const u32 tick = g_system->GetGlobalTickCounter() + m_core->GetPendingTicks();
-      if (tick == 61033207)
+      const u32 tick = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
+      if (tick == 4188233674)
         __debugbreak();
 #endif
 
