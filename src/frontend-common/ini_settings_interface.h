@@ -1,6 +1,10 @@
 #pragma once
 #include "core/settings.h"
 
+// being a pain here...
+#ifdef WIN32
+#include "common/windows_headers.h"
+#endif
 #include "SimpleIni.h"
 
 class INISettingsInterface : public SettingsInterface

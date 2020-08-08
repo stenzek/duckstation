@@ -1,11 +1,19 @@
 #include "ini_settings_interface.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include <algorithm>
 Log_SetChannel(INISettingsInterface);
 
 INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
 {
-  SI_Error err = m_ini.LoadFile(m_filename.c_str());
+  SI_Error err = SI_FAIL;
+  std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "rb");
+  if (fp)
+  {
+    err = m_ini.LoadFile(fp);
+    std::fclose(fp);
+  }
+
   if (err != SI_OK)
     Log_WarningPrintf("Settings could not be loaded from '%s', defaults will be used.", m_filename.c_str());
 }
@@ -18,7 +26,14 @@ INISettingsInterface::~INISettingsInterface()
 
 bool INISettingsInterface::Save()
 {
-  SI_Error err = m_ini.SaveFile(m_filename.c_str(), false);
+  SI_Error err = SI_FAIL;
+  std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "wb");
+  if (fp)
+  {
+    err = m_ini.SaveFile(fp, false);
+    std::fclose(fp);
+  }
+
   if (err != SI_OK)
   {
     Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
