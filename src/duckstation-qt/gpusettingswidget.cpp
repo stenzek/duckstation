@@ -19,7 +19,6 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.renderer, "GPU", "Renderer",
                                                &Settings::ParseRendererName, &Settings::GetRendererName,
                                                Settings::DEFAULT_GPU_RENDERER);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useDebugDevice, "GPU", "UseDebugDevice");
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayAspectRatio, "Display", "AspectRatio",
                                                &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
                                                Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
@@ -70,9 +69,6 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     m_ui.adapter, tr("Adapter"), tr("(Default)"),
     tr("If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware "
        "renderers. This option is only supported in Direct3D and Vulkan, OpenGL will always use the default device."));
-  dialog->registerWidgetHelp(m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
-                             tr("Enables the usage of debug devices and shaders for rendering APIs which support them. "
-                                "Should only be used when debugging the emulator."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"), QStringLiteral("4:3"),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default "

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>502</width>
-    <height>501</height>
+    <height>623</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -195,6 +195,22 @@
        <widget class="QCheckBox" name="cpuRecompilerMemoryExceptions">
         <property name="text">
          <string>Enable Recompiler Memory Exceptions</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>System Settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QCheckBox" name="gpuUseDebugDevice">
+        <property name="text">
+         <string>Use Debug Host GPU Device</string>
         </property>
        </widget>
       </item>

@@ -37,7 +37,7 @@
         <x>0</x>
         <y>0</y>
         <width>423</width>
-        <height>762</height>
+        <height>756</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -66,13 +66,6 @@
           </item>
           <item row="1" column="1">
            <widget class="QComboBox" name="adapter"/>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="useDebugDevice">
-            <property name="text">
-             <string>Use Debug Device</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
