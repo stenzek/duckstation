@@ -6,6 +6,7 @@
 #include "common/state_wrapper.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
@@ -741,10 +742,6 @@ ALWAYS_INLINE static TickCount DoDMAAccess(u32 offset, u32& value)
 
 namespace CPU {
 
-// defined in cpu_core.cpp
-void RaiseException(Exception excode);
-void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
-
 static void WriteCacheControl(u32 value)
 {
   Log_WarningPrintf("Cache control <- 0x%08X", value);
@@ -962,7 +959,7 @@ bool FetchInstruction()
       0)
   {
     // Bus errors don't set BadVaddr.
-    RaiseException(Exception::IBE, g_state.regs.npc, false, false, 0);
+    RaiseException(g_state.regs.npc, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
     return false;
   }
 
@@ -1107,111 +1104,93 @@ bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 
 namespace Recompiler::Thunks {
 
-u64 ReadMemoryByte(u32 pc, u32 address)
+u64 ReadMemoryByte(u32 address)
 {
-  g_state.current_instruction_pc = pc;
-
   u32 temp = 0;
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, temp);
   if (cycles < 0)
-  {
-    RaiseException(Exception::DBE);
-    return UINT64_C(0xFFFFFFFFFFFFFFFF);
-  }
+    return static_cast<u64>(-static_cast<s64>(Exception::DBE));
 
   g_state.pending_ticks += cycles;
   return ZeroExtend64(temp);
 }
 
-u64 ReadMemoryHalfWord(u32 pc, u32 address)
+u64 ReadMemoryHalfWord(u32 address)
 {
-  g_state.current_instruction_pc = pc;
-
-  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address))
-    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  if (!Common::IsAlignedPow2(address, 2))
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u64>(-static_cast<s64>(Exception::AdEL));
+  }
 
   u32 temp = 0;
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, temp);
   if (cycles < 0)
-  {
-    RaiseException(Exception::DBE);
-    return UINT64_C(0xFFFFFFFFFFFFFFFF);
-  }
+    return static_cast<u64>(-static_cast<s64>(Exception::DBE));
 
   g_state.pending_ticks += cycles;
   return ZeroExtend64(temp);
 }
 
-u64 ReadMemoryWord(u32 pc, u32 address)
+u64 ReadMemoryWord(u32 address)
 {
-  g_state.current_instruction_pc = pc;
-
-  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(address))
-    return UINT64_C(0xFFFFFFFFFFFFFFFF);
+  if (!Common::IsAlignedPow2(address, 4))
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u64>(-static_cast<s64>(Exception::AdEL));
+  }
 
   u32 temp = 0;
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, temp);
   if (cycles < 0)
-  {
-    RaiseException(Exception::DBE);
-    return UINT64_C(0xFFFFFFFFFFFFFFFF);
-  }
+    return static_cast<u64>(-static_cast<s64>(Exception::DBE));
 
   g_state.pending_ticks += cycles;
   return ZeroExtend64(temp);
 }
 
-bool WriteMemoryByte(u32 pc, u32 address, u8 value)
+u32 WriteMemoryByte(u32 address, u8 value)
 {
-  g_state.current_instruction_pc = pc;
-
   u32 temp = ZeroExtend32(value);
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(address, temp);
   if (cycles < 0)
-  {
-    RaiseException(Exception::DBE);
-    return false;
-  }
+    return static_cast<u32>(Exception::DBE);
 
   DebugAssert(cycles == 0);
-  return true;
+  return 0;
 }
 
-bool WriteMemoryHalfWord(u32 pc, u32 address, u16 value)
+u32 WriteMemoryHalfWord(u32 address, u16 value)
 {
-  g_state.current_instruction_pc = pc;
-
-  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address))
-    return false;
+  if (!Common::IsAlignedPow2(address, 2))
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u32>(Exception::AdES);
+  }
 
   u32 temp = ZeroExtend32(value);
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address, temp);
   if (cycles < 0)
-  {
-    RaiseException(Exception::DBE);
-    return false;
-  }
+    return static_cast<u32>(Exception::DBE);
 
   DebugAssert(cycles == 0);
-  return true;
+  return 0;
 }
 
-bool WriteMemoryWord(u32 pc, u32 address, u32 value)
+u32 WriteMemoryWord(u32 address, u32 value)
 {
-  g_state.current_instruction_pc = pc;
-
-  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(address))
-    return false;
+  if (!Common::IsAlignedPow2(address, 4))
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u32>(Exception::AdES);
+  }
 
   const TickCount cycles = DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
   if (cycles < 0)
-  {
-    RaiseException(Exception::DBE);
-    return false;
-  }
+    return static_cast<u32>(Exception::DBE);
 
   DebugAssert(cycles == 0);
-  return true;
+  return 0;
 }
 
 } // namespace Recompiler::Thunks

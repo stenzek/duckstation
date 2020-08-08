@@ -1,5 +1,6 @@
 #include "common/align.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
 
@@ -202,9 +203,6 @@ void CodeGenerator::EmitEndBlock()
 void CodeGenerator::EmitExceptionExit()
 {
   AddPendingCycles(false);
-
-  // toss away our PC value since we're jumping to the exception handler
-  m_register_cache.InvalidateGuestRegister(Reg::pc);
 
   // ensure all unflushed registers are written back
   m_register_cache.FlushAllGuestRegisters(false, false);
@@ -1739,7 +1737,6 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
 
 Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size)
 {
-  const Value pc = Value::FromConstantU32(cbi.pc);
   AddPendingCycles(true);
 
   // We need to use the full 64 bits here since we test the sign bit result.
@@ -1749,15 +1746,15 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
   switch (size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryByte, address);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryHalfWord, address);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, pc, address);
+      EmitFunctionCall(&result, &Thunks::ReadMemoryWord, address);
       break;
 
     default:
@@ -1772,6 +1769,15 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
   // load exception path
   SwitchToFarCode();
+
+  // cause_bits = (-result << 2) | BD | cop_n
+  m_emit->neg(GetHostReg32(result.host_reg));
+  m_emit->shl(GetHostReg32(result.host_reg), 2);
+  m_emit->or_(GetHostReg32(result.host_reg),
+              Cop0Registers::CAUSE::MakeValueForException(static_cast<Exception>(0), cbi.is_branch_delay_slot, false,
+                                                          cbi.instruction.cop.cop_n));
+  EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
+
   EmitExceptionExit();
   SwitchToNearCode();
 
@@ -1802,23 +1808,22 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
 {
-  const Value pc = Value::FromConstantU32(cbi.pc);
   AddPendingCycles(true);
 
-  Value result = m_register_cache.AllocateScratch(RegSize_8);
+  Value result = m_register_cache.AllocateScratch(RegSize_32);
 
   switch (value.size)
   {
     case RegSize_8:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryByte, address, value);
       break;
 
     case RegSize_16:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, address, value);
       break;
 
     case RegSize_32:
-      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, pc, address, value);
+      EmitFunctionCall(&result, &Thunks::WriteMemoryWord, address, value);
       break;
 
     default:
@@ -1828,11 +1833,19 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
   m_register_cache.PushState();
 
-  m_emit->test(GetHostReg8(result), GetHostReg8(result));
-  m_emit->jz(GetCurrentFarCodePointer());
+  m_emit->test(GetHostReg32(result), GetHostReg32(result));
+  m_emit->jnz(GetCurrentFarCodePointer());
 
   // store exception path
   SwitchToFarCode();
+
+  // cause_bits = (result << 2) | BD | cop_n
+  m_emit->shl(GetHostReg32(result.host_reg), 2);
+  m_emit->or_(GetHostReg32(result.host_reg),
+              Cop0Registers::CAUSE::MakeValueForException(static_cast<Exception>(0), cbi.is_branch_delay_slot, false,
+                                                          cbi.instruction.cop.cop_n));
+  EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
+
   EmitExceptionExit();
   SwitchToNearCode();
 

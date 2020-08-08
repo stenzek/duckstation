@@ -3,6 +3,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
@@ -26,21 +27,8 @@ static void ExecuteCop0Instruction();
 static void ExecuteCop2Instruction();
 static void Branch(u32 target);
 
-// exceptions
-void RaiseException(Exception excode);
-void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE);
-
 // clears pipeline of load/branch delays
 static void FlushPipeline();
-
-// defined in cpu_memory.cpp - memory access functions which return false if an exception was thrown.
-bool FetchInstruction();
-bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value);
-bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
-bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value);
-bool WriteMemoryByte(VirtualMemoryAddress addr, u8 value);
-bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
-bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 
 State g_state;
 bool TRACE_EXECUTION = false;
@@ -164,7 +152,7 @@ void Branch(u32 target)
   {
     // The BadVaddr and EPC must be set to the fetching address, not the instruction about to execute.
     g_state.cop0_regs.BadVaddr = target;
-    RaiseException(Exception::AdEL, target, false, false, 0);
+    RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::AdEL, false, false, 0), target);
     return;
   }
 
@@ -193,33 +181,38 @@ ALWAYS_INLINE static u32 GetExceptionVector(Exception excode)
 
 void RaiseException(Exception excode)
 {
-  RaiseException(excode, g_state.current_instruction_pc, g_state.current_instruction_in_branch_delay_slot,
-                 g_state.current_instruction_was_branch_taken, g_state.current_instruction.cop.cop_n);
+  RaiseException(Cop0Registers::CAUSE::MakeValueForException(excode, g_state.current_instruction_in_branch_delay_slot,
+                                                             g_state.current_instruction_was_branch_taken,
+                                                             g_state.current_instruction.cop.cop_n),
+                 g_state.current_instruction_pc);
 }
 
-void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
+void RaiseException(u32 CAUSE_bits, u32 EPC)
 {
+  g_state.cop0_regs.EPC = EPC;
+  g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & !Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK) |
+                                 (CAUSE_bits & Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK);
+
 #ifdef _DEBUG
-  if (excode != Exception::INT && excode != Exception::Syscall && excode != Exception::BP)
+  if (g_state.cop0_regs.cause.Excode != Exception::INT && g_state.cop0_regs.cause.Excode != Exception::Syscall &&
+      g_state.cop0_regs.cause.Excode != Exception::BP)
   {
-    Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)", static_cast<u32>(excode),
-                    g_state.current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+    Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)",
+                    static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()), g_state.current_instruction_pc,
+                    g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
+                    g_state.cop0_regs.cause.CE.GetValue());
     DisassembleAndPrint(g_state.current_instruction_pc, 4, 0);
     if (LOG_EXECUTION)
     {
-      CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n", static_cast<u32>(excode),
-                               g_state.current_instruction_pc, EPC, BD ? "true" : "false", ZeroExtend32(CE));
+      CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n",
+                               static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()),
+                               g_state.current_instruction_pc, g_state.cop0_regs.EPC,
+                               g_state.cop0_regs.cause.BD ? "true" : "false", g_state.cop0_regs.cause.CE.GetValue());
     }
   }
 #endif
 
-  g_state.cop0_regs.EPC = EPC;
-  g_state.cop0_regs.cause.Excode = excode;
-  g_state.cop0_regs.cause.BD = BD;
-  g_state.cop0_regs.cause.BT = BT;
-  g_state.cop0_regs.cause.CE = CE;
-
-  if (BD)
+  if (g_state.cop0_regs.cause.BD)
   {
     // TAR is set to the address which was being fetched in this instruction, or the next instruction to execute if the
     // exception hadn't occurred in the delay slot.
@@ -231,7 +224,7 @@ void RaiseException(Exception excode, u32 EPC, bool BD, bool BT, u8 CE)
   g_state.cop0_regs.sr.mode_bits <<= 2;
 
   // flush the pipeline - we don't want to execute the previously fetched instruction
-  g_state.regs.npc = GetExceptionVector(excode);
+  g_state.regs.npc = GetExceptionVector(g_state.cop0_regs.cause.Excode);
   g_state.exception_raised = true;
   FlushPipeline();
 }
@@ -268,8 +261,10 @@ void DispatchInterrupt()
     return;
 
   // Interrupt raising occurs before the start of the instruction.
-  RaiseException(Exception::INT, g_state.regs.pc, g_state.next_instruction_is_branch_delay_slot,
-                 g_state.branch_was_taken, g_state.next_instruction.cop.cop_n);
+  RaiseException(
+    Cop0Registers::CAUSE::MakeValueForException(Exception::INT, g_state.next_instruction_is_branch_delay_slot,
+                                                g_state.branch_was_taken, g_state.next_instruction.cop.cop_n),
+    g_state.regs.pc);
 }
 
 void UpdateLoadDelay()
@@ -1421,21 +1416,6 @@ bool InterpretInstruction()
 {
   ExecuteInstruction();
   return g_state.exception_raised;
-}
-
-void RaiseException(u32 epc, u32 ri_bits)
-{
-  const RaiseExceptionInfo ri{ri_bits};
-  RaiseException(static_cast<Exception>(ri.excode), epc, ri.BD, g_state.current_instruction_was_branch_taken, ri.CE);
-}
-
-void RaiseAddressException(u32 address, bool store, bool branch)
-{
-  g_state.cop0_regs.BadVaddr = address;
-  if (branch)
-    RaiseException(Exception::AdEL, address, false, false, 0);
-  else
-    RaiseException(store ? Exception::AdES : Exception::AdEL);
 }
 
 } // namespace Recompiler::Thunks

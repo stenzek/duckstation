@@ -15,6 +15,7 @@ add_library(core
     cpu_code_cache.h
     cpu_core.cpp
     cpu_core.h
+    cpu_core_private.h
     cpu_disasm.cpp
     cpu_disasm.h
     cpu_types.cpp

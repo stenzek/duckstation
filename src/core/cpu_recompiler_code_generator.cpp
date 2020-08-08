@@ -1,6 +1,7 @@
 #include "cpu_recompiler_code_generator.h"
 #include "common/log.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "gte.h"
 #include "pgxp.h"
@@ -803,17 +804,17 @@ Value CodeGenerator::NotValue(const Value& val)
 void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Exception excode,
                                           Condition condition /* = Condition::Always */)
 {
-  const Value epc = Value::FromConstantU32(cbi.pc);
-  const Value ri_bits = Value::FromConstantU32(Thunks::MakeRaiseExceptionInfo(excode, cbi));
+  const Value CAUSE_bits = Value::FromConstantU32(
+    Cop0Registers::CAUSE::MakeValueForException(excode, cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n));
 
   if (condition == Condition::Always)
   {
     // no need to use far code if we're always raising the exception
-    m_register_cache.InvalidateGuestRegister(Reg::pc);
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
 
-    EmitFunctionCall(nullptr, &Thunks::RaiseException, epc, ri_bits);
+    EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), CAUSE_bits,
+                     GetCurrentInstructionPC());
     return;
   }
 
@@ -825,7 +826,8 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
   EmitBranch(GetCurrentFarCodePointer());
 
   SwitchToFarCode();
-  EmitFunctionCall(nullptr, &Thunks::RaiseException, epc, ri_bits);
+  EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), CAUSE_bits,
+                   GetCurrentInstructionPC());
   EmitExceptionExit();
   SwitchToNearCode();
 
@@ -844,6 +846,10 @@ void CodeGenerator::BlockPrologue()
   m_branch_was_taken_dirty = true;
   m_current_instruction_was_branch_taken_dirty = false;
   m_load_delay_dirty = true;
+
+  m_pc_offset = 0;
+  m_current_instruction_pc_offset = 0;
+  m_next_pc_offset = 4;
 }
 
 void CodeGenerator::BlockEpilogue()
@@ -865,6 +871,11 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
 #if defined(_DEBUG) && defined(CPU_X64)
   m_emit->nop();
 #endif
+
+  // move instruction offsets forward
+  m_current_instruction_pc_offset = m_pc_offset;
+  m_pc_offset = m_next_pc_offset;
+  m_next_pc_offset += 4;
 
   // reset dirty flags
   if (m_branch_was_taken_dirty)
@@ -888,13 +899,6 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     m_current_instruction_in_branch_delay_slot_dirty = false;
   }
 
-  // increment PC, except if we're in the branch delay slot where it was just changed
-  if (!cbi.is_branch_delay_slot)
-  {
-    Assert(!m_register_cache.IsGuestRegisterInHostRegister(Reg::pc));
-    m_register_cache.WriteGuestRegister(Reg::pc, Value::FromConstantU32(cbi.pc + 4));
-  }
-
   if (!force_sync)
   {
     // Defer updates for non-faulting instructions.
@@ -910,7 +914,6 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
   }
 
   m_delayed_cycles_add += cycles;
-  SetCurrentInstructionPC(cbi);
   AddPendingCycles(true);
 }
 
@@ -948,9 +951,47 @@ void CodeGenerator::AddPendingCycles(bool commit)
     m_delayed_cycles_add = 0;
 }
 
-void CodeGenerator::SetCurrentInstructionPC(const CodeBlockInstruction& cbi)
+Value CodeGenerator::CalculatePC(u32 offset /* = 0 */)
 {
-  EmitStoreCPUStructField(offsetof(State, current_instruction_pc), Value::FromConstantU32(cbi.pc));
+  Value value = m_register_cache.AllocateScratch(RegSize_32);
+  EmitLoadGuestRegister(value.GetHostRegister(), Reg::pc);
+
+  const u32 apply_offset = m_pc_offset + offset;
+  if (apply_offset > 0)
+    EmitAdd(value.GetHostRegister(), value.GetHostRegister(), Value::FromConstantU32(apply_offset), false);
+
+  return value;
+}
+
+Value CodeGenerator::GetCurrentInstructionPC(u32 offset /* = 0 */)
+{
+  Value value = m_register_cache.AllocateScratch(RegSize_32);
+  EmitLoadCPUStructField(value.GetHostRegister(), RegSize_32, offsetof(State, current_instruction_pc));
+
+  const u32 apply_offset = m_current_instruction_pc_offset + offset;
+  if (apply_offset > 0)
+    EmitAdd(value.GetHostRegister(), value.GetHostRegister(), Value::FromConstantU32(apply_offset), false);
+
+  return value;
+}
+
+void CodeGenerator::UpdateCurrentInstructionPC(bool commit)
+{
+  if (m_current_instruction_pc_offset > 0)
+  {
+    EmitAddCPUStructField(offsetof(State, current_instruction_pc),
+                          Value::FromConstantU32(m_current_instruction_pc_offset));
+
+    if (commit)
+      m_current_instruction_pc_offset = 0;
+  }
+}
+
+void CodeGenerator::WriteNewPC(const Value& value)
+{
+  // TODO: This _could_ be moved into the register cache, but would it gain anything?
+  EmitStoreGuestRegister(Reg::pc, value);
+  m_next_pc_offset = 0;
 }
 
 bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
@@ -1558,24 +1599,20 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       m_register_cache.FlushGuestRegister(lr_reg, false, true);
 
     // compute return address, which is also set as the new pc when the branch isn't taken
-    Value new_pc;
+    Value next_pc;
     if (condition != Condition::Always || lr_reg != Reg::count)
-    {
-      new_pc = AddValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(4), false);
-      if (!new_pc.IsInHostRegister())
-        new_pc = GetValueInHostRegister(new_pc);
-    }
+      next_pc = CalculatePC(4);
 
-    LabelType skip_branch;
+    LabelType branch_not_taken;
     if (condition != Condition::Always)
     {
       // condition is inverted because we want the case for skipping it
       if (lhs.IsValid() && rhs.IsValid())
-        EmitConditionalBranch(condition, true, lhs.host_reg, rhs, &skip_branch);
+        EmitConditionalBranch(condition, true, lhs.host_reg, rhs, &branch_not_taken);
       else if (lhs.IsValid())
-        EmitConditionalBranch(condition, true, lhs.host_reg, lhs.size, &skip_branch);
+        EmitConditionalBranch(condition, true, lhs.host_reg, lhs.size, &branch_not_taken);
       else
-        EmitConditionalBranch(condition, true, &skip_branch);
+        EmitConditionalBranch(condition, true, &branch_not_taken);
     }
 
     // save the old PC if we want to
@@ -1584,7 +1621,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       // Can't cache because we have two branches. Load delay cancel is due to the immediate flush afterwards,
       // if we don't cancel it, at the end of the instruction the value we write can be overridden.
       EmitCancelInterpreterLoadDelayForReg(lr_reg);
-      EmitStoreGuestRegister(lr_reg, new_pc);
+      EmitStoreGuestRegister(lr_reg, next_pc);
     }
 
     // we don't need to test the address of constant branches unless they're definitely misaligned, which would be
@@ -1611,28 +1648,33 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       EmitBindLabel(&branch_okay);
 
       SwitchToFarCode();
-      EmitFunctionCall(nullptr, &Thunks::RaiseAddressException, branch_target, Value::FromConstantU8(0),
-                       Value::FromConstantU8(1));
+      EmitStoreCPUStructField(offsetof(State, cop0_regs.BadVaddr), branch_target);
+      EmitFunctionCall(
+        nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException),
+        Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(Exception::AdEL, false, false, 0)),
+        branch_target);
       EmitExceptionExit();
       SwitchToNearCode();
 
       m_register_cache.PopState();
     }
 
-    // branch taken path - change the return address/new pc
     if (condition != Condition::Always)
-      EmitCopyValue(new_pc.GetHostRegister(), branch_target);
+    {
+      // branch taken path - modify the next pc
+      EmitCopyValue(next_pc.GetHostRegister(), branch_target);
 
-    // converge point
-    EmitBindLabel(&skip_branch);
-
-    // update pc
-    if (condition != Condition::Always)
-      m_register_cache.WriteGuestRegister(Reg::pc, std::move(new_pc));
+      // converge point
+      EmitBindLabel(&branch_not_taken);
+      WriteNewPC(next_pc);
+    }
     else
-      m_register_cache.WriteGuestRegister(Reg::pc, std::move(branch_target));
+    {
+      // next_pc is not used for unconditional branches
+      WriteNewPC(branch_target);
+    }
 
-    // now invalidate lr becuase it was possibly written in the branch, and we don't need branch_target anymore
+    // now invalidate lr becuase it was possibly written in the branch
     if (lr_reg != Reg::count && lr_reg != Reg::zero)
       m_register_cache.InvalidateGuestRegister(lr_reg);
   };
@@ -1645,9 +1687,8 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::jal:
     {
       // npc = (pc & 0xF0000000) | (target << 2)
-      Value branch_target =
-        OrValues(AndValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(0xF0000000)),
-                 Value::FromConstantU32(cbi.instruction.j.target << 2));
+      Value branch_target = OrValues(AndValues(CalculatePC(), Value::FromConstantU32(0xF0000000)),
+                                     Value::FromConstantU32(cbi.instruction.j.target << 2));
 
       DoBranch(Condition::Always, Value(), Value(), (cbi.instruction.op == InstructionOp::jal) ? Reg::ra : Reg::count,
                std::move(branch_target));
@@ -1682,8 +1723,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::bne:
     {
       // npc = pc + (sext(imm) << 2)
-      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc),
-                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
+      Value branch_target = CalculatePC(cbi.instruction.i.imm_sext32() << 2);
 
       // branch <- rs op rt
       Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
@@ -1697,8 +1737,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::blez:
     {
       // npc = pc + (sext(imm) << 2)
-      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc),
-                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
+      Value branch_target = CalculatePC(cbi.instruction.i.imm_sext32() << 2);
 
       // branch <- rs op 0
       Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
@@ -1712,8 +1751,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
     case InstructionOp::b:
     {
       // npc = pc + (sext(imm) << 2)
-      Value branch_target = AddValues(m_register_cache.ReadGuestRegister(Reg::pc),
-                                      Value::FromConstantU32(cbi.instruction.i.imm_sext32() << 2), false);
+      Value branch_target = CalculatePC(cbi.instruction.i.imm_sext32() << 2);
 
       const u8 rt = static_cast<u8>(cbi.instruction.i.rt.GetValue());
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
@@ -1727,8 +1765,7 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       if (link)
       {
         EmitCancelInterpreterLoadDelayForReg(Reg::ra);
-        m_register_cache.WriteGuestRegister(
-          Reg::ra, AddValues(m_register_cache.ReadGuestRegister(Reg::pc), Value::FromConstantU32(4), false));
+        m_register_cache.WriteGuestRegister(Reg::ra, CalculatePC(4));
       }
 
       DoBranch(condition, lhs, Value(), Reg::count, std::move(branch_target));

@@ -41,7 +41,8 @@ public:
   void EmitSub(HostReg to_reg, HostReg from_reg, const Value& value, bool set_flags);
   void EmitCmp(HostReg to_reg, const Value& value);
   void EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs, bool signed_multiply);
-  void EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, HostReg num, HostReg denom, RegSize size, bool signed_divide);
+  void EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, HostReg num, HostReg denom, RegSize size,
+               bool signed_divide);
   void EmitInc(HostReg to_reg, RegSize size);
   void EmitDec(HostReg to_reg, RegSize size);
   void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
@@ -167,8 +168,13 @@ private:
   void BlockEpilogue();
   void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles, bool force_sync = false);
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
-  void SetCurrentInstructionPC(const CodeBlockInstruction& cbi);
   void AddPendingCycles(bool commit);
+
+  Value CalculatePC(u32 offset = 0);
+  void CalculatePC(Value* dest_value, u32 offset = 0);
+  Value GetCurrentInstructionPC(u32 offset = 0);
+  void UpdateCurrentInstructionPC(bool commit);
+  void WriteNewPC(const Value& value);
 
   Value DoGTERegisterRead(u32 index);
   void DoGTERegisterWrite(u32 index, const Value& value);
@@ -204,6 +210,9 @@ private:
   CodeEmitter* m_emit;
 
   TickCount m_delayed_cycles_add = 0;
+  TickCount m_pc_offset = 0;
+  TickCount m_current_instruction_pc_offset = 0;
+  TickCount m_next_pc_offset = 0;
 
   // whether various flags need to be reset.
   bool m_current_instruction_in_branch_delay_slot_dirty = false;

@@ -352,6 +352,17 @@ struct Cop0Registers
     BitField<u32, bool, 31, 1> BD;         // exception occurred in branch delay slot, but pushed IP is for branch
 
     static constexpr u32 WRITE_MASK = 0b0000'0000'0000'0000'0000'0011'0000'0000;
+    static constexpr u32 EXCEPTION_WRITE_MASK = 0b1111'0000'0000'0000'0000'0000'0111'1100;
+
+    static u32 MakeValueForException(Exception excode, bool BD, bool BT, u8 CE)
+    {
+      CAUSE c = {};
+      c.Excode = excode;
+      c.BD = BD;
+      c.BT = BT;
+      c.CE = CE;
+      return c.bits;
+    }
   } cause;
 
   union DCIC

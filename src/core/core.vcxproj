@@ -98,6 +98,7 @@
     <ClInclude Include="cdrom.h" />
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cpu_core.h" />
+    <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="cpu_code_cache.h" />
     <ClInclude Include="cpu_recompiler_code_generator.h" />
