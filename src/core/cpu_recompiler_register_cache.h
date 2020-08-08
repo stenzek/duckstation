@@ -317,6 +317,10 @@ public:
   void FlushAllGuestRegisters(bool invalidate, bool clear_dirty);
   bool EvictOneGuestRegister();
 
+  /// Temporarily prevents register allocation.
+  void InhibitAllocation();
+  void UnunhibitAllocation();
+
 private:
   void ClearRegisterFromOrder(Reg reg);
   void PushRegisterToOrder(Reg reg);
@@ -338,6 +342,7 @@ private:
     u32 available_count = 0;
     u32 callee_saved_order_count = 0;
     u32 guest_reg_order_count = 0;
+    u32 allocator_inhibit_count = 0;
 
     Reg load_delay_register = Reg::count;
     Value load_delay_value{};

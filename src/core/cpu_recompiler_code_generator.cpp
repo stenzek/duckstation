@@ -1433,6 +1433,7 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 
     Value lo = m_register_cache.AllocateScratch(RegSize_32);
     Value hi = m_register_cache.AllocateScratch(RegSize_32);
+    m_register_cache.InhibitAllocation();
 
     LabelType do_divide, done;
 
@@ -1458,6 +1459,7 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 
     EmitBindLabel(&done);
 
+    m_register_cache.UnunhibitAllocation();
     m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
     m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
   }
@@ -1488,6 +1490,7 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
 
     Value lo = m_register_cache.AllocateScratch(RegSize_32);
     Value hi = m_register_cache.AllocateScratch(RegSize_32);
+    m_register_cache.InhibitAllocation();
 
     // we need this in a register on ARM because it won't fit in an immediate
     EmitCopyValue(lo.GetHostRegister(), Value::FromConstantU32(0x80000000u));
@@ -1538,6 +1541,7 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
 
     EmitBindLabel(&done);
 
+    m_register_cache.UnunhibitAllocation();
     m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
     m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
   }

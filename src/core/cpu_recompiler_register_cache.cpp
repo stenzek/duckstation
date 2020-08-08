@@ -184,6 +184,9 @@ u32 RegisterCache::GetFreeHostRegisters() const
 
 HostReg RegisterCache::AllocateHostReg(HostRegState state /* = HostRegState::InUse */)
 {
+  if (m_state.allocator_inhibit_count > 0)
+    Panic("Allocating when inhibited");
+
   // try for a free register in allocation order
   for (u32 i = 0; i < m_state.available_count; i++)
   {
@@ -359,6 +362,7 @@ void RegisterCache::PushState()
   save_state.available_count = m_state.available_count;
   save_state.callee_saved_order_count = m_state.callee_saved_order_count;
   save_state.guest_reg_order_count = m_state.guest_reg_order_count;
+  save_state.allocator_inhibit_count = m_state.allocator_inhibit_count;
   save_state.load_delay_register = m_state.load_delay_register;
   save_state.load_delay_value.regcache = m_state.load_delay_value.regcache;
   save_state.load_delay_value.host_reg = m_state.load_delay_value.host_reg;
@@ -496,14 +500,15 @@ Value RegisterCache::ReadGuestRegisterToScratch(Reg guest_reg)
 
     if (cache_value.IsConstant())
     {
-      Log_DebugPrintf("Copying guest register %s from constant 0x%08X to scratch host register %s", GetRegName(guest_reg),
-                      static_cast<u32>(cache_value.constant_value),
+      Log_DebugPrintf("Copying guest register %s from constant 0x%08X to scratch host register %s",
+                      GetRegName(guest_reg), static_cast<u32>(cache_value.constant_value),
                       m_code_generator.GetHostRegName(host_reg, RegSize_32));
     }
     else
     {
       Log_DebugPrintf("Copying guest register %s from %s to scratch host register %s", GetRegName(guest_reg),
-                      m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32), m_code_generator.GetHostRegName(host_reg, RegSize_32));
+                      m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32),
+                      m_code_generator.GetHostRegName(host_reg, RegSize_32));
     }
   }
   else
@@ -794,6 +799,17 @@ void RegisterCache::AppendRegisterToOrder(Reg reg)
     std::memmove(&m_state.guest_reg_order[1], &m_state.guest_reg_order[0], sizeof(Reg) * m_state.guest_reg_order_count);
   m_state.guest_reg_order[0] = reg;
   m_state.guest_reg_order_count++;
+}
+
+void RegisterCache::InhibitAllocation()
+{
+  m_state.allocator_inhibit_count++;
+}
+
+void RegisterCache::UnunhibitAllocation()
+{
+  Assert(m_state.allocator_inhibit_count > 0);
+  m_state.allocator_inhibit_count--;
 }
 
 } // namespace CPU::Recompiler
