@@ -905,7 +905,7 @@ void SPU::UpdateTransferEvent()
     // transfer event copies from fifo to ram
     if (m_transfer_fifo.IsEmpty())
       m_transfer_event->Deactivate();
-    if (!m_transfer_event->IsActive())
+    else if (!m_transfer_event->IsActive())
       m_transfer_event->Schedule(TickCount(m_transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)));
   }
 
