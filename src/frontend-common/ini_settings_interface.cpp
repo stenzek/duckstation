@@ -2,6 +2,9 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include <algorithm>
+#include <iterator>
+#include <set>
+
 Log_SetChannel(INISettingsInterface);
 
 INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
