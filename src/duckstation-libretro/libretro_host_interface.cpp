@@ -352,7 +352,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 28> s_option_definitions = {{
+static std::array<retro_core_option_definition, 29> s_option_definitions = {{
   {"Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -446,6 +446,12 @@ static std::array<retro_core_option_definition, 28> s_option_definitions = {{
    "Force NTSC Timings",
    "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while "
    "others will break.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"GPU.TextureFiltering",
+   "Bilinear Texture Filtering",
+   "Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a "
+   "greater effect on higher resolution scales. Only applies to the hardware renderers.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"GPU.WidescreenHack",
