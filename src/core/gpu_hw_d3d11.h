@@ -95,6 +95,7 @@ private:
   ComPtr<ID3D11ShaderResourceView> m_texture_stream_buffer_srv_r16ui;
 
   ComPtr<ID3D11RasterizerState> m_cull_none_rasterizer_state;
+  ComPtr<ID3D11RasterizerState> m_wireframe_rasterizer_state;
 
   ComPtr<ID3D11DepthStencilState> m_depth_disabled_state;
   ComPtr<ID3D11DepthStencilState> m_depth_test_always_state;

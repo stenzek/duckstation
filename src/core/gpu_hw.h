@@ -58,13 +58,16 @@ protected:
     u32 texpage;
     u16 u; // 16-bit texcoords are needed for 256 extent rectangles
     u16 v;
+    u32 uv_limits;
 
-    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 packed_texcoord)
+    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 packed_texcoord,
+                           u32 uv_limits_)
     {
-      Set(x_, y_, z_, w_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8));
+      Set(x_, y_, z_, w_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8), uv_limits_);
     }
 
-    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 u_, u16 v_)
+    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 u_, u16 v_,
+                           u32 uv_limits_)
     {
       x = x_;
       y = y_;
@@ -74,6 +77,17 @@ protected:
       texpage = texpage_;
       u = u_;
       v = v_;
+      uv_limits = uv_limits_;
+    }
+
+    ALWAYS_INLINE static u32 PackUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v)
+    {
+      return min_u | (min_v << 8) | (max_u << 16) | (max_v << 24);
+    }
+
+    ALWAYS_INLINE void SetUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v)
+    {
+      uv_limits = PackUVLimits(min_u, max_u, min_v, max_v);
     }
   };
 
@@ -235,6 +249,10 @@ protected:
 
   /// Handles quads with flipped texture coordinate directions.
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
+
+  /// Computes polygon U/V boundaries.
+  static void ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices);
+  static bool AreUVLimitsNeeded();
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 

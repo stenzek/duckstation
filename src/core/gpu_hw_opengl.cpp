@@ -297,12 +297,15 @@ bool GPU_HW_OpenGL::CreateVertexBuffer()
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
+  glEnableVertexAttribArray(4);
   glVertexAttribPointer(0, 4, GL_FLOAT, false, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
                         reinterpret_cast<void*>(offsetof(BatchVertex, color)));
   glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, u)));
   glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(BatchVertex),
                          reinterpret_cast<void*>(offsetof(BatchVertex, texpage)));
+  glVertexAttribPointer(4, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
+                        reinterpret_cast<void*>(offsetof(BatchVertex, uv_limits)));
   glBindVertexArray(0);
 
   glGenVertexArrays(1, &m_attributeless_vao_id);
@@ -367,6 +370,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
               {
                 prog.BindAttribute(2, "a_texcoord");
                 prog.BindAttribute(3, "a_texpage");
+                prog.BindAttribute(4, "a_uv_limits");
               }
 
               if (!IsGLES() || m_supports_dual_source_blend)

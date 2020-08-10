@@ -646,6 +646,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
               {
                 gpbuilder.AddVertexAttribute(2, 0, VK_FORMAT_R32_UINT, offsetof(BatchVertex, u));
                 gpbuilder.AddVertexAttribute(3, 0, VK_FORMAT_R32_UINT, offsetof(BatchVertex, texpage));
+                gpbuilder.AddVertexAttribute(4, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(BatchVertex, uv_limits));
               }
 
               gpbuilder.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

@@ -215,6 +215,32 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   }
 }
 
+bool GPU_HW::AreUVLimitsNeeded()
+{
+  // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
+  return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filtering;
+}
+
+void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
+{
+  u16 min_u = vertices[0].u, max_u = vertices[0].u, min_v = vertices[0].v, max_v = vertices[0].v;
+  for (u32 i = 1; i < num_vertices; i++)
+  {
+    min_u = std::min<u16>(min_u, vertices[i].u);
+    max_u = std::max<u16>(max_u, vertices[i].u);
+    min_v = std::min<u16>(min_v, vertices[i].v);
+    max_v = std::max<u16>(max_v, vertices[i].v);
+  }
+
+  if (min_u != max_u)
+    max_u--;
+  if (min_v != max_v)
+    max_v--;
+
+  for (u32 i = 0; i < num_vertices; i++)
+    vertices[i].SetUVLimits(min_u, max_u, min_v, max_v);
+}
+
 void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)
 {
   const float dx = x1 - x0;
@@ -223,10 +249,10 @@ void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1
   if (dx == 0.0f && dy == 0.0f)
   {
     // Degenerate, render a point.
-    output[0].Set(x0, y0, depth, 1.0f, col0, 0, 0);
-    output[1].Set(x0 + 1.0f, y0, depth, 1.0f, col0, 0, 0);
-    output[2].Set(x1, y1 + 1.0f, depth, 1.0f, col0, 0, 0);
-    output[3].Set(x1 + 1.0f, y1 + 1.0f, depth, 1.0f, col0, 0, 0);
+    output[0].Set(x0, y0, depth, 1.0f, col0, 0, 0, 0);
+    output[1].Set(x0 + 1.0f, y0, depth, 1.0f, col0, 0, 0, 0);
+    output[2].Set(x1, y1 + 1.0f, depth, 1.0f, col0, 0, 0, 0);
+    output[3].Set(x1 + 1.0f, y1 + 1.0f, depth, 1.0f, col0, 0, 0, 0);
   }
   else
   {
@@ -290,10 +316,10 @@ void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1
     const float ox1 = x1 + pad_x1;
     const float oy1 = y1 + pad_y1;
 
-    output[0].Set(ox0, oy0, depth, 1.0f, col0, 0, 0);
-    output[1].Set(ox0 + fill_dx, oy0 + fill_dy, depth, 1.0f, col0, 0, 0);
-    output[2].Set(ox1, oy1, depth, 1.0f, col1, 0, 0);
-    output[3].Set(ox1 + fill_dx, oy1 + fill_dy, depth, 1.0f, col1, 0, 0);
+    output[0].Set(ox0, oy0, depth, 1.0f, col0, 0, 0, 0);
+    output[1].Set(ox0 + fill_dx, oy0 + fill_dy, depth, 1.0f, col0, 0, 0, 0);
+    output[2].Set(ox1, oy1, depth, 1.0f, col1, 0, 0, 0);
+    output[3].Set(ox1 + fill_dx, oy1 + fill_dy, depth, 1.0f, col1, 0, 0, 0);
   }
 
   AddVertex(output[0]);
@@ -339,7 +365,7 @@ void GPU_HW::LoadVertices()
         native_vertex_positions[i][0] = native_x;
         native_vertex_positions[i][1] = native_y;
         vertices[i].Set(static_cast<float>(native_x), static_cast<float>(native_y), depth, 1.0f, color, texpage,
-                        texcoord);
+                        texcoord, 0xFFFF0000u);
 
         if (pgxp)
         {
@@ -356,6 +382,9 @@ void GPU_HW::LoadVertices()
 
       if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
+
+      if (AreUVLimitsNeeded())
+        ComputePolygonUVLimits(vertices.data(), num_vertices);
 
       if (!IsDrawingAreaIsValid())
         return;
@@ -490,14 +519,15 @@ void GPU_HW::LoadVertices()
           const float quad_start_x = static_cast<float>(pos_x + x_offset);
           const float quad_end_x = quad_start_x + static_cast<float>(quad_width);
           const u16 tex_right = tex_left + static_cast<u16>(quad_width);
+          const u32 uv_limits = BatchVertex::PackUVLimits(tex_left, tex_right - 1, tex_top, tex_bottom - 1);
 
-          AddNewVertex(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, tex_left, tex_top);
-          AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top);
-          AddNewVertex(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom);
+          AddNewVertex(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, tex_left, tex_top, uv_limits);
+          AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top, uv_limits);
+          AddNewVertex(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom, uv_limits);
 
-          AddNewVertex(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom);
-          AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top);
-          AddNewVertex(quad_end_x, quad_end_y, depth, 1.0f, color, texpage, tex_right, tex_bottom);
+          AddNewVertex(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom, uv_limits);
+          AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top, uv_limits);
+          AddNewVertex(quad_end_x, quad_end_y, depth, 1.0f, color, texpage, tex_right, tex_bottom, uv_limits);
 
           x_offset += quad_width;
           tex_left = 0;
@@ -628,6 +658,8 @@ void GPU_HW::LoadVertices()
       UnreachableCode();
       break;
   }
+
+  FlushRender();
 }
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)

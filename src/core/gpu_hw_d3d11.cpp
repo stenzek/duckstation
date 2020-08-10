@@ -265,11 +265,12 @@ bool GPU_HW_D3D11::CreateTextureBuffer()
 
 bool GPU_HW_D3D11::CreateBatchInputLayout()
 {
-  static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 4> attributes = {
+  static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 5> attributes = {
     {{"ATTR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(BatchVertex, x), D3D11_INPUT_PER_VERTEX_DATA, 0},
      {"ATTR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, color), D3D11_INPUT_PER_VERTEX_DATA, 0},
      {"ATTR", 2, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, u), D3D11_INPUT_PER_VERTEX_DATA, 0},
-     {"ATTR", 3, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
+     {"ATTR", 3, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0},
+     {"ATTR", 4, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, uv_limits), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
 
   // we need a vertex shader...
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
