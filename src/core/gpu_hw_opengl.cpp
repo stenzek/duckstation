@@ -122,8 +122,14 @@ void GPU_HW_OpenGL::UpdateSettings()
 {
   GPU_HW::UpdateSettings();
 
-  CreateFramebuffer();
-  CompilePrograms();
+  bool framebuffer_changed, shaders_changed;
+  UpdateHWSettings(&framebuffer_changed, &shaders_changed);
+
+  if (framebuffer_changed)
+    CreateFramebuffer();
+  if (shaders_changed)
+    CompilePrograms();
+
   UpdateDisplay();
 }
 
@@ -343,7 +349,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 {
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_supports_dual_source_blend);
+                             m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
 
   g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
 
@@ -356,7 +362,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
-          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured, false);
+          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured);
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));

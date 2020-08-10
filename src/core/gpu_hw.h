@@ -34,7 +34,6 @@ public:
   virtual bool Initialize(HostDisplay* host_display) override;
   virtual void Reset() override;
   virtual bool DoState(StateWrapper& sw) override;
-  virtual void UpdateSettings() override;
   virtual void UpdateResolutionScale() override;
 
 protected:
@@ -174,6 +173,8 @@ protected:
                            static_cast<float>(rgba >> 24) * (1.0f / 255.0f));
   }
 
+  void UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed);
+
   virtual void UpdateVRAMReadTexture();
   virtual void UpdateDepthBufferFromMaskBit() = 0;
   virtual void SetScissorFromDrawingArea() = 0;
@@ -269,6 +270,7 @@ protected:
   bool m_scaled_dithering = false;
   bool m_texture_filtering = false;
   bool m_supports_dual_source_blend = false;
+  bool m_using_uv_limits = false;
 
   BatchConfig m_batch = {};
   BatchUBOData m_batch_ubo_data = {};

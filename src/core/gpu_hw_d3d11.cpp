@@ -70,12 +70,6 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
     return false;
   }
 
-  if (!CreateBatchInputLayout())
-  {
-    Log_ErrorPrintf("Failed to create batch input layout");
-    return false;
-  }
-
   if (!CompileShaders())
   {
     Log_ErrorPrintf("Failed to compile shaders");
@@ -124,9 +118,14 @@ void GPU_HW_D3D11::UpdateSettings()
 {
   GPU_HW::UpdateSettings();
 
-  CreateFramebuffer();
-  CreateStateObjects();
-  CompileShaders();
+  bool needs_new_framebuffer, needs_new_shaders;
+  UpdateHWSettings(&needs_new_framebuffer, &needs_new_shaders);
+
+  if (needs_new_framebuffer)
+    CreateFramebuffer();
+  if (needs_new_shaders)
+    CompileShaders();
+
   RestoreGraphicsAPIState();
   UpdateDisplay();
 }
@@ -263,35 +262,6 @@ bool GPU_HW_D3D11::CreateTextureBuffer()
   return true;
 }
 
-bool GPU_HW_D3D11::CreateBatchInputLayout()
-{
-  static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 5> attributes = {
-    {{"ATTR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(BatchVertex, x), D3D11_INPUT_PER_VERTEX_DATA, 0},
-     {"ATTR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, color), D3D11_INPUT_PER_VERTEX_DATA, 0},
-     {"ATTR", 2, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, u), D3D11_INPUT_PER_VERTEX_DATA, 0},
-     {"ATTR", 3, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0},
-     {"ATTR", 4, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, uv_limits), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
-
-  // we need a vertex shader...
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_supports_dual_source_blend);
-  ComPtr<ID3DBlob> vs_bytecode =
-    m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true, false));
-  if (!vs_bytecode)
-    return false;
-
-  const HRESULT hr = m_device->CreateInputLayout(attributes.data(), static_cast<UINT>(attributes.size()),
-                                                 vs_bytecode->GetBufferPointer(), vs_bytecode->GetBufferSize(),
-                                                 m_batch_input_layout.GetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("CreateInputLayout failed: 0x%08X", hr);
-    return false;
-  }
-
-  return true;
-}
-
 bool GPU_HW_D3D11::CreateStateObjects()
 {
   HRESULT hr;
@@ -373,9 +343,34 @@ bool GPU_HW_D3D11::CreateStateObjects()
 bool GPU_HW_D3D11::CompileShaders()
 {
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_supports_dual_source_blend);
+                             m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
 
   g_host_interface->DisplayLoadingScreen("Compiling shaders...");
+
+  // input layout
+  {
+    static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 5> attributes = {
+      {{"ATTR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(BatchVertex, x), D3D11_INPUT_PER_VERTEX_DATA, 0},
+       {"ATTR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, color), D3D11_INPUT_PER_VERTEX_DATA, 0},
+       {"ATTR", 2, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, u), D3D11_INPUT_PER_VERTEX_DATA, 0},
+       {"ATTR", 3, DXGI_FORMAT_R32_UINT, 0, offsetof(BatchVertex, texpage), D3D11_INPUT_PER_VERTEX_DATA, 0},
+       {"ATTR", 4, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(BatchVertex, uv_limits), D3D11_INPUT_PER_VERTEX_DATA, 0}}};
+
+    // we need a vertex shader...
+    ComPtr<ID3DBlob> vs_bytecode =
+      m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true));
+    if (!vs_bytecode)
+      return false;
+
+    const HRESULT hr = m_device->CreateInputLayout(attributes.data(), static_cast<UINT>(attributes.size()),
+                                                   vs_bytecode->GetBufferPointer(), vs_bytecode->GetBufferSize(),
+                                                   m_batch_input_layout.GetAddressOf());
+    if (FAILED(hr))
+    {
+      Log_ErrorPrintf("CreateInputLayout failed: 0x%08X", hr);
+      return false;
+    }
+  }
 
   m_screen_quad_vertex_shader =
     m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
@@ -384,7 +379,7 @@ bool GPU_HW_D3D11::CompileShaders()
 
   for (u8 textured = 0; textured < 2; textured++)
   {
-    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), false);
+    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured));
     m_batch_vertex_shaders[textured] = m_shader_cache.GetVertexShader(m_device.Get(), vs);
     if (!m_batch_vertex_shaders[textured])
       return false;

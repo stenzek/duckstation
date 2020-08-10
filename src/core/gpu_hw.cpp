@@ -21,6 +21,12 @@ ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
     return std::tie(v1, v2);
 }
 
+ALWAYS_INLINE static bool ShouldUseUVLimits()
+{
+  // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
+  return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filtering;
+}
+
 GPU_HW::GPU_HW() : GPU()
 {
   m_vram_ptr = m_vram_shadow.data();
@@ -43,6 +49,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filtering;
+  m_using_uv_limits = ShouldUseUVLimits();
   PrintSettingsToLog();
   return true;
 }
@@ -79,14 +86,21 @@ bool GPU_HW::DoState(StateWrapper& sw)
   return true;
 }
 
-void GPU_HW::UpdateSettings()
+void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 {
-  GPU::UpdateSettings();
+  const u32 resolution_scale = CalculateResolutionScale();
+  const bool use_uv_limits = ShouldUseUVLimits();
 
-  m_resolution_scale = CalculateResolutionScale();
+  *framebuffer_changed = (m_resolution_scale != resolution_scale);
+  *shaders_changed = (m_resolution_scale != resolution_scale || m_true_color != g_settings.gpu_true_color ||
+                      m_scaled_dithering != g_settings.gpu_scaled_dithering ||
+                      m_texture_filtering != g_settings.gpu_texture_filtering || m_using_uv_limits != use_uv_limits);
+
+  m_resolution_scale = resolution_scale;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filtering;
+  m_using_uv_limits = use_uv_limits;
   PrintSettingsToLog();
 }
 
@@ -120,6 +134,7 @@ void GPU_HW::PrintSettingsToLog()
                  (!m_true_color && m_scaled_dithering) ? " (Scaled)" : "");
   Log_InfoPrintf("Texture Filtering: %s", m_texture_filtering ? "Enabled" : "Disabled");
   Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
+  Log_InfoPrintf("Using UV limits: %s", m_using_uv_limits ? "YES" : "NO");
 }
 
 void GPU_HW::UpdateVRAMReadTexture()
@@ -213,12 +228,6 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
     vertices[2].v++;
     vertices[3].v++;
   }
-}
-
-bool GPU_HW::AreUVLimitsNeeded()
-{
-  // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
-  return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filtering;
 }
 
 void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
@@ -383,7 +392,7 @@ void GPU_HW::LoadVertices()
       if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
-      if (AreUVLimitsNeeded())
+      if (m_using_uv_limits && textured)
         ComputePolygonUVLimits(vertices.data(), num_vertices);
 
       if (!IsDrawingAreaIsValid())
@@ -658,8 +667,6 @@ void GPU_HW::LoadVertices()
       UnreachableCode();
       break;
   }
-
-  FlushRender();
 }
 
 void GPU_HW::CalcScissorRect(int* left, int* top, int* right, int* bottom)

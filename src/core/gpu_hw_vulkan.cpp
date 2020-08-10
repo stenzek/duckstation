@@ -128,11 +128,27 @@ void GPU_HW_Vulkan::UpdateSettings()
   // Everything should be finished executing before recreating resources.
   g_vulkan_context->ExecuteCommandBuffer(true);
 
-  CreateFramebuffer();
-  DestroyPipelines();
-  CompilePipelines();
-  UpdateDepthBufferFromMaskBit();
-  UpdateDisplay();
+  bool framebuffer_changed, shaders_changed;
+  UpdateHWSettings(&framebuffer_changed, &shaders_changed);
+
+  if (framebuffer_changed)
+    CreateFramebuffer();
+
+  if (shaders_changed)
+  {
+    // clear it since we draw a loading screen and it's not in the correct state
+    m_host_display->ClearDisplayTexture();
+    DestroyPipelines();
+    CompilePipelines();
+  }
+
+  // this has to be done here, because otherwise we're using destroyed pipelines in the same cmdbuffer
+  if (framebuffer_changed)
+  {
+    UpdateDepthBufferFromMaskBit();
+    UpdateDisplay();
+  }
+
   RestoreGraphicsAPIState();
 }
 
@@ -576,7 +592,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
   VkPipelineCache pipeline_cache = g_vulkan_shader_cache->GetPipelineCache();
 
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_supports_dual_source_blend);
+                             m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
@@ -589,7 +605,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   for (u8 textured = 0; textured < 2; textured++)
   {
-    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), false);
+    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured));
     VkShaderModule shader = g_vulkan_shader_cache->GetVertexShader(vs);
     if (shader == VK_NULL_HANDLE)
       return false;
