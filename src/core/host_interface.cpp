@@ -97,7 +97,9 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   if (!System::Boot(parameters))
   {
     ReportFormattedError("System failed to boot. The log may contain more information.");
-    DestroySystem();
+    OnSystemDestroyed();
+    m_audio_stream.reset();
+    ReleaseHostDisplay();
     return false;
   }
 
