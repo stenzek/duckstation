@@ -5,13 +5,14 @@
 #include "ui_consolesettingswidget.h"
 
 class QtHostInterface;
+class SettingsDialog;
 
 class ConsoleSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  explicit ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
   ~ConsoleSettingsWidget();
 
 private Q_SLOTS:

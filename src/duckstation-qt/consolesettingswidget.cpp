@@ -1,10 +1,11 @@
 #include "consolesettingswidget.h"
+#include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include <QtWidgets/QFileDialog>
 
 static constexpr char BIOS_IMAGE_FILTER[] = "Binary Images (*.bin);;All Files (*.*)";
 
-ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
+ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
   m_ui.setupUi(this);
@@ -26,9 +27,14 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromReadThread, "CDROM", "ReadThread");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
+                                               false);
 
   connect(m_ui.biosPathBrowse, &QPushButton::pressed, this, &ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked);
+
+  dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
+                             tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
+                                "but usually safe to enabled."));
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
