@@ -364,7 +364,7 @@ bool GPU_HW_D3D11::CompileShaders()
 
     const HRESULT hr = m_device->CreateInputLayout(attributes.data(), static_cast<UINT>(attributes.size()),
                                                    vs_bytecode->GetBufferPointer(), vs_bytecode->GetBufferSize(),
-                                                   m_batch_input_layout.GetAddressOf());
+                                                   m_batch_input_layout.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
       Log_ErrorPrintf("CreateInputLayout failed: 0x%08X", hr);
