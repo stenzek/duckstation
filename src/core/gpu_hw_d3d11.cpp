@@ -122,7 +122,10 @@ void GPU_HW_D3D11::UpdateSettings()
   UpdateHWSettings(&needs_new_framebuffer, &needs_new_shaders);
 
   if (needs_new_framebuffer)
+  {
+    m_host_display->ClearDisplayTexture();
     CreateFramebuffer();
+  }
   if (needs_new_shaders)
     CompileShaders();
 

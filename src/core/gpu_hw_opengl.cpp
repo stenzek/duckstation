@@ -126,7 +126,10 @@ void GPU_HW_OpenGL::UpdateSettings()
   UpdateHWSettings(&framebuffer_changed, &shaders_changed);
 
   if (framebuffer_changed)
+  {
+    m_host_display->ClearDisplayTexture();
     CreateFramebuffer();
+  }
   if (shaders_changed)
     CompilePrograms();
 
