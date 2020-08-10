@@ -127,12 +127,12 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
-       "increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which "
-       "use pre-rendered backgrounds, this enhancement will not work as expected."));
+       "increasing the field of view from 4:3 to 16:9 in 3D games. <br>For 2D games, or games which "
+       "use pre-rendered backgrounds, this enhancement will not work as expected. <b><u>May not be compatible with all games.</u></b>"));
   dialog->registerWidgetHelp(
     m_ui.pgxpEnable, tr("Geometry Correction"), tr("Unchecked"),
-    tr("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory transfers. Only "
-       "works with the hardware renderers, and may not be compatible with all games."));
+    tr("Reduces \"wobbly\" polygons and \"warping\" textures that are common in PS1 games. <br>Only "
+       "works with the hardware renderers. <b><u>May not be compatible with all games.</u></b>"));
   dialog->registerWidgetHelp(m_ui.pgxpCulling, tr("Culling Correction"), tr("Checked"),
                              tr("Increases the precision of polygon culling, reducing the number of holes in geometry. "
                                 "Requires geometry correction enabled."));
