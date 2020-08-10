@@ -234,9 +234,7 @@ Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the rele
 
 To use, download and extract, and install the core file in RetroArch or your preferred frontend.
 
-To build on Windows, simply compile in the same manner as the normal frontend build. A libretro DLL will be built automatically and placed in the output directory. This will be based on the configuration you selected, you can load it directly into RetroArch, or rename it to `duckstation_libretro.dll`.
-
-Alternatively, you can build via cmake using the following commands from a `x64 Native Tools Command Prompt for VS 2019`:
+To build on Windows, use cmake using the following commands from a `x64 Native Tools Command Prompt for VS 2019`:
 - mkdir build
 - cd build
 - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..
