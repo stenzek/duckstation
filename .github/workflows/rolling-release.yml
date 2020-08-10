@@ -189,6 +189,7 @@ jobs:
         ./gradlew assembleRelease
 
     - name: Sign APK
+      if: github.ref == 'refs/heads/master'
       uses: r0adkll/sign-android-release@v1
       with:
         releaseDirectory: android/app/build/outputs/apk/release
@@ -198,12 +199,14 @@ jobs:
         keyPassword: ${{ secrets.APK_KEY_PASSWORD }}
 
     - name: Rename APK
+      if: github.ref == 'refs/heads/master'
       shell: bash
       run: |
         cd android
         mv app/build/outputs/apk/release/app-release-unsigned-signed.apk ../duckstation-android-aarch64.apk
          
     - name: Upload APK
+      if: github.ref == 'refs/heads/master'
       uses: actions/upload-artifact@v1
       with:
         name: "android"
