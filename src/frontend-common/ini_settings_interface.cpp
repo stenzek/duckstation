@@ -3,7 +3,6 @@
 #include "common/log.h"
 #include <algorithm>
 #include <iterator>
-#include <set>
 
 Log_SetChannel(INISettingsInterface);
 
