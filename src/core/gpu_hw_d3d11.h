@@ -57,6 +57,7 @@ private:
   bool CreateUniformBuffer();
   bool CreateTextureBuffer();
   bool CreateStateObjects();
+  void DestroyStateObjects();
 
   bool CompileShaders();
   void DestroyShaders();

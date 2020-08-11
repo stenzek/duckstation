@@ -13,10 +13,12 @@ GPU_HW_D3D11::GPU_HW_D3D11() = default;
 GPU_HW_D3D11::~GPU_HW_D3D11()
 {
   if (m_host_display)
-  {
     m_host_display->ClearDisplayTexture();
-    ResetGraphicsAPIState();
-  }
+
+  m_context->ClearState();
+
+  DestroyShaders();
+  DestroyStateObjects();
 }
 
 bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
@@ -121,8 +123,6 @@ void GPU_HW_D3D11::UpdateSettings()
   bool framebuffer_changed, shaders_changed;
   UpdateHWSettings(&framebuffer_changed, &shaders_changed);
 
-  m_context->ClearState();
-
   if (framebuffer_changed)
   {
     m_host_display->ClearDisplayTexture();
@@ -132,6 +132,8 @@ void GPU_HW_D3D11::UpdateSettings()
   if (shaders_changed)
   {
     DestroyShaders();
+    DestroyStateObjects();
+    CreateStateObjects();
     CompileShaders();
   }
 
@@ -350,6 +352,19 @@ bool GPU_HW_D3D11::CreateStateObjects()
   }
 
   return true;
+}
+
+void GPU_HW_D3D11::DestroyStateObjects()
+{
+  m_batch_blend_states = {};
+  m_linear_sampler_state.Reset();
+  m_point_sampler_state.Reset();
+  m_blend_no_color_writes_state.Reset();
+  m_blend_disabled_state.Reset();
+  m_depth_test_less_state.Reset();
+  m_depth_test_always_state.Reset();
+  m_depth_disabled_state.Reset();
+  m_cull_none_rasterizer_state.Reset();
 }
 
 bool GPU_HW_D3D11::CompileShaders()
