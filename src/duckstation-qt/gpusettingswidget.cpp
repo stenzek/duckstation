@@ -62,46 +62,45 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"), Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER),
     tr(
-      "Chooses the backend to use for rendering tasks for the the console GPU. Depending on your system and hardware, "
-      "Direct3D 11 and OpenGL hardware backends may be available. The software renderer offers the best compatibility, "
+      "Chooses the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
+      "Direct3D 11 and OpenGL hardware backends may be available. <br>The software renderer offers the best compatibility, "
       "but is the slowest and does not offer any enhancements."));
   dialog->registerWidgetHelp(
     m_ui.adapter, tr("Adapter"), tr("(Default)"),
     tr("If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware "
-       "renderers. This option is only supported in Direct3D and Vulkan, OpenGL will always use the default device."));
+       "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"), QStringLiteral("4:3"),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default "
        "is 4:3 which matches a typical TV of the era."));
   dialog->registerWidgetHelp(
     m_ui.displayCropMode, tr("Crop Mode"), tr("Only Overscan Area"),
-    tr("Determines how much of the area typically not visible on a consumer TV set to crop/hide. "
-       "Some games display content in the overscan area, or use it for screen effects and may "
-       "not display correctly with the All Borders setting. Only Overscan offers a good "
+    tr("Determines how much of the area typically not visible on a consumer TV set to crop/hide. <br>"
+       "Some games display content in the overscan area, or use it for screen effects. <br>May "
+       "not display correctly with the \"All Borders\" setting. \"Only Overscan\" offers a good "
        "compromise between stability and hiding black borders."));
   dialog->registerWidgetHelp(
     m_ui.disableInterlacing, tr("Disable Interlacing (force progressive render/scan)"), tr("Unchecked"),
-    tr("Forces the rendering and display of frames to progressive mode. This removes the \"combing\" effect seen in "
-       "480i games by rendering them in 480p. Not all games are compatible with this option, some require interlaced "
-       "rendering or render interlaced internally. Usually safe to enable."));
+    tr("Forces the rendering and display of frames to progressive mode. <br>This removes the \"combing\" effect seen in "
+       "480i games by rendering them in 480p. Usually safe to enable.<br> "
+       "<b><u>May not be compatible with all games.</u></b>"));
   dialog->registerWidgetHelp(
     m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
-    tr("Uses bilinear texture filtering when displaying the console's framebuffer to the screen. Disabling filtering "
-       "will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less "
+    tr("Uses bilinear texture filtering when displaying the console's framebuffer to the screen. <br>Disabling filtering "
+       "will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. <br>The option will be less "
        "noticable the higher the resolution scale."));
   dialog->registerWidgetHelp(
     m_ui.displayIntegerScaling, tr("Integer Upscaling"), tr("Unchecked"),
     tr("Adds padding to the display area to ensure that the ratio between pixels on the host to "
-       "pixels in the console is an integer number. May result in a sharper image in some 2D games."));
+       "pixels in the console is an integer number. <br>May result in a sharper image in some 2D games."));
   dialog->registerWidgetHelp(
     m_ui.vsync, tr("VSync"), tr("Checked"),
-    tr("Enables synchronization with the host display when possible. Enabling this option will "
-       "provide better frame pacing and smoother motion with fewer duplicated frames. VSync is "
-       "automatically disabled when it is not possible (e.g. running at non-100% speed)."));
+    tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
+       "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
   dialog->registerWidgetHelp(
     m_ui.resolutionScale, tr("Resolution Scale"), "1x",
-    tr("Enables the upscaling of 3D objects rendered to the console's framebuffer. Only applies "
-       "to the hardware backends. This option is usually safe, with most games looking fine at "
+    tr("Enhances the resolution of rendered 3D polygons and lines. Only applies "
+       "to the hardware backends. <br>This option is usually safe, with most games looking fine at "
        "higher resolutions. Higher resolutions require a more powerful GPU."));
   dialog->registerWidgetHelp(
     m_ui.trueColor, tr("True Color Rendering (24-bit, disables dithering)"), tr("Unchecked"),
@@ -113,24 +112,24 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   dialog->registerWidgetHelp(
     m_ui.scaledDithering, tr("Scaled Dithering (scale dither pattern to resolution)"), tr("Checked"),
     tr("Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "
-       "obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers."));
+       "obvious at higher resolutions. <br>Usually safe to enable, and only supported by the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.forceNTSCTimings, tr("Force NTSC Timings (60hz-on-PAL)"), tr("Unchecked"),
     tr(
-      "Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which "
-      "have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable "
+      "Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. <br>For most games which "
+      "have a speed tied to the framerate, this will result in the game running approximately 17% faster. <br>For variable "
       "frame rate games, it may not affect the speed."));
   dialog->registerWidgetHelp(
     m_ui.linearTextureFiltering, tr("Bilinear Texture Filtering"), tr("Unchecked"),
     tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear "
-       "filtering. Will have a greater effect on higher resolution scales. Currently this option "
+       "filtering. <br>Will have a greater effect on higher resolution scales. Currently this option "
        "produces artifacts around objects in many games and needs further work. Only applies to the hardware "
        "renderers."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
        "increasing the field of view from 4:3 to 16:9 in 3D games. <br>For 2D games, or games which "
-       "use pre-rendered backgrounds, this enhancement will not work as expected. <b><u>May not be compatible with all games.</u></b>"));
+       "use pre-rendered backgrounds, this enhancement will not work as expected. <br><b><u>May not be compatible with all games.</u></b>"));
   dialog->registerWidgetHelp(
     m_ui.pgxpEnable, tr("Geometry Correction"), tr("Unchecked"),
     tr("Reduces \"wobbly\" polygons and \"warping\" textures that are common in PS1 games. <br>Only "
