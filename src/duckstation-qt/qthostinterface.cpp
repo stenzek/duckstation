@@ -244,18 +244,14 @@ void QtHostInterface::RemoveSettingValue(const char* section, const char* key)
 
 void QtHostInterface::queueSettingsSave()
 {
-  if (!m_settings_save_timer)
-  {
-    m_settings_save_timer = std::make_unique<QTimer>();
-    connect(m_settings_save_timer.get(), &QTimer::timeout, this, &QtHostInterface::doSaveSettings);
-    m_settings_save_timer->setSingleShot(true);
-  }
-  else
-  {
-    m_settings_save_timer->stop();
-  }
+  if (m_settings_save_timer)
+    return;
 
+  m_settings_save_timer = std::make_unique<QTimer>();
+  connect(m_settings_save_timer.get(), &QTimer::timeout, this, &QtHostInterface::doSaveSettings);
+  m_settings_save_timer->setSingleShot(true);
   m_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+  m_settings_save_timer->moveToThread(m_worker_thread);
 }
 
 void QtHostInterface::doSaveSettings()
@@ -1104,6 +1100,11 @@ void QtHostInterface::threadEntryPoint()
 
   delete m_worker_thread_event_loop;
   m_worker_thread_event_loop = nullptr;
+  if (m_settings_save_timer)
+  {
+    m_settings_save_timer.reset();
+    doSaveSettings();
+  }
 
   // move back to UI thread
   moveToThread(m_original_thread);
