@@ -734,6 +734,10 @@ void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
   float2 weights = abs(texel_top_left);
   texcol = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
   ialpha = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
+
+  // Compensate for partially transparent sampling.
+  if (ialpha > 0.0)
+    texcol.rgb /= float3(ialpha, ialpha, ialpha);
 }
 
 #endif
@@ -793,9 +797,6 @@ void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
       BilinearSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
       if (ialpha < 0.5)
         discard;
-
-      texcol.rgb /= float3(ialpha, ialpha, ialpha);
-      semitransparent = (texcol.a != 0.0);
     #else
       #if UV_LIMITS
         texcol = SampleFromVRAM(v_texpage, clamp(coords, uv_limits.xy, uv_limits.zw));
