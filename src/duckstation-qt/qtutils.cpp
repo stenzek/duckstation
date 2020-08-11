@@ -4,6 +4,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
@@ -43,15 +44,18 @@ QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
 
 void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
 {
+  const int min_column_width = view->horizontalHeader()->minimumSectionSize();
+  const int max_column_width = view->horizontalHeader()->maximumSectionSize();
   const int total_width =
-    std::accumulate(widths.begin(), widths.end(), 0, [](int a, int b) { return a + std::max(b, 0); });
+    std::accumulate(widths.begin(), widths.end(), 0, [&min_column_width, &max_column_width](int a, int b) {
+      return a + ((b < 0) ? 0 : std::clamp(b, min_column_width, max_column_width));
+    });
 
-  const int padding = 2;
   const int scrollbar_width = ((view->verticalScrollBar() && view->verticalScrollBar()->isVisible()) ||
                                view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
-                                view->style()->pixelMetric(QStyle::PM_ScrollBarExtent) :
+                                view->verticalScrollBar()->width() :
                                 0;
-  const int flex_width = std::max(view->width() - total_width - scrollbar_width - padding, 1);
+  const int flex_width = std::max(view->contentsRect().width() - total_width - scrollbar_width, 1);
 
   int column_index = 0;
   for (const int spec_width : widths)
