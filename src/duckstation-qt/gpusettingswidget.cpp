@@ -99,7 +99,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
        "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
   dialog->registerWidgetHelp(
     m_ui.resolutionScale, tr("Resolution Scale"), "1x",
-    tr("Enhances the resolution of rendered 3D polygons and lines. Only applies "
+    tr("Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies "
        "to the hardware backends. <br>This option is usually safe, with most games looking fine at "
        "higher resolutions. Higher resolutions require a more powerful GPU."));
   dialog->registerWidgetHelp(
