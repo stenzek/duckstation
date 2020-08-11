@@ -182,8 +182,11 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
                       (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
 
+  // Leverage PGXP to further avoid 3D polygons that just happen to align this way after projection
+  const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
+
   // Shouldn't matter as degenerate primitives will be culled anyways.
-  if (area == 0.0f && texArea == 0)
+  if (area == 0.0f || texArea == 0 || is_3d)
     return;
 
   // Use floats here as it'll be faster than integer divides.
