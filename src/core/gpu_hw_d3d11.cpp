@@ -118,19 +118,30 @@ void GPU_HW_D3D11::UpdateSettings()
 {
   GPU_HW::UpdateSettings();
 
-  bool needs_new_framebuffer, needs_new_shaders;
-  UpdateHWSettings(&needs_new_framebuffer, &needs_new_shaders);
+  bool framebuffer_changed, shaders_changed;
+  UpdateHWSettings(&framebuffer_changed, &shaders_changed);
 
-  if (needs_new_framebuffer)
+  m_context->ClearState();
+
+  if (framebuffer_changed)
   {
     m_host_display->ClearDisplayTexture();
     CreateFramebuffer();
   }
-  if (needs_new_shaders)
-    CompileShaders();
 
-  RestoreGraphicsAPIState();
-  UpdateDisplay();
+  if (shaders_changed)
+  {
+    DestroyShaders();
+    CompileShaders();
+  }
+
+  if (framebuffer_changed)
+  {
+    RestoreGraphicsAPIState();
+    UpdateDepthBufferFromMaskBit();
+    UpdateDisplay();
+    ResetGraphicsAPIState();
+  }
 }
 
 void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
@@ -208,12 +219,10 @@ bool GPU_HW_D3D11::CreateFramebuffer()
     BlitTexture(m_vram_texture.GetD3DRTV(), 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                 old_vram_texture.GetD3DSRV(), 0, 0, old_vram_texture.GetWidth(), old_vram_texture.GetHeight(),
                 old_vram_texture.GetWidth(), old_vram_texture.GetHeight(), linear_filter);
-    UpdateDepthBufferFromMaskBit();
   }
 
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), nullptr);
   SetFullVRAMDirtyRectangle();
-  RestoreGraphicsAPIState();
   return true;
 }
 
@@ -454,6 +463,22 @@ bool GPU_HW_D3D11::CompileShaders()
   }
 
   return true;
+}
+
+void GPU_HW_D3D11::DestroyShaders()
+{
+  m_display_pixel_shaders = {};
+  m_vram_update_depth_pixel_shader.Reset();
+  m_vram_copy_pixel_shader.Reset();
+  m_vram_write_pixel_shader.Reset();
+  m_vram_read_pixel_shader.Reset();
+  m_vram_interlaced_fill_pixel_shader.Reset();
+  m_vram_fill_pixel_shader.Reset();
+  m_copy_pixel_shader.Reset();
+  m_screen_quad_vertex_shader.Reset();
+  m_batch_pixel_shaders = {};
+  m_batch_vertex_shaders = {};
+  m_batch_input_layout.Reset();
 }
 
 void GPU_HW_D3D11::UploadUniformBuffer(const void* data, u32 data_size)

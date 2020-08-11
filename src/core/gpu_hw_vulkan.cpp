@@ -145,11 +145,11 @@ void GPU_HW_Vulkan::UpdateSettings()
   // this has to be done here, because otherwise we're using destroyed pipelines in the same cmdbuffer
   if (framebuffer_changed)
   {
+    RestoreGraphicsAPIState();
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
+    ResetGraphicsAPIState();
   }
-
-  RestoreGraphicsAPIState();
 }
 
 void GPU_HW_Vulkan::MapBatchVertexPointer(u32 required_vertices)

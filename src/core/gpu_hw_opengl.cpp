@@ -133,7 +133,13 @@ void GPU_HW_OpenGL::UpdateSettings()
   if (shaders_changed)
     CompilePrograms();
 
-  UpdateDisplay();
+  if (framebuffer_changed)
+  {
+    RestoreGraphicsAPIState();
+    UpdateDepthBufferFromMaskBit();
+    UpdateDisplay();
+    ResetGraphicsAPIState();
+  }
 }
 
 void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
@@ -274,8 +280,6 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
     glEnable(GL_SCISSOR_TEST);
     old_vram_texture.Destroy();
     glDeleteFramebuffers(1, &old_vram_fbo);
-
-    UpdateDepthBufferFromMaskBit();
   }
 
   SetFullVRAMDirtyRectangle();

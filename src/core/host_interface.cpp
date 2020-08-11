@@ -499,9 +499,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable)
     {
-      g_gpu->RestoreGraphicsAPIState();
       g_gpu->UpdateSettings();
-      g_gpu->ResetGraphicsAPIState();
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
