@@ -6,9 +6,10 @@
 Log_SetChannel(GPU_HW_ShaderGen);
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
-                                   bool scaled_dithering, bool texture_filtering, bool supports_dual_source_blend)
+                                   bool scaled_dithering, bool texture_filtering, bool uv_limits,
+                                   bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
-    m_scaled_dithering(scaled_dithering), m_texture_filering(texture_filtering),
+    m_scaled_dithering(scaled_dithering), m_texture_filering(texture_filtering), m_uv_limits(uv_limits),
     m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_supports_dual_source_blend(supports_dual_source_blend),
     m_use_glsl_interface_blocks(false)
 {
@@ -494,26 +495,35 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
                        false);
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool upscaled_lines)
+std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
+  DefineMacro(ss, "UV_LIMITS", m_uv_limits);
 
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
 
   ss << "CONSTANT float EPSILON = 0.00001;\n";
 
-  const char* output_block_suffix = upscaled_lines ? "VS" : "";
   if (textured)
   {
-    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                            {{"nointerpolation", "uint4 v_texpage"}}, false, output_block_suffix);
+    if (m_uv_limits)
+    {
+      DeclareVertexEntryPoint(
+        ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
+        {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}}, false);
+    }
+    else
+    {
+      DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
+                              {{"nointerpolation", "uint4 v_texpage"}}, false);
+    }
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false, output_block_suffix);
+    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false);
   }
 
   ss << R"(
@@ -557,6 +567,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool upsc
     v_texpage.y = ((a_texpage >> 4) & 1u) * 256u * RESOLUTION_SCALE;
     v_texpage.z = ((a_texpage >> 16) & 63u) * 16u * RESOLUTION_SCALE;
     v_texpage.w = ((a_texpage >> 22) & 511u) * RESOLUTION_SCALE;
+
+    #if UV_LIMITS
+      v_uv_limits = a_uv_limits * float4(255.0, 255.0, 255.0, 255.0);
+    #endif
   #endif
 }
 )";
@@ -593,6 +607,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filering);
+  DefineMacro(ss, "UV_LIMITS", m_uv_limits);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
 
   WriteCommonFunctions(ss);
@@ -658,13 +673,7 @@ uint2 FloatToIntegerCoords(float2 coords)
 float4 SampleFromVRAM(uint4 texpage, float2 coords)
 {
   #if PALETTE
-    // We can't currently use upscaled coordinate for palettes because of how they're packed.
-    // Not that it would be any benefit anyway, render-to-texture effects don't use palettes.
-    #if !TEXTURE_FILTERING
-      coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-    #endif
     uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
-
     uint2 index_coord = icoord;
     #if PALETTE_4_BIT
       index_coord.x /= 4u;
@@ -698,12 +707,55 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     return SAMPLE_TEXTURE(samp0, float2(direct_icoord) * RCP_VRAM_SIZE);
   #endif
 }
+
+void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  // Compute the coordinates of the four texels we will be interpolating between.
+  // Clamp this to the triangle texture coordinates.
+  float2 texel_top_left = frac(coords) - float2(0.5, 0.5);
+  float2 texel_offset = sign(texel_top_left);
+  float4 fcoords = max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
+                        float4(0.0, 0.0, 0.0, 0.0));
+
+  // Load four texels.
+  float4 s00 = SampleFromVRAM(texpage, clamp(fcoords.xy, uv_limits.xy, uv_limits.zw));
+  float4 s10 = SampleFromVRAM(texpage, clamp(fcoords.zy, uv_limits.xy, uv_limits.zw));
+  float4 s01 = SampleFromVRAM(texpage, clamp(fcoords.xw, uv_limits.xy, uv_limits.zw));
+  float4 s11 = SampleFromVRAM(texpage, clamp(fcoords.zw, uv_limits.xy, uv_limits.zw));
+
+  // Compute alpha from how many texels aren't pixel color 0000h.
+  float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
+  float a10 = float(VECTOR_NEQ(s10, TRANSPARENT_PIXEL_COLOR));
+  float a01 = float(VECTOR_NEQ(s01, TRANSPARENT_PIXEL_COLOR));
+  float a11 = float(VECTOR_NEQ(s11, TRANSPARENT_PIXEL_COLOR));
+
+  // Bilinearly interpolate.
+  float2 weights = abs(texel_top_left);
+  texcol = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
+  ialpha = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
+
+  // Compensate for partially transparent sampling.
+  if (ialpha > 0.0)
+    texcol.rgb /= float3(ialpha, ialpha, ialpha);
+}
+
 #endif
 )";
 
   if (textured)
   {
-    DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1, true);
+    if (m_uv_limits)
+    {
+      DeclareFragmentEntryPoint(ss, 1, 1,
+                                {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
+                                true, use_dual_source ? 2 : 1, true);
+    }
+    else
+    {
+      DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1,
+                                true);
+    }
   }
   else
   {
@@ -725,47 +777,39 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
   #endif
 
   #if TEXTURED
-    #if TEXTURE_FILTERING
-      // Compute the coordinates of the four texels we will be interpolating between.
-      // TODO: Find some way to clamp this to the triangle texture coordinates?
-      float2 downscaled_coords = v_tex0;
-      #if PALETTE
-        downscaled_coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+
+    // We can't currently use upscaled coordinate for palettes because of how they're packed.
+    // Not that it would be any benefit anyway, render-to-texture effects don't use palettes.
+    float2 coords = v_tex0;
+    #if PALETTE
+      coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+    #endif
+
+    #if UV_LIMITS
+      float4 uv_limits = v_uv_limits;
+      #if !PALETTE
+        uv_limits *= float4(RESOLUTION_SCALE, RESOLUTION_SCALE, RESOLUTION_SCALE, RESOLUTION_SCALE);
       #endif
-      float2 texel_top_left = frac(downscaled_coords) - float2(0.5, 0.5);
-      float2 texel_offset = sign(texel_top_left);
-      float4 fcoords = max(downscaled_coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
-                           float4(0.0, 0.0, 0.0, 0.0));
+    #endif
 
-      // Load four texels.
-      float4 s00 = SampleFromVRAM(v_texpage, fcoords.xy);
-      float4 s10 = SampleFromVRAM(v_texpage, fcoords.zy);
-      float4 s01 = SampleFromVRAM(v_texpage, fcoords.xw);
-      float4 s11 = SampleFromVRAM(v_texpage, fcoords.zw);
-
-      // Compute alpha from how many texels aren't pixel color 0000h.
-      float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
-      float a10 = float(VECTOR_NEQ(s10, TRANSPARENT_PIXEL_COLOR));
-      float a01 = float(VECTOR_NEQ(s01, TRANSPARENT_PIXEL_COLOR));
-      float a11 = float(VECTOR_NEQ(s11, TRANSPARENT_PIXEL_COLOR));
-
-      // Bilinearly interpolate.
-      float2 weights = abs(texel_top_left);
-      float4 texcol = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
-      ialpha = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
+    float4 texcol;
+    #if TEXTURE_FILTERING
+      BilinearSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
       if (ialpha < 0.5)
         discard;
-
-      texcol.rgb /= float3(ialpha, ialpha, ialpha);
-      semitransparent = (texcol.a != 0.0);
     #else
-      float4 texcol = SampleFromVRAM(v_texpage, v_tex0);
+      #if UV_LIMITS
+        texcol = SampleFromVRAM(v_texpage, clamp(coords, uv_limits.xy, uv_limits.zw));
+      #else
+        texcol = SampleFromVRAM(v_texpage, coords);
+      #endif
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 
-      semitransparent = (texcol.a != 0.0);
       ialpha = 1.0;
     #endif
+
+    semitransparent = (texcol.a != 0.0);
 
     // If not using true color, truncate the framebuffer colors to 5-bit.
     #if !TRUE_COLOR

@@ -56,10 +56,11 @@ private:
   bool CreateVertexBuffer();
   bool CreateUniformBuffer();
   bool CreateTextureBuffer();
-  bool CreateBatchInputLayout();
   bool CreateStateObjects();
+  void DestroyStateObjects();
 
   bool CompileShaders();
+  void DestroyShaders();
   void SetViewport(u32 x, u32 y, u32 width, u32 height);
   void SetScissor(u32 x, u32 y, u32 width, u32 height);
   void SetViewportAndScissor(u32 x, u32 y, u32 width, u32 height);

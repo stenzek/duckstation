@@ -122,9 +122,24 @@ void GPU_HW_OpenGL::UpdateSettings()
 {
   GPU_HW::UpdateSettings();
 
-  CreateFramebuffer();
-  CompilePrograms();
-  UpdateDisplay();
+  bool framebuffer_changed, shaders_changed;
+  UpdateHWSettings(&framebuffer_changed, &shaders_changed);
+
+  if (framebuffer_changed)
+  {
+    m_host_display->ClearDisplayTexture();
+    CreateFramebuffer();
+  }
+  if (shaders_changed)
+    CompilePrograms();
+
+  if (framebuffer_changed)
+  {
+    RestoreGraphicsAPIState();
+    UpdateDepthBufferFromMaskBit();
+    UpdateDisplay();
+    ResetGraphicsAPIState();
+  }
 }
 
 void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
@@ -265,8 +280,6 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
     glEnable(GL_SCISSOR_TEST);
     old_vram_texture.Destroy();
     glDeleteFramebuffers(1, &old_vram_fbo);
-
-    UpdateDepthBufferFromMaskBit();
   }
 
   SetFullVRAMDirtyRectangle();
@@ -297,12 +310,15 @@ bool GPU_HW_OpenGL::CreateVertexBuffer()
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
+  glEnableVertexAttribArray(4);
   glVertexAttribPointer(0, 4, GL_FLOAT, false, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, x)));
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
                         reinterpret_cast<void*>(offsetof(BatchVertex, color)));
   glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(BatchVertex), reinterpret_cast<void*>(offsetof(BatchVertex, u)));
   glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(BatchVertex),
                          reinterpret_cast<void*>(offsetof(BatchVertex, texpage)));
+  glVertexAttribPointer(4, 4, GL_UNSIGNED_BYTE, true, sizeof(BatchVertex),
+                        reinterpret_cast<void*>(offsetof(BatchVertex, uv_limits)));
   glBindVertexArray(0);
 
   glGenVertexArrays(1, &m_attributeless_vao_id);
@@ -340,7 +356,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 {
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_supports_dual_source_blend);
+                             m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
 
   g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
 
@@ -353,7 +369,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
-          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured, false);
+          const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured);
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
@@ -367,6 +383,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
               {
                 prog.BindAttribute(2, "a_texcoord");
                 prog.BindAttribute(3, "a_texpage");
+                prog.BindAttribute(4, "a_uv_limits");
               }
 
               if (!IsGLES() || m_supports_dual_source_blend)

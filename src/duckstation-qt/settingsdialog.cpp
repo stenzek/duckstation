@@ -22,7 +22,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   m_general_settings = new GeneralSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer);
+  m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
   m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
   m_controller_settings = new ControllerSettingsWidget(host_interface, m_ui.settingsContainer);

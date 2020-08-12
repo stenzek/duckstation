@@ -121,10 +121,8 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
       "frame rate games, it may not affect the speed."));
   dialog->registerWidgetHelp(
     m_ui.linearTextureFiltering, tr("Bilinear Texture Filtering"), tr("Unchecked"),
-    tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear "
-       "filtering. <br>Will have a greater effect on higher resolution scales. Currently this option "
-       "produces artifacts around objects in many games and needs further work. Only applies to the hardware "
-       "renderers."));
+    tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. <br>Will have a "
+       "greater effect on higher resolution scales. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "

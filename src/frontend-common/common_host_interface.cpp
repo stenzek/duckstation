@@ -1302,6 +1302,7 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    if (!pressed)
                    {
                      g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
+                     g_gpu->UpdateSettings();
                      ReportFormattedMessage("PGXP is now %s.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
 
                      if (g_settings.gpu_pgxp_enable)

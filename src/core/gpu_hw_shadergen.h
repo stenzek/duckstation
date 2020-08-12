@@ -8,12 +8,12 @@ class GPU_HW_ShaderGen
 {
 public:
   GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color, bool scaled_dithering,
-                   bool texture_filtering, bool supports_dual_source_blend);
+                   bool texture_filtering, bool uv_limits, bool supports_dual_source_blend);
   ~GPU_HW_ShaderGen();
 
   static bool UseGLSLBindingLayout();
 
-  std::string GenerateBatchVertexShader(bool textured, bool upscaled_lines);
+  std::string GenerateBatchVertexShader(bool textured);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPU::TextureMode texture_mode,
                                           bool dithering, bool interlacing);
   std::string GenerateScreenQuadVertexShader();
@@ -51,6 +51,7 @@ private:
   bool m_true_color;
   bool m_scaled_dithering;
   bool m_texture_filering;
+  bool m_uv_limits;
   bool m_glsl;
   bool m_supports_dual_source_blend;
   bool m_use_glsl_interface_blocks;

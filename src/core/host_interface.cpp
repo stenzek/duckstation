@@ -97,7 +97,9 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   if (!System::Boot(parameters))
   {
     ReportFormattedError("System failed to boot. The log may contain more information.");
-    DestroySystem();
+    OnSystemDestroyed();
+    m_audio_stream.reset();
+    ReleaseHostDisplay();
     return false;
   }
 
@@ -494,11 +496,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
-        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
+        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable)
     {
-      g_gpu->RestoreGraphicsAPIState();
       g_gpu->UpdateSettings();
-      g_gpu->ResetGraphicsAPIState();
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
