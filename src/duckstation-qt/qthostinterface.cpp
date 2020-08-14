@@ -1,4 +1,4 @@
-#include "qthostinterface.h"
+﻿#include "qthostinterface.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
@@ -56,6 +56,7 @@ std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageLi
 {
   return {{QStringLiteral("English"), QStringLiteral("")},
           {QStringLiteral("Deutsch"), QStringLiteral("de")},
+          {QStringLiteral("עברית"), QStringLiteral("he")},
           {QStringLiteral("Portuguese (Pt)"), QStringLiteral("pt-pt")},
           {QStringLiteral("Portuguese (Br)"), QStringLiteral("pt-br")}};
 }

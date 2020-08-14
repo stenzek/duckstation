@@ -113,9 +113,6 @@
     <Image Include="duckstation-qt.ico" />
   </ItemGroup>
   <ItemGroup>
-    <QtTs Include="translations\duckstation-qt_pt.ts" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="translations\duckstation-qt_pt-br.ts">
       <Filter>translations</Filter>
     </None>
@@ -123,6 +120,9 @@
       <Filter>translations</Filter>
     </None>
     <None Include="translations\duckstation-qt_de.ts">
+      <Filter>translations</Filter>
+    </None>
+    <None Include="translations\duckstation-qt_he.ts">
       <Filter>translations</Filter>
     </None>
   </ItemGroup>
