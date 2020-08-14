@@ -190,7 +190,7 @@ void RaiseException(Exception excode)
 void RaiseException(u32 CAUSE_bits, u32 EPC)
 {
   g_state.cop0_regs.EPC = EPC;
-  g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & !Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK) |
+  g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK) |
                                  (CAUSE_bits & Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK);
 
 #ifdef _DEBUG
