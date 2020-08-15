@@ -82,7 +82,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../advancedsettingswidget.ui" line="103"/>
         <source>These options are tweakable to improve performance/game compatibility. Use at your own risk, modified values will not be supported.</source>
-        <translation>Diese Einstellungen erlauben das optimieren der Performance bzw Spielkompatibilität. Auf eigenes Risiko hin zu verwenden.</translation>
+        <translation>Diese Einstellungen erlauben das Optimieren der Performance bzw Spielkompatibilität. Auf eigenes Risiko hin zu verwenden.</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="113"/>
@@ -196,7 +196,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../audiosettingswidget.cpp" line="46"/>
         <source>Throttles the emulation speed based on the audio backend pulling audio frames. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Drosselt die Emulationsgeschwindigkeit basierend auf einkommenden Audioframes. Dadurch lassen sich Tonkratzer oder ähnliche Störgeräusche durch zu schnelle Emulation vermeiden. Sobald die Emulation allerdings unter 100% läuft wird diese Synchronisation aufgehoben.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="49"/>
@@ -681,7 +681,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../gpusettingswidget.cpp" line="180"/>
         <source>%1x%2</source>
-        <translation>%1%2</translation>
+        <translation>%1x%2</translation>
     </message>
 </context>
 <context>
@@ -1267,7 +1267,7 @@ Ungefähr 4 Megabyte werden über ihre Internetverbindung beansprucht.</translat
     <message>
         <location filename="../mainwindow.ui" line="86"/>
         <source>S&amp;ettings</source>
-        <translation>Einstellungen</translation>
+        <translation>E&amp;instellungen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="90"/>
@@ -1357,7 +1357,7 @@ Ungefähr 4 Megabyte werden über ihre Internetverbindung beansprucht.</translat
     <message>
         <location filename="../mainwindow.ui" line="290"/>
         <source>C&amp;onsole Settings...</source>
-        <translation>Konsoleneinstellungen…</translation>
+        <translation>K&amp;onsoleneinstellungen…</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="299"/>
@@ -1522,7 +1522,7 @@ Ungefähr 4 Megabyte werden über ihre Internetverbindung beansprucht.</translat
     <message>
         <location filename="../mainwindow.ui" line="538"/>
         <source>Resume</source>
-        <translation>fortsetzen</translation>
+        <translation>Fortsetzen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="541"/>
@@ -1573,7 +1573,7 @@ Ungefähr 4 Megabyte werden über ihre Internetverbindung beansprucht.</translat
     <message>
         <location filename="../mainwindow.cpp" line="393"/>
         <source>Full Boot</source>
-        <translation>Voller Boot</translation>
+        <translation>Vollständiger Boot</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="411"/>
@@ -1681,7 +1681,7 @@ Die URL lautete: %1</translation>
     <message>
         <location filename="../qthostinterface.cpp" line="862"/>
         <source>Resume (%1)</source>
-        <translation>(%1) wieder aufnhemen</translation>
+        <translation>(%1) fortsetzen</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="869"/>
