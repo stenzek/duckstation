@@ -21,6 +21,9 @@ struct SAVE_STATE_HEADER
   u32 media_filename_length;
   u32 offset_to_media_filename;
 
+  u32 playlist_filename_length;
+  u32 offset_to_playlist_filename;
+
   u32 screenshot_width;
   u32 screenshot_height;
   u32 screenshot_size;
