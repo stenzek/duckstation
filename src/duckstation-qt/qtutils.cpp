@@ -525,8 +525,6 @@ static const std::array<QtKeyModifierEntry, 5> s_qt_key_modifiers = {
    {Qt::AltModifier, Qt::Key_Alt, QStringLiteral("Alt")},
    {Qt::MetaModifier, Qt::Key_Meta, QStringLiteral("Meta")},
    {Qt::KeypadModifier, static_cast<Qt::Key>(0), QStringLiteral("Keypad")}}};
-static const Qt::KeyboardModifiers s_qt_modifier_mask =
-  Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier;
 
 QString GetKeyIdentifier(int key)
 {
@@ -597,7 +595,20 @@ std::optional<int> ParseKeyString(const QString& key_str)
 
 int KeyEventToInt(const QKeyEvent* ke)
 {
-  return static_cast<int>(ke->modifiers() & s_qt_modifier_mask) | ke->key();
+  const Qt::KeyboardModifiers mods = ke->modifiers();
+  const int key = ke->key();
+
+  int val = key;
+  if (mods != 0)
+  {
+    for (const QtKeyModifierEntry& mod : s_qt_key_modifiers)
+    {
+      if (mods & mod.mod && key != mod.key)
+        val |= static_cast<int>(mod.mod);
+    }
+  }
+
+  return val;
 }
 
 QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind /*= false*/)
