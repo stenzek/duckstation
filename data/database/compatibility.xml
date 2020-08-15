@@ -344,6 +344,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SCUS-94182" compatibility="5" region="NTSC-U" title="Armored Core (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
   <entry code="SLUS-01022" compatibility="5" region="NTSC-U" title="Armorines - Project S.W.A.R.M. (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1334-g10f2366</version-tested>
@@ -697,6 +701,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
   </entry>
+  <entry code="SCUS-94700" compatibility="5" region="NTSC-U" title="Chronicles of the Sword (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
   <entry code="SLUS-01041" compatibility="3" region="NTSC-U" title="Chrono Cross (USA) (Disc 1)">
     <compatibility>Crashes In-Game</compatibility>
     <version-tested>0.1-1409-ge198e315</version-tested>
@@ -925,6 +933,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01513" compatibility="5" region="NTSC-U" title="Disney's Winnie the Pooh - Kindergarten (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
+  </entry>
+  <entry code="SLUS-01214" compatibility="5" region="NTSC-U" title="Disney-Pixar Toy Story Racer (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1485-ge6156e2a</version-tested>
   </entry>
   <entry code="SLUS-00077" compatibility="5" region="NTSC-U" title="Doom (USA)">
     <compatibility>No Issues</compatibility>
@@ -1290,6 +1302,27 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="PBPX-95002" compatibility="3" region="NTSC-U" title="Interactive CD Sampler Disc Volume 4 (USA)">
+    <compatibility>Crashes In-Game</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+    <comments>Hangs when choosing Armored core (Issue #751).</comments>
+  </entry>
+  <entry code="SCUS-94957" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Pack Volume 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
+  <entry code="SCUS-94959" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Pack Volume 3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
+  <entry code="SCUS-94966" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Pack Volume 3.5 (USA) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
+  <entry code="SCUS-94177" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Pack Volume 3.5 (USA) (Rev 1) (SCUS-94177)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
   <entry code="SCUS-94955" compatibility="3" region="NTSC-U" title="Interactive CD Sampler Volume 1 (USA)">
     <compatibility>Crashes In-Game</compatibility>
     <comments>Crashes with NFL GameDay demo (Issue #729).</comments>
@@ -1439,6 +1472,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00937" compatibility="5" region="NTSC-U" title="LEGO Rock Raiders (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
+  </entry>
+  <entry code="SLPS-01556" compatibility="5" region="NTSC-J" title="LSD - Dream Emulator (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1485-ge6156e2a</version-tested>
   </entry>
   <entry code="SLES-02024" compatibility="5" region="PAL" title="Legacy of Kain - Soul Reaver (France)">
     <compatibility>No Issues</compatibility>
@@ -1756,6 +1793,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
   </entry>
+  <entry code="SLUS-01068" compatibility="5" region="NTSC-U" title="NASCAR Rumble (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1485-ge6156e2a</version-tested>
+  </entry>
   <entry code="SLUS-01571" compatibility="4" region="NTSC-U" title="NASCAR Thunder 2004 (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <comments>Screen transitions are corrupted.</comments>
@@ -1872,7 +1913,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-00439" compatibility="5" region="NTSC-U" title="Pac-Man World - 20th Anniversary (USA)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-1445-ge5c46a54</version-tested>
+    <version-tested>0.1-1485-ge6156e2a</version-tested>
   </entry>
   <entry code="SLUS-00578" compatibility="5" region="NTSC-U" title="Pandemonium 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -2303,6 +2344,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
   </entry>
+  <entry code="SLUS-01069" compatibility="5" region="NTSC-U" title="SimTheme Park (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1485-ge6156e2a</version-tested>
+  </entry>
   <entry code="SLPS-02474" compatibility="5" region="NTSC-J" title="Simple 1500 Series Vol. 24 - The Gun Shooting (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -2633,6 +2678,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPM-86462" compatibility="5" region="NTSC-J" title="The King of Fighters '99">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00017" compatibility="5" region="NTSC-U" title="Theme Park (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1485-ge6156e2a</version-tested>
   </entry>
   <entry code="SLUS-01019" compatibility="4" region="NTSC-U" title="Threads of Fate (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
