@@ -16,7 +16,8 @@ class SettingsInterface;
 enum class GameListEntryType
 {
   Disc,
-  PSExe
+  PSExe,
+  Playlist
 };
 
 enum class GameListCompatibilityRating
@@ -140,6 +141,7 @@ private:
   class CompatibilityListVisitor;
 
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
+  bool GetM3UListEntry(const char* path, GameListEntry* entry);
 
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
   bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);

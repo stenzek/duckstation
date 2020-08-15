@@ -348,10 +348,59 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   return true;
 }
 
+bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
+{
+  FILESYSTEM_STAT_DATA ffd;
+  if (!FileSystem::StatFile(path, &ffd))
+    return false;
+
+  std::vector<std::string> entries = ParseM3UFile(path);
+  if (entries.empty())
+    return false;
+
+  entry->code.clear();
+  entry->title = GetTitleForPath(path);
+  entry->path = path;
+  entry->region = DiscRegion::Other;
+  entry->total_size = 0;
+  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
+  entry->type = GameListEntryType::Playlist;
+  entry->compatibility_rating = GameListCompatibilityRating::Unknown;
+
+  for (size_t i = 0; i < entries.size(); i++)
+  {
+    std::unique_ptr<CDImage> entry_image = CDImage::Open(entries[i].c_str());
+    if (!entry_image)
+    {
+      Log_ErrorPrintf("Failed to open entry %zu ('%s') in playlist %s", i, entries[i].c_str(), path);
+      return false;
+    }
+
+    entry->total_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(entry_image->GetLBACount());
+
+    if (entry->region == DiscRegion::Other)
+      entry->region = GetRegionForImage(entry_image.get());
+
+    if (entry->compatibility_rating == GameListCompatibilityRating::Unknown)
+    {
+      std::string code = GetGameCodeForImage(entry_image.get());
+      const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
+      if (compatibility_entry)
+        entry->compatibility_rating = compatibility_entry->compatibility_rating;
+      else
+        Log_WarningPrintf("'%s' (%s) not found in compatibility list", entry->code.c_str(), entry->title.c_str());
+    }
+  }
+
+  return true;
+}
+
 bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 {
   if (IsExeFileName(path.c_str()))
     return GetExeListEntry(path.c_str(), entry);
+  if (IsM3UFileName(path.c_str()))
+    return GetM3UListEntry(path.c_str(), entry);
 
   std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
   if (!cdi)
@@ -511,7 +560,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
         !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
         region >= static_cast<u8>(DiscRegion::Count) || !ReadU8(stream, &type) ||
-        type > static_cast<u8>(GameListEntryType::PSExe) || !ReadU8(stream, &compatibility_rating) ||
+        type > static_cast<u8>(GameListEntryType::Playlist) || !ReadU8(stream, &compatibility_rating) ||
         compatibility_rating >= static_cast<u8>(GameListCompatibilityRating::Count))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
