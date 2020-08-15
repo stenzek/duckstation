@@ -831,13 +831,12 @@ static QString FormatTimestampForSaveStateMenu(u64 timestamp)
 
 void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
 {
-  auto add_slot = [this, game_code, load_menu, save_menu](const char* title, const char* empty_title, bool global,
+  auto add_slot = [this, game_code, load_menu, save_menu](const QString& title, const QString& empty_title, bool global,
                                                           s32 slot) {
     std::optional<SaveStateInfo> ssi = GetSaveStateInfo(global ? nullptr : game_code, slot);
 
-    const QString menu_title = ssi.has_value() ?
-                                 tr(title).arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) :
-                                 tr(empty_title).arg(slot);
+    const QString menu_title =
+      ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
 
     QAction* load_action = load_menu->addAction(menu_title);
     load_action->setEnabled(ssi.has_value());
@@ -857,14 +856,14 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   if (game_code && std::strlen(game_code) > 0)
   {
     for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
-      add_slot("Game Save %1 (%2)", "Game Save %1 (Empty)", false, static_cast<s32>(slot));
+      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
 
     load_menu->addSeparator();
     save_menu->addSeparator();
   }
 
   for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)
-    add_slot("Global Save %1 (%2)", "Global Save %1 (Empty)", true, static_cast<s32>(slot));
+    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
 }
 
 void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu)
