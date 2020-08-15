@@ -352,7 +352,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 29> s_option_definitions = {{
+static std::array<retro_core_option_definition, 30> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -515,6 +515,12 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"PerGame", "Separate Card Per Game (Game Code)"},
     {"PerGameTitle", "Separate Card Per Game (Game Title)"}},
    "None"},
+  {"duckstation_MemoryCards.UsePlaylistTitle",
+   "Use Single Card For Playlist",
+   "When using a playlist (m3u) and per-game (title) memory cards, a single memory card "
+   "will be used for all discs. If unchecked, a separate card will be used for each disc.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_Controller1.Type",
    "Controller 1 Type",
    "Sets the type of controller for Slot 1.",
@@ -788,7 +794,8 @@ static std::optional<GPURenderer> RenderAPIToRenderer(HostDisplay::RenderAPI api
 bool LibretroHostInterface::RequestHardwareRendererContext()
 {
   GPURenderer renderer = Settings::DEFAULT_GPU_RENDERER;
-  retro_variable renderer_variable{"duckstation_GPU.Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER)};
+  retro_variable renderer_variable{"duckstation_GPU.Renderer",
+                                   Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER)};
   if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &renderer_variable) && renderer_variable.value)
     renderer = Settings::ParseRendererName(renderer_variable.value).value_or(Settings::DEFAULT_GPU_RENDERER);
 
