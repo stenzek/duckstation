@@ -10,6 +10,8 @@ The following people have contributed to the project in some way, and are credit
 - @bajolzas - Portuguese (Pt)
 - posix - @Richard-L - German
 - @phoe-nix - Chinese (Simplified)
+- Sorer - @MojoJojoDojo - Hebrew
+- Hipnosis183 - Spanish
 
 ## Game Compatibility Database
  - @Zet-sensei
