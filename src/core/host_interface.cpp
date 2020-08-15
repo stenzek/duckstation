@@ -410,6 +410,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
   si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
+  si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
   si.SetStringValue("Logging", "LogFilter", "");
@@ -519,7 +520,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       g_cdrom.SetUseReadThread(g_settings.cdrom_read_thread);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
-        g_settings.memory_card_paths != old_settings.memory_card_paths)
+        g_settings.memory_card_paths != old_settings.memory_card_paths ||
+        (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title &&
+         System::HasMediaPlaylist()))
     {
       System::UpdateMemoryCards();
     }

@@ -1187,7 +1187,12 @@ void UpdateMemoryCards()
 
       case MemoryCardType::PerGameTitle:
       {
-        if (s_running_game_title.empty())
+        if (!s_media_playlist_filename.empty() && g_settings.memory_card_use_playlist_title)
+        {
+          const std::string playlist_title(GameList::GetTitleForPath(s_media_playlist_filename.c_str()));
+          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(playlist_title.c_str(), i));
+        }
+        else if (s_running_game_title.empty())
         {
           g_host_interface->AddFormattedOSDMessage(5.0f,
                                                    "Per-game memory card cannot be used for slot %u as the running "
@@ -1266,6 +1271,11 @@ void UpdateRunningGame(const char* path, CDImage* image)
   }
 
   g_host_interface->OnRunningGameChanged();
+}
+
+bool HasMediaPlaylist()
+{
+  return !s_media_playlist_filename.empty();
 }
 
 u32 GetMediaPlaylistCount()

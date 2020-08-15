@@ -143,6 +143,7 @@ struct Settings
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
+  bool memory_card_use_playlist_title = true;
 
   LOGLEVEL log_level = LOGLEVEL_INFO;
   std::string log_filter;

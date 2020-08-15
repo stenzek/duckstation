@@ -164,6 +164,7 @@ void Settings::Load(SettingsInterface& si)
       si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_2_TYPE)).c_str())
       .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
+  memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -258,6 +259,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));
   si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
+  si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());

@@ -9,13 +9,14 @@
 #include <vector>
 
 class QtHostInterface;
+class SettingsDialog;
 
 class MemoryCardSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  MemoryCardSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  MemoryCardSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
   ~MemoryCardSettingsWidget();
 
 private:
@@ -29,8 +30,8 @@ private:
     QLineEdit* memory_card_path;
   };
 
-  void createUi();
-  void createPortSettingsUi(int index, PortSettingsUI* ui);
+  void createUi(SettingsDialog* dialog);
+  void createPortSettingsUi(SettingsDialog* dialog, int index, PortSettingsUI* ui);
   void onBrowseMemoryCardPathClicked(int index);
   void onOpenMemCardsDirectoryClicked();
 
