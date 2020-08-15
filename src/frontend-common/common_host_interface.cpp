@@ -836,7 +836,10 @@ void CommonHostInterface::DrawOSDMessages()
     }
 
     if (!g_settings.display_show_osd_messages)
+    {
+      ++iter;
       continue;
+    }
 
     const float opacity = std::min(time_remaining, 1.0f);
     ImGui::SetNextWindowPos(ImVec2(position_x, position_y));
