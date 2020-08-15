@@ -125,5 +125,8 @@
     <None Include="translations\duckstation-qt_he.ts">
       <Filter>translations</Filter>
     </None>
+    <None Include="translations\duckstation-qt_zh-cn.ts">
+      <Filter>translations</Filter>
+    </None>
   </ItemGroup>
 </Project>

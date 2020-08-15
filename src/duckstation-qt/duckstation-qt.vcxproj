@@ -201,6 +201,9 @@
     <QtTs Include="translations\duckstation-qt_pt-pt.ts">
       <FileType>Document</FileType>
     </QtTs>
+    <QtTs Include="translations\duckstation-qt_zh-cn.ts">
+      <FileType>Document</FileType>
+    </QtTs>
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="autoupdaterdialog.ui">
