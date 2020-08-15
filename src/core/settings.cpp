@@ -121,6 +121,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
+  display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
@@ -223,6 +224,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
+  si.SetBoolValue("Display", "ShowResolution", display_show_speed);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
 
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);

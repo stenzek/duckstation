@@ -59,6 +59,11 @@ void GPU::UpdateSettings()
 
 void GPU::UpdateResolutionScale() {}
 
+std::tuple<u32, u32> GPU::GetEffectiveDisplayResolution()
+{
+  return std::tie(m_crtc_state.display_vram_width, m_crtc_state.display_vram_height);
+}
+
 void GPU::Reset()
 {
   SoftReset();

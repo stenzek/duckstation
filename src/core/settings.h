@@ -101,6 +101,7 @@ struct Settings
   bool display_show_fps = false;
   bool display_show_vps = false;
   bool display_show_speed = false;
+  bool display_show_resolution = false;
   bool video_sync_enabled = true;
 
   bool cdrom_read_thread = true;

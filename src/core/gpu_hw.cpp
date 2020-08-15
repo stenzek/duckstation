@@ -134,6 +134,12 @@ void GPU_HW::UpdateResolutionScale()
     UpdateSettings();
 }
 
+std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution()
+{
+  return std::make_tuple(m_crtc_state.display_vram_width * m_resolution_scale,
+                         m_resolution_scale * m_crtc_state.display_vram_height);
+}
+
 void GPU_HW::PrintSettingsToLog()
 {
   Log_InfoPrintf("Resolution Scale: %u (%ux%u), maximum %u", m_resolution_scale, VRAM_WIDTH * m_resolution_scale,

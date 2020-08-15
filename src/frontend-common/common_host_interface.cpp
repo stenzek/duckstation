@@ -723,11 +723,14 @@ void CommonHostInterface::DrawImGuiWindows()
 
 void CommonHostInterface::DrawFPSWindow()
 {
-  if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed))
+  if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed |
+        g_settings.display_show_resolution))
+  {
     return;
+  }
 
   const ImVec2 window_size =
-    ImVec2(175.0f * ImGui::GetIO().DisplayFramebufferScale.x, 16.0f * ImGui::GetIO().DisplayFramebufferScale.y);
+    ImVec2(175.0f * ImGui::GetIO().DisplayFramebufferScale.x, 48.0f * ImGui::GetIO().DisplayFramebufferScale.y);
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - window_size.x, 0.0f), ImGuiCond_Always);
   ImGui::SetNextWindowSize(window_size);
 
@@ -782,6 +785,13 @@ void CommonHostInterface::DrawFPSWindow()
       ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
     else
       ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+  }
+
+  if (g_settings.display_show_resolution)
+  {
+    const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
+    const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
+    ImGui::Text("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
   }
 
   ImGui::End();
@@ -1297,22 +1307,22 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                      ToggleSoftwareRendering();
                  });
 
-  RegisterHotkey(StaticString("Graphics"), StaticString("TogglePGXP"), StaticString("Toggle PGXP"),
-                 [this](bool pressed) {
-                   if (!pressed)
-                   {
-                     g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
-                     g_gpu->UpdateSettings();
-                     AddFormattedOSDMessage(5.0f, "PGXP is now %s.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
+  RegisterHotkey(
+    StaticString("Graphics"), StaticString("TogglePGXP"), StaticString("Toggle PGXP"), [this](bool pressed) {
+      if (!pressed)
+      {
+        g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
+        g_gpu->UpdateSettings();
+        AddFormattedOSDMessage(5.0f, "PGXP is now %s.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
 
-                     if (g_settings.gpu_pgxp_enable)
-                       PGXP::Initialize();
+        if (g_settings.gpu_pgxp_enable)
+          PGXP::Initialize();
 
-                     // we need to recompile all blocks if pgxp is toggled on/off
-                     if (g_settings.IsUsingCodeCache())
-                       CPU::CodeCache::Flush();
-                   }
-                 });
+        // we need to recompile all blocks if pgxp is toggled on/off
+        if (g_settings.IsUsingCodeCache())
+          CPU::CodeCache::Flush();
+      }
+    });
 
   RegisterHotkey(StaticString("Graphics"), StaticString("IncreaseResolutionScale"),
                  StaticString("Increase Resolution Scale"), [this](bool pressed) {

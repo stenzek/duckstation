@@ -144,6 +144,24 @@ public:
   }
   void EndDMAWrite();
 
+  /// Returns false if the DAC is loading any data from VRAM.
+  ALWAYS_INLINE bool IsDisplayDisabled() const
+  {
+    return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
+  }
+
+  /// Returns true if scanout should be interlaced.
+  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
+  {
+    return (!m_force_progressive_scan) & m_GPUSTAT.vertical_interlace;
+  }
+
+  /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
+  ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
+  {
+    return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
+  }
+
   /// Returns the number of pending GPU ticks.
   TickCount GetPendingCRTCTicks() const;
   TickCount GetPendingCommandTicks() const;
@@ -162,6 +180,9 @@ public:
 
   /// Updates the resolution scale when it's set to automatic.
   virtual void UpdateResolutionScale();
+
+  /// Returns the effective display resolution of the GPU.
+  virtual std::tuple<u32, u32> GetEffectiveDisplayResolution();
 
   // gpu_hw_d3d11.cpp
   static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();
@@ -366,24 +387,6 @@ protected:
   // Ticks for hblank/vblank.
   void CRTCTickEvent(TickCount ticks);
   void CommandTickEvent(TickCount ticks);
-
-  /// Returns false if the DAC is loading any data from VRAM.
-  ALWAYS_INLINE bool IsDisplayDisabled() const
-  {
-    return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
-  }
-
-  /// Returns true if scanout should be interlaced.
-  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
-  {
-    return (!m_force_progressive_scan) & m_GPUSTAT.vertical_interlace;
-  }
-
-  /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
-  ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
-  {
-    return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
-  }
 
   /// Returns 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...).
   ALWAYS_INLINE u32 GetInterlacedDisplayField() const { return ZeroExtend32(m_crtc_state.interlaced_field); }
