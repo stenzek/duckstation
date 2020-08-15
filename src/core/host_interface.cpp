@@ -676,9 +676,6 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     return;
 
   g_settings.gpu_resolution_scale = new_resolution_scale;
-  AddFormattedOSDMessage(5.0f, "Resolution scale set to %ux (%ux%u)", g_settings.gpu_resolution_scale,
-                         GPU::VRAM_WIDTH * g_settings.gpu_resolution_scale,
-                         GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 
   if (!System::IsShutdown())
   {
