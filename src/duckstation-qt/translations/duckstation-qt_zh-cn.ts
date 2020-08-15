@@ -21,7 +21,7 @@
     <message>
         <location filename="../aboutdialog.cpp" line="29"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>DuckStation是索尼PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;主机的免费开源仿真器/模拟器, 注重可玩性、速度和长期可维护性。</translation>
+        <translation>DuckStation是索尼PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;主机的免费开源仿真器/模拟器, 注重可玩性、速度和长期可维护性。 </translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="32"/>
@@ -94,12 +94,12 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="113"/>
         <source>DMA Max Slice Ticks:</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA Max Slice Ticks:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="133"/>
         <source>DMA Halt Ticks:</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA Halt Ticks:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="166"/>
@@ -109,7 +109,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="173"/>
         <source>GPU Max Run-Ahead:</source>
-        <translation>GPU最大前进速度:</translation>
+        <translation>PU最大前进速度:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="190"/>
@@ -285,12 +285,12 @@
     <message>
         <location filename="../autoupdaterdialog.ui" line="40"/>
         <source>Current Version: </source>
-        <translation>当前版本: </translation>
+        <translation>当前版本:</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="47"/>
         <source>New Version: </source>
-        <translation>新版本: </translation>
+        <translation>新版本:</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="54"/>
@@ -361,13 +361,28 @@
         <translation>区域:</translation>
     </message>
     <message>
+        <source>Auto-Detect</source>
+        <translation>自动检测</translation>
+    </message>
+    <message>
+        <source>NTSC-J (Japan)</source>
+        <translation>NTSC-J (日本)</translation>
+    </message>
+    <message>
+        <source>NTSC-U (US)</source>
+        <translation>NTSC-U (美国)</translation>
+    </message>
+    <message>
+        <source>PAL (Europe, Australia)</source>
+        <translation>PAL (欧洲, 澳大利亚)</translation>
+    </message>
+    <message>
         <location filename="../consolesettingswidget.ui" line="48"/>
         <source>BIOS Image Path:</source>
         <translation>BIOS文件路径:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="55"/>
-        <location filename="../consolesettingswidget.cpp" line="35"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
@@ -390,6 +405,18 @@
         <location filename="../consolesettingswidget.ui" line="92"/>
         <source>Execution Mode:</source>
         <translation>执行方式:</translation>
+    </message>
+    <message>
+        <source>Intepreter (Slowest)</source>
+        <translation>解释器 (最慢)</translation>
+    </message>
+    <message>
+        <source>Cached Interpreter (Faster)</source>
+        <translation>缓存解释器 (较快)</translation>
+    </message>
+    <message>
+        <source>Recompiler (Fastest)</source>
+        <translation>重编译器 (最快)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="105"/>
@@ -433,7 +460,7 @@
         <translation>将游戏图像加载到内存中。对于可能在游戏过程中变得不可靠的网络路径非常有用。</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="47"/>
+        <location filename="../consolesettingswidget.cpp" line="38"/>
         <source>Select BIOS Image</source>
         <translation>选择BIOS文件</translation>
     </message>
@@ -444,6 +471,14 @@
         <location filename="../controllersettingswidget.cpp" line="82"/>
         <source>Controller Type:</source>
         <translation>控制器类型:</translation>
+    </message>
+    <message>
+        <source>Enable Analog Mode on Reset</source>
+        <translation>重启时启用模拟模式</translation>
+    </message>
+    <message>
+        <source>Analog Axis Scale</source>
+        <translation>模拟摇杆灵敏度</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="113"/>
@@ -463,23 +498,23 @@
     <message>
         <location filename="../controllersettingswidget.cpp" line="125"/>
         <source>Clear Bindings</source>
-        <translation>清除绑定</translation>
+        <translation>清除映射</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="126"/>
         <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation>确实要清除所有绑定控件吗？这是无法撤消的。</translation>
+        <translation>确实要清除所有映射控件吗？这是无法撤消的。</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="140"/>
         <location filename="../controllersettingswidget.cpp" line="142"/>
         <source>Rebind All</source>
-        <translation>全部重新绑定</translation>
+        <translation>全部重新映射</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="143"/>
         <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation>是否确实要重新绑定所有控件？所有当前绑定的控件都将被不可逆转地清除。确认后将开始重新绑定。</translation>
+        <translation>是否确实要重新映射所有控件？所有当前映射的控件都将被不可逆转地清除。确认后将开始重新映射。</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="167"/>
@@ -489,17 +524,17 @@
     <message>
         <location filename="../controllersettingswidget.cpp" line="183"/>
         <source>Button Bindings:</source>
-        <translation>按钮绑定:</translation>
+        <translation>按键映射:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="220"/>
         <source>Axis Bindings:</source>
-        <translation>轴绑定:</translation>
+        <translation>摇杆映射:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="259"/>
         <source>Rumble</source>
-        <translation>Rumble</translation>
+        <translation>震动开关</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="345"/>
@@ -570,125 +605,125 @@
         <translation>适配器:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="76"/>
+        <location filename="../gpusettingswidget.ui" line="83"/>
         <source>Screen Display</source>
         <translation>屏幕显示</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="82"/>
+        <location filename="../gpusettingswidget.ui" line="89"/>
         <source>Aspect Ratio:</source>
         <translation>纵横比:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="92"/>
+        <location filename="../gpusettingswidget.ui" line="99"/>
         <source>Crop:</source>
         <translation>裁剪:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="102"/>
-        <location filename="../gpusettingswidget.cpp" line="88"/>
+        <location filename="../gpusettingswidget.ui" line="109"/>
+        <location filename="../gpusettingswidget.cpp" line="92"/>
         <source>Linear Upscaling</source>
         <translation>线性放大</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="109"/>
-        <location filename="../gpusettingswidget.cpp" line="93"/>
+        <location filename="../gpusettingswidget.ui" line="116"/>
+        <location filename="../gpusettingswidget.cpp" line="97"/>
         <source>Integer Upscaling</source>
         <translation>整数放大</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="116"/>
-        <location filename="../gpusettingswidget.cpp" line="97"/>
+        <location filename="../gpusettingswidget.ui" line="123"/>
+        <location filename="../gpusettingswidget.cpp" line="101"/>
         <source>VSync</source>
         <translation>垂直同步</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="126"/>
+        <location filename="../gpusettingswidget.ui" line="133"/>
         <source>Enhancements</source>
         <translation>增强功能</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="132"/>
+        <location filename="../gpusettingswidget.ui" line="139"/>
         <source>Resolution Scale:</source>
         <translation>分辨率缩放:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="142"/>
-        <location filename="../gpusettingswidget.cpp" line="107"/>
-        <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="unfinished">真彩色渲染 (24位, 禁用色彩抖动)</translation>
-    </message>
-    <message>
         <location filename="../gpusettingswidget.ui" line="149"/>
-        <location filename="../gpusettingswidget.cpp" line="114"/>
-        <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="unfinished">缩放色彩抖动 (按分辨率缩放模式)</translation>
+        <location filename="../gpusettingswidget.cpp" line="111"/>
+        <source>True Color Rendering (24-bit, disables dithering)</source>
+        <translation>真彩色渲染 (24位, 禁用着色器)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="156"/>
-        <location filename="../gpusettingswidget.cpp" line="83"/>
+        <location filename="../gpusettingswidget.cpp" line="118"/>
+        <source>Scaled Dithering (scale dither pattern to resolution)</source>
+        <translation>缩放着色器 (按分辨率缩放着色模式)</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.ui" line="163"/>
+        <location filename="../gpusettingswidget.cpp" line="87"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>禁用隔行扫描 (强制渐进式渲染/扫描)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="163"/>
-        <location filename="../gpusettingswidget.cpp" line="118"/>
+        <location filename="../gpusettingswidget.ui" line="170"/>
+        <location filename="../gpusettingswidget.cpp" line="122"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>强制NTSC制式(60hz-PAL)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="170"/>
-        <location filename="../gpusettingswidget.cpp" line="124"/>
+        <location filename="../gpusettingswidget.ui" line="177"/>
+        <location filename="../gpusettingswidget.cpp" line="128"/>
         <source>Bilinear Texture Filtering</source>
         <translation>双线性纹理过滤</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="177"/>
-        <location filename="../gpusettingswidget.cpp" line="128"/>
+        <location filename="../gpusettingswidget.ui" line="184"/>
+        <location filename="../gpusettingswidget.cpp" line="134"/>
         <source>Widescreen Hack</source>
         <translation>宽屏补丁</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="187"/>
+        <location filename="../gpusettingswidget.ui" line="194"/>
         <source>PGXP</source>
         <translation>PGXP</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="193"/>
-        <location filename="../gpusettingswidget.cpp" line="133"/>
+        <location filename="../gpusettingswidget.ui" line="200"/>
+        <location filename="../gpusettingswidget.cpp" line="139"/>
         <source>Geometry Correction</source>
         <translation>几何校正</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="200"/>
-        <location filename="../gpusettingswidget.cpp" line="136"/>
+        <location filename="../gpusettingswidget.ui" line="207"/>
+        <location filename="../gpusettingswidget.cpp" line="142"/>
         <source>Culling Correction</source>
         <translation>剔除校正</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="207"/>
-        <location filename="../gpusettingswidget.cpp" line="139"/>
+        <location filename="../gpusettingswidget.ui" line="214"/>
+        <location filename="../gpusettingswidget.cpp" line="145"/>
         <source>Texture Correction</source>
         <translation>纹理校正</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="214"/>
-        <location filename="../gpusettingswidget.cpp" line="142"/>
+        <location filename="../gpusettingswidget.ui" line="221"/>
+        <location filename="../gpusettingswidget.cpp" line="148"/>
         <source>Vertex Cache</source>
         <translation>顶点缓存</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="63"/>
+        <location filename="../gpusettingswidget.cpp" line="64"/>
         <source>Renderer</source>
         <translation>渲染器</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="64"/>
+        <location filename="../gpusettingswidget.cpp" line="65"/>
         <source>Chooses the backend to use for rendering tasks for the the console GPU. Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
         <translation>选择用于呈现控制台GPU任务的后端。根据您的系统和硬件, Direct3D 11和OpenGL硬件后端可能可用。软件渲染器提供了最好的兼容性, 但速度最慢, 并且不提供任何增强功能。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="69"/>
+        <location filename="../gpusettingswidget.cpp" line="70"/>
         <source>Adapter</source>
         <translation>适配器</translation>
     </message>
@@ -699,32 +734,32 @@
         <translation>(默认)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="70"/>
+        <location filename="../gpusettingswidget.cpp" line="71"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. This option is only supported in Direct3D and Vulkan, OpenGL will always use the default device.</source>
         <translation>如果系统包含多个GPU或适配器, 则可以选择要将哪个GPU用于硬件渲染器。此选项仅在Direct3D和Vulkan中受支持, OpenGL将始终使用默认设备。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="73"/>
+        <location filename="../gpusettingswidget.cpp" line="77"/>
         <source>Aspect Ratio</source>
         <translation>高宽比</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="74"/>
+        <location filename="../gpusettingswidget.cpp" line="78"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
         <translation>更改用于在屏幕上显示控制台输出的纵横比。默认值是4:3, 与那个时代的典型电视相匹配。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="77"/>
+        <location filename="../gpusettingswidget.cpp" line="81"/>
         <source>Crop Mode</source>
         <translation>裁剪模式</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="77"/>
+        <location filename="../gpusettingswidget.cpp" line="81"/>
         <source>Only Overscan Area</source>
         <translation>仅限过扫描区域</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="78"/>
+        <location filename="../gpusettingswidget.cpp" line="82"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects and may not display correctly with the All Borders setting. Only Overscan offers a good compromise between stability and hiding black borders.</source>
         <translation>确定用户电视机上通常不可见的区域有多少要裁剪/隐藏。有些游戏在“过扫描”区域显示内容, 或将其用于屏幕效果, 在“所有边框”设置下可能无法正确显示。只有过度扫描才能在稳定和隐藏黑边界之间提供一个很好的折衷方案。</translation>
     </message>
@@ -741,7 +776,7 @@
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="84"/>
+        <location filename="../gpusettingswidget.cpp" line="88"/>
         <source>Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Not all games are compatible with this option, some require interlaced rendering or render interlaced internally. Usually safe to enable.</source>
         <translation>强制以渐进模式渲染和显示帧。这将通过在480p中渲染480i游戏中的效果来移除它们。并非所有的游戏都与此选项兼容, 有些游戏需要隔行渲染或内部渲染。通常可以安全启用。</translation>
     </message>
@@ -755,67 +790,67 @@
         <translation>勾选</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="89"/>
+        <location filename="../gpusettingswidget.cpp" line="93"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less noticable the higher the resolution scale.</source>
         <translation>在将控制台帧缓冲区显示到屏幕时使用双线性纹理过滤。禁用过滤将生成更清晰、更块状/像素化的图像。启用将使图像平滑。分辨率越高, 选项就越不引人注意。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="94"/>
+        <location filename="../gpusettingswidget.cpp" line="98"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
         <translation>向显示区域添加填充, 以确保主机上的像素与控制台中的像素之间的比率为整数。在一些2D游戏中可能会产生更清晰的图像。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="98"/>
+        <location filename="../gpusettingswidget.cpp" line="102"/>
         <source>Enables synchronization with the host display when possible. Enabling this option will provide better frame pacing and smoother motion with fewer duplicated frames. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
         <translation>如果可能, 启用与主机显示的同步。启用此选项将以更少的重复帧提供更好的帧间距和更平滑的运动。当不可能时(例如, 以非100%速度运行), 垂直同步将自动禁用。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="102"/>
+        <location filename="../gpusettingswidget.cpp" line="106"/>
         <source>Resolution Scale</source>
         <translation>分辨率缩放</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="103"/>
+        <location filename="../gpusettingswidget.cpp" line="107"/>
         <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>允许放大渲染到控制台帧缓冲区的三维对象。仅适用于硬件后端。这个选项通常是安全的, 大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="108"/>
+        <location filename="../gpusettingswidget.cpp" line="112"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation type="unfinished">强制输出到控制台的帧缓冲区的颜色精度使用每个通道的全部8位精度。这会产生更好看的渐变, 但代价是使某些颜色看起来稍有不同。禁用该选项也会启用色彩抖动, 这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容, 但也有一部分游戏不支持此选项, 并且在启用该选项后会产生中断效果。仅适用于硬件渲染器。</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="115"/>
-        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation type="unfinished">将着色彩抖动式缩放到模拟GPU的分辨率级别。这使得着色彩抖动式在更高分辨率下变得不那么明显。通常可以安全启用, 并且仅由硬件渲染器支持。</translation>
+        <translation>强制输出到控制台的帧缓冲区的颜色精度使用每个通道的全部8位精度。这会产生更好看的渐变, 但代价是使某些颜色看起来稍有不同。禁用该选项也会启用着色器, 这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容, 但也有一部分游戏不支持此选项, 并且在启用该选项后会产生中断效果。仅适用于硬件渲染器。</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="119"/>
+        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers.</source>
+        <translation>将着色模式缩放到模拟GPU的分辨率级别。这使得着色模式在更高分辨率下变得不那么明显。通常可以安全启用, 并且仅由硬件渲染器支持。</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="123"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the speed.</source>
         <translation>当游戏机处于PAL模式时使用NTSC帧计时, 强制PAL游戏以60hz运行。对于大多数速度与帧速率相关的游戏, 这将导致游戏运行速度大约快17%。对于可变帧速率游戏, 它可能不会影响速度。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="125"/>
+        <location filename="../gpusettingswidget.cpp" line="129"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
         <translation>利用双线性滤波消除三维物体上放大纹理的块状。会对更高分辨率的尺度产生更大的影响。目前, 在许多游戏中, 这个选项会在对象周围产生瑕疵, 需要进一步的工作。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="129"/>
+        <location filename="../gpusettingswidget.cpp" line="135"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>将屏幕空间中的顶点位置缩放到宽屏幕的纵横比, 基本上将3D游戏中的视野从4:3增加到16:9。&lt;br&gt;对于2D游戏, 或使用预渲染背景的游戏, 此增强将无法按预期工作。&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="134"/>
+        <location filename="../gpusettingswidget.cpp" line="140"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>减少在PS1游戏中常见的&quot;抖动&quot;多边形和扭曲纹理。&lt;br&gt;仅适用于硬件渲染器。&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="137"/>
+        <location filename="../gpusettingswidget.cpp" line="143"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>提高多边形剔除的精度, 减少几何体中的孔数。需要启用几何校正。</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="140"/>
+        <location filename="../gpusettingswidget.cpp" line="146"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>使用透视校正插值纹理坐标和颜色, 矫直扭曲的纹理。需要启用几何校正。</translation>
     </message>
@@ -827,22 +862,22 @@
     <message>
         <location filename="../gpusettingswidget.cpp" line="178"/>
         <source> (for 720p)</source>
-        <translation> (适合720p)</translation>
+        <translation> (720p)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="180"/>
         <source> (for 1080p)</source>
-        <translation> (适合1080p)</translation>
+        <translation> (1080p)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="181"/>
         <source> (for 1440p)</source>
-        <translation> (适合1440p)</translation>
+        <translation> (1440p)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="184"/>
         <source> (for 4K)</source>
-        <translation> (适合4K)</translation>
+        <translation> (4K)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="194"/>
@@ -983,32 +1018,32 @@ This will download approximately 4 megabytes over your current internet connecti
 这将通过您当前的网络连接下载大约4MB。</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="248"/>
+        <location filename="../gamelistsettingswidget.cpp" line="293"/>
         <source>Downloading %1...</source>
         <translation>下载中 %1...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="248"/>
+        <location filename="../gamelistsettingswidget.cpp" line="293"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="259"/>
+        <location filename="../gamelistsettingswidget.cpp" line="304"/>
         <source>Download failed</source>
         <translation>下载失败</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="266"/>
+        <location filename="../gamelistsettingswidget.cpp" line="311"/>
         <source>Extracting...</source>
         <translation>解压中...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="272"/>
+        <location filename="../gamelistsettingswidget.cpp" line="317"/>
         <source>Extract failed</source>
         <translation>解压失败</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="272"/>
+        <location filename="../gamelistsettingswidget.cpp" line="317"/>
         <source>Extracting game database failed.</source>
         <translation>解压游戏数据库失败。</translation>
     </message>
@@ -1018,7 +1053,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Dialog</translation>
+        <translation>对话</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="24"/>
@@ -1151,7 +1186,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation>FPS</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="32"/>
@@ -1160,43 +1195,43 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
-        <location filename="../generalsettingswidget.cpp" line="52"/>
+        <location filename="../generalsettingswidget.cpp" line="51"/>
         <source>Pause On Start</source>
         <translation>开始时暂停</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
-        <location filename="../generalsettingswidget.cpp" line="40"/>
+        <location filename="../generalsettingswidget.cpp" line="39"/>
         <source>Confirm Power Off</source>
         <translation>确认关机</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
-        <location filename="../generalsettingswidget.cpp" line="43"/>
+        <location filename="../generalsettingswidget.cpp" line="42"/>
         <source>Save State On Exit</source>
         <translation>退出时保存即时存档</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="55"/>
+        <location filename="../generalsettingswidget.cpp" line="54"/>
         <source>Load Devices From Save States</source>
         <translation>从即时存档读取设备</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
-        <location filename="../generalsettingswidget.cpp" line="46"/>
+        <location filename="../generalsettingswidget.cpp" line="45"/>
         <source>Start Fullscreen</source>
         <translation>全屏启动</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
-        <location filename="../generalsettingswidget.cpp" line="49"/>
+        <location filename="../generalsettingswidget.cpp" line="48"/>
         <source>Render To Main Window</source>
         <translation>渲染到主窗口</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="83"/>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="67"/>
         <source>Emulation Speed</source>
         <translation>模拟速度</translation>
     </message>
@@ -1207,13 +1242,13 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="128"/>
-        <location filename="../generalsettingswidget.cpp" line="60"/>
+        <location filename="../generalsettingswidget.cpp" line="59"/>
         <source>Enable Speed Limiter</source>
         <translation>启用限速</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="135"/>
-        <location filename="../generalsettingswidget.cpp" line="64"/>
+        <location filename="../generalsettingswidget.cpp" line="63"/>
         <source>Increase Timer Resolution</source>
         <translation>提高计时器分辨率</translation>
     </message>
@@ -1229,7 +1264,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="158"/>
-        <location filename="../generalsettingswidget.cpp" line="74"/>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Show FPS</source>
         <translation>显示FPS</translation>
     </message>
@@ -1374,38 +1409,38 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../inputbindingdialog.ui" line="17"/>
         <source>Edit Bindings</source>
-        <translation>编辑绑定</translation>
+        <translation>编辑映射</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="26"/>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>控制器0/按钮圈绑定</translation>
+        <translation>控制器0/按键圈映射</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="45"/>
         <source>Add Binding</source>
-        <translation>添加绑定</translation>
+        <translation>添加映射</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="52"/>
         <source>Remove Binding</source>
-        <translation>移除绑定</translation>
+        <translation>移除映射</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="59"/>
         <source>Clear Bindings</source>
-        <translation>清除绑定</translation>
+        <translation>清除映射</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.cpp" line="21"/>
         <source>Bindings for %1 %2</source>
-        <translation>为%1 %2绑定</translation>
+        <translation>为%1 %2映射</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.cpp" line="57"/>
         <location filename="../inputbindingdialog.cpp" line="69"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>按钮/轴... [%1]</translation>
+        <translation>按键/摇杆... [%1]</translation>
     </message>
 </context>
 <context>
@@ -1413,13 +1448,13 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../inputbindingwidgets.cpp" line="38"/>
         <source>%1 bindings</source>
-        <translation>%1 绑定</translation>
+        <translation>%1 映射</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="140"/>
         <location filename="../inputbindingwidgets.cpp" line="152"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>按钮/轴... [%1]</translation>
+        <translation>按键/摇杆... [%1]</translation>
     </message>
 </context>
 <context>
@@ -1556,12 +1591,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="310"/>
         <source>&amp;Hotkey Settings...</source>
-        <translation>快捷键设置(&amp;H)...</translation>
+        <translation>快捷键设置(&amp;C)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="319"/>
         <source>&amp;GPU Settings...</source>
-        <translation>视频设置(&amp;G)...</translation>
+        <translation>视频设置(&amp;C)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="328"/>
@@ -1591,7 +1626,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="353"/>
         <source>Check for &amp;Updates...</source>
-        <translation>检查更新(&amp;U)...</translation>
+        <translation>检查更新(&amp;U)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="358"/>
@@ -1735,52 +1770,52 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="368"/>
+        <location filename="../mainwindow.cpp" line="366"/>
         <source>Properties...</source>
         <translation>属性...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="371"/>
+        <location filename="../mainwindow.cpp" line="369"/>
         <source>Open Containing Directory...</source>
         <translation>打开所在目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="386"/>
+        <location filename="../mainwindow.cpp" line="384"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="389"/>
+        <location filename="../mainwindow.cpp" line="387"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="395"/>
+        <location filename="../mainwindow.cpp" line="393"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="413"/>
+        <location filename="../mainwindow.cpp" line="411"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="483"/>
+        <location filename="../mainwindow.cpp" line="479"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>语言已更改, 请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="660"/>
+        <location filename="../mainwindow.cpp" line="664"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="661"/>
+        <location filename="../mainwindow.cpp" line="665"/>
         <source>DarkFusion</source>
         <translation>黑色</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="662"/>
+        <location filename="../mainwindow.cpp" line="666"/>
         <source>QDarkStyle</source>
         <translation>深色</translation>
     </message>
@@ -1803,37 +1838,62 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardSettingsWidget</name>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="38"/>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>如果选择了&quot;每个游戏独立记忆卡&quot;的存储卡模式, 这些存储卡将保存到memcards目录中。</translation>
+        <location filename="../memorycardsettingswidget.cpp" line="14"/>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
+        <translation>全部记忆卡类型 (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="44"/>
+        <location filename="../memorycardsettingswidget.cpp" line="37"/>
+        <source>Shared Settings</source>
+        <translation>共用设置</translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="45"/>
+        <source>Use Single Card For Playlist</source>
+        <translation>为列表使用单个记忆卡</translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="45"/>
+        <source>Checked</source>
+        <translation>勾选</translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="46"/>
+        <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation>当使用列表 (m3u) 并且每个游戏使用独立记忆卡 (标题) 存储卡时, 所有光盘都将使用单个记忆卡。如果未勾选, 则每个光盘将使用各自的记忆卡。</translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="51"/>
+        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
+        <translation>如果选择了&quot;每个游戏使用独立记忆卡&quot;的存储卡模式, 这些存储卡将保存到memcards目录中。</translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="57"/>
         <source>Open...</source>
         <translation>打开...</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="57"/>
+        <location filename="../memorycardsettingswidget.cpp" line="72"/>
         <source>Memory Card %1</source>
         <translation>记忆卡%1</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="71"/>
+        <location filename="../memorycardsettingswidget.cpp" line="86"/>
         <source>Memory Card Type:</source>
         <translation>记忆卡类型:</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="80"/>
+        <location filename="../memorycardsettingswidget.cpp" line="95"/>
         <source>Browse...</source>
         <translation>浏览...</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="84"/>
+        <location filename="../memorycardsettingswidget.cpp" line="99"/>
         <source>Shared Memory Card Path:</source>
         <translation>共用记忆卡路径:</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="93"/>
+        <location filename="../memorycardsettingswidget.cpp" line="108"/>
         <source>Select path to memory card image</source>
         <translation>选择记忆卡文件的路径</translation>
     </message>
@@ -1851,12 +1911,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>初始化主机接口失败, 无法继续。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="628"/>
+        <location filename="../qtutils.cpp" line="624"/>
         <source>Failed to open URL</source>
         <translation>无法打开URL</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="629"/>
+        <location filename="../qtutils.cpp" line="625"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -1868,42 +1928,42 @@ URL: %1</translation>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="856"/>
+        <location filename="../qthostinterface.cpp" line="843"/>
         <source>Resume</source>
         <translation>恢复</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="859"/>
+        <location filename="../qthostinterface.cpp" line="846"/>
         <source>Load State</source>
         <translation>即时读档</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="877"/>
+        <location filename="../qthostinterface.cpp" line="864"/>
         <source>Resume (%1)</source>
         <translation>恢复(%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="884"/>
+        <location filename="../qthostinterface.cpp" line="871"/>
         <source>%1 Save %2 (%3)</source>
         <translation>&quot;%1保存%2 (%3)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="884"/>
+        <location filename="../qthostinterface.cpp" line="871"/>
         <source>Game</source>
         <translation>游戏</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="891"/>
+        <location filename="../qthostinterface.cpp" line="878"/>
         <source>Delete Save States...</source>
         <translation>删除即时存档...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="898"/>
+        <location filename="../qthostinterface.cpp" line="885"/>
         <source>Confirm Save State Deletion</source>
         <translation>确认删除即时存档</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="899"/>
+        <location filename="../qthostinterface.cpp" line="886"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -2010,12 +2070,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="66"/>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;快捷键设置&lt;/strong&gt;&lt;hr&gt;绑定热键可以触发事件, 例如按下键/控制器按钮时重置或截屏。热键标题是不言而喻的。单击绑定将开始倒计时, 在这种情况下, 您应该按要绑定的键或控制器按钮/轴。如果没有按下任何按钮, 计时器过期, 绑定将保持不变。要清除绑定, 请右键单击该按钮。若要绑定多个按钮, 请按住Shift键并单击该按钮。</translation>
+        <translation>&lt;strong&gt;快捷键设置&lt;/strong&gt;&lt;hr&gt;映射热键可以触发事件, 例如按下键/控制器按键时重置或截屏。热键标题是不言而喻的。单击映射将开始倒计时, 在这种情况下, 您应该按要映射的键或控制器按键/摇杆。如果没有按下任何按键, 计时器超时, 映射将保持不变。要清除映射, 请右键单击该按键。若要映射多个按键, 请按住Shift键并单击该按键。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="72"/>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;控制器设置&lt;/strong&gt;&lt;hr&gt;此页允许您选择要为控制台模拟的控制器类型, 并将按键或主机游戏控制器按钮重新绑定到您选择的位置。单击绑定将开始倒计时, 在这种情况下, 您应该按要绑定的键或控制器按钮/轴。（对于rumble, 请按您要发送rumble的控制器上的任何按钮/轴。）如果没有按下任何按钮并且计时器过期, 绑定将保持不变。要清除绑定, 请右键单击该按钮。若要绑定多个按钮, 请按住Shift键并单击该按钮。</translation>
+        <translation>&lt;strong&gt;控制器设置&lt;/strong&gt;&lt;hr&gt;此页允许您选择要为模拟主机的控制器类型, 并将按键或主机游戏控制器按键重新映射到您选择的位置。单击映射将开始倒计时, 在这种情况下, 您应该按要映射的键或控制器按键/摇杆。 (关于震动开关, 请按控制器上的任意按键/摇杆来映射震动开关。) 如果没有按下任何按键并且计时器超时, 映射将保持不变。要清除映射, 请右键单击该按键。若要映射多个按键, 请按住Shift键并单击该按键。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="80"/>
