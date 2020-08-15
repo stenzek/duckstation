@@ -53,6 +53,7 @@ private:
 
   QPixmap m_type_disc_pixmap;
   QPixmap m_type_exe_pixmap;
+  QPixmap m_type_playlist_pixmap;
 
   QPixmap m_region_jp_pixmap;
   QPixmap m_region_eu_pixmap;

@@ -124,6 +124,8 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           {
             case GameListEntryType::Disc:
               return m_type_disc_pixmap;
+            case GameListEntryType::Playlist:
+              return m_type_playlist_pixmap;
             case GameListEntryType::PSExe:
             default:
               return m_type_exe_pixmap;
@@ -275,6 +277,7 @@ void GameListModel::loadCommonImages()
   // TODO: Use svg instead of png
   m_type_disc_pixmap.load(QStringLiteral(":/icons/media-optical-24.png"));
   m_type_exe_pixmap.load(QStringLiteral(":/icons/applications-system-24.png"));
+  m_type_playlist_pixmap.load(QStringLiteral(":/icons/address-book-new-22.png"));
   m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
   m_region_jp_pixmap.load(QStringLiteral(":/icons/flag-jp.png"));
   m_region_us_pixmap.load(QStringLiteral(":/icons/flag-us.png"));

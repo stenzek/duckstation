@@ -84,6 +84,9 @@ public:
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu);
 
+  /// Fills menu with the current playlist entries. The disc index is marked as checked.
+  void populatePlaylistEntryMenu(QMenu* menu);
+
   ALWAYS_INLINE QString getSavePathForInputProfile(const QString& name) const
   {
     return QString::fromStdString(GetSavePathForInputProfile(name.toUtf8().constData()));
@@ -140,6 +143,7 @@ public Q_SLOTS:
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(const QString& new_disc_filename);
+  void changeDiscFromPlaylist(quint32 index);
   void loadState(const QString& filename);
   void loadState(bool global, qint32 slot);
   void saveState(bool global, qint32 slot, bool block_until_done = false);

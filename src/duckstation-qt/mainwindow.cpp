@@ -29,7 +29,8 @@
 
 static constexpr char DISC_IMAGE_FILTER[] =
   "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
-  "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf)";
+  "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files "
+  "(*.psf);;Playlists (*.m3u)";
 
 ALWAYS_INLINE static QString getWindowTitle()
 {
@@ -292,6 +293,16 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
 {
   m_host_interface->pauseSystem(true);
   switchToGameListView();
+}
+
+void MainWindow::onChangeDiscFromPlaylistMenuAboutToShow()
+{
+  m_host_interface->populatePlaylistEntryMenu(m_ui.menuChangeDiscFromPlaylist);
+}
+
+void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
+{
+  m_ui.menuChangeDiscFromPlaylist->clear();
 }
 
 void MainWindow::onRemoveDiscActionTriggered()
@@ -567,6 +578,10 @@ void MainWindow::connectSignals()
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
+  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToShow, this,
+          &MainWindow::onChangeDiscFromPlaylistMenuAboutToShow);
+  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToHide, this,
+          &MainWindow::onChangeDiscFromPlaylistMenuAboutToHide);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });

@@ -808,6 +808,21 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
     System::RemoveMedia();
 }
 
+void QtHostInterface::changeDiscFromPlaylist(quint32 index)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "changeDiscFromPlaylist", Qt::QueuedConnection, Q_ARG(quint32, index));
+    return;
+  }
+
+  if (System::IsShutdown())
+    return;
+
+  if (!System::SwitchMediaFromPlaylist(index))
+    ReportFormattedError("Failed to switch to playlist index %u", index);
+}
+
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
 {
   const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
@@ -906,6 +921,24 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
 
       DeleteSaveStates(game_code_copy.c_str(), true);
     });
+  }
+}
+
+void QtHostInterface::populatePlaylistEntryMenu(QMenu* menu)
+{
+  if (!System::IsValid())
+    return;
+
+  QActionGroup* ag = new QActionGroup(menu);
+  const u32 count = System::GetMediaPlaylistCount();
+  const u32 current = System::GetMediaPlaylistIndex();
+  for (u32 i = 0; i < count; i++)
+  {
+    QAction* action = ag->addAction(QString::fromStdString(System::GetMediaPlaylistPath(i)));
+    action->setCheckable(true);
+    action->setChecked(i == current);
+    connect(action, &QAction::triggered, [this, i]() { changeDiscFromPlaylist(i); });
+    menu->addAction(action);
   }
 }
 
