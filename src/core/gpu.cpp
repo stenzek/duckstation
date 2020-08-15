@@ -162,6 +162,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
   sw.Do(&m_crtc_state.interlaced_field);
+  sw.Do(&m_crtc_state.interlaced_display_field);
   sw.Do(&m_crtc_state.active_line_lsb);
 
   sw.Do(&m_blitter_state);
@@ -734,10 +735,10 @@ void GPU::CRTCTickEvent(TickCount ticks)
         System::FrameDone();
 
         // switch fields early. this is needed so we draw to the correct one.
-        if (m_GPUSTAT.vertical_interlace)
-          m_crtc_state.interlaced_field ^= 1u;
+        if (m_GPUSTAT.InInterleaved480iMode())
+          m_crtc_state.interlaced_display_field = m_crtc_state.interlaced_field ^ 1u;
         else
-          m_crtc_state.interlaced_field = 0;
+          m_crtc_state.interlaced_display_field = 0;
       }
 
       g_timers.SetGate(HBLANK_TIMER_INDEX, new_vblank);
@@ -749,15 +750,20 @@ void GPU::CRTCTickEvent(TickCount ticks)
     {
       // start the new frame
       m_crtc_state.current_scanline = 0;
+      if (m_GPUSTAT.vertical_interlace)
+        m_crtc_state.interlaced_field ^= 1u;
+      else
+        m_crtc_state.interlaced_field = 0;
     }
   }
 
   // alternating even line bit in 240-line mode
-  if (m_GPUSTAT.vertical_interlace)
+  if (m_GPUSTAT.InInterleaved480iMode())
   {
     m_crtc_state.active_line_lsb =
-      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.interlaced_field)) & u32(1));
-    m_GPUSTAT.display_line_lsb = m_crtc_state.active_line_lsb && !m_crtc_state.in_vblank;
+      Truncate8((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.interlaced_display_field)) & u32(1));
+    m_GPUSTAT.display_line_lsb = ConvertToBoolUnchecked(
+      (m_crtc_state.regs.Y + (BoolToUInt8(m_crtc_state.in_vblank) ^ m_crtc_state.interlaced_display_field)) & u32(1));
   }
   else
   {

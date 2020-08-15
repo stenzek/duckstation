@@ -513,6 +513,11 @@ protected:
       static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
       return ((bits & MASK) == ACTIVE);
     }
+    bool InInterleaved480iMode() const
+    {
+      static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
+      return ((bits & ACTIVE) == ACTIVE);
+    }
 
     // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
     u16 GetMaskAND() const
@@ -694,6 +699,7 @@ protected:
     bool in_vblank;
 
     u8 interlaced_field; // 0 = odd, 1 = even
+    u8 interlaced_display_field;
     u8 active_line_lsb;
   } m_crtc_state = {};
 

@@ -227,7 +227,7 @@ bool RecreateGPU(GPURenderer renderer)
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
-  const bool state_valid = g_gpu->DoState(sw) && TimingEvents::DoState(sw, TimingEvents::GetGlobalTickCounter());
+  const bool state_valid = g_gpu->DoState(sw) && TimingEvents::DoState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
 
@@ -247,7 +247,7 @@ bool RecreateGPU(GPURenderer renderer)
     sw.SetMode(StateWrapper::Mode::Read);
     g_gpu->RestoreGraphicsAPIState();
     g_gpu->DoState(sw);
-    TimingEvents::DoState(sw, TimingEvents::GetGlobalTickCounter());
+    TimingEvents::DoState(sw);
     g_gpu->ResetGraphicsAPIState();
   }
 
@@ -540,13 +540,9 @@ bool DoState(StateWrapper& sw)
   if (!sw.DoMarker("System"))
     return false;
 
-  // TODO: Move this into timing state
-  u32 global_tick_counter = TimingEvents::GetGlobalTickCounter();
-
   sw.Do(&s_region);
   sw.Do(&s_frame_number);
   sw.Do(&s_internal_frame_number);
-  sw.Do(&global_tick_counter);
 
   if (!sw.DoMarker("CPU") || !CPU::DoState(sw))
     return false;
@@ -584,7 +580,7 @@ bool DoState(StateWrapper& sw)
   if (!sw.DoMarker("SIO") || !g_sio.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw, global_tick_counter))
+  if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw))
     return false;
 
   return !sw.HasError();
