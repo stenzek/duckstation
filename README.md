@@ -3,8 +3,6 @@
 
 **Latest Windows, Linux (AppImage), and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
 
-**NOTE:** Linux builds are temporarily disabled due to an issue with AppImage creation. Once this is sorted out they will be re-enabled again. You can still build from source in the meantime.
-
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
 
 DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. Accuracy is not the main focus of the emulator, but the goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.

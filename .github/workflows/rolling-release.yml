@@ -90,51 +90,51 @@ jobs:
         path: "build/duckstation_libretro.dll.zip"
 
 
-#  linux-build:
-#    runs-on: ubuntu-20.04
-#    steps:
-#    - uses: actions/checkout@v2.3.1
-#      with:
-#        fetch-depth: 0
-#
-#    - name: Install packages
-#      shell: bash
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk2.0-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev
-#
-#    - name: Compile build
-#      shell: bash
-#      run: |
-#        mkdir build
-#        cd build
-#        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
-#        ninja
-#        ../appimage/generate-appimages.sh $(pwd)
-#        
-#    - name: Upload SDL AppImage
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-sdl"
-#        path: "build/duckstation-sdl-x64.AppImage"
-#
-#    - name: Upload SDL AppImage zsync
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-sdl-zsync"
-#        path: "build/duckstation-sdl-x64.AppImage.zsync"
-#
-#    - name: Upload Qt AppImage
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-qt"
-#        path: "build/duckstation-qt-x64.AppImage"
-#
-#    - name: Upload Qt AppImage zsync
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-qt-zsync"
-#        path: "build/duckstation-qt-x64.AppImage.zsync"
+  linux-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Install packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk2.0-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev
+
+    - name: Compile build
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
+        ninja
+        ../appimage/generate-appimages.sh $(pwd)
+
+    - name: Upload SDL AppImage
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-sdl"
+        path: "build/duckstation-sdl-x64.AppImage"
+
+    - name: Upload SDL AppImage zsync
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-sdl-zsync"
+        path: "build/duckstation-sdl-x64.AppImage.zsync"
+
+    - name: Upload Qt AppImage
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-qt"
+        path: "build/duckstation-qt-x64.AppImage"
+
+    - name: Upload Qt AppImage zsync
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-qt-zsync"
+        path: "build/duckstation-qt-x64.AppImage.zsync"
 
 
   linux-libretro-build:
@@ -214,8 +214,7 @@ jobs:
 
 
   create-release:
-    #needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build]
-    needs: [windows-build, windows-libretro-build, linux-libretro-build, android-build]
+    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build]
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     steps:
@@ -229,25 +228,25 @@ jobs:
         with:
           name: "windows-libretro-x64"
 
-#      - name: Download SDL AppImage Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-sdl"
-#
-#      - name: Download SDL AppImage zsync Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-sdl-zsync"
-#
-#      - name: Download Qt AppImage Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-qt"
-#
-#      - name: Download Qt AppImage zsync Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-qt-zsync"
+      - name: Download SDL AppImage Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-sdl"
+
+      - name: Download SDL AppImage zsync Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-sdl-zsync"
+
+      - name: Download Qt AppImage Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-qt"
+
+      - name: Download Qt AppImage zsync Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-qt-zsync"
 
       - name: Download Linux libretro core
         uses: actions/download-artifact@v1
@@ -268,11 +267,11 @@ jobs:
           files: |
             windows-x64/duckstation-windows-x64-release.zip
             windows-libretro-x64/duckstation_libretro.dll.zip
+            linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
+            linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
+            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
+            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             linux-libretro/duckstation_libretro.so.zip
             linux-libretro/duckstation_libretro_android_aarch64.so.zip
             android/duckstation-android-aarch64.apk
 
-#            linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
-#            linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
-#            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
-#            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
