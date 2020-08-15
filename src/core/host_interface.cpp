@@ -284,7 +284,7 @@ bool HostInterface::LoadState(const char* filename)
   if (!stream)
     return false;
 
-  AddFormattedOSDMessage(2.0f, "Loading state from '%s'...", filename);
+  AddFormattedOSDMessage(5.0f, "Loading state from '%s'...", filename);
 
   if (!System::IsShutdown())
   {
@@ -323,7 +323,7 @@ bool HostInterface::SaveState(const char* filename)
   }
   else
   {
-    AddFormattedOSDMessage(2.0f, "State saved to '%s'.", filename);
+    AddFormattedOSDMessage(5.0f, "State saved to '%s'.", filename);
     stream->Commit();
   }
 
@@ -451,7 +451,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
     {
-      ReportFormattedMessage("Switching to %s%s GPU renderer.", Settings::GetRendererName(g_settings.gpu_renderer),
+      AddFormattedOSDMessage(5.0f, "Switching to %s%s GPU renderer.",
+                             Settings::GetRendererName(g_settings.gpu_renderer),
                              g_settings.gpu_use_debug_device ? " (debug)" : "");
       RecreateSystem();
     }
@@ -460,8 +461,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.audio_buffer_size != old_settings.audio_buffer_size)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
-        ReportFormattedMessage("Switching to %s audio backend.",
+      {
+        AddFormattedOSDMessage(5.0f, "Switching to %s audio backend.",
                                Settings::GetAudioBackendName(g_settings.audio_backend));
+      }
       DebugAssert(m_audio_stream);
       m_audio_stream.reset();
       CreateAudioStream();
@@ -473,7 +476,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
-      ReportFormattedMessage("Switching to %s CPU execution mode.",
+      AddFormattedOSDMessage(5.0f, "Switching to %s CPU execution mode.",
                              Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
       CPU::CodeCache::SetUseRecompiler(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
     }
@@ -481,7 +484,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
         g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
     {
-      ReportFormattedMessage("CPU memory exceptions %s, flushing all blocks.",
+      AddFormattedOSDMessage(5.0f, "CPU memory exceptions %s, flushing all blocks.",
                              g_settings.cpu_recompiler_memory_exceptions ? "enabled" : "disabled");
       CPU::CodeCache::Flush();
     }
@@ -508,7 +511,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     {
       if (g_settings.IsUsingCodeCache())
       {
-        ReportFormattedMessage("PGXP %s, recompiling all blocks.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
+        AddFormattedOSDMessage(5.0f, "PGXP %s, recompiling all blocks.",
+                               g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
         CPU::CodeCache::Flush();
       }
 
@@ -660,7 +664,7 @@ void HostInterface::ToggleSoftwareRendering()
 
   const GPURenderer new_renderer = g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
-  AddFormattedOSDMessage(2.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
+  AddFormattedOSDMessage(5.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
   System::RecreateGPU(new_renderer);
 }
 
@@ -672,7 +676,7 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     return;
 
   g_settings.gpu_resolution_scale = new_resolution_scale;
-  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", g_settings.gpu_resolution_scale,
+  AddFormattedOSDMessage(5.0f, "Resolution scale set to %ux (%ux%u)", g_settings.gpu_resolution_scale,
                          GPU::VRAM_WIDTH * g_settings.gpu_resolution_scale,
                          GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 

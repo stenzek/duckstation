@@ -1211,7 +1211,7 @@ void UpdateMemoryCards()
       {
         if (g_settings.memory_card_paths[i].empty())
         {
-          g_host_interface->AddFormattedOSDMessage(2.0f, "Memory card path for slot %u is missing, using default.",
+          g_host_interface->AddFormattedOSDMessage(10.0f, "Memory card path for slot %u is missing, using default.",
                                                    i + 1u);
           card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
@@ -1333,7 +1333,7 @@ bool RemoveMediaPathFromPlaylist(u32 index)
 
   if (GetMediaPlaylistIndex() == index)
   {
-    g_host_interface->ReportMessage("Removing current media from playlist, removing media from CD-ROM.");
+    g_host_interface->AddFormattedOSDMessage(10.0f, "Removing current media from playlist, removing media from CD-ROM.");
     g_cdrom.RemoveMedia();
   }
 
@@ -1348,7 +1348,7 @@ bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
 
   if (GetMediaPlaylistIndex() == index)
   {
-    g_host_interface->ReportMessage("Changing current media from playlist, replacing current media.");
+    g_host_interface->AddFormattedOSDMessage(10.0f, "Changing current media from playlist, replacing current media.");
     g_cdrom.RemoveMedia();
 
     s_media_playlist[index] = path;

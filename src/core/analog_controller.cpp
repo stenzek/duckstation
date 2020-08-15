@@ -53,7 +53,7 @@ bool AnalogController::DoState(StateWrapper& sw)
 
     if (old_analog_mode != m_analog_mode)
     {
-      g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+      g_host_interface->AddFormattedOSDMessage(5.0f, "Controller %u switched to %s mode.", m_index + 1u,
                                                m_analog_mode ? "analog" : "digital");
     }
   }
@@ -95,7 +95,7 @@ void AnalogController::SetButtonState(Button button, bool pressed)
     {
       if (m_analog_locked)
       {
-        g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.", m_index + 1u,
+        g_host_interface->AddFormattedOSDMessage(5.0f, "Controller %u is locked to %s mode by the game.", m_index + 1u,
                                                  m_analog_mode ? "analog" : "digital");
       }
       else
@@ -155,7 +155,7 @@ void AnalogController::SetAnalogMode(bool enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
+  g_host_interface->AddFormattedOSDMessage(5.0f, "Controller %u switched to %s mode.", m_index + 1u,
                                            enabled ? "analog" : "digital");
   m_analog_mode = enabled;
 }

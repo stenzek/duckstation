@@ -1237,7 +1237,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    {
                      m_speed_limiter_temp_disabled = !m_speed_limiter_temp_disabled;
                      UpdateSpeedLimiterState();
-                     AddFormattedOSDMessage(1.0f, "Speed limiter %s.",
+                     AddFormattedOSDMessage(2.0f, "Speed limiter %s.",
                                             m_speed_limiter_enabled ? "enabled" : "disabled");
                    }
                  });
@@ -1303,7 +1303,7 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    {
                      g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                      g_gpu->UpdateSettings();
-                     ReportFormattedMessage("PGXP is now %s.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
+                     AddFormattedOSDMessage(5.0f, "PGXP is now %s.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
 
                      if (g_settings.gpu_pgxp_enable)
                        PGXP::Initialize();
