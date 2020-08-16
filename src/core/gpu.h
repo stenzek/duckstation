@@ -102,8 +102,10 @@ public:
   enum : u16
   {
     NTSC_TICKS_PER_LINE = 3413,
+    NTSC_HSYNC_TICKS = 200,
     NTSC_TOTAL_LINES = 263,
     PAL_TICKS_PER_LINE = 3406,
+    PAL_HSYNC_TICKS = 200, // actually one more on odd lines
     PAL_TOTAL_LINES = 314,
   };
 
@@ -683,6 +685,7 @@ protected:
     u16 display_vram_height;
 
     u16 horizontal_total;
+    u16 horizontal_sync_start; // <- not currently saved to state, so we don't have to bump the version
     u16 horizontal_active_start;
     u16 horizontal_active_end;
     u16 horizontal_display_start;

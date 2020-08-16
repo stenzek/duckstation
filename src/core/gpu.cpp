@@ -449,6 +449,7 @@ void GPU::UpdateCRTCConfig()
     cs.vertical_total = PAL_TOTAL_LINES;
     cs.current_scanline %= PAL_TOTAL_LINES;
     cs.horizontal_total = PAL_TICKS_PER_LINE;
+    cs.horizontal_sync_start = PAL_HSYNC_TICKS;
     cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
   }
   else
@@ -456,8 +457,11 @@ void GPU::UpdateCRTCConfig()
     cs.vertical_total = NTSC_TOTAL_LINES;
     cs.current_scanline %= NTSC_TOTAL_LINES;
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
+    cs.horizontal_sync_start = NTSC_HSYNC_TICKS;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
+
+  cs.in_hblank = (cs.current_tick_in_scanline >= cs.horizontal_sync_start);
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
@@ -682,8 +686,8 @@ void GPU::CRTCTickEvent(TickCount ticks)
   {
     // short path when we execute <1 line.. this shouldn't occur often.
     const bool old_hblank = m_crtc_state.in_hblank;
-    const bool new_hblank = m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start ||
-                            m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end;
+    const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
+    m_crtc_state.in_hblank = new_hblank;
     if (!old_hblank && new_hblank && g_timers.IsUsingExternalClock(HBLANK_TIMER_INDEX))
       g_timers.AddTicks(HBLANK_TIMER_INDEX, 1);
 
@@ -699,8 +703,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
 #endif
 
   const bool old_hblank = m_crtc_state.in_hblank;
-  const bool new_hblank = m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start ||
-                          m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end;
+  const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
   m_crtc_state.in_hblank = new_hblank;
   if (g_timers.IsUsingExternalClock(HBLANK_TIMER_INDEX))
   {
