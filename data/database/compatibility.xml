@@ -1000,6 +1000,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
   </entry>
+  <entry code="SLUS-01052" compatibility="5" region="NTSC-U" title="EA Sports Superbike 2000 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1520-g0aefdf47</version-tested>
+  </entry>
   <entry code="SLES-00343" compatibility="5" region="PAL" title="Earthworm Jim 2 (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-896-gc8a00c5</version-tested>
@@ -1261,6 +1265,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00498" compatibility="5" region="NTSC-J" title="Harmful Park (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1031-g47138aa</version-tested>
+  </entry>
+  <entry code="SLUS-01503" compatibility="5" region="NTSC-U" title="Harry Potter and the Chamber of Secrets (USA) (En,Fr,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1520-g0aefdf47</version-tested>
+  </entry>
+  <entry code="SLUS-01415" compatibility="5" region="NTSC-U" title="Harry Potter and the Sorcerer's Stone (USA) (En,Fr,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1520-g0aefdf47</version-tested>
   </entry>
   <entry code="SLUS-01115" compatibility="5" region="NTSC-U" title="Harvest Moon - Back to Nature (USA)">
     <compatibility>No Issues</compatibility>
@@ -1732,14 +1744,12 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
   </entry>
-  <entry code="SLUS-80765" compatibility="4" region="NTSC-U" title="Monkey Hero">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <comments>Works, except dynamic lighting on character is broken.</comments>
+  <entry code="SLUS-80765" compatibility="5" region="NTSC-U" title="Monkey Hero">
+    <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLUS-00765" compatibility="4" region="NTSC-U" title="Monkey Hero (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-986-gfc911de1</version-tested>
-    <comments>Dynamic lighting on character does not work (issue #412)</comments>
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1522-gf6565182</version-tested>
   </entry>
   <entry code="SLUS-00930" compatibility="5" region="NTSC-U" title="Monkey Magic (USA)">
     <compatibility>No Issues</compatibility>
@@ -2306,6 +2316,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1445-ge5c46a54</version-tested>
   </entry>
+  <entry code="SLUS-01396" compatibility="5" region="NTSC-U" title="Scooby-Doo and the Cyber Chase (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1520-g0aefdf47</version-tested>
+  </entry>
   <entry code="SLPM-86009" compatibility="5" region="NTSC-J" title="Sexy Parodius (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
@@ -2409,6 +2423,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01378" compatibility="5" region="NTSC-U" title="Spider-Man 2 - Enter Electro (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SLUS-01459" compatibility="5" region="NTSC-U" title="Sports Superbike 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1520-g0aefdf47</version-tested>
   </entry>
   <entry code="SCUS-94467" compatibility="5" region="NTSC-U" title="Spyro - Year of the Dragon (USA)">
     <compatibility>No Issues</compatibility>
