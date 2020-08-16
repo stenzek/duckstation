@@ -79,6 +79,7 @@ private:
   void DrawImGuiWindows() override;
   void DoStartDisc();
   void DoChangeDisc();
+  void DoDumpRAM();
 
   void HandleSDLEvent(const SDL_Event* event);
   void ProcessEvents();

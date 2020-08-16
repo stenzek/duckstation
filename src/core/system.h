@@ -104,6 +104,9 @@ void UpdateControllerSettings();
 void ResetControllers();
 void UpdateMemoryCards();
 
+/// Dumps RAM to a file.
+bool DumpRAM(const char* filename);
+
 bool HasMedia();
 bool InsertMedia(const char* path);
 void RemoveMedia();

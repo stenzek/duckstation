@@ -662,6 +662,13 @@ void MainWindow::connectSignals()
     else
       m_host_interface->stopDumpingAudio();
   });
+  connect(m_ui.actionDumpRAM, &QAction::triggered, [this]() {
+    const QString filename = QFileDialog::getSaveFileName(this, tr("Destination File"));
+    if (filename.isEmpty())
+      return;
+
+    m_host_interface->dumpRAM(filename);
+  });
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug", "ShowVRAM");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, "Debug", "ShowGPUState");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowCDROMState, "Debug",

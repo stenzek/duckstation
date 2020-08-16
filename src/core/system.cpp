@@ -1228,6 +1228,15 @@ void UpdateMemoryCards()
   }
 }
 
+bool DumpRAM(const char* filename)
+{
+  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
+  if (!fp)
+    return false;
+
+  return std::fwrite(Bus::g_ram, Bus::RAM_SIZE, 1, fp.get()) == 1;
+}
+
 bool HasMedia()
 {
   return g_cdrom.HasMedia();
@@ -1333,7 +1342,8 @@ bool RemoveMediaPathFromPlaylist(u32 index)
 
   if (GetMediaPlaylistIndex() == index)
   {
-    g_host_interface->AddFormattedOSDMessage(10.0f, "Removing current media from playlist, removing media from CD-ROM.");
+    g_host_interface->AddFormattedOSDMessage(10.0f,
+                                             "Removing current media from playlist, removing media from CD-ROM.");
     g_cdrom.RemoveMedia();
   }
 

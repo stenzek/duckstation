@@ -151,6 +151,7 @@ public Q_SLOTS:
   void setAudioOutputMuted(bool muted);
   void startDumpingAudio();
   void stopDumpingAudio();
+  void dumpRAM(const QString& filename);
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();

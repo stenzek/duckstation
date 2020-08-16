@@ -904,6 +904,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
 void SDLHostInterface::DrawDebugMenu()
 {
+  const bool system_valid = System::IsValid();
   Settings::DebugSettings& debug_settings = g_settings.debugging;
   bool settings_changed = false;
 
@@ -930,6 +931,9 @@ void SDLHostInterface::DrawDebugMenu()
 
   settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
+
+  if (ImGui::MenuItem("Dump RAM...", nullptr, nullptr, system_valid))
+    DoDumpRAM();
 
   ImGui::Separator();
 
@@ -1507,6 +1511,22 @@ void SDLHostInterface::DoChangeDisc()
     AddFormattedOSDMessage(2.0f, "Switched CD to '%s'", path);
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
+
+  System::ResetPerformanceCounters();
+}
+
+void SDLHostInterface::DoDumpRAM()
+{
+  Assert(!System::IsShutdown());
+
+  nfdchar_t* path = nullptr;
+  if (!NFD_SaveDialog("bin", nullptr, &path) || !path || std::strlen(path) == 0)
+    return;
+
+  if (System::DumpRAM(path))
+    AddFormattedOSDMessage(5.0f, "Dumped RAM to '%s'", path);
+  else
+    AddFormattedOSDMessage(10.0f, "Failed to dump RAM to '%s'", path);
 
   System::ResetPerformanceCounters();
 }
