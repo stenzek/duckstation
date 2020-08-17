@@ -392,7 +392,7 @@ bool Boot(const SystemBootParameters& params)
   }
 
   // Notify change of disc.
-  UpdateRunningGame(params.filename.c_str(), media.get());
+  UpdateRunningGame(media ? media->GetFileName().c_str() : params.filename.c_str(), media.get());
   UpdateControllers();
   UpdateMemoryCards();
   Reset();

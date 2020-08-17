@@ -520,7 +520,7 @@ static std::array<retro_core_option_definition, 30> s_option_definitions = {{
    "When using a playlist (m3u) and per-game (title) memory cards, a single memory card "
    "will be used for all discs. If unchecked, a separate card will be used for each disc.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
-   "false"},
+   "true"},
   {"duckstation_Controller1.Type",
    "Controller 1 Type",
    "Sets the type of controller for Slot 1.",
