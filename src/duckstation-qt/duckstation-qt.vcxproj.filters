@@ -113,14 +113,27 @@
     <Image Include="duckstation-qt.ico" />
   </ItemGroup>
   <ItemGroup>
-    <QtTs Include="translations\duckstation-qt_de.ts" />
-    <QtTs Include="translations\duckstation-qt_he.ts" />
-    <QtTs Include="translations\duckstation-qt_pt-br.ts" />
-    <QtTs Include="translations\duckstation-qt_pt-pt.ts" />
-    <QtTs Include="translations\duckstation-qt_zh-cn.ts" />
+    <QtTs Include="translations\duckstation-qt_de.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_he.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_pt-br.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_pt-pt.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_zh-cn.ts">
+      <Filter>translations</Filter>
+    </QtTs>
   </ItemGroup>
   <ItemGroup>
     <None Include="translations\duckstation-qt_es.ts">
+      <Filter>translations</Filter>
+    </None>
+    <None Include="translations\duckstation-qt_it.ts">
       <Filter>translations</Filter>
     </None>
   </ItemGroup>

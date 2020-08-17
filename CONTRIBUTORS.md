@@ -12,6 +12,7 @@ The following people have contributed to the project in some way, and are credit
 - @phoe-nix - Chinese (Simplified)
 - Sorer - @MojoJojoDojo - Hebrew
 - Hipnosis183 - Spanish
+- @RaydenX93 - Italian
 
 ## Game Compatibility Database
  - @Zet-sensei
