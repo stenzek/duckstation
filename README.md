@@ -229,7 +229,7 @@ DuckStation is available as a libretro core, which can be loaded into a frontend
 Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
 - 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
-- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_aarch64.so.zip
+- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
 - AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
 
 To use, download and extract, and install the core file in RetroArch or your preferred frontend.
