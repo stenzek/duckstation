@@ -122,12 +122,7 @@ RETRO_API size_t retro_get_memory_size(unsigned id)
 RETRO_API void retro_set_environment(retro_environment_t f)
 {
   g_retro_environment_callback = f;
-
-  if (!g_libretro_host_interface.SetCoreOptions())
-    Log_WarningPrintf("Failed to set core options, settings will not be changeable.");
-
-  g_libretro_host_interface.InitLogging();
-  g_libretro_host_interface.InitDiskControlInterface();
+  g_libretro_host_interface.InitInterfaces();
 }
 
 RETRO_API void retro_set_video_refresh(retro_video_refresh_t f)

@@ -11,10 +11,7 @@ public:
   LibretroHostInterface();
   ~LibretroHostInterface() override;
 
-  static void InitLogging();
-  static bool SetCoreOptions();
-  static bool HasCoreVariablesChanged();
-  static void InitDiskControlInterface();
+  void InitInterfaces();
 
   ALWAYS_INLINE u32 GetResolutionScale() const { return g_settings.gpu_resolution_scale; }
 
@@ -51,6 +48,12 @@ protected:
   void CheckForSettingsChanges(const Settings& old_settings) override;
 
 private:
+  bool SetCoreOptions();
+  bool HasCoreVariablesChanged();
+  void InitLogging();
+  void InitDiskControlInterface();
+  void InitRumbleInterface();
+
   void LoadSettings();
   void UpdateSettings();
   void UpdateControllers();
@@ -86,6 +89,9 @@ private:
   bool m_hw_render_callback_valid = false;
   bool m_using_hardware_renderer = false;
   std::optional<u32> m_next_disc_index;
+
+  retro_rumble_interface m_rumble_interface = {};
+  bool m_rumble_interface_valid = false;
 };
 
 extern LibretroHostInterface g_libretro_host_interface;

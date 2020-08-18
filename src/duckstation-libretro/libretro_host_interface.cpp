@@ -63,6 +63,14 @@ LibretroHostInterface::~LibretroHostInterface()
   }
 }
 
+void LibretroHostInterface::InitInterfaces()
+{
+  SetCoreOptions();
+  InitLogging();
+  InitDiskControlInterface();
+  InitRumbleInterface();
+}
+
 void LibretroHostInterface::InitLogging()
 {
   if (s_libretro_log_callback_registered)
@@ -650,6 +658,11 @@ void LibretroHostInterface::CheckForSettingsChanges(const Settings& old_settings
     UpdateLogging();
 }
 
+void LibretroHostInterface::InitRumbleInterface()
+{
+  m_rumble_interface_valid = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &m_rumble_interface);
+}
+
 void LibretroHostInterface::UpdateControllers()
 {
   g_retro_input_poll_callback();
@@ -744,6 +757,17 @@ void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
   {
     const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_ANALOG, it.second.first, it.second.second);
     controller->SetAxisState(static_cast<s32>(it.first), std::clamp(static_cast<float>(state) / 32767.0f, -1.0f, 1.0f));
+  }
+
+  if (m_rumble_interface_valid)
+  {
+    const u32 motor_count = controller->GetVibrationMotorCount();
+    for (u32 i = 0; i < motor_count; i++)
+    {
+      const float strength = controller->GetVibrationMotorStrength(i);
+      m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_STRONG,
+                                          static_cast<u16>(static_cast<u32>(strength * 65565.0f)));
+    }
   }
 }
 
