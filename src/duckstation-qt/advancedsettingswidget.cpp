@@ -1,6 +1,7 @@
 #include "advancedsettingswidget.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include "mainwindow.h"
 
 AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
@@ -27,9 +28,12 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cpuRecompilerMemoryExceptions, "CPU",
                                                "RecompilerMemoryExceptions", false);
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showDebugMenu, "Main", "ShowDebugMenu");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuUseDebugDevice, "GPU", "UseDebugDevice");
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
+  connect(m_ui.showDebugMenu, &QCheckBox::toggled, m_host_interface->getMainWindow(),
+          &MainWindow::updateDebugMenuVisibility, Qt::QueuedConnection);
 
   dialog->registerWidgetHelp(m_ui.gpuUseDebugDevice, tr("Use Debug Host GPU Device"), tr("Unchecked"),
                              tr("Enables the usage of debug devices and shaders for rendering APIs which support them. "

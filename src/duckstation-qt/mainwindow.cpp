@@ -451,6 +451,8 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
 
+  updateDebugMenuVisibility();
+
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
     const CPUExecutionMode mode = static_cast<CPUExecutionMode>(i);
@@ -845,6 +847,12 @@ void MainWindow::startupUpdateCheck()
     return;
 
   checkForUpdates(false);
+}
+
+void MainWindow::updateDebugMenuVisibility()
+{
+  const bool visible = m_host_interface->GetBoolSettingValue("Main", "ShowDebugMenu", false);
+  m_ui.menuDebug->menuAction()->setVisible(visible);
 }
 
 void MainWindow::checkForUpdates(bool display_message)
