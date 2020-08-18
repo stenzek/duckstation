@@ -759,9 +759,15 @@ void GPU::CRTCTickEvent(TickCount ticks)
       // start the new frame
       m_crtc_state.current_scanline = 0;
       if (m_GPUSTAT.vertical_interlace)
+      {
         m_crtc_state.interlaced_field ^= 1u;
+        m_GPUSTAT.interlaced_field = m_crtc_state.interlaced_field;
+      }
       else
+      {
         m_crtc_state.interlaced_field = 0;
+        m_GPUSTAT.interlaced_field = 0u;      // new GPU = 1, old GPU = 0
+      }
     }
   }
 
