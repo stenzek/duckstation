@@ -66,9 +66,18 @@ LibretroHostInterface::~LibretroHostInterface()
 void LibretroHostInterface::InitInterfaces()
 {
   SetCoreOptions();
-  InitLogging();
   InitDiskControlInterface();
-  InitRumbleInterface();
+
+  if (!m_interfaces_initialized)
+  {
+    InitLogging();
+    InitRumbleInterface();
+
+    unsigned dummy = 0;
+    m_supports_input_bitmasks = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, &dummy);
+
+    m_interfaces_initialized = true;
+  }
 }
 
 void LibretroHostInterface::InitLogging()
@@ -711,10 +720,19 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
      {DigitalController::Button::R1, RETRO_DEVICE_ID_JOYPAD_R},
      {DigitalController::Button::R2, RETRO_DEVICE_ID_JOYPAD_R2}}};
 
-  for (const auto& it : mapping)
+  if (m_supports_input_bitmasks)
   {
-    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
-    controller->SetButtonState(it.first, state != 0);
+    const u16 active = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    for (const auto& it : mapping)
+      controller->SetButtonState(it.first, (active & (static_cast<u16>(1u) << it.second)) != 0u);
+  }
+  else
+  {
+    for (const auto& it : mapping)
+    {
+      const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+      controller->SetButtonState(it.first, state != 0);
+    }
   }
 }
 
@@ -747,10 +765,19 @@ void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
      {AnalogController::Axis::RightX, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X}},
      {AnalogController::Axis::RightY, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y}}}};
 
-  for (const auto& it : button_mapping)
+  if (m_supports_input_bitmasks)
   {
-    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
-    controller->SetButtonState(it.first, state != 0);
+    const u16 active = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    for (const auto& it : button_mapping)
+      controller->SetButtonState(it.first, (active & (static_cast<u16>(1u) << it.second)) != 0u);
+  }
+  else
+  {
+    for (const auto& it : button_mapping)
+    {
+      const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+      controller->SetButtonState(it.first, state != 0);
+    }
   }
 
   for (const auto& it : axis_mapping)
