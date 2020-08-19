@@ -454,8 +454,8 @@ void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+  m_settings_copy.Load(*m_settings_interface);
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  m_settings_copy = g_settings;
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -807,7 +807,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   if (ImGui::BeginMenu("CPU Execution Mode"))
   {
-    const CPUExecutionMode current = g_settings.cpu_execution_mode;
+    const CPUExecutionMode current = m_settings_copy.cpu_execution_mode;
     for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
     {
       if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
