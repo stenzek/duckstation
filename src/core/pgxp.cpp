@@ -21,6 +21,7 @@
 #include "pgxp.h"
 #include "settings.h"
 #include <cmath>
+#include <climits>
 
 namespace PGXP {
 // pgxp_types.h
