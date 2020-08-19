@@ -369,7 +369,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 30> s_option_definitions = {{
+static std::array<retro_core_option_definition, 31> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -500,6 +500,12 @@ static std::array<retro_core_option_definition, 30> s_option_definitions = {{
    "Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
+  {"duckstation_GPU.PGXPCPU",
+   "PGXP CPU Mode",
+   "Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. "
+   "Very slow, and incompatible with the recompiler.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_Display.CropMode",
    "Crop Mode",
    "Changes how much of the image is cropped. Some games display garbage in the overscan area which is typically "
@@ -607,7 +613,7 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
-  g_settings.Load(si);
+  HostInterface::LoadSettings(si);
 
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;

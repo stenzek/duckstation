@@ -135,7 +135,6 @@ enum class InstructionFunct : u8
   or_ = 37,
   xor_ = 38,
   nor = 39,
-  sh = 41,
   slt = 42,
   sltu = 43
 };

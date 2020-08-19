@@ -110,7 +110,8 @@ void Shutdown()
 #endif
 }
 
-void Execute()
+template<PGXPMode pgxp_mode>
+static void ExecuteImpl()
 {
   CodeBlockKey next_block_key;
 
@@ -157,7 +158,7 @@ void Execute()
       }
       else
       {
-        InterpretCachedBlock(*block);
+        InterpretCachedBlock<pgxp_mode>(*block);
       }
 
       if (g_state.pending_ticks >= g_state.downcount)
@@ -210,6 +211,21 @@ void Execute()
 
   // in case we switch to interpreter...
   g_state.regs.npc = g_state.regs.pc;
+}
+
+void Execute()
+{
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_pgxp_cpu)
+      ExecuteImpl<PGXPMode::CPU>();
+    else
+      ExecuteImpl<PGXPMode::Memory>();
+  }
+  else
+  {
+    ExecuteImpl<PGXPMode::Disabled>();
+  }
 }
 
 #ifdef WITH_RECOMPILER

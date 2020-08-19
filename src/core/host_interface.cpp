@@ -375,6 +375,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCulling", true);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", true);
   si.SetBoolValue("GPU", "PGXPVertexCache", false);
+  si.SetBoolValue("GPU", "PGXPCPU", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
   si.SetStringValue("Display", "AspectRatio",
@@ -438,6 +439,25 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 void HostInterface::LoadSettings(SettingsInterface& si)
 {
   g_settings.Load(si);
+
+  FixIncompatibleSettings();
+}
+
+void HostInterface::FixIncompatibleSettings()
+{
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_renderer == GPURenderer::Software)
+    {
+      Log_WarningPrintf("PGXP enabled with software renderer, disabling");
+      g_settings.gpu_pgxp_enable = false;
+    }
+    else if (g_settings.gpu_pgxp_cpu && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
+    {
+      Log_WarningPrintf("Recompiler selected with PGXP CPU mode, falling back to cached interpreter");
+      g_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
+    }
+  }
 }
 
 void HostInterface::SaveSettings(SettingsInterface& si)

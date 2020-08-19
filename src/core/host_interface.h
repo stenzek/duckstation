@@ -134,6 +134,9 @@ protected:
   /// Saves current settings variables to ini.
   virtual void SaveSettings(SettingsInterface& si);
 
+  /// Checks and fixes up any incompatible settings.
+  virtual void FixIncompatibleSettings();
+
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
   virtual void CheckForSettingsChanges(const Settings& old_settings);
 

@@ -51,4 +51,56 @@ void CPU_SB(u32 instr, u8 rtVal, u32 addr);
 void CPU_SH(u32 instr, u16 rtVal, u32 addr);
 void CPU_SW(u32 instr, u32 rtVal, u32 addr);
 
+// Arithmetic with immediate value
+void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_ADDIU(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_ANDI(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_ORI(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_XORI(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_SLTI(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_SLTIU(u32 instr, u32 rtVal, u32 rsVal);
+
+// Load Upper
+void CPU_LUI(u32 instr, u32 rtVal);
+
+// Register Arithmetic
+void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_ADDU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_SUBU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_AND(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_OR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_XOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_NOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+
+// Register mult/div
+void CPU_MULT(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
+void CPU_MULTU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
+void CPU_DIV(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
+void CPU_DIVU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
+
+// Shift operations (sa)
+void CPU_SLL(u32 instr, u32 rdVal, u32 rtVal);
+void CPU_SRL(u32 instr, u32 rdVal, u32 rtVal);
+void CPU_SRA(u32 instr, u32 rdVal, u32 rtVal);
+
+// Shift operations variable
+void CPU_SLLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
+void CPU_SRLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
+void CPU_SRAV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
+
+// Move registers
+void CPU_MFHI(u32 instr, u32 rdVal, u32 hiVal);
+void CPU_MTHI(u32 instr, u32 hiVal, u32 rdVal);
+void CPU_MFLO(u32 instr, u32 rdVal, u32 loVal);
+void CPU_MTLO(u32 instr, u32 loVal, u32 rdVal);
+
+// CP0 Data transfer tracking
+void CPU_MFC0(u32 instr, u32 rtVal, u32 rdVal);
+void CPU_MTC0(u32 instr, u32 rdVal, u32 rtVal);
+void CPU_CFC0(u32 instr, u32 rtVal, u32 rdVal);
+void CPU_CTC0(u32 instr, u32 rdVal, u32 rtVal);
+
 } // namespace PGXP

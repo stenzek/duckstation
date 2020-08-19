@@ -44,6 +44,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpTextureCorrection, "GPU",
                                                "PGXPTextureCorrection", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCPUMode, "GPU", "PGXPCPUMode", false);
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
@@ -142,6 +143,9 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   dialog->registerWidgetHelp(m_ui.pgxpVertexCache, tr("Vertex Cache"), tr("Unchecked"),
                              tr("Uses screen coordinates as a fallback when tracking vertices through memory fails. "
                                 "May improve PGXP compatibility."));
+  dialog->registerWidgetHelp(m_ui.pgxpCPUMode, tr("CPU Mode"), tr("Unchecked"),
+    tr("Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. "
+       "Very slow, and incompatible with the recompiler."));
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;
@@ -255,4 +259,5 @@ void GPUSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpCulling->setEnabled(enabled);
   m_ui.pgxpTextureCorrection->setEnabled(enabled);
   m_ui.pgxpVertexCache->setEnabled(enabled);
+  m_ui.pgxpCPUMode->setEnabled(enabled);
 }

@@ -93,6 +93,7 @@ struct Settings
   bool gpu_pgxp_culling = true;
   bool gpu_pgxp_texture_correction = true;
   bool gpu_pgxp_vertex_cache = false;
+  bool gpu_pgxp_cpu = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_linear_filtering = true;
@@ -156,6 +157,11 @@ struct Settings
   ALWAYS_INLINE bool IsUsingCodeCache() const { return (cpu_execution_mode != CPUExecutionMode::Interpreter); }
   ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
+
+  ALWAYS_INLINE PGXPMode GetPGXPMode()
+  {
+    return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
+  }
 
   bool HasAnyPerGameMemoryCards() const;
 

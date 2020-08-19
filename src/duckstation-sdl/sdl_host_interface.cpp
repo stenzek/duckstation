@@ -874,6 +874,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
                                         &m_settings_copy.gpu_pgxp_texture_correction, m_settings_copy.gpu_pgxp_enable);
     settings_changed |= ImGui::MenuItem("PGXP Vertex Cache", nullptr, &m_settings_copy.gpu_pgxp_vertex_cache,
                                         m_settings_copy.gpu_pgxp_enable);
+    settings_changed |=
+      ImGui::MenuItem("PGXP CPU Instructions", nullptr, &m_settings_copy.gpu_pgxp_cpu, m_settings_copy.gpu_pgxp_enable);
     ImGui::EndMenu();
   }
 
@@ -1347,6 +1349,7 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);
         settings_changed |= ImGui::Checkbox("PGXP Texture Correction", &m_settings_copy.gpu_pgxp_texture_correction);
         settings_changed |= ImGui::Checkbox("PGXP Vertex Cache", &m_settings_copy.gpu_pgxp_vertex_cache);
+        settings_changed |= ImGui::Checkbox("PGXP CPU", &m_settings_copy.gpu_pgxp_cpu);
       }
 
       ImGui::EndTabItem();
