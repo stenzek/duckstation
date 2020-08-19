@@ -625,7 +625,7 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   if (g_settings.gpu_pgxp_enable)
   {
     // this can potentially use increased precision on Z
-    const float precise_z = std::max<float>((float)REGS.H / 2.f, (float)REGS.SZ3);
+    const float precise_z = std::max<float>((float)REGS.H / 2.f, (float)z / 4096.0f);
     const float precise_h_div_sz = (float)REGS.H / precise_z;
     const float fofx = ((float)REGS.OFX / (float)(1 << 16));
     const float fofy = ((float)REGS.OFY / (float)(1 << 16));
