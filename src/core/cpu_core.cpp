@@ -554,7 +554,7 @@ ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
         {
           const u32 new_value = ReadReg(inst.r.rs) & ReadReg(inst.r.rt);
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_AND(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+            PGXP::CPU_AND_(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
 
           WriteReg(inst.r.rd, new_value);
         }
@@ -564,7 +564,7 @@ ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
         {
           const u32 new_value = ReadReg(inst.r.rs) | ReadReg(inst.r.rt);
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_OR(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+            PGXP::CPU_OR_(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
 
           WriteReg(inst.r.rd, new_value);
         }
@@ -574,7 +574,7 @@ ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
         {
           const u32 new_value = ReadReg(inst.r.rs) ^ ReadReg(inst.r.rt);
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_XOR(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+            PGXP::CPU_XOR_(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
 
           WriteReg(inst.r.rd, new_value);
         }

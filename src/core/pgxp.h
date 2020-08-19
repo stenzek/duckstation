@@ -41,7 +41,8 @@ void CPU_CTC2(u32 instr, u32 rdVal, u32 rtVal); // copy GPR reg to GTE ctrl reg 
 void CPU_LWC2(u32 instr, u32 rtVal, u32 addr); // copy memory to GTE reg
 void CPU_SWC2(u32 instr, u32 rtVal, u32 addr); // copy GTE reg to memory
 
-bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y, float* out_w);
+bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y,
+                      float* out_w);
 
 // -- CPU functions
 void CPU_LW(u32 instr, u32 rtVal, u32 addr);
@@ -68,9 +69,9 @@ void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_ADDU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_SUBU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_AND(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_OR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_XOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_OR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_XOR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_NOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);

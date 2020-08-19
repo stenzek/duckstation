@@ -1101,7 +1101,7 @@ void CPU_SUBU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   CPU_SUB(instr, rdVal, rsVal, rtVal);
 }
 
-void CPU_AND(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs & Rt
   psx_value vald, vals, valt;
@@ -1193,22 +1193,22 @@ void CPU_AND(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_OR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_OR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs | Rt
-  CPU_AND(instr, rdVal, rsVal, rtVal);
+  CPU_AND_(instr, rdVal, rsVal, rtVal);
 }
 
-void CPU_XOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_XOR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs ^ Rt
-  CPU_AND(instr, rdVal, rsVal, rtVal);
+  CPU_AND_(instr, rdVal, rsVal, rtVal);
 }
 
 void CPU_NOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs NOR Rt
-  CPU_AND(instr, rdVal, rsVal, rtVal);
+  CPU_AND_(instr, rdVal, rsVal, rtVal);
 }
 
 void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
