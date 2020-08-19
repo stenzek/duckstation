@@ -28,6 +28,9 @@ private Q_SLOTS:
   void getLatestTagComplete(QNetworkReply* reply);
   void getLatestReleaseComplete(QNetworkReply* reply);
 
+  void queueGetChanges();
+  void getChangesComplete(QNetworkReply* reply);
+
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
   void remindMeLaterClicked();
