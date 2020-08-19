@@ -97,7 +97,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   {
     QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Automatic Update Check"), m_ui.groupBox_4);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "AutoUpdater",
-                                                 "CheckAtStartup");
+                                                 "CheckAtStartup", true);
     m_ui.formLayout_4->addWidget(enableDiscordPresence, last_row_count, 1);
     dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Automatic Update Check"), tr("Checked"),
                                tr("Automatically checks for updates to the program on startup. Updates can be deferred "
