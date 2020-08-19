@@ -197,7 +197,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
           m_download_url = asset_obj["browser_download_url"].toString();
           if (!m_download_url.isEmpty())
           {
-            m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(__TIMESTAMP__));
+            m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(g_scm_date_str));
             m_ui.newVersion->setText(
               tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
             m_ui.updateNotes->setText(tr("Loading..."));
@@ -266,7 +266,8 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
         if (first_line_terminator >= 0)
           message.remove(first_line_terminator, message.size() - first_line_terminator);
         if (!message.isEmpty())
-          changes_html += QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
+          changes_html +=
+            QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
       }
 
       changes_html += "</ul>";
