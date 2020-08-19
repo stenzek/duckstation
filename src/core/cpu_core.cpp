@@ -477,6 +477,10 @@ ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
     LogInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
 #endif
 
+  // Skip nops. Makes PGXP-CPU quicker, but also the regular interpreter.
+  if (inst.bits == 0)
+    return;
+
   switch (inst.op)
   {
     case InstructionOp::funct:
