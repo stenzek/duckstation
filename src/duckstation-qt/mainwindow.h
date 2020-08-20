@@ -62,6 +62,10 @@ private Q_SLOTS:
   void onChangeDiscFromPlaylistMenuAboutToShow();
   void onChangeDiscFromPlaylistMenuAboutToHide();
   void onRemoveDiscActionTriggered();
+  void onViewToolbarActionToggled(bool checked);
+  void onViewStatusBarActionToggled(bool checked);
+  void onViewGameListActionTriggered();
+  void onViewSystemDisplayTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();

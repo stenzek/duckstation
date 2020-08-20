@@ -310,6 +310,34 @@ void MainWindow::onRemoveDiscActionTriggered()
   m_host_interface->changeDisc(QString());
 }
 
+void MainWindow::onViewToolbarActionToggled(bool checked)
+{
+  m_host_interface->SetBoolSettingValue("UI", "ShowToolbar", checked);
+  m_ui.toolBar->setVisible(checked);
+}
+
+void MainWindow::onViewStatusBarActionToggled(bool checked)
+{
+  m_host_interface->SetBoolSettingValue("UI", "ShowStatusBar", checked);
+  m_ui.statusBar->setVisible(checked);
+}
+
+void MainWindow::onViewGameListActionTriggered()
+{
+  if (m_emulation_running)
+    m_host_interface->pauseSystem(true);
+  switchToGameListView();
+}
+
+void MainWindow::onViewSystemDisplayTriggered()
+{
+  if (m_emulation_running)
+  {
+    switchToEmulationView();
+    m_host_interface->pauseSystem(false);
+  }
+}
+
 void MainWindow::onGitHubRepositoryActionTriggered()
 {
   QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/");
@@ -431,6 +459,14 @@ void MainWindow::setupAdditionalUi()
 {
   setWindowTitle(getWindowTitle());
 
+  const bool toolbar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowToolbar", true);
+  m_ui.actionViewToolbar->setChecked(toolbar_visible);
+  m_ui.toolBar->setVisible(toolbar_visible);
+
+  const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
+  m_ui.actionViewStatusBar->setChecked(status_bar_visible);
+  m_ui.statusBar->setVisible(status_bar_visible);
+
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_host_interface);
   m_ui.mainContainer->insertWidget(0, m_game_list_widget);
@@ -509,6 +545,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
   m_ui.actionScreenshot->setDisabled(starting || !running);
+  m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
@@ -617,6 +654,10 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AdvancedSettings); });
+  connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
+  connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
+  connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
+  connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
