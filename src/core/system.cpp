@@ -131,7 +131,7 @@ bool IsShutdown()
 
 bool IsValid()
 {
-  return s_state != State::Shutdown;
+  return s_state != State::Shutdown && s_state != State::Starting;
 }
 
 ConsoleRegion GetRegion()
@@ -384,6 +384,9 @@ bool Boot(const SystemBootParameters& params)
     return false;
   }
 
+  // Notify change of disc.
+  UpdateRunningGame(media ? media->GetFileName().c_str() : params.filename.c_str(), media.get());
+
   // Component setup.
   if (!Initialize(params.force_software_renderer))
   {
@@ -391,8 +394,6 @@ bool Boot(const SystemBootParameters& params)
     return false;
   }
 
-  // Notify change of disc.
-  UpdateRunningGame(media ? media->GetFileName().c_str() : params.filename.c_str(), media.get());
   UpdateControllers();
   UpdateMemoryCards();
   Reset();
@@ -1269,6 +1270,9 @@ void RemoveMedia()
 
 void UpdateRunningGame(const char* path, CDImage* image)
 {
+  if (s_running_game_path == path)
+    return;
+
   s_running_game_path.clear();
   s_running_game_code.clear();
   s_running_game_title.clear();

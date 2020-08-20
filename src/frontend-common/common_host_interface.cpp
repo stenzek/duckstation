@@ -71,6 +71,8 @@ bool CommonHostInterface::Initialize()
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
   m_game_list->SetDatabaseFilename(GetUserDirectoryRelativePath("cache/redump.dat"));
   m_game_list->SetCompatibilityFilename(GetProgramDirectoryRelativePath("database/compatibility.xml"));
+  m_game_list->SetGameSettingsFilename(GetProgramDirectoryRelativePath("database/gamesettings.ini"));
+  m_game_list->SetUserGameSettingsFilename(GetUserDirectoryRelativePath("gamesettings.ini"));
 
   m_save_state_selector_ui = std::make_unique<FrontendCommon::SaveStateSelectorUI>(this);
 
@@ -2022,6 +2024,17 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
 
   AddFormattedOSDMessage(5.0f, "Screenshot saved to '%s'.", filename);
   return true;
+}
+
+void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
+{
+  // this gets called while booting, so can't use valid
+  if (System::IsShutdown() || System::GetRunningCode().empty())
+    return;
+
+  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
+  if (gs)
+    gs->ApplySettings(display_osd_messages);
 }
 
 #ifdef WITH_DISCORD_PRESENCE

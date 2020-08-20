@@ -280,16 +280,17 @@ void QtHostInterface::setDefaultSettings()
     m_settings_interface->Save();
 
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
+    CommonHostInterface::ApplyGameSettings(false);
   }
 
   CheckForSettingsChanges(old_settings);
 }
 
-void QtHostInterface::applySettings()
+void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "applySettings", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "applySettings", Qt::QueuedConnection, Q_ARG(bool, display_osd_messages));
     return;
   }
 
@@ -297,6 +298,7 @@ void QtHostInterface::applySettings()
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
+    CommonHostInterface::ApplyGameSettings(display_osd_messages);
   }
 
   CheckForSettingsChanges(old_settings);
@@ -649,6 +651,7 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 void QtHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
+  applySettings(true);
 
   if (!System::IsShutdown())
   {

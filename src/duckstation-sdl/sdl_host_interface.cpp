@@ -321,6 +321,11 @@ void SDLHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
+  Settings old_settings(std::move(g_settings));
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(true);
+  CheckForSettingsChanges(old_settings);
+
   if (!System::GetRunningTitle().empty())
     SDL_SetWindowTitle(m_window, System::GetRunningTitle().c_str());
   else
@@ -347,6 +352,7 @@ void SDLHostInterface::SaveAndUpdateSettings()
 
   Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(false);
   CheckForSettingsChanges(old_settings);
 
   m_settings_interface->Save();

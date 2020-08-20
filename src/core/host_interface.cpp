@@ -378,6 +378,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCPU", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
+  si.SetIntValue("Display", "OverscanActiveStartOffset", 0);
+  si.SetIntValue("Display", "OverscanActiveEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
   si.SetBoolValue("Display", "LinearFiltering", true);
@@ -467,7 +469,7 @@ void HostInterface::SaveSettings(SettingsInterface& si)
 
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
-  if (!System::IsShutdown())
+  if (System::IsValid())
   {
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
@@ -522,7 +524,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
-        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable)
+        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
+        g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
+        g_settings.display_active_end_offset != old_settings.display_active_end_offset)
     {
       g_gpu->UpdateSettings();
     }

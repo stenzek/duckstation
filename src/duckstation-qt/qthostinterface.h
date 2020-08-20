@@ -129,7 +129,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
   void setDefaultSettings();
-  void applySettings();
+  void applySettings(bool display_osd_messages = false);
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
   void onDisplayWindowKeyEvent(int key, bool pressed);
