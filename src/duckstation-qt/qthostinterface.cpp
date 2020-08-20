@@ -281,6 +281,7 @@ void QtHostInterface::setDefaultSettings()
 
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
     CommonHostInterface::ApplyGameSettings(false);
+    CommonHostInterface::FixIncompatibleSettings(false);
   }
 
   CheckForSettingsChanges(old_settings);
@@ -299,6 +300,7 @@ void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
     CommonHostInterface::ApplyGameSettings(display_osd_messages);
+    CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
   }
 
   CheckForSettingsChanges(old_settings);
@@ -676,6 +678,7 @@ void QtHostInterface::LoadSettings()
 
   CommonHostInterface::CheckSettings(*m_settings_interface.get());
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::FixIncompatibleSettings(false);
 }
 
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)

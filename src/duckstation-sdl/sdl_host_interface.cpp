@@ -324,6 +324,7 @@ void SDLHostInterface::OnRunningGameChanged()
   Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
   CommonHostInterface::ApplyGameSettings(true);
+  CommonHostInterface::FixIncompatibleSettings(true);
   CheckForSettingsChanges(old_settings);
 
   if (!System::GetRunningTitle().empty())
@@ -353,6 +354,7 @@ void SDLHostInterface::SaveAndUpdateSettings()
   Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
   CommonHostInterface::ApplyGameSettings(false);
+  CommonHostInterface::FixIncompatibleSettings(false);
   CheckForSettingsChanges(old_settings);
 
   m_settings_interface->Save();
@@ -462,6 +464,7 @@ void SDLHostInterface::LoadSettings()
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
   m_settings_copy.Load(*m_settings_interface);
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::FixIncompatibleSettings(false);
 }
 
 void SDLHostInterface::ReportError(const char* message)

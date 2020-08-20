@@ -441,22 +441,22 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 void HostInterface::LoadSettings(SettingsInterface& si)
 {
   g_settings.Load(si);
-
-  FixIncompatibleSettings();
 }
 
-void HostInterface::FixIncompatibleSettings()
+void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
 {
   if (g_settings.gpu_pgxp_enable)
   {
     if (g_settings.gpu_renderer == GPURenderer::Software)
     {
-      Log_WarningPrintf("PGXP enabled with software renderer, disabling");
+      if (display_osd_messages)
+        AddOSDMessage("PGXP is incompatible with the software renderer, disabling PGXP.", 10.0f);
       g_settings.gpu_pgxp_enable = false;
     }
     else if (g_settings.gpu_pgxp_cpu && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
     {
-      Log_WarningPrintf("Recompiler selected with PGXP CPU mode, falling back to cached interpreter");
+      if (display_osd_messages)
+        AddOSDMessage("PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.", 10.0f);
       g_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
     }
   }

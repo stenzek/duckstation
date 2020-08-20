@@ -101,6 +101,7 @@ bool LibretroHostInterface::Initialize()
     return false;
 
   LoadSettings();
+  FixIncompatibleSettings();
   UpdateLogging();
   return true;
 }
@@ -631,6 +632,7 @@ void LibretroHostInterface::UpdateSettings()
 {
   Settings old_settings(std::move(g_settings));
   LoadSettings();
+  FixIncompatibleSettings();
 
   if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
       g_settings.gpu_renderer != GPURenderer::Software)
