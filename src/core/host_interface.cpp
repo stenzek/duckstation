@@ -358,6 +358,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "SaveStateOnExit", true);
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  si.SetBoolValue("Main", "ApplyGameSettings", true);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);

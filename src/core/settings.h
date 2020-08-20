@@ -78,6 +78,7 @@ struct Settings
   bool save_state_on_exit = true;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
+  bool apply_game_settings = true;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;

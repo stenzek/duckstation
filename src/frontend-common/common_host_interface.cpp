@@ -2029,7 +2029,7 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
 void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
 {
   // this gets called while booting, so can't use valid
-  if (System::IsShutdown() || System::GetRunningCode().empty())
+  if (System::IsShutdown() || System::GetRunningCode().empty() || !g_settings.apply_game_settings)
     return;
 
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());

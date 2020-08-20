@@ -84,6 +84,7 @@ void Settings::Load(SettingsInterface& si)
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
 
   cpu_execution_mode =
     ParseCPUExecutionMode(
@@ -200,6 +201,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
+  si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
