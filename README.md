@@ -38,6 +38,7 @@ Other features include:
  - CPU Recompiler/JIT (x86-64 and AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling and true colour (24-bit) in hardware renderers
+ - PGXP for geometry precision and texture correction
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows, Linux, **highly experimental** macOS support

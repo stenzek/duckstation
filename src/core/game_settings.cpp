@@ -205,7 +205,7 @@ bool Database::Load(const char* path)
 
   CSimpleIniA ini;
   SI_Error err = ini.LoadFile(fp.get());
-  if (err != S_OK)
+  if (err != SI_OK)
   {
     Log_ErrorPrintf("Failed to parse game settings ini: %d", static_cast<int>(err));
     return false;
@@ -243,7 +243,7 @@ void Database::SetEntry(const std::string& code, const std::string& name, const 
       if (fp)
       {
         SI_Error err = ini.LoadFile(fp.get());
-        if (err != S_OK)
+        if (err != SI_OK)
           Log_ErrorPrintf("Failed to parse game settings ini: %d. Contents will be lost.", static_cast<int>(err));
       }
       else
@@ -266,7 +266,7 @@ void Database::SetEntry(const std::string& code, const std::string& name, const 
         std::fputs("# DuckStation Game Settings\n\n", fp.get());
 
       SI_Error err = ini.SaveFile(fp.get());
-      if (err != S_OK)
+      if (err != SI_OK)
         Log_ErrorPrintf("Failed to save game settings ini: %d", static_cast<int>(err));
     }
     else
