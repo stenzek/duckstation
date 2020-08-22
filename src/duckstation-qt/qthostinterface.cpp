@@ -959,6 +959,9 @@ void QtHostInterface::loadState(const QString& filename)
     return;
   }
 
+  if (System::IsShutdown())
+    emit emulationStarting();
+
   LoadState(filename.toStdString().c_str());
   if (System::IsValid())
     renderDisplay();
