@@ -1355,7 +1355,7 @@ static void ExecuteImpl()
   {
     TimingEvents::UpdateCPUDowncount();
 
-    while (g_state.pending_ticks <= g_state.downcount)
+    while (g_state.pending_ticks < g_state.downcount)
     {
       if (HasPendingInterrupt())
         DispatchInterrupt();
