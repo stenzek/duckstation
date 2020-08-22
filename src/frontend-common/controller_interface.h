@@ -40,7 +40,7 @@ public:
   static std::optional<Backend> ParseBackendName(const char* name);
   static const char* GetBackendName(Backend type);
   static Backend GetDefaultBackend();
-  static std::unique_ptr<ControllerInterface> Create(Backend type);
+  static std::shared_ptr<ControllerInterface> Create(Backend type);
 
   virtual Backend GetBackend() const = 0;
   virtual bool Initialize(CommonHostInterface* host_interface);

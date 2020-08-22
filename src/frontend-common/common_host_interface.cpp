@@ -1247,9 +1247,15 @@ bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 co
       return false;
     }
 
-    AddControllerRumble(controller_index, num_motors,
-                        std::bind(&ControllerInterface::SetControllerRumbleStrength, m_controller_interface.get(),
-                                  host_controller_index.value(), std::placeholders::_1, std::placeholders::_2));
+    AddControllerRumble(
+      controller_index, num_motors,
+      [index = host_controller_index.value(),
+       ci = std::weak_ptr<ControllerInterface>(m_controller_interface)](const float* strengths, u32 num_motors) {
+        if (auto controller = ci.lock(); controller)
+        {
+          controller->SetControllerRumbleStrength(index, strengths, num_motors);
+        }
+      });
 
     return true;
   }

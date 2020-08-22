@@ -277,7 +277,7 @@ protected:
 
   std::unique_ptr<GameList> m_game_list;
 
-  std::unique_ptr<ControllerInterface> m_controller_interface;
+  std::shared_ptr<ControllerInterface> m_controller_interface;
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;

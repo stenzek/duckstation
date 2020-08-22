@@ -125,15 +125,15 @@ ControllerInterface::Backend ControllerInterface::GetDefaultBackend()
 #include "xinput_controller_interface.h"
 #endif
 
-std::unique_ptr<ControllerInterface> ControllerInterface::Create(Backend type)
+std::shared_ptr<ControllerInterface> ControllerInterface::Create(Backend type)
 {
 #ifdef WITH_SDL2
   if (type == Backend::SDL)
-    return std::make_unique<SDLControllerInterface>();
+    return std::make_shared<SDLControllerInterface>();
 #endif
 #ifdef WIN32
   if (type == Backend::XInput)
-    return std::make_unique<XInputControllerInterface>();
+    return std::make_shared<XInputControllerInterface>();
 #endif
 
   return {};
