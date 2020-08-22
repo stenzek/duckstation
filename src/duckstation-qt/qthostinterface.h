@@ -64,6 +64,9 @@ public:
   void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
   void RemoveSettingValue(const char* section, const char* key);
 
+  TinyString TranslateString(const char* context, const char* str) const;
+  std::string TranslateStdString(const char* context, const char* str) const;
+
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
@@ -83,6 +86,9 @@ public:
 
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu);
+
+  /// Fills menu with the current playlist entries. The disc index is marked as checked.
+  void populatePlaylistEntryMenu(QMenu* menu);
 
   ALWAYS_INLINE QString getSavePathForInputProfile(const QString& name) const
   {
@@ -126,7 +132,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
   void setDefaultSettings();
-  void applySettings();
+  void applySettings(bool display_osd_messages = false);
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
   void onDisplayWindowKeyEvent(int key, bool pressed);
@@ -140,6 +146,7 @@ public Q_SLOTS:
   void resetSystem();
   void pauseSystem(bool paused);
   void changeDisc(const QString& new_disc_filename);
+  void changeDiscFromPlaylist(quint32 index);
   void loadState(const QString& filename);
   void loadState(bool global, qint32 slot);
   void saveState(bool global, qint32 slot, bool block_until_done = false);
@@ -147,6 +154,7 @@ public Q_SLOTS:
   void setAudioOutputMuted(bool muted);
   void startDumpingAudio();
   void stopDumpingAudio();
+  void dumpRAM(const QString& filename);
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();

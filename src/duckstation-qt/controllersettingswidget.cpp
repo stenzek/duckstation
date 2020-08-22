@@ -9,6 +9,7 @@
 #include <QtCore/QSignalBlocker>
 #include <QtCore/QTimer>
 #include <QtGui/QCursor>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -48,7 +49,7 @@ void ControllerSettingsWidget::onProfileLoaded()
     ControllerType ctype = Settings::ParseControllerTypeName(
                              m_host_interface
                                ->GetStringSettingValue(QStringLiteral("Controller%1").arg(i + 1).toStdString().c_str(),
-                                                 QStringLiteral("Type").toStdString().c_str())
+                                                       QStringLiteral("Type").toStdString().c_str())
                                .c_str())
                              .value_or(ControllerType::None);
 
@@ -86,7 +87,7 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
   for (int i = 0; i < static_cast<int>(ControllerType::Count); i++)
   {
     ui->controller_type->addItem(
-      QString::fromUtf8(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
+      qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
   ControllerType ctype =
     Settings::ParseControllerTypeName(

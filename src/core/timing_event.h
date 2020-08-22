@@ -79,7 +79,7 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
                                                TimingEventCallback callback, bool activate);
 
 /// Serialization.
-bool DoState(StateWrapper& sw, u32 global_tick_counter);
+bool DoState(StateWrapper& sw);
 
 void RunEvents();
 

@@ -53,8 +53,12 @@ bool AnalogController::DoState(StateWrapper& sw)
 
     if (old_analog_mode != m_analog_mode)
     {
-      g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
-                                               m_analog_mode ? "analog" : "digital");
+      g_host_interface->AddFormattedOSDMessage(
+        5.0f,
+        m_analog_mode ?
+          g_host_interface->TranslateString("AnalogController", "Controller %u switched to analog mode.") :
+          g_host_interface->TranslateString("AnalogController", "Controller %u switched to digital mode."),
+        m_index + 1u);
     }
   }
   return true;
@@ -95,8 +99,13 @@ void AnalogController::SetButtonState(Button button, bool pressed)
     {
       if (m_analog_locked)
       {
-        g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u is locked to %s mode by the game.", m_index + 1u,
-                                                 m_analog_mode ? "analog" : "digital");
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          m_analog_mode ? g_host_interface->TranslateString("AnalogController",
+                                                            "Controller %u is locked to analog mode by the game.") :
+                          g_host_interface->TranslateString("AnalogController",
+                                                            "Controller %u is locked to digital mode by the game."),
+          m_index + 1u);
       }
       else
       {
@@ -155,8 +164,11 @@ void AnalogController::SetAnalogMode(bool enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  g_host_interface->AddFormattedOSDMessage(2.0f, "Controller %u switched to %s mode.", m_index + 1u,
-                                           enabled ? "analog" : "digital");
+  g_host_interface->AddFormattedOSDMessage(
+    5.0f,
+    enabled ? g_host_interface->TranslateString("AnalogController", "Controller %u switched to analog mode.") :
+              g_host_interface->TranslateString("AnalogController", "Controller %u switched to digital mode."),
+    m_index + 1u);
   m_analog_mode = enabled;
 }
 

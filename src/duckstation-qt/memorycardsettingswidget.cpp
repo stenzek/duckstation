@@ -5,6 +5,7 @@
 #include "inputbindingwidgets.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include <QtCore/QUrl>
 #include <QtWidgets/QFileDialog>
@@ -12,39 +13,53 @@
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] = "All Memory Card Types (*.mcd *.mcr *.mc)";
 
-MemoryCardSettingsWidget::MemoryCardSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
+MemoryCardSettingsWidget::MemoryCardSettingsWidget(QtHostInterface* host_interface, QWidget* parent,
+                                                   SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
-  createUi();
+  createUi(dialog);
 }
 
 MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;
 
-void MemoryCardSettingsWidget::createUi()
+void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
 {
   QVBoxLayout* layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
 
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
   {
-    createPortSettingsUi(i, &m_port_ui[i]);
+    createPortSettingsUi(dialog, i, &m_port_ui[i]);
     layout->addWidget(m_port_ui[i].container);
   }
 
   {
-    QGroupBox* note_box = new QGroupBox(this);
-    QHBoxLayout* note_layout = new QHBoxLayout(note_box);
+    QGroupBox* box = new QGroupBox(tr("Shared Settings"), this);
+    QVBoxLayout* box_layout = new QVBoxLayout(box);
+
+    QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Playlist"), box);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, playlist_title_as_game_title, "MemoryCards",
+                                                 "UsePlaylistTitle", true);
+    box_layout->addWidget(playlist_title_as_game_title);
+    dialog->registerWidgetHelp(
+      playlist_title_as_game_title, tr("Use Single Card For Playlist"), tr("Checked"),
+      tr("When using a playlist (m3u) and per-game (title) memory cards, a single memory card "
+         "will be used for all discs. If unchecked, a separate card will be used for each disc."));
+
+    QHBoxLayout* note_layout = new QHBoxLayout();
     QLabel* note_label =
       new QLabel(tr("If one of the \"separate card per game\" memory card modes is chosen, these memory "
                     "cards will be saved to the memcards directory."),
-                 note_box);
+                 box);
     note_label->setWordWrap(true);
     note_layout->addWidget(note_label, 1);
 
-    QPushButton* open_memcards = new QPushButton(tr("Open..."), note_box);
+    QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
     connect(open_memcards, &QPushButton::clicked, this, &MemoryCardSettingsWidget::onOpenMemCardsDirectoryClicked);
     note_layout->addWidget(open_memcards);
-    layout->addWidget(note_box);
+    box_layout->addLayout(note_layout);
+
+    layout->addWidget(box);
   }
 
   layout->addStretch(1);
@@ -52,7 +67,7 @@ void MemoryCardSettingsWidget::createUi()
   setLayout(layout);
 }
 
-void MemoryCardSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
+void MemoryCardSettingsWidget::createPortSettingsUi(SettingsDialog* dialog, int index, PortSettingsUI* ui)
 {
   ui->container = new QGroupBox(tr("Memory Card %1").arg(index + 1), this);
   ui->layout = new QVBoxLayout(ui->container);
@@ -61,7 +76,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
   for (int i = 0; i < static_cast<int>(MemoryCardType::Count); i++)
   {
     ui->memory_card_type->addItem(
-      QString::fromUtf8(Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
+      qApp->translate("MemoryCardType", Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
   }
 
   const MemoryCardType default_value = (index == 0) ? MemoryCardType::PerGameTitle : MemoryCardType::None;

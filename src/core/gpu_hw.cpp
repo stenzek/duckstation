@@ -96,6 +96,14 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
                       m_scaled_dithering != g_settings.gpu_scaled_dithering ||
                       m_texture_filtering != g_settings.gpu_texture_filtering || m_using_uv_limits != use_uv_limits);
 
+  if (m_resolution_scale != resolution_scale)
+  {
+    g_host_interface->AddFormattedOSDMessage(10.0f, "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)",
+                                             resolution_scale, m_crtc_state.display_vram_width * resolution_scale,
+                                             resolution_scale * m_crtc_state.display_vram_height,
+                                             VRAM_WIDTH * resolution_scale, VRAM_HEIGHT * resolution_scale);
+  }
+
   m_resolution_scale = resolution_scale;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
@@ -124,6 +132,12 @@ void GPU_HW::UpdateResolutionScale()
 
   if (CalculateResolutionScale() != m_resolution_scale)
     UpdateSettings();
+}
+
+std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution()
+{
+  return std::make_tuple(m_crtc_state.display_vram_width * m_resolution_scale,
+                         m_resolution_scale * m_crtc_state.display_vram_height);
 }
 
 void GPU_HW::PrintSettingsToLog()

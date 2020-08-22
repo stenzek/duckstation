@@ -32,6 +32,20 @@
       <string>Behaviour</string>
      </property>
      <layout class="QGridLayout" name="formLayout_4">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="confirmPowerOff">
+        <property name="text">
+         <string>Confirm Power Off</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="renderToMain">
+        <property name="text">
+         <string>Render To Main Window</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
@@ -39,10 +53,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="confirmPowerOff">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="startFullscreen">
         <property name="text">
-         <string>Confirm Power Off</string>
+         <string>Start Fullscreen</string>
         </property>
        </widget>
       </item>
@@ -60,17 +74,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="startFullscreen">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="applyGameSettings">
         <property name="text">
-         <string>Start Fullscreen</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="renderToMain">
-        <property name="text">
-         <string>Render To Main Window</string>
+         <string>Apply Per-Game Settings</string>
         </property>
        </widget>
       </item>
@@ -170,6 +177,13 @@
        <widget class="QCheckBox" name="showVPS">
         <property name="text">
          <string>Show VPS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="showResolution">
+        <property name="text">
+         <string>Show Resolution</string>
         </property>
        </widget>
       </item>

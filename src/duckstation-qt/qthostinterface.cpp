@@ -1,4 +1,4 @@
-#include "qthostinterface.h"
+﻿#include "qthostinterface.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
@@ -34,7 +34,10 @@
 Log_SetChannel(QtHostInterface);
 
 #ifdef WIN32
+#include "common/windows_headers.h"
 #include "frontend-common/d3d11_host_display.h"
+#include <KnownFolders.h>
+#include <ShlObj.h>
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
@@ -56,8 +59,12 @@ std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageLi
 {
   return {{QStringLiteral("English"), QStringLiteral("")},
           {QStringLiteral("Deutsch"), QStringLiteral("de")},
-          {QStringLiteral("Portuguese (Pt)"), QStringLiteral("pt-pt")},
-          {QStringLiteral("Portuguese (Br)"), QStringLiteral("pt-br")}};
+          {QStringLiteral("Español"), QStringLiteral("es")},
+          {QStringLiteral("עברית"), QStringLiteral("he")},
+          {QStringLiteral("Italiano"), QStringLiteral("it")},
+          {QStringLiteral("Português (Pt)"), QStringLiteral("pt-pt")},
+          {QStringLiteral("Português (Br)"), QStringLiteral("pt-br")},
+          {QStringLiteral("简体中文"), QStringLiteral("zh-cn")}};
 }
 
 bool QtHostInterface::Initialize()
@@ -276,16 +283,18 @@ void QtHostInterface::setDefaultSettings()
     m_settings_interface->Save();
 
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
+    CommonHostInterface::ApplyGameSettings(false);
+    CommonHostInterface::FixIncompatibleSettings(false);
   }
 
   CheckForSettingsChanges(old_settings);
 }
 
-void QtHostInterface::applySettings()
+void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "applySettings", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "applySettings", Qt::QueuedConnection, Q_ARG(bool, display_osd_messages));
     return;
   }
 
@@ -293,6 +302,8 @@ void QtHostInterface::applySettings()
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
     CommonHostInterface::LoadSettings(*m_settings_interface.get());
+    CommonHostInterface::ApplyGameSettings(display_osd_messages);
+    CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
   }
 
   CheckForSettingsChanges(old_settings);
@@ -645,6 +656,7 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 void QtHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
+  applySettings(true);
 
   if (!System::IsShutdown())
   {
@@ -669,6 +681,7 @@ void QtHostInterface::LoadSettings()
 
   CommonHostInterface::CheckSettings(*m_settings_interface.get());
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::FixIncompatibleSettings(false);
 }
 
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -805,6 +818,21 @@ void QtHostInterface::changeDisc(const QString& new_disc_filename)
     System::RemoveMedia();
 }
 
+void QtHostInterface::changeDiscFromPlaylist(quint32 index)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "changeDiscFromPlaylist", Qt::QueuedConnection, Q_ARG(quint32, index));
+    return;
+  }
+
+  if (System::IsShutdown())
+    return;
+
+  if (!System::SwitchMediaFromPlaylist(index))
+    ReportFormattedError("Failed to switch to playlist index %u", index);
+}
+
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
 {
   const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
@@ -813,13 +841,12 @@ static QString FormatTimestampForSaveStateMenu(u64 timestamp)
 
 void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
 {
-  auto add_slot = [this, game_code, load_menu, save_menu](const char* title, const char* empty_title, bool global,
+  auto add_slot = [this, game_code, load_menu, save_menu](const QString& title, const QString& empty_title, bool global,
                                                           s32 slot) {
     std::optional<SaveStateInfo> ssi = GetSaveStateInfo(global ? nullptr : game_code, slot);
 
-    const QString menu_title = ssi.has_value() ?
-                                 tr(title).arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) :
-                                 tr(empty_title).arg(slot);
+    const QString menu_title =
+      ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
 
     QAction* load_action = load_menu->addAction(menu_title);
     load_action->setEnabled(ssi.has_value());
@@ -839,14 +866,14 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   if (game_code && std::strlen(game_code) > 0)
   {
     for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
-      add_slot("Game Save %1 (%2)", "Game Save %1 (Empty)", false, static_cast<s32>(slot));
+      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
 
     load_menu->addSeparator();
     save_menu->addSeparator();
   }
 
   for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)
-    add_slot("Global Save %1 (%2)", "Global Save %1 (Empty)", true, static_cast<s32>(slot));
+    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
 }
 
 void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu)
@@ -903,6 +930,24 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
 
       DeleteSaveStates(game_code_copy.c_str(), true);
     });
+  }
+}
+
+void QtHostInterface::populatePlaylistEntryMenu(QMenu* menu)
+{
+  if (!System::IsValid())
+    return;
+
+  QActionGroup* ag = new QActionGroup(menu);
+  const u32 count = System::GetMediaPlaylistCount();
+  const u32 current = System::GetMediaPlaylistIndex();
+  for (u32 i = 0; i < count; i++)
+  {
+    QAction* action = ag->addAction(QString::fromStdString(System::GetMediaPlaylistPath(i)));
+    action->setCheckable(true);
+    action->setChecked(i == current);
+    connect(action, &QAction::triggered, [this, i]() { changeDiscFromPlaylist(i); });
+    menu->addAction(action);
   }
 }
 
@@ -989,6 +1034,24 @@ void QtHostInterface::stopDumpingAudio()
   }
 
   StopDumpingAudio();
+}
+
+void QtHostInterface::dumpRAM(const QString& filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "dumpRAM", Q_ARG(const QString&, filename));
+    return;
+  }
+
+  if (System::IsShutdown())
+    return;
+
+  const std::string filename_str = filename.toStdString();
+  if (System::DumpRAM(filename_str.c_str()))
+    ReportFormattedMessage("RAM dumped to '%s'", filename_str.c_str());
+  else
+    ReportFormattedMessage("Failed to dump RAM to '%s'", filename_str.c_str());
 }
 
 void QtHostInterface::saveScreenshot()
@@ -1126,6 +1189,49 @@ void QtHostInterface::wakeThread()
     QMetaObject::invokeMethod(m_worker_thread_event_loop, "quit", Qt::QueuedConnection);
 }
 
+static std::string GetFontPath(const char* name)
+{
+#ifdef WIN32
+  PWSTR folder_path;
+  if (FAILED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &folder_path)))
+    return StringUtil::StdStringFromFormat("C:\\Windows\\Fonts\\%s", name);
+
+  std::string font_path(StringUtil::WideStringToUTF8String(folder_path));
+  CoTaskMemFree(folder_path);
+  font_path += "\\";
+  font_path += name;
+  return font_path;
+#else
+  return name;
+#endif
+}
+
+static bool AddImGuiFont(const std::string& language, float size, float framebuffer_scale)
+{
+  std::string path;
+  const ImWchar* range = nullptr;
+#ifdef WIN32
+  if (language == "jp")
+  {
+    path = GetFontPath("msgothic.ttc");
+    range = ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
+  }
+  else if (language == "zh-cn")
+  {
+    path = GetFontPath("msyh.ttc");
+    range = ImGui::GetIO().Fonts->GetGlyphRangesChineseSimplifiedCommon();
+  }
+#endif
+
+  if (!path.empty())
+  {
+    return (ImGui::GetIO().Fonts->AddFontFromFileTTF(path.c_str(), size * framebuffer_scale, nullptr, range) !=
+            nullptr);
+  }
+
+  return false;
+}
+
 void QtHostInterface::createImGuiContext(float framebuffer_scale)
 {
   ImGui::CreateContext();
@@ -1137,12 +1243,33 @@ void QtHostInterface::createImGuiContext(float framebuffer_scale)
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
 
   ImGui::StyleColorsDarker();
-  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
+
+  std::string language = GetStringSettingValue("Main", "Language", "");
+  if (!AddImGuiFont(language, 15.0f, framebuffer_scale))
+    ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
 }
 
 void QtHostInterface::destroyImGuiContext()
 {
   ImGui::DestroyContext();
+}
+
+TinyString QtHostInterface::TranslateString(const char* context, const char* str) const
+{
+  const QString translated(m_translator->translate(context, str));
+  if (translated.isEmpty())
+    return TinyString(str);
+
+  return TinyString(translated.toUtf8().constData());
+}
+
+std::string QtHostInterface::TranslateStdString(const char* context, const char* str) const
+{
+  const QString translated(m_translator->translate(context, str));
+  if (translated.isEmpty())
+    return std::string(str);
+
+  return translated.toStdString();
 }
 
 QtHostInterface::Thread::Thread(QtHostInterface* parent) : QThread(parent), m_parent(parent) {}

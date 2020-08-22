@@ -63,6 +63,23 @@ LibretroHostInterface::~LibretroHostInterface()
   }
 }
 
+void LibretroHostInterface::InitInterfaces()
+{
+  SetCoreOptions();
+  InitDiskControlInterface();
+
+  if (!m_interfaces_initialized)
+  {
+    InitLogging();
+    InitRumbleInterface();
+
+    unsigned dummy = 0;
+    m_supports_input_bitmasks = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, &dummy);
+
+    m_interfaces_initialized = true;
+  }
+}
+
 void LibretroHostInterface::InitLogging()
 {
   if (s_libretro_log_callback_registered)
@@ -84,6 +101,7 @@ bool LibretroHostInterface::Initialize()
     return false;
 
   LoadSettings();
+  FixIncompatibleSettings(true);
   UpdateLogging();
   return true;
 }
@@ -150,7 +168,7 @@ std::string LibretroHostInterface::GetStringSettingValue(const char* section, co
                                                          const char* default_value /*= ""*/)
 {
   TinyString name;
-  name.Format("%s.%s", section, key);
+  name.Format("duckstation_%s.%s", section, key);
   retro_variable var{name, default_value};
   if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     return var.value;
@@ -352,8 +370,8 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 29> s_option_definitions = {{
-  {"Console.Region",
+static std::array<retro_core_option_definition, 31> s_option_definitions = {{
+  {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
    {{"Auto", "Auto-Detect"},
@@ -361,34 +379,34 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"NTSC-U", "NTSC-U (US)"},
     {"PAL", "PAL (Europe, Australia)"}},
    "Auto"},
-  {"BIOS.PatchFastBoot",
+  {"duckstation_BIOS.PatchFastBoot",
    "Fast Boot",
    "Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"CDROM.RegionCheck",
+  {"duckstation_CDROM.RegionCheck",
    "CD-ROM Region Check",
    "Prevents discs from incorrect regions being read by the emulator. Usually safe to disable.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"CDROM.ReadThread",
+  {"duckstation_CDROM.ReadThread",
    "CD-ROM Read Thread",
    "Reads CD-ROM sectors ahead asynchronously, reducing the risk of frame time spikes.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "true"},
-  {"CDROM.LoadImageToRAM",
+  {"duckstation_CDROM.LoadImageToRAM",
    "Preload CD-ROM Image To RAM",
    "Loads the disc image to RAM before starting emulation. May reduce hitching if you are running off a network share, "
    "at a cost of a greater startup time. As libretro provides no way to draw overlays, the emulator will appear to "
    "lock up while the image is preloaded.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"CPU.ExecutionMode",
+  {"duckstation_CPU.ExecutionMode",
    "CPU Execution Mode",
    "Which mode to use for CPU emulation. Recompiler provides the best performance.",
    {{"Interpreter", "Interpreter"}, {"CachedIntepreter", "Cached Interpreter"}, {"Recompiler", "Recompiler"}},
    "Recompiler"},
-  {"GPU.Renderer",
+  {"duckstation_GPU.Renderer",
    "GPU Renderer",
    "Which renderer to use to emulate the GPU",
    {
@@ -404,7 +422,7 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
    "OpenGL"
 #endif
   },
-  {"GPU.ResolutionScale",
+  {"duckstation_GPU.ResolutionScale",
    "Internal Resolution Scale",
    "Scales internal VRAM resolution by the specified multiplier. Larger values are slower. Some games require "
    "1x VRAM resolution or they will have rendering issues.",
@@ -425,81 +443,87 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"15", "15x"},
     {"16", "16x"}},
    "1"},
-  {"GPU.TrueColor",
+  {"duckstation_GPU.TrueColor",
    "True Color Rendering",
    "Disables dithering and uses the full 8 bits per channel of color information. May break rendering in some games.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"GPU.ScaledDithering",
+  {"duckstation_GPU.ScaledDithering",
    "Scaled Dithering",
    "Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to "
    "enable.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "true"},
-  {"GPU.DisableInterlacing",
+  {"duckstation_GPU.DisableInterlacing",
    "Disable Interlacing",
    "Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will "
    "break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"GPU.ForceNTSCTimings",
+  {"duckstation_GPU.ForceNTSCTimings",
    "Force NTSC Timings",
    "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while "
    "others will break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"GPU.TextureFiltering",
+  {"duckstation_GPU.TextureFiltering",
    "Bilinear Texture Filtering",
    "Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a "
    "greater effect on higher resolution scales. Only applies to the hardware renderers.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"GPU.WidescreenHack",
+  {"duckstation_GPU.WidescreenHack",
    "Widescreen Hack",
    "Increases the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered "
    "backgrounds, this enhancement will not work as expected.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"GPU.PGXPEnable",
+  {"duckstation_GPU.PGXPEnable",
    "PGXP Geometry Correction",
    "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory transfers. Only "
    "works with the hardware renderers, and may not be compatible with all games.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"GPU.PGXPCulling",
+  {"duckstation_GPU.PGXPCulling",
    "PGXP Culling Correction",
    "Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction "
    "enabled.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "true"},
-  {"GPU.PGXPTextureCorrection",
+  {"duckstation_GPU.PGXPTextureCorrection",
    "PGXP Texture Correction",
    "Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. "
    "Requires geometry correction enabled.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "true"},
-  {"GPU.PGXPVertexCache",
+  {"duckstation_GPU.PGXPVertexCache",
    "PGXP Vertex Cache",
    "Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"Display.CropMode",
+  {"duckstation_GPU.PGXPCPU",
+   "PGXP CPU Mode",
+   "Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. "
+   "Very slow, and incompatible with the recompiler.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_Display.CropMode",
    "Crop Mode",
    "Changes how much of the image is cropped. Some games display garbage in the overscan area which is typically "
    "hidden.",
    {{"None", "None"}, {"Overscan", "Only Overscan Area"}, {"Borders", "All Borders"}},
    "Overscan"},
-  {"Display.AspectRatio",
+  {"duckstation_Display.AspectRatio",
    "Aspect Ratio",
    "Sets the core-provided aspect ratio.",
    {{"4:3", "4:3"}, {"16:9", "16:9"}, {"2:1", "2:1 (VRAM 1:1)"}, {"1:1", "1:1"}},
    "4:3"},
-  {"MemoryCards.LoadFromSaveStates",
-   "Load Memory Cards From Save States",
-   "Sets whether the contents of memory cards will be loaded when a save state is loaded.",
+  {"duckstation_Main.LoadDevicesFromSaveStates",
+   "Load Devices From Save States",
+   "Sets whether the contents of devices and memory cards will be loaded when a save state is loaded.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"MemoryCards.Card1Type",
+  {"duckstation_MemoryCards.Card1Type",
    "Memory Card 1 Type",
    "Sets the type of memory card for Slot 1.",
    {{"None", "No Memory Card"},
@@ -507,7 +531,7 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"PerGame", "Separate Card Per Game (Game Code)"},
     {"PerGameTitle", "Separate Card Per Game (Game Title)"}},
    "PerGameTitle"},
-  {"MemoryCards.Card2Type",
+  {"duckstation_MemoryCards.Card2Type",
    "Memory Card 2 Type",
    "Sets the type of memory card for Slot 2.",
    {{"None", "No Memory Card"},
@@ -515,7 +539,13 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"PerGame", "Separate Card Per Game (Game Code)"},
     {"PerGameTitle", "Separate Card Per Game (Game Title)"}},
    "None"},
-  {"Controller1.Type",
+  {"duckstation_MemoryCards.UsePlaylistTitle",
+   "Use Single Card For Playlist",
+   "When using a playlist (m3u) and per-game (title) memory cards, a single memory card "
+   "will be used for all discs. If unchecked, a separate card will be used for each disc.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "true"},
+  {"duckstation_Controller1.Type",
    "Controller 1 Type",
    "Sets the type of controller for Slot 1.",
    {{"None", "None"},
@@ -525,12 +555,12 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"PlayStationMouse", "PlayStation Mouse"},
     {"NeGcon", "NeGcon"}},
    "DigitalController"},
-  {"Controller1.AutoEnableAnalog",
+  {"duckstation_Controller1.AutoEnableAnalog",
    "Controller 1 Auto Analog Mode",
    "Automatically enables analog mode in supported controllers at start/reset.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"Controller2.Type",
+  {"duckstation_Controller2.Type",
    "Controller 2 Type",
    "Sets the type of controller for Slot 2.",
    {{"None", "None"},
@@ -540,12 +570,12 @@ static std::array<retro_core_option_definition, 29> s_option_definitions = {{
     {"PlayStationMouse", "PlayStation Mouse"},
     {"NeGcon", "NeGcon"}},
    "None"},
-  {"Controller2.AutoEnableAnalog",
+  {"duckstation_Controller2.AutoEnableAnalog",
    "Controller 2 Auto Analog Mode",
    "Automatically enables analog mode in supported controllers at start/reset.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"Logging.LogLevel",
+  {"duckstation_Logging.LogLevel",
    "Log Level",
    "Sets the level of information logged by the core.",
    {{"None", "None"},
@@ -584,7 +614,7 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
-  g_settings.Load(si);
+  HostInterface::LoadSettings(si);
 
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;
@@ -602,6 +632,7 @@ void LibretroHostInterface::UpdateSettings()
 {
   Settings old_settings(std::move(g_settings));
   LoadSettings();
+  FixIncompatibleSettings(false);
 
   if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
       g_settings.gpu_renderer != GPURenderer::Software)
@@ -642,6 +673,11 @@ void LibretroHostInterface::CheckForSettingsChanges(const Settings& old_settings
 
   if (g_settings.log_level != old_settings.log_level)
     UpdateLogging();
+}
+
+void LibretroHostInterface::InitRumbleInterface()
+{
+  m_rumble_interface_valid = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &m_rumble_interface);
 }
 
 void LibretroHostInterface::UpdateControllers()
@@ -692,10 +728,19 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
      {DigitalController::Button::R1, RETRO_DEVICE_ID_JOYPAD_R},
      {DigitalController::Button::R2, RETRO_DEVICE_ID_JOYPAD_R2}}};
 
-  for (const auto& it : mapping)
+  if (m_supports_input_bitmasks)
   {
-    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
-    controller->SetButtonState(it.first, state != 0);
+    const u16 active = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    for (const auto& it : mapping)
+      controller->SetButtonState(it.first, (active & (static_cast<u16>(1u) << it.second)) != 0u);
+  }
+  else
+  {
+    for (const auto& it : mapping)
+    {
+      const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+      controller->SetButtonState(it.first, state != 0);
+    }
   }
 }
 
@@ -728,16 +773,33 @@ void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
      {AnalogController::Axis::RightX, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X}},
      {AnalogController::Axis::RightY, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y}}}};
 
-  for (const auto& it : button_mapping)
+  if (m_supports_input_bitmasks)
   {
-    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
-    controller->SetButtonState(it.first, state != 0);
+    const u16 active = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    for (const auto& it : button_mapping)
+      controller->SetButtonState(it.first, (active & (static_cast<u16>(1u) << it.second)) != 0u);
+  }
+  else
+  {
+    for (const auto& it : button_mapping)
+    {
+      const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+      controller->SetButtonState(it.first, state != 0);
+    }
   }
 
   for (const auto& it : axis_mapping)
   {
     const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_ANALOG, it.second.first, it.second.second);
     controller->SetAxisState(static_cast<s32>(it.first), std::clamp(static_cast<float>(state) / 32767.0f, -1.0f, 1.0f));
+  }
+
+  if (m_rumble_interface_valid)
+  {
+    const u16 strong = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(0) * 65565.0f));
+    const u16 weak = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(1) * 65565.0f));
+    m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_STRONG, strong);
+    m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_WEAK, weak);
   }
 }
 
@@ -788,7 +850,8 @@ static std::optional<GPURenderer> RenderAPIToRenderer(HostDisplay::RenderAPI api
 bool LibretroHostInterface::RequestHardwareRendererContext()
 {
   GPURenderer renderer = Settings::DEFAULT_GPU_RENDERER;
-  retro_variable renderer_variable{"GPU.Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER)};
+  retro_variable renderer_variable{"duckstation_GPU.Renderer",
+                                   Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER)};
   if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &renderer_variable) && renderer_variable.value)
     renderer = Settings::ParseRendererName(renderer_variable.value).value_or(Settings::DEFAULT_GPU_RENDERER);
 

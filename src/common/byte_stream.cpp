@@ -267,10 +267,12 @@ public:
     {
 #if WIN32
       // delete the temporary file
-      if (!DeleteFileA(m_temporaryFileName.c_str()))
+      if (!DeleteFileW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
+      {
         Log_WarningPrintf(
           "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
           m_temporaryFileName.c_str());
+      }
 #else
       // delete the temporary file
       if (remove(m_temporaryFileName.c_str()) < 0)
@@ -308,7 +310,8 @@ public:
 
 #ifdef WIN32
     // move the atomic file name to the original file name
-    if (!MoveFileExA(m_temporaryFileName.c_str(), m_originalFileName.c_str(), MOVEFILE_REPLACE_EXISTING))
+    if (!MoveFileExW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str(),
+                     StringUtil::UTF8StringToWideString(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
     {
       Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
                         m_temporaryFileName.c_str(), m_originalFileName.c_str());

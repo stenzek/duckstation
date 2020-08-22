@@ -59,6 +59,11 @@ void GPU::UpdateSettings()
 
 void GPU::UpdateResolutionScale() {}
 
+std::tuple<u32, u32> GPU::GetEffectiveDisplayResolution()
+{
+  return std::tie(m_crtc_state.display_vram_width, m_crtc_state.display_vram_height);
+}
+
 void GPU::Reset()
 {
   SoftReset();
@@ -162,6 +167,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
   sw.Do(&m_crtc_state.interlaced_field);
+  sw.Do(&m_crtc_state.interlaced_display_field);
   sw.Do(&m_crtc_state.active_line_lsb);
 
   sw.Do(&m_blitter_state);
@@ -443,6 +449,7 @@ void GPU::UpdateCRTCConfig()
     cs.vertical_total = PAL_TOTAL_LINES;
     cs.current_scanline %= PAL_TOTAL_LINES;
     cs.horizontal_total = PAL_TICKS_PER_LINE;
+    cs.horizontal_sync_start = PAL_HSYNC_TICKS;
     cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
   }
   else
@@ -450,8 +457,11 @@ void GPU::UpdateCRTCConfig()
     cs.vertical_total = NTSC_TOTAL_LINES;
     cs.current_scanline %= NTSC_TOTAL_LINES;
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
+    cs.horizontal_sync_start = NTSC_HSYNC_TICKS;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
+
+  cs.in_hblank = (cs.current_tick_in_scanline >= cs.horizontal_sync_start);
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
@@ -503,15 +513,15 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        cs.horizontal_active_start = 487;
-        cs.horizontal_active_end = 3282;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 487 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3282 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 20;
         cs.vertical_active_end = 308;
         break;
 
       case DisplayCropMode::Overscan:
-        cs.horizontal_active_start = 628;
-        cs.horizontal_active_end = 3188;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 628 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3188 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 30;
         cs.vertical_active_end = 298;
         break;
@@ -530,15 +540,15 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        cs.horizontal_active_start = 488;
-        cs.horizontal_active_end = 3288;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 488 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3288 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 16;
         cs.vertical_active_end = 256;
         break;
 
       case DisplayCropMode::Overscan:
-        cs.horizontal_active_start = 608;
-        cs.horizontal_active_end = 3168;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 608 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3168 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 24;
         cs.vertical_active_end = 248;
         break;
@@ -676,8 +686,8 @@ void GPU::CRTCTickEvent(TickCount ticks)
   {
     // short path when we execute <1 line.. this shouldn't occur often.
     const bool old_hblank = m_crtc_state.in_hblank;
-    const bool new_hblank = m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start ||
-                            m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end;
+    const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
+    m_crtc_state.in_hblank = new_hblank;
     if (!old_hblank && new_hblank && g_timers.IsUsingExternalClock(HBLANK_TIMER_INDEX))
       g_timers.AddTicks(HBLANK_TIMER_INDEX, 1);
 
@@ -693,8 +703,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
 #endif
 
   const bool old_hblank = m_crtc_state.in_hblank;
-  const bool new_hblank = m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_display_start ||
-                          m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end;
+  const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
   m_crtc_state.in_hblank = new_hblank;
   if (g_timers.IsUsingExternalClock(HBLANK_TIMER_INDEX))
   {
@@ -734,10 +743,10 @@ void GPU::CRTCTickEvent(TickCount ticks)
         System::FrameDone();
 
         // switch fields early. this is needed so we draw to the correct one.
-        if (m_GPUSTAT.vertical_interlace)
-          m_crtc_state.interlaced_field ^= 1u;
+        if (m_GPUSTAT.InInterleaved480iMode())
+          m_crtc_state.interlaced_display_field = m_crtc_state.interlaced_field ^ 1u;
         else
-          m_crtc_state.interlaced_field = 0;
+          m_crtc_state.interlaced_display_field = 0;
       }
 
       g_timers.SetGate(HBLANK_TIMER_INDEX, new_vblank);
@@ -749,15 +758,26 @@ void GPU::CRTCTickEvent(TickCount ticks)
     {
       // start the new frame
       m_crtc_state.current_scanline = 0;
+      if (m_GPUSTAT.vertical_interlace)
+      {
+        m_crtc_state.interlaced_field ^= 1u;
+        m_GPUSTAT.interlaced_field = m_crtc_state.interlaced_field;
+      }
+      else
+      {
+        m_crtc_state.interlaced_field = 0;
+        m_GPUSTAT.interlaced_field = 0u; // new GPU = 1, old GPU = 0
+      }
     }
   }
 
   // alternating even line bit in 240-line mode
-  if (m_GPUSTAT.vertical_interlace)
+  if (m_GPUSTAT.InInterleaved480iMode())
   {
     m_crtc_state.active_line_lsb =
-      ConvertToBoolUnchecked((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.interlaced_field)) & u32(1));
-    m_GPUSTAT.display_line_lsb = m_crtc_state.active_line_lsb && !m_crtc_state.in_vblank;
+      Truncate8((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.interlaced_display_field)) & u32(1));
+    m_GPUSTAT.display_line_lsb = ConvertToBoolUnchecked(
+      (m_crtc_state.regs.Y + (BoolToUInt8(m_crtc_state.in_vblank) ^ m_crtc_state.interlaced_display_field)) & u32(1));
   }
   else
   {

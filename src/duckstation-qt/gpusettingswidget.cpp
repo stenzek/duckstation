@@ -44,6 +44,7 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpTextureCorrection, "GPU",
                                                "PGXPTextureCorrection", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCPUMode, "GPU", "PGXPCPUMode", false);
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GPUSettingsWidget::updateScaledDitheringEnabled);
@@ -141,6 +142,10 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
   dialog->registerWidgetHelp(m_ui.pgxpVertexCache, tr("Vertex Cache"), tr("Unchecked"),
                              tr("Uses screen coordinates as a fallback when tracking vertices through memory fails. "
                                 "May improve PGXP compatibility."));
+  dialog->registerWidgetHelp(
+    m_ui.pgxpCPUMode, tr("CPU Mode"), tr("Unchecked"),
+    tr("Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. "
+       "Very slow, and incompatible with the recompiler."));
 }
 
 GPUSettingsWidget::~GPUSettingsWidget() = default;
@@ -156,7 +161,10 @@ void GPUSettingsWidget::updateScaledDitheringEnabled()
 void GPUSettingsWidget::setupAdditionalUi()
 {
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
-    m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
+  {
+    m_ui.renderer->addItem(
+      qApp->translate("GPURenderer", Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
+  }
 
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
   {
@@ -167,7 +175,7 @@ void GPUSettingsWidget::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
     m_ui.displayCropMode->addItem(
-      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+      qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
   std::array<QString, GPU::MAX_RESOLUTION_SCALE + 1> resolution_suffixes = {{
@@ -254,4 +262,5 @@ void GPUSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpCulling->setEnabled(enabled);
   m_ui.pgxpTextureCorrection->setEnabled(enabled);
   m_ui.pgxpVertexCache->setEnabled(enabled);
+  m_ui.pgxpCPUMode->setEnabled(enabled);
 }

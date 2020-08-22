@@ -120,8 +120,8 @@ if(MSVC)
     # Set warning level 3 instead of 4.
     string(REPLACE "/W3" "/W4" ${config} "${${config}}")
 
-    # Enable intrinsic functions, disable minimal rebuild.
-    set(${config} "${${config}} /Oi /Gm-")
+    # Enable intrinsic functions, disable minimal rebuild, UTF-8 source.
+    set(${config} "${${config}} /Oi /Gm- /utf-8")
   endforeach()
 
   # RelWithDebInfo is set to Ob1 instead of Ob2.   

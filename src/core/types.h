@@ -48,6 +48,13 @@ enum class CPUExecutionMode : u8
   Count
 };
 
+enum class PGXPMode : u8
+{
+  Disabled,
+  Memory,
+  CPU
+};
+
 enum class GPURenderer : u8
 {
 #ifdef WIN32

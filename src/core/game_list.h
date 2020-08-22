@@ -1,4 +1,5 @@
 #pragma once
+#include "game_settings.h"
 #include "types.h"
 #include <memory>
 #include <optional>
@@ -16,7 +17,8 @@ class SettingsInterface;
 enum class GameListEntryType
 {
   Disc,
-  PSExe
+  PSExe,
+  Playlist
 };
 
 enum class GameListCompatibilityRating
@@ -47,6 +49,7 @@ struct GameListEntry
   DiscRegion region;
   GameListEntryType type;
   GameListCompatibilityRating compatibility_rating;
+  GameSettings::Entry settings;
 };
 
 struct GameListCompatibilityEntry
@@ -108,6 +111,8 @@ public:
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
   void SetDatabaseFilename(std::string filename) { m_database_filename = std::move(filename); }
   void SetCompatibilityFilename(std::string filename) { m_compatibility_list_filename = std::move(filename); }
+  void SetGameSettingsFilename(std::string filename) { m_game_settings_filename = std::move(filename); }
+  void SetUserGameSettingsFilename(std::string filename) { m_user_game_settings_filename = std::move(filename); }
   void SetSearchDirectoriesFromSettings(SettingsInterface& si);
 
   bool IsDatabasePresent() const;
@@ -119,11 +124,15 @@ public:
 
   static std::string ExportCompatibilityEntry(const GameListCompatibilityEntry* entry);
 
+  const GameSettings::Entry* GetGameSettings(const std::string& filename, const std::string& game_code);
+  void UpdateGameSettings(const std::string& filename, const std::string& game_code, const std::string& game_title,
+                          const GameSettings::Entry& new_entry, bool save_to_list = true, bool save_to_user = true);
+
 private:
   enum : u32
   {
     GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-    GAME_LIST_CACHE_VERSION = 5
+    GAME_LIST_CACHE_VERSION = 6
   };
 
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;
@@ -139,7 +148,10 @@ private:
   class RedumpDatVisitor;
   class CompatibilityListVisitor;
 
+  GameListEntry* GetMutableEntryForPath(const char* path);
+
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
+  bool GetM3UListEntry(const char* path, GameListEntry* entry);
 
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
   bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);
@@ -161,16 +173,22 @@ private:
   bool SaveCompatibilityDatabase();
   bool SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntry* entry);
 
+  void LoadGameSettings();
+
   DatabaseMap m_database;
   EntryList m_entries;
   CacheMap m_cache_map;
   CompatibilityMap m_compatibility_list;
+  GameSettings::Database m_game_settings;
   std::unique_ptr<ByteStream> m_cache_write_stream;
 
   std::vector<DirectoryEntry> m_search_directories;
   std::string m_cache_filename;
   std::string m_database_filename;
   std::string m_compatibility_list_filename;
+  std::string m_game_settings_filename;
+  std::string m_user_game_settings_filename;
   bool m_database_load_tried = false;
   bool m_compatibility_list_load_tried = false;
+  bool m_game_settings_load_tried = false;
 };

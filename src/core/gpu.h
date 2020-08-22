@@ -102,8 +102,10 @@ public:
   enum : u16
   {
     NTSC_TICKS_PER_LINE = 3413,
+    NTSC_HSYNC_TICKS = 200,
     NTSC_TOTAL_LINES = 263,
     PAL_TICKS_PER_LINE = 3406,
+    PAL_HSYNC_TICKS = 200, // actually one more on odd lines
     PAL_TOTAL_LINES = 314,
   };
 
@@ -144,6 +146,24 @@ public:
   }
   void EndDMAWrite();
 
+  /// Returns false if the DAC is loading any data from VRAM.
+  ALWAYS_INLINE bool IsDisplayDisabled() const
+  {
+    return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
+  }
+
+  /// Returns true if scanout should be interlaced.
+  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
+  {
+    return (!m_force_progressive_scan) & m_GPUSTAT.vertical_interlace;
+  }
+
+  /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
+  ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
+  {
+    return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
+  }
+
   /// Returns the number of pending GPU ticks.
   TickCount GetPendingCRTCTicks() const;
   TickCount GetPendingCommandTicks() const;
@@ -162,6 +182,9 @@ public:
 
   /// Updates the resolution scale when it's set to automatic.
   virtual void UpdateResolutionScale();
+
+  /// Returns the effective display resolution of the GPU.
+  virtual std::tuple<u32, u32> GetEffectiveDisplayResolution();
 
   // gpu_hw_d3d11.cpp
   static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();
@@ -367,24 +390,6 @@ protected:
   void CRTCTickEvent(TickCount ticks);
   void CommandTickEvent(TickCount ticks);
 
-  /// Returns false if the DAC is loading any data from VRAM.
-  ALWAYS_INLINE bool IsDisplayDisabled() const
-  {
-    return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
-  }
-
-  /// Returns true if scanout should be interlaced.
-  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
-  {
-    return (!m_force_progressive_scan) & m_GPUSTAT.vertical_interlace;
-  }
-
-  /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
-  ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
-  {
-    return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
-  }
-
   /// Returns 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...).
   ALWAYS_INLINE u32 GetInterlacedDisplayField() const { return ZeroExtend32(m_crtc_state.interlaced_field); }
 
@@ -484,7 +489,7 @@ protected:
     BitField<u32, bool, 10, 1> draw_to_displayed_field;
     BitField<u32, bool, 11, 1> set_mask_while_drawing;
     BitField<u32, bool, 12, 1> check_mask_before_draw;
-    BitField<u32, bool, 13, 1> interlaced_field;
+    BitField<u32, u8, 13, 1> interlaced_field;
     BitField<u32, bool, 14, 1> reverse_flag;
     BitField<u32, bool, 15, 1> texture_disable;
     BitField<u32, u8, 16, 1> horizontal_resolution_2;
@@ -512,6 +517,11 @@ protected:
       static constexpr u32 MASK = (1 << 19) | (1 << 22) | (1 << 10);
       static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
       return ((bits & MASK) == ACTIVE);
+    }
+    bool InInterleaved480iMode() const
+    {
+      static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
+      return ((bits & ACTIVE) == ACTIVE);
     }
 
     // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
@@ -675,6 +685,7 @@ protected:
     u16 display_vram_height;
 
     u16 horizontal_total;
+    u16 horizontal_sync_start; // <- not currently saved to state, so we don't have to bump the version
     u16 horizontal_active_start;
     u16 horizontal_active_end;
     u16 horizontal_display_start;
@@ -694,6 +705,7 @@ protected:
     bool in_vblank;
 
     u8 interlaced_field; // 0 = odd, 1 = even
+    u8 interlaced_display_field;
     u8 active_line_lsb;
   } m_crtc_state = {};
 

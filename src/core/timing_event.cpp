@@ -172,12 +172,12 @@ void RunEvents()
   UpdateCPUDowncount();
 }
 
-bool DoState(StateWrapper& sw, u32 global_tick_counter)
+bool DoState(StateWrapper& sw)
 {
+  sw.Do(&s_global_tick_counter);
+
   if (sw.IsReading())
   {
-    s_global_tick_counter = global_tick_counter;
-
     // Load timestamps for the clock events.
     // Any oneshot events should be recreated by the load state method, so we can fix up their times here.
     u32 event_count = 0;

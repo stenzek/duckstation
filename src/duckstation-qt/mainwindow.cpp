@@ -29,7 +29,8 @@
 
 static constexpr char DISC_IMAGE_FILTER[] =
   "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
-  "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf)";
+  "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files "
+  "(*.psf);;Playlists (*.m3u)";
 
 ALWAYS_INLINE static QString getWindowTitle()
 {
@@ -294,9 +295,47 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
   switchToGameListView();
 }
 
+void MainWindow::onChangeDiscFromPlaylistMenuAboutToShow()
+{
+  m_host_interface->populatePlaylistEntryMenu(m_ui.menuChangeDiscFromPlaylist);
+}
+
+void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
+{
+  m_ui.menuChangeDiscFromPlaylist->clear();
+}
+
 void MainWindow::onRemoveDiscActionTriggered()
 {
   m_host_interface->changeDisc(QString());
+}
+
+void MainWindow::onViewToolbarActionToggled(bool checked)
+{
+  m_host_interface->SetBoolSettingValue("UI", "ShowToolbar", checked);
+  m_ui.toolBar->setVisible(checked);
+}
+
+void MainWindow::onViewStatusBarActionToggled(bool checked)
+{
+  m_host_interface->SetBoolSettingValue("UI", "ShowStatusBar", checked);
+  m_ui.statusBar->setVisible(checked);
+}
+
+void MainWindow::onViewGameListActionTriggered()
+{
+  if (m_emulation_running)
+    m_host_interface->pauseSystem(true);
+  switchToGameListView();
+}
+
+void MainWindow::onViewSystemDisplayTriggered()
+{
+  if (m_emulation_running)
+  {
+    switchToEmulationView();
+    m_host_interface->pauseSystem(false);
+  }
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -420,6 +459,14 @@ void MainWindow::setupAdditionalUi()
 {
   setWindowTitle(getWindowTitle());
 
+  const bool toolbar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowToolbar", true);
+  m_ui.actionViewToolbar->setChecked(toolbar_visible);
+  m_ui.toolBar->setVisible(toolbar_visible);
+
+  const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
+  m_ui.actionViewStatusBar->setChecked(status_bar_visible);
+  m_ui.statusBar->setVisible(status_bar_visible);
+
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_host_interface);
   m_ui.mainContainer->insertWidget(0, m_game_list_widget);
@@ -439,6 +486,8 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
+
+  updateDebugMenuVisibility();
 
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
@@ -496,6 +545,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
   m_ui.actionScreenshot->setDisabled(starting || !running);
+  m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
@@ -567,6 +617,10 @@ void MainWindow::connectSignals()
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
+  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToShow, this,
+          &MainWindow::onChangeDiscFromPlaylistMenuAboutToShow);
+  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToHide, this,
+          &MainWindow::onChangeDiscFromPlaylistMenuAboutToHide);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
@@ -600,6 +654,10 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AdvancedSettings); });
+  connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
+  connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
+  connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
+  connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
@@ -646,6 +704,13 @@ void MainWindow::connectSignals()
       m_host_interface->startDumpingAudio();
     else
       m_host_interface->stopDumpingAudio();
+  });
+  connect(m_ui.actionDumpRAM, &QAction::triggered, [this]() {
+    const QString filename = QFileDialog::getSaveFileName(this, tr("Destination File"));
+    if (filename.isEmpty())
+      return;
+
+    m_host_interface->dumpRAM(filename);
   });
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug", "ShowVRAM");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, "Debug", "ShowGPUState");
@@ -823,6 +888,12 @@ void MainWindow::startupUpdateCheck()
     return;
 
   checkForUpdates(false);
+}
+
+void MainWindow::updateDebugMenuVisibility()
+{
+  const bool visible = m_host_interface->GetBoolSettingValue("Main", "ShowDebugMenu", false);
+  m_ui.menuDebug->menuAction()->setVisible(visible);
 }
 
 void MainWindow::checkForUpdates(bool display_message)

@@ -11,7 +11,10 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
-    m_ui.audioBackend->addItem(tr(Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(i))));
+  {
+    m_ui.audioBackend->addItem(
+      qApp->translate("AudioBackend", Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(i))));
+  }
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.audioBackend, "Audio", "Backend",
                                                &Settings::ParseAudioBackend, &Settings::GetAudioBackendName,
@@ -43,7 +46,7 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
        "this value, so using a low value here may not significantly change latency."));
   dialog->registerWidgetHelp(
     m_ui.syncToOutput, "Sync To Output", tr("Checked"),
-    tr("Throttles the emulation speed based on the audio backend pulling audio frames. Sync will "
+    tr("Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will "
        "automatically be disabled if not running at 100% speed."));
   dialog->registerWidgetHelp(
     m_ui.startDumpingOnBoot, "Start Dumping On Boot", tr("Unchecked"),

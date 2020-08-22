@@ -20,7 +20,7 @@ QFrame* CreateHorizontalLine(QWidget* parent);
 /// Returns the greatest parent of a widget, i.e. its dialog/window.
 QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog = true);
 
-/// Resizes columns of the table view to at the specified widths. A width of -1 will stretch the column to use the
+/// Resizes columns of the table view to at the specified widths. A negative width will stretch the column to use the
 /// remaining space.
 void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths);
 

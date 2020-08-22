@@ -16,11 +16,15 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, "Main", "ConfirmPowerOff", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.loadDevicesFromSaveStates, "Main",
                                                "LoadDevicesFromSaveStates", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.applyGameSettings, "Main", "ApplyGameSettings",
+                                               true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showVPS, "Display", "ShowVPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, "Display", "ShowSpeed", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showResolution, "Display", "ShowResolution",
+                                               false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter, "Main", "SpeedLimiterEnabled",
                                                true);
@@ -57,6 +61,10 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
        "result in lost saves, and controller type mismatches. For deterministic save states, enable this option, "
        "otherwise leave disabled."));
   dialog->registerWidgetHelp(
+    m_ui.applyGameSettings, tr("Apply Per-Game Settings"), tr("Checked"),
+    tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
+       "leave this option enabled except when testing enhancements with incompatible games."));
+  dialog->registerWidgetHelp(
     m_ui.enableSpeedLimiter, tr("Enable Speed Limiter"), tr("Checked"),
     tr("Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will "
        "run as fast as possible, which may not be playable."));
@@ -81,26 +89,33 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
-  const int last_row_count = m_ui.formLayout_4->rowCount();
+  int current_col = 1;
+  int current_row = m_ui.formLayout_4->rowCount() - current_col;
 #ifdef WITH_DISCORD_PRESENCE
   {
     QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Discord Presence"), m_ui.groupBox_4);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "Main",
                                                  "EnableDiscordPresence");
-    m_ui.formLayout_4->addWidget(enableDiscordPresence, last_row_count, 0);
+    m_ui.formLayout_4->addWidget(enableDiscordPresence, current_row, current_col);
     dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
                                tr("Shows the game you are currently playing as part of your profile in Discord."));
+    current_col++;
+    current_row += (current_col / 2);
+    current_col %= 2;
   }
 #endif
   if (AutoUpdaterDialog::isSupported())
   {
     QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Automatic Update Check"), m_ui.groupBox_4);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "AutoUpdater",
-                                                 "CheckAtStartup");
-    m_ui.formLayout_4->addWidget(enableDiscordPresence, last_row_count, 1);
+                                                 "CheckAtStartup", true);
+    m_ui.formLayout_4->addWidget(enableDiscordPresence, current_row, current_col);
     dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Automatic Update Check"), tr("Checked"),
                                tr("Automatically checks for updates to the program on startup. Updates can be deferred "
                                   "until later or skipped entirely."));
+    current_col++;
+    current_row += (current_col / 2);
+    current_col %= 2;
   }
 }
 

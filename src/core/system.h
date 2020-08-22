@@ -104,9 +104,15 @@ void UpdateControllerSettings();
 void ResetControllers();
 void UpdateMemoryCards();
 
+/// Dumps RAM to a file.
+bool DumpRAM(const char* filename);
+
 bool HasMedia();
 bool InsertMedia(const char* path);
 void RemoveMedia();
+
+/// Returns true if a playlist is being used.
+bool HasMediaPlaylist();
 
 /// Returns the number of entries in the media/disc playlist.
 u32 GetMediaPlaylistCount();

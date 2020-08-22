@@ -114,7 +114,7 @@ void HostInterface::ResetSystem()
 {
   System::Reset();
   System::ResetPerformanceCounters();
-  AddOSDMessage("System reset.");
+  AddOSDMessage(TranslateStdString("OSDMessage", "System reset."));
 }
 
 void HostInterface::PowerOffSystem()
@@ -284,13 +284,13 @@ bool HostInterface::LoadState(const char* filename)
   if (!stream)
     return false;
 
-  AddFormattedOSDMessage(2.0f, "Loading state from '%s'...", filename);
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
 
   if (!System::IsShutdown())
   {
     if (!System::LoadState(stream.get()))
     {
-      ReportFormattedError("Loading state from '%s' failed. Resetting.", filename);
+      ReportFormattedError(TranslateString("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
       ResetSystem();
       return false;
     }
@@ -318,12 +318,12 @@ bool HostInterface::SaveState(const char* filename)
   const bool result = System::SaveState(stream.get());
   if (!result)
   {
-    ReportFormattedError("Saving state to '%s' failed.", filename);
+    ReportFormattedError(TranslateString("OSDMessage", "Saving state to '%s' failed."), filename);
     stream->Discard();
   }
   else
   {
-    AddFormattedOSDMessage(2.0f, "State saved to '%s'.", filename);
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "State saved to '%s'."), filename);
     stream->Commit();
   }
 
@@ -358,6 +358,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "SaveStateOnExit", true);
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  si.SetBoolValue("Main", "ApplyGameSettings", true);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
@@ -375,8 +376,11 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCulling", true);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", true);
   si.SetBoolValue("GPU", "PGXPVertexCache", false);
+  si.SetBoolValue("GPU", "PGXPCPU", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
+  si.SetIntValue("Display", "OverscanActiveStartOffset", 0);
+  si.SetIntValue("Display", "OverscanActiveEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
   si.SetBoolValue("Display", "LinearFiltering", true);
@@ -385,6 +389,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowFPS", false);
   si.SetBoolValue("Display", "ShowVPS", false);
   si.SetBoolValue("Display", "ShowSpeed", false);
+  si.SetBoolValue("Display", "ShowResolution", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
 
@@ -410,6 +415,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
   si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
+  si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
   si.SetStringValue("Logging", "LogFilter", "");
@@ -438,6 +444,32 @@ void HostInterface::LoadSettings(SettingsInterface& si)
   g_settings.Load(si);
 }
 
+void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
+{
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_renderer == GPURenderer::Software)
+    {
+      if (display_osd_messages)
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
+      }
+      g_settings.gpu_pgxp_enable = false;
+    }
+    else if (g_settings.gpu_pgxp_cpu && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
+    {
+      if (display_osd_messages)
+      {
+        AddOSDMessage(
+          TranslateStdString("OSDMessage",
+                             "PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead."),
+          10.0f);
+      }
+      g_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
+    }
+  }
+}
+
 void HostInterface::SaveSettings(SettingsInterface& si)
 {
   g_settings.Save(si);
@@ -445,12 +477,13 @@ void HostInterface::SaveSettings(SettingsInterface& si)
 
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
-  if (!System::IsShutdown())
+  if (System::IsValid())
   {
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
     {
-      ReportFormattedMessage("Switching to %s%s GPU renderer.", Settings::GetRendererName(g_settings.gpu_renderer),
+      AddFormattedOSDMessage(5.0f, "Switching to %s%s GPU renderer.",
+                             Settings::GetRendererName(g_settings.gpu_renderer),
                              g_settings.gpu_use_debug_device ? " (debug)" : "");
       RecreateSystem();
     }
@@ -459,8 +492,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.audio_buffer_size != old_settings.audio_buffer_size)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
-        ReportFormattedMessage("Switching to %s audio backend.",
+      {
+        AddFormattedOSDMessage(5.0f, "Switching to %s audio backend.",
                                Settings::GetAudioBackendName(g_settings.audio_backend));
+      }
       DebugAssert(m_audio_stream);
       m_audio_stream.reset();
       CreateAudioStream();
@@ -472,7 +507,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
-      ReportFormattedMessage("Switching to %s CPU execution mode.",
+      AddFormattedOSDMessage(5.0f, "Switching to %s CPU execution mode.",
                              Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
       CPU::CodeCache::SetUseRecompiler(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
     }
@@ -480,7 +515,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
         g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
     {
-      ReportFormattedMessage("CPU memory exceptions %s, flushing all blocks.",
+      AddFormattedOSDMessage(5.0f, "CPU memory exceptions %s, flushing all blocks.",
                              g_settings.cpu_recompiler_memory_exceptions ? "enabled" : "disabled");
       CPU::CodeCache::Flush();
     }
@@ -497,7 +532,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
-        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable)
+        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
+        g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
+        g_settings.display_active_end_offset != old_settings.display_active_end_offset)
     {
       g_gpu->UpdateSettings();
     }
@@ -507,7 +544,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     {
       if (g_settings.IsUsingCodeCache())
       {
-        ReportFormattedMessage("PGXP %s, recompiling all blocks.", g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
+        AddFormattedOSDMessage(5.0f, "PGXP %s, recompiling all blocks.",
+                               g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
         CPU::CodeCache::Flush();
       }
 
@@ -519,7 +557,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       g_cdrom.SetUseReadThread(g_settings.cdrom_read_thread);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
-        g_settings.memory_card_paths != old_settings.memory_card_paths)
+        g_settings.memory_card_paths != old_settings.memory_card_paths ||
+        (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title &&
+         System::HasMediaPlaylist()))
     {
       System::UpdateMemoryCards();
     }
@@ -650,6 +690,16 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
   return float_value.value_or(default_value);
 }
 
+TinyString HostInterface::TranslateString(const char* context, const char* str) const
+{
+  return str;
+}
+
+std::string HostInterface::TranslateStdString(const char* context, const char* str) const
+{
+  return str;
+}
+
 void HostInterface::ToggleSoftwareRendering()
 {
   if (System::IsShutdown() || g_settings.gpu_renderer == GPURenderer::Software)
@@ -657,7 +707,7 @@ void HostInterface::ToggleSoftwareRendering()
 
   const GPURenderer new_renderer = g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
-  AddFormattedOSDMessage(2.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
+  AddFormattedOSDMessage(5.0f, "Switching to %s renderer...", Settings::GetRendererDisplayName(new_renderer));
   System::RecreateGPU(new_renderer);
 }
 
@@ -669,9 +719,6 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     return;
 
   g_settings.gpu_resolution_scale = new_resolution_scale;
-  AddFormattedOSDMessage(2.0f, "Resolution scale set to %ux (%ux%u)", g_settings.gpu_resolution_scale,
-                         GPU::VRAM_WIDTH * g_settings.gpu_resolution_scale,
-                         GPU::VRAM_HEIGHT * g_settings.gpu_resolution_scale);
 
   if (!System::IsShutdown())
   {

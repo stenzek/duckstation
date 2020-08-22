@@ -15,7 +15,7 @@ fi
 
 # Acquire linuxdeploy and linuxdeploy-plugin-qt
 wget --timestamping --directory-prefix=${BUILD_DIR} \
-  https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+  https://artifacts.assassinate-you.net/artifactory/list/linuxdeploy/travis-456/linuxdeploy-x86_64.AppImage
 chmod a+x ${BUILD_DIR}/linuxdeploy-x86_64.AppImage
 
 wget --timestamping --directory-prefix=${BUILD_DIR} \

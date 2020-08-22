@@ -39,6 +39,7 @@ Log_SetChannel(AutoUpdaterDialog);
 static constexpr char LATEST_TAG_URL[] = "https://api.github.com/repos/stenzek/duckstation/tags";
 static constexpr char LATEST_RELEASE_URL[] =
   "https://api.github.com/repos/stenzek/duckstation/releases/tags/" SCM_RELEASE_TAG;
+static constexpr char CHANGES_URL[] = "https://api.github.com/repos/stenzek/duckstation/compare/%s..." SCM_RELEASE_TAG;
 static constexpr char UPDATE_ASSET_FILENAME[] = SCM_RELEASE_ASSET;
 
 #endif
@@ -196,10 +197,11 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
           m_download_url = asset_obj["browser_download_url"].toString();
           if (!m_download_url.isEmpty())
           {
-            m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(__TIMESTAMP__));
+            m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(g_scm_date_str));
             m_ui.newVersion->setText(
               tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
-            m_ui.updateNotes->setText(doc_object["body"].toString());
+            m_ui.updateNotes->setText(tr("Loading..."));
+            queueGetChanges();
             exec();
             emit updateCheckCompleted();
             return;
@@ -221,6 +223,68 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
     reportError("Failed to download latest release info: %d", static_cast<int>(reply->error()));
   }
 #endif
+}
+
+void AutoUpdaterDialog::queueGetChanges()
+{
+#ifdef AUTO_UPDATER_SUPPORTED
+  connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getChangesComplete);
+
+  const std::string url_string(StringUtil::StdStringFromFormat(CHANGES_URL, g_scm_hash_str));
+  QUrl url(QUrl::fromEncoded(QByteArray(url_string.c_str(), static_cast<int>(url_string.size()))));
+  QNetworkRequest request(url);
+  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+  m_network_access_mgr->get(request);
+#endif
+}
+
+void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
+{
+#ifdef AUTO_UPDATER_SUPPORTED
+  m_network_access_mgr->disconnect(this);
+  reply->deleteLater();
+
+  if (reply->error() == QNetworkReply::NoError)
+  {
+    const QByteArray reply_json(reply->readAll());
+    QJsonParseError parse_error;
+    QJsonDocument doc(QJsonDocument::fromJson(reply_json, &parse_error));
+    if (doc.isObject())
+    {
+      const QJsonObject doc_object(doc.object());
+
+      QString changes_html = QStringLiteral("<ul>");
+
+      const QJsonArray commits(doc_object["commits"].toArray());
+      for (const QJsonValue& commit : commits)
+      {
+        const QJsonObject commit_obj(commit["commit"].toObject());
+
+        QString message = commit_obj["message"].toString();
+        QString author = commit_obj["author"].toObject()["name"].toString();
+        const int first_line_terminator = message.indexOf('\n');
+        if (first_line_terminator >= 0)
+          message.remove(first_line_terminator, message.size() - first_line_terminator);
+        if (!message.isEmpty())
+          changes_html +=
+            QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
+      }
+
+      changes_html += "</ul>";
+      m_ui.updateNotes->setText(changes_html);
+    }
+    else
+    {
+      reportError("Change list JSON is not an object");
+    }
+  }
+  else
+  {
+    reportError("Failed to download change list: %d", static_cast<int>(reply->error()));
+  }
+#endif
+
+  m_ui.downloadAndInstall->setEnabled(true);
 }
 
 void AutoUpdaterDialog::downloadUpdateClicked()

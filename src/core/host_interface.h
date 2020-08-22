@@ -109,6 +109,10 @@ public:
   /// Returns a float setting from the configuration.
   virtual float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
+  /// Translates a string to the current language.
+  virtual TinyString TranslateString(const char* context, const char* str) const;
+  virtual std::string TranslateStdString(const char* context, const char* str) const;
+
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
@@ -133,6 +137,9 @@ protected:
 
   /// Saves current settings variables to ini.
   virtual void SaveSettings(SettingsInterface& si);
+
+  /// Checks and fixes up any incompatible settings.
+  virtual void FixIncompatibleSettings(bool display_osd_messages);
 
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
   virtual void CheckForSettingsChanges(const Settings& old_settings);
@@ -160,5 +167,7 @@ protected:
   std::string m_program_directory;
   std::string m_user_directory;
 };
+
+#define TRANSLATABLE(context, str) str
 
 extern HostInterface* g_host_interface;

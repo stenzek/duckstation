@@ -59,7 +59,7 @@ bool Pad::DoState(StateWrapper& sw)
       if (g_settings.load_devices_from_save_states)
       {
         g_host_interface->AddFormattedOSDMessage(
-          2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
+          10.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
           Settings::GetControllerTypeName(state_controller_type), i + 1u,
           Settings::GetControllerTypeName(controller_type));
 
@@ -69,7 +69,7 @@ bool Pad::DoState(StateWrapper& sw)
       }
       else
       {
-        g_host_interface->AddFormattedOSDMessage(2.0f, "Ignoring mismatched controller type %s in port %u.",
+        g_host_interface->AddFormattedOSDMessage(10.0f, "Ignoring mismatched controller type %s in port %u.",
                                                  Settings::GetControllerTypeName(state_controller_type), i + 1u);
 
         // we still need to read the save state controller state

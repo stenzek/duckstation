@@ -9,6 +9,10 @@ The following people have contributed to the project in some way, and are credit
 - Anderson Cardoso - Portuguese (Br)
 - @bajolzas - Portuguese (Pt)
 - posix - @Richard-L - German
+- @phoe-nix - Chinese (Simplified)
+- Sorer - @MojoJojoDojo - Hebrew
+- Hipnosis183 - Spanish
+- @RaydenX93 - Italian
 
 ## Game Compatibility Database
  - @Zet-sensei
@@ -24,6 +28,7 @@ The following people have contributed to the project in some way, and are credit
  - @MojoJojoDojo
  - @heckez-sys
  - @Damaniel
+ - @RaydenX93
 
 ## Special Thanks
 The following people did not directly contribute to the emulator, but it would not be in the state if not for them.

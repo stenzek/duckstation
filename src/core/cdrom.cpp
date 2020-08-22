@@ -1917,6 +1917,17 @@ void CDROM::DoSectorRead()
 
   // TODO: Error handling
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
+  if (subq.IsCRCValid())
+  {
+    m_last_subq = subq;
+  }
+  else
+  {
+    const CDImage::Position pos(CDImage::Position::FromLBA(m_current_lba));
+    Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_current_lba, pos.minute, pos.second,
+                  pos.frame);
+  }
+
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
   {
     Log_DevPrintf("Read reached lead-out area of disc at LBA %u, pausing", m_reader.GetLastReadSector());
@@ -1946,17 +1957,6 @@ void CDROM::DoSectorRead()
   else
   {
     ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
-  }
-
-  if (subq.IsCRCValid())
-  {
-    m_last_subq = subq;
-  }
-  else
-  {
-    const CDImage::Position pos(CDImage::Position::FromLBA(m_current_lba));
-    Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_current_lba, pos.minute, pos.second,
-                  pos.frame);
   }
 
   if (is_data_sector && m_drive_state == DriveState::Reading)

@@ -1,6 +1,8 @@
 #pragma once
+#include "core/game_settings.h"
 #include "ui_gamepropertiesdialog.h"
 #include <QtWidgets/QDialog>
+#include <array>
 
 struct GameListEntry;
 struct GameListCompatibilityEntry;
@@ -40,15 +42,22 @@ private:
   void connectUi();
   void populateCompatibilityInfo(const std::string& game_code);
   void populateTracksInfo(const std::string& image_path);
+  void populateGameSettings();
+  void saveGameSettings();
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
   void computeTrackHashes();
   void onResize();
 
   Ui::GamePropertiesDialog m_ui;
+  std::array<QCheckBox*, static_cast<u32>(GameSettings::Trait::Count)> m_trait_checkboxes{};
 
   QtHostInterface* m_host_interface;
 
-  std::string m_image_path;
+  std::string m_path;
+  std::string m_game_code;
+  std::string m_game_title;
+
+  GameSettings::Entry m_game_settings;
 
   bool m_compatibility_info_changed = false;
   bool m_tracks_hashed = false;

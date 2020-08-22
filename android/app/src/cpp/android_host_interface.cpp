@@ -132,6 +132,7 @@ void AndroidHostInterface::SetUserDirectory()
 void AndroidHostInterface::LoadSettings()
 {
   CommonHostInterface::LoadSettings(m_settings_interface);
+  CommonHostInterface::FixIncompatibleSettings(false);
   CommonHostInterface::UpdateInputMap(m_settings_interface);
 }
 

@@ -8,6 +8,7 @@
 #include "common/log.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
+#include "host_interface.h"
 #include "settings.h"
 #include <algorithm>
 #include <array>
@@ -270,7 +271,12 @@ std::vector<std::string> GameList::ParseM3UFile(const char* path)
 const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibilityRating rating)
 {
   static constexpr std::array<const char*, static_cast<size_t>(GameListCompatibilityRating::Count)> names = {
-    {"Unknown", "Doesn't Boot", "Crashes In Intro", "Crashes In-Game", "Graphical/Audio Issues", "No Issues"}};
+    {TRANSLATABLE("GameListCompatibilityRating", "Unknown"),
+     TRANSLATABLE("GameListCompatibilityRating", "Doesn't Boot"),
+     TRANSLATABLE("GameListCompatibilityRating", "Crashes In Intro"),
+     TRANSLATABLE("GameListCompatibilityRating", "Crashes In-Game"),
+     TRANSLATABLE("GameListCompatibilityRating", "Graphical/Audio Issues"),
+     TRANSLATABLE("GameListCompatibilityRating", "No Issues")}};
   return (rating >= GameListCompatibilityRating::Unknown && rating < GameListCompatibilityRating::Count) ?
            names[static_cast<int>(rating)] :
            "";
@@ -348,10 +354,59 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   return true;
 }
 
+bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
+{
+  FILESYSTEM_STAT_DATA ffd;
+  if (!FileSystem::StatFile(path, &ffd))
+    return false;
+
+  std::vector<std::string> entries = ParseM3UFile(path);
+  if (entries.empty())
+    return false;
+
+  entry->code.clear();
+  entry->title = GetTitleForPath(path);
+  entry->path = path;
+  entry->region = DiscRegion::Other;
+  entry->total_size = 0;
+  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
+  entry->type = GameListEntryType::Playlist;
+  entry->compatibility_rating = GameListCompatibilityRating::Unknown;
+
+  for (size_t i = 0; i < entries.size(); i++)
+  {
+    std::unique_ptr<CDImage> entry_image = CDImage::Open(entries[i].c_str());
+    if (!entry_image)
+    {
+      Log_ErrorPrintf("Failed to open entry %zu ('%s') in playlist %s", i, entries[i].c_str(), path);
+      return false;
+    }
+
+    entry->total_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(entry_image->GetLBACount());
+
+    if (entry->region == DiscRegion::Other)
+      entry->region = GetRegionForImage(entry_image.get());
+
+    if (entry->compatibility_rating == GameListCompatibilityRating::Unknown)
+    {
+      std::string code = GetGameCodeForImage(entry_image.get());
+      const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
+      if (compatibility_entry)
+        entry->compatibility_rating = compatibility_entry->compatibility_rating;
+      else
+        Log_WarningPrintf("'%s' (%s) not found in compatibility list", entry->code.c_str(), entry->title.c_str());
+    }
+  }
+
+  return true;
+}
+
 bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 {
   if (IsExeFileName(path.c_str()))
     return GetExeListEntry(path.c_str(), entry);
+  if (IsM3UFileName(path.c_str()))
+    return GetM3UListEntry(path.c_str(), entry);
 
   std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
   if (!cdi)
@@ -397,6 +452,12 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
       entry->compatibility_rating = compatibility_entry->compatibility_rating;
     else
       Log_WarningPrintf("'%s' (%s) not found in compatibility list", entry->code.c_str(), entry->title.c_str());
+
+    if (!m_game_settings_load_tried)
+      LoadGameSettings();
+    const GameSettings::Entry* settings = m_game_settings.GetEntry(entry->code);
+    if (settings)
+      entry->settings = *settings;
   }
 
   FILESYSTEM_STAT_DATA ffd;
@@ -511,7 +572,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
         !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
         region >= static_cast<u8>(DiscRegion::Count) || !ReadU8(stream, &type) ||
-        type > static_cast<u8>(GameListEntryType::PSExe) || !ReadU8(stream, &compatibility_rating) ||
+        type > static_cast<u8>(GameListEntryType::Playlist) || !ReadU8(stream, &compatibility_rating) ||
         compatibility_rating >= static_cast<u8>(GameListCompatibilityRating::Count))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
@@ -527,6 +588,12 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     ge.region = static_cast<DiscRegion>(region);
     ge.type = static_cast<GameListEntryType>(type);
     ge.compatibility_rating = static_cast<GameListCompatibilityRating>(compatibility_rating);
+
+    if (!ge.settings.LoadFromStream(stream))
+    {
+      Log_WarningPrintf("Game list cache entry is corrupted (settings)");
+      return false;
+    }
 
     auto iter = m_cache_map.find(ge.path);
     if (iter != m_cache_map.end())
@@ -576,6 +643,7 @@ bool GameList::WriteEntryToCache(const GameListEntry* entry, ByteStream* stream)
   result &= WriteU8(stream, static_cast<u8>(entry->region));
   result &= WriteU8(stream, static_cast<u8>(entry->type));
   result &= WriteU8(stream, static_cast<u8>(entry->compatibility_rating));
+  result &= entry->settings.SaveToStream(stream);
   return result;
 }
 
@@ -796,6 +864,18 @@ const GameListEntry* GameList::GetEntryForPath(const char* path) const
 {
   const size_t path_length = std::strlen(path);
   for (const GameListEntry& entry : m_entries)
+  {
+    if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path) == 0)
+      return &entry;
+  }
+
+  return nullptr;
+}
+
+GameListEntry* GameList::GetMutableEntryForPath(const char* path)
+{
+  const size_t path_length = std::strlen(path);
+  for (GameListEntry& entry : m_entries)
   {
     if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path) == 0)
       return &entry;
@@ -1222,4 +1302,47 @@ std::string GameList::ExportCompatibilityEntry(const GameListCompatibilityEntry*
   // doc.Print(&printer);
   entry_elem->Accept(&printer);
   return std::string(printer.CStr(), printer.CStrSize());
+}
+
+void GameList::LoadGameSettings()
+{
+  if (m_game_settings_load_tried)
+    return;
+
+  m_game_settings_load_tried = true;
+
+  if (!m_game_settings_filename.empty() && FileSystem::FileExists(m_user_game_settings_filename.c_str()))
+    m_game_settings.Load(m_game_settings_filename.c_str());
+  if (!m_user_game_settings_filename.empty() && FileSystem::FileExists(m_user_game_settings_filename.c_str()))
+    m_game_settings.Load(m_user_game_settings_filename.c_str());
+}
+
+const GameSettings::Entry* GameList::GetGameSettings(const std::string& filename, const std::string& game_code)
+{
+  const GameListEntry* entry = GetMutableEntryForPath(filename.c_str());
+  if (entry)
+    return &entry->settings;
+
+  if (!m_game_settings_load_tried)
+    LoadGameSettings();
+
+  return m_game_settings.GetEntry(game_code);
+}
+
+void GameList::UpdateGameSettings(const std::string& filename, const std::string& game_code,
+                                  const std::string& game_title, const GameSettings::Entry& new_entry,
+                                  bool save_to_list /* = true */, bool save_to_user /* = true */)
+{
+  GameListEntry* entry = GetMutableEntryForPath(filename.c_str());
+  if (entry)
+  {
+    entry->settings = new_entry;
+    RewriteCacheFile();
+  }
+
+  if (save_to_list)
+  {
+    m_game_settings.SetEntry(game_code, game_title, new_entry,
+                             save_to_user ? m_user_game_settings_filename.c_str() : m_game_settings_filename.c_str());
+  }
 }
