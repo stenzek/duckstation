@@ -58,6 +58,7 @@ Other features include:
  - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
  - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL-compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
+   - Optional [SDL game contoller database files](#sdl-game-controller-database) are also supported.
 
 ## Downloading and running
 Binaries of DuckStation for Windows 64-bit, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
@@ -186,6 +187,7 @@ Requirements:
 
 ## User Directories
 The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
+An optional [SDL game controller database file](#sdl-game-controller-database) can be also placed here.
 
 This is located in the following places depending on the platform you're using:
 
@@ -208,6 +210,17 @@ click the button next to button name, and press the key/button you want to use w
 
 ## Bindings for SDL frontend
 Keyboard bindings in the SDL frontend are currently not customizable in the frontend itself. You should use the Qt frontend to set up your key/controller bindings first.
+
+## SDL Game Controller Database
+DuckStation uses the SDL2 GameController API for input handling which requires controller devices to have known input mappings.
+SDL2 provides an embedded database of recognised controllers in its own source code, however it is rather small and thus limited in practice.
+
+There is an officially endorsed [community sourced database](https://github.com/gabomdq/SDL_GameControllerDB) that can be used to support a much broader range of game controllers in DuckStation.
+If your controller is not recognized by DuckStation but can be found in the community database above, just download a recent copy of the `gamecontrollerdb.txt` database file and place it in your [User directory](#user-directories). Your controller should now be recognized by DuckStation.
+
+Alternatively, you can also create your own custom controller mappings from scratch easily using readily available tools. See the referenced community database repository for more information.
+
+Using a mappings database is specially useful when using non-XInput game controllers with DuckStation.
 
 ## Default bindings
 Controller 1:
