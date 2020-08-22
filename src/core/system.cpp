@@ -571,7 +571,10 @@ bool DoState(StateWrapper& sw)
   if (!sw.DoMarker("InterruptController") || !g_interrupt_controller.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw))
+  g_gpu->RestoreGraphicsAPIState();
+  const bool gpu_result = sw.DoMarker("GPU") && g_gpu->DoState(sw);
+  g_gpu->ResetGraphicsAPIState();
+  if (!gpu_result)
     return false;
 
   if (!sw.DoMarker("CDROM") || !g_cdrom.DoState(sw))
@@ -630,13 +633,7 @@ bool LoadState(ByteStream* state)
   if (IsShutdown())
     return false;
 
-  g_gpu->RestoreGraphicsAPIState();
-
-  const bool result = DoLoadState(state, false);
-
-  g_gpu->ResetGraphicsAPIState();
-
-  return result;
+  return DoLoadState(state, false);
 }
 
 bool DoLoadState(ByteStream* state, bool force_software_renderer)
