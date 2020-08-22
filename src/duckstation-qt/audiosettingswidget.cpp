@@ -44,12 +44,12 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
        "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
        "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
        "this value, so using a low value here may not significantly change latency."));
+  dialog->registerWidgetHelp(m_ui.syncToOutput, tr("Sync To Output"), tr("Checked"),
+                             tr("Throttles the emulation speed based on the audio backend pulling audio frames. This "
+                                "helps to remove noises or crackling if emulation is too fast. Sync will "
+                                "automatically be disabled if not running at 100% speed."));
   dialog->registerWidgetHelp(
-    m_ui.syncToOutput, "Sync To Output", tr("Checked"),
-    tr("Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will "
-       "automatically be disabled if not running at 100% speed."));
-  dialog->registerWidgetHelp(
-    m_ui.startDumpingOnBoot, "Start Dumping On Boot", tr("Unchecked"),
+    m_ui.startDumpingOnBoot, tr("Start Dumping On Boot"), tr("Unchecked"),
     tr("Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option."));
   dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), "100",
                              tr("Controls the volume of the audio played on the host. Values are in percentage."));
