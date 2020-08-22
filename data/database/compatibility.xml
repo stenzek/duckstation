@@ -583,6 +583,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLUS-01144" compatibility="5" region="NTSC-U" title="Bugs Bunny &amp; Taz - Time Busters (USA) (En,Fr,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
+  </entry>
   <entry code="SLUS-00838" compatibility="5" region="NTSC-U" title="Bugs Bunny - Lost in Time (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
@@ -590,6 +594,14 @@
   <entry code="SLES-00345" compatibility="5" region="PAL" title="Burning Road (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
+  </entry>
+  <entry code="SCUS-94180" compatibility="5" region="NTSC-U" title="Bushido Blade (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
+  </entry>
+  <entry code="SLUS-00663" compatibility="5" region="NTSC-U" title="Bushido Blade 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
   </entry>
   <entry code="SCUS-94263" compatibility="5" region="NTSC-U" title="Bust A Groove (USA)">
     <compatibility>No Issues</compatibility>
@@ -1314,10 +1326,39 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SCUS-94242" compatibility="4" region="NTSC-U" title="Interactive CD Sampler Disc 6 (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+    <comments>Various graphical errors in menu (Issue #772).</comments>
+  </entry>
+  <entry code="PBPX-95011" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Vol. 10 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="SCUS-94463" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Vol. 11 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="PBPX-95010" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Vol. 9 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
   <entry code="PBPX-95002" compatibility="3" region="NTSC-U" title="Interactive CD Sampler Disc Volume 4 (USA)">
     <compatibility>Crashes In-Game</compatibility>
     <version-tested>0.1-1490-g76978986</version-tested>
     <comments>Hangs when choosing Armored core (Issue #751).</comments>
+  </entry>
+  <entry code="PBPX-95006" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Volume 7 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="PBPX-95009" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Volume 8 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="PBPX-95003" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disk Volume 5 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
   </entry>
   <entry code="SCUS-94957" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Pack Volume 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -1622,6 +1663,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLES-01485" compatibility="5" region="PAL" title="Mega Man Legends">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01140" compatibility="5" region="NTSC-U" title="Mega Man Legends 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
   </entry>
   <entry code="SLES-00503" compatibility="5" region="PAL" title="Mega Man X3">
     <compatibility>No Issues</compatibility>
@@ -2006,6 +2051,30 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1445-ge5c46a54</version-tested>
   </entry>
+  <entry code="SCUS-94482" compatibility="5" region="NTSC-U" title="PlayStation Demo Disc - Shock Your System! (USA) (SCUS-94482)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="SCUS-94618" compatibility="5" region="NTSC-U" title="PlayStation Demo Disc Version 1.3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="SCUS-94650" compatibility="5" region="NTSC-U" title="PlayStation Demo Disc Version 1.4 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="SCUS-94674" compatibility="5" region="NTSC-U" title="PlayStation Demo Disc Version 1.5 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="SCUS-94950" compatibility="5" region="NTSC-U" title="PlayStation Developer's Demo Disc (USA) (SCUS-94950)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
+  <entry code="SCUS-94954" compatibility="5" region="NTSC-U" title="PlayStation Developer's Demo Disc (USA) (SCUS-94954)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1530-g6d75f42e</version-tested>
+  </entry>
   <entry code="SLPS-01360" compatibility="5" region="NTSC-J" title="Pocket Fighter (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
@@ -2034,6 +2103,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPM-86146" compatibility="5" region="NTSC-J" title="Pop'n Tanks!">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLUS-01423" compatibility="5" region="NTSC-U" title="Powerpuff Girls, The - Chemical X-Traction (USA) (En,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
   </entry>
   <entry code="SLUS-00102" compatibility="5" region="NTSC-U" title="Powerslave">
     <compatibility>No Issues</compatibility>
@@ -2368,6 +2441,14 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-03444" compatibility="5" region="NTSC-J" title="Simple Character 2000 Series Vol. 08 - Kagaku Ninjatai Gatchaman - The Shooting (Japan)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-01227" compatibility="5" region="NTSC-U" title="Simpsons Wrestling, The (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
+  </entry>
+  <entry code="SLUS-00209" compatibility="5" region="NTSC-U" title="Skeleton Warriors (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1529-ga895c027</version-tested>
   </entry>
   <entry code="SLUS-00601" compatibility="5" region="NTSC-U" title="Skullmonkeys (USA)">
     <compatibility>No Issues</compatibility>

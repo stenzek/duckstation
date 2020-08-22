@@ -11,6 +11,8 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.
+- 2020/08/19: CPU PGXP mode added. It is very slow and incompatible with the recompiler, only use for games which need it.
 - 2020/08/15: Playlist support/single memcard for multi-disc games in Qt frontend added.
 - 2020/08/07: Automatic updater for standalone Windows builds.
 - 2020/08/01: Initial PGXP (geometry/perspective correction) support.
@@ -36,6 +38,7 @@ Other features include:
  - CPU Recompiler/JIT (x86-64 and AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling and true colour (24-bit) in hardware renderers
+ - PGXP for geometry precision and texture correction
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows, Linux, **highly experimental** macOS support
@@ -228,7 +231,8 @@ DuckStation is available as a libretro core, which can be loaded into a frontend
 
 Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
-- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.so.zip
+- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
+- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
 - AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
 
 To use, download and extract, and install the core file in RetroArch or your preferred frontend.

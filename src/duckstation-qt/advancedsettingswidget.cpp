@@ -1,4 +1,5 @@
 #include "advancedsettingswidget.h"
+#include "mainwindow.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
@@ -8,7 +9,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
-    m_ui.logLevel->addItem(tr(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
+    m_ui.logLevel->addItem(qApp->translate("LogLevel", Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.logLevel, "Logging", "LogLevel",
                                                &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
@@ -27,9 +28,12 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cpuRecompilerMemoryExceptions, "CPU",
                                                "RecompilerMemoryExceptions", false);
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showDebugMenu, "Main", "ShowDebugMenu");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuUseDebugDevice, "GPU", "UseDebugDevice");
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
+  connect(m_ui.showDebugMenu, &QCheckBox::toggled, m_host_interface->getMainWindow(),
+          &MainWindow::updateDebugMenuVisibility, Qt::QueuedConnection);
 
   dialog->registerWidgetHelp(m_ui.gpuUseDebugDevice, tr("Use Debug Host GPU Device"), tr("Unchecked"),
                              tr("Enables the usage of debug devices and shaders for rendering APIs which support them. "

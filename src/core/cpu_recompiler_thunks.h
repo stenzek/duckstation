@@ -13,6 +13,7 @@ namespace Recompiler::Thunks {
 // TODO: Abuse carry flag or something else for exception
 //////////////////////////////////////////////////////////////////////////
 bool InterpretInstruction();
+bool InterpretInstructionPGXP();
 
 // Memory access functions for the JIT - MSB is set on exception.
 u64 ReadMemoryByte(u32 address);

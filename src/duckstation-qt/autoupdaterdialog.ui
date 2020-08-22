@@ -82,6 +82,9 @@
        <property name="text">
         <string>Download and Install...</string>
        </property>
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>

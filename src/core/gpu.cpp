@@ -513,15 +513,15 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        cs.horizontal_active_start = 487;
-        cs.horizontal_active_end = 3282;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 487 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3282 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 20;
         cs.vertical_active_end = 308;
         break;
 
       case DisplayCropMode::Overscan:
-        cs.horizontal_active_start = 628;
-        cs.horizontal_active_end = 3188;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 628 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3188 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 30;
         cs.vertical_active_end = 298;
         break;
@@ -540,15 +540,15 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        cs.horizontal_active_start = 488;
-        cs.horizontal_active_end = 3288;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 488 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3288 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 16;
         cs.vertical_active_end = 256;
         break;
 
       case DisplayCropMode::Overscan:
-        cs.horizontal_active_start = 608;
-        cs.horizontal_active_end = 3168;
+        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 608 + g_settings.display_active_start_offset));
+        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3168 + g_settings.display_active_end_offset));
         cs.vertical_active_start = 24;
         cs.vertical_active_end = 248;
         break;
@@ -759,9 +759,15 @@ void GPU::CRTCTickEvent(TickCount ticks)
       // start the new frame
       m_crtc_state.current_scanline = 0;
       if (m_GPUSTAT.vertical_interlace)
+      {
         m_crtc_state.interlaced_field ^= 1u;
+        m_GPUSTAT.interlaced_field = m_crtc_state.interlaced_field;
+      }
       else
+      {
         m_crtc_state.interlaced_field = 0;
+        m_GPUSTAT.interlaced_field = 0u; // new GPU = 1, old GPU = 0
+      }
     }
   }
 

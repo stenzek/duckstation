@@ -1014,12 +1014,14 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
   {
     // TODO: Use carry flag or something here too
     Value return_value = m_register_cache.AllocateScratch(RegSize_8);
-    EmitFunctionCall(&return_value, &Thunks::InterpretInstruction);
+    EmitFunctionCall(&return_value,
+                     g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
     EmitExceptionExitOnBool(return_value);
   }
   else
   {
-    EmitFunctionCall(nullptr, &Thunks::InterpretInstruction);
+    EmitFunctionCall(nullptr,
+                     g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
   }
 
   m_current_instruction_in_branch_delay_slot_dirty = cbi.is_branch_instruction;

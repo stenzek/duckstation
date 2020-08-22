@@ -489,7 +489,7 @@ protected:
     BitField<u32, bool, 10, 1> draw_to_displayed_field;
     BitField<u32, bool, 11, 1> set_mask_while_drawing;
     BitField<u32, bool, 12, 1> check_mask_before_draw;
-    BitField<u32, bool, 13, 1> interlaced_field;
+    BitField<u32, u8, 13, 1> interlaced_field;
     BitField<u32, bool, 14, 1> reverse_flag;
     BitField<u32, bool, 15, 1> texture_disable;
     BitField<u32, u8, 16, 1> horizontal_resolution_2;

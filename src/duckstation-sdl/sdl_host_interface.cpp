@@ -321,6 +321,12 @@ void SDLHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
+  Settings old_settings(std::move(g_settings));
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(true);
+  CommonHostInterface::FixIncompatibleSettings(true);
+  CheckForSettingsChanges(old_settings);
+
   if (!System::GetRunningTitle().empty())
     SDL_SetWindowTitle(m_window, System::GetRunningTitle().c_str());
   else
@@ -347,6 +353,8 @@ void SDLHostInterface::SaveAndUpdateSettings()
 
   Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(false);
+  CommonHostInterface::FixIncompatibleSettings(false);
   CheckForSettingsChanges(old_settings);
 
   m_settings_interface->Save();
@@ -454,8 +462,9 @@ void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+  m_settings_copy.Load(*m_settings_interface);
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  m_settings_copy = g_settings;
+  CommonHostInterface::FixIncompatibleSettings(false);
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -807,7 +816,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   if (ImGui::BeginMenu("CPU Execution Mode"))
   {
-    const CPUExecutionMode current = g_settings.cpu_execution_mode;
+    const CPUExecutionMode current = m_settings_copy.cpu_execution_mode;
     for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
     {
       if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
@@ -874,6 +883,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
                                         &m_settings_copy.gpu_pgxp_texture_correction, m_settings_copy.gpu_pgxp_enable);
     settings_changed |= ImGui::MenuItem("PGXP Vertex Cache", nullptr, &m_settings_copy.gpu_pgxp_vertex_cache,
                                         m_settings_copy.gpu_pgxp_enable);
+    settings_changed |=
+      ImGui::MenuItem("PGXP CPU Instructions", nullptr, &m_settings_copy.gpu_pgxp_cpu, m_settings_copy.gpu_pgxp_enable);
     ImGui::EndMenu();
   }
 
@@ -1347,6 +1358,7 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);
         settings_changed |= ImGui::Checkbox("PGXP Texture Correction", &m_settings_copy.gpu_pgxp_texture_correction);
         settings_changed |= ImGui::Checkbox("PGXP Vertex Cache", &m_settings_copy.gpu_pgxp_vertex_cache);
+        settings_changed |= ImGui::Checkbox("PGXP CPU", &m_settings_copy.gpu_pgxp_cpu);
       }
 
       ImGui::EndTabItem();

@@ -29,6 +29,10 @@ public:
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
+public Q_SLOTS:
+  /// Updates debug menu visibility (hides if disabled).
+  void updateDebugMenuVisibility();
+
 private Q_SLOTS:
   void reportError(const QString& message);
   void reportMessage(const QString& message);
@@ -58,6 +62,10 @@ private Q_SLOTS:
   void onChangeDiscFromPlaylistMenuAboutToShow();
   void onChangeDiscFromPlaylistMenuAboutToHide();
   void onRemoveDiscActionTriggered();
+  void onViewToolbarActionToggled(bool checked);
+  void onViewStatusBarActionToggled(bool checked);
+  void onViewGameListActionTriggered();
+  void onViewSystemDisplayTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();

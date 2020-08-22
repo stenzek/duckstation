@@ -4,6 +4,7 @@
 #include "inputbindingwidgets.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
+#include <QtCore/QCoreApplication>
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QGridLayout>
@@ -63,7 +64,7 @@ void HotkeySettingsWidget::createButtons()
 
     std::string section_name("Hotkeys");
     std::string key_name(hi.name.GetCharArray());
-    layout->addWidget(new QLabel(QString::fromUtf8(hi.display_name), container), target_row, 0);
+    layout->addWidget(new QLabel(qApp->translate("Hotkeys", hi.display_name), container), target_row, 0);
     layout->addWidget(
       new InputButtonBindingWidget(m_host_interface, std::move(section_name), std::move(key_name), container),
       target_row, 1);

@@ -64,6 +64,9 @@ public:
   void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
   void RemoveSettingValue(const char* section, const char* key);
 
+  TinyString TranslateString(const char* context, const char* str) const;
+  std::string TranslateStdString(const char* context, const char* str) const;
+
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
@@ -129,7 +132,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
   void setDefaultSettings();
-  void applySettings();
+  void applySettings(bool display_osd_messages = false);
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
   void onDisplayWindowKeyEvent(int key, bool pressed);

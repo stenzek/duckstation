@@ -1,5 +1,6 @@
 #include "sdl_controller_interface.h"
 #include "common/assert.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "core/controller.h"
 #include "core/host_interface.h"
@@ -22,6 +23,17 @@ bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
     return false;
 
   FrontendCommon::EnsureSDLInitialized();
+
+  const std::string gcdb_file_name = GetGameControllerDBFileName();
+  if (FileSystem::FileExists(gcdb_file_name.c_str()))
+  {
+    Log_InfoPrintf("Loading game controller mappings from '%s'", gcdb_file_name.c_str());
+    if (SDL_GameControllerAddMappingsFromFile(gcdb_file_name.c_str()) < 0)
+    {
+      Log_ErrorPrintf("SDL_GameControllerAddMappingsFromFile(%s) failed: %s",
+                      gcdb_file_name.c_str(), SDL_GetError());
+    }
+  }
 
   if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
   {
@@ -46,6 +58,11 @@ void SDLControllerInterface::Shutdown()
   }
 
   ControllerInterface::Shutdown();
+}
+
+std::string SDLControllerInterface::GetGameControllerDBFileName() const
+{
+  return m_host_interface->GetUserDirectoryRelativePath("gamecontrollerdb.txt");
 }
 
 void SDLControllerInterface::PollEvents()

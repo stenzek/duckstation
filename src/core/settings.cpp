@@ -84,6 +84,7 @@ void Settings::Load(SettingsInterface& si)
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
 
   cpu_execution_mode =
     ParseCPUExecutionMode(
@@ -106,6 +107,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
   gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
   gpu_pgxp_vertex_cache = si.GetBoolValue("GPU", "PGXPVertexCache", false);
+  gpu_pgxp_cpu = si.GetBoolValue("GPU", "PGXPCPU", false);
 
   display_crop_mode =
     ParseDisplayCropMode(
@@ -115,6 +117,8 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
       .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
+  display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
@@ -197,6 +201,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
+  si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
@@ -215,8 +220,11 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "PGXPCulling", gpu_pgxp_culling);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", gpu_pgxp_texture_correction);
   si.SetBoolValue("GPU", "PGXPVertexCache", gpu_pgxp_vertex_cache);
+  si.SetBoolValue("GPU", "PGXPCPU", gpu_pgxp_cpu);
 
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
+  si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
+  si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
@@ -283,7 +291,10 @@ void Settings::Save(SettingsInterface& si) const
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
   {"None", "Error", "Warning", "Perf", "Success", "Info", "Dev", "Profile", "Debug", "Trace"}};
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_display_names = {
-  {"None", "Error", "Warning", "Performance", "Success", "Information", "Developer", "Profile", "Debug", "Trace"}};
+  {TRANSLATABLE("LogLevel", "None"), TRANSLATABLE("LogLevel", "Error"), TRANSLATABLE("LogLevel", "Warning"),
+   TRANSLATABLE("LogLevel", "Performance"), TRANSLATABLE("LogLevel", "Success"),
+   TRANSLATABLE("LogLevel", "Information"), TRANSLATABLE("LogLevel", "Developer"), TRANSLATABLE("LogLevel", "Profile"),
+   TRANSLATABLE("LogLevel", "Debug"), TRANSLATABLE("LogLevel", "Trace")}};
 
 std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
 {
@@ -311,7 +322,8 @@ const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
 static std::array<const char*, 4> s_console_region_display_names = {
-  {"Auto-Detect", "NTSC-J (Japan)", "NTSC-U (US)", "PAL (Europe, Australia)"}};
+  {TRANSLATABLE("ConsoleRegion", "Auto-Detect"), TRANSLATABLE("ConsoleRegion", "NTSC-J (Japan)"),
+   TRANSLATABLE("ConsoleRegion", "NTSC-U (US)"), TRANSLATABLE("ConsoleRegion", "PAL (Europe, Australia)")}};
 
 std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
 {
@@ -339,7 +351,8 @@ const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
 
 static std::array<const char*, 4> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other"}};
 static std::array<const char*, 4> s_disc_region_display_names = {
-  {"NTSC-J (Japan)", "NTSC-U (US)", "PAL (Europe, Australia)", "Other"}};
+  {TRANSLATABLE("DiscRegion", "NTSC-J (Japan)"), TRANSLATABLE("DiscRegion", "NTSC-U (US)"),
+   TRANSLATABLE("DiscRegion", "PAL (Europe, Australia)"), TRANSLATABLE("DiscRegion", "Other")}};
 
 std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
 {
@@ -367,7 +380,8 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 
 static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
 static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
-  {"Intepreter (Slowest)", "Cached Interpreter (Faster)", "Recompiler (Fastest)"}};
+  {TRANSLATABLE("CPUExecutionMode", "Intepreter (Slowest)"), TRANSLATABLE("CPUExecutionMode", "Cached Interpreter (Faster)"),
+   TRANSLATABLE("CPUExecutionMode", "Recompiler (Fastest)")}};
 
 std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
 {
@@ -400,9 +414,10 @@ static std::array<const char*, 4> s_gpu_renderer_names = {{
   "Vulkan", "OpenGL", "Software"}};
 static std::array<const char*, 4> s_gpu_renderer_display_names = {{
 #ifdef WIN32
-  "Hardware (D3D11)",
+  TRANSLATABLE("GPURenderer", "Hardware (D3D11)"),
 #endif
-  "Hardware (Vulkan)", "Hardware (OpenGL)", "Software"}};
+  TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"), TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
+  TRANSLATABLE("GPURenderer", "Software")}};
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {
@@ -429,7 +444,9 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 }
 
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
-static std::array<const char*, 3> s_display_crop_mode_display_names = {{"None", "Only Overscan Area", "All Borders"}};
+static std::array<const char*, 3> s_display_crop_mode_display_names = {{TRANSLATABLE("DisplayCropMode", "None"),
+                                                                        TRANSLATABLE("DisplayCropMode", "Only Overscan Area"),
+                                                                        TRANSLATABLE("DisplayCropMode", "All Borders")}};
 
 std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
 {
@@ -485,7 +502,8 @@ float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};
-static std::array<const char*, 3> s_audio_backend_display_names = {{"Null (No Output)", "Cubeb", "SDL"}};
+static std::array<const char*, 3> s_audio_backend_display_names = {
+  {TRANSLATABLE("AudioBackend", "Null (No Output)"), TRANSLATABLE("AudioBackend", "Cubeb"), TRANSLATABLE("AudioBackend", "SDL")}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {
@@ -514,7 +532,9 @@ const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
 static std::array<const char*, 6> s_controller_type_names = {
   {"None", "DigitalController", "AnalogController", "NamcoGunCon", "PlayStationMouse", "NeGcon"}};
 static std::array<const char*, 6> s_controller_display_names = {
-  {"None", "Digital Controller", "Analog Controller (DualShock)", "Namco GunCon", "PlayStation Mouse", "NeGcon"}};
+  {TRANSLATABLE("ControllerType", "None"), TRANSLATABLE("ControllerType", "Digital Controller"),
+   TRANSLATABLE("ControllerType", "Analog Controller (DualShock)"), TRANSLATABLE("ControllerType", "Namco GunCon"),
+   TRANSLATABLE("ControllerType", "PlayStation Mouse"), TRANSLATABLE("ControllerType", "NeGcon")}};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
 {
@@ -541,9 +561,10 @@ const char* Settings::GetControllerTypeDisplayName(ControllerType type)
 }
 
 static std::array<const char*, 4> s_memory_card_type_names = {{"None", "Shared", "PerGame", "PerGameTitle"}};
-static std::array<const char*, 4> s_memory_card_type_display_names = {{"No Memory Card", "Shared Between All Games",
-                                                                       "Separate Card Per Game (Game Code)",
-                                                                       "Separate Card Per Game (Game Title)"}};
+static std::array<const char*, 4> s_memory_card_type_display_names = {
+  {TRANSLATABLE("MemoryCardType", "No Memory Card"), TRANSLATABLE("MemoryCardType", "Shared Between All Games"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Code)"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Title)")}};
 
 std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
 {

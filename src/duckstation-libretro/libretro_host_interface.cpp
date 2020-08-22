@@ -63,6 +63,23 @@ LibretroHostInterface::~LibretroHostInterface()
   }
 }
 
+void LibretroHostInterface::InitInterfaces()
+{
+  SetCoreOptions();
+  InitDiskControlInterface();
+
+  if (!m_interfaces_initialized)
+  {
+    InitLogging();
+    InitRumbleInterface();
+
+    unsigned dummy = 0;
+    m_supports_input_bitmasks = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, &dummy);
+
+    m_interfaces_initialized = true;
+  }
+}
+
 void LibretroHostInterface::InitLogging()
 {
   if (s_libretro_log_callback_registered)
@@ -84,6 +101,7 @@ bool LibretroHostInterface::Initialize()
     return false;
 
   LoadSettings();
+  FixIncompatibleSettings(true);
   UpdateLogging();
   return true;
 }
@@ -352,7 +370,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 30> s_option_definitions = {{
+static std::array<retro_core_option_definition, 31> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -483,6 +501,12 @@ static std::array<retro_core_option_definition, 30> s_option_definitions = {{
    "Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
+  {"duckstation_GPU.PGXPCPU",
+   "PGXP CPU Mode",
+   "Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. "
+   "Very slow, and incompatible with the recompiler.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_Display.CropMode",
    "Crop Mode",
    "Changes how much of the image is cropped. Some games display garbage in the overscan area which is typically "
@@ -494,9 +518,9 @@ static std::array<retro_core_option_definition, 30> s_option_definitions = {{
    "Sets the core-provided aspect ratio.",
    {{"4:3", "4:3"}, {"16:9", "16:9"}, {"2:1", "2:1 (VRAM 1:1)"}, {"1:1", "1:1"}},
    "4:3"},
-  {"duckstation_MemoryCards.LoadFromSaveStates",
-   "Load Memory Cards From Save States",
-   "Sets whether the contents of memory cards will be loaded when a save state is loaded.",
+  {"duckstation_Main.LoadDevicesFromSaveStates",
+   "Load Devices From Save States",
+   "Sets whether the contents of devices and memory cards will be loaded when a save state is loaded.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_MemoryCards.Card1Type",
@@ -520,7 +544,7 @@ static std::array<retro_core_option_definition, 30> s_option_definitions = {{
    "When using a playlist (m3u) and per-game (title) memory cards, a single memory card "
    "will be used for all discs. If unchecked, a separate card will be used for each disc.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
-   "false"},
+   "true"},
   {"duckstation_Controller1.Type",
    "Controller 1 Type",
    "Sets the type of controller for Slot 1.",
@@ -590,7 +614,7 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
-  g_settings.Load(si);
+  HostInterface::LoadSettings(si);
 
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;
@@ -608,6 +632,7 @@ void LibretroHostInterface::UpdateSettings()
 {
   Settings old_settings(std::move(g_settings));
   LoadSettings();
+  FixIncompatibleSettings(false);
 
   if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale &&
       g_settings.gpu_renderer != GPURenderer::Software)
@@ -648,6 +673,11 @@ void LibretroHostInterface::CheckForSettingsChanges(const Settings& old_settings
 
   if (g_settings.log_level != old_settings.log_level)
     UpdateLogging();
+}
+
+void LibretroHostInterface::InitRumbleInterface()
+{
+  m_rumble_interface_valid = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &m_rumble_interface);
 }
 
 void LibretroHostInterface::UpdateControllers()
@@ -698,10 +728,19 @@ void LibretroHostInterface::UpdateControllersDigitalController(u32 index)
      {DigitalController::Button::R1, RETRO_DEVICE_ID_JOYPAD_R},
      {DigitalController::Button::R2, RETRO_DEVICE_ID_JOYPAD_R2}}};
 
-  for (const auto& it : mapping)
+  if (m_supports_input_bitmasks)
   {
-    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
-    controller->SetButtonState(it.first, state != 0);
+    const u16 active = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    for (const auto& it : mapping)
+      controller->SetButtonState(it.first, (active & (static_cast<u16>(1u) << it.second)) != 0u);
+  }
+  else
+  {
+    for (const auto& it : mapping)
+    {
+      const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+      controller->SetButtonState(it.first, state != 0);
+    }
   }
 }
 
@@ -734,16 +773,33 @@ void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
      {AnalogController::Axis::RightX, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X}},
      {AnalogController::Axis::RightY, {RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y}}}};
 
-  for (const auto& it : button_mapping)
+  if (m_supports_input_bitmasks)
   {
-    const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
-    controller->SetButtonState(it.first, state != 0);
+    const u16 active = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+    for (const auto& it : button_mapping)
+      controller->SetButtonState(it.first, (active & (static_cast<u16>(1u) << it.second)) != 0u);
+  }
+  else
+  {
+    for (const auto& it : button_mapping)
+    {
+      const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_JOYPAD, 0, it.second);
+      controller->SetButtonState(it.first, state != 0);
+    }
   }
 
   for (const auto& it : axis_mapping)
   {
     const int16_t state = g_retro_input_state_callback(index, RETRO_DEVICE_ANALOG, it.second.first, it.second.second);
     controller->SetAxisState(static_cast<s32>(it.first), std::clamp(static_cast<float>(state) / 32767.0f, -1.0f, 1.0f));
+  }
+
+  if (m_rumble_interface_valid)
+  {
+    const u16 strong = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(0) * 65565.0f));
+    const u16 weak = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(1) * 65565.0f));
+    m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_STRONG, strong);
+    m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_WEAK, weak);
   }
 }
 

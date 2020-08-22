@@ -78,6 +78,7 @@ struct Settings
   bool save_state_on_exit = true;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
+  bool apply_game_settings = true;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;
@@ -93,7 +94,10 @@ struct Settings
   bool gpu_pgxp_culling = true;
   bool gpu_pgxp_texture_correction = true;
   bool gpu_pgxp_vertex_cache = false;
+  bool gpu_pgxp_cpu = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
+  s16 display_active_start_offset = 0;
+  s16 display_active_end_offset = 0;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
@@ -156,6 +160,11 @@ struct Settings
   ALWAYS_INLINE bool IsUsingCodeCache() const { return (cpu_execution_mode != CPUExecutionMode::Interpreter); }
   ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
+
+  ALWAYS_INLINE PGXPMode GetPGXPMode()
+  {
+    return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
+  }
 
   bool HasAnyPerGameMemoryCards() const;
 

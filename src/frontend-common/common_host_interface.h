@@ -266,6 +266,8 @@ protected:
 
   void RecreateSystem() override;
 
+  void ApplyGameSettings(bool display_osd_messages);
+
   virtual void DrawImGuiWindows();
 
   void DrawFPSWindow();

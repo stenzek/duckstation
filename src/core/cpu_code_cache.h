@@ -96,6 +96,7 @@ void SetUseRecompiler(bool enable);
 /// Invalidates all blocks which are in the range of the specified code page.
 void InvalidateBlocksWithPageIndex(u32 page_index);
 
+template<PGXPMode pgxp_mode>
 void InterpretCachedBlock(const CodeBlock& block);
 void InterpretUncachedBlock();
 

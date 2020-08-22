@@ -114,7 +114,7 @@ void HostInterface::ResetSystem()
 {
   System::Reset();
   System::ResetPerformanceCounters();
-  AddOSDMessage("System reset.");
+  AddOSDMessage(TranslateStdString("OSDMessage", "System reset."));
 }
 
 void HostInterface::PowerOffSystem()
@@ -284,13 +284,13 @@ bool HostInterface::LoadState(const char* filename)
   if (!stream)
     return false;
 
-  AddFormattedOSDMessage(5.0f, "Loading state from '%s'...", filename);
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
 
   if (!System::IsShutdown())
   {
     if (!System::LoadState(stream.get()))
     {
-      ReportFormattedError("Loading state from '%s' failed. Resetting.", filename);
+      ReportFormattedError(TranslateString("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
       ResetSystem();
       return false;
     }
@@ -318,12 +318,12 @@ bool HostInterface::SaveState(const char* filename)
   const bool result = System::SaveState(stream.get());
   if (!result)
   {
-    ReportFormattedError("Saving state to '%s' failed.", filename);
+    ReportFormattedError(TranslateString("OSDMessage", "Saving state to '%s' failed."), filename);
     stream->Discard();
   }
   else
   {
-    AddFormattedOSDMessage(5.0f, "State saved to '%s'.", filename);
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "State saved to '%s'."), filename);
     stream->Commit();
   }
 
@@ -358,6 +358,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "SaveStateOnExit", true);
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  si.SetBoolValue("Main", "ApplyGameSettings", true);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
@@ -375,8 +376,11 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCulling", true);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", true);
   si.SetBoolValue("GPU", "PGXPVertexCache", false);
+  si.SetBoolValue("GPU", "PGXPCPU", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
+  si.SetIntValue("Display", "OverscanActiveStartOffset", 0);
+  si.SetIntValue("Display", "OverscanActiveEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
   si.SetBoolValue("Display", "LinearFiltering", true);
@@ -440,6 +444,32 @@ void HostInterface::LoadSettings(SettingsInterface& si)
   g_settings.Load(si);
 }
 
+void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
+{
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_renderer == GPURenderer::Software)
+    {
+      if (display_osd_messages)
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
+      }
+      g_settings.gpu_pgxp_enable = false;
+    }
+    else if (g_settings.gpu_pgxp_cpu && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
+    {
+      if (display_osd_messages)
+      {
+        AddOSDMessage(
+          TranslateStdString("OSDMessage",
+                             "PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead."),
+          10.0f);
+      }
+      g_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
+    }
+  }
+}
+
 void HostInterface::SaveSettings(SettingsInterface& si)
 {
   g_settings.Save(si);
@@ -447,7 +477,7 @@ void HostInterface::SaveSettings(SettingsInterface& si)
 
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
-  if (!System::IsShutdown())
+  if (System::IsValid())
   {
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
@@ -502,7 +532,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
-        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable)
+        g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
+        g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
+        g_settings.display_active_end_offset != old_settings.display_active_end_offset)
     {
       g_gpu->UpdateSettings();
     }
@@ -656,6 +688,16 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
 
   std::optional<float> float_value = StringUtil::FromChars<float>(value);
   return float_value.value_or(default_value);
+}
+
+TinyString HostInterface::TranslateString(const char* context, const char* str) const
+{
+  return str;
+}
+
+std::string HostInterface::TranslateStdString(const char* context, const char* str) const
+{
+  return str;
 }
 
 void HostInterface::ToggleSoftwareRendering()

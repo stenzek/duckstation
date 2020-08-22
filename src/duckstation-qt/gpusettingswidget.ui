@@ -215,6 +215,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="pgxpCPUMode">
+            <property name="text">
+             <string>CPU Mode</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
