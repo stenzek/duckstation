@@ -18,13 +18,21 @@ namespace CPU::CodeCache {
 constexpr bool USE_BLOCK_LINKING = true;
 
 #ifdef WITH_RECOMPILER
+
+// Currently remapping the code buffer doesn't work in macOS or Haiku.
+#if !defined(__HAIKU__) && !defined(__APPLE__)
+#define USE_STATIC_CODE_BUFFER 1
+#endif
+
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
-#ifndef __HAIKU__
+
+#ifdef USE_STATIC_CODE_BUFFER
 static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
 alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
   s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
 #endif
+
 static JitCodeBuffer s_code_buffer;
 
 enum : u32
@@ -92,7 +100,7 @@ void Initialize(bool use_recompiler)
 
 #ifdef WITH_RECOMPILER
   s_use_recompiler = use_recompiler;
-#ifndef __HAIKU__
+#ifdef USE_STATIC_CODE_BUFFER
   if (!s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE,
                                 RECOMPILER_GUARD_SIZE))
 #else
