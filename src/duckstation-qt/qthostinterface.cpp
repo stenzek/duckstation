@@ -960,6 +960,8 @@ void QtHostInterface::loadState(const QString& filename)
   }
 
   LoadState(filename.toStdString().c_str());
+  if (System::IsValid())
+    renderDisplay();
 }
 
 void QtHostInterface::loadState(bool global, qint32 slot)
@@ -971,6 +973,8 @@ void QtHostInterface::loadState(bool global, qint32 slot)
   }
 
   LoadState(global, slot);
+  if (System::IsValid())
+    renderDisplay();
 }
 
 void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
