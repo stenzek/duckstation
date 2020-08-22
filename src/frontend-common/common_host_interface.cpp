@@ -30,7 +30,6 @@
 
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
-#include "sdl_controller_interface.h"
 #endif
 
 #ifdef WITH_DISCORD_PRESENCE
@@ -81,17 +80,7 @@ bool CommonHostInterface::Initialize()
   RegisterSaveStateHotkeys();
   RegisterAudioHotkeys();
 
-  m_controller_interface = CreateControllerInterface();
-  if (m_controller_interface && !m_controller_interface->Initialize(this))
-  {
-    Log_WarningPrintf("Failed to initialize controller bindings are not possible.");
-    m_controller_interface.reset();
-  }
-  else if (!m_controller_interface)
-  {
-    Log_WarningPrintf("No controller interface created, controller bindings are not possible.");
-  }
-
+  UpdateControllerInterface();
   return true;
 }
 
@@ -459,14 +448,45 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
   }
 }
 
-std::unique_ptr<ControllerInterface> CommonHostInterface::CreateControllerInterface()
+void CommonHostInterface::UpdateControllerInterface()
 {
-  // In the future we might want to use different controller interfaces.
-#ifdef WITH_SDL2
-  return std::make_unique<SDLControllerInterface>();
-#else
-  return nullptr;
-#endif
+  const std::string backend_str = GetStringSettingValue(
+    "Main", "ControllerBackend", ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
+  const std::optional<ControllerInterface::Backend> new_backend =
+    ControllerInterface::ParseBackendName(backend_str.c_str());
+  const ControllerInterface::Backend current_backend =
+    (m_controller_interface ? m_controller_interface->GetBackend() : ControllerInterface::Backend::None);
+  if (new_backend == current_backend)
+    return;
+
+  if (m_controller_interface)
+  {
+    m_controller_interface->Shutdown();
+    m_controller_interface.reset();
+  }
+
+  if (!new_backend.has_value())
+  {
+    Log_ErrorPrintf("Invalid controller interface type: '%s'", backend_str.c_str());
+    return;
+  }
+
+  if (new_backend == ControllerInterface::Backend::None)
+  {
+    Log_WarningPrintf("No controller interface created, controller bindings are not possible.");
+    return;
+  }
+
+  m_controller_interface = ControllerInterface::Create(new_backend.value());
+  if (!m_controller_interface || !m_controller_interface->Initialize(this))
+  {
+    Log_WarningPrintf("Failed to initialize controller interface, bindings are not possible.");
+    if (m_controller_interface)
+    {
+      m_controller_interface->Shutdown();
+      m_controller_interface.reset();
+    }
+  }
 }
 
 bool CommonHostInterface::LoadState(bool global, s32 slot)
@@ -1831,6 +1851,9 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
   si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
 
+  si.SetStringValue("Main", "ControllerBackend",
+                    ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
+
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
 #endif
@@ -1853,6 +1876,8 @@ void CommonHostInterface::SaveSettings(SettingsInterface& si)
 void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
   HostInterface::CheckForSettingsChanges(old_settings);
+
+  UpdateControllerInterface();
 
   if (System::IsValid())
   {

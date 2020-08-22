@@ -23,6 +23,8 @@ if(WIN32)
   target_sources(frontend-common PRIVATE
     d3d11_host_display.cpp
     d3d11_host_display.h
+    xinput_controller_interface.cpp
+    xinput_controller_interface.h
   )
   target_link_libraries(frontend-common PRIVATE d3d11.lib dxgi.lib)
 endif()
@@ -36,7 +38,7 @@ if(SDL2_FOUND AND NOT BUILD_LIBRETRO_CORE)
     sdl_initializer.cpp
     sdl_initializer.h
   )
-  target_compile_definitions(frontend-common PRIVATE "WITH_SDL2=1")
+  target_compile_definitions(frontend-common PUBLIC "WITH_SDL2=1")
   target_include_directories(frontend-common PRIVATE ${SDL2_INCLUDE_DIRS})
   target_link_libraries(frontend-common PRIVATE ${SDL2_LIBRARIES})
 

@@ -13,6 +13,7 @@
     <ClCompile Include="vulkan_host_display.cpp" />
     <ClCompile Include="d3d11_host_display.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
+    <ClCompile Include="xinput_controller_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -27,6 +28,7 @@
     <ClInclude Include="vulkan_host_display.h" />
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="opengl_host_display.h" />
+    <ClInclude Include="xinput_controller_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

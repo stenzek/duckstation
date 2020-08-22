@@ -3,6 +3,7 @@
 #include "core/types.h"
 #include <array>
 #include <functional>
+#include <optional>
 #include <map>
 #include <mutex>
 
@@ -12,6 +13,18 @@ class Controller;
 class ControllerInterface
 {
 public:
+  enum class Backend
+  {
+    None,
+#ifdef WITH_SDL2
+    SDL,
+#endif
+#ifdef WIN32
+    XInput,
+#endif
+    Count
+  };
+
   enum : int
   {
     MAX_NUM_AXISES = 7,
@@ -24,6 +37,12 @@ public:
   ControllerInterface();
   virtual ~ControllerInterface();
 
+  static std::optional<Backend> ParseBackendName(const char* name);
+  static const char* GetBackendName(Backend type);
+  static Backend GetDefaultBackend();
+  static std::unique_ptr<ControllerInterface> Create(Backend type);
+
+  virtual Backend GetBackend() const = 0;
   virtual bool Initialize(CommonHostInterface* host_interface);
   virtual void Shutdown();
 

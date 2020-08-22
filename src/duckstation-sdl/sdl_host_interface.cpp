@@ -277,11 +277,6 @@ std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend ba
   }
 }
 
-std::unique_ptr<ControllerInterface> SDLHostInterface::CreateControllerInterface()
-{
-  return std::make_unique<SDLControllerInterface>();
-}
-
 std::optional<CommonHostInterface::HostKeyCode> SDLHostInterface::GetHostKeyCode(const std::string_view key_code) const
 {
   const std::optional<u32> code = SDLKeyNames::ParseKeyString(key_code);

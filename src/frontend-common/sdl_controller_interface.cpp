@@ -17,6 +17,11 @@ SDLControllerInterface::~SDLControllerInterface()
   Assert(m_controllers.empty());
 }
 
+ControllerInterface::Backend SDLControllerInterface::GetBackend() const
+{
+  return ControllerInterface::Backend::SDL;
+}
+
 bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
 {
   if (!ControllerInterface::Initialize(host_interface))

@@ -1,5 +1,6 @@
 #include "generalsettingswidget.h"
 #include "autoupdaterdialog.h"
+#include "frontend-common/controller_interface.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
@@ -7,6 +8,12 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   : QWidget(parent), m_host_interface(host_interface)
 {
   m_ui.setupUi(this);
+
+  for (u32 i = 0; i < static_cast<u32>(ControllerInterface::Backend::Count); i++)
+  {
+    m_ui.controllerBackend->addItem(qApp->translate(
+      "ControllerInterface", ControllerInterface::GetBackendName(static_cast<ControllerInterface::Backend>(i))));
+  }
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "Main", "StartPaused", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, "Main", "StartFullscreen",
@@ -32,6 +39,9 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                                "IncreaseTimerResolution", true);
   SettingWidgetBinder::BindWidgetToNormalizedSetting(m_host_interface, m_ui.emulationSpeed, "Main", "EmulationSpeed",
                                                      100.0f, 1.0f);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    m_host_interface, m_ui.controllerBackend, "Main", "ControllerBackend", &ControllerInterface::ParseBackendName,
+    &ControllerInterface::GetBackendName, ControllerInterface::GetDefaultBackend());
 
   connect(m_ui.enableSpeedLimiter, &QCheckBox::stateChanged, this,
           &GeneralSettingsWidget::onEnableSpeedLimiterStateChanged);
@@ -87,6 +97,11 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(
     m_ui.showSpeed, tr("Show Speed"), tr("Unchecked"),
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
+  dialog->registerWidgetHelp(m_ui.controllerBackend, tr("Controller Backend"),
+                             qApp->translate("ControllerInterface", ControllerInterface::GetBackendName(
+                                                                      ControllerInterface::GetDefaultBackend())),
+                             tr("Determines the backend which is used for controller input. Windows users may prefer "
+                                "to use XInput over SDL2 for compatibility."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
   int current_col = 1;

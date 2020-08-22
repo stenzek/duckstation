@@ -1,6 +1,7 @@
 #include "controller_interface.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/string_util.h"
 #include "core/controller.h"
 #include "core/system.h"
 #include <cmath>
@@ -79,3 +80,61 @@ bool ControllerInterface::BindControllerAxisToButton(int controller_index, int a
   return false;
 }
 
+static constexpr std::array<const char*, static_cast<u32>(ControllerInterface::Backend::Count)> s_backend_names = {{
+  TRANSLATABLE("ControllerInterface", "None"),
+#ifdef WITH_SDL2
+  TRANSLATABLE("ControllerInterface", "SDL"),
+#endif
+#ifdef WIN32
+  TRANSLATABLE("ControllerInterface", "XInput"),
+#endif
+}};
+
+std::optional<ControllerInterface::Backend> ControllerInterface::ParseBackendName(const char* name)
+{
+  for (u32 i = 0; i < static_cast<u32>(s_backend_names.size()); i++)
+  {
+    if (StringUtil::Strcasecmp(name, s_backend_names[i]) == 0)
+      return static_cast<Backend>(i);
+  }
+
+  return std::nullopt;
+}
+
+const char* ControllerInterface::GetBackendName(Backend type)
+{
+  return s_backend_names[static_cast<u32>(type)];
+}
+
+ControllerInterface::Backend ControllerInterface::GetDefaultBackend()
+{
+#ifdef WITH_SDL2
+  return Backend::SDL;
+#endif
+#ifdef WIN32
+  return Backend::XInput;
+#else
+  return Backend::None;
+#endif
+}
+
+#ifdef WITH_SDL2
+#include "sdl_controller_interface.h"
+#endif
+#ifdef WIN32
+#include "xinput_controller_interface.h"
+#endif
+
+std::unique_ptr<ControllerInterface> ControllerInterface::Create(Backend type)
+{
+#ifdef WITH_SDL2
+  if (type == Backend::SDL)
+    return std::make_unique<SDLControllerInterface>();
+#endif
+#ifdef WIN32
+  if (type == Backend::XInput)
+    return std::make_unique<XInputControllerInterface>();
+#endif
+
+  return {};
+}

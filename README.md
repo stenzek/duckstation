@@ -11,6 +11,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/08/22: XInput controller backend added.
 - 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.
 - 2020/08/19: CPU PGXP mode added. It is very slow and incompatible with the recompiler, only use for games which need it.
 - 2020/08/15: Playlist support/single memcard for multi-disc games in Qt frontend added.

@@ -182,7 +182,7 @@ protected:
   virtual bool SetFullscreen(bool enabled);
 
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
-  virtual std::unique_ptr<ControllerInterface> CreateControllerInterface();
+  virtual void UpdateControllerInterface();
 
   virtual void OnSystemCreated() override;
   virtual void OnSystemPaused(bool paused);

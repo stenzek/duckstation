@@ -1,25 +1,22 @@
 #pragma once
-#include "core/types.h"
+#include "common/windows_headers.h"
 #include "controller_interface.h"
+#include "core/types.h"
+#include <Xinput.h>
 #include <array>
 #include <functional>
-#include <vector>
 #include <mutex>
+#include <vector>
 
-union SDL_Event;
-
-class SDLControllerInterface final : public ControllerInterface
+class XInputControllerInterface final : public ControllerInterface
 {
 public:
-  SDLControllerInterface();
-  ~SDLControllerInterface();
+  XInputControllerInterface();
+  ~XInputControllerInterface() override;
 
   Backend GetBackend() const override;
   bool Initialize(CommonHostInterface* host_interface) override;
   void Shutdown() override;
-
-  /// Returns the path of the optional game controller database file.
-  std::string GetGameControllerDBFileName() const;
 
   // Removes all bindings. Call before setting new bindings.
   void ClearBindings() override;
@@ -27,7 +24,8 @@ public:
   // Binding to events. If a binding for this axis/button already exists, returns false.
   bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback) override;
   bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
-  bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction, ButtonCallback callback) override;
+  bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
+                                  ButtonCallback callback) override;
 
   // Changing rumble strength.
   u32 GetControllerRumbleMotorCount(int controller_index) override;
@@ -41,16 +39,28 @@ public:
 
   void PollEvents() override;
 
-  bool ProcessSDLEvent(const SDL_Event* event);
-
 private:
+  enum : u32
+  {
+    NUM_AXISES = 6,
+    NUM_BUTTONS = 15,
+    NUM_RUMBLE_MOTORS = 2
+  };
+  enum class Axis : u32
+  {
+    LeftX,
+    LeftY,
+    RightX,
+    RightY,
+    LeftTrigger,
+    RightTrigger
+  };
+
   struct ControllerData
   {
-    void* controller;
-    void* haptic;
-    int haptic_left_right_effect;
-    int joystick_id;
-    int player_id;
+    XINPUT_STATE last_state = {};
+    bool connected = false;
+    bool supports_rumble = false;
 
     // Scaling value of 1.30f to 1.40f recommended when using recent controllers
     float axis_scale = 1.00f;
@@ -61,22 +71,19 @@ private:
     std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
   };
 
-  using ControllerDataVector = std::vector<ControllerData>;
+  using ControllerDataArray = std::array<ControllerData, XUSER_MAX_COUNT>;
 
-  ControllerDataVector::iterator GetControllerDataForController(void* controller);
-  ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
-  ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
-  int GetFreePlayerId() const;
+  void CheckForStateChanges(u32 index, const XINPUT_STATE& new_state);
+  void UpdateCapabilities(u32 index);
+  bool HandleAxisEvent(u32 index, Axis axis, s32 value);
+  bool HandleButtonEvent(u32 index, u32 button, bool pressed);
 
-  bool OpenGameController(int index);
-  bool CloseGameController(int joystick_index, bool notify);
-  bool HandleControllerAxisEvent(const SDL_Event* event);
-  bool HandleControllerButtonEvent(const SDL_Event* event);
+  ControllerDataArray m_controllers;
 
-  ControllerDataVector m_controllers;
-
+  HMODULE m_xinput_module{};
+  DWORD(WINAPI* m_xinput_get_state)(DWORD, XINPUT_STATE*);
+  DWORD(WINAPI* m_xinput_get_capabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
+  DWORD(WINAPI* m_xinput_set_state)(DWORD, XINPUT_VIBRATION*);
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;
-
-  bool m_sdl_subsystem_initialized = false;
 };
