@@ -4,7 +4,7 @@
 #if defined(WIN32)
 #include <malloc.h>
 #include "windows_headers.h"
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__HAIKU__)
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
@@ -61,7 +61,7 @@ void Event::WaitForMultiple(Event** events, u32 num_events)
   WaitForMultipleObjects(num_events, event_handles, TRUE, INFINITE);
 }
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__HAIKU__)
 
 Event::Event(bool auto_reset /*= false*/) : m_auto_reset(auto_reset)
 {

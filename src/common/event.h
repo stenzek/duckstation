@@ -19,7 +19,7 @@ public:
 private:
 #ifdef WIN32
   void* m_event_handle;
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__HAIKU__)
   int m_pipe_fds[2];
   bool m_auto_reset;
 #else

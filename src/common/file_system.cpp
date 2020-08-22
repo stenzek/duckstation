@@ -1216,7 +1216,14 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
+#ifdef __HAIKU__
+    struct stat sDir;
+
+    stat(pDirEnt->d_name, &sDir);
+    if (S_ISDIR(sDir.st_mode))
+#else
     if (pDirEnt->d_type == DT_DIR)
+#endif
     {
       if (Flags & FILESYSTEM_FIND_RECURSIVE)
       {
@@ -1309,8 +1316,13 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
   // stat file
+#ifdef __HAIKU__
+  struct stat sysStatData;
+  if (stat(Path, &sysStatData) < 0)
+#else
   struct stat64 sysStatData;
   if (stat64(Path, &sysStatData) < 0)
+#endif
     return false;
 
   // parse attributes
@@ -1338,8 +1350,13 @@ bool FileExists(const char* Path)
     return false;
 
   // stat file
+#ifdef __HAIKU__
+  struct stat sysStatData;
+  if (stat(Path, &sysStatData) < 0)
+#else
   struct stat64 sysStatData;
   if (stat64(Path, &sysStatData) < 0)
+#endif
     return false;
 
   if (S_ISDIR(sysStatData.st_mode))
@@ -1355,8 +1372,13 @@ bool DirectoryExists(const char* Path)
     return false;
 
   // stat file
-  struct stat64 sysStatData;
-  if (stat64(Path, &sysStatData) < 0)
+#ifdef __HAIKU__
+    struct stat sysStatData;
+    if (stat(Path, &sysStatData) < 0)
+#else
+    struct stat64 sysStatData;
+    if (stat64(Path, &sysStatData) < 0)
+#endif
     return false;
 
   if (S_ISDIR(sysStatData.st_mode))

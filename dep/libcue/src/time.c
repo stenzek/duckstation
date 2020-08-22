@@ -5,7 +5,7 @@
  * For license terms, see the file COPYING in this distribution.
  */
 
-#include "time.h"
+#include "cuetime.h"
 #include <stdio.h>
 #include <stdlib.h>
 
