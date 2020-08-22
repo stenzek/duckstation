@@ -23,15 +23,19 @@ ControllerInterface::Backend XInputControllerInterface::GetBackend() const
 
 bool XInputControllerInterface::Initialize(CommonHostInterface* host_interface)
 {
-  m_xinput_module = LoadLibraryA("xinput1_4.dll");
+  m_xinput_module = LoadLibraryW(L"xinput1_4");
   if (!m_xinput_module)
   {
-    m_xinput_module = LoadLibraryA("xinput9_1_0.dll");
-    if (!m_xinput_module)
-    {
-      Log_ErrorPrintf("Failed to load XInput module.");
-      return false;
-    }
+    m_xinput_module = LoadLibraryW(L"xinput1_3");
+  }
+  if (!m_xinput_module)
+  {
+    m_xinput_module = LoadLibraryW(L"xinput9_1_0");
+  }
+  if (!m_xinput_module)
+  {
+    Log_ErrorPrintf("Failed to load XInput module.");
+    return false;
   }
 
   // Try the hidden version of XInputGetState(), which lets us query the guide button.
