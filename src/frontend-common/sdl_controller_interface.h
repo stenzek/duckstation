@@ -17,6 +17,9 @@ public:
   bool Initialize(CommonHostInterface* host_interface) override;
   void Shutdown() override;
 
+  /// Returns the path of the optional game controller database file.
+  std::string GetGameControllerDBFileName() const;
+
   // Removes all bindings. Call before setting new bindings.
   void ClearBindings() override;
 
