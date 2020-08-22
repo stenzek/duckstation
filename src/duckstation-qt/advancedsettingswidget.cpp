@@ -1,7 +1,7 @@
 #include "advancedsettingswidget.h"
+#include "mainwindow.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
-#include "mainwindow.h"
 
 AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
@@ -9,7 +9,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
-    m_ui.logLevel->addItem(tr(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
+    m_ui.logLevel->addItem(qApp->translate("LogLevel", Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.logLevel, "Logging", "LogLevel",
                                                &Settings::ParseLogLevelName, &Settings::GetLogLevelName,

@@ -34,7 +34,10 @@
 Log_SetChannel(QtHostInterface);
 
 #ifdef WIN32
+#include "common/windows_headers.h"
 #include "frontend-common/d3d11_host_display.h"
+#include <KnownFolders.h>
+#include <ShlObj.h>
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
@@ -1186,6 +1189,49 @@ void QtHostInterface::wakeThread()
     QMetaObject::invokeMethod(m_worker_thread_event_loop, "quit", Qt::QueuedConnection);
 }
 
+static std::string GetFontPath(const char* name)
+{
+#ifdef WIN32
+  PWSTR folder_path;
+  if (FAILED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &folder_path)))
+    return StringUtil::StdStringFromFormat("C:\\Windows\\Fonts\\%s", name);
+
+  std::string font_path(StringUtil::WideStringToUTF8String(folder_path));
+  CoTaskMemFree(folder_path);
+  font_path += "\\";
+  font_path += name;
+  return font_path;
+#else
+  return name;
+#endif
+}
+
+static bool AddImGuiFont(const std::string& language, float size, float framebuffer_scale)
+{
+  std::string path;
+  const ImWchar* range = nullptr;
+#ifdef WIN32
+  if (language == "jp")
+  {
+    path = GetFontPath("msgothic.ttc");
+    range = ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
+  }
+  else if (language == "zh-cn")
+  {
+    path = GetFontPath("msyh.ttc");
+    range = ImGui::GetIO().Fonts->GetGlyphRangesChineseSimplifiedCommon();
+  }
+#endif
+
+  if (!path.empty())
+  {
+    return (ImGui::GetIO().Fonts->AddFontFromFileTTF(path.c_str(), size * framebuffer_scale, nullptr, range) !=
+            nullptr);
+  }
+
+  return false;
+}
+
 void QtHostInterface::createImGuiContext(float framebuffer_scale)
 {
   ImGui::CreateContext();
@@ -1197,12 +1243,33 @@ void QtHostInterface::createImGuiContext(float framebuffer_scale)
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
 
   ImGui::StyleColorsDarker();
-  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
+
+  std::string language = GetStringSettingValue("Main", "Language", "");
+  if (!AddImGuiFont(language, 15.0f, framebuffer_scale))
+    ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
 }
 
 void QtHostInterface::destroyImGuiContext()
 {
   ImGui::DestroyContext();
+}
+
+TinyString QtHostInterface::TranslateString(const char* context, const char* str) const
+{
+  const QString translated(m_translator->translate(context, str));
+  if (translated.isEmpty())
+    return TinyString(str);
+
+  return TinyString(translated.toUtf8().constData());
+}
+
+std::string QtHostInterface::TranslateStdString(const char* context, const char* str) const
+{
+  const QString translated(m_translator->translate(context, str));
+  if (translated.isEmpty())
+    return std::string(str);
+
+  return translated.toStdString();
 }
 
 QtHostInterface::Thread::Thread(QtHostInterface* parent) : QThread(parent), m_parent(parent) {}

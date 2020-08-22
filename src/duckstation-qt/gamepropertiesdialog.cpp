@@ -104,12 +104,13 @@ void GamePropertiesDialog::populateCompatibilityInfo(const std::string& game_cod
 void GamePropertiesDialog::setupAdditionalUi()
 {
   for (u8 i = 0; i < static_cast<u8>(DiscRegion::Count); i++)
-    m_ui.region->addItem(tr(Settings::GetDiscRegionDisplayName(static_cast<DiscRegion>(i))));
+    m_ui.region->addItem(qApp->translate("DiscRegion", Settings::GetDiscRegionDisplayName(static_cast<DiscRegion>(i))));
 
   for (int i = 0; i < static_cast<int>(GameListCompatibilityRating::Count); i++)
   {
     m_ui.compatibility->addItem(
-      tr(GameList::GetGameListCompatibilityRatingString(static_cast<GameListCompatibilityRating>(i))));
+      qApp->translate("GameListCompatibilityRating",
+                      GameList::GetGameListCompatibilityRatingString(static_cast<GameListCompatibilityRating>(i))));
   }
 
   m_ui.userAspectRatio->addItem(tr("(unchanged)"));
@@ -123,29 +124,29 @@ void GamePropertiesDialog::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
     m_ui.userCropMode->addItem(
-      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+      qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
   m_ui.userControllerType1->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
     m_ui.userControllerType1->addItem(
-      QString::fromUtf8(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
+      qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
 
   m_ui.userControllerType2->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
     m_ui.userControllerType2->addItem(
-      QString::fromUtf8(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
+      qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
 
   QGridLayout* traits_layout = new QGridLayout(m_ui.compatibilityTraits);
   for (u32 i = 0; i < static_cast<u32>(GameSettings::Trait::Count); i++)
   {
-    m_trait_checkboxes[i] =
-      new QCheckBox(QString::fromUtf8(GameSettings::GetTraitDisplayName(static_cast<GameSettings::Trait>(i))),
-                    m_ui.compatibilityTraits);
+    m_trait_checkboxes[i] = new QCheckBox(
+      qApp->translate("GameSettingsTrait", GameSettings::GetTraitDisplayName(static_cast<GameSettings::Trait>(i))),
+      m_ui.compatibilityTraits);
     traits_layout->addWidget(m_trait_checkboxes[i], i / 2, i % 2);
   }
 
@@ -189,8 +190,8 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
     const int row = static_cast<int>(track - 1u);
     m_ui.tracks->insertRow(row);
-    m_ui.tracks->setItem(row, 0, new QTableWidgetItem(tr("%1").arg(track)));
-    m_ui.tracks->setItem(row, 1, new QTableWidgetItem(tr(track_mode_strings[static_cast<u32>(mode)])));
+    m_ui.tracks->setItem(row, 0, new QTableWidgetItem(QStringLiteral("%1").arg(track)));
+    m_ui.tracks->setItem(row, 1, new QTableWidgetItem(track_mode_strings[static_cast<u32>(mode)]));
     m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFTotString(position)));
     m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFTotString(length)));
     m_ui.tracks->setItem(row, 4, new QTableWidgetItem(tr("<not computed>")));

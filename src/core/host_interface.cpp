@@ -114,7 +114,7 @@ void HostInterface::ResetSystem()
 {
   System::Reset();
   System::ResetPerformanceCounters();
-  AddOSDMessage("System reset.");
+  AddOSDMessage(TranslateStdString("OSDMessage", "System reset."));
 }
 
 void HostInterface::PowerOffSystem()
@@ -284,13 +284,13 @@ bool HostInterface::LoadState(const char* filename)
   if (!stream)
     return false;
 
-  AddFormattedOSDMessage(5.0f, "Loading state from '%s'...", filename);
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
 
   if (!System::IsShutdown())
   {
     if (!System::LoadState(stream.get()))
     {
-      ReportFormattedError("Loading state from '%s' failed. Resetting.", filename);
+      ReportFormattedError(TranslateString("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
       ResetSystem();
       return false;
     }
@@ -318,12 +318,12 @@ bool HostInterface::SaveState(const char* filename)
   const bool result = System::SaveState(stream.get());
   if (!result)
   {
-    ReportFormattedError("Saving state to '%s' failed.", filename);
+    ReportFormattedError(TranslateString("OSDMessage", "Saving state to '%s' failed."), filename);
     stream->Discard();
   }
   else
   {
-    AddFormattedOSDMessage(5.0f, "State saved to '%s'.", filename);
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "State saved to '%s'."), filename);
     stream->Commit();
   }
 
@@ -451,13 +451,20 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     if (g_settings.gpu_renderer == GPURenderer::Software)
     {
       if (display_osd_messages)
-        AddOSDMessage("PGXP is incompatible with the software renderer, disabling PGXP.", 10.0f);
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
+      }
       g_settings.gpu_pgxp_enable = false;
     }
     else if (g_settings.gpu_pgxp_cpu && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
     {
       if (display_osd_messages)
-        AddOSDMessage("PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.", 10.0f);
+      {
+        AddOSDMessage(
+          TranslateStdString("OSDMessage",
+                             "PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead."),
+          10.0f);
+      }
       g_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
     }
   }
@@ -681,6 +688,16 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
 
   std::optional<float> float_value = StringUtil::FromChars<float>(value);
   return float_value.value_or(default_value);
+}
+
+TinyString HostInterface::TranslateString(const char* context, const char* str) const
+{
+  return str;
+}
+
+std::string HostInterface::TranslateStdString(const char* context, const char* str) const
+{
+  return str;
 }
 
 void HostInterface::ToggleSoftwareRendering()

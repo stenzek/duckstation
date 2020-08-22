@@ -8,6 +8,7 @@
 #include "common/log.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
+#include "host_interface.h"
 #include "settings.h"
 #include <algorithm>
 #include <array>
@@ -270,7 +271,12 @@ std::vector<std::string> GameList::ParseM3UFile(const char* path)
 const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibilityRating rating)
 {
   static constexpr std::array<const char*, static_cast<size_t>(GameListCompatibilityRating::Count)> names = {
-    {"Unknown", "Doesn't Boot", "Crashes In Intro", "Crashes In-Game", "Graphical/Audio Issues", "No Issues"}};
+    {TRANSLATABLE("GameListCompatibilityRating", "Unknown"),
+     TRANSLATABLE("GameListCompatibilityRating", "Doesn't Boot"),
+     TRANSLATABLE("GameListCompatibilityRating", "Crashes In Intro"),
+     TRANSLATABLE("GameListCompatibilityRating", "Crashes In-Game"),
+     TRANSLATABLE("GameListCompatibilityRating", "Graphical/Audio Issues"),
+     TRANSLATABLE("GameListCompatibilityRating", "No Issues")}};
   return (rating >= GameListCompatibilityRating::Unknown && rating < GameListCompatibilityRating::Count) ?
            names[static_cast<int>(rating)] :
            "";

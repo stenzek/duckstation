@@ -291,7 +291,10 @@ void Settings::Save(SettingsInterface& si) const
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
   {"None", "Error", "Warning", "Perf", "Success", "Info", "Dev", "Profile", "Debug", "Trace"}};
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_display_names = {
-  {"None", "Error", "Warning", "Performance", "Success", "Information", "Developer", "Profile", "Debug", "Trace"}};
+  {TRANSLATABLE("LogLevel", "None"), TRANSLATABLE("LogLevel", "Error"), TRANSLATABLE("LogLevel", "Warning"),
+   TRANSLATABLE("LogLevel", "Performance"), TRANSLATABLE("LogLevel", "Success"),
+   TRANSLATABLE("LogLevel", "Information"), TRANSLATABLE("LogLevel", "Developer"), TRANSLATABLE("LogLevel", "Profile"),
+   TRANSLATABLE("LogLevel", "Debug"), TRANSLATABLE("LogLevel", "Trace")}};
 
 std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
 {
@@ -319,7 +322,8 @@ const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
 static std::array<const char*, 4> s_console_region_display_names = {
-  {"Auto-Detect", "NTSC-J (Japan)", "NTSC-U (US)", "PAL (Europe, Australia)"}};
+  {TRANSLATABLE("ConsoleRegion", "Auto-Detect"), TRANSLATABLE("ConsoleRegion", "NTSC-J (Japan)"),
+   TRANSLATABLE("ConsoleRegion", "NTSC-U (US)"), TRANSLATABLE("ConsoleRegion", "PAL (Europe, Australia)")}};
 
 std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
 {
@@ -347,7 +351,8 @@ const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
 
 static std::array<const char*, 4> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other"}};
 static std::array<const char*, 4> s_disc_region_display_names = {
-  {"NTSC-J (Japan)", "NTSC-U (US)", "PAL (Europe, Australia)", "Other"}};
+  {TRANSLATABLE("DiscRegion", "NTSC-J (Japan)"), TRANSLATABLE("DiscRegion", "NTSC-U (US)"),
+   TRANSLATABLE("DiscRegion", "PAL (Europe, Australia)"), TRANSLATABLE("DiscRegion", "Other")}};
 
 std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
 {
@@ -375,7 +380,8 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 
 static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
 static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
-  {"Intepreter (Slowest)", "Cached Interpreter (Faster)", "Recompiler (Fastest)"}};
+  {TRANSLATABLE("CPUExecutionMode", "Intepreter (Slowest)"), TRANSLATABLE("CPUExecutionMode", "Cached Interpreter (Faster)"),
+   TRANSLATABLE("CPUExecutionMode", "Recompiler (Fastest)")}};
 
 std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
 {
@@ -408,9 +414,10 @@ static std::array<const char*, 4> s_gpu_renderer_names = {{
   "Vulkan", "OpenGL", "Software"}};
 static std::array<const char*, 4> s_gpu_renderer_display_names = {{
 #ifdef WIN32
-  "Hardware (D3D11)",
+  TRANSLATABLE("GPURenderer", "Hardware (D3D11)"),
 #endif
-  "Hardware (Vulkan)", "Hardware (OpenGL)", "Software"}};
+  TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"), TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
+  TRANSLATABLE("GPURenderer", "Software")}};
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {
@@ -437,7 +444,9 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 }
 
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
-static std::array<const char*, 3> s_display_crop_mode_display_names = {{"None", "Only Overscan Area", "All Borders"}};
+static std::array<const char*, 3> s_display_crop_mode_display_names = {{TRANSLATABLE("DisplayCropMode", "None"),
+                                                                        TRANSLATABLE("DisplayCropMode", "Only Overscan Area"),
+                                                                        TRANSLATABLE("DisplayCropMode", "All Borders")}};
 
 std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
 {
@@ -493,7 +502,8 @@ float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};
-static std::array<const char*, 3> s_audio_backend_display_names = {{"Null (No Output)", "Cubeb", "SDL"}};
+static std::array<const char*, 3> s_audio_backend_display_names = {
+  {TRANSLATABLE("AudioBackend", "Null (No Output)"), TRANSLATABLE("AudioBackend", "Cubeb"), TRANSLATABLE("AudioBackend", "SDL")}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {
@@ -522,7 +532,9 @@ const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
 static std::array<const char*, 6> s_controller_type_names = {
   {"None", "DigitalController", "AnalogController", "NamcoGunCon", "PlayStationMouse", "NeGcon"}};
 static std::array<const char*, 6> s_controller_display_names = {
-  {"None", "Digital Controller", "Analog Controller (DualShock)", "Namco GunCon", "PlayStation Mouse", "NeGcon"}};
+  {TRANSLATABLE("ControllerType", "None"), TRANSLATABLE("ControllerType", "Digital Controller"),
+   TRANSLATABLE("ControllerType", "Analog Controller (DualShock)"), TRANSLATABLE("ControllerType", "Namco GunCon"),
+   TRANSLATABLE("ControllerType", "PlayStation Mouse"), TRANSLATABLE("ControllerType", "NeGcon")}};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
 {
@@ -549,9 +561,10 @@ const char* Settings::GetControllerTypeDisplayName(ControllerType type)
 }
 
 static std::array<const char*, 4> s_memory_card_type_names = {{"None", "Shared", "PerGame", "PerGameTitle"}};
-static std::array<const char*, 4> s_memory_card_type_display_names = {{"No Memory Card", "Shared Between All Games",
-                                                                       "Separate Card Per Game (Game Code)",
-                                                                       "Separate Card Per Game (Game Title)"}};
+static std::array<const char*, 4> s_memory_card_type_display_names = {
+  {TRANSLATABLE("MemoryCardType", "No Memory Card"), TRANSLATABLE("MemoryCardType", "Shared Between All Games"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Code)"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Title)")}};
 
 std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
 {

@@ -76,7 +76,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsDialog* dialog, int 
   for (int i = 0; i < static_cast<int>(MemoryCardType::Count); i++)
   {
     ui->memory_card_type->addItem(
-      QString::fromUtf8(Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
+      qApp->translate("MemoryCardType", Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
   }
 
   const MemoryCardType default_value = (index == 0) ? MemoryCardType::PerGameTitle : MemoryCardType::None;

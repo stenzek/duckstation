@@ -650,8 +650,10 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer)
 
   if (header.version != SAVE_STATE_VERSION)
   {
-    g_host_interface->ReportFormattedError("Save state is incompatible: expecting version %u but state is version %u.",
-                                           SAVE_STATE_VERSION, header.version);
+    g_host_interface->ReportFormattedError(
+      g_host_interface->TranslateString("System",
+                                        "Save state is incompatible: expecting version %u but state is version %u."),
+      SAVE_STATE_VERSION, header.version);
     return false;
   }
 
@@ -672,8 +674,9 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer)
       media = OpenCDImage(media_filename.c_str(), false);
       if (!media)
       {
-        g_host_interface->ReportFormattedError("Failed to open CD image from save state: '%s'.",
-                                               media_filename.c_str());
+        g_host_interface->ReportFormattedError(
+          g_host_interface->TranslateString("System", "Failed to open CD image from save state: '%s'."),
+          media_filename.c_str());
         return false;
       }
     }
@@ -1173,10 +1176,12 @@ void UpdateMemoryCards()
       {
         if (s_running_game_code.empty())
         {
-          g_host_interface->AddFormattedOSDMessage(5.0f,
-                                                   "Per-game memory card cannot be used for slot %u as the running "
-                                                   "game has no code. Using shared card instead.",
-                                                   i + 1u);
+          g_host_interface->AddFormattedOSDMessage(
+            5.0f,
+            g_host_interface->TranslateString("System",
+                                              "Per-game memory card cannot be used for slot %u as the running "
+                                              "game has no code. Using shared card instead."),
+            i + 1u);
           card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
         else
@@ -1195,10 +1200,12 @@ void UpdateMemoryCards()
         }
         else if (s_running_game_title.empty())
         {
-          g_host_interface->AddFormattedOSDMessage(5.0f,
-                                                   "Per-game memory card cannot be used for slot %u as the running "
-                                                   "game has no title. Using shared card instead.",
-                                                   i + 1u);
+          g_host_interface->AddFormattedOSDMessage(
+            5.0f,
+            g_host_interface->TranslateString("System",
+                                              "Per-game memory card cannot be used for slot %u as the running "
+                                              "game has no title. Using shared card instead."),
+            i + 1u);
           card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
         else
@@ -1212,8 +1219,10 @@ void UpdateMemoryCards()
       {
         if (g_settings.memory_card_paths[i].empty())
         {
-          g_host_interface->AddFormattedOSDMessage(10.0f, "Memory card path for slot %u is missing, using default.",
-                                                   i + 1u);
+          g_host_interface->AddFormattedOSDMessage(
+            10.0f,
+            g_host_interface->TranslateString("System", "Memory card path for slot %u is missing, using default."),
+            i + 1u);
           card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
         }
         else
@@ -1256,7 +1265,8 @@ bool InsertMedia(const char* path)
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
-    g_host_interface->AddOSDMessage("Game changed, reloading memory cards.", 2.0f);
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("System", "Game changed, reloading memory cards."), 10.0f);
     UpdateMemoryCards();
   }
 

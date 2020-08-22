@@ -19,19 +19,19 @@ Log_SetChannel(GameSettings);
 namespace GameSettings {
 
 std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> s_trait_names = {{
-  {"ForceInterpreter", "Force Interpreter"},
-  {"ForceSoftwareRenderer", "Force Software Renderer"},
-  {"EnableInterlacing", "Enable Interlacing"},
-  {"DisableTrueColor", "Disable True Color"},
-  {"DisableUpscaling", "Disable Upscaling"},
-  {"DisableScaledDithering", "Disable Scaled Dithering"},
-  {"DisableWidescreen", "Disable Widescreen"},
-  {"DisablePGXP", "Disable PGXP"},
-  {"DisablePGXPCulling", "Disable PGXP Culling"},
-  {"EnablePGXPVertexCache", "Enable PGXP Vertex Cache"},
-  {"EnablePGXPCPUMode", "Enable PGXP CPU Mode"},
-  {"ForceDigitalController", "Force Digital Controller"},
-  {"EnableRecompilerMemoryExceptions", "Enable Recompiler Memory Exceptions"},
+  {"ForceInterpreter", TRANSLATABLE("GameSettingsTrait", "Force Interpreter")},
+  {"ForceSoftwareRenderer", TRANSLATABLE("GameSettingsTrait", "Force Software Renderer")},
+  {"EnableInterlacing", TRANSLATABLE("GameSettingsTrait", "Enable Interlacing")},
+  {"DisableTrueColor", TRANSLATABLE("GameSettingsTrait", "Disable True Color")},
+  {"DisableUpscaling", TRANSLATABLE("GameSettingsTrait", "Disable Upscaling")},
+  {"DisableScaledDithering", TRANSLATABLE("GameSettingsTrait", "Disable Scaled Dithering")},
+  {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
+  {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
+  {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
+  {"EnablePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Enable PGXP Vertex Cache")},
+  {"EnablePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Enable PGXP CPU Mode")},
+  {"ForceDigitalController", TRANSLATABLE("GameSettingsTrait", "Force Digital Controller")},
+  {"EnableRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Enable Recompiler Memory Exceptions")},
 }};
 
 const char* GetTraitName(Trait trait)
