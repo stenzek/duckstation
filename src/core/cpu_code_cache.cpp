@@ -165,15 +165,7 @@ static void ExecuteImpl()
       LogCurrentState();
 #endif
 
-      if (s_use_recompiler)
-      {
-        g_state.current_instruction_pc = g_state.regs.pc;
-        block->host_code();
-      }
-      else
-      {
-        InterpretCachedBlock<pgxp_mode>(*block);
-      }
+      InterpretCachedBlock<pgxp_mode>(*block);
 
       if (g_state.pending_ticks >= g_state.downcount)
         break;
