@@ -11,7 +11,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
 
-static constexpr char MEMORY_CARD_IMAGE_FILTER[] = "All Memory Card Types (*.mcd *.mcr *.mc)";
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] = QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
 
 MemoryCardSettingsWidget::MemoryCardSettingsWidget(QtHostInterface* host_interface, QWidget* parent,
                                                    SettingsDialog* dialog)

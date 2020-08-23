@@ -174,6 +174,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
 
   QGridLayout* layout = new QGridLayout(ui->bindings_container);
   const auto buttons = Controller::GetButtonNames(ctype);
+  const char* cname = Settings::GetControllerTypeName(ctype);
 
   InputBindingWidget* first_button = nullptr;
   InputBindingWidget* last_button = nullptr;
@@ -196,7 +197,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
 
       std::string section_name = StringUtil::StdStringFromFormat("Controller%d", index + 1);
       std::string key_name = StringUtil::StdStringFromFormat("Button%s", button_name.c_str());
-      QLabel* label = new QLabel(QString::fromStdString(button_name), ui->bindings_container);
+      QLabel* label = new QLabel(qApp->translate(cname, button_name.c_str()), ui->bindings_container);
       InputButtonBindingWidget* button = new InputButtonBindingWidget(m_host_interface, std::move(section_name),
                                                                       std::move(key_name), ui->bindings_container);
       layout->addWidget(label, start_row + current_row, current_column);
@@ -233,7 +234,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
 
       std::string section_name = StringUtil::StdStringFromFormat("Controller%d", index + 1);
       std::string key_name = StringUtil::StdStringFromFormat("Axis%s", axis_name.c_str());
-      QLabel* label = new QLabel(QString::fromStdString(axis_name), ui->bindings_container);
+      QLabel* label = new QLabel(qApp->translate(cname, axis_name.c_str()), ui->bindings_container);
       InputAxisBindingWidget* button = new InputAxisBindingWidget(m_host_interface, std::move(section_name),
                                                                   std::move(key_name), ui->bindings_container);
       layout->addWidget(label, start_row + current_row, current_column);
@@ -282,13 +283,13 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
     {
       std::string section_name = StringUtil::StdStringFromFormat("Controller%d", index + 1);
       std::string key_name = si.key;
-      const QString setting_tooltip = si.description ? QString::fromUtf8(si.description) : "";
+      const QString setting_tooltip = si.description ? qApp->translate(cname, si.description) : QString();
 
       switch (si.type)
       {
         case SettingInfo::Type::Boolean:
         {
-          QCheckBox* cb = new QCheckBox(tr(si.visible_name), ui->bindings_container);
+          QCheckBox* cb = new QCheckBox(qApp->translate(cname, si.visible_name), ui->bindings_container);
           cb->setToolTip(setting_tooltip);
           SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, std::move(section_name),
                                                        std::move(key_name), si.BooleanDefaultValue());
@@ -306,7 +307,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           sb->setSingleStep(si.IntegerStepValue());
           SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, sb, std::move(section_name),
                                                       std::move(key_name), si.IntegerDefaultValue());
-          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(new QLabel(qApp->translate(cname, si.visible_name), ui->bindings_container), start_row, 0);
           layout->addWidget(sb, start_row, 1, 1, 3);
           start_row++;
         }
@@ -321,7 +322,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           sb->setSingleStep(si.FloatStepValue());
           SettingWidgetBinder::BindWidgetToFloatSetting(m_host_interface, sb, std::move(section_name),
                                                         std::move(key_name), si.FloatDefaultValue());
-          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(new QLabel(qApp->translate(cname, si.visible_name), ui->bindings_container), start_row, 0);
           layout->addWidget(sb, start_row, 1, 1, 3);
           start_row++;
         }
@@ -333,7 +334,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           le->setToolTip(setting_tooltip);
           SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, le, std::move(section_name),
                                                          std::move(key_name), si.StringDefaultValue());
-          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(new QLabel(qApp->translate(cname, si.visible_name), ui->bindings_container), start_row, 0);
           layout->addWidget(le, start_row, 1, 1, 3);
           start_row++;
         }
@@ -356,7 +357,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
           hbox->addWidget(le, 1);
           hbox->addWidget(browse_button);
 
-          layout->addWidget(new QLabel(tr(si.visible_name), ui->bindings_container), start_row, 0);
+          layout->addWidget(new QLabel(qApp->translate(cname, si.visible_name), ui->bindings_container), start_row, 0);
           layout->addLayout(hbox, start_row, 1, 1, 3);
           start_row++;
         }

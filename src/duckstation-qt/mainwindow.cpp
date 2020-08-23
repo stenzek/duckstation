@@ -27,10 +27,11 @@
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
 
-static constexpr char DISC_IMAGE_FILTER[] =
+static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
+  "MainWindow",
   "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
   "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files "
-  "(*.psf);;Playlists (*.m3u)";
+  "(*.psf);;Playlists (*.m3u)");
 
 ALWAYS_INLINE static QString getWindowTitle()
 {

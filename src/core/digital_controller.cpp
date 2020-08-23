@@ -1,6 +1,7 @@
 #include "digital_controller.h"
 #include "common/assert.h"
 #include "common/state_wrapper.h"
+#include "host_interface.h"
 
 DigitalController::DigitalController() = default;
 
@@ -155,13 +156,20 @@ Controller::AxisList DigitalController::StaticGetAxisNames()
 
 Controller::ButtonList DigitalController::StaticGetButtonNames()
 {
-#define B(n)                                                                                                           \
-  {                                                                                                                    \
-#n, static_cast < s32>(Button::n)                                                                                  \
-  }
-  return {B(Up),    B(Down),   B(Left),   B(Right), B(Select), B(Start), B(Triangle),
-          B(Cross), B(Circle), B(Square), B(L1),    B(L2),     B(R1),    B(R2)};
-#undef B
+  return {{TRANSLATABLE("DigitalController", "Up"), static_cast<s32>(Button::Up)},
+          {TRANSLATABLE("DigitalController", "Down"), static_cast<s32>(Button::Down)},
+          {TRANSLATABLE("DigitalController", "Left"), static_cast<s32>(Button::Left)},
+          {TRANSLATABLE("DigitalController", "Right"), static_cast<s32>(Button::Right)},
+          {TRANSLATABLE("DigitalController", "Select"), static_cast<s32>(Button::Select)},
+          {TRANSLATABLE("DigitalController", "Start"), static_cast<s32>(Button::Start)},
+          {TRANSLATABLE("DigitalController", "Triangle"), static_cast<s32>(Button::Triangle)},
+          {TRANSLATABLE("DigitalController", "Cross"), static_cast<s32>(Button::Cross)},
+          {TRANSLATABLE("DigitalController", "Circle"), static_cast<s32>(Button::Circle)},
+          {TRANSLATABLE("DigitalController", "Square"), static_cast<s32>(Button::Square)},
+          {TRANSLATABLE("DigitalController", "L1"), static_cast<s32>(Button::L1)},
+          {TRANSLATABLE("DigitalController", "L2"), static_cast<s32>(Button::L2)},
+          {TRANSLATABLE("DigitalController", "R1"), static_cast<s32>(Button::R1)},
+          {TRANSLATABLE("DigitalController", "R2"), static_cast<s32>(Button::R2)}};
 }
 
 u32 DigitalController::StaticGetVibrationMotorCount()

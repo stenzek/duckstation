@@ -466,25 +466,31 @@ std::optional<s32> AnalogController::StaticGetButtonCodeByName(std::string_view 
 
 Controller::AxisList AnalogController::StaticGetAxisNames()
 {
-#define A(n)                                                                                                           \
-  {                                                                                                                    \
-#n, static_cast < s32>(Axis::n)                                                                                    \
-  }
-
-  return {A(LeftX), A(LeftY), A(RightX), A(RightY)};
-
-#undef A
+  return {{TRANSLATABLE("AnalogController", "LeftX"), static_cast<s32>(Axis::LeftX)},
+          {TRANSLATABLE("AnalogController", "LeftY"), static_cast<s32>(Axis::LeftY)},
+          {TRANSLATABLE("AnalogController", "RightX"), static_cast<s32>(Axis::RightX)},
+          {TRANSLATABLE("AnalogController", "RightY"), static_cast<s32>(Axis::RightY)}};
 }
 
 Controller::ButtonList AnalogController::StaticGetButtonNames()
 {
-#define B(n)                                                                                                           \
-  {                                                                                                                    \
-#n, static_cast < s32>(Button::n)                                                                                  \
-  }
-  return {B(Up),     B(Down), B(Left), B(Right), B(Select), B(Start), B(Triangle), B(Cross), B(Circle),
-          B(Square), B(L1),   B(L2),   B(R1),    B(R2),     B(L3),    B(R3),       B(Analog)};
-#undef B
+  return {{TRANSLATABLE("AnalogController", "Up"), static_cast<s32>(Button::Up)},
+          {TRANSLATABLE("AnalogController", "Down"), static_cast<s32>(Button::Down)},
+          {TRANSLATABLE("AnalogController", "Left"), static_cast<s32>(Button::Left)},
+          {TRANSLATABLE("AnalogController", "Right"), static_cast<s32>(Button::Right)},
+          {TRANSLATABLE("AnalogController", "Select"), static_cast<s32>(Button::Select)},
+          {TRANSLATABLE("AnalogController", "Start"), static_cast<s32>(Button::Start)},
+          {TRANSLATABLE("AnalogController", "Triangle"), static_cast<s32>(Button::Triangle)},
+          {TRANSLATABLE("AnalogController", "Cross"), static_cast<s32>(Button::Cross)},
+          {TRANSLATABLE("AnalogController", "Circle"), static_cast<s32>(Button::Circle)},
+          {TRANSLATABLE("AnalogController", "Square"), static_cast<s32>(Button::Square)},
+          {TRANSLATABLE("AnalogController", "L1"), static_cast<s32>(Button::L1)},
+          {TRANSLATABLE("AnalogController", "L2"), static_cast<s32>(Button::L2)},
+          {TRANSLATABLE("AnalogController", "R1"), static_cast<s32>(Button::R1)},
+          {TRANSLATABLE("AnalogController", "R2"), static_cast<s32>(Button::R2)},
+          {TRANSLATABLE("AnalogController", "L3"), static_cast<s32>(Button::L3)},
+          {TRANSLATABLE("AnalogController", "R3"), static_cast<s32>(Button::R3)},
+          {TRANSLATABLE("AnalogController", "Analog"), static_cast<s32>(Button::Analog)}};
 }
 
 u32 AnalogController::StaticGetVibrationMotorCount()
@@ -495,11 +501,14 @@ u32 AnalogController::StaticGetVibrationMotorCount()
 Controller::SettingList AnalogController::StaticGetSettings()
 {
   static constexpr std::array<SettingInfo, 2> settings = {
-    {{SettingInfo::Type::Boolean, "AutoEnableAnalog", "Enable Analog Mode on Reset",
-      "Automatically enables analog mode when the console is reset/powered on.", "false"},
-     {SettingInfo::Type::Float, "AxisScale", "Analog Axis Scale",
-      "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
-      "controllers, e.g. DualShock 4, Xbox One Controller.",
+    {{SettingInfo::Type::Boolean, "AutoEnableAnalog", TRANSLATABLE("AnalogController", "Enable Analog Mode on Reset"),
+      TRANSLATABLE("AnalogController", "Automatically enables analog mode when the console is reset/powered on."),
+      "false"},
+     {SettingInfo::Type::Float, "AxisScale", TRANSLATABLE("AnalogController", "Analog Axis Scale"),
+      TRANSLATABLE(
+        "AnalogController",
+        "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+        "controllers, e.g. DualShock 4, Xbox One Controller."),
       "1.00f", "0.01f", "1.50f", "0.01f"}}};
 
   return SettingList(settings.begin(), settings.end());
