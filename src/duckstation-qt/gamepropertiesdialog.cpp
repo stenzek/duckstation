@@ -242,12 +242,12 @@ void GamePropertiesDialog::populateGameSettings()
   }
   if (gs.gpu_widescreen_hack.has_value())
   {
-    QSignalBlocker sb(m_ui.userControllerType2);
-    m_ui.userWidescreenHack->setCheckState(Qt::Checked);
+    QSignalBlocker sb(m_ui.userWidescreenHack);
+    m_ui.userWidescreenHack->setCheckState(gs.gpu_widescreen_hack.value() ? Qt::Checked : Qt::Unchecked);
   }
   else
   {
-    QSignalBlocker sb(m_ui.userControllerType2);
+    QSignalBlocker sb(m_ui.userWidescreenHack);
     m_ui.userWidescreenHack->setCheckState(Qt::PartiallyChecked);
   }
 }
