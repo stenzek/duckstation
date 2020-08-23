@@ -66,6 +66,7 @@
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="make_array.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="null_audio_stream.h" />
     <ClInclude Include="progress_callback.h" />

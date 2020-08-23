@@ -101,6 +101,7 @@
     <ClInclude Include="image.h" />
     <ClInclude Include="minizip_helpers.h" />
     <ClInclude Include="win32_progress_callback.h" />
+    <ClInclude Include="make_array.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

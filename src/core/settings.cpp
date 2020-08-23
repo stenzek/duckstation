@@ -1,4 +1,5 @@
 #include "settings.h"
+#include "common/make_array.h"
 #include "common/string_util.h"
 #include "host_interface.h"
 #include <algorithm>
@@ -380,7 +381,8 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 
 static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
 static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
-  {TRANSLATABLE("CPUExecutionMode", "Intepreter (Slowest)"), TRANSLATABLE("CPUExecutionMode", "Cached Interpreter (Faster)"),
+  {TRANSLATABLE("CPUExecutionMode", "Intepreter (Slowest)"),
+   TRANSLATABLE("CPUExecutionMode", "Cached Interpreter (Faster)"),
    TRANSLATABLE("CPUExecutionMode", "Recompiler (Fastest)")}};
 
 std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
@@ -407,17 +409,17 @@ const char* Settings::GetCPUExecutionModeDisplayName(CPUExecutionMode mode)
   return s_cpu_execution_mode_display_names[static_cast<u8>(mode)];
 }
 
-static std::array<const char*, 4> s_gpu_renderer_names = {{
+static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef WIN32
   "D3D11",
 #endif
-  "Vulkan", "OpenGL", "Software"}};
-static std::array<const char*, 4> s_gpu_renderer_display_names = {{
+  "Vulkan", "OpenGL", "Software");
+static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef WIN32
   TRANSLATABLE("GPURenderer", "Hardware (D3D11)"),
 #endif
   TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"), TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
-  TRANSLATABLE("GPURenderer", "Software")}};
+  TRANSLATABLE("GPURenderer", "Software"));
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {
@@ -444,9 +446,9 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 }
 
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
-static std::array<const char*, 3> s_display_crop_mode_display_names = {{TRANSLATABLE("DisplayCropMode", "None"),
-                                                                        TRANSLATABLE("DisplayCropMode", "Only Overscan Area"),
-                                                                        TRANSLATABLE("DisplayCropMode", "All Borders")}};
+static std::array<const char*, 3> s_display_crop_mode_display_names = {
+  {TRANSLATABLE("DisplayCropMode", "None"), TRANSLATABLE("DisplayCropMode", "Only Overscan Area"),
+   TRANSLATABLE("DisplayCropMode", "All Borders")}};
 
 std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
 {
@@ -502,8 +504,9 @@ float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};
-static std::array<const char*, 3> s_audio_backend_display_names = {
-  {TRANSLATABLE("AudioBackend", "Null (No Output)"), TRANSLATABLE("AudioBackend", "Cubeb"), TRANSLATABLE("AudioBackend", "SDL")}};
+static std::array<const char*, 3> s_audio_backend_display_names = {{TRANSLATABLE("AudioBackend", "Null (No Output)"),
+                                                                    TRANSLATABLE("AudioBackend", "Cubeb"),
+                                                                    TRANSLATABLE("AudioBackend", "SDL")}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {

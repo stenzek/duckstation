@@ -49,6 +49,7 @@ add_library(common
   jit_code_buffer.h
   log.cpp
   log.h
+  make_array.h
   md5_digest.cpp
   md5_digest.h
   minizip_helpers.cpp

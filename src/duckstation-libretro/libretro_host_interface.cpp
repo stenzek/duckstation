@@ -409,13 +409,13 @@ static std::array<retro_core_option_definition, 31> s_option_definitions = {{
   {"duckstation_GPU.Renderer",
    "GPU Renderer",
    "Which renderer to use to emulate the GPU",
-   {
+   {{"Auto", "Hardware (Auto)"},
 #ifdef WIN32
-     {"D3D11", "Hardware (D3D11)"},
+    {"D3D11", "Hardware (D3D11)"},
 #endif
-     {"OpenGL", "Hardware (OpenGL)"},
-     {"Vulkan", "Hardware (Vulkan)"},
-     {"Software", "Software"}},
+    {"OpenGL", "Hardware (OpenGL)"},
+    {"Vulkan", "Hardware (Vulkan)"},
+    {"Software", "Software"}},
 #ifdef WIN32
    "D3D11"
 #else
@@ -849,32 +849,23 @@ static std::optional<GPURenderer> RenderAPIToRenderer(HostDisplay::RenderAPI api
 
 bool LibretroHostInterface::RequestHardwareRendererContext()
 {
-  GPURenderer renderer = Settings::DEFAULT_GPU_RENDERER;
   retro_variable renderer_variable{"duckstation_GPU.Renderer",
                                    Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER)};
-  if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &renderer_variable) && renderer_variable.value)
-    renderer = Settings::ParseRendererName(renderer_variable.value).value_or(Settings::DEFAULT_GPU_RENDERER);
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE, &renderer_variable) || !renderer_variable.value)
+    renderer_variable.value = Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER);
 
-  Log_InfoPrintf("Renderer = %s", Settings::GetRendererName(renderer));
-
+  GPURenderer renderer = Settings::ParseRendererName(renderer_variable.value).value_or(Settings::DEFAULT_GPU_RENDERER);
   unsigned preferred_renderer = 0;
-  if (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred_renderer))
+  g_retro_environment_callback(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred_renderer);
+  if (std::strcmp(renderer_variable.value, "Auto") == 0)
   {
     std::optional<GPURenderer> preferred_gpu_renderer =
       RetroHwContextToRenderer(static_cast<retro_hw_context_type>(preferred_renderer));
-    if (!preferred_gpu_renderer.has_value() || preferred_gpu_renderer.value() != renderer)
-    {
-      const char* preferred_name =
-        preferred_gpu_renderer.has_value() ? Settings::GetRendererName(preferred_gpu_renderer.value()) : "Unknown";
-      const char* config_name = Settings::GetRendererName(renderer);
-      renderer = preferred_gpu_renderer.value_or(GPURenderer::Software);
-      ReportFormattedError(
-        "Mismatch between frontend's preferred GPU renderer '%s' and configured renderer '%s'. Please "
-        "change your video driver to '%s'. Using '%s' renderer for now.",
-        preferred_name, config_name, config_name, Settings::GetRendererName(renderer));
-    }
+    if (preferred_gpu_renderer.has_value())
+      renderer = preferred_gpu_renderer.value();
   }
 
+  Log_InfoPrintf("Renderer = %s", Settings::GetRendererName(renderer));
   if (renderer == GPURenderer::Software)
   {
     m_hw_render_callback_valid = false;
