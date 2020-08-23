@@ -683,7 +683,9 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetBlendAttachment(
                   0, true, VK_BLEND_FACTOR_ONE,
                   m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC1_ALPHA : VK_BLEND_FACTOR_SRC_ALPHA,
-                  (static_cast<TransparencyMode>(transparency_mode) == TransparencyMode::BackgroundMinusForeground) ?
+                  (static_cast<TransparencyMode>(transparency_mode) == TransparencyMode::BackgroundMinusForeground &&
+                   static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
+                   static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque) ?
                     VK_BLEND_OP_REVERSE_SUBTRACT :
                     VK_BLEND_OP_ADD,
                   VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
