@@ -177,6 +177,11 @@ u32 Timers::ReadRegister(u32 offset)
 {
   const u32 timer_index = (offset >> 4) & u32(0x03);
   const u32 port_offset = offset & u32(0x0F);
+  if (timer_index >= 3)
+  {
+    Log_ErrorPrintf("Timer read out of range: offset 0x%02X", offset);
+    return UINT32_C(0xFFFFFFFF);
+  }
 
   CounterState& cs = m_states[timer_index];
 
@@ -226,6 +231,11 @@ void Timers::WriteRegister(u32 offset, u32 value)
 {
   const u32 timer_index = (offset >> 4) & u32(0x03);
   const u32 port_offset = offset & u32(0x0F);
+  if (timer_index >= 3)
+  {
+    Log_ErrorPrintf("Timer write out of range: offset 0x%02X value 0x%08X", offset, value);
+    return;
+  }
 
   CounterState& cs = m_states[timer_index];
 
