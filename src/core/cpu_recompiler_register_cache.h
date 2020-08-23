@@ -316,6 +316,7 @@ public:
 
   void InvalidateAllNonDirtyGuestRegisters();
   void FlushAllGuestRegisters(bool invalidate, bool clear_dirty);
+  void FlushCallerSavedGuestRegisters(bool invalidate, bool clear_dirty);
   bool EvictOneGuestRegister();
 
   /// Temporarily prevents register allocation.

@@ -1744,6 +1744,7 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
   {
     // We need to use the full 64 bits here since we test the sign bit result.
     Value result = m_register_cache.AllocateScratch(RegSize_64);
+    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
 
     // NOTE: This can leave junk in the upper bits
     switch (size)
@@ -1811,6 +1812,8 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
   else
   {
     Value result = m_register_cache.AllocateScratch(RegSize_32);
+    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+
     switch (size)
     {
       case RegSize_8:
@@ -1860,6 +1863,8 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   if (g_settings.cpu_recompiler_memory_exceptions)
   {
     Value result = m_register_cache.AllocateScratch(RegSize_32);
+    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+
     switch (value.size)
     {
       case RegSize_8:
@@ -1901,6 +1906,8 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   }
   else
   {
+    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+
     switch (value.size)
     {
       case RegSize_8:

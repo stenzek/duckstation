@@ -739,6 +739,21 @@ void RegisterCache::FlushAllGuestRegisters(bool invalidate, bool clear_dirty)
     FlushGuestRegister(static_cast<Reg>(reg), invalidate, clear_dirty);
 }
 
+void RegisterCache::FlushCallerSavedGuestRegisters(bool invalidate, bool clear_dirty)
+{
+  for (u8 reg = 0; reg < static_cast<u8>(Reg::count); reg++)
+  {
+    const Value& gr = m_state.guest_reg_state[reg];
+    if (!gr.IsInHostRegister() ||
+        (m_state.host_reg_state[gr.GetHostRegister()] & HostRegState::CallerSaved) != HostRegState::CallerSaved)
+    {
+      continue;
+    }
+
+    FlushGuestRegister(static_cast<Reg>(reg), invalidate, clear_dirty);
+  }
+}
+
 bool RegisterCache::EvictOneGuestRegister()
 {
   if (m_state.guest_reg_order_count == 0)
