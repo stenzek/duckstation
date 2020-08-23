@@ -26,6 +26,9 @@ public:
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
   void DestroyRenderSurface() override;
 
+  bool CreateResources() override;
+  void DestroyResources() override;
+
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
                                                     bool dynamic) override;
   void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,

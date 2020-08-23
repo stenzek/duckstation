@@ -137,6 +137,13 @@ void LibretroHostDisplay::DestroyRenderDevice() {}
 
 void LibretroHostDisplay::DestroyRenderSurface() {}
 
+bool LibretroHostDisplay::CreateResources()
+{
+  return true;
+}
+
+void LibretroHostDisplay::DestroyResources() {}
+
 bool LibretroHostDisplay::ChangeRenderWindow(const WindowInfo& wi)
 {
   m_window_info = wi;

@@ -59,6 +59,8 @@ public:
   virtual void DestroyRenderDevice() = 0;
   virtual void DestroyRenderSurface() = 0;
   virtual bool ChangeRenderWindow(const WindowInfo& wi) = 0;
+  virtual bool CreateResources() = 0;
+  virtual void DestroyResources() = 0;
 
   /// Call when the window size changes externally to recreate any resources.
   virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) = 0;

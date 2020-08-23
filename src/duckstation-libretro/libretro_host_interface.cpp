@@ -935,6 +935,8 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   {
     Log_InfoPrintf("Using existing hardware display");
     renderer = RenderAPIToRenderer(display->GetRenderAPI());
+    if (!display->CreateResources())
+      Panic("Failed to recreate resources after reinit");
   }
   else
   {
@@ -1013,6 +1015,7 @@ void LibretroHostInterface::SwitchToSoftwareRenderer()
   if (m_using_hardware_renderer)
   {
     m_hw_render_display = std::move(m_display);
+    m_hw_render_display->DestroyResources();
     m_using_hardware_renderer = false;
   }
 
