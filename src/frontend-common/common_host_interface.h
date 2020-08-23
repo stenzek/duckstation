@@ -217,6 +217,7 @@ protected:
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
   bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
   void UpdateInputMap(SettingsInterface& si);
+  void ClearInputMap();
 
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
   void UpdateControllerRumble();

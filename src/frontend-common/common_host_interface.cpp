@@ -461,6 +461,7 @@ void CommonHostInterface::UpdateControllerInterface()
 
   if (m_controller_interface)
   {
+    ClearInputMap();
     m_controller_interface->Shutdown();
     m_controller_interface.reset();
   }
@@ -939,13 +940,18 @@ bool CommonHostInterface::HandleHostMouseEvent(HostMouseButton button, bool pres
 
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
-  m_keyboard_input_handlers.clear();
-  m_mouse_input_handlers.clear();
-  if (m_controller_interface)
-    m_controller_interface->ClearBindings();
-
+  ClearInputMap();
   UpdateControllerInputMap(si);
   UpdateHotkeyInputMap(si);
+}
+
+void CommonHostInterface::ClearInputMap()
+{
+  m_keyboard_input_handlers.clear();
+  m_mouse_input_handlers.clear();
+  m_controller_vibration_motors.clear();
+  if (m_controller_interface)
+    m_controller_interface->ClearBindings();
 }
 
 void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback)
