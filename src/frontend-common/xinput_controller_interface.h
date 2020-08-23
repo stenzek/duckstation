@@ -60,7 +60,6 @@ private:
   {
     XINPUT_STATE last_state = {};
     bool connected = false;
-    bool supports_rumble = false;
 
     // Scaling value of 1.30f to 1.40f recommended when using recent controllers
     float axis_scale = 1.00f;
@@ -74,7 +73,6 @@ private:
   using ControllerDataArray = std::array<ControllerData, XUSER_MAX_COUNT>;
 
   void CheckForStateChanges(u32 index, const XINPUT_STATE& new_state);
-  void UpdateCapabilities(u32 index);
   bool HandleAxisEvent(u32 index, Axis axis, s32 value);
   bool HandleButtonEvent(u32 index, u32 button, bool pressed);
 
@@ -82,7 +80,6 @@ private:
 
   HMODULE m_xinput_module{};
   DWORD(WINAPI* m_xinput_get_state)(DWORD, XINPUT_STATE*);
-  DWORD(WINAPI* m_xinput_get_capabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
   DWORD(WINAPI* m_xinput_set_state)(DWORD, XINPUT_VIBRATION*);
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;
