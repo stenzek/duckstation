@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/08/25: Automated builds for macOS now available.
 - 2020/08/22: XInput controller backend added.
 - 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.
 - 2020/08/19: CPU PGXP mode added. It is very slow and incompatible with the recompiler, only use for games which need it.
@@ -96,6 +97,20 @@ To download:
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
 
+### macOS
+
+To download:
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Mac build. This is a zip archive containing the prebuilt binary.
+ - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-mac-release.zip
+ - Extract the zip archive. If you're using Safari, apparently this happens automatically. This will give you DuckStation.app.
+ - Right click DuckStation.app, and click Open. As the package is not signed (Mac certificates are expensive), you must do this the first time you open it. Subsequent runs can be done by double-clicking.
+
+macOS support is considered experimental and not actively supported by the developer; the builds are provided here as a courtesy. Please feel free to submit issues, but it may be some time before
+they are investigated.
+
+**macOS builds do not support automatic updates yet.** If there is sufficient demand, this may be something I will consider.
+
+
 ### Android
 
 A prebuilt APK is now available for Android. However, please keep in mind that the Android version is not yet feature complete, it is more of a preview of things to come. You will need a device running a 64-bit AArch64 userland (anything made in the last few years).
@@ -170,12 +185,11 @@ Requirements:
  - Qt 5 (`brew install qt5`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
+2. Clone the mac externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
 2. Create a build directory, either in-tree or elsewhere, e.g. `mkdir build-release`, `cd build-release`.
 3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
 4. Compile the source code: `make`. Use `make -jN` where `N` is the number of CPU cores in your system for a faster build.
-5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/duckstation-qt`.
-
-Application bundles/.apps are currently not created, so you can't launch it via Finder yet. This is planned for the future.
+5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/DuckStation.app` for Qt.
 
 ### Android
 **NOTE:** The Android frontend is still incomplete, not all functionality is available yet. User directory is hardcoded to `/sdcard/duckstation` for now.

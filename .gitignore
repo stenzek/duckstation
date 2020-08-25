@@ -37,3 +37,6 @@ CMakeLists.txt.user
 
 # python bytecode
 __pycache__
+
+# other repos
+/dep/mac

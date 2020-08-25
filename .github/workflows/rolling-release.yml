@@ -233,9 +233,46 @@ jobs:
         name: "android"
         path: "duckstation-android-aarch64.apk"
 
+  macos-build:
+    runs-on: macos-10.15
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Install packages
+      shell: bash
+      run: |
+        brew install qt5 sdl2
+
+    - name: Clone mac externals
+      shell: bash
+      run: |
+        git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac
+
+    - name: Compile build
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..
+        cmake --build . --parallel 2
+
+    - name: Zip macOS .app
+      shell: bash
+      run: |
+        cd build/bin
+        zip -r duckstation-mac-release.zip DuckStation.app/
+
+    - name: Upload macOS .app
+      uses: actions/upload-artifact@v1
+      with:
+        name: "macos-x64"
+        path: "build/bin/duckstation-mac-release.zip"
+
 
   create-release:
-    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build]
+    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build, macos-build]
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     steps:
@@ -279,6 +316,11 @@ jobs:
         with:
           name: "android"
 
+      - name: Download Mac App
+        uses: actions/download-artifact@v1
+        with:
+          name: "macos-x64"
+
       - name: Create release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -296,4 +338,5 @@ jobs:
             linux-libretro/duckstation_libretro_linux_aarch64.so.zip
             linux-libretro/duckstation_libretro_android_aarch64.so.zip
             android/duckstation-android-aarch64.apk
+            macos-x64/duckstation-mac-release.zip
 

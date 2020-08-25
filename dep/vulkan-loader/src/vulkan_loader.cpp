@@ -7,11 +7,17 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <string>
 
 #include "vulkan_loader.h"
 
 #ifndef WIN32
 #include <dlfcn.h>
+#endif
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
 #endif
 
 #define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name name;
@@ -111,6 +117,25 @@ bool LoadVulkanLibrary()
   char* libvulkan_env = getenv("LIBVULKAN_PATH");
   if (libvulkan_env)
     vulkan_module = dlopen(libvulkan_env, RTLD_NOW);
+  if (!vulkan_module)
+  {
+    unsigned path_size = 0;
+    _NSGetExecutablePath(nullptr, &path_size);
+    std::string path;
+    path.resize(path_size);
+    if (_NSGetExecutablePath(path.data(), &path_size) == 0)
+    {
+      path[path_size] = 0;
+
+      size_t pos = path.rfind('/');
+      if (pos != std::string::npos)
+      {
+        path.erase(pos);
+        path += "/../Frameworks/libvulkan.dylib";
+        vulkan_module = dlopen(path.c_str(), RTLD_NOW);
+      }
+    }
+  }
   if (!vulkan_module)
     vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
 #else
