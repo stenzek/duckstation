@@ -732,7 +732,6 @@
   <entry code="SLUS-01041" compatibility="5" region="NTSC-U" title="Chrono Cross (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1600-g032127a7</version-tested>
-    <comments>  </comments>
   </entry>
   <entry code="SLUS-00792" compatibility="5" region="NTSC-U" title="Civilization II (USA)">
     <compatibility>No Issues</compatibility>
@@ -1189,9 +1188,9 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCES-03404" compatibility="3" region="PAL" title="Formula One 2001 (Europe) (En,Fi)">
     <compatibility>Crashes In-Game</compatibility>
   </entry>
-  <entry code="SLUS-00870" compatibility="2" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
-    <compatibility>Crashes In Intro</compatibility>
-    <version-tested>0.1-1580-g136a9d60</version-tested>
+  <entry code="SLUS-00870" compatibility="5" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1614-g914f3ad4</version-tested>
     <comments>Blackscreen after the first Loading screen (Issue #54).</comments>
   </entry>
   <entry code="SLUS-01129" compatibility="5" region="NTSC-U" title="FoxKids.com - Micro Maniacs Racing (USA)">
@@ -1743,6 +1742,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLPS-00435" compatibility="5" region="NTSC-J" title="Megatudo 2096 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1614-g914f3ad4</version-tested>
+  </entry>
   <entry code="SLES-01047" compatibility="5" region="PAL" title="Men in Black - The Game (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
@@ -1916,6 +1919,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-00329" compatibility="5" region="NTSC-U" title="NBA Hangtime">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00388" compatibility="5" region="NTSC-U" title="NBA Jam Extreme (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1614-g914f3ad4</version-tested>
   </entry>
   <entry code="SLUS-00060" compatibility="5" region="NTSC-U" title="NBA Live 96 (USA)">
     <compatibility>No Issues</compatibility>
