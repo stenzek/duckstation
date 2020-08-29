@@ -21,17 +21,17 @@ namespace GameSettings {
 std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> s_trait_names = {{
   {"ForceInterpreter", TRANSLATABLE("GameSettingsTrait", "Force Interpreter")},
   {"ForceSoftwareRenderer", TRANSLATABLE("GameSettingsTrait", "Force Software Renderer")},
-  {"EnableInterlacing", TRANSLATABLE("GameSettingsTrait", "Enable Interlacing")},
+  {"ForceInterlacing", TRANSLATABLE("GameSettingsTrait", "Force Interlacing")},
   {"DisableTrueColor", TRANSLATABLE("GameSettingsTrait", "Disable True Color")},
   {"DisableUpscaling", TRANSLATABLE("GameSettingsTrait", "Disable Upscaling")},
   {"DisableScaledDithering", TRANSLATABLE("GameSettingsTrait", "Disable Scaled Dithering")},
   {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
   {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
   {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
-  {"EnablePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Enable PGXP Vertex Cache")},
-  {"EnablePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Enable PGXP CPU Mode")},
+  {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
+  {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
   {"ForceDigitalController", TRANSLATABLE("GameSettingsTrait", "Force Digital Controller")},
-  {"EnableRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Enable Recompiler Memory Exceptions")},
+  {"ForceRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Force Recompiler Memory Exceptions")},
 }};
 
 const char* GetTraitName(Trait trait)
@@ -305,7 +305,7 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForceInterpreter))
   {
     if (display_osd_messages && g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
-      g_host_interface->AddOSDMessage("CPU execution mode forced to interpreter by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage("CPU interpreter forced by game settings.", osd_duration);
 
     g_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
   }
@@ -313,15 +313,15 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForceSoftwareRenderer))
   {
     if (display_osd_messages && g_settings.gpu_renderer != GPURenderer::Software)
-      g_host_interface->AddOSDMessage("GPU renderer forced to software by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage("Software renderer forced by game settings.", osd_duration);
 
     g_settings.gpu_renderer = GPURenderer::Software;
   }
 
-  if (HasTrait(Trait::EnableInterlacing))
+  if (HasTrait(Trait::ForceInterlacing))
   {
     if (display_osd_messages && g_settings.gpu_disable_interlacing)
-      g_host_interface->AddOSDMessage("Interlacing enabled by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage("Interlacing forced by game settings.", osd_duration);
 
     g_settings.gpu_disable_interlacing = false;
   }
@@ -378,18 +378,18 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_pgxp_culling = false;
   }
 
-  if (HasTrait(Trait::EnablePGXPVertexCache))
+  if (HasTrait(Trait::ForcePGXPVertexCache))
   {
     if (display_osd_messages && g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_vertex_cache)
-      g_host_interface->AddOSDMessage("PGXP vertex cache enabled by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage("PGXP vertex cache forced by game settings.", osd_duration);
 
     g_settings.gpu_pgxp_vertex_cache = true;
   }
 
-  if (HasTrait(Trait::EnablePGXPCPUMode))
+  if (HasTrait(Trait::ForcePGXPCPUMode))
   {
     if (display_osd_messages && g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu)
-      g_host_interface->AddOSDMessage("PGXP CPU mode enabled by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage("PGXP CPU mode forced by game settings.", osd_duration);
 
     g_settings.gpu_pgxp_cpu = true;
   }
@@ -412,12 +412,12 @@ void Entry::ApplySettings(bool display_osd_messages) const
     }
   }
 
-  if (HasTrait(Trait::EnableRecompilerMemoryExceptions))
+  if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
   {
     if (display_osd_messages && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
         !g_settings.cpu_recompiler_memory_exceptions)
     {
-      g_host_interface->AddOSDMessage("Recompiler memory exceptions enabled by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage("Recompiler memory exceptions forced by game settings.", osd_duration);
     }
 
     g_settings.cpu_recompiler_memory_exceptions = true;

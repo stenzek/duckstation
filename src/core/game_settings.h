@@ -12,17 +12,17 @@ enum class Trait : u32
 {
   ForceInterpreter,
   ForceSoftwareRenderer,
-  EnableInterlacing,
+  ForceInterlacing,
   DisableTrueColor,
   DisableUpscaling,
   DisableScaledDithering,
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,
-  EnablePGXPVertexCache,
-  EnablePGXPCPUMode,
+  ForcePGXPVertexCache,
+  ForcePGXPCPUMode,
   ForceDigitalController,
-  EnableRecompilerMemoryExceptions,
+  ForceRecompilerMemoryExceptions,
 
   Count
 };
