@@ -17,7 +17,7 @@ public:
   GamePropertiesDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~GamePropertiesDialog();
 
-  static void showForEntry(QtHostInterface* host_interface, const GameListEntry* ge);
+  static void showForEntry(QtHostInterface* host_interface, const GameListEntry* ge, QWidget* parent);
 
 public Q_SLOTS:
   void clear();

@@ -153,9 +153,9 @@ void GamePropertiesDialog::setupAdditionalUi()
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 }
 
-void GamePropertiesDialog::showForEntry(QtHostInterface* host_interface, const GameListEntry* ge)
+void GamePropertiesDialog::showForEntry(QtHostInterface* host_interface, const GameListEntry* ge, QWidget* parent)
 {
-  GamePropertiesDialog* gpd = new GamePropertiesDialog(host_interface);
+  GamePropertiesDialog* gpd = new GamePropertiesDialog(host_interface, parent);
   gpd->populate(ge);
   gpd->show();
   gpd->onResize();

@@ -406,7 +406,7 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   if (entry)
   {
     connect(menu.addAction(tr("Properties...")), &QAction::triggered,
-            [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry); });
+            [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry, this); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
       const QFileInfo fi(QString::fromStdString(entry->path));
