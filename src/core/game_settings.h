@@ -23,6 +23,7 @@ enum class Trait : u32
   ForcePGXPCPUMode,
   ForceDigitalController,
   ForceRecompilerMemoryExceptions,
+  ForceRecompilerICache,
 
   Count
 };
