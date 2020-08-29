@@ -1,8 +1,11 @@
 #pragma once
 #include <QtCore/QByteArray>
+#include <QtCore/QMetaType>
 #include <QtCore/QString>
 #include <initializer_list>
 #include <optional>
+
+Q_DECLARE_METATYPE(std::optional<bool>);
 
 class ByteStream;
 

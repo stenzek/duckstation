@@ -204,6 +204,19 @@ bool XInputControllerInterface::BindControllerAxisToButton(int controller_index,
   return true;
 }
 
+bool XInputControllerInterface::BindControllerButtonToAxis(int controller_index, int button_number,
+                                                           AxisCallback callback)
+{
+  if (static_cast<u32>(controller_index) >= m_controllers.size() || !m_controllers[controller_index].connected)
+    return false;
+
+  if (button_number < 0 || button_number >= MAX_NUM_BUTTONS)
+    return false;
+
+  m_controllers[controller_index].button_axis_mapping[button_number] = std::move(callback);
+  return true;
+}
+
 bool XInputControllerInterface::HandleAxisEvent(u32 index, Axis axis, s32 value)
 {
   const float f_value = static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
@@ -255,10 +268,18 @@ bool XInputControllerInterface::HandleButtonEvent(u32 index, u32 button, bool pr
     return true;
 
   const ButtonCallback& cb = m_controllers[index].button_mapping[button];
-  if (!cb)
-    return false;
+  if (cb)
+  {
+    cb(pressed);
+    return true;
+  }
 
-  cb(pressed);
+  // Assume a half-axis, i.e. in 0..1 range
+  const AxisCallback& axis_cb = m_controllers[index].button_axis_mapping[button];
+  if (axis_cb)
+  {
+    axis_cb(pressed ? 1.0f : 0.0f);
+  }
   return true;
 }
 

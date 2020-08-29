@@ -3,9 +3,9 @@
 #include "core/types.h"
 #include <array>
 #include <functional>
-#include <optional>
 #include <map>
 #include <mutex>
+#include <optional>
 
 class HostInterface;
 class Controller;
@@ -54,6 +54,7 @@ public:
   virtual bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) = 0;
   virtual bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                           ButtonCallback callback) = 0;
+  virtual bool BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback) = 0;
 
   virtual void PollEvents() = 0;
 

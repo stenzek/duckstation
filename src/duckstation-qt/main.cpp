@@ -1,6 +1,7 @@
 #include "common/log.h"
 #include "mainwindow.h"
 #include "qthostinterface.h"
+#include "qtutils.h"
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include <cstdlib>
@@ -8,6 +9,9 @@
 
 int main(int argc, char* argv[])
 {
+  // Register any standard types we need elsewhere
+  qRegisterMetaType<std::optional<bool>>();
+
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);

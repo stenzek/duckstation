@@ -1,5 +1,6 @@
 #pragma once
 #include "common/string.h"
+#include "core/controller.h"
 #include "core/host_interface.h"
 #include <atomic>
 #include <functional>
@@ -195,7 +196,8 @@ protected:
   virtual bool AddButtonToInputMap(const std::string& binding, const std::string_view& device,
                                    const std::string_view& button, InputButtonHandler handler);
   virtual bool AddAxisToInputMap(const std::string& binding, const std::string_view& device,
-                                 const std::string_view& axis, InputAxisHandler handler);
+                                 const std::string_view& axis, Controller::AxisType axis_type,
+                                 InputAxisHandler handler);
   virtual bool AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors);
 
   /// Reloads the input map from config. Callable from controller interface.

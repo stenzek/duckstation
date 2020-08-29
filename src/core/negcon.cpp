@@ -219,12 +219,12 @@ std::optional<s32> NeGcon::StaticGetButtonCodeByName(std::string_view button_nam
 
 Controller::AxisList NeGcon::StaticGetAxisNames()
 {
-#define A(n)                                                                                                           \
+#define A(n, t)                                                                                                        \
   {                                                                                                                    \
-    #n, static_cast <s32>(Axis::n)                                                                                     \
+    #n, static_cast <s32>(Axis::n), Controller::AxisType::t                                                            \
   }
 
-  return {A(Steering), A(I), A(II), A(L)};
+  return {A(Steering, Full), A(I, Half), A(II, Half), A(L, Half)};
 
 #undef A
 }
