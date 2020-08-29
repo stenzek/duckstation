@@ -305,7 +305,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForceInterpreter))
   {
     if (display_osd_messages && g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
-      g_host_interface->AddOSDMessage("CPU interpreter forced by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "CPU interpreter forced by game settings."), osd_duration);
+    }
 
     g_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
   }
@@ -313,7 +316,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForceSoftwareRenderer))
   {
     if (display_osd_messages && g_settings.gpu_renderer != GPURenderer::Software)
-      g_host_interface->AddOSDMessage("Software renderer forced by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Software renderer forced by game settings."), osd_duration);
+    }
 
     g_settings.gpu_renderer = GPURenderer::Software;
   }
@@ -321,7 +327,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForceInterlacing))
   {
     if (display_osd_messages && g_settings.gpu_disable_interlacing)
-      g_host_interface->AddOSDMessage("Interlacing forced by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Interlacing forced by game settings."), osd_duration);
+    }
 
     g_settings.gpu_disable_interlacing = false;
   }
@@ -329,7 +338,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::DisableTrueColor))
   {
     if (display_osd_messages && g_settings.gpu_true_color)
-      g_host_interface->AddOSDMessage("True color disabled by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "True color disabled by game settings."), osd_duration);
+    }
 
     g_settings.gpu_true_color = false;
   }
@@ -337,7 +349,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::DisableUpscaling))
   {
     if (display_osd_messages && g_settings.gpu_resolution_scale > 1)
-      g_host_interface->AddOSDMessage("Upscaling disabled by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Upscaling disabled by game settings."), osd_duration);
+    }
 
     g_settings.gpu_resolution_scale = 1;
   }
@@ -345,7 +360,11 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::DisableScaledDithering))
   {
     if (display_osd_messages && g_settings.gpu_scaled_dithering)
-      g_host_interface->AddOSDMessage("Scaled dithering disabled by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Scaled dithering disabled by game settings."),
+        osd_duration);
+    }
 
     g_settings.gpu_scaled_dithering = false;
   }
@@ -355,7 +374,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     if (display_osd_messages &&
         (g_settings.display_aspect_ratio == DisplayAspectRatio::R16_9 || g_settings.gpu_widescreen_hack))
     {
-      g_host_interface->AddOSDMessage("Widescreen disabled by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Widescreen disabled by game settings."), osd_duration);
     }
 
     g_settings.display_aspect_ratio = DisplayAspectRatio::R4_3;
@@ -365,7 +385,11 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::DisablePGXP))
   {
     if (display_osd_messages && g_settings.gpu_pgxp_enable)
-      g_host_interface->AddOSDMessage("PGXP geometry correction disabled by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP geometry correction disabled by game settings."),
+        osd_duration);
+    }
 
     g_settings.gpu_pgxp_enable = false;
   }
@@ -373,7 +397,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::DisablePGXPCulling))
   {
     if (display_osd_messages && g_settings.gpu_pgxp_culling)
-      g_host_interface->AddOSDMessage("PGXP culling disabled by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP culling disabled by game settings."), osd_duration);
+    }
 
     g_settings.gpu_pgxp_culling = false;
   }
@@ -381,7 +408,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForcePGXPVertexCache))
   {
     if (display_osd_messages && g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_vertex_cache)
-      g_host_interface->AddOSDMessage("PGXP vertex cache forced by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP vertex cache forced by game settings."), osd_duration);
+    }
 
     g_settings.gpu_pgxp_vertex_cache = true;
   }
@@ -389,7 +419,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (HasTrait(Trait::ForcePGXPCPUMode))
   {
     if (display_osd_messages && g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu)
-      g_host_interface->AddOSDMessage("PGXP CPU mode forced by game settings.", osd_duration);
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP CPU mode forced by game settings."), osd_duration);
+    }
 
     g_settings.gpu_pgxp_cpu = true;
   }
@@ -403,8 +436,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
       {
         if (display_osd_messages)
         {
-          g_host_interface->AddFormattedOSDMessage(osd_duration, "Controller %u changed to digital by game settings.",
-                                                   i + 1u);
+          g_host_interface->AddFormattedOSDMessage(
+            osd_duration,
+            g_host_interface->TranslateString("OSDMessage", "Controller %u changed to digital by game settings."),
+            i + 1u);
         }
 
         g_settings.controller_types[i] = ControllerType::DigitalController;
@@ -417,13 +452,13 @@ void Entry::ApplySettings(bool display_osd_messages) const
     if (display_osd_messages && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
         !g_settings.cpu_recompiler_memory_exceptions)
     {
-      g_host_interface->AddOSDMessage("Recompiler memory exceptions forced by game settings.", osd_duration);
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Recompiler memory exceptions forced by game settings."),
+        osd_duration);
     }
 
     g_settings.cpu_recompiler_memory_exceptions = true;
   }
-
-  // TODO: Overscan settings.
 }
 
 } // namespace GameSettings
