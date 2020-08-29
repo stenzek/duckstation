@@ -1056,6 +1056,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-896-gc8a00c5</version-tested>
   </entry>
+  <entry code="SLUS-00809" compatibility="5" region="NTSC-U" title="Ehrgeiz - God Bless the Ring">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SCUS-94243" compatibility="5" region="NTSC-U" title="Einhaender (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-896-gc8a00c5</version-tested>
@@ -1090,6 +1094,10 @@ Tetris with Card Captor Sakura (Japan)
     <upscaling-issues>The playable character gain &quot;yellow horns&quot; (actually, 2 broken polygons in head) if the upscaling is used (Issue 427).</upscaling-issues>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
   </entry>
+  <entry code="SLUS-00395" compatibility="5" region="NTSC-U" title="Fantastic Four (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SLUS-00920" compatibility="5" region="NTSC-U" title="Fear Effect (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>If use fast forward some controllers buttons may not function properly.</upscaling-issues>
@@ -1098,6 +1106,18 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01266" compatibility="5" region="NTSC-U" title="Fear Effect 2 - Retro Helix (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
+  </entry>
+  <entry code="SLUS-00711" compatibility="5" region="NTSC-U" title="Fifth Element, The (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
+  <entry code="SLUS-00433" compatibility="5" region="NTSC-U" title="Fighting Force (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
+  <entry code="SLUS-00934" compatibility="5" region="NTSC-U" title="Fighting Force 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
   <entry code="SLUS-00331" compatibility="5" region="NTSC-U" title="Final Doom (USA)">
     <compatibility>No Issues</compatibility>
@@ -1180,6 +1200,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLPS-02158" compatibility="5" region="NTSC-J" title="Finger Flashing">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SLUS-00546" compatibility="4" region="NTSC-U" title="Formula 1 Championship Edition (USA) (En,Fr,De,Es,It)">
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-1580-g136a9d60</version-tested>
@@ -1216,6 +1240,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00624" compatibility="5" region="NTSC-J" title="GaiaSeed: Project Seed Trap">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLUS-01258" compatibility="5" region="NTSC-U" title="Galaga - Destination Earth (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SLUS-00986" compatibility="5" region="NTSC-U" title="Galerians (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
@@ -1246,6 +1274,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00970" compatibility="5" region="NTSC-U" title="Gekido - Urban Fighters (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
+  </entry>
+  <entry code="SLUS-00024" compatibility="5" region="NTSC-U" title="Geom Cube (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
   <entry code="SLUS-00042" compatibility="5" region="NTSC-U" title="Gex (USA)">
     <compatibility>No Issues</compatibility>
@@ -1303,6 +1335,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLUS-00127" compatibility="5" region="NTSC-U" title="Grand Slam (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SLUS-00106" compatibility="5" region="NTSC-U" title="Grand Theft Auto (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
@@ -1314,6 +1350,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCUS-94568" compatibility="5" region="NTSC-U" title="Grind Session (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
+  </entry>
+  <entry code="SLUS-01466" compatibility="5" region="NTSC-U" title="Gubble (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
   <entry code="SLPS-01357" compatibility="5" region="NTSC-J" title="Guilty Gear">
     <compatibility>No Issues</compatibility>
@@ -1983,6 +2023,14 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-1443-g7ab521f7</version-tested>
     <comments>After the initial FMV, the game crashes (Issue #717).</comments>
   </entry>
+  <entry code="SLUS-01352" compatibility="5" region="NTSC-U" title="Nickelodeon SpongeBob SquarePants - SuperSponge (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
+  <entry code="SLUS-01047" compatibility="5" region="NTSC-U" title="Nicktoons Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SLPM-87048" compatibility="5" region="NTSC-J" title="Night Raid (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
@@ -2392,6 +2440,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-1334-g10f2366</version-tested>
     <comments>The menu music is messing completely (Issue #662). </comments>
+  </entry>
+  <entry code="SLUS-01053" compatibility="5" region="NTSC-U" title="Road Rash - Jailbreak (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
   <entry code="SLUS-00524" compatibility="5" region="NTSC-U" title="Road Rash 3D (USA)">
     <compatibility>No Issues</compatibility>
@@ -3150,6 +3202,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
   </entry>
+  <entry code="SLUS-01444" compatibility="5" region="NTSC-U" title="X-Bladez - Inline Skater (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
+  </entry>
   <entry code="SLUS-00141" compatibility="5" region="NTSC-U" title="X-COM - UFO Defense">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -3157,6 +3213,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Small grafics errors when the cursor is over the text (don't know if this bug occurs in the real hardware).</upscaling-issues>
     <version-tested>0.1-1304-gc8b6712</version-tested>
+  </entry>
+  <entry code="SLUS-00044" compatibility="5" region="NTSC-U" title="X-Men - Children of the Atom (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
   <entry code="SLUS-00774" compatibility="5" region="NTSC-U" title="X-Men - Mutant Academy (USA)">
     <compatibility>No Issues</compatibility>
@@ -3169,6 +3229,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-01915" compatibility="5" region="NTSC-J" title="X-Men VS Street Fighter - EX Edition">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Sprite glitches</upscaling-issues>
+  </entry>
+  <entry code="SLUS-00627" compatibility="5" region="NTSC-U" title="X-Men vs. Street Fighter (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
   <entry code="SLPS-01063" compatibility="5" region="NTSC-J" title="X.Racing (Japan)">
     <compatibility>No Issues</compatibility>
