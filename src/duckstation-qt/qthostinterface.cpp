@@ -641,6 +641,7 @@ void QtHostInterface::OnSystemDestroyed()
 {
   CommonHostInterface::OnSystemDestroyed();
 
+  ClearOSDMessages();
   startBackgroundControllerPollTimer();
   emit emulationStopped();
 }

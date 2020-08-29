@@ -830,6 +830,12 @@ void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 
   m_osd_messages.push_back(std::move(msg));
 }
 
+void CommonHostInterface::ClearOSDMessages()
+{
+  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  m_osd_messages.clear();
+}
+
 void CommonHostInterface::DrawOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
