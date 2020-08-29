@@ -224,7 +224,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
     const int num_rows = (static_cast<int>(axises.size()) + 1) / 2;
     int current_row = 0;
     int current_column = 0;
-    for (const auto& [axis_name, axis_code] : axises)
+    for (const auto& [axis_name, axis_code, axis_type] : axises)
     {
       if (current_row == num_rows)
       {
@@ -235,8 +235,8 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
       std::string section_name = StringUtil::StdStringFromFormat("Controller%d", index + 1);
       std::string key_name = StringUtil::StdStringFromFormat("Axis%s", axis_name.c_str());
       QLabel* label = new QLabel(qApp->translate(cname, axis_name.c_str()), ui->bindings_container);
-      InputAxisBindingWidget* button = new InputAxisBindingWidget(m_host_interface, std::move(section_name),
-                                                                  std::move(key_name), ui->bindings_container);
+      InputAxisBindingWidget* button = new InputAxisBindingWidget(
+        m_host_interface, std::move(section_name), std::move(key_name), axis_type, ui->bindings_container);
       layout->addWidget(label, start_row + current_row, current_column);
       layout->addWidget(button, start_row + current_row, current_column + 1);
 

@@ -78,41 +78,6 @@ extern std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits;
 extern u8 g_ram[RAM_SIZE];   // 2MB RAM
 extern u8 g_bios[BIOS_SIZE]; // 512K BIOS ROM
 
-/// Returns the address which should be used for code caching (i.e. removes mirrors).
-ALWAYS_INLINE PhysicalMemoryAddress UnmirrorAddress(PhysicalMemoryAddress address)
-{
-  // RAM
-  if (address < 0x800000)
-    return address & UINT32_C(0x1FFFFF);
-  else
-    return address;
-}
-
-/// Returns true if the address specified is cacheable (RAM or BIOS).
-ALWAYS_INLINE bool IsCacheableAddress(PhysicalMemoryAddress address)
-{
-  return (address < RAM_MIRROR_END) || (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE));
-}
-
-/// Reads a cachable address (RAM or BIOS).
-ALWAYS_INLINE u32 ReadCacheableAddress(PhysicalMemoryAddress address)
-{
-  u32 value;
-  if (address < RAM_MIRROR_END)
-  {
-    std::memcpy(&value, &g_ram[address & RAM_MASK], sizeof(value));
-    return value;
-  }
-  else
-  {
-    std::memcpy(&value, &g_bios[address & BIOS_MASK], sizeof(value));
-    return value;
-  }
-}
-
-/// Returns true if the address specified is writable (RAM).
-ALWAYS_INLINE bool IsRAMAddress(PhysicalMemoryAddress address) { return address < RAM_MIRROR_END; }
-
 /// Flags a RAM region as code, so we know when to invalidate blocks.
 ALWAYS_INLINE void SetRAMCodePage(u32 index) { m_ram_code_bits[index] = true; }
 

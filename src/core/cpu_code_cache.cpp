@@ -139,8 +139,7 @@ static void ExecuteImpl()
     {
       if (HasPendingInterrupt())
       {
-        // TODO: Fill in m_next_instruction...
-        SafeReadMemoryWord(g_state.regs.pc, &g_state.next_instruction.bits);
+        SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
         DispatchInterrupt();
         next_block_key = GetNextBlockKey();
       }
@@ -164,6 +163,9 @@ static void ExecuteImpl()
 #if 0
       LogCurrentState();
 #endif
+
+      if (g_settings.cpu_recompiler_icache)
+        CheckAndUpdateICacheTags(block->icache_line_count, block->uncached_fetch_ticks);
 
       InterpretCachedBlock<pgxp_mode>(*block);
 
@@ -247,7 +249,7 @@ void ExecuteRecompiler()
     {
       if (HasPendingInterrupt())
       {
-        SafeReadMemoryWord(g_state.regs.pc, &g_state.next_instruction.bits);
+        SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
         DispatchInterrupt();
       }
 
@@ -351,7 +353,8 @@ bool RevalidateBlock(CodeBlock* block)
 {
   for (const CodeBlockInstruction& cbi : block->instructions)
   {
-    u32 new_code = Bus::ReadCacheableAddress(cbi.pc & PHYSICAL_MEMORY_ADDRESS_MASK);
+    u32 new_code = 0;
+    SafeReadInstruction(cbi.pc, &new_code);
     if (cbi.instruction.bits != new_code)
     {
       Log_DebugPrintf("Block 0x%08X changed at PC 0x%08X - %08X to %08X - recompiling.", block->GetPC(), cbi.pc,
@@ -395,16 +398,12 @@ bool CompileBlock(CodeBlock* block)
     __debugbreak();
 #endif
 
+  u32 last_cache_line = ICACHE_LINES;
+
   for (;;)
   {
     CodeBlockInstruction cbi = {};
-
-    const PhysicalMemoryAddress phys_addr = pc & PHYSICAL_MEMORY_ADDRESS_MASK;
-    if (!Bus::IsCacheableAddress(phys_addr))
-      break;
-
-    cbi.instruction.bits = Bus::ReadCacheableAddress(phys_addr);
-    if (!IsInvalidInstruction(cbi.instruction))
+    if (!SafeReadInstruction(pc, &cbi.instruction.bits) || !IsInvalidInstruction(cbi.instruction))
       break;
 
     cbi.pc = pc;
@@ -415,6 +414,18 @@ bool CompileBlock(CodeBlock* block)
     cbi.is_store_instruction = IsMemoryStoreInstruction(cbi.instruction);
     cbi.has_load_delay = InstructionHasLoadDelay(cbi.instruction);
     cbi.can_trap = CanInstructionTrap(cbi.instruction, InUserMode());
+
+    if (g_settings.cpu_recompiler_icache)
+    {
+      const u32 icache_line = GetICacheLine(pc);
+      if (icache_line != last_cache_line)
+      {
+        block->icache_line_count++;
+        block->icache_line_count = GetICacheFillTicks(pc);
+        last_cache_line = icache_line;
+      }
+      block->uncached_fetch_ticks += GetInstructionReadTicks(pc);
+    }
 
     // instruction is decoded now
     block->instructions.push_back(cbi);

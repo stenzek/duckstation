@@ -14,8 +14,14 @@ class HostInterface;
 class Controller
 {
 public:
+  enum class AxisType : u8
+  {
+    Full,
+    Half
+  };
+
   using ButtonList = std::vector<std::pair<std::string, s32>>;
-  using AxisList = std::vector<std::pair<std::string, s32>>;
+  using AxisList = std::vector<std::tuple<std::string, s32, AxisType>>;
   using SettingList = std::vector<SettingInfo>;
 
   Controller();

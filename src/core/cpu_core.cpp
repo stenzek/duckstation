@@ -80,6 +80,8 @@ void Reset()
   g_state.cop0_regs.sr.bits = 0;
   g_state.cop0_regs.cause.bits = 0;
 
+  ClearICache();
+
   GTE::Reset();
 
   SetPC(RESET_VECTOR);
@@ -117,14 +119,17 @@ bool DoState(StateWrapper& sw)
   sw.Do(&g_state.load_delay_value);
   sw.Do(&g_state.next_load_delay_reg);
   sw.Do(&g_state.next_load_delay_value);
-  sw.Do(&g_state.cache_control);
+  sw.Do(&g_state.cache_control.bits);
   sw.DoBytes(g_state.dcache.data(), g_state.dcache.size());
 
   if (!GTE::DoState(sw))
     return false;
 
   if (sw.IsReading())
+  {
+    ClearICache();
     PGXP::Initialize();
+  }
 
   return !sw.HasError();
 }
@@ -1416,7 +1421,6 @@ void InterpretCachedBlock(const CodeBlock& block)
 {
   // set up the state so we've already fetched the instruction
   DebugAssert(g_state.regs.pc == block.GetPC());
-
   g_state.regs.npc = block.GetPC() + 4;
 
   for (const CodeBlockInstruction& cbi : block.instructions)
