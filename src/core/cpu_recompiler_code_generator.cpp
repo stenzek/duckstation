@@ -34,7 +34,7 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
   const CodeBlockInstruction* cbi = m_block_start;
   while (cbi != m_block_end)
   {
-#ifndef Y_BUILD_CONFIG_RELEASE
+#ifdef _DEBUG
     SmallString disasm;
     DisassembleInstruction(&disasm, cbi->pc, cbi->instruction.bits, nullptr);
     Log_DebugPrintf("Compiling instruction '%s'", disasm.GetCharArray());
@@ -839,6 +839,9 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
 void CodeGenerator::BlockPrologue()
 {
   EmitStoreCPUStructField(offsetof(State, exception_raised), Value::FromConstantU8(0));
+
+  if (m_block->uncached_fetch_ticks > 0)
+    EmitICacheCheckAndUpdate();
 
   // we don't know the state of the last block, so assume load delays might be in progress
   // TODO: Pull load delay into register cache

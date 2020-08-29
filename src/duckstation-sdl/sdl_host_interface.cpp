@@ -950,6 +950,11 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
 
+  ImGui::Separator();
+
+  settings_changed |= ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
+
   if (settings_changed)
   {
     // have to apply it to the copy too, otherwise it won't save

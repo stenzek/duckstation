@@ -362,6 +362,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
+  si.SetBoolValue("CPU", "ICache", false);
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
@@ -452,7 +453,8 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     {
       if (display_osd_messages)
       {
-        AddOSDMessage(TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
+        AddOSDMessage(
+          TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
       }
       g_settings.gpu_pgxp_enable = false;
     }
@@ -510,6 +512,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       AddFormattedOSDMessage(5.0f, "Switching to %s CPU execution mode.",
                              Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
       CPU::CodeCache::SetUseRecompiler(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
+      CPU::CodeCache::Flush();
+      CPU::ClearICache();
     }
 
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
@@ -518,6 +522,15 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       AddFormattedOSDMessage(5.0f, "CPU memory exceptions %s, flushing all blocks.",
                              g_settings.cpu_recompiler_memory_exceptions ? "enabled" : "disabled");
       CPU::CodeCache::Flush();
+    }
+
+    if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter &&
+        g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
+    {
+      AddFormattedOSDMessage(5.0f, "CPU ICache %s, flushing all blocks.",
+                             g_settings.cpu_recompiler_icache ? "enabled" : "disabled");
+      CPU::CodeCache::Flush();
+      CPU::ClearICache();
     }
 
     m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);

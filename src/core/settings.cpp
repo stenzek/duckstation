@@ -92,6 +92,7 @@ void Settings::Load(SettingsInterface& si)
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
       .value_or(DEFAULT_CPU_EXECUTION_MODE);
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
+  cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
@@ -206,6 +207,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
+  si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());

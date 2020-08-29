@@ -370,7 +370,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 31> s_option_definitions = {{
+static std::array<retro_core_option_definition, 32> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -406,6 +406,12 @@ static std::array<retro_core_option_definition, 31> s_option_definitions = {{
    "Which mode to use for CPU emulation. Recompiler provides the best performance.",
    {{"Interpreter", "Interpreter"}, {"CachedIntepreter", "Cached Interpreter"}, {"Recompiler", "Recompiler"}},
    "Recompiler"},
+  {"duckstation_CPU.RecompilerICache",
+   "CPU Recompiler ICache",
+   "Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost "
+   "to performance. If games are running too fast, try enabling this option.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_GPU.Renderer",
    "GPU Renderer",
    "Which renderer to use to emulate the GPU",
