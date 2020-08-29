@@ -466,10 +466,10 @@ std::optional<s32> AnalogController::StaticGetButtonCodeByName(std::string_view 
 
 Controller::AxisList AnalogController::StaticGetAxisNames()
 {
-  return {{TRANSLATABLE("AnalogController", "LeftX"), static_cast<s32>(Axis::LeftX)},
-          {TRANSLATABLE("AnalogController", "LeftY"), static_cast<s32>(Axis::LeftY)},
-          {TRANSLATABLE("AnalogController", "RightX"), static_cast<s32>(Axis::RightX)},
-          {TRANSLATABLE("AnalogController", "RightY"), static_cast<s32>(Axis::RightY)}};
+  return {{TRANSLATABLE("AnalogController", "LeftX"), static_cast<s32>(Axis::LeftX), AxisType::Full},
+          {TRANSLATABLE("AnalogController", "LeftY"), static_cast<s32>(Axis::LeftY), AxisType::Full},
+          {TRANSLATABLE("AnalogController", "RightX"), static_cast<s32>(Axis::RightX), AxisType::Full},
+          {TRANSLATABLE("AnalogController", "RightY"), static_cast<s32>(Axis::RightY), AxisType::Full}};
 }
 
 Controller::ButtonList AnalogController::StaticGetButtonNames()

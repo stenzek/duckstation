@@ -1,7 +1,9 @@
 #pragma once
 #include "common/types.h"
+#include "core/controller.h"
 #include "ui_inputbindingdialog.h"
 #include <QtWidgets/QDialog>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -17,6 +19,8 @@ public:
   ~InputBindingDialog();
 
 protected Q_SLOTS:
+  void bindToControllerAxis(int controller_index, int axis_index, std::optional<bool> positive);
+  void bindToControllerButton(int controller_index, int button_index);
   void onAddBindingButtonClicked();
   void onRemoveBindingButtonClicked();
   void onClearBindingsButtonClicked();
@@ -52,7 +56,7 @@ protected:
   u32 m_input_listen_remaining_seconds = 0;
 };
 
-class InputButtonBindingDialog : public InputBindingDialog
+class InputButtonBindingDialog final : public InputBindingDialog
 {
   Q_OBJECT
 
@@ -62,34 +66,28 @@ public:
   ~InputButtonBindingDialog();
 
 protected:
-  bool eventFilter(QObject* watched, QEvent* event) override;
-
-private Q_SLOTS:
-  void bindToControllerAxis(int controller_index, int axis_index, bool positive);
-  void bindToControllerButton(int controller_index, int button_index);
-
-protected:
   void startListeningForInput(u32 timeout_in_seconds) override;
   void stopListeningForInput() override;
   void hookControllerInput();
   void unhookControllerInput();
 };
 
-class InputAxisBindingDialog : public InputBindingDialog
+class InputAxisBindingDialog final : public InputBindingDialog
 {
   Q_OBJECT
 
 public:
   InputAxisBindingDialog(QtHostInterface* host_interface, std::string section_name, std::string key_name,
-                           std::vector<std::string> bindings, QWidget* parent);
+                         std::vector<std::string> bindings, Controller::AxisType axis_type, QWidget* parent);
   ~InputAxisBindingDialog();
 
-private Q_SLOTS:
-  void bindToControllerAxis(int controller_index, int axis_index);
-
 protected:
+  bool eventFilter(QObject* watched, QEvent* event) override;
   void startListeningForInput(u32 timeout_in_seconds) override;
   void stopListeningForInput() override;
   void hookControllerInput();
   void unhookControllerInput();
+
+private:
+  Controller::AxisType m_axis_type;
 };

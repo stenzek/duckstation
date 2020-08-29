@@ -7,7 +7,6 @@
 #include "common/string_util.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
-#include "core/controller.h"
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
 #include "core/game_list.h"
@@ -1061,8 +1060,9 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
     const auto axis_names = Controller::GetAxisNames(ctype);
     for (const auto& it : axis_names)
     {
-      const std::string& axis_name = it.first;
-      const s32 axis_code = it.second;
+      const std::string& axis_name = std::get<std::string>(it);
+      const s32 axis_code = std::get<s32>(it);
+      const auto axis_type = std::get<Controller::AxisType>(it);
 
       const std::vector<std::string> bindings =
         si.GetStringList(category, TinyString::FromFormat("Axis%s", axis_name.c_str()));
@@ -1072,7 +1072,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         if (!SplitBinding(binding, &device, &axis))
           continue;
 
-        AddAxisToInputMap(binding, device, axis, [this, controller_index, axis_code](float value) {
+        AddAxisToInputMap(binding, device, axis, axis_type, [this, controller_index, axis_code](float value) {
           if (System::IsShutdown())
             return;
 
@@ -1204,8 +1204,44 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
 }
 
 bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const std::string_view& device,
-                                            const std::string_view& axis, InputAxisHandler handler)
+                                            const std::string_view& axis, Controller::AxisType axis_type,
+                                            InputAxisHandler handler)
 {
+  if (axis_type == Controller::AxisType::Half)
+  {
+    if (device == "Keyboard")
+    {
+      std::optional<int> key_id = GetHostKeyCode(axis);
+      if (!key_id.has_value())
+      {
+        Log_WarningPrintf("Unknown keyboard key in binding '%s'", binding.c_str());
+        return false;
+      }
+
+      m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
+      return true;
+    }
+
+    if (device == "Mouse")
+    {
+      if (StringUtil::StartsWith(axis, "Button"))
+      {
+        const std::optional<s32> button_index = StringUtil::FromChars<s32>(axis.substr(6));
+        if (!button_index.has_value())
+        {
+          Log_WarningPrintf("Invalid button in mouse binding '%s'", binding.c_str());
+          return false;
+        }
+
+        m_mouse_input_handlers.emplace(static_cast<HostMouseButton>(button_index.value()), std::move(handler));
+        return true;
+      }
+
+      Log_WarningPrintf("Malformed mouse binding '%s'", binding.c_str());
+      return false;
+    }
+  }
+
   if (StringUtil::StartsWith(device, "Controller"))
   {
     if (!m_controller_interface)
@@ -1228,6 +1264,18 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
           !m_controller_interface->BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller axis '%s' to axis", binding.c_str());
+        return false;
+      }
+
+      return true;
+    }
+    else if (StringUtil::StartsWith(axis, "Button") && axis_type == Controller::AxisType::Half)
+    {
+      const std::optional<int> button_index = StringUtil::FromChars<int>(axis.substr(6));
+      if (!button_index ||
+          !m_controller_interface->BindControllerButtonToAxis(*controller_index, *button_index, std::move(handler)))
+      {
+        Log_WarningPrintf("Failed to bind controller button '%s' to axis", binding.c_str());
         return false;
       }
 
@@ -1539,7 +1587,7 @@ void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
       si.DeleteValue(section_name, button.first.c_str());
 
     for (const auto& axis : Controller::GetAxisNames(ctype))
-      si.DeleteValue(section_name, axis.first.c_str());
+      si.DeleteValue(section_name, std::get<std::string>(axis).c_str());
 
     if (Controller::GetVibrationMotorCount(ctype) > 0)
       si.DeleteValue(section_name, "Rumble");
@@ -1583,8 +1631,8 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
 
     for (const auto& axis : Controller::GetAxisNames(*ctype))
     {
-      const auto key_name = TinyString::FromFormat("Axis%s", axis.first.c_str());
-      si.DeleteValue(section_name, axis.first.c_str());
+      const auto key_name = TinyString::FromFormat("Axis%s", std::get<std::string>(axis).c_str());
+      si.DeleteValue(section_name, std::get<std::string>(axis).c_str());
       const std::vector<std::string> bindings = profile.GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
         si.AddToStringList(section_name, key_name, binding.c_str());
@@ -1642,7 +1690,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
 
     for (const auto& axis : Controller::GetAxisNames(ctype))
     {
-      const auto key_name = TinyString::FromFormat("Axis%s", axis.first.c_str());
+      const auto key_name = TinyString::FromFormat("Axis%s", std::get<std::string>(axis).c_str());
       const std::vector<std::string> bindings = si.GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
         profile.AddToStringList(section_name, key_name, binding.c_str());
