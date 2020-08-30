@@ -50,9 +50,8 @@ public class TouchscreenControllerView extends FrameLayout implements Touchscree
         linkButton(view, R.id.controller_button_r2, "R2");
     }
 
-    private void linkButton(View view, int id, String buttonName)
-    {
-        TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView)view.findViewById(id);
+    private void linkButton(View view, int id, String buttonName) {
+        TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         buttonView.setButtonName(buttonName);
         buttonView.setButtonStateChangedListener(this);
 

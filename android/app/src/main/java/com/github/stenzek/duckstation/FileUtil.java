@@ -17,13 +17,13 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 
 public final class FileUtil {
-    static String TAG="TAG";
+    static String TAG = "TAG";
     private static final String PRIMARY_VOLUME_NAME = "primary";
 
     @Nullable
     public static String getFullPathFromTreeUri(@Nullable final Uri treeUri, Context con) {
         if (treeUri == null) return null;
-        String volumePath = getVolumePath(getVolumeIdFromTreeUri(treeUri),con);
+        String volumePath = getVolumePath(getVolumeIdFromTreeUri(treeUri), con);
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
@@ -37,8 +37,7 @@ public final class FileUtil {
                 return volumePath + documentPath;
             else
                 return volumePath + File.separator + documentPath;
-        }
-        else return volumePath;
+        } else return volumePath;
     }
 
 

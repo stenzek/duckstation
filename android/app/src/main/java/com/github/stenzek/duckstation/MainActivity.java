@@ -28,10 +28,13 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
+
+import static com.google.android.material.snackbar.Snackbar.make;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSIONS = 1;
@@ -39,15 +42,11 @@ public class MainActivity extends AppCompatActivity {
 
     private GameList mGameList;
     private ListView mGameListView;
+    private boolean mHasExternalStoragePermissions = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (!AndroidHostInterface.hasInstance() && !AndroidHostInterface.createInstance(this)) {
-            Log.i("MainActivity", "Failed to create host interface");
-            throw new RuntimeException("Failed to create host interface");
-        }
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -93,6 +92,18 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        mHasExternalStoragePermissions = checkForExternalStoragePermissions();
+        if (mHasExternalStoragePermissions)
+            completeStartup();
+    }
+
+    private void completeStartup() {
+        if (!AndroidHostInterface.hasInstance() && !AndroidHostInterface.createInstance(this)) {
+            Log.i("MainActivity", "Failed to create host interface");
+            throw new RuntimeException("Failed to create host interface");
+        }
+
         mGameList.refresh(false, false);
     }
 
@@ -122,12 +133,17 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_add_game_directory) {
+        if (id == R.id.action_resume) {
+            startEmulation(null, true);
+        } else if (id == R.id.action_start_bios) {
+            startEmulation(null, false);
+        } else if (id == R.id.action_add_game_directory) {
             startAddGameDirectory();
         } else if (id == R.id.action_scan_for_new_games) {
             mGameList.refresh(false, false);
-        } if (id == R.id.action_rescan_all_games) {
-            mGameList.refresh(true, false);
+        }
+        if (id == R.id.action_rescan_all_games) {
+            mGameList.refresh(true, true);
         }
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
@@ -190,19 +206,21 @@ public class MainActivity extends AppCompatActivity {
                                            int[] grantResults) {
         // check that all were successful
         for (int i = 0; i < grantResults.length; i++) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                Snackbar.make(mGameListView,
-                        "External storage permissions are required to start emulation.",
-                        Snackbar.LENGTH_LONG);
+            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                if (!mHasExternalStoragePermissions) {
+                    mHasExternalStoragePermissions = true;
+                    completeStartup();
+                }
+            } else {
+                Toast.makeText(this,
+                        "External storage permissions are required to use DuckStation.",
+                        Toast.LENGTH_LONG);
+                finish();
             }
         }
     }
 
     private boolean startEmulation(String bootPath, boolean resumeState) {
-        if (!checkForExternalStoragePermissions()) {
-            return false;
-        }
-
         Intent intent = new Intent(this, EmulationActivity.class);
         intent.putExtra("bootPath", bootPath);
         intent.putExtra("resumeState", resumeState);

@@ -19,25 +19,24 @@ public class TouchscreenControllerButtonView extends View {
     private String mButtonName = "";
     private ButtonStateChangedListener mListener;
 
-    public interface ButtonStateChangedListener
-    {
+    public interface ButtonStateChangedListener {
         void onButtonStateChanged(TouchscreenControllerButtonView view, boolean pressed);
     }
 
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
-        init(context,null, 0);
+        init(context, null, 0);
     }
 
     public TouchscreenControllerButtonView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context,attrs, 0);
+        init(context, attrs, 0);
     }
 
     public TouchscreenControllerButtonView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(context,attrs, defStyle);
+        init(context, attrs, defStyle);
     }
 
     private void init(Context context, AttributeSet attrs, int defStyle) {
@@ -80,15 +79,12 @@ public class TouchscreenControllerButtonView extends View {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
+    public boolean onTouchEvent(MotionEvent event) {
         final boolean oldState = mPressed;
 
-        switch (event.getAction())
-        {
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-            {
+            case MotionEvent.ACTION_POINTER_DOWN: {
                 mPressed = true;
                 invalidate();
 
@@ -99,8 +95,7 @@ public class TouchscreenControllerButtonView extends View {
             }
 
             case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-            {
+            case MotionEvent.ACTION_POINTER_UP: {
                 mPressed = false;
                 invalidate();
 
@@ -114,8 +109,7 @@ public class TouchscreenControllerButtonView extends View {
         return super.onTouchEvent(event);
     }
 
-    public boolean isPressed()
-    {
+    public boolean isPressed() {
         return mPressed;
     }
 
@@ -127,13 +121,11 @@ public class TouchscreenControllerButtonView extends View {
         mButtonName = buttonName;
     }
 
-    public int getButtonCode()
-    {
+    public int getButtonCode() {
         return mButtonCode;
     }
 
-    public void setButtonCode(int code)
-    {
+    public void setButtonCode(int code) {
         mButtonCode = code;
     }
 
@@ -153,8 +145,7 @@ public class TouchscreenControllerButtonView extends View {
         mUnpressedDrawable = unpressedDrawable;
     }
 
-    public void setButtonStateChangedListener(ButtonStateChangedListener listener)
-    {
+    public void setButtonStateChangedListener(ButtonStateChangedListener listener) {
         mListener = listener;
     }
 }

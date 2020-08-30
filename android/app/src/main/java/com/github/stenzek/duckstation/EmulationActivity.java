@@ -3,6 +3,7 @@ package com.github.stenzek.duckstation;
 import android.annotation.SuppressLint;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -11,14 +12,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
-import androidx.core.app.NavUtils;
 import androidx.preference.PreferenceManager;
 
 /**
@@ -30,77 +29,69 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
      * Settings interfaces.
      */
     SharedPreferences mPreferences;
+
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
     }
+
     private void setBooleanSetting(String key, boolean value) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putBoolean(key, value);
         editor.apply();
     }
+
     private String getStringSetting(String key, String defaultValue) {
         return mPreferences.getString(key, defaultValue);
     }
 
-    /**
-     * Touchscreen controller overlay
-     */
-    TouchscreenControllerView mTouchscreenController;
-    private boolean mTouchscreenControllerVisible = true;
+    public void reportError(String message) {
+        Log.e("EmulationActivity", message);
 
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
+        Object lock = new Object();
+        runOnUiThread(() -> {
+            // Toast.makeText(this, message, Toast.LENGTH_LONG);
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage(message)
+                    .setPositiveButton("OK", (dialog, button) -> {
+                        dialog.dismiss();
+                        synchronized (lock) {
+                            lock.notify();
+                        }
+                    })
+                    .create()
+                    .show();
+        });
 
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler();
-    private EmulationSurfaceView mContentView;
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
-
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    };
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
+        synchronized (lock) {
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
             }
         }
-    };
-    private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
+    }
+
+    public void reportMessage(String message) {
+        Log.i("EmulationActivity", message);
+        runOnUiThread(() -> {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        });
+    }
+
+    public void onEmulationStarted() {
+    }
+
+    public void onEmulationStopped() {
+        runOnUiThread(() -> {
+            finish();
+        });
+    }
+
+    public void onGameTitleChanged(String title) {
+        runOnUiThread(() -> {
+            setTitle(title);
+        });
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -114,16 +105,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             return;
         }
 
-        String bootPath = getIntent().getStringExtra("bootPath");
-        String bootSaveStatePath = getIntent().getStringExtra("bootSaveStatePath");
-        boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
+        final String bootPath = getIntent().getStringExtra("bootPath");
+        final boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
+        final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
-        if (!AndroidHostInterface.getInstance()
-                .startEmulationThread(holder.getSurface(), bootPath, bootSaveStatePath)) {
-            Log.e("EmulationActivity", "Failed to start emulation thread");
-            finishActivity(0);
-            return;
-        }
+        AndroidHostInterface.getInstance().startEmulationThread(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
     }
 
     @Override
@@ -146,14 +132,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mVisible = true;
+        mSystemUIVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
         mContentView.getHolder().addCallback(this);
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mVisible)
-                    hide();
+                if (mSystemUIVisible)
+                    hideSystemUI();
             }
         });
 
@@ -173,11 +159,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+        hideSystemUI();
+    }
 
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            AndroidHostInterface.getInstance().stopEmulationThread();
+        }
     }
 
     @Override
@@ -228,37 +219,79 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     @Override
     public void onBackPressed() {
-        if (mVisible) {
+        if (mSystemUIVisible) {
             finish();
             return;
         }
 
-        show();
+        showSystemUI();
     }
 
-    private void hide() {
+    /**
+     * Some older devices needs a small delay between UI widget updates
+     * and a change of the status and navigation bar.
+     */
+    private static final int UI_ANIMATION_DELAY = 300;
+    private final Handler mSystemUIHideHandler = new Handler();
+    private EmulationSurfaceView mContentView;
+    private final Runnable mHidePart2Runnable = new Runnable() {
+        @SuppressLint("InlinedApi")
+        @Override
+        public void run() {
+            // Delayed removal of status and navigation bar
+
+            // Note that some of these constants are new as of API 16 (Jelly Bean)
+            // and API 19 (KitKat). It is safe to use them, as they are inlined
+            // at compile-time and do nothing on earlier devices.
+            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }
+    };
+    private final Runnable mShowPart2Runnable = new Runnable() {
+        @Override
+        public void run() {
+            // Delayed display of UI elements
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.show();
+            }
+        }
+    };
+    private boolean mSystemUIVisible;
+    private final Runnable mHideRunnable = new Runnable() {
+        @Override
+        public void run() {
+            hideSystemUI();
+        }
+    };
+
+    private void hideSystemUI() {
         // Hide UI first
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.hide();
         }
-        mVisible = false;
+        mSystemUIVisible = false;
 
         // Schedule a runnable to remove the status and navigation bar after a delay
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+        mSystemUIHideHandler.removeCallbacks(mShowPart2Runnable);
+        mSystemUIHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
     }
 
     @SuppressLint("InlinedApi")
-    private void show() {
+    private void showSystemUI() {
         // Show the system bar
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        mVisible = true;
+        mSystemUIVisible = true;
 
         // Schedule a runnable to display UI elements after a delay
-        mHideHandler.removeCallbacks(mHidePart2Runnable);
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
+        mSystemUIHideHandler.removeCallbacks(mHidePart2Runnable);
+        mSystemUIHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
     }
 
     /**
@@ -266,9 +299,15 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
      * previously scheduled calls.
      */
     private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
+        mSystemUIHideHandler.removeCallbacks(mHideRunnable);
+        mSystemUIHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+
+    /**
+     * Touchscreen controller overlay
+     */
+    TouchscreenControllerView mTouchscreenController;
+    private boolean mTouchscreenControllerVisible = true;
 
     private void setTouchscreenControllerVisibility(boolean visible) {
         mTouchscreenControllerVisible = visible;

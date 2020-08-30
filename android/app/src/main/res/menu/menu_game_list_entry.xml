@@ -13,8 +13,8 @@
         android:title="Slow Boot" />
     <item
         android:id="@+id/game_list_entry_menu_load_state"
-        android:title="Load State" >
-        <menu >
+        android:title="Load State">
+        <menu>
             <item android:title="Item" />
             <item android:title="Item" />
         </menu>
