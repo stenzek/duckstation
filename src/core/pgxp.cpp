@@ -142,8 +142,8 @@ static void PGXP_InitGTE();
 // pgxp_cpu.h
 static void PGXP_InitCPU();
 static PGXP_value CPU_reg_mem[34];
-#define CPU_Hi CPU_reg[33]
-#define CPU_Lo CPU_reg[34]
+#define CPU_Hi CPU_reg[32]
+#define CPU_Lo CPU_reg[33]
 static PGXP_value CP0_reg_mem[32];
 
 static PGXP_value* CPU_reg = CPU_reg_mem;
