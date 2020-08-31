@@ -56,6 +56,9 @@ public:
   void SetInterval(TickCount interval) { m_interval = interval; }
   void SetPeriod(TickCount period) { m_period = period; }
 
+  TimingEvent* prev = nullptr;
+  TimingEvent* next = nullptr;
+
   TickCount m_downcount;
   TickCount m_time_since_last_run;
   TickCount m_period;
