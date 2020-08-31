@@ -349,7 +349,7 @@ TickCount Timers::GetTicksUntilNextInterrupt() const
       min_ticks_for_this_timer = std::min(min_ticks_for_this_timer, static_cast<TickCount>(0xFFFF - cs.counter));
 
     if (cs.external_counting_enabled) // sysclk/8 for timer 2
-      min_ticks_for_this_timer = std::max<TickCount>(1, min_ticks_for_this_timer / 8);
+      min_ticks_for_this_timer = std::max<TickCount>(1, min_ticks_for_this_timer * 8);
 
     min_ticks = std::min(min_ticks, min_ticks_for_this_timer);
   }
