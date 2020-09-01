@@ -9,6 +9,7 @@ Q_DECLARE_METATYPE(std::optional<bool>);
 
 class ByteStream;
 
+class QComboBox;
 class QFrame;
 class QKeyEvent;
 class QTableView;
@@ -53,5 +54,8 @@ void OpenURL(QWidget* parent, const QUrl& qurl);
 
 /// Opens a URL string with the default handler.
 void OpenURL(QWidget* parent, const char* url);
+
+/// Fills a combo box with resolution scale options.
+void FillComboBoxWithResolutionScales(QComboBox* cb);
 
 } // namespace QtUtils

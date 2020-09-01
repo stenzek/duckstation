@@ -70,6 +70,19 @@ bool ReadOptionalFromStream(ByteStream* stream, std::optional<T>* dest)
   return true;
 }
 
+static bool ReadStringFromStream(ByteStream* stream, std::string* dest)
+{
+  u32 size;
+  if (!stream->Read2(&size, sizeof(size)))
+    return false;
+
+  dest->resize(size);
+  if (!stream->Read2(dest->data(), size))
+    return false;
+
+  return true;
+}
+
 template<typename T>
 bool WriteOptionalToStream(ByteStream* stream, const std::optional<T>& src)
 {
@@ -83,6 +96,12 @@ bool WriteOptionalToStream(ByteStream* stream, const std::optional<T>& src)
   return stream->Write2(&src.value(), sizeof(T));
 }
 
+static bool WriteStringToStream(ByteStream* stream, const std::string& str)
+{
+  const u32 size = static_cast<u32>(str.size());
+  return (stream->Write2(&size, sizeof(size)) && (size == 0 || stream->Write2(str.data(), size)));
+}
+
 bool Entry::LoadFromStream(ByteStream* stream)
 {
   constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
@@ -91,8 +110,17 @@ bool Entry::LoadFromStream(ByteStream* stream)
   if (!stream->Read2(bits.data(), num_bytes) || !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
+      !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
+      !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
+      !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
+      !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
+      !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
+      !ReadOptionalFromStream(stream, &gpu_bilinear_texture_filtering) ||
+      !ReadOptionalFromStream(stream, &gpu_widescreen_hack) || !ReadOptionalFromStream(stream, &gpu_pgxp) ||
       !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
-      !ReadOptionalFromStream(stream, &gpu_widescreen_hack))
+      !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
+      !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
+      !ReadStringFromStream(stream, &memory_card_2_shared_path))
   {
     return false;
   }
@@ -120,8 +148,17 @@ bool Entry::SaveToStream(ByteStream* stream) const
 
   return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
-         WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, controller_1_type) &&
-         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, gpu_widescreen_hack);
+         WriteOptionalToStream(stream, display_linear_upscaling) &&
+         WriteOptionalToStream(stream, display_integer_upscaling) &&
+         WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, gpu_resolution_scale) &&
+         WriteOptionalToStream(stream, gpu_true_color) && WriteOptionalToStream(stream, gpu_scaled_dithering) &&
+         WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
+         WriteOptionalToStream(stream, gpu_bilinear_texture_filtering) &&
+         WriteOptionalToStream(stream, gpu_widescreen_hack) && WriteOptionalToStream(stream, gpu_pgxp) &&
+         WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
+         WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
+         WriteStringToStream(stream, memory_card_1_shared_path) &&
+         WriteStringToStream(stream, memory_card_2_shared_path);
 }
 
 static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA& ini)
@@ -145,6 +182,34 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "DisplayAspectRatio", nullptr);
   if (cvalue)
     entry->display_aspect_ratio = Settings::ParseDisplayAspectRatio(cvalue);
+  cvalue = ini.GetValue(section, "DisplayLinearUpscaling", nullptr);
+  if (cvalue)
+    entry->display_linear_upscaling = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "DisplayIntegerUpscaling", nullptr);
+  if (cvalue)
+    entry->display_integer_upscaling = StringUtil::FromChars<bool>(cvalue);
+
+  cvalue = ini.GetValue(section, "GPUResolutionScale", nullptr);
+  if (cvalue)
+    entry->gpu_resolution_scale = StringUtil::FromChars<u32>(cvalue);
+  cvalue = ini.GetValue(section, "GPUTrueColor", nullptr);
+  if (cvalue)
+    entry->gpu_true_color = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUScaledDithering", nullptr);
+  if (cvalue)
+    entry->gpu_scaled_dithering = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUBilinearTextureFiltering", nullptr);
+  if (cvalue)
+    entry->gpu_bilinear_texture_filtering = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUForceNTSCTimings", nullptr);
+  if (cvalue)
+    entry->gpu_force_ntsc_timings = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUWidescreenHack", nullptr);
+  if (cvalue)
+    entry->gpu_widescreen_hack = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUPGXP", nullptr);
+  if (cvalue)
+    entry->gpu_pgxp = StringUtil::FromChars<bool>(cvalue);
 
   cvalue = ini.GetValue(section, "Controller1Type", nullptr);
   if (cvalue)
@@ -153,9 +218,18 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   if (cvalue)
     entry->controller_2_type = Settings::ParseControllerTypeName(cvalue);
 
-  cvalue = ini.GetValue(section, "GPUWidescreenHack", nullptr);
+  cvalue = ini.GetValue(section, "MemoryCard1Type", nullptr);
   if (cvalue)
-    entry->gpu_widescreen_hack = StringUtil::FromChars<bool>(cvalue);
+    entry->memory_card_1_type = Settings::ParseMemoryCardTypeName(cvalue);
+  cvalue = ini.GetValue(section, "MemoryCard2Type", nullptr);
+  if (cvalue)
+    entry->memory_card_2_type = Settings::ParseMemoryCardTypeName(cvalue);
+  cvalue = ini.GetValue(section, "MemoryCard1SharedPath");
+  if (cvalue)
+    entry->memory_card_1_shared_path = cvalue;
+  cvalue = ini.GetValue(section, "MemoryCard2SharedPath");
+  if (cvalue)
+    entry->memory_card_2_shared_path = cvalue;
 }
 
 static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA& ini)
@@ -179,14 +253,46 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "DisplayAspectRatio",
                  Settings::GetDisplayAspectRatioName(entry.display_aspect_ratio.value()));
   }
+  if (entry.display_linear_upscaling.has_value())
+    ini.SetValue(section, "DisplayLinearUpscaling", entry.display_linear_upscaling.value() ? "true" : "false");
+  if (entry.display_integer_upscaling.has_value())
+    ini.SetValue(section, "DisplayIntegerUpscaling", entry.display_integer_upscaling.value() ? "true" : "false");
+
+  if (entry.gpu_resolution_scale.has_value())
+    ini.SetLongValue(section, "GPUResolutionScale", static_cast<s32>(entry.gpu_resolution_scale.value()));
+  if (entry.gpu_true_color.has_value())
+    ini.SetValue(section, "GPUTrueColor", entry.gpu_true_color.value() ? "true" : "false");
+  if (entry.gpu_scaled_dithering.has_value())
+    ini.SetValue(section, "GPUScaledDithering", entry.gpu_scaled_dithering.value() ? "true" : "false");
+  if (entry.gpu_bilinear_texture_filtering.has_value())
+  {
+    ini.SetValue(section, "GPUBilinearTextureFiltering",
+                 entry.gpu_bilinear_texture_filtering.value() ? "true" : "false");
+  }
+  if (entry.gpu_force_ntsc_timings.has_value())
+    ini.SetValue(section, "GPUForceNTSCTimings", entry.gpu_force_ntsc_timings.value() ? "true" : "false");
+  if (entry.gpu_widescreen_hack.has_value())
+    ini.SetValue(section, "GPUWidescreenHack", entry.gpu_widescreen_hack.value() ? "true" : "false");
+  if (entry.gpu_pgxp.has_value())
+    ini.SetValue(section, "GPUPGXP", entry.gpu_pgxp.value() ? "true" : "false");
 
   if (entry.controller_1_type.has_value())
     ini.SetValue(section, "Controller1Type", Settings::GetControllerTypeName(entry.controller_1_type.value()));
   if (entry.controller_2_type.has_value())
     ini.SetValue(section, "Controller2Type", Settings::GetControllerTypeName(entry.controller_2_type.value()));
 
-  if (entry.gpu_widescreen_hack.has_value())
-    ini.SetValue(section, "GPUWidescreenHack", entry.gpu_widescreen_hack.value() ? "true" : "false");
+  if (entry.controller_1_type.has_value())
+    ini.SetValue(section, "Controller1Type", Settings::GetControllerTypeName(entry.controller_1_type.value()));
+  if (entry.controller_2_type.has_value())
+    ini.SetValue(section, "Controller2Type", Settings::GetControllerTypeName(entry.controller_2_type.value()));
+  if (entry.memory_card_1_type.has_value())
+    ini.SetValue(section, "MemoryCard1Type", Settings::GetMemoryCardTypeName(entry.memory_card_1_type.value()));
+  if (entry.memory_card_2_type.has_value())
+    ini.SetValue(section, "MemoryCard2Type", Settings::GetMemoryCardTypeName(entry.memory_card_2_type.value()));
+  if (!entry.memory_card_1_shared_path.empty())
+    ini.SetValue(section, "MemoryCard1SharedPath", entry.memory_card_1_shared_path.c_str());
+  if (!entry.memory_card_2_shared_path.empty())
+    ini.SetValue(section, "MemoryCard2SharedPath", entry.memory_card_2_shared_path.c_str());
 }
 
 Database::Database() = default;
@@ -297,12 +403,39 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_crop_mode = display_crop_mode.value();
   if (display_aspect_ratio.has_value())
     g_settings.display_aspect_ratio = display_aspect_ratio.value();
+  if (display_linear_upscaling.has_value())
+    g_settings.display_linear_filtering = display_linear_upscaling.value();
+  if (display_integer_upscaling.has_value())
+    g_settings.display_integer_scaling = display_integer_upscaling.value();
+
+  if (gpu_resolution_scale.has_value())
+    g_settings.gpu_resolution_scale = gpu_resolution_scale.value();
+  if (gpu_true_color.has_value())
+    g_settings.gpu_true_color = gpu_true_color.value();
+  if (gpu_scaled_dithering.has_value())
+    g_settings.gpu_scaled_dithering = gpu_scaled_dithering.value();
+  if (gpu_force_ntsc_timings.has_value())
+    g_settings.gpu_force_ntsc_timings = gpu_force_ntsc_timings.value();
+  if (gpu_bilinear_texture_filtering)
+    g_settings.gpu_texture_filtering = gpu_bilinear_texture_filtering.value();
+  if (gpu_widescreen_hack.has_value())
+    g_settings.gpu_widescreen_hack = gpu_widescreen_hack.value();
+  if (gpu_pgxp.has_value())
+    g_settings.gpu_pgxp_enable = gpu_pgxp.value();
+
   if (controller_1_type.has_value())
     g_settings.controller_types[0] = controller_1_type.value();
   if (controller_2_type.has_value())
     g_settings.controller_types[1] = controller_2_type.value();
-  if (gpu_widescreen_hack.has_value())
-    g_settings.gpu_widescreen_hack = gpu_widescreen_hack.value();
+
+  if (memory_card_1_type.has_value())
+    g_settings.memory_card_types[0] = memory_card_1_type.value();
+  if (!memory_card_1_shared_path.empty())
+    g_settings.memory_card_paths[0] = memory_card_1_shared_path;
+  if (memory_card_2_type.has_value())
+    g_settings.memory_card_types[1] = memory_card_2_type.value();
+  if (!memory_card_1_shared_path.empty())
+    g_settings.memory_card_paths[1] = memory_card_2_shared_path;
 
   if (HasTrait(Trait::ForceInterpreter))
   {

@@ -43,6 +43,8 @@ private:
   void populateCompatibilityInfo(const std::string& game_code);
   void populateTracksInfo(const std::string& image_path);
   void populateGameSettings();
+  void populateBooleanUserSetting(QCheckBox* cb, const std::optional<bool>& value);
+  void connectBooleanUserSetting(QCheckBox* cb, std::optional<bool>* value);
   void saveGameSettings();
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
   void computeTrackHashes();

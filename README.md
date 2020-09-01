@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
 - 2020/08/25: Automated builds for macOS now available.
 - 2020/08/22: XInput controller backend added.
 - 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.

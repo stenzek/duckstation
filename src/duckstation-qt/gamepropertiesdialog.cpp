@@ -9,8 +9,12 @@
 #include "scmversion/scmversion.h"
 #include <QtGui/QClipboard>
 #include <QtGui/QGuiApplication>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
+  QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
 
 GamePropertiesDialog::GamePropertiesDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
   : QDialog(parent), m_host_interface(host_interface)
@@ -127,18 +131,33 @@ void GamePropertiesDialog::setupAdditionalUi()
       qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
+  m_ui.userResolutionScale->addItem(tr("(unchanged)"));
+  QtUtils::FillComboBoxWithResolutionScales(m_ui.userResolutionScale);
+
   m_ui.userControllerType1->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
     m_ui.userControllerType1->addItem(
       qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
-
   m_ui.userControllerType2->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
     m_ui.userControllerType2->addItem(
       qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
+  }
+
+  m_ui.userMemoryCard1Type->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(MemoryCardType::Count); i++)
+  {
+    m_ui.userMemoryCard1Type->addItem(
+      qApp->translate("MemoryCardType", Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
+  }
+  m_ui.userMemoryCard2Type->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(MemoryCardType::Count); i++)
+  {
+    m_ui.userMemoryCard2Type->addItem(
+      qApp->translate("MemoryCardType", Settings::GetMemoryCardTypeDisplayName(static_cast<MemoryCardType>(i))));
   }
 
   QGridLayout* traits_layout = new QGridLayout(m_ui.compatibilityTraits);
@@ -198,6 +217,26 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
   }
 }
 
+void GamePropertiesDialog::populateBooleanUserSetting(QCheckBox* cb, const std::optional<bool>& value)
+{
+  QSignalBlocker sb(cb);
+  if (value.has_value())
+    cb->setCheckState(value.value() ? Qt::Checked : Qt::Unchecked);
+  else
+    cb->setCheckState(Qt::PartiallyChecked);
+}
+
+void GamePropertiesDialog::connectBooleanUserSetting(QCheckBox* cb, std::optional<bool>* value)
+{
+  connect(cb, &QCheckBox::stateChanged, [this, value](int state) {
+    if (state == Qt::PartiallyChecked)
+      value->reset();
+    else
+      *value = (state == Qt::Checked);
+    saveGameSettings();
+  });
+}
+
 void GamePropertiesDialog::populateGameSettings()
 {
   const GameSettings::Entry& gs = m_game_settings;
@@ -230,6 +269,27 @@ void GamePropertiesDialog::populateGameSettings()
     m_ui.userAspectRatio->setCurrentIndex(static_cast<int>(gs.display_aspect_ratio.value()) + 1);
   }
 
+  populateBooleanUserSetting(m_ui.userLinearUpscaling, gs.display_linear_upscaling);
+  populateBooleanUserSetting(m_ui.userIntegerUpscaling, gs.display_integer_upscaling);
+
+  if (gs.gpu_resolution_scale.has_value())
+  {
+    QSignalBlocker sb(m_ui.userResolutionScale);
+    m_ui.userResolutionScale->setCurrentIndex(static_cast<int>(gs.gpu_resolution_scale.value()) + 1);
+  }
+  else
+  {
+    QSignalBlocker sb(m_ui.userResolutionScale);
+    m_ui.userResolutionScale->setCurrentIndex(0);
+  }
+
+  populateBooleanUserSetting(m_ui.userTrueColor, gs.gpu_true_color);
+  populateBooleanUserSetting(m_ui.userScaledDithering, gs.gpu_scaled_dithering);
+  populateBooleanUserSetting(m_ui.userBilinearTextureFiltering, gs.gpu_bilinear_texture_filtering);
+  populateBooleanUserSetting(m_ui.userForceNTSCTimings, gs.gpu_force_ntsc_timings);
+  populateBooleanUserSetting(m_ui.userWidescreenHack, gs.gpu_widescreen_hack);
+  populateBooleanUserSetting(m_ui.userPGXP, gs.gpu_pgxp);
+
   if (gs.controller_1_type.has_value())
   {
     QSignalBlocker sb(m_ui.userControllerType1);
@@ -240,15 +300,26 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.userControllerType2);
     m_ui.userControllerType2->setCurrentIndex(static_cast<int>(gs.controller_2_type.value()) + 1);
   }
-  if (gs.gpu_widescreen_hack.has_value())
+
+  if (gs.memory_card_1_type.has_value())
   {
-    QSignalBlocker sb(m_ui.userWidescreenHack);
-    m_ui.userWidescreenHack->setCheckState(gs.gpu_widescreen_hack.value() ? Qt::Checked : Qt::Unchecked);
+    QSignalBlocker sb(m_ui.userMemoryCard1Type);
+    m_ui.userMemoryCard1Type->setCurrentIndex(static_cast<int>(gs.memory_card_1_type.value()) + 1);
   }
-  else
+  if (gs.memory_card_2_type.has_value())
   {
-    QSignalBlocker sb(m_ui.userWidescreenHack);
-    m_ui.userWidescreenHack->setCheckState(Qt::PartiallyChecked);
+    QSignalBlocker sb(m_ui.userMemoryCard2Type);
+    m_ui.userMemoryCard2Type->setCurrentIndex(static_cast<int>(gs.memory_card_2_type.value()) + 1);
+  }
+  if (!gs.memory_card_1_shared_path.empty())
+  {
+    QSignalBlocker sb(m_ui.userMemoryCard1SharedPath);
+    m_ui.userMemoryCard1SharedPath->setText(QString::fromStdString(gs.memory_card_1_shared_path));
+  }
+  if (!gs.memory_card_2_shared_path.empty())
+  {
+    QSignalBlocker sb(m_ui.userMemoryCard2SharedPath);
+    m_ui.userMemoryCard2SharedPath->setText(QString::fromStdString(gs.memory_card_2_shared_path));
   }
 }
 
@@ -306,6 +377,24 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
 
+  connectBooleanUserSetting(m_ui.userLinearUpscaling, &m_game_settings.display_linear_upscaling);
+  connectBooleanUserSetting(m_ui.userIntegerUpscaling, &m_game_settings.display_integer_upscaling);
+
+  connect(m_ui.userResolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.gpu_resolution_scale.reset();
+    else
+      m_game_settings.gpu_resolution_scale = static_cast<u32>(index - 1);
+    saveGameSettings();
+  });
+
+  connectBooleanUserSetting(m_ui.userTrueColor, &m_game_settings.gpu_true_color);
+  connectBooleanUserSetting(m_ui.userScaledDithering, &m_game_settings.gpu_scaled_dithering);
+  connectBooleanUserSetting(m_ui.userForceNTSCTimings, &m_game_settings.gpu_force_ntsc_timings);
+  connectBooleanUserSetting(m_ui.userBilinearTextureFiltering, &m_game_settings.gpu_bilinear_texture_filtering);
+  connectBooleanUserSetting(m_ui.userWidescreenHack, &m_game_settings.gpu_widescreen_hack);
+  connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
+
   connect(m_ui.userControllerType1, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
       m_game_settings.controller_1_type.reset();
@@ -322,12 +411,49 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
 
-  connect(m_ui.userWidescreenHack, &QCheckBox::stateChanged, [this](int state) {
-    if (state == Qt::PartiallyChecked)
-      m_game_settings.gpu_widescreen_hack.reset();
+  connect(m_ui.userMemoryCard1Type, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.memory_card_1_type.reset();
     else
-      m_game_settings.gpu_widescreen_hack = (state == Qt::Checked);
+      m_game_settings.memory_card_1_type = static_cast<MemoryCardType>(index - 1);
     saveGameSettings();
+  });
+  connect(m_ui.userMemoryCard1SharedPath, &QLineEdit::textChanged, [this](const QString& text) {
+    if (text.isEmpty())
+      std::string().swap(m_game_settings.memory_card_1_shared_path);
+    else
+      m_game_settings.memory_card_1_shared_path = text.toStdString();
+    saveGameSettings();
+  });
+  connect(m_ui.userMemoryCard1SharedPathBrowse, &QPushButton::clicked, [this]() {
+    QString path = QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
+                                                qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER));
+    if (path.isEmpty())
+      return;
+
+    m_ui.userMemoryCard1SharedPath->setText(path);
+  });
+  connect(m_ui.userMemoryCard2Type, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.memory_card_2_type.reset();
+    else
+      m_game_settings.memory_card_2_type = static_cast<MemoryCardType>(index - 1);
+    saveGameSettings();
+  });
+  connect(m_ui.userMemoryCard2SharedPath, &QLineEdit::textChanged, [this](const QString& text) {
+    if (text.isEmpty())
+      std::string().swap(m_game_settings.memory_card_2_shared_path);
+    else
+      m_game_settings.memory_card_2_shared_path = text.toStdString();
+    saveGameSettings();
+  });
+  connect(m_ui.userMemoryCard2SharedPathBrowse, &QPushButton::clicked, [this]() {
+    QString path = QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
+                                                qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER));
+    if (path.isEmpty())
+      return;
+
+    m_ui.userMemoryCard2SharedPath->setText(path);
   });
 
   for (u32 i = 0; i < static_cast<u32>(GameSettings::Trait::Count); i++)
