@@ -85,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
                 menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
+                        int id = item.getItemId();
+                        if (id == R.id.game_list_entry_menu_start_game) {
+                            startEmulation(mGameList.getEntry(position).getPath(), false);
+                            return true;
+                        } else if (id == R.id.game_list_entry_menu_resume_game) {
+                            startEmulation(mGameList.getEntry(position).getPath(), true);
+                            return true;
+                        }
                         return false;
                     }
                 });
