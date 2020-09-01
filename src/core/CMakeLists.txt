@@ -24,10 +24,6 @@ add_library(core
     digital_controller.h
     dma.cpp
     dma.h
-    game_list.cpp
-    game_list.h
-    game_settings.cpp
-    game_settings.h
     gpu.cpp
     gpu.h
     gpu_commands.cpp
@@ -98,7 +94,7 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common tinyxml2 zlib vulkan-loader simpleini)
+target_link_libraries(core PUBLIC Threads::Threads common zlib vulkan-loader)
 target_link_libraries(core PRIVATE glad stb)
 
 if(WIN32)

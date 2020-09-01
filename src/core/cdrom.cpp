@@ -3,7 +3,6 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
-#include "game_list.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
@@ -446,7 +445,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
     RemoveMedia();
 
   // set the region from the system area of the disc
-  m_disc_region = GameList::GetRegionForImage(media.get());
+  m_disc_region = System::GetRegionForImage(media.get());
   Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(m_disc_region),
                  Settings::GetConsoleRegionName(System::GetRegion()));
 

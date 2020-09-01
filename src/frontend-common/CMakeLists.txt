@@ -3,6 +3,10 @@ add_library(frontend-common
   common_host_interface.h
   controller_interface.cpp
   controller_interface.h
+  game_list.cpp
+  game_list.h
+  game_settings.cpp
+  game_settings.h
   icon.cpp
   icon.h
   imgui_styles.cpp
@@ -17,7 +21,7 @@ add_library(frontend-common
   vulkan_host_display.h
 )
 
-target_link_libraries(frontend-common PUBLIC core common imgui simpleini scmversion glad vulkan-loader)
+target_link_libraries(frontend-common PUBLIC core common imgui simpleini tinyxml2 scmversion glad vulkan-loader)
 
 if(WIN32)
   target_sources(frontend-common PRIVATE

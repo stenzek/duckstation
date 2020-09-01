@@ -2,7 +2,7 @@
 #include "common/assert.h"
 #include "common/minizip_helpers.h"
 #include "common/string_util.h"
-#include "core/game_list.h"
+#include "frontend-common/game_list.h"
 #include "gamelistsearchdirectoriesmodel.h"
 #include "qthostinterface.h"
 #include "qtutils.h"

@@ -14,6 +14,8 @@
     <ClCompile Include="d3d11_host_display.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="xinput_controller_interface.cpp" />
+    <ClCompile Include="game_settings.cpp" />
+    <ClCompile Include="game_list.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -29,6 +31,8 @@
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="xinput_controller_interface.h" />
+    <ClInclude Include="game_list.h" />
+    <ClInclude Include="game_settings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

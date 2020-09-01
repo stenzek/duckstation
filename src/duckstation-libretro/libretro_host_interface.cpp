@@ -7,7 +7,6 @@
 #include "core/analog_controller.h"
 #include "core/bus.h"
 #include "core/digital_controller.h"
-#include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
 #include "libretro_audio_stream.h"
@@ -132,7 +131,7 @@ bool LibretroHostInterface::ConfirmMessage(const char* message)
 void LibretroHostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title)
 {
   // Just use the filename for now... we don't have the game list. Unless we can pull this from the frontend somehow?
-  *title = GameList::GetTitleForPath(path);
+  *title = System::GetTitleForPath(path);
   code->clear();
 }
 
@@ -1158,7 +1157,7 @@ bool LibretroHostInterface::DiskControlGetImageLabel(unsigned index, char* label
   if (image_path.empty())
     return false;
 
-  const std::string_view title = GameList::GetTitleForPath(label);
+  const std::string_view title = System::GetTitleForPath(label);
   StringUtil::Strlcpy(label, title, len);
   Log_DevPrintf("DiskControlGetImagePath(%u) -> %s", index, label);
   return true;

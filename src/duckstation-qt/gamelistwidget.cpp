@@ -1,7 +1,7 @@
 #include "gamelistwidget.h"
 #include "common/string_util.h"
-#include "core/game_list.h"
 #include "core/settings.h"
+#include "frontend-common/game_list.h"
 #include "gamelistmodel.h"
 #include "qthostinterface.h"
 #include "qtutils.h"

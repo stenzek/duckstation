@@ -45,8 +45,28 @@ enum class State
   Paused
 };
 
+/// Returns true if the filename is a PlayStation executable we can inject.
+bool IsExeFileName(const char* path);
+
+/// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
+bool IsPsfFileName(const char* path);
+
+/// Returns true if the filename is a M3U Playlist we can handle.
+bool IsM3UFileName(const char* path);
+
+/// Parses an M3U playlist, returning the entries.
+std::vector<std::string> ParseM3UFile(const char* path);
+
 /// Returns the preferred console type for a disc.
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
+
+std::string GetGameCodeForImage(CDImage* cdi);
+std::string GetGameCodeForPath(const char* image_path);
+DiscRegion GetRegionForCode(std::string_view code);
+DiscRegion GetRegionFromSystemArea(CDImage* cdi);
+DiscRegion GetRegionForImage(CDImage* cdi);
+std::optional<DiscRegion> GetRegionForPath(const char* image_path);
+std::string_view GetTitleForPath(const char* path);
 
 State GetState();
 void SetState(State new_state);

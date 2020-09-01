@@ -1,5 +1,4 @@
 #include "game_list.h"
-#include "bios.h"
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/cd_image.h"
@@ -8,12 +7,13 @@
 #include "common/log.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
-#include "host_interface.h"
-#include "settings.h"
+#include "core/bios.h"
+#include "core/host_interface.h"
+#include "core/settings.h"
+#include "core/system.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
-#include <fstream>
 #include <string_view>
 #include <tinyxml2.h>
 #include <utility>
@@ -34,238 +34,6 @@ const char* GameList::EntryCompatibilityRatingToString(GameListCompatibilityRati
   static std::array<const char*, static_cast<int>(GameListCompatibilityRating::Count)> names = {
     {"Unknown", "DoesntBoot", "CrashesInIntro", "CrashesInGame", "GraphicalAudioIssues", "NoIssues"}};
   return names[static_cast<int>(rating)];
-}
-
-std::string GameList::GetGameCodeForPath(const char* image_path)
-{
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
-  if (!cdi)
-    return {};
-
-  return GetGameCodeForImage(cdi.get());
-}
-
-std::string GameList::GetGameCodeForImage(CDImage* cdi)
-{
-  ISOReader iso;
-  if (!iso.Open(cdi, 1))
-    return {};
-
-  // Read SYSTEM.CNF
-  std::vector<u8> system_cnf_data;
-  if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data))
-    return {};
-
-  // Parse lines
-  std::vector<std::pair<std::string, std::string>> lines;
-  std::pair<std::string, std::string> current_line;
-  bool reading_value = false;
-  for (size_t pos = 0; pos < system_cnf_data.size(); pos++)
-  {
-    const char ch = static_cast<char>(system_cnf_data[pos]);
-    if (ch == '\r' || ch == '\n')
-    {
-      if (!current_line.first.empty())
-      {
-        lines.push_back(std::move(current_line));
-        current_line = {};
-        reading_value = false;
-      }
-    }
-    else if (ch == ' ' || (ch >= 0x09 && ch <= 0x0D))
-    {
-      continue;
-    }
-    else if (ch == '=' && !reading_value)
-    {
-      reading_value = true;
-    }
-    else
-    {
-      if (reading_value)
-        current_line.second.push_back(ch);
-      else
-        current_line.first.push_back(ch);
-    }
-  }
-
-  if (!current_line.first.empty())
-    lines.push_back(std::move(current_line));
-
-  // Find the BOOT line
-  auto iter = std::find_if(lines.begin(), lines.end(),
-                           [](const auto& it) { return StringUtil::Strcasecmp(it.first.c_str(), "boot") == 0; });
-  if (iter == lines.end())
-    return {};
-
-  // cdrom:\SCES_123.45;1
-  std::string code = iter->second;
-  std::string::size_type pos = code.rfind('\\');
-  if (pos != std::string::npos)
-  {
-    code.erase(0, pos + 1);
-  }
-  else
-  {
-    // cdrom:SCES_123.45;1
-    pos = code.rfind(':');
-    if (pos != std::string::npos)
-      code.erase(0, pos + 1);
-  }
-
-  pos = code.find(';');
-  if (pos != std::string::npos)
-    code.erase(pos);
-
-  // SCES_123.45 -> SCES-12345
-  for (pos = 0; pos < code.size();)
-  {
-    if (code[pos] == '.')
-    {
-      code.erase(pos, 1);
-      continue;
-    }
-
-    if (code[pos] == '_')
-      code[pos] = '-';
-    else
-      code[pos] = static_cast<char>(std::toupper(code[pos]));
-
-    pos++;
-  }
-
-  return code;
-}
-
-DiscRegion GameList::GetRegionForCode(std::string_view code)
-{
-  std::string prefix;
-  for (size_t pos = 0; pos < code.length(); pos++)
-  {
-    const int ch = std::tolower(code[pos]);
-    if (ch < 'a' || ch > 'z')
-      break;
-
-    prefix.push_back(static_cast<char>(ch));
-  }
-
-  if (prefix == "sces" || prefix == "sced" || prefix == "sles" || prefix == "sled")
-    return DiscRegion::PAL;
-  else if (prefix == "scps" || prefix == "slps" || prefix == "slpm" || prefix == "sczs" || prefix == "papx")
-    return DiscRegion::NTSC_J;
-  else if (prefix == "scus" || prefix == "slus")
-    return DiscRegion::NTSC_U;
-  else
-    return DiscRegion::Other;
-}
-
-DiscRegion GameList::GetRegionFromSystemArea(CDImage* cdi)
-{
-  // The license code is on sector 4 of the disc.
-  u8 sector[CDImage::DATA_SECTOR_SIZE];
-  if (!cdi->Seek(1, 4) || cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
-    return DiscRegion::Other;
-
-  static constexpr char ntsc_u_string[] = "          Licensed  by          Sony Computer Entertainment Amer  ica ";
-  static constexpr char ntsc_j_string[] = "          Licensed  by          Sony Computer Entertainment Inc.";
-  static constexpr char pal_string[] = "          Licensed  by          Sony Computer Entertainment Euro pe";
-
-  // subtract one for the terminating null
-  if (std::equal(ntsc_u_string, ntsc_u_string + countof(ntsc_u_string) - 1, sector))
-    return DiscRegion::NTSC_U;
-  else if (std::equal(ntsc_j_string, ntsc_j_string + countof(ntsc_j_string) - 1, sector))
-    return DiscRegion::NTSC_J;
-  else if (std::equal(pal_string, pal_string + countof(pal_string) - 1, sector))
-    return DiscRegion::PAL;
-  else
-    return DiscRegion::Other;
-}
-
-DiscRegion GameList::GetRegionForImage(CDImage* cdi)
-{
-  DiscRegion system_area_region = GetRegionFromSystemArea(cdi);
-  if (system_area_region != DiscRegion::Other)
-    return system_area_region;
-
-  std::string code = GetGameCodeForImage(cdi);
-  if (code.empty())
-    return DiscRegion::Other;
-
-  return GetRegionForCode(code);
-}
-
-std::optional<DiscRegion> GameList::GetRegionForPath(const char* image_path)
-{
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
-  if (!cdi)
-    return {};
-
-  return GetRegionForImage(cdi.get());
-}
-
-bool GameList::IsExeFileName(const char* path)
-{
-  const char* extension = std::strrchr(path, '.');
-  return (extension &&
-          (StringUtil::Strcasecmp(extension, ".exe") == 0 || StringUtil::Strcasecmp(extension, ".psexe") == 0));
-}
-
-bool GameList::IsPsfFileName(const char* path)
-{
-  const char* extension = std::strrchr(path, '.');
-  return (extension && StringUtil::Strcasecmp(extension, ".psf") == 0);
-}
-
-bool GameList::IsM3UFileName(const char* path)
-{
-  const char* extension = std::strrchr(path, '.');
-  return (extension && StringUtil::Strcasecmp(extension, ".m3u") == 0);
-}
-
-std::vector<std::string> GameList::ParseM3UFile(const char* path)
-{
-  std::ifstream ifs(path);
-  if (!ifs.is_open())
-  {
-    Log_ErrorPrintf("Failed to open %s", path);
-    return {};
-  }
-
-  std::vector<std::string> entries;
-  std::string line;
-  while (std::getline(ifs, line))
-  {
-    u32 start_offset = 0;
-    while (start_offset < line.size() && std::isspace(line[start_offset]))
-      start_offset++;
-
-    // skip comments
-    if (start_offset == line.size() || line[start_offset] == '#')
-      continue;
-
-    // strip ending whitespace
-    u32 end_offset = static_cast<u32>(line.size()) - 1;
-    while (std::isspace(line[end_offset]) && end_offset > start_offset)
-      end_offset--;
-
-    // anything?
-    if (start_offset == end_offset)
-      continue;
-
-    std::string entry_path(line.begin() + start_offset, line.begin() + end_offset + 1);
-    if (!FileSystem::IsAbsolutePath(entry_path))
-    {
-      SmallString absolute_path;
-      FileSystem::BuildPathRelativeToFile(absolute_path, path, entry_path.c_str());
-      entry_path = absolute_path;
-    }
-
-    Log_DevPrintf("Read path from m3u: '%s'", entry_path.c_str());
-    entries.push_back(std::move(entry_path));
-  }
-
-  Log_InfoPrintf("Loaded %zu paths from m3u '%s'", entries.size(), path);
-  return entries;
 }
 
 const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibilityRating rating)
@@ -290,21 +58,6 @@ static std::string_view GetFileNameFromPath(const char* path)
     return std::string_view(path, filename_end - path);
   else
     return std::string_view(filename_start + 1, filename_end - filename_start);
-}
-
-std::string_view GameList::GetTitleForPath(const char* path)
-{
-  const char* extension = std::strrchr(path, '.');
-  if (path == extension)
-    return path;
-
-  const char* path_end = path + std::strlen(path);
-  const char* title_end = extension ? (extension - 1) : (path_end);
-  const char* title_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
-  if (!title_start || title_start == path)
-    return std::string_view(path, title_end - title_start);
-  else
-    return std::string_view(title_start + 1, title_end - title_start);
 }
 
 bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
@@ -360,12 +113,12 @@ bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
   if (!FileSystem::StatFile(path, &ffd))
     return false;
 
-  std::vector<std::string> entries = ParseM3UFile(path);
+  std::vector<std::string> entries = System::ParseM3UFile(path);
   if (entries.empty())
     return false;
 
   entry->code.clear();
-  entry->title = GetTitleForPath(path);
+  entry->title = System::GetTitleForPath(path);
   entry->path = path;
   entry->region = DiscRegion::Other;
   entry->total_size = 0;
@@ -385,11 +138,11 @@ bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
     entry->total_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(entry_image->GetLBACount());
 
     if (entry->region == DiscRegion::Other)
-      entry->region = GetRegionForImage(entry_image.get());
+      entry->region = System::GetRegionForImage(entry_image.get());
 
     if (entry->compatibility_rating == GameListCompatibilityRating::Unknown)
     {
-      std::string code = GetGameCodeForImage(entry_image.get());
+      std::string code = System::GetGameCodeForImage(entry_image.get());
       const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
       if (compatibility_entry)
         entry->compatibility_rating = compatibility_entry->compatibility_rating;
@@ -403,19 +156,19 @@ bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
 
 bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 {
-  if (IsExeFileName(path.c_str()))
+  if (System::IsExeFileName(path.c_str()))
     return GetExeListEntry(path.c_str(), entry);
-  if (IsM3UFileName(path.c_str()))
+  if (System::IsM3UFileName(path.c_str()))
     return GetM3UListEntry(path.c_str(), entry);
 
   std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
   if (!cdi)
     return false;
 
-  std::string code = GetGameCodeForImage(cdi.get());
-  DiscRegion region = GetRegionFromSystemArea(cdi.get());
+  std::string code = System::GetGameCodeForImage(cdi.get());
+  DiscRegion region = System::GetRegionFromSystemArea(cdi.get());
   if (region == DiscRegion::Other)
-    region = GetRegionForCode(code);
+    region = System::GetRegionForCode(code);
 
   entry->path = path;
   entry->code = std::move(code);
@@ -428,7 +181,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   if (entry->code.empty())
   {
     // no game code, so use the filename title
-    entry->title = GetTitleForPath(path.c_str());
+    entry->title = System::GetTitleForPath(path.c_str());
     entry->compatibility_rating = GameListCompatibilityRating::Unknown;
   }
   else
@@ -444,7 +197,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
     else
     {
       Log_WarningPrintf("'%s' not found in database", entry->code.c_str());
-      entry->title = GetTitleForPath(path.c_str());
+      entry->title = System::GetTitleForPath(path.c_str());
     }
 
     const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
@@ -825,7 +578,7 @@ public:
       {
         GameListDatabaseEntry gde;
         gde.code = std::move(code);
-        gde.region = GameList::GetRegionForCode(gde.code);
+        gde.region = System::GetRegionForCode(gde.code);
         gde.title = name;
         m_database.emplace(gde.code, std::move(gde));
       }

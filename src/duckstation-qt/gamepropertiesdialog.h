@@ -1,5 +1,5 @@
 #pragma once
-#include "core/game_settings.h"
+#include "frontend-common/game_settings.h"
 #include "ui_gamepropertiesdialog.h"
 #include <QtWidgets/QDialog>
 #include <array>

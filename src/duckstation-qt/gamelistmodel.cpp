@@ -1,5 +1,6 @@
 #include "gamelistmodel.h"
 #include "common/string_util.h"
+#include "core/system.h"
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
   {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility"}};
@@ -69,7 +70,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+          const std::string_view file_title(System::GetTitleForPath(ge.path.c_str()));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -96,7 +97,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+          const std::string_view file_title(System::GetTitleForPath(ge.path.c_str()));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -234,8 +235,8 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 
     case Column_FileTitle:
     {
-      const std::string_view file_title_left(GameList::GetTitleForPath(left.path.c_str()));
-      const std::string_view file_title_right(GameList::GetTitleForPath(right.path.c_str()));
+      const std::string_view file_title_left(System::GetTitleForPath(left.path.c_str()));
+      const std::string_view file_title_right(System::GetTitleForPath(right.path.c_str()));
       if (file_title_left == file_title_right)
         return titlesLessThan(left_row, right_row, ascending);
 

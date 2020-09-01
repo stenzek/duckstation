@@ -5,8 +5,8 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "common/string_util.h"
-#include "host_interface.h"
-#include "settings.h"
+#include "core/host_interface.h"
+#include "core/settings.h"
 #include <array>
 #include <utility>
 Log_SetChannel(GameSettings);

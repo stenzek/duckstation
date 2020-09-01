@@ -4,6 +4,7 @@
 #include "cdrom.h"
 #include "common/audio_stream.h"
 #include "common/file_system.h"
+#include "common/iso_reader.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
@@ -11,7 +12,6 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "dma.h"
-#include "game_list.h"
 #include "gpu.h"
 #include "gte.h"
 #include "host_display.h"
@@ -27,6 +27,7 @@
 #include "spu.h"
 #include "timers.h"
 #include <cstdio>
+#include <fstream>
 #include <limits>
 Log_SetChannel(System);
 
@@ -203,6 +204,71 @@ float GetThrottleFrequency()
   return s_throttle_frequency;
 }
 
+bool IsExeFileName(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  return (extension &&
+          (StringUtil::Strcasecmp(extension, ".exe") == 0 || StringUtil::Strcasecmp(extension, ".psexe") == 0));
+}
+
+bool IsPsfFileName(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  return (extension && StringUtil::Strcasecmp(extension, ".psf") == 0);
+}
+
+bool IsM3UFileName(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  return (extension && StringUtil::Strcasecmp(extension, ".m3u") == 0);
+}
+
+std::vector<std::string> ParseM3UFile(const char* path)
+{
+  std::ifstream ifs(path);
+  if (!ifs.is_open())
+  {
+    Log_ErrorPrintf("Failed to open %s", path);
+    return {};
+  }
+
+  std::vector<std::string> entries;
+  std::string line;
+  while (std::getline(ifs, line))
+  {
+    u32 start_offset = 0;
+    while (start_offset < line.size() && std::isspace(line[start_offset]))
+      start_offset++;
+
+    // skip comments
+    if (start_offset == line.size() || line[start_offset] == '#')
+      continue;
+
+    // strip ending whitespace
+    u32 end_offset = static_cast<u32>(line.size()) - 1;
+    while (std::isspace(line[end_offset]) && end_offset > start_offset)
+      end_offset--;
+
+    // anything?
+    if (start_offset == end_offset)
+      continue;
+
+    std::string entry_path(line.begin() + start_offset, line.begin() + end_offset + 1);
+    if (!FileSystem::IsAbsolutePath(entry_path))
+    {
+      SmallString absolute_path;
+      FileSystem::BuildPathRelativeToFile(absolute_path, path, entry_path.c_str());
+      entry_path = absolute_path;
+    }
+
+    Log_DevPrintf("Read path from m3u: '%s'", entry_path.c_str());
+    entries.push_back(std::move(entry_path));
+  }
+
+  Log_InfoPrintf("Loaded %zu paths from m3u '%s'", entries.size(), path);
+  return entries;
+}
+
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
 {
   switch (region)
@@ -218,6 +284,188 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
     case DiscRegion::PAL:
       return ConsoleRegion::PAL;
   }
+}
+
+std::string_view GetTitleForPath(const char* path)
+{
+  const char* extension = std::strrchr(path, '.');
+  if (path == extension)
+    return path;
+
+  const char* path_end = path + std::strlen(path);
+  const char* title_end = extension ? (extension - 1) : (path_end);
+  const char* title_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
+  if (!title_start || title_start == path)
+    return std::string_view(path, title_end - title_start);
+  else
+    return std::string_view(title_start + 1, title_end - title_start);
+}
+
+std::string GetGameCodeForPath(const char* image_path)
+{
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  if (!cdi)
+    return {};
+
+  return GetGameCodeForImage(cdi.get());
+}
+
+std::string GetGameCodeForImage(CDImage* cdi)
+{
+  ISOReader iso;
+  if (!iso.Open(cdi, 1))
+    return {};
+
+  // Read SYSTEM.CNF
+  std::vector<u8> system_cnf_data;
+  if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data))
+    return {};
+
+  // Parse lines
+  std::vector<std::pair<std::string, std::string>> lines;
+  std::pair<std::string, std::string> current_line;
+  bool reading_value = false;
+  for (size_t pos = 0; pos < system_cnf_data.size(); pos++)
+  {
+    const char ch = static_cast<char>(system_cnf_data[pos]);
+    if (ch == '\r' || ch == '\n')
+    {
+      if (!current_line.first.empty())
+      {
+        lines.push_back(std::move(current_line));
+        current_line = {};
+        reading_value = false;
+      }
+    }
+    else if (ch == ' ' || (ch >= 0x09 && ch <= 0x0D))
+    {
+      continue;
+    }
+    else if (ch == '=' && !reading_value)
+    {
+      reading_value = true;
+    }
+    else
+    {
+      if (reading_value)
+        current_line.second.push_back(ch);
+      else
+        current_line.first.push_back(ch);
+    }
+  }
+
+  if (!current_line.first.empty())
+    lines.push_back(std::move(current_line));
+
+  // Find the BOOT line
+  auto iter = std::find_if(lines.begin(), lines.end(),
+                           [](const auto& it) { return StringUtil::Strcasecmp(it.first.c_str(), "boot") == 0; });
+  if (iter == lines.end())
+    return {};
+
+  // cdrom:\SCES_123.45;1
+  std::string code = iter->second;
+  std::string::size_type pos = code.rfind('\\');
+  if (pos != std::string::npos)
+  {
+    code.erase(0, pos + 1);
+  }
+  else
+  {
+    // cdrom:SCES_123.45;1
+    pos = code.rfind(':');
+    if (pos != std::string::npos)
+      code.erase(0, pos + 1);
+  }
+
+  pos = code.find(';');
+  if (pos != std::string::npos)
+    code.erase(pos);
+
+  // SCES_123.45 -> SCES-12345
+  for (pos = 0; pos < code.size();)
+  {
+    if (code[pos] == '.')
+    {
+      code.erase(pos, 1);
+      continue;
+    }
+
+    if (code[pos] == '_')
+      code[pos] = '-';
+    else
+      code[pos] = static_cast<char>(std::toupper(code[pos]));
+
+    pos++;
+  }
+
+  return code;
+}
+
+DiscRegion GetRegionForCode(std::string_view code)
+{
+  std::string prefix;
+  for (size_t pos = 0; pos < code.length(); pos++)
+  {
+    const int ch = std::tolower(code[pos]);
+    if (ch < 'a' || ch > 'z')
+      break;
+
+    prefix.push_back(static_cast<char>(ch));
+  }
+
+  if (prefix == "sces" || prefix == "sced" || prefix == "sles" || prefix == "sled")
+    return DiscRegion::PAL;
+  else if (prefix == "scps" || prefix == "slps" || prefix == "slpm" || prefix == "sczs" || prefix == "papx")
+    return DiscRegion::NTSC_J;
+  else if (prefix == "scus" || prefix == "slus")
+    return DiscRegion::NTSC_U;
+  else
+    return DiscRegion::Other;
+}
+
+DiscRegion GetRegionFromSystemArea(CDImage* cdi)
+{
+  // The license code is on sector 4 of the disc.
+  u8 sector[CDImage::DATA_SECTOR_SIZE];
+  if (!cdi->Seek(1, 4) || cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
+    return DiscRegion::Other;
+
+  static constexpr char ntsc_u_string[] = "          Licensed  by          Sony Computer Entertainment Amer  ica ";
+  static constexpr char ntsc_j_string[] = "          Licensed  by          Sony Computer Entertainment Inc.";
+  static constexpr char pal_string[] = "          Licensed  by          Sony Computer Entertainment Euro pe";
+
+  // subtract one for the terminating null
+  if (std::equal(ntsc_u_string, ntsc_u_string + countof(ntsc_u_string) - 1, sector))
+    return DiscRegion::NTSC_U;
+  else if (std::equal(ntsc_j_string, ntsc_j_string + countof(ntsc_j_string) - 1, sector))
+    return DiscRegion::NTSC_J;
+  else if (std::equal(pal_string, pal_string + countof(pal_string) - 1, sector))
+    return DiscRegion::PAL;
+  else
+    return DiscRegion::Other;
+}
+
+DiscRegion GetRegionForImage(CDImage* cdi)
+{
+  DiscRegion system_area_region = GetRegionFromSystemArea(cdi);
+  if (system_area_region != DiscRegion::Other)
+    return system_area_region;
+
+  std::string code = GetGameCodeForImage(cdi);
+  if (code.empty())
+    return DiscRegion::Other;
+
+  return GetRegionForCode(code);
+}
+
+std::optional<DiscRegion> GetRegionForPath(const char* image_path)
+{
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  if (!cdi)
+    return {};
+
+  return GetRegionForImage(cdi.get());
 }
 
 bool RecreateGPU(GPURenderer renderer)
@@ -297,8 +545,8 @@ bool Boot(const SystemBootParameters& params)
   bool psf_boot = false;
   if (!params.filename.empty())
   {
-    exe_boot = GameList::IsExeFileName(params.filename.c_str());
-    psf_boot = (!exe_boot && GameList::IsPsfFileName(params.filename.c_str()));
+    exe_boot = IsExeFileName(params.filename.c_str());
+    psf_boot = (!exe_boot && IsPsfFileName(params.filename.c_str()));
     if (exe_boot || psf_boot)
     {
       // TODO: Pull region from PSF
@@ -311,9 +559,9 @@ bool Boot(const SystemBootParameters& params)
     else
     {
       u32 playlist_index;
-      if (GameList::IsM3UFileName(params.filename.c_str()))
+      if (IsM3UFileName(params.filename.c_str()))
       {
-        s_media_playlist = GameList::ParseM3UFile(params.filename.c_str());
+        s_media_playlist = ParseM3UFile(params.filename.c_str());
         s_media_playlist_filename = params.filename;
         if (s_media_playlist.empty())
         {
@@ -350,7 +598,7 @@ bool Boot(const SystemBootParameters& params)
 
       if (s_region == ConsoleRegion::Auto)
       {
-        const DiscRegion disc_region = GameList::GetRegionForImage(media.get());
+        const DiscRegion disc_region = GetRegionForImage(media.get());
         if (disc_region != DiscRegion::Other)
         {
           s_region = GetConsoleRegionForDiscRegion(disc_region);
@@ -689,7 +937,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer)
       return false;
     }
 
-    playlist_entries = GameList::ParseM3UFile(playlist_filename.c_str());
+    playlist_entries = ParseM3UFile(playlist_filename.c_str());
     if (playlist_entries.empty())
     {
       g_host_interface->ReportFormattedError("Failed to load save state playlist entries from '%s'",
@@ -1191,7 +1439,7 @@ void UpdateMemoryCards()
       {
         if (!s_media_playlist_filename.empty() && g_settings.memory_card_use_playlist_title)
         {
-          const std::string playlist_title(GameList::GetTitleForPath(s_media_playlist_filename.c_str()));
+          const std::string playlist_title(GetTitleForPath(s_media_playlist_filename.c_str()));
           card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(playlist_title.c_str(), i));
         }
         else if (s_running_game_title.empty())

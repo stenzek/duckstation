@@ -31,7 +31,6 @@
     <ClCompile Include="cpu_recompiler_code_generator.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
     <ClCompile Include="cpu_types.cpp" />
-    <ClCompile Include="game_list.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_aarch64.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="controller.cpp" />
@@ -47,7 +46,6 @@
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="pgxp.cpp" />
-    <ClCompile Include="game_settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -82,7 +80,6 @@
     <ClInclude Include="cpu_recompiler_register_cache.h" />
     <ClInclude Include="cpu_recompiler_thunks.h" />
     <ClInclude Include="cpu_recompiler_code_generator.h" />
-    <ClInclude Include="game_list.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="analog_controller.h" />
@@ -98,6 +95,5 @@
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="pgxp.h" />
     <ClInclude Include="cpu_core_private.h" />
-    <ClInclude Include="game_settings.h" />
   </ItemGroup>
 </Project>

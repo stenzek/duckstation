@@ -1,6 +1,6 @@
 #pragma once
-#include "core/game_list.h"
 #include "core/types.h"
+#include "frontend-common/game_list.h"
 #include <QtCore/QAbstractTableModel>
 #include <QtGui/QPixmap>
 #include <array>
