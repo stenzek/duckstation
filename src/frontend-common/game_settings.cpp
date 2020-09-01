@@ -91,7 +91,8 @@ bool Entry::LoadFromStream(ByteStream* stream)
   if (!stream->Read2(bits.data(), num_bytes) || !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
-      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type))
+      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
+      !ReadOptionalFromStream(stream, &gpu_widescreen_hack))
   {
     return false;
   }
@@ -120,7 +121,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
   return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
          WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, controller_1_type) &&
-         WriteOptionalToStream(stream, controller_2_type);
+         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, gpu_widescreen_hack);
 }
 
 static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA& ini)
