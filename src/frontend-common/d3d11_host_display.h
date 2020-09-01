@@ -65,20 +65,17 @@ protected:
   virtual bool CreateResources();
   virtual void DestroyResources();
 
-#ifndef LIBRETRO
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();
 
+#ifndef LIBRETRO
   bool CreateSwapChain();
   bool CreateSwapChainRTV();
 #endif
 
   void RenderDisplay();
   void RenderSoftwareCursor();
-
-#ifndef LIBRETRO
   void RenderImGui();
-#endif
 
   void RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
                      s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
