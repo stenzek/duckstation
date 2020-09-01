@@ -25,6 +25,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisableTrueColor", TRANSLATABLE("GameSettingsTrait", "Disable True Color")},
   {"DisableUpscaling", TRANSLATABLE("GameSettingsTrait", "Disable Upscaling")},
   {"DisableScaledDithering", TRANSLATABLE("GameSettingsTrait", "Disable Scaled Dithering")},
+  {"DisableForceNTSCTimings", TRANSLATABLE("GameSettingsTrait", "Disallow Forcing NTSC Timings")},
   {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
   {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
   {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
@@ -515,6 +516,18 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
     g_settings.display_aspect_ratio = DisplayAspectRatio::R4_3;
     g_settings.gpu_widescreen_hack = false;
+  }
+
+  if (HasTrait(Trait::DisableForceNTSCTimings))
+  {
+    if (display_osd_messages && g_settings.gpu_force_ntsc_timings)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "Forcing NTSC Timings disallowed by game settings."),
+        osd_duration);
+    }
+
+    g_settings.gpu_force_ntsc_timings = false;
   }
 
   if (HasTrait(Trait::DisablePGXP))

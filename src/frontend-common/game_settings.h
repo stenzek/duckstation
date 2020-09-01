@@ -16,6 +16,7 @@ enum class Trait : u32
   DisableTrueColor,
   DisableUpscaling,
   DisableScaledDithering,
+  DisableForceNTSCTimings,
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,
