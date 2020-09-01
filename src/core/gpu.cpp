@@ -10,7 +10,9 @@
 #include "system.h"
 #include "timers.h"
 #include <cmath>
-#include <imgui.h>
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(GPU);
 
 std::unique_ptr<GPU> g_gpu;
@@ -1341,6 +1343,7 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
 
 void GPU::DrawDebugStateWindow()
 {
+#ifdef WITH_IMGUI
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(450.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
@@ -1451,6 +1454,7 @@ void GPU::DrawDebugStateWindow()
   }
 
   ImGui::End();
+#endif
 }
 
 void GPU::DrawRendererStats(bool is_idle_frame) {}

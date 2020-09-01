@@ -5,7 +5,9 @@
 #include "dma.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#include <imgui.h>
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(MDEC);
 
 MDEC g_mdec;
@@ -701,6 +703,7 @@ void MDEC::HandleSetScaleCommand()
 
 void MDEC::DrawDebugStateWindow()
 {
+#ifdef WITH_IMGUI
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(300.0f * framebuffer_scale, 350.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
@@ -738,4 +741,5 @@ void MDEC::DrawDebugStateWindow()
   }
 
   ImGui::End();
+#endif
 }

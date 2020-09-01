@@ -1,7 +1,6 @@
 add_subdirectory(cubeb)
 add_subdirectory(glad)
 add_subdirectory(googletest)
-add_subdirectory(imgui)
 add_subdirectory(libcue)
 add_subdirectory(simpleini)
 add_subdirectory(stb)
@@ -13,9 +12,12 @@ add_subdirectory(libFLAC)
 add_subdirectory(libchdr)
 add_subdirectory(xxhash)
 add_subdirectory(rapidjson)
-
 add_subdirectory(glslang)
 add_subdirectory(vulkan-loader)
+
+if(NOT BUILD_LIBRETRO_CORE)
+  add_subdirectory(imgui)
+endif()
 
 if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)

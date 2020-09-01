@@ -98,7 +98,7 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common imgui tinyxml2 zlib vulkan-loader simpleini)
+target_link_libraries(core PUBLIC Threads::Threads common tinyxml2 zlib vulkan-loader simpleini)
 target_link_libraries(core PRIVATE glad stb)
 
 if(WIN32)
@@ -125,4 +125,9 @@ elseif(${CPU_ARCH} STREQUAL "aarch64")
   message("Building AArch64 recompiler")
 else()
   message("Not building recompiler")
+endif()
+
+if(NOT BUILD_LIBRETRO_CORE)
+  target_link_libraries(core PRIVATE imgui)
+  target_compile_definitions(core PRIVATE "WITH_IMGUI=1")
 endif()

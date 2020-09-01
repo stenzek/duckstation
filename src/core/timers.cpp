@@ -4,7 +4,9 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#include <imgui.h>
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(Timers);
 
 Timers g_timers;
@@ -369,6 +371,7 @@ void Timers::UpdateSysClkEvent()
 
 void Timers::DrawDebugStateWindow()
 {
+#ifdef WITH_IMGUI
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
     {"#", "Value", "Target", "Sync", "Reset", "IRQ", "IRQRepeat", "IRQToggle", "Clock Source", "Reached"}};
@@ -437,4 +440,5 @@ void Timers::DrawDebugStateWindow()
 
   ImGui::Columns(1);
   ImGui::End();
+#endif
 }

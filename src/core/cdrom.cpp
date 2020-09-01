@@ -4,11 +4,13 @@
 #include "common/state_wrapper.h"
 #include "dma.h"
 #include "game_list.h"
-#include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(CDROM);
 
 struct CommandInfo
@@ -2341,6 +2343,7 @@ void CDROM::ClearSectorBuffers()
 
 void CDROM::DrawDebugWindow()
 {
+#ifdef WITH_IMGUI
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
@@ -2521,4 +2524,5 @@ void CDROM::DrawDebugWindow()
   }
 
   ImGui::End();
+#endif
 }

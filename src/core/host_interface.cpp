@@ -20,7 +20,6 @@
 #include <cmath>
 #include <cstring>
 #include <cwchar>
-#include <imgui.h>
 #include <stdlib.h>
 Log_SetChannel(HostInterface);
 

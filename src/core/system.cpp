@@ -27,7 +27,6 @@
 #include "spu.h"
 #include "timers.h"
 #include <cstdio>
-#include <imgui.h>
 #include <limits>
 Log_SetChannel(System);
 
