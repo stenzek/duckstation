@@ -561,6 +561,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         CPU::CodeCache::Flush();
       }
 
+      if (old_settings.gpu_pgxp_enable)
+        PGXP::Shutdown();
+
       if (g_settings.gpu_pgxp_enable)
         PGXP::Initialize();
     }

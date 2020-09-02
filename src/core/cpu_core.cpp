@@ -61,6 +61,7 @@ void Initialize()
 void Shutdown()
 {
   // GTE::Shutdown();
+  PGXP::Shutdown();
 }
 
 void Reset()
@@ -128,7 +129,8 @@ bool DoState(StateWrapper& sw)
   if (sw.IsReading())
   {
     ClearICache();
-    PGXP::Initialize();
+    if (g_settings.gpu_pgxp_enable)
+      PGXP::Initialize();
   }
 
   return !sw.HasError();

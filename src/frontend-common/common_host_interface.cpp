@@ -1411,6 +1411,8 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 
                      if (g_settings.gpu_pgxp_enable)
                        PGXP::Initialize();
+                     else
+                       PGXP::Shutdown();
 
                      // we need to recompile all blocks if pgxp is toggled on/off
                      if (g_settings.IsUsingCodeCache())
