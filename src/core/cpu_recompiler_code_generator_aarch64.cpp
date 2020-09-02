@@ -18,6 +18,7 @@ constexpr HostReg RARG1 = 0;
 constexpr HostReg RARG2 = 1;
 constexpr HostReg RARG3 = 2;
 constexpr HostReg RARG4 = 3;
+constexpr HostReg RSCRATCH = 8;
 constexpr u64 FUNCTION_CALL_STACK_ALIGNMENT = 16;
 constexpr u64 FUNCTION_CALL_SHADOW_SPACE = 32;
 constexpr u64 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
@@ -125,7 +126,7 @@ void CodeGenerator::InitHostRegs()
   // TODO: function calls mess up the parameter registers if we use them.. fix it
   // allocate nonvolatile before volatile
   m_register_cache.SetHostRegAllocationOrder(
-    {19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
+    {19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17});
   m_register_cache.SetCallerSavedHostRegs({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
   m_register_cache.SetCalleeSavedHostRegs({19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30});
   m_register_cache.SetCPUPtrHostReg(RCPUPTR);
@@ -977,8 +978,8 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
   const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(RRETURN));
+    m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RSCRATCH));
   }
   else
   {
@@ -1012,8 +1013,8 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(RRETURN));
+    m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RSCRATCH));
   }
   else
   {
@@ -1048,8 +1049,8 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(RRETURN));
+    m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RSCRATCH));
   }
   else
   {
@@ -1086,8 +1087,8 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(RRETURN));
+    m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RSCRATCH));
   }
   else
   {
@@ -1125,8 +1126,8 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
-    m_emit->Mov(GetHostReg64(RRETURN), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(RRETURN));
+    m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+    m_emit->Blr(GetHostReg64(RSCRATCH));
   }
   else
   {
