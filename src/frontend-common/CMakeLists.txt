@@ -16,6 +16,23 @@ if(WIN32)
 endif()
 
 if(NOT BUILD_LIBRETRO_CORE)
+  target_sources(imgui PRIVATE
+    imgui_impl_opengl3.h
+    imgui_impl_opengl3.cpp
+  )
+
+  target_sources(imgui PRIVATE
+    imgui_impl_vulkan.h
+    imgui_impl_vulkan.cpp
+  )
+
+  if(WIN32)
+    target_sources(imgui PRIVATE
+      imgui_impl_dx11.h
+      imgui_impl_dx11.cpp
+    )
+  endif()
+
   target_sources(frontend-common PRIVATE
     common_host_interface.cpp
     common_host_interface.h

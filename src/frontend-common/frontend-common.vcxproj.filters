@@ -16,6 +16,9 @@
     <ClCompile Include="xinput_controller_interface.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="game_list.cpp" />
+    <ClCompile Include="imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui_impl_vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -33,6 +36,9 @@
     <ClInclude Include="xinput_controller_interface.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
+    <ClInclude Include="imgui_impl_vulkan.h" />
+    <ClInclude Include="imgui_impl_dx11.h" />
+    <ClInclude Include="imgui_impl_opengl3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

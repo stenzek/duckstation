@@ -18,20 +18,3 @@ target_include_directories(imgui PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" "
 target_include_directories(imgui INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_definitions(imgui PRIVATE "imgui_STATIC")
 
-target_sources(imgui PRIVATE
-  include/imgui_impl_opengl3.h
-  src/imgui_impl_opengl3.cpp
-)
-target_link_libraries(imgui PRIVATE glad)
-
-target_sources(imgui PRIVATE
-  include/imgui_impl_vulkan.h
-  src/imgui_impl_vulkan.cpp
-)
-target_link_libraries(imgui PRIVATE vulkan-loader)
-
-if(WIN32)
-  target_sources(imgui PRIVATE include/imgui_impl_dx11.h src/imgui_impl_dx11.cpp)
-endif()
-
-

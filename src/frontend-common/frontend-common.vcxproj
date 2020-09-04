@@ -73,6 +73,9 @@
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="icon.cpp" />
+    <ClCompile Include="imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui_impl_vulkan.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
@@ -90,6 +93,9 @@
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="icon.h" />
+    <ClInclude Include="imgui_impl_dx11.h" />
+    <ClInclude Include="imgui_impl_opengl3.h" />
+    <ClInclude Include="imgui_impl_vulkan.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="opengl_host_display.h" />
