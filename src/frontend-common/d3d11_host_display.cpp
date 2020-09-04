@@ -156,15 +156,15 @@ bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y,
 {
   ID3D11ShaderResourceView* srv =
     const_cast<ID3D11ShaderResourceView*>(static_cast<const ID3D11ShaderResourceView*>(texture_handle));
-  ID3D11Resource* srv_resource;
+  ComPtr<ID3D11Resource> srv_resource;
   D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
-  srv->GetResource(&srv_resource);
+  srv->GetResource(srv_resource.GetAddressOf());
   srv->GetDesc(&srv_desc);
 
   if (!m_readback_staging_texture.EnsureSize(m_context.Get(), width, height, srv_desc.Format, false))
     return false;
 
-  m_readback_staging_texture.CopyFromTexture(m_context.Get(), srv_resource, 0, x, y, 0, 0, width, height);
+  m_readback_staging_texture.CopyFromTexture(m_context.Get(), srv_resource.Get(), 0, x, y, 0, 0, width, height);
   return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height, out_data_stride / sizeof(u32),
                                                     static_cast<u32*>(out_data));
 }
