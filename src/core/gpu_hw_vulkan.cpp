@@ -99,13 +99,6 @@ void GPU_HW_Vulkan::ResetGraphicsAPIState()
   GPU_HW::ResetGraphicsAPIState();
 
   EndRenderPass();
-
-  // vram texture is probably going to be displayed now
-  if (!IsDisplayDisabled())
-  {
-    m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
-                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  }
 }
 
 void GPU_HW_Vulkan::RestoreGraphicsAPIState()
@@ -928,9 +921,12 @@ void GPU_HW_Vulkan::ClearDisplay()
 void GPU_HW_Vulkan::UpdateDisplay()
 {
   GPU_HW::UpdateDisplay();
+  EndRenderPass();
 
   if (g_settings.debugging.show_vram)
   {
+    m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     m_host_display->SetDisplayTexture(&m_vram_texture, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
                                       m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
@@ -956,6 +952,8 @@ void GPU_HW_Vulkan::UpdateDisplay()
              (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
+      m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
       m_host_display->SetDisplayTexture(&m_vram_texture, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
                                         scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
                                         scaled_display_height);

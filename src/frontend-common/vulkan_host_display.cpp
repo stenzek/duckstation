@@ -466,7 +466,7 @@ bool VulkanHostDisplay::CreateImGuiContext()
     return false;
   }
 
-  ImGui_ImplVulkan_NewFrame();
+  ImGui_ImplVulkan_NewFrame(g_vulkan_context->GetCurrentDescriptorPool());
 #endif
 
   return true;
@@ -532,7 +532,7 @@ bool VulkanHostDisplay::Render()
 
 #ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
-    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplVulkan_NewFrame(g_vulkan_context->GetCurrentDescriptorPool());
 #endif
 
   return true;
