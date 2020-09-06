@@ -208,20 +208,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QCheckBox" name="pgxpVertexCache">
-            <property name="text">
-             <string>Vertex Cache</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="pgxpCPUMode">
-            <property name="text">
-             <string>CPU Mode</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
