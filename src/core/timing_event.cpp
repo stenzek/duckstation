@@ -207,7 +207,8 @@ static void RemoveActiveEvent(TimingEvent* event)
   else
   {
     s_active_events_head = event->next;
-    UpdateCPUDowncount();
+    if (s_active_events_head)
+      UpdateCPUDowncount();
   }
 
   event->prev = nullptr;
