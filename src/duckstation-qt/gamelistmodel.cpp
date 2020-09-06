@@ -188,7 +188,8 @@ bool GameListModel::titlesLessThan(int left_row, int right_row, bool ascending) 
 
   const GameListEntry& left = m_game_list->GetEntries().at(left_row);
   const GameListEntry& right = m_game_list->GetEntries().at(right_row);
-  return ascending ? (left.title < right.title) : (right.title < left.title);
+  return ascending ? (StringUtil::Strcasecmp(left.title.c_str(), right.title.c_str()) < 0) :
+                     (StringUtil::Strcasecmp(right.title.c_str(), left.title.c_str()) > 0);
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column,
@@ -222,15 +223,13 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     {
       if (left.code == right.code)
         return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (left.code < right.code) : (right.code > left.code);
+      return ascending ? (StringUtil::Strcasecmp(left.code.c_str(), right.code.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.code.c_str(), left.code.c_str()) > 0);
     }
 
     case Column_Title:
     {
-      if (left.title == right.title)
-        return titlesLessThan(left_row, right_row, ascending);
-
-      return ascending ? (left.title < right.title) : (right.title > left.title);
+      return titlesLessThan(left_row, right_row, ascending);
     }
 
     case Column_FileTitle:
@@ -240,7 +239,9 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       if (file_title_left == file_title_right)
         return titlesLessThan(left_row, right_row, ascending);
 
-      return ascending ? (file_title_left < file_title_right) : (file_title_right > file_title_left);
+      const std::size_t smallest = std::min(file_title_left.size(), file_title_right.size());
+      return ascending ? (StringUtil::Strncasecmp(file_title_left.data(), file_title_right.data(), smallest) < 0) :
+                         (StringUtil::Strncasecmp(file_title_right.data(), file_title_left.data(), smallest) > 0);
     }
 
     case Column_Region:
