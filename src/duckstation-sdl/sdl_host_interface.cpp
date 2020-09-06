@@ -420,6 +420,8 @@ void SDLHostInterface::Shutdown()
 {
   DestroySystem();
 
+  CommonHostInterface::Shutdown();
+
   if (m_display)
   {
     DestroyDisplay();
@@ -428,8 +430,6 @@ void SDLHostInterface::Shutdown()
 
   if (m_window)
     DestroySDLWindow();
-
-  CommonHostInterface::Shutdown();
 }
 
 std::string SDLHostInterface::GetStringSettingValue(const char* section, const char* key,
