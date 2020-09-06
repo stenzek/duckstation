@@ -1384,82 +1384,82 @@
     <message>
         <location filename="../qtutils.cpp" line="654"/>
         <source>1x</source>
-        <translation>100% {1x?}</translation>
+        <translation>1x &gt; (1024x512)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="655"/>
         <source>2x</source>
-        <translation>100% {2x?}</translation>
+        <translation>2x &gt; (2048x1024)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="656"/>
         <source>3x (for 720p)</source>
-        <translation>3x &gt; (720p)</translation>
+        <translation>3x &gt; (3072x1536)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="657"/>
         <source>4x</source>
-        <translation>100% {4x?}</translation>
+        <translation>4x &gt; (4096x2048)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="658"/>
         <source>5x (for 1080p)</source>
-        <translation>5x &gt; (1080p)</translation>
+        <translation>5x &gt; (5120x2560)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="659"/>
         <source>6x (for 1440p)</source>
-        <translation>6x &gt; (1440p)</translation>
+        <translation>6x &gt;(6144x3072)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="660"/>
         <source>7x</source>
-        <translation>100% {7x?}</translation>
+        <translation>7x &gt; (7168x3584)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="661"/>
         <source>8x</source>
-        <translation>100% {8x?}</translation>
+        <translation>8x &gt; (8192x4096)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="662"/>
         <source>9x</source>
-        <translation>100% {9x?}</translation>
+        <translation>9x &gt; (9216x4608)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="663"/>
         <source>10x</source>
-        <translation>100% {10x?}</translation>
+        <translation>10x &gt; (10240x5120)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="664"/>
         <source>11x</source>
-        <translation>100% {11x?}</translation>
+        <translation>11x &gt; (11264x5632)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="665"/>
         <source>12x</source>
-        <translation>100% {12x?}</translation>
+        <translation>12x &gt; (12288x6144)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="666"/>
         <source>13x</source>
-        <translation>100% {13x?}</translation>
+        <translation>13x &gt; (13312x6656)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="667"/>
         <source>14x</source>
-        <translation>100% {14x?}</translation>
+        <translation>14x &gt; (14336x7168)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="668"/>
         <source>15x</source>
-        <translation>100% {15x?}</translation>
+        <translation>15x &gt; (15360x7680)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="669"/>
         <source>16x</source>
-        <translation>100% {16x?}</translation>
+        <translation>16x &gt; (16384x8192)</translation>
     </message>
     <message>
         <source>%1x%2</source>
