@@ -31,6 +31,7 @@ void SaveStateSelectorUI::Close()
     return;
 
   m_open = false;
+  ClearList();
 }
 
 void SaveStateSelectorUI::ClearList()

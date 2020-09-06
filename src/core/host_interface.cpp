@@ -48,7 +48,11 @@ bool HostInterface::Initialize()
   return true;
 }
 
-void HostInterface::Shutdown() {}
+void HostInterface::Shutdown()
+{
+  if (!System::IsShutdown())
+    System::Shutdown();
+}
 
 void HostInterface::CreateAudioStream()
 {
