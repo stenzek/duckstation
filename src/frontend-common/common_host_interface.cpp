@@ -1807,8 +1807,7 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
 
   if (header.version != SAVE_STATE_VERSION)
   {
-    ssi.title = StringUtil::StdStringFromFormat("Invalid version %u (expected %u)", header.version, header.magic,
-                                                SAVE_STATE_VERSION);
+    ssi.title = StringUtil::StdStringFromFormat("Invalid version %u (expected %u)", header.version, SAVE_STATE_VERSION);
     return ssi;
   }
 
