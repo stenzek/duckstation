@@ -26,6 +26,7 @@ public:
   bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
   bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                   ButtonCallback callback) override;
+  bool BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback) override;
 
   // Changing rumble strength.
   u32 GetControllerRumbleMotorCount(int controller_index) override;
@@ -60,7 +61,6 @@ private:
   {
     XINPUT_STATE last_state = {};
     bool connected = false;
-    bool supports_rumble = false;
 
     // Scaling value of 1.30f to 1.40f recommended when using recent controllers
     float axis_scale = 1.00f;
@@ -69,12 +69,12 @@ private:
     std::array<AxisCallback, MAX_NUM_AXISES> axis_mapping;
     std::array<ButtonCallback, MAX_NUM_BUTTONS> button_mapping;
     std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
+    std::array<AxisCallback, MAX_NUM_BUTTONS> button_axis_mapping;
   };
 
   using ControllerDataArray = std::array<ControllerData, XUSER_MAX_COUNT>;
 
   void CheckForStateChanges(u32 index, const XINPUT_STATE& new_state);
-  void UpdateCapabilities(u32 index);
   bool HandleAxisEvent(u32 index, Axis axis, s32 value);
   bool HandleButtonEvent(u32 index, u32 button, bool pressed);
 
@@ -82,7 +82,6 @@ private:
 
   HMODULE m_xinput_module{};
   DWORD(WINAPI* m_xinput_get_state)(DWORD, XINPUT_STATE*);
-  DWORD(WINAPI* m_xinput_get_capabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
   DWORD(WINAPI* m_xinput_set_state)(DWORD, XINPUT_VIBRATION*);
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;

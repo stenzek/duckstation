@@ -1,16 +1,28 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.github.stenzek.duckstation.MainActivity" >
+    tools:context="com.github.stenzek.duckstation.MainActivity">
+    <group android:id="@+id/start_menu">
+        <item
+            android:id="@+id/action_resume"
+            android:title="Resume Last Session" />
+        <item
+            android:id="@+id/action_start_bios"
+            android:title="Start BIOS" />
+    </group>
     <group android:id="@+id/game_list">
-        <item android:id="@+id/action_add_game_directory"
+        <item
+            android:id="@+id/action_add_game_directory"
             android:title="Add Game Directory" />
-        <item android:id="@+id/action_scan_for_new_games"
+        <item
+            android:id="@+id/action_scan_for_new_games"
             android:title="Scan For New Games" />
-        <item android:id="@+id/action_rescan_all_games"
+        <item
+            android:id="@+id/action_rescan_all_games"
             android:title="Rescan All Games" />
     </group>
-    <item android:id="@+id/action_settings"
+    <item
+        android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"
         app:showAsAction="never" />

@@ -84,8 +84,8 @@ bool AutoStagingTexture::EnsureSize(ID3D11DeviceContext* context, u32 width, u32
   if (m_texture && m_width >= width && m_height >= height && m_format == format)
     return true;
 
-  ID3D11Device* device;
-  context->GetDevice(&device);
+  ComPtr<ID3D11Device> device;
+  context->GetDevice(device.GetAddressOf());
 
   CD3D11_TEXTURE2D_DESC new_desc(format, width, height, 1, 1, 0,
                                  for_uploading ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_STAGING,

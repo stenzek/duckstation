@@ -742,10 +742,153 @@ ALWAYS_INLINE static TickCount DoDMAAccess(u32 offset, u32& value)
 
 namespace CPU {
 
+template<bool add_ticks, bool icache_read = false, u32 word_count = 1>
+ALWAYS_INLINE_RELEASE void DoInstructionRead(PhysicalMemoryAddress address, void* data)
+{
+  using namespace Bus;
+
+  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < RAM_MIRROR_END)
+  {
+    std::memcpy(data, &g_ram[address & RAM_MASK], sizeof(u32) * word_count);
+    if constexpr (add_ticks)
+      g_state.pending_ticks += (icache_read ? 1 : 4) * word_count;
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    std::memcpy(data, &g_bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32));
+    if constexpr (add_ticks)
+      g_state.pending_ticks += m_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+  }
+  else
+  {
+    CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+    std::memset(data, 0, sizeof(u32) * word_count);
+  }
+}
+
+TickCount GetInstructionReadTicks(VirtualMemoryAddress address)
+{
+  using namespace Bus;
+
+  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < RAM_MIRROR_END)
+  {
+    return 4;
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return m_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)];
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+TickCount GetICacheFillTicks(VirtualMemoryAddress address)
+{
+  using namespace Bus;
+
+  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < RAM_MIRROR_END)
+  {
+    return 1 * (ICACHE_LINE_SIZE / sizeof(u32));
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return m_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * (ICACHE_LINE_SIZE / sizeof(u32));
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+void CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks)
+{
+  VirtualMemoryAddress current_pc = g_state.regs.pc & ICACHE_TAG_ADDRESS_MASK;
+  if (IsCachedAddress(current_pc))
+  {
+    TickCount ticks = 0;
+    TickCount cached_ticks_per_line = GetICacheFillTicks(current_pc);
+    for (u32 i = 0; i < line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const u32 line = GetICacheLine(current_pc);
+      if (g_state.icache_tags[line] != current_pc)
+      {
+        g_state.icache_tags[line] = current_pc;
+        ticks += cached_ticks_per_line;
+      }
+    }
+
+    g_state.pending_ticks += ticks;
+  }
+  else
+  {
+    g_state.pending_ticks += uncached_ticks;
+  }
+}
+
+u32 FillICache(VirtualMemoryAddress address)
+{
+  const u32 line = GetICacheLine(address);
+  g_state.icache_tags[line] = GetICacheTagForAddress(address);
+  u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
+  DoInstructionRead<true, true, 4>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
+
+  const u32 offset = GetICacheLineOffset(address);
+  u32 result;
+  std::memcpy(&result, &line_data[offset], sizeof(result));
+  return result;
+}
+
+void ClearICache()
+{
+  std::memset(g_state.icache_data.data(), 0, ICACHE_SIZE);
+  g_state.icache_tags.fill(ICACHE_INVALD_BIT | ICACHE_DISABLED_BIT);
+}
+
+ALWAYS_INLINE_RELEASE static u32 ReadICache(VirtualMemoryAddress address)
+{
+  const u32 line = GetICacheLine(address);
+  const u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
+  const u32 offset = GetICacheLineOffset(address);
+  u32 result;
+  std::memcpy(&result, &line_data[offset], sizeof(result));
+  return result;
+}
+
+ALWAYS_INLINE_RELEASE static void WriteICache(VirtualMemoryAddress address, u32 value)
+{
+  const u32 line = GetICacheLine(address);
+  const u32 offset = GetICacheLineOffset(address);
+  g_state.icache_tags[line] = GetICacheTagForAddress(address) | ICACHE_INVALD_BIT;
+  std::memcpy(&g_state.icache_data[line * ICACHE_LINE_SIZE + offset], &value, sizeof(value));
+}
+
 static void WriteCacheControl(u32 value)
 {
   Log_WarningPrintf("Cache control <- 0x%08X", value);
-  g_state.cache_control = value;
+
+  CacheControl changed_bits{g_state.cache_control.bits ^ value};
+  g_state.cache_control.bits = value;
+  if (changed_bits.icache_enable)
+  {
+    if (g_state.cache_control.icache_enable)
+    {
+      for (u32 i = 0; i < ICACHE_LINES; i++)
+        g_state.icache_tags[i] &= ~ICACHE_DISABLED_BIT;
+    }
+    else
+    {
+      for (u32 i = 0; i < ICACHE_LINES; i++)
+        g_state.icache_tags[i] |= ICACHE_DISABLED_BIT;
+    }
+  }
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -797,7 +940,10 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
       if constexpr (type == MemoryAccessType::Write)
       {
         if (g_state.cop0_regs.sr.Isc)
+        {
+          WriteICache(address, value);
           return 0;
+        }
       }
 
       address &= PHYSICAL_MEMORY_ADDRESS_MASK;
@@ -829,7 +975,7 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
       if (address == 0xFFFE0130)
       {
         if constexpr (type == MemoryAccessType::Read)
-          value = g_state.cache_control;
+          value = g_state.cache_control.bits;
         else
           WriteCacheControl(value);
 
@@ -848,6 +994,10 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
   if (address < 0x800000)
   {
     return DoRAMAccess<type, size>(address, value);
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
   }
   else if (address < EXP1_BASE)
   {
@@ -921,14 +1071,6 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
   {
     return DoEXP2Access<type, size>(address & EXP2_MASK, value);
   }
-  else if (address < BIOS_BASE)
-  {
-    return DoInvalidAccess(type, size, address, value);
-  }
-  else if (address < (BIOS_BASE + BIOS_SIZE))
-  {
-    return DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
-  }
   else
   {
     return DoInvalidAccess(type, size, address, value);
@@ -961,17 +1103,74 @@ static bool DoAlignmentCheck(VirtualMemoryAddress address)
 bool FetchInstruction()
 {
   DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
-  if (DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(g_state.regs.npc, g_state.next_instruction.bits) <
-      0)
+
+  using namespace Bus;
+
+  PhysicalMemoryAddress address = g_state.regs.npc;
+  switch (address >> 29)
   {
-    // Bus errors don't set BadVaddr.
-    RaiseException(g_state.regs.npc, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
-    return false;
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    {
+#if 0
+      // TODO: icache
+      TickCount cycles;
+      DoInstructionRead(address, cycles, g_state.next_instruction.bits);
+#else
+      if (CompareICacheTag(address))
+        g_state.next_instruction.bits = ReadICache(address);
+      else
+        g_state.next_instruction.bits = FillICache(address);
+
+#endif
+    }
+    break;
+
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      DoInstructionRead<true, false, 1>(address, &g_state.next_instruction.bits);
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+    {
+      CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+      return false;
+    }
   }
 
   g_state.regs.pc = g_state.regs.npc;
   g_state.regs.npc += sizeof(g_state.next_instruction.bits);
   return true;
+}
+
+bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value)
+{
+  switch (addr >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      DoInstructionRead<false, false, 1>(addr, value);
+      return true;
+    }
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+    {
+      return false;
+    }
+  }
 }
 
 bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value)

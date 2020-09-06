@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/game_list_entry_menu_info"
-        android:title="Show Information" />
+        android:id="@+id/game_list_entry_menu_start_game"
+        android:title="Start Game" />
     <item
-        android:id="@+id/game_list_entry_menu_fast_boot"
-        android:title="@string/settings_console_fast_boot" />
-    <item
-        android:id="@+id/game_list_entry_menu_slow_boot"
-        android:title="Slow Boot" />
-    <item
-        android:id="@+id/game_list_entry_menu_load_state"
-        android:title="Load State" >
-        <menu >
-            <item android:title="Item" />
-            <item android:title="Item" />
-        </menu>
-    </item>
+        android:id="@+id/game_list_entry_menu_resume_game"
+        android:title="Resume Game" />
 </menu>

@@ -1,5 +1,5 @@
 #pragma once
-#include "core/game_settings.h"
+#include "frontend-common/game_settings.h"
 #include "ui_gamepropertiesdialog.h"
 #include <QtWidgets/QDialog>
 #include <array>
@@ -17,7 +17,7 @@ public:
   GamePropertiesDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~GamePropertiesDialog();
 
-  static void showForEntry(QtHostInterface* host_interface, const GameListEntry* ge);
+  static void showForEntry(QtHostInterface* host_interface, const GameListEntry* ge, QWidget* parent);
 
 public Q_SLOTS:
   void clear();
@@ -43,6 +43,8 @@ private:
   void populateCompatibilityInfo(const std::string& game_code);
   void populateTracksInfo(const std::string& image_path);
   void populateGameSettings();
+  void populateBooleanUserSetting(QCheckBox* cb, const std::optional<bool>& value);
+  void connectBooleanUserSetting(QCheckBox* cb, std::optional<bool>* value);
   void saveGameSettings();
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
   void computeTrackHashes();

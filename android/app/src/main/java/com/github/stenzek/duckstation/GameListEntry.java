@@ -7,14 +7,12 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 public class GameListEntry {
-    public enum EntryType
-    {
+    public enum EntryType {
         Disc,
         PSExe
     }
 
-    public enum CompatibilityRating
-    {
+    public enum CompatibilityRating {
         Unknown,
         DoesntBoot,
         CrashesInIntro,
@@ -72,15 +70,21 @@ public class GameListEntry {
         return mTitle;
     }
 
-    public String getModifiedTime() { return mModifiedTime; }
+    public String getModifiedTime() {
+        return mModifiedTime;
+    }
 
     public DiscRegion getRegion() {
         return mRegion;
     }
 
-    public EntryType getType() { return mType; }
+    public EntryType getType() {
+        return mType;
+    }
 
-    public CompatibilityRating getCompatibilityRating() { return mCompatibilityRating; }
+    public CompatibilityRating getCompatibilityRating() {
+        return mCompatibilityRating;
+    }
 
     public void fillView(View view) {
         ((TextView) view.findViewById(R.id.game_list_view_entry_title)).setText(mTitle);

@@ -1,5 +1,5 @@
 #pragma once
-#include "types.h"
+#include "core/types.h"
 #include <bitset>
 #include <optional>
 #include <string>
@@ -12,17 +12,19 @@ enum class Trait : u32
 {
   ForceInterpreter,
   ForceSoftwareRenderer,
-  EnableInterlacing,
+  ForceInterlacing,
   DisableTrueColor,
   DisableUpscaling,
   DisableScaledDithering,
+  DisableForceNTSCTimings,
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,
-  EnablePGXPVertexCache,
-  EnablePGXPCPUMode,
+  ForcePGXPVertexCache,
+  ForcePGXPCPUMode,
   ForceDigitalController,
-  EnableRecompilerMemoryExceptions,
+  ForceRecompilerMemoryExceptions,
+  ForceRecompilerICache,
 
   Count
 };
@@ -39,9 +41,21 @@ struct Entry
   // user settings
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayAspectRatio> display_aspect_ratio;
+  std::optional<bool> display_linear_upscaling;
+  std::optional<bool> display_integer_upscaling;
+  std::optional<u32> gpu_resolution_scale;
+  std::optional<bool> gpu_true_color;
+  std::optional<bool> gpu_scaled_dithering;
+  std::optional<bool> gpu_force_ntsc_timings;
+  std::optional<bool> gpu_bilinear_texture_filtering;
+  std::optional<bool> gpu_widescreen_hack;
+  std::optional<bool> gpu_pgxp;
   std::optional<ControllerType> controller_1_type;
   std::optional<ControllerType> controller_2_type;
-  std::optional<bool> gpu_widescreen_hack;
+  std::optional<MemoryCardType> memory_card_1_type;
+  std::optional<MemoryCardType> memory_card_2_type;
+  std::string memory_card_1_shared_path;
+  std::string memory_card_2_shared_path;
 
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
   ALWAYS_INLINE void AddTrait(Trait trait) { traits[static_cast<int>(trait)] = true; }

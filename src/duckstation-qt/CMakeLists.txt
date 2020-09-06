@@ -105,3 +105,63 @@ if(WIN32)
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/qt.conf.win" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
   )
 endif()
+
+if(APPLE)
+  include(BundleUtilities)
+  set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
+
+  # Ask for an application bundle.
+  set_target_properties(duckstation-qt PROPERTIES
+    MACOSX_BUNDLE true
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+    OUTPUT_NAME DuckStation
+    )
+
+  # Copy qt.conf into the bundle
+  target_sources(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/qt.conf")
+  set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/qt.conf" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+  # Copy icon into the bundle
+  target_sources(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns")
+  set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+  # Copy Qt plugins into the bundle
+  get_target_property(qtcocoa_location Qt5::QCocoaIntegrationPlugin LOCATION)
+  target_sources(duckstation-qt PRIVATE "${qtcocoa_location}")
+  set_source_files_properties("${qtcocoa_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/platforms)
+
+  get_target_property(qtmacstyle_location Qt5::QMacStylePlugin LOCATION)
+  target_sources(duckstation-qt PRIVATE "${qtmacstyle_location}")
+  set_source_files_properties("${qtmacstyle_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/styles)
+
+  # Copy resources into the bundle
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/data")
+  file(GLOB_RECURSE resources RELATIVE "${CMAKE_SOURCE_DIR}/data" "${CMAKE_SOURCE_DIR}/data/*")
+  foreach(res ${resources})
+    target_sources(duckstation-qt PRIVATE "${CMAKE_SOURCE_DIR}/data/${res}")
+    get_filename_component(resdir "${res}" DIRECTORY)
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/data/${res}" PROPERTIES
+      MACOSX_PACKAGE_LOCATION "MacOS/${resdir}")
+    source_group("Resources" FILES "${CMAKE_SOURCE_DIR}/data/${res}")
+  endforeach()
+
+  # Copy translations into the bundle
+  add_custom_command(TARGET duckstation-qt
+                     POST_BUILD
+                     COMMAND mkdir $<TARGET_FILE_DIR:duckstation-qt>/translations
+                     COMMAND cp ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations/*.qm $<TARGET_FILE_DIR:duckstation-qt>/translations)
+
+  # Copy MoltenVK into the bundle
+  target_sources(duckstation-qt PRIVATE "${CMAKE_SOURCE_DIR}/dep/mac/MoltenVK/libvulkan.dylib")
+  set_source_files_properties("${CMAKE_SOURCE_DIR}/dep/mac/MoltenVK/libvulkan.dylib" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+
+  # Update library references to make the bundle portable
+  include(DolphinPostprocessBundle)
+  dolphin_postprocess_bundle(duckstation-qt)
+  # Fix rpath
+  add_custom_command(TARGET duckstation-qt
+    POST_BUILD COMMAND
+    ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../Frameworks/"
+    $<TARGET_FILE:duckstation-qt>)
+endif()
+

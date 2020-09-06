@@ -1,6 +1,6 @@
 #pragma once
+#include "core/types.h"
 #include "game_settings.h"
-#include "types.h"
 #include <memory>
 #include <optional>
 #include <string>
@@ -74,28 +74,8 @@ public:
   static const char* EntryTypeToString(GameListEntryType type);
   static const char* EntryCompatibilityRatingToString(GameListCompatibilityRating rating);
 
-  /// Returns true if the filename is a PlayStation executable we can inject.
-  static bool IsExeFileName(const char* path);
-
-  /// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
-  static bool IsPsfFileName(const char* path);
-
-  /// Returns true if the filename is a M3U Playlist we can handle.
-  static bool IsM3UFileName(const char* path);
-
-  /// Parses an M3U playlist, returning the entries.
-  static std::vector<std::string> ParseM3UFile(const char* path);
-
   /// Returns a string representation of a compatibility level.
   static const char* GetGameListCompatibilityRatingString(GameListCompatibilityRating rating);
-
-  static std::string GetGameCodeForImage(CDImage* cdi);
-  static std::string GetGameCodeForPath(const char* image_path);
-  static DiscRegion GetRegionForCode(std::string_view code);
-  static DiscRegion GetRegionFromSystemArea(CDImage* cdi);
-  static DiscRegion GetRegionForImage(CDImage* cdi);
-  static std::optional<DiscRegion> GetRegionForPath(const char* image_path);
-  static std::string_view GetTitleForPath(const char* path);
 
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
@@ -132,7 +112,7 @@ private:
   enum : u32
   {
     GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-    GAME_LIST_CACHE_VERSION = 6
+    GAME_LIST_CACHE_VERSION = 8
   };
 
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;

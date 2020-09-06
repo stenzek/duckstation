@@ -1,8 +1,10 @@
 #include "qtutils.h"
 #include "common/byte_stream.h"
+#include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
@@ -644,6 +646,27 @@ void OpenURL(QWidget* parent, const QUrl& qurl)
 void OpenURL(QWidget* parent, const char* url)
 {
   return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
+}
+
+void FillComboBoxWithResolutionScales(QComboBox* cb)
+{
+  cb->addItem(qApp->translate("GPUSettingsWidget", "Automatic based on window size"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "1x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "2x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "3x (for 720p)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "4x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "5x (for 1080p)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "6x (for 1440p)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "7x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "8x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "9x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "10x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "11x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "12x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "13x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "14x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "15x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "16x"));
 }
 
 } // namespace QtUtils

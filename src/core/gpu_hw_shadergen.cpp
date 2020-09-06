@@ -594,7 +594,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   WriteHeader(ss);
   DefineMacro(ss, "TRANSPARENCY", transparency != GPU_HW::BatchRenderMode::TransparencyDisabled);
   DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", transparency == GPU_HW::BatchRenderMode::OnlyOpaque);
-  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENCY", transparency == GPU_HW::BatchRenderMode::OnlyTransparent);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", transparency == GPU_HW::BatchRenderMode::OnlyTransparent);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
               actual_texture_mode == GPU::TextureMode::Palette4Bit ||
@@ -889,18 +889,23 @@ void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
     }
     else
     {
-      #if TRANSPARENCY_ONLY_TRANSPARENCY
+      #if TRANSPARENCY_ONLY_TRANSPARENT
         discard;
       #endif
 
       #if TRANSPARENCY_ONLY_OPAQUE
-        // We don't output the second color here because it's not used.
+        // We don't output the second color here because it's not used (except for filtering).
         o_col0 = float4(color, oalpha);
-      #elif USE_DUAL_SOURCE
-        o_col0 = float4(color, oalpha);
-        o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
+        #if USE_DUAL_SOURCE
+          o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
+        #endif
       #else
-        o_col0 = float4(color, 1.0 - ialpha);
+        #if USE_DUAL_SOURCE
+          o_col0 = float4(color, oalpha);
+          o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
+        #else
+          o_col0 = float4(color, 1.0 - ialpha);
+        #endif
       #endif
 
       o_depth = oalpha * v_pos.z;

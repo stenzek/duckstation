@@ -24,6 +24,7 @@
 namespace PGXP {
 
 void Initialize();
+void Shutdown();
 
 // -- GTE functions
 // Transforms

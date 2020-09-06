@@ -420,6 +420,8 @@ void SDLHostInterface::Shutdown()
 {
   DestroySystem();
 
+  CommonHostInterface::Shutdown();
+
   if (m_display)
   {
     DestroyDisplay();
@@ -428,8 +430,6 @@ void SDLHostInterface::Shutdown()
 
   if (m_window)
     DestroySDLWindow();
-
-  CommonHostInterface::Shutdown();
 }
 
 std::string SDLHostInterface::GetStringSettingValue(const char* section, const char* key,
@@ -949,6 +949,11 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
   settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
+
+  ImGui::Separator();
+
+  settings_changed |= ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   if (settings_changed)
   {

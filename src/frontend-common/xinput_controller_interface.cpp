@@ -23,15 +23,19 @@ ControllerInterface::Backend XInputControllerInterface::GetBackend() const
 
 bool XInputControllerInterface::Initialize(CommonHostInterface* host_interface)
 {
-  m_xinput_module = LoadLibraryA("xinput1_4.dll");
+  m_xinput_module = LoadLibraryW(L"xinput1_4");
   if (!m_xinput_module)
   {
-    m_xinput_module = LoadLibraryA("xinput9_1_0.dll");
-    if (!m_xinput_module)
-    {
-      Log_ErrorPrintf("Failed to load XInput module.");
-      return false;
-    }
+    m_xinput_module = LoadLibraryW(L"xinput1_3");
+  }
+  if (!m_xinput_module)
+  {
+    m_xinput_module = LoadLibraryW(L"xinput9_1_0");
+  }
+  if (!m_xinput_module)
+  {
+    Log_ErrorPrintf("Failed to load XInput module.");
+    return false;
   }
 
   // Try the hidden version of XInputGetState(), which lets us query the guide button.
@@ -39,11 +43,9 @@ bool XInputControllerInterface::Initialize(CommonHostInterface* host_interface)
     reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, reinterpret_cast<LPCSTR>(100)));
   if (!m_xinput_get_state)
     reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, "XInputGetState"));
-  m_xinput_get_capabilities =
-    reinterpret_cast<decltype(m_xinput_get_capabilities)>(GetProcAddress(m_xinput_module, "XInputGetCapabilities"));
   m_xinput_set_state =
     reinterpret_cast<decltype(m_xinput_set_state)>(GetProcAddress(m_xinput_module, "XInputSetState"));
-  if (!m_xinput_get_state || !m_xinput_get_capabilities || !m_xinput_set_state)
+  if (!m_xinput_get_state || !m_xinput_set_state)
   {
     Log_ErrorPrintf("Failed to get XInput function pointers.");
     return false;
@@ -72,7 +74,6 @@ void XInputControllerInterface::PollEvents()
       if (!cd.connected)
       {
         cd.connected = true;
-        UpdateCapabilities(i);
         OnControllerConnected(static_cast<int>(i));
       }
 
@@ -155,17 +156,6 @@ void XInputControllerInterface::CheckForStateChanges(u32 index, const XINPUT_STA
   }
 }
 
-void XInputControllerInterface::UpdateCapabilities(u32 index)
-{
-  ControllerData& cd = m_controllers[index];
-
-  XINPUT_CAPABILITIES caps = {};
-  m_xinput_get_capabilities(index, 0, &caps);
-  cd.supports_rumble = (caps.Flags & 0x0001 /* XINPUT_CAPS_FFB_SUPPORTED */);
-
-  Log_InfoPrintf("Controller %u: Rumble is %s", index, cd.supports_rumble ? "supported" : "not supported");
-}
-
 void XInputControllerInterface::ClearBindings()
 {
   for (auto& it : m_controllers)
@@ -211,6 +201,19 @@ bool XInputControllerInterface::BindControllerAxisToButton(int controller_index,
     return false;
 
   m_controllers[controller_index].axis_button_mapping[axis_number][BoolToUInt8(direction)] = std::move(callback);
+  return true;
+}
+
+bool XInputControllerInterface::BindControllerButtonToAxis(int controller_index, int button_number,
+                                                           AxisCallback callback)
+{
+  if (static_cast<u32>(controller_index) >= m_controllers.size() || !m_controllers[controller_index].connected)
+    return false;
+
+  if (button_number < 0 || button_number >= MAX_NUM_BUTTONS)
+    return false;
+
+  m_controllers[controller_index].button_axis_mapping[button_number] = std::move(callback);
   return true;
 }
 
@@ -265,10 +268,18 @@ bool XInputControllerInterface::HandleButtonEvent(u32 index, u32 button, bool pr
     return true;
 
   const ButtonCallback& cb = m_controllers[index].button_mapping[button];
-  if (!cb)
-    return false;
+  if (cb)
+  {
+    cb(pressed);
+    return true;
+  }
 
-  cb(pressed);
+  // Assume a half-axis, i.e. in 0..1 range
+  const AxisCallback& axis_cb = m_controllers[index].button_axis_mapping[button];
+  if (axis_cb)
+  {
+    axis_cb(pressed ? 1.0f : 0.0f);
+  }
   return true;
 }
 
@@ -277,7 +288,7 @@ u32 XInputControllerInterface::GetControllerRumbleMotorCount(int controller_inde
   if (static_cast<u32>(controller_index) >= XUSER_MAX_COUNT || !m_controllers[controller_index].connected)
     return 0;
 
-  return m_controllers[controller_index].supports_rumble ? NUM_RUMBLE_MOTORS : 0;
+  return NUM_RUMBLE_MOTORS;
 }
 
 void XInputControllerInterface::SetControllerRumbleStrength(int controller_index, const float* strengths,

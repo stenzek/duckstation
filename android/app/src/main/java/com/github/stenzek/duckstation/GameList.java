@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import androidx.preference.PreferenceManager;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Set;
 
 public class GameList {
@@ -25,10 +27,19 @@ public class GameList {
         mEntries = new GameListEntry[0];
     }
 
+    private class GameListEntryComparator implements Comparator<GameListEntry> {
+        @Override
+        public int compare(GameListEntry left, GameListEntry right) {
+            return left.getTitle().compareTo(right.getTitle());
+        }
+    }
+
+
     public void refresh(boolean invalidateCache, boolean invalidateDatabase) {
         // Search and get entries from native code
         AndroidHostInterface.getInstance().refreshGameList(invalidateCache, invalidateDatabase);
         mEntries = AndroidHostInterface.getInstance().getGameListEntries();
+        Arrays.sort(mEntries, new GameListEntryComparator());
         mAdapter.notifyDataSetChanged();
     }
 

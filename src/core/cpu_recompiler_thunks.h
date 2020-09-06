@@ -14,6 +14,7 @@ namespace Recompiler::Thunks {
 //////////////////////////////////////////////////////////////////////////
 bool InterpretInstruction();
 bool InterpretInstructionPGXP();
+void CheckAndUpdateICache(u32 pc, u32 line_count);
 
 // Memory access functions for the JIT - MSB is set on exception.
 u64 ReadMemoryByte(u32 address);

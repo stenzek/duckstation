@@ -1,6 +1,7 @@
 #include "gpusettingswidget.h"
 #include "core/gpu.h"
 #include "core/settings.h"
+#include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
@@ -62,14 +63,15 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"), Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER),
-    tr(
-      "Chooses the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
-      "Direct3D 11 and OpenGL hardware backends may be available. <br>The software renderer offers the best compatibility, "
-      "but is the slowest and does not offer any enhancements."));
+    tr("Chooses the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
+       "Direct3D 11 and OpenGL hardware backends may be available. <br>The software renderer offers the best "
+       "compatibility, "
+       "but is the slowest and does not offer any enhancements."));
   dialog->registerWidgetHelp(
     m_ui.adapter, tr("Adapter"), tr("(Default)"),
     tr("If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware "
-       "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device."));
+       "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default "
+       "device."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"), QStringLiteral("4:3"),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default "
@@ -82,14 +84,16 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
        "compromise between stability and hiding black borders."));
   dialog->registerWidgetHelp(
     m_ui.disableInterlacing, tr("Disable Interlacing (force progressive render/scan)"), tr("Unchecked"),
-    tr("Forces the rendering and display of frames to progressive mode. <br>This removes the \"combing\" effect seen in "
-       "480i games by rendering them in 480p. Usually safe to enable.<br> "
-       "<b><u>May not be compatible with all games.</u></b>"));
-  dialog->registerWidgetHelp(
-    m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
-    tr("Uses bilinear texture filtering when displaying the console's framebuffer to the screen. <br>Disabling filtering "
-       "will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. <br>The option will be less "
-       "noticable the higher the resolution scale."));
+    tr(
+      "Forces the rendering and display of frames to progressive mode. <br>This removes the \"combing\" effect seen in "
+      "480i games by rendering them in 480p. Usually safe to enable.<br> "
+      "<b><u>May not be compatible with all games.</u></b>"));
+  dialog->registerWidgetHelp(m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
+                             tr("Uses bilinear texture filtering when displaying the console's framebuffer to the "
+                                "screen. <br>Disabling filtering "
+                                "will producer a sharper, blockier/pixelated image. Enabling will smooth out the "
+                                "image. <br>The option will be less "
+                                "noticable the higher the resolution scale."));
   dialog->registerWidgetHelp(
     m_ui.displayIntegerScaling, tr("Integer Upscaling"), tr("Unchecked"),
     tr("Adds padding to the display area to ensure that the ratio between pixels on the host to "
@@ -114,12 +118,12 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     m_ui.scaledDithering, tr("Scaled Dithering (scale dither pattern to resolution)"), tr("Checked"),
     tr("Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "
        "obvious at higher resolutions. <br>Usually safe to enable, and only supported by the hardware renderers."));
-  dialog->registerWidgetHelp(
-    m_ui.forceNTSCTimings, tr("Force NTSC Timings (60hz-on-PAL)"), tr("Unchecked"),
-    tr(
-      "Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. <br>For most games which "
-      "have a speed tied to the framerate, this will result in the game running approximately 17% faster. <br>For variable "
-      "frame rate games, it may not affect the speed."));
+  dialog->registerWidgetHelp(m_ui.forceNTSCTimings, tr("Force NTSC Timings (60hz-on-PAL)"), tr("Unchecked"),
+                             tr("Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at "
+                                "60hz. <br>For most games which "
+                                "have a speed tied to the framerate, this will result in the game running "
+                                "approximately 17% faster. <br>For variable "
+                                "frame rate games, it may not affect the speed."));
   dialog->registerWidgetHelp(
     m_ui.linearTextureFiltering, tr("Bilinear Texture Filtering"), tr("Unchecked"),
     tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. <br>Will have a "
@@ -128,7 +132,8 @@ GPUSettingsWidget::GPUSettingsWidget(QtHostInterface* host_interface, QWidget* p
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
        "increasing the field of view from 4:3 to 16:9 in 3D games. <br>For 2D games, or games which "
-       "use pre-rendered backgrounds, this enhancement will not work as expected. <br><b><u>May not be compatible with all games.</u></b>"));
+       "use pre-rendered backgrounds, this enhancement will not work as expected. <br><b><u>May not be compatible with "
+       "all games.</u></b>"));
   dialog->registerWidgetHelp(
     m_ui.pgxpEnable, tr("Geometry Correction"), tr("Unchecked"),
     tr("Reduces \"wobbly\" polygons and \"warping\" textures that are common in PS1 games. <br>Only "
@@ -178,29 +183,7 @@ void GPUSettingsWidget::setupAdditionalUi()
       qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
-  std::array<QString, GPU::MAX_RESOLUTION_SCALE + 1> resolution_suffixes = {{
-    QString(),          // auto
-    QString(),          // 1x
-    QString(),          // 2x
-    tr(" (for 720p)"),  // 3x
-    QString(),          // 4x
-    tr(" (for 1080p)"), // 5x
-    tr(" (for 1440p)"), // 6x
-    QString(),          // 7x
-    QString(),          // 8x
-    tr(" (for 4K)"),    // 9x
-    QString(),          // 10x
-    QString(),          // 11x
-    QString(),          // 12x
-    QString(),          // 13x
-    QString(),          // 14x
-    QString(),          // 15x
-    QString()           // 16x
-  }};
-
-  m_ui.resolutionScale->addItem(tr("Automatic based on window size"));
-  for (u32 i = 1; i <= GPU::MAX_RESOLUTION_SCALE; i++)
-    m_ui.resolutionScale->addItem(tr("%1x%2").arg(i).arg(resolution_suffixes[i]));
+  QtUtils::FillComboBoxWithResolutionScales(m_ui.resolutionScale);
 }
 
 void GPUSettingsWidget::populateGPUAdapters()

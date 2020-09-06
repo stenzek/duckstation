@@ -73,7 +73,7 @@ public:
   void WriteTexel(u32 x, u32 y, const void* in_ptr);
 
 private:
-  bool PrepareForAccess();
+  void PrepareForAccess();
 
   StagingBuffer m_staging_buffer;
   u64 m_flush_fence_counter = 0;

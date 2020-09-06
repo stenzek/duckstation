@@ -21,7 +21,7 @@ if(WIN32)
   )
 endif()
 
-target_link_libraries(duckstation_libretro PRIVATE core common imgui glad scmversion frontend-common vulkan-loader libretro-common)
+target_link_libraries(duckstation_libretro PRIVATE core common glad scmversion frontend-common vulkan-loader libretro-common)
 
 # no lib prefix
 set_target_properties(duckstation_libretro PROPERTIES PREFIX "")

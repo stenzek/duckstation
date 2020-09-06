@@ -1,10 +1,12 @@
 #include "opengl_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "imgui.h"
 #include <array>
-#include <imgui_impl_opengl3.h>
 #include <tuple>
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#endif
 Log_SetChannel(LibretroOpenGLHostDisplay);
 
 namespace FrontendCommon {
@@ -219,8 +221,10 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
   if (!CreateResources())
     return false;
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext() && !CreateImGuiContext())
     return false;
+#endif
 
   return true;
 }
@@ -246,8 +250,10 @@ void OpenGLHostDisplay::DestroyRenderDevice()
   if (!m_gl_context)
     return;
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     DestroyImGuiContext();
+#endif
 
   DestroyResources();
 
@@ -269,11 +275,13 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
   m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
+#endif
 
   return true;
 }
@@ -287,11 +295,13 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
   m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
   m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
+#endif
 }
 
 void OpenGLHostDisplay::DestroyRenderSurface()
@@ -306,6 +316,7 @@ void OpenGLHostDisplay::DestroyRenderSurface()
 
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
+#ifdef WITH_IMGUI
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
@@ -313,12 +324,15 @@ bool OpenGLHostDisplay::CreateImGuiContext()
     return false;
 
   ImGui_ImplOpenGL3_NewFrame();
+#endif
   return true;
 }
 
 void OpenGLHostDisplay::DestroyImGuiContext()
 {
+#ifdef WITH_IMGUI
   ImGui_ImplOpenGL3_Shutdown();
+#endif
 }
 
 bool OpenGLHostDisplay::CreateResources()
@@ -424,24 +438,30 @@ bool OpenGLHostDisplay::Render()
 
   RenderDisplay();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     RenderImGui();
+#endif
 
   RenderSoftwareCursor();
 
   m_gl_context->SwapBuffers();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     ImGui_ImplOpenGL3_NewFrame();
+#endif
 
   return true;
 }
 
 void OpenGLHostDisplay::RenderImGui()
 {
+#ifdef WITH_IMGUI
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   GL::Program::ResetLastProgram();
+#endif
 }
 
 void OpenGLHostDisplay::RenderDisplay()

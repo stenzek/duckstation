@@ -209,12 +209,9 @@ Controller::AxisList NamcoGunCon::StaticGetAxisNames()
 
 Controller::ButtonList NamcoGunCon::StaticGetButtonNames()
 {
-#define B(n)                                                                                                           \
-  {                                                                                                                    \
-#n, static_cast < s32>(Button::n)                                                                                  \
-  }
-  return {B(Trigger), B(A), B(B)};
-#undef B
+  return {{TRANSLATABLE("NamcoGunCon", "Trigger"), static_cast<s32>(Button::Trigger)},
+          {TRANSLATABLE("NamcoGunCon", "A"), static_cast<s32>(Button::A)},
+          {TRANSLATABLE("NamcoGunCon", "B"), static_cast<s32>(Button::B)}};
 }
 
 u32 NamcoGunCon::StaticGetVibrationMotorCount()

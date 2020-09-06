@@ -19,7 +19,32 @@ enum : PhysicalMemoryAddress
   DCACHE_LOCATION = UINT32_C(0x1F800000),
   DCACHE_LOCATION_MASK = UINT32_C(0xFFFFFC00),
   DCACHE_OFFSET_MASK = UINT32_C(0x000003FF),
-  DCACHE_SIZE = UINT32_C(0x00000400)
+  DCACHE_SIZE = UINT32_C(0x00000400),
+  ICACHE_SIZE = UINT32_C(0x00001000),
+  ICACHE_SLOTS = ICACHE_SIZE / sizeof(u32),
+  ICACHE_LINE_SIZE = 16,
+  ICACHE_LINES = ICACHE_SIZE / ICACHE_LINE_SIZE,
+  ICACHE_SLOTS_PER_LINE = ICACHE_SLOTS / ICACHE_LINES,
+  ICACHE_TAG_ADDRESS_MASK = 0xFFFFFFF0u
+};
+
+enum : u32
+{
+  ICACHE_DISABLED_BIT = 0x01,
+  ICACHE_INVALD_BIT = 0x02,
+};
+
+union CacheControl
+{
+  u32 bits;
+
+  BitField<u32, bool, 0, 1> lock_mode;
+  BitField<u32, bool, 1, 1> invalidate_mode;
+  BitField<u32, bool, 2, 1> tag_test_mode;
+  BitField<u32, bool, 3, 1> dcache_scratchpad;
+  BitField<u32, bool, 7, 1> dcache_enable;
+  BitField<u32, u8, 8, 2> icache_fill_size;   // actually dcache? icache always fills to 16 bytes
+  BitField<u32, bool, 11, 1> icache_enable;
 };
 
 struct State
@@ -49,13 +74,15 @@ struct State
   Reg next_load_delay_reg = Reg::count;
   u32 next_load_delay_value = 0;
 
-  u32 cache_control = 0;
+  CacheControl cache_control{ 0 };
 
   // GTE registers are stored here so we can access them on ARM with a single instruction
   GTE::Regs gte_regs = {};
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> dcache = {};
+  std::array<u32, ICACHE_LINES> icache_tags = {};
+  std::array<u8, ICACHE_SIZE> icache_data = {};
 };
 
 extern State g_state;
@@ -64,6 +91,7 @@ void Initialize();
 void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
+void ClearICache();
 
 /// Executes interpreter loop.
 void Execute();

@@ -2,10 +2,10 @@
 #include "aboutdialog.h"
 #include "autoupdaterdialog.h"
 #include "common/assert.h"
-#include "core/game_list.h"
 #include "core/host_display.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "frontend-common/game_list.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
@@ -27,10 +27,11 @@
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
 
-static constexpr char DISC_IMAGE_FILTER[] =
+static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
+  "MainWindow",
   "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
   "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files "
-  "(*.psf);;Playlists (*.m3u)";
+  "(*.psf);;Playlists (*.m3u)");
 
 ALWAYS_INLINE static QString getWindowTitle()
 {
@@ -405,7 +406,7 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   if (entry)
   {
     connect(menu.addAction(tr("Properties...")), &QAction::triggered,
-            [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry); });
+            [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry, this); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
       const QFileInfo fi(QString::fromStdString(entry->path));

@@ -35,7 +35,8 @@ public:
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
-  bool StartEmulationThread(ANativeWindow* initial_surface, SystemBootParameters boot_params);
+  bool StartEmulationThread(jobject emulation_activity, ANativeWindow* initial_surface,
+                            SystemBootParameters boot_params, bool resume_state);
   void RunOnEmulationThread(std::function<void()> function, bool blocking = false);
   void StopEmulationThread();
 
@@ -46,7 +47,7 @@ public:
   void SetControllerAxisState(u32 index, s32 button_code, float value);
 
   void RefreshGameList(bool invalidate_cache, bool invalidate_database);
-  void ApplySettings();
+  void ApplySettings(bool display_osd_messages);
 
 protected:
   void SetUserDirectory() override;
@@ -56,13 +57,18 @@ protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
 
+  void OnSystemDestroyed() override;
+  void OnRunningGameChanged() override;
+
 private:
-  void EmulationThreadEntryPoint(ANativeWindow* initial_surface, SystemBootParameters boot_params);
+  void EmulationThreadEntryPoint(jobject emulation_activity, ANativeWindow* initial_surface,
+                                 SystemBootParameters boot_params, bool resume_state);
 
   void CreateImGuiContext();
   void DestroyImGuiContext();
 
   jobject m_java_object = {};
+  jobject m_emulation_activity_object = {};
 
   AndroidSettingsInterface m_settings_interface;
 
@@ -73,8 +79,6 @@ private:
 
   std::thread m_emulation_thread;
   std::atomic_bool m_emulation_thread_stop_request{false};
-  std::atomic_bool m_emulation_thread_start_result{false};
-  Common::Event m_emulation_thread_started;
 };
 
 namespace AndroidHelpers {

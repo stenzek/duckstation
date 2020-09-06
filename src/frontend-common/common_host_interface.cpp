@@ -7,10 +7,8 @@
 #include "common/string_util.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
-#include "core/controller.h"
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
-#include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/mdec.h"
@@ -19,6 +17,7 @@
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/timers.h"
+#include "game_list.h"
 #include "imgui.h"
 #include "ini_settings_interface.h"
 #include "save_state_selector_ui.h"
@@ -369,7 +368,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else
       {
         // find the game id, and get its save state path
-        std::string game_code = m_game_list->GetGameCodeForPath(boot_filename.c_str());
+        std::string game_code = System::GetGameCodeForPath(boot_filename.c_str());
         if (game_code.empty())
         {
           Log_WarningPrintf("Could not identify game code for '%s', cannot load save state %d.", boot_filename.c_str(),
@@ -461,6 +460,7 @@ void CommonHostInterface::UpdateControllerInterface()
 
   if (m_controller_interface)
   {
+    ClearInputMap();
     m_controller_interface->Shutdown();
     m_controller_interface.reset();
   }
@@ -829,6 +829,12 @@ void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 
   m_osd_messages.push_back(std::move(msg));
 }
 
+void CommonHostInterface::ClearOSDMessages()
+{
+  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  m_osd_messages.clear();
+}
+
 void CommonHostInterface::DrawOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
@@ -939,13 +945,18 @@ bool CommonHostInterface::HandleHostMouseEvent(HostMouseButton button, bool pres
 
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
-  m_keyboard_input_handlers.clear();
-  m_mouse_input_handlers.clear();
-  if (m_controller_interface)
-    m_controller_interface->ClearBindings();
-
+  ClearInputMap();
   UpdateControllerInputMap(si);
   UpdateHotkeyInputMap(si);
+}
+
+void CommonHostInterface::ClearInputMap()
+{
+  m_keyboard_input_handlers.clear();
+  m_mouse_input_handlers.clear();
+  m_controller_vibration_motors.clear();
+  if (m_controller_interface)
+    m_controller_interface->ClearBindings();
 }
 
 void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback)
@@ -1049,8 +1060,9 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
     const auto axis_names = Controller::GetAxisNames(ctype);
     for (const auto& it : axis_names)
     {
-      const std::string& axis_name = it.first;
-      const s32 axis_code = it.second;
+      const std::string& axis_name = std::get<std::string>(it);
+      const s32 axis_code = std::get<s32>(it);
+      const auto axis_type = std::get<Controller::AxisType>(it);
 
       const std::vector<std::string> bindings =
         si.GetStringList(category, TinyString::FromFormat("Axis%s", axis_name.c_str()));
@@ -1060,7 +1072,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         if (!SplitBinding(binding, &device, &axis))
           continue;
 
-        AddAxisToInputMap(binding, device, axis, [this, controller_index, axis_code](float value) {
+        AddAxisToInputMap(binding, device, axis, axis_type, [this, controller_index, axis_code](float value) {
           if (System::IsShutdown())
             return;
 
@@ -1192,8 +1204,44 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
 }
 
 bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const std::string_view& device,
-                                            const std::string_view& axis, InputAxisHandler handler)
+                                            const std::string_view& axis, Controller::AxisType axis_type,
+                                            InputAxisHandler handler)
 {
+  if (axis_type == Controller::AxisType::Half)
+  {
+    if (device == "Keyboard")
+    {
+      std::optional<int> key_id = GetHostKeyCode(axis);
+      if (!key_id.has_value())
+      {
+        Log_WarningPrintf("Unknown keyboard key in binding '%s'", binding.c_str());
+        return false;
+      }
+
+      m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
+      return true;
+    }
+
+    if (device == "Mouse")
+    {
+      if (StringUtil::StartsWith(axis, "Button"))
+      {
+        const std::optional<s32> button_index = StringUtil::FromChars<s32>(axis.substr(6));
+        if (!button_index.has_value())
+        {
+          Log_WarningPrintf("Invalid button in mouse binding '%s'", binding.c_str());
+          return false;
+        }
+
+        m_mouse_input_handlers.emplace(static_cast<HostMouseButton>(button_index.value()), std::move(handler));
+        return true;
+      }
+
+      Log_WarningPrintf("Malformed mouse binding '%s'", binding.c_str());
+      return false;
+    }
+  }
+
   if (StringUtil::StartsWith(device, "Controller"))
   {
     if (!m_controller_interface)
@@ -1216,6 +1264,18 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
           !m_controller_interface->BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
       {
         Log_WarningPrintf("Failed to bind controller axis '%s' to axis", binding.c_str());
+        return false;
+      }
+
+      return true;
+    }
+    else if (StringUtil::StartsWith(axis, "Button") && axis_type == Controller::AxisType::Half)
+    {
+      const std::optional<int> button_index = StringUtil::FromChars<int>(axis.substr(6));
+      if (!button_index ||
+          !m_controller_interface->BindControllerButtonToAxis(*controller_index, *button_index, std::move(handler)))
+      {
+        Log_WarningPrintf("Failed to bind controller button '%s' to axis", binding.c_str());
         return false;
       }
 
@@ -1351,6 +1411,8 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 
                      if (g_settings.gpu_pgxp_enable)
                        PGXP::Initialize();
+                     else
+                       PGXP::Shutdown();
 
                      // we need to recompile all blocks if pgxp is toggled on/off
                      if (g_settings.IsUsingCodeCache())
@@ -1527,7 +1589,7 @@ void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
       si.DeleteValue(section_name, button.first.c_str());
 
     for (const auto& axis : Controller::GetAxisNames(ctype))
-      si.DeleteValue(section_name, axis.first.c_str());
+      si.DeleteValue(section_name, std::get<std::string>(axis).c_str());
 
     if (Controller::GetVibrationMotorCount(ctype) > 0)
       si.DeleteValue(section_name, "Rumble");
@@ -1571,8 +1633,8 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
 
     for (const auto& axis : Controller::GetAxisNames(*ctype))
     {
-      const auto key_name = TinyString::FromFormat("Axis%s", axis.first.c_str());
-      si.DeleteValue(section_name, axis.first.c_str());
+      const auto key_name = TinyString::FromFormat("Axis%s", std::get<std::string>(axis).c_str());
+      si.DeleteValue(section_name, std::get<std::string>(axis).c_str());
       const std::vector<std::string> bindings = profile.GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
         si.AddToStringList(section_name, key_name, binding.c_str());
@@ -1630,7 +1692,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
 
     for (const auto& axis : Controller::GetAxisNames(ctype))
     {
-      const auto key_name = TinyString::FromFormat("Axis%s", axis.first.c_str());
+      const auto key_name = TinyString::FromFormat("Axis%s", std::get<std::string>(axis).c_str());
       const std::vector<std::string> bindings = si.GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
         profile.AddToStringList(section_name, key_name, binding.c_str());
@@ -1745,8 +1807,7 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
 
   if (header.version != SAVE_STATE_VERSION)
   {
-    ssi.title = StringUtil::StdStringFromFormat("Invalid version %u (expected %u)", header.version, header.magic,
-                                                SAVE_STATE_VERSION);
+    ssi.title = StringUtil::StdStringFromFormat("Invalid version %u (expected %u)", header.version, SAVE_STATE_VERSION);
     return ssi;
   }
 
@@ -1758,6 +1819,7 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
   if (header.screenshot_width > 0 && header.screenshot_height > 0 && header.screenshot_size > 0 &&
       (static_cast<u64>(header.offset_to_screenshot) + static_cast<u64>(header.screenshot_size)) <= stream->GetSize())
   {
+    stream->SeekAbsolute(header.offset_to_screenshot);
     ssi.screenshot_data.resize((header.screenshot_size + 3u) / 4u);
     if (stream->Read2(ssi.screenshot_data.data(), header.screenshot_size))
     {
@@ -1972,13 +2034,13 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
   else
   {
     if (image)
-      *code = GameList::GetGameCodeForImage(image);
+      *code = System::GetGameCodeForImage(image);
 
     const GameListDatabaseEntry* db_entry = (!code->empty()) ? m_game_list->GetDatabaseEntryForCode(*code) : nullptr;
     if (db_entry)
       *title = db_entry->title;
     else
-      *title = GameList::GetTitleForPath(path);
+      *title = System::GetTitleForPath(path);
   }
 }
 

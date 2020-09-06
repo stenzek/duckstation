@@ -17,7 +17,7 @@
 
 // Force inline in non-debug helper
 #ifdef _DEBUG
-#define ALWAYS_INLINE_RELEASE
+#define ALWAYS_INLINE_RELEASE inline
 #else
 #define ALWAYS_INLINE_RELEASE ALWAYS_INLINE
 #endif

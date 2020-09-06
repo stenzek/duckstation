@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="include\imgui_impl_dx11.h" />
-    <ClInclude Include="include\imgui_impl_opengl3.h" />
     <ClInclude Include="include\imconfig.h" />
     <ClInclude Include="include\imgui.h" />
     <ClInclude Include="src\imgui_internal.h" />
@@ -10,15 +8,11 @@
     <ClInclude Include="src\imstb_textedit.h" />
     <ClInclude Include="src\imstb_truetype.h" />
     <ClInclude Include="include\imgui_stdlib.h" />
-    <ClInclude Include="include\imgui_impl_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\imgui_widgets.cpp" />
     <ClCompile Include="src\imgui.cpp" />
     <ClCompile Include="src\imgui_draw.cpp" />
-    <ClCompile Include="src\imgui_impl_dx11.cpp" />
     <ClCompile Include="src\imgui_stdlib.cpp" />
-    <ClCompile Include="src\imgui_impl_vulkan.cpp" />
   </ItemGroup>
 </Project>

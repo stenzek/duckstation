@@ -27,6 +27,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead, "Hacks", "GPUMaxRunAhead");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cpuRecompilerMemoryExceptions, "CPU",
                                                "RecompilerMemoryExceptions", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cpuRecompilerICache, "CPU", "RecompilerICache",
+                                               false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showDebugMenu, "Main", "ShowDebugMenu");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuUseDebugDevice, "GPU", "UseDebugDevice");
@@ -38,6 +40,10 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   dialog->registerWidgetHelp(m_ui.gpuUseDebugDevice, tr("Use Debug Host GPU Device"), tr("Unchecked"),
                              tr("Enables the usage of debug devices and shaders for rendering APIs which support them. "
                                 "Should only be used when debugging the emulator."));
+  dialog->registerWidgetHelp(
+    m_ui.cpuRecompilerICache, tr("Enable Recompiler ICache"), tr("Unchecked"),
+    tr("Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small "
+       "cost to performance. If games are running too fast, try enabling this option."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;

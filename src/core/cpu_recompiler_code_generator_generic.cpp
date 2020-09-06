@@ -1,4 +1,5 @@
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
 
 namespace CPU::Recompiler {
@@ -21,5 +22,49 @@ void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)
   EmitStoreCPUStructField(offsetof(State, load_delay_value), value);
   m_load_delay_dirty = true;
 }
+
+#ifndef CPU_X64
+
+void CodeGenerator::EmitICacheCheckAndUpdate()
+{
+  Value pc = CalculatePC();
+  Value temp = m_register_cache.AllocateScratch(RegSize_32);
+  m_register_cache.InhibitAllocation();
+
+  EmitShr(temp.GetHostRegister(), pc.GetHostRegister(), RegSize_32, Value::FromConstantU32(29));
+  LabelType is_cached;
+  LabelType ready_to_execute;
+  EmitConditionalBranch(Condition::LessEqual, false, temp.GetHostRegister(), Value::FromConstantU32(4), &is_cached);
+  EmitAddCPUStructField(offsetof(State, pending_ticks),
+                        Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+  EmitBranch(&ready_to_execute);
+  EmitBindLabel(&is_cached);
+
+  // cached path
+  EmitAnd(pc.GetHostRegister(), pc.GetHostRegister(), Value::FromConstantU32(ICACHE_TAG_ADDRESS_MASK));
+  VirtualMemoryAddress current_address = (m_block->instructions[0].pc & ICACHE_TAG_ADDRESS_MASK);
+  for (u32 i = 0; i < m_block->icache_line_count; i++, current_address += ICACHE_LINE_SIZE)
+  {
+    const TickCount fill_ticks = GetICacheFillTicks(current_address);
+    if (fill_ticks <= 0)
+      continue;
+
+    const u32 line = GetICacheLine(current_address);
+    const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+    LabelType cache_hit;
+
+    EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offset);
+    EmitConditionalBranch(Condition::Equal, false, temp.GetHostRegister(), pc, &cache_hit);
+    EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(fill_ticks)));
+    EmitStoreCPUStructField(offset, pc);
+    EmitBindLabel(&cache_hit);
+    EmitAdd(pc.GetHostRegister(), pc.GetHostRegister(), Value::FromConstantU32(ICACHE_LINE_SIZE), false);
+  }
+
+  EmitBindLabel(&ready_to_execute);
+  m_register_cache.UnunhibitAllocation();
+}
+
+#endif
 
 } // namespace CPU::Recompiler

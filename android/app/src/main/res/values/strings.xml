@@ -30,11 +30,11 @@
     <string name="settings_osd_show_show_vps">Show VPS</string>
 
     <!-- CPU Preferences -->
-    <string name="settings_cpu_execution_mode">Execution Mode</string>
+    <string name="settings_cpu_execution_mode">CPU Execution Mode</string>
     <string name="settings_cpu_execution_mode_default">Interpreter</string>
 
     <!-- GPU Preferences -->
-    <string name="settings_gpu_renderer">Renderer</string>
+    <string name="settings_gpu_renderer">GPU Renderer</string>
     <string name="settings_gpu_display_linear_filtering">Display Linear Filtering</string>
     <string name="settings_gpu_resolution_scale">Resolution Scale</string>
     <string name="settings_gpu_true_color">True 24-Bit Color (Disables Dithering)</string>

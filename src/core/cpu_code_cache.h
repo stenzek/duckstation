@@ -61,6 +61,8 @@ struct CodeBlock
   std::vector<CodeBlock*> link_predecessors;
   std::vector<CodeBlock*> link_successors;
 
+  TickCount uncached_fetch_ticks = 0;
+  u32 icache_line_count = 0;
   bool invalidated = false;
 
   const u32 GetPC() const { return key.GetPC(); }

@@ -3,11 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:id="@+id/actions">
-        <item android:id="@+id/reset"
+        <item
+            android:id="@+id/reset"
             android:title="Reset" />
-        <item android:id="@+id/quick_load"
+        <item
+            android:id="@+id/quick_load"
             android:title="Quick Load" />
-        <item android:id="@+id/quick_save"
+        <item
+            android:id="@+id/quick_save"
             android:title="Quick Save" />
     </group>
     <group android:id="@+id/quick_settings">

@@ -6,9 +6,9 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/controller.h"
-#include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "frontend-common/game_list.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/opengl_host_display.h"
@@ -641,6 +641,7 @@ void QtHostInterface::OnSystemDestroyed()
 {
   CommonHostInterface::OnSystemDestroyed();
 
+  ClearOSDMessages();
   startBackgroundControllerPollTimer();
   emit emulationStopped();
 }

@@ -1,5 +1,6 @@
 #include "gamelistmodel.h"
 #include "common/string_util.h"
+#include "core/system.h"
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
   {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility"}};
@@ -69,7 +70,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+          const std::string_view file_title(System::GetTitleForPath(ge.path.c_str()));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -96,7 +97,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+          const std::string_view file_title(System::GetTitleForPath(ge.path.c_str()));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -187,7 +188,8 @@ bool GameListModel::titlesLessThan(int left_row, int right_row, bool ascending) 
 
   const GameListEntry& left = m_game_list->GetEntries().at(left_row);
   const GameListEntry& right = m_game_list->GetEntries().at(right_row);
-  return ascending ? (left.title < right.title) : (right.title < left.title);
+  return ascending ? (StringUtil::Strcasecmp(left.title.c_str(), right.title.c_str()) < 0) :
+                     (StringUtil::Strcasecmp(right.title.c_str(), left.title.c_str()) > 0);
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column,
@@ -221,25 +223,25 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     {
       if (left.code == right.code)
         return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (left.code < right.code) : (right.code > left.code);
+      return ascending ? (StringUtil::Strcasecmp(left.code.c_str(), right.code.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.code.c_str(), left.code.c_str()) > 0);
     }
 
     case Column_Title:
     {
-      if (left.title == right.title)
-        return titlesLessThan(left_row, right_row, ascending);
-
-      return ascending ? (left.title < right.title) : (right.title > left.title);
+      return titlesLessThan(left_row, right_row, ascending);
     }
 
     case Column_FileTitle:
     {
-      const std::string_view file_title_left(GameList::GetTitleForPath(left.path.c_str()));
-      const std::string_view file_title_right(GameList::GetTitleForPath(right.path.c_str()));
+      const std::string_view file_title_left(System::GetTitleForPath(left.path.c_str()));
+      const std::string_view file_title_right(System::GetTitleForPath(right.path.c_str()));
       if (file_title_left == file_title_right)
         return titlesLessThan(left_row, right_row, ascending);
 
-      return ascending ? (file_title_left < file_title_right) : (file_title_right > file_title_left);
+      const std::size_t smallest = std::min(file_title_left.size(), file_title_right.size());
+      return ascending ? (StringUtil::Strncasecmp(file_title_left.data(), file_title_right.data(), smallest) < 0) :
+                         (StringUtil::Strncasecmp(file_title_right.data(), file_title_left.data(), smallest) > 0);
     }
 
     case Column_Region:

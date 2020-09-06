@@ -20,8 +20,8 @@
 
 #include "pgxp.h"
 #include "settings.h"
-#include <cmath>
 #include <climits>
+#include <cmath>
 
 namespace PGXP {
 // pgxp_types.h
@@ -134,6 +134,26 @@ static void WriteMem(PGXP_value* value, u32 addr);
 static void WriteMem16(PGXP_value* src, u32 addr);
 
 // pgxp_gpu.h
+enum : u32
+{
+  VERTEX_CACHE_WIDTH = 0x800 * 2,
+  VERTEX_CACHE_HEIGHT = 0x800 * 2,
+  VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
+  PGXP_MEM_SIZE = 3 * 2048 * 1024 / 4 // mirror 2MB in 32-bit words * 3
+};
+
+static PGXP_value* Mem = nullptr;
+
+const unsigned int mode_init = 0;
+const unsigned int mode_write = 1;
+const unsigned int mode_read = 2;
+const unsigned int mode_fail = 3;
+
+unsigned int baseID = 0;
+unsigned int lastID = 0;
+unsigned int cacheMode = 0;
+static PGXP_value* vertexCache = nullptr;
+
 void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex);
 
 // pgxp_gte.h
@@ -142,8 +162,8 @@ static void PGXP_InitGTE();
 // pgxp_cpu.h
 static void PGXP_InitCPU();
 static PGXP_value CPU_reg_mem[34];
-#define CPU_Hi CPU_reg[33]
-#define CPU_Lo CPU_reg[34]
+#define CPU_Hi CPU_reg[32]
+#define CPU_Lo CPU_reg[33]
 static PGXP_value CP0_reg_mem[32];
 
 static PGXP_value* CPU_reg = CPU_reg_mem;
@@ -195,7 +215,6 @@ double f16Overflow(double in)
 
 // pgxp_mem.c
 static void PGXP_InitMem();
-static PGXP_value Mem[3 * 2048 * 1024 / 4]; // mirror 2MB in 32-bit words * 3
 static const u32 UserMemOffset = 0;
 static const u32 ScratchOffset = 2048 * 1024 / 4;
 static const u32 RegisterOffset = 2 * 2048 * 1024 / 4;
@@ -203,7 +222,19 @@ static const u32 InvalidAddress = 3 * 2048 * 1024 / 4;
 
 void PGXP_InitMem()
 {
-  memset(Mem, 0, sizeof(Mem));
+  if (!Mem)
+  {
+    Mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
+    if (!Mem)
+    {
+      std::fprintf(stderr, "Failed to allocate PGXP memory\n");
+      std::abort();
+    }
+  }
+  else
+  {
+    std::memset(Mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
+  }
 }
 
 u32 PGXP_ConvertAddress(u32 addr)
@@ -366,8 +397,6 @@ void WriteMem16(PGXP_value* src, u32 addr)
 }
 
 // pgxp_main.c
-u32 static gMode = 0;
-
 void Initialize()
 {
   PGXP_InitMem();
@@ -375,24 +404,19 @@ void Initialize()
   PGXP_InitGTE();
 }
 
-void PGXP_SetModes(u32 modes)
+void Shutdown()
 {
-  gMode = modes;
-}
-
-u32 PGXP_GetModes()
-{
-  return gMode;
-}
-
-void PGXP_EnableModes(u32 modes)
-{
-  gMode |= modes;
-}
-
-void PGXP_DisableModes(u32 modes)
-{
-  gMode = gMode & ~modes;
+  cacheMode = mode_init;
+  if (vertexCache)
+  {
+    std::free(vertexCache);
+    vertexCache = nullptr;
+  }
+  if (Mem)
+  {
+    std::free(Mem);
+    Mem = nullptr;
+  }
 }
 
 // pgxp_gte.c
@@ -584,17 +608,6 @@ void CPU_SWC2(u32 instr, u32 rtVal, u32 addr)
 /////////////////////////////////
 //// Blade_Arma's Vertex Cache (CatBlade?)
 /////////////////////////////////
-const unsigned int mode_init = 0;
-const unsigned int mode_write = 1;
-const unsigned int mode_read = 2;
-const unsigned int mode_fail = 3;
-
-PGXP_value vertexCache[0x800 * 2][0x800 * 2];
-
-unsigned int baseID = 0;
-unsigned int lastID = 0;
-unsigned int cacheMode = 0;
-
 unsigned int IsSessionID(unsigned int vertID)
 {
   // No wrapping
@@ -612,6 +625,23 @@ unsigned int IsSessionID(unsigned int vertID)
   return 0;
 }
 
+static void InitPGXPVertexCache()
+{
+  if (!vertexCache)
+  {
+    vertexCache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
+    if (!vertexCache)
+    {
+      std::fprintf(stderr, "Failed to allocate PGXP vertex cache memory\n");
+      std::abort();
+    }
+  }
+  else
+  {
+    memset(vertexCache, 0x00, VERTEX_CACHE_SIZE * sizeof(PGXP_value));
+  }
+}
+
 void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
 {
   const PGXP_value* pNewVertex = (const PGXP_value*)_pVertex;
@@ -623,14 +653,14 @@ void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
     return;
   }
 
+  // Initialise cache on first use
+  if (!vertexCache)
+    InitPGXPVertexCache();
+
   // if (bGteAccuracy)
   {
     if (cacheMode != mode_write)
     {
-      // Initialise cache on first use
-      if (cacheMode == mode_init)
-        memset(vertexCache, 0x00, sizeof(vertexCache));
-
       // First vertex of write session (frame?)
       cacheMode = mode_write;
       baseID = pNewVertex->count;
@@ -640,7 +670,7 @@ void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
 
     if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
     {
-      pOldVertex = &vertexCache[sy + 0x800][sx + 0x800];
+      pOldVertex = &vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
 
       // To avoid ambiguity there can only be one valid entry per-session
       if (0) //(IsSessionID(pOldVertex->count) && (pOldVertex->value == pNewVertex->value))
@@ -664,25 +694,25 @@ void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
 
 PGXP_value* PGXP_GetCachedVertex(short sx, short sy)
 {
-  // if (bGteAccuracy)
+  if (g_settings.gpu_pgxp_vertex_cache)
   {
     if (cacheMode != mode_read)
     {
       if (cacheMode == mode_fail)
         return NULL;
 
-      // Initialise cache on first use
-      if (cacheMode == mode_init)
-        memset(vertexCache, 0x00, sizeof(vertexCache));
-
       // First vertex of read session (frame?)
       cacheMode = mode_read;
     }
 
+    // Initialise cache on first use
+    if (!vertexCache)
+      InitPGXPVertexCache();
+
     if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
     {
       // Return pointer to cache entry
-      return &vertexCache[sy + 0x800][sx + 0x800];
+      return &vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
     }
   }
 

@@ -17,18 +17,67 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="Game List">
-        <Preference
-            app:key="GameList/SearchPaths"
-            app:title="Game Search Directories"/>
-        <CheckBoxPreference
-            app:key="GameList/SearchRecursively"
-            app:title="Search Directories Recursively"
-            app:defaultValue="true" />
-        <EditTextPreference
-            app:key="GameList/RedumpDatPath"
-            app:title="Redump Database Path"
+    <PreferenceCategory app:title="General">
+        <SwitchPreferenceCompat
+            app:key="Main/SpeedLimiterEnabled"
+            app:title="@string/settings_behavior_enable_speed_limiter"
+            app:defaultValue="true"
+            app:summary="Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable." />
+        <SwitchPreferenceCompat
+            app:key="Main/SaveStateOnExit"
+            app:title="Save State On Exit"
+            app:defaultValue="true"
+            app:summary="Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time." />
+        <SwitchPreferenceCompat
+            app:key="Display/VSync"
+            app:title="Video Sync"
+            app:defaultValue="true"
+            app:summary="Enable this option to match DuckStation's refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)." />
+
+        <SwitchPreferenceCompat
+            app:key="Audio/Sync"
+            app:title="Audio Sync"
+            app:defaultValue="true"
+            app:summary="Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed." />
+
+        <ListPreference
+            app:key="CPU/ExecutionMode"
+            app:title="@string/settings_cpu_execution_mode"
+            app:entries="@array/settings_cpu_execution_mode_entries"
+            app:entryValues="@array/settings_cpu_execution_mode_values"
+            app:defaultValue="Recompiler"
             app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:key="GPU/Renderer"
+            app:title="@string/settings_gpu_renderer"
+            app:entries="@array/gpu_renderer_entries"
+            app:entryValues="@array/gpu_renderer_values"
+            app:defaultValue="OpenGL"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_osd_header">
+        <SwitchPreferenceCompat
+            app:key="Display/ShowOSDMessages"
+            app:title="@string/settings_osd_show_messages"
+            app:defaultValue="true"
+            app:summary="Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc." />
+        <SwitchPreferenceCompat
+            app:key="Display/ShowSpeed"
+            app:title="@string/settings_osd_show_speed"
+            app:defaultValue="false"
+            app:summary="Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage." />
+        <SwitchPreferenceCompat
+            app:key="Display/ShowFPS"
+            app:title="@string/settings_osd_show_show_fps"
+            app:defaultValue="false"
+            app:summary="Shows the internal frame rate of the game in the top-right corner of the display." />
+        <SwitchPreferenceCompat
+            app:key="Display/ShowVPS"
+            app:title="@string/settings_osd_show_show_vps"
+            app:defaultValue="false"
+            app:summary="Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display." />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/settings_console_header">
@@ -42,78 +91,14 @@
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat
-            app:key="BIOS/PatchTTYEnable"
-            app:title="@string/settings_console_tty_output"
-            app:defaultValue="false"
-            app:useSimpleSummaryProvider="true" />
-
-        <SwitchPreferenceCompat
             app:key="BIOS/PatchFastBoot"
             app:title="@string/settings_console_fast_boot"
             app:defaultValue="false"
-            app:useSimpleSummaryProvider="true" />
+            app:summary="Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break." />
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/settings_behavior_header">
-        <SwitchPreferenceCompat
-            app:key="Main/SpeedLimiterEnabled"
-            app:title="@string/settings_behavior_enable_speed_limiter"
-            app:defaultValue="true"
-            app:useSimpleSummaryProvider="true" />
-        <SwitchPreferenceCompat
-            app:key="Main/StartPaused"
-            app:title="@string/settings_behavior_pause_on_start"
-            app:useSimpleSummaryProvider="true" />
-        <SwitchPreferenceCompat
-            app:key="Audio/Sync"
-            app:title="@string/settings_host_synchronization_sync_to_audio"
-            app:defaultValue="true"
-            app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/settings_osd_header">
-        <SwitchPreferenceCompat
-            app:key="Display/ShowOSDMessages"
-            app:title="@string/settings_osd_show_messages"
-            app:defaultValue="true"
-            app:useSimpleSummaryProvider="true" />
-        <SwitchPreferenceCompat
-            app:key="Display/ShowSpeed"
-            app:title="@string/settings_osd_show_speed"
-            app:defaultValue="false"
-            app:useSimpleSummaryProvider="true" />
-        <SwitchPreferenceCompat
-            app:key="Display/ShowFPS"
-            app:title="@string/settings_osd_show_show_fps"
-            app:defaultValue="false"
-            app:useSimpleSummaryProvider="true" />
-        <SwitchPreferenceCompat
-            app:key="Display/ShowVPS"
-            app:title="@string/settings_osd_show_show_vps"
-            app:defaultValue="false"
-            app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/settings_cpu_header">
-        <ListPreference
-            app:key="CPU/ExecutionMode"
-            app:title="@string/settings_cpu_execution_mode"
-            app:entries="@array/settings_cpu_execution_mode_entries"
-            app:entryValues="@array/settings_cpu_execution_mode_values"
-            app:defaultValue="Recompiler"
-            app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
-    <PreferenceCategory app:title="@string/settings_gpu_header">
-
-        <ListPreference
-            app:key="GPU/Renderer"
-            app:title="@string/settings_gpu_renderer"
-            app:entries="@array/gpu_renderer_entries"
-            app:entryValues="@array/gpu_renderer_values"
-            app:defaultValue="OpenGL"
-            app:useSimpleSummaryProvider="true" />
-
+    <PreferenceCategory app:title="Enhancements">
         <ListPreference
             app:key="GPU/ResolutionScale"
             app:title="@string/settings_gpu_resolution_scale"
@@ -124,87 +109,87 @@
 
         <SwitchPreferenceCompat
             app:key="GPU/TrueColor"
-            app:title="@string/settings_gpu_true_color"
-            app:defaultValue="false"/>
-
-    </PreferenceCategory>
-  
-    <PreferenceCategory app:title="Enhancements">
-
-        <SwitchPreferenceCompat
-            app:key="GPU/TrueColor"
             app:title="True Color Rendering (24-bit, disables dithering)"
-            app:defaultValue="false"/>
+            app:summary="Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren't and will have broken effects with it enabled. Only applies to the hardware renderers." />
 
         <SwitchPreferenceCompat
-          app:key="GPU/ScaledDithering"
-          app:title="Scaled Dithering (scale dither pattern to resolution)"
-          app:defaultValue="true"/>
+            app:key="GPU/ScaledDithering"
+            app:title="Scaled Dithering (scale dither pattern to resolution)"
+            app:defaultValue="true"
+            app:summary="Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers." />
 
-         <SwitchPreferenceCompat
-          app:key="GPU/DisableInterlacing"
-          app:title="Disable Interlacing (force progressive render/scan)"
-          app:defaultValue="true"/>
-      
         <SwitchPreferenceCompat
-          app:key="GPU/ForceNTSCTimings"
-          app:title="Force NTSC Timings (60hz-on-PAL)"
-          app:defaultValue="false"/>
+            app:key="GPU/DisableInterlacing"
+            app:title="Disable Interlacing (force progressive render/scan)"
+            app:defaultValue="true"
+            app:summary="Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable." />
+
+        <SwitchPreferenceCompat
+            app:key="GPU/TextureFiltering"
+            app:title="Bilinear Texture Filtering"
+            app:defaultValue="false"
+            app:summary="Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a greater effect on higher resolution scales. Only applies to the hardware renderers." />
+
+        <SwitchPreferenceCompat
+            app:key="GPU/ForceNTSCTimings"
+            app:title="Force NTSC Timings (60hz-on-PAL)"
+            app:defaultValue="false"
+            app:summary="Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the speed." />
+
+        <SwitchPreferenceCompat
+            app:key="GPU/WidescreenHack"
+            app:title="Widescreen Hack"
+            app:defaultValue="false"
+            app:summary="Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. May not be compatible with all games." />
 
         <SwitchPreferenceCompat
             app:key="GPU/PGXPEnable"
             app:title="PGXP Geometry Correction"
-            app:defaultValue="false"/>
+            app:defaultValue="false"
+            app:summary="Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. >Only works with the hardware renderers. May not be compatible with all games." />
 
         <SwitchPreferenceCompat
             app:key="GPU/PGXPCulling"
             app:title="PGXP Culling Correction"
-            app:defaultValue="true"/>
-      
+            app:defaultValue="true"
+            app:summary="Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled." />
+
         <SwitchPreferenceCompat
             app:key="GPU/PGXPTextureCorrection"
             app:title="PGXP Texture Correction"
-            app:defaultValue="true"/>
-      
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPVertexCache"
-            app:title="PGXP Vertex Cache"
-            app:defaultValue="false"/>
+            app:summary="Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled." />
 
     </PreferenceCategory>
-  
+
     <PreferenceCategory app:title="Display">
-         <ListPreference
+        <ListPreference
             app:key="Display/CropMode"
             app:title="Crop Mode"
             app:entries="@array/settings_display_crop_mode_entries"
             app:entryValues="@array/settings_display_crop_mode_values"
             app:defaultValue="Overscan"
             app:useSimpleSummaryProvider="true" />
-      
-         <ListPreference
+
+        <ListPreference
             app:key="Display/AspectRatio"
             app:title="Aspect Ratio"
             app:entries="@array/settings_display_aspect_ratio_names"
             app:entryValues="@array/settings_display_aspect_ratio_values"
             app:defaultValue="4:3"
             app:useSimpleSummaryProvider="true" />
-            
-         <SwitchPreferenceCompat
+
+        <SwitchPreferenceCompat
             app:key="Display/LinearFiltering"
             app:title="Linear Upscaling"
-            app:defaultValue="true"/>
-      
-         <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:summary="Uses bilinear texture filtering when displaying the console's framebuffer to the screen. Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less noticable the higher the resolution scale." />
+
+        <SwitchPreferenceCompat
             app:key="Display/IntegerScaling"
             app:title="Integer Upscaling"
-            app:defaultValue="false"/>
-      
-         <SwitchPreferenceCompat
-            app:key="Display/VSync"
-            app:title="VSync"
-            app:defaultValue="true"
-            app:useSimpleSummaryProvider="true" />
+            app:defaultValue="false"
+            app:summary="Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games." />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Controller">
@@ -224,7 +209,7 @@
             app:title="Display Touchscreen Controller"
             app:defaultValue="true" />
     </PreferenceCategory>
-  
+
     <PreferenceCategory app:title="Memory Cards">
         <ListPreference
             app:key="MemoryCards/Card1Type"
@@ -240,6 +225,28 @@
             app:entryValues="@array/settings_memory_card_mode_values"
             app:defaultValue="None"
             app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Advanced Settings">
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPVertexCache"
+            app:title="PGXP Vertex Cache"
+            app:defaultValue="false"
+            app:summary="Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility." />
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPCPU"
+            app:title="PGXP CPU Mode"
+            app:defaultValue="false"
+            app:summary="Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler." />
+        <SwitchPreferenceCompat
+            app:key="CPU/RecompilerICache"
+            app:title="CPU Recompiler ICache"
+            app:defaultValue="false"
+            app:summary="Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option." />
+        <SwitchPreferenceCompat
+            app:key="BIOS/PatchTTYEnable"
+            app:title="@string/settings_console_tty_output"
+            app:defaultValue="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>

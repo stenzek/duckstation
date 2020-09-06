@@ -1,6 +1,8 @@
 #pragma once
+#include "core/controller.h"
 #include "core/types.h"
 #include <QtWidgets/QPushButton>
+#include <optional>
 
 class QTimer;
 
@@ -18,6 +20,8 @@ public:
   ALWAYS_INLINE void setNextWidget(InputBindingWidget* widget) { m_next_widget = widget; }
 
 public Q_SLOTS:
+  void bindToControllerAxis(int controller_index, int axis_index, std::optional<bool> positive);
+  void bindToControllerButton(int controller_index, int button_index);
   void beginRebindAll();
   void clearBinding();
   void reloadBinding();
@@ -67,13 +71,6 @@ public:
   ~InputButtonBindingWidget();
 
 protected:
-  bool eventFilter(QObject* watched, QEvent* event) override;
-
-private Q_SLOTS:
-  void bindToControllerAxis(int controller_index, int axis_index, bool positive);
-  void bindToControllerButton(int controller_index, int button_index);
-
-protected:
   void startListeningForInput(u32 timeout_in_seconds) override;
   void stopListeningForInput() override;
   void openDialog() override;
@@ -87,18 +84,19 @@ class InputAxisBindingWidget : public InputBindingWidget
 
 public:
   InputAxisBindingWidget(QtHostInterface* host_interface, std::string section_name, std::string key_name,
-                         QWidget* parent);
+                         Controller::AxisType axis_type, QWidget* parent);
   ~InputAxisBindingWidget();
 
-private Q_SLOTS:
-  void bindToControllerAxis(int controller_index, int axis_index);
-
 protected:
+  bool eventFilter(QObject* watched, QEvent* event) override;
   void startListeningForInput(u32 timeout_in_seconds) override;
   void stopListeningForInput() override;
   void openDialog() override;
   void hookControllerInput();
   void unhookControllerInput();
+
+private:
+  Controller::AxisType m_axis_type;
 };
 
 class InputRumbleBindingWidget : public InputBindingWidget

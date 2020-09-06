@@ -35,8 +35,7 @@ bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
     Log_InfoPrintf("Loading game controller mappings from '%s'", gcdb_file_name.c_str());
     if (SDL_GameControllerAddMappingsFromFile(gcdb_file_name.c_str()) < 0)
     {
-      Log_ErrorPrintf("SDL_GameControllerAddMappingsFromFile(%s) failed: %s",
-                      gcdb_file_name.c_str(), SDL_GetError());
+      Log_ErrorPrintf("SDL_GameControllerAddMappingsFromFile(%s) failed: %s", gcdb_file_name.c_str(), SDL_GetError());
     }
   }
 
@@ -293,6 +292,19 @@ bool SDLControllerInterface::BindControllerAxisToButton(int controller_index, in
   return true;
 }
 
+bool SDLControllerInterface::BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback)
+{
+  auto it = GetControllerDataForPlayerId(controller_index);
+  if (it == m_controllers.end())
+    return false;
+
+  if (button_number < 0 || button_number >= MAX_NUM_BUTTONS)
+    return false;
+
+  it->button_axis_mapping[button_number] = std::move(callback);
+  return true;
+}
+
 bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
 {
   const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
@@ -350,11 +362,20 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
     return true;
 
   const ButtonCallback& cb = it->button_mapping[ev->cbutton.button];
-  if (!cb)
-    return false;
+  if (cb)
+  {
+    cb(pressed);
+    return true;
+  }
 
-  cb(pressed);
-  return true;
+  // Assume a half-axis, i.e. in 0..1 range
+  const AxisCallback& axis_cb = it->button_axis_mapping[ev->cbutton.button];
+  if (axis_cb)
+  {
+    axis_cb(pressed ? 1.0f : 0.0f);
+  }
+
+  return false;
 }
 
 u32 SDLControllerInterface::GetControllerRumbleMotorCount(int controller_index)

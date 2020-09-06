@@ -8,7 +8,9 @@
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#include <imgui.h>
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(SPU);
 
 SPU g_spu;
@@ -1747,6 +1749,7 @@ void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out
 
 void SPU::DrawDebugStateWindow()
 {
+#ifdef WITH_IMGUI
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
@@ -1924,4 +1927,5 @@ void SPU::DrawDebugStateWindow()
   }
 
   ImGui::End();
+#endif
 }
