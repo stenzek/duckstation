@@ -1820,6 +1820,7 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
   if (header.screenshot_width > 0 && header.screenshot_height > 0 && header.screenshot_size > 0 &&
       (static_cast<u64>(header.offset_to_screenshot) + static_cast<u64>(header.screenshot_size)) <= stream->GetSize())
   {
+    stream->SeekAbsolute(header.offset_to_screenshot);
     ssi.screenshot_data.resize((header.screenshot_size + 3u) / 4u);
     if (stream->Read2(ssi.screenshot_data.data(), header.screenshot_size))
     {
