@@ -46,6 +46,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+#include "common/vulkan/context.h"
 #include "common/vulkan/texture.h"
 #include <stdio.h>
 
@@ -309,14 +310,7 @@ static void ImGui_ImplVulkan_UpdateAndBindDescriptors(const ImDrawCmd* pcmd, VkC
 {
     const Vulkan::Texture* tex = static_cast<const Vulkan::Texture*>(pcmd->TextureId);
 
-    VkDescriptorSet desc_set;
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    alloc_info.descriptorPool = g_VulkanInitInfo.DescriptorPool;
-    alloc_info.descriptorSetCount = 1;
-    alloc_info.pSetLayouts = &g_DescriptorSetLayout;
-    VkResult err = vkAllocateDescriptorSets(g_VulkanInitInfo.Device, &alloc_info, &desc_set);
-    check_vk_result(err);
+    VkDescriptorSet desc_set = g_vulkan_context->AllocateDescriptorSet(g_DescriptorSetLayout);
 
     VkDescriptorImageInfo desc_image[1] = {};
     desc_image[0].sampler = g_FontSampler;
@@ -503,6 +497,7 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
     // Create the Image View:
     {
         g_FontTexture.Adopt(g_FontImage, VK_IMAGE_VIEW_TYPE_2D, width, height, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT);
+        g_FontTexture.TransitionToLayout(command_buffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     // Create the Upload Buffer:
@@ -807,7 +802,6 @@ bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass rend
     IM_ASSERT(info->PhysicalDevice != VK_NULL_HANDLE);
     IM_ASSERT(info->Device != VK_NULL_HANDLE);
     IM_ASSERT(info->Queue != VK_NULL_HANDLE);
-    IM_ASSERT(info->DescriptorPool != VK_NULL_HANDLE);
     IM_ASSERT(info->MinImageCount >= 2);
     IM_ASSERT(info->ImageCount >= info->MinImageCount);
     IM_ASSERT(render_pass != VK_NULL_HANDLE);
@@ -824,9 +818,8 @@ void ImGui_ImplVulkan_Shutdown()
     ImGui_ImplVulkan_DestroyDeviceObjects();
 }
 
-void ImGui_ImplVulkan_NewFrame(VkDescriptorPool DescriptorPool)
+void ImGui_ImplVulkan_NewFrame()
 {
-    g_VulkanInitInfo.DescriptorPool = DescriptorPool;
 }
 
 void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)

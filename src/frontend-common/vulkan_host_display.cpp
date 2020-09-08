@@ -1,4 +1,4 @@
-#include "vulkan_host_display.h"
+﻿#include "vulkan_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scope_guard.h"
@@ -233,7 +233,7 @@ void VulkanHostDisplay::SetVSync(bool enabled)
 
 bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
 {
-  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, debug_device, false))
+  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, true, true))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     return false;
@@ -455,7 +455,6 @@ bool VulkanHostDisplay::CreateImGuiContext()
   vii.QueueFamily = g_vulkan_context->GetGraphicsQueueFamilyIndex();
   vii.Queue = g_vulkan_context->GetGraphicsQueue();
   vii.PipelineCache = g_vulkan_shader_cache->GetPipelineCache();
-  vii.DescriptorPool = g_vulkan_context->GetGlobalDescriptorPool();
   vii.MinImageCount = m_swap_chain->GetImageCount();
   vii.ImageCount = m_swap_chain->GetImageCount();
   vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -466,7 +465,7 @@ bool VulkanHostDisplay::CreateImGuiContext()
     return false;
   }
 
-  ImGui_ImplVulkan_NewFrame(g_vulkan_context->GetCurrentDescriptorPool());
+  ImGui_ImplVulkan_NewFrame();
 #endif
 
   return true;
@@ -532,7 +531,7 @@ bool VulkanHostDisplay::Render()
 
 #ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
-    ImGui_ImplVulkan_NewFrame(g_vulkan_context->GetCurrentDescriptorPool());
+    ImGui_ImplVulkan_NewFrame();
 #endif
 
   return true;
