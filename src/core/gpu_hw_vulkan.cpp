@@ -909,6 +909,7 @@ void GPU_HW_Vulkan::SetScissorFromDrawingArea()
 void GPU_HW_Vulkan::ClearDisplay()
 {
   GPU_HW::ClearDisplay();
+  EndRenderPass();
 
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
   m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
