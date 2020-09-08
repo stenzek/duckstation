@@ -233,7 +233,7 @@ void VulkanHostDisplay::SetVSync(bool enabled)
 
 bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
 {
-  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, true, true))
+  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     return false;
