@@ -47,6 +47,7 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
   m_table_sort_model->setSourceModel(m_table_model);
   m_table_view = new QTableView(this);
   m_table_view->setModel(m_table_sort_model);
+  m_table_view->setIconSize(QSize(32, 32));
   m_table_view->setSortingEnabled(true);
   m_table_view->setSelectionMode(QAbstractItemView::SingleSelection);
   m_table_view->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -147,7 +148,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 
 void GameListWidget::resizeTableViewColumnsToFit()
 {
-  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 100, 60, 100});
+  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 100, 45, 100});
 }
 
 static TinyString getColumnVisibilitySettingsKeyName(int column)

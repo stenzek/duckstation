@@ -63,9 +63,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtResource Include="resources\resources.qrc" />
-  </ItemGroup>
-  <ItemGroup>
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
     <QtMoc Include="gamelistwidget.h" />
@@ -136,5 +133,10 @@
     <None Include="translations\duckstation-qt_it.ts">
       <Filter>translations</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtResource Include="resources\resources.qrc">
+      <Filter>resources</Filter>
+    </QtResource>
   </ItemGroup>
 </Project>
