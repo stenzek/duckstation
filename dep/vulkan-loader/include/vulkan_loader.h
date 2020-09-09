@@ -79,6 +79,9 @@
 #ifdef Expose
 #undef Expose
 #endif
+#ifdef Unsorted
+#undef Unsorted
+#endif
 
 #endif
 
