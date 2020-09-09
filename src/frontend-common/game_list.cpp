@@ -367,8 +367,11 @@ bool GameList::OpenCacheForWriting()
   m_cache_write_stream =
     FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
                                                      BYTESTREAM_OPEN_APPEND | BYTESTREAM_OPEN_STREAMED);
-  if (!m_cache_write_stream)
+  if (!m_cache_write_stream || !m_cache_write_stream->SeekToEnd())
+  {
+    m_cache_write_stream.reset();
     return false;
+  }
 
   if (m_cache_write_stream->GetPosition() == 0)
   {
@@ -515,8 +518,6 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
     m_entries.push_back(std::move(entry));
     entry = {};
   }
-
-  FlushCacheFileStream();
 
   progress->SetProgressValue(static_cast<u32>(files.size()));
   progress->PopState();
