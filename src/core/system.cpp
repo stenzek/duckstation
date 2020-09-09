@@ -305,7 +305,7 @@ bool Boot(const SystemBootParameters& params)
       // TODO: Pull region from PSF
       if (s_region == ConsoleRegion::Auto)
       {
-        Log_InfoPrintf("Defaulting to NTSC-U region for executable.");
+        Log_InfoPrintf("Defaulting to NTSC-U/C region for executable.");
         s_region = ConsoleRegion::NTSC_U;
       }
     }

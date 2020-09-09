@@ -1,11 +1,19 @@
 <RCC>
   <qresource>
-    <file>icons/flag-eu.png</file>
     <file>icons/flag-eu.svg</file>
-    <file>icons/flag-jp.png</file>
+    <file>icons/flag-eu.png</file>
+    <file>icons/flag-eu@2x.png</file>
     <file>icons/flag-jp.svg</file>
-    <file>icons/flag-us.png</file>
+    <file>icons/flag-jp.png</file>
+    <file>icons/flag-jp@2x.png</file>
+    <file>icons/flag-uc.svg</file>
+    <file>icons/flag-uc.png</file>
+    <file>icons/flag-uc@2x.png</file>
+    <!--
     <file>icons/flag-us.svg</file>
+    <file>icons/flag-us.png</file>
+    <file>icons/flag-us@2x.png</file>
+    -->
     <file>icons/star-0.png</file>
     <file>icons/star-1.png</file>
     <file>icons/star-2.png</file>

@@ -326,7 +326,7 @@ const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
 static std::array<const char*, 4> s_console_region_display_names = {
   {TRANSLATABLE("ConsoleRegion", "Auto-Detect"), TRANSLATABLE("ConsoleRegion", "NTSC-J (Japan)"),
-   TRANSLATABLE("ConsoleRegion", "NTSC-U (US)"), TRANSLATABLE("ConsoleRegion", "PAL (Europe, Australia)")}};
+   TRANSLATABLE("ConsoleRegion", "NTSC-U/C (US, Canada)"), TRANSLATABLE("ConsoleRegion", "PAL (Europe, Australia)")}};
 
 std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
 {
@@ -354,7 +354,7 @@ const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
 
 static std::array<const char*, 4> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other"}};
 static std::array<const char*, 4> s_disc_region_display_names = {
-  {TRANSLATABLE("DiscRegion", "NTSC-J (Japan)"), TRANSLATABLE("DiscRegion", "NTSC-U (US)"),
+  {TRANSLATABLE("DiscRegion", "NTSC-J (Japan)"), TRANSLATABLE("DiscRegion", "NTSC-U/C (US, Canada)"),
    TRANSLATABLE("DiscRegion", "PAL (Europe, Australia)"), TRANSLATABLE("DiscRegion", "Other")}};
 
 std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
