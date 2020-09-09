@@ -46,6 +46,7 @@
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="pgxp.cpp" />
+    <ClCompile Include="cheats.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -95,5 +96,6 @@
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="pgxp.h" />
     <ClInclude Include="cpu_core_private.h" />
+    <ClInclude Include="cheats.h" />
   </ItemGroup>
 </Project>

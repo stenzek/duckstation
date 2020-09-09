@@ -13,6 +13,9 @@ class StateWrapper;
 
 class Controller;
 
+struct CheatCode;
+class CheatList;
+
 struct SystemBootParameters
 {
   SystemBootParameters();
@@ -155,5 +158,17 @@ bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path);
 
 /// Switches to the specified media/disc playlist index.
 bool SwitchMediaFromPlaylist(u32 index);
+
+/// Returns true if there is currently a cheat list.
+bool HasCheatList();
+
+/// Accesses the current cheat list.
+CheatList* GetCheatList();
+
+/// Applies a single cheat code.
+void ApplyCheatCode(const CheatCode& code);
+
+/// Sets or clears the provided cheat list, applying every frame.
+void SetCheatList(std::unique_ptr<CheatList> cheats);
 
 } // namespace System
