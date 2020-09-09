@@ -4,6 +4,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
@@ -724,6 +725,67 @@ void SDLHostInterface::DrawMainMenuBar()
 
     ImGui::Separator();
 
+    if (ImGui::BeginMenu("Cheats", system_enabled))
+    {
+      const bool has_cheat_file = System::HasCheatList();
+
+      if (ImGui::MenuItem("Load Cheats..."))
+      {
+        nfdchar_t* path = nullptr;
+        if (NFD_OpenDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
+        {
+          std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
+          if (cl->LoadFromFile(path, CheatList::Format::Autodetect))
+          {
+            System::SetCheatList(std::move(cl));
+          }
+          else
+          {
+            ReportFormattedMessage("Failed to load cheats from '%s'", path);
+          }
+        }
+      }
+
+      if (ImGui::MenuItem("Save Cheats...", nullptr, false, has_cheat_file))
+      {
+        nfdchar_t* path = nullptr;
+        if (NFD_SaveDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
+        {
+          if (!System::GetCheatList()->SaveToPCSXRFile(path))
+            ReportFormattedMessage("Failed to save cheats to '%s'", path);
+        }
+      }
+
+      if (ImGui::BeginMenu("Enabled Cheats", has_cheat_file))
+      {
+        CheatList* cl = System::GetCheatList();
+        for (u32 i = 0; i < cl->GetCodeCount(); i++)
+        {
+          CheatCode& cc = cl->GetCode(i);
+          ImGui::MenuItem(cc.description.c_str(), nullptr, &cc.enabled, true);
+        }
+
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("Apply Cheat", has_cheat_file))
+      {
+        CheatList* cl = System::GetCheatList();
+        for (u32 i = 0; i < cl->GetCodeCount(); i++)
+        {
+          const CheatCode& cc = cl->GetCode(i);
+          if (ImGui::MenuItem(cc.description.c_str()))
+            cc.Apply();
+        }
+
+        ImGui::EndMenu();
+      }
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::Separator();
+
     if (ImGui::MenuItem("Exit"))
       m_quit_request = true;
 
@@ -952,7 +1014,8 @@ void SDLHostInterface::DrawDebugMenu()
 
   ImGui::Separator();
 
-  settings_changed |= ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |=
+    ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
   settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   if (settings_changed)
