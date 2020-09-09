@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1235" height="650">
-<defs>
-<polygon id="pt" points="-0.1624598481164531,0 0,-0.5 0.1624598481164531,0" transform="scale(0.0616)" fill="#FFF"/>
-<g id="star"><use xlink:href="#pt" transform="rotate(-144)"/><use xlink:href="#pt" transform="rotate(-72)"/><use xlink:href="#pt"/><use xlink:href="#pt" transform="rotate(72)"/><use xlink:href="#pt" transform="rotate(144)"/></g>
-<g id="s5"><use xlink:href="#star" x="-0.252"/><use xlink:href="#star" x="-0.126"/><use xlink:href="#star"/><use xlink:href="#star" x="0.126"/><use xlink:href="#star" x="0.252"/></g>
-<g id="s6"><use xlink:href="#s5" x="-0.063"/><use xlink:href="#star" x="0.315"/></g>
-<g id="x4"><use xlink:href="#s6"/><use xlink:href="#s5" y="0.054"/><use xlink:href="#s6" y="0.108"/><use xlink:href="#s5" y="0.162"/></g>
-<g id="u"><use xlink:href="#x4" y="-0.216"/><use xlink:href="#x4"/><use xlink:href="#s6" y="0.216"/></g>
-<rect id="stripe" width="1235" height="50" fill="#B22234"/>
-</defs>
-<rect width="1235" height="650" fill="#FFF"/><use xlink:href="#stripe"/><use xlink:href="#stripe" y="100"/><use xlink:href="#stripe" y="200"/><use xlink:href="#stripe" y="300"/><use xlink:href="#stripe" y="400"/><use xlink:href="#stripe" y="500"/><use xlink:href="#stripe" y="600"/><rect width="494" height="350" fill="#3C3B6E"/><use xlink:href="#u" transform="translate(247,175) scale(650)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="900" height="600" viewBox="0 0 5850 3900">
+<desc>United States flag, reworked as 2:3. This involved shrinking the stripes from the right until the flag was the right aspect, then shrinking the canton horizontally so that it only occupied 1/2 of the flag's width, then transposing the stars so that they were centered within the canton.</desc>
+<rect width="5850" height="3900" fill="#b22234"/> <!-- red backdrop -->
+<path d="M0,450H5850m0,600H0m0,600H5850m0,600H0m0,600H5850m0,600H0" stroke="#fff" stroke-width="300"/> <!-- 6 white stripes -->
+<rect width="2925" height="2100" fill="#3c3b6e"/> <!-- blue canton 2964 > 2925. 39px difference. -->
+<g fill="#fff">
+	<g id="s18">
+		<g id="s9"> <!-- 9 stars, comprised of vertical sets of 5 and 4 defined inside this block -->
+			<g id="s5">
+				<g id="s4">
+					<!-- Left shifted 19.5 from original position to align stars in smaller box -->
+					<path id="s" d="M227.5,90 298.034230,307.082039 113.373218,172.917961H341.626782L156.965770,307.082039z"/> <!-- star, done in 5 points -->
+					<use xlink:href="#s" y="420"/>
+					<use xlink:href="#s" y="840"/>
+					<use xlink:href="#s" y="1260"/>
+				</g>
+				<use xlink:href="#s" y="1680"/>
+			</g>
+			<use xlink:href="#s4" x="247" y="210"/>
+		</g>
+		<use xlink:href="#s9" x="494"/>
+	</g>
+	<use xlink:href="#s18" x="988"/>
+	<use xlink:href="#s9" x="1976"/>
+	<use xlink:href="#s5" x="2470"/>
+</g>
+</svg>

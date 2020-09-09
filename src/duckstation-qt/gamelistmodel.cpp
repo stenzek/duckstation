@@ -282,7 +282,7 @@ void GameListModel::loadCommonImages()
   m_type_playlist_pixmap.load(QStringLiteral(":/icons/address-book-new-22.png"));
   m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
   m_region_jp_pixmap.load(QStringLiteral(":/icons/flag-jp.png"));
-  m_region_us_pixmap.load(QStringLiteral(":/icons/flag-us.png"));
+  m_region_us_pixmap.load(QStringLiteral(":/icons/flag-uc.png"));
   m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
 
   for (int i = 0; i < static_cast<int>(GameListCompatibilityRating::Count); i++)

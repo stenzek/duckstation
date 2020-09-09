@@ -375,7 +375,7 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
    {{"Auto", "Auto-Detect"},
     {"NTSC-J", "NTSC-J (Japan)"},
-    {"NTSC-U", "NTSC-U (US)"},
+    {"NTSC-U", "NTSC-U/C (US, Canada)"},
     {"PAL", "PAL (Europe, Australia)"}},
    "Auto"},
   {"duckstation_BIOS.PatchFastBoot",
