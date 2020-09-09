@@ -324,6 +324,44 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
   return (std::ferror(fp.get()) == 0);
 }
 
+u32 CheatList::GetEnabledCodeCount() const
+{
+  u32 count = 0;
+  for (const CheatCode& cc : m_codes)
+  {
+    if (cc.enabled)
+      count++;
+  }
+
+  return count;
+}
+
+void CheatList::SetCodeEnabled(u32 index, bool state)
+{
+  if (index >= m_codes.size())
+    return;
+
+  m_codes[index].enabled = state;
+}
+
+void CheatList::EnableCode(u32 index)
+{
+  SetCodeEnabled(index, true);
+}
+
+void CheatList::DisableCode(u32 index)
+{
+  SetCodeEnabled(index, false);
+}
+
+void CheatList::ApplyCode(u32 index)
+{
+  if (index >= m_codes.size())
+    return;
+
+  m_codes[index].Apply();
+}
+
 void CheatCode::Apply() const
 {
   const u32 count = static_cast<u32>(instructions.size());

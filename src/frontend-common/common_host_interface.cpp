@@ -7,6 +7,7 @@
 #include "common/string_util.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
+#include "core/cheats.h"
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
 #include "core/gpu.h"
@@ -116,6 +117,7 @@ void CommonHostInterface::InitializeUserDirectory()
 
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("bios").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cheats").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("inputprofiles").c_str(), false);
@@ -709,6 +711,13 @@ void CommonHostInterface::OnSystemDestroyed()
 void CommonHostInterface::OnRunningGameChanged()
 {
   HostInterface::OnRunningGameChanged();
+
+  if (!System::IsShutdown())
+  {
+    System::SetCheatList(nullptr);
+    if (g_settings.auto_load_cheats)
+      LoadCheatListFromGameTitle();
+  }
 
 #ifdef WITH_DISCORD_PRESENCE
   UpdateDiscordPresence();
@@ -2138,6 +2147,111 @@ void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
   if (gs)
     gs->ApplySettings(display_osd_messages);
+}
+
+std::string CommonHostInterface::GetCheatFileName() const
+{
+  const std::string& title = System::GetRunningTitle();
+  if (title.empty())
+    return {};
+
+  return GetUserDirectoryRelativePath("cheats/%s.cht", title.c_str());
+}
+
+bool CommonHostInterface::LoadCheatList(const char* filename)
+{
+  if (System::IsShutdown())
+    return false;
+
+  std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
+  if (!cl->LoadFromPCSXRFile(filename))
+  {
+    AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to load cheats from '%s'."), filename);
+    return false;
+  }
+
+  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from list. %u cheats are enabled."),
+                         cl->GetCodeCount(), cl->GetEnabledCodeCount());
+  System::SetCheatList(std::move(cl));
+  return true;
+}
+
+bool CommonHostInterface::LoadCheatListFromGameTitle()
+{
+  const std::string filename(GetCheatFileName());
+  if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
+    return false;
+
+  return LoadCheatList(filename.c_str());
+}
+
+bool CommonHostInterface::SaveCheatList(const char* filename)
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return false;
+
+  if (!System::GetCheatList()->SaveToPCSXRFile(filename))
+    return false;
+
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Saved %u cheats to '%s'."),
+                         System::GetCheatList()->GetCodeCount(), filename);
+  return true;
+}
+
+void CommonHostInterface::SetCheatCodeState(u32 index, bool enabled, bool save_to_file)
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return;
+
+  CheatList* cl = System::GetCheatList();
+  if (index >= cl->GetCodeCount())
+    return;
+
+  CheatCode& cc = cl->GetCode(index);
+  if (cc.enabled == enabled)
+    return;
+
+  cc.enabled = enabled;
+
+  if (enabled)
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' enabled."), cc.description.c_str());
+  }
+  else
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' disabled."), cc.description.c_str());
+  }
+
+  if (save_to_file)
+  {
+    const std::string filename(GetCheatFileName());
+    if (!filename.empty())
+    {
+      if (!cl->SaveToPCSXRFile(filename.c_str()))
+      {
+        AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to save cheat list to '%s'"),
+                               filename.c_str());
+      }
+    }
+  }
+}
+
+void CommonHostInterface::ApplyCheatCode(u32 index)
+{
+  if (!System::HasCheatList() || index >= System::GetCheatList()->GetCodeCount())
+    return;
+
+  const CheatCode& cc = System::GetCheatList()->GetCode(index);
+  if (!cc.enabled)
+  {
+    cc.Apply();
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Applied cheat '%s'."), cc.description.c_str());
+  }
+  else
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' is already enabled."),
+                           cc.description.c_str());
+  }
 }
 
 #ifdef WITH_DISCORD_PRESENCE

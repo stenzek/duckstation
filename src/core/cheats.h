@@ -68,9 +68,15 @@ public:
   ALWAYS_INLINE const CheatCode& GetCode(u32 i) const { return m_codes[i]; }
   ALWAYS_INLINE CheatCode& GetCode(u32 i) { return m_codes[i]; }
   ALWAYS_INLINE u32 GetCodeCount() const { return static_cast<u32>(m_codes.size()); }
+  ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
 
   void AddCode(CheatCode cc);
   void RemoveCode(u32 i);
+
+  u32 GetEnabledCodeCount() const;
+  void EnableCode(u32 index);
+  void DisableCode(u32 index);
+  void SetCodeEnabled(u32 index, bool state);
 
   static std::optional<Format> DetectFileFormat(const char* filename);
 
@@ -81,6 +87,8 @@ public:
   bool SaveToPCSXRFile(const char* filename);
 
   void Apply();
+
+  void ApplyCode(u32 index);
 
 private:
   std::vector<CheatCode> m_codes;

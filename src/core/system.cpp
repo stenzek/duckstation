@@ -757,6 +757,7 @@ void Shutdown()
   s_running_game_title.clear();
   s_media_playlist.clear();
   s_media_playlist_filename.clear();
+  s_cheat_list.reset();
   s_state = State::Shutdown;
 }
 

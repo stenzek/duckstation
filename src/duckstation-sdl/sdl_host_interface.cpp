@@ -733,27 +733,14 @@ void SDLHostInterface::DrawMainMenuBar()
       {
         nfdchar_t* path = nullptr;
         if (NFD_OpenDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
-        {
-          std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-          if (cl->LoadFromFile(path, CheatList::Format::Autodetect))
-          {
-            System::SetCheatList(std::move(cl));
-          }
-          else
-          {
-            ReportFormattedMessage("Failed to load cheats from '%s'", path);
-          }
-        }
+          LoadCheatList(path);
       }
 
       if (ImGui::MenuItem("Save Cheats...", nullptr, false, has_cheat_file))
       {
         nfdchar_t* path = nullptr;
         if (NFD_SaveDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
-        {
-          if (!System::GetCheatList()->SaveToPCSXRFile(path))
-            ReportFormattedMessage("Failed to save cheats to '%s'", path);
-        }
+          SaveCheatList(path);
       }
 
       if (ImGui::BeginMenu("Enabled Cheats", has_cheat_file))
@@ -761,8 +748,9 @@ void SDLHostInterface::DrawMainMenuBar()
         CheatList* cl = System::GetCheatList();
         for (u32 i = 0; i < cl->GetCodeCount(); i++)
         {
-          CheatCode& cc = cl->GetCode(i);
-          ImGui::MenuItem(cc.description.c_str(), nullptr, &cc.enabled, true);
+          const CheatCode& cc = cl->GetCode(i);
+          if (ImGui::MenuItem(cc.description.c_str(), nullptr, cc.enabled, true))
+            SetCheatCodeState(i, !cc.enabled, g_settings.auto_load_cheats);
         }
 
         ImGui::EndMenu();
@@ -775,7 +763,7 @@ void SDLHostInterface::DrawMainMenuBar()
         {
           const CheatCode& cc = cl->GetCode(i);
           if (ImGui::MenuItem(cc.description.c_str()))
-            cc.Apply();
+            ApplyCheatCode(i);
         }
 
         ImGui::EndMenu();
@@ -1198,6 +1186,8 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
         settings_changed |= ImGui::Checkbox("Start Fullscreen", &m_settings_copy.start_fullscreen);
         settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings_copy.save_state_on_exit);
+        settings_changed |= ImGui::Checkbox("Apply Game Settings", &m_settings_copy.apply_game_settings);
+        settings_changed |= ImGui::Checkbox("Automatically Load Cheats", &m_settings_copy.auto_load_cheats);
         settings_changed |=
           ImGui::Checkbox("Load Devices From Save States", &m_settings_copy.load_devices_from_save_states);
       }
