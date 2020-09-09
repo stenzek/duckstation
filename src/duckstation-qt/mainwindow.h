@@ -61,6 +61,7 @@ private Q_SLOTS:
   void onChangeDiscFromGameListActionTriggered();
   void onChangeDiscFromPlaylistMenuAboutToShow();
   void onChangeDiscFromPlaylistMenuAboutToHide();
+  void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
   void onViewToolbarActionToggled(bool checked);
   void onViewStatusBarActionToggled(bool checked);

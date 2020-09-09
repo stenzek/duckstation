@@ -5,6 +5,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/system.h"
@@ -27,6 +28,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
@@ -950,6 +952,87 @@ void QtHostInterface::populatePlaylistEntryMenu(QMenu* menu)
     connect(action, &QAction::triggered, [this, i]() { changeDiscFromPlaylist(i); });
     menu->addAction(action);
   }
+}
+
+void QtHostInterface::populateCheatsMenu(QMenu* menu)
+{
+  Assert(!isOnWorkerThread());
+  if (!System::IsValid())
+    return;
+
+  const bool has_cheat_list = System::HasCheatList();
+
+  QAction* action = menu->addAction(tr("&Load Cheats..."));
+  connect(action, &QAction::triggered, [this]() {
+    QString filename = QFileDialog::getOpenFileName(m_main_window, tr("Select Cheat File"), QString(),
+                                                    tr("PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)"));
+    if (!filename.isEmpty())
+      loadCheatList(filename);
+  });
+
+  action = menu->addAction(tr("&Save Cheats..."));
+  action->setEnabled(has_cheat_list);
+  connect(action, &QAction::triggered, [this]() {
+    QString filename = QFileDialog::getSaveFileName(m_main_window, tr("Select Cheat File"), QString(),
+                                                    tr("PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)"));
+    if (!filename.isEmpty())
+      SaveCheatList(filename.toUtf8().constData());
+  });
+
+  QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
+  enabled_menu->setEnabled(has_cheat_list);
+  QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
+  apply_menu->setEnabled(has_cheat_list);
+  if (has_cheat_list)
+  {
+    CheatList* cl = System::GetCheatList();
+    for (u32 i = 0; i < cl->GetCodeCount(); i++)
+    {
+      CheatCode& cc = cl->GetCode(i);
+      QString desc(QString::fromStdString(cc.description));
+      action = enabled_menu->addAction(desc);
+      action->setCheckable(true);
+      action->setChecked(cc.enabled);
+      connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+
+      action = apply_menu->addAction(desc);
+      connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
+    }
+  }
+}
+
+void QtHostInterface::loadCheatList(const QString& filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "loadCheatList", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+    return;
+  }
+
+  LoadCheatList(filename.toUtf8().constData());
+}
+
+void QtHostInterface::setCheatEnabled(quint32 index, bool enabled)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "setCheatEnabled", Qt::QueuedConnection, Q_ARG(quint32, index),
+                              Q_ARG(bool, enabled));
+    return;
+  }
+
+  SetCheatCodeState(index, enabled, g_settings.auto_load_cheats);
+}
+
+void QtHostInterface::applyCheat(u32 index)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "applyCheat", Qt::QueuedConnection, Q_ARG(quint32, index));
+    return;
+  }
+
+  ApplyCheatCode(index);
 }
 
 void QtHostInterface::loadState(const QString& filename)

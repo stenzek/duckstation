@@ -90,6 +90,9 @@ public:
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
   void populatePlaylistEntryMenu(QMenu* menu);
 
+  /// Fills menu with the current cheat options.
+  void populateCheatsMenu(QMenu* menu);
+
   ALWAYS_INLINE QString getSavePathForInputProfile(const QString& name) const
   {
     return QString::fromStdString(GetSavePathForInputProfile(name.toUtf8().constData()));
@@ -158,6 +161,9 @@ public Q_SLOTS:
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();
+  void loadCheatList(const QString& filename);
+  void setCheatEnabled(quint32 index, bool enabled);
+  void applyCheat(quint32 index);
 
 private Q_SLOTS:
   void doStopThread();

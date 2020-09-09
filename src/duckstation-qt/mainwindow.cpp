@@ -306,6 +306,12 @@ void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
   m_ui.menuChangeDiscFromPlaylist->clear();
 }
 
+void MainWindow::onCheatsMenuAboutToShow()
+{
+  m_ui.menuCheats->clear();
+  m_host_interface->populateCheatsMenu(m_ui.menuCheats);
+}
+
 void MainWindow::onRemoveDiscActionTriggered()
 {
   m_host_interface->changeDisc(QString());
@@ -545,9 +551,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
+  m_ui.actionCheats->setDisabled(starting || !running);
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
+  m_ui.menuCheats->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -622,6 +630,8 @@ void MainWindow::connectSignals()
           &MainWindow::onChangeDiscFromPlaylistMenuAboutToShow);
   connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToHide, this,
           &MainWindow::onChangeDiscFromPlaylistMenuAboutToHide);
+  connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
+  connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
