@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
 - 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
 - 2020/08/25: Automated builds for macOS now available.
 - 2020/08/22: XInput controller backend added.
@@ -58,6 +59,7 @@ Other features include:
  - Automatic updates for Windows builds
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
+ - Supports loading cheats from libretro or PCSXR format lists
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
