@@ -61,7 +61,7 @@
      </property>
      <property name="icon">
       <iconset resource="resources/icons.qrc">
-       <normaloff>:/icons/actions-tools-wizard.png</normaloff>:/icons/actions-tools-wizard.png</iconset>
+       <normaloff>:/icons/conical-flask-red.png</normaloff>:/icons/conical-flask-red.png</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuLoadState">
@@ -400,7 +400,7 @@
   <action name="actionCheats">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/actions-tools-wizard-32.png</normaloff>:/icons/actions-tools-wizard-32.png</iconset>
+     <normaloff>:/icons/conical-flask-red.png</normaloff>:/icons/conical-flask-red.png</iconset>
    </property>
    <property name="text">
     <string>Cheats...</string>
@@ -454,7 +454,7 @@
   <action name="actionSettings">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+     <normaloff>:/icons/preferences-system.png</normaloff>:/icons/preferences-system.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Settings...</string>
@@ -565,7 +565,7 @@
   <action name="actionScreenshot">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+     <normaloff>:/icons/camera-photo.png</normaloff>:/icons/camera-photo.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Screenshot</string>

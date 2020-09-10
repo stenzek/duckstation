@@ -1,6 +1,7 @@
 #include "gamelistmodel.h"
 #include "common/string_util.h"
 #include "core/system.h"
+#include <QtGui/QIcon>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
   {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility"}};
@@ -277,12 +278,12 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 void GameListModel::loadCommonImages()
 {
   // TODO: Use svg instead of png
-  m_type_disc_pixmap.load(QStringLiteral(":/icons/media-optical-24.png"));
-  m_type_exe_pixmap.load(QStringLiteral(":/icons/applications-system-24.png"));
-  m_type_playlist_pixmap.load(QStringLiteral(":/icons/address-book-new-22.png"));
-  m_region_eu_pixmap.addFile(QStringLiteral(":/icons/flag-eu.png"));
-  m_region_jp_pixmap.addFile(QStringLiteral(":/icons/flag-jp.png"));
-  m_region_us_pixmap.addFile(QStringLiteral(":/icons/flag-uc.png"));
+  m_type_disc_pixmap = QIcon(QStringLiteral(":/icons/media-optical-24.png")).pixmap(QSize(24, 24));
+  m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
+  m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
+  m_region_eu_pixmap = QIcon(QStringLiteral(":/icons/flag-eu.png")).pixmap(QSize(42, 30));
+  m_region_jp_pixmap = QIcon(QStringLiteral(":/icons/flag-jp.png")).pixmap(QSize(42, 30));
+  m_region_us_pixmap = QIcon(QStringLiteral(":/icons/flag-uc.png")).pixmap(QSize(42, 30));
 
   for (int i = 0; i < static_cast<int>(GameListCompatibilityRating::Count); i++)
     m_compatibiliy_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i));

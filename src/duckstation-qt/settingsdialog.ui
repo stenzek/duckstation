@@ -82,7 +82,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
+          <normaloff>:/icons/system-file-manager.png</normaloff>:/icons/system-file-manager.png</iconset>
         </property>
        </item>
        <item>
@@ -91,7 +91,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+          <normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</iconset>
         </property>
        </item>
        <item>
