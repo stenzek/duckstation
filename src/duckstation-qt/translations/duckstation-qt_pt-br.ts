@@ -1016,6 +1016,359 @@
     </message>
 </context>
 <context>
+    <name>DisplaySettingsWidget</name>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="14"/>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="32"/>
+        <source>Basic</source>
+        <translation>Básico</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="38"/>
+        <source>Renderer:</source>
+        <translation>Renderizador:</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="48"/>
+        <source>Adapter:</source>
+        <translation>Adaptador:</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="61"/>
+        <source>Screen Display</source>
+        <translation>Exibição</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="67"/>
+        <source>Aspect Ratio:</source>
+        <translation>Proporção e Aspecto:</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="77"/>
+        <source>Crop:</source>
+        <translation>Tipo de Corte:</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="87"/>
+        <location filename="../displaysettingswidget.cpp" line="69"/>
+        <source>Linear Upscaling</source>
+        <translation>Escalonamento Linear</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="94"/>
+        <location filename="../displaysettingswidget.cpp" line="76"/>
+        <source>Integer Upscaling</source>
+        <translation>Escalonamento Integro</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="101"/>
+        <location filename="../displaysettingswidget.cpp" line="80"/>
+        <source>VSync</source>
+        <translation>Sincronização Vertical (V-Sync)</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="111"/>
+        <source>On-Screen Display</source>
+        <translation>Mensagens em Tela (OSD)</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="117"/>
+        <source>Show Messages</source>
+        <translation>Mostrar Mensagens</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="124"/>
+        <location filename="../displaysettingswidget.cpp" line="86"/>
+        <source>Show FPS</source>
+        <translation>Mostar FPS</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="131"/>
+        <source>Show Emulation Speed</source>
+        <translation>Mostrar velocidade de Emulação</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="138"/>
+        <location filename="../displaysettingswidget.cpp" line="88"/>
+        <source>Show VPS</source>
+        <translation>Mostrar VPS</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="145"/>
+        <source>Show Resolution</source>
+        <translation>Mostrar Resolução</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="49"/>
+        <source>Renderer</source>
+        <translation>Rederizador</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="50"/>
+        <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
+        <translation>Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="55"/>
+        <source>Adapter</source>
+        <translation>Adaptador</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="55"/>
+        <location filename="../displaysettingswidget.cpp" line="144"/>
+        <source>(Default)</source>
+        <translation>Padrão</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="56"/>
+        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
+        <translation>Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="60"/>
+        <source>Aspect Ratio</source>
+        <translation>Razão de Aspecto</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="61"/>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
+        <translation>Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="64"/>
+        <source>Crop Mode</source>
+        <translation>Modo de Corte</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="64"/>
+        <source>Only Overscan Area</source>
+        <translation>Somente Área Renderizada</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="65"/>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
+        <translation>Determina quanto da area normalmente não visivel em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visivel) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="69"/>
+        <location filename="../displaysettingswidget.cpp" line="80"/>
+        <location filename="../displaysettingswidget.cpp" line="83"/>
+        <source>Checked</source>
+        <translation>Marcado</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="70"/>
+        <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
+        <translation>Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="76"/>
+        <location filename="../displaysettingswidget.cpp" line="86"/>
+        <location filename="../displaysettingswidget.cpp" line="88"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
+        <source>Unchecked</source>
+        <translation>Desmarcado</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="77"/>
+        <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
+        <translation>Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="81"/>
+        <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
+        <translation>Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possivel atingir 100% da velocidade.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="83"/>
+        <source>Show OSD Messages</source>
+        <translation>Mostar mensagens em Tela</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="84"/>
+        <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
+        <translation>Mostrar as mensagens na tela (canto superior esquerdo) quando eventos ocorrerem; Quando um SaveState é criado ou carregado, capturas de tela forem feitas etc.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="87"/>
+        <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
+        <translation>Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="89"/>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <translation>Mostra o FPS no canto superior direito da tela.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
+        <source>Show Speed</source>
+        <translation>Mostrar Velocidade</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="93"/>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <translation>Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
+    </message>
+</context>
+<context>
+    <name>EnhancementSettingsWidget</name>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="14"/>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="32"/>
+        <source>Rendering Enhancements</source>
+        <translation>Aprimoramentos de Renderização</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="38"/>
+        <source>Internal Resolution Scale:</source>
+        <translation>Escala de Resolução:</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="48"/>
+        <location filename="../enhancementsettingswidget.cpp" line="48"/>
+        <source>True Color Rendering (24-bit, disables dithering)</source>
+        <translation>Renderização em (24 Cores, desativa o efeito dithering)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="55"/>
+        <location filename="../enhancementsettingswidget.cpp" line="55"/>
+        <source>Scaled Dithering (scale dither pattern to resolution)</source>
+        <translation>Dithering Escalonado, (Escalona o padrão do dithering para a resolução)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="62"/>
+        <location filename="../enhancementsettingswidget.cpp" line="65"/>
+        <source>Bilinear Texture Filtering</source>
+        <translation>Filtragem de Textura Bilinear</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="72"/>
+        <source>Display Enhancements</source>
+        <translation>Aprimoramentos de Renderização</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="78"/>
+        <location filename="../enhancementsettingswidget.cpp" line="37"/>
+        <source>Disable Interlacing (force progressive render/scan)</source>
+        <translation>Desativa o entrelaçamento (Força Rederização Progressiva)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="85"/>
+        <location filename="../enhancementsettingswidget.cpp" line="58"/>
+        <source>Force NTSC Timings (60hz-on-PAL)</source>
+        <translation>Força rodar em modo NTSC (60hz Jogos EU)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="92"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
+        <source>Widescreen Hack</source>
+        <translation>Aprimoramento P/ Telas Panoramicas</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="102"/>
+        <source>PGXP (Precision Geometry Transform Pipeline)</source>
+        <translation>PGXP (Correção Geometrica)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="108"/>
+        <location filename="../enhancementsettingswidget.cpp" line="75"/>
+        <source>Geometry Correction</source>
+        <translation>Correção Geométrica</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="115"/>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
+        <source>Culling Correction</source>
+        <translation>Correção de Curvas</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="122"/>
+        <location filename="../enhancementsettingswidget.cpp" line="81"/>
+        <source>Texture Correction</source>
+        <translation>Correção de Textura</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="37"/>
+        <location filename="../enhancementsettingswidget.cpp" line="48"/>
+        <location filename="../enhancementsettingswidget.cpp" line="58"/>
+        <location filename="../enhancementsettingswidget.cpp" line="65"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
+        <location filename="../enhancementsettingswidget.cpp" line="75"/>
+        <source>Unchecked</source>
+        <translation>Desmarcado</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="38"/>
+        <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
+        <translation>Força a renderização e a exibição de quadros para o modo progressivo. Isso remove efeitos de &quot;trepidação&quot; Visto nos jogos 480i renderizando-os em 480p.Nem todos os jogos são compatíveis com esta opção, alguns requerem renderização entrelaçada internamente. Normalmente é seguro ativar..&lt;/u&gt;&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="43"/>
+        <source>Resolution Scale</source>
+        <translation>Escala de Resolução</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="44"/>
+        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
+        <translation>Aumentar a resolução para mais de 1x aumentará a resolução dos Poligonos e linhas em jogos 3D. Só é utilizável quando usado com placas de video dedicadas. &lt;br&gt; Geralmente é seguro ativar esta opção, deixando assim a maior parte dos jogos com vizual muito melhor em resoluções mais altas; Porém, utiliza mais da sua placa de Vídeo.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="49"/>
+        <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
+        <translation>Força a precisão das cores produz efeitos de gradientes mais agradável ao custo de fazer com que algumas cores pareçam um pouco diferentes. Desativar a opção também ativa alguns pontilhados, o que torna a transição entre cores menos nítida a maioria dos jogos é compatível com esta opção, os que não forem terão efeitos quebrados com a opção ativada. Aplica-se apenas aos renderizadores por hardware.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="55"/>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
+        <location filename="../enhancementsettingswidget.cpp" line="81"/>
+        <source>Checked</source>
+        <translation>Marcado</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="56"/>
+        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
+        <translation>Escalona os &apos;ditherings&apos; - pontilhados na imagem para a placa de Video.Torna a visão destes pontos muito menos visiveis em resoluções mais altas.Geralmente seguro ativar e suportado apenas pelos rederizadores por Hardware (ou seja usando sua placa de vídeo).</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="59"/>
+        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
+        <translation>Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%.Em jogos com taxas de quadro (fps) variável pode isto não afetará a velocidade na hora da jogatina.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="66"/>
+        <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
+        <translation>Suaviza texturas ampliadas em objetos 3D usando filtragem bilinear. Terá efeito maior em resoluções mais altas. Aplica-se apenas aos rederizadores por hardware.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="70"/>
+        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
+        <translation>Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="76"/>
+        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
+        <translation>Reduz &quot;tremeliques&quot; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="79"/>
+        <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
+        <translation>Aumenta a precisão das curvas nos poligonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="82"/>
+        <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
+        <translation>Utiliza interpolação corretiva em perspetiva para cordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
+    </message>
+</context>
+<context>
     <name>GPURenderer</name>
     <message>
         <location filename="../../core/settings.cpp" line="423"/>
@@ -1041,130 +1394,96 @@
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <location filename="../gpusettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation type="vanished">Form</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="47"/>
         <source>Basic</source>
-        <translation>Básico</translation>
+        <translation type="vanished">Básico</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="53"/>
         <source>Renderer:</source>
-        <translation>Renderizador:</translation>
+        <translation type="vanished">Renderizador:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="63"/>
         <source>Adapter:</source>
-        <translation>Adaptador:</translation>
+        <translation type="vanished">Adaptador:</translation>
     </message>
     <message>
         <source>Use Debug Device</source>
         <translation type="vanished">Usar Dispositivo de Depuração</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="76"/>
         <source>Screen Display</source>
-        <translation>Exibição</translation>
+        <translation type="vanished">Exibição</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="82"/>
         <source>Aspect Ratio:</source>
-        <translation>Proporção e Aspecto:</translation>
+        <translation type="vanished">Proporção e Aspecto:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="92"/>
         <source>Crop:</source>
-        <translation>Cortar:</translation>
+        <translation type="vanished">Cortar:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="102"/>
-        <location filename="../gpusettingswidget.cpp" line="89"/>
         <source>Linear Upscaling</source>
-        <translation>Escalonamento Linear</translation>
+        <translation type="vanished">Escalonamento Linear</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="109"/>
-        <location filename="../gpusettingswidget.cpp" line="96"/>
         <source>Integer Upscaling</source>
-        <translation>Escalonamento Integro</translation>
+        <translation type="vanished">Escalonamento Integro</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="116"/>
-        <location filename="../gpusettingswidget.cpp" line="100"/>
         <source>VSync</source>
-        <translation>Sincronização Vertical (V-Sync)</translation>
+        <translation type="vanished">Sincronização Vertical (V-Sync)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="126"/>
         <source>Enhancements</source>
-        <translation>Aprimoramentos</translation>
+        <translation type="vanished">Aprimoramentos</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="132"/>
         <source>Resolution Scale:</source>
-        <translation>Escala de Resolução:</translation>
+        <translation type="vanished">Escala de Resolução:</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="142"/>
-        <location filename="../gpusettingswidget.cpp" line="109"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation>Renderização em (24 Cores, desativa o efeito dithering)</translation>
+        <translation type="vanished">Renderização em (24 Cores, desativa o efeito dithering)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="149"/>
-        <location filename="../gpusettingswidget.cpp" line="116"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation>Dithering Escalonado, (Escalona o padrão do dithering para a resolução)</translation>
+        <translation type="vanished">Dithering Escalonado, (Escalona o padrão do dithering para a resolução)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="156"/>
-        <location filename="../gpusettingswidget.cpp" line="84"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation>Desativa o entrelaçamento (Força Rederização Progressiva)</translation>
+        <translation type="vanished">Desativa o entrelaçamento (Força Rederização Progressiva)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="163"/>
-        <location filename="../gpusettingswidget.cpp" line="119"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation>Força o temporizador rodar em NTSC (60hz em jogos EU)</translation>
+        <translation type="vanished">Força o temporizador rodar em NTSC (60hz em jogos EU)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="170"/>
-        <location filename="../gpusettingswidget.cpp" line="126"/>
         <source>Bilinear Texture Filtering</source>
-        <translation>Filtragem de Textura Bilinear</translation>
+        <translation type="vanished">Filtragem de Textura Bilinear</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="177"/>
-        <location filename="../gpusettingswidget.cpp" line="130"/>
         <source>Widescreen Hack</source>
-        <translation>Hack para Telas Widescreen</translation>
+        <translation type="vanished">Hack para Telas Widescreen</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="187"/>
         <source>PGXP</source>
-        <translation>PGXP</translation>
+        <translation type="vanished">PGXP</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="193"/>
-        <location filename="../gpusettingswidget.cpp" line="136"/>
         <source>Geometry Correction</source>
-        <translation>Correção Geométrica</translation>
+        <translation type="vanished">Correção Geométrica</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="200"/>
-        <location filename="../gpusettingswidget.cpp" line="139"/>
         <source>Culling Correction</source>
-        <translation>Correção de Curvas</translation>
+        <translation type="vanished">Correção de Curvas</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.ui" line="207"/>
-        <location filename="../gpusettingswidget.cpp" line="142"/>
         <source>Texture Correction</source>
-        <translation>Correção de Textura</translation>
+        <translation type="vanished">Correção de Textura</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
@@ -1175,57 +1494,44 @@
         <translation type="vanished">Modo CPU</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="63"/>
         <source>Renderer</source>
-        <translation>Rederizador</translation>
+        <translation type="vanished">Rederizador</translation>
     </message>
     <message>
         <source>Chooses the backend to use for rendering tasks for the the console GPU. Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
         <translation type="vanished">Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="69"/>
         <source>Adapter</source>
-        <translation>Adaptador</translation>
+        <translation type="vanished">Adaptador</translation>
     </message>
     <message>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. This option is only supported in Direct3D and Vulkan, OpenGL will always use the default device.</source>
         <translation type="vanished">Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="84"/>
-        <location filename="../gpusettingswidget.cpp" line="96"/>
-        <location filename="../gpusettingswidget.cpp" line="109"/>
-        <location filename="../gpusettingswidget.cpp" line="119"/>
-        <location filename="../gpusettingswidget.cpp" line="126"/>
-        <location filename="../gpusettingswidget.cpp" line="130"/>
-        <location filename="../gpusettingswidget.cpp" line="136"/>
         <source>Unchecked</source>
-        <translation>Desmarcado</translation>
+        <translation type="vanished">Desmarcado</translation>
     </message>
     <message>
         <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
         <translation type="vanished">Permite o uso de dispositivos de depuração e shaders para renderizar APIs que os suportam. Só deve ser usado ao depurar o emulador.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="74"/>
         <source>Aspect Ratio</source>
-        <translation>Razão de Aspecto</translation>
+        <translation type="vanished">Razão de Aspecto</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="75"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation>Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
+        <translation type="vanished">Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="78"/>
         <source>Crop Mode</source>
-        <translation>Modo de Corte</translation>
+        <translation type="vanished">Modo de Corte</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="78"/>
         <source>Only Overscan Area</source>
-        <translation>Somente Área Renderizada</translation>
+        <translation type="vanished">Somente Área Renderizada</translation>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects and may not display correctly with the All Borders setting. Only Overscan offers a good compromise between stability and hiding black borders.</source>
@@ -1244,13 +1550,8 @@
         <translation type="vanished">Força o modo de quadros por segundo em modo progressivo. Se o jogo já tem essa opção nativamente ele não irá ter nenhum beneficio podendo assim deixar a mesma ligada.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="89"/>
-        <location filename="../gpusettingswidget.cpp" line="100"/>
-        <location filename="../gpusettingswidget.cpp" line="116"/>
-        <location filename="../gpusettingswidget.cpp" line="139"/>
-        <location filename="../gpusettingswidget.cpp" line="142"/>
         <source>Checked</source>
-        <translation>Marcado</translation>
+        <translation type="vanished">Marcado</translation>
     </message>
     <message>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less noticable the higher the resolution scale.</source>
@@ -1265,18 +1566,16 @@
         <translation type="vanished">Ativa a sincronização quando possível. A ativação dessa opção fornecerá melhor ritmo de quadros por segundo e movimento mais suave com menos quadros duplicados.&lt;br&gt;&lt;br&gt;O V-Sync é desativado automaticamente quando não é possível usá-lo (por exemplo quando o jogo não estiver rodando a 100%).</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="104"/>
         <source>Resolution Scale</source>
-        <translation>Escala de Resolução</translation>
+        <translation type="vanished">Escala de Resolução</translation>
     </message>
     <message>
         <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation type="vanished">Permite o aumento de escala de objetos 3D renderizados, aplica-se apenas aos back-end de hardware é seguro usar essa opção na maioria dos jogos ficando melhor ainda em resoluções mais altas; Isto implica também no maior uso da sua Placa de Video.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="110"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation>Força a precisão das cores produz efeitos de gradientes mais agradável ao custo de fazer com que algumas cores pareçam um pouco diferentes. Desativar a opção também ativa alguns pontilhados, o que torna a transição entre cores menos nítida a maioria dos jogos é compatível com esta opção, os que não forem terão efeitos quebrados com a opção ativada. Aplica-se apenas aos renderizadores por hardware.</translation>
+        <translation type="vanished">Força a precisão das cores produz efeitos de gradientes mais agradável ao custo de fazer com que algumas cores pareçam um pouco diferentes. Desativar a opção também ativa alguns pontilhados, o que torna a transição entre cores menos nítida a maioria dos jogos é compatível com esta opção, os que não forem terão efeitos quebrados com a opção ativada. Aplica-se apenas aos renderizadores por hardware.</translation>
     </message>
     <message>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers.</source>
@@ -1307,79 +1606,64 @@
         <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="64"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
+        <translation type="vanished">Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="70"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation>Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
+        <translation type="vanished">Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="79"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Determina quanto da area normalmente não visivel em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visivel) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
+        <translation type="vanished">Determina quanto da area normalmente não visivel em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visivel) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="85"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Força a renderização e a exibição de quadros para o modo progressivo. Isso remove efeitos de &quot;trepidação&quot; Visto nos jogos 480i renderizando-os em 480p.Nem todos os jogos são compatíveis com esta opção, alguns requerem renderização entrelaçada internamente. Normalmente é seguro ativar..&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation type="vanished">Força a renderização e a exibição de quadros para o modo progressivo. Isso remove efeitos de &quot;trepidação&quot; Visto nos jogos 480i renderizando-os em 480p.Nem todos os jogos são compatíveis com esta opção, alguns requerem renderização entrelaçada internamente. Normalmente é seguro ativar..&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="90"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
+        <translation type="vanished">Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="97"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation>Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
+        <translation type="vanished">Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="101"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possivel atingir 100% da velocidade.</translation>
+        <translation type="vanished">Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possivel atingir 100% da velocidade.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="105"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Aumentar a resolução para mais de 1x aumentará a resolução dos Poligonos e linhas em jogos 3D. Só é utilizável quando usado com placas de video dedicadas. &lt;br&gt; Geralmente é seguro ativar esta opção, deixando assim a maior parte dos jogos com vizual muito melhor em resoluções mais altas; Porém, utiliza mais da sua placa de Vídeo.</translation>
+        <translation type="vanished">Aumentar a resolução para mais de 1x aumentará a resolução dos Poligonos e linhas em jogos 3D. Só é utilizável quando usado com placas de video dedicadas. &lt;br&gt; Geralmente é seguro ativar esta opção, deixando assim a maior parte dos jogos com vizual muito melhor em resoluções mais altas; Porém, utiliza mais da sua placa de Vídeo.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="117"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation>Escalona os &apos;ditherings&apos; - pontilhados na imagem para a placa de Video.Torna a visão destes pontos muito menos visiveis em resoluções mais altas.Geralmente seguro ativar e suportado apenas pelos rederizadores por Hardware (ou seja usando sua placa de vídeo).</translation>
+        <translation type="vanished">Escalona os &apos;ditherings&apos; - pontilhados na imagem para a placa de Video.Torna a visão destes pontos muito menos visiveis em resoluções mais altas.Geralmente seguro ativar e suportado apenas pelos rederizadores por Hardware (ou seja usando sua placa de vídeo).</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="120"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation>Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%.Em jogos com taxas de quadro (fps) variável pode isto não afetará a velocidade na hora da jogatina.</translation>
+        <translation type="vanished">Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%.Em jogos com taxas de quadro (fps) variável pode isto não afetará a velocidade na hora da jogatina.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="127"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>Suaviza texturas ampliadas em objetos 3D usando filtragem bilinear. Terá efeito maior em resoluções mais altas. Aplica-se apenas aos rederizadores por hardware.</translation>
+        <translation type="vanished">Suaviza texturas ampliadas em objetos 3D usando filtragem bilinear. Terá efeito maior em resoluções mais altas. Aplica-se apenas aos rederizadores por hardware.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="131"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="137"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Reduz &quot;tremeliques&quot; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation type="vanished">Reduz &quot;tremeliques&quot; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="140"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation>Aumenta a precisão das curvas nos poligonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
+        <translation type="vanished">Aumenta a precisão das curvas nos poligonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="143"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Utiliza interpolação corretiva em perspetiva para cordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
+        <translation type="vanished">Utiliza interpolação corretiva em perspetiva para cordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
     </message>
     <message>
         <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
@@ -1499,10 +1783,8 @@
         <translation type="obsolete">%1x (%2x%3 VRAM)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="69"/>
-        <location filename="../gpusettingswidget.cpp" line="205"/>
         <source>(Default)</source>
-        <translation>Padrão</translation>
+        <translation type="vanished">Padrão</translation>
     </message>
 </context>
 <context>
@@ -1541,37 +1823,37 @@
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistmodel.cpp" line="293"/>
+        <location filename="../gamelistmodel.cpp" line="294"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="294"/>
+        <location filename="../gamelistmodel.cpp" line="295"/>
         <source>Code</source>
         <translation>Código</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="295"/>
+        <location filename="../gamelistmodel.cpp" line="296"/>
         <source>Title</source>
         <translation>Titulo</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="296"/>
+        <location filename="../gamelistmodel.cpp" line="297"/>
         <source>File Title</source>
         <translation>Titulo do Jogo (Na pasta)</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="297"/>
+        <location filename="../gamelistmodel.cpp" line="298"/>
         <source>Size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="298"/>
+        <location filename="../gamelistmodel.cpp" line="299"/>
         <source>Region</source>
         <translation>Região</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="299"/>
+        <location filename="../gamelistmodel.cpp" line="300"/>
         <source>Compatibility</source>
         <translation>Compatibilidade</translation>
     </message>
@@ -2094,43 +2376,43 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="60"/>
         <source>Pause On Start</source>
         <translation>Pausar ao Iniciar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
-        <location filename="../generalsettingswidget.cpp" line="56"/>
+        <location filename="../generalsettingswidget.cpp" line="48"/>
         <source>Confirm Power Off</source>
         <translation>Confirmar ao Fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
-        <location filename="../generalsettingswidget.cpp" line="59"/>
+        <location filename="../generalsettingswidget.cpp" line="51"/>
         <source>Save State On Exit</source>
         <translation>Salvar ao Fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
-        <location filename="../generalsettingswidget.cpp" line="71"/>
+        <location filename="../generalsettingswidget.cpp" line="63"/>
         <source>Load Devices From Save States</source>
         <translation>Carregar a partir do estado salvo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="62"/>
+        <location filename="../generalsettingswidget.cpp" line="54"/>
         <source>Start Fullscreen</source>
         <translation>Iniciar em Tela Cheia</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
-        <location filename="../generalsettingswidget.cpp" line="65"/>
+        <location filename="../generalsettingswidget.cpp" line="57"/>
         <source>Render To Main Window</source>
         <translation>Carregar Jogo na janela principal</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
-        <location filename="../generalsettingswidget.cpp" line="76"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>Apply Per-Game Settings</source>
         <translation>Usar Configs. Separadas por Jogo</translation>
     </message>
@@ -2141,7 +2423,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="97"/>
-        <location filename="../generalsettingswidget.cpp" line="88"/>
+        <location filename="../generalsettingswidget.cpp" line="80"/>
         <source>Emulation Speed</source>
         <translation>Velocidade da emulação</translation>
     </message>
@@ -2152,195 +2434,177 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="142"/>
-        <location filename="../generalsettingswidget.cpp" line="80"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Enable Speed Limiter</source>
         <translation>Ativa Limitador de Velocidade</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="149"/>
-        <location filename="../generalsettingswidget.cpp" line="84"/>
+        <location filename="../generalsettingswidget.cpp" line="76"/>
         <source>Increase Timer Resolution</source>
         <translation>Aumentar Resolução em Tempo Real</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="159"/>
         <source>On-Screen Display</source>
-        <translation>Mensagens na Tela</translation>
+        <translation type="vanished">Mensagens na Tela</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="165"/>
         <source>Show Messages</source>
-        <translation>Mostrar Mensagens</translation>
+        <translation type="vanished">Mostrar Mensagens</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="172"/>
-        <location filename="../generalsettingswidget.cpp" line="94"/>
         <source>Show FPS</source>
-        <translation>Mostar FPS</translation>
+        <translation type="vanished">Mostar FPS</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="179"/>
         <source>Show Emulation Speed</source>
-        <translation>Mostrar velocidade de Emulação</translation>
+        <translation type="vanished">Mostrar velocidade de Emulação</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="186"/>
-        <location filename="../generalsettingswidget.cpp" line="96"/>
         <source>Show VPS</source>
-        <translation>Mostrar VPS</translation>
+        <translation type="vanished">Mostrar VPS</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="193"/>
         <source>Show Resolution</source>
-        <translation>Mostrar Resolução</translation>
+        <translation type="vanished">Mostrar Resolução</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="203"/>
+        <location filename="../generalsettingswidget.ui" line="159"/>
         <source>Miscellaneous</source>
         <translation>Diversos</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="211"/>
+        <location filename="../generalsettingswidget.ui" line="167"/>
         <source>Controller Backend:</source>
         <translation>Tipo de Controle:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="56"/>
-        <location filename="../generalsettingswidget.cpp" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="65"/>
+        <location filename="../generalsettingswidget.cpp" line="48"/>
+        <location filename="../generalsettingswidget.cpp" line="51"/>
+        <location filename="../generalsettingswidget.cpp" line="57"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
         <location filename="../generalsettingswidget.cpp" line="76"/>
-        <location filename="../generalsettingswidget.cpp" line="80"/>
-        <location filename="../generalsettingswidget.cpp" line="84"/>
-        <location filename="../generalsettingswidget.cpp" line="91"/>
-        <location filename="../generalsettingswidget.cpp" line="130"/>
+        <location filename="../generalsettingswidget.cpp" line="111"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="57"/>
+        <location filename="../generalsettingswidget.cpp" line="49"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>Determina se uma janela será mostrara para confirmar o fechamento do emulador ou jogo quando atalho é pressionado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="60"/>
+        <location filename="../generalsettingswidget.cpp" line="52"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>Salva automaticamente o estado do emulador ao desligar ou sair. Você pode retomar diretamente de onde parou na próxima vez.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="62"/>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
-        <location filename="../generalsettingswidget.cpp" line="71"/>
-        <location filename="../generalsettingswidget.cpp" line="94"/>
-        <location filename="../generalsettingswidget.cpp" line="96"/>
-        <location filename="../generalsettingswidget.cpp" line="100"/>
-        <location filename="../generalsettingswidget.cpp" line="117"/>
+        <location filename="../generalsettingswidget.cpp" line="54"/>
+        <location filename="../generalsettingswidget.cpp" line="60"/>
+        <location filename="../generalsettingswidget.cpp" line="63"/>
+        <location filename="../generalsettingswidget.cpp" line="98"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="63"/>
+        <location filename="../generalsettingswidget.cpp" line="55"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>Muda para o modo Tela Cheia assim que um Jogo é Iniciado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="66"/>
+        <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
         <translation>Renderiza o jogo na janela principal do emulador sob a janela da lista de jogos. Se desmarcado, o jogo irá rodar em uma janela separada.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="69"/>
+        <location filename="../generalsettingswidget.cpp" line="61"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>Pausa a emulação quando um jogo é iniciado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="72"/>
+        <location filename="../generalsettingswidget.cpp" line="64"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
         <translation>Quando ativado, os cartões de memória e os controles serão substituídos assim que os saves states forem carregados. Isso pode resultar em perda de Saves e incompatibilidade nos  controles. sendo assim, deixe isto desativado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="77"/>
+        <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>Quando ativadas, as configurações separadas por jogos serão aplicadas e os aprimoramentos incompatíveis serão desligados. Você deve deixar esta opção ativada exceto ao usar melhorias com jogos não compatíveis.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="81"/>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
         <translation>Acelera a velocidade da emulação para a velocidade escolhida acima. Se desmarcado, o emulador será executado o mais rápido possível, pode ser que não seja possivel sequer jogar.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="85"/>
+        <location filename="../generalsettingswidget.cpp" line="77"/>
         <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
         <translation>Aumenta a resolução em tempo real quando emulador é iniciado dando maior precisão nos quadros emulados. Pode aumentar o consumo de bateria em Laptops.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="89"/>
+        <location filename="../generalsettingswidget.cpp" line="81"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>Ajusta a velocidade da emulação. Não é garantido que a velocidade será alcançada sendo assim o emulador irá rodar o mais rápido que pode.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Show OSD Messages</source>
-        <translation>Mostar mensagens em Tela</translation>
+        <translation type="vanished">Mostar mensagens em Tela</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="92"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation>Mostrar as mensagens na tela (canto superior esquerdo) quando eventos ocorrerem; Quando um SaveState é criado ou carregado, capturas de tela forem feitas etc.</translation>
+        <translation type="vanished">Mostrar as mensagens na tela (canto superior esquerdo) quando eventos ocorrerem; Quando um SaveState é criado ou carregado, capturas de tela forem feitas etc.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="95"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
-        <translation>Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
+        <translation type="vanished">Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="97"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation>Mostra o FPS no canto superior direito da tela.</translation>
+        <translation type="vanished">Mostra o FPS no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="100"/>
         <source>Show Speed</source>
-        <translation>Mostrar Velocidade</translation>
+        <translation type="vanished">Mostrar Velocidade</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="101"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation>Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
+        <translation type="vanished">Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="102"/>
+        <location filename="../generalsettingswidget.cpp" line="83"/>
         <source>Controller Backend</source>
         <translation>Tipo de Controle</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="105"/>
+        <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
         <translation>Determina qual opção de controle será usada para o controle em uso. Para quem usa Windows dê preferência ao X-Input ao invés do SDL2 para melhor compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="113"/>
-        <location filename="../generalsettingswidget.cpp" line="117"/>
+        <location filename="../generalsettingswidget.cpp" line="94"/>
+        <location filename="../generalsettingswidget.cpp" line="98"/>
         <source>Enable Discord Presence</source>
         <translation>Ativar Presença Rica do Discord</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="118"/>
+        <location filename="../generalsettingswidget.cpp" line="99"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Mostra o jogo que estiver jogando em seu perfil no Discord quando logado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="126"/>
-        <location filename="../generalsettingswidget.cpp" line="130"/>
+        <location filename="../generalsettingswidget.cpp" line="107"/>
+        <location filename="../generalsettingswidget.cpp" line="111"/>
         <source>Enable Automatic Update Check</source>
         <translation>Verificar Por Atualizações</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="131"/>
+        <location filename="../generalsettingswidget.cpp" line="112"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>Verifica automaticamente por atualizações assim que o emulador for iniciado. Atualizações podem ser postergadas ou ignoradas completamente.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="148"/>
+        <location filename="../generalsettingswidget.cpp" line="129"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -2621,292 +2885,301 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Linguagem</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="136"/>
+        <location filename="../mainwindow.ui" line="137"/>
         <source>&amp;Help</source>
         <translation>&amp;Ajuda</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="148"/>
+        <location filename="../mainwindow.ui" line="149"/>
         <source>&amp;Debug</source>
         <translation>&amp;Depurar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="152"/>
+        <location filename="../mainwindow.ui" line="153"/>
         <source>Switch GPU Renderer</source>
         <translation>Mudar Renderizador da GPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="157"/>
+        <location filename="../mainwindow.ui" line="158"/>
         <source>Switch CPU Emulation Mode</source>
         <translation>Mudar Modo de emulação para CPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="177"/>
+        <location filename="../mainwindow.ui" line="178"/>
         <source>&amp;View</source>
         <translation>&amp;Ver</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="193"/>
+        <location filename="../mainwindow.ui" line="194"/>
         <source>toolBar</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="233"/>
+        <location filename="../mainwindow.ui" line="234"/>
         <source>Start &amp;Disc...</source>
-        <translation>Iniciar Disco...</translation>
+        <translation>&amp;Iniciar Disco...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="242"/>
+        <location filename="../mainwindow.ui" line="243"/>
         <source>Start &amp;BIOS</source>
-        <translation>Iniciar BIOS</translation>
+        <translation>Iniciar &amp;BIOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="251"/>
+        <location filename="../mainwindow.ui" line="252"/>
         <source>&amp;Scan For New Games</source>
-        <translation>Escanear Jogos Novos</translation>
+        <translation>&amp;Escanear Jogos Novos</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="260"/>
+        <location filename="../mainwindow.ui" line="261"/>
         <source>&amp;Rescan All Games</source>
-        <translation>Scanear Todos os Jogos</translation>
+        <translation>Scanear &amp;Todos os Jogos</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="269"/>
+        <location filename="../mainwindow.ui" line="270"/>
         <source>Power &amp;Off</source>
-        <translation>Desligar</translation>
+        <translation>&amp;Desligar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="278"/>
+        <location filename="../mainwindow.ui" line="279"/>
         <source>&amp;Reset</source>
-        <translation>Reiniciar</translation>
+        <translation>&amp;Reiniciar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="290"/>
+        <location filename="../mainwindow.ui" line="291"/>
         <source>&amp;Pause</source>
-        <translation>Pausar</translation>
+        <translation>Pausa&amp;r</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="299"/>
+        <location filename="../mainwindow.ui" line="300"/>
         <source>&amp;Load State</source>
-        <translation>Carregar Estado</translation>
+        <translation>Carregar &amp;Estado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="308"/>
+        <location filename="../mainwindow.ui" line="309"/>
         <source>&amp;Save State</source>
-        <translation>Salvar Estado</translation>
+        <translation>Salvar &amp;Estado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="313"/>
+        <location filename="../mainwindow.ui" line="314"/>
         <source>E&amp;xit</source>
-        <translation>Sair</translation>
+        <translation>&amp;Sair</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="322"/>
+        <location filename="../mainwindow.ui" line="323"/>
         <source>C&amp;onsole Settings...</source>
-        <translation>Configuração do Console</translation>
+        <translation>Configuração do &amp;Console...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="331"/>
+        <location filename="../mainwindow.ui" line="332"/>
         <source>&amp;Controller Settings...</source>
-        <translation>Configuração de Controles...</translation>
+        <translation>Configuração de C&amp;ontroles...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="340"/>
+        <location filename="../mainwindow.ui" line="341"/>
         <source>&amp;Hotkey Settings...</source>
-        <translation>Configuração de Atalhos...</translation>
+        <translation>Configuraç&amp;ão de Atalhos...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="349"/>
         <source>&amp;GPU Settings...</source>
-        <translation>Configuração da GPU</translation>
+        <translation type="vanished">Configuração da GPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="358"/>
+        <location filename="../mainwindow.ui" line="350"/>
+        <source>&amp;Display Settings...</source>
+        <translation>&amp;Opções de Video...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="359"/>
+        <source>&amp;Enhancement Settings...</source>
+        <translation>&amp;Opções de Aprimoramento...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="368"/>
         <source>Fullscreen</source>
         <translation>Tela Cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="363"/>
+        <location filename="../mainwindow.ui" line="373"/>
         <source>Resolution Scale</source>
         <translation>Escala de Resolução</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="368"/>
-        <source>&amp;GitHub Repository...</source>
-        <translation>Repositório no Github...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="373"/>
-        <source>&amp;Issue Tracker...</source>
-        <translation>Problemas Abertos...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="378"/>
-        <source>&amp;Discord Server...</source>
-        <translation>Servidor no Discord...</translation>
+        <source>&amp;GitHub Repository...</source>
+        <translation>R&amp;epositório no Github...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="383"/>
-        <source>Check for &amp;Updates...</source>
-        <translation>Checar por Atualizações...</translation>
+        <source>&amp;Issue Tracker...</source>
+        <translation>&amp;Problemas Abertos...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="388"/>
-        <source>&amp;About...</source>
-        <translation>Sobre...</translation>
+        <source>&amp;Discord Server...</source>
+        <translation>Servidor no &amp;Discord...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="397"/>
+        <location filename="../mainwindow.ui" line="393"/>
+        <source>Check for &amp;Updates...</source>
+        <translation>Checar por &amp;Atualizações...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="398"/>
+        <source>&amp;About...</source>
+        <translation>Sobr&amp;e...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="407"/>
         <source>Change Disc...</source>
         <translation>Mudar Disco...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="406"/>
+        <location filename="../mainwindow.ui" line="416"/>
         <source>Cheats...</source>
         <translation>Trapaças...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="415"/>
+        <location filename="../mainwindow.ui" line="425"/>
         <source>Audio Settings...</source>
         <translation>Configurações de Audio...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="424"/>
+        <location filename="../mainwindow.ui" line="434"/>
         <source>Game List Settings...</source>
         <translation>Configurar lista de Jogos...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="433"/>
+        <location filename="../mainwindow.ui" line="443"/>
         <source>General Settings...</source>
         <translation>Configurações Gerais...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="442"/>
+        <location filename="../mainwindow.ui" line="452"/>
         <source>Advanced Settings...</source>
         <translation>Configurações Avançadas...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="451"/>
+        <location filename="../mainwindow.ui" line="461"/>
         <source>Add Game Directory...</source>
         <translation>Adicionar Diretório de Jogo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="460"/>
+        <location filename="../mainwindow.ui" line="470"/>
         <source>&amp;Settings...</source>
-        <translation>Configurações...</translation>
+        <translation>Co&amp;nfigurações...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="465"/>
+        <location filename="../mainwindow.ui" line="475"/>
         <source>From File...</source>
         <translation>Do Arquivo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="470"/>
+        <location filename="../mainwindow.ui" line="480"/>
         <source>From Game List...</source>
         <translation>Da lista de Jogos...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="475"/>
+        <location filename="../mainwindow.ui" line="485"/>
         <source>Remove Disc</source>
         <translation>Remover Disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="480"/>
+        <location filename="../mainwindow.ui" line="490"/>
         <source>Resume State</source>
         <translation>Resumir Estado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="485"/>
+        <location filename="../mainwindow.ui" line="495"/>
         <source>Global State</source>
         <translation>Estado Global</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="493"/>
+        <location filename="../mainwindow.ui" line="503"/>
         <source>Show VRAM</source>
         <translation>Mostrar VRAM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="501"/>
+        <location filename="../mainwindow.ui" line="511"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation>Despejar cópias do CPU para a VRAM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="509"/>
+        <location filename="../mainwindow.ui" line="519"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Despejar cópias da VRAM para o CPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="517"/>
+        <location filename="../mainwindow.ui" line="527"/>
         <source>Dump Audio</source>
         <translation>Despejar Audio</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="522"/>
+        <location filename="../mainwindow.ui" line="532"/>
         <source>Dump RAM...</source>
         <translation>Despejar para RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="530"/>
+        <location filename="../mainwindow.ui" line="540"/>
         <source>Show GPU State</source>
         <translation>Mostrar Estado da GPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="538"/>
+        <location filename="../mainwindow.ui" line="548"/>
         <source>Show CDROM State</source>
         <translation>Mostrar estado do CD-Rom</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="546"/>
+        <location filename="../mainwindow.ui" line="556"/>
         <source>Show SPU State</source>
         <translation>Mostrar estado do SPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="554"/>
+        <location filename="../mainwindow.ui" line="564"/>
         <source>Show Timers State</source>
         <translation>Mostrar estado do Temporizador</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="562"/>
+        <location filename="../mainwindow.ui" line="572"/>
         <source>Show MDEC State</source>
         <translation>Mostrar estado do MDEC</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="571"/>
+        <location filename="../mainwindow.ui" line="581"/>
         <source>&amp;Screenshot</source>
-        <translation>Captura de Tela</translation>
+        <translation>C&amp;aptura de Tela</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="580"/>
+        <location filename="../mainwindow.ui" line="590"/>
         <source>&amp;Memory Card Settings...</source>
-        <translation>Configurações de Memory Card...</translation>
+        <translation>&amp;Configurações de Memory Card...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="589"/>
+        <location filename="../mainwindow.ui" line="599"/>
         <source>Resume</source>
         <translation>Resumir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="592"/>
+        <location filename="../mainwindow.ui" line="602"/>
         <source>Resumes the last save state created.</source>
-        <translation>Resumir Último Estado Salvo</translation>
+        <translation>Resumir Último Estado Salvo.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="603"/>
+        <location filename="../mainwindow.ui" line="613"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Barra de Ferramentas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="614"/>
+        <location filename="../mainwindow.ui" line="624"/>
         <source>&amp;Status Bar</source>
         <translation>Barra de &amp;Status</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="619"/>
+        <location filename="../mainwindow.ui" line="629"/>
         <source>&amp;Game List</source>
         <translation>&amp;Caminho dos Jogos</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="627"/>
+        <location filename="../mainwindow.ui" line="637"/>
         <source>System &amp;Display</source>
         <translation>Sistema e &amp;Video</translation>
     </message>
@@ -2970,37 +3243,37 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Lingua Alterada. Reinicie para Aplicar!.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="720"/>
+        <location filename="../mainwindow.cpp" line="723"/>
         <source>Destination File</source>
         <translation>Destino do Arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="736"/>
+        <location filename="../mainwindow.cpp" line="739"/>
         <source>Default</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="737"/>
+        <location filename="../mainwindow.cpp" line="740"/>
         <source>DarkFusion</source>
         <translation>DarkFusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="738"/>
+        <location filename="../mainwindow.cpp" line="741"/>
         <source>QDarkStyle</source>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="917"/>
+        <location filename="../mainwindow.cpp" line="920"/>
         <source>Updater Error</source>
         <translation>Erro na Atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="923"/>
+        <location filename="../mainwindow.cpp" line="926"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe mas, Você está tentando atualizar uma versão não oficial do Duckstation Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, Siga as instruções de como e onde no link &quot;Baixando e Rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="929"/>
+        <location filename="../mainwindow.cpp" line="932"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizções automáticas não são suportadas na plataforma atual.</translation>
     </message>
@@ -3490,66 +3763,84 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="117"/>
-        <source>GPU Settings</source>
-        <translation>Configurações da GPU</translation>
+        <source>Display Settings</source>
+        <translation>Opções de Vídeo</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="126"/>
+        <source>Enhancement Settings</source>
+        <translation>Opções de Aprimoramento</translation>
+    </message>
+    <message>
+        <source>GPU Settings</source>
+        <translation type="vanished">Configurações da GPU</translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.ui" line="135"/>
         <source>Audio Settings</source>
         <translation>Configurações de Áudio</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.ui" line="135"/>
+        <location filename="../settingsdialog.ui" line="144"/>
         <source>Advanced Settings</source>
         <translation>Configurações Avançadas</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="54"/>
+        <location filename="../settingsdialog.cpp" line="57"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Configurações Gerais&lt;/strong&gt;&lt;hr&gt;Estas opções controlam a aparencia do emulador e seu comportamento.&lt;br&gt;&lt;br&gt;Repouse o ponteiro do mouse para mais informações.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="58"/>
+        <location filename="../settingsdialog.cpp" line="61"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Configurações do Console&lt;/strong&gt;&lt;hr&gt;Estas opções determinam a config. do console emulado.&lt;br&gt;&lt;br&gt; passe o ponteiro do mouse para mais informações.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="61"/>
+        <location filename="../settingsdialog.cpp" line="64"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
         <translation>&lt;strong&gt;Configuração Lista de Jogos&lt;/strong&gt;&lt;hr&gt;A lista acima mostra os diretórios que serão pesquisados ​​pelo DuckStation para preencher a lista de jogos.Os diretórios de pesquisa podem ser adicionados, removidos e alternados para recursivo / não recursivo. Além disso, o banco de dados pode ser baixado ou atualizado para fornecer mais títulos, pois os próprios discos não fornecem tais informações.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="66"/>
+        <location filename="../settingsdialog.cpp" line="69"/>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
         <translation>&lt;strong&gt;Configuração de Atalhos&lt;/strong&gt;&lt;hr&gt;Vincular uma tecla de atalho permite acionar eventos como redefinir botões vinculados ou tirar capturas de tela com o pressionar de uma tecla. Clicando em uma das opções iniciará uma contagem regressiva; Neste caso você deve pressionar uma tecla referente ao botão ou eixo que quer vincular. Se nenhum botão for pressionado o cronômetro irá parar e o vinculo permanecerá inalterado. Para limpar um vinculo clique com o direito sobre o botão desejado. Para vincular mais de um botão segure Shift e clique no que quer vincular.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="72"/>
+        <location filename="../settingsdialog.cpp" line="75"/>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
         <translation>&lt;strong&gt;Configuração de Controle&lt;/strong&gt;&lt;hr&gt;Esta página permite escolher o tipo de controle que você deseja emular bem como vincular teclas ou botões para seu controle a vontade Clicar em vincular iniciará uma contagem regressiva; Você deve pressionar a tecla ou botão /analógico do controle que deseja vincular. (Para vibração, pressione qualquer botão no controle para o qual você deseja atribuir.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="80"/>
+        <location filename="../settingsdialog.cpp" line="83"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
         <translation>&lt;strong&gt;Configuração de Cartão de Memória&lt;/strong&gt;&lt;hr&gt;Esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas no disco.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="83"/>
-        <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
-        <translation>&lt;strong&gt;Configuração da GPU&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a simulação da GPU no console. Estão disponíveis várias melhorias, passe o mouse sobre cada uma para obter informações adicionais.</translation>
+        <location filename="../settingsdialog.cpp" line="86"/>
+        <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
+        <translation>&lt;strong&gt;Opções de Vídeo&lt;/strong&gt;&lt;hr&gt;Essas opções controlam como os frames gerados pelo console são exibidos na tela.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="86"/>
+        <location filename="../settingsdialog.cpp" line="89"/>
+        <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
+        <translation>&lt;strong&gt;Opções de Aprimoramento&lt;/strong&gt;&lt;hr&gt;Estas opções controlam como as melhorias visuais serão controladas em comparação com o console original.</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
+        <translation type="vanished">&lt;strong&gt;Configuração da GPU&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a simulação da GPU no console. Estão disponíveis várias melhorias, passe o mouse sobre cada uma para obter informações adicionais.</translation>
+    </message>
+    <message>
+        <location filename="../settingsdialog.cpp" line="92"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Configurações de Áudio&lt;/strong&gt;&lt;hr&gt;Estas opções controlam a saída do som no emulador. passe o ponteiro do mouse para mais informações.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="88"/>
+        <location filename="../settingsdialog.cpp" line="94"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Opções Avançadas&lt;/strong&gt;&lt;hr&gt;Essas opções controlam o log e o comportamento interno do emulador.Passe o mouse sobre uma opção para obter informações adicionais.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="115"/>
+        <location filename="../settingsdialog.cpp" line="121"/>
         <source>Recommended Value</source>
         <translation>Recomendado</translation>
     </message>
