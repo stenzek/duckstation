@@ -94,7 +94,22 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
         *out_left_padding = 0;
     }
     if (out_top_padding)
-      *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+    {
+      switch (m_display_alignment)
+      {
+        case Alignment::LeftOrTop:
+          *out_top_padding = 0;
+          break;
+
+        case Alignment::Center:
+          *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+          break;
+
+        case Alignment::RightOrBottom:
+          *out_top_padding = std::max<s32>(window_height - static_cast<s32>(display_height * scale), 0);
+          break;
+      }
+    }
   }
   else
   {
@@ -104,7 +119,23 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
-      *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+    {
+      switch (m_display_alignment)
+      {
+        case Alignment::LeftOrTop:
+          *out_left_padding = 0;
+          break;
+
+        case Alignment::Center:
+          *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+          break;
+
+        case Alignment::RightOrBottom:
+          *out_left_padding = std::max<s32>(window_width - static_cast<s32>(display_width * scale), 0);
+          break;
+      }
+    }
+
     if (out_top_padding)
     {
       if (m_display_integer_scaling)
