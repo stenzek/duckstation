@@ -660,7 +660,10 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::ControllerSettings); });
   connect(m_ui.actionMemoryCardSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::MemoryCardSettings); });
-  connect(m_ui.actionGPUSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::GPUSettings); });
+  connect(m_ui.actionDisplaySettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::DisplaySettings); });
+  connect(m_ui.actionEnhancementSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::EnhancementSettings); });
   connect(m_ui.actionAudioSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,

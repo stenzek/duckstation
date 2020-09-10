@@ -40,10 +40,11 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
+    <ClCompile Include="enhancementsettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
     <ClCompile Include="generalsettingswidget.cpp" />
-    <ClCompile Include="gpusettingswidget.cpp" />
+    <ClCompile Include="displaysettingswidget.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
@@ -64,10 +65,11 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="controllersettingswidget.h" />
+    <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="qtdisplaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
-    <QtMoc Include="gpusettingswidget.h" />
+    <QtMoc Include="displaysettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="advancedsettingswidget.h" />
@@ -117,6 +119,9 @@
     <QtUi Include="consolesettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="enhancementsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="gamelistsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -129,7 +134,7 @@
     <QtUi Include="settingsdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="gpusettingswidget.ui">
+    <QtUi Include="displaysettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="advancedsettingswidget.ui">
@@ -151,13 +156,14 @@
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_enhancementsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsearchdirectoriesmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_gpusettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_displaysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />

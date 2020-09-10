@@ -120,7 +120,8 @@
     <addaction name="actionHotkeySettings"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionMemoryCardSettings"/>
-    <addaction name="actionGPUSettings"/>
+    <addaction name="actionDisplaySettings"/>
+    <addaction name="actionEnhancementSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
@@ -340,13 +341,22 @@
     <string>&amp;Hotkey Settings...</string>
    </property>
   </action>
-  <action name="actionGPUSettings">
+  <action name="actionDisplaySettings">
    <property name="icon">
     <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;GPU Settings...</string>
+    <string>&amp;Display Settings...</string>
+   </property>
+  </action>
+  <action name="actionEnhancementSettings">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Enhancement Settings...</string>
    </property>
   </action>
   <action name="actionFullscreen">

@@ -13,7 +13,8 @@ class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
 class ControllerSettingsWidget;
 class MemoryCardSettingsWidget;
-class GPUSettingsWidget;
+class DisplaySettingsWidget;
+class EnhancementSettingsWidget;
 class AudioSettingsWidget;
 class AdvancedSettingsWidget;
 
@@ -30,7 +31,8 @@ public:
     HotkeySettings,
     ControllerSettings,
     MemoryCardSettings,
-    GPUSettings,
+    DisplaySettings,
+    EnhancementSettings,
     AudioSettings,
     AdvancedSettings,
     Count
@@ -45,7 +47,8 @@ public:
   HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
   ControllerSettingsWidget* getControllerSettingsWidget() const { return m_controller_settings; }
   MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
-  GPUSettingsWidget* getGPUSettingsWidget() const { return m_gpu_settings; }
+  DisplaySettingsWidget* getDisplaySettingsWidget() const { return m_display_settings; }
+  EnhancementSettingsWidget* getEnhancementSettingsWidget() const { return m_enhancement_settings; }
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
   AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
 
@@ -71,7 +74,8 @@ private:
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
   ControllerSettingsWidget* m_controller_settings = nullptr;
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
-  GPUSettingsWidget* m_gpu_settings = nullptr;
+  DisplaySettingsWidget* m_display_settings = nullptr;
+  EnhancementSettingsWidget* m_enhancement_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AdvancedSettingsWidget* m_advanced_settings = nullptr;
 

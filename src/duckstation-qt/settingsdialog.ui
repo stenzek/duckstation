@@ -114,11 +114,20 @@
        </item>
        <item>
         <property name="text">
-         <string>GPU Settings</string>
+         <string>Display Settings</string>
         </property>
         <property name="icon">
          <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Enhancement Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/resources.qrc">
+          <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
         </property>
        </item>
        <item>

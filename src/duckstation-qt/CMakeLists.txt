@@ -20,6 +20,12 @@ set(SRCS
   consolesettingswidget.ui
   controllersettingswidget.cpp
   controllersettingswidget.h
+  displaysettingswidget.cpp
+  displaysettingswidget.h
+  displaysettingswidget.ui
+  enhancementsettingswidget.cpp
+  enhancementsettingswidget.h
+  enhancementsettingswidget.ui
   gamelistmodel.cpp
   gamelistmodel.h
   gamelistsearchdirectoriesmodel.cpp
@@ -35,9 +41,6 @@ set(SRCS
   generalsettingswidget.cpp
   generalsettingswidget.h
   generalsettingswidget.ui
-  gpusettingswidget.cpp
-  gpusettingswidget.h
-  gpusettingswidget.ui
   hotkeysettingswidget.cpp
   hotkeysettingswidget.h
   inputbindingdialog.cpp
