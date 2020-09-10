@@ -2,12 +2,14 @@ package com.github.stenzek.duckstation;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -102,6 +104,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         // Once we get a surface, we can boot.
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
             AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
+            updateOrientation();
             return;
         }
 
@@ -110,6 +113,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
         AndroidHostInterface.getInstance().startEmulationThread(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
+        updateOrientation();
     }
 
     @Override
@@ -225,6 +229,27 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
 
         showSystemUI();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateOrientation(newConfig.orientation);
+    }
+
+    private void updateOrientation() {
+        final int orientation = getResources().getConfiguration().orientation;
+        updateOrientation(orientation);
+    }
+
+    private void updateOrientation(int newOrientation) {
+        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
+            return;
+
+        if (newOrientation == Configuration.ORIENTATION_PORTRAIT)
+            AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_TOP_OR_LEFT);
+        else
+            AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_CENTER);
     }
 
     /**

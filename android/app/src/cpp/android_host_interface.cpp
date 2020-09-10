@@ -723,3 +723,10 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_saveState, jobject obj, jboole
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread([hi, global, slot]() { hi->SaveState(global, slot); });
 }
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setDisplayAlignment, jobject obj, jint alignment)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([hi, alignment]() { hi->GetDisplay()->SetDisplayAlignment(static_cast<HostDisplay::Alignment>(alignment)); });
+}
+
