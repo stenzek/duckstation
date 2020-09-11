@@ -270,7 +270,7 @@ protected:
   HostDisplay::RenderAPI m_render_api = HostDisplay::RenderAPI::None;
   bool m_true_color = true;
   bool m_scaled_dithering = false;
-  bool m_texture_filtering = false;
+  GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
   bool m_supports_dual_source_blend = false;
   bool m_using_uv_limits = false;
 

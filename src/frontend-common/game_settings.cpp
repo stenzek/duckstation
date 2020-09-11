@@ -116,7 +116,7 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
-      !ReadOptionalFromStream(stream, &gpu_bilinear_texture_filtering) ||
+      !ReadOptionalFromStream(stream, &gpu_texture_filter) ||
       !ReadOptionalFromStream(stream, &gpu_widescreen_hack) || !ReadOptionalFromStream(stream, &gpu_pgxp) ||
       !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
       !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
@@ -154,7 +154,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, gpu_resolution_scale) &&
          WriteOptionalToStream(stream, gpu_true_color) && WriteOptionalToStream(stream, gpu_scaled_dithering) &&
          WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
-         WriteOptionalToStream(stream, gpu_bilinear_texture_filtering) &&
+         WriteOptionalToStream(stream, gpu_texture_filter) &&
          WriteOptionalToStream(stream, gpu_widescreen_hack) && WriteOptionalToStream(stream, gpu_pgxp) &&
          WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
          WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
@@ -201,7 +201,7 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
     entry->gpu_scaled_dithering = StringUtil::FromChars<bool>(cvalue);
   cvalue = ini.GetValue(section, "GPUBilinearTextureFiltering", nullptr);
   if (cvalue)
-    entry->gpu_bilinear_texture_filtering = StringUtil::FromChars<bool>(cvalue);
+    entry->gpu_texture_filter = Settings::ParseTextureFilterName(cvalue);
   cvalue = ini.GetValue(section, "GPUForceNTSCTimings", nullptr);
   if (cvalue)
     entry->gpu_force_ntsc_timings = StringUtil::FromChars<bool>(cvalue);
@@ -265,11 +265,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "GPUTrueColor", entry.gpu_true_color.value() ? "true" : "false");
   if (entry.gpu_scaled_dithering.has_value())
     ini.SetValue(section, "GPUScaledDithering", entry.gpu_scaled_dithering.value() ? "true" : "false");
-  if (entry.gpu_bilinear_texture_filtering.has_value())
-  {
-    ini.SetValue(section, "GPUBilinearTextureFiltering",
-                 entry.gpu_bilinear_texture_filtering.value() ? "true" : "false");
-  }
+  if (entry.gpu_texture_filter.has_value())
+    ini.SetValue(section, "GPUTextureFilter", Settings::GetTextureFilterName(entry.gpu_texture_filter.value()));
   if (entry.gpu_force_ntsc_timings.has_value())
     ini.SetValue(section, "GPUForceNTSCTimings", entry.gpu_force_ntsc_timings.value() ? "true" : "false");
   if (entry.gpu_widescreen_hack.has_value())
@@ -417,8 +414,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_scaled_dithering = gpu_scaled_dithering.value();
   if (gpu_force_ntsc_timings.has_value())
     g_settings.gpu_force_ntsc_timings = gpu_force_ntsc_timings.value();
-  if (gpu_bilinear_texture_filtering)
-    g_settings.gpu_texture_filtering = gpu_bilinear_texture_filtering.value();
+  if (gpu_texture_filter.has_value())
+    g_settings.gpu_texture_filter = gpu_texture_filter.value();
   if (gpu_widescreen_hack.has_value())
     g_settings.gpu_widescreen_hack = gpu_widescreen_hack.value();
   if (gpu_pgxp.has_value())

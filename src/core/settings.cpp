@@ -102,7 +102,10 @@ void Settings::Load(SettingsInterface& si)
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
-  gpu_texture_filtering = si.GetBoolValue("GPU", "TextureFiltering", false);
+  gpu_texture_filter =
+    ParseTextureFilterName(
+      si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
+      .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", false);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
@@ -217,7 +220,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
-  si.SetBoolValue("GPU", "TextureFiltering", gpu_texture_filtering);
+  si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
@@ -447,6 +450,35 @@ const char* Settings::GetRendererName(GPURenderer renderer)
 const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 {
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
+}
+
+static constexpr auto s_texture_filter_names = make_array("Nearest", "Bilinear", "JINC2", "xBRZ");
+static constexpr auto s_texture_filter_display_names =
+  make_array(TRANSLATABLE("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATABLE("GPUTextureFilter", "Bilinear"),
+             TRANSLATABLE("GPUTextureFilter", "JINC2"), TRANSLATABLE("GPUTextureFilter", "xBRZ"));
+
+std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_texture_filter_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPUTextureFilter>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetTextureFilterName(GPUTextureFilter filter)
+{
+  return s_texture_filter_names[static_cast<int>(filter)];
+}
+
+const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
+{
+  return s_texture_filter_display_names[static_cast<int>(filter)];
 }
 
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};

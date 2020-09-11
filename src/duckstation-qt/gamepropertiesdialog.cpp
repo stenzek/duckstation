@@ -283,9 +283,19 @@ void GamePropertiesDialog::populateGameSettings()
     m_ui.userResolutionScale->setCurrentIndex(0);
   }
 
+  if (gs.gpu_texture_filter.has_value())
+  {
+    QSignalBlocker sb(m_ui.userTextureFiltering);
+    m_ui.userTextureFiltering->setCurrentIndex(static_cast<int>(gs.gpu_texture_filter.value()) + 1);
+  }
+  else
+  {
+    QSignalBlocker sb(m_ui.userResolutionScale);
+    m_ui.userTextureFiltering->setCurrentIndex(0);
+  }
+
   populateBooleanUserSetting(m_ui.userTrueColor, gs.gpu_true_color);
   populateBooleanUserSetting(m_ui.userScaledDithering, gs.gpu_scaled_dithering);
-  populateBooleanUserSetting(m_ui.userBilinearTextureFiltering, gs.gpu_bilinear_texture_filtering);
   populateBooleanUserSetting(m_ui.userForceNTSCTimings, gs.gpu_force_ntsc_timings);
   populateBooleanUserSetting(m_ui.userWidescreenHack, gs.gpu_widescreen_hack);
   populateBooleanUserSetting(m_ui.userPGXP, gs.gpu_pgxp);
@@ -388,10 +398,17 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
 
+  connect(m_ui.userTextureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.gpu_texture_filter.reset();
+    else
+      m_game_settings.gpu_texture_filter = static_cast<GPUTextureFilter>(index - 1);
+    saveGameSettings();
+  });
+
   connectBooleanUserSetting(m_ui.userTrueColor, &m_game_settings.gpu_true_color);
   connectBooleanUserSetting(m_ui.userScaledDithering, &m_game_settings.gpu_scaled_dithering);
   connectBooleanUserSetting(m_ui.userForceNTSCTimings, &m_game_settings.gpu_force_ntsc_timings);
-  connectBooleanUserSetting(m_ui.userBilinearTextureFiltering, &m_game_settings.gpu_bilinear_texture_filtering);
   connectBooleanUserSetting(m_ui.userWidescreenHack, &m_game_settings.gpu_widescreen_hack);
   connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
 

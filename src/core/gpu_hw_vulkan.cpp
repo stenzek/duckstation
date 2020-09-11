@@ -671,7 +671,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
               if ((static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled &&
                    (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
-                  m_texture_filtering)
+                  m_texture_filtering != GPUTextureFilter::Nearest)
               {
                 gpbuilder.SetBlendAttachment(
                   0, true, VK_BLEND_FACTOR_ONE,

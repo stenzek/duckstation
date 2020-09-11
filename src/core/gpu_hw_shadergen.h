@@ -8,7 +8,7 @@ class GPU_HW_ShaderGen
 {
 public:
   GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color, bool scaled_dithering,
-                   bool texture_filtering, bool uv_limits, bool supports_dual_source_blend);
+                   GPUTextureFilter texture_filtering, bool uv_limits, bool supports_dual_source_blend);
   ~GPU_HW_ShaderGen();
 
   static bool UseGLSLBindingLayout();
@@ -45,12 +45,13 @@ private:
 
   void WriteCommonFunctions(std::stringstream& ss);
   void WriteBatchUniformBuffer(std::stringstream& ss);
+  void WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter);
 
   HostDisplay::RenderAPI m_render_api;
   u32 m_resolution_scale;
   bool m_true_color;
   bool m_scaled_dithering;
-  bool m_texture_filering;
+  GPUTextureFilter m_texture_filter;
   bool m_uv_limits;
   bool m_glsl;
   bool m_supports_dual_source_blend;

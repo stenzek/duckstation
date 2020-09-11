@@ -935,7 +935,23 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings_copy.gpu_true_color);
   settings_changed |= ImGui::MenuItem("Scaled Dithering", nullptr, &m_settings_copy.gpu_scaled_dithering);
-  settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings_copy.gpu_texture_filtering);
+
+  if (ImGui::BeginMenu("Texture Filtering"))
+  {
+    const GPUTextureFilter current = m_settings_copy.gpu_texture_filter;
+    for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i)), nullptr,
+                          i == static_cast<u32>(current)))
+      {
+        m_settings_copy.gpu_texture_filter = static_cast<GPUTextureFilter>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
   settings_changed |= ImGui::MenuItem("Disable Interlacing", nullptr, &m_settings_copy.gpu_disable_interlacing);
   settings_changed |= ImGui::MenuItem("Widescreen Hack", nullptr, &m_settings_copy.gpu_widescreen_hack);
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
@@ -1401,8 +1417,22 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
+        ImGui::Text("Texture Filtering:");
+        ImGui::SameLine(indent);
+        int gpu_texture_filter = static_cast<int>(m_settings_copy.gpu_texture_filter);
+        if (ImGui::Combo(
+              "##gpu_texture_filter", &gpu_texture_filter,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(GPUTextureFilter::Count)))
+        {
+          m_settings_copy.gpu_texture_filter = static_cast<GPUTextureFilter>(gpu_texture_filter);
+          settings_changed = true;
+        }
+
         settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings_copy.gpu_true_color);
-        settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings_copy.gpu_texture_filtering);
         settings_changed |= ImGui::Checkbox("Disable Interlacing", &m_settings_copy.gpu_disable_interlacing);
         settings_changed |= ImGui::Checkbox("Force NTSC Timings", &m_settings_copy.gpu_force_ntsc_timings);
         settings_changed |= ImGui::Checkbox("Widescreen Hack", &m_settings_copy.gpu_widescreen_hack);

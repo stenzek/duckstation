@@ -6,10 +6,10 @@
 Log_SetChannel(GPU_HW_ShaderGen);
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color,
-                                   bool scaled_dithering, bool texture_filtering, bool uv_limits,
+                                   bool scaled_dithering, GPUTextureFilter texture_filtering, bool uv_limits,
                                    bool supports_dual_source_blend)
   : m_render_api(render_api), m_resolution_scale(resolution_scale), m_true_color(true_color),
-    m_scaled_dithering(scaled_dithering), m_texture_filering(texture_filtering), m_uv_limits(uv_limits),
+    m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
     m_glsl(render_api != HostDisplay::RenderAPI::D3D11), m_supports_dual_source_blend(supports_dual_source_blend),
     m_use_glsl_interface_blocks(false)
 {
@@ -148,6 +148,8 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT const\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
+    ss << "#define VECTOR_COMP_EQ(a, b) equal((a), (b))\n";
+    ss << "#define VECTOR_COMP_NEQ(a, b) notEqual((a), (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -160,6 +162,8 @@ void GPU_HW_ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define CONSTANT static const\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
+    ss << "#define VECTOR_COMP_EQ(a, b) ((a) == (b))\n";
+    ss << "#define VECTOR_COMP_NEQ(a, b) ((a) != (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
@@ -578,6 +582,476 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   return ss.str();
 }
 
+void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter)
+{
+  // JINC2 and xBRZ shaders originally from beetle-psx, modified to support filtering mask channel.
+  if (texture_filter == GPUTextureFilter::Bilinear)
+  {
+    ss << R"(
+void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  // Compute the coordinates of the four texels we will be interpolating between.
+  // Clamp this to the triangle texture coordinates.
+  float2 texel_top_left = frac(coords) - float2(0.5, 0.5);
+  float2 texel_offset = sign(texel_top_left);
+  float4 fcoords = max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
+                        float4(0.0, 0.0, 0.0, 0.0));
+
+  // Load four texels.
+  float4 s00 = SampleFromVRAM(texpage, clamp(fcoords.xy, uv_limits.xy, uv_limits.zw));
+  float4 s10 = SampleFromVRAM(texpage, clamp(fcoords.zy, uv_limits.xy, uv_limits.zw));
+  float4 s01 = SampleFromVRAM(texpage, clamp(fcoords.xw, uv_limits.xy, uv_limits.zw));
+  float4 s11 = SampleFromVRAM(texpage, clamp(fcoords.zw, uv_limits.xy, uv_limits.zw));
+
+  // Compute alpha from how many texels aren't pixel color 0000h.
+  float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
+  float a10 = float(VECTOR_NEQ(s10, TRANSPARENT_PIXEL_COLOR));
+  float a01 = float(VECTOR_NEQ(s01, TRANSPARENT_PIXEL_COLOR));
+  float a11 = float(VECTOR_NEQ(s11, TRANSPARENT_PIXEL_COLOR));
+
+  // Bilinearly interpolate.
+  float2 weights = abs(texel_top_left);
+  texcol = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
+  ialpha = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
+
+  // Compensate for partially transparent sampling.
+  if (ialpha > 0.0)
+    texcol.rgb /= float3(ialpha, ialpha, ialpha);
+}
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::JINC2)
+  {
+    ss << R"(
+CONSTANT float JINC2_WINDOW_SINC = 0.44;
+CONSTANT float JINC2_SINC = 0.82;
+CONSTANT float JINC2_AR_STRENGTH = 0.8;
+
+CONSTANT   float halfpi            = 1.5707963267948966192313216916398;
+CONSTANT   float pi                = 3.1415926535897932384626433832795;
+CONSTANT   float wa                = 1.382300768;
+CONSTANT   float wb                = 2.576105976;
+
+// Calculates the distance between two points
+float d(float2 pt1, float2 pt2)
+{
+  float2 v = pt2 - pt1;
+  return sqrt(dot(v,v));
+}
+
+float min4(float a, float b, float c, float d)
+{
+    return min(a, min(b, min(c, d)));
+}
+
+float4 min4(float4 a, float4 b, float4 c, float4 d)
+{
+    return min(a, min(b, min(c, d)));
+}
+
+float max4(float a, float b, float c, float d)
+{
+  return max(a, max(b, max(c, d)));
+}
+
+float4 max4(float4 a, float4 b, float4 c, float4 d)
+{
+    return max(a, max(b, max(c, d)));
+}
+
+float4 resampler(float4 x)
+{
+   float4 res;
+
+   // res = (x==float4(0.0, 0.0, 0.0, 0.0)) ?  float4(wa*wb)  :  sin(x*wa)*sin(x*wb)/(x*x);
+   // Need to use mix(.., equal(..)) since we want zero check to be component wise
+   res = lerp(sin(x*wa)*sin(x*wb)/(x*x), float4(wa*wb, wa*wb, wa*wb, wa*wb), VECTOR_COMP_EQ(x,float4(0.0, 0.0, 0.0, 0.0)));
+
+   return res;
+}
+
+void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+    float4 weights[4];
+
+    float2 dx = float2(1.0, 0.0);
+    float2 dy = float2(0.0, 1.0);
+
+    float2 pc = coords.xy;
+
+    float2 tc = (floor(pc-float2(0.5,0.5))+float2(0.5,0.5));
+
+    weights[0] = resampler(float4(d(pc, tc    -dx    -dy), d(pc, tc           -dy), d(pc, tc    +dx    -dy), d(pc, tc+2.0*dx    -dy)));
+    weights[1] = resampler(float4(d(pc, tc    -dx       ), d(pc, tc              ), d(pc, tc    +dx       ), d(pc, tc+2.0*dx       )));
+    weights[2] = resampler(float4(d(pc, tc    -dx    +dy), d(pc, tc           +dy), d(pc, tc    +dx    +dy), d(pc, tc+2.0*dx    +dy)));
+    weights[3] = resampler(float4(d(pc, tc    -dx+2.0*dy), d(pc, tc       +2.0*dy), d(pc, tc    +dx+2.0*dy), d(pc, tc+2.0*dx+2.0*dy)));
+
+    dx = dx;
+    dy = dy;
+    tc = tc;
+
+#define sample_texel(coords) SampleFromVRAM(texpage, clamp((coords), uv_limits.xy, uv_limits.zw))
+
+    float4 c00 = sample_texel(tc    -dx    -dy);
+    float a00 = float(VECTOR_NEQ(c00, TRANSPARENT_PIXEL_COLOR));
+    float4 c10 = sample_texel(tc           -dy);
+    float a10 = float(VECTOR_NEQ(c10, TRANSPARENT_PIXEL_COLOR));
+    float4 c20 = sample_texel(tc    +dx    -dy);
+    float a20 = float(VECTOR_NEQ(c20, TRANSPARENT_PIXEL_COLOR));
+    float4 c30 = sample_texel(tc+2.0*dx    -dy);
+    float a30 = float(VECTOR_NEQ(c30, TRANSPARENT_PIXEL_COLOR));
+    float4 c01 = sample_texel(tc    -dx       );
+    float a01 = float(VECTOR_NEQ(c01, TRANSPARENT_PIXEL_COLOR));
+    float4 c11 = sample_texel(tc              );
+    float a11 = float(VECTOR_NEQ(c11, TRANSPARENT_PIXEL_COLOR));
+    float4 c21 = sample_texel(tc    +dx       );
+    float a21 = float(VECTOR_NEQ(c21, TRANSPARENT_PIXEL_COLOR));
+    float4 c31 = sample_texel(tc+2.0*dx       );
+    float a31 = float(VECTOR_NEQ(c31, TRANSPARENT_PIXEL_COLOR));
+    float4 c02 = sample_texel(tc    -dx    +dy);
+    float a02 = float(VECTOR_NEQ(c02, TRANSPARENT_PIXEL_COLOR));
+    float4 c12 = sample_texel(tc           +dy);
+    float a12 = float(VECTOR_NEQ(c12, TRANSPARENT_PIXEL_COLOR));
+    float4 c22 = sample_texel(tc    +dx    +dy);
+    float a22 = float(VECTOR_NEQ(c22, TRANSPARENT_PIXEL_COLOR));
+    float4 c32 = sample_texel(tc+2.0*dx    +dy);
+    float a32 = float(VECTOR_NEQ(c32, TRANSPARENT_PIXEL_COLOR));
+    float4 c03 = sample_texel(tc    -dx+2.0*dy);
+    float a03 = float(VECTOR_NEQ(c03, TRANSPARENT_PIXEL_COLOR));
+    float4 c13 = sample_texel(tc       +2.0*dy);
+    float a13 = float(VECTOR_NEQ(c13, TRANSPARENT_PIXEL_COLOR));
+    float4 c23 = sample_texel(tc    +dx+2.0*dy);
+    float a23 = float(VECTOR_NEQ(c23, TRANSPARENT_PIXEL_COLOR));
+    float4 c33 = sample_texel(tc+2.0*dx+2.0*dy);
+    float a33 = float(VECTOR_NEQ(c33, TRANSPARENT_PIXEL_COLOR));
+
+#undef sample_texel
+
+    //  Get min/max samples
+    float4 min_sample = min4(c11, c21, c12, c22);
+    float min_sample_alpha = min4(a11, a21, a12, a22);
+    float4 max_sample = max4(c11, c21, c12, c22);
+    float max_sample_alpha = max4(a11, a21, a12, a22);
+
+    float4 color;
+    color = float4(dot(weights[0], float4(c00.x, c10.x, c20.x, c30.x)), dot(weights[0], float4(c00.y, c10.y, c20.y, c30.y)), dot(weights[0], float4(c00.z, c10.z, c20.z, c30.z)), dot(weights[0], float4(c00.w, c10.w, c20.w, c30.w)));
+    color+= float4(dot(weights[1], float4(c01.x, c11.x, c21.x, c31.x)), dot(weights[1], float4(c01.y, c11.y, c21.y, c31.y)), dot(weights[1], float4(c01.z, c11.z, c21.z, c31.z)), dot(weights[1], float4(c01.w, c11.w, c21.w, c31.w)));
+    color+= float4(dot(weights[2], float4(c02.x, c12.x, c22.x, c32.x)), dot(weights[2], float4(c02.y, c12.y, c22.y, c32.y)), dot(weights[2], float4(c02.z, c12.z, c22.z, c32.z)), dot(weights[2], float4(c02.w, c12.w, c22.w, c32.w)));
+    color+= float4(dot(weights[3], float4(c03.x, c13.x, c23.x, c33.x)), dot(weights[3], float4(c03.y, c13.y, c23.y, c33.y)), dot(weights[3], float4(c03.z, c13.z, c23.z, c33.z)), dot(weights[3], float4(c03.w, c13.w, c23.w, c33.w)));
+    color = color/(dot(weights[0], float4(1,1,1,1)) + dot(weights[1], float4(1,1,1,1)) + dot(weights[2], float4(1,1,1,1)) + dot(weights[3], float4(1,1,1,1)));
+
+    float alpha;
+    alpha = dot(weights[0], float4(a00, a10, a20, a30));
+    alpha+= dot(weights[1], float4(a01, a11, a21, a31));
+    alpha+= dot(weights[2], float4(a02, a12, a22, a32));
+    alpha+= dot(weights[3], float4(a03, a13, a23, a33));
+    //alpha = alpha/(weights[0].w + weights[1].w + weights[2].w + weights[3].w);
+    alpha = alpha/(dot(weights[0], float4(1,1,1,1)) + dot(weights[1], float4(1,1,1,1)) + dot(weights[2], float4(1,1,1,1)) + dot(weights[3], float4(1,1,1,1)));
+
+    // Anti-ringing
+    float4 aux = color;
+    float aux_alpha = alpha;
+    color = clamp(color, min_sample, max_sample);
+    alpha = clamp(alpha, min_sample_alpha, max_sample_alpha);
+    color = lerp(aux, color, JINC2_AR_STRENGTH);
+    alpha = lerp(aux_alpha, alpha, JINC2_AR_STRENGTH);
+
+    // final sum and weight normalization
+    ialpha = alpha;
+    texcol = color;
+
+    // Compensate for partially transparent sampling.
+    if (ialpha > 0.0)
+      texcol.rgb /= float3(ialpha, ialpha, ialpha);
+}
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::xBRZ)
+  {
+    ss << R"(
+CONSTANT int BLEND_NONE = 0;
+CONSTANT int BLEND_NORMAL = 1;
+CONSTANT int BLEND_DOMINANT = 2;
+CONSTANT float LUMINANCE_WEIGHT = 1.0;
+CONSTANT float EQUAL_COLOR_TOLERANCE = 0.1176470588235294;
+CONSTANT float STEEP_DIRECTION_THRESHOLD = 2.2;
+CONSTANT float DOMINANT_DIRECTION_THRESHOLD = 3.6;
+CONSTANT float4 w = float4(0.2627, 0.6780, 0.0593, 0.5);
+
+float DistYCbCr(float4 pixA, float4 pixB)
+{
+  const float scaleB = 0.5 / (1.0 - w.b);
+  const float scaleR = 0.5 / (1.0 - w.r);
+  float4 diff = pixA - pixB;
+  float Y = dot(diff, w);
+  float Cb = scaleB * (diff.b - Y);
+  float Cr = scaleR * (diff.r - Y);
+
+  return sqrt(((LUMINANCE_WEIGHT * Y) * (LUMINANCE_WEIGHT * Y)) + (Cb * Cb) + (Cr * Cr));
+}
+
+bool IsPixEqual(const float4 pixA, const float4 pixB)
+{
+  return (DistYCbCr(pixA, pixB) < EQUAL_COLOR_TOLERANCE);
+}
+
+float get_left_ratio(float2 center, float2 origin, float2 direction, float2 scale)
+{
+  float2 P0 = center - origin;
+  float2 proj = direction * (dot(P0, direction) / dot(direction, direction));
+  float2 distv = P0 - proj;
+  float2 orth = float2(-direction.y, direction.x);
+  float side = sign(dot(P0, orth));
+  float v = side * length(distv * scale);
+
+//  return step(0, v);
+  return smoothstep(-sqrt(2.0)/2.0, sqrt(2.0)/2.0, v);
+}
+
+#define P(coord, xoffs, yoffs) SampleFromVRAM(texpage, clamp(coords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw))
+
+void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  //---------------------------------------
+  // Input Pixel Mapping:  -|x|x|x|-
+  //                       x|A|B|C|x
+  //                       x|D|E|F|x
+  //                       x|G|H|I|x
+  //                       -|x|x|x|-
+
+  float2 scale = float2(8.0, 8.0);
+  float2 pos = frac(coords.xy) - float2(0.5, 0.5);
+  float2 coord = coords.xy - pos;
+
+  float4 A = P(coord, -1,-1);
+  float Aw = A.w;
+  A.w = float(VECTOR_NEQ(A, TRANSPARENT_PIXEL_COLOR));
+  float4 B = P(coord,  0,-1);
+  float Bw = B.w;
+  B.w = float(VECTOR_NEQ(B, TRANSPARENT_PIXEL_COLOR));
+  float4 C = P(coord,  1,-1);
+  float Cw = C.w;
+  C.w = float(VECTOR_NEQ(C, TRANSPARENT_PIXEL_COLOR));
+  float4 D = P(coord, -1, 0);
+  float Dw = D.w;
+  D.w = float(VECTOR_NEQ(D, TRANSPARENT_PIXEL_COLOR));
+  float4 E = P(coord, 0, 0);
+  float Ew = E.w;
+  E.w = float(VECTOR_NEQ(E, TRANSPARENT_PIXEL_COLOR));
+  float4 F = P(coord,  1, 0);
+  float Fw = F.w;
+  F.w = float(VECTOR_NEQ(F, TRANSPARENT_PIXEL_COLOR));
+  float4 G = P(coord, -1, 1);
+  float Gw = G.w;
+  G.w = float(VECTOR_NEQ(G, TRANSPARENT_PIXEL_COLOR));
+  float4 H = P(coord,  0, 1);
+  float Hw = H.w;
+  H.w = float(VECTOR_NEQ(H, TRANSPARENT_PIXEL_COLOR));
+  float4 I = P(coord,  1, 1);
+  float Iw = I.w;
+  I.w = float(VECTOR_NEQ(H, TRANSPARENT_PIXEL_COLOR));
+
+  // blendResult Mapping: x|y|
+  //                      w|z|
+  int4 blendResult = int4(BLEND_NONE,BLEND_NONE,BLEND_NONE,BLEND_NONE);
+
+  // Preprocess corners
+  // Pixel Tap Mapping: -|-|-|-|-
+  //                    -|-|B|C|-
+  //                    -|D|E|F|x
+  //                    -|G|H|I|x
+  //                    -|-|x|x|-
+  if (!((VECTOR_EQ(E,F) && VECTOR_EQ(H,I)) || (VECTOR_EQ(E,H) && VECTOR_EQ(F,I))))
+  {
+    float dist_H_F = DistYCbCr(G, E) + DistYCbCr(E, C) + DistYCbCr(P(coord, 0,2), I) + DistYCbCr(I, P(coord, 2,0)) + (4.0 * DistYCbCr(H, F));
+    float dist_E_I = DistYCbCr(D, H) + DistYCbCr(H, P(coord, 1,2)) + DistYCbCr(B, F) + DistYCbCr(F, P(coord, 2,1)) + (4.0 * DistYCbCr(E, I));
+    bool dominantGradient = (DOMINANT_DIRECTION_THRESHOLD * dist_H_F) < dist_E_I;
+    blendResult.z = ((dist_H_F < dist_E_I) && VECTOR_NEQ(E,F) && VECTOR_NEQ(E,H)) ? ((dominantGradient) ? BLEND_DOMINANT : BLEND_NORMAL) : BLEND_NONE;
+  }
+
+
+  // Pixel Tap Mapping: -|-|-|-|-
+  //                    -|A|B|-|-
+  //                    x|D|E|F|-
+  //                    x|G|H|I|-
+  //                    -|x|x|-|-
+  if (!((VECTOR_EQ(D,E) && VECTOR_EQ(G,H)) || (VECTOR_EQ(D,G) && VECTOR_EQ(E,H))))
+  {
+    float dist_G_E = DistYCbCr(P(coord, -2,1)  , D) + DistYCbCr(D, B) + DistYCbCr(P(coord, -1,2), H) + DistYCbCr(H, F) + (4.0 * DistYCbCr(G, E));
+    float dist_D_H = DistYCbCr(P(coord, -2,0)  , G) + DistYCbCr(G, P(coord, 0,2)) + DistYCbCr(A, E) + DistYCbCr(E, I) + (4.0 * DistYCbCr(D, H));
+    bool dominantGradient = (DOMINANT_DIRECTION_THRESHOLD * dist_D_H) < dist_G_E;
+    blendResult.w = ((dist_G_E > dist_D_H) && VECTOR_NEQ(E,D) && VECTOR_NEQ(E,H)) ? ((dominantGradient) ? BLEND_DOMINANT : BLEND_NORMAL) : BLEND_NONE;
+  }
+
+  // Pixel Tap Mapping: -|-|x|x|-
+  //                    -|A|B|C|x
+  //                    -|D|E|F|x
+  //                    -|-|H|I|-
+  //                    -|-|-|-|-
+  if (!((VECTOR_EQ(B,C) && VECTOR_EQ(E,F)) || (VECTOR_EQ(B,E) && VECTOR_EQ(C,F))))
+  {
+    float dist_E_C = DistYCbCr(D, B) + DistYCbCr(B, P(coord, 1,-2)) + DistYCbCr(H, F) + DistYCbCr(F, P(coord, 2,-1)) + (4.0 * DistYCbCr(E, C));
+    float dist_B_F = DistYCbCr(A, E) + DistYCbCr(E, I) + DistYCbCr(P(coord, 0,-2), C) + DistYCbCr(C, P(coord, 2,0)) + (4.0 * DistYCbCr(B, F));
+    bool dominantGradient = (DOMINANT_DIRECTION_THRESHOLD * dist_B_F) < dist_E_C;
+    blendResult.y = ((dist_E_C > dist_B_F) && VECTOR_NEQ(E,B) && VECTOR_NEQ(E,F)) ? ((dominantGradient) ? BLEND_DOMINANT : BLEND_NORMAL) : BLEND_NONE;
+  }
+
+  // Pixel Tap Mapping: -|x|x|-|-
+  //                    x|A|B|C|-
+  //                    x|D|E|F|-
+  //                    -|G|H|-|-
+  //                    -|-|-|-|-
+  if (!((VECTOR_EQ(A,B) && VECTOR_EQ(D,E)) || (VECTOR_EQ(A,D) && VECTOR_EQ(B,E))))
+  {
+    float dist_D_B = DistYCbCr(P(coord, -2,0), A) + DistYCbCr(A, P(coord, 0,-2)) + DistYCbCr(G, E) + DistYCbCr(E, C) + (4.0 * DistYCbCr(D, B));
+    float dist_A_E = DistYCbCr(P(coord, -2,-1), D) + DistYCbCr(D, H) + DistYCbCr(P(coord, -1,-2), B) + DistYCbCr(B, F) + (4.0 * DistYCbCr(A, E));
+    bool dominantGradient = (DOMINANT_DIRECTION_THRESHOLD * dist_D_B) < dist_A_E;
+    blendResult.x = ((dist_D_B < dist_A_E) && VECTOR_NEQ(E,D) && VECTOR_NEQ(E,B)) ? ((dominantGradient) ? BLEND_DOMINANT : BLEND_NORMAL) : BLEND_NONE;
+  }
+
+  float4 res = E;
+  float resW = Ew;
+
+  // Pixel Tap Mapping: -|-|-|-|-
+  //                    -|-|B|C|-
+  //                    -|D|E|F|x
+  //                    -|G|H|I|x
+  //                    -|-|x|x|-
+  if(blendResult.z != BLEND_NONE)
+  {
+    float dist_F_G = DistYCbCr(F, G);
+    float dist_H_C = DistYCbCr(H, C);
+    bool doLineBlend = (blendResult.z == BLEND_DOMINANT ||
+                !((blendResult.y != BLEND_NONE && !IsPixEqual(E, G)) || (blendResult.w != BLEND_NONE && !IsPixEqual(E, C)) ||
+                  (IsPixEqual(G, H) && IsPixEqual(H, I) && IsPixEqual(I, F) && IsPixEqual(F, C) && !IsPixEqual(E, I))));
+
+    float2 origin = float2(0.0, 1.0 / sqrt(2.0));
+    float2 direction = float2(1.0, -1.0);
+    if(doLineBlend)
+    {
+      bool haveShallowLine = (STEEP_DIRECTION_THRESHOLD * dist_F_G <= dist_H_C) && VECTOR_NEQ(E,G) && VECTOR_NEQ(D,G);
+      bool haveSteepLine = (STEEP_DIRECTION_THRESHOLD * dist_H_C <= dist_F_G) && VECTOR_NEQ(E,C) && VECTOR_NEQ(B,C);
+      origin = haveShallowLine? float2(0.0, 0.25) : float2(0.0, 0.5);
+      direction.x += haveShallowLine? 1.0: 0.0;
+      direction.y -= haveSteepLine? 1.0: 0.0;
+    }
+
+    float4 blendPix = lerp(H,F, step(DistYCbCr(E, F), DistYCbCr(E, H)));
+    float blendW = lerp(Hw,Fw, step(DistYCbCr(E, F), DistYCbCr(E, H)));
+    res = lerp(res, blendPix, get_left_ratio(pos, origin, direction, scale));
+    resW = lerp(resW, blendW, get_left_ratio(pos, origin, direction, scale));
+  }
+
+  // Pixel Tap Mapping: -|-|-|-|-
+  //                    -|A|B|-|-
+  //                    x|D|E|F|-
+  //                    x|G|H|I|-
+  //                    -|x|x|-|-
+  if(blendResult.w != BLEND_NONE)
+  {
+    float dist_H_A = DistYCbCr(H, A);
+    float dist_D_I = DistYCbCr(D, I);
+    bool doLineBlend = (blendResult.w == BLEND_DOMINANT ||
+                !((blendResult.z != BLEND_NONE && !IsPixEqual(E, A)) || (blendResult.x != BLEND_NONE && !IsPixEqual(E, I)) ||
+                  (IsPixEqual(A, D) && IsPixEqual(D, G) && IsPixEqual(G, H) && IsPixEqual(H, I) && !IsPixEqual(E, G))));
+
+    float2 origin = float2(-1.0 / sqrt(2.0), 0.0);
+    float2 direction = float2(1.0, 1.0);
+    if(doLineBlend)
+    {
+      bool haveShallowLine = (STEEP_DIRECTION_THRESHOLD * dist_H_A <= dist_D_I) && VECTOR_NEQ(E,A) && VECTOR_NEQ(B,A);
+      bool haveSteepLine  = (STEEP_DIRECTION_THRESHOLD * dist_D_I <= dist_H_A) && VECTOR_NEQ(E,I) && VECTOR_NEQ(F,I);
+      origin = haveShallowLine? float2(-0.25, 0.0) : float2(-0.5, 0.0);
+      direction.y += haveShallowLine? 1.0: 0.0;
+      direction.x += haveSteepLine? 1.0: 0.0;
+    }
+    origin = origin;
+    direction = direction;
+
+    float4 blendPix = lerp(H,D, step(DistYCbCr(E, D), DistYCbCr(E, H)));
+    float blendW = lerp(Hw,Dw, step(DistYCbCr(E, D), DistYCbCr(E, H)));
+    res = lerp(res, blendPix, get_left_ratio(pos, origin, direction, scale));
+    resW = lerp(resW, blendW, get_left_ratio(pos, origin, direction, scale));
+  }
+
+  // Pixel Tap Mapping: -|-|x|x|-
+  //                    -|A|B|C|x
+  //                    -|D|E|F|x
+  //                    -|-|H|I|-
+  //                    -|-|-|-|-
+  if(blendResult.y != BLEND_NONE)
+  {
+    float dist_B_I = DistYCbCr(B, I);
+    float dist_F_A = DistYCbCr(F, A);
+    bool doLineBlend = (blendResult.y == BLEND_DOMINANT ||
+                !((blendResult.x != BLEND_NONE && !IsPixEqual(E, I)) || (blendResult.z != BLEND_NONE && !IsPixEqual(E, A)) ||
+                  (IsPixEqual(I, F) && IsPixEqual(F, C) && IsPixEqual(C, B) && IsPixEqual(B, A) && !IsPixEqual(E, C))));
+
+    float2 origin = float2(1.0 / sqrt(2.0), 0.0);
+    float2 direction = float2(-1.0, -1.0);
+
+    if(doLineBlend)
+    {
+      bool haveShallowLine = (STEEP_DIRECTION_THRESHOLD * dist_B_I <= dist_F_A) && VECTOR_NEQ(E,I) && VECTOR_NEQ(H,I);
+      bool haveSteepLine  = (STEEP_DIRECTION_THRESHOLD * dist_F_A <= dist_B_I) && VECTOR_NEQ(E,A) && VECTOR_NEQ(D,A);
+      origin = haveShallowLine? float2(0.25, 0.0) : float2(0.5, 0.0);
+      direction.y -= haveShallowLine? 1.0: 0.0;
+      direction.x -= haveSteepLine? 1.0: 0.0;
+    }
+
+    float4 blendPix = lerp(F,B, step(DistYCbCr(E, B), DistYCbCr(E, F)));
+    float blendW = lerp(Fw,Bw, step(DistYCbCr(E, B), DistYCbCr(E, F)));
+    res = lerp(res, blendPix, get_left_ratio(pos, origin, direction, scale));
+    resW = lerp(resW, blendW, get_left_ratio(pos, origin, direction, scale));
+  }
+
+  // Pixel Tap Mapping: -|x|x|-|-
+  //                    x|A|B|C|-
+  //                    x|D|E|F|-
+  //                    -|G|H|-|-
+  //                    -|-|-|-|-
+  if(blendResult.x != BLEND_NONE)
+  {
+    float dist_D_C = DistYCbCr(D, C);
+    float dist_B_G = DistYCbCr(B, G);
+    bool doLineBlend = (blendResult.x == BLEND_DOMINANT ||
+                !((blendResult.w != BLEND_NONE && !IsPixEqual(E, C)) || (blendResult.y != BLEND_NONE && !IsPixEqual(E, G)) ||
+                  (IsPixEqual(C, B) && IsPixEqual(B, A) && IsPixEqual(A, D) && IsPixEqual(D, G) && !IsPixEqual(E, A))));
+
+    float2 origin = float2(0.0, -1.0 / sqrt(2.0));
+    float2 direction = float2(-1.0, 1.0);
+    if(doLineBlend)
+    {
+      bool haveShallowLine = (STEEP_DIRECTION_THRESHOLD * dist_D_C <= dist_B_G) && VECTOR_NEQ(E,C) && VECTOR_NEQ(F,C);
+      bool haveSteepLine  = (STEEP_DIRECTION_THRESHOLD * dist_B_G <= dist_D_C) && VECTOR_NEQ(E,G) && VECTOR_NEQ(H,G);
+      origin = haveShallowLine? float2(0.0, -0.25) : float2(0.0, -0.5);
+      direction.x -= haveShallowLine? 1.0: 0.0;
+      direction.y += haveSteepLine? 1.0: 0.0;
+    }
+
+    float4 blendPix = lerp(D,B, step(DistYCbCr(E, B), DistYCbCr(E, D)));
+    float blendW = lerp(Dw,Bw, step(DistYCbCr(E, B), DistYCbCr(E, D)));
+    res = lerp(res, blendPix, get_left_ratio(pos, origin, direction, scale));
+    resW = lerp(resW, blendW, get_left_ratio(pos, origin, direction, scale));
+  }
+
+  ialpha = res.w;
+  texcol = float4(res.xyz, resW);
+     
+  // Compensate for partially transparent sampling.
+  if (ialpha > 0.0)
+    texcol.rgb /= float3(ialpha, ialpha, ialpha);
+}
+
+#undef P
+
+)";
+  }
+}
+
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency,
                                                           GPU::TextureMode texture_mode, bool dithering,
                                                           bool interlacing)
@@ -588,7 +1062,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   const bool use_dual_source =
     m_supports_dual_source_blend && ((transparency != GPU_HW::BatchRenderMode::TransparencyDisabled &&
                                       transparency != GPU_HW::BatchRenderMode::OnlyOpaque) ||
-                                     m_texture_filering);
+                                     m_texture_filter != GPUTextureFilter::Nearest);
 
   std::stringstream ss;
   WriteHeader(ss);
@@ -606,7 +1080,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
-  DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filering);
+  DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filter != GPUTextureFilter::Nearest);
   DefineMacro(ss, "UV_LIMITS", m_uv_limits);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
 
@@ -708,43 +1182,14 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
   #endif
 }
 
-void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
-                            out float4 texcol, out float ialpha)
-{
-  // Compute the coordinates of the four texels we will be interpolating between.
-  // Clamp this to the triangle texture coordinates.
-  float2 texel_top_left = frac(coords) - float2(0.5, 0.5);
-  float2 texel_offset = sign(texel_top_left);
-  float4 fcoords = max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
-                        float4(0.0, 0.0, 0.0, 0.0));
-
-  // Load four texels.
-  float4 s00 = SampleFromVRAM(texpage, clamp(fcoords.xy, uv_limits.xy, uv_limits.zw));
-  float4 s10 = SampleFromVRAM(texpage, clamp(fcoords.zy, uv_limits.xy, uv_limits.zw));
-  float4 s01 = SampleFromVRAM(texpage, clamp(fcoords.xw, uv_limits.xy, uv_limits.zw));
-  float4 s11 = SampleFromVRAM(texpage, clamp(fcoords.zw, uv_limits.xy, uv_limits.zw));
-
-  // Compute alpha from how many texels aren't pixel color 0000h.
-  float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
-  float a10 = float(VECTOR_NEQ(s10, TRANSPARENT_PIXEL_COLOR));
-  float a01 = float(VECTOR_NEQ(s01, TRANSPARENT_PIXEL_COLOR));
-  float a11 = float(VECTOR_NEQ(s11, TRANSPARENT_PIXEL_COLOR));
-
-  // Bilinearly interpolate.
-  float2 weights = abs(texel_top_left);
-  texcol = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
-  ialpha = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
-
-  // Compensate for partially transparent sampling.
-  if (ialpha > 0.0)
-    texcol.rgb /= float3(ialpha, ialpha, ialpha);
-}
-
 #endif
 )";
 
   if (textured)
   {
+    if (m_texture_filter != GPUTextureFilter::Nearest)
+      WriteBatchTextureFilter(ss, m_texture_filter);
+
     if (m_uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
@@ -794,7 +1239,7 @@ void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
 
     float4 texcol;
     #if TEXTURE_FILTERING
-      BilinearSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
+      FilteredSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
       if (ialpha < 0.5)
         discard;
     #else
@@ -809,7 +1254,7 @@ void BilinearSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
       ialpha = 1.0;
     #endif
 
-    semitransparent = (texcol.a != 0.0);
+    semitransparent = (texcol.a >= 0.5);
 
     // If not using true color, truncate the framebuffer colors to 5-bit.
     #if !TRUE_COLOR

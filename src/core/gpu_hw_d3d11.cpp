@@ -332,7 +332,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
   for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
   {
     bl_desc = CD3D11_BLEND_DESC(CD3D11_DEFAULT());
-    if (transparency_mode != static_cast<u8>(TransparencyMode::Disabled) || m_texture_filtering)
+    if (transparency_mode != static_cast<u8>(TransparencyMode::Disabled) || m_texture_filtering != GPUTextureFilter::Nearest)
     {
       bl_desc.RenderTarget[0].BlendEnable = TRUE;
       bl_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;

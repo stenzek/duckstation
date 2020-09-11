@@ -471,12 +471,12 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "others will break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"duckstation_GPU.TextureFiltering",
-   "Bilinear Texture Filtering",
+  {"duckstation_GPU.TextureFilter",
+   "Texture Filtering",
    "Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a "
    "greater effect on higher resolution scales. Only applies to the hardware renderers.",
-   {{"true", "Enabled"}, {"false", "Disabled"}},
-   "false"},
+   {{"Nearest", "Nearest-Neighbor"}, {"Bilinear", "Bilinear"}, {"JINC2", "JINC2"}, {"xBRZ", "xBRZ"}},
+   "Nearest"},
   {"duckstation_GPU.WidescreenHack",
    "Widescreen Hack",
    "Increases the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered "

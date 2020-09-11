@@ -42,24 +42,34 @@
           <item row="0" column="1">
            <widget class="QComboBox" name="resolutionScale"/>
           </item>
-          <item row="1" column="0" colspan="2">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Texture Filtering:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="textureFiltering"/>
+          </item>
+          <item row="2" column="0" colspan="2">
            <widget class="QCheckBox" name="trueColor">
             <property name="text">
              <string>True Color Rendering (24-bit, disables dithering)</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <widget class="QCheckBox" name="scaledDithering">
             <property name="text">
              <string>Scaled Dithering (scale dither pattern to resolution)</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QCheckBox" name="linearTextureFiltering">
+          <item row="4" column="0" colspan="2">
+           <widget class="QCheckBox" name="widescreenHack">
             <property name="text">
-             <string>Bilinear Texture Filtering</string>
+             <string>Widescreen Hack (render 3D in 16:9)</string>
             </property>
            </widget>
           </item>
@@ -83,13 +93,6 @@
            <widget class="QCheckBox" name="forceNTSCTimings">
             <property name="text">
              <string>Force NTSC Timings (60hz-on-PAL)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="widescreenHack">
-            <property name="text">
-             <string>Widescreen Hack</string>
             </property>
            </widget>
           </item>

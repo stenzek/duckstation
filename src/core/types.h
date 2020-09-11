@@ -66,6 +66,15 @@ enum class GPURenderer : u8
   Count
 };
 
+enum class GPUTextureFilter : u8
+{
+  Nearest,
+  Bilinear,
+  JINC2,
+  xBRZ,
+  Count
+};
+
 enum class DisplayCropMode : u8
 {
   None,

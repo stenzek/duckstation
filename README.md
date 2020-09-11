@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/12: Additional texture filtering options added.
 - 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
 - 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
 - 2020/08/25: Automated builds for macOS now available.

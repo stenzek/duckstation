@@ -88,7 +88,7 @@ struct Settings
   bool gpu_use_debug_device = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = false;
-  bool gpu_texture_filtering = false;
+  GPUTextureFilter gpu_texture_filter = GPUTextureFilter::Nearest;
   bool gpu_disable_interlacing = false;
   bool gpu_force_ntsc_timings = false;
   bool gpu_widescreen_hack = false;
@@ -201,6 +201,10 @@ struct Settings
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
 
+  static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
+  static const char* GetTextureFilterName(GPUTextureFilter filter);
+  static const char* GetTextureFilterDisplayName(GPUTextureFilter filter);
+
   static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
@@ -227,6 +231,7 @@ struct Settings
 #else
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
 #endif
+  static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;

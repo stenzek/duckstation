@@ -5,7 +5,8 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
+EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_interface, QWidget* parent,
+                                                     SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
   m_ui.setupUi(this);
@@ -16,8 +17,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU", "ScaledDithering");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.linearTextureFiltering, "GPU",
-                                               "TextureFiltering");
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter", &Settings::ParseTextureFilterName,
+    &Settings::GetTextureFilterDisplayName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
@@ -62,7 +64,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
                                 "approximately 17% faster. <br>For variable "
                                 "frame rate games, it may not affect the speed."));
   dialog->registerWidgetHelp(
-    m_ui.linearTextureFiltering, tr("Bilinear Texture Filtering"), tr("Unchecked"),
+    m_ui.textureFiltering, tr("Texture Filtering"), tr("Unchecked"),
     tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. <br>Will have a "
        "greater effect on higher resolution scales. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
@@ -96,6 +98,12 @@ void EnhancementSettingsWidget::updateScaledDitheringEnabled()
 void EnhancementSettingsWidget::setupAdditionalUi()
 {
   QtUtils::FillComboBoxWithResolutionScales(m_ui.resolutionScale);
+
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+  {
+    m_ui.textureFiltering->addItem(
+      qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
 }
 
 void EnhancementSettingsWidget::updatePGXPSettingsEnabled()

@@ -47,7 +47,7 @@ struct Entry
   std::optional<bool> gpu_true_color;
   std::optional<bool> gpu_scaled_dithering;
   std::optional<bool> gpu_force_ntsc_timings;
-  std::optional<bool> gpu_bilinear_texture_filtering;
+  std::optional<GPUTextureFilter> gpu_texture_filter;
   std::optional<bool> gpu_widescreen_hack;
   std::optional<bool> gpu_pgxp;
   std::optional<ControllerType> controller_1_type;

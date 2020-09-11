@@ -372,7 +372,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "UseDebugDevice", false);
   si.SetBoolValue("GPU", "TrueColor", false);
   si.SetBoolValue("GPU", "ScaledDithering", true);
-  si.SetBoolValue("GPU", "TextureFiltering", false);
+  si.SetStringValue("GPU", "TextureFilter", Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER));
   si.SetBoolValue("GPU", "DisableInterlacing", false);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
   si.SetBoolValue("GPU", "WidescreenHack", false);
@@ -543,7 +543,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_true_color != old_settings.gpu_true_color ||
         g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
-        g_settings.gpu_texture_filtering != old_settings.gpu_texture_filtering ||
+        g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
         g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
