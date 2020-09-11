@@ -1036,7 +1036,7 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
 
     ImGui::TextUnformatted("Texture Filtering:");
     ImGui::NextColumn();
-    ImGui::TextColored((m_texture_filtering != GPUTextureFilter::Nearest) ? active_color : inactive_color,
+    ImGui::TextColored((m_texture_filtering != GPUTextureFilter::Nearest) ? active_color : inactive_color, "%s",
                        Settings::GetTextureFilterDisplayName(m_texture_filtering));
     ImGui::NextColumn();
 
