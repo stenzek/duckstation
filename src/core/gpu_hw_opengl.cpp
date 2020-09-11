@@ -1,6 +1,7 @@
 #include "gpu_hw_opengl.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "system.h"
@@ -358,7 +359,19 @@ bool GPU_HW_OpenGL::CompilePrograms()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
 
-  g_host_interface->DisplayLoadingScreen("Compiling Shaders...");
+  Common::Timer compile_time;
+  const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 5;
+  int progress_value = 0;
+#define UPDATE_PROGRESS()                                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    progress_value++;                                                                                                  \
+    if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
+    {                                                                                                                  \
+      compile_time.Reset();                                                                                            \
+      g_host_interface->DisplayLoadingScreen("Compiling Shaders", 0, progress_total, progress_value);                  \
+    }                                                                                                                  \
+  } while (0)
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -416,6 +429,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
           }
 
           m_render_programs[render_mode][texture_mode][dithering][interlacing] = std::move(*prog);
+
+          UPDATE_PROGRESS();
         }
       }
     }
@@ -444,6 +459,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
         prog->Uniform1i("samp0", 0);
       }
       m_display_programs[depth_24bit][interlaced] = std::move(*prog);
+      UPDATE_PROGRESS();
     }
   }
 
@@ -460,6 +476,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->BindUniformBlock("UBOBlock", 1);
 
   m_vram_interlaced_fill_program = std::move(*prog);
+  UPDATE_PROGRESS();
 
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMReadFragmentShader(),
@@ -477,6 +494,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->Uniform1i("samp0", 0);
   }
   m_vram_read_program = std::move(*prog);
+  UPDATE_PROGRESS();
 
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMCopyFragmentShader(),
@@ -494,6 +512,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->Uniform1i("samp0", 0);
   }
   m_vram_copy_program = std::move(*prog);
+  UPDATE_PROGRESS();
 
   prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMUpdateDepthFragmentShader());
@@ -503,6 +522,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog->Bind();
   prog->Uniform1i("samp0", 0);
   m_vram_update_depth_program = std::move(*prog);
+  UPDATE_PROGRESS();
 
   if (m_supports_texture_buffer || m_use_ssbo_for_vram_writes)
   {
@@ -523,6 +543,9 @@ bool GPU_HW_OpenGL::CompilePrograms()
     }
     m_vram_write_program = std::move(*prog);
   }
+
+  UPDATE_PROGRESS();
+#undef UPDATE_PROGRESS
 
   return true;
 }

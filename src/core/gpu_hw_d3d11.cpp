@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
+#include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "host_interface.h"
@@ -332,7 +333,8 @@ bool GPU_HW_D3D11::CreateStateObjects()
   for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
   {
     bl_desc = CD3D11_BLEND_DESC(CD3D11_DEFAULT());
-    if (transparency_mode != static_cast<u8>(TransparencyMode::Disabled) || m_texture_filtering != GPUTextureFilter::Nearest)
+    if (transparency_mode != static_cast<u8>(TransparencyMode::Disabled) ||
+        m_texture_filtering != GPUTextureFilter::Nearest)
     {
       bl_desc.RenderTarget[0].BlendEnable = TRUE;
       bl_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
@@ -372,7 +374,19 @@ bool GPU_HW_D3D11::CompileShaders()
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
 
-  g_host_interface->DisplayLoadingScreen("Compiling shaders...");
+  Common::Timer compile_time;
+  const int progress_total = 1 + 1 + 2 + (4 * 9 * 2 * 2) + 7 + (2 * 3);
+  int progress_value = 0;
+#define UPDATE_PROGRESS()                                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    progress_value++;                                                                                                  \
+    if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
+    {                                                                                                                  \
+      compile_time.Reset();                                                                                            \
+      g_host_interface->DisplayLoadingScreen("Compiling Shaders", 0, progress_total, progress_value);                  \
+    }                                                                                                                  \
+  } while (0)
 
   // input layout
   {
@@ -400,10 +414,14 @@ bool GPU_HW_D3D11::CompileShaders()
     }
   }
 
+  UPDATE_PROGRESS();
+
   m_screen_quad_vertex_shader =
     m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
   if (!m_screen_quad_vertex_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   for (u8 textured = 0; textured < 2; textured++)
   {
@@ -411,6 +429,8 @@ bool GPU_HW_D3D11::CompileShaders()
     m_batch_vertex_shaders[textured] = m_shader_cache.GetVertexShader(m_device.Get(), vs);
     if (!m_batch_vertex_shaders[textured])
       return false;
+
+    UPDATE_PROGRESS();
   }
 
   for (u8 render_mode = 0; render_mode < 4; render_mode++)
@@ -429,6 +449,8 @@ bool GPU_HW_D3D11::CompileShaders()
             m_shader_cache.GetPixelShader(m_device.Get(), ps);
           if (!m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing])
             return false;
+
+          UPDATE_PROGRESS();
         }
       }
     }
@@ -438,32 +460,46 @@ bool GPU_HW_D3D11::CompileShaders()
   if (!m_copy_pixel_shader)
     return false;
 
+  UPDATE_PROGRESS();
+
   m_vram_fill_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
   if (!m_vram_fill_pixel_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   m_vram_interlaced_fill_pixel_shader =
     m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateInterlacedFillFragmentShader());
   if (!m_vram_interlaced_fill_pixel_shader)
     return false;
 
+  UPDATE_PROGRESS();
+
   m_vram_read_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
   if (!m_vram_read_pixel_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   m_vram_write_pixel_shader =
     m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader(false));
   if (!m_vram_write_pixel_shader)
     return false;
 
+  UPDATE_PROGRESS();
+
   m_vram_copy_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMCopyFragmentShader());
   if (!m_vram_copy_pixel_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   m_vram_update_depth_pixel_shader =
     m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMUpdateDepthFragmentShader());
   if (!m_vram_update_depth_pixel_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
@@ -474,8 +510,14 @@ bool GPU_HW_D3D11::CompileShaders()
       m_display_pixel_shaders[depth_24bit][interlacing] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
       if (!m_display_pixel_shaders[depth_24bit][interlacing])
         return false;
+
+      UPDATE_PROGRESS();
     }
   }
+
+  UPDATE_PROGRESS();
+
+#undef UPDATE_PROGRESS
 
   return true;
 }
