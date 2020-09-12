@@ -54,6 +54,9 @@ public:
   // Construct a string from a data object, does not increment the reference count on the string data, use carefully.
   explicit String(StringData* pStringData) : m_pStringData(pStringData) {}
 
+  // Creates string from string_view.
+  String(const std::string_view& sv);
+
   // Destructor. Child classes may not have any destructors, as this is not virtual.
   ~String();
 
@@ -305,6 +308,12 @@ public:
     // force a copy by passing it a string pointer, instead of a string object
     InitStackStringData();
     Assign(copyString.GetCharArray());
+  }
+
+  StackString(const std::string_view& sv) : String(&m_sStringData)
+  {
+    InitStackStringData();
+    AppendString(sv.data(), static_cast<u32>(sv.size()));
   }
 
   // Override the fromstring method
