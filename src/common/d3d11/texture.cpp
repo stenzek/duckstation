@@ -121,6 +121,8 @@ void Texture::Destroy()
   m_rtv.Reset();
   m_srv.Reset();
   m_texture.Reset();
+  m_width = 0;
+  m_height = 0;
 }
 
 } // namespace D3D11
