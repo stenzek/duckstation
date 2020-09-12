@@ -44,7 +44,7 @@ Log_SetChannel(QtHostInterface);
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
-  qRegisterMetaType<SystemBootParameters>();
+  qRegisterMetaType<std::shared_ptr<const SystemBootParameters>>();
 }
 
 QtHostInterface::~QtHostInterface()
@@ -169,12 +169,6 @@ bool QtHostInterface::ConfirmMessage(const char* message)
     SetFullscreen(true);
 
   return result;
-}
-
-bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
-                                                 std::unique_ptr<SystemBootParameters>* out_boot_params)
-{
-  return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
 std::string QtHostInterface::GetStringSettingValue(const char* section, const char* key,
@@ -344,16 +338,17 @@ void QtHostInterface::setMainWindow(MainWindow* window)
   m_main_window = window;
 }
 
-void QtHostInterface::bootSystem(const SystemBootParameters& params)
+void QtHostInterface::bootSystem(std::shared_ptr<const SystemBootParameters> params)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "bootSystem", Qt::QueuedConnection, Q_ARG(const SystemBootParameters&, params));
+    QMetaObject::invokeMethod(this, "bootSystem", Qt::QueuedConnection,
+                              Q_ARG(std::shared_ptr<const SystemBootParameters>, std::move(params)));
     return;
   }
 
   emit emulationStarting();
-  BootSystem(params);
+  BootSystem(*params);
 }
 
 void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_on_failure)

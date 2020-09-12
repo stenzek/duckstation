@@ -269,15 +269,12 @@ void MainWindow::onStartDiscActionTriggered()
   if (filename.isEmpty())
     return;
 
-  SystemBootParameters boot_params;
-  boot_params.filename = filename.toStdString();
-  m_host_interface->bootSystem(boot_params);
+  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(filename.toStdString()));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
-  SystemBootParameters boot_params;
-  m_host_interface->bootSystem(boot_params);
+  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>());
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -391,9 +388,7 @@ void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
     }
     else
     {
-      SystemBootParameters boot_params;
-      boot_params.filename = path.toStdString();
-      m_host_interface->bootSystem(boot_params);
+      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path.toStdString()));
     }
   }
   else
@@ -429,19 +424,20 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
         menu.addSeparator();
       }
 
-      connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
-              [this, entry]() { m_host_interface->bootSystem(SystemBootParameters(entry->path)); });
+      connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, entry]() {
+        m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(entry->path));
+      });
 
       connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
-        SystemBootParameters boot_params(entry->path);
-        boot_params.override_fast_boot = true;
-        m_host_interface->bootSystem(boot_params);
+        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+        boot_params->override_fast_boot = true;
+        m_host_interface->bootSystem(std::move(boot_params));
       });
 
       connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
-        SystemBootParameters boot_params(entry->path);
-        boot_params.override_fast_boot = false;
-        m_host_interface->bootSystem(boot_params);
+        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+        boot_params->override_fast_boot = false;
+        m_host_interface->bootSystem(std::move(boot_params));
       });
     }
     else

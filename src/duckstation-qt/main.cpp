@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
   std::unique_ptr<QtHostInterface> host_interface = std::make_unique<QtHostInterface>();
   std::unique_ptr<SystemBootParameters> boot_params;
-  if (!host_interface->parseCommandLineParameters(argc, argv, &boot_params))
+  if (!host_interface->ParseCommandLineParameters(argc, argv, &boot_params))
     return EXIT_FAILURE;
 
   if (!host_interface->Initialize())
@@ -48,8 +48,7 @@ int main(int argc, char* argv[])
 
   if (boot_params)
   {
-    host_interface->bootSystem(*boot_params);
-    boot_params.reset();
+    host_interface->bootSystem(std::move(boot_params));
   }
   else
   {
