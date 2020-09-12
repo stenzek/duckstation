@@ -45,7 +45,7 @@ void SaveStateSelectorUI::RefreshList()
 
   if (!System::GetRunningCode().empty())
   {
-    for (s32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
+    for (s32 i = 1; i <= CommonHostInterface::PER_GAME_SAVE_STATE_SLOTS; i++)
     {
       std::optional<CommonHostInterface::ExtendedSaveStateInfo> ssi =
         m_host_interface->GetExtendedSaveStateInfo(System::GetRunningCode().c_str(), i);
@@ -146,6 +146,16 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, CommonHostInterface
     Log_ErrorPrintf("Failed to upload save state image to GPU");
 }
 
+std::pair<s32, bool> SaveStateSelectorUI::GetSlotTypeFromSelection(u32 selection) const
+{
+  if (selection < CommonHostInterface::PER_GAME_SAVE_STATE_SLOTS)
+  {
+    return {selection + 1, false};
+  }
+
+  return {selection - CommonHostInterface::PER_GAME_SAVE_STATE_SLOTS + 1, true};
+}
+
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, s32 slot, bool global)
 {
   li->title = "No Save State";
@@ -231,27 +241,15 @@ void SaveStateSelectorUI::Draw()
 
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
-  if (m_current_selection >= m_slots.size())
-  {
-    RefreshList();
-    return;
-  }
-
-  const ListEntry& le = m_slots.at(m_current_selection);
-  m_host_interface->LoadState(le.global, le.slot);
+  const auto slot_info = GetSlotTypeFromSelection(m_current_selection);
+  m_host_interface->LoadState(slot_info.second, slot_info.first);
   Close();
 }
 
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
-  if (m_current_selection >= m_slots.size())
-  {
-    RefreshList();
-    return;
-  }
-
-  const ListEntry& le = m_slots.at(m_current_selection);
-  m_host_interface->SaveState(le.global, le.slot);
+  const auto slot_info = GetSlotTypeFromSelection(m_current_selection);
+  m_host_interface->SaveState(slot_info.second, slot_info.first);
   Close();
 }
 
