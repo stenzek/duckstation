@@ -374,8 +374,15 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
           state_filename = GetGameSaveStateFileName(game_code.c_str(), *state_index);
           if (state_filename.empty() || !FileSystem::FileExists(state_filename.c_str()))
           {
-            Log_ErrorPrintf("Could not find file for game '%s' save state %d", game_code.c_str(), *state_index);
-            return false;
+            if (state_index >= 0) // Do not exit if -resume is specified, but resume save state does not exist
+            {
+              Log_ErrorPrintf("Could not find file for game '%s' save state %d", game_code.c_str(), *state_index);
+              return false;
+            }
+            else
+            {
+              state_filename.clear();
+            }
           }
         }
       }
