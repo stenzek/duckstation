@@ -1,9 +1,11 @@
 #include "displaysettingswidget.h"
 #include "core/gpu.h"
 #include "core/settings.h"
+#include "postprocessingchainconfigwidget.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include <QtWidgets/QMessageBox>
 
 // For enumerating adapters.
 #include "frontend-common/vulkan_host_display.h"
@@ -44,6 +46,25 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::onGPUAdapterIndexChanged);
   populateGPUAdapters();
+
+  {
+    std::string post_chain = g_host_interface->GetStringSettingValue("Display", "PostProcessChain");
+    if (!post_chain.empty() && !m_ui.postChain->setConfigString(post_chain))
+    {
+      QMessageBox::critical(this, tr("Error"),
+                            tr("The current post-processing chain is invalid, it has been reset. Any changes made will "
+                               "overwrite the existing config."));
+    }
+  }
+  connect(m_ui.postChain, &PostProcessingChainConfigWidget::chainConfigStringChanged,
+          [this](const std::string& new_config) {
+            if (new_config.empty())
+              m_host_interface->RemoveSettingValue("Display", "PostProcessChain");
+            else
+              m_host_interface->SetStringSettingValue("Display", "PostProcessChain", new_config.c_str());
+
+            m_host_interface->applySettings();
+          });
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"), Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER),
