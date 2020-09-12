@@ -163,6 +163,7 @@ public:
   void DeferFramebufferDestruction(VkFramebuffer object);
   void DeferImageDestruction(VkImage object);
   void DeferImageViewDestruction(VkImageView object);
+  void DeferPipelineDestruction(VkPipeline pipeline);
 
   // Wait for a fence to be completed.
   // Also invokes callbacks for completion.

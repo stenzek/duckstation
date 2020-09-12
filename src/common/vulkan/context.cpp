@@ -997,6 +997,12 @@ void Context::DeferImageViewDestruction(VkImageView object)
   resources.cleanup_resources.push_back([this, object]() { vkDestroyImageView(m_device, object, nullptr); });
 }
 
+void Context::DeferPipelineDestruction(VkPipeline pipeline)
+{
+  FrameResources& resources = m_frame_resources[m_current_frame];
+  resources.cleanup_resources.push_back([this, pipeline]() { vkDestroyPipeline(m_device, pipeline, nullptr); });
+}
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags,
                                                           VkDebugReportObjectTypeEXT objectType, uint64_t object,
                                                           size_t location, int32_t messageCode,
