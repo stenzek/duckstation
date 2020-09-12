@@ -47,6 +47,7 @@
     <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="pgxp.cpp" />
     <ClCompile Include="cheats.cpp" />
+    <ClCompile Include="shadergen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -97,5 +98,6 @@
     <ClInclude Include="pgxp.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cheats.h" />
+    <ClInclude Include="shadergen.h" />
   </ItemGroup>
 </Project>

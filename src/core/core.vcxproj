@@ -85,6 +85,7 @@
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="resources.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="shadergen.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />
