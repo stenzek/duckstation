@@ -768,7 +768,7 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
 }
 )";
   }
-  else if (texture_filter == GPUTextureFilter::xBRZ)
+  else if (texture_filter == GPUTextureFilter::xBR)
   {
     ss << R"(
 CONSTANT int BLEND_NONE = 0;

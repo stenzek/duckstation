@@ -475,7 +475,7 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "Texture Filtering",
    "Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a "
    "greater effect on higher resolution scales. Only applies to the hardware renderers.",
-   {{"Nearest", "Nearest-Neighbor"}, {"Bilinear", "Bilinear"}, {"JINC2", "JINC2"}, {"xBRZ", "xBRZ"}},
+   {{"Nearest", "Nearest-Neighbor"}, {"Bilinear", "Bilinear"}, {"JINC2", "JINC2"}, {"xBR", "xBR"}},
    "Nearest"},
   {"duckstation_GPU.WidescreenHack",
    "Widescreen Hack",

@@ -71,7 +71,7 @@ enum class GPUTextureFilter : u8
   Nearest,
   Bilinear,
   JINC2,
-  xBRZ,
+  xBR,
   Count
 };
 

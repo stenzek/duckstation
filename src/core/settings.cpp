@@ -452,10 +452,10 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }
 
-static constexpr auto s_texture_filter_names = make_array("Nearest", "Bilinear", "JINC2", "xBRZ");
+static constexpr auto s_texture_filter_names = make_array("Nearest", "Bilinear", "JINC2", "xBR");
 static constexpr auto s_texture_filter_display_names =
   make_array(TRANSLATABLE("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATABLE("GPUTextureFilter", "Bilinear"),
-             TRANSLATABLE("GPUTextureFilter", "JINC2"), TRANSLATABLE("GPUTextureFilter", "xBRZ"));
+             TRANSLATABLE("GPUTextureFilter", "JINC2"), TRANSLATABLE("GPUTextureFilter", "xBR"));
 
 std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
 {
