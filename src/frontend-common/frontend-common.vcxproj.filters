@@ -19,6 +19,9 @@
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_vulkan.cpp" />
+    <ClCompile Include="postprocessing_shader.cpp" />
+    <ClCompile Include="postprocessing_shadergen.cpp" />
+    <ClCompile Include="postprocessing_chain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -39,6 +42,9 @@
     <ClInclude Include="imgui_impl_vulkan.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
+    <ClInclude Include="postprocessing_shader.h" />
+    <ClInclude Include="postprocessing_shadergen.h" />
+    <ClInclude Include="postprocessing_chain.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

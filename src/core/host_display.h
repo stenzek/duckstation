@@ -69,6 +69,8 @@ public:
   virtual bool CreateResources() = 0;
   virtual void DestroyResources() = 0;
 
+  virtual bool SetPostProcessingChain(const std::string_view& config) = 0;
+
   /// Call when the window size changes externally to recreate any resources.
   virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) = 0;
 

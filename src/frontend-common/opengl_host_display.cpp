@@ -7,6 +7,9 @@
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #endif
+#ifndef LIBRETRO
+#include "postprocessing_shadergen.h"
+#endif
 Log_SetChannel(LibretroOpenGLHostDisplay);
 
 namespace FrontendCommon {
@@ -207,6 +210,8 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 
 bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
+  glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
+
   if (debug_device && GLAD_GL_KHR_debug)
   {
     if (GetRenderAPI() == RenderAPI::OpenGLES)
@@ -418,6 +423,13 @@ void main()
 
 void OpenGLHostDisplay::DestroyResources()
 {
+#ifndef LIBRETRO
+  m_post_processing_chain.ClearStages();
+  m_post_processing_input_texture.Destroy();
+  m_post_processing_ubo.reset();
+  m_post_processing_stages.clear();
+#endif
+
   if (m_display_vao != 0)
     glDeleteVertexArrays(1, &m_display_vao);
   if (m_display_linear_sampler != 0)
@@ -470,9 +482,18 @@ void OpenGLHostDisplay::RenderDisplay()
     return;
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
-  RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
-                m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+
+  if (!m_post_processing_chain.IsEmpty())
+  {
+    ApplyPostProcessingChain(0, left, top, width, height, m_display_texture_handle, m_display_texture_width,
+                             m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                             m_display_texture_view_width, m_display_texture_view_height);
+    return;
+  }
+
+  RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                m_display_texture_view_height, m_display_linear_filtering);
 }
 
 void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle,
@@ -525,5 +546,182 @@ void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s3
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindSampler(0, 0);
 }
+
+#ifndef LIBRETRO
+
+bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  if (config.empty())
+  {
+    m_post_processing_input_texture.Destroy();
+    m_post_processing_stages.clear();
+    m_post_processing_chain.ClearStages();
+    return true;
+  }
+
+  if (!m_post_processing_chain.CreateFromString(config))
+    return false;
+
+  m_post_processing_stages.clear();
+
+  FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::OpenGL, false);
+
+  for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
+  {
+    const PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
+    const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
+
+    PostProcessingStage stage;
+    stage.uniforms_size = shader.GetUniformsSize();
+    if (!stage.program.Compile(vs, {}, ps))
+    {
+      Log_InfoPrintf("Failed to compile post-processing program, disabling.");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    if (!shadergen.UseGLSLBindingLayout())
+    {
+      stage.program.BindUniformBlock("UBOBlock", 1);
+      stage.program.Bind();
+      stage.program.Uniform1i("samp0", 0);
+    }
+
+    if (!stage.program.Link())
+    {
+      Log_InfoPrintf("Failed to link post-processing program, disabling.");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    m_post_processing_stages.push_back(std::move(stage));
+  }
+
+  if (!m_post_processing_ubo)
+  {
+    m_post_processing_ubo = GL::StreamBuffer::Create(GL_UNIFORM_BUFFER, 1 * 1024 * 1024);
+    if (!m_post_processing_ubo)
+    {
+      Log_InfoPrintf("Failed to allocate uniform buffer for postprocessing");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    m_post_processing_ubo->Unbind();
+  }
+
+  return true;
+}
+
+bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 target_height)
+{
+  DebugAssert(!m_post_processing_stages.empty());
+
+  if (m_post_processing_input_texture.GetWidth() != target_width ||
+      m_post_processing_input_texture.GetHeight() != target_height)
+  {
+    if (!m_post_processing_input_texture.Create(target_width, target_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+        !m_post_processing_input_texture.CreateFramebuffer())
+    {
+      return false;
+    }
+  }
+
+  const u32 target_count = (static_cast<u32>(m_post_processing_stages.size()) - 1);
+  for (u32 i = 0; i < target_count; i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
+    {
+      if (!pps.output_texture.Create(target_width, target_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+          !pps.output_texture.CreateFramebuffer())
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_left, s32 final_top, s32 final_width,
+                                                 s32 final_height, void* texture_handle, u32 texture_width,
+                                                 s32 texture_height, s32 texture_view_x, s32 texture_view_y,
+                                                 s32 texture_view_width, s32 texture_view_height)
+{
+  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
+
+  if (!CheckPostProcessingRenderTargets(GetWindowWidth(), GetWindowHeight()))
+  {
+    RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
+                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+    return;
+  }
+
+  // downsample/upsample - use same viewport for remainder
+  m_post_processing_input_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  glClear(GL_COLOR_BUFFER_BIT);
+  RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
+                texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+
+  texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_post_processing_input_texture.GetGLId()));
+  texture_width = m_post_processing_input_texture.GetWidth();
+  texture_height = m_post_processing_input_texture.GetHeight();
+  texture_view_x = final_left;
+  texture_view_y = final_top;
+  texture_view_width = final_width;
+  texture_view_height = final_height;
+
+  m_post_processing_ubo->Bind();
+
+  const u32 final_stage = static_cast<u32>(m_post_processing_stages.size()) - 1u;
+  for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (i == final_stage)
+    {
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, final_target);
+    }
+    else
+    {
+      pps.output_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+      glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    pps.program.Bind();
+    glBindSampler(0, m_display_linear_sampler);
+    glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)));
+    glBindSampler(0, m_display_nearest_sampler);
+
+    const auto map_result = m_post_processing_ubo->Map(m_uniform_buffer_alignment, pps.uniforms_size);
+    m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
+      map_result.pointer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
+      texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+    m_post_processing_ubo->Unmap(pps.uniforms_size);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_post_processing_ubo->GetGLBufferId(), map_result.buffer_offset,
+                      pps.uniforms_size);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    if (i != final_stage)
+      texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(pps.output_texture.GetGLId()));
+  }
+
+  glBindSampler(0, 0);
+  m_post_processing_ubo->Unbind();
+}
+
+#else
+
+bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  return false;
+}
+
+#endif
 
 } // namespace FrontendCommon

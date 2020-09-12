@@ -84,6 +84,7 @@ struct Settings
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;
+  std::string display_post_process_chain;
   u32 gpu_resolution_scale = 1;
   bool gpu_use_debug_device = false;
   bool gpu_true_color = true;

@@ -169,8 +169,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   ss << "\n";
 }
 
-void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
-                                     bool push_constant_on_vulkan)
+void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan)
 {
   if (IsVulkan())
   {
@@ -190,6 +189,12 @@ void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializ
   {
     ss << "cbuffer UBOBlock : register(b0)\n";
   }
+}
+
+void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
+                                     bool push_constant_on_vulkan)
+{
+  WriteUniformBufferDeclaration(ss, push_constant_on_vulkan);
 
   ss << "{\n";
   for (const char* member : members)

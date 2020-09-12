@@ -99,6 +99,7 @@ void GPU_HW_OpenGL::ResetGraphicsAPIState()
   if (m_resolution_scale > 1 && !m_supports_geometry_shaders)
     glLineWidth(1.0f);
   glBindVertexArray(0);
+  m_uniform_stream_buffer->Unbind();
 }
 
 void GPU_HW_OpenGL::RestoreGraphicsAPIState()
@@ -114,6 +115,7 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   if (m_resolution_scale > 1 && !m_supports_geometry_shaders)
     glLineWidth(static_cast<float>(m_resolution_scale));
   glBindVertexArray(m_vao_id);
+  m_uniform_stream_buffer->Bind();
 
   SetScissorFromDrawingArea();
   m_batch_ubo_dirty = true;

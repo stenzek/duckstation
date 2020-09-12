@@ -22,6 +22,7 @@ protected:
   void SetGLSLVersionString();
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled);
   void WriteHeader(std::stringstream& ss);
+  void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan);
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
                             bool push_constant_on_vulkan);
   void DeclareTexture(std::stringstream& ss, const char* name, u32 index);

@@ -79,6 +79,9 @@
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
+    <ClCompile Include="postprocessing_chain.cpp" />
+    <ClCompile Include="postprocessing_shader.cpp" />
+    <ClCompile Include="postprocessing_shadergen.cpp" />
     <ClCompile Include="save_state_selector_ui.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_controller_interface.cpp" />
@@ -99,6 +102,9 @@
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="opengl_host_display.h" />
+    <ClInclude Include="postprocessing_chain.h" />
+    <ClInclude Include="postprocessing_shader.h" />
+    <ClInclude Include="postprocessing_shadergen.h" />
     <ClInclude Include="save_state_selector_ui.h" />
     <ClInclude Include="sdl_audio_stream.h" />
     <ClInclude Include="sdl_controller_interface.h" />
