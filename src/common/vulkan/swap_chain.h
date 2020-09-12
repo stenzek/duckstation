@@ -31,7 +31,7 @@ public:
 
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
   ALWAYS_INLINE VkSurfaceFormatKHR GetSurfaceFormat() const { return m_surface_format; }
-  ALWAYS_INLINE VkFormat GetTextureFormat() const { return m_texture_format; }
+  ALWAYS_INLINE VkFormat GetTextureFormat() const { return m_surface_format.format; }
   ALWAYS_INLINE bool IsVSyncEnabled() const { return m_vsync_enabled; }
   ALWAYS_INLINE VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
@@ -85,7 +85,6 @@ private:
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
   VkSurfaceFormatKHR m_surface_format = {};
   VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-  VkFormat m_texture_format = VK_FORMAT_UNDEFINED;
 
   VkRenderPass m_load_render_pass = VK_NULL_HANDLE;
   VkRenderPass m_clear_render_pass = VK_NULL_HANDLE;
