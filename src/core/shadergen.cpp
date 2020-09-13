@@ -137,6 +137,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define uint2 uvec2\n";
     ss << "#define uint3 uvec3\n";
     ss << "#define uint4 uvec4\n";
+    ss << "#define float2x2 mat2\n";
+    ss << "#define float3x3 mat3\n";
+    ss << "#define float4x4 mat4\n";
+    ss << "#define mul(x, y) ((x) * (y))\n";
     ss << "#define nointerpolation flat\n";
     ss << "#define frac fract\n";
     ss << "#define lerp mix\n";
@@ -150,6 +154,13 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) texelFetch(name, index)\n";
+    ss << "#define BEGIN_ARRAY(type, size) type[size](\n";
+    ss << "#define END_ARRAY )\n";
+
+    ss << "float saturate(float value) { return clamp(value, 0.0, 1.0); }\n";
+    ss << "float2 saturate(float2 value) { return clamp(value, float2(0.0, 0.0), float2(1.0, 1.0)); }\n";
+    ss << "float3 saturate(float3 value) { return clamp(value, float3(0.0, 0.0, 0.0), float3(1.0, 1.0, 1.0)); }\n";
+    ss << "float4 saturate(float4 value) { return clamp(value, float4(0.0, 0.0, 0.0, 0.0), float4(1.0, 1.0, 1.0, 1.0)); }\n";
   }
   else
   {
@@ -157,6 +168,18 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define roundEven round\n";
     ss << "#define mix lerp\n";
     ss << "#define fract frac\n";
+    ss << "#define vec2 float2\n";
+    ss << "#define vec3 float3\n";
+    ss << "#define vec4 float4\n";
+    ss << "#define ivec2 int2\n";
+    ss << "#define ivec3 int3\n";
+    ss << "#define ivec4 int4\n";
+    ss << "#define uivec2 uint2\n";
+    ss << "#define uivec3 uint3\n";
+    ss << "#define uivec4 uint4\n";
+    ss << "#define mat2 float2x2\n";
+    ss << "#define mat3 float3x3\n";
+    ss << "#define mat4 float4x4\n";
     ss << "#define CONSTANT static const\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
@@ -166,6 +189,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(index)\n";
+    ss << "#define BEGIN_ARRAY(type, size) {\n";
+    ss << "#define END_ARRAY }\n";
   }
 
   ss << "\n";
