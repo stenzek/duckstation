@@ -1,5 +1,6 @@
 #include "postprocessingchainconfigwidget.h"
 #include "frontend-common/postprocessing_chain.h"
+#include "postprocessingshaderconfigwidget.h"
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -72,7 +73,8 @@ void PostProcessingChainConfigWidget::updateButtonStates()
   std::optional<u32> index = getSelectedIndex();
   m_ui.remove->setEnabled(index.has_value());
   m_ui.clear->setEnabled(!m_chain.IsEmpty());
-  m_ui.shaderSettings->setEnabled(index.has_value());
+  m_ui.shaderSettings->setEnabled(index.has_value() && (index.value() < m_chain.GetStageCount()) &&
+                                  m_chain.GetShaderStage(index.value()).HasOptions());
 
   if (index.has_value())
   {
@@ -106,7 +108,7 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
           QMessageBox::critical(this, tr("Error"), tr("Failed to add shader. The log may contain more information."));
           return;
         }
-        
+
         updateList();
         configChanged();
       });
@@ -168,7 +170,10 @@ void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
 void PostProcessingChainConfigWidget::onShaderConfigButtonClicked()
 {
   std::optional<u32> index = getSelectedIndex();
-  if (index.has_value())
+  if (index.has_value() && index.value() < m_chain.GetStageCount())
   {
+    PostProcessingShaderConfigWidget shader_config(this, &m_chain.GetShaderStage(index.value()));
+    connect(&shader_config, &PostProcessingShaderConfigWidget::configChanged, [this]() { configChanged(); });
+    shader_config.exec();
   }
 }
