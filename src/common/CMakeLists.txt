@@ -172,7 +172,7 @@ if(USE_WAYLAND)
   target_link_libraries(common PRIVATE Wayland::Egl)
 endif()
 
-if(APPLE)
+if(APPLE AND NOT BUILD_LIBRETRO_CORE)
   target_sources(common PRIVATE
     gl/context_agl.mm
     gl/context_agl.h
