@@ -93,6 +93,18 @@
         <item>1:1</item>
         <item>PAR 1:1</item>
     </string-array>
+    <string-array name="settings_gpu_texture_filter_names">
+        <item>Nearest-Neighbor</item>
+        <item>Bilinear</item>
+        <item>JINC2</item>
+        <item>xBR</item>
+    </string-array>
+    <string-array name="settings_gpu_texture_filter_values">
+        <item>Nearest</item>
+        <item>Bilinear</item>
+        <item>JINC2</item>
+        <item>xBR</item>
+    </string-array>
     <string-array name="settings_controller_type_entries">
         <item>Digital Controller (Gamepad)</item>
         <item>Analog Controller (DualShock)</item>
