@@ -3,6 +3,7 @@ package com.github.stenzek.duckstation;
 import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.AndroidException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.SurfaceHolder;
@@ -30,7 +32,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     /**
      * Settings interfaces.
      */
-    SharedPreferences mPreferences;
+    private SharedPreferences mPreferences;
+    private boolean mWasDestroyed = false;
+    private boolean mWasPausedOnSurfaceLoss = false;
+    private boolean mApplySettingsOnSurfaceRestored = false;
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
@@ -85,7 +90,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     public void onEmulationStopped() {
         runOnUiThread(() -> {
-            finish();
+            if (!mWasDestroyed)
+                finish();
         });
     }
 
@@ -93,6 +99,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         runOnUiThread(() -> {
             setTitle(title);
         });
+    }
+
+    private void applySettings() {
+        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
+            return;
+
+        if (AndroidHostInterface.getInstance().hasSurface())
+            AndroidHostInterface.getInstance().applySettings();
+        else
+            mApplySettingsOnSurfaceRestored = true;
     }
 
     @Override
@@ -103,8 +119,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // Once we get a surface, we can boot.
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            final boolean hadSurface = AndroidHostInterface.getInstance().hasSurface();
             AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
             updateOrientation();
+
+            if (holder.getSurface() != null && !hadSurface && AndroidHostInterface.getInstance().isEmulationThreadPaused() && !mWasPausedOnSurfaceLoss) {
+                AndroidHostInterface.getInstance().pauseEmulationThread(false);
+            }
+
+            if (mApplySettingsOnSurfaceRestored) {
+                AndroidHostInterface.getInstance().applySettings();
+                mApplySettingsOnSurfaceRestored = false;
+            }
+
             return;
         }
 
@@ -121,14 +148,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
             return;
 
-        Log.i("EmulationActivity", "Stopping emulation thread");
-        AndroidHostInterface.getInstance().stopEmulationThread();
+        Log.i("EmulationActivity", "Surface destroyed");
+
+        // Save the resume state in case we never get back again...
+        AndroidHostInterface.getInstance().saveResumeState(true);
+
+        mWasPausedOnSurfaceLoss = AndroidHostInterface.getInstance().isEmulationThreadPaused();
+        AndroidHostInterface.getInstance().pauseEmulationThread(true);
+        AndroidHostInterface.getInstance().surfaceChanged(null, 0, 0, 0);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.i("EmulationActivity", "OnCreate");
 
         setContentView(R.layout.activity_emulation);
         ActionBar actionBar = getSupportActionBar();
@@ -167,10 +201,20 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPostResume() {
+        super.onPostResume();
+        if (!mSystemUIVisible)
+            hideSystemUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i("EmulationActivity", "OnStop");
+        showSystemUI(false);
 
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            mWasDestroyed = true;
             AndroidHostInterface.getInstance().stopEmulationThread();
         }
     }
@@ -185,6 +229,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         return true;
     }
 
+    private static final int REQUEST_CODE_SETTINGS = 0;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -195,7 +241,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivityForResult(intent, REQUEST_CODE_SETTINGS);
             return true;
         } else if (id == R.id.show_controller) {
             setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
@@ -205,7 +252,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
             setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
             item.setChecked(newSetting);
-            AndroidHostInterface.getInstance().applySettings();
+            applySettings();
             return true;
         } else if (id == R.id.reset) {
             AndroidHostInterface.getInstance().resetSystem();
@@ -222,13 +269,24 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_SETTINGS) {
+            // TODO: Sync any menu settings.
+            if (AndroidHostInterface.getInstance().isEmulationThreadRunning())
+                applySettings();
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         if (mSystemUIVisible) {
             finish();
             return;
         }
 
-        showSystemUI();
+        showSystemUI(true);
     }
 
     @Override
@@ -308,24 +366,17 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     @SuppressLint("InlinedApi")
-    private void showSystemUI() {
+    private void showSystemUI(boolean delay) {
         // Show the system bar
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        mContentView.setSystemUiVisibility(0);
         mSystemUIVisible = true;
 
         // Schedule a runnable to display UI elements after a delay
         mSystemUIHideHandler.removeCallbacks(mHidePart2Runnable);
-        mSystemUIHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
-    }
-
-    /**
-     * Schedules a call to hide() in delay milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    private void delayedHide(int delayMillis) {
-        mSystemUIHideHandler.removeCallbacks(mHideRunnable);
-        mSystemUIHideHandler.postDelayed(mHideRunnable, delayMillis);
+        if (delay)
+            mSystemUIHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
+        else
+            mShowPart2Runnable.run();
     }
 
     /**

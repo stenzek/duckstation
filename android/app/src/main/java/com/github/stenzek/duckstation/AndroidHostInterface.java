@@ -34,7 +34,13 @@ public class AndroidHostInterface {
 
     public native boolean startEmulationThread(EmulationActivity emulationActivity, Surface surface, String filename, boolean resumeState, String state_filename);
 
+    public native boolean isEmulationThreadPaused();
+
+    public native void pauseEmulationThread(boolean paused);
+
     public native void stopEmulationThread();
+
+    public native boolean hasSurface();
 
     public native void surfaceChanged(Surface surface, int format, int width, int height);
 
@@ -58,6 +64,8 @@ public class AndroidHostInterface {
     public native void loadState(boolean global, int slot);
 
     public native void saveState(boolean global, int slot);
+
+    public native void saveResumeState(boolean waitForCompletion);
 
     public native void applySettings();
 
