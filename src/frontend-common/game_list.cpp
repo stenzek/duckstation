@@ -740,8 +740,12 @@ void GameList::LoadDatabase()
   if (m_database_filename.empty())
     return;
 
+  auto fp = FileSystem::OpenManagedCFile(m_database_filename.c_str(), "rb");
+  if (!fp)
+    return;
+
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(m_database_filename.c_str());
+  tinyxml2::XMLError error = doc.LoadFile(fp.get());
   if (error != tinyxml2::XML_SUCCESS)
   {
     Log_ErrorPrintf("Failed to parse redump dat '%s': %s", m_database_filename.c_str(),
@@ -858,8 +862,12 @@ void GameList::LoadCompatibilityList()
   if (m_compatibility_list_filename.empty())
     return;
 
+  auto fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "rb");
+  if (!fp)
+    return;
+
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(m_compatibility_list_filename.c_str());
+  tinyxml2::XMLError error = doc.LoadFile(fp.get());
   if (error != tinyxml2::XML_SUCCESS)
   {
     Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
@@ -989,11 +997,12 @@ bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntr
   if (m_compatibility_list_filename.empty())
     return false;
 
-  if (!FileSystem::FileExists(m_compatibility_list_filename.c_str()))
+  auto fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "rb");
+  if (!fp)
     return SaveCompatibilityDatabase();
 
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(m_compatibility_list_filename.c_str());
+  tinyxml2::XMLError error = doc.LoadFile(fp.get());
   if (error != tinyxml2::XML_SUCCESS)
   {
     Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
