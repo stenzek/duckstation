@@ -5,6 +5,7 @@
 #include "ui_displaysettingswidget.h"
 
 class QtHostInterface;
+class PostProcessingChainConfigWidget;
 class SettingsDialog;
 
 class DisplaySettingsWidget : public QWidget

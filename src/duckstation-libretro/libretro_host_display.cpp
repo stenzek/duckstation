@@ -156,6 +156,11 @@ void LibretroHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_windo
   m_window_info.surface_height = new_window_height;
 }
 
+bool LibretroHostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  return false;
+}
+
 std::unique_ptr<HostDisplayTexture> LibretroHostDisplay::CreateTexture(u32 width, u32 height, const void* data,
                                                                        u32 data_stride, bool dynamic)
 {

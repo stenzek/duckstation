@@ -32,6 +32,8 @@
     <file>icons/duck.png</file>
     <file>icons/duck_128.png</file>
     <file>icons/duck_64.png</file>
+    <file>icons/edit-clear-16.png</file>
+    <file>icons/edit-clear-16@2x.png</file>
     <file>icons/edit-find.png</file>
     <file>icons/flag-eu.png</file>
     <file>icons/flag-eu@2x.png</file>
@@ -43,6 +45,10 @@
     <file>icons/flag-us@2x.png</file>
     <file>icons/folder-open.png</file>
     <file>icons/folder-open@2x.png</file>
+    <file>icons/go-down-16.png</file>
+    <file>icons/go-down-16@2x.png</file>
+    <file>icons/go-up-16.png</file>
+    <file>icons/go-up-16@2x.png</file>
     <file>icons/input-gaming.png</file>
     <file>icons/input-gaming@2x.png</file>
     <file>icons/list-add.png</file>

@@ -54,6 +54,11 @@ set(SRCS
   mainwindow.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
+  postprocessingchainconfigwidget.cpp
+  postprocessingchainconfigwidget.h
+  postprocessingchainconfigwidget.ui
+  postprocessingshaderconfigwidget.cpp
+  postprocessingshaderconfigwidget.h
   qtdisplaywidget.cpp
   qtdisplaywidget.h
   qthostinterface.cpp

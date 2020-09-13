@@ -123,6 +123,7 @@ void CommonHostInterface::InitializeUserDirectory()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("inputprofiles").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("shaders").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
 
   if (!result)
@@ -172,6 +173,7 @@ void CommonHostInterface::DestroySystem()
 {
   SetTimerResolutionIncreased(false);
   m_save_state_selector_ui->Close();
+  m_display->SetPostProcessingChain({});
 
   HostInterface::DestroySystem();
 }
@@ -684,6 +686,9 @@ void CommonHostInterface::SetUserDirectory()
 void CommonHostInterface::OnSystemCreated()
 {
   HostInterface::OnSystemCreated();
+
+  if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
 }
 
 void CommonHostInterface::OnSystemPaused(bool paused)
@@ -1954,6 +1959,12 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.emulation_speed != old_settings.emulation_speed)
     {
       UpdateSpeedLimiterState();
+    }
+
+    if (g_settings.display_post_process_chain != old_settings.display_post_process_chain)
+    {
+      if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+        AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
     }
   }
 
