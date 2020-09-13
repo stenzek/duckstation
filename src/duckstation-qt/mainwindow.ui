@@ -122,6 +122,7 @@
     <addaction name="actionMemoryCardSettings"/>
     <addaction name="actionDisplaySettings"/>
     <addaction name="actionEnhancementSettings"/>
+    <addaction name="actionPostProcessingSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
@@ -357,6 +358,15 @@
    </property>
    <property name="text">
     <string>&amp;Enhancement Settings...</string>
+   </property>
+  </action>
+  <action name="actionPostProcessingSettings">
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Post-Processing Settings...</string>
    </property>
   </action>
   <action name="actionFullscreen">

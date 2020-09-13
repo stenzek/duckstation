@@ -19,9 +19,14 @@ public:
   PostProcessingChainConfigWidget(QWidget* parent);
   ~PostProcessingChainConfigWidget();
 
+  ALWAYS_INLINE FrontendCommon::PostProcessingChain& getChain() { return m_chain; }
+
   bool setConfigString(const std::string_view& config_string);
+  void setOptionsButtonVisible(bool visible);
 
 Q_SIGNALS:
+  void selectedShaderChanged(qint32 index);
+  void chainAboutToChange();
   void chainConfigStringChanged(const std::string& new_config_string);
 
 private Q_SLOTS:
@@ -32,13 +37,14 @@ private Q_SLOTS:
   void onMoveDownButtonClicked();
   void onShaderConfigButtonClicked();
   void onReloadButtonClicked();
-  void updateButtonStates();
+  void onSelectedShaderChanged();
 
 private:
   void connectUi();
   std::optional<u32> getSelectedIndex() const;
   void updateList();
   void configChanged();
+  void updateButtonStates(std::optional<u32> index);
 
   Ui::PostProcessingChainConfigWidget m_ui;
 

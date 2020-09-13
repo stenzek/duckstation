@@ -15,6 +15,7 @@ class ControllerSettingsWidget;
 class MemoryCardSettingsWidget;
 class DisplaySettingsWidget;
 class EnhancementSettingsWidget;
+class PostProcessingSettingsWidget;
 class AudioSettingsWidget;
 class AdvancedSettingsWidget;
 
@@ -33,6 +34,7 @@ public:
     MemoryCardSettings,
     DisplaySettings,
     EnhancementSettings,
+    PostProcessingSettings,
     AudioSettings,
     AdvancedSettings,
     Count
@@ -51,6 +53,7 @@ public:
   EnhancementSettingsWidget* getEnhancementSettingsWidget() const { return m_enhancement_settings; }
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
   AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
+  PostProcessingSettingsWidget* getPostProcessingSettingsWidget() { return m_post_processing_settings; }
 
   void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
   bool eventFilter(QObject* object, QEvent* event) override;
@@ -76,6 +79,7 @@ private:
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
   DisplaySettingsWidget* m_display_settings = nullptr;
   EnhancementSettingsWidget* m_enhancement_settings = nullptr;
+  PostProcessingSettingsWidget *m_post_processing_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AdvancedSettingsWidget* m_advanced_settings = nullptr;
 

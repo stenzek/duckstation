@@ -58,6 +58,7 @@
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="postprocessingshaderconfigwidget.cpp" />
+    <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="qthostinterface.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
@@ -88,6 +89,7 @@
     <QtMoc Include="gamepropertiesdialog.h" />
     <QtMoc Include="postprocessingchainconfigwidget.h" />
     <QtMoc Include="postprocessingshaderconfigwidget.h" />
+    <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="mainwindow.h" />
     <QtMoc Include="qthostinterface.h" />
     <ClInclude Include="qtutils.h" />
@@ -150,6 +152,9 @@
     <QtUi Include="postprocessingchainconfigwidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="postprocessingsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -178,6 +183,7 @@
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingshaderconfigwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />

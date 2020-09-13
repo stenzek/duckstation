@@ -9,10 +9,8 @@ using FrontendCommon::PostProcessingShader;
 
 PostProcessingShaderConfigWidget::PostProcessingShaderConfigWidget(QWidget* parent,
                                                                    FrontendCommon::PostProcessingShader* shader)
-  : QDialog(parent), m_shader(shader)
+  : QWidget(parent), m_shader(shader)
 {
-  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-  setWindowTitle(tr("%1 Shader Options").arg(QString::fromStdString(m_shader->GetName())));
   createUi();
 }
 
@@ -20,7 +18,8 @@ PostProcessingShaderConfigWidget::~PostProcessingShaderConfigWidget() = default;
 
 void PostProcessingShaderConfigWidget::createUi()
 {
-  QGridLayout* layout = new QGridLayout(this);
+  m_layout = new QGridLayout(this);
+  m_layout->setContentsMargins(0, 0, 0, 0);
   u32 row = 0;
 
   for (PostProcessingShader::Option& option : m_shader->GetOptions())
@@ -38,7 +37,7 @@ void PostProcessingShaderConfigWidget::createUi()
         checkbox->setChecked(option.default_value[0].bool_value);
         option.value = option.default_value;
       });
-      layout->addWidget(checkbox, row, 0, 1, 3, Qt::AlignLeft);
+      m_layout->addWidget(checkbox, row, 0, 1, 3, Qt::AlignLeft);
       row++;
     }
     else
@@ -57,13 +56,13 @@ void PostProcessingShaderConfigWidget::createUi()
           label = tr("%1 (%2)").arg(QString::fromStdString(option.ui_name)).arg(tr(suffixes[i]));
         }
 
-        layout->addWidget(new QLabel(label, this), row, 0, 1, 1, Qt::AlignLeft);
+        m_layout->addWidget(new QLabel(label, this), row, 0, 1, 1, Qt::AlignLeft);
 
         QSlider* slider = new QSlider(Qt::Horizontal, this);
-        layout->addWidget(slider, row, 1, 1, 1, Qt::AlignLeft);
+        m_layout->addWidget(slider, row, 1, 1, 1, Qt::AlignLeft);
 
         QLabel* slider_label = new QLabel(this);
-        layout->addWidget(slider_label, row, 2, 1, 1, Qt::AlignLeft);
+        m_layout->addWidget(slider_label, row, 2, 1, 1, Qt::AlignLeft);
 
         if (option.type == PostProcessingShader::Option::Type::Int)
         {
@@ -132,20 +131,42 @@ void PostProcessingShaderConfigWidget::createUi()
 
   QPushButton* reset_button = new QPushButton(tr("Reset to Defaults"), this);
   connect(reset_button, &QPushButton::clicked, this, &PostProcessingShaderConfigWidget::onResetToDefaultsClicked);
-  layout->addWidget(reset_button, row, 0, 1, 2);
-
-  QPushButton* close_button = new QPushButton(tr("Close"), this);
-  connect(close_button, &QPushButton::clicked, this, &PostProcessingShaderConfigWidget::onCloseClicked);
-  layout->addWidget(close_button, row, 2, 1, 2);
-}
-
-void PostProcessingShaderConfigWidget::onCloseClicked()
-{
-  done(0);
+  m_layout->addWidget(reset_button, row, 0, 1, 1);
 }
 
 void PostProcessingShaderConfigWidget::onResetToDefaultsClicked()
 {
   resettingtoDefaults();
   configChanged();
+}
+
+PostProcessingShaderConfigDialog::PostProcessingShaderConfigDialog(QWidget* parent,
+                                                                   FrontendCommon::PostProcessingShader* shader)
+  : QDialog(parent)
+{
+  setWindowTitle(tr("%1 Shader Options").arg(QString::fromStdString(shader->GetName())));
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+  QGridLayout* layout = new QGridLayout(this);
+  m_widget = new PostProcessingShaderConfigWidget(this, shader);
+  layout->addWidget(m_widget);
+
+  connect(m_widget, &PostProcessingShaderConfigWidget::configChanged, this,
+          &PostProcessingShaderConfigDialog::onConfigChanged);
+
+  QPushButton* close_button = new QPushButton(tr("Close"), this);
+  connect(close_button, &QPushButton::clicked, this, &PostProcessingShaderConfigDialog::onCloseClicked);
+  m_widget->getLayout()->addWidget(close_button, m_widget->getLayout()->rowCount() - 1, 2, 1, 2);
+}
+
+PostProcessingShaderConfigDialog::~PostProcessingShaderConfigDialog() = default;
+
+void PostProcessingShaderConfigDialog::onConfigChanged()
+{
+  configChanged();
+}
+
+void PostProcessingShaderConfigDialog::onCloseClicked()
+{
+  done(0);
 }

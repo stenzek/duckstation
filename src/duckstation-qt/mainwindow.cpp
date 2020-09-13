@@ -664,6 +664,8 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::DisplaySettings); });
   connect(m_ui.actionEnhancementSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::EnhancementSettings); });
+  connect(m_ui.actionPostProcessingSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::PostProcessingSettings); });
   connect(m_ui.actionAudioSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,

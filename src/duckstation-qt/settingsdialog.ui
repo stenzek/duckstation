@@ -132,6 +132,15 @@
        </item>
        <item>
         <property name="text">
+         <string>Post-Processing Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/resources.qrc">
+          <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Audio Settings</string>
         </property>
         <property name="icon">

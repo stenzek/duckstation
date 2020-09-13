@@ -687,7 +687,7 @@ void CommonHostInterface::OnSystemCreated()
 {
   HostInterface::OnSystemCreated();
 
-  if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+  if (g_settings.display_post_processing && !m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
 }
 
@@ -1967,10 +1967,18 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
       UpdateSpeedLimiterState();
     }
 
-    if (g_settings.display_post_process_chain != old_settings.display_post_process_chain)
+    if (g_settings.display_post_processing != old_settings.display_post_processing ||
+        g_settings.display_post_process_chain != old_settings.display_post_process_chain)
     {
-      if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
-        AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+      if (g_settings.display_post_processing)
+      {
+        if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+          AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+      }
+      else
+      {
+        m_display->SetPostProcessingChain({});
+      }
     }
   }
 
@@ -2273,7 +2281,7 @@ void CommonHostInterface::ApplyCheatCode(u32 index)
 
 void CommonHostInterface::ReloadPostProcessingShaders()
 {
-  if (!m_display)
+  if (!m_display || !g_settings.display_post_processing)
     return;
 
   if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))

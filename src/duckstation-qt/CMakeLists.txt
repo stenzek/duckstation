@@ -57,6 +57,9 @@ set(SRCS
   postprocessingchainconfigwidget.cpp
   postprocessingchainconfigwidget.h
   postprocessingchainconfigwidget.ui
+  postprocessingsettingswidget.cpp
+  postprocessingsettingswidget.h
+  postprocessingsettingswidget.ui
   postprocessingshaderconfigwidget.cpp
   postprocessingshaderconfigwidget.h
   qtdisplaywidget.cpp

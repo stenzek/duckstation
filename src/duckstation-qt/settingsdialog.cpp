@@ -9,6 +9,7 @@
 #include "generalsettingswidget.h"
 #include "hotkeysettingswidget.h"
 #include "memorycardsettingswidget.h"
+#include "postprocessingsettingswidget.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QTextEdit>
 
@@ -30,6 +31,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_memory_card_settings = new MemoryCardSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_display_settings = new DisplaySettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_enhancement_settings = new EnhancementSettingsWidget(host_interface, m_ui.settingsContainer, this);
+  m_post_processing_settings = new PostProcessingSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
 
@@ -41,6 +43,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::MemoryCardSettings), m_memory_card_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::DisplaySettings), m_display_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::EnhancementSettings), m_enhancement_settings);
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::PostProcessingSettings), m_post_processing_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AudioSettings), m_audio_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AdvancedSettings), m_advanced_settings);
 
@@ -88,6 +91,9 @@ void SettingsDialog::setCategoryHelpTexts()
   m_category_help_text[static_cast<int>(Category::EnhancementSettings)] =
     tr("<strong>Enhancement Settings</strong><hr>These options control enhancements which can improve visuals compared "
        "to the original console. Mouse over each option for additional information.");
+  m_category_help_text[static_cast<int>(Category::PostProcessingSettings)] =
+    tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
+       "displayed on the screen with various filters. Shaders will be executed in sequence.");
   m_category_help_text[static_cast<int>(Category::AudioSettings)] =
     tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
        "for additional information.");
