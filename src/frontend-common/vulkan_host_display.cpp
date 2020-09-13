@@ -591,6 +591,7 @@ void VulkanHostDisplay::RenderDisplay()
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
 
+#ifndef LIBRETRO
   if (!m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(left, top, width, height, m_display_texture_handle, m_display_texture_width,
@@ -598,6 +599,7 @@ void VulkanHostDisplay::RenderDisplay()
                              m_display_texture_view_width, m_display_texture_view_height);
     return;
   }
+#endif
 
   BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
