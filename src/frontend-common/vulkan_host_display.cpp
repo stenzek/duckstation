@@ -439,6 +439,7 @@ void VulkanHostDisplay::DestroyResources()
   m_post_processing_input_texture.Destroy(false);
   Vulkan::Util::SafeDestroyFramebuffer(m_post_processing_input_framebuffer);
   m_post_processing_stages.clear();
+  m_post_processing_ubo.Destroy(true);
   m_post_processing_chain.ClearStages();
 #endif
 
