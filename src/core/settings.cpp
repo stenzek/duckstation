@@ -7,6 +7,8 @@
 
 Settings g_settings;
 
+SettingsInterface::~SettingsInterface() = default;
+
 const char* SettingInfo::StringDefaultValue() const
 {
   return default_value ? default_value : "";
@@ -628,3 +630,4 @@ const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
 {
   return s_memory_card_type_display_names[static_cast<int>(type)];
 }
+

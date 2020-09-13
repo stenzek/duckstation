@@ -54,7 +54,7 @@ private:
   void InitDiskControlInterface();
   void InitRumbleInterface();
 
-  void LoadSettings();
+  void LoadSettings() override;
   void UpdateSettings();
   void UpdateControllers();
   void UpdateControllersDigitalController(u32 index);

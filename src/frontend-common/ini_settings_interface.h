@@ -7,11 +7,11 @@
 #endif
 #include "SimpleIni.h"
 
-class INISettingsInterface : public SettingsInterface
+class INISettingsInterface final : public SettingsInterface
 {
 public:
   INISettingsInterface(std::string filename);
-  ~INISettingsInterface();
+  ~INISettingsInterface() override;
 
   bool Save();
 

@@ -9,6 +9,8 @@
 class SettingsInterface
 {
 public:
+  virtual ~SettingsInterface();
+
   virtual void Clear() = 0;
 
   virtual int GetIntValue(const char* section, const char* key, int default_value = 0) = 0;

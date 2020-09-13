@@ -56,8 +56,8 @@ protected:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
 
-  virtual bool CreateResources();
-  virtual void DestroyResources();
+  virtual bool CreateResources() override;
+  virtual void DestroyResources() override;
 
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();

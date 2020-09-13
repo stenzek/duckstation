@@ -946,7 +946,7 @@ void GPU_HW_Vulkan::ClearDisplay()
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
   m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-  static const VkClearColorValue cc = {0.0f, 0.0f, 0.0f, 1.0f};
+  static const VkClearColorValue cc = {{0.0f, 0.0f, 0.0f, 1.0f}};
   static const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
   vkCmdClearColorImage(cmdbuf, m_display_texture.GetImage(), m_display_texture.GetLayout(), &cc, 1, &srr);
 }

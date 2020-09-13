@@ -63,8 +63,8 @@ protected:
   // Can be overridden by frontends.
   virtual VkRenderPass GetRenderPassForDisplay() const;
 
-  virtual bool CreateResources();
-  virtual void DestroyResources();
+  virtual bool CreateResources() override;
+  virtual void DestroyResources() override;
 
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();

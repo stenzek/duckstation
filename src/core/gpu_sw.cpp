@@ -121,7 +121,6 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u3
     dst_stride <<= interlaced_shift;
     height >>= interlaced_shift;
 
-    const u32 end_x = src_x + width;
     for (u32 row = 0; row < height; row++)
     {
       const u16* src_row_ptr = &m_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
@@ -160,7 +159,6 @@ void GPU_SW::UpdateDisplay()
       return;
     }
 
-    const u32 vram_offset_x = m_crtc_state.display_vram_left;
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;

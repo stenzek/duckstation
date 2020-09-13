@@ -1048,7 +1048,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         if (!SplitBinding(binding, &device, &button))
           continue;
 
-        AddButtonToInputMap(binding, device, button, [this, controller_index, button_code](bool pressed) {
+        AddButtonToInputMap(binding, device, button, [controller_index, button_code](bool pressed) {
           if (System::IsShutdown())
             return;
 
@@ -1074,7 +1074,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         if (!SplitBinding(binding, &device, &axis))
           continue;
 
-        AddAxisToInputMap(binding, device, axis, axis_type, [this, controller_index, axis_code](float value) {
+        AddAxisToInputMap(binding, device, axis, axis_type, [controller_index, axis_code](float value) {
           if (System::IsShutdown())
             return;
 

@@ -62,8 +62,8 @@ protected:
 
   static std::vector<std::string> EnumerateAdapterNames(IDXGIFactory* dxgi_factory);
 
-  virtual bool CreateResources();
-  virtual void DestroyResources();
+  virtual bool CreateResources() override;
+  virtual void DestroyResources() override;
 
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();
