@@ -502,7 +502,7 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
                                       u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
                                       s32 texture_view_width, s32 texture_view_height, bool linear_filter)
 {
-  glViewport(left, bottom, width, height);
+  glViewport(left, GetWindowHeight() - bottom - height, width, height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
