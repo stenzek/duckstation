@@ -40,6 +40,8 @@ public:
   explicit QtHostInterface(QObject* parent = nullptr);
   ~QtHostInterface();
 
+  ALWAYS_INLINE static QtHostInterface* GetInstance() { return static_cast<QtHostInterface*>(g_host_interface); }
+
   const char* GetFrontendName() const override;
 
   bool Initialize() override;
@@ -164,6 +166,7 @@ public Q_SLOTS:
   void loadCheatList(const QString& filename);
   void setCheatEnabled(quint32 index, bool enabled);
   void applyCheat(quint32 index);
+  void reloadPostProcessingShaders();
 
 private Q_SLOTS:
   void doStopThread();

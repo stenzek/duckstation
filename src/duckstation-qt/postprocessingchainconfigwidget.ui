@@ -83,6 +83,17 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="reload">
+       <property name="text">
+        <string>&amp;Reload Shaders</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/icons.qrc">
+         <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

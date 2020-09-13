@@ -31,6 +31,7 @@ private Q_SLOTS:
   void onMoveUpButtonClicked();
   void onMoveDownButtonClicked();
   void onShaderConfigButtonClicked();
+  void onReloadButtonClicked();
   void updateButtonStates();
 
 private:

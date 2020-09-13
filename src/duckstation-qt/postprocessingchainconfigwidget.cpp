@@ -1,6 +1,7 @@
 #include "postprocessingchainconfigwidget.h"
 #include "frontend-common/postprocessing_chain.h"
 #include "postprocessingshaderconfigwidget.h"
+#include "qthostinterface.h"
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -21,6 +22,7 @@ void PostProcessingChainConfigWidget::connectUi()
   connect(m_ui.clear, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onClearButtonClicked);
   connect(m_ui.moveUp, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveUpButtonClicked);
   connect(m_ui.moveDown, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveDownButtonClicked);
+  connect(m_ui.reload, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onReloadButtonClicked);
   connect(m_ui.shaderSettings, &QPushButton::clicked, this,
           &PostProcessingChainConfigWidget::onShaderConfigButtonClicked);
   connect(m_ui.shaders, &QListWidget::itemSelectionChanged, this, &PostProcessingChainConfigWidget::updateButtonStates);
@@ -73,6 +75,7 @@ void PostProcessingChainConfigWidget::updateButtonStates()
   std::optional<u32> index = getSelectedIndex();
   m_ui.remove->setEnabled(index.has_value());
   m_ui.clear->setEnabled(!m_chain.IsEmpty());
+  m_ui.reload->setEnabled(!m_chain.IsEmpty());
   m_ui.shaderSettings->setEnabled(index.has_value() && (index.value() < m_chain.GetStageCount()) &&
                                   m_chain.GetShaderStage(index.value()).HasOptions());
 
@@ -176,4 +179,9 @@ void PostProcessingChainConfigWidget::onShaderConfigButtonClicked()
     connect(&shader_config, &PostProcessingShaderConfigWidget::configChanged, [this]() { configChanged(); });
     shader_config.exec();
   }
+}
+
+void PostProcessingChainConfigWidget::onReloadButtonClicked()
+{
+  QtHostInterface::GetInstance()->reloadPostProcessingShaders();
 }

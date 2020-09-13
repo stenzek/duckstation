@@ -1024,7 +1024,7 @@ void QtHostInterface::setCheatEnabled(quint32 index, bool enabled)
   SetCheatCodeState(index, enabled, g_settings.auto_load_cheats);
 }
 
-void QtHostInterface::applyCheat(u32 index)
+void QtHostInterface::applyCheat(quint32 index)
 {
   if (!isOnWorkerThread())
   {
@@ -1033,6 +1033,17 @@ void QtHostInterface::applyCheat(u32 index)
   }
 
   ApplyCheatCode(index);
+}
+
+void QtHostInterface::reloadPostProcessingShaders()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "reloadPostProcessingShaders", Qt::QueuedConnection);
+    return;
+  }
+
+  ReloadPostProcessingShaders();
 }
 
 void QtHostInterface::loadState(const QString& filename)
