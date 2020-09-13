@@ -1438,6 +1438,12 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    if (!pressed)
                      ModifyResolutionScale(-1);
                  });
+
+  RegisterHotkey(StaticString("Graphics"), StaticString("ReloadPostProcessingShaders"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Reload Post Processing Shaders")), [this](bool pressed) {
+                   if (!pressed)
+                     ReloadPostProcessingShaders();
+                 });
 }
 
 void CommonHostInterface::RegisterSaveStateHotkeys()
@@ -2263,6 +2269,17 @@ void CommonHostInterface::ApplyCheatCode(u32 index)
     AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' is already enabled."),
                            cc.description.c_str());
   }
+}
+
+void CommonHostInterface::ReloadPostProcessingShaders()
+{
+  if (!m_display)
+    return;
+
+  if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+  else
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post processing shaders reloaded."), 10.0f);
 }
 
 #ifdef WITH_DISCORD_PRESENCE
