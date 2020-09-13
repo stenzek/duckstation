@@ -166,6 +166,9 @@ public:
   /// Immediately applies the specified cheat code.
   void ApplyCheatCode(u32 index);
 
+  /// Temporarily toggles post-processing on/off.
+  void TogglePostProcessing();
+
   /// Reloads post processing shaders with the current configuration.
   void ReloadPostProcessingShaders();
 

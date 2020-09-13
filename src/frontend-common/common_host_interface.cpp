@@ -1439,6 +1439,12 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                      ModifyResolutionScale(-1);
                  });
 
+  RegisterHotkey(StaticString("Graphics"), StaticString("TogglePostProcessing"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Post-Processing")), [this](bool pressed) {
+                   if (!pressed)
+                     TogglePostProcessing();
+                 });
+
   RegisterHotkey(StaticString("Graphics"), StaticString("ReloadPostProcessingShaders"),
                  StaticString(TRANSLATABLE("Hotkeys", "Reload Post Processing Shaders")), [this](bool pressed) {
                    if (!pressed)
@@ -2279,15 +2285,35 @@ void CommonHostInterface::ApplyCheatCode(u32 index)
   }
 }
 
+void CommonHostInterface::TogglePostProcessing()
+{
+  if (!m_display)
+    return;
+
+  g_settings.display_post_processing = !g_settings.display_post_processing;
+  if (g_settings.display_post_processing)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing is now enabled."), 10.0f);
+
+    if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+      AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+  }
+  else
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing is now disabled."), 10.0f);
+    m_display->SetPostProcessingChain({});
+  }
+}
+
 void CommonHostInterface::ReloadPostProcessingShaders()
 {
   if (!m_display || !g_settings.display_post_processing)
     return;
 
   if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
-    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
   else
-    AddOSDMessage(TranslateStdString("OSDMessage", "Post processing shaders reloaded."), 10.0f);
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
 }
 
 #ifdef WITH_DISCORD_PRESENCE
