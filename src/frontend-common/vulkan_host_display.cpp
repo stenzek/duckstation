@@ -118,7 +118,12 @@ void* VulkanHostDisplay::GetRenderContext() const
 
 bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
-  Assert(!m_swap_chain);
+  if (new_wi.type == WindowInfo::Type::Surfaceless)
+  {
+    g_vulkan_context->ExecuteCommandBuffer(true);
+    m_swap_chain.reset();
+    return true;
+  }
 
   WindowInfo wi_copy(new_wi);
   VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), wi_copy);
