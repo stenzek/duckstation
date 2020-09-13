@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/13: Support for chaining post processing shaders added.
 - 2020/09/12: Additional texture filtering options added.
 - 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
 - 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
@@ -46,6 +47,7 @@ Other features include:
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
  - PGXP for geometry precision and texture correction
+ - Post processing shader chains
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows, Linux, **highly experimental** macOS support
