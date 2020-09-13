@@ -156,6 +156,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define HLSL 1\n";
     ss << "#define roundEven round\n";
     ss << "#define mix lerp\n";
+    ss << "#define fract frac\n";
     ss << "#define CONSTANT static const\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";

@@ -48,10 +48,12 @@ std::string PostProcessingShaderGen::GeneratePostProcessingFragmentShader(const 
     ss << R"(
 #define main real_main
 static float2 v_tex0;
+static float4 v_pos;
 static float4 o_col0;
 // Wrappers for sampling functions.
 #define texture(sampler, coords) sampler.Sample(sampler##_ss, coords)
 #define textureOffset(sampler, coords, offset) sampler.Sample(sampler##_ss, coords, offset)
+#define gl_FragCoord v_pos
 )";
   }
   else
@@ -84,6 +86,10 @@ static float4 o_col0;
 float4 Sample() { return texture(samp0, v_tex0); }
 float4 SampleLocation(float2 location) { return texture(samp0, location); }
 #define SampleOffset(offset) textureOffset(samp0, v_tex0, offset)
+float2 GetFragCoord()
+{
+  return gl_FragCoord.xy;
+}
 float2 GetWindowResolution()
 {
   return window_resolution;
@@ -118,8 +124,9 @@ void SetOutput(float4 color)
   {
     ss << R"(
 #undef main
-void main(in float2 v_tex0_ : TEXCOORD0, out float4 o_col0_ : SV_Target)
+void main(in float2 v_tex0_ : TEXCOORD0, in float4 v_pos_ : SV_Position, out float4 o_col0_ : SV_Target)
 {
+  v_pos = v_pos_;
   v_tex0 = v_tex0_;
   real_main();
   o_col0_ = o_col0;
