@@ -134,6 +134,13 @@ void GamePropertiesDialog::setupAdditionalUi()
   m_ui.userResolutionScale->addItem(tr("(unchanged)"));
   QtUtils::FillComboBoxWithResolutionScales(m_ui.userResolutionScale);
 
+  m_ui.userTextureFiltering->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+  {
+    m_ui.userTextureFiltering->addItem(
+      qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
+
   m_ui.userControllerType1->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
