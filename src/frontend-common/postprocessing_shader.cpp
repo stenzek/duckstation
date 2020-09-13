@@ -34,9 +34,9 @@ void ParseKeyValue(const std::string_view& line, std::string_view* key, std::str
   while (value_start < line.size() && std::isspace(line[value_start]))
     value_start++;
 
-  size_t value_end = value_start;
-  while (value_end < line.size() && !std::isspace(line[value_end]))
-    value_end++;
+  size_t value_end = line.size();
+  while (value_end > value_start && std::isspace(line[value_end - 1]))
+    value_end--;
 
   if (value_start == value_end)
     return;
@@ -52,15 +52,24 @@ u32 ParseVector(const std::string_view& line, PostProcessingShader::Option::Valu
   size_t start = 0;
   while (index < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS)
   {
-    size_t end = line.find(',');
+    while (start < line.size() && std::isspace(line[start]))
+      start++;
+
+    if (start >= line.size())
+      break;
+
+    size_t end = line.find(',', start);
     if (end == std::string_view::npos)
       end = line.size();
 
-    T value = StringUtil::FromChars<T>(line.substr(start, end - start)).value_or(static_cast<T>(0));
+    const std::string_view component = line.substr(start, end - start);
+    T value = StringUtil::FromChars<T>(component).value_or(static_cast<T>(0));
     if constexpr (std::is_same_v<T, float>)
       (*values)[index++].float_value = value;
     else if constexpr (std::is_same_v<T, s32>)
       (*values)[index++].int_value = value;
+
+    start = end + 1;
   }
 
   const u32 size = index;
@@ -308,11 +317,9 @@ void PostProcessingShader::LoadOptions()
     {
       std::string_view line_view = line_str;
 
-#ifndef _WIN32
       // Check for CRLF eol and convert it to LF
       if (!line_view.empty() && line_view.at(line_view.size() - 1) == '\r')
         line_view.remove_suffix(1);
-#endif
 
       if (line_view.empty())
         continue;
@@ -344,56 +351,56 @@ void PostProcessingShader::LoadOptions()
             current_option.type = Option::Type::Int;
           else
             Log_ErrorPrintf("Invalid option type: '%s'", line_str.c_str());
+
+          continue;
+        }
+      }
+
+      if (current_option.type == Option::Type::Invalid)
+        continue;
+
+      std::string_view key, value;
+      ParseKeyValue(line_view, &key, &value);
+      if (!key.empty() && !value.empty())
+      {
+        if (key == "GUIName")
+        {
+          current_option.ui_name = value;
+        }
+        else if (key == "OptionName")
+        {
+          current_option.name = value;
+        }
+        else if (key == "DependentOption")
+        {
+          current_option.dependent_option = value;
+        }
+        else if (key == "MinValue" || key == "MaxValue" || key == "DefaultValue" || key == "StepAmount")
+        {
+          Option::ValueVector* dst_array;
+          if (key == "MinValue")
+            dst_array = &current_option.min_value;
+          else if (key == "MaxValue")
+            dst_array = &current_option.max_value;
+          else if (key == "DefaultValue")
+            dst_array = &current_option.default_value;
+          else // if (key == "StepAmount")
+            dst_array = &current_option.step_value;
+
+          u32 size = 0;
+          if (current_option.type == Option::Type::Bool)
+            (*dst_array)[size++].bool_value = StringUtil::FromChars<bool>(value).value_or(false);
+          else if (current_option.type == Option::Type::Float)
+            size = ParseVector<float>(value, dst_array);
+          else if (current_option.type == Option::Type::Int)
+            size = ParseVector<s32>(value, dst_array);
+
+          current_option.vector_size =
+            (current_option.vector_size == 0) ? size : std::min(current_option.vector_size, size);
         }
         else
         {
-          if (current_option.type == Option::Type::Invalid)
-            continue;
-
-          std::string_view key, value;
-          ParseKeyValue(line_view, &key, &value);
-          if (!key.empty() && !value.empty())
-          {
-            if (key == "GUIName")
-            {
-              current_option.ui_name = value;
-            }
-            else if (key == "OptionName")
-            {
-              current_option.name = value;
-            }
-            else if (key == "DependentOption")
-            {
-              current_option.dependent_option = value;
-            }
-            else if (key == "MinValue" || key == "MaxValue" || key == "DefaultValue" || key == "StepAmount")
-            {
-              Option::ValueVector* dst_array;
-              if (key == "MinValue")
-                dst_array = &current_option.min_value;
-              else if (key == "MaxValue")
-                dst_array = &current_option.max_value;
-              else if (key == "DefaultValue")
-                dst_array = &current_option.default_value;
-              else // if (key == "StepAmount")
-                dst_array = &current_option.step_value;
-
-              u32 size = 0;
-              if (current_option.type == Option::Type::Bool)
-                (*dst_array)[size++].bool_value = StringUtil::FromChars<bool>(value).value_or(false);
-              else if (current_option.type == Option::Type::Float)
-                size = ParseVector<float>(value, dst_array);
-              else if (current_option.type == Option::Type::Int)
-                size = ParseVector<s32>(value, dst_array);
-
-              current_option.vector_size =
-                (current_option.vector_size != 0) ? size : std::min(current_option.vector_size, size);
-            }
-            else
-            {
-              Log_ErrorPrintf("Invalid option key: '%s'", line_str.c_str());
-            }
-          }
+          Log_ErrorPrintf("Invalid option key: '%s'", line_str.c_str());
         }
       }
     }

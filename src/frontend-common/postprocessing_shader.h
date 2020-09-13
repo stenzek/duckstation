@@ -66,6 +66,8 @@ public:
   ALWAYS_INLINE const std::string& GetName() const { return m_name; }
   ALWAYS_INLINE const std::string& GetCode() const { return m_code; }
   ALWAYS_INLINE const std::vector<Option>& GetOptions() const { return m_options; }
+  ALWAYS_INLINE std::vector<Option>& GetOptions() { return m_options; }
+  ALWAYS_INLINE bool HasOptions() const { return !m_options.empty(); }
 
   bool IsValid() const;
 

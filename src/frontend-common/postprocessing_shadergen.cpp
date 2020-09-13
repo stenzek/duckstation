@@ -147,14 +147,14 @@ void PostProcessingShaderGen::WriteUniformBuffer(std::stringstream& ss, const Po
   ss << "  float ubo_pad" << (pad_counter++) << ";\n";
   ss << "\n";
 
-  static constexpr std::array<const char*, PostProcessingShader::Option::MAX_VECTOR_COMPONENTS> vector_size_suffix = {
-    {"", "2", "3", "4"}};
+  static constexpr std::array<const char*, PostProcessingShader::Option::MAX_VECTOR_COMPONENTS + 1> vector_size_suffix =
+    {{"", "", "2", "3", "4"}};
   for (const PostProcessingShader::Option& option : shader.GetOptions())
   {
     switch (option.type)
     {
       case PostProcessingShader::Option::Type::Bool:
-        ss << "  bool u_option_" << option.name << ";\n";
+        ss << "  bool " << option.name << ";\n";
         for (u32 i = option.vector_size; i < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS; i++)
           ss << "  bool ubo_pad" << (pad_counter++) << ";\n";
         break;
