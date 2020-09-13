@@ -604,12 +604,12 @@ void D3D11HostDisplay::RenderImGui()
 
 void D3D11HostDisplay::RenderDisplay()
 {
-#ifndef LIBRETRO
   if (!HasDisplayTexture())
     return;
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
 
+#ifndef LIBRETRO
   if (!m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height, m_display_texture_handle,
@@ -617,11 +617,11 @@ void D3D11HostDisplay::RenderDisplay()
                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height);
     return;
   }
+#endif
 
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                 m_display_texture_view_height, m_display_linear_filtering);
-#endif
 }
 
 void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,

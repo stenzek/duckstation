@@ -483,6 +483,7 @@ void OpenGLHostDisplay::RenderDisplay()
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
 
+#ifndef LIBRETRO
   if (!m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(0, left, top, width, height, m_display_texture_handle, m_display_texture_width,
@@ -490,6 +491,7 @@ void OpenGLHostDisplay::RenderDisplay()
                              m_display_texture_view_width, m_display_texture_view_height);
     return;
   }
+#endif
 
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,

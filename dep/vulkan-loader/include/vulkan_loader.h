@@ -82,6 +82,9 @@
 #ifdef Unsorted
 #undef Unsorted
 #endif
+#ifdef Bool
+#undef Bool
+#endif
 
 #endif
 
