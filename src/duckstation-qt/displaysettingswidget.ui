@@ -196,7 +196,7 @@
   <customwidget>
    <class>PostProcessingChainConfigWidget</class>
    <extends>QWidget</extends>
-   <header>postprocessingchainconfigwidget.h</header>
+   <header>duckstation-qt/postprocessingchainconfigwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
