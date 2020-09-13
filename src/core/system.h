@@ -19,8 +19,8 @@ class CheatList;
 struct SystemBootParameters
 {
   SystemBootParameters();
+  SystemBootParameters(SystemBootParameters&& other);
   SystemBootParameters(std::string filename_);
-  SystemBootParameters(const SystemBootParameters& copy);
   ~SystemBootParameters();
 
   std::string filename;

@@ -41,14 +41,9 @@ Log_SetChannel(System);
 
 SystemBootParameters::SystemBootParameters() = default;
 
-SystemBootParameters::SystemBootParameters(std::string filename_) : filename(filename_) {}
+SystemBootParameters::SystemBootParameters(SystemBootParameters&& other) = default;
 
-SystemBootParameters::SystemBootParameters(const SystemBootParameters& copy)
-  : filename(copy.filename), override_fast_boot(copy.override_fast_boot), override_fullscreen(copy.override_fullscreen)
-{
-  // only exists for qt, we can't copy the state stream
-  Assert(!copy.state_stream);
-}
+SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std::move(filename_)) {}
 
 SystemBootParameters::~SystemBootParameters() = default;
 

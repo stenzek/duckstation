@@ -30,7 +30,7 @@ class INISettingsInterface;
 class MainWindow;
 class QtDisplayWidget;
 
-Q_DECLARE_METATYPE(SystemBootParameters);
+Q_DECLARE_METATYPE(std::shared_ptr<const SystemBootParameters>);
 
 class QtHostInterface final : public QObject, public CommonHostInterface
 {
@@ -50,8 +50,6 @@ public:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
-
-  bool parseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
   /// Thread-safe settings access.
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
@@ -143,7 +141,7 @@ public Q_SLOTS:
   void onDisplayWindowKeyEvent(int key, bool pressed);
   void onDisplayWindowMouseMoveEvent(int x, int y);
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
-  void bootSystem(const SystemBootParameters& params);
+  void bootSystem(std::shared_ptr<const SystemBootParameters> params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void resumeSystemFromMostRecentState();
   void powerOffSystem();
