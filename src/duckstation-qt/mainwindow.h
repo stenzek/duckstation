@@ -71,6 +71,7 @@ private Q_SLOTS:
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
+  void onCheckForUpdatesActionTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);

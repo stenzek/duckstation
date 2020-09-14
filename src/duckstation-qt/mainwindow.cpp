@@ -669,7 +669,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
-  connect(m_ui.actionCheckForUpdates, &QAction::triggered, [this]() { checkForUpdates(true); });
+  connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
@@ -947,6 +947,13 @@ void MainWindow::updateDebugMenuVisibility()
 {
   const bool visible = m_host_interface->GetBoolSettingValue("Main", "ShowDebugMenu", false);
   m_ui.menuDebug->menuAction()->setVisible(visible);
+}
+
+void MainWindow::onCheckForUpdatesActionTriggered()
+{
+  // Wipe out the last version, that way it displays the update if we've previously skipped it.
+  m_host_interface->RemoveSettingValue("AutoUpdater", "LastVersion");
+  checkForUpdates(true);
 }
 
 void MainWindow::checkForUpdates(bool display_message)
