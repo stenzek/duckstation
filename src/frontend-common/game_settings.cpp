@@ -29,6 +29,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
   {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
   {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
+  {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Texture Correction")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
   {"ForceDigitalController", TRANSLATABLE("GameSettingsTrait", "Force Digital Controller")},
@@ -46,11 +47,6 @@ const char* GetTraitDisplayName(Trait trait)
 {
   DebugAssert(trait < Trait::Count);
   return s_trait_names[static_cast<u32>(trait)].second;
-}
-
-bool Entry::HasAnySettings() const
-{
-  return traits.any() || display_active_start_offset >= 0 || display_active_end_offset > 0;
 }
 
 template<typename T>
@@ -547,6 +543,18 @@ void Entry::ApplySettings(bool display_osd_messages) const
     }
 
     g_settings.gpu_pgxp_culling = false;
+  }
+
+  if (HasTrait(Trait::DisablePGXPTextureCorrection))
+  {
+    if (display_osd_messages && g_settings.gpu_pgxp_culling && g_settings.gpu_pgxp_texture_correction)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP texture correction disabled by game settings."),
+        osd_duration);
+    }
+
+    g_settings.gpu_pgxp_texture_correction = false;
   }
 
   if (HasTrait(Trait::ForcePGXPVertexCache))

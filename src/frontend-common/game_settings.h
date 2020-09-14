@@ -20,6 +20,7 @@ enum class Trait : u32
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,
+  DisablePGXPTextureCorrection,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
   ForceDigitalController,
@@ -61,8 +62,6 @@ struct Entry
   ALWAYS_INLINE void AddTrait(Trait trait) { traits[static_cast<int>(trait)] = true; }
   ALWAYS_INLINE void RemoveTrait(Trait trait) { traits[static_cast<int>(trait)] = false; }
   ALWAYS_INLINE void SetTrait(Trait trait, bool enabled) { traits[static_cast<int>(trait)] = enabled; }
-
-  bool HasAnySettings() const;
 
   bool LoadFromStream(ByteStream* stream);
   bool SaveToStream(ByteStream* stream) const;
