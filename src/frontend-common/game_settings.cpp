@@ -116,10 +116,10 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
-      !ReadOptionalFromStream(stream, &gpu_texture_filter) ||
-      !ReadOptionalFromStream(stream, &gpu_widescreen_hack) || !ReadOptionalFromStream(stream, &gpu_pgxp) ||
-      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
-      !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
+      !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &controller_1_type) ||
+      !ReadOptionalFromStream(stream, &controller_2_type) || !ReadOptionalFromStream(stream, &memory_card_1_type) ||
+      !ReadOptionalFromStream(stream, &memory_card_2_type) ||
       !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
       !ReadStringFromStream(stream, &memory_card_2_shared_path))
   {
@@ -149,16 +149,15 @@ bool Entry::SaveToStream(ByteStream* stream) const
 
   return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
+         WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
-         WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, gpu_resolution_scale) &&
-         WriteOptionalToStream(stream, gpu_true_color) && WriteOptionalToStream(stream, gpu_scaled_dithering) &&
-         WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
-         WriteOptionalToStream(stream, gpu_texture_filter) &&
-         WriteOptionalToStream(stream, gpu_widescreen_hack) && WriteOptionalToStream(stream, gpu_pgxp) &&
-         WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
-         WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
-         WriteStringToStream(stream, memory_card_1_shared_path) &&
+         WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_true_color) &&
+         WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
+         WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
+         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, controller_1_type) &&
+         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, memory_card_1_type) &&
+         WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
          WriteStringToStream(stream, memory_card_2_shared_path);
 }
 
