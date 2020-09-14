@@ -49,6 +49,9 @@ MainWindow::MainWindow(QtHostInterface* host_interface)
   updateTheme();
 
   resize(800, 700);
+
+  restoreStateFromConfig();
+  switchToGameListView();
 }
 
 MainWindow::~MainWindow()
@@ -316,14 +319,14 @@ void MainWindow::onRemoveDiscActionTriggered()
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
 {
-  m_host_interface->SetBoolSettingValue("UI", "ShowToolbar", checked);
   m_ui.toolBar->setVisible(checked);
+  saveStateToConfig();
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
 {
-  m_host_interface->SetBoolSettingValue("UI", "ShowStatusBar", checked);
   m_ui.statusBar->setVisible(checked);
+  saveStateToConfig();
 }
 
 void MainWindow::onViewGameListActionTriggered()
@@ -461,14 +464,6 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 void MainWindow::setupAdditionalUi()
 {
   setWindowTitle(getWindowTitle());
-
-  const bool toolbar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowToolbar", true);
-  m_ui.actionViewToolbar->setChecked(toolbar_visible);
-  m_ui.toolBar->setVisible(toolbar_visible);
-
-  const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
-  m_ui.actionViewStatusBar->setChecked(status_bar_visible);
-  m_ui.statusBar->setVisible(status_bar_visible);
 
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_host_interface);
@@ -822,6 +817,51 @@ void MainWindow::updateTheme()
   }
 }
 
+void MainWindow::saveStateToConfig()
+{
+  {
+    const QByteArray geometry = saveGeometry();
+    const QByteArray geometry_b64 = geometry.toBase64();
+    const std::string old_geometry_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowGeometry");
+    if (geometry_b64.compare(old_geometry_b64.c_str()) != 0)
+      m_host_interface->SetStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
+  }
+
+  {
+    const QByteArray state = saveState();
+    const QByteArray state_b64 = state.toBase64();
+    const std::string old_state_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowState");
+    if (state_b64.compare(old_state_b64.c_str()) != 0)
+      m_host_interface->SetStringSettingValue("UI", "MainWindowState", state_b64.constData());
+  }
+}
+
+void MainWindow::restoreStateFromConfig()
+{
+  {
+    const std::string geometry_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowGeometry");
+    const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+    if (!geometry.isEmpty())
+      restoreGeometry(geometry);
+  }
+
+  {
+    const std::string state_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowState");
+    const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
+    if (!state.isEmpty())
+      restoreState(state);
+
+    {
+      QSignalBlocker sb(m_ui.actionViewToolbar);
+      m_ui.actionViewToolbar->setChecked(!m_ui.toolBar->isHidden());
+    }
+    {
+      QSignalBlocker sb(m_ui.actionViewStatusBar);
+      m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
+    }
+  }
+}
+
 SettingsDialog* MainWindow::getSettingsDialog()
 {
   if (!m_settings_dialog)
@@ -879,6 +919,7 @@ void MainWindow::updateDebugMenuGPURenderer()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   m_host_interface->synchronousPowerOffSystem();
+  saveStateToConfig();
   QMainWindow::closeEvent(event);
 }
 

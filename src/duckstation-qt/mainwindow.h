@@ -90,6 +90,8 @@ private:
   void updateEmulationActions(bool starting, bool running);
   void switchToGameListView();
   void switchToEmulationView();
+  void saveStateToConfig();
+  void restoreStateFromConfig();
   void destroyDisplayWidget();
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
