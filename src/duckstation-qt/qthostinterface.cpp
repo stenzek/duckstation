@@ -144,7 +144,7 @@ void QtHostInterface::ReportError(const char* message)
   if (was_fullscreen)
     SetFullscreen(false);
 
-  emit errorReported(QString::fromLocal8Bit(message));
+  emit errorReported(QString::fromUtf8(message));
 
   if (was_fullscreen)
     SetFullscreen(true);
@@ -154,7 +154,7 @@ void QtHostInterface::ReportMessage(const char* message)
 {
   HostInterface::ReportMessage(message);
 
-  emit messageReported(QString::fromLocal8Bit(message));
+  emit messageReported(QString::fromUtf8(message));
 }
 
 bool QtHostInterface::ConfirmMessage(const char* message)
@@ -163,7 +163,7 @@ bool QtHostInterface::ConfirmMessage(const char* message)
   if (was_fullscreen)
     SetFullscreen(false);
 
-  const bool result = messageConfirmed(QString::fromLocal8Bit(message));
+  const bool result = messageConfirmed(QString::fromUtf8(message));
 
   if (was_fullscreen)
     SetFullscreen(true);
