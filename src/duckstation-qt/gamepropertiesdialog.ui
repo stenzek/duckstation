@@ -214,24 +214,28 @@
            <widget class="QComboBox" name="userCropMode"/>
           </item>
           <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="userLinearUpscaling">
-            <property name="text">
-             <string>Linear Upscaling</string>
-            </property>
-            <property name="tristate">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QCheckBox" name="userIntegerUpscaling">
-            <property name="text">
-             <string>Integer Upscaling</string>
-            </property>
-            <property name="tristate">
-             <bool>true</bool>
-            </property>
-           </widget>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="userLinearUpscaling">
+              <property name="text">
+               <string>Linear Upscaling</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="userIntegerUpscaling">
+              <property name="text">
+               <string>Integer Upscaling</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
