@@ -1,4 +1,5 @@
 #include "host_display.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "stb_image.h"
@@ -31,8 +32,14 @@ bool HostDisplay::SetSoftwareCursor(const void* pixels, u32 width, u32 height, u
 
 bool HostDisplay::SetSoftwareCursor(const char* path, float scale /*= 1.0f*/)
 {
+  auto fp = FileSystem::OpenManagedCFile(path, "rb");
+  if (!fp)
+  {
+    return false;
+  }
+
   int width, height, file_channels;
-  u8* pixel_data = stbi_load(path, &width, &height, &file_channels, 4);
+  u8* pixel_data = stbi_load_from_file(fp.get(), &width, &height, &file_channels, 4);
   if (!pixel_data)
   {
     const char* error_reason = stbi_failure_reason();
@@ -257,32 +264,39 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
     texture_data_stride = resized_texture_stride;
   }
 
-  bool result;
+  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s'", filename);
+    return false;
+  }
+
+  const auto write_func = [](void* context, void* data, int size) {
+    std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
+  };
+
+  bool result = false;
   if (StringUtil::Strcasecmp(extension, ".png") == 0)
   {
-    result = (stbi_write_png(filename, width, height, 4, texture_data.data(), texture_data_stride) != 0);
+    result =
+      (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), texture_data_stride) != 0);
   }
   else if (StringUtil::Strcasecmp(filename, ".jpg") == 0)
   {
-    result = (stbi_write_jpg(filename, width, height, 4, texture_data.data(), 95) != 0);
+    result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), 95) != 0);
   }
   else if (StringUtil::Strcasecmp(filename, ".tga") == 0)
   {
-    result = (stbi_write_tga(filename, width, height, 4, texture_data.data()) != 0);
+    result = (stbi_write_tga_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
   else if (StringUtil::Strcasecmp(filename, ".bmp") == 0)
   {
-    result = (stbi_write_bmp(filename, width, height, 4, texture_data.data()) != 0);
-  }
-  else
-  {
-    Log_ErrorPrintf("Unknown extension in filename '%s': '%s'", filename, extension);
-    return false;
+    result = (stbi_write_bmp_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
 
   if (!result)
   {
-    Log_ErrorPrintf("Failed to save texture to '%s'", filename);
+    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename, extension);
     return false;
   }
 

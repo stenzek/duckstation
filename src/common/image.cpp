@@ -1,4 +1,5 @@
 #include "image.h"
+#include "file_system.h"
 #include "log.h"
 #include "stb_image.h"
 Log_SetChannel(Common::Image);
@@ -6,8 +7,14 @@ Log_SetChannel(Common::Image);
 namespace Common {
 bool LoadImageFromFile(Common::RGBA8Image* image, const char* filename)
 {
+  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
+  if (!fp)
+  {
+    return false;
+  }
+
   int width, height, file_channels;
-  u8* pixel_data = stbi_load(filename, &width, &height, &file_channels, 4);
+  u8* pixel_data = stbi_load_from_file(fp.get(), &width, &height, &file_channels, 4);
   if (!pixel_data)
   {
     const char* error_reason = stbi_failure_reason();
