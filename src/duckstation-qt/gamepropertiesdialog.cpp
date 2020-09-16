@@ -377,6 +377,12 @@ void GamePropertiesDialog::connectUi()
   connect(m_ui.exportCompatibilityInfo, &QPushButton::clicked, this,
           &GamePropertiesDialog::onExportCompatibilityInfoClicked);
   connect(m_ui.close, &QPushButton::clicked, this, &QDialog::close);
+  connect(m_ui.tabWidget, &QTabWidget::currentChanged, [this](int index) {
+    const bool show_buttons = index == 0;
+    m_ui.computeHashes->setVisible(show_buttons);
+    m_ui.verifyDump->setVisible(show_buttons);
+    m_ui.exportCompatibilityInfo->setVisible(show_buttons);
+  });
 
   connect(m_ui.userAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
