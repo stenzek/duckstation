@@ -146,6 +146,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define lerp mix\n";
 
     ss << "#define CONSTANT const\n";
+    ss << "#define GLOBAL\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
     ss << "#define VECTOR_COMP_EQ(a, b) equal((a), (b))\n";
@@ -181,6 +182,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define mat3 float3x3\n";
     ss << "#define mat4 float4x4\n";
     ss << "#define CONSTANT static const\n";
+    ss << "#define GLOBAL static\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
     ss << "#define VECTOR_COMP_EQ(a, b) ((a) == (b))\n";

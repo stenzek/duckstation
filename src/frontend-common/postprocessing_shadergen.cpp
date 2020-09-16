@@ -161,9 +161,9 @@ void PostProcessingShaderGen::WriteUniformBuffer(std::stringstream& ss, const Po
     switch (option.type)
     {
       case PostProcessingShader::Option::Type::Bool:
-        ss << "  bool " << option.name << ";\n";
+        ss << "  int " << option.name << ";\n";
         for (u32 i = option.vector_size; i < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS; i++)
-          ss << "  bool ubo_pad" << (pad_counter++) << ";\n";
+          ss << "  int ubo_pad" << (pad_counter++) << ";\n";
         break;
 
       case PostProcessingShader::Option::Type::Int:

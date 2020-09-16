@@ -925,7 +925,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
     if (use_push_constants)
     {
       u8 buffer[PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD];
-      Assert(pps.uniforms_size < sizeof(buffer));
+      Assert(pps.uniforms_size <= sizeof(buffer));
       m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
         buffer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
         texture_width, texture_width, 0.0f);
