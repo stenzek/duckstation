@@ -33,7 +33,6 @@ public:
 
     union Value
     {
-      bool bool_value;
       s32 int_value;
       float float_value;
     };

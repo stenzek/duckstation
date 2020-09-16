@@ -27,14 +27,14 @@ void PostProcessingShaderConfigWidget::createUi()
     if (option.type == PostProcessingShader::Option::Type::Bool)
     {
       QCheckBox* checkbox = new QCheckBox(QString::fromStdString(option.ui_name), this);
-      checkbox->setChecked(option.value[0].bool_value);
+      checkbox->setChecked(option.value[0].int_value != 0);
       connect(checkbox, &QCheckBox::stateChanged, [this, &option](int state) {
-        option.value[0].bool_value = (state == Qt::Checked);
+        option.value[0].int_value = (state == Qt::Checked) ? 1 : 0;
         configChanged();
       });
       connect(this, &PostProcessingShaderConfigWidget::resettingtoDefaults, [&option, checkbox]() {
         QSignalBlocker sb(checkbox);
-        checkbox->setChecked(option.default_value[0].bool_value);
+        checkbox->setChecked(option.default_value[0].int_value != 0);
         option.value = option.default_value;
       });
       m_layout->addWidget(checkbox, row, 0, 1, 3, Qt::AlignLeft);

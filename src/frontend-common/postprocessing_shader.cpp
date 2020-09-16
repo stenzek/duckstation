@@ -166,7 +166,7 @@ std::string PostProcessingShader::GetConfigString() const
       switch (option.type)
       {
         case Option::Type::Bool:
-          ss << option.value[i].bool_value ? "true" : "false";
+          ss << (option.value[i].int_value != 0) ? "true" : "false";
           break;
 
         case Option::Type::Int:
@@ -209,7 +209,7 @@ void PostProcessingShader::SetConfigString(const std::string_view& str)
         switch (option->type)
         {
           case Option::Type::Bool:
-            option->value[0].bool_value = StringUtil::FromChars<bool>(value).value_or(false);
+            option->value[0].int_value = StringUtil::FromChars<bool>(value).value_or(false) ? 1 : 0;
             break;
 
           case Option::Type::Int:
@@ -389,7 +389,7 @@ void PostProcessingShader::LoadOptions()
 
           u32 size = 0;
           if (current_option.type == Option::Type::Bool)
-            (*dst_array)[size++].bool_value = StringUtil::FromChars<bool>(value).value_or(false);
+            (*dst_array)[size++].int_value = StringUtil::FromChars<bool>(value).value_or(false) ? 1 : 0;
           else if (current_option.type == Option::Type::Float)
             size = ParseVector<float>(value, dst_array);
           else if (current_option.type == Option::Type::Int)
