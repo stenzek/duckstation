@@ -141,9 +141,13 @@ float AnalogController::GetVibrationMotorStrength(u32 motor)
   if (m_motor_state[motor] == 0)
     return 0.0f;
 
-  return static_cast<float>(
-           std::min<u32>(static_cast<u32>(m_motor_state[motor]) + static_cast<u32>(m_rumble_bias), 255)) /
-         255.0f;
+  // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
+  const double x =
+    static_cast<double>(std::min<u32>(static_cast<u32>(m_motor_state[motor]) + static_cast<u32>(m_rumble_bias), 255));
+  const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
+                          156.82454281087692 * x + 3.637978807091713e-11;
+
+  return static_cast<float>(strength / 65535.0);
 }
 
 void AnalogController::ResetTransferState()
