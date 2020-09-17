@@ -25,6 +25,7 @@ void AnalogController::Reset()
   m_rumble_unlocked = false;
   m_configuration_mode = false;
   m_command_param = 0;
+  m_motor_state.fill(0);
 
   if (m_auto_enable_analog)
     SetAnalogMode(true);
