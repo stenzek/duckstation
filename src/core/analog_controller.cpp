@@ -4,6 +4,7 @@
 #include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
+#include <cmath>
 Log_SetChannel(AnalogController);
 
 AnalogController::AnalogController(u32 index) : m_index(index)
