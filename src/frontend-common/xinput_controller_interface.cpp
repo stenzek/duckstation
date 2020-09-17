@@ -296,13 +296,9 @@ void XInputControllerInterface::SetControllerRumbleStrength(int controller_index
 {
   DebugAssert(static_cast<u32>(controller_index) < XUSER_MAX_COUNT);
 
-  // we'll update before this duration is elapsed
-  static constexpr float MIN_STRENGTH = 0.01f;
-  static constexpr u32 DURATION = 100000;
-
   XINPUT_VIBRATION vib;
-  vib.wLeftMotorSpeed = (strengths[0] >= MIN_STRENGTH) ? static_cast<u16>(strengths[0] * 65535.0f) : 0;
-  vib.wRightMotorSpeed = (strengths[1] >= MIN_STRENGTH) ? static_cast<u16>(strengths[1] * 65535.0f) : 0;
+  vib.wLeftMotorSpeed = static_cast<u16>(strengths[0] * 65535.0f);
+  vib.wRightMotorSpeed = static_cast<u16>(strengths[1] * 65535.0f);
   m_xinput_set_state(static_cast<u32>(controller_index), &vib);
 }
 
