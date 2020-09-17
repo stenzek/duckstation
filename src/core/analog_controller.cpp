@@ -533,5 +533,5 @@ void AnalogController::LoadSettings(const char* section)
   Controller::LoadSettings(section);
   m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
   m_rumble_bias =
-    static_cast<u8>(std::min<u32>(g_host_interface->GetIntSettingValue(section, "VibrationBias", false), 255));
+    static_cast<u8>(std::min<u32>(g_host_interface->GetIntSettingValue(section, "VibrationBias", 8), 255));
 }
