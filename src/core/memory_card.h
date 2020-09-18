@@ -1,6 +1,7 @@
 #pragma once
 #include "common/bitfield.h"
 #include "controller.h"
+#include "memory_card_image.h"
 #include <array>
 #include <memory>
 #include <string>
@@ -11,13 +12,6 @@ class TimingEvent;
 class MemoryCard final
 {
 public:
-  enum : u32
-  {
-    DATA_SIZE = 128 * 1024, // 1mbit
-    SECTOR_SIZE = 128,
-    NUM_SECTORS = DATA_SIZE / SECTOR_SIZE
-  };
-
   MemoryCard();
   ~MemoryCard();
 
@@ -76,10 +70,6 @@ private:
     WriteEnd,
   };
 
-  static u8 ChecksumFrame(const u8* fptr);
-
-  u8* GetSectorPtr(u32 sector);
-
   bool LoadFromFile();
   bool SaveIfChanged(bool display_osd_message);
   void QueueFileSave();
@@ -94,7 +84,7 @@ private:
   u8 m_last_byte = 0;
   bool m_changed = false;
 
-  std::array<u8, DATA_SIZE> m_data{};
+  MemoryCardImage::DataArray m_data{};
 
   std::string m_filename;
 };

@@ -48,6 +48,7 @@
     <ClCompile Include="pgxp.cpp" />
     <ClCompile Include="cheats.cpp" />
     <ClCompile Include="shadergen.cpp" />
+    <ClCompile Include="memory_card_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -99,5 +100,6 @@
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="shadergen.h" />
+    <ClInclude Include="memory_card_image.h" />
   </ItemGroup>
 </Project>

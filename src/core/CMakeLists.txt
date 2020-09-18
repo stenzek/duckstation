@@ -54,6 +54,8 @@ add_library(core
     mdec.h
     memory_card.cpp
     memory_card.h
+    memory_card_image.cpp
+    memory_card_image.h
     namco_guncon.cpp
     namco_guncon.h
     negcon.cpp

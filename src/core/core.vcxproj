@@ -76,6 +76,7 @@
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
+    <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="namco_guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="pad.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
+    <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="namco_guncon.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="pad.h" />

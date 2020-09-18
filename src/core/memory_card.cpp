@@ -107,7 +107,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
 
     case State::ReadData:
     {
-      const u8 bits = m_data[ZeroExtend32(m_address) * SECTOR_SIZE + m_sector_offset];
+      const u8 bits = m_data[ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset];
       if (m_sector_offset == 0)
       {
         Log_DevPrintf("Reading memory card sector %u", ZeroExtend32(m_address));
@@ -122,7 +122,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       ack = true;
 
       m_sector_offset++;
-      if (m_sector_offset == SECTOR_SIZE)
+      if (m_sector_offset == MemoryCardImage::FRAME_SIZE)
       {
         m_state = State::ReadChecksum;
         m_sector_offset = 0;
@@ -153,7 +153,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         m_checksum ^= data_in;
       }
 
-      const u32 offset = ZeroExtend32(m_address) * SECTOR_SIZE + m_sector_offset;
+      const u32 offset = ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset;
       m_changed |= (m_data[offset] != data_in);
       m_data[offset] = data_in;
 
@@ -161,7 +161,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       ack = true;
 
       m_sector_offset++;
-      if (m_sector_offset == SECTOR_SIZE)
+      if (m_sector_offset == MemoryCardImage::FRAME_SIZE)
       {
         m_state = State::WriteChecksum;
         m_sector_offset = 0;
@@ -262,96 +262,15 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   return mc;
 }
 
-u8 MemoryCard::ChecksumFrame(const u8* fptr)
-{
-  u8 value = 0;
-  for (u32 i = 0; i < SECTOR_SIZE - 1; i++)
-    value ^= fptr[i];
-
-  return value;
-}
-
 void MemoryCard::Format()
 {
-  // fill everything with FF
-  m_data.fill(u8(0xFF));
-
-  // header
-  {
-    u8* fptr = GetSectorPtr(0);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0));
-    fptr[0] = 'M';
-    fptr[1] = 'C';
-    fptr[0x7F] = ChecksumFrame(fptr);
-  }
-
-  // directory
-  for (u32 frame = 1; frame < 16; frame++)
-  {
-    u8* fptr = GetSectorPtr(frame);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0));
-    fptr[0] = 0xA0;                   // free
-    fptr[8] = 0xFF;                   // pointer to next file
-    fptr[9] = 0xFF;                   // pointer to next file
-    fptr[0x7F] = ChecksumFrame(fptr); // checksum
-  }
-
-  // broken sector list
-  for (u32 frame = 16; frame < 36; frame++)
-  {
-    u8* fptr = GetSectorPtr(frame);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0));
-    fptr[0] = 0xFF;
-    fptr[1] = 0xFF;
-    fptr[2] = 0xFF;
-    fptr[3] = 0xFF;
-    fptr[8] = 0xFF;                   // pointer to next file
-    fptr[9] = 0xFF;                   // pointer to next file
-    fptr[0x7F] = ChecksumFrame(fptr); // checksum
-  }
-
-  // broken sector replacement data
-  for (u32 frame = 36; frame < 56; frame++)
-  {
-    u8* fptr = GetSectorPtr(frame);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0x00));
-  }
-
-  // unused frames
-  for (u32 frame = 56; frame < 63; frame++)
-  {
-    u8* fptr = GetSectorPtr(frame);
-    std::fill_n(fptr, SECTOR_SIZE, u8(0x00));
-  }
-
-  // write test frame
-  std::memcpy(GetSectorPtr(63), GetSectorPtr(0), SECTOR_SIZE);
-
+  MemoryCardImage::Format(&m_data);
   m_changed = true;
-}
-
-u8* MemoryCard::GetSectorPtr(u32 sector)
-{
-  Assert(sector < NUM_SECTORS);
-  return &m_data[sector * SECTOR_SIZE];
 }
 
 bool MemoryCard::LoadFromFile()
 {
-  std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(m_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
-    return false;
-
-  const size_t num_read = stream->Read(m_data.data(), SECTOR_SIZE * NUM_SECTORS);
-  if (num_read != (SECTOR_SIZE * NUM_SECTORS))
-  {
-    Log_ErrorPrintf("Only read %zu of %u sectors from '%s'", num_read / SECTOR_SIZE, NUM_SECTORS, m_filename.c_str());
-    return false;
-  }
-
-  Log_InfoPrintf("Loaded memory card from %s", m_filename.c_str());
-  return true;
+  return MemoryCardImage::LoadFromFile(&m_data, m_filename.c_str());
 }
 
 bool MemoryCard::SaveIfChanged(bool display_osd_message)
@@ -366,27 +285,19 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   if (m_filename.empty())
     return false;
 
-  std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(m_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
-                                               BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
+  if (!MemoryCardImage::SaveToFile(m_data, m_filename.c_str()))
   {
-    Log_ErrorPrintf("Failed to open '%s' for writing.", m_filename.c_str());
+    if (display_osd_message)
+    {
+      g_host_interface->AddOSDMessage(
+        StringUtil::StdStringFromFormat("Failed to save memory card to '%s'", m_filename.c_str()), 20.0f);
+    }
+
     return false;
   }
 
-  if (!stream->Write2(m_data.data(), SECTOR_SIZE * NUM_SECTORS) || !stream->Commit())
-  {
-    Log_ErrorPrintf("Failed to write sectors to '%s'", m_filename.c_str());
-    stream->Discard();
-    return false;
-  }
-
-  Log_InfoPrintf("Saved memory card to '%s'", m_filename.c_str());
   if (display_osd_message)
-  {
     g_host_interface->AddOSDMessage(StringUtil::StdStringFromFormat("Saved memory card to '%s'", m_filename.c_str()));
-  }
 
   return true;
 }
