@@ -56,6 +56,7 @@
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="controllersettingswidget.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
+    <ClCompile Include="memorycardeditordialog.cpp" />
     <ClCompile Include="postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
@@ -70,6 +71,7 @@
     <QtMoc Include="controllersettingswidget.h" />
     <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
+    <QtMoc Include="memorycardeditordialog.h" />
     <QtMoc Include="qtdisplaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="displaysettingswidget.h" />
@@ -155,6 +157,9 @@
     <QtUi Include="postprocessingsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="memorycardeditordialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -181,6 +186,7 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />

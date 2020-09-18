@@ -14,6 +14,7 @@ class GameListWidget;
 class QtHostInterface;
 class QtDisplayWidget;
 class AutoUpdaterDialog;
+class MemoryCardEditorDialog;
 
 class HostDisplay;
 struct GameListEntry;
@@ -72,6 +73,7 @@ private Q_SLOTS:
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
+  void onToolsMemoryCardEditorTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
@@ -116,6 +118,7 @@ private:
 
   SettingsDialog* m_settings_dialog = nullptr;
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
+  MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
 
   bool m_emulation_running = false;
 };

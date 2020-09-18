@@ -9,6 +9,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
+#include "memorycardeditordialog.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -670,6 +671,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
+  connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
@@ -954,6 +956,15 @@ void MainWindow::onCheckForUpdatesActionTriggered()
   // Wipe out the last version, that way it displays the update if we've previously skipped it.
   m_host_interface->RemoveSettingValue("AutoUpdater", "LastVersion");
   checkForUpdates(true);
+}
+
+void MainWindow::onToolsMemoryCardEditorTriggered()
+{
+  if (!m_memory_card_editor_dialog)
+    m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
+
+  m_memory_card_editor_dialog->setModal(false);
+  m_memory_card_editor_dialog->show();
 }
 
 void MainWindow::checkForUpdates(bool display_message)

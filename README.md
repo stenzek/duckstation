@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/19: Memory card importer/editor added to Qt frontend.
 - 2020/09/13: Support for chaining post processing shaders added.
 - 2020/09/12: Additional texture filtering options added.
 - 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
@@ -63,6 +64,7 @@ Other features include:
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
  - Supports loading cheats from libretro or PCSXR format lists
+ - Memory card editor and save importer
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
