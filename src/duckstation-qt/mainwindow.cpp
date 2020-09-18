@@ -326,8 +326,8 @@ void MainWindow::onViewToolbarActionToggled(bool checked)
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
 {
+  m_host_interface->SetBoolSettingValue("UI", "ShowStatusBar", checked);
   m_ui.statusBar->setVisible(checked);
-  saveStateToConfig();
 }
 
 void MainWindow::onViewGameListActionTriggered()
@@ -465,6 +465,10 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 void MainWindow::setupAdditionalUi()
 {
   setWindowTitle(getWindowTitle());
+
+  const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
+  m_ui.actionViewStatusBar->setChecked(status_bar_visible);
+  m_ui.statusBar->setVisible(status_bar_visible);
 
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_host_interface);
