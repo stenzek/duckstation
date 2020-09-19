@@ -629,7 +629,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     ticks += MASTER_CLOCK;
   if (lba_diff >= 2550)
     ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
-  else if (m_drive_state == DriveState::Idle) // paused
+  else
   {
     // When paused, the CDC seems to keep reading the disc until it hits the position it's set to, then skip 10-15
     // sectors back (depending on how far into the disc it is). We'll be generous and use 4 sectors, since on average
