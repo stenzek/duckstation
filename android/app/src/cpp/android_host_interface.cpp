@@ -155,6 +155,8 @@ void AndroidHostInterface::LoadSettings()
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(false);
   CommonHostInterface::UpdateInputMap(m_settings_interface);
+  g_settings.log_level = LOGLEVEL_INFO;
+  g_settings.log_to_debug = true;
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -392,7 +394,7 @@ void AndroidHostInterface::OnRunningGameChanged()
 
 void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, int width, int height)
 {
-  ReportFormattedMessage("SurfaceChanged %p %d %d %d", surface, format, width, height);
+  Log_InfoPrintf("SurfaceChanged %p %d %d %d", surface, format, width, height);
   if (m_surface == surface)
   {
     if (m_display)
@@ -499,6 +501,8 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   Settings old_settings = std::move(g_settings);
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
+  g_settings.log_level = LOGLEVEL_INFO;
+  g_settings.log_to_debug = true;
   CheckForSettingsChanges(old_settings);
 }
 

@@ -333,7 +333,9 @@ bool SwapChain::CreateSwapChain()
   // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
   // determines window size?
   VkExtent2D size = surface_capabilities.currentExtent;
+#ifndef ANDROID
   if (size.width == UINT32_MAX)
+#endif
   {
     size.width = m_wi.surface_width;
     size.height = m_wi.surface_height;
