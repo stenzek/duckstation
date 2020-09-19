@@ -8,6 +8,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -22,6 +23,7 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.PopupMenu;
 import androidx.preference.PreferenceManager;
 
 /**
@@ -36,6 +38,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private boolean mWasDestroyed = false;
     private boolean mWasPausedOnSurfaceLoss = false;
     private boolean mApplySettingsOnSurfaceRestored = false;
+    private String mGameTitle = null;
+    private EmulationSurfaceView mContentView;
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
@@ -97,7 +101,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     public void onGameTitleChanged(String title) {
         runOnUiThread(() -> {
-            setTitle(title);
+            mGameTitle = title;
         });
     }
 
@@ -164,22 +168,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Log.i("EmulationActivity", "OnCreate");
 
+        enableFullscreenImmersive();
         setContentView(R.layout.activity_emulation);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
-        mSystemUIVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
         mContentView.getHolder().addCallback(this);
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSystemUIVisible)
-                    hideSystemUI();
-            }
-        });
 
         // Hook up controller input.
         final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
@@ -197,22 +190,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        hideSystemUI();
+        enableFullscreenImmersive();
     }
 
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        if (!mSystemUIVisible)
-            hideSystemUI();
+        enableFullscreenImmersive();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.i("EmulationActivity", "OnStop");
-        showSystemUI(false);
-
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
             mWasDestroyed = true;
             AndroidHostInterface.getInstance().stopEmulationThread();
@@ -220,60 +210,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_emulation, menu);
-        menu.findItem(R.id.show_controller).setChecked(mTouchscreenControllerVisible);
-        menu.findItem(R.id.enable_speed_limiter).setChecked(getBooleanSetting("Main/SpeedLimiterEnabled", true));
-        menu.findItem(R.id.show_controller).setChecked(getBooleanSetting("Controller1/EnableTouchscreenController", true));
-        return true;
-    }
-
-    private static final int REQUEST_CODE_SETTINGS = 0;
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivityForResult(intent, REQUEST_CODE_SETTINGS);
-            return true;
-        } else if (id == R.id.show_controller) {
-            setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
-            item.setChecked(mTouchscreenControllerVisible);
-            return true;
-        } else if (id == R.id.enable_speed_limiter) {
-            boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
-            setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
-            item.setChecked(newSetting);
-            applySettings();
-            return true;
-        } else if (id == R.id.reset) {
-            AndroidHostInterface.getInstance().resetSystem();
-        } else if (id == R.id.quick_load) {
-            AndroidHostInterface.getInstance().loadState(false, 0);
-        } else if (id == R.id.quick_save) {
-            AndroidHostInterface.getInstance().saveState(false, 0);
-        } else if (id == R.id.quit) {
-            finish();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_SETTINGS) {
-            // TODO: Sync any menu settings.
             if (AndroidHostInterface.getInstance().isEmulationThreadRunning())
                 applySettings();
         }
@@ -281,12 +221,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     @Override
     public void onBackPressed() {
-        if (mSystemUIVisible) {
-            finish();
-            return;
-        }
-
-        showSystemUI(true);
+        showMenu();
     }
 
     @Override
@@ -310,73 +245,89 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_CENTER);
     }
 
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mSystemUIHideHandler = new Handler();
-    private EmulationSurfaceView mContentView;
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
-
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    };
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
-            }
-        }
-    };
-    private boolean mSystemUIVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hideSystemUI();
-        }
-    };
-
-    private void hideSystemUI() {
-        // Hide UI first
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-        mSystemUIVisible = false;
-
-        // Schedule a runnable to remove the status and navigation bar after a delay
-        mSystemUIHideHandler.removeCallbacks(mShowPart2Runnable);
-        mSystemUIHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+    private void enableFullscreenImmersive()
+    {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    @SuppressLint("InlinedApi")
-    private void showSystemUI(boolean delay) {
-        // Show the system bar
-        mContentView.setSystemUiVisibility(0);
-        mSystemUIVisible = true;
+    private static final int REQUEST_CODE_SETTINGS = 0;
 
-        // Schedule a runnable to display UI elements after a delay
-        mSystemUIHideHandler.removeCallbacks(mHidePart2Runnable);
-        if (delay)
-            mSystemUIHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
-        else
-            mShowPart2Runnable.run();
+    private void showMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (mGameTitle != null && !mGameTitle.isEmpty())
+            builder.setTitle(mGameTitle);
+
+        builder.setItems(R.array.emulation_menu, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i)
+                {
+                    case 0:     // Quick Load
+                    {
+                        AndroidHostInterface.getInstance().loadState(false, 0);
+                        return;
+                    }
+
+                    case 1:     // Quick Save
+                    {
+                        AndroidHostInterface.getInstance().saveState(false, 0);
+                        return;
+                    }
+
+                    case 2:     // Reset
+                    {
+                        AndroidHostInterface.getInstance().resetSystem();
+                        return;
+                    }
+
+                    case 3:     // Change Disc
+                    {
+                        return;
+                    }
+
+                    case 4:     // Toggle Speed Limiter
+                    {
+                        boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
+                        setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
+                        applySettings();
+                        return;
+                    }
+
+                    case 5:     // Toggle Touchscreen Controller
+                    {
+                        setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
+                        return;
+                    }
+
+                    case 6:     // Settings
+                    {
+                        Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                        return;
+                    }
+
+                    case 7:     // Quit
+                    {
+                        finish();
+                        return;
+                    }
+                }
+            }
+        });
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                enableFullscreenImmersive();
+            }
+        });
+        builder.create().show();
     }
 
     /**

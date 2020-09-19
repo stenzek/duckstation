@@ -18,7 +18,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_emulation"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/FullscreenTheme"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:immersive="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
