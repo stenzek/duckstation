@@ -2371,7 +2371,7 @@ void CommonHostInterface::UpdateDiscordPresence()
   rp.startTimestamp = std::time(nullptr);
 
   SmallString details_string;
-  if (System::IsValid())
+  if (!System::IsShutdown())
   {
     details_string.AppendFormattedString("%s (%s)", System::GetRunningTitle().c_str(),
                                          System::GetRunningCode().c_str());
