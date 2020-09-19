@@ -467,6 +467,7 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
 template<PGXPMode pgxp_mode>
 ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
 {
+restart_instruction:
   const Instruction inst = g_state.current_instruction;
 
 #if 0
@@ -1348,6 +1349,16 @@ ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
       // everything else is reserved/invalid
     default:
     {
+      u32 ram_value;
+      if (SafeReadInstruction(g_state.current_instruction_pc, &ram_value) &&
+          ram_value != g_state.current_instruction.bits)
+      {
+        Log_ErrorPrintf("Stale icache at 0x%08X - ICache: %08X RAM: %08X", g_state.current_instruction_pc,
+                        g_state.current_instruction.bits, ram_value);
+        g_state.current_instruction.bits = ram_value;
+        goto restart_instruction;
+      }
+
       RaiseException(Exception::RI);
     }
     break;
