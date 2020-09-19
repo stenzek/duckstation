@@ -493,7 +493,7 @@ void OpenGLHostDisplay::RenderDisplay()
   }
 #endif
 
-  RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+  RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                 m_display_texture_view_height, m_display_linear_filtering);
 }
