@@ -41,16 +41,19 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
                              tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
                                 "but usually safe to enabled."));
-  
-  dialog->registerWidgetHelp(m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
-                             tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback."));
+
+  dialog->registerWidgetHelp(
+    m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
+    tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
+       "cases also eliminates stutter when games initiate audio track playback."));
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
 
 void ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked()
 {
-  QString path = QFileDialog::getOpenFileName(this, tr("Select BIOS Image"), QString(), tr(BIOS_IMAGE_FILTER));
+  QString path = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select BIOS Image"), QString(), tr(BIOS_IMAGE_FILTER)));
   if (path.isEmpty())
     return;
 

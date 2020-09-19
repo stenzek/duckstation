@@ -1,4 +1,5 @@
 #include "settings.h"
+#include "common/file_system.h"
 #include "common/make_array.h"
 #include "common/string_util.h"
 #include "host_interface.h"
@@ -156,7 +157,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE));
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
-  bios_path = si.GetStringValue("BIOS", "Path", "bios/scph1001.bin");
+  bios_path = si.GetStringValue("BIOS", "Path", "bios" FS_OSPATH_SEPARATOR_STR "scph1001.bin");
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
 
@@ -173,12 +174,14 @@ void Settings::Load(SettingsInterface& si)
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
       .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
-  memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
+  memory_card_paths[0] =
+    si.GetStringValue("MemoryCards", "Card1Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_1.mcd");
   memory_card_types[1] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_2_TYPE)).c_str())
       .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
-  memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
+  memory_card_paths[1] =
+    si.GetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
@@ -637,4 +640,3 @@ const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
 {
   return s_memory_card_type_display_names[static_cast<int>(type)];
 }
-

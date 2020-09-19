@@ -410,7 +410,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Audio", "Sync", true);
   si.SetBoolValue("Audio", "DumpOnBoot", false);
 
-  si.SetStringValue("BIOS", "Path", "bios/scph1001.bin");
+  si.SetStringValue("BIOS", "Path", "bios" FS_OSPATH_SEPARATOR_STR "scph1001.bin");
   si.SetBoolValue("BIOS", "PatchTTYEnable", false);
   si.SetBoolValue("BIOS", "PatchFastBoot", false);
 
@@ -418,9 +418,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_2_TYPE));
 
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_1_TYPE));
-  si.SetStringValue("MemoryCards", "Card1Path", "memcards/shared_card_1.mcd");
+  si.SetStringValue("MemoryCards", "Card1Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
-  si.SetStringValue("MemoryCards", "Card2Path", "memcards/shared_card_2.mcd");
+  si.SetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
@@ -639,7 +639,7 @@ std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...)
   }
   else
   {
-    return StringUtil::StdStringFromFormat("%s%c%s", m_user_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER,
+    return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_user_directory.c_str(),
                                            formatted_path.c_str());
   }
 }
@@ -657,7 +657,7 @@ std::string HostInterface::GetProgramDirectoryRelativePath(const char* format, .
   }
   else
   {
-    return StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER,
+    return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(),
                                            formatted_path.c_str());
   }
 }
