@@ -848,6 +848,10 @@
         <source>No path selected, input profile was not saved.</source>
         <translation>未选择路径, 未保存输入配置文件。</translation>
     </message>
+    <message>
+        <source>Input Profiles (*.ini)</source>
+        <translation>输入配置文件 (*.ini)</translation>
+    </message>
 </context>
 <context>
     <name>ControllerType</name>
@@ -2507,6 +2511,14 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>工具栏</translation>
     </message>
     <message>
+        <source>&amp;Tools</source>
+        <translation>工具(&amp;T)</translation>
+    </message>
+    <message>
+        <source>Memory &amp;Card Editor</source>
+        <translation>记忆卡管理器(&amp;C)</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="203"/>
         <source>Start &amp;Disc...</source>
         <translation>启动光盘(&amp;D)...</translation>
@@ -3665,6 +3677,105 @@ The saves will not be recoverable.</source>
         <location filename="../../core/system.cpp" line="1266"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变, 重新加载存储卡。</translation>
+    </message>
+</context>
+<context>
+    <name>MemoryCardEditorDialog</name>
+    <message>
+        <source>Memory Card Editor</source>
+        <translation>记忆卡管理器</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation>标题</translation>
+    </message>
+    <message>
+        <source>File Name</source>
+        <translation>文件名</translation>
+    </message>
+    <message>
+        <source>Blocks</source>
+        <translation>格</translation>
+    </message>
+    <message>
+        <source>Memory Card:</source>
+        <translation>记忆卡:</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
+        <translation>所有记忆卡类型 (*.mcd *.mcr *.mc)</translation>
+    </message>
+    <message>
+        <source>New...</source>
+        <translation>新建...</translation>
+    </message>
+    <message>
+        <source>0 blocks used</source>
+        <translation>已使用0格</translation>
+    </message>
+    <message>
+        <source>%1 blocks free%2</source>
+        <translation>剩余%1格%2</translation>
+    </message>
+    <message>
+        <source>Import File...</source>
+        <translation>导入文件...</translation>
+    </message>
+    <message>
+        <source>Import Card...</source>
+        <translation>导入记忆卡...</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <translation>删除文件</translation>
+    </message>
+    <message>
+        <source>Export File</source>
+        <translation>导出文件</translation>
+    </message>
+    <message>
+        <source>&lt;&lt;</source>
+        <translation>&lt;&lt;复制</translation>
+    </message>
+    <message>
+        <source>&gt;&gt;</source>
+        <translation>复制&gt;&gt;</translation>
+    </message>
+    <message>
+        <source>Select Memory Card</source>
+        <translation>选择记忆卡</translation>
+    </message>
+    <message>
+        <source>Failed to load memory card image.</source>
+        <translation>无法读取记忆卡文件。</translation>
+    </message>
+    <message>
+        <source>Memory card '%1' is not saved, do you want to save before closing?</source>
+        <translation>记忆卡'%1'未保存, 在关闭前要保存吗?</translation>
+    </message>
+    <message>
+        <source>Save memory card?</source>
+        <translation>保存记忆卡?</translation>
+    </message>
+    <message>
+        <source>Failed to write card to '%1'</source>
+        <translation>无法将记忆卡写入到'%1'</translation>
+    </message>
+    <message>
+        <source>Failed to write file %1</source>
+        <translation>无法将文件写入到'%1'</translation>
+    </message>
+    <message>
+        <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
+        <translation>空间不足, 此文件需要%1格, 但只有%2格可用。</translation>
     </message>
 </context>
 </TS>
