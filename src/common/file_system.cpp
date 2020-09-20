@@ -1114,16 +1114,18 @@ bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
 
 std::string GetProgramPath()
 {
-  const HANDLE hProcess = GetCurrentProcess();
-
   std::wstring buffer;
   buffer.resize(MAX_PATH);
 
+  // Fall back to the main module if this fails.
+  HMODULE module = nullptr;
+  GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                     reinterpret_cast<LPCWSTR>(&GetProgramPath), &module);
+
   for (;;)
   {
-    DWORD nChars = static_cast<DWORD>(buffer.size());
-    if (!QueryFullProcessImageNameW(GetCurrentProcess(), 0, buffer.data(), &nChars) &&
-        GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    DWORD nChars = GetModuleFileNameW(module, buffer.data(), static_cast<DWORD>(buffer.size()));
+    if (nChars == static_cast<DWORD>(buffer.size()) && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
     {
       buffer.resize(buffer.size() * 2);
       continue;
@@ -1315,7 +1317,7 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
   if (Path[0] == '\0')
     return false;
 
-  // stat file
+    // stat file
 #ifdef __HAIKU__
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
@@ -1349,7 +1351,7 @@ bool FileExists(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-  // stat file
+    // stat file
 #ifdef __HAIKU__
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
@@ -1371,13 +1373,13 @@ bool DirectoryExists(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-  // stat file
+    // stat file
 #ifdef __HAIKU__
-    struct stat sysStatData;
-    if (stat(Path, &sysStatData) < 0)
+  struct stat sysStatData;
+  if (stat(Path, &sysStatData) < 0)
 #else
-    struct stat64 sysStatData;
-    if (stat64(Path, &sysStatData) < 0)
+  struct stat64 sysStatData;
+  if (stat64(Path, &sysStatData) < 0)
 #endif
     return false;
 
