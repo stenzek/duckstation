@@ -13,8 +13,8 @@ static bool TryLoadingShader(PostProcessingShader* shader, const std::string_vie
 {
   std::string shader_name_str(shader_name);
 
-  std::string filename = g_host_interface->GetUserDirectoryRelativePath(
-    "shaders%c%s.glsl", FS_OSPATH_SEPERATOR_CHARACTER, shader_name_str.c_str());
+  std::string filename = g_host_interface->GetUserDirectoryRelativePath("shaders" FS_OSPATH_SEPARATOR_STR "%s.glsl",
+                                                                        shader_name_str.c_str());
   if (FileSystem::FileExists(filename.c_str()))
   {
     if (!shader->LoadFromFile(std::move(shader_name_str), filename.c_str()))
@@ -25,7 +25,7 @@ static bool TryLoadingShader(PostProcessingShader* shader, const std::string_vie
   }
   else
   {
-    filename = g_host_interface->GetProgramDirectoryRelativePath("shaders%c%s.glsl", FS_OSPATH_SEPERATOR_CHARACTER,
+    filename = g_host_interface->GetProgramDirectoryRelativePath("shaders" FS_OSPATH_SEPARATOR_STR "%s.glsl",
                                                                  shader_name_str.c_str());
     if (FileSystem::FileExists(filename.c_str()))
     {

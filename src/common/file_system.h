@@ -11,8 +11,10 @@ class ByteStream;
 
 #ifdef WIN32
 #define FS_OSPATH_SEPERATOR_CHARACTER '\\'
+#define FS_OSPATH_SEPARATOR_STR "\\"
 #else
 #define FS_OSPATH_SEPERATOR_CHARACTER '/'
+#define FS_OSPATH_SEPARATOR_STR "/"
 #endif
 
 enum FILESYSTEM_FILE_ATTRIBUTES

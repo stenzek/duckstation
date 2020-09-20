@@ -456,8 +456,9 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
   connect(m_ui.userMemoryCard1SharedPathBrowse, &QPushButton::clicked, [this]() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
-                                                qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER));
+    QString path = QDir::toNativeSeparators(
+      QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
+                                   qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER)));
     if (path.isEmpty())
       return;
 
@@ -478,8 +479,9 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
   connect(m_ui.userMemoryCard2SharedPathBrowse, &QPushButton::clicked, [this]() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
-                                                qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER));
+    QString path = QDir::toNativeSeparators(
+      QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
+                                   qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER)));
     if (path.isEmpty())
       return;
 

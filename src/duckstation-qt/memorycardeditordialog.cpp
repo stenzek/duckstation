@@ -78,7 +78,7 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
     std::string real_filename(
-      StringUtil::StdStringFromFormat("%s%c%s", base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, fd.FileName.c_str()));
+      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", base_path.c_str(), fd.FileName.c_str()));
     std::string::size_type pos = fd.FileName.rfind('.');
     if (pos != std::string::npos)
       fd.FileName.erase(pos);

@@ -146,13 +146,13 @@ static const char* GetSaveDirectory()
 
 std::string LibretroHostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
-  return StringUtil::StdStringFromFormat("%s%cduckstation_shared_card_%d.mcd", GetSaveDirectory(),
-                                         FS_OSPATH_SEPERATOR_CHARACTER, slot + 1);
+  return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "duckstation_shared_card_%d.mcd",
+                                         GetSaveDirectory(), slot + 1);
 }
 
 std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
-  return StringUtil::StdStringFromFormat("%s%c%s_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER, game_code,
+  return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s_%d.mcd", GetSaveDirectory(), game_code,
                                          slot + 1);
 }
 
@@ -662,8 +662,7 @@ void LibretroHostInterface::LoadSettings()
   const char* system_directory = nullptr;
   if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_directory) || !system_directory)
     system_directory = "bios";
-  g_settings.bios_path =
-    StringUtil::StdStringFromFormat("%s%cscph1001.bin", system_directory, FS_OSPATH_SEPERATOR_CHARACTER);
+  g_settings.bios_path = StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "scph1001.bin", system_directory);
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)

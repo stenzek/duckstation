@@ -637,12 +637,12 @@ void CommonHostInterface::SetUserDirectory()
 
   std::fprintf(stdout, "Program directory \"%s\"\n", m_program_directory.c_str());
 
-  if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
-                                                             FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
-                               .c_str()) ||
-      FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
-                                                             FS_OSPATH_SEPERATOR_CHARACTER, "settings.ini")
-                               .c_str()))
+  if (FileSystem::FileExists(
+        StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(), "portable.txt")
+          .c_str()) ||
+      FileSystem::FileExists(
+        StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(), "settings.ini")
+          .c_str()))
   {
     std::fprintf(stdout, "portable.txt or old settings.ini found, using program directory as user directory.\n");
     m_user_directory = m_program_directory;
@@ -657,8 +657,8 @@ void CommonHostInterface::SetUserDirectory()
       const std::string documents_directory_str(StringUtil::WideStringToUTF8String(documents_directory));
       if (!documents_directory_str.empty())
       {
-        m_user_directory = StringUtil::StdStringFromFormat("%s%c%s", documents_directory_str.c_str(),
-                                                           FS_OSPATH_SEPERATOR_CHARACTER, "DuckStation");
+        m_user_directory = StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s",
+                                                           documents_directory_str.c_str(), "DuckStation");
       }
       CoTaskMemFree(documents_directory);
     }
@@ -1594,7 +1594,7 @@ void CommonHostInterface::FindInputProfiles(const std::string& base_path, InputP
     }
 
     std::string filename(
-      StringUtil::StdStringFromFormat("%s%c%s", base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, it.FileName.c_str()));
+      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", base_path.c_str(), it.FileName.c_str()));
     out_list->push_back(InputProfileEntry{std::move(name), std::move(filename)});
   }
 }
@@ -1755,17 +1755,17 @@ std::string CommonHostInterface::GetSettingsFileName() const
 std::string CommonHostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot) const
 {
   if (slot < 0)
-    return GetUserDirectoryRelativePath("savestates/%s_resume.sav", game_code);
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "%s_resume.sav", game_code);
   else
-    return GetUserDirectoryRelativePath("savestates/%s_%d.sav", game_code, slot);
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "%s_%d.sav", game_code, slot);
 }
 
 std::string CommonHostInterface::GetGlobalSaveStateFileName(s32 slot) const
 {
   if (slot < 0)
-    return GetUserDirectoryRelativePath("savestates/resume.sav");
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "resume.sav");
   else
-    return GetUserDirectoryRelativePath("savestates/savestate_%d.sav", slot);
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "savestate_%d.sav", slot);
 }
 
 std::vector<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetAvailableSaveStates(const char* game_code) const
@@ -2153,12 +2153,12 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     const char* extension = "png";
     if (code.empty())
     {
-      auto_filename =
-        GetUserDirectoryRelativePath("screenshots/%s.%s", GetTimestampStringForFileName().GetCharArray(), extension);
+      auto_filename = GetUserDirectoryRelativePath("screenshots" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                                                   GetTimestampStringForFileName().GetCharArray(), extension);
     }
     else
     {
-      auto_filename = GetUserDirectoryRelativePath("screenshots/%s_%s.%s", code.c_str(),
+      auto_filename = GetUserDirectoryRelativePath("screenshots" FS_OSPATH_SEPARATOR_STR "%s_%s.%s", code.c_str(),
                                                    GetTimestampStringForFileName().GetCharArray(), extension);
     }
 
