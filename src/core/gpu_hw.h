@@ -119,8 +119,8 @@ protected:
 
   struct BatchUBOData
   {
-    u32 u_texture_window_mask[2];
-    u32 u_texture_window_offset[2];
+    u32 u_texture_window_and[2];
+    u32 u_texture_window_or[2];
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
     u32 u_interlaced_displayed_field;

@@ -306,7 +306,7 @@ protected:
   };
 
   // Sprites/rectangles should be clipped to 12 bits before drawing.
-  static constexpr s32 TruncateVertexPosition(s32 x) { return SignExtendN<11, s32>(x); }
+  static constexpr s32 TruncateVertexPosition(s32 x) { return SignExtendN<12, s32>(x); }
 
   struct NativeVertex
   {
@@ -581,10 +581,10 @@ protected:
     u32 texture_page_y;
     u32 texture_palette_x;
     u32 texture_palette_y;
-    u8 texture_window_mask_x;   // in 8 pixel steps
-    u8 texture_window_mask_y;   // in 8 pixel steps
-    u8 texture_window_offset_x; // in 8 pixel steps
-    u8 texture_window_offset_y; // in 8 pixel steps
+    u8 texture_window_and_x;
+    u8 texture_window_and_y;
+    u8 texture_window_or_x;
+    u8 texture_window_or_y;
     bool texture_x_flip;
     bool texture_y_flip;
     bool texture_page_changed;

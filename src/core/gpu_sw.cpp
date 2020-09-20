@@ -602,10 +602,8 @@ void GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 tex
   {
     // Apply texture window
     // TODO: Precompute the second half
-    texcoord_x = (texcoord_x & ~(m_draw_mode.texture_window_mask_x * 8u)) |
-                 ((m_draw_mode.texture_window_offset_x & m_draw_mode.texture_window_mask_x) * 8u);
-    texcoord_y = (texcoord_y & ~(m_draw_mode.texture_window_mask_y * 8u)) |
-                 ((m_draw_mode.texture_window_offset_y & m_draw_mode.texture_window_mask_y) * 8u);
+    texcoord_x = (texcoord_x & m_draw_mode.texture_window_and_x) | m_draw_mode.texture_window_or_x;
+    texcoord_y = (texcoord_y & m_draw_mode.texture_window_and_y) | m_draw_mode.texture_window_or_y;
 
     VRAMPixel texture_color;
     switch (m_draw_mode.GetTextureMode())
