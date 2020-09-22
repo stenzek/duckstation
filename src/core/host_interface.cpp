@@ -199,6 +199,11 @@ void HostInterface::AddFormattedOSDMessage(float duration, const char* format, .
   AddOSDMessage(std::move(message), duration);
 }
 
+std::string HostInterface::GetBIOSDirectory() const
+{
+  return GetUserDirectoryRelativePath("bios");
+}
+
 std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
 {
   const std::string* bios_path;
@@ -221,12 +226,13 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
   if (bios_path->empty())
   {
     // auto-detect
-    return FindBIOSImageInDirectory(region, GetUserDirectoryRelativePath("bios").c_str());
+    return FindBIOSImageInDirectory(region, GetBIOSDirectory().c_str());
   }
 
   // try the configured path
   std::optional<BIOS::Image> image = BIOS::LoadImageFromFile(
-    GetUserDirectoryRelativePath("bios" FS_OSPATH_SEPARATOR_STR "%s", bios_path->c_str()).c_str());
+    StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", GetBIOSDirectory().c_str(), bios_path->c_str())
+      .c_str());
   if (!image.has_value())
   {
     g_host_interface->ReportFormattedError(

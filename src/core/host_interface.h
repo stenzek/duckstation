@@ -118,6 +118,9 @@ public:
   virtual TinyString TranslateString(const char* context, const char* str) const;
   virtual std::string TranslateStdString(const char* context, const char* str) const;
 
+  /// Returns the path to the directory to search for BIOS images.
+  virtual std::string GetBIOSDirectory() const;
+
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 
