@@ -1,6 +1,7 @@
 #include "settingsdialog.h"
 #include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
+#include "biossettingswidget.h"
 #include "consolesettingswidget.h"
 #include "controllersettingswidget.h"
 #include "displaysettingswidget.h"
@@ -24,6 +25,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   m_general_settings = new GeneralSettingsWidget(host_interface, m_ui.settingsContainer, this);
+  m_bios_settings = new BIOSSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
   m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
@@ -36,6 +38,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GeneralSettings), m_general_settings);
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::BIOSSettings), m_bios_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ConsoleSettings), m_console_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GameListSettings), m_game_list_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::HotkeySettings), m_hotkey_settings);

@@ -646,6 +646,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
   connect(m_ui.actionGeneralSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::GeneralSettings); });
+  connect(m_ui.actionBIOSSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::BIOSSettings); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::ConsoleSettings); });
   connect(m_ui.actionGameListSettings, &QAction::triggered,

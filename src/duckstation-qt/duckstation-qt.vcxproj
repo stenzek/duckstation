@@ -39,6 +39,7 @@
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
+    <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="enhancementsettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
@@ -68,6 +69,7 @@
   <ItemGroup>
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
+    <QtMoc Include="biossettingswidget.h" />
     <QtMoc Include="controllersettingswidget.h" />
     <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
@@ -124,6 +126,9 @@
     <QtUi Include="audiosettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="biossettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="consolesettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -171,6 +176,7 @@
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_enhancementsettingswidget.cpp" />

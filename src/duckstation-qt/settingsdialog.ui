@@ -69,6 +69,15 @@
        </item>
        <item>
         <property name="text">
+         <string>BIOS Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/resources.qrc">
+          <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Console Settings</string>
         </property>
         <property name="icon">

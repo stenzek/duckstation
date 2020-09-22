@@ -1182,10 +1182,6 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
-        ImGui::Text("BIOS Path:");
-        ImGui::SameLine(indent);
-        settings_changed |= DrawFileChooser("##bios_path", &m_settings_copy.bios_path);
-
         settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings_copy.bios_patch_tty_enable);
         settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings_copy.bios_patch_fast_boot);
       }

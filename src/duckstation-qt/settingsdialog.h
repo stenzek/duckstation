@@ -8,6 +8,7 @@
 class QtHostInterface;
 
 class GeneralSettingsWidget;
+class BIOSSettingsWidget;
 class GameListSettingsWidget;
 class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
@@ -27,6 +28,7 @@ public:
   enum class Category
   {
     GeneralSettings,
+    BIOSSettings,
     ConsoleSettings,
     GameListSettings,
     HotkeySettings,
@@ -44,6 +46,7 @@ public:
   ~SettingsDialog();
 
   GeneralSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
+  BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
   ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
   GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
   HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
@@ -72,6 +75,7 @@ private:
   QtHostInterface* m_host_interface;
 
   GeneralSettingsWidget* m_general_settings = nullptr;
+  BIOSSettingsWidget* m_bios_settings = nullptr;
   ConsoleSettingsWidget* m_console_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
@@ -79,7 +83,7 @@ private:
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
   DisplaySettingsWidget* m_display_settings = nullptr;
   EnhancementSettingsWidget* m_enhancement_settings = nullptr;
-  PostProcessingSettingsWidget *m_post_processing_settings = nullptr;
+  PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AdvancedSettingsWidget* m_advanced_settings = nullptr;
 

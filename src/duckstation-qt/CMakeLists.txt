@@ -15,6 +15,9 @@ set(SRCS
   autoupdaterdialog.cpp
   autoupdaterdialog.h
   autoupdaterdialog.ui
+  biossettingswidget.cpp
+  biossettingswidget.h
+  biossettingswidget.ui
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui

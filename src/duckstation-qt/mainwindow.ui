@@ -115,6 +115,7 @@
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionGeneralSettings"/>
+    <addaction name="actionBIOSSettings"/> 
     <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionHotkeySettings"/>
@@ -320,6 +321,15 @@
   <action name="actionExit">
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="actionBIOSSettings">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
+   </property>
+   <property name="text">
+    <string>B&amp;IOS Settings...</string>
    </property>
   </action>
   <action name="actionConsoleSettings">

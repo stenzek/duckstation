@@ -201,84 +201,132 @@ void HostInterface::AddFormattedOSDMessage(float duration, const char* format, .
 
 std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
 {
-  // Try the other default filenames in the directory of the configured BIOS.
-#define TRY_FILENAME(filename)                                                                                         \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    String try_filename = filename;                                                                                    \
-    std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(try_filename.GetCharArray());                     \
-    if (found_image)                                                                                                   \
-    {                                                                                                                  \
-      BIOS::Hash found_hash = BIOS::GetHash(*found_image);                                                             \
-      Log_DevPrintf("Hash for BIOS '%s': %s", try_filename.GetCharArray(), found_hash.ToString().c_str());             \
-      if (BIOS::IsValidHashForRegion(region, found_hash))                                                              \
-      {                                                                                                                \
-        Log_InfoPrintf("Using BIOS from '%s' for region '%s'", try_filename.GetCharArray(),                            \
-                       Settings::GetConsoleRegionName(region));                                                        \
-        return found_image;                                                                                            \
-      }                                                                                                                \
-    }                                                                                                                  \
-  } while (0)
-
-  // Try the configured image.
-  TRY_FILENAME(g_settings.bios_path.c_str());
-
-  // Try searching in the same folder for other region's images.
+  const std::string* bios_path;
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph3000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-11j.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph1000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-10j.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5500.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-30j.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7500.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9000.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-40j.bin", false, false));
-      break;
-
-    case ConsoleRegion::NTSC_U:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph1001.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-22a.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5501.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5503.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7003.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-30a.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7001.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7501.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7503.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9001.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9003.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9903.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-41a.bin", false, false));
+      bios_path = &g_settings.bios_path_ntsc_j;
       break;
 
     case ConsoleRegion::PAL:
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph1002.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-21e.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5502.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph5552.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-30e.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7002.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph7502.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "scph9002.bin", false, false));
-      TRY_FILENAME(FileSystem::BuildPathRelativeToFile(g_settings.bios_path.c_str(), "ps-41e.bin", false, false));
+      bios_path = &g_settings.bios_path_pal;
       break;
 
+    case ConsoleRegion::NTSC_U:
     default:
+      bios_path = &g_settings.bios_path_ntsc_u;
       break;
   }
 
-#undef RELATIVE_PATH
-#undef TRY_FILENAME
+  if (bios_path->empty())
+  {
+    // auto-detect
+    return FindBIOSImageInDirectory(region, GetUserDirectoryRelativePath("bios").c_str());
+  }
 
-  // Fall back to the default image.
-  Log_WarningPrintf("No suitable BIOS image for region %s could be located, using configured image '%s'. This may "
-                    "result in instability.",
-                    Settings::GetConsoleRegionName(region), g_settings.bios_path.c_str());
-  return BIOS::LoadImageFromFile(g_settings.bios_path);
+  // try the configured path
+  std::optional<BIOS::Image> image = BIOS::LoadImageFromFile(
+    GetUserDirectoryRelativePath("bios" FS_OSPATH_SEPARATOR_STR "%s", bios_path->c_str()).c_str());
+  if (!image.has_value())
+  {
+    g_host_interface->ReportFormattedError(
+      g_host_interface->TranslateString("HostInterface", "Failed to load configured BIOS file '%s'"),
+      bios_path->c_str());
+    return std::nullopt;
+  }
+
+  BIOS::Hash found_hash = BIOS::GetHash(*image);
+  Log_DevPrintf("Hash for BIOS '%s': %s", bios_path->c_str(), found_hash.ToString().c_str());
+
+  if (!BIOS::IsValidHashForRegion(region, found_hash))
+    Log_WarningPrintf("Hash for BIOS '%s' does not match region. This may cause issues.", bios_path->c_str());
+
+  return image;
+}
+
+std::optional<std::vector<u8>> HostInterface::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory)
+{
+  Log_InfoPrintf("Searching for a %s BIOS in '%s'...", Settings::GetConsoleRegionDisplayName(region), directory);
+
+  FileSystem::FindResultsArray results;
+  FileSystem::FindFiles(
+    directory, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+
+  std::string fallback_path;
+  std::optional<BIOS::Image> fallback_image;
+
+  for (const FILESYSTEM_FIND_DATA& fd : results)
+  {
+    if (fd.Size != BIOS::BIOS_SIZE)
+    {
+      Log_WarningPrintf("Skipping '%s': incorrect size", fd.FileName.c_str());
+      continue;
+    }
+
+    std::string full_path(
+      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", directory, fd.FileName.c_str()));
+
+    std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(full_path.c_str());
+    if (!found_image)
+      continue;
+
+    BIOS::Hash found_hash = BIOS::GetHash(*found_image);
+    Log_DevPrintf("Hash for BIOS '%s': %s", fd.FileName.c_str(), found_hash.ToString().c_str());
+
+    if (BIOS::IsValidHashForRegion(region, found_hash))
+    {
+      Log_InfoPrintf("Using BIOS '%s'", fd.FileName.c_str());
+      return found_image;
+    }
+
+    fallback_path = std::move(full_path);
+    fallback_image = std::move(found_image);
+  }
+
+  if (!fallback_image.has_value())
+  {
+    g_host_interface->ReportFormattedError(
+      g_host_interface->TranslateString("HostInterface", "No BIOS image found for %s region"),
+      Settings::GetConsoleRegionDisplayName(region));
+    return std::nullopt;
+  }
+
+  Log_WarningPrintf("Falling back to possibly-incompatible image '%s'", fallback_path.c_str());
+  return fallback_image;
+}
+
+std::vector<std::pair<std::string, const BIOS::ImageInfo*>>
+HostInterface::FindBIOSImagesInDirectory(const char* directory)
+{
+  std::vector<std::pair<std::string, const BIOS::ImageInfo*>> results;
+
+  FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(directory, "*",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &files);
+
+  for (FILESYSTEM_FIND_DATA& fd : files)
+  {
+    if (fd.Size != BIOS::BIOS_SIZE)
+      continue;
+
+    std::string full_path(
+      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", directory, fd.FileName.c_str()));
+
+    std::optional<BIOS::Image> found_image = BIOS::LoadImageFromFile(full_path.c_str());
+    if (!found_image)
+      continue;
+
+    BIOS::Hash found_hash = BIOS::GetHash(*found_image);
+    const BIOS::ImageInfo* ii = BIOS::GetImageInfoForHash(found_hash);
+    results.emplace_back(std::move(fd.FileName), ii);
+  }
+
+  return results;
+}
+
+std::vector<std::pair<std::string, const BIOS::ImageInfo*>> HostInterface::FindBIOSImagesInUserDirectory()
+{
+  return FindBIOSImagesInDirectory(GetUserDirectoryRelativePath("bios").c_str());
 }
 
 bool HostInterface::LoadState(const char* filename)
@@ -410,7 +458,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Audio", "Sync", true);
   si.SetBoolValue("Audio", "DumpOnBoot", false);
 
-  si.SetStringValue("BIOS", "Path", "bios" FS_OSPATH_SEPARATOR_STR "scph1001.bin");
+  si.SetStringValue("BIOS", "PathNTSCU", "");
+  si.SetStringValue("BIOS", "PathNTSCJ", "");
+  si.SetStringValue("BIOS", "PathPAL", "");
   si.SetBoolValue("BIOS", "PatchTTYEnable", false);
   si.SetBoolValue("BIOS", "PatchFastBoot", false);
 

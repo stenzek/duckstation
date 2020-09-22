@@ -157,7 +157,9 @@ void Settings::Load(SettingsInterface& si)
   gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE));
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
-  bios_path = si.GetStringValue("BIOS", "Path", "bios" FS_OSPATH_SEPARATOR_STR "scph1001.bin");
+  bios_path_ntsc_u = si.GetStringValue("BIOS", "PathNTSCU", "");
+  bios_path_ntsc_j = si.GetStringValue("BIOS", "PathNTSCJ", "");
+  bios_path_pal = si.GetStringValue("BIOS", "PathPAL", "");
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
 
@@ -271,7 +273,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
   si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
 
-  si.SetStringValue("BIOS", "Path", bios_path.c_str());
+  si.SetStringValue("BIOS", "PathNTSCJ", bios_path_ntsc_j.c_str());
+  si.SetStringValue("BIOS", "PathNTSCU", bios_path_ntsc_u.c_str());
+  si.SetStringValue("BIOS", "PathPAL", bios_path_pal.c_str());
   si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 

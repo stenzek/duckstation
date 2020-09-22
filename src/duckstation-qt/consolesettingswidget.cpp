@@ -1,9 +1,6 @@
 #include "consolesettingswidget.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
-#include <QtWidgets/QFileDialog>
-
-static constexpr char BIOS_IMAGE_FILTER[] = "Binary Images (*.bin);;All Files (*.*)";
 
 ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
@@ -25,9 +22,6 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console", "Region",
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                                                Settings::DEFAULT_CONSOLE_REGION);
-  SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.biosPath, "BIOS", "Path");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableTTYOutput, "BIOS", "PatchTTYEnable");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.fastBoot, "BIOS", "PatchFastBoot");
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -36,12 +30,6 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
 
-  connect(m_ui.biosPathBrowse, &QPushButton::pressed, this, &ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked);
-
-  dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
-                             tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
-                                "but usually safe to enabled."));
-
   dialog->registerWidgetHelp(
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
@@ -49,16 +37,3 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
-
-void ConsoleSettingsWidget::onBrowseBIOSPathButtonClicked()
-{
-  QString path = QDir::toNativeSeparators(
-    QFileDialog::getOpenFileName(this, tr("Select BIOS Image"), QString(), tr(BIOS_IMAGE_FILTER)));
-  if (path.isEmpty())
-    return;
-
-  m_ui.biosPath->setText(path);
-
-  m_host_interface->SetStringSettingValue("BIOS", "Path", path.toUtf8().constData());
-  m_host_interface->applySettings();
-}
