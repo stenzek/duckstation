@@ -1314,6 +1314,12 @@ static bool AddImGuiFont(const std::string& language, float size, float framebuf
     path = GetFontPath("msgothic.ttc");
     range = ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
   }
+  else if (language == "ru")
+  {
+    path = GetFontPath("segoeui.ttf");
+    range = ImGui::GetIO().Fonts->GetGlyphRangesCyrillic();
+    size *= 1.15f;
+  }
   else if (language == "zh-cn")
   {
     path = GetFontPath("msyh.ttc");
