@@ -246,6 +246,7 @@
   <ItemGroup>
     <None Include="translations\duckstation-qt_es.ts" />
     <None Include="translations\duckstation-qt_it.ts" />
+    <None Include="translations\duckstation-qt_ru.ts" />
   </ItemGroup>
   <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying common data files" Importance="High" />
