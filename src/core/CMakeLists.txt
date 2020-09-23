@@ -9,6 +9,8 @@ add_library(core
     cdrom.h
     cdrom_async_reader.cpp
     cdrom_async_reader.h
+    cheats.cpp
+    cheats.h
     controller.cpp
     controller.h
     cpu_code_cache.cpp
@@ -52,6 +54,8 @@ add_library(core
     mdec.h
     memory_card.cpp
     memory_card.h
+    memory_card_image.cpp
+    memory_card_image.h
     namco_guncon.cpp
     namco_guncon.h
     negcon.cpp
@@ -69,6 +73,8 @@ add_library(core
     save_state_version.h
     settings.cpp
     settings.h
+    shadergen.cpp
+    shadergen.h
     sio.cpp
     sio.h
     spu.cpp

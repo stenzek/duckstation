@@ -2,6 +2,7 @@
 #include "bios.h"
 #include "bus.h"
 #include "cdrom.h"
+#include "cheats.h"
 #include "common/audio_stream.h"
 #include "common/file_system.h"
 #include "common/iso_reader.h"
@@ -26,8 +27,8 @@
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
-#include <cstdio>
 #include <cctype>
+#include <cstdio>
 #include <fstream>
 #include <limits>
 Log_SetChannel(System);
@@ -40,14 +41,9 @@ Log_SetChannel(System);
 
 SystemBootParameters::SystemBootParameters() = default;
 
-SystemBootParameters::SystemBootParameters(std::string filename_) : filename(filename_) {}
+SystemBootParameters::SystemBootParameters(SystemBootParameters&& other) = default;
 
-SystemBootParameters::SystemBootParameters(const SystemBootParameters& copy)
-  : filename(copy.filename), override_fast_boot(copy.override_fast_boot), override_fullscreen(copy.override_fullscreen)
-{
-  // only exists for qt, we can't copy the state stream
-  Assert(!copy.state_stream);
-}
+SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std::move(filename_)) {}
 
 SystemBootParameters::~SystemBootParameters() = default;
 
@@ -102,6 +98,8 @@ static Common::Timer s_frame_timer;
 // Playlist of disc images.
 static std::vector<std::string> s_media_playlist;
 static std::string s_media_playlist_filename;
+
+static std::unique_ptr<CheatList> s_cheat_list;
 
 State GetState()
 {
@@ -553,7 +551,7 @@ bool Boot(const SystemBootParameters& params)
       // TODO: Pull region from PSF
       if (s_region == ConsoleRegion::Auto)
       {
-        Log_InfoPrintf("Defaulting to NTSC-U region for executable.");
+        Log_InfoPrintf("Defaulting to NTSC-U/C region for executable.");
         s_region = ConsoleRegion::NTSC_U;
       }
     }
@@ -754,6 +752,7 @@ void Shutdown()
   s_running_game_title.clear();
   s_media_playlist.clear();
   s_media_playlist_filename.clear();
+  s_cheat_list.reset();
   s_state = State::Shutdown;
 }
 
@@ -1106,6 +1105,9 @@ void RunFrame()
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   g_spu.GeneratePendingSamples();
+
+  if (s_cheat_list)
+    s_cheat_list->Apply();
 
   g_gpu->ResetGraphicsAPIState();
 }
@@ -1641,6 +1643,28 @@ bool SwitchMediaFromPlaylist(u32 index)
     return true;
 
   return InsertMedia(path.c_str());
+}
+
+bool HasCheatList()
+{
+  return static_cast<bool>(s_cheat_list);
+}
+
+CheatList* GetCheatList()
+{
+  return s_cheat_list.get();
+}
+
+void ApplyCheatCode(const CheatCode& code)
+{
+  Assert(!IsShutdown());
+  code.Apply();
+}
+
+void SetCheatList(std::unique_ptr<CheatList> cheats)
+{
+  Assert(!IsShutdown());
+  s_cheat_list = std::move(cheats);
 }
 
 } // namespace System

@@ -134,6 +134,13 @@ void GamePropertiesDialog::setupAdditionalUi()
   m_ui.userResolutionScale->addItem(tr("(unchanged)"));
   QtUtils::FillComboBoxWithResolutionScales(m_ui.userResolutionScale);
 
+  m_ui.userTextureFiltering->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+  {
+    m_ui.userTextureFiltering->addItem(
+      qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
+
   m_ui.userControllerType1->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
@@ -283,9 +290,19 @@ void GamePropertiesDialog::populateGameSettings()
     m_ui.userResolutionScale->setCurrentIndex(0);
   }
 
+  if (gs.gpu_texture_filter.has_value())
+  {
+    QSignalBlocker sb(m_ui.userTextureFiltering);
+    m_ui.userTextureFiltering->setCurrentIndex(static_cast<int>(gs.gpu_texture_filter.value()) + 1);
+  }
+  else
+  {
+    QSignalBlocker sb(m_ui.userResolutionScale);
+    m_ui.userTextureFiltering->setCurrentIndex(0);
+  }
+
   populateBooleanUserSetting(m_ui.userTrueColor, gs.gpu_true_color);
   populateBooleanUserSetting(m_ui.userScaledDithering, gs.gpu_scaled_dithering);
-  populateBooleanUserSetting(m_ui.userBilinearTextureFiltering, gs.gpu_bilinear_texture_filtering);
   populateBooleanUserSetting(m_ui.userForceNTSCTimings, gs.gpu_force_ntsc_timings);
   populateBooleanUserSetting(m_ui.userWidescreenHack, gs.gpu_widescreen_hack);
   populateBooleanUserSetting(m_ui.userPGXP, gs.gpu_pgxp);
@@ -360,6 +377,12 @@ void GamePropertiesDialog::connectUi()
   connect(m_ui.exportCompatibilityInfo, &QPushButton::clicked, this,
           &GamePropertiesDialog::onExportCompatibilityInfoClicked);
   connect(m_ui.close, &QPushButton::clicked, this, &QDialog::close);
+  connect(m_ui.tabWidget, &QTabWidget::currentChanged, [this](int index) {
+    const bool show_buttons = index == 0;
+    m_ui.computeHashes->setVisible(show_buttons);
+    m_ui.verifyDump->setVisible(show_buttons);
+    m_ui.exportCompatibilityInfo->setVisible(show_buttons);
+  });
 
   connect(m_ui.userAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
@@ -388,10 +411,17 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
 
+  connect(m_ui.userTextureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.gpu_texture_filter.reset();
+    else
+      m_game_settings.gpu_texture_filter = static_cast<GPUTextureFilter>(index - 1);
+    saveGameSettings();
+  });
+
   connectBooleanUserSetting(m_ui.userTrueColor, &m_game_settings.gpu_true_color);
   connectBooleanUserSetting(m_ui.userScaledDithering, &m_game_settings.gpu_scaled_dithering);
   connectBooleanUserSetting(m_ui.userForceNTSCTimings, &m_game_settings.gpu_force_ntsc_timings);
-  connectBooleanUserSetting(m_ui.userBilinearTextureFiltering, &m_game_settings.gpu_bilinear_texture_filtering);
   connectBooleanUserSetting(m_ui.userWidescreenHack, &m_game_settings.gpu_widescreen_hack);
   connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
 
@@ -426,8 +456,9 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
   connect(m_ui.userMemoryCard1SharedPathBrowse, &QPushButton::clicked, [this]() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
-                                                qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER));
+    QString path = QDir::toNativeSeparators(
+      QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
+                                   qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER)));
     if (path.isEmpty())
       return;
 
@@ -448,8 +479,9 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
   connect(m_ui.userMemoryCard2SharedPathBrowse, &QPushButton::clicked, [this]() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
-                                                qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER));
+    QString path = QDir::toNativeSeparators(
+      QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(),
+                                   qApp->translate("MemoryCardSettingsWidget", MEMORY_CARD_IMAGE_FILTER)));
     if (path.isEmpty())
       return;
 

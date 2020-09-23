@@ -146,13 +146,13 @@ static const char* GetSaveDirectory()
 
 std::string LibretroHostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
-  return StringUtil::StdStringFromFormat("%s%cduckstation_shared_card_%d.mcd", GetSaveDirectory(),
-                                         FS_OSPATH_SEPERATOR_CHARACTER, slot + 1);
+  return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "duckstation_shared_card_%d.mcd",
+                                         GetSaveDirectory(), slot + 1);
 }
 
 std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
-  return StringUtil::StdStringFromFormat("%s%c%s_%d.mcd", GetSaveDirectory(), FS_OSPATH_SEPERATOR_CHARACTER, game_code,
+  return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s_%d.mcd", GetSaveDirectory(), game_code,
                                          slot + 1);
 }
 
@@ -252,6 +252,36 @@ bool LibretroHostInterface::retro_load_game(const struct retro_game_info* game)
   bp.filename = game->path;
   bp.media_playlist_index = m_next_disc_index.value_or(0);
   bp.force_software_renderer = !m_hw_render_callback_valid;
+
+  struct retro_input_descriptor desc[] = {
+#define JOYP(port)                                                                                                     \
+  {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left"},                                           \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up"},                                             \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "D-Pad Down"},                                         \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right"},                                       \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Cross"},                                                 \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Circle"},                                                \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Triangle"},                                              \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Square"},                                                \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L1"},                                                    \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "L2"},                                                   \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "L3"},                                                   \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R1"},                                                    \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "R2"},                                                   \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "R3"},                                                   \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},                                           \
+    {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},                                             \
+    {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Left Analog X"},            \
+    {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Left Analog Y"},            \
+    {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Right Analog X"},          \
+    {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Right Analog Y"},
+
+    JOYP(0) JOYP(1) JOYP(2) JOYP(3) JOYP(4) JOYP(5) JOYP(6) JOYP(7)
+
+      {0},
+  };
+
+  g_retro_environment_callback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
   if (!BootSystem(bp))
     return false;
@@ -375,7 +405,7 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
    {{"Auto", "Auto-Detect"},
     {"NTSC-J", "NTSC-J (Japan)"},
-    {"NTSC-U", "NTSC-U (US)"},
+    {"NTSC-U", "NTSC-U/C (US, Canada)"},
     {"PAL", "PAL (Europe, Australia)"}},
    "Auto"},
   {"duckstation_BIOS.PatchFastBoot",
@@ -471,12 +501,12 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "others will break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"duckstation_GPU.TextureFiltering",
-   "Bilinear Texture Filtering",
+  {"duckstation_GPU.TextureFilter",
+   "Texture Filtering",
    "Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a "
    "greater effect on higher resolution scales. Only applies to the hardware renderers.",
-   {{"true", "Enabled"}, {"false", "Disabled"}},
-   "false"},
+   {{"Nearest", "Nearest-Neighbor"}, {"Bilinear", "Bilinear"}, {"JINC2", "JINC2"}, {"xBR", "xBR"}},
+   "Nearest"},
   {"duckstation_GPU.WidescreenHack",
    "Widescreen Hack",
    "Increases the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered "
@@ -616,17 +646,20 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
   return (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &changed) && changed);
 }
 
+std::string LibretroHostInterface::GetBIOSDirectory()
+{
+  // Assume BIOS files are located in system directory.
+  const char* system_directory = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_directory) || !system_directory)
+    return GetProgramDirectoryRelativePath("system");
+  else
+    return system_directory;
+}
+
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
   HostInterface::LoadSettings(si);
-
-  // Assume BIOS files are located in system directory.
-  const char* system_directory = nullptr;
-  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_directory) || !system_directory)
-    system_directory = "bios";
-  g_settings.bios_path =
-    StringUtil::StdStringFromFormat("%s%cscph1001.bin", system_directory, FS_OSPATH_SEPERATOR_CHARACTER);
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -801,8 +834,8 @@ void LibretroHostInterface::UpdateControllersAnalogController(u32 index)
 
   if (m_rumble_interface_valid)
   {
-    const u16 strong = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(0) * 65565.0f));
-    const u16 weak = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(1) * 65565.0f));
+    const u16 strong = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(0) * 65535.0f));
+    const u16 weak = static_cast<u16>(static_cast<u32>(controller->GetVibrationMotorStrength(1) * 65535.0f));
     m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_STRONG, strong);
     m_rumble_interface.set_rumble_state(index, RETRO_RUMBLE_WEAK, weak);
   }

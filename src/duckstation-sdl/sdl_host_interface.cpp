@@ -4,6 +4,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
@@ -724,6 +725,55 @@ void SDLHostInterface::DrawMainMenuBar()
 
     ImGui::Separator();
 
+    if (ImGui::BeginMenu("Cheats", system_enabled))
+    {
+      const bool has_cheat_file = System::HasCheatList();
+
+      if (ImGui::MenuItem("Load Cheats..."))
+      {
+        nfdchar_t* path = nullptr;
+        if (NFD_OpenDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
+          LoadCheatList(path);
+      }
+
+      if (ImGui::MenuItem("Save Cheats...", nullptr, false, has_cheat_file))
+      {
+        nfdchar_t* path = nullptr;
+        if (NFD_SaveDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
+          SaveCheatList(path);
+      }
+
+      if (ImGui::BeginMenu("Enabled Cheats", has_cheat_file))
+      {
+        CheatList* cl = System::GetCheatList();
+        for (u32 i = 0; i < cl->GetCodeCount(); i++)
+        {
+          const CheatCode& cc = cl->GetCode(i);
+          if (ImGui::MenuItem(cc.description.c_str(), nullptr, cc.enabled, true))
+            SetCheatCodeState(i, !cc.enabled, g_settings.auto_load_cheats);
+        }
+
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("Apply Cheat", has_cheat_file))
+      {
+        CheatList* cl = System::GetCheatList();
+        for (u32 i = 0; i < cl->GetCodeCount(); i++)
+        {
+          const CheatCode& cc = cl->GetCode(i);
+          if (ImGui::MenuItem(cc.description.c_str()))
+            ApplyCheatCode(i);
+        }
+
+        ImGui::EndMenu();
+      }
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::Separator();
+
     if (ImGui::MenuItem("Exit"))
       m_quit_request = true;
 
@@ -885,7 +935,23 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings_copy.gpu_true_color);
   settings_changed |= ImGui::MenuItem("Scaled Dithering", nullptr, &m_settings_copy.gpu_scaled_dithering);
-  settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings_copy.gpu_texture_filtering);
+
+  if (ImGui::BeginMenu("Texture Filtering"))
+  {
+    const GPUTextureFilter current = m_settings_copy.gpu_texture_filter;
+    for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i)), nullptr,
+                          i == static_cast<u32>(current)))
+      {
+        m_settings_copy.gpu_texture_filter = static_cast<GPUTextureFilter>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
   settings_changed |= ImGui::MenuItem("Disable Interlacing", nullptr, &m_settings_copy.gpu_disable_interlacing);
   settings_changed |= ImGui::MenuItem("Widescreen Hack", nullptr, &m_settings_copy.gpu_widescreen_hack);
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
@@ -952,7 +1018,8 @@ void SDLHostInterface::DrawDebugMenu()
 
   ImGui::Separator();
 
-  settings_changed |= ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |=
+    ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
   settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   if (settings_changed)
@@ -1115,10 +1182,6 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
-        ImGui::Text("BIOS Path:");
-        ImGui::SameLine(indent);
-        settings_changed |= DrawFileChooser("##bios_path", &m_settings_copy.bios_path);
-
         settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings_copy.bios_patch_tty_enable);
         settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings_copy.bios_patch_fast_boot);
       }
@@ -1135,6 +1198,8 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
         settings_changed |= ImGui::Checkbox("Start Fullscreen", &m_settings_copy.start_fullscreen);
         settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings_copy.save_state_on_exit);
+        settings_changed |= ImGui::Checkbox("Apply Game Settings", &m_settings_copy.apply_game_settings);
+        settings_changed |= ImGui::Checkbox("Automatically Load Cheats", &m_settings_copy.auto_load_cheats);
         settings_changed |=
           ImGui::Checkbox("Load Devices From Save States", &m_settings_copy.load_devices_from_save_states);
       }
@@ -1348,8 +1413,22 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
+        ImGui::Text("Texture Filtering:");
+        ImGui::SameLine(indent);
+        int gpu_texture_filter = static_cast<int>(m_settings_copy.gpu_texture_filter);
+        if (ImGui::Combo(
+              "##gpu_texture_filter", &gpu_texture_filter,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(GPUTextureFilter::Count)))
+        {
+          m_settings_copy.gpu_texture_filter = static_cast<GPUTextureFilter>(gpu_texture_filter);
+          settings_changed = true;
+        }
+
         settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings_copy.gpu_true_color);
-        settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings_copy.gpu_texture_filtering);
         settings_changed |= ImGui::Checkbox("Disable Interlacing", &m_settings_copy.gpu_disable_interlacing);
         settings_changed |= ImGui::Checkbox("Force NTSC Timings", &m_settings_copy.gpu_force_ntsc_timings);
         settings_changed |= ImGui::Checkbox("Widescreen Hack", &m_settings_copy.gpu_widescreen_hack);

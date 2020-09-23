@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #define ARRAY_LENGTH(x) (sizeof(x)/sizeof(x[0]))
 
 typedef uint64_t UINT64;

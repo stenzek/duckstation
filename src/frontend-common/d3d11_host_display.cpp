@@ -3,10 +3,12 @@
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "core/settings.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
 #include <array>
 #ifndef LIBRETRO
+#include "frontend-common/postprocessing_shadergen.h"
 #include <dxgi1_5.h>
 #endif
 #ifdef WITH_IMGUI
@@ -524,6 +526,12 @@ bool D3D11HostDisplay::CreateResources()
 
 void D3D11HostDisplay::DestroyResources()
 {
+#ifndef LIBRETRO
+  m_post_processing_chain.ClearStages();
+  m_post_processing_input_texture.Destroy();
+  m_post_processing_stages.clear();
+#endif
+
   m_display_uniform_buffer.Release();
   m_linear_sampler.Reset();
   m_point_sampler.Reset();
@@ -580,9 +588,7 @@ bool D3D11HostDisplay::Render()
   if (ImGui::GetCurrentContext())
     ImGui_ImplDX11_NewFrame();
 #endif
-#else
-  RenderDisplay();
-  RenderSoftwareCursor();
+
 #endif
 
   return true;
@@ -602,6 +608,17 @@ void D3D11HostDisplay::RenderDisplay()
     return;
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+
+#ifndef LIBRETRO
+  if (!m_post_processing_chain.IsEmpty())
+  {
+    ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height, m_display_texture_handle,
+                             m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height);
+    return;
+  }
+#endif
+
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                 m_display_texture_view_height, m_display_linear_filtering);
@@ -621,7 +638,7 @@ void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, v
                              static_cast<float>(texture_view_y) / static_cast<float>(texture_height),
                              (static_cast<float>(texture_view_width) - 0.5f) / static_cast<float>(texture_width),
                              (static_cast<float>(texture_view_height) - 0.5f) / static_cast<float>(texture_height)};
-  const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
+  const auto map = m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));
   m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
@@ -655,7 +672,7 @@ void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 he
   m_context->PSSetSamplers(0, 1, m_linear_sampler.GetAddressOf());
 
   const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
-  const auto map = m_display_uniform_buffer.Map(m_context.Get(), sizeof(uniforms), sizeof(uniforms));
+  const auto map = m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));
   m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
@@ -726,6 +743,162 @@ std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames(IDXGIFactory* d
   }
 
   return adapter_names;
+}
+
+bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  if (config.empty())
+  {
+    m_post_processing_input_texture.Destroy();
+    m_post_processing_stages.clear();
+    m_post_processing_chain.ClearStages();
+    return true;
+  }
+
+  if (!m_post_processing_chain.CreateFromString(config))
+    return false;
+
+  m_post_processing_stages.clear();
+
+  FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::D3D11, true);
+  u32 max_ubo_size = 0;
+
+  for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
+  {
+    const PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
+    const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
+
+    PostProcessingStage stage;
+    stage.uniforms_size = shader.GetUniformsSize();
+    stage.vertex_shader =
+      D3D11::ShaderCompiler::CompileAndCreateVertexShader(m_device.Get(), vs, g_settings.gpu_use_debug_device);
+    stage.pixel_shader =
+      D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), ps, g_settings.gpu_use_debug_device);
+    if (!stage.vertex_shader || !stage.pixel_shader)
+    {
+      Log_ErrorPrintf("Failed to compile one or more post-processing shaders, disabling.");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    max_ubo_size = std::max(max_ubo_size, stage.uniforms_size);
+    m_post_processing_stages.push_back(std::move(stage));
+  }
+
+  if (m_display_uniform_buffer.GetSize() < max_ubo_size &&
+      !m_display_uniform_buffer.Create(m_device.Get(), D3D11_BIND_CONSTANT_BUFFER, max_ubo_size))
+  {
+    Log_ErrorPrintf("Failed to allocate %u byte constant buffer for postprocessing", max_ubo_size);
+    m_post_processing_stages.clear();
+    m_post_processing_chain.ClearStages();
+    return false;
+  }
+
+  return true;
+}
+
+bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 target_height)
+{
+  DebugAssert(!m_post_processing_stages.empty());
+
+  const DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  const u32 bind_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+  if (m_post_processing_input_texture.GetWidth() != target_width ||
+      m_post_processing_input_texture.GetHeight() != target_height)
+  {
+    if (!m_post_processing_input_texture.Create(m_device.Get(), target_width, target_height, format, bind_flags))
+      return false;
+  }
+
+  const u32 target_count = (static_cast<u32>(m_post_processing_stages.size()) - 1);
+  for (u32 i = 0; i < target_count; i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
+    {
+      if (!pps.output_texture.Create(m_device.Get(), target_width, target_height, format, bind_flags))
+        return false;
+    }
+  }
+
+  return true;
+}
+
+void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_target, s32 final_left, s32 final_top,
+                                                s32 final_width, s32 final_height, void* texture_handle,
+                                                u32 texture_width, s32 texture_height, s32 texture_view_x,
+                                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height)
+{
+  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
+
+  if (!CheckPostProcessingRenderTargets(GetWindowWidth(), GetWindowHeight()))
+  {
+    RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
+                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+    return;
+  }
+
+  // downsample/upsample - use same viewport for remainder
+  m_context->ClearRenderTargetView(m_post_processing_input_texture.GetD3DRTV(), clear_color.data());
+  m_context->OMSetRenderTargets(1, m_post_processing_input_texture.GetD3DRTVArray(), nullptr);
+  RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
+                texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+
+  texture_handle = m_post_processing_input_texture.GetD3DSRV();
+  texture_width = m_post_processing_input_texture.GetWidth();
+  texture_height = m_post_processing_input_texture.GetHeight();
+  texture_view_x = final_left;
+  texture_view_y = final_top;
+  texture_view_width = final_width;
+  texture_view_height = final_height;
+
+  const u32 final_stage = static_cast<u32>(m_post_processing_stages.size()) - 1u;
+  for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (i == final_stage)
+    {
+      m_context->OMSetRenderTargets(1, &final_target, nullptr);
+    }
+    else
+    {
+      m_context->ClearRenderTargetView(pps.output_texture.GetD3DRTV(), clear_color.data());
+      m_context->OMSetRenderTargets(1, pps.output_texture.GetD3DRTVArray(), nullptr);
+    }
+
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_context->VSSetShader(pps.vertex_shader.Get(), nullptr, 0);
+    m_context->PSSetShader(pps.pixel_shader.Get(), nullptr, 0);
+    m_context->PSSetShaderResources(0, 1, reinterpret_cast<ID3D11ShaderResourceView**>(&texture_handle));
+    m_context->PSSetSamplers(0, 1, m_point_sampler.GetAddressOf());
+
+    const auto map =
+      m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), pps.uniforms_size);
+    m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
+      map.pointer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
+      texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+    m_display_uniform_buffer.Unmap(m_context.Get(), pps.uniforms_size);
+    m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
+    m_context->PSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
+
+    m_context->Draw(3, 0);
+
+    if (i != final_stage)
+      texture_handle = pps.output_texture.GetD3DSRV();
+  }
+
+  ID3D11ShaderResourceView* null_srv = nullptr;
+  m_context->PSSetShaderResources(0, 1, &null_srv);
+}
+
+#else // LIBRETRO
+
+bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  return false;
 }
 
 #endif

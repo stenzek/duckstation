@@ -29,6 +29,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
   {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
   {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
+  {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Texture Correction")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
   {"ForceDigitalController", TRANSLATABLE("GameSettingsTrait", "Force Digital Controller")},
@@ -46,11 +47,6 @@ const char* GetTraitDisplayName(Trait trait)
 {
   DebugAssert(trait < Trait::Count);
   return s_trait_names[static_cast<u32>(trait)].second;
-}
-
-bool Entry::HasAnySettings() const
-{
-  return traits.any() || display_active_start_offset >= 0 || display_active_end_offset > 0;
 }
 
 template<typename T>
@@ -116,10 +112,10 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
-      !ReadOptionalFromStream(stream, &gpu_bilinear_texture_filtering) ||
-      !ReadOptionalFromStream(stream, &gpu_widescreen_hack) || !ReadOptionalFromStream(stream, &gpu_pgxp) ||
-      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
-      !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
+      !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &controller_1_type) ||
+      !ReadOptionalFromStream(stream, &controller_2_type) || !ReadOptionalFromStream(stream, &memory_card_1_type) ||
+      !ReadOptionalFromStream(stream, &memory_card_2_type) ||
       !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
       !ReadStringFromStream(stream, &memory_card_2_shared_path))
   {
@@ -149,16 +145,15 @@ bool Entry::SaveToStream(ByteStream* stream) const
 
   return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
+         WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
-         WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, gpu_resolution_scale) &&
-         WriteOptionalToStream(stream, gpu_true_color) && WriteOptionalToStream(stream, gpu_scaled_dithering) &&
-         WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
-         WriteOptionalToStream(stream, gpu_bilinear_texture_filtering) &&
-         WriteOptionalToStream(stream, gpu_widescreen_hack) && WriteOptionalToStream(stream, gpu_pgxp) &&
-         WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
-         WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
-         WriteStringToStream(stream, memory_card_1_shared_path) &&
+         WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_true_color) &&
+         WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
+         WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
+         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, controller_1_type) &&
+         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, memory_card_1_type) &&
+         WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
          WriteStringToStream(stream, memory_card_2_shared_path);
 }
 
@@ -201,7 +196,7 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
     entry->gpu_scaled_dithering = StringUtil::FromChars<bool>(cvalue);
   cvalue = ini.GetValue(section, "GPUBilinearTextureFiltering", nullptr);
   if (cvalue)
-    entry->gpu_bilinear_texture_filtering = StringUtil::FromChars<bool>(cvalue);
+    entry->gpu_texture_filter = Settings::ParseTextureFilterName(cvalue);
   cvalue = ini.GetValue(section, "GPUForceNTSCTimings", nullptr);
   if (cvalue)
     entry->gpu_force_ntsc_timings = StringUtil::FromChars<bool>(cvalue);
@@ -265,11 +260,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "GPUTrueColor", entry.gpu_true_color.value() ? "true" : "false");
   if (entry.gpu_scaled_dithering.has_value())
     ini.SetValue(section, "GPUScaledDithering", entry.gpu_scaled_dithering.value() ? "true" : "false");
-  if (entry.gpu_bilinear_texture_filtering.has_value())
-  {
-    ini.SetValue(section, "GPUBilinearTextureFiltering",
-                 entry.gpu_bilinear_texture_filtering.value() ? "true" : "false");
-  }
+  if (entry.gpu_texture_filter.has_value())
+    ini.SetValue(section, "GPUTextureFilter", Settings::GetTextureFilterName(entry.gpu_texture_filter.value()));
   if (entry.gpu_force_ntsc_timings.has_value())
     ini.SetValue(section, "GPUForceNTSCTimings", entry.gpu_force_ntsc_timings.value() ? "true" : "false");
   if (entry.gpu_widescreen_hack.has_value())
@@ -417,8 +409,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_scaled_dithering = gpu_scaled_dithering.value();
   if (gpu_force_ntsc_timings.has_value())
     g_settings.gpu_force_ntsc_timings = gpu_force_ntsc_timings.value();
-  if (gpu_bilinear_texture_filtering)
-    g_settings.gpu_texture_filtering = gpu_bilinear_texture_filtering.value();
+  if (gpu_texture_filter.has_value())
+    g_settings.gpu_texture_filter = gpu_texture_filter.value();
   if (gpu_widescreen_hack.has_value())
     g_settings.gpu_widescreen_hack = gpu_widescreen_hack.value();
   if (gpu_pgxp.has_value())
@@ -551,6 +543,18 @@ void Entry::ApplySettings(bool display_osd_messages) const
     }
 
     g_settings.gpu_pgxp_culling = false;
+  }
+
+  if (HasTrait(Trait::DisablePGXPTextureCorrection))
+  {
+    if (display_osd_messages && g_settings.gpu_pgxp_culling && g_settings.gpu_pgxp_texture_correction)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP texture correction disabled by game settings."),
+        osd_duration);
+    }
+
+    g_settings.gpu_pgxp_texture_correction = false;
   }
 
   if (HasTrait(Trait::ForcePGXPVertexCache))

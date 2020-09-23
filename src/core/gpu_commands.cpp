@@ -44,9 +44,6 @@ void GPU::ExecuteCommands()
         {
           DebugAssert(m_blit_remaining_words > 0);
           const u32 words_to_copy = std::min(m_blit_remaining_words, m_fifo.GetSize());
-          const size_t old_size = m_blit_buffer.size();
-          // m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
-          // FifoPopRange(&m_blit_buffer[old_size], words_to_copy);
           m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
           for (u32 i = 0; i < words_to_copy; i++)
             m_blit_buffer.push_back(FifoPop());
@@ -83,9 +80,6 @@ void GPU::ExecuteCommands()
           const u32 words_to_copy = std::min(terminator_index, m_fifo.GetSize());
           if (words_to_copy > 0)
           {
-            const size_t old_size = m_blit_buffer.size();
-            // m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
-            // FifoPopRange(&m_blit_buffer[old_size], words_to_copy);
             m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
             for (u32 i = 0; i < words_to_copy; i++)
               m_blit_buffer.push_back(FifoPop());

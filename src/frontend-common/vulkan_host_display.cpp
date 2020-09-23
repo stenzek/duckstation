@@ -1,4 +1,4 @@
-#include "vulkan_host_display.h"
+﻿#include "vulkan_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scope_guard.h"
@@ -13,6 +13,9 @@
 #ifdef WITH_IMGUI
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+#endif
+#ifndef LIBRETRO
+#include "postprocessing_shadergen.h"
 #endif
 Log_SetChannel(VulkanHostDisplay);
 
@@ -115,7 +118,12 @@ void* VulkanHostDisplay::GetRenderContext() const
 
 bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
-  Assert(!m_swap_chain);
+  if (new_wi.type == WindowInfo::Type::Surfaceless)
+  {
+    g_vulkan_context->ExecuteCommandBuffer(true);
+    m_swap_chain.reset();
+    return true;
+  }
 
   WindowInfo wi_copy(new_wi);
   VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), wi_copy);
@@ -343,6 +351,34 @@ void main()
   if (m_pipeline_layout == VK_NULL_HANDLE)
     return false;
 
+#ifndef LIBRETRO
+
+  dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  m_post_process_descriptor_set_layout = dslbuilder.Create(device);
+  if (m_post_process_descriptor_set_layout == VK_NULL_HANDLE)
+    return false;
+
+  plbuilder.AddDescriptorSet(m_post_process_descriptor_set_layout);
+  plbuilder.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                             PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD);
+  m_post_process_pipeline_layout = plbuilder.Create(device);
+  if (m_post_process_pipeline_layout == VK_NULL_HANDLE)
+    return false;
+
+  dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+  dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  m_post_process_ubo_descriptor_set_layout = dslbuilder.Create(device);
+  if (m_post_process_ubo_descriptor_set_layout == VK_NULL_HANDLE)
+    return false;
+
+  plbuilder.AddDescriptorSet(m_post_process_ubo_descriptor_set_layout);
+  m_post_process_ubo_pipeline_layout = plbuilder.Create(device);
+  if (m_post_process_ubo_pipeline_layout == VK_NULL_HANDLE)
+    return false;
+
+#endif
+
   VkShaderModule vertex_shader = g_vulkan_shader_cache->GetVertexShader(fullscreen_quad_vertex_shader);
   if (vertex_shader == VK_NULL_HANDLE)
     return false;
@@ -395,6 +431,18 @@ void main()
 
 void VulkanHostDisplay::DestroyResources()
 {
+#ifndef LIBRETRO
+  Vulkan::Util::SafeDestroyPipelineLayout(m_post_process_pipeline_layout);
+  Vulkan::Util::SafeDestroyPipelineLayout(m_post_process_ubo_pipeline_layout);
+  Vulkan::Util::SafeDestroyDescriptorSetLayout(m_post_process_descriptor_set_layout);
+  Vulkan::Util::SafeDestroyDescriptorSetLayout(m_post_process_ubo_descriptor_set_layout);
+  m_post_processing_input_texture.Destroy(false);
+  Vulkan::Util::SafeDestroyFramebuffer(m_post_processing_input_framebuffer);
+  m_post_processing_stages.clear();
+  m_post_processing_ubo.Destroy(true);
+  m_post_processing_chain.ClearStages();
+#endif
+
   m_readback_staging_texture.Destroy(false);
   m_upload_staging_texture.Destroy(false);
 
@@ -455,7 +503,6 @@ bool VulkanHostDisplay::CreateImGuiContext()
   vii.QueueFamily = g_vulkan_context->GetGraphicsQueueFamilyIndex();
   vii.Queue = g_vulkan_context->GetGraphicsQueue();
   vii.PipelineCache = g_vulkan_shader_cache->GetPipelineCache();
-  vii.DescriptorPool = g_vulkan_context->GetGlobalDescriptorPool();
   vii.MinImageCount = m_swap_chain->GetImageCount();
   vii.ImageCount = m_swap_chain->GetImageCount();
   vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -466,7 +513,7 @@ bool VulkanHostDisplay::CreateImGuiContext()
     return false;
   }
 
-  ImGui_ImplVulkan_NewFrame(g_vulkan_context->GetCurrentDescriptorPool());
+  ImGui_ImplVulkan_NewFrame();
 #endif
 
   return true;
@@ -501,17 +548,6 @@ bool VulkanHostDisplay::Render()
   swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
   swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  const VkClearValue clear_value = {};
-
-  const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                                    nullptr,
-                                    m_swap_chain->GetClearRenderPass(),
-                                    m_swap_chain->GetCurrentFramebuffer(),
-                                    {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
-                                    1u,
-                                    &clear_value};
-  vkCmdBeginRenderPass(cmdbuffer, &rp, VK_SUBPASS_CONTENTS_INLINE);
-
   RenderDisplay();
 
 #ifdef WITH_IMGUI
@@ -532,18 +568,46 @@ bool VulkanHostDisplay::Render()
 
 #ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
-    ImGui_ImplVulkan_NewFrame(g_vulkan_context->GetCurrentDescriptorPool());
+    ImGui_ImplVulkan_NewFrame();
 #endif
 
   return true;
 }
 
+void VulkanHostDisplay::BeginSwapChainRenderPass(VkFramebuffer framebuffer)
+{
+  const VkClearValue clear_value = {};
+  const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                                    nullptr,
+                                    m_swap_chain->GetClearRenderPass(),
+                                    framebuffer,
+                                    {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
+                                    1u,
+                                    &clear_value};
+  vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
+}
+
 void VulkanHostDisplay::RenderDisplay()
 {
   if (!HasDisplayTexture())
+  {
+    BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
     return;
+  }
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+
+#ifndef LIBRETRO
+  if (!m_post_processing_chain.IsEmpty())
+  {
+    ApplyPostProcessingChain(left, top, width, height, m_display_texture_handle, m_display_texture_width,
+                             m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                             m_display_texture_view_width, m_display_texture_view_height);
+    return;
+  }
+#endif
+
+  BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                 m_display_texture_view_height, m_display_linear_filtering);
@@ -646,5 +710,274 @@ std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
 
   return {};
 }
+
+#ifndef LIBRETRO
+
+VulkanHostDisplay::PostProcessingStage::PostProcessingStage(PostProcessingStage&& move)
+  : output_texture(std::move(move.output_texture)), output_framebuffer(move.output_framebuffer),
+    pipeline(move.pipeline), uniforms_size(move.uniforms_size)
+{
+  move.output_framebuffer = VK_NULL_HANDLE;
+  move.pipeline = VK_NULL_HANDLE;
+  move.uniforms_size = 0;
+}
+
+VulkanHostDisplay::PostProcessingStage::~PostProcessingStage()
+{
+  if (output_framebuffer != VK_NULL_HANDLE)
+    g_vulkan_context->DeferFramebufferDestruction(output_framebuffer);
+
+  output_texture.Destroy(true);
+  if (pipeline != VK_NULL_HANDLE)
+    g_vulkan_context->DeferPipelineDestruction(pipeline);
+}
+
+bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  if (config.empty())
+  {
+    m_post_processing_stages.clear();
+    m_post_processing_chain.ClearStages();
+    return true;
+  }
+
+  if (!m_post_processing_chain.CreateFromString(config))
+    return false;
+
+  m_post_processing_stages.clear();
+
+  FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::Vulkan, false);
+  bool only_use_push_constants = true;
+
+  for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
+  {
+    const PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
+    const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
+    const bool use_push_constants = shader.UsePushConstants();
+    only_use_push_constants &= use_push_constants;
+
+    PostProcessingStage stage;
+    stage.uniforms_size = shader.GetUniformsSize();
+
+    VkShaderModule vs_mod = g_vulkan_shader_cache->GetVertexShader(vs);
+    VkShaderModule fs_mod = g_vulkan_shader_cache->GetFragmentShader(ps);
+    if (vs_mod == VK_NULL_HANDLE || fs_mod == VK_NULL_HANDLE)
+    {
+      Log_ErrorPrintf("Failed to compile one or more post-processing shaders, disabling.");
+
+      if (vs_mod != VK_NULL_HANDLE)
+        vkDestroyShaderModule(g_vulkan_context->GetDevice(), vs_mod, nullptr);
+      if (fs_mod != VK_NULL_HANDLE)
+        vkDestroyShaderModule(g_vulkan_context->GetDevice(), vs_mod, nullptr);
+
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    Vulkan::GraphicsPipelineBuilder gpbuilder;
+    gpbuilder.SetVertexShader(vs_mod);
+    gpbuilder.SetFragmentShader(fs_mod);
+    gpbuilder.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    gpbuilder.SetNoCullRasterizationState();
+    gpbuilder.SetNoDepthTestState();
+    gpbuilder.SetNoBlendingState();
+    gpbuilder.SetDynamicViewportAndScissorState();
+    gpbuilder.SetPipelineLayout(use_push_constants ? m_post_process_pipeline_layout :
+                                                     m_post_process_ubo_pipeline_layout);
+    gpbuilder.SetRenderPass(GetRenderPassForDisplay(), 0);
+
+    stage.pipeline = gpbuilder.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache());
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), vs_mod, nullptr);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs_mod, nullptr);
+    if (!stage.pipeline)
+    {
+      Log_ErrorPrintf("Failed to compile one or more post-processing pipelines, disabling.");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    m_post_processing_stages.push_back(std::move(stage));
+  }
+
+  constexpr u32 UBO_SIZE = 1 * 1024 * 1024;
+  if (!only_use_push_constants && m_post_processing_ubo.GetCurrentSize() < UBO_SIZE &&
+      !m_post_processing_ubo.Create(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, UBO_SIZE))
+  {
+    Log_ErrorPrintf("Failed to allocate %u byte uniform buffer for postprocessing", UBO_SIZE);
+    m_post_processing_stages.clear();
+    m_post_processing_chain.ClearStages();
+    return false;
+  }
+
+  return true;
+}
+
+bool VulkanHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 target_height)
+{
+  DebugAssert(!m_post_processing_stages.empty());
+
+  if (m_post_processing_input_texture.GetWidth() != target_width ||
+      m_post_processing_input_texture.GetHeight() != target_height)
+  {
+    if (m_post_processing_input_framebuffer != VK_NULL_HANDLE)
+    {
+      g_vulkan_context->DeferFramebufferDestruction(m_post_processing_input_framebuffer);
+      m_post_processing_input_framebuffer = VK_NULL_HANDLE;
+    }
+
+    if (!m_post_processing_input_texture.Create(target_width, target_height, 1, 1, m_swap_chain->GetTextureFormat(),
+                                                VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT) ||
+        (m_post_processing_input_framebuffer =
+           m_post_processing_input_texture.CreateFramebuffer(GetRenderPassForDisplay())) == VK_NULL_HANDLE)
+    {
+      return false;
+    }
+  }
+
+  const u32 target_count = (static_cast<u32>(m_post_processing_stages.size()) - 1);
+  for (u32 i = 0; i < target_count; i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
+    {
+      if (pps.output_framebuffer != VK_NULL_HANDLE)
+      {
+        g_vulkan_context->DeferFramebufferDestruction(pps.output_framebuffer);
+        pps.output_framebuffer = VK_NULL_HANDLE;
+      }
+
+      if (!pps.output_texture.Create(target_width, target_height, 1, 1, m_swap_chain->GetTextureFormat(),
+                                     VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT) ||
+          (pps.output_framebuffer = pps.output_texture.CreateFramebuffer(GetRenderPassForDisplay())) == VK_NULL_HANDLE)
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, s32 final_width, s32 final_height,
+                                                 void* texture_handle, u32 texture_width, s32 texture_height,
+                                                 s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                                                 s32 texture_view_height)
+{
+  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
+
+  if (!CheckPostProcessingRenderTargets(m_swap_chain->GetWidth(), m_swap_chain->GetHeight()))
+  {
+    BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
+    RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
+                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+    return;
+  }
+
+  // downsample/upsample - use same viewport for remainder
+  VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+  m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  BeginSwapChainRenderPass(m_post_processing_input_framebuffer);
+  RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
+                texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+  vkCmdEndRenderPass(cmdbuffer);
+  m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+  texture_handle = &m_post_processing_input_texture;
+  texture_width = m_post_processing_input_texture.GetWidth();
+  texture_height = m_post_processing_input_texture.GetHeight();
+  texture_view_x = final_left;
+  texture_view_y = final_top;
+  texture_view_width = final_width;
+  texture_view_height = final_height;
+
+  const u32 final_stage = static_cast<u32>(m_post_processing_stages.size()) - 1u;
+  for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (i != final_stage)
+    {
+      pps.output_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+      BeginSwapChainRenderPass(pps.output_framebuffer);
+    }
+    else
+    {
+      BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
+    }
+
+    const bool use_push_constants = m_post_processing_chain.GetShaderStage(i).UsePushConstants();
+    VkDescriptorSet ds = g_vulkan_context->AllocateDescriptorSet(
+      use_push_constants ? m_post_process_descriptor_set_layout : m_post_process_ubo_descriptor_set_layout);
+    if (ds == VK_NULL_HANDLE)
+    {
+      Log_ErrorPrintf("Skipping rendering display because of no descriptor set");
+      return;
+    }
+
+    const Vulkan::Texture* vktex = static_cast<Vulkan::Texture*>(texture_handle);
+    Vulkan::DescriptorSetUpdateBuilder dsupdate;
+    dsupdate.AddCombinedImageSamplerDescriptorWrite(ds, 1, vktex->GetView(), m_point_sampler, vktex->GetLayout());
+
+    if (use_push_constants)
+    {
+      u8 buffer[PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD];
+      Assert(pps.uniforms_size <= sizeof(buffer));
+      m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
+        buffer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
+        texture_width, texture_width, 0.0f);
+
+      vkCmdPushConstants(cmdbuffer, m_post_process_pipeline_layout,
+                         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pps.uniforms_size, buffer);
+
+      dsupdate.Update(g_vulkan_context->GetDevice());
+      vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_post_process_pipeline_layout, 0, 1, &ds, 0,
+                              nullptr);
+    }
+    else
+    {
+      if (!m_post_processing_ubo.ReserveMemory(pps.uniforms_size,
+                                               static_cast<u32>(g_vulkan_context->GetUniformBufferAlignment())))
+      {
+        Panic("Failed to reserve space in post-processing UBO");
+      }
+
+      const u32 offset = m_post_processing_ubo.GetCurrentOffset();
+      m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
+        m_post_processing_ubo.GetCurrentHostPointer(), texture_width, texture_height, texture_view_x, texture_view_y,
+        texture_view_width, texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+      m_post_processing_ubo.CommitMemory(pps.uniforms_size);
+
+      dsupdate.AddBufferDescriptorWrite(ds, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, m_post_processing_ubo.GetBuffer(),
+                                        offset, pps.uniforms_size);
+      dsupdate.Update(g_vulkan_context->GetDevice());
+      vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_post_process_ubo_pipeline_layout, 0, 1, &ds,
+                              0, nullptr);
+    }
+
+    vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pps.pipeline);
+
+    vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
+
+    if (i != final_stage)
+    {
+      vkCmdEndRenderPass(cmdbuffer);
+      pps.output_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+      texture_handle = &pps.output_texture;
+    }
+  }
+}
+
+#else // LIBRETRO
+
+bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
+{
+  return false;
+}
+
+#endif
 
 } // namespace FrontendCommon

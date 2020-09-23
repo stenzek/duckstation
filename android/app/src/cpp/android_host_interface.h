@@ -4,6 +4,7 @@
 #include "frontend-common/common_host_interface.h"
 #include <array>
 #include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <jni.h>
 #include <memory>
@@ -35,9 +36,11 @@ public:
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
+  bool IsEmulationThreadPaused() const;
   bool StartEmulationThread(jobject emulation_activity, ANativeWindow* initial_surface,
                             SystemBootParameters boot_params, bool resume_state);
   void RunOnEmulationThread(std::function<void()> function, bool blocking = false);
+  void PauseEmulationThread(bool paused);
   void StopEmulationThread();
 
   void SurfaceChanged(ANativeWindow* surface, int format, int width, int height);
@@ -63,6 +66,7 @@ protected:
 private:
   void EmulationThreadEntryPoint(jobject emulation_activity, ANativeWindow* initial_surface,
                                  SystemBootParameters boot_params, bool resume_state);
+  void EmulationThreadLoop();
 
   void CreateImGuiContext();
   void DestroyImGuiContext();
@@ -74,7 +78,8 @@ private:
 
   ANativeWindow* m_surface = nullptr;
 
-  std::mutex m_callback_mutex;
+  std::mutex m_mutex;
+  std::condition_variable m_sleep_cv;
   std::deque<std::function<void()>> m_callback_queue;
 
   std::thread m_emulation_thread;

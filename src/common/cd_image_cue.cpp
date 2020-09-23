@@ -129,10 +129,15 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       track_length = file_size - track_start;
     }
 
-    // two seconds pregap for track 1 is assumed if not specified
+    // Two seconds pregap for track 1 is assumed if not specified.
+    // Some people have broken (older) dumps where a two second pregap was implicit but not specified in the cuesheet.
+    // The problem is we can't tell between a missing implicit two second pregap and a zero second pregap. Most of these
+    // seem to be a single bin file for all tracks. So if this is the case, we add the two seconds in if it's not
+    // specified.
     long pregap_frames = track_get_zero_pre(track);
-    bool pregap_in_file = pregap_frames > 0 && track_start >= pregap_frames;
-    if (track_num == 1 && pregap_frames < 0)
+    const bool pregap_in_file = pregap_frames > 0 && track_start >= pregap_frames;
+    const bool is_multi_track_bin = (track_num > 1 && track_file_index == m_indices[0].file_index);
+    if ((track_num == 1 || is_multi_track_bin) && pregap_frames < 0)
       pregap_frames = 2 * FRAMES_PER_SECOND;
 
     // create the index for the pregap

@@ -121,7 +121,7 @@
 
   <!--Copy the needed dlls-->
   <ItemGroup>
-    <QtLibNames Include="Qt5Core$(QtLibSuffix);Qt5Gui$(QtLibSuffix);Qt5Widgets$(QtLibSuffix);Qt5Network$(QtLibSuffix)" />
+    <QtLibNames Include="Qt5Core$(QtLibSuffix);Qt5Gui$(QtLibSuffix);Qt5Widgets$(QtLibSuffix);Qt5Network$(QtLibSuffix);Qt5Svg$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
     <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />

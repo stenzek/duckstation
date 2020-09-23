@@ -35,6 +35,11 @@ if(LINUX OR ANDROID)
   option(USE_EGL "Support EGL OpenGL context creation" ON)
 endif()
 
+# Force EGL when using Wayland
+if(USE_WAYLAND)
+  set(USE_EGL ON)
+endif()
+
 # When we're building for libretro, everything else is invalid because of PIC.
 if(ANDROID OR BUILD_LIBRETRO_CORE)
   if(BUILD_SDL_FRONTEND)
@@ -55,6 +60,9 @@ if(ANDROID OR BUILD_LIBRETRO_CORE)
   endif()
   if(USE_X11)
     set(USE_X11 OFF)
+  endif()
+  if(USE_WAYLAND)
+    set(USE_WAYLAND OFF)
   endif()
   if(BUILD_LIBRETRO_CORE AND USE_EGL)
     set(USE_EGL OFF)

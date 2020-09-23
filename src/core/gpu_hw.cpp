@@ -26,7 +26,7 @@ ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
 ALWAYS_INLINE static bool ShouldUseUVLimits()
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
-  return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filtering;
+  return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filter != GPUTextureFilter::Nearest;
 }
 
 GPU_HW::GPU_HW() : GPU()
@@ -50,7 +50,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   m_render_api = host_display->GetRenderAPI();
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
-  m_texture_filtering = g_settings.gpu_texture_filtering;
+  m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
   PrintSettingsToLog();
   return true;
@@ -96,7 +96,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   *framebuffer_changed = (m_resolution_scale != resolution_scale);
   *shaders_changed = (m_resolution_scale != resolution_scale || m_true_color != g_settings.gpu_true_color ||
                       m_scaled_dithering != g_settings.gpu_scaled_dithering ||
-                      m_texture_filtering != g_settings.gpu_texture_filtering || m_using_uv_limits != use_uv_limits);
+                      m_texture_filtering != g_settings.gpu_texture_filter || m_using_uv_limits != use_uv_limits);
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -109,7 +109,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   m_resolution_scale = resolution_scale;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
-  m_texture_filtering = g_settings.gpu_texture_filtering;
+  m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = use_uv_limits;
   PrintSettingsToLog();
 }
@@ -148,7 +148,7 @@ void GPU_HW::PrintSettingsToLog()
                  VRAM_HEIGHT * m_resolution_scale, m_max_resolution_scale);
   Log_InfoPrintf("Dithering: %s%s", m_true_color ? "Disabled" : "Enabled",
                  (!m_true_color && m_scaled_dithering) ? " (Scaled)" : "");
-  Log_InfoPrintf("Texture Filtering: %s", m_texture_filtering ? "Enabled" : "Disabled");
+  Log_InfoPrintf("Texture Filtering: %s", Settings::GetTextureFilterDisplayName(m_texture_filtering));
   Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
   Log_InfoPrintf("Using UV limits: %s", m_using_uv_limits ? "YES" : "NO");
 }
@@ -1036,8 +1036,8 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
 
     ImGui::TextUnformatted("Texture Filtering:");
     ImGui::NextColumn();
-    ImGui::TextColored(m_texture_filtering ? active_color : inactive_color,
-                       m_texture_filtering ? "Enabled" : "Disabled");
+    ImGui::TextColored((m_texture_filtering != GPUTextureFilter::Nearest) ? active_color : inactive_color, "%s",
+                       Settings::GetTextureFilterDisplayName(m_texture_filtering));
     ImGui::NextColumn();
 
     ImGui::TextUnformatted("PGXP:");

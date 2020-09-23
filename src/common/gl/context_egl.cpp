@@ -89,19 +89,24 @@ bool ContextEGL::ChangeSurface(const WindowInfo& new_wi)
 
 void ContextEGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
 {
+  // This seems to race on Android...
+#ifndef ANDROID
   EGLint surface_width, surface_height;
   if (eglQuerySurface(m_display, m_surface, EGL_WIDTH, &surface_width) &&
       eglQuerySurface(m_display, m_surface, EGL_HEIGHT, &surface_height))
   {
     m_wi.surface_width = static_cast<u32>(surface_width);
     m_wi.surface_height = static_cast<u32>(surface_height);
+    return;
   }
   else
   {
     Log_ErrorPrintf("eglQuerySurface() failed: %d", eglGetError());
-    m_wi.surface_width = new_surface_width;
-    m_wi.surface_height = new_surface_height;
   }
+#endif
+
+  m_wi.surface_width = new_surface_width;
+  m_wi.surface_height = new_surface_height;
 }
 
 bool ContextEGL::SwapBuffers()

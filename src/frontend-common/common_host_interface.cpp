@@ -7,6 +7,7 @@
 #include "common/string_util.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
+#include "core/cheats.h"
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
 #include "core/gpu.h"
@@ -87,17 +88,9 @@ void CommonHostInterface::Shutdown()
 {
   HostInterface::Shutdown();
 
-  // this has gpu objects so it has to come first
-  m_save_state_selector_ui.reset();
-
 #ifdef WITH_DISCORD_PRESENCE
   ShutdownDiscordPresence();
 #endif
-
-  System::Shutdown();
-  m_audio_stream.reset();
-  if (m_display)
-    ReleaseHostDisplay();
 
   if (m_controller_interface)
   {
@@ -124,11 +117,14 @@ void CommonHostInterface::InitializeUserDirectory()
 
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("bios").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cheats").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("covers").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("inputprofiles").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("shaders").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
 
   if (!result)
@@ -177,6 +173,8 @@ void CommonHostInterface::PauseSystem(bool paused)
 void CommonHostInterface::DestroySystem()
 {
   SetTimerResolutionIncreased(false);
+  m_save_state_selector_ui->Close();
+  m_display->SetPostProcessingChain({});
 
   HostInterface::DestroySystem();
 }
@@ -379,8 +377,15 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
           state_filename = GetGameSaveStateFileName(game_code.c_str(), *state_index);
           if (state_filename.empty() || !FileSystem::FileExists(state_filename.c_str()))
           {
-            Log_ErrorPrintf("Could not find file for game '%s' save state %d", game_code.c_str(), *state_index);
-            return false;
+            if (state_index >= 0) // Do not exit if -resume is specified, but resume save state does not exist
+            {
+              Log_ErrorPrintf("Could not find file for game '%s' save state %d", game_code.c_str(), *state_index);
+              return false;
+            }
+            else
+            {
+              state_filename.clear();
+            }
           }
         }
       }
@@ -633,12 +638,12 @@ void CommonHostInterface::SetUserDirectory()
 
   std::fprintf(stdout, "Program directory \"%s\"\n", m_program_directory.c_str());
 
-  if (FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
-                                                             FS_OSPATH_SEPERATOR_CHARACTER, "portable.txt")
-                               .c_str()) ||
-      FileSystem::FileExists(StringUtil::StdStringFromFormat("%s%c%s", m_program_directory.c_str(),
-                                                             FS_OSPATH_SEPERATOR_CHARACTER, "settings.ini")
-                               .c_str()))
+  if (FileSystem::FileExists(
+        StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(), "portable.txt")
+          .c_str()) ||
+      FileSystem::FileExists(
+        StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(), "settings.ini")
+          .c_str()))
   {
     std::fprintf(stdout, "portable.txt or old settings.ini found, using program directory as user directory.\n");
     m_user_directory = m_program_directory;
@@ -653,8 +658,8 @@ void CommonHostInterface::SetUserDirectory()
       const std::string documents_directory_str(StringUtil::WideStringToUTF8String(documents_directory));
       if (!documents_directory_str.empty())
       {
-        m_user_directory = StringUtil::StdStringFromFormat("%s%c%s", documents_directory_str.c_str(),
-                                                           FS_OSPATH_SEPERATOR_CHARACTER, "DuckStation");
+        m_user_directory = StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s",
+                                                           documents_directory_str.c_str(), "DuckStation");
       }
       CoTaskMemFree(documents_directory);
     }
@@ -689,6 +694,9 @@ void CommonHostInterface::SetUserDirectory()
 void CommonHostInterface::OnSystemCreated()
 {
   HostInterface::OnSystemCreated();
+
+  if (g_settings.display_post_processing && !m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
 }
 
 void CommonHostInterface::OnSystemPaused(bool paused)
@@ -716,6 +724,13 @@ void CommonHostInterface::OnSystemDestroyed()
 void CommonHostInterface::OnRunningGameChanged()
 {
   HostInterface::OnRunningGameChanged();
+
+  if (!System::IsShutdown())
+  {
+    System::SetCheatList(nullptr);
+    if (g_settings.auto_load_cheats)
+      LoadCheatListFromGameTitle();
+  }
 
 #ifdef WITH_DISCORD_PRESENCE
   UpdateDiscordPresence();
@@ -1046,7 +1061,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         if (!SplitBinding(binding, &device, &button))
           continue;
 
-        AddButtonToInputMap(binding, device, button, [this, controller_index, button_code](bool pressed) {
+        AddButtonToInputMap(binding, device, button, [controller_index, button_code](bool pressed) {
           if (System::IsShutdown())
             return;
 
@@ -1072,7 +1087,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
         if (!SplitBinding(binding, &device, &axis))
           continue;
 
-        AddAxisToInputMap(binding, device, axis, axis_type, [this, controller_index, axis_code](float value) {
+        AddAxisToInputMap(binding, device, axis, axis_type, [controller_index, axis_code](float value) {
           if (System::IsShutdown())
             return;
 
@@ -1431,6 +1446,18 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    if (!pressed)
                      ModifyResolutionScale(-1);
                  });
+
+  RegisterHotkey(StaticString("Graphics"), StaticString("TogglePostProcessing"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Post-Processing")), [this](bool pressed) {
+                   if (!pressed)
+                     TogglePostProcessing();
+                 });
+
+  RegisterHotkey(StaticString("Graphics"), StaticString("ReloadPostProcessingShaders"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Reload Post Processing Shaders")), [this](bool pressed) {
+                   if (!pressed)
+                     ReloadPostProcessingShaders();
+                 });
 }
 
 void CommonHostInterface::RegisterSaveStateHotkeys()
@@ -1568,7 +1595,7 @@ void CommonHostInterface::FindInputProfiles(const std::string& base_path, InputP
     }
 
     std::string filename(
-      StringUtil::StdStringFromFormat("%s%c%s", base_path.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, it.FileName.c_str()));
+      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", base_path.c_str(), it.FileName.c_str()));
     out_list->push_back(InputProfileEntry{std::move(name), std::move(filename)});
   }
 }
@@ -1729,17 +1756,17 @@ std::string CommonHostInterface::GetSettingsFileName() const
 std::string CommonHostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot) const
 {
   if (slot < 0)
-    return GetUserDirectoryRelativePath("savestates/%s_resume.sav", game_code);
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "%s_resume.sav", game_code);
   else
-    return GetUserDirectoryRelativePath("savestates/%s_%d.sav", game_code, slot);
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "%s_%d.sav", game_code, slot);
 }
 
 std::string CommonHostInterface::GetGlobalSaveStateFileName(s32 slot) const
 {
   if (slot < 0)
-    return GetUserDirectoryRelativePath("savestates/resume.sav");
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "resume.sav");
   else
-    return GetUserDirectoryRelativePath("savestates/savestate_%d.sav", slot);
+    return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "savestate_%d.sav", slot);
 }
 
 std::vector<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetAvailableSaveStates(const char* game_code) const
@@ -1953,6 +1980,20 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
     {
       UpdateSpeedLimiterState();
     }
+
+    if (g_settings.display_post_processing != old_settings.display_post_processing ||
+        g_settings.display_post_process_chain != old_settings.display_post_process_chain)
+    {
+      if (g_settings.display_post_processing)
+      {
+        if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+          AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+      }
+      else
+      {
+        m_display->SetPostProcessingChain({});
+      }
+    }
   }
 
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
@@ -2113,12 +2154,12 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     const char* extension = "png";
     if (code.empty())
     {
-      auto_filename =
-        GetUserDirectoryRelativePath("screenshots/%s.%s", GetTimestampStringForFileName().GetCharArray(), extension);
+      auto_filename = GetUserDirectoryRelativePath("screenshots" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                                                   GetTimestampStringForFileName().GetCharArray(), extension);
     }
     else
     {
-      auto_filename = GetUserDirectoryRelativePath("screenshots/%s_%s.%s", code.c_str(),
+      auto_filename = GetUserDirectoryRelativePath("screenshots" FS_OSPATH_SEPARATOR_STR "%s_%s.%s", code.c_str(),
                                                    GetTimestampStringForFileName().GetCharArray(), extension);
     }
 
@@ -2145,6 +2186,142 @@ void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
   if (gs)
     gs->ApplySettings(display_osd_messages);
+}
+
+std::string CommonHostInterface::GetCheatFileName() const
+{
+  const std::string& title = System::GetRunningTitle();
+  if (title.empty())
+    return {};
+
+  return GetUserDirectoryRelativePath("cheats/%s.cht", title.c_str());
+}
+
+bool CommonHostInterface::LoadCheatList(const char* filename)
+{
+  if (System::IsShutdown())
+    return false;
+
+  std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
+  if (!cl->LoadFromPCSXRFile(filename))
+  {
+    AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to load cheats from '%s'."), filename);
+    return false;
+  }
+
+  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from list. %u cheats are enabled."),
+                         cl->GetCodeCount(), cl->GetEnabledCodeCount());
+  System::SetCheatList(std::move(cl));
+  return true;
+}
+
+bool CommonHostInterface::LoadCheatListFromGameTitle()
+{
+  const std::string filename(GetCheatFileName());
+  if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
+    return false;
+
+  return LoadCheatList(filename.c_str());
+}
+
+bool CommonHostInterface::SaveCheatList(const char* filename)
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return false;
+
+  if (!System::GetCheatList()->SaveToPCSXRFile(filename))
+    return false;
+
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Saved %u cheats to '%s'."),
+                         System::GetCheatList()->GetCodeCount(), filename);
+  return true;
+}
+
+void CommonHostInterface::SetCheatCodeState(u32 index, bool enabled, bool save_to_file)
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return;
+
+  CheatList* cl = System::GetCheatList();
+  if (index >= cl->GetCodeCount())
+    return;
+
+  CheatCode& cc = cl->GetCode(index);
+  if (cc.enabled == enabled)
+    return;
+
+  cc.enabled = enabled;
+
+  if (enabled)
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' enabled."), cc.description.c_str());
+  }
+  else
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' disabled."), cc.description.c_str());
+  }
+
+  if (save_to_file)
+  {
+    const std::string filename(GetCheatFileName());
+    if (!filename.empty())
+    {
+      if (!cl->SaveToPCSXRFile(filename.c_str()))
+      {
+        AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to save cheat list to '%s'"),
+                               filename.c_str());
+      }
+    }
+  }
+}
+
+void CommonHostInterface::ApplyCheatCode(u32 index)
+{
+  if (!System::HasCheatList() || index >= System::GetCheatList()->GetCodeCount())
+    return;
+
+  const CheatCode& cc = System::GetCheatList()->GetCode(index);
+  if (!cc.enabled)
+  {
+    cc.Apply();
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Applied cheat '%s'."), cc.description.c_str());
+  }
+  else
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Cheat '%s' is already enabled."),
+                           cc.description.c_str());
+  }
+}
+
+void CommonHostInterface::TogglePostProcessing()
+{
+  if (!m_display)
+    return;
+
+  g_settings.display_post_processing = !g_settings.display_post_processing;
+  if (g_settings.display_post_processing)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing is now enabled."), 10.0f);
+
+    if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+      AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+  }
+  else
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing is now disabled."), 10.0f);
+    m_display->SetPostProcessingChain({});
+  }
+}
+
+void CommonHostInterface::ReloadPostProcessingShaders()
+{
+  if (!m_display || !g_settings.display_post_processing)
+    return;
+
+  if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
+  else
+    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
 }
 
 #ifdef WITH_DISCORD_PRESENCE
@@ -2195,7 +2372,7 @@ void CommonHostInterface::UpdateDiscordPresence()
   rp.startTimestamp = std::time(nullptr);
 
   SmallString details_string;
-  if (System::IsValid())
+  if (!System::IsShutdown())
   {
     details_string.AppendFormattedString("%s (%s)", System::GetRunningTitle().c_str(),
                                          System::GetRunningCode().c_str());

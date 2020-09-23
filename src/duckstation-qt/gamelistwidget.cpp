@@ -7,6 +7,7 @@
 #include "qtutils.h"
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QPixmap>
+#include <QtGui/QWheelEvent>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 
@@ -42,11 +43,14 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
 
   connect(m_host_interface, &QtHostInterface::gameListRefreshed, this, &GameListWidget::onGameListRefreshed);
 
-  m_table_model = new GameListModel(m_game_list, this);
-  m_table_sort_model = new GameListSortModel(m_table_model);
-  m_table_sort_model->setSourceModel(m_table_model);
+  m_model = new GameListModel(m_game_list, this);
+  m_model->setCoverScale(host_interface->GetFloatSettingValue("UI", "GameListCoverArtScale", 0.45f));
+  m_model->setShowCoverTitles(host_interface->GetBoolSettingValue("UI", "GameListShowCoverTitles", true));
+
+  m_sort_model = new GameListSortModel(m_model);
+  m_sort_model->setSourceModel(m_model);
   m_table_view = new QTableView(this);
-  m_table_view->setModel(m_table_sort_model);
+  m_table_view->setModel(m_sort_model);
   m_table_view->setSortingEnabled(true);
   m_table_view->setSelectionMode(QAbstractItemView::SingleSelection);
   m_table_view->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -73,19 +77,59 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
           &GameListWidget::onTableViewHeaderSortIndicatorChanged);
 
   insertWidget(0, m_table_view);
-  setCurrentIndex(0);
+
+  m_list_view = new GameListGridListView(this);
+  m_list_view->setModel(m_sort_model);
+  m_list_view->setModelColumn(GameListModel::Column_Cover);
+  m_list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  m_list_view->setViewMode(QListView::IconMode);
+  m_list_view->setResizeMode(QListView::Adjust);
+  m_list_view->setUniformItemSizes(true);
+  m_list_view->setContextMenuPolicy(Qt::CustomContextMenu);
+  m_list_view->setFrameStyle(QFrame::NoFrame);
+  m_list_view->setSpacing(m_model->getCoverArtSpacing());
+  updateListFont();
+
+  connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
+          &GameListWidget::onSelectionModelCurrentChanged);
+  connect(m_list_view, &GameListGridListView::zoomIn, this, &GameListWidget::gridZoomIn);
+  connect(m_list_view, &GameListGridListView::zoomOut, this, &GameListWidget::gridZoomOut);
+  connect(m_list_view, &QListView::doubleClicked, this, &GameListWidget::onListViewItemDoubleClicked);
+  connect(m_list_view, &QListView::customContextMenuRequested, this, &GameListWidget::onListViewContextMenuRequested);
+
+  insertWidget(1, m_list_view);
+
+  if (m_host_interface->GetBoolSettingValue("UI", "GameListGridView", false))
+    setCurrentIndex(1);
+  else
+    setCurrentIndex(0);
 
   resizeTableViewColumnsToFit();
 }
 
+bool GameListWidget::isShowingGameList() const
+{
+  return currentIndex() == 0;
+}
+
+bool GameListWidget::isShowingGameGrid() const
+{
+  return currentIndex() == 1;
+}
+
+bool GameListWidget::getShowGridCoverTitles() const
+{
+  return m_model->getShowCoverTitles();
+}
+
 void GameListWidget::onGameListRefreshed()
 {
-  m_table_model->refresh();
+  m_model->refresh();
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
 {
-  const QModelIndex source_index = m_table_sort_model->mapToSource(current);
+  const QModelIndex source_index = m_sort_model->mapToSource(current);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
   {
     emit entrySelected(nullptr);
@@ -98,7 +142,7 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
 
 void GameListWidget::onTableViewItemDoubleClicked(const QModelIndex& index)
 {
-  const QModelIndex source_index = m_table_sort_model->mapToSource(index);
+  const QModelIndex source_index = m_sort_model->mapToSource(index);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
     return;
 
@@ -115,13 +159,35 @@ void GameListWidget::onTableViewContextMenuRequested(const QPoint& point)
   emit entryContextMenuRequested(m_table_view->mapToGlobal(point), entry);
 }
 
+void GameListWidget::onListViewItemDoubleClicked(const QModelIndex& index)
+{
+  const QModelIndex source_index = m_sort_model->mapToSource(index);
+  if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
+    return;
+
+  const GameListEntry& entry = m_game_list->GetEntries().at(source_index.row());
+  emit entryDoubleClicked(&entry);
+}
+
+void GameListWidget::onListViewContextMenuRequested(const QPoint& point)
+{
+  const GameListEntry* entry = getSelectedEntry();
+  if (!entry)
+    return;
+
+  emit entryContextMenuRequested(m_list_view->mapToGlobal(point), entry);
+}
+
 void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 {
   QMenu menu;
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {
-    QAction* action = menu.addAction(m_table_model->getColumnDisplayName(column));
+    if (column == GameListModel::Column_Cover)
+      continue;
+
+    QAction* action = menu.addAction(m_model->getColumnDisplayName(column));
     action->setCheckable(true);
     action->setChecked(!m_table_view->isColumnHidden(column));
     connect(action, &QAction::toggled, [this, column](bool enabled) {
@@ -139,6 +205,71 @@ void GameListWidget::onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder)
   saveTableViewColumnSortSettings();
 }
 
+void GameListWidget::listZoom(float delta)
+{
+  static constexpr float MIN_SCALE = 0.1f;
+  static constexpr float MAX_SCALE = 2.0f;
+
+  const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_SCALE, MAX_SCALE);
+  m_host_interface->SetFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
+  m_model->setCoverScale(new_scale);
+  updateListFont();
+
+  m_model->refresh();
+}
+
+void GameListWidget::gridZoomIn()
+{
+  listZoom(0.05f);
+}
+
+void GameListWidget::gridZoomOut()
+{
+  listZoom(-0.05f);
+}
+
+void GameListWidget::refreshGridCovers()
+{
+  m_model->refreshCovers();
+}
+
+void GameListWidget::showGameList()
+{
+  if (currentIndex() == 0)
+    return;
+
+  m_host_interface->SetBoolSettingValue("UI", "GameListGridView", false);
+  setCurrentIndex(0);
+  resizeTableViewColumnsToFit();
+}
+
+void GameListWidget::showGameGrid()
+{
+  if (currentIndex() == 1)
+    return;
+
+  m_host_interface->SetBoolSettingValue("UI", "GameListGridView", true);
+  setCurrentIndex(1);
+}
+
+void GameListWidget::setShowCoverTitles(bool enabled)
+{
+  if (m_model->getShowCoverTitles() == enabled)
+    return;
+
+  m_host_interface->SetBoolSettingValue("UI", "GameListShowCoverTitles", enabled);
+  m_model->setShowCoverTitles(enabled);
+  if (isShowingGameGrid())
+    m_model->refresh();
+}
+
+void GameListWidget::updateListFont()
+{
+  QFont font;
+  font.setPointSizeF(16.0f * m_model->getCoverScale());
+  m_list_view->setFont(font);
+}
+
 void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QStackedWidget::resizeEvent(event);
@@ -147,7 +278,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 
 void GameListWidget::resizeTableViewColumnsToFit()
 {
-  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 100, 60, 100});
+  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 100, 50, 100});
 }
 
 static TinyString getColumnVisibilitySettingsKeyName(int column)
@@ -193,7 +324,7 @@ void GameListWidget::loadTableViewColumnSortSettings()
       .value_or(DEFAULT_SORT_COLUMN);
   const bool sort_descending =
     m_host_interface->GetBoolSettingValue("GameListTableView", "SortDescending", DEFAULT_SORT_DESCENDING);
-  m_table_sort_model->sort(sort_column, sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder);
+  m_sort_model->sort(sort_column, sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder);
 }
 
 void GameListWidget::saveTableViewColumnSortSettings()
@@ -212,17 +343,53 @@ void GameListWidget::saveTableViewColumnSortSettings()
 
 const GameListEntry* GameListWidget::getSelectedEntry() const
 {
-  const QItemSelectionModel* selection_model = m_table_view->selectionModel();
-  if (!selection_model->hasSelection())
-    return nullptr;
+  if (currentIndex() == 0)
+  {
+    const QItemSelectionModel* selection_model = m_table_view->selectionModel();
+    if (!selection_model->hasSelection())
+      return nullptr;
 
-  const QModelIndexList selected_rows = selection_model->selectedRows();
-  if (selected_rows.empty())
-    return nullptr;
+    const QModelIndexList selected_rows = selection_model->selectedRows();
+    if (selected_rows.empty())
+      return nullptr;
 
-  const QModelIndex source_index = m_table_sort_model->mapToSource(selected_rows[0]);
-  if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
-    return nullptr;
+    const QModelIndex source_index = m_sort_model->mapToSource(selected_rows[0]);
+    if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
+      return nullptr;
 
-  return &m_game_list->GetEntries().at(source_index.row());
+    return &m_game_list->GetEntries().at(source_index.row());
+  }
+  else
+  {
+    const QItemSelectionModel* selection_model = m_list_view->selectionModel();
+    if (!selection_model->hasSelection())
+      return nullptr;
+
+    const QModelIndex source_index = m_sort_model->mapToSource(selection_model->currentIndex());
+    if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
+      return nullptr;
+
+    return &m_game_list->GetEntries().at(source_index.row());
+  }
+}
+
+GameListGridListView::GameListGridListView(QWidget* parent /*= nullptr*/) : QListView(parent) {}
+
+void GameListGridListView::wheelEvent(QWheelEvent* e)
+{
+  if (e->modifiers() & Qt::ControlModifier)
+  {
+    int dy = e->angleDelta().y();
+    if (dy != 0)
+    {
+      if (dy < 0)
+        zoomOut();
+      else
+        zoomIn();
+
+      return;
+    }
+  }
+
+  QListView::wheelEvent(e);
 }

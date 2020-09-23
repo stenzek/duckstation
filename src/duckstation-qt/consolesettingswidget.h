@@ -15,9 +15,6 @@ public:
   explicit ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
   ~ConsoleSettingsWidget();
 
-private Q_SLOTS:
-  void onBrowseBIOSPathButtonClicked();
-
 private:
   Ui::ConsoleSettingsWidget m_ui;
 

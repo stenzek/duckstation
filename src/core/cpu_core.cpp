@@ -467,6 +467,7 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
 template<PGXPMode pgxp_mode>
 ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
 {
+restart_instruction:
   const Instruction inst = g_state.current_instruction;
 
 #if 0
@@ -1348,6 +1349,16 @@ ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
       // everything else is reserved/invalid
     default:
     {
+      u32 ram_value;
+      if (SafeReadInstruction(g_state.current_instruction_pc, &ram_value) &&
+          ram_value != g_state.current_instruction.bits)
+      {
+        Log_ErrorPrintf("Stale icache at 0x%08X - ICache: %08X RAM: %08X", g_state.current_instruction_pc,
+                        g_state.current_instruction.bits, ram_value);
+        g_state.current_instruction.bits = ram_value;
+        goto restart_instruction;
+      }
+
       RaiseException(Exception::RI);
     }
     break;
@@ -1461,7 +1472,8 @@ template void InterpretCachedBlock<PGXPMode::CPU>(const CodeBlock& block);
 
 void InterpretUncachedBlock()
 {
-  Panic("Fixme with regards to re-fetching PC");
+  g_state.regs.npc = g_state.regs.pc;
+  FetchInstruction();
 
   // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
   // yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.
@@ -1480,8 +1492,15 @@ void InterpretUncachedBlock()
     g_state.exception_raised = false;
 
     // Fetch the next instruction, except if we're in a branch delay slot. The "fetch" is done in the next block.
-    if (!FetchInstruction())
-      break;
+    if (!g_state.current_instruction_in_branch_delay_slot)
+    {
+      if (!FetchInstruction())
+        break;
+    }
+    else
+    {
+      g_state.regs.pc = g_state.regs.npc;
+    }
 
     // execute the instruction we previously fetched
     ExecuteInstruction<PGXPMode::Disabled>();

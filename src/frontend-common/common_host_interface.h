@@ -151,6 +151,27 @@ public:
   /// Saves a screenshot to the specified file. IF no file name is provided, one will be generated automatically.
   bool SaveScreenshot(const char* filename = nullptr, bool full_resolution = true, bool apply_aspect_ratio = true);
 
+  /// Loads the cheat list from the specified file.
+  bool LoadCheatList(const char* filename);
+
+  /// Loads the cheat list for the current game title from the user directory.
+  bool LoadCheatListFromGameTitle();
+
+  /// Saves the current cheat list to the specified file.
+  bool SaveCheatList(const char* filename);
+
+  /// Enables/disabled the specified cheat code.
+  void SetCheatCodeState(u32 index, bool enabled, bool save_to_file);
+
+  /// Immediately applies the specified cheat code.
+  void ApplyCheatCode(u32 index);
+
+  /// Temporarily toggles post-processing on/off.
+  void TogglePostProcessing();
+
+  /// Reloads post processing shaders with the current configuration.
+  void ReloadPostProcessingShaders();
+
 protected:
   enum : u32
   {
@@ -247,6 +268,9 @@ protected:
 
   /// Returns the most recent resume save state.
   std::string GetMostRecentResumeSaveStatePath() const;
+
+  /// Returns the path to the cheat file for the specified game title.
+  std::string GetCheatFileName() const;
 
   /// Ensures the settings is valid and the correct version. If not, resets to defaults.
   void CheckSettings(SettingsInterface& si);

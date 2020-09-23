@@ -25,13 +25,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                                "LoadDevicesFromSaveStates", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.applyGameSettings, "Main", "ApplyGameSettings",
                                                true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
-                                               true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showVPS, "Display", "ShowVPS", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, "Display", "ShowSpeed", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showResolution, "Display", "ShowResolution",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.autoLoadCheats, "Main", "AutoLoadCheats", false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter, "Main", "SpeedLimiterEnabled",
                                                true);
@@ -86,17 +80,6 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.emulationSpeed, tr("Emulation Speed"), "100%",
     tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
        "and if not, the emulator will run as fast as it can manage."));
-  dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
-                             tr("Shows on-screen-display messages when events occur such as save states being "
-                                "created/loaded, screenshots being taken, etc."));
-  dialog->registerWidgetHelp(m_ui.showFPS, tr("Show FPS"), tr("Unchecked"),
-                             tr("Shows the internal frame rate of the game in the top-right corner of the display."));
-  dialog->registerWidgetHelp(m_ui.showVPS, tr("Show VPS"), tr("Unchecked"),
-                             tr("Shows the number of frames (or v-syncs) displayed per second by the system in the "
-                                "top-right corner of the display."));
-  dialog->registerWidgetHelp(
-    m_ui.showSpeed, tr("Show Speed"), tr("Unchecked"),
-    tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
   dialog->registerWidgetHelp(m_ui.controllerBackend, tr("Controller Backend"),
                              qApp->translate("ControllerInterface", ControllerInterface::GetBackendName(
                                                                       ControllerInterface::GetDefaultBackend())),
@@ -104,7 +87,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                 "to use XInput over SDL2 for compatibility."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
-  int current_col = 1;
+  int current_col = 0;
   int current_row = m_ui.formLayout_4->rowCount() - current_col;
 #ifdef WITH_DISCORD_PRESENCE
   {

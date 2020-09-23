@@ -4,6 +4,7 @@
 #include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
+#include <cmath>
 Log_SetChannel(AnalogController);
 
 AnalogController::AnalogController(u32 index) : m_index(index)
@@ -25,6 +26,7 @@ void AnalogController::Reset()
   m_rumble_unlocked = false;
   m_configuration_mode = false;
   m_command_param = 0;
+  m_motor_state.fill(0);
 
   if (m_auto_enable_analog)
     SetAnalogMode(true);
@@ -138,7 +140,16 @@ u32 AnalogController::GetVibrationMotorCount() const
 float AnalogController::GetVibrationMotorStrength(u32 motor)
 {
   DebugAssert(motor < NUM_MOTORS);
-  return static_cast<float>(m_motor_state[motor]) * (1.0f / 255.0f);
+  if (m_motor_state[motor] == 0)
+    return 0.0f;
+
+  // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
+  const double x =
+    static_cast<double>(std::min<u32>(static_cast<u32>(m_motor_state[motor]) + static_cast<u32>(m_rumble_bias), 255));
+  const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
+                          156.82454281087692 * x + 3.637978807091713e-11;
+
+  return static_cast<float>(strength / 65535.0);
 }
 
 void AnalogController::ResetTransferState()
@@ -282,7 +293,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     case State::GetStateButtonsMSB:
     {
       if (m_rumble_unlocked)
-        SetMotorState(0, (data_in != 0) ? 255 : 0);
+        SetMotorState(0, data_in);
 
       *data_out = Truncate8(m_button_state >> 8);
       m_state = m_analog_mode ? State::GetStateRightAxisX : State::Idle;
@@ -500,7 +511,7 @@ u32 AnalogController::StaticGetVibrationMotorCount()
 
 Controller::SettingList AnalogController::StaticGetSettings()
 {
-  static constexpr std::array<SettingInfo, 2> settings = {
+  static constexpr std::array<SettingInfo, 3> settings = {
     {{SettingInfo::Type::Boolean, "AutoEnableAnalog", TRANSLATABLE("AnalogController", "Enable Analog Mode on Reset"),
       TRANSLATABLE("AnalogController", "Automatically enables analog mode when the console is reset/powered on."),
       "false"},
@@ -509,7 +520,11 @@ Controller::SettingList AnalogController::StaticGetSettings()
         "AnalogController",
         "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
         "controllers, e.g. DualShock 4, Xbox One Controller."),
-      "1.00f", "0.01f", "1.50f", "0.01f"}}};
+      "1.00f", "0.01f", "1.50f", "0.01f"},
+     {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("AnalogController", "Vibration Bias"),
+      TRANSLATABLE("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
+                                       "functioning, try increasing this value."),
+      "8", "0", "255", "1"}}};
 
   return SettingList(settings.begin(), settings.end());
 }
@@ -518,4 +533,6 @@ void AnalogController::LoadSettings(const char* section)
 {
   Controller::LoadSettings(section);
   m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
+  m_rumble_bias =
+    static_cast<u8>(std::min<u32>(g_host_interface->GetIntSettingValue(section, "VibrationBias", 8), 255));
 }

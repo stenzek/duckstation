@@ -30,15 +30,15 @@ Updater::~Updater()
 bool Updater::Initialize(std::string destination_directory)
 {
   m_destination_directory = std::move(destination_directory);
-  m_staging_directory = StringUtil::StdStringFromFormat("%s%c%s", m_destination_directory.c_str(),
-                                                        FS_OSPATH_SEPERATOR_CHARACTER, "UPDATE_STAGING");
+  m_staging_directory = StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s",
+                                                        m_destination_directory.c_str(), "UPDATE_STAGING");
   m_progress->DisplayFormattedInformation("Destination directory: '%s'", m_destination_directory.c_str());
   m_progress->DisplayFormattedInformation("Staging directory: '%s'", m_staging_directory.c_str());
 
   // log everything to file as well
-  Log::SetFileOutputParams(true, StringUtil::StdStringFromFormat("%s%cupdater.log", m_destination_directory.c_str(),
-                                                                 FS_OSPATH_SEPERATOR_CHARACTER)
-                                   .c_str());
+  Log::SetFileOutputParams(
+    true, StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "updater.log", m_destination_directory.c_str())
+            .c_str());
 
   return true;
 }
@@ -180,8 +180,8 @@ bool Updater::PrepareStagingDirectory()
   {
     m_progress->DisplayFormattedInformation("Creating subdirectory in staging: %s", subdir.c_str());
 
-    const std::string staging_subdir = StringUtil::StdStringFromFormat("%s%c%s", m_staging_directory.c_str(),
-                                                                       FS_OSPATH_SEPERATOR_CHARACTER, subdir.c_str());
+    const std::string staging_subdir =
+      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_staging_directory.c_str(), subdir.c_str());
     if (!FileSystem::CreateDirectory(staging_subdir.c_str(), false))
     {
       m_progress->DisplayFormattedModalError("Failed to create staging subdirectory %s", staging_subdir.c_str());
@@ -215,7 +215,7 @@ bool Updater::StageUpdate()
     m_progress->DisplayFormattedInformation("Extracting '%s'...", ftu.destination_filename.c_str());
 
     const std::string destination_file = StringUtil::StdStringFromFormat(
-      "%s%c%s", m_staging_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, ftu.destination_filename.c_str());
+      "%s" FS_OSPATH_SEPARATOR_STR "%s", m_staging_directory.c_str(), ftu.destination_filename.c_str());
     std::FILE* fp = FileSystem::OpenCFile(destination_file.c_str(), "wb");
     if (!fp)
     {
@@ -268,8 +268,8 @@ bool Updater::CommitUpdate()
   // create directories in target
   for (const std::string& subdir : m_update_directories)
   {
-    const std::string dest_subdir = StringUtil::StdStringFromFormat("%s%c%s", m_destination_directory.c_str(),
-                                                                    FS_OSPATH_SEPERATOR_CHARACTER, subdir.c_str());
+    const std::string dest_subdir = StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s",
+                                                                    m_destination_directory.c_str(), subdir.c_str());
 
     if (!FileSystem::DirectoryExists(dest_subdir.c_str()) && !FileSystem::CreateDirectory(dest_subdir.c_str(), false))
     {
@@ -282,9 +282,9 @@ bool Updater::CommitUpdate()
   for (const FileToUpdate& ftu : m_update_paths)
   {
     const std::string staging_file_name = StringUtil::StdStringFromFormat(
-      "%s%c%s", m_staging_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, ftu.destination_filename.c_str());
+      "%s" FS_OSPATH_SEPARATOR_STR "%s", m_staging_directory.c_str(), ftu.destination_filename.c_str());
     const std::string dest_file_name = StringUtil::StdStringFromFormat(
-      "%s%c%s", m_destination_directory.c_str(), FS_OSPATH_SEPERATOR_CHARACTER, ftu.destination_filename.c_str());
+      "%s" FS_OSPATH_SEPARATOR_STR "%s", m_destination_directory.c_str(), ftu.destination_filename.c_str());
     m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
 #ifdef WIN32
     const bool result =

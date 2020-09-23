@@ -394,13 +394,12 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
     return;
 
   // we'll update before this duration is elapsed
-  static constexpr float MIN_STRENGTH = 0.01f;
   static constexpr u32 DURATION = 100000;
 
   SDL_Haptic* haptic = static_cast<SDL_Haptic*>(it->haptic);
   if (it->haptic_left_right_effect >= 0 && num_motors > 1)
   {
-    if (strengths[0] >= MIN_STRENGTH || strengths[1] >= MIN_STRENGTH)
+    if (strengths[0] > 0.0f || strengths[1] > 0.0f)
     {
       SDL_HapticEffect ef;
       ef.type = SDL_HAPTIC_LEFTRIGHT;
@@ -421,7 +420,7 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
     for (u32 i = 0; i < num_motors; i++)
       max_strength = std::max(max_strength, strengths[i]);
 
-    if (max_strength >= MIN_STRENGTH)
+    if (max_strength > 0.0f)
       SDL_HapticRumblePlay(haptic, max_strength, DURATION);
     else
       SDL_HapticRumbleStop(haptic);

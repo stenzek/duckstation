@@ -9,6 +9,10 @@ import android.widget.Toast;
 import com.google.android.material.snackbar.Snackbar;
 
 public class AndroidHostInterface {
+    public final static int DISPLAY_ALIGNMENT_TOP_OR_LEFT = 0;
+    public final static int DISPLAY_ALIGNMENT_CENTER = 1;
+    public final static int DISPLAY_ALIGNMENT_RIGHT_OR_BOTTOM = 2;
+
     private long mNativePointer;
     private Context mContext;
 
@@ -30,7 +34,13 @@ public class AndroidHostInterface {
 
     public native boolean startEmulationThread(EmulationActivity emulationActivity, Surface surface, String filename, boolean resumeState, String state_filename);
 
+    public native boolean isEmulationThreadPaused();
+
+    public native void pauseEmulationThread(boolean paused);
+
     public native void stopEmulationThread();
+
+    public native boolean hasSurface();
 
     public native void surfaceChanged(Surface surface, int format, int width, int height);
 
@@ -55,7 +65,11 @@ public class AndroidHostInterface {
 
     public native void saveState(boolean global, int slot);
 
+    public native void saveResumeState(boolean waitForCompletion);
+
     public native void applySettings();
+
+    public native void setDisplayAlignment(int alignment);
 
     static {
         System.loadLibrary("duckstation-native");

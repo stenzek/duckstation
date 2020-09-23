@@ -13,6 +13,10 @@
 #include <vector>
 #include <wrl/client.h>
 
+#ifndef LIBRETRO
+#include "frontend-common/postprocessing_chain.h"
+#endif
+
 namespace FrontendCommon {
 
 class D3D11HostDisplay : public HostDisplay
@@ -42,6 +46,8 @@ public:
   virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
   virtual void DestroyRenderSurface() override;
 
+  virtual bool SetPostProcessingChain(const std::string_view& config) override;
+
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
                                                     u32 initial_data_stride, bool dynamic) override;
   void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data,
@@ -62,8 +68,8 @@ protected:
 
   static std::vector<std::string> EnumerateAdapterNames(IDXGIFactory* dxgi_factory);
 
-  virtual bool CreateResources();
-  virtual void DestroyResources();
+  virtual bool CreateResources() override;
+  virtual void DestroyResources() override;
 
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();
@@ -81,6 +87,22 @@ protected:
                      s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                      s32 texture_view_height, bool linear_filter);
   void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture_handle);
+
+#ifndef LIBRETRO
+  struct PostProcessingStage
+  {
+    ComPtr<ID3D11VertexShader> vertex_shader;
+    ComPtr<ID3D11PixelShader> pixel_shader;
+    D3D11::Texture output_texture;
+    u32 uniforms_size;
+  };
+
+  bool CheckPostProcessingRenderTargets(u32 target_width, u32 target_height);
+  void ApplyPostProcessingChain(ID3D11RenderTargetView* final_target, s32 final_left, s32 final_top, s32 final_width,
+                                s32 final_height, void* texture_handle, u32 texture_width, s32 texture_height,
+                                s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                                s32 texture_view_height);
+#endif
 
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
@@ -109,6 +131,10 @@ protected:
   bool m_using_flip_model_swap_chain = true;
   bool m_using_allow_tearing = false;
   bool m_vsync = true;
+
+  PostProcessingChain m_post_processing_chain;
+  D3D11::Texture m_post_processing_input_texture;
+  std::vector<PostProcessingStage> m_post_processing_stages;
 #endif
 };
 

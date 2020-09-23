@@ -1,6 +1,5 @@
 #pragma once
 #include "core/host_display.h"
-#include <memory>
 
 class LibretroHostDisplay final : public HostDisplay
 {
@@ -25,6 +24,8 @@ public:
   bool ChangeRenderWindow(const WindowInfo& wi) override;
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
   void DestroyRenderSurface() override;
+
+  bool SetPostProcessingChain(const std::string_view& config) override;
 
   bool CreateResources() override;
   void DestroyResources() override;

@@ -60,6 +60,8 @@ add_library(common
   progress_callback.cpp
   progress_callback.h
   scope_guard.h
+  shiftjis.cpp
+  shiftjis.h
   state_wrapper.cpp
   state_wrapper.h
   string.cpp
@@ -172,7 +174,7 @@ if(USE_WAYLAND)
   target_link_libraries(common PRIVATE Wayland::Egl)
 endif()
 
-if(APPLE)
+if(APPLE AND NOT BUILD_LIBRETRO_CORE)
   target_sources(common PRIVATE
     gl/context_agl.mm
     gl/context_agl.h

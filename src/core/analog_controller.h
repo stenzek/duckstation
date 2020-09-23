@@ -135,6 +135,7 @@ private:
   u32 m_index;
 
   bool m_auto_enable_analog = false;
+  u8 m_rumble_bias = 8;
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;

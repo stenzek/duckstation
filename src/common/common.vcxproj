@@ -73,6 +73,7 @@
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="scope_guard.h" />
+    <ClInclude Include="shiftjis.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="string_util.h" />
@@ -128,6 +129,7 @@
     <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="null_audio_stream.cpp" />
     <ClCompile Include="progress_callback.cpp" />
+    <ClCompile Include="shiftjis.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="string.cpp" />

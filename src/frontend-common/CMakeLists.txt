@@ -48,6 +48,12 @@ if(NOT BUILD_LIBRETRO_CORE)
     imgui_styles.h
     ini_settings_interface.cpp
     ini_settings_interface.h
+    postprocessing_chain.cpp
+    postprocessing_chain.h
+    postprocessing_shader.cpp
+    postprocessing_shader.h
+    postprocessing_shadergen.cpp
+    postprocessing_shadergen.h
     save_state_selector_ui.cpp
     save_state_selector_ui.h
   )

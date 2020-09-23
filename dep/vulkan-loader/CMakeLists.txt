@@ -30,3 +30,6 @@ if(USE_X11)
   target_compile_definitions(vulkan-loader PUBLIC "VULKAN_USE_X11=1")
 endif()
 
+if(USE_WAYLAND)
+  target_compile_definitions(vulkan-loader PUBLIC "VULKAN_USE_WAYLAND=1")
+endif()

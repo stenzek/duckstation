@@ -1,4 +1,5 @@
 #include "gpu.h"
+#include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
@@ -1320,10 +1321,17 @@ void GPU::SetTextureWindow(u32 value)
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)
 {
-  std::vector<u32> rgba8_buf(width * height);
+  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s'", filename);
+    return false;
+  }
+
+  auto rgba8_buf = std::make_unique<u32[]>(width * height);
 
   const char* ptr_in = static_cast<const char*>(buffer);
-  u32* ptr_out = rgba8_buf.data();
+  u32* ptr_out = rgba8_buf.get();
   for (u32 row = 0; row < height; row++)
   {
     const char* row_ptr_in = ptr_in;
@@ -1338,7 +1346,11 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
 
     ptr_in += stride;
   }
-  return (stbi_write_png(filename, width, height, 4, rgba8_buf.data(), sizeof(u32) * width) != 0);
+
+  const auto write_func = [](void* context, void* data, int size) {
+    std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
+  };
+  return (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, rgba8_buf.get(), sizeof(u32) * width) != 0);
 }
 
 void GPU::DrawDebugStateWindow()

@@ -9,6 +9,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
+#include "memorycardeditordialog.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -49,6 +50,9 @@ MainWindow::MainWindow(QtHostInterface* host_interface)
   updateTheme();
 
   resize(800, 700);
+
+  restoreStateFromConfig();
+  switchToGameListView();
 }
 
 MainWindow::~MainWindow()
@@ -269,15 +273,12 @@ void MainWindow::onStartDiscActionTriggered()
   if (filename.isEmpty())
     return;
 
-  SystemBootParameters boot_params;
-  boot_params.filename = filename.toStdString();
-  m_host_interface->bootSystem(boot_params);
+  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(filename.toStdString()));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
-  SystemBootParameters boot_params;
-  m_host_interface->bootSystem(boot_params);
+  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>());
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -306,6 +307,12 @@ void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
   m_ui.menuChangeDiscFromPlaylist->clear();
 }
 
+void MainWindow::onCheatsMenuAboutToShow()
+{
+  m_ui.menuCheats->clear();
+  m_host_interface->populateCheatsMenu(m_ui.menuCheats);
+}
+
 void MainWindow::onRemoveDiscActionTriggered()
 {
   m_host_interface->changeDisc(QString());
@@ -313,8 +320,8 @@ void MainWindow::onRemoveDiscActionTriggered()
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
 {
-  m_host_interface->SetBoolSettingValue("UI", "ShowToolbar", checked);
   m_ui.toolBar->setVisible(checked);
+  saveStateToConfig();
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
@@ -328,6 +335,15 @@ void MainWindow::onViewGameListActionTriggered()
   if (m_emulation_running)
     m_host_interface->pauseSystem(true);
   switchToGameListView();
+  m_game_list_widget->showGameList();
+}
+
+void MainWindow::onViewGameGridActionTriggered()
+{
+  if (m_emulation_running)
+    m_host_interface->pauseSystem(true);
+  switchToGameListView();
+  m_game_list_widget->showGameGrid();
 }
 
 void MainWindow::onViewSystemDisplayTriggered()
@@ -385,9 +401,7 @@ void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
     }
     else
     {
-      SystemBootParameters boot_params;
-      boot_params.filename = path.toStdString();
-      m_host_interface->bootSystem(boot_params);
+      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path.toStdString()));
     }
   }
   else
@@ -423,19 +437,20 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
         menu.addSeparator();
       }
 
-      connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
-              [this, entry]() { m_host_interface->bootSystem(SystemBootParameters(entry->path)); });
+      connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, entry]() {
+        m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(entry->path));
+      });
 
       connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
-        SystemBootParameters boot_params(entry->path);
-        boot_params.override_fast_boot = true;
-        m_host_interface->bootSystem(boot_params);
+        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+        boot_params->override_fast_boot = true;
+        m_host_interface->bootSystem(std::move(boot_params));
       });
 
       connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
-        SystemBootParameters boot_params(entry->path);
-        boot_params.override_fast_boot = false;
-        m_host_interface->bootSystem(boot_params);
+        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+        boot_params->override_fast_boot = false;
+        m_host_interface->bootSystem(std::move(boot_params));
       });
     }
     else
@@ -460,10 +475,6 @@ void MainWindow::setupAdditionalUi()
 {
   setWindowTitle(getWindowTitle());
 
-  const bool toolbar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowToolbar", true);
-  m_ui.actionViewToolbar->setChecked(toolbar_visible);
-  m_ui.toolBar->setVisible(toolbar_visible);
-
   const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
   m_ui.actionViewStatusBar->setChecked(status_bar_visible);
   m_ui.statusBar->setVisible(status_bar_visible);
@@ -487,6 +498,8 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
+
+  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 
   updateDebugMenuVisibility();
 
@@ -545,9 +558,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
+  m_ui.actionCheats->setDisabled(starting || !running);
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
+  m_ui.menuCheats->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -593,6 +608,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.statusBar->clearMessage();
 }
 
+bool MainWindow::isShowingGameList() const
+{
+  return m_ui.mainContainer->currentIndex() == 0;
+}
+
 void MainWindow::switchToGameListView()
 {
   m_ui.mainContainer->setCurrentIndex(0);
@@ -622,6 +642,8 @@ void MainWindow::connectSignals()
           &MainWindow::onChangeDiscFromPlaylistMenuAboutToShow);
   connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToHide, this,
           &MainWindow::onChangeDiscFromPlaylistMenuAboutToHide);
+  connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
+  connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
@@ -640,6 +662,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::Count); });
   connect(m_ui.actionGeneralSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::GeneralSettings); });
+  connect(m_ui.actionBIOSSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::BIOSSettings); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::ConsoleSettings); });
   connect(m_ui.actionGameListSettings, &QAction::triggered,
@@ -650,7 +674,12 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::ControllerSettings); });
   connect(m_ui.actionMemoryCardSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::MemoryCardSettings); });
-  connect(m_ui.actionGPUSettings, &QAction::triggered, [this]() { doSettings(SettingsDialog::Category::GPUSettings); });
+  connect(m_ui.actionDisplaySettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::DisplaySettings); });
+  connect(m_ui.actionEnhancementSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::EnhancementSettings); });
+  connect(m_ui.actionPostProcessingSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::PostProcessingSettings); });
   connect(m_ui.actionAudioSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,
@@ -658,12 +687,26 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
   connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
+  connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
   connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
-  connect(m_ui.actionCheckForUpdates, &QAction::triggered, [this]() { checkForUpdates(true); });
+  connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
+  connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
+  connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
+  connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
+    if (isShowingGameList())
+      m_game_list_widget->gridZoomIn();
+  });
+  connect(m_ui.actionGridViewZoomOut, &QAction::triggered, m_game_list_widget, [this]() {
+    if (isShowingGameList())
+      m_game_list_widget->gridZoomOut();
+  });
+  connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
+          &GameListWidget::refreshGridCovers);
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
@@ -724,7 +767,9 @@ void MainWindow::connectSignals()
                                                "ShowMDECState");
 
   addThemeToMenu(tr("Default"), QStringLiteral("default"));
-  addThemeToMenu(tr("DarkFusion"), QStringLiteral("darkfusion"));
+  addThemeToMenu(tr("Fusion"), QStringLiteral("fusion"));
+  addThemeToMenu(tr("Dark Fusion (Gray)"), QStringLiteral("darkfusion"));
+  addThemeToMenu(tr("Dark Fusion (Blue)"), QStringLiteral("darkfusionblue"));
   addThemeToMenu(tr("QDarkStyle"), QStringLiteral("qdarkstyle"));
 }
 
@@ -753,6 +798,12 @@ void MainWindow::updateTheme()
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
       qApp->setStyleSheet(f.readAll());
+  }
+  else if (theme == QStringLiteral("fusion"))
+  {
+    qApp->setPalette(QApplication::style()->standardPalette());
+    qApp->setStyleSheet(QString());
+    qApp->setStyle(QStyleFactory::create("Fusion"));
   }
   else if (theme == QStringLiteral("darkfusion"))
   {
@@ -789,6 +840,42 @@ void MainWindow::updateTheme()
 
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
+  else if (theme == QStringLiteral("darkfusionblue"))
+  {
+    // adapted from https://gist.github.com/QuantumCD/6245215
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    const QColor lighterGray(75, 75, 75);
+    const QColor darkGray(53, 53, 53);
+    const QColor gray(128, 128, 128);
+    const QColor black(25, 25, 25);
+    const QColor blue(198, 238, 255);
+    const QColor blue2(0, 88, 208);
+
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, darkGray);
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, black);
+    darkPalette.setColor(QPalette::AlternateBase, darkGray);
+    darkPalette.setColor(QPalette::ToolTipBase, blue2);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, darkGray);
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::Link, blue);
+    darkPalette.setColor(QPalette::Highlight, blue2);
+    darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+    darkPalette.setColor(QPalette::Active, QPalette::Button, gray.darker());
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+
+    qApp->setPalette(darkPalette);
+
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+  }
   else
   {
     qApp->setPalette(QApplication::style()->standardPalette());
@@ -807,6 +894,51 @@ void MainWindow::updateTheme()
         QSignalBlocker blocker(action);
         action->setChecked(action_data == theme);
       }
+    }
+  }
+}
+
+void MainWindow::saveStateToConfig()
+{
+  {
+    const QByteArray geometry = saveGeometry();
+    const QByteArray geometry_b64 = geometry.toBase64();
+    const std::string old_geometry_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowGeometry");
+    if (old_geometry_b64 != geometry_b64.constData())
+      m_host_interface->SetStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
+  }
+
+  {
+    const QByteArray state = saveState();
+    const QByteArray state_b64 = state.toBase64();
+    const std::string old_state_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowState");
+    if (old_state_b64 != state_b64.constData())
+      m_host_interface->SetStringSettingValue("UI", "MainWindowState", state_b64.constData());
+  }
+}
+
+void MainWindow::restoreStateFromConfig()
+{
+  {
+    const std::string geometry_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowGeometry");
+    const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+    if (!geometry.isEmpty())
+      restoreGeometry(geometry);
+  }
+
+  {
+    const std::string state_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowState");
+    const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
+    if (!state.isEmpty())
+      restoreState(state);
+
+    {
+      QSignalBlocker sb(m_ui.actionViewToolbar);
+      m_ui.actionViewToolbar->setChecked(!m_ui.toolBar->isHidden());
+    }
+    {
+      QSignalBlocker sb(m_ui.actionViewStatusBar);
+      m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
     }
   }
 }
@@ -868,6 +1000,7 @@ void MainWindow::updateDebugMenuGPURenderer()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   m_host_interface->synchronousPowerOffSystem();
+  saveStateToConfig();
   QMainWindow::closeEvent(event);
 }
 
@@ -895,6 +1028,27 @@ void MainWindow::updateDebugMenuVisibility()
 {
   const bool visible = m_host_interface->GetBoolSettingValue("Main", "ShowDebugMenu", false);
   m_ui.menuDebug->menuAction()->setVisible(visible);
+}
+
+void MainWindow::onCheckForUpdatesActionTriggered()
+{
+  // Wipe out the last version, that way it displays the update if we've previously skipped it.
+  m_host_interface->RemoveSettingValue("AutoUpdater", "LastVersion");
+  checkForUpdates(true);
+}
+
+void MainWindow::onToolsMemoryCardEditorTriggered()
+{
+  if (!m_memory_card_editor_dialog)
+    m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
+
+  m_memory_card_editor_dialog->setModal(false);
+  m_memory_card_editor_dialog->show();
+}
+
+void MainWindow::onToolsOpenDataDirectoryTriggered()
+{
+  QtUtils::OpenURL(this, QUrl::fromLocalFile(m_host_interface->getUserDirectoryRelativePath(QString())));
 }
 
 void MainWindow::checkForUpdates(bool display_message)

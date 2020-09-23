@@ -69,6 +69,15 @@
        </item>
        <item>
         <property name="text">
+         <string>BIOS Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/resources.qrc">
+          <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Console Settings</string>
         </property>
         <property name="icon">
@@ -82,7 +91,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
+          <normaloff>:/icons/system-file-manager.png</normaloff>:/icons/system-file-manager.png</iconset>
         </property>
        </item>
        <item>
@@ -91,7 +100,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+          <normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</iconset>
         </property>
        </item>
        <item>
@@ -114,11 +123,29 @@
        </item>
        <item>
         <property name="text">
-         <string>GPU Settings</string>
+         <string>Display Settings</string>
         </property>
         <property name="icon">
          <iconset resource="resources/resources.qrc">
           <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Enhancement Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/resources.qrc">
+          <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Post-Processing Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/resources.qrc">
+          <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
         </property>
        </item>
        <item>

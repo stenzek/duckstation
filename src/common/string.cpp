@@ -166,6 +166,11 @@ String::String(String&& moveString)
   Assign(moveString);
 }
 
+String::String(const std::string_view& sv)
+{
+  AppendString(sv.data(), static_cast<u32>(sv.size()));
+}
+
 String::~String()
 {
   StringDataRelease(m_pStringData);

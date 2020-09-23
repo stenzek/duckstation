@@ -14,6 +14,7 @@ class GameListWidget;
 class QtHostInterface;
 class QtDisplayWidget;
 class AutoUpdaterDialog;
+class MemoryCardEditorDialog;
 
 class HostDisplay;
 struct GameListEntry;
@@ -61,15 +62,20 @@ private Q_SLOTS:
   void onChangeDiscFromGameListActionTriggered();
   void onChangeDiscFromPlaylistMenuAboutToShow();
   void onChangeDiscFromPlaylistMenuAboutToHide();
+  void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
   void onViewToolbarActionToggled(bool checked);
   void onViewStatusBarActionToggled(bool checked);
   void onViewGameListActionTriggered();
+  void onViewGameGridActionTriggered();
   void onViewSystemDisplayTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
+  void onCheckForUpdatesActionTriggered();
+  void onToolsMemoryCardEditorTriggered();
+  void onToolsOpenDataDirectoryTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
@@ -87,8 +93,11 @@ private:
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
   void updateEmulationActions(bool starting, bool running);
+  bool isShowingGameList() const;
   void switchToGameListView();
   void switchToEmulationView();
+  void saveStateToConfig();
+  void restoreStateFromConfig();
   void destroyDisplayWidget();
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
@@ -112,6 +121,7 @@ private:
 
   SettingsDialog* m_settings_dialog = nullptr;
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
+  MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
 
   bool m_emulation_running = false;
 };

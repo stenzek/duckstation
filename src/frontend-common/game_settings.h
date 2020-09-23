@@ -20,6 +20,7 @@ enum class Trait : u32
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,
+  DisablePGXPTextureCorrection,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
   ForceDigitalController,
@@ -47,7 +48,7 @@ struct Entry
   std::optional<bool> gpu_true_color;
   std::optional<bool> gpu_scaled_dithering;
   std::optional<bool> gpu_force_ntsc_timings;
-  std::optional<bool> gpu_bilinear_texture_filtering;
+  std::optional<GPUTextureFilter> gpu_texture_filter;
   std::optional<bool> gpu_widescreen_hack;
   std::optional<bool> gpu_pgxp;
   std::optional<ControllerType> controller_1_type;
@@ -61,8 +62,6 @@ struct Entry
   ALWAYS_INLINE void AddTrait(Trait trait) { traits[static_cast<int>(trait)] = true; }
   ALWAYS_INLINE void RemoveTrait(Trait trait) { traits[static_cast<int>(trait)] = false; }
   ALWAYS_INLINE void SetTrait(Trait trait, bool enabled) { traits[static_cast<int>(trait)] = enabled; }
-
-  bool HasAnySettings() const;
 
   bool LoadFromStream(ByteStream* stream);
   bool SaveToStream(ByteStream* stream) const;

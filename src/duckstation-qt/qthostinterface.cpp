@@ -5,6 +5,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/system.h"
@@ -27,6 +28,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
@@ -42,7 +44,7 @@ Log_SetChannel(QtHostInterface);
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
-  qRegisterMetaType<SystemBootParameters>();
+  qRegisterMetaType<std::shared_ptr<const SystemBootParameters>>();
 }
 
 QtHostInterface::~QtHostInterface()
@@ -64,6 +66,7 @@ std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageLi
           {QStringLiteral("Italiano"), QStringLiteral("it")},
           {QStringLiteral("Português (Pt)"), QStringLiteral("pt-pt")},
           {QStringLiteral("Português (Br)"), QStringLiteral("pt-br")},
+          {QStringLiteral("Русский"), QStringLiteral("ru")},
           {QStringLiteral("简体中文"), QStringLiteral("zh-cn")}};
 }
 
@@ -142,7 +145,7 @@ void QtHostInterface::ReportError(const char* message)
   if (was_fullscreen)
     SetFullscreen(false);
 
-  emit errorReported(QString::fromLocal8Bit(message));
+  emit errorReported(QString::fromUtf8(message));
 
   if (was_fullscreen)
     SetFullscreen(true);
@@ -152,7 +155,7 @@ void QtHostInterface::ReportMessage(const char* message)
 {
   HostInterface::ReportMessage(message);
 
-  emit messageReported(QString::fromLocal8Bit(message));
+  emit messageReported(QString::fromUtf8(message));
 }
 
 bool QtHostInterface::ConfirmMessage(const char* message)
@@ -161,18 +164,12 @@ bool QtHostInterface::ConfirmMessage(const char* message)
   if (was_fullscreen)
     SetFullscreen(false);
 
-  const bool result = messageConfirmed(QString::fromLocal8Bit(message));
+  const bool result = messageConfirmed(QString::fromUtf8(message));
 
   if (was_fullscreen)
     SetFullscreen(true);
 
   return result;
-}
-
-bool QtHostInterface::parseCommandLineParameters(int argc, char* argv[],
-                                                 std::unique_ptr<SystemBootParameters>* out_boot_params)
-{
-  return CommonHostInterface::ParseCommandLineParameters(argc, argv, out_boot_params);
 }
 
 std::string QtHostInterface::GetStringSettingValue(const char* section, const char* key,
@@ -342,16 +339,17 @@ void QtHostInterface::setMainWindow(MainWindow* window)
   m_main_window = window;
 }
 
-void QtHostInterface::bootSystem(const SystemBootParameters& params)
+void QtHostInterface::bootSystem(std::shared_ptr<const SystemBootParameters> params)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "bootSystem", Qt::QueuedConnection, Q_ARG(const SystemBootParameters&, params));
+    QMetaObject::invokeMethod(this, "bootSystem", Qt::QueuedConnection,
+                              Q_ARG(std::shared_ptr<const SystemBootParameters>, std::move(params)));
     return;
   }
 
   emit emulationStarting();
-  BootSystem(params);
+  BootSystem(*params);
 }
 
 void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_on_failure)
@@ -952,6 +950,98 @@ void QtHostInterface::populatePlaylistEntryMenu(QMenu* menu)
   }
 }
 
+void QtHostInterface::populateCheatsMenu(QMenu* menu)
+{
+  Assert(!isOnWorkerThread());
+  if (!System::IsValid())
+    return;
+
+  const bool has_cheat_list = System::HasCheatList();
+
+  QAction* action = menu->addAction(tr("&Load Cheats..."));
+  connect(action, &QAction::triggered, [this]() {
+    QString filename = QFileDialog::getOpenFileName(m_main_window, tr("Select Cheat File"), QString(),
+                                                    tr("PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)"));
+    if (!filename.isEmpty())
+      loadCheatList(filename);
+  });
+
+  action = menu->addAction(tr("&Save Cheats..."));
+  action->setEnabled(has_cheat_list);
+  connect(action, &QAction::triggered, [this]() {
+    QString filename = QFileDialog::getSaveFileName(m_main_window, tr("Select Cheat File"), QString(),
+                                                    tr("PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)"));
+    if (!filename.isEmpty())
+      SaveCheatList(filename.toUtf8().constData());
+  });
+
+  QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
+  enabled_menu->setEnabled(has_cheat_list);
+  QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
+  apply_menu->setEnabled(has_cheat_list);
+  if (has_cheat_list)
+  {
+    CheatList* cl = System::GetCheatList();
+    for (u32 i = 0; i < cl->GetCodeCount(); i++)
+    {
+      CheatCode& cc = cl->GetCode(i);
+      QString desc(QString::fromStdString(cc.description));
+      action = enabled_menu->addAction(desc);
+      action->setCheckable(true);
+      action->setChecked(cc.enabled);
+      connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+
+      action = apply_menu->addAction(desc);
+      connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
+    }
+  }
+}
+
+void QtHostInterface::loadCheatList(const QString& filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "loadCheatList", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+    return;
+  }
+
+  LoadCheatList(filename.toUtf8().constData());
+}
+
+void QtHostInterface::setCheatEnabled(quint32 index, bool enabled)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "setCheatEnabled", Qt::QueuedConnection, Q_ARG(quint32, index),
+                              Q_ARG(bool, enabled));
+    return;
+  }
+
+  SetCheatCodeState(index, enabled, g_settings.auto_load_cheats);
+}
+
+void QtHostInterface::applyCheat(quint32 index)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "applyCheat", Qt::QueuedConnection, Q_ARG(quint32, index));
+    return;
+  }
+
+  ApplyCheatCode(index);
+}
+
+void QtHostInterface::reloadPostProcessingShaders()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "reloadPostProcessingShaders", Qt::QueuedConnection);
+    return;
+  }
+
+  ReloadPostProcessingShaders();
+}
+
 void QtHostInterface::loadState(const QString& filename)
 {
   if (!isOnWorkerThread())
@@ -1223,6 +1313,12 @@ static bool AddImGuiFont(const std::string& language, float size, float framebuf
   {
     path = GetFontPath("msgothic.ttc");
     range = ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
+  }
+  else if (language == "ru")
+  {
+    path = GetFontPath("segoeui.ttf");
+    range = ImGui::GetIO().Fonts->GetGlyphRangesCyrillic();
+    size *= 1.15f;
   }
   else if (language == "zh-cn")
   {

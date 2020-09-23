@@ -55,7 +55,7 @@
          <number>1024</number>
         </property>
         <property name="maximum">
-         <number>16384</number>
+         <number>8192</number>
         </property>
         <property name="singleStep">
          <number>128</number>

@@ -30,7 +30,7 @@ class INISettingsInterface;
 class MainWindow;
 class QtDisplayWidget;
 
-Q_DECLARE_METATYPE(SystemBootParameters);
+Q_DECLARE_METATYPE(std::shared_ptr<const SystemBootParameters>);
 
 class QtHostInterface final : public QObject, public CommonHostInterface
 {
@@ -40,6 +40,8 @@ public:
   explicit QtHostInterface(QObject* parent = nullptr);
   ~QtHostInterface();
 
+  ALWAYS_INLINE static QtHostInterface* GetInstance() { return static_cast<QtHostInterface*>(g_host_interface); }
+
   const char* GetFrontendName() const override;
 
   bool Initialize() override;
@@ -48,8 +50,6 @@ public:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
-
-  bool parseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
   /// Thread-safe settings access.
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
@@ -64,8 +64,8 @@ public:
   void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
   void RemoveSettingValue(const char* section, const char* key);
 
-  TinyString TranslateString(const char* context, const char* str) const;
-  std::string TranslateStdString(const char* context, const char* str) const;
+  TinyString TranslateString(const char* context, const char* str) const override;
+  std::string TranslateStdString(const char* context, const char* str) const override;
 
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }
@@ -89,6 +89,9 @@ public:
 
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
   void populatePlaylistEntryMenu(QMenu* menu);
+
+  /// Fills menu with the current cheat options.
+  void populateCheatsMenu(QMenu* menu);
 
   ALWAYS_INLINE QString getSavePathForInputProfile(const QString& name) const
   {
@@ -138,7 +141,7 @@ public Q_SLOTS:
   void onDisplayWindowKeyEvent(int key, bool pressed);
   void onDisplayWindowMouseMoveEvent(int x, int y);
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
-  void bootSystem(const SystemBootParameters& params);
+  void bootSystem(std::shared_ptr<const SystemBootParameters> params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void resumeSystemFromMostRecentState();
   void powerOffSystem();
@@ -158,6 +161,10 @@ public Q_SLOTS:
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();
+  void loadCheatList(const QString& filename);
+  void setCheatEnabled(quint32 index, bool enabled);
+  void applyCheat(quint32 index);
+  void reloadPostProcessingShaders();
 
 private Q_SLOTS:
   void doStopThread();

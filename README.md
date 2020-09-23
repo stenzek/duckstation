@@ -13,6 +13,11 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/23: Game covers added to Qt frontend (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 2020/09/19: Memory card importer/editor added to Qt frontend.
+- 2020/09/13: Support for chaining post processing shaders added.
+- 2020/09/12: Additional texture filtering options added.
+- 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
 - 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
 - 2020/08/25: Automated builds for macOS now available.
 - 2020/08/22: XInput controller backend added.
@@ -44,6 +49,7 @@ Other features include:
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
  - PGXP for geometry precision and texture correction
+ - Post processing shader chains
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows, Linux, **highly experimental** macOS support
@@ -58,6 +64,8 @@ Other features include:
  - Automatic updates for Windows builds
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
+ - Supports loading cheats from libretro or PCSXR format lists
+ - Memory card editor and save importer
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
@@ -293,6 +301,7 @@ To build on Linux, follow the same instructions as for a normal build, but for c
   <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg" alt="Final Fantasy 8" width="400" /></a>
   <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png" alt="SDL Frontend" width="400" /></a>
   <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg" alt="Spyro 2" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/gamegrid.png"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/gamegrid.png" alt="Game Grid" width="400" /></a>
 </p>
 
 ## Disclaimers

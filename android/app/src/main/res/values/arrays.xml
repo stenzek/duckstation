@@ -93,6 +93,18 @@
         <item>1:1</item>
         <item>PAR 1:1</item>
     </string-array>
+    <string-array name="settings_gpu_texture_filter_names">
+        <item>Nearest-Neighbor</item>
+        <item>Bilinear</item>
+        <item>JINC2</item>
+        <item>xBR</item>
+    </string-array>
+    <string-array name="settings_gpu_texture_filter_values">
+        <item>Nearest</item>
+        <item>Bilinear</item>
+        <item>JINC2</item>
+        <item>xBR</item>
+    </string-array>
     <string-array name="settings_controller_type_entries">
         <item>Digital Controller (Gamepad)</item>
         <item>Analog Controller (DualShock)</item>
@@ -112,5 +124,15 @@
         <item>Shared</item>
         <item>PerGame</item>
         <item>PerGameTitle</item>
+    </string-array>
+    <string-array name="emulation_menu">
+        <item>Quick Load</item>
+        <item>Quick Save</item>
+        <item>Reset</item>
+        <item>Change Disc</item>
+        <item>Toggle Speed Limiter</item>
+        <item>Toggle Touch Controller</item>
+        <item>Settings</item>
+        <item>Quit</item>
     </string-array>
 </resources>

@@ -24,6 +24,13 @@ struct Hash
   std::string ToString() const;
 };
 
+struct ImageInfo
+{
+  const char* description;
+  ConsoleRegion region;
+  Hash hash;
+};
+
 #pragma pack(push, 1)
 struct PSEXEHeader
 {
@@ -46,9 +53,10 @@ static_assert(sizeof(PSEXEHeader) == 0x800);
 #pragma pack(pop)
 
 Hash GetHash(const Image& image);
-std::optional<Image> LoadImageFromFile(std::string_view filename);
-std::optional<Hash> GetHashForFile(std::string_view filename);
+std::optional<Image> LoadImageFromFile(const char* filename);
+std::optional<Hash> GetHashForFile(const char* filename);
 
+const ImageInfo* GetImageInfoForHash(const Hash& hash);
 bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash);
 
 void PatchBIOS(Image& image, u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
