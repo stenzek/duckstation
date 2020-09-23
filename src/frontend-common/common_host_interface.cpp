@@ -118,6 +118,7 @@ void CommonHostInterface::InitializeUserDirectory()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("bios").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cache").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("cheats").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("covers").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("inputprofiles").c_str(), false);

@@ -1109,3 +1109,40 @@ void GameList::UpdateGameSettings(const std::string& filename, const std::string
                              save_to_user ? m_user_game_settings_filename.c_str() : m_game_settings_filename.c_str());
   }
 }
+
+std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
+{
+  static constexpr std::array<const char*, 2> extensions = {{"jpg", "png"}};
+
+  PathString cover_path;
+  for (const char* extension : extensions)
+  {
+    // try the title
+    cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                      g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
+    if (FileSystem::FileExists(cover_path))
+      return std::string(cover_path.GetCharArray());
+
+    // then the code
+    cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                      g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
+    if (FileSystem::FileExists(cover_path))
+      return std::string(cover_path.GetCharArray());
+
+    // and the file title if it differs
+    const std::string_view file_title = GetFileNameFromPath(entry->path.c_str());
+    if (!file_title.empty() && entry->title != file_title)
+    {
+      cover_path.Clear();
+      cover_path.AppendString(g_host_interface->GetUserDirectory().c_str());
+      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
+      cover_path.AppendString(file_title.data(), static_cast<u32>(file_title.size()));
+      cover_path.AppendCharacter('.');
+      cover_path.AppendString(extension);
+      if (FileSystem::FileExists(cover_path))
+        return std::string(cover_path.GetCharArray());
+    }
+  }
+
+  return std::string();
+}
