@@ -186,19 +186,24 @@ bool Context::SelectInstanceExtensions(ExtensionList* extension_list, bool enabl
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
   if (enable_surface && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
     return false;
-#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
   if (enable_surface && !SupportsExtension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, true))
     return false;
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-  if (enable_surface && !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true))
+#endif
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+  if (enable_surface && !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
     return false;
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+#endif
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
   if (enable_surface && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
     return false;
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+#endif
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
   if (enable_surface && !SupportsExtension(VK_MVK_MACOS_SURFACE_EXTENSION_NAME, true))
     return false;
-#elif defined(VK_USE_PLATFORM_METAL_EXT)
+#endif
+#if defined(VK_USE_PLATFORM_METAL_EXT)
   if (enable_surface && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif

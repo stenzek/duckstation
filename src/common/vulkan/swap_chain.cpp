@@ -135,6 +135,25 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, WindowInfo& wi)
   }
 #endif
 
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+  if (wi.type == WindowInfo::Type::Wayland)
+  {
+    VkWaylandSurfaceCreateInfoKHR surface_create_info = {VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR, nullptr, 0,
+                                                         static_cast<struct wl_display*>(wi.display_connection),
+                                                         static_cast<struct wl_surface*>(wi.window_handle)};
+
+    VkSurfaceKHR surface;
+    VkResult res = vkCreateWaylandSurfaceKHR(instance, &surface_create_info, nullptr, &surface);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkCreateWaylandSurfaceEXT failed: ");
+      return VK_NULL_HANDLE;
+    }
+
+    return surface;
+  }
+#endif
+
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
   if (wi.type == WindowInfo::Type::Android)
   {
