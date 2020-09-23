@@ -189,6 +189,7 @@
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
+    <addaction name="actionGridViewRefreshCovers"/>
    </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
@@ -658,7 +659,7 @@
   </action>
   <action name="actionViewGameList">
    <property name="text">
-    <string>&amp;Game List</string>
+    <string>Game &amp;List</string>
    </property>
   </action>
   <action name="actionViewSystemDisplay">
@@ -676,7 +677,7 @@
   </action>
   <action name="actionViewGameGrid">
    <property name="text">
-    <string>Game Grid</string>
+    <string>Game &amp;Grid</string>
    </property>
   </action>
   <action name="actionGridViewShowTitles">
@@ -692,7 +693,7 @@
   </action>
   <action name="actionGridViewZoomIn">
    <property name="text">
-    <string>Zoom In (Grid View)</string>
+    <string>Zoom &amp;In (Grid View)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -700,10 +701,15 @@
   </action>
   <action name="actionGridViewZoomOut">
    <property name="text">
-    <string>Zoom Out (Grid View)</string>
+    <string>Zoom &amp;Out (Grid View)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionGridViewRefreshCovers">
+   <property name="text">
+    <string>Refresh &amp;Covers (Grid View)</string>
    </property>
   </action>
  </widget>

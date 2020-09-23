@@ -92,8 +92,8 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
 
   connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
           &GameListWidget::onSelectionModelCurrentChanged);
-  connect(m_list_view, &GameListGridListView::zoomIn, this, &GameListWidget::listZoomIn);
-  connect(m_list_view, &GameListGridListView::zoomOut, this, &GameListWidget::listZoomOut);
+  connect(m_list_view, &GameListGridListView::zoomIn, this, &GameListWidget::gridZoomIn);
+  connect(m_list_view, &GameListGridListView::zoomOut, this, &GameListWidget::gridZoomOut);
   connect(m_list_view, &QListView::doubleClicked, this, &GameListWidget::onListViewItemDoubleClicked);
   connect(m_list_view, &QListView::customContextMenuRequested, this, &GameListWidget::onListViewContextMenuRequested);
 
@@ -218,14 +218,19 @@ void GameListWidget::listZoom(float delta)
   m_model->refresh();
 }
 
-void GameListWidget::listZoomIn()
+void GameListWidget::gridZoomIn()
 {
   listZoom(0.05f);
 }
 
-void GameListWidget::listZoomOut()
+void GameListWidget::gridZoomOut()
 {
   listZoom(-0.05f);
+}
+
+void GameListWidget::refreshGridCovers()
+{
+  m_model->refreshCovers();
 }
 
 void GameListWidget::showGameList()

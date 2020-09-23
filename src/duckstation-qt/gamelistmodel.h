@@ -54,6 +54,7 @@ public:
   int getCoverArtWidth() const;
   int getCoverArtHeight() const;
   int getCoverArtSpacing() const;
+  void refreshCovers();
 
 private:
   void loadCommonImages();

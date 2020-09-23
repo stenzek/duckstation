@@ -97,6 +97,12 @@ void GameListModel::setCoverScale(float scale)
   m_cover_scale = scale;
 }
 
+void GameListModel::refreshCovers()
+{
+  m_cover_pixmap_cache.clear();
+  refresh();
+}
+
 int GameListModel::getCoverArtWidth() const
 {
   return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale), 1);

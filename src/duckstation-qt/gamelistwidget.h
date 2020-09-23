@@ -60,8 +60,9 @@ public Q_SLOTS:
   void showGameList();
   void showGameGrid();
   void setShowCoverTitles(bool enabled);
-  void listZoomIn();
-  void listZoomOut();
+  void gridZoomIn();
+  void gridZoomOut();
+  void refreshGridCovers();
 
 protected:
   void resizeEvent(QResizeEvent* event);

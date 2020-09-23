@@ -698,12 +698,14 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
     if (isShowingGameList())
-      m_game_list_widget->listZoomIn();
+      m_game_list_widget->gridZoomIn();
   });
   connect(m_ui.actionGridViewZoomOut, &QAction::triggered, m_game_list_widget, [this]() {
     if (isShowingGameList())
-      m_game_list_widget->listZoomOut();
+      m_game_list_widget->gridZoomOut();
   });
+  connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
+          &GameListWidget::refreshGridCovers);
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
