@@ -920,15 +920,27 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
   return true;
 }
 
-bool FileSystem::FileExists(const char* Path)
+bool FileSystem::FileExists(const char* path)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
+  // convert to wide string
+  int len = static_cast<int>(std::strlen(path));
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
+  if (wlen <= 0)
+    return false;
+
+  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
+  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
+  if (wlen <= 0)
+    return false;
+
+  wpath[wlen] = 0;
+
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  DWORD fileAttributes = GetFileAttributesW(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -938,15 +950,27 @@ bool FileSystem::FileExists(const char* Path)
     return true;
 }
 
-bool FileSystem::DirectoryExists(const char* Path)
+bool FileSystem::DirectoryExists(const char* path)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
+  // convert to wide string
+  int len = static_cast<int>(std::strlen(path));
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
+  if (wlen <= 0)
+    return false;
+
+  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
+  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
+  if (wlen <= 0)
+    return false;
+
+  wpath[wlen] = 0;
+
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  DWORD fileAttributes = GetFileAttributesW(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
