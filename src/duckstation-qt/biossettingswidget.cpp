@@ -1,6 +1,7 @@
 #include "biossettingswidget.h"
 #include "core/bios.h"
 #include "qthostinterface.h"
+#include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include <QtWidgets/QFileDialog>
@@ -9,6 +10,9 @@
 static void populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,
                                       std::vector<std::pair<std::string, const BIOS::ImageInfo*>>& images)
 {
+  QSignalBlocker sb(cb);
+  cb->clear();
+
   cb->addItem(QIcon(QStringLiteral(":/icons/system-search.png")),
               QT_TRANSLATE_NOOP("BIOSSettingsWidget", "Auto-Detect"));
 
@@ -94,14 +98,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(QtHostInterface* host_interface, QWidget*
                              tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
                                 "but usually safe to enabled."));
 
-  auto images = m_host_interface->FindBIOSImagesInUserDirectory();
-  populateDropDownForRegion(ConsoleRegion::NTSC_J, m_ui.imageNTSCJ, images);
-  populateDropDownForRegion(ConsoleRegion::NTSC_U, m_ui.imageNTSCU, images);
-  populateDropDownForRegion(ConsoleRegion::PAL, m_ui.imagePAL, images);
-
-  setDropDownValue(m_ui.imageNTSCJ, m_host_interface->GetStringSettingValue("BIOS", "PathNTSCJ", ""));
-  setDropDownValue(m_ui.imageNTSCU, m_host_interface->GetStringSettingValue("BIOS", "PathNTSCU", ""));
-  setDropDownValue(m_ui.imagePAL, m_host_interface->GetStringSettingValue("BIOS", "PathPAL", ""));
+  refreshList();
 
   connect(m_ui.imageNTSCJ, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     m_host_interface->SetStringSettingValue("BIOS", "PathNTSCJ",
@@ -118,6 +115,52 @@ BIOSSettingsWidget::BIOSSettingsWidget(QtHostInterface* host_interface, QWidget*
                                             m_ui.imagePAL->itemData(index).toString().toStdString().c_str());
     m_host_interface->applySettings();
   });
+
+  connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
+
+  std::string current_search_directory = g_host_interface->GetBIOSDirectory();
+  m_ui.searchDirectory->setText(QString::fromStdString(current_search_directory));
+  connect(m_ui.searchDirectory, &QLineEdit::textChanged, [this](const QString& text) {
+    if (text.isEmpty())
+    {
+      m_host_interface->RemoveSettingValue("BIOS", "SearchDirectory");
+    }
+    else
+    {
+      m_host_interface->SetStringSettingValue("BIOS", "SearchDirectory", text.toStdString().c_str());
+    }
+    refreshList();
+  });
+  connect(m_ui.browseSearchDirectory, &QPushButton::clicked, this, &BIOSSettingsWidget::browseSearchDirectory);
+  connect(m_ui.openSearchDirectory, &QPushButton::clicked, this, &BIOSSettingsWidget::openSearchDirectory);
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;
+
+void BIOSSettingsWidget::refreshList()
+{
+  auto images = m_host_interface->FindBIOSImagesInDirectory(m_host_interface->GetBIOSDirectory().c_str());
+  populateDropDownForRegion(ConsoleRegion::NTSC_J, m_ui.imageNTSCJ, images);
+  populateDropDownForRegion(ConsoleRegion::NTSC_U, m_ui.imageNTSCU, images);
+  populateDropDownForRegion(ConsoleRegion::PAL, m_ui.imagePAL, images);
+
+  setDropDownValue(m_ui.imageNTSCJ, m_host_interface->GetStringSettingValue("BIOS", "PathNTSCJ", ""));
+  setDropDownValue(m_ui.imageNTSCU, m_host_interface->GetStringSettingValue("BIOS", "PathNTSCU", ""));
+  setDropDownValue(m_ui.imagePAL, m_host_interface->GetStringSettingValue("BIOS", "PathPAL", ""));
+}
+
+void BIOSSettingsWidget::browseSearchDirectory()
+{
+  QString directory = QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(this), tr("Select Directory"),
+                                                        m_ui.searchDirectory->text());
+  if (directory.isEmpty())
+    return;
+
+  m_ui.searchDirectory->setText(directory);
+}
+
+void BIOSSettingsWidget::openSearchDirectory()
+{
+  QString dir = QString::fromStdString(m_host_interface->GetBIOSDirectory());
+  QtUtils::OpenURL(this, QUrl::fromLocalFile(dir));
+}

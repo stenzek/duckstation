@@ -147,9 +147,6 @@ struct Settings
 
   // TODO: Controllers, memory cards, etc.
 
-  std::string bios_path_ntsc_j;
-  std::string bios_path_ntsc_u;
-  std::string bios_path_pal;
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
 

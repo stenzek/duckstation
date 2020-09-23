@@ -28,7 +28,7 @@ public:
   std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const override;
   std::string GetShaderCacheBasePath() const override;
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
-  std::string GetBIOSDirectory() const override;
+  std::string GetBIOSDirectory() override;
 
   // Called by frontend
   void retro_get_system_av_info(struct retro_system_av_info* info);

@@ -119,7 +119,7 @@ public:
   virtual std::string TranslateStdString(const char* context, const char* str) const;
 
   /// Returns the path to the directory to search for BIOS images.
-  virtual std::string GetBIOSDirectory() const;
+  virtual std::string GetBIOSDirectory();
 
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
@@ -130,7 +130,6 @@ public:
 
   /// Returns a list of filenames and descriptions for BIOS images in a directory.
   std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);
-  std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInUserDirectory();
 
   virtual void OnRunningGameChanged();
   virtual void OnSystemPerformanceCountersUpdated();

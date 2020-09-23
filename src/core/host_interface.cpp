@@ -199,53 +199,57 @@ void HostInterface::AddFormattedOSDMessage(float duration, const char* format, .
   AddOSDMessage(std::move(message), duration);
 }
 
-std::string HostInterface::GetBIOSDirectory() const
+std::string HostInterface::GetBIOSDirectory()
 {
+  std::string dir = GetStringSettingValue("BIOS", "SearchDirectory", "");
+  if (!dir.empty())
+    return dir;
+
   return GetUserDirectoryRelativePath("bios");
 }
 
 std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
 {
-  const std::string* bios_path;
+  std::string bios_dir = GetBIOSDirectory();
+  std::string bios_name;
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      bios_path = &g_settings.bios_path_ntsc_j;
+      bios_name = GetStringSettingValue("BIOS", "PathNTSCJ", "");
       break;
 
     case ConsoleRegion::PAL:
-      bios_path = &g_settings.bios_path_pal;
+      bios_name = GetStringSettingValue("BIOS", "PAL", "");
       break;
 
     case ConsoleRegion::NTSC_U:
     default:
-      bios_path = &g_settings.bios_path_ntsc_u;
+      bios_name = GetStringSettingValue("BIOS", "PathNTSCU", "");
       break;
   }
 
-  if (bios_path->empty())
+  if (bios_name.empty())
   {
     // auto-detect
-    return FindBIOSImageInDirectory(region, GetBIOSDirectory().c_str());
+    return FindBIOSImageInDirectory(region, bios_dir.c_str());
   }
 
   // try the configured path
   std::optional<BIOS::Image> image = BIOS::LoadImageFromFile(
-    StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", GetBIOSDirectory().c_str(), bios_path->c_str())
-      .c_str());
+    StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", bios_dir.c_str(), bios_name.c_str()).c_str());
   if (!image.has_value())
   {
     g_host_interface->ReportFormattedError(
       g_host_interface->TranslateString("HostInterface", "Failed to load configured BIOS file '%s'"),
-      bios_path->c_str());
+      bios_name.c_str());
     return std::nullopt;
   }
 
   BIOS::Hash found_hash = BIOS::GetHash(*image);
-  Log_DevPrintf("Hash for BIOS '%s': %s", bios_path->c_str(), found_hash.ToString().c_str());
+  Log_DevPrintf("Hash for BIOS '%s': %s", bios_name.c_str(), found_hash.ToString().c_str());
 
   if (!BIOS::IsValidHashForRegion(region, found_hash))
-    Log_WarningPrintf("Hash for BIOS '%s' does not match region. This may cause issues.", bios_path->c_str());
+    Log_WarningPrintf("Hash for BIOS '%s' does not match region. This may cause issues.", bios_name.c_str());
 
   return image;
 }
@@ -328,11 +332,6 @@ HostInterface::FindBIOSImagesInDirectory(const char* directory)
   }
 
   return results;
-}
-
-std::vector<std::pair<std::string, const BIOS::ImageInfo*>> HostInterface::FindBIOSImagesInUserDirectory()
-{
-  return FindBIOSImagesInDirectory(GetUserDirectoryRelativePath("bios").c_str());
 }
 
 bool HostInterface::LoadState(const char* filename)
@@ -464,6 +463,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Audio", "Sync", true);
   si.SetBoolValue("Audio", "DumpOnBoot", false);
 
+  si.SetStringValue("BIOS", "SearchDirectory", "");
   si.SetStringValue("BIOS", "PathNTSCU", "");
   si.SetStringValue("BIOS", "PathNTSCJ", "");
   si.SetStringValue("BIOS", "PathPAL", "");

@@ -646,7 +646,7 @@ bool LibretroHostInterface::HasCoreVariablesChanged()
   return (g_retro_environment_callback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &changed) && changed);
 }
 
-std::string LibretroHostInterface::GetBIOSDirectory() const
+std::string LibretroHostInterface::GetBIOSDirectory()
 {
   // Assume BIOS files are located in system directory.
   const char* system_directory = nullptr;

@@ -15,6 +15,11 @@ public:
   explicit BIOSSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
   ~BIOSSettingsWidget();
 
+private Q_SLOTS:
+  void refreshList();
+  void browseSearchDirectory();
+  void openSearchDirectory();
+
 private:
   Ui::BIOSSettingsWidget m_ui;
 
