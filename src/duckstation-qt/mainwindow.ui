@@ -196,6 +196,8 @@
      <string>&amp;Tools</string>
     </property>
     <addaction name="actionMemory_Card_Editor"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenDataDirectory"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -710,6 +712,16 @@
   <action name="actionGridViewRefreshCovers">
    <property name="text">
     <string>Refresh &amp;Covers (Grid View)</string>
+   </property>
+  </action>
+  <action name="actionOpen_Memory_Card_Directory">
+   <property name="text">
+    <string>Open Memory Card Directory...</string>
+   </property>
+  </action>
+  <action name="actionOpenDataDirectory">
+   <property name="text">
+    <string>Open Data Directory...</string>
    </property>
   </action>
  </widget>

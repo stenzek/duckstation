@@ -695,6 +695,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
     if (isShowingGameList())
@@ -766,7 +767,9 @@ void MainWindow::connectSignals()
                                                "ShowMDECState");
 
   addThemeToMenu(tr("Default"), QStringLiteral("default"));
-  addThemeToMenu(tr("DarkFusion"), QStringLiteral("darkfusion"));
+  addThemeToMenu(tr("Fusion"), QStringLiteral("fusion"));
+  addThemeToMenu(tr("Dark Fusion (Gray)"), QStringLiteral("darkfusion"));
+  addThemeToMenu(tr("Dark Fusion (Blue)"), QStringLiteral("darkfusionblue"));
   addThemeToMenu(tr("QDarkStyle"), QStringLiteral("qdarkstyle"));
 }
 
@@ -796,6 +799,12 @@ void MainWindow::updateTheme()
     if (f.open(QFile::ReadOnly | QFile::Text))
       qApp->setStyleSheet(f.readAll());
   }
+  else if (theme == QStringLiteral("fusion"))
+  {
+    qApp->setPalette(QApplication::style()->standardPalette());
+    qApp->setStyleSheet(QString());
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+  }
   else if (theme == QStringLiteral("darkfusion"))
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
@@ -819,6 +828,42 @@ void MainWindow::updateTheme()
     darkPalette.setColor(QPalette::ButtonText, Qt::white);
     darkPalette.setColor(QPalette::Link, blue);
     darkPalette.setColor(QPalette::Highlight, lighterGray);
+    darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+    darkPalette.setColor(QPalette::Active, QPalette::Button, gray.darker());
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+
+    qApp->setPalette(darkPalette);
+
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+  }
+  else if (theme == QStringLiteral("darkfusionblue"))
+  {
+    // adapted from https://gist.github.com/QuantumCD/6245215
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    const QColor lighterGray(75, 75, 75);
+    const QColor darkGray(53, 53, 53);
+    const QColor gray(128, 128, 128);
+    const QColor black(25, 25, 25);
+    const QColor blue(198, 238, 255);
+    const QColor blue2(0, 88, 208);
+
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, darkGray);
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, black);
+    darkPalette.setColor(QPalette::AlternateBase, darkGray);
+    darkPalette.setColor(QPalette::ToolTipBase, blue2);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, darkGray);
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::Link, blue);
+    darkPalette.setColor(QPalette::Highlight, blue2);
     darkPalette.setColor(QPalette::HighlightedText, Qt::white);
 
     darkPalette.setColor(QPalette::Active, QPalette::Button, gray.darker());
@@ -999,6 +1044,11 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 
   m_memory_card_editor_dialog->setModal(false);
   m_memory_card_editor_dialog->show();
+}
+
+void MainWindow::onToolsOpenDataDirectoryTriggered()
+{
+  QtUtils::OpenURL(this, QUrl::fromLocalFile(m_host_interface->getUserDirectoryRelativePath(QString())));
 }
 
 void MainWindow::checkForUpdates(bool display_message)
