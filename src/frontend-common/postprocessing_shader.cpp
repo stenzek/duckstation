@@ -166,7 +166,7 @@ std::string PostProcessingShader::GetConfigString() const
       switch (option.type)
       {
         case Option::Type::Bool:
-          ss << (option.value[i].int_value != 0) ? "true" : "false";
+          ss << ((option.value[i].int_value != 0) ? "true" : "false");
           break;
 
         case Option::Type::Int:
