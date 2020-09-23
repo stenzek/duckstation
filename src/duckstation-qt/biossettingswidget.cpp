@@ -13,8 +13,7 @@ static void populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,
   QSignalBlocker sb(cb);
   cb->clear();
 
-  cb->addItem(QIcon(QStringLiteral(":/icons/system-search.png")),
-              QT_TRANSLATE_NOOP("BIOSSettingsWidget", "Auto-Detect"));
+  cb->addItem(QIcon(QStringLiteral(":/icons/system-search.png")), qApp->translate("BIOSSettingsWidget", "Auto-Detect"));
 
   std::sort(images.begin(), images.end(), [region](const auto& left, const auto& right) {
     const bool left_region_match = (left.second && left.second->region == region);
