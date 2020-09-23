@@ -831,7 +831,7 @@ void MainWindow::saveStateToConfig()
     const QByteArray geometry = saveGeometry();
     const QByteArray geometry_b64 = geometry.toBase64();
     const std::string old_geometry_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowGeometry");
-    if (geometry_b64.compare(old_geometry_b64.c_str()) != 0)
+    if (old_geometry_b64 != geometry_b64.constData())
       m_host_interface->SetStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
   }
 
@@ -839,7 +839,7 @@ void MainWindow::saveStateToConfig()
     const QByteArray state = saveState();
     const QByteArray state_b64 = state.toBase64();
     const std::string old_state_b64 = m_host_interface->GetStringSettingValue("UI", "MainWindowState");
-    if (state_b64.compare(old_state_b64.c_str()) != 0)
+    if (old_state_b64 != state_b64.constData())
       m_host_interface->SetStringSettingValue("UI", "MainWindowState", state_b64.constData());
   }
 }
