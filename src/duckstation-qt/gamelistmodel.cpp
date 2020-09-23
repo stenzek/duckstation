@@ -2,9 +2,67 @@
 #include "common/string_util.h"
 #include "core/system.h"
 #include <QtGui/QIcon>
+#include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility"}};
+  {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility", "Cover"}};
+
+static constexpr int COVER_ART_WIDTH = 512;
+static constexpr int COVER_ART_HEIGHT = 512;
+static constexpr int COVER_ART_SPACING = 32;
+
+static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_height)
+{
+  if (pm->width() == expected_width && pm->height() == expected_height)
+    return;
+
+  *pm = pm->scaled(expected_width, expected_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+  if (pm->width() == expected_width && pm->height() == expected_height)
+    return;
+
+  int xoffs = 0;
+  int yoffs = 0;
+  if (pm->width() < expected_width)
+    xoffs = (expected_width - pm->width()) / 2;
+  if (pm->height() < expected_height)
+    yoffs = (expected_height - pm->height()) / 2;
+
+  QPixmap padded_image(expected_width, expected_height);
+  padded_image.fill(Qt::transparent);
+  QPainter painter;
+  if (painter.begin(&padded_image))
+  {
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.drawPixmap(xoffs, yoffs, *pm);
+    painter.setCompositionMode(QPainter::CompositionMode_Destination);
+    painter.fillRect(padded_image.rect(), QColor(0, 0, 0, 0));
+    painter.end();
+  }
+
+  *pm = padded_image;
+}
+
+static QPixmap createPlaceholderImage(int width, int height, float scale, const std::string& title)
+{
+  QPixmap pm(QStringLiteral(":/icons/cover-placeholder.png"));
+  if (pm.isNull())
+    return QPixmap(width, height);
+
+  resizeAndPadPixmap(&pm, width, height);
+  QPainter painter;
+  if (painter.begin(&pm))
+  {
+    QFont font;
+    font.setPointSize(std::max(static_cast<int>(32.0f * scale), 1));
+    painter.setFont(font);
+    painter.setPen(Qt::white);
+
+    painter.drawText(QRect(0, 0, width, height), Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
+    painter.end();
+  }
+
+  return pm;
+}
 
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
 {
@@ -29,6 +87,30 @@ GameListModel::GameListModel(GameList* game_list, QObject* parent /* = nullptr *
   setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
+
+void GameListModel::setCoverScale(float scale)
+{
+  if (m_cover_scale == scale)
+    return;
+
+  m_cover_pixmap_cache.clear();
+  m_cover_scale = scale;
+}
+
+int GameListModel::getCoverArtWidth() const
+{
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale), 1);
+}
+
+int GameListModel::getCoverArtHeight() const
+{
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_HEIGHT) * m_cover_scale), 1);
+}
+
+int GameListModel::getCoverArtSpacing() const
+{
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_SPACING) * m_cover_scale), 1);
+}
 
 int GameListModel::rowCount(const QModelIndex& parent) const
 {
@@ -78,6 +160,14 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
         case Column_Size:
           return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
 
+        case Column_Cover:
+        {
+          if (m_show_titles_for_covers)
+            return QString::fromStdString(ge.title);
+          else
+            return {};
+        }
+
         default:
           return {};
       }
@@ -94,6 +184,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           return QString::fromStdString(ge.code);
 
         case Column_Title:
+        case Column_Cover:
           return QString::fromStdString(ge.title);
 
         case Column_FileTitle:
@@ -154,6 +245,29 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
             (ge.compatibility_rating >= GameListCompatibilityRating::Count) ? GameListCompatibilityRating::Unknown :
                                                                               ge.compatibility_rating)];
         }
+
+        case Column_Cover:
+        {
+          auto it = m_cover_pixmap_cache.find(ge.path);
+          if (it != m_cover_pixmap_cache.end())
+            return it->second;
+
+          QPixmap image;
+          std::string path = m_game_list->GetCoverImagePathForEntry(&ge);
+          if (!path.empty())
+          {
+            image = QPixmap(QString::fromStdString(path));
+            if (!image.isNull())
+              resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight());
+          }
+
+          if (image.isNull())
+            image = createPlaceholderImage(getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, ge.title);
+
+          m_cover_pixmap_cache.emplace(ge.path, image);
+          return image;
+        }
+        break;
 
         default:
           return {};

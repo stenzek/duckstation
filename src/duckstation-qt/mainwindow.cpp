@@ -335,6 +335,15 @@ void MainWindow::onViewGameListActionTriggered()
   if (m_emulation_running)
     m_host_interface->pauseSystem(true);
   switchToGameListView();
+  m_game_list_widget->showGameList();
+}
+
+void MainWindow::onViewGameGridActionTriggered()
+{
+  if (m_emulation_running)
+    m_host_interface->pauseSystem(true);
+  switchToGameListView();
+  m_game_list_widget->showGameGrid();
 }
 
 void MainWindow::onViewSystemDisplayTriggered()
@@ -490,6 +499,8 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
 
+  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
+
   updateDebugMenuVisibility();
 
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
@@ -597,6 +608,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.statusBar->clearMessage();
 }
 
+bool MainWindow::isShowingGameList() const
+{
+  return m_ui.mainContainer->currentIndex() == 0;
+}
+
 void MainWindow::switchToGameListView()
 {
   m_ui.mainContainer->setCurrentIndex(0);
@@ -671,6 +687,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
   connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
+  connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
   connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
@@ -678,6 +695,15 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
+  connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
+    if (isShowingGameList())
+      m_game_list_widget->listZoomIn();
+  });
+  connect(m_ui.actionGridViewZoomOut, &QAction::triggered, m_game_list_widget, [this]() {
+    if (isShowingGameList())
+      m_game_list_widget->listZoomOut();
+  });
 
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);

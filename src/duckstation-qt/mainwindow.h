@@ -67,6 +67,7 @@ private Q_SLOTS:
   void onViewToolbarActionToggled(bool checked);
   void onViewStatusBarActionToggled(bool checked);
   void onViewGameListActionTriggered();
+  void onViewGameGridActionTriggered();
   void onViewSystemDisplayTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
@@ -91,6 +92,7 @@ private:
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
   void updateEmulationActions(bool starting, bool running);
+  bool isShowingGameList() const;
   void switchToGameListView();
   void switchToEmulationView();
   void saveStateToConfig();

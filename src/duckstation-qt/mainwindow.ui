@@ -14,7 +14,7 @@
    <string>DuckStation</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="resources/resources.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
   <widget class="QStackedWidget" name="mainContainer">
@@ -42,7 +42,7 @@
       <string>Change Disc</string>
      </property>
      <property name="icon">
-      <iconset>
+      <iconset resource="resources/resources.qrc">
        <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
      </property>
      <widget class="QMenu" name="menuChangeDiscFromPlaylist">
@@ -60,7 +60,7 @@
       <string>Cheats</string>
      </property>
      <property name="icon">
-      <iconset>
+      <iconset resource="resources/resources.qrc">
        <normaloff>:/icons/conical-flask-red.png</normaloff>:/icons/conical-flask-red.png</iconset>
      </property>
     </widget>
@@ -69,7 +69,7 @@
       <string>Load State</string>
      </property>
      <property name="icon">
-      <iconset>
+      <iconset resource="resources/resources.qrc">
        <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
      </property>
     </widget>
@@ -78,7 +78,7 @@
       <string>Save State</string>
      </property>
      <property name="icon">
-      <iconset>
+      <iconset resource="resources/resources.qrc">
        <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
      </property>
     </widget>
@@ -115,7 +115,7 @@
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionGeneralSettings"/>
-    <addaction name="actionBIOSSettings"/> 
+    <addaction name="actionBIOSSettings"/>
     <addaction name="actionConsoleSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionHotkeySettings"/>
@@ -183,7 +183,12 @@
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
+    <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
+    <addaction name="separator"/>
+    <addaction name="actionGridViewShowTitles"/>
+    <addaction name="actionGridViewZoomIn"/>
+    <addaction name="actionGridViewZoomOut"/>
    </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
@@ -236,7 +241,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStartDisc">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/drive-optical.png</normaloff>:/icons/drive-optical.png</iconset>
    </property>
    <property name="text">
@@ -245,7 +250,7 @@
   </action>
   <action name="actionStartBios">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/drive-removable-media.png</normaloff>:/icons/drive-removable-media.png</iconset>
    </property>
    <property name="text">
@@ -254,7 +259,7 @@
   </action>
   <action name="actionScanForNewGames">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
    </property>
    <property name="text">
@@ -263,7 +268,7 @@
   </action>
   <action name="actionRescanAllGames">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
    </property>
    <property name="text">
@@ -272,7 +277,7 @@
   </action>
   <action name="actionPowerOff">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/system-shutdown.png</normaloff>:/icons/system-shutdown.png</iconset>
    </property>
    <property name="text">
@@ -281,7 +286,7 @@
   </action>
   <action name="actionReset">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
    </property>
    <property name="text">
@@ -293,7 +298,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/media-playback-pause.png</normaloff>:/icons/media-playback-pause.png</iconset>
    </property>
    <property name="text">
@@ -302,7 +307,7 @@
   </action>
   <action name="actionLoadState">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
    </property>
    <property name="text">
@@ -311,7 +316,7 @@
   </action>
   <action name="actionSaveState">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
    </property>
    <property name="text">
@@ -334,7 +339,7 @@
   </action>
   <action name="actionConsoleSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
    </property>
    <property name="text">
@@ -343,7 +348,7 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
    </property>
    <property name="text">
@@ -352,7 +357,7 @@
   </action>
   <action name="actionHotkeySettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
    </property>
    <property name="text">
@@ -361,7 +366,7 @@
   </action>
   <action name="actionDisplaySettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
    </property>
    <property name="text">
@@ -370,7 +375,7 @@
   </action>
   <action name="actionEnhancementSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
    </property>
    <property name="text">
@@ -379,7 +384,7 @@
   </action>
   <action name="actionPostProcessingSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
    </property>
    <property name="text">
@@ -388,7 +393,7 @@
   </action>
   <action name="actionFullscreen">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/view-fullscreen.png</normaloff>:/icons/view-fullscreen.png</iconset>
    </property>
    <property name="text">
@@ -427,7 +432,7 @@
   </action>
   <action name="actionChangeDisc">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
    </property>
    <property name="text">
@@ -436,7 +441,7 @@
   </action>
   <action name="actionCheats">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/conical-flask-red.png</normaloff>:/icons/conical-flask-red.png</iconset>
    </property>
    <property name="text">
@@ -445,7 +450,7 @@
   </action>
   <action name="actionAudioSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
    </property>
    <property name="text">
@@ -454,7 +459,7 @@
   </action>
   <action name="actionGameListSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
    </property>
    <property name="text">
@@ -463,7 +468,7 @@
   </action>
   <action name="actionGeneralSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
    </property>
    <property name="text">
@@ -472,7 +477,7 @@
   </action>
   <action name="actionAdvancedSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
    </property>
    <property name="text">
@@ -481,7 +486,7 @@
   </action>
   <action name="actionAddGameDirectory">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/edit-find.png</normaloff>:/icons/edit-find.png</iconset>
    </property>
    <property name="text">
@@ -490,7 +495,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/preferences-system.png</normaloff>:/icons/preferences-system.png</iconset>
    </property>
    <property name="text">
@@ -601,7 +606,7 @@
   </action>
   <action name="actionScreenshot">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/camera-photo.png</normaloff>:/icons/camera-photo.png</iconset>
    </property>
    <property name="text">
@@ -610,7 +615,7 @@
   </action>
   <action name="actionMemoryCardSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/media-flash-24.png</normaloff>:/icons/media-flash-24.png</iconset>
    </property>
    <property name="text">
@@ -619,7 +624,7 @@
   </action>
   <action name="actionResumeLastState">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
    </property>
    <property name="text">
@@ -669,9 +674,41 @@
     <string>Memory &amp;Card Editor</string>
    </property>
   </action>
+  <action name="actionViewGameGrid">
+   <property name="text">
+    <string>Game Grid</string>
+   </property>
+  </action>
+  <action name="actionGridViewShowTitles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Titles (Grid View)</string>
+   </property>
+  </action>
+  <action name="actionGridViewZoomIn">
+   <property name="text">
+    <string>Zoom In (Grid View)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionGridViewZoomOut">
+   <property name="text">
+    <string>Zoom Out (Grid View)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="resources/icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
