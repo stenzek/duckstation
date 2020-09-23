@@ -618,8 +618,8 @@
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="327"/>
-        <source>NTSC-U (US)</source>
-        <translation>NTSC-U (美国)</translation>
+        <source>NTSC-U/C (US, Canada)</source>
+        <translation>NTSC-U (美国, 加拿大)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="327"/>
@@ -643,22 +643,6 @@
         <location filename="../consolesettingswidget.ui" line="38"/>
         <source>Region:</source>
         <translation>区域:</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="48"/>
-        <source>BIOS Image Path:</source>
-        <translation>BIOS文件路径:</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="55"/>
-        <location filename="../consolesettingswidget.cpp" line="35"/>
-        <source>Fast Boot</source>
-        <translation>快速启动</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="62"/>
-        <source>Enable TTY Output</source>
-        <translation>启用TTY输出</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="74"/>
@@ -702,11 +686,6 @@
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="36"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
-        <translation>对BIOS应用补丁以跳过主机的启动动画, 不适用于所有游戏, 但通常可以安全启用。</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="39"/>
         <source>Preload Image to RAM</source>
         <translation>将镜像预加载到内存</translation>
@@ -715,11 +694,6 @@
         <location filename="../consolesettingswidget.cpp" line="40"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>将游戏镜像加载到内存中。对于可能在游戏过程中变得不可靠的网络路径非常有用。在某些情况下, 当游戏开始播放音轨时也可以消除卡顿。</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.cpp" line="47"/>
-        <source>Select BIOS Image</source>
-        <translation>选择BIOS文件</translation>
     </message>
 </context>
 <context>
@@ -2663,6 +2637,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>常规设置...</translation>
     </message>
     <message>
+        <source>B&amp;IOS Settings...</source>
+        <translation>BIOS设置(&amp;I)...</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="403"/>
         <source>Advanced Settings...</source>
         <translation>高级设置...</translation>
@@ -3528,6 +3506,10 @@ The saves will not be recoverable.</source>
         <translation>常规设置</translation>
     </message>
     <message>
+        <source>BIOS Settings</source>
+        <translation>BIOS设置</translation>
+    </message>
+    <message>
         <location filename="../settingsdialog.ui" line="72"/>
         <source>Console Settings</source>
         <translation>主机设置</translation>
@@ -3776,6 +3758,82 @@ The saves will not be recoverable.</source>
     <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空间不足, 此文件需要%1格, 但只有%2格可用。</translation>
+    </message>
+</context>
+<context>
+	<name>BIOSSettingsWidget</name>
+    <message>
+        <source>BIOS Selection</source>
+        <translation>BIOS选择</translation>
+    </message>
+    <message>
+        <source>Auto-Detect</source>
+        <translation>自动检测</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <source>NTSC-J (Japan):</source>
+        <translation>NTSC-J (日本):</translation>
+    </message>
+    <message>
+        <source>NTSC-U/C (US/Canada):</source>
+        <translation>NTSC-U/C (美国/加拿大):</translation>
+    </message>
+    <message>
+        <source>PAL (Europe, Australia):</source>
+        <translation>PAL (欧洲, 澳大利亚):</translation>
+    </message>
+    <message>
+        <source>Open in Explorer...</source>
+        <translation>打开所在目录</translation>
+    </message>
+    <message>
+        <source>Refresh List</source>
+        <translation>刷新列表</translation>
+    </message>
+    <message>
+        <source>BIOS Directory</source>
+        <translation>BIOS路径</translation>
+    </message>
+    <message>
+        <source>DuckStation will search for BIOS images in this directory.</source>
+        <translation>DuckStation将在此目录中搜索BIOS文件。</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <source>Options and Patches</source>
+        <translation>选项和补丁</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="55"/>
+        <location filename="../consolesettingswidget.cpp" line="35"/>
+        <source>Fast Boot</source>
+        <translation>快速启动</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="62"/>
+        <source>Enable TTY Output</source>
+        <translation>启用TTY输出</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="74"/>
+        <source>...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="36"/>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <translation>对BIOS应用补丁以跳过主机的启动动画, 不适用于所有游戏, 但通常可以安全启用。</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>不勾选</translation>
     </message>
 </context>
 </TS>
