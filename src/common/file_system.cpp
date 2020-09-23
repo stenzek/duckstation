@@ -1200,6 +1200,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
   }
 
   // iterate results
+  PathString full_path;
   struct dirent* pDirEnt;
   while ((pDirEnt = readdir(pDir)) != nullptr)
   {
@@ -1215,17 +1216,28 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         continue;
     }
 
+    if (ParentPath != nullptr)
+      full_path.Format("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
+    else if (Path != nullptr)
+      full_path.Format("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
+    else
+      full_path.Format("%s/%s", OriginPath, pDirEnt->d_name);
+
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
 #ifdef __HAIKU__
     struct stat sDir;
+    if (stat(full_path, &sDir) < 0)
+      continue;
 
-    stat(pDirEnt->d_name, &sDir);
-    if (S_ISDIR(sDir.st_mode))
 #else
-    if (pDirEnt->d_type == DT_DIR)
+    struct stat64 sDir;
+    if (stat64(full_path, &sDir) < 0)
+      continue;
 #endif
+
+    if (S_ISDIR(sDir.st_mode))
     {
       if (Flags & FILESYSTEM_FIND_RECURSIVE)
       {
@@ -1252,8 +1264,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         continue;
     }
 
-    //        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-    //            outData.Attributes |= FILESYSTEM_FILE_ATTRIBUTE_READ_ONLY;
+    outData.Size = static_cast<u64>(sDir.st_size);
 
     // match the filename
     if (hasWildCards)
@@ -1271,13 +1282,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     // TODO string formatter, clean this mess..
     if (!(Flags & FILESYSTEM_FIND_RELATIVE_PATHS))
     {
-      if (ParentPath != nullptr)
-        outData.FileName =
-          StringUtil::StdStringFromFormat("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
-      else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
-      else
-        outData.FileName = StringUtil::StdStringFromFormat("%s/%s", OriginPath, pDirEnt->d_name);
+      outData.FileName = std::string(full_path);
     }
     else
     {
