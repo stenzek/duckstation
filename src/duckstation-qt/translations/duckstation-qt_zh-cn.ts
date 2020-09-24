@@ -2493,6 +2493,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>记忆卡管理器(&amp;C)</translation>
     </message>
     <message>
+        <source>Open Data Directory...</source>
+        <translation>打开模拟器数据目录...</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="203"/>
         <source>Start &amp;Disc...</source>
         <translation>启动光盘(&amp;D)...</translation>
@@ -2761,8 +2765,28 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="598"/>
-        <source>&amp;Game List</source>
-        <translation>游戏列表(&amp;G)</translation>
+        <source>Game &amp;List</source>
+        <translation>游戏列表(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Game &amp;Grid</source>
+        <translation>游戏方格(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Show Titles (Grid View)</source>
+        <translation>显示标题 (方格样式)</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;Out (Grid View)</source>
+        <translation>缩小 (方格样式)</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;In (Grid View)</source>
+        <translation>放大 (方格样式)</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Covers (Grid View)</source>
+        <translation>刷新 (方格样式)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="606"/>
@@ -2837,6 +2861,18 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="660"/>
         <source>Default</source>
         <translation>默认</translation>
+    </message>
+    <message>
+        <source>Fusion</source>
+        <translation>Fusion</translation>
+    </message>
+    <message>
+        <source>Dark Fusion (Gray)</source>
+        <translation>Dark Fusion (灰色)</translation>
+    </message>
+    <message>
+        <source>Dark Fusion (Blue)</source>
+        <translation>Dark Fusion (蓝色)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="661"/>
