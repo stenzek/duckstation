@@ -1118,16 +1118,22 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
   for (const char* extension : extensions)
   {
     // try the title
-    cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
-                      g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
-    if (FileSystem::FileExists(cover_path))
-      return std::string(cover_path.GetCharArray());
+    if (!entry->title.empty())
+    {
+      cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                        g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
+      if (FileSystem::FileExists(cover_path))
+        return std::string(cover_path.GetCharArray());
+    }
 
     // then the code
-    cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
-                      g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
-    if (FileSystem::FileExists(cover_path))
-      return std::string(cover_path.GetCharArray());
+    if (!entry->code.empty())
+    {
+      cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                        g_host_interface->GetUserDirectory().c_str(), entry->code.c_str(), extension);
+      if (FileSystem::FileExists(cover_path))
+        return std::string(cover_path.GetCharArray());
+    }
 
     // and the file title if it differs
     const std::string_view file_title = GetFileNameFromPath(entry->path.c_str());
