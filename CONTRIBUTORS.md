@@ -4,6 +4,7 @@ The following people have contributed to the project in some way, and are credit
 ## Code Contributions
 - Connor McLaughlin - @stenzek
 - @ggrtk
+- @CookiePLMonster
 
 ## Translators
 - Anderson Cardoso - Portuguese (Br)
@@ -13,6 +14,7 @@ The following people have contributed to the project in some way, and are credit
 - Sorer - @MojoJojoDojo - Hebrew
 - Hipnosis183 - Spanish
 - @RaydenX93 - Italian
+- @r57zone - Russian
 
 ## Game Compatibility Database
  - @Zet-sensei
@@ -31,6 +33,8 @@ The following people have contributed to the project in some way, and are credit
  - @RaydenX93
  - @gp2man
  - @Richard-L
+ - @pan2marumie3
+ - @CookiePLMonster
 
 ## Special Thanks
 The following people did not directly contribute to the emulator, but it would not be in the state if not for them.
