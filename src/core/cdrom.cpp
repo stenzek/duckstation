@@ -1800,8 +1800,8 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // TODO: How does XA relate to this buffering?
-  m_current_write_sector_buffer = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  SectorBuffer* sb = &m_sector_buffers[m_current_write_sector_buffer];
+  const u32 sb_num = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
+  SectorBuffer* sb = &m_sector_buffers[sb_num];
   if (sb->size > 0)
   {
     Log_DevPrintf("Sector buffer %u was not read, previous sector dropped",
@@ -1819,10 +1819,17 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   else
   {
     // TODO: This should actually depend on the mode...
-    Assert(m_last_sector_header.sector_mode == 2);
+    if (m_last_sector_header.sector_mode != 2)
+    {
+      Log_WarningPrintf("Ignoring non-mode2 sector at %u", m_current_lba);
+      return;
+    }
+
     std::memcpy(sb->data.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
+
+  m_current_write_sector_buffer = sb_num;
 
   // Deliver to CPU
   if (HasPendingAsyncInterrupt())
