@@ -1039,7 +1039,12 @@ bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntr
     InitElementForCompatibilityEntry(&doc, entry_elem, entry);
   }
 
-  error = doc.SaveFile(m_compatibility_list_filename.c_str());
+  fp.reset();
+  fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "wb");
+  if (!fp)
+    return SaveCompatibilityDatabase();
+
+  error = doc.SaveFile(fp.get());
   if (error != tinyxml2::XML_SUCCESS)
   {
     Log_ErrorPrintf("Failed to update compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
