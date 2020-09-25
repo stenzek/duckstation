@@ -905,7 +905,7 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
     else
     {
       load_state_menu->setEnabled(true);
-      action = load_state_menu->addAction(tr("%1 Save %2 (%3)").arg(tr("Game")).arg(slot).arg(timestamp_str));
+      action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
     }
 
     connect(action, &QAction::triggered, [this, path]() { loadState(path); });
