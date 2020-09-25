@@ -2203,7 +2203,7 @@ bool CommonHostInterface::LoadCheatList(const char* filename)
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromPCSXRFile(filename))
+  if (!cl->LoadFromFile(filename, CheatList::Format::Autodetect))
   {
     AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to load cheats from '%s'."), filename);
     return false;

@@ -149,7 +149,7 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     while (*value_start != '\0' && std::isspace(*value_start))
       value_start++;
 
-    if (value_start == end)
+    if (*value_start == '\0')
       continue;
 
     char* value_end = value_start + std::strlen(value_start) - 1;
@@ -158,9 +158,6 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
       *value_end = '\0';
       value_end--;
     }
-
-    if (value_start == value_end)
-      continue;
 
     if (*value_start == '\"')
     {
@@ -178,7 +175,7 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     return false;
 
   const std::string* num_cheats_value = FindKey(kvp, "cheats");
-  const u32 num_cheats = StringUtil::FromChars<u32>(*num_cheats_value).value_or(0);
+  const u32 num_cheats = num_cheats_value ? StringUtil::FromChars<u32>(*num_cheats_value).value_or(0) : 0;
   if (num_cheats == 0)
     return false;
 
@@ -204,6 +201,11 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
   return !m_codes.empty();
 }
 
+static bool IsLibretroSeparator(char ch)
+{
+  return (ch == ' ' || ch == '-' || ch == ':' || ch == '+');
+}
+
 bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
 {
   const char* current_ptr = line;
@@ -215,7 +217,7 @@ bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
     current_ptr = end_ptr;
     if (end_ptr)
     {
-      if (*end_ptr != ' ')
+      if (!IsLibretroSeparator(*end_ptr))
       {
         Log_WarningPrintf("Malformed code '%s'", line);
         break;
@@ -226,9 +228,9 @@ bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
       if (end_ptr && *end_ptr == '\0')
         end_ptr = nullptr;
 
-      if (end_ptr)
+      if (end_ptr && *end_ptr != '\0')
       {
-        if (*end_ptr != '+')
+        if (!IsLibretroSeparator(*end_ptr))
         {
           Log_WarningPrintf("Malformed code '%s'", line);
           break;
@@ -285,7 +287,6 @@ std::optional<CheatList::Format> CheatList::DetectFileFormat(const char* filenam
     return Format::Count;
 
   char line[1024];
-  KeyValuePairVector kvp;
   while (std::fgets(line, sizeof(line), fp.get()))
   {
     char* start = line;
