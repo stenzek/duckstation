@@ -159,9 +159,31 @@ std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, 
 
 std::string LibretroHostInterface::GetShaderCacheBasePath() const
 {
-  // TODO: Is there somewhere we can save our shaders?
-  Log_WarningPrint("No shader cache directory available, startup will be slower.");
-  return std::string();
+  // Use the save directory, and failing that, the system directory.
+  const char* save_directory_ptr = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_directory_ptr) || !save_directory_ptr)
+  {
+    save_directory_ptr = nullptr;
+    if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &save_directory_ptr) ||
+        !save_directory_ptr)
+    {
+      Log_WarningPrint("No shader cache directory available, startup will be slower.");
+      return std::string();
+    }
+  }
+
+  // Use a directory named "duckstation_cache" in the save/system directory.
+  std::string shader_cache_path = StringUtil::StdStringFromFormat(
+    "%s" FS_OSPATH_SEPARATOR_STR "duckstation_cache" FS_OSPATH_SEPARATOR_STR, save_directory_ptr);
+  if (!FileSystem::DirectoryExists(shader_cache_path.c_str()) &&
+      !FileSystem::CreateDirectory(shader_cache_path.c_str(), false))
+  {
+    Log_ErrorPrintf("Failed to create shader cache directory: '%s'", shader_cache_path.c_str());
+    return std::string();
+  }
+
+  Log_InfoPrintf("Shader cache directory: '%s'", shader_cache_path.c_str());
+  return shader_cache_path;
 }
 
 std::string LibretroHostInterface::GetStringSettingValue(const char* section, const char* key,
@@ -1031,7 +1053,7 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
     wi.surface_height = avi.geometry.base_height;
     wi.surface_scale = 1.0f;
     if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
-        !display->InitializeRenderDevice({}, g_settings.gpu_use_debug_device))
+        !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
     {
       Log_ErrorPrintf("Failed to create hardware host display");
       return;
