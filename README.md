@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/09/25: Cheat support added for libretro core.
 - 2020/09/23: Game covers added to Qt frontend (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
 - 2020/09/19: Memory card importer/editor added to Qt frontend.
 - 2020/09/13: Support for chaining post processing shaders added.

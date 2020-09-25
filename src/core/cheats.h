@@ -71,6 +71,7 @@ public:
   ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
 
   void AddCode(CheatCode cc);
+  void SetCode(u32 index, CheatCode cc);
   void RemoveCode(u32 i);
 
   u32 GetEnabledCodeCount() const;
@@ -79,6 +80,7 @@ public:
   void SetCodeEnabled(u32 index, bool state);
 
   static std::optional<Format> DetectFileFormat(const char* filename);
+  static bool ParseLibretroCheat(CheatCode* cc, const char* line);
 
   bool LoadFromFile(const char* filename, Format format);
   bool LoadFromPCSXRFile(const char* filename);

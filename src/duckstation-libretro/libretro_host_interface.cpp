@@ -6,6 +6,7 @@
 #include "common/string_util.h"
 #include "core/analog_controller.h"
 #include "core/bus.h"
+#include "core/cheats.h"
 #include "core/digital_controller.h"
 #include "core/gpu.h"
 #include "core/system.h"
@@ -367,6 +368,29 @@ size_t LibretroHostInterface::retro_get_memory_size(unsigned id)
     default:
       return 0;
   }
+}
+
+void LibretroHostInterface::retro_cheat_reset()
+{
+  System::SetCheatList(nullptr);
+}
+
+void LibretroHostInterface::retro_cheat_set(unsigned index, bool enabled, const char* code)
+{
+  CheatList* cl = System::GetCheatList();
+  if (!cl)
+  {
+    System::SetCheatList(std::make_unique<CheatList>());
+    cl = System::GetCheatList();
+  }
+
+  CheatCode cc;
+  cc.description = StringUtil::StdStringFromFormat("Cheat%u", index);
+  cc.enabled = true;
+  if (!CheatList::ParseLibretroCheat(&cc, code))
+    Log_ErrorPrintf("Failed to parse cheat %u '%s'", index, code);
+
+  cl->SetCode(index, std::move(cc));
 }
 
 bool LibretroHostInterface::AcquireHostDisplay()

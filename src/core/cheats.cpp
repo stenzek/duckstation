@@ -196,47 +196,53 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     CheatCode cc;
     cc.description = *desc;
     cc.enabled = StringUtil::FromChars<bool>(*enable).value_or(false);
-
-    const char* current_ptr = code->c_str();
-    while (current_ptr)
-    {
-      char* end_ptr;
-      CheatCode::Instruction inst;
-      inst.first = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
-      current_ptr = end_ptr;
-      if (end_ptr)
-      {
-        if (*end_ptr != ' ')
-        {
-          Log_WarningPrintf("Malformed code '%s'", code->c_str());
-          break;
-        }
-
-        end_ptr++;
-        inst.second = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
-        current_ptr = end_ptr;
-
-        if (end_ptr)
-        {
-          if (*end_ptr != '+')
-          {
-            Log_WarningPrintf("Malformed code '%s'", code->c_str());
-            break;
-          }
-
-          end_ptr++;
-          current_ptr = end_ptr;
-        }
-
-        cc.instructions.push_back(inst);
-      }
-    }
-
-    m_codes.push_back(std::move(cc));
+    if (ParseLibretroCheat(&cc, code->c_str()))
+      m_codes.push_back(std::move(cc));
   }
 
   Log_InfoPrintf("Loaded %zu cheats from '%s' (libretro format)", m_codes.size(), filename);
   return !m_codes.empty();
+}
+
+bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
+{
+  const char* current_ptr = line;
+  while (current_ptr)
+  {
+    char* end_ptr;
+    CheatCode::Instruction inst;
+    inst.first = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
+    current_ptr = end_ptr;
+    if (end_ptr)
+    {
+      if (*end_ptr != ' ')
+      {
+        Log_WarningPrintf("Malformed code '%s'", line);
+        break;
+      }
+
+      end_ptr++;
+      inst.second = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
+      if (end_ptr && *end_ptr == '\0')
+        end_ptr = nullptr;
+
+      if (end_ptr)
+      {
+        if (*end_ptr != '+')
+        {
+          Log_WarningPrintf("Malformed code '%s'", line);
+          break;
+        }
+
+        end_ptr++;
+      }
+
+      current_ptr = end_ptr;
+      cc->instructions.push_back(inst);
+    }
+  }
+
+  return !cc->instructions.empty();
 }
 
 void CheatList::Apply()
@@ -251,6 +257,20 @@ void CheatList::Apply()
 void CheatList::AddCode(CheatCode cc)
 {
   m_codes.push_back(std::move(cc));
+}
+
+void CheatList::SetCode(u32 index, CheatCode cc)
+{
+  if (index > m_codes.size())
+    return;
+
+  if (index == m_codes.size())
+  {
+    m_codes.push_back(std::move(cc));
+    return;
+  }
+
+  m_codes[index] = std::move(cc);
 }
 
 void CheatList::RemoveCode(u32 i)
