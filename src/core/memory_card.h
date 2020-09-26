@@ -18,6 +18,8 @@ public:
   static std::unique_ptr<MemoryCard> Create();
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 
+  const MemoryCardImage::DataArray& GetData() const { return m_data; }
+
   void Reset();
   bool DoState(StateWrapper& sw);
 
