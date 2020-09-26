@@ -309,6 +309,16 @@
              </widget>
             </item>
             <item row="2" column="0">
+             <widget class="QCheckBox" name="userForce43For24Bit">
+              <property name="text">
+               <string>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
              <widget class="QCheckBox" name="userPGXP">
               <property name="text">
                <string>PGXP Geometry Correction</string>

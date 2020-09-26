@@ -44,6 +44,7 @@ struct Entry
   std::optional<DisplayAspectRatio> display_aspect_ratio;
   std::optional<bool> display_linear_upscaling;
   std::optional<bool> display_integer_upscaling;
+  std::optional<bool> display_force_4_3_for_24bit;
   std::optional<u32> gpu_resolution_scale;
   std::optional<bool> gpu_true_color;
   std::optional<bool> gpu_scaled_dithering;

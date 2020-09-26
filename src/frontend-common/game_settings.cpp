@@ -109,6 +109,7 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
+      !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
       !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
@@ -148,6 +149,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
+         WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
          WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_true_color) &&
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
          WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
@@ -184,6 +186,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "DisplayIntegerUpscaling", nullptr);
   if (cvalue)
     entry->display_integer_upscaling = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "DisplayForce4_3For24Bit", nullptr);
+  if (cvalue)
+    entry->display_force_4_3_for_24bit = StringUtil::FromChars<bool>(cvalue);
 
   cvalue = ini.GetValue(section, "GPUResolutionScale", nullptr);
   if (cvalue)
@@ -253,6 +258,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "DisplayLinearUpscaling", entry.display_linear_upscaling.value() ? "true" : "false");
   if (entry.display_integer_upscaling.has_value())
     ini.SetValue(section, "DisplayIntegerUpscaling", entry.display_integer_upscaling.value() ? "true" : "false");
+  if (entry.display_force_4_3_for_24bit.has_value())
+    ini.SetValue(section, "DisplayForce4_3For24Bit", entry.display_force_4_3_for_24bit.value() ? "true" : "false");
 
   if (entry.gpu_resolution_scale.has_value())
     ini.SetLongValue(section, "GPUResolutionScale", static_cast<s32>(entry.gpu_resolution_scale.value()));
@@ -400,6 +407,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_linear_filtering = display_linear_upscaling.value();
   if (display_integer_upscaling.has_value())
     g_settings.display_integer_scaling = display_integer_upscaling.value();
+  if (display_force_4_3_for_24bit.has_value())
+    g_settings.display_force_4_3_for_24bit = display_force_4_3_for_24bit.value();
 
   if (gpu_resolution_scale.has_value())
     g_settings.gpu_resolution_scale = gpu_resolution_scale.value();

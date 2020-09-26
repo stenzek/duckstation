@@ -305,6 +305,7 @@ void GamePropertiesDialog::populateGameSettings()
   populateBooleanUserSetting(m_ui.userScaledDithering, gs.gpu_scaled_dithering);
   populateBooleanUserSetting(m_ui.userForceNTSCTimings, gs.gpu_force_ntsc_timings);
   populateBooleanUserSetting(m_ui.userWidescreenHack, gs.gpu_widescreen_hack);
+  populateBooleanUserSetting(m_ui.userForce43For24Bit, gs.display_force_4_3_for_24bit);
   populateBooleanUserSetting(m_ui.userPGXP, gs.gpu_pgxp);
 
   if (gs.controller_1_type.has_value())
@@ -423,6 +424,7 @@ void GamePropertiesDialog::connectUi()
   connectBooleanUserSetting(m_ui.userScaledDithering, &m_game_settings.gpu_scaled_dithering);
   connectBooleanUserSetting(m_ui.userForceNTSCTimings, &m_game_settings.gpu_force_ntsc_timings);
   connectBooleanUserSetting(m_ui.userWidescreenHack, &m_game_settings.gpu_widescreen_hack);
+  connectBooleanUserSetting(m_ui.userForce43For24Bit, &m_game_settings.display_force_4_3_for_24bit);
   connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
 
   connect(m_ui.userControllerType1, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
