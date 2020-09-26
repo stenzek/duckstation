@@ -29,7 +29,6 @@ bool GPU::Initialize(HostDisplay* host_display)
   m_host_display = host_display;
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
-  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
   m_crtc_tick_event = TimingEvents::CreateTimingEvent(
     "GPU CRTC Tick", 1, 1, std::bind(&GPU::CRTCTickEvent, this, std::placeholders::_1), true);
   m_command_tick_event = TimingEvents::CreateTimingEvent(
@@ -53,8 +52,6 @@ void GPU::UpdateSettings()
     m_console_is_pal = System::IsPALRegion();
     UpdateCRTCConfig();
   }
-
-  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
 
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
@@ -440,6 +437,14 @@ float GPU::ComputeVerticalFrequency() const
   TickCount fractional_ticks = 0;
   return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
                             static_cast<double>(ticks_per_frame));
+}
+
+float GPU::GetDisplayAspectRatio() const
+{
+  if (g_settings.display_force_4_3_for_24bit && m_GPUSTAT.display_area_color_depth_24)
+    return 4.0f / 3.0f;
+  else
+    return Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
 }
 
 void GPU::UpdateCRTCConfig()

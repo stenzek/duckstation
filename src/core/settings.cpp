@@ -126,6 +126,7 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
       .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
@@ -239,6 +240,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
   si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
+  si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);

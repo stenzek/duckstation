@@ -375,6 +375,7 @@ protected:
   // Sets dots per scanline
   float ComputeHorizontalFrequency() const;
   float ComputeVerticalFrequency() const;
+  float GetDisplayAspectRatio() const;
   void UpdateCRTCConfig();
   void UpdateCRTCDisplayParameters();
 
@@ -700,7 +701,6 @@ protected:
     TickCount current_tick_in_scanline;
     u32 current_scanline;
 
-    float display_aspect_ratio;
     bool in_hblank;
     bool in_vblank;
 

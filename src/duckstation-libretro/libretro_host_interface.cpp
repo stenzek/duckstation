@@ -445,7 +445,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 32> s_option_definitions = {{
+static std::array<retro_core_option_definition, 33> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -545,6 +545,11 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "Force NTSC Timings",
    "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while "
    "others will break.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_Display.Force4_3For24Bit",
+   "Force 4:3 For 24-Bit Display",
+   "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_GPU.TextureFilter",

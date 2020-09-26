@@ -96,6 +96,13 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="force43For24Bit">
+            <property name="text">
+             <string>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

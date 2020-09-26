@@ -104,6 +104,7 @@ struct Settings
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
+  bool display_force_4_3_for_24bit = false;
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
   bool display_post_processing = false;

@@ -436,10 +436,11 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCPU", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
-  si.SetIntValue("Display", "OverscanActiveStartOffset", 0);
-  si.SetIntValue("Display", "OverscanActiveEndOffset", 0);
+  si.SetIntValue("Display", "ActiveStartOffset", 0);
+  si.SetIntValue("Display", "ActiveEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+  si.SetBoolValue("Display", "Force4_3For24Bit", false);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
   si.SetBoolValue("Display", "PostProcessing", false);

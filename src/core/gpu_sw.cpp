@@ -198,7 +198,7 @@ void GPU_SW::UpdateDisplay()
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
-                                         m_crtc_state.display_aspect_ratio);
+                                         GetDisplayAspectRatio());
   }
   else
   {
