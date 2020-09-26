@@ -19,6 +19,8 @@ public:
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 
   const MemoryCardImage::DataArray& GetData() const { return m_data; }
+  const std::string& GetFilename() const { return m_filename; }
+  void SetFilename(std::string filename) { m_filename = std::move(filename); }
 
   void Reset();
   bool DoState(StateWrapper& sw);

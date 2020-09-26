@@ -110,6 +110,7 @@ bool Pad::DoState(StateWrapper& sw)
         if (m_memory_cards[i]->GetData() == card_from_state->GetData())
         {
           Log_DevPrintf("Using memory card %u state from save state", i);
+          card_from_state->SetFilename(m_memory_cards[i]->GetFilename());
           m_memory_cards[i] = std::move(card_from_state);
         }
         else
