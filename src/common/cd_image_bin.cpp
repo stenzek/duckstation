@@ -25,17 +25,6 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-static std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
-{
-  std::string_view::size_type pos = path.rfind('.');
-  if (pos == std::string::npos)
-    return std::string(path);
-
-  std::string ret(path, 0, pos + 1);
-  ret.append(new_extension);
-  return ret;
-}
-
 CDImageBin::CDImageBin() = default;
 
 CDImageBin::~CDImageBin()
@@ -101,7 +90,7 @@ bool CDImageBin::Open(const char* filename)
 
   AddLeadOutIndex();
 
-  m_sbi.LoadSBI(ReplaceExtension(filename, "sbi").c_str());
+  m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
 
   return Seek(1, Position{0, 0, 0});
 }
