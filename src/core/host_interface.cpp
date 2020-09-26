@@ -505,6 +505,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Debug", "ShowSPUState", false);
   si.SetBoolValue("Debug", "ShowTimersState", false);
   si.SetBoolValue("Debug", "ShowMDECState", false);
+  si.SetBoolValue("Debug", "ShowDMAState", false);
 
   si.SetIntValue("Hacks", "DMAMaxSliceTicks", static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
   si.SetIntValue("Hacks", "DMAHaltTicks", static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));

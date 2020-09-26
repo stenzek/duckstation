@@ -936,6 +936,8 @@ void CommonHostInterface::DrawDebugWindows()
     g_spu.DrawDebugStateWindow();
   if (g_settings.debugging.show_mdec_state)
     g_mdec.DrawDebugStateWindow();
+  if (g_settings.debugging.show_dma_state)
+    g_dma.DrawDebugStateWindow();
 }
 
 void CommonHostInterface::DoFrameStep()

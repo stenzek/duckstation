@@ -11,6 +11,9 @@
 #include "mdec.h"
 #include "spu.h"
 #include "system.h"
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(DMA);
 
 DMA g_dma;
@@ -550,4 +553,85 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
   CPU::CodeCache::InvalidateCodePages(address, word_count);
   return Bus::GetDMARAMTickCount(word_count);
+}
+
+void DMA::DrawDebugStateWindow()
+{
+#ifdef WITH_IMGUI
+  static constexpr u32 NUM_COLUMNS = 10;
+  static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
+    {"#", "Req", "Direction", "Chopping", "Mode", "Busy", "Enable", "Priority", "IRQ", "Flag"}};
+  static constexpr std::array<const char*, NUM_CHANNELS> channel_names = {
+    {"MDECin", "MDECout", "GPU", "CDROM", "SPU", "PIO", "OTC"}};
+  static constexpr std::array<const char*, 4> sync_mode_names = {{"Manual", "Request", "LinkedList", "Reserved"}};
+
+  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+
+  ImGui::SetNextWindowSize(ImVec2(850.0f * framebuffer_scale, 250.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("DMA State", &g_settings.debugging.show_dma_state))
+  {
+    ImGui::End();
+    return;
+  }
+
+  ImGui::Columns(NUM_COLUMNS);
+  ImGui::SetColumnWidth(0, 100.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(1, 50.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(2, 100.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(3, 150.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(4, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(5, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(6, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(7, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(8, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(9, 80.0f * framebuffer_scale);
+
+  for (const char* title : column_names)
+  {
+    ImGui::TextUnformatted(title);
+    ImGui::NextColumn();
+  }
+
+  const ImVec4 active(1.0f, 1.0f, 1.0f, 1.0f);
+  const ImVec4 inactive(0.5f, 0.5f, 0.5f, 1.0f);
+
+  for (u32 i = 0; i < NUM_CHANNELS; i++)
+  {
+    const ChannelState& cs = m_state[i];
+
+    ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%u[%s]", i, channel_names[i]);
+    ImGui::NextColumn();
+    ImGui::TextColored(cs.request ? active : inactive, cs.request ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::Text("%s%s", cs.channel_control.copy_to_device ? "FromRAM" : "ToRAM",
+                cs.channel_control.address_step_reverse ? " Addr+" : " Addr-");
+    ImGui::NextColumn();
+    ImGui::TextColored(cs.channel_control.chopping_enable ? active : inactive, "%s/%u/%u",
+                       cs.channel_control.chopping_enable ? "Yes" : "No",
+                       cs.channel_control.chopping_cpu_window_size.GetValue(),
+                       cs.channel_control.chopping_dma_window_size.GetValue());
+    ImGui::NextColumn();
+    ImGui::Text("%s", sync_mode_names[static_cast<u8>(cs.channel_control.sync_mode.GetValue())]);
+    ImGui::NextColumn();
+    ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%s%s",
+                       cs.channel_control.enable_busy ? "Busy" : "Idle",
+                       cs.channel_control.start_trigger ? " (Trigger)" : "");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_DPCR.GetMasterEnable(static_cast<Channel>(i)) ? active : inactive,
+                       m_DPCR.GetMasterEnable(static_cast<Channel>(i)) ? "Enabled" : "Disabled");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_DPCR.GetMasterEnable(static_cast<Channel>(i)) ? active : inactive, "%u",
+                       m_DPCR.GetPriority(static_cast<Channel>(i)));
+    ImGui::NextColumn();
+    ImGui::TextColored(m_DICR.IsIRQEnabled(static_cast<Channel>(i)) ? active : inactive,
+                       m_DICR.IsIRQEnabled(static_cast<Channel>(i)) ? "Enabled" : "Disabled");
+    ImGui::NextColumn();
+    ImGui::TextColored(m_DICR.GetIRQFlag(static_cast<Channel>(i)) ? active : inactive,
+                       m_DICR.GetIRQFlag(static_cast<Channel>(i)) ? "IRQ" : "");
+    ImGui::NextColumn();
+  }
+
+  ImGui::Columns(1);
+  ImGui::End();
+#endif
 }
