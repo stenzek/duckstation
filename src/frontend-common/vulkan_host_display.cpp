@@ -734,6 +734,8 @@ VulkanHostDisplay::PostProcessingStage::~PostProcessingStage()
 
 bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
 {
+  g_vulkan_context->ExecuteCommandBuffer(true);
+
   if (config.empty())
   {
     m_post_processing_stages.clear();
