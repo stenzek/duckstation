@@ -481,8 +481,10 @@ void GPU::UpdateCRTCConfig()
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
-  cs.horizontal_display_start = std::min<u16>(cs.regs.X1, cs.horizontal_total);
-  cs.horizontal_display_end = std::min<u16>(cs.regs.X2, cs.horizontal_total);
+  cs.horizontal_display_start =
+    (std::min<u16>(cs.regs.X1, cs.horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
+  cs.horizontal_display_end =
+    (std::min<u16>(cs.regs.X2, cs.horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
   cs.vertical_display_start = std::min<u16>(cs.regs.Y1, cs.vertical_total);
   cs.vertical_display_end = std::min<u16>(cs.regs.Y2, cs.vertical_total);
 
@@ -524,8 +526,10 @@ void GPU::UpdateCRTCDisplayParameters()
 
   const u16 horizontal_total = m_GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
   const u16 vertical_total = m_GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
-  const u16 horizontal_display_start = std::min<u16>(cs.regs.X1, horizontal_total);
-  const u16 horizontal_display_end = std::min<u16>(cs.regs.X2, horizontal_total);
+  const u16 horizontal_display_start =
+    (std::min<u16>(cs.regs.X1, horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
+  const u16 horizontal_display_end =
+    (std::min<u16>(cs.regs.X2, horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
   const u16 vertical_display_start = std::min<u16>(cs.regs.Y1, vertical_total);
   const u16 vertical_display_end = std::min<u16>(cs.regs.Y2, vertical_total);
 
