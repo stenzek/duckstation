@@ -16,6 +16,8 @@ namespace CPU::Recompiler {
 class CodeGenerator
 {
 public:
+  using SpeculativeValue = std::optional<u32>;
+
   CodeGenerator(JitCodeBuffer* code_buffer);
   ~CodeGenerator();
 
@@ -75,12 +77,16 @@ public:
   void EmitLoadGlobalAddress(HostReg host_reg, const void* ptr);
 
   // Automatically generates an exception handler.
-  Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);
+  Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
+                            RegSize size);
   void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
-  void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result, bool in_far_code);
-  void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
+  void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
+                                  bool in_far_code);
+  void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
+                            const Value& value);
   void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
-  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value, bool in_far_code);
+  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
+                                   bool in_far_code);
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);
@@ -236,6 +242,24 @@ private:
   bool m_current_instruction_was_branch_taken_dirty = false;
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Speculative Constants
+  //////////////////////////////////////////////////////////////////////////
+  struct SpeculativeConstants
+  {
+    std::array<SpeculativeValue, static_cast<u8>(Reg::count)> regs;
+    std::unordered_map<PhysicalMemoryAddress, SpeculativeValue> memory;
+  };
+
+  void InitSpeculativeRegs();
+  void InvalidateSpeculativeValues();
+  SpeculativeValue SpeculativeReadReg(Reg reg);
+  void SpeculativeWriteReg(Reg reg, SpeculativeValue value);
+  SpeculativeValue SpeculativeReadMemory(u32 address);
+  void SpeculativeWriteMemory(VirtualMemoryAddress address, SpeculativeValue value);
+
+  SpeculativeConstants m_speculative_constants;
 };
 
 } // namespace CPU::Recompiler

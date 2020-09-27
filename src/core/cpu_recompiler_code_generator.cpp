@@ -850,6 +850,8 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
 
 void CodeGenerator::BlockPrologue()
 {
+  InitSpeculativeRegs();
+
   EmitStoreCPUStructField(offsetof(State, exception_raised), Value::FromConstantU8(0));
 
   if (m_block->uncached_fetch_ticks > 0)
@@ -1042,6 +1044,7 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
   m_current_instruction_in_branch_delay_slot_dirty = cbi.is_branch_instruction;
   m_branch_was_taken_dirty = cbi.is_branch_instruction;
   m_next_load_delay_dirty = cbi.has_load_delay;
+  InvalidateSpeculativeValues();
   InstructionEpilogue(cbi);
   return true;
 }
@@ -1054,54 +1057,92 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
   Value lhs;
   Value rhs;
   Reg dest;
+
+  SpeculativeValue spec_lhs, spec_rhs;
+  SpeculativeValue spec_value;
+
   if (op != InstructionOp::funct)
   {
     // rt <- rs op zext(imm)
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
     rhs = Value::FromConstantU32(cbi.instruction.i.imm_zext32());
     dest = cbi.instruction.i.rt;
+
+    spec_lhs = SpeculativeReadReg(cbi.instruction.i.rs);
+    spec_rhs = cbi.instruction.i.imm_zext32();
   }
   else
   {
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
     rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     dest = cbi.instruction.r.rd;
+
+    spec_lhs = SpeculativeReadReg(cbi.instruction.r.rs);
+    spec_rhs = SpeculativeReadReg(cbi.instruction.r.rt);
   }
 
   Value result;
   switch (cbi.instruction.op)
   {
     case InstructionOp::ori:
+    {
       result = OrValues(lhs, rhs);
-      break;
+      if (spec_lhs && spec_rhs)
+        spec_value = *spec_lhs | *spec_rhs;
+    }
+    break;
 
     case InstructionOp::andi:
+    {
       result = AndValues(lhs, rhs);
-      break;
+      if (spec_lhs && spec_rhs)
+        spec_value = *spec_lhs & *spec_rhs;
+    }
+    break;
 
     case InstructionOp::xori:
+    {
       result = XorValues(lhs, rhs);
-      break;
+      if (spec_lhs && spec_rhs)
+        spec_value = *spec_lhs ^ *spec_rhs;
+    }
+    break;
 
     case InstructionOp::funct:
     {
       switch (cbi.instruction.r.funct)
       {
         case InstructionFunct::or_:
+        {
           result = OrValues(lhs, rhs);
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = *spec_lhs | *spec_rhs;
+        }
+        break;
 
         case InstructionFunct::and_:
+        {
           result = AndValues(lhs, rhs);
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = *spec_lhs & *spec_rhs;
+        }
+        break;
 
         case InstructionFunct::xor_:
+        {
           result = XorValues(lhs, rhs);
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = *spec_lhs ^ *spec_rhs;
+        }
+        break;
 
         case InstructionFunct::nor:
+        {
           result = NotValue(OrValues(lhs, rhs));
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = ~(*spec_lhs | *spec_rhs);
+        }
+        break;
 
         default:
           UnreachableCode();
@@ -1116,6 +1157,7 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
+  SpeculativeWriteReg(dest, spec_value);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1127,37 +1169,54 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
 
   const InstructionFunct funct = cbi.instruction.r.funct;
   Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  SpeculativeValue rt_spec = SpeculativeReadReg(cbi.instruction.r.rt);
   Value shamt;
+  SpeculativeValue shamt_spec;
   if (funct == InstructionFunct::sll || funct == InstructionFunct::srl || funct == InstructionFunct::sra)
   {
     // rd <- rt op shamt
     shamt = Value::FromConstantU32(cbi.instruction.r.shamt);
+    shamt_spec = cbi.instruction.r.shamt;
   }
   else
   {
     // rd <- rt op (rs & 0x1F)
     shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+    shamt_spec = SpeculativeReadReg(cbi.instruction.r.rs);
     if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
       EmitAnd(shamt.host_reg, shamt.host_reg, Value::FromConstantU32(0x1F));
   }
 
   Value result;
+  SpeculativeValue result_spec;
   switch (cbi.instruction.r.funct)
   {
     case InstructionFunct::sll:
     case InstructionFunct::sllv:
+    {
       result = ShlValues(rt, shamt);
-      break;
+      if (rt_spec && shamt_spec)
+        result_spec = *rt_spec << *shamt_spec;
+    }
+    break;
 
     case InstructionFunct::srl:
     case InstructionFunct::srlv:
+    {
       result = ShrValues(rt, shamt);
-      break;
+      if (rt_spec && shamt_spec)
+        result_spec = *rt_spec >> *shamt_spec;
+    }
+    break;
 
     case InstructionFunct::sra:
     case InstructionFunct::srav:
+    {
       result = SarValues(rt, shamt);
-      break;
+      if (rt_spec && shamt_spec)
+        result_spec = static_cast<u32>(static_cast<s32>(*rt_spec) << *shamt_spec);
+    }
+    break;
 
     default:
       UnreachableCode();
@@ -1165,6 +1224,7 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
+  SpeculativeWriteReg(cbi.instruction.r.rd, result_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1179,35 +1239,57 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
   Value address = AddValues(base, offset, false);
 
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  SpeculativeValue value_spec;
+  if (address_spec)
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+
   Value result;
   switch (cbi.instruction.op)
   {
     case InstructionOp::lb:
     case InstructionOp::lbu:
     {
-      result = EmitLoadGuestMemory(cbi, address, RegSize_8);
+      result = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_8);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lb));
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_LBx, Value::FromConstantU32(cbi.instruction.bits), result, address);
+
+      if (address_spec)
+      {
+        value_spec = SpeculativeReadMemory(*address_spec & ~3u);
+        if (value_spec)
+          value_spec = (*value_spec >> ((*address_spec & 3u) * 8u)) & 0xFFu;
+      }
     }
     break;
 
     case InstructionOp::lh:
     case InstructionOp::lhu:
     {
-      result = EmitLoadGuestMemory(cbi, address, RegSize_16);
+      result = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_16);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lh));
 
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_LHx, Value::FromConstantU32(cbi.instruction.bits), result, address);
+
+      if (address_spec)
+      {
+        value_spec = SpeculativeReadMemory(*address_spec & ~1u);
+        if (value_spec)
+          value_spec = (*value_spec >> ((*address_spec & 1u) * 16u)) & 0xFFFFu;
+      }
     }
     break;
 
     case InstructionOp::lw:
     {
-      result = EmitLoadGuestMemory(cbi, address, RegSize_32);
+      result = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_LW, Value::FromConstantU32(cbi.instruction.bits), result, address);
+
+      if (address_spec)
+        value_spec = SpeculativeReadMemory(*address_spec);
     }
     break;
 
@@ -1217,6 +1299,7 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.i.rt, std::move(result));
+  SpeculativeWriteReg(cbi.instruction.i.rt, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1232,35 +1315,81 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   Value address = AddValues(base, offset, false);
   Value value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
 
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  SpeculativeValue value_spec = SpeculativeReadReg(cbi.instruction.i.rt);
+  if (address_spec)
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+
   switch (cbi.instruction.op)
   {
     case InstructionOp::sb:
     {
-      EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_8));
+      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_8));
       if (g_settings.gpu_pgxp_enable)
       {
         EmitFunctionCall(nullptr, PGXP::CPU_SB, Value::FromConstantU32(cbi.instruction.bits),
                          value.ViewAsSize(RegSize_8), address);
+      }
+
+      if (address_spec)
+      {
+        const VirtualMemoryAddress aligned_addr = (*address_spec & ~3u);
+        const SpeculativeValue aligned_existing_value = SpeculativeReadMemory(aligned_addr);
+        if (aligned_existing_value)
+        {
+          if (value_spec)
+          {
+            const u32 shift = (aligned_addr & 3u) * 8u;
+            SpeculativeWriteMemory(aligned_addr,
+                                   (*aligned_existing_value & ~(0xFFu << shift)) | ((*value_spec & 0xFFu) << shift));
+          }
+          else
+          {
+            SpeculativeWriteMemory(aligned_addr, std::nullopt);
+          }
+        }
       }
     }
     break;
 
     case InstructionOp::sh:
     {
-      EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_16));
+      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_16));
       if (g_settings.gpu_pgxp_enable)
       {
         EmitFunctionCall(nullptr, PGXP::CPU_SH, Value::FromConstantU32(cbi.instruction.bits),
                          value.ViewAsSize(RegSize_16), address);
+      }
+
+      if (address_spec)
+      {
+        const VirtualMemoryAddress aligned_addr = (*address_spec & ~3u);
+        const SpeculativeValue aligned_existing_value = SpeculativeReadMemory(aligned_addr);
+        if (aligned_existing_value)
+        {
+          if (value_spec)
+          {
+            const u32 shift = (aligned_addr & 1u) * 16u;
+            SpeculativeWriteMemory(aligned_addr, (*aligned_existing_value & ~(0xFFFFu << shift)) |
+                                                   ((*value_spec & 0xFFFFu) << shift));
+          }
+          else
+          {
+            SpeculativeWriteMemory(aligned_addr, std::nullopt);
+          }
+        }
       }
     }
     break;
 
     case InstructionOp::sw:
     {
-      EmitStoreGuestMemory(cbi, address, value);
+      EmitStoreGuestMemory(cbi, address, address_spec, value);
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), value, address);
+
+      if (address_spec)
+        SpeculativeWriteMemory(*address_spec, value_spec);
     }
     break;
 
@@ -1282,10 +1411,14 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
   Value address = AddValues(base, offset, false);
   base.ReleaseAndClear();
 
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  if (address_spec)
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+
   Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
   address = AndValues(address, Value::FromConstantU32(~u32(3)));
 
-  Value mem = EmitLoadGuestMemory(cbi, address, RegSize_32);
+  Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
 
   // hack to bypass load delays
   Value value;
@@ -1323,6 +1456,9 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
 
   m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.i.rt, std::move(mem));
 
+  // TODO: Speculative values
+  SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
+
   InstructionEpilogue(cbi);
   return true;
 }
@@ -1336,10 +1472,18 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
   Value address = AddValues(base, offset, false);
   base.ReleaseAndClear();
 
+  // TODO: Speculative values
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  if (address_spec)
+  {
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+    SpeculativeWriteMemory(*address_spec & ~3u, std::nullopt);
+  }
+
   Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
   address = AndValues(address, Value::FromConstantU32(~u32(3)));
 
-  Value mem = EmitLoadGuestMemory(cbi, address, RegSize_32);
+  Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
 
   Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
 
@@ -1359,7 +1503,7 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
 
   shift.ReleaseAndClear();
 
-  EmitStoreGuestMemory(cbi, address, mem);
+  EmitStoreGuestMemory(cbi, address, address_spec, mem);
   if (g_settings.gpu_pgxp_enable)
     EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
 
@@ -1375,6 +1519,7 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
   {
     case InstructionFunct::mfhi:
       m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::hi));
+      SpeculativeWriteReg(cbi.instruction.r.rd, std::nullopt);
       break;
 
     case InstructionFunct::mthi:
@@ -1383,6 +1528,7 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
 
     case InstructionFunct::mflo:
       m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::lo));
+      SpeculativeWriteReg(cbi.instruction.r.rd, std::nullopt);
       break;
 
     case InstructionFunct::mtlo:
@@ -1408,7 +1554,9 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
 
   Value lhs, rhs;
   Reg lhs_src;
+  SpeculativeValue lhs_spec, rhs_spec;
   Reg dest;
+
   switch (cbi.instruction.op)
   {
     case InstructionOp::addi:
@@ -1419,6 +1567,9 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
       lhs_src = cbi.instruction.i.rs;
       lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
       rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+
+      lhs_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+      rhs_spec = cbi.instruction.i.imm_sext32();
     }
     break;
 
@@ -1429,6 +1580,8 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
       lhs_src = cbi.instruction.r.rs;
       lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
       rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+      lhs_spec = SpeculativeReadReg(cbi.instruction.r.rs);
+      rhs_spec = SpeculativeReadReg(cbi.instruction.r.rt);
     }
     break;
 
@@ -1450,6 +1603,11 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
 
+  SpeculativeValue value_spec;
+  if (lhs_spec && rhs_spec)
+    value_spec = *lhs_spec + *rhs_spec;
+  SpeculativeWriteReg(dest, value_spec);
+
   InstructionEpilogue(cbi);
   return true;
 }
@@ -1464,11 +1622,19 @@ bool CodeGenerator::Compile_Subtract(const CodeBlockInstruction& cbi)
   Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
 
+  SpeculativeValue lhs_spec = SpeculativeReadReg(cbi.instruction.r.rs);
+  SpeculativeValue rhs_spec = SpeculativeReadReg(cbi.instruction.r.rt);
+
   Value result = SubValues(lhs, rhs, check_overflow);
   if (check_overflow)
     GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
+
+  SpeculativeValue value_spec;
+  if (lhs_spec && rhs_spec)
+    value_spec = *lhs_spec - *rhs_spec;
+  SpeculativeWriteReg(cbi.instruction.r.rd, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1680,12 +1846,15 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
 
   Reg dest;
   Value lhs, rhs;
+  SpeculativeValue lhs_spec, rhs_spec;
   if (cbi.instruction.op == InstructionOp::slti || cbi.instruction.op == InstructionOp::sltiu)
   {
     // rt <- rs < {z,s}ext(imm)
     dest = cbi.instruction.i.rt;
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
     rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+    lhs_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+    rhs_spec = cbi.instruction.i.imm_sext32();
 
     // flush the old value which might free up a register
     if (dest != cbi.instruction.r.rs)
@@ -1697,6 +1866,8 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
     dest = cbi.instruction.r.rd;
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs, true, true);
     rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+    lhs_spec = SpeculativeReadReg(cbi.instruction.r.rs);
+    rhs_spec = SpeculativeReadReg(cbi.instruction.r.rt);
 
     // flush the old value which might free up a register
     if (dest != cbi.instruction.i.rs && dest != cbi.instruction.r.rt)
@@ -1707,6 +1878,14 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
   EmitCmp(lhs.host_reg, rhs);
   EmitSetConditionResult(result.host_reg, result.size, signed_comparison ? Condition::Less : Condition::Below);
   m_register_cache.WriteGuestRegister(dest, std::move(result));
+
+  SpeculativeValue value_spec;
+  if (lhs_spec && rhs_spec)
+  {
+    value_spec = BoolToUInt32(signed_comparison ? (static_cast<s32>(*lhs_spec) < static_cast<s32>(*rhs_spec)) :
+                                                  (*lhs_spec < *rhs_spec));
+  }
+  SpeculativeWriteReg(cbi.instruction.r.rd, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1920,8 +2099,9 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
   InstructionPrologue(cbi, 1);
 
   // rt <- (imm << 16)
-  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt,
-                                      Value::FromConstantU32(cbi.instruction.i.imm_zext32() << 16));
+  const u32 value = cbi.instruction.i.imm_zext32() << 16;
+  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt, Value::FromConstantU32(value));
+  SpeculativeWriteReg(cbi.instruction.i.rt, value);
 
   InstructionEpilogue(cbi);
   return true;
@@ -2005,6 +2185,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           Value value = m_register_cache.AllocateScratch(RegSize_32);
           EmitLoadCPUStructField(value.host_reg, value.size, offset);
           m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+          SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
         }
         else
         {
@@ -2228,9 +2409,13 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     const u32 reg = static_cast<u32>(cbi.instruction.i.rt.GetValue());
     Value address = AddValues(m_register_cache.ReadGuestRegister(cbi.instruction.i.rs),
                               Value::FromConstantU32(cbi.instruction.i.imm_sext32()), false);
+    SpeculativeValue spec_address = SpeculativeReadReg(cbi.instruction.i.rs);
+    if (spec_address)
+      spec_address = *spec_address + cbi.instruction.i.imm_sext32();
+
     if (cbi.instruction.op == InstructionOp::lwc2)
     {
-      Value value = EmitLoadGuestMemory(cbi, address, RegSize_32);
+      Value value = EmitLoadGuestMemory(cbi, address, spec_address, RegSize_32);
       DoGTERegisterWrite(reg, value);
 
       if (g_settings.gpu_pgxp_enable)
@@ -2239,10 +2424,14 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     else
     {
       Value value = DoGTERegisterRead(reg);
-      EmitStoreGuestMemory(cbi, address, value);
+      EmitStoreGuestMemory(cbi, address, spec_address, value);
 
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SWC2, Value::FromConstantU32(cbi.instruction.bits), value, address);
+
+      SpeculativeValue spec_base = SpeculativeReadReg(cbi.instruction.i.rs);
+      if (spec_base)
+        SpeculativeWriteMemory(*spec_address, std::nullopt);
     }
 
     InstructionEpilogue(cbi);
@@ -2274,6 +2463,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
         }
 
         m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+        SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
 
         InstructionEpilogue(cbi);
         return true;
@@ -2317,4 +2507,68 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     return true;
   }
 }
+
+void CodeGenerator::InitSpeculativeRegs()
+{
+  for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
+    m_speculative_constants.regs[i] = g_state.regs.r[i];
+}
+
+void CodeGenerator::InvalidateSpeculativeValues()
+{
+  m_speculative_constants.regs.fill(std::nullopt);
+  m_speculative_constants.memory.clear();
+}
+
+CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadReg(Reg reg)
+{
+  return m_speculative_constants.regs[static_cast<u8>(reg)];
+}
+
+void CodeGenerator::SpeculativeWriteReg(Reg reg, SpeculativeValue value)
+{
+  m_speculative_constants.regs[static_cast<u8>(reg)] = value;
+}
+
+CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadMemory(VirtualMemoryAddress address)
+{
+  PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  auto it = m_speculative_constants.memory.find(address);
+  if (it != m_speculative_constants.memory.end())
+    return it->second;
+
+  u32 value;
+  if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  {
+    u32 scratchpad_offset = phys_addr & DCACHE_OFFSET_MASK;
+    std::memcpy(&value, &CPU::g_state.dcache[scratchpad_offset], sizeof(value));
+    return value;
+  }
+
+  if (Bus::IsRAMAddress(phys_addr))
+  {
+    u32 ram_offset = phys_addr & Bus::RAM_MASK;
+    std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
+    return value;
+  }
+
+  return std::nullopt;
+}
+
+void CodeGenerator::SpeculativeWriteMemory(u32 address, SpeculativeValue value)
+{
+  PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  auto it = m_speculative_constants.memory.find(address);
+  if (it != m_speculative_constants.memory.end())
+  {
+    it->second = value;
+    return;
+  }
+
+  if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
+    m_speculative_constants.memory.emplace(address, value);
+}
+
 } // namespace CPU::Recompiler

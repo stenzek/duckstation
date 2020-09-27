@@ -1281,61 +1281,6 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   }
 }
 
-Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size)
-{
-  if (address.IsConstant())
-  {
-    TickCount read_ticks;
-    void* ptr = GetDirectReadMemoryPointer(
-      static_cast<u32>(address.constant_value),
-      (size == RegSize_8) ? MemoryAccessSize::Byte :
-                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word),
-      &read_ticks);
-    if (ptr)
-    {
-      Value result = m_register_cache.AllocateScratch(size);
-      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
-      m_delayed_cycles_add += read_ticks;
-      return result;
-    }
-  }
-
-  AddPendingCycles(true);
-
-  Value result = m_register_cache.AllocateScratch(RegSize_64);
-  if (g_settings.IsUsingFastmem())
-  {
-    EmitLoadGuestMemoryFastmem(cbi, address, size, result);
-  }
-  else
-  {
-    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-    EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
-  }
-
-  // Downcast to ignore upper 56/48/32 bits. This should be a noop.
-  switch (size)
-  {
-    case RegSize_8:
-      ConvertValueSizeInPlace(&result, RegSize_8, false);
-      break;
-
-    case RegSize_16:
-      ConvertValueSizeInPlace(&result, RegSize_16, false);
-      break;
-
-    case RegSize_32:
-      ConvertValueSizeInPlace(&result, RegSize_32, false);
-      break;
-
-    default:
-      UnreachableCode();
-      break;
-  }
-
-  return result;
-}
-
 void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                Value& result)
 {
@@ -1470,39 +1415,11 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, 
   }
 }
 
-void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
-{
-  if (address.IsConstant())
-  {
-    void* ptr = GetDirectWriteMemoryPointer(
-      static_cast<u32>(address.constant_value),
-      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
-                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
-    if (ptr)
-    {
-      EmitStoreGlobal(ptr, value);
-      return;
-    }
-  }
-
-  AddPendingCycles(true);
-
-  if (g_settings.IsUsingFastmem())
-  {
-    // we need the value in a host register to store it
-    Value value_in_hr = GetValueInHostRegister(value);
-    EmitStoreGuestMemoryFastmem(cbi, address, value_in_hr);
-  }
-  else
-  {
-    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-    EmitStoreGuestMemorySlowmem(cbi, address, value, false);
-  }
-}
-
 void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address,
                                                 const Value& value)
 {
+  Value value_in_hr = GetValueInHostRegister(value);
+
   // fastmem
   LoadStoreBackpatchInfo bpi;
   bpi.host_pc = GetCurrentNearCodePointer();
@@ -1525,15 +1442,15 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   switch (value.size)
   {
     case RegSize_8:
-      m_emit->Strb(GetHostReg8(value), actual_address);
+      m_emit->Strb(GetHostReg8(value_in_hr), actual_address);
       break;
 
     case RegSize_16:
-      m_emit->Strh(GetHostReg16(value), actual_address);
+      m_emit->Strh(GetHostReg16(value_in_hr), actual_address);
       break;
 
     case RegSize_32:
-      m_emit->Str(GetHostReg32(value), actual_address);
+      m_emit->Str(GetHostReg32(value_in_hr), actual_address);
       break;
 
     default:
@@ -1548,7 +1465,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   bpi.host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
 
-  EmitStoreGuestMemorySlowmem(cbi, address, value, true);
+  EmitStoreGuestMemorySlowmem(cbi, address, value_in_hr, true);
 
   // return to the block code
   EmitBranch(GetCurrentNearCodePointer(), false);
@@ -1563,6 +1480,8 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
 {
   AddPendingCycles(true);
 
+  Value value_in_hr = GetValueInHostRegister(value);
+
   if (g_settings.cpu_recompiler_memory_exceptions)
   {
     Assert(!in_far_code);
@@ -1571,15 +1490,15 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
     switch (value.size)
     {
       case RegSize_8:
-        EmitFunctionCall(&result, &Thunks::WriteMemoryByte, address, value);
+        EmitFunctionCall(&result, &Thunks::WriteMemoryByte, address, value_in_hr);
         break;
 
       case RegSize_16:
-        EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, address, value);
+        EmitFunctionCall(&result, &Thunks::WriteMemoryHalfWord, address, value_in_hr);
         break;
 
       case RegSize_32:
-        EmitFunctionCall(&result, &Thunks::WriteMemoryWord, address, value);
+        EmitFunctionCall(&result, &Thunks::WriteMemoryWord, address, value_in_hr);
         break;
 
       default:
@@ -1616,15 +1535,15 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
     switch (value.size)
     {
       case RegSize_8:
-        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryByte, address, value);
+        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryByte, address, value_in_hr);
         break;
 
       case RegSize_16:
-        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryHalfWord, address, value);
+        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryHalfWord, address, value_in_hr);
         break;
 
       case RegSize_32:
-        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryWord, address, value);
+        EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryWord, address, value_in_hr);
         break;
 
       default:

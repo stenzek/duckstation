@@ -1745,61 +1745,6 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   }
 }
 
-Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size)
-{
-  if (address.IsConstant())
-  {
-    TickCount read_ticks;
-    void* ptr = GetDirectReadMemoryPointer(
-      static_cast<u32>(address.constant_value),
-      (size == RegSize_8) ? MemoryAccessSize::Byte :
-                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word),
-      &read_ticks);
-    if (ptr)
-    {
-      Value result = m_register_cache.AllocateScratch(size);
-      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
-      m_delayed_cycles_add += read_ticks;
-      return result;
-    }
-  }
-
-  AddPendingCycles(true);
-
-  Value result = m_register_cache.AllocateScratch(RegSize_64);
-  if (g_settings.IsUsingFastmem())
-  {
-    EmitLoadGuestMemoryFastmem(cbi, address, size, result);
-  }
-  else
-  {
-    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-    EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
-  }
-
-  // Downcast to ignore upper 56/48/32 bits. This should be a noop.
-  switch (size)
-  {
-    case RegSize_8:
-      ConvertValueSizeInPlace(&result, RegSize_8, false);
-      break;
-
-    case RegSize_16:
-      ConvertValueSizeInPlace(&result, RegSize_16, false);
-      break;
-
-    case RegSize_32:
-      ConvertValueSizeInPlace(&result, RegSize_32, false);
-      break;
-
-    default:
-      UnreachableCode();
-      break;
-  }
-
-  return result;
-}
-
 void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                Value& result)
 {
@@ -1964,34 +1909,6 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, 
         UnreachableCode();
         break;
     }
-  }
-}
-
-void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
-{
-  if (address.IsConstant())
-  {
-    void* ptr = GetDirectWriteMemoryPointer(
-      static_cast<u32>(address.constant_value),
-      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
-                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
-    if (ptr)
-    {
-      EmitStoreGlobal(ptr, value);
-      return;
-    }
-  }
-
-  AddPendingCycles(true);
-
-  if (g_settings.IsUsingFastmem())
-  {
-    EmitStoreGuestMemoryFastmem(cbi, address, value);
-  }
-  else
-  {
-    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-    EmitStoreGuestMemorySlowmem(cbi, address, value, false);
   }
 }
 
