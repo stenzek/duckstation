@@ -598,11 +598,16 @@ void GPU::UpdateCRTCDisplayParameters()
   cs.display_width = (cs.horizontal_active_end - cs.horizontal_active_start) / cs.dot_clock_divider;
   cs.display_height = (cs.vertical_active_end - cs.vertical_active_start) << height_shift;
 
-  // Determine number of pixels outputted from VRAM (align to 4-pixel boundary).
-  // TODO: Verify behavior if start > end and also if values are outside of the active video portion of scanline.
-  const u16 horizontal_display_ticks = horizontal_display_end - horizontal_display_start;
-  cs.display_vram_width =
-    (static_cast<u16>(std::round(horizontal_display_ticks / static_cast<float>(cs.dot_clock_divider))) + 2u) & ~3u;
+  // Determine number of pixels outputted from VRAM (in general, round to 4-pixel multiple).
+  // TODO: Verify behavior if values are outside of the active video portion of scanline.
+  const u16 horizontal_display_ticks =
+    (horizontal_display_end < horizontal_display_start) ? 0 : (horizontal_display_end - horizontal_display_start);
+
+  const u16 horizontal_display_pixels = horizontal_display_ticks / cs.dot_clock_divider;
+  if (horizontal_display_pixels == 1u)
+    cs.display_vram_width = 4u;
+  else
+    cs.display_vram_width = (horizontal_display_pixels + 2u) & ~3u;
 
   // Determine if we need to adjust the VRAM rectangle (because the display is starting outside the visible area) or add
   // padding.
