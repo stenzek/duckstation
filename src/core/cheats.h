@@ -24,7 +24,8 @@ struct CheatCode
     CompareNotEqual8 = 0xE1,
     CompareLess8 = 0xE2,
     CompareGreater8 = 0xE3,
-    Slide = 0x50
+    Slide = 0x50,
+    MemoryCopy = 0xC2
   };
 
   union Instruction

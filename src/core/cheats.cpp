@@ -579,6 +579,32 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::MemoryCopy:
+      {
+        if ((index + 1) >= instructions.size())
+        {
+          Log_ErrorPrintf("Incomplete memory copy instruction");
+          return;
+        }
+
+        const Instruction& inst2 = instructions[index + 1];
+        const u32 byte_count = inst.value16;
+        u32 src_address = inst.address;
+        u32 dst_address = inst2.address;
+
+        for (u32 i = 0; i < byte_count; i++)
+        {
+          u8 value = 0;
+          CPU::SafeReadMemoryByte(src_address, &value);
+          CPU::SafeWriteMemoryByte(dst_address, value);
+          src_address++;
+          dst_address++;
+        }
+
+        index += 2;
+      }
+      break;
+
       default:
       {
         Log_ErrorPrintf("Unhandled instruction code 0x%02X (%08X %08X)", static_cast<u8>(inst.code.GetValue()),
