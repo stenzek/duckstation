@@ -392,6 +392,12 @@ void CheatCode::Apply() const
     const Instruction& inst = instructions[index];
     switch (inst.code)
     {
+      case InstructionCode::Nop:
+      {
+        index++;
+      }
+      break;
+
       case InstructionCode::ConstantWrite8:
       {
         CPU::SafeWriteMemoryByte(inst.address, inst.value8);

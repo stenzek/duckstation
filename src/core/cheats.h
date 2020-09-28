@@ -9,6 +9,7 @@ struct CheatCode
 {
   enum class InstructionCode : u8
   {
+    Nop = 0x00,
     ConstantWrite8 = 0x30,
     ConstantWrite16 = 0x80,
     Increment16 = 0x10,
