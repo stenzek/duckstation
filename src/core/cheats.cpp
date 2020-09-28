@@ -410,7 +410,7 @@ void CheatCode::Apply() const
       {
         u16 value = 0;
         CPU::SafeReadMemoryHalfWord(inst.address, &value);
-        CPU::SafeWriteMemoryHalfWord(inst.address, value + 1u);
+        CPU::SafeWriteMemoryHalfWord(inst.address, value + inst.value16);
         index++;
       }
       break;
@@ -419,7 +419,7 @@ void CheatCode::Apply() const
       {
         u16 value = 0;
         CPU::SafeReadMemoryHalfWord(inst.address, &value);
-        CPU::SafeWriteMemoryHalfWord(inst.address, value - 1u);
+        CPU::SafeWriteMemoryHalfWord(inst.address, value - inst.value16);
         index++;
       }
       break;
@@ -428,7 +428,7 @@ void CheatCode::Apply() const
       {
         u8 value = 0;
         CPU::SafeReadMemoryByte(inst.address, &value);
-        CPU::SafeWriteMemoryByte(inst.address, value + 1u);
+        CPU::SafeWriteMemoryByte(inst.address, value + inst.value8);
         index++;
       }
       break;
@@ -437,7 +437,7 @@ void CheatCode::Apply() const
       {
         u8 value = 0;
         CPU::SafeReadMemoryByte(inst.address, &value);
-        CPU::SafeWriteMemoryByte(inst.address, value - 1u);
+        CPU::SafeWriteMemoryByte(inst.address, value - inst.value8);
         index++;
       }
       break;
