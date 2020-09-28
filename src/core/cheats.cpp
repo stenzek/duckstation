@@ -530,6 +530,49 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::Slide:
+      {
+        if ((index + 1) >= instructions.size())
+        {
+          Log_ErrorPrintf("Incomplete slide instruction");
+          return;
+        }
+
+        const u32 slide_count = (inst.first >> 8) & 0xFFu;
+        const u32 address_increment = SignExtendN<8>(inst.first & 0xFFu);
+        const u16 value_increment = SignExtendN<8>(Truncate16(inst.second & 0xFFu));
+        const Instruction& inst2 = instructions[index + 1];
+        const InstructionCode write_type = inst2.code;
+        u32 address = inst2.address;
+        u16 value = inst2.value16;
+
+        if (write_type == InstructionCode::ConstantWrite8)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            CPU::SafeWriteMemoryByte(address, Truncate8(value));
+            address += address_increment;
+            value += value_increment;
+          }
+        }
+        else if (write_type == InstructionCode::ConstantWrite16)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            CPU::SafeWriteMemoryHalfWord(address, value);
+            address += address_increment;
+            value += value_increment;
+          }
+        }
+        else
+        {
+          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02X", write_type);
+        }
+
+        index += 2;
+      }
+      break;
+
       default:
       {
         Log_ErrorPrintf("Unhandled instruction code 0x%02X (%08X %08X)", static_cast<u8>(inst.code.GetValue()),
