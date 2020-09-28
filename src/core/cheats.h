@@ -12,6 +12,7 @@ struct CheatCode
     Nop = 0x00,
     ConstantWrite8 = 0x30,
     ConstantWrite16 = 0x80,
+    ScratchpadWrite16 = 0x1F,
     Increment16 = 0x10,
     Decrement16 = 0x11,
     Increment8 = 0x20,

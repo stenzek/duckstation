@@ -412,6 +412,13 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ScratchpadWrite16:
+      {
+        CPU::SafeWriteMemoryHalfWord(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
+        index++;
+      }
+      break;
+
       case InstructionCode::Increment16:
       {
         u16 value = 0;
