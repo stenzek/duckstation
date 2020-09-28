@@ -1328,6 +1328,14 @@
         <translation>强制NTSC制式 (60hz-PAL)</translation>
     </message>
     <message>
+        <source>Force 4:3 For 24-bit Display</source>
+        <translation>24位色显示中强制4比3</translation>
+    </message>
+    <message>
+        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
+        <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
+    </message>
+    <message>
         <location filename="../gpusettingswidget.ui" line="170"/>
         <location filename="../gpusettingswidget.cpp" line="124"/>
         <source>Bilinear Texture Filtering</source>
@@ -1398,6 +1406,10 @@
         <location filename="../gpusettingswidget.cpp" line="119"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>当游戏机处于PAL模式时使用NTSC帧计时, 强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧速率相关的游戏, 这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧速率游戏, 它可能不会影响速度。</translation>
+    </message>
+    <message>
+        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
+        <translation>当显示24位色内容(通常为动画)时，纵横比切换回4比3显示。</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="129"/>
