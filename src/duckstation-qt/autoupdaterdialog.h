@@ -53,6 +53,7 @@ private:
   QNetworkAccessManager* m_network_access_mgr = nullptr;
   QString m_latest_sha;
   QString m_download_url;
+  int m_download_size = 0;
 
   bool m_display_messages = false;
   bool m_update_will_break_save_states = false;
