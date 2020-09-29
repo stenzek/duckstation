@@ -28,20 +28,31 @@ static bool TryDesktopVersions(retro_hw_render_callback* cb)
   static constexpr std::array<std::tuple<u32, u32>, 11> desktop_versions_to_try = {
     {/*{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, */ {3, 3}, {3, 2}, {3, 1}, {3, 0}}};
 
-  for (const auto& [major, minor] : desktop_versions_to_try)
+  retro_hw_context_type preferred_renderer;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred_renderer))
+    preferred_renderer = RETRO_HW_CONTEXT_DUMMY;
+
+  if (preferred_renderer == RETRO_HW_CONTEXT_DUMMY || preferred_renderer == RETRO_HW_CONTEXT_OPENGL_CORE)
   {
-    if (major > 3 || (major == 3 && minor >= 2))
+    for (const auto& [major, minor] : desktop_versions_to_try)
     {
-      cb->context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
-      cb->version_major = major;
-      cb->version_minor = minor;
+      if (major > 3 || (major == 3 && minor >= 2))
+      {
+        cb->context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
+        cb->version_major = major;
+        cb->version_minor = minor;
+
+        if (g_retro_environment_callback(RETRO_ENVIRONMENT_SET_HW_RENDER, cb))
+          return true;
+      }
     }
-    else
-    {
-      cb->context_type = RETRO_HW_CONTEXT_OPENGL;
-      cb->version_major = 0;
-      cb->version_minor = 0;
-    }
+  }
+
+  if (preferred_renderer == RETRO_HW_CONTEXT_DUMMY || preferred_renderer == RETRO_HW_CONTEXT_OPENGL)
+  {
+    cb->context_type = RETRO_HW_CONTEXT_OPENGL;
+    cb->version_major = 0;
+    cb->version_minor = 0;
 
     if (g_retro_environment_callback(RETRO_ENVIRONMENT_SET_HW_RENDER, cb))
       return true;
