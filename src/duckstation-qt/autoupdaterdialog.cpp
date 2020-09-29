@@ -253,9 +253,12 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
     {
       const QJsonObject doc_object(doc.object());
 
-      QString changes_html = QStringLiteral("<ul>");
+      QString changes_html = tr("<h2>Changes:</h2>");
+      changes_html += QStringLiteral("<ul>");
 
       const QJsonArray commits(doc_object["commits"].toArray());
+      bool update_will_break_save_states = false;
+
       for (const QJsonValue& commit : commits)
       {
         const QJsonObject commit_obj(commit["commit"].toObject());
@@ -268,9 +271,20 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
         if (!message.isEmpty())
           changes_html +=
             QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
+
+        if (message.contains(QStringLiteral("[SAVEVERSION+]")))
+          update_will_break_save_states = true;
       }
 
       changes_html += "</ul>";
+
+      if (update_will_break_save_states)
+      {
+        changes_html.prepend(tr("<h2>Save State Warning</h2><p>Installing this update will make your save states "
+                                "<b>incompatible</b>. Please ensure you have saved your games to memory card "
+                                "before installing this update or you will lose progress.</p>"));
+      }
+
       m_ui.updateNotes->setText(changes_html);
     }
     else
