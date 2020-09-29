@@ -692,7 +692,7 @@ void SPU::IncrementCaptureBufferPosition()
 
 void SPU::Execute(TickCount ticks)
 {
-  Assert(ticks >= 0);
+
   u32 remaining_frames;
   if (g_settings.cpu_overclock_active)
   {
@@ -700,8 +700,8 @@ void SPU::Execute(TickCount ticks)
     const u64 num = (static_cast<u64>(ticks) * g_settings.cpu_overclock_denominator) + static_cast<u32>(m_ticks_carry);
     remaining_frames = static_cast<u32>(num / m_cpu_tick_divider);
     m_ticks_carry = static_cast<TickCount>(num % m_cpu_tick_divider);
-    if (remaining_frames > 100000)
-      __debugbreak();
+
+
   }
   else
   {
