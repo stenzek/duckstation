@@ -35,7 +35,6 @@ private:
   {
     // save in three seconds, that should be long enough for everything to finish writing
     SAVE_DELAY_IN_SECONDS = 5,
-    SAVE_DELAY_IN_SYSCLK_TICKS = MASTER_CLOCK * SAVE_DELAY_IN_SECONDS,
   };
 
   union FLAG
@@ -73,6 +72,8 @@ private:
     WriteACK2,
     WriteEnd,
   };
+
+  static TickCount GetSaveDelayInTicks();
 
   bool LoadFromFile();
   bool SaveIfChanged(bool display_osd_message);

@@ -51,7 +51,7 @@ struct State
 {
   // ticks the CPU has executed
   TickCount pending_ticks = 0;
-  TickCount downcount = MAX_SLICE_SIZE;
+  TickCount downcount = 0;
 
   Registers regs = {};
   Cop0Registers cop0_regs = {};

@@ -57,6 +57,11 @@ void GPU::UpdateSettings()
   UpdateCRTCDisplayParameters();
 }
 
+void GPU::CPUClockChanged()
+{
+  UpdateCRTCConfig();
+}
+
 void GPU::UpdateResolutionScale() {}
 
 std::tuple<u32, u32> GPU::GetEffectiveDisplayResolution()
@@ -426,8 +431,9 @@ float GPU::ComputeHorizontalFrequency() const
 {
   const CRTCState& cs = m_crtc_state;
   TickCount fractional_ticks = 0;
-  return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
-                            static_cast<double>(cs.horizontal_total));
+  return static_cast<float>(
+    static_cast<double>(SystemTicksToCRTCTicks(System::GetTicksPerSecond(), &fractional_ticks)) /
+    static_cast<double>(cs.horizontal_total));
 }
 
 float GPU::ComputeVerticalFrequency() const
@@ -435,8 +441,9 @@ float GPU::ComputeVerticalFrequency() const
   const CRTCState& cs = m_crtc_state;
   const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
   TickCount fractional_ticks = 0;
-  return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
-                            static_cast<double>(ticks_per_frame));
+  return static_cast<float>(
+    static_cast<double>(SystemTicksToCRTCTicks(System::GetTicksPerSecond(), &fractional_ticks)) /
+    static_cast<double>(ticks_per_frame));
 }
 
 float GPU::GetDisplayAspectRatio() const
@@ -458,7 +465,7 @@ void GPU::UpdateCRTCConfig()
     cs.current_scanline %= PAL_TOTAL_LINES;
     cs.horizontal_total = PAL_TICKS_PER_LINE;
     cs.horizontal_sync_start = PAL_HSYNC_TICKS;
-    cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= System::ScaleTicksToOverclock(PAL_TICKS_PER_LINE);
   }
   else
   {
@@ -466,7 +473,7 @@ void GPU::UpdateCRTCConfig()
     cs.current_scanline %= NTSC_TOTAL_LINES;
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.horizontal_sync_start = NTSC_HSYNC_TICKS;
-    cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= System::ScaleTicksToOverclock(NTSC_TICKS_PER_LINE);
   }
 
   cs.in_hblank = (cs.current_tick_in_scanline >= cs.horizontal_sync_start);
@@ -496,6 +503,12 @@ void GPU::UpdateCRTCConfig()
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
+
+  cs.horizontal_display_start =
+    static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_start)));
+  cs.horizontal_display_end =
+    static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_end)));
+  cs.horizontal_total = static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_total)));
 
   System::SetThrottleFrequency(ComputeVerticalFrequency());
 

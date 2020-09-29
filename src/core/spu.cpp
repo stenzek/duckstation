@@ -21,13 +21,25 @@ SPU::~SPU() = default;
 
 void SPU::Initialize()
 {
-  m_tick_event = TimingEvents::CreateTimingEvent("SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK,
+  // (X * D) / N / 768 -> (X * D) / (N * 768)
+  m_cpu_ticks_per_spu_tick = System::ScaleTicksToOverclock(SYSCLK_TICKS_PER_SPU_TICK);
+  m_cpu_tick_divider = static_cast<TickCount>(g_settings.cpu_overclock_numerator * SYSCLK_TICKS_PER_SPU_TICK);
+  m_tick_event = TimingEvents::CreateTimingEvent("SPU Sample", m_cpu_ticks_per_spu_tick, m_cpu_ticks_per_spu_tick,
                                                  std::bind(&SPU::Execute, this, std::placeholders::_1), false);
   m_transfer_event =
     TimingEvents::CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
                                     std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
 
   Reset();
+}
+
+void SPU::CPUClockChanged()
+{
+  // (X * D) / N / 768 -> (X * D) / (N * 768)
+  m_cpu_ticks_per_spu_tick = System::ScaleTicksToOverclock(SYSCLK_TICKS_PER_SPU_TICK);
+  m_cpu_tick_divider = static_cast<TickCount>(g_settings.cpu_overclock_numerator * SYSCLK_TICKS_PER_SPU_TICK);
+  m_ticks_carry = 0;
+  UpdateEventInterval();
 }
 
 void SPU::Shutdown()
@@ -680,8 +692,22 @@ void SPU::IncrementCaptureBufferPosition()
 
 void SPU::Execute(TickCount ticks)
 {
-  u32 remaining_frames = static_cast<u32>((ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK);
-  m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
+  Assert(ticks >= 0);
+  u32 remaining_frames;
+  if (g_settings.cpu_overclock_active)
+  {
+    // (X * D) / N / 768 -> (X * D) / (N * 768)
+    const u64 num = (static_cast<u64>(ticks) * g_settings.cpu_overclock_denominator) + static_cast<u32>(m_ticks_carry);
+    remaining_frames = static_cast<u32>(num / m_cpu_tick_divider);
+    m_ticks_carry = static_cast<TickCount>(num % m_cpu_tick_divider);
+    if (remaining_frames > 100000)
+      __debugbreak();
+  }
+  else
+  {
+    remaining_frames = static_cast<u32>((ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK);
+    m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
+  }
 
   while (remaining_frames > 0)
   {
@@ -796,14 +822,19 @@ void SPU::UpdateEventInterval()
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;
-  const TickCount interval_ticks = static_cast<TickCount>(interval) * SYSCLK_TICKS_PER_SPU_TICK;
+  const TickCount interval_ticks = static_cast<TickCount>(interval) * m_cpu_ticks_per_spu_tick;
   if (m_tick_event->IsActive() && m_tick_event->GetInterval() == interval_ticks)
     return;
 
   // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
   m_tick_event->InvokeEarly(true);
   m_tick_event->SetInterval(interval_ticks);
-  m_tick_event->Schedule(interval_ticks - m_ticks_carry);
+
+  TickCount downcount = interval_ticks;
+  if (!g_settings.cpu_overclock_active)
+    downcount -= m_ticks_carry;
+
+  m_tick_event->Schedule(downcount);
 }
 
 void SPU::ExecuteTransfer(TickCount ticks)

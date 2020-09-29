@@ -70,6 +70,10 @@ struct Settings
   ConsoleRegion region = ConsoleRegion::Auto;
 
   CPUExecutionMode cpu_execution_mode = CPUExecutionMode::Interpreter;
+  u32 cpu_overclock_numerator = 1;
+  u32 cpu_overclock_denominator = 1;
+  bool cpu_overclock_enable = false;
+  bool cpu_overclock_active = false;
   bool cpu_recompiler_memory_exceptions = false;
   bool cpu_recompiler_icache = false;
 
@@ -173,6 +177,12 @@ struct Settings
   }
 
   bool HasAnyPerGameMemoryCards() const;
+
+  static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
+  static u32 CPUOverclockFractionToPercent(u32 numerator, u32 denominator);
+
+  void SetCPUOverclockPercent(u32 percent);
+  u32 GetCPUOverclockPercent() const;
 
   enum : u32
   {
