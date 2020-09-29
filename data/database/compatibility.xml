@@ -4,6 +4,14 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLPS-01311" compatibility="5" region="NTSC-J" title="0 kara no Mahjong - Mahjong Youchien Tamago-gumi (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
+  <entry code="SLPS-01986" compatibility="5" region="NTSC-J" title="0 kara no Shougi - Shougi Youchien Ayumi-gumi (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
   <entry code="SLUS-01272" compatibility="5" region="NTSC-U" title="007 - The World Is Not Enough (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
@@ -27,6 +35,10 @@
   <entry code="SLPS-01054" compatibility="5" region="NTSC-J" title="10101 - Will the Starship (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1313-g10cd00c</version-tested>
+  </entry>
+  <entry code="SLPM-80643" compatibility="5" region="NTSC-J" title="10th Anniversary Memorial Save Data (Japan) (Disc 1) (PlayStation Taiou)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
   </entry>
   <entry code="LSP99012201" compatibility="5" region="NTSC-U" title="16 tales 2 (usa)">
     <compatibility>No Issues</compatibility>
@@ -53,13 +65,40 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
   </entry>
+  <entry code="SLPS-00693" compatibility="5" region="NTSC-J" title="3D Baseball - The Majors (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
+  <entry code="SLPS-01434" compatibility="5" region="NTSC-J" title="3D Kakutou Tkool (Japan)">
+    <compatibility>No Issues</compatibility>
+    <comments>Disable Interlacing option needs to be ON.</comments>
+  </entry>
+  <entry code="SIPS-60002" compatibility="5" region="NTSC-J" title="3D Lemmings (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
   <entry code="SCUS-94601" compatibility="5" region="NTSC-U" title="3D Lemmings (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
   </entry>
+  <entry code="SCPS-18006" compatibility="5" region="NTSC-J" title="3D-Kaleidoscope - Baby Universe (Japan)">
+    <compatibility>No Issues</compatibility>
+  </entry>
   <entry code="SCUS-94231" compatibility="5" region="NTSC-U" title="3Xtreme (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
+  </entry>
+  <entry code="SLPS-01497" compatibility="5" region="NTSC-J" title="3x3 Eyes - Tenrinou Genmu (Japan) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
+  <entry code="SLPS-01498" compatibility="5" region="NTSC-J" title="3x3 Eyes - Tenrinou Genmu (Japan) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
+  <entry code="SLPS-01499" compatibility="5" region="NTSC-J" title="3x3 Eyes - Tenrinou Genmu (Japan) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
   </entry>
   <entry code="SLUS-00874" compatibility="5" region="NTSC-U" title="40 Winks (USA)">
     <compatibility>No Issues</compatibility>
@@ -326,6 +365,14 @@
   <entry code="SLPM-87118" compatibility="5" region="NTSC-J" title="Arcade Hits - Frisky Tom (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
+  </entry>
+  <entry code="SLPM-87173" compatibility="5" region="NTSC-J" title="Arcade Hits - Magical Drop (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+  </entry>
+  <entry code="SLPM-87082" compatibility="5" region="NTSC-J" title="Arcade Hits - Moon Cresta (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
   </entry>
   <entry code="SLPM-87228" compatibility="5" region="NTSC-J" title="Arcade Hits - Shienryuu">
     <compatibility>No Issues</compatibility>
@@ -935,6 +982,21 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLES-00299" compatibility="4" region="PAL" title="Destruction Derby 2 (Europe)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+    <comments>Pause menu is not displayed. </comments>
+  </entry>
+  <entry code="SIPS-60012" compatibility="4" region="NTSC-J" title="Destruction Derby 2 (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+    <comments>Pause menu is not displayed.</comments>
+  </entry>
+  <entry code="SCUS-94350" compatibility="4" region="NTSC-U" title="Destruction Derby 2 (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+    <comments>Pause menu is not displayed. </comments>
+  </entry>
   <entry code="SLPS-00335" compatibility="5" region="NTSC-J" title="Dezaemon Plus">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -1267,6 +1329,8 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SCES-03404" compatibility="3" region="PAL" title="Formula One 2001 (Europe) (En,Fi)">
     <compatibility>Crashes In-Game</compatibility>
+    <version-tested>0.1-1835-ge2fab72b</version-tested>
+    <comments>Control in race are so crazy! No drivible!</comments>
   </entry>
   <entry code="SLUS-00870" compatibility="5" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
@@ -2190,7 +2254,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-02459" compatibility="5" region="NTSC-J" title="Otona no Asobi (Japan)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-986-gfc911de1</version-tested>
+    <version-tested>0.1-1850-g8342fec2</version-tested>
     <comments>Does not boot with analog controller.</comments>
   </entry>
   <entry code="SCUS-94799" compatibility="5" region="NTSC-U" title="PSone - Wherever, Whenever, Forever. (USA) (EDC)">
@@ -2730,6 +2794,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00863" compatibility="5" region="NTSC-U" title="Shadow Tower (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1773-gbdd98281</version-tested>
+  </entry>
+  <entry code="SLPS-04535" compatibility="5" region="NTSC-J" title="Shanghai - The Great Wall (Japan) [SLPS-04535]">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1861-g75734c25</version-tested>
   </entry>
   <entry code="SLUS-01298" compatibility="5" region="NTSC-U" title="Sheep (USA)">
     <compatibility>No Issues</compatibility>
@@ -3285,10 +3353,13 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
-  <entry code="SLUS-01138" compatibility="2" region="NTSC-U" title="Vampire Hunter D (USA)">
-    <compatibility>Crashes In Intro</compatibility>
-    <version-tested>0.1-1409-ge198e315</version-tested>
-    <comments>Main menu is broken (Issue #121).</comments>
+  <entry code="SLUS-01138" compatibility="4" region="NTSC-U" title="Vampire Hunter D (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Main menu is broken (Issue #121). Could be bypassed by pressing START button.</comments>
+  </entry>
+  <entry code="SLPS-01700" compatibility="5" region="NTSC-J" title="Vampire Savior - EX Edition (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1850-g8342fec2</version-tested>
   </entry>
   <entry code="SLUS-01035" compatibility="5" region="NTSC-U" title="Vanark (USA)">
     <compatibility>No Issues</compatibility>
