@@ -31,6 +31,8 @@ public:
   void InsertMedia(std::unique_ptr<CDImage> media);
   std::unique_ptr<CDImage> RemoveMedia(bool force = false);
 
+  void CPUClockChanged();
+
   // I/O
   u8 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u8 value);

@@ -13,14 +13,18 @@ MemoryCard::MemoryCard()
 {
   m_FLAG.no_write_yet = true;
 
-  m_save_event =
-    TimingEvents::CreateTimingEvent("Memory Card Host Flush", SAVE_DELAY_IN_SYSCLK_TICKS, SAVE_DELAY_IN_SYSCLK_TICKS,
-                                    std::bind(&MemoryCard::SaveIfChanged, this, true), false);
+  m_save_event = TimingEvents::CreateTimingEvent("Memory Card Host Flush", GetSaveDelayInTicks(), GetSaveDelayInTicks(),
+                                                 std::bind(&MemoryCard::SaveIfChanged, this, true), false);
 }
 
 MemoryCard::~MemoryCard()
 {
   SaveIfChanged(false);
+}
+
+TickCount MemoryCard::GetSaveDelayInTicks()
+{
+  return System::GetTicksPerSecond() * SAVE_DELAY_IN_SECONDS;
 }
 
 void MemoryCard::Reset()
@@ -309,5 +313,5 @@ void MemoryCard::QueueFileSave()
     return;
 
   // save in one second, that should be long enough for everything to finish writing
-  m_save_event->Schedule(SAVE_DELAY_IN_SYSCLK_TICKS);
+  m_save_event->Schedule(GetSaveDelayInTicks());
 }

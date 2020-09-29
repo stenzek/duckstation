@@ -132,6 +132,8 @@ public:
   // Render statistics debug window.
   void DrawDebugStateWindow();
 
+  void CPUClockChanged();
+
   // MMIO access
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);

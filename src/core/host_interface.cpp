@@ -543,6 +543,14 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
   if (System::IsValid())
   {
+    if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
+        (g_settings.cpu_overclock_active &&
+         (g_settings.cpu_overclock_numerator != old_settings.cpu_overclock_numerator ||
+          g_settings.cpu_overclock_denominator != old_settings.cpu_overclock_denominator)))
+    {
+      System::UpdateOverclock();
+    }
+
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
     {

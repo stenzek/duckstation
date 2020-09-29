@@ -5,6 +5,7 @@
 #include "host_interface.h"
 #include <algorithm>
 #include <array>
+#include <numeric>
 
 Settings g_settings;
 
@@ -75,6 +76,28 @@ bool Settings::HasAnyPerGameMemoryCards() const
   });
 }
 
+void Settings::CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator)
+{
+  const u32 percent_gcd = std::gcd(percent, 100);
+  *numerator = percent / percent_gcd;
+  *denominator = 100u / percent_gcd;
+}
+
+u32 Settings::CPUOverclockFractionToPercent(u32 numerator, u32 denominator)
+{
+  return (numerator * 100u) / denominator;
+}
+
+void Settings::SetCPUOverclockPercent(u32 percent)
+{
+  CPUOverclockPercentToFraction(percent, &cpu_overclock_numerator, &cpu_overclock_denominator);
+}
+
+u32 Settings::GetCPUOverclockPercent() const
+{
+  return CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator);
+}
+
 void Settings::Load(SettingsInterface& si)
 {
   region =
@@ -95,6 +118,10 @@ void Settings::Load(SettingsInterface& si)
     ParseCPUExecutionMode(
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
       .value_or(DEFAULT_CPU_EXECUTION_MODE);
+  cpu_overclock_numerator = std::max(si.GetIntValue("CPU", "OverclockNumerator", 1), 1);
+  cpu_overclock_denominator = std::max(si.GetIntValue("CPU", "OverclockDenominator", 1), 1);
+  cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
+  cpu_overclock_active = (cpu_overclock_enable && (cpu_overclock_numerator != 1 || cpu_overclock_denominator != 1));
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
 
@@ -218,6 +245,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
+  si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);
+  si.SetIntValue("CPU", "OverclockNumerator", cpu_overclock_numerator);
+  si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
 

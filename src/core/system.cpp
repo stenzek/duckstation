@@ -68,6 +68,8 @@ static void UpdateRunningGame(const char* path, CDImage* image);
 static State s_state = State::Shutdown;
 
 static ConsoleRegion s_region = ConsoleRegion::NTSC_U;
+TickCount g_ticks_per_second = MASTER_CLOCK;
+static TickCount s_max_slice_ticks = MASTER_CLOCK / 10;
 static u32 s_frame_number = 1;
 static u32 s_internal_frame_number = 1;
 
@@ -141,6 +143,22 @@ ConsoleRegion GetRegion()
 bool IsPALRegion()
 {
   return s_region == ConsoleRegion::PAL;
+}
+
+TickCount GetMaxSliceTicks()
+{
+  return s_max_slice_ticks;
+}
+
+void UpdateOverclock()
+{
+  g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
+  s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
+  g_spu.CPUClockChanged();
+  g_cdrom.CPUClockChanged();
+  g_gpu->CPUClockChanged();
+  g_timers.CPUClocksChanged();
+  UpdateThrottlePeriod();
 }
 
 u32 GetFrameNumber()
@@ -682,6 +700,8 @@ bool Boot(const SystemBootParameters& params)
 
 bool Initialize(bool force_software_renderer)
 {
+  g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
+  s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
   s_frame_number = 1;
   s_internal_frame_number = 1;
 
@@ -724,6 +744,15 @@ bool Initialize(bool force_software_renderer)
   g_spu.Initialize();
   g_mdec.Initialize();
   g_sio.Initialize();
+
+  if (g_settings.cpu_overclock_active)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f,
+      g_host_interface->TranslateString("OSDMessage",
+                                        "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
+      g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
+  }
 
   UpdateThrottlePeriod();
   return true;
@@ -844,6 +873,31 @@ bool DoState(StateWrapper& sw)
 
   if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw))
     return false;
+
+  if (!sw.DoMarker("Overclock"))
+    return false;
+
+  bool cpu_overclock_active = g_settings.cpu_overclock_active;
+  u32 cpu_overclock_numerator = g_settings.cpu_overclock_numerator;
+  u32 cpu_overclock_denominator = g_settings.cpu_overclock_denominator;
+  sw.Do(&cpu_overclock_active);
+  sw.Do(&cpu_overclock_numerator);
+  sw.Do(&cpu_overclock_denominator);
+
+  if (sw.IsReading() && (cpu_overclock_active != g_settings.cpu_overclock_active ||
+                         (cpu_overclock_active && (g_settings.cpu_overclock_numerator != cpu_overclock_numerator ||
+                                                   g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f,
+      g_host_interface->TranslateString("OSDMessage",
+                                        "WARNING: CPU overclock (%u%%) was different in save state (%u%%)."),
+      g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
+      cpu_overclock_active ?
+        Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
+        100u);
+    UpdateOverclock();
+  }
 
   return !sw.HasError();
 }
@@ -1186,7 +1240,7 @@ void UpdatePerformanceCounters()
   s_fps = static_cast<float>(s_internal_frame_number - s_last_internal_frame_number) / time;
   s_last_internal_frame_number = s_internal_frame_number;
   s_speed = static_cast<float>(static_cast<double>(global_tick_counter - s_last_global_tick_counter) /
-                               (static_cast<double>(MASTER_CLOCK) * time)) *
+                               (static_cast<double>(g_ticks_per_second) * time)) *
             100.0f;
   s_last_global_tick_counter = global_tick_counter;
   s_fps_timer.Reset();
