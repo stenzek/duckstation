@@ -1311,8 +1311,24 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed = true;
       }
 
+      settings_changed |= ImGui::Checkbox("Enable CPU Clock Control", &m_settings_copy.cpu_overclock_enable);
+      if (m_settings_copy.cpu_overclock_enable)
+      {
+        ImGui::Text("Overclock:");
+        ImGui::SameLine(indent);
+
+        int overclock_percent = static_cast<int>(m_settings_copy.GetCPUOverclockPercent());
+        if (ImGui::SliderInt("##overclock_percent", &overclock_percent, 1, 1000, "%d%%"))
+        {
+          m_settings_copy.SetCPUOverclockPercent(static_cast<u32>(overclock_percent));
+          settings_changed = true;
+        }
+      }
+
       settings_changed |=
         ImGui::Checkbox("Enable Recompiler Memory Exceptions", &m_settings_copy.cpu_recompiler_memory_exceptions);
+
+      settings_changed |= ImGui::Checkbox("Enable Recompiler ICache", &m_settings_copy.cpu_recompiler_icache);
 
       ImGui::EndTabItem();
     }
@@ -1432,7 +1448,8 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Disable Interlacing", &m_settings_copy.gpu_disable_interlacing);
         settings_changed |= ImGui::Checkbox("Force NTSC Timings", &m_settings_copy.gpu_force_ntsc_timings);
         settings_changed |= ImGui::Checkbox("Widescreen Hack", &m_settings_copy.gpu_widescreen_hack);
-        settings_changed |= ImGui::Checkbox("Force 4:3 For 24-Bit Display", &m_settings_copy.display_force_4_3_for_24bit);
+        settings_changed |=
+          ImGui::Checkbox("Force 4:3 For 24-Bit Display", &m_settings_copy.display_force_4_3_for_24bit);
 
         settings_changed |= ImGui::Checkbox("PGXP Enabled", &m_settings_copy.gpu_pgxp_enable);
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);
