@@ -183,6 +183,7 @@ struct Settings
 
   void SetCPUOverclockPercent(u32 percent);
   u32 GetCPUOverclockPercent() const;
+  void UpdateOverclockActive();
 
   enum : u32
   {

@@ -98,6 +98,11 @@ u32 Settings::GetCPUOverclockPercent() const
   return CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator);
 }
 
+void Settings::UpdateOverclockActive()
+{
+  cpu_overclock_active = (cpu_overclock_enable && (cpu_overclock_numerator != 1 || cpu_overclock_denominator != 1));
+}
+
 void Settings::Load(SettingsInterface& si)
 {
   region =
@@ -121,7 +126,7 @@ void Settings::Load(SettingsInterface& si)
   cpu_overclock_numerator = std::max(si.GetIntValue("CPU", "OverclockNumerator", 1), 1);
   cpu_overclock_denominator = std::max(si.GetIntValue("CPU", "OverclockDenominator", 1), 1);
   cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
-  cpu_overclock_active = (cpu_overclock_enable && (cpu_overclock_numerator != 1 || cpu_overclock_denominator != 1));
+  UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
 
