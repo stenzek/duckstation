@@ -2,6 +2,7 @@
 #include "common/cd_image.h"
 #include "common/cd_image_hasher.h"
 #include "core/settings.h"
+#include "core/system.h"
 #include "frontend-common/game_list.h"
 #include "qthostinterface.h"
 #include "qtprogresscallback.h"
@@ -254,6 +255,18 @@ void GamePropertiesDialog::populateGameSettings()
     m_trait_checkboxes[i]->setChecked(gs.HasTrait(static_cast<GameSettings::Trait>(i)));
   }
 
+  if (gs.cpu_overclock_numerator.has_value() || gs.cpu_overclock_denominator.has_value())
+  {
+    const u32 numerator = gs.cpu_overclock_numerator.value_or(1);
+    const u32 denominator = gs.cpu_overclock_denominator.value_or(1);
+    const u32 percent = Settings::CPUOverclockFractionToPercent(numerator, denominator);
+    QSignalBlocker sb(m_ui.userCPUClockSpeed);
+    m_ui.userCPUClockSpeed->setValue(static_cast<int>(percent));
+  }
+
+  populateBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, gs.cpu_overclock_enable);
+  updateCPUClockSpeedLabel();
+
   if (gs.display_active_start_offset.has_value())
   {
     QSignalBlocker sb(m_ui.displayActiveStartOffset);
@@ -385,6 +398,28 @@ void GamePropertiesDialog::connectUi()
     m_ui.exportCompatibilityInfo->setVisible(show_buttons);
   });
 
+  connectBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, &m_game_settings.cpu_overclock_enable);
+  connect(m_ui.userEnableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
+          &GamePropertiesDialog::updateCPUClockSpeedLabel);
+
+  connect(m_ui.userCPUClockSpeed, &QSlider::valueChanged, [this](int value) {
+    if (value == 100)
+    {
+      m_game_settings.cpu_overclock_numerator.reset();
+      m_game_settings.cpu_overclock_denominator.reset();
+    }
+    else
+    {
+      u32 numerator, denominator;
+      Settings::CPUOverclockPercentToFraction(static_cast<u32>(value), &numerator, &denominator);
+      m_game_settings.cpu_overclock_numerator = numerator;
+      m_game_settings.cpu_overclock_denominator = denominator;
+    }
+
+    saveGameSettings();
+    updateCPUClockSpeedLabel();
+  });
+
   connect(m_ui.userAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
       m_game_settings.display_aspect_ratio.reset();
@@ -512,6 +547,13 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.display_active_end_offset = static_cast<s16>(value);
     saveGameSettings();
   });
+}
+
+void GamePropertiesDialog::updateCPUClockSpeedLabel()
+{
+  const int percent = m_ui.userCPUClockSpeed->value();
+  const double frequency = (static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0;
+  m_ui.userCPUClockSpeedLabel->setText(tr("%1% (%2MHz)").arg(percent).arg(frequency / 1000000.0, 0, 'f', 2));
 }
 
 void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)
