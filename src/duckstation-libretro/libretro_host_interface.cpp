@@ -445,7 +445,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 33> s_option_definitions = {{
+static std::array<retro_core_option_definition, 34> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -481,6 +481,15 @@ static std::array<retro_core_option_definition, 33> s_option_definitions = {{
    "Which mode to use for CPU emulation. Recompiler provides the best performance.",
    {{"Interpreter", "Interpreter"}, {"CachedIntepreter", "Cached Interpreter"}, {"Recompiler", "Recompiler"}},
    "Recompiler"},
+  {"duckstation_CPU.Overclock",
+   "CPU Overclocking",
+   "Runs the emulated CPU faster or slower than native speed, which can improve framerates in some games. Will break "
+   "other games and increase system requirements, use with caution.",
+   {{"25", "25%"},   {"50", "50%"},   {"100", "100% (Default)"}, {"125", "125%"}, {"150", "150%"},
+    {"175", "175%"}, {"200", "200%"}, {"225", "225%"},           {"250", "250%"}, {"275", "275%"},
+    {"300", "300%"}, {"350", "350%"}, {"400", "400%"},           {"450", "450%"}, {"500", "500%"},
+    {"600", "600%"}, {"700", "700%"}, {"800", "800%"},           {"900", "900%"}, {"1000", "1000%"}},
+   "100"},
   {"duckstation_CPU.RecompilerICache",
    "CPU Recompiler ICache",
    "Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost "
@@ -711,6 +720,13 @@ void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
   HostInterface::LoadSettings(si);
+
+  // turn percentage into fraction for overclock
+  const u32 overclock_percent = static_cast<u32>(std::max(si.GetIntValue("CPU", "Overclock", 100), 1));
+  Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
+                                          &g_settings.cpu_overclock_denominator);
+  g_settings.cpu_overclock_enable = (overclock_percent != 100);
+  g_settings.UpdateOverclockActive();
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
