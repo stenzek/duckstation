@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
-    <height>600</height>
+    <width>750</width>
+    <height>548</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -184,7 +184,7 @@
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>User Settings</string>
+       <string>User Settings (Console)</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -264,7 +264,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="userTextureFiltering" />
+           <widget class="QComboBox" name="userTextureFiltering"/>
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">
@@ -333,6 +333,26 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>User Settings (Input)</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
@@ -434,7 +454,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_4">
+        <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
