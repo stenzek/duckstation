@@ -754,6 +754,14 @@
         <translation>执行方式:</translation>
     </message>
     <message>
+        <source>CPU Clock Speed Control</source>
+        <translation>CPU速率控制</translation>
+    </message>
+    <message>
+        <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
+        <translation>启用速率控制 (超频/降频)</translation>
+    </message>
+    <message>
         <location filename="../consolesettingswidget.ui" line="105"/>
         <source>CDROM Emulation</source>
         <translation>光盘模拟</translation>
@@ -1801,9 +1809,20 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>哈希</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="187"/>
-        <source>User Settings</source>
-        <translation>用户设置</translation>
+        <source>User Settings (Console)</source>
+        <translation>用户设置 (主机)</translation>
+    </message>
+    <message>
+        <source>User Settings (Input)</source>
+        <translation>用户设置 (输入)</translation>
+    </message>
+    <message>
+        <source>CPU Clock Speed Control</source>
+        <translation>CPU速率控制</translation>
+    </message>
+    <message>
+        <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
+        <translation>启用速率控制 (超频/降频)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="193"/>
@@ -1851,6 +1870,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>强制NTSC制式 (60hz-PAL)</translation>
+    </message>
+    <message>
+        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
+        <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
     </message>
     <message>
         <source>Bilinear Texture Filtering</source>
