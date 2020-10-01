@@ -110,7 +110,7 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
         ninja
-        ../appimage/generate-appimages.sh $(pwd)
+        ../appimage/generate_appimages.sh $(pwd)
 
     - name: Upload SDL AppImage
       uses: actions/upload-artifact@v1
