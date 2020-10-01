@@ -144,7 +144,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="97"/>
         <source>GPU FIFO Size</source>
-        <translation></translation>
+        <translation>Размер очереди ГП</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="99"/>
@@ -276,7 +276,7 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="67"/>
         <source>Maximum latency: %1 frames (%2ms)</source>
-        <translation>Максимальная задержка:%1 кадров (%2 мс)</translation>
+        <translation>Максимальная задержка: %1 кадров (%2 мс)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="72"/>
@@ -356,7 +356,7 @@
     <message>
         <location filename="../autoupdaterdialog.cpp" line="297"/>
         <source>Downloading %1...</source>
-        <translation>Загружается %1 ...</translation>
+        <translation>Загружается %1...</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="297"/>
@@ -631,7 +631,7 @@
     <message>
         <location filename="../displaysettingswidget.ui" line="121"/>
         <source>Show Messages</source>
-        <translation>Показывать сообщений</translation>
+        <translation>Показывать сообщения</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="128"/>
@@ -704,7 +704,7 @@
     <message>
         <location filename="../displaysettingswidget.cpp" line="67"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Определяет, какую часть области, обычно не видимой на потребительском телевизоре, следует обрезать / скрыть.&lt;br&gt;В некоторых играх контент отображается в области нерабочей области или используется для экранных эффектов.&lt;br&gt;Может отображаться некорректно при настройке &quot;Все границы&quot;. &quot;Only Overscan&quot; предлагает хороший компромисс между стабильностью и скрытием черных границ.</translation>
+        <translation>Определяет, какую часть области, обычно не видимой на потребительском телевизоре, следует обрезать/скрыть.&lt;br&gt;В некоторых играх контент отображается в области нерабочей области или используется для экранных эффектов.&lt;br&gt;Может отображаться некорректно при настройке &quot;Все границы&quot;. &quot;Only Overscan&quot; предлагает хороший компромисс между стабильностью и скрытием черных границ.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="71"/>
@@ -716,7 +716,7 @@
     <message>
         <location filename="../displaysettingswidget.cpp" line="72"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>Использует билинейную фильтрацию текстур при отображении фреймбуфера консоли на экране.&lt;br&gt;Отключение фильтрации приведет к более резкому, блочному / пиксельному изображению. Включение сгладит изображение.&lt;br&gt;Чем выше разрешение, тем менее заметен этот параметр.</translation>
+        <translation>Использует билинейную фильтрацию текстур при отображении фреймбуфера консоли на экране.&lt;br&gt;Отключение фильтрации приведет к более резкому, блочному/пиксельному изображению. Включение сгладит изображение.&lt;br&gt;Чем выше разрешение, тем менее заметно влияние этого параметра.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="78"/>
@@ -799,7 +799,7 @@
         <location filename="../enhancementsettingswidget.ui" line="65"/>
         <location filename="../enhancementsettingswidget.cpp" line="57"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation>Масштабировать сглаживание (масштабирование шаблона дизеринга до разрешения)</translation>
+        <translation>Масштабировать дизеринг (масштабирование шаблона дизеринга до разрешения)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="72"/>
@@ -859,7 +859,7 @@
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="40"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Принудительно переводит рендеринг и отображение кадров в прогрессивный режим.&lt;br&gt;Это устраняет эффект &quot;расчески&quot;, наблюдаемый в играх 480i, за счет их рендеринга в 480p. Обычно безопасно для включения.&lt;br&gt;&lt;b&gt;&lt;u&gt; Может быть совместим не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Принудительно переводит рендеринг и отображение кадров в прогрессивный режим.&lt;br&gt;Это устраняет эффект &quot;гребёнки&quot;, наблюдаемый в играх 480i, за счет их рендеринга в 480p. Обычно безопасно для включения.&lt;br&gt;&lt;b&gt;&lt;u&gt; Может быть совместим не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="45"/>
@@ -886,7 +886,7 @@
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="58"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation>Масштабирует шаблон дизеринга в соответствии со шкалой разрешения эмулируемого графического процессора. Это делает шаблон дизеринга менее очевидным при более высоких разрешениях.&lt;br&gt;Обычно безопасно для включения и поддерживает только аппаратные средства визуализации.</translation>
+        <translation>Масштабирует шаблон дизеринга в соответствии со шкалой разрешения эмулируемого графического процессора. Это делает шаблон дизеринга менее выраженным при более высоких разрешениях.&lt;br&gt;Обычно безопасно для включения и поддерживает только аппаратные средства визуализации.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="61"/>
@@ -916,17 +916,17 @@
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="78"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Уменьшает &quot;шаткие&quot; полигоны и &quot;деформирующиеся&quot; текстуры, которые нормальными в играх для PS1. &lt;br&gt; Работает только с аппаратными рендерерами. &lt;b&gt; &lt;u&gt; Может быть совместим не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Уменьшает &quot;дрожание&quot; полигонов и &quot;искажение&quot; текстур свойственные играм для PS1. &lt;br&gt; Работает только с аппаратными рендерерами. &lt;b&gt; &lt;u&gt; Может быть совместим не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="81"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation>Повышает точность отсечения полигонов, уменьшая количество отверстий в геометрии. Требует включения коррекции геометрии.</translation>
+        <translation>Повышает точность отсечения полигонов, уменьшая количество дыр в геометрии. Требует включения коррекции геометрии.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="84"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Использует интерполяцию с коррекцией перспективы для координат текстуры и цветов, выравнивая деформированные текстуры. Требует включения коррекции геометрии.</translation>
+        <translation>Использует перспективно-корректную интерполяцию для текстуры и цвета, исправляя искажение текстуры. Требует включения коррекции геометрии.</translation>
     </message>
 </context>
 <context>
@@ -1140,7 +1140,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>Do you wish to download the disc database from redump.org?
 
 This will download approximately 4 megabytes over your current internet connection.</source>
-        <translation>Вы хотите загрузить базы данных дисков с  redump.org?
+        <translation>Вы хотите загрузить базы данных дисков с redump.org?
 
 Будет загружено около 4 мегабайт через ваше текущее интернет подключение.</translation>
     </message>
@@ -1371,7 +1371,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="395"/>
         <source>Memory Card 2 Type:</source>
-        <translation>Типа карты памяти 2:</translation>
+        <translation>Тип карты памяти 2:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="405"/>
@@ -1502,7 +1502,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="66"/>
         <location filename="../generalsettingswidget.cpp" line="51"/>
         <source>Save State On Exit</source>
-        <translation>Сохраниь состояние при выходе</translation>
+        <translation>Сохранить состояние при выходе</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
@@ -1573,7 +1573,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="52"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-        <translation>Автоматически сохраняет состояние эмулятора при выключении или выходе. Затем вы можете продолжить прямо с того места, где остановились в следующий раз.</translation>
+        <translation>Автоматически сохраняет состояние эмулятора при выключении или выходе. В следующий раз вы сможете продолжить прямо с того места, где остановились.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="54"/>
@@ -1591,7 +1591,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
-        <translation>Отображает смоделированную консоль в главном окне приложения над списком игр. Если этот флажок не установлен, отображение будет отображаться в отдельном окне.</translation>
+        <translation>Отображает симулируемую консоль в главном окне приложения над списком игр. Если этот флажок не установлен, для отображения будет использоваться отдельное окно.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="61"/>
@@ -1611,7 +1611,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
-        <translation>Регулирует скорость эмуляции до выбранной выше скорости. Если этот флажок не установлен, эмулятор будет работать как можно быстрее, что может быть не играбельным.</translation>
+        <translation>Регулирует скорость эмуляции до выбранной выше скорости. Если этот флажок не установлен, эмулятор будет работать как можно быстрее, что может быть неиграбельным.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="77"/>
@@ -1671,7 +1671,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../inputbindingdialog.ui" line="26"/>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>Привязки для  Controller0/КнопкаКруг</translation>
+        <translation>Привязки для Controller0/КнопкаКруг</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="45"/>
@@ -1697,7 +1697,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../inputbindingdialog.cpp" line="81"/>
         <location filename="../inputbindingdialog.cpp" line="93"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Нажмите Кнопку/Оси... [%1]</translation>
+        <translation>Нажмите Кнопку/Ось... [%1]</translation>
     </message>
 </context>
 <context>
@@ -1711,7 +1711,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../inputbindingwidgets.cpp" line="185"/>
         <location filename="../inputbindingwidgets.cpp" line="197"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Нажмите Кнопку/Оси... [%1]</translation>
+        <translation>Нажмите Кнопку/Ось... [%1]</translation>
     </message>
 </context>
 <context>
@@ -1818,7 +1818,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="260"/>
         <source>&amp;Scan For New Games</source>
-        <translation>&amp;Сканировать  новые игры</translation>
+        <translation>&amp;Сканировать новые игры</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="269"/>
@@ -1953,7 +1953,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="478"/>
         <source>Add Game Directory...</source>
-        <translation>Добавить директорию с играми...</translation>
+        <translation>Добавить каталог с играми...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="487"/>
@@ -2303,12 +2303,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardeditordialog.cpp" line="264"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>Карта памяти  &apos;%1&apos;  не сохранена. Сохранить перед закрытием?</translation>
+        <translation>Карта памяти &apos;%1&apos; не сохранена. Сохранить перед закрытием?</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="285"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
-        <translation>Недостаточно блоков, этому файлу нужен%1, но доступно только%2.</translation>
+        <translation>Недостаточно блоков, этому файлу нужен %1, но доступно только %2.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="294"/>
@@ -2318,7 +2318,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardeditordialog.cpp" line="300"/>
         <source>Failed to write file %1</source>
-        <translation>Не удалось записать  файл %1</translation>
+        <translation>Не удалось записать файл %1</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="319"/>
@@ -2342,7 +2342,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../gamepropertiesdialog.cpp" line="17"/>
         <location filename="../memorycardsettingswidget.cpp" line="14"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>Все типа карт памяти (*.mcd *.mcr *.mc)</translation>
+        <translation>Все типы карт памяти (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="37"/>
@@ -2368,7 +2368,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="51"/>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>Если выбран один из режимов карты памяти &quot;отдельная карта для каждой игры&quot;, эти карты памяти будут сохранены в папку  memcards.</translation>
+        <translation>Если выбран один из режимов карты памяти &quot;отдельная карта для каждой игры&quot;, эти карты памяти будут сохранены в папку memcards.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="57"/>
@@ -2577,7 +2577,7 @@ This will download approximately 4 megabytes over your current internet connecti
 The URL was: %1</source>
         <translation>Не удалось открыть URL.
 
- URL: %1</translation>
+URL: %1</translation>
     </message>
 </context>
 <context>
@@ -2590,7 +2590,7 @@ The URL was: %1</source>
     <message>
         <location filename="../qthostinterface.cpp" line="867"/>
         <source>Game Save %1 (Empty)</source>
-        <translation>Игра сохранения  %1 (Пусто)</translation>
+        <translation>Игра сохранения %1 (Пусто)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="874"/>
@@ -2777,22 +2777,22 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="64"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию моделируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
+        <translation>&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию симулируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="67"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
-        <translation>&lt;strong&gt;Настройки списка игр&lt;/strong&gt;&lt;hr&gt;В приведенном выше списке показаны папки, в которых DuckStation будет искать для заполнения списка игр. Каталоги поиска можно добавлять, удалять и переключать на рекурсивные/нерекурсивные. Кроме того, можно загрузить или обновить базу данных redump.org для предоставления названий дисков, поскольку сами диски не содержат информации о названиях.</translation>
+        <translation>&lt;strong&gt;Настройки списка игр&lt;/strong&gt;&lt;hr&gt;В приведенном выше списке показаны папки, в которых DuckStation будет искать для заполнения списка игр. Каталоги поиска можно добавлять, удалять и переключать на рекурсивные/нерекурсивные. Кроме того, можно загрузить или обновить базу данных redump.org для отображения названий дисков, поскольку сами диски не содержат информации о названиях.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="72"/>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;Настройки горячих клавиш&lt;/strong&gt;&lt;hr&gt;Привязка горячих клавиш позволяет запускать такие события, как сброс настроек или создание снимков экрана при нажатии клавиши / кнопки контроллера. Названия горячих клавиш говорят сами за себя. Щелчок по привязке запустит обратный отсчет, и в этом случае вы должны нажать клавишу или кнопку/оси контроллера, которую вы хотите привязать. Если ни одна кнопка не нажата и таймер истечет, привязка не изменится. Чтобы очистить привязку, щелкните кнопку правой кнопкой мыши. Чтобы связать несколько кнопок, удерживайте Shift и нажмите кнопку.</translation>
+        <translation>&lt;strong&gt;Настройки горячих клавиш&lt;/strong&gt;&lt;hr&gt;Привязка горячих клавиш позволяет запускать такие события, как сброс настроек или создание снимков экрана при нажатии клавиши / кнопки контроллера. Названия горячих клавиш говорят сами за себя. Щелчок по привязке запустит обратный отсчет, и в этом случае вы должны нажать клавишу или кнопку/ось контроллера, которую хотите привязать. Если ни одна кнопка не нажата и таймер истечет, привязка не изменится. Чтобы очистить привязку, щелкните кнопку правой кнопкой мыши. Чтобы связать несколько кнопок, удерживайте Shift и нажмите кнопку.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="78"/>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;Настройки контроллера&lt;/strong&gt;&lt;hr&gt;На этой странице вы можете выбрать тип контроллера, который вы хотите моделировать для консоли, и переназначить клавиши или кнопки игрового контроллера по вашему выбору. Щелчок по привязке запустит обратный отсчет, и в этом случае вы должны нажать клавишу или кнопку/оси контроллера, которую вы хотите привязать. (Для грохота нажмите любую кнопку/оси на контроллере, на который вы хотите отправить гул.) Если ни одна кнопка не нажата и таймер истечет, привязка не изменится. Чтобы очистить привязку, щелкните кнопку правой кнопкой мыши. Чтобы связать несколько кнопок, удерживайте Shift и нажмите кнопку.</translation>
+        <translation>&lt;strong&gt;Настройки контроллера&lt;/strong&gt;&lt;hr&gt;На этой странице вы можете выбрать тип контроллера, который вы хотите симулировать для консоли, и переназначить клавиши или кнопки игрового контроллера по вашему выбору. Щелчок по привязке запустит обратный отсчет, и в этом случае вы должны нажать клавишу или кнопку/ось контроллера, которую хотите привязать. (Для вибрации нажмите любую кнопку/ось на контроллере.) Если ни одна кнопка не нажата и таймер истечет, привязка не изменится. Чтобы очистить привязку, щелкните кнопку правой кнопкой мыши. Чтобы связать несколько кнопок, удерживайте Shift и нажмите кнопку.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="86"/>
