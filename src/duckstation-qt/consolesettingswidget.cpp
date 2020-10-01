@@ -66,6 +66,7 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
     {
       QSignalBlocker sb(m_ui.enableCPUClockSpeedControl);
       m_ui.enableCPUClockSpeedControl->setChecked(Qt::Unchecked);
+      m_host_interface->SetBoolSettingValue("CPU", "OverclockEnable", false);
       return;
     }
 
