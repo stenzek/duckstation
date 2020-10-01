@@ -248,11 +248,16 @@ bool SDLHostInterface::AcquireHostDisplay()
     ImGui::NewFrame();
   }
 
+  if (!CreateHostDisplayResources())
+    return false;
+
   return true;
 }
 
 void SDLHostInterface::ReleaseHostDisplay()
 {
+  ReleaseHostDisplayResources();
+
   if (m_fullscreen)
     SetFullscreen(false);
 

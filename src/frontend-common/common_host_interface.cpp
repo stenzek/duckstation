@@ -19,6 +19,7 @@
 #include "core/system.h"
 #include "core/timers.h"
 #include "game_list.h"
+#include "icon.h"
 #include "imgui.h"
 #include "ini_settings_interface.h"
 #include "save_state_selector_ui.h"
@@ -430,6 +431,21 @@ bool CommonHostInterface::IsFullscreen() const
 bool CommonHostInterface::SetFullscreen(bool enabled)
 {
   return false;
+}
+
+bool CommonHostInterface::CreateHostDisplayResources()
+{
+  m_logo_texture =
+    m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
+  if (!m_logo_texture)
+    Log_WarningPrintf("Failed to create logo texture");
+
+  return true;
+}
+
+void CommonHostInterface::ReleaseHostDisplayResources()
+{
+  m_logo_texture.reset();
 }
 
 std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend backend)
@@ -2035,9 +2051,26 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   // ImGui::EndFrame();
   // ImGui::NewFrame();
 
+  const float logo_width = static_cast<float>(APP_ICON_WIDTH) * scale;
+  const float logo_height = static_cast<float>(APP_ICON_HEIGHT) * scale;
+
+  ImGui::SetNextWindowSize(ImVec2(logo_width, logo_height), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) - (50.0f * scale)),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  if (ImGui::Begin("LoadingScreenLogo", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
+                     ImGuiWindowFlags_NoBackground))
+  {
+    if (m_logo_texture)
+      ImGui::Image(m_logo_texture->GetHandle(), ImVec2(logo_width, logo_height));
+  }
+  ImGui::End();
+
   ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 50.0f : 30.0f) * scale), ImGuiCond_Always);
-  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
-                          ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.0f));
   if (ImGui::Begin("LoadingScreen", nullptr,
                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
