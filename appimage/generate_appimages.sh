@@ -6,14 +6,14 @@ echo "APPIMAGE_RESOURCES_DIR set to ${APPIMAGE_RESOURCES_DIR}"
 
 if [[ "$#" -ne 1 ]]; then
   echo "Wrong number of arguments (\$# = $# args) provided."
-  echo "Usage: create-appimage.sh <build_directory_path>"
+  echo "Usage: generate_appimages.sh <build_directory_path>"
+  echo "AppImages will be generated in the path this script is called from."
   exit 1
 else
   BUILD_DIR=$(readlink -f $1)
   echo "BUILD_DIR set to ${BUILD_DIR}"
 fi
 
-# Acquire linuxdeploy and linuxdeploy-plugin-qt
 wget --timestamping --directory-prefix=${BUILD_DIR} \
   https://artifacts.assassinate-you.net/artifactory/list/linuxdeploy/travis-456/linuxdeploy-x86_64.AppImage
 chmod a+x ${BUILD_DIR}/linuxdeploy-x86_64.AppImage
@@ -28,22 +28,23 @@ FRONTENDS=("qt" "sdl")
 ICONS_QT=()
 ICONS_SDL=()
 
-ICON_PNG_RESOLUTIONS=($(seq 16 16 64)) # 16, 32, 48, 64
-for res in ${ICON_PNG_RESOLUTIONS[@]}; do
+for filename in ${APPIMAGE_RESOURCES_DIR}/icon-*px.png; do
+  [[ ${filename} =~ ${APPIMAGE_RESOURCES_DIR}/icon-(.*)px.png ]];
+  res=${BASH_REMATCH[1]}
   mkdir -p ${BUILD_DIR}/AppImage-icons/${res}x${res}
   for frontend in ${FRONTENDS[@]}; do
     # Copy icon to proper directory
-    cp ${APPIMAGE_RESOURCES_DIR}/icon-${res}px.png ${BUILD_DIR}/AppImage-icons/${res}x${res}/duckstation-${frontend}.png
+    cp -v ${APPIMAGE_RESOURCES_DIR}/icon-${res}px.png ${BUILD_DIR}/AppImage-icons/${res}x${res}/duckstation-${frontend}.png
     # Append icon filepath to array that will later be passed to linuxdeploy
     eval "ICONS_${frontend^^}+=(${BUILD_DIR}/AppImage-icons/${res}x${res}/duckstation-${frontend}.png)"
   done
 done
 
 # Add data files into the AppDir
-DATA_DIR=$(dirname $(realpath "${BASH_SOURCE[0]}"))/../data
+DATA_DIR=${APPIMAGE_RESOURCES_DIR}/../data
 echo "Data directory is: ${DATA_DIR}"
 for frontend in ${FRONTENDS[@]}; do
-  CURRENT_APPDIR=${BUILD_DIR}/AppDir-duckstation-${frontend}
+  CURRENT_APPDIR=${BUILD_DIR}/duckstation-${frontend}.AppDir
   mkdir -p ${CURRENT_APPDIR}/usr/bin
   cp -av ${DATA_DIR}/* ${CURRENT_APPDIR}/usr/bin
 done
@@ -52,7 +53,7 @@ done
 TRANSLATIONS_DIR=${BUILD_DIR}/bin/translations
 echo "Translation directory is: ${BUILD_DIR}"
 for frontend in ${FRONTENDS[@]}; do
-  CURRENT_APPDIR=${BUILD_DIR}/AppDir-duckstation-${frontend}
+  CURRENT_APPDIR=${BUILD_DIR}/duckstation-${frontend}.AppDir
   mkdir -p ${CURRENT_APPDIR}/usr/bin
   cp -av ${TRANSLATIONS_DIR} ${CURRENT_APPDIR}/usr/bin
 done
@@ -63,7 +64,7 @@ done
 UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
 OUTPUT="duckstation-qt-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
-  --appdir=${BUILD_DIR}/AppDir-duckstation-qt \
+  --appdir=${BUILD_DIR}/duckstation-qt.AppDir \
   --executable=${BUILD_DIR}/bin/duckstation-qt \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-qt.desktop \
   ${ICONS_QT[@]/#/--icon-file=} \
@@ -73,11 +74,8 @@ ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
 UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-sdl-x64.AppImage.zsync" \
 OUTPUT="duckstation-sdl-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
-  --appdir=${BUILD_DIR}/AppDir-duckstation-sdl \
+  --appdir=${BUILD_DIR}/duckstation-sdl.AppDir \
   --executable=${BUILD_DIR}/bin/duckstation-sdl \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-sdl.desktop \
   ${ICONS_SDL[@]/#/--icon-file=} \
   --output=appimage
-
-# Resulting AppImages and zsync files will be created in the directory this script is called from;
-# move them into the user's specified build directory
