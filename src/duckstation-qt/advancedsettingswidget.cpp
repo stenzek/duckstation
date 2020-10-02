@@ -39,6 +39,7 @@ static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget
   table->insertRow(row);
 
   QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
   table->setItem(row, 0, name_item);
 
   QSpinBox* cb = new QSpinBox(table);
