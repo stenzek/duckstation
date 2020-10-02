@@ -361,23 +361,24 @@ void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_o
     return;
   }
 
+  std::string state_filename = filename.toStdString();
+  if (state_filename.empty())
+  {
+    state_filename = GetMostRecentResumeSaveStatePath();
+    if (state_filename.empty())
+    {
+      emit errorReported(tr("No resume save state found."));
+      return;
+    }
+  }
+
   emit emulationStarting();
-  if (filename.isEmpty())
-    ResumeSystemFromMostRecentState();
-  else
-    ResumeSystemFromState(filename.toStdString().c_str(), boot_on_failure);
+  ResumeSystemFromState(state_filename.c_str(), boot_on_failure);
 }
 
 void QtHostInterface::resumeSystemFromMostRecentState()
 {
-  if (!isOnWorkerThread())
-  {
-    QMetaObject::invokeMethod(this, "resumeSystemFromMostRecentState");
-    return;
-  }
-
-  emit emulationStarting();
-  ResumeSystemFromMostRecentState();
+  resumeSystemFromState(QString(), false);
 }
 
 void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
