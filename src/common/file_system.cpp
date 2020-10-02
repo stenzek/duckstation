@@ -1250,7 +1250,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
-#ifdef __HAIKU__
+#if defined (__HAIKU__) || defined (__APPLE__)
     struct stat sDir;
     if (stat(full_path, &sDir) < 0)
       continue;
@@ -1347,7 +1347,7 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
     // stat file
-#ifdef __HAIKU__
+#if defined (__HAIKU__) || defined (__APPLE__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1381,7 +1381,7 @@ bool FileExists(const char* Path)
     return false;
 
     // stat file
-#ifdef __HAIKU__
+#if defined (__HAIKU__) || defined (__APPLE__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1403,7 +1403,7 @@ bool DirectoryExists(const char* Path)
     return false;
 
     // stat file
-#ifdef __HAIKU__
+#if defined (__HAIKU__) || defined (__APPLE__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
