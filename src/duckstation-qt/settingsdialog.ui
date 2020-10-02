@@ -26,189 +26,199 @@
    <iconset resource="resources/resources.qrc">
     <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
+  <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="horizontalSpacing">
-      <number>10</number>
+    <widget class="QListWidget" name="settingsCategory">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <item row="0" column="0">
-      <widget class="QListWidget" name="settingsCategory">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>230</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>400</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>32</width>
-         <height>32</height>
-        </size>
-       </property>
-       <item>
-        <property name="text">
-         <string>General Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>BIOS Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Console Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Game List Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/system-file-manager.png</normaloff>:/icons/system-file-manager.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Hotkey Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Controller Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Memory Card Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/media-flash.png</normaloff>:/icons/media-flash.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Display Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Enhancement Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Post-Processing Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Audio Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Advanced Settings</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/resources.qrc">
-          <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
-        </property>
-       </item>
-      </widget>
+     <property name="minimumSize">
+      <size>
+       <width>230</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>400</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <item>
+      <property name="text">
+       <string>General Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+      </property>
      </item>
-     <item row="0" column="1">
-      <widget class="QStackedWidget" name="settingsContainer">
-       <property name="minimumSize">
-        <size>
-         <width>500</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <widget class="QWidget" name="page"/>
-       <widget class="QWidget" name="page_2"/>
-      </widget>
+     <item>
+      <property name="text">
+       <string>BIOS Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
+      </property>
      </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="QTextEdit" name="helpText">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>120</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>120</height>
-        </size>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
+     <item>
+      <property name="text">
+       <string>Console Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
+      </property>
      </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QDialogButtonBox" name="buttonBox">
+     <item>
+      <property name="text">
+       <string>Game List Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/system-file-manager.png</normaloff>:/icons/system-file-manager.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Hotkey Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Controller Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Memory Card Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/media-flash.png</normaloff>:/icons/media-flash.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Display Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Enhancement Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Post-Processing Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Audio Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Advanced Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QStackedWidget" name="settingsContainer">
+     <property name="minimumSize">
+      <size>
+       <width>500</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page"/>
+     <widget class="QWidget" name="page_2"/>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QTextEdit" name="helpText">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Close|QDialogButtonBox::RestoreDefaults</set>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -219,38 +229,5 @@
  <resources>
   <include location="resources/resources.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>SettingsDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>SettingsDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
