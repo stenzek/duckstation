@@ -22,6 +22,10 @@ wget --timestamping --directory-prefix=${BUILD_DIR} \
   https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
 chmod a+x ${BUILD_DIR}/linuxdeploy-plugin-qt-x86_64.AppImage
 
+wget --timestamping --directory-prefix=${BUILD_DIR} \
+  https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
+chmod a+x ${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage
+
 # Copy icons into the <resolution>/<app_name>.<ext> directory structure that linuxdeploy nominally expects,
 # e.g. 16x16/duckstation-qt.png, 32x32/duckstation-qt.png, etc.
 FRONTENDS=("qt" "sdl")
@@ -61,15 +65,21 @@ done
 # Pass UPDATE_INFORMATION and OUTPUT variables (used by linuxdeploy-plugin-appimage)
 # to the environment of the linuxdeploy commands
 
-UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
-OUTPUT="duckstation-qt-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/duckstation-qt.AppDir \
   --executable=${BUILD_DIR}/bin/duckstation-qt \
   --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-qt.desktop \
   ${ICONS_QT[@]/#/--icon-file=} \
-  --plugin=qt \
-  --output=appimage
+  --plugin=qt
+
+# Patch AppRun to work around system Qt libraries being loaded ahead of bundled libraries
+sed -i 's|exec "$this_dir"/AppRun.wrapped "$@"|exec env LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH "$this_dir"/AppRun.wrapped "$@"|' \
+  ${BUILD_DIR}/duckstation-qt.AppDir/AppRun
+  
+UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
+OUTPUT="duckstation-qt-x64.AppImage" \
+${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage \
+  --appdir=${BUILD_DIR}/duckstation-qt.AppDir
 
 UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-sdl-x64.AppImage.zsync" \
 OUTPUT="duckstation-sdl-x64.AppImage" \
