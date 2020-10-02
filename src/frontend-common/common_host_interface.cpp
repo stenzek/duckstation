@@ -1351,13 +1351,13 @@ bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 co
 
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
-  RegisterHotkey(StaticString("General"), StaticString("FastForward"), TRANSLATABLE("Hotkeys", "Fast Forward"),
-                 [this](bool pressed) {
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FastForward"),
+                 TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) {
                    m_speed_limiter_temp_disabled = pressed;
                    UpdateSpeedLimiterState();
                  });
 
-  RegisterHotkey(StaticString("General"), StaticString("ToggleFastForward"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFastForward"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fast Forward")), [this](bool pressed) {
                    if (!pressed)
                    {
@@ -1370,19 +1370,19 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString("General"), StaticString("ToggleFullscreen"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFullscreen"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fullscreen")), [this](bool pressed) {
                    if (!pressed)
                      SetFullscreen(!IsFullscreen());
                  });
 
-  RegisterHotkey(StaticString("General"), StaticString("TogglePause"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePause"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Pause")), [this](bool pressed) {
                    if (System::IsValid() && !pressed)
                      PauseSystem(!System::IsPaused());
                  });
 
-  RegisterHotkey(StaticString("General"), StaticString("PowerOff"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
                  StaticString(TRANSLATABLE("Hotkeys", "Power Off System")), [this](bool pressed) {
                    if (!pressed && System::IsValid())
                    {
@@ -1408,13 +1408,13 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString("General"), StaticString("Screenshot"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Screenshot"),
                  StaticString(TRANSLATABLE("Hotkeys", "Save Screenshot")), [this](bool pressed) {
                    if (!pressed && System::IsValid())
                      SaveScreenshot();
                  });
 
-  RegisterHotkey(StaticString("General"), StaticString("FrameStep"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (!pressed)
                    {
@@ -1425,13 +1425,13 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
 void CommonHostInterface::RegisterGraphicsHotkeys()
 {
-  RegisterHotkey(StaticString("Graphics"), StaticString("ToggleSoftwareRendering"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ToggleSoftwareRendering"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Software Rendering")), [this](bool pressed) {
                    if (!pressed)
                      ToggleSoftwareRendering();
                  });
 
-  RegisterHotkey(StaticString("Graphics"), StaticString("TogglePGXP"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXP"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP")), [this](bool pressed) {
                    if (!pressed)
                    {
@@ -1451,25 +1451,25 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString("Graphics"), StaticString("IncreaseResolutionScale"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("IncreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Increase Resolution Scale")), [this](bool pressed) {
                    if (!pressed)
                      ModifyResolutionScale(1);
                  });
 
-  RegisterHotkey(StaticString("Graphics"), StaticString("DecreaseResolutionScale"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("DecreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Decrease Resolution Scale")), [this](bool pressed) {
                    if (!pressed)
                      ModifyResolutionScale(-1);
                  });
 
-  RegisterHotkey(StaticString("Graphics"), StaticString("TogglePostProcessing"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePostProcessing"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Post-Processing")), [this](bool pressed) {
                    if (!pressed)
                      TogglePostProcessing();
                  });
 
-  RegisterHotkey(StaticString("Graphics"), StaticString("ReloadPostProcessingShaders"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ReloadPostProcessingShaders"),
                  StaticString(TRANSLATABLE("Hotkeys", "Reload Post Processing Shaders")), [this](bool pressed) {
                    if (!pressed)
                      ReloadPostProcessingShaders();
@@ -1478,22 +1478,22 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 
 void CommonHostInterface::RegisterSaveStateHotkeys()
 {
-  RegisterHotkey(StaticString("Save States"), StaticString("LoadSelectedSaveState"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("LoadSelectedSaveState"),
                  StaticString(TRANSLATABLE("Hotkeys", "Load From Selected Slot")), [this](bool pressed) {
                    if (!pressed)
                      m_save_state_selector_ui->LoadCurrentSlot();
                  });
-  RegisterHotkey(StaticString("Save States"), StaticString("SaveSelectedSaveState"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("SaveSelectedSaveState"),
                  StaticString(TRANSLATABLE("Hotkeys", "Save To Selected Slot")), [this](bool pressed) {
                    if (!pressed)
                      m_save_state_selector_ui->SaveCurrentSlot();
                  });
-  RegisterHotkey(StaticString("Save States"), StaticString("SelectPreviousSaveStateSlot"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("SelectPreviousSaveStateSlot"),
                  StaticString(TRANSLATABLE("Hotkeys", "Select Previous Save Slot")), [this](bool pressed) {
                    if (!pressed)
                      m_save_state_selector_ui->SelectPreviousSlot();
                  });
-  RegisterHotkey(StaticString("Save States"), StaticString("SelectNextSaveStateSlot"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("SelectNextSaveStateSlot"),
                  StaticString(TRANSLATABLE("Hotkeys", "Select Next Save Slot")), [this](bool pressed) {
                    if (!pressed)
                      m_save_state_selector_ui->SelectNextSlot();
@@ -1501,42 +1501,42 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
 
   for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
   {
-    RegisterHotkey(StaticString("Save States"), TinyString::FromFormat("LoadGameState%u", slot),
-                   TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Load Game State %u"), slot),
-                   [this, slot](bool pressed) {
-                     if (!pressed)
-                       LoadState(false, slot);
-                   });
-    RegisterHotkey(StaticString("Save States"), TinyString::FromFormat("SaveGameState%u", slot),
-                   TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Save Game State %u"), slot),
-                   [this, slot](bool pressed) {
-                     if (!pressed)
-                       SaveState(false, slot);
-                   });
+    RegisterHotkey(
+      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("LoadGameState%u", slot),
+      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Load Game State %u"), slot), [this, slot](bool pressed) {
+        if (!pressed)
+          LoadState(false, slot);
+      });
+    RegisterHotkey(
+      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("SaveGameState%u", slot),
+      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Save Game State %u"), slot), [this, slot](bool pressed) {
+        if (!pressed)
+          SaveState(false, slot);
+      });
   }
 
   for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)
   {
-    RegisterHotkey(StaticString("Save States"), TinyString::FromFormat("LoadGlobalState%u", slot),
-                   TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Load Global State %u"), slot),
-                   [this, slot](bool pressed) {
-                     if (!pressed)
-                       LoadState(true, slot);
-                   });
-    RegisterHotkey(StaticString("Save States"), TinyString::FromFormat("SaveGlobalState%u", slot),
-                   TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Save Global State %u"), slot),
-                   [this, slot](bool pressed) {
-                     if (!pressed)
-                       SaveState(true, slot);
-                   });
+    RegisterHotkey(
+      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("LoadGlobalState%u", slot),
+      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Load Global State %u"), slot), [this, slot](bool pressed) {
+        if (!pressed)
+          LoadState(true, slot);
+      });
+    RegisterHotkey(
+      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("SaveGlobalState%u", slot),
+      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Save Global State %u"), slot), [this, slot](bool pressed) {
+        if (!pressed)
+          SaveState(true, slot);
+      });
   }
 }
 
 void CommonHostInterface::RegisterAudioHotkeys()
 {
   RegisterHotkey(
-    StaticString("Audio"), StaticString("AudioMute"), StaticString(TRANSLATABLE("Hotkeys", "Toggle Mute")),
-    [this](bool pressed) {
+    StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioMute"),
+    StaticString(TRANSLATABLE("Hotkeys", "Toggle Mute")), [this](bool pressed) {
       if (System::IsValid() && !pressed)
       {
         g_settings.audio_output_muted = !g_settings.audio_output_muted;
@@ -1547,7 +1547,7 @@ void CommonHostInterface::RegisterAudioHotkeys()
           AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), g_settings.audio_output_volume);
       }
     });
-  RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeUp"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioVolumeUp"),
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Up")), [this](bool pressed) {
                    if (System::IsValid() && pressed)
                    {
@@ -1558,7 +1558,7 @@ void CommonHostInterface::RegisterAudioHotkeys()
                                             g_settings.audio_output_volume);
                    }
                  });
-  RegisterHotkey(StaticString("Audio"), StaticString("AudioVolumeDown"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioVolumeDown"),
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Down")), [this](bool pressed) {
                    if (System::IsValid() && pressed)
                    {
