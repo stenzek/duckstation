@@ -1437,8 +1437,10 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    {
                      g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                      g_gpu->UpdateSettings();
-                     AddFormattedOSDMessage(5.0f, "PGXP is now %s.",
-                                            g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
+                     AddOSDMessage(g_settings.gpu_pgxp_enable ?
+                                     TranslateStdString("OSDMessage", "PGXP is now enabled.") :
+                                     TranslateStdString("OSDMessage", "PGXP is now disabled"),
+                                   5.0f);
 
                      if (g_settings.gpu_pgxp_enable)
                        PGXP::Initialize();
