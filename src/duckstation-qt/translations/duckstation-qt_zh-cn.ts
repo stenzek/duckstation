@@ -2992,20 +2992,20 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Fusion</source>
-        <translation>炼金</translation>
+        <translation>氪金</translation>
     </message>
     <message>
         <source>Dark Fusion (Gray)</source>
-        <translation>黑炼金 (灰色)</translation>
+        <translation>黑氪金 (灰色)</translation>
     </message>
     <message>
         <source>Dark Fusion (Blue)</source>
-        <translation>黑炼金 (蓝色)</translation>
+        <translation>黑氪金 (蓝色)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="661"/>
         <source>DarkFusion</source>
-        <translation>黑色</translation>
+        <translation>黑氪金</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="662"/>
