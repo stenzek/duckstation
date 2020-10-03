@@ -812,7 +812,7 @@
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="89"/>
         <source>XInput</source>
-        <translation>X-输入</translation>
+        <translation>XInput</translation>
     </message>
 </context>
 <context>
