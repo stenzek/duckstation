@@ -812,7 +812,7 @@
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="89"/>
         <source>XInput</source>
-        <translation>X-Input</translation>
+        <translation>X-输入</translation>
     </message>
 </context>
 <context>
@@ -1358,7 +1358,7 @@
     <message>
         <location filename="../gpusettingswidget.ui" line="187"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (精确几何转换)</translation>
+        <translation>PGXP (精确几何转换管线)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="193"/>
@@ -1881,7 +1881,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Widescreen Hack</source>
-        <translation>宽屏补丁</translation>
+        <translation>宽屏调整</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -2263,7 +2263,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.cpp" line="87"/>
         <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Enable Discord Presence</source>
-        <translation>启用Discord呈现</translation>
+        <translation>启用Discord显现</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="92"/>
@@ -2996,15 +2996,15 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Fusion</source>
-        <translation>Fusion</translation>
+        <translation>炼金</translation>
     </message>
     <message>
         <source>Dark Fusion (Gray)</source>
-        <translation>Dark Fusion (灰色)</translation>
+        <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
         <source>Dark Fusion (Blue)</source>
-        <translation>Dark Fusion (蓝色)</translation>
+        <translation>黑炼金 (蓝色)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="661"/>
@@ -3172,7 +3172,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="464"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>PGXP CPU模式与重新编译器不兼容, 改为使用缓存解释器。</translation>
+        <translation>PGXP下CPU模式与重新编译器不兼容, 改为使用缓存解释器。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="698"/>
@@ -3341,7 +3341,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="576"/>
         <source>PGXP CPU mode forced by game settings.</source>
-        <translation>根据游戏设置强制PGXP CPU模式。</translation>
+        <translation>根据游戏设置强制PGXP下CPU模式。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="593"/>
