@@ -102,29 +102,29 @@
     </message>
     <message>
         <source>DMA Max Slice Ticks:</source>
-        <translation>DMA 最大 Slice Ticks:</translation>
+        <translation>DMA最大切片计时:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
-        <translation>DMA Halt Ticks:</translation>
+        <translation>DMA停顿计时:</translation>
     </message>
     <message>
         <source>GPU FIFO Size:</source>
-        <translation>GPU FIFO 大小:</translation>
+        <translation>GPU下FIFO大小:</translation>
     </message>
     <message>
         <source>GPU Max Run-Ahead:</source>
-        <translation>GPU 最大前进速度:</translation>
+        <translation>GPU最大前进速度:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="84"/>
         <source>PGXP Vertex Cache</source>
-        <translation>PGXP 顶点缓存</translation>
+        <translation>PGXP顶点缓存</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="86"/>
         <source>PGXP CPU Mode</source>
-        <translation>PGXP CPU 模式</translation>
+        <translation>PGXP下CPU模式</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="90"/>
@@ -134,22 +134,22 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="93"/>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA 最大 Slice Ticks</translation>
+        <translation>DMA最大切片计时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="95"/>
         <source>DMA Halt Ticks</source>
-        <translation>DMA Halt Ticks</translation>
+        <translation>DMA停顿计时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="97"/>
         <source>GPU FIFO Size</source>
-        <translation>GPU FIFO 大小</translation>
+        <translation>GPU下FIFO大小</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="99"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU 最大前进速度</translation>
+        <translation>GPU最大前进速度</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="190"/>
@@ -363,7 +363,7 @@
     <message>
         <location filename="../../core/settings.cpp" line="508"/>
         <source>Cubeb</source>
-        <translation>Cubed</translation>
+        <translation>立方</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="509"/>
@@ -948,12 +948,12 @@
     <message>
         <location filename="../../core/settings.cpp" line="539"/>
         <source>Namco GunCon</source>
-        <translation>Namco GunCon</translation>
+        <translation>南梦宫光枪</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="540"/>
         <source>PlayStation Mouse</source>
-        <translation>Playstation Mouse</translation>
+        <translation>Playstation鼠标</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="540"/>
@@ -1388,7 +1388,7 @@
         <location filename="../gpusettingswidget.ui" line="221"/>
         <location filename="../gpusettingswidget.cpp" line="146"/>
         <source>CPU Mode</source>
-        <translation>CPU 模式</translation>
+        <translation>CPU模式</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="103"/>
@@ -1885,7 +1885,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
-        <translation>PGXP 几何校正</translation>
+        <translation>PGXP几何校正</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="232"/>
@@ -2053,24 +2053,24 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/game_settings.cpp" line="29"/>
         <source>Disable PGXP</source>
-        <translation>禁用 PGXP</translation>
+        <translation>禁用PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_settings.cpp" line="30"/>
         <source>Disable PGXP Culling</source>
-        <translation>禁用 PGXP 剔除</translation>
+        <translation>禁用PGXP剔除</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
-        <translation>禁用 PGXP 纹理校正</translation>
+        <translation>禁用PGXP纹理校正</translation>
     </message>
     <message>
         <source>Force PGXP Vertex Cache</source>
-        <translation>强制 PGXP 顶点缓存</translation>
+        <translation>强制PGXP顶点缓存</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
-        <translation>强制 PGXP CPU 模式</translation>
+        <translation>强制PGXP下CPU模式</translation>
     </message>
     <message>
         <source>Force Digital Controller</source>
@@ -2263,7 +2263,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.cpp" line="87"/>
         <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Enable Discord Presence</source>
-        <translation>启用Discord Presence</translation>
+        <translation>启用Discord呈现</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="92"/>
@@ -2345,7 +2345,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1350"/>
         <source>Toggle PGXP</source>
-        <translation>切换 PGXP</translation>
+        <translation>切换PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1368"/>
